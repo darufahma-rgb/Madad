@@ -27,7 +27,10 @@ const DashboardPage = () => {
   const styleLabel = profile.learningStyle?.[0]
     ? LEARNING_STYLES.find(s => s.id === profile.learningStyle[0])?.label
     : "campuran";
-  const fieldLabel = FIELDS.find(f => f.id === profile.field)?.label || "-";
+  const facultyData = FACULTIES.find(f => f.id === profile.faculty);
+  const facultyLabel = facultyData?.label || FIELDS.find(f => f.id === profile.field)?.label || "-";
+  const majorLabel = profile.major ? facultyData?.majors.find(m => m.id === profile.major)?.label : null;
+  const levelLabel = LEVELS.find(l => l.id === profile.level)?.short || "";
   const firstName = session.name.split(" ")[0];
   const topRec = recs[0];
   const greeting = getCairoGreeting();
@@ -48,10 +51,13 @@ const DashboardPage = () => {
               <span className="gradient-text">{firstName}.</span>
             </h1>
             <p className="mt-5 text-ink-muted text-lg max-w-2xl leading-relaxed">
-              {greeting.sub}{" "}
-              Dashboard disusun untuk gaya{" "}
-              <span className="text-ink font-medium">{styleLabel.toLowerCase()}</span>,
-              bidang <span className="text-ink font-medium">{fieldLabel.toLowerCase()}</span>.
+              Dashboard ini disusun khusus untukmu —{" "}
+              <span className="text-ink font-medium">
+                {facultyLabel}
+                {majorLabel ? ` · ${majorLabel}` : ""}
+                {levelLabel ? ` · ${levelLabel}` : ""}
+              </span>.
+              Madad paham cara belajarmu.
             </p>
           </Reveal>
         </div>

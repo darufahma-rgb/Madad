@@ -1,0 +1,646 @@
+# MADAD — Rework Landing Page + Onboarding Khas Masisir
+
+## Konteks
+
+Ini adalah **MADAD** — premium AI learning sanctuary untuk Masisir (mahasiswa Al-Azhar Kairo). Brand: **MADAD**. Logo mark: **AIGYPT**. Developer: **Dar Dev**.
+
+Sekarang kita rombak dua hal:
+
+1. **Landing page** — sekarang terlalu banyak tulisan, harus dipangkas habis. Orang Indonesia tidak suka baca panjang di landing. Focus: **visual, ringkas, langsung ke value**.
+
+2. **Onboarding & Profile** — saat ini field-nya generic ("Syariah", "Bahasa Arab", "Kedokteran"). Harus diubah supaya benar-benar **akurat untuk sistem Al-Azhar** dengan struktur per fakultas + tingkat + jurusan kondisional.
+
+**design.md tetap source of truth. Sanctuary mood non-negotiable.**
+
+---
+
+## Filosofi Perubahan (BACA DULU)
+
+### Untuk Landing:
+- **Less is more**. Hapus semua paragraf yang lebih dari 2 baris.
+- **Visual carries weight, not text**. Pakai mockup, ikon, ornamen — bukan deskripsi panjang.
+- **Satu pesan utama**: "Panduan Masisir untuk belajar materi Al-Azhar dengan AI."
+- Hapus penjelasan teknis di landing. Detail muncul di Tool Guide / Learning Path (member area).
+- **Mobile-first thinking**. Masisir mostly buka via HP — landing harus enak di-scroll cepat di mobile.
+
+### Untuk Onboarding:
+- **Akurasi > kelengkapan**. Field harus match sistem Al-Azhar yang sebenarnya, bukan dibuat-buat.
+- **Conditional logic**: pertanyaan follow-up cuma muncul kalau relevan (penjurusan baru ada di tingkat tertentu untuk fakultas tertentu).
+- **Tetap singkat**: jangan jadikan onboarding form panjang. Tambah field hanya yang benar-benar mempengaruhi rekomendasi/path.
+
+---
+
+## MODUL 1 — LANDING PAGE REWORK
+
+### Struktur Baru (5 section saja, semua pendek)
+
+```
+1. Hero (1 viewport mobile, max 1.2 viewport desktop)
+2. "Khusus untuk Masisir" — visual showcase fitur
+3. "3 Langkah Mulai" — flow super pendek
+4. Pricing inline mini (1 card saja)
+5. Final CTA (1 viewport)
+```
+
+**Hapus semua section ini dari landing existing:**
+- `BantuanSection` (yang panjang menjelaskan bantuan AI)
+- `PromptPreview` (preview prompt yang verbose)
+- `EthicsTeaser` (link etika tetap ada tapi cuma jadi link footer, bukan section penuh)
+- `ToolsPreview` versi panjang (ganti dengan logo strip kecil)
+
+**Footer tetap, tapi pricing section panjang di-replace.**
+
+### Section 1 — HERO (Ringkas Banget)
+
+**Layout:** Split 2-kolom desktop (60/40), stack di mobile.
+
+**Kolom kiri (text):**
+- Eyebrow chip: `MADAD · Untuk Masisir Al-Azhar` (1 baris)
+- Headline (font-display, besar — text-5xl mobile / text-7xl desktop, max 8 kata):
+  > **Belajar materi Azhar, jadi lebih ringan.**
+- Sub-headline (1 kalimat, max 18 kata, text-ink-muted):
+  > Panduan AI khusus untuk thalib Azhari — dari Nahwu, Tafsir, Fiqh, sampai Mustholah Hadits.
+- CTA row:
+  - Tombol primary: "Gabung Member" → buka PaymentModal
+  - Link kecil: "Sudah punya kode? Login →"
+- **TIDAK ADA** stats numerik di hero (hapus "6 AI Tools · 36 Adaptive Guides · 3 Learning Paths" yang ada sekarang — terlalu marketing-y, gak sanctuary)
+
+**Kolom kanan (visual):**
+- **Dashboard preview mockup** — bukan stats. Pakai SVG mockup dari dashboard MADAD yang sudah ada: greeting "Assalamu'alaikum [name]", strip Niat, rhythm dots, kartu rekomendasi AI. Static screenshot-style.
+- Atau alternatif: **stack 3 kartu fitur** dengan glass effect (Muqaranah, Kurasah, Adaptive Guide) — masing-masing kartu cuma judul + 1-baris hint + ornamen kecil
+
+**Background hero:** sama seperti sekarang (blob violet + gold + pattern stars) — itu udah bagus, jangan diubah.
+
+**Yang harus dihapus dari hero existing:**
+- Paragraf panjang yang menjelaskan "Bukan sekadar daftar alat AI..."
+- Stats row 3-kolom
+- Tombol "Lihat Cara Kerjanya" (terlalu banyak CTA di hero)
+- Sub-eyebrow arabic yang panjang
+
+### Section 2 — "KHUSUS UNTUK MASISIR" (Visual Showcase)
+
+**Header section** (center align, ringkas):
+- Kicker kecil: `— DIRANCANG UNTUK THALIB AZHARI`
+- Heading (font-display, max 6 kata): `Untukmu yang belajar di Mesir.`
+- **TANPA paragraf penjelasan**. Heading langsung ke visual.
+
+**Grid 3 kartu** (3 kolom desktop, stack mobile) — masing-masing kartu max 50 kata total:
+
+**Kartu 1 — Adaptive Guide**
+- Icon: `sparkles`
+- Title (font-display): "Guide per gaya belajar"
+- Body (1 kalimat, max 15 kata): "Tiap AI dipakai beda untuk Nahwu, Tafsir, atau Fiqh — sesuai caramu."
+
+**Kartu 2 — Muqaranah** 
+- Icon: `scale`
+- Title: "Muqaranah qoul ulama"
+- Body: "Pendapat 4 madzhab side-by-side dengan dalil dan wajh istidlal."
+
+**Kartu 3 — Kurasah**
+- Icon: `book`
+- Title: "Kurasah pribadi"
+- Body: "Catatan, talkhish, dan ta'liq — semua dalam satu tempat."
+
+**Setiap kartu:**
+- Background: `card-glass`
+- Icon di lingkaran kecil dengan accent gold subtle
+- Hover: soft lift saja, jangan ada yang loud
+- TIDAK ada tombol/link per kartu — keep clean
+
+**Logo strip kecil** di bawah grid (1 baris):
+- Text mini di tengah: `Mengintegrasikan AI yang sudah kamu kenal`
+- Row 6 logo grayscale: Claude · ChatGPT · Gemini · NotebookLM · Perplexity · DeepSeek (atau apapun yang ada di assets)
+- Logo opacity 50%, hover 100%
+
+### Section 3 — "3 LANGKAH MULAI"
+
+**Header:** 
+- Kicker: `— BAGAIMANA CARA KERJANYA`
+- Heading: `Tiga langkah, sudah jalan.`
+
+**Layout:** 3 step horizontal dengan connector line tipis (gold) di antara nomor.
+
+**Step 1:**
+- Nomor: `01` (font-display, besar, gradient text)
+- Title: "Pilih fakultas & gaya belajarmu"
+- 1 kalimat: "Onboarding 4 pertanyaan singkat."
+
+**Step 2:**
+- Nomor: `02`
+- Title: "Dapat rekomendasi AI personal"
+- 1 kalimat: "MADAD pilihkan tool & guide yang cocok."
+
+**Step 3:**
+- Nomor: `03`
+- Title: "Mulai belajar dengan tenang"
+- 1 kalimat: "Companion harian, muqaranah, kurasah — semua siap."
+
+**Visual:** simple, tanpa illustration berlebihan. Just numbered cards.
+
+### Section 4 — PRICING MINI
+
+**Header sangat ringkas:**
+- Kicker: `— INVESTASI ILMU`  
+- Heading: `Sekali bayar, akses penuh.`
+
+**1 card saja (centered, max-width 520px):**
+- Chip: `Member MADAD`
+- Harga besar (font-display, gradient gold): pakai harga yang sudah ada di system
+- 4 bullet pendek (1 baris each, **bukan paragraf**):
+  - "✓ Adaptive guide 6 AI × 6 gaya"
+  - "✓ Muqaranah qoul ulama (4 madzhab)"
+  - "✓ Kurasah dengan markdown & teks Arab"
+  - "✓ Companion harian: niat, ritme, refleksi"
+- Tombol primary: "Bayar via Lynk.id"
+- Mikro text di bawah: "Setelah bayar, kode dikirim admin via WhatsApp."
+
+**Gak ada section pricing besar terpisah dengan banyak option.** Cuma 1 card simple.
+
+### Section 5 — FINAL CTA
+
+**Sangat ringkas, center-aligned:**
+- Ornamen arabesque/divider di atas
+- Arabic kalimat (font-arabic, gold, text-2xl):
+  > `قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ`
+- Terjemah italic small: "Ikatlah ilmu dengan tulisan."
+- Attribution: "— Atsar"
+- Tombol primary: "Mulai perjalananmu di MADAD"
+- Divider arabesque di bawah
+
+**Tidak perlu paragraf rich text. Tidak perlu duplicate value prop. Cukup ajakan tenang.**
+
+### Yang DIHAPUS Permanen
+
+Hapus komponen dan section ini dari `landing.jsx`:
+- `BantuanSection` component dan semua referensinya
+- `PromptPreview` component
+- Section pricing besar `PricingSection` (replace dengan PricingMini inline)
+- Section ethics teaser panjang (tetap link di footer)
+- Hero stats row (3-kolom)
+- Sub-headline paragraph panjang di hero
+
+### Copy Guidelines untuk Landing Baru
+
+**Bahasa:**
+- Bahasa Indonesia santai-formal (khas Masisir)
+- Boleh pakai istilah Arab transliterasi: thalib, qoul, ilmi, ta'liq, talaqqi, muqaranah, mustholah
+- **MAX 18 kata per kalimat**. Kalau lebih, pecah jadi 2.
+- **MAX 2 baris per paragraf**. Lebih dari itu = pecah jadi bullet atau hapus.
+
+**Apa yang TIDAK boleh muncul di landing:**
+- ❌ Paragraf yang menjelaskan AI itu apa (Masisir sudah tahu)
+- ❌ "Dalam era digital..." atau opening generic apapun
+- ❌ Stats yang terdengar sales-y ("100+ feature!", "500+ user!")
+- ❌ Testimonial palsu kalau memang belum ada user nyata
+- ❌ FAQ panjang (FAQ pindah ke modal kalau perlu)
+- ❌ Footer yang sama panjang sama tinggi dengan landing
+
+---
+
+## MODUL 2 — ONBOARDING & PROFILE REWORK
+
+### Filosofi
+
+Onboarding sekarang nanya 3 hal: struggle, field, learning style. Yang harus diubah:
+1. **FIELDS** harus per **fakultas** Al-Azhar (bukan generic)
+2. Tambah **TINGKAT** kuliah (I, II, III, IV, mustawa, S2)
+3. Tambah **JURUSAN** conditional — cuma muncul kalau fakultas + tingkatnya memang sudah dijurus
+
+### Struktur Onboarding Baru
+
+**Urutan pertanyaan** (semua tetap progressive, satu per layar):
+1. Intro (existing — pesan welcome) — TIDAK DIUBAH
+2. **Fakultas** (new structure) — single select, 6 opsi
+3. **Tingkat** (NEW) — single select, 6 opsi
+4. **Jurusan** (NEW, conditional) — hanya muncul kalau kombinasi fakultas+tingkat memang sudah dijurus
+5. Struggle (existing) — TIDAK DIUBAH
+6. Learning Style (existing) — TIDAK DIUBAH
+
+Jadi total pertanyaan jadi **4-5** (tergantung apakah jurusan muncul).
+
+### Data Schema Baru di `data.jsx`
+
+**Replace `FIELDS` lama dengan struktur baru:**
+
+```js
+/* ============ FAKULTAS (Al-Azhar) ============ */
+const FACULTIES = [
+  {
+    id: "ushuluddin",
+    label: "Ushuluddin",
+    arabic: "أصول الدين",
+    desc: "Tafsir, Hadits, Aqidah & Filsafat",
+    icon: "bookOpen",
+    // penjurusan baru di tingkat III
+    majorsStartLevel: 3,
+    majors: [
+      { id: "tafsir",  label: "Tafsir & 'Ulum Al-Qur'an", arabic: "التفسير وعلوم القرآن" },
+      { id: "hadits",  label: "Hadits & 'Ulum Al-Hadits", arabic: "الحديث وعلومه" },
+      { id: "aqidah",  label: "Aqidah & Filsafat", arabic: "العقيدة والفلسفة" },
+    ]
+  },
+  {
+    id: "syariah",
+    label: "Syariah wal Qanun",
+    arabic: "الشريعة والقانون",
+    desc: "Fiqh, Ushul Fiqh, Hukum Islam",
+    icon: "scale",
+    // penjurusan dari tingkat I
+    majorsStartLevel: 1,
+    majors: [
+      { id: "islamiyah", label: "Syariah Islamiyah (4 thn)", arabic: "الشريعة الإسلامية" },
+      { id: "wal_qanun", label: "Syariah wal Qanun (5 thn)", arabic: "الشريعة والقانون" },
+    ]
+  },
+  {
+    id: "lughah",
+    label: "Lughah 'Arabiyah",
+    arabic: "اللغة العربية",
+    desc: "Nahwu, Sharaf, Balaghah, Adab",
+    icon: "pen",
+    // penjurusan dari tingkat I, tapi sub-jurusan Tarikh-Hadharah di tingkat III
+    majorsStartLevel: 1,
+    majors: [
+      { id: "adab",      label: "Lughah & Adab (Umum)",    arabic: "اللغة والأدب" },
+      { id: "tarikh",    label: "Tarikh wal Hadharah",     arabic: "التاريخ والحضارة" },
+      { id: "shahafah",  label: "Shahafah wal I'lam",      arabic: "الصحافة والإعلام" },
+    ]
+  },
+  {
+    id: "dirasat",
+    label: "Dirasat Islamiyah",
+    arabic: "الدراسات الإسلامية",
+    desc: "Gabungan Ushuluddin, Syariah & Lughah",
+    icon: "layers",
+    // tidak ada penjurusan di S1
+    majorsStartLevel: null,
+    majors: []
+  },
+  {
+    id: "quran",
+    label: "Al-Qur'an Al-Karim",
+    arabic: "القرآن الكريم",
+    desc: "Tahfidz, Qira'at, Tafsir",
+    icon: "book",
+    majorsStartLevel: null,
+    majors: []
+  },
+  {
+    id: "umum",
+    label: "Fakultas Umum / Lainnya",
+    arabic: "أخرى",
+    desc: "Kedokteran, Teknik, Sains, dll",
+    icon: "grid",
+    majorsStartLevel: null,
+    majors: []
+  },
+];
+
+/* ============ TINGKAT KULIAH ============ */
+const LEVELS = [
+  { id: "mustawa", label: "Mustawa / Daurah Lughah",  short: "Persiapan",  arabic: "مستوى" },
+  { id: "1",       label: "Tingkat I",                short: "Awwal",      arabic: "الأولى" },
+  { id: "2",       label: "Tingkat II",               short: "Tsani",      arabic: "الثانية" },
+  { id: "3",       label: "Tingkat III",              short: "Tsalits",    arabic: "الثالثة" },
+  { id: "4",       label: "Tingkat IV",               short: "Robi'",      arabic: "الرابعة" },
+  { id: "5",       label: "Tingkat V (Syariah wal Qanun)", short: "Khamis", arabic: "الخامسة" },
+  { id: "pasca",   label: "Pasca-sarjana (S2/S3)",    short: "Dirasat 'Ulya", arabic: "دراسات عليا" },
+];
+```
+
+**Tetap export semua:**
+```js
+window.FACULTIES = FACULTIES;
+window.LEVELS = LEVELS;
+// FIELDS lama bisa dihapus, atau di-alias ke FACULTIES untuk backward compat
+window.FIELDS = FACULTIES; // alias supaya code lama tidak break
+```
+
+### Logic Conditional di `onboarding.jsx`
+
+**Update QUESTIONS array:**
+
+```js
+const QUESTIONS = [
+  { key: "intro", kind: "intro" },
+  
+  {
+    key: "faculty",
+    title: "Di fakultas apa kamu belajar?",
+    hint: "Pilih yang paling dekat",
+    options: FACULTIES,
+    multi: false,
+    iconType: "arabic",
+  },
+  
+  {
+    key: "level",
+    title: "Sekarang di tingkat berapa?",
+    hint: "Pilih tingkat saat ini",
+    options: LEVELS,
+    multi: false,
+    iconType: "arabic-small",
+  },
+  
+  // Conditional — only show if faculty has majors AND user's level >= majorsStartLevel
+  {
+    key: "major",
+    title: "Jurusan apa yang kamu ambil?",
+    hint: "Sesuai pembagian fakultasmu",
+    optionsFromState: true, // sinyal untuk resolve options dari state.faculty
+    multi: false,
+    iconType: "arabic",
+    conditional: (data) => {
+      const faculty = FACULTIES.find(f => f.id === data.faculty);
+      if (!faculty || !faculty.majorsStartLevel || faculty.majors.length === 0) return false;
+      const levelNum = data.level === "mustawa" ? 0 : data.level === "pasca" ? 99 : parseInt(data.level);
+      return levelNum >= faculty.majorsStartLevel;
+    },
+  },
+  
+  {
+    key: "struggle",
+    title: "Sekarang kamu paling sering struggle di bagian mana?",
+    hint: "Boleh pilih lebih dari satu",
+    options: STRUGGLES,
+    multi: true,
+    iconType: "lucide",
+  },
+  
+  {
+    key: "learningStyle",
+    title: "Biasanya kamu lebih nyaman belajar dengan cara seperti apa?",
+    hint: "Boleh pilih lebih dari satu",
+    options: LEARNING_STYLES,
+    multi: true,
+    iconType: "emoji",
+  },
+];
+```
+
+**State management adjustment:**
+```js
+const [data, setData] = useState({ 
+  faculty: null,      // string id
+  level: null,        // string id
+  major: null,        // string id (optional)
+  struggle: [], 
+  learningStyle: [] 
+});
+```
+
+**Step navigation:** karena ada conditional question, perlu **logic skip**:
+
+```js
+// Helper: filter out questions yang conditional-nya tidak terpenuhi
+const getActiveQuestions = (data) => {
+  return QUESTIONS.filter(q => !q.conditional || q.conditional(data));
+};
+
+const activeQuestions = getActiveQuestions(data);
+const cur = activeQuestions[step];
+const total = activeQuestions.length - 1; // exclude intro
+const progress = Math.round((step / total) * 100);
+```
+
+**Resolve options untuk jurusan dinamis:**
+```js
+const currentOptions = cur?.optionsFromState 
+  ? (FACULTIES.find(f => f.id === data.faculty)?.majors || [])
+  : cur?.options;
+```
+
+**Save profile:**
+```js
+const finalProfile = { 
+  ...data, 
+  onboarded: true, 
+  onboardedAt: new Date().toISOString() 
+};
+// note: data sudah include faculty, level, major (kalau ada), struggle, learningStyle
+saveProfile(finalProfile);
+```
+
+### Update Dashboard Greeting & Personalization
+
+**Di `dashboard.jsx`,** ganti reference `profile.field` jadi `profile.faculty`:
+
+```js
+// OLD:
+const fieldLabel = FIELDS.find(f => f.id === profile.field)?.label || "-";
+
+// NEW:
+const facultyData = FACULTIES.find(f => f.id === profile.faculty);
+const facultyLabel = facultyData?.label || "-";
+const majorLabel = profile.major 
+  ? facultyData?.majors.find(m => m.id === profile.major)?.label 
+  : null;
+const levelData = LEVELS.find(l => l.id === profile.level);
+const levelLabel = levelData?.label || "";
+```
+
+**Greeting subtitle update** (ganti yang sekarang):
+
+```jsx
+<p className="mt-5 text-ink-muted text-lg max-w-2xl leading-relaxed">
+  Dashboard ini disusun khusus untukmu —{" "}
+  <span className="text-ink font-medium">
+    {facultyLabel}
+    {majorLabel ? ` · ${majorLabel}` : ""}
+    {levelLabel ? ` · ${levelLabel}` : ""}
+  </span>.
+  Madad paham cara belajarmu.
+</p>
+```
+
+### Update `recommend()` Logic di `data.jsx`
+
+Sekarang reasoning rekomendasi cuma based on `field` & `learningStyle`. Update biar reasoning lebih Azhari:
+
+```js
+const recommend = (profile) => {
+  // ... logic yang sudah ada, tapi tambah konteks faculty + level + major
+  const faculty = profile.faculty;
+  const level = profile.level;
+  const major = profile.major;
+  
+  // Tambah reasoning yang refer ke konteks Azhari-nya
+  // Misal: kalau faculty=ushuluddin & major=hadits → strong rec untuk Claude
+  //  (karena Claude bagus untuk navigate teks hadits panjang)
+  // Misal: kalau faculty=lughah → strong rec untuk NotebookLM
+  //  (karena bagus untuk parsing kitab sastra)
+  // ... dst
+};
+```
+
+**Reasoning examples per fakultas** (untuk diintegrasikan ke `recommend()`):
+
+| Fakultas + Jurusan | Top Rec | Reasoning Hint |
+|---|---|---|
+| Ushuluddin · Tafsir | Claude | "kuat untuk komparasi tafsir Klasik vs Mu'ashir, navigasi teks Arab panjang" |
+| Ushuluddin · Hadits | Claude + Perplexity | "Claude untuk takhrij & analisis sanad, Perplexity untuk verifikasi rujukan" |
+| Ushuluddin · Aqidah | ChatGPT + Claude | "diskusi konsep abstrak filsafat butuh dialog mendalam" |
+| Syariah Islamiyah | NotebookLM + Claude | "NotebookLM untuk hafal matan, Claude untuk fiqh muqaran" |
+| Syariah wal Qanun | Claude + ChatGPT | "navigate teks panjang qanun, drafting analisis hukum" |
+| Lughah · Adab | NotebookLM + Claude | "parsing kitab sastra klasik, analisis balaghah dan kritik syi'ir" |
+| Lughah · Tarikh | NotebookLM + Perplexity | "navigate kitab sejarah tebal, cross-reference periode" |
+| Dirasat Islamiyah | ChatGPT + Claude | "luas materi butuh tool generalis yang bagus banyak hal" |
+| Qur'an Karim | Claude | "navigate qira'at dan ulumul Qur'an detail" |
+| Umum | (existing logic) | sesuai jurusan umum |
+
+---
+
+## File yang Perlu Dimodifikasi
+
+### 1. `src/pages/landing.jsx` — **MAJOR REWORK**
+- Hapus components: `BantuanSection`, `PromptPreview`, `EthicsTeaser` (sebagai section), `PricingSection` (yang besar)
+- Buat components baru: `HeroNew` (replace `Hero`), `MasisirShowcase`, `ThreeSteps`, `PricingMini`, `FinalCTA`
+- Landing root component cuma render: `<HeroNew/>`, `<MasisirShowcase/>`, `<ThreeSteps/>`, `<PricingMini/>`, `<FinalCTA/>`
+- **Goal**: file landing.jsx jadi **paling banyak 250 baris** (dari current 515 baris). Kalau lebih, lo over-engineering.
+
+### 2. `src/data.jsx` — **TAMBAH DATA STRUCTURE**
+- Tambah `FACULTIES` array (replace `FIELDS`)
+- Tambah `LEVELS` array
+- Alias `FIELDS = FACULTIES` untuk backward compat
+- Update `recommend()` function biar reasoning lebih kontekstual per fakultas+jurusan
+- Export semua: `window.FACULTIES = FACULTIES; window.LEVELS = LEVELS;`
+
+### 3. `src/pages/onboarding.jsx` — **TAMBAH 2 STEP + CONDITIONAL LOGIC**
+- Update `QUESTIONS` dengan struktur baru (faculty, level, major conditional)
+- Update state initialization: `{ faculty, level, major, struggle, learningStyle }`
+- Tambah helper `getActiveQuestions()` untuk filter conditional
+- Tambah resolve `currentOptions` untuk question yang `optionsFromState: true`
+- Ganti emoji toast "Dashboard personal sudah siap 🎉" → "Dashboard personal sudah siap." (hapus emoji sesuai audit sebelumnya)
+
+### 4. `src/pages/dashboard.jsx` — **UPDATE GREETING REFERENCE**
+- Replace `profile.field` → `profile.faculty`
+- Tambah display untuk `profile.major` dan `profile.level` di greeting subtitle
+- Format: "{Fakultas} · {Jurusan kalau ada} · {Tingkat}"
+
+### 5. `src/pages/admin.jsx` — **UPDATE ONBOARDING DATA TAB**
+Cek tab "Onboarding Data" di admin — kalau tampilin `profile.field`, ganti jadi tampilkan `profile.faculty + profile.major + profile.level`. Supaya admin bisa lihat data Masisir-nya benar.
+
+### 6. `src/layout.jsx` — **UPDATE PAYMENT MODAL FEATURES LIST**
+Update list "Yang kamu dapat" di PaymentModal supaya match dengan fitur baru:
+- "Adaptive guide untuk 6 AI × 6 gaya belajar"
+- "Muqaranah qoul ulama (Library + buat sendiri)"
+- "Kurasah pribadi dengan markdown & teks Arab"
+- "Companion harian: niat, ritme, refleksi"
+- "Personalisasi per fakultas Al-Azhar"
+
+### 7. `index.html` — **UPDATE META DESCRIPTION**
+```html
+<meta name="description" content="MADAD — Panduan belajar materi Al-Azhar dengan AI. Adaptive guide per fakultas, muqaranah qoul ulama, dan kurasah pribadi untuk Masisir." />
+```
+
+---
+
+## Migration Logic (Backward Compatibility)
+
+Karena ada user existing yang sudah punya `profile.field`, perlu migration sederhana:
+
+**Di `auth.jsx` atau `data.jsx`,** tambah helper saat load profile:
+
+```js
+const migrateProfile = (profile) => {
+  if (!profile) return profile;
+  
+  // Migrate old `field` → `faculty`
+  if (profile.field && !profile.faculty) {
+    const fieldToFacultyMap = {
+      "syariah":    "syariah",
+      "bahasa":     "lughah",
+      "ushuluddin": "ushuluddin",
+      "kedokteran": "umum",
+      "teknik":     "umum",
+      "lainnya":    "umum",
+    };
+    profile.faculty = fieldToFacultyMap[profile.field] || "umum";
+  }
+  
+  // Default level if missing (existing users)
+  if (!profile.level) profile.level = "1";
+  
+  return profile;
+};
+
+// Pakai di getProfile():
+const getProfile = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.PROFILE);
+    const profile = raw ? JSON.parse(raw) : null;
+    return migrateProfile(profile);
+  } catch(e) { return null; }
+};
+```
+
+User existing tidak perlu re-onboarding — data lama diterjemahkan otomatis.
+
+---
+
+## Acceptance Criteria
+
+### Landing Page
+- [ ] Page total scroll desktop **maksimum 4 viewport** (saat ini ~6-7)
+- [ ] Page total scroll mobile **maksimum 5 viewport**
+- [ ] **Tidak ada paragraf lebih dari 2 baris** di seluruh landing
+- [ ] Hero copy max 18 kata di headline, max 18 kata di sub
+- [ ] Tidak ada section panjang BantuanSection / PromptPreview / EthicsTeaser besar
+- [ ] Logo strip 6 AI tools tampil dengan opacity 50%
+- [ ] 3 langkah mulai tampil rapi dengan connector line gold
+- [ ] Pricing mini cuma 1 card center, max-width 520px
+- [ ] Final CTA punya atsar `قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ` dengan ornamen
+- [ ] **landing.jsx total baris < 250**
+
+### Onboarding
+- [ ] 4 pertanyaan untuk yang fakultas tanpa jurusan (Dirasat, Qur'an, Umum) — Faculty + Level + Struggle + Learning Style
+- [ ] 5 pertanyaan untuk yang fakultas dengan jurusan dan tingkat ≥ batas — Faculty + Level + Major + Struggle + Learning Style
+- [ ] Conditional jurusan **benar-benar muncul/hilang** sesuai logic:
+  - Ushuluddin tingkat I-II → SKIP jurusan
+  - Ushuluddin tingkat III-IV → MUNCUL jurusan (Tafsir/Hadits/Aqidah)
+  - Syariah tingkat I-V → MUNCUL jurusan (Islamiyah / wal Qanun)
+  - Lughah tingkat I-IV → MUNCUL jurusan (Adab / Tarikh / Shahafah)
+  - Dirasat / Qur'an / Umum → SKIP jurusan
+- [ ] Progress bar update sesuai jumlah pertanyaan aktif (4 atau 5)
+- [ ] Mahasiswa S2 (pasca) → MUNCUL jurusan untuk semua fakultas yang ada major
+- [ ] Mahasiswa Mustawa → SKIP jurusan
+- [ ] Setelah onboarding selesai, profile localStorage punya: `{ faculty, level, major (atau null), struggle, learningStyle, onboarded: true }`
+
+### Dashboard
+- [ ] Greeting subtitle menampilkan `{Fakultas} · {Jurusan} · {Tingkat}` (jurusan hilang kalau tidak ada)
+- [ ] Rekomendasi AI menggunakan logic baru yang refer ke fakultas + jurusan
+- [ ] User existing dengan data lama (`profile.field`) tetap bisa akses dashboard tanpa error (migration jalan)
+
+### Admin
+- [ ] Tab "Onboarding Data" menampilkan kolom Fakultas, Tingkat, Jurusan (bukan cuma "Field")
+
+### General
+- [ ] Tidak ada console error
+- [ ] Mobile responsive untuk landing & onboarding (test width 375px)
+- [ ] Tidak ada emoji celebration 🎉 di toast (per audit sebelumnya, sekalian dibersihin)
+- [ ] Sanctuary feel terjaga — gold accent cuma di moment Islamic (atsar di final CTA, arabic di onboarding), purple untuk action
+
+---
+
+## Anti-Pattern Check
+
+Sebelum bilang selesai, baca semua copy landing baru sambil tanya:
+
+- [ ] Apakah ada paragraf yang bikin gue (sebagai pembaca) bilang "TLDR" dan skip? **Kalau iya, potong lagi.**
+- [ ] Apakah CTA-nya cuma 1-2 button per section? **Lebih dari itu = bingungin.**
+- [ ] Apakah ada section yang "menjelaskan apa itu AI" / "kenapa AI penting" / generic motivation? **Hapus. Masisir bukan target market yang butuh dijelasin.**
+- [ ] Apakah landing sekarang bisa di-screenshot 1 mobile-screen dan masih cukup untuk represent produk? **Itu test kerampingan ideal.**
+
+---
+
+## Catatan Final
+
+Lo bilang "orang males baca tulisan panjang". Itu insight yang valid banget untuk pasar Indonesia, apalagi Masisir yang biasanya lagi capek pulang kuliah. Tapi tahan godaan untuk **menggantikan tulisan panjang dengan visual ramai**. Sanctuary mood butuh **ruang kosong sebagai bagian dari kemewahan**.
+
+Jadi prinsipnya: **hapus tulisan, kasih napas, jangan ganti dengan animasi ramai**.
+
+Untuk data Al-Azhar, lo sudah punya riset detail (10 fakultas + jurusan). Yang gue masukkan ke struktur ini cuma 6 fakultas utama (yang accessible untuk wafidin). Sengaja gak overload onboarding dengan 10+ opsi — sweet spot adalah 6 opsi per pertanyaan (sesuai Hick's law: lebih dari 7 = bikin user freeze).
+
+Mulai. Kalau ada ambiguitas, default ke versi paling lega dan paling sedikit copy.
+
+والله ولي التوفيق.

@@ -14,15 +14,88 @@ const STRUGGLES = [
   { id: "fokus",     label: "Fokus",            desc: "Produktivitas & disiplin waktu belajar",    icon: "target" },
 ];
 
-/* ============ STUDY FIELDS ============ */
-const FIELDS = [
-  { id: "syariah",     label: "Syariah",       arabic: "الشريعة",        kind: "azhari" },
-  { id: "bahasa",      label: "Bahasa Arab",   arabic: "اللغة العربية",  kind: "azhari" },
-  { id: "ushuluddin",  label: "Ushuluddin",    arabic: "أصول الدين",     kind: "azhari" },
-  { id: "kedokteran",  label: "Kedokteran",    arabic: "الطب",           kind: "umum" },
-  { id: "teknik",      label: "Teknik",        arabic: "الهندسة",        kind: "umum" },
-  { id: "lainnya",     label: "Lainnya",       arabic: "أخرى",           kind: "umum" },
+/* ============ FACULTIES (Al-Azhar) ============ */
+const FACULTIES = [
+  {
+    id: "ushuluddin",
+    label: "Ushuluddin",
+    arabic: "أصول الدين",
+    desc: "Tafsir, Hadits, Aqidah & Filsafat",
+    icon: "bookOpen",
+    majorsStartLevel: 3,
+    majors: [
+      { id: "tafsir",  label: "Tafsir & 'Ulum Al-Qur'an", arabic: "التفسير وعلوم القرآن" },
+      { id: "hadits",  label: "Hadits & 'Ulum Al-Hadits",  arabic: "الحديث وعلومه" },
+      { id: "aqidah",  label: "Aqidah & Filsafat",         arabic: "العقيدة والفلسفة" },
+    ],
+  },
+  {
+    id: "syariah",
+    label: "Syariah wal Qanun",
+    arabic: "الشريعة والقانون",
+    desc: "Fiqh, Ushul Fiqh, Hukum Islam",
+    icon: "scale",
+    majorsStartLevel: 1,
+    majors: [
+      { id: "islamiyah",  label: "Syariah Islamiyah (4 thn)",   arabic: "الشريعة الإسلامية" },
+      { id: "wal_qanun",  label: "Syariah wal Qanun (5 thn)",   arabic: "الشريعة والقانون" },
+    ],
+  },
+  {
+    id: "lughah",
+    label: "Lughah 'Arabiyah",
+    arabic: "اللغة العربية",
+    desc: "Nahwu, Sharaf, Balaghah, Adab",
+    icon: "pen",
+    majorsStartLevel: 1,
+    majors: [
+      { id: "adab",     label: "Lughah & Adab (Umum)",   arabic: "اللغة والأدب" },
+      { id: "tarikh",   label: "Tarikh wal Hadharah",    arabic: "التاريخ والحضارة" },
+      { id: "shahafah", label: "Shahafah wal I'lam",     arabic: "الصحافة والإعلام" },
+    ],
+  },
+  {
+    id: "dirasat",
+    label: "Dirasat Islamiyah",
+    arabic: "الدراسات الإسلامية",
+    desc: "Gabungan Ushuluddin, Syariah & Lughah",
+    icon: "layers",
+    majorsStartLevel: null,
+    majors: [],
+  },
+  {
+    id: "quran",
+    label: "Al-Qur'an Al-Karim",
+    arabic: "القرآن الكريم",
+    desc: "Tahfidz, Qira'at, Tafsir",
+    icon: "book",
+    majorsStartLevel: null,
+    majors: [],
+  },
+  {
+    id: "umum",
+    label: "Fakultas Umum / Lainnya",
+    arabic: "أخرى",
+    desc: "Kedokteran, Teknik, Sains, dll",
+    icon: "grid",
+    majorsStartLevel: null,
+    majors: [],
+  },
 ];
+
+/* ============ TINGKAT KULIAH ============ */
+const LEVELS = [
+  { id: "mustawa", label: "Mustawa / Daurah Lughah",         short: "Persiapan",      arabic: "مستوى" },
+  { id: "1",       label: "Tingkat I",                        short: "Awwal",          arabic: "الأولى" },
+  { id: "2",       label: "Tingkat II",                       short: "Tsani",          arabic: "الثانية" },
+  { id: "3",       label: "Tingkat III",                      short: "Tsalits",        arabic: "الثالثة" },
+  { id: "4",       label: "Tingkat IV",                       short: "Robi'",          arabic: "الرابعة" },
+  { id: "5",       label: "Tingkat V (Syariah wal Qanun)",    short: "Khamis",         arabic: "الخامسة" },
+  { id: "pasca",   label: "Pasca-sarjana (S2/S3)",            short: "Dirasat 'Ulya",  arabic: "دراسات عليا" },
+];
+
+/* ============ STUDY FIELDS (alias untuk backward compat) ============ */
+const FIELDS = FACULTIES;
 
 /* ============ LEARNING STYLES ============ */
 const LEARNING_STYLES = [
@@ -447,7 +520,9 @@ const AI_TOOLS = [
 const recommend = (profile) => {
   const struggles = profile.struggle || [];
   const styles = profile.learningStyle || [];
-  const field = profile.field;
+  const faculty = profile.faculty || profile.field;
+  const major = profile.major;
+  const field = faculty; // keep compat
 
   const scores = {};
   const reasons = {};
@@ -506,12 +581,54 @@ const recommend = (profile) => {
     addScore("notebooklm", 1, "baca kitab dengan AI di samping");
   }
 
-  // By field
-  if (["syariah", "bahasa", "ushuluddin"].includes(field)) {
+  // By faculty — umum Azhari
+  if (["syariah", "lughah", "ushuluddin", "quran", "dirasat"].includes(faculty)) {
     addScore("claude", 1, "fasih dengan bahasa Arab klasik");
     addScore("notebooklm", 1, "cocok untuk PDF kitab Azhari");
   }
-  if (["kedokteran", "teknik"].includes(field)) {
+
+  // Faculty + major specific
+  if (faculty === "ushuluddin") {
+    if (!major || major === "tafsir") {
+      addScore("claude", 2, "kuat untuk komparasi tafsir klasik vs mu'ashir, navigasi teks Arab panjang");
+    }
+    if (major === "hadits") {
+      addScore("claude", 2, "analisis sanad dan takhrij mendalam");
+      addScore("perplexity", 1, "verifikasi rujukan hadits dan sumber primer");
+    }
+    if (major === "aqidah") {
+      addScore("chatgpt", 1, "diskusi konsep abstrak filsafat butuh dialog mendalam");
+      addScore("claude", 1, "nuansa argumen aqidah komparatif");
+    }
+  }
+  if (faculty === "syariah") {
+    if (!major || major === "islamiyah") {
+      addScore("notebooklm", 2, "hafal matan & ringkasan kitab Syariah langsung dari file");
+      addScore("claude", 1, "fiqh muqaran antar madzhab");
+    }
+    if (major === "wal_qanun") {
+      addScore("claude", 2, "navigate teks panjang qanun, drafting analisis hukum");
+      addScore("chatgpt", 1, "drafting dan strukturisasi dokumen hukum");
+    }
+  }
+  if (faculty === "lughah") {
+    addScore("notebooklm", 2, "parsing kitab sastra klasik, analisis balaghah dan kritik syi'ir");
+    if (major === "tarikh") {
+      addScore("perplexity", 1, "cross-reference periode sejarah dan kitab tarikh");
+    }
+    if (major === "shahafah") {
+      addScore("chatgpt", 1, "drafting dan editing teks media");
+    }
+  }
+  if (faculty === "quran") {
+    addScore("claude", 2, "navigate qira'at dan ulumul Qur'an detail");
+    addScore("chatgpt", 1, "sesi tasmi' interaktif via mode suara");
+  }
+  if (faculty === "dirasat") {
+    addScore("chatgpt", 1, "generalis untuk materi luas lintas disiplin");
+    addScore("claude", 1, "analisis mendalam teks multi-bidang");
+  }
+  if (faculty === "umum" || ["kedokteran", "teknik"].includes(faculty)) {
     addScore("perplexity", 1, "untuk sumber jurnal sains");
     addScore("gemini", 1, "info terkini & riset terbaru");
   }
@@ -615,7 +732,7 @@ const ADMIN_PIN = "9090";
 
 /* ============ EXPORTS ============ */
 Object.assign(window, {
-  STRUGGLES, FIELDS, LEARNING_STYLES,
+  STRUGGLES, FIELDS, FACULTIES, LEVELS, LEARNING_STYLES,
   AI_TOOLS, recommend,
   LEARNING_PATHS, allModules,
   ETHICS_POINTS,

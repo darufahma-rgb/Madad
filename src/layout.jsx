@@ -372,10 +372,11 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
                 <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-3">Yang kamu dapat</div>
                 <div className="space-y-2.5 mb-5">
                   {[
-                    { i: "sparkles", t: "Rekomendasi AI personal sesuai profil belajarmu" },
-                    { i: "bookOpen", t: "36 adaptive guide (6 AI × 6 gaya belajar)" },
-                    { i: "layers",   t: "3 learning path terstruktur (Beginner → Advanced)" },
-                    { i: "refresh",  t: "Progress tracking & habit belajar berkelanjutan" },
+                    { i: "sparkles", t: "Adaptive guide untuk 6 AI × 6 gaya belajar" },
+                    { i: "layers",   t: "Muqaranah qoul ulama (Library + buat sendiri)" },
+                    { i: "book",     t: "Kurasah pribadi dengan markdown & teks Arab" },
+                    { i: "heart",    t: "Companion harian: niat, ritme, refleksi" },
+                    { i: "user",     t: "Personalisasi per fakultas Al-Azhar" },
                   ].map((f, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <span className="w-7 h-7 rounded-lg bg-violet-500/15 text-violet-300 flex items-center justify-center flex-shrink-0 mt-0.5">

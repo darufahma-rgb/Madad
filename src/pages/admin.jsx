@@ -410,9 +410,13 @@ const AdminOnboarding = () => {
       { id: "arab", n: 86 }, { id: "makalah", n: 72 }, { id: "referensi", n: 54 },
       { id: "hafalan", n: 48 }, { id: "fokus", n: 31 },
     ],
-    fields: [
-      { id: "syariah", n: 52 }, { id: "bahasa", n: 38 }, { id: "ushuluddin", n: 24 },
-      { id: "kedokteran", n: 16 }, { id: "teknik", n: 8 }, { id: "lainnya", n: 4 },
+    faculties: [
+      { id: "syariah", n: 52 }, { id: "lughah", n: 38 }, { id: "ushuluddin", n: 24 },
+      { id: "dirasat", n: 16 }, { id: "quran", n: 8 }, { id: "umum", n: 4 },
+    ],
+    levels: [
+      { id: "1", n: 38 }, { id: "2", n: 34 }, { id: "3", n: 28 },
+      { id: "4", n: 22 }, { id: "mustawa", n: 12 }, { id: "pasca", n: 8 },
     ],
     styles: [
       { id: "discussion", n: 64 }, { id: "summary", n: 58 }, { id: "reading", n: 46 },
@@ -425,9 +429,12 @@ const AdminOnboarding = () => {
       <h1 className="font-display text-4xl font-semibold text-ink mb-1">Onboarding Data</h1>
       <p className="text-ink-muted mb-8">Total respons: <span className="text-ink font-medium num">{data.totalResponses}</span> dari sesi onboarding.</p>
 
-      <div className="grid lg:grid-cols-3 gap-5">
+      <div className="grid lg:grid-cols-2 gap-5 mb-5">
+        <AggCard title="Fakultas" items={data.faculties.map(s => ({ label: FACULTIES.find(x => x.id === s.id)?.label, n: s.n }))}/>
+        <AggCard title="Tingkat" items={data.levels.map(s => ({ label: LEVELS.find(x => x.id === s.id)?.label, n: s.n }))}/>
+      </div>
+      <div className="grid lg:grid-cols-2 gap-5">
         <AggCard title="Top Struggles" items={data.struggles.map(s => ({ label: STRUGGLES.find(x => x.id === s.id)?.label, n: s.n }))}/>
-        <AggCard title="Bidang Studi" items={data.fields.map(s => ({ label: FIELDS.find(x => x.id === s.id)?.label, n: s.n }))}/>
         <AggCard title="Gaya Belajar" items={data.styles.map(s => ({ label: LEARNING_STYLES.find(x => x.id === s.id)?.label, n: s.n }))}/>
       </div>
 

@@ -136,10 +136,21 @@ const getSession = () => {
 };
 
 /* ---------- Profile ---------- */
+const migrateProfile = (profile) => {
+  if (!profile) return profile;
+  if (profile.field && !profile.faculty) {
+    const map = { syariah: "syariah", bahasa: "lughah", ushuluddin: "ushuluddin", kedokteran: "umum", teknik: "umum", lainnya: "umum" };
+    profile.faculty = map[profile.field] || "umum";
+  }
+  if (!profile.level) profile.level = "1";
+  return profile;
+};
+
 const getProfile = () => {
   try {
     const raw = localStorage.getItem(STORAGE_KEYS.PROFILE);
-    return raw ? JSON.parse(raw) : null;
+    const profile = raw ? JSON.parse(raw) : null;
+    return migrateProfile(profile);
   } catch (e) { return null; }
 };
 const saveProfile = (profile) => {
