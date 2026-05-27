@@ -339,7 +339,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
             <div className="w-16 h-16 rounded-full bg-mint-500/20 text-mint-500 flex items-center justify-center mx-auto mb-5">
               <Icon name="check" className="w-8 h-8" strokeWidth={2.4}/>
             </div>
-            <div className="arabic text-2xl text-gold-300 mb-3">جَزَاكَ اللهُ خَيْرًا</div>
+            <div className="arabic-display-classical text-2xl text-gold-300 mb-3">جَزَاكَ اللهُ خَيْرًا</div>
             <h2 className="font-display text-2xl font-semibold text-ink mb-3">Terima kasih!</h2>
             <p className="text-ink-muted text-sm leading-relaxed mb-6 max-w-xs mx-auto">
               Pembayaran sedang diproses. Kode akses akan dikirimkan oleh admin setelah konfirmasi pembayaran.
@@ -441,7 +441,7 @@ const PageHeader = ({ kicker, title, subtitle, arabic, children, right }) => (
           {kicker && <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>{kicker}
           </div>}
-          {arabic && <div className="arabic text-2xl text-violet-200/60 mb-3">{arabic}</div>}
+          {arabic && <div className="arabic-display-classical text-2xl text-violet-200/60 mb-3">{arabic}</div>}
           <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-ink leading-[1.05] tracking-tightest max-w-3xl">
             {title}
           </h1>

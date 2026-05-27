@@ -35,7 +35,7 @@ const EthicsPage = () => {
               <div className="md:col-span-5">
                 <div className="card-glass p-7 text-center">
                   <Icon name="quote" className="w-7 h-7 text-gold-400 mx-auto mb-4" strokeWidth={1.4}/>
-                  <div className="arabic text-3xl text-gold-200 leading-loose mb-4">إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ</div>
+                  <div className="arabic-display-classical text-3xl text-gold-200 leading-loose mb-4">إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ</div>
                   <p className="text-sm text-ink-muted italic mb-2">"Sesungguhnya amal itu tergantung niatnya."</p>
                   <div className="text-xs text-ink-soft tracking-wider">HR. Bukhari &amp; Muslim</div>
                 </div>

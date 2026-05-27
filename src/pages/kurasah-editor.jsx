@@ -176,7 +176,7 @@ const KurasahEditorPage = () => {
         ))}
         <div className="w-px h-4 bg-line"/>
         <button type="button" onClick={insertBismillah} title="Insert Bismillah"
-          className="px-2.5 py-1 rounded text-xs text-gold-400 hover:text-gold-300 hover:bg-gold-500/8 transition-colors arabic"
+          className="px-2.5 py-1 rounded text-xs text-gold-400 hover:text-gold-300 hover:bg-gold-500/8 transition-colors arabic-ui"
           style={{direction:"rtl"}}>
           ﷽
         </button>

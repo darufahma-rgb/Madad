@@ -163,7 +163,7 @@ const OnboardingPage = () => {
 
 const Intro = ({ session, onNext }) => (
   <div className="max-w-2xl mx-auto text-center pt-10">
-    <div className="arabic text-3xl text-gold-300 mb-4">السلام عليكم</div>
+    <div className="arabic-display-classical text-3xl text-gold-300 mb-4">السلام عليكم</div>
     <h1 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-tight mb-5">
       Selamat datang, {session.name.split(" ")[0]}.
     </h1>
@@ -220,7 +220,7 @@ const QuestionStep = ({ question, options, value, onPick }) => {
               <div className="flex items-start justify-between mb-2">
                 {question.iconType === "emoji" && <span className="text-3xl">{opt.emoji}</span>}
                 {(question.iconType === "arabic" || isArabicSmall) && (
-                  <span className={`arabic text-gold-300 ${isArabicSmall ? "text-base" : "text-xl"}`}>
+                  <span className={`arabic-ui text-gold-300 ${isArabicSmall ? "text-base" : "text-xl"}`}>
                     {opt.arabic}
                   </span>
                 )}

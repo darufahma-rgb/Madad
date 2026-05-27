@@ -97,9 +97,9 @@ const MuqaranahPage = () => {
             </div>
             <div className="text-center max-w-2xl mx-auto">
               <div className="divider-arabesque opacity-40 mb-8"/>
-              <div className="arabic text-gold-300 text-2xl leading-loose mb-3" style={{direction:"rtl"}}>بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+              <div className="arabic-display-modern text-gold-300 text-2xl leading-loose mb-3" style={{direction:"rtl"}}>بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
               <h1 className="font-display text-5xl md:text-6xl font-semibold text-ink mb-3">Muqaranah</h1>
-              <div className="arabic text-gold-300 text-xl leading-loose mb-5" style={{direction:"rtl"}}>بَيْنَ الْأَقْوَالِ نَتَأَمَّلُ</div>
+              <div className="arabic-display-modern text-gold-300 text-xl leading-loose mb-5" style={{direction:"rtl"}}>بَيْنَ الْأَقْوَالِ نَتَأَمَّلُ</div>
               <p className="text-ink-muted leading-relaxed text-base max-w-xl mx-auto mb-2">
                 Ruang untuk merenungi perbedaan pendapat para ulama, bukan untuk menghakimi, melainkan untuk memahami keluasan ilmu dan adab dalam menyikapi khilaf.
               </p>
@@ -167,10 +167,10 @@ const MuqaranahPage = () => {
             ) : (
               <Reveal className="py-20 text-center">
                 <div className="pattern-stars opacity-5 absolute inset-0 pointer-events-none rounded-xl"/>
-                <div className="arabic text-gold-300 text-3xl leading-loose mb-3" style={{direction:"rtl"}}>
+                <div className="arabic-display-classical text-gold-300 text-3xl leading-loose mb-3" style={{direction:"rtl"}}>
                   إِنَّمَا يَخْشَى اللَّهَ مِنْ عِبَادِهِ الْعُلَمَاءُ
                 </div>
-                <p className="text-xs text-gold-400/70 mb-1 arabic" style={{direction:"rtl"}}>فاطر: ٢٨</p>
+                <p className="text-xs text-gold-400/70 mb-1 arabic-ui" style={{direction:"rtl"}}>فاطر: ٢٨</p>
                 <p className="text-ink-muted text-sm mt-4 mb-8 max-w-sm mx-auto">
                   Belum ada muqaranah buatanmu. Susun yang pertama, merangkum qoul ulama adalah ibadah ilmiah tersendiri.
                 </p>

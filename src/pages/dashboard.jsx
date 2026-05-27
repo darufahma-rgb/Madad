@@ -45,7 +45,7 @@ const DashboardPage = () => {
         <div className="absolute inset-0 pattern-stars opacity-25 pointer-events-none"/>
         <div className="container-x relative">
           <Reveal>
-            <div className="arabic text-2xl text-gold-300 mb-3">{greeting.arabic}</div>
+            <div className="arabic-display-classical text-2xl text-gold-300 mb-3">{greeting.arabic}</div>
             <h1 className="font-display text-5xl md:text-[68px] font-semibold text-ink leading-[1.0] tracking-tightest">
               {greeting.text},{" "}
               <span className="gradient-text">{firstName}.</span>
@@ -223,7 +223,7 @@ const KurasahRecentCards = () => {
       <Reveal>
         <div className="card-glass rounded-xl p-7 flex flex-col sm:flex-row items-center gap-6">
           <div className="flex-1 text-center sm:text-left">
-            <div className="arabic text-gold-300 text-xl leading-loose mb-1" style={{direction:"rtl"}}>قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ</div>
+            <div className="arabic-display-classical text-gold-300 text-xl leading-loose mb-1" style={{direction:"rtl"}}>قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ</div>
             <p className="text-sm text-ink-muted italic mb-4">Ikatlah ilmu dengan tulisan. <span className="text-ink-soft">Atsar</span></p>
             <button onClick={() => navigate("/kurasah")} className="btn btn-ghost text-sm py-2 px-4">
               <Icon name="pen" className="w-3.5 h-3.5"/> Mulai menulis

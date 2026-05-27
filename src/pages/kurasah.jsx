@@ -227,7 +227,7 @@ const KurasahPage = () => {
         <div className="container-x">
           {notes.length === 0 ? (
             <Reveal className="py-20 text-center">
-              <div className="arabic text-gold-300 text-4xl leading-loose mb-3" style={{direction:"rtl"}}>قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ</div>
+              <div className="arabic-display-classical text-gold-300 text-4xl leading-loose mb-3" style={{direction:"rtl"}}>قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ</div>
               <p className="text-xs text-gold-400/70 mb-1">Atsar</p>
               <p className="text-ink-muted mt-3 mb-2 text-sm">Ikatlah ilmu dengan tulisan.</p>
               <p className="text-ink-soft text-xs mb-8">Kurasahmu masih kosong. Mulai menulis, satu catatan kecil sudah cukup.</p>

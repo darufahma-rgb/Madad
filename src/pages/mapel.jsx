@@ -208,7 +208,7 @@ const MapelListPage = ({ profile }) => {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="text-sm font-semibold text-ink leading-tight">{guide.subject}</div>
-                          <div className="arabic text-xs text-gold-300/70 mt-0.5">{guide.arabic}</div>
+                          <div className="arabic-ui text-xs text-gold-300/70 mt-0.5">{guide.arabic}</div>
                         </div>
                       </div>
                       <p className="text-xs text-ink-soft leading-relaxed mb-3">{guide.tagline}</p>
@@ -281,7 +281,7 @@ const MapelCard = ({ guide, highlighted }) => (
 
       <div className="mb-3">
         <div className="font-display text-xl font-semibold text-ink">{guide.subject}</div>
-        <div className="arabic text-sm text-gold-300/80 mt-0.5">{guide.arabic}</div>
+        <div className="arabic-ui text-sm text-gold-300/80 mt-0.5">{guide.arabic}</div>
       </div>
 
       <p className="text-sm text-ink-muted leading-relaxed mb-5 flex-1">{guide.tagline}</p>
@@ -342,7 +342,7 @@ const MapelDetailPage = ({ guide, profile }) => {
                 <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 flex items-center gap-2">
                   <span className="w-6 h-px bg-gold-500/70"/>Panduan Mata Pelajaran
                 </div>
-                <div className="arabic text-3xl text-gold-200 mb-2">{guide.arabic}</div>
+                <div className="arabic-display-modern text-3xl text-gold-200 mb-2">{guide.arabic}</div>
                 <h1 className="font-display text-5xl md:text-6xl font-semibold text-ink leading-[1.0] tracking-tightest mb-4">
                   {guide.subject}
                 </h1>

@@ -200,7 +200,7 @@ Tolong bantu aku merenungkan mas'alah ini dengan adab thalib:
             <div className="chip chip-glass text-[11px] uppercase tracking-wider mb-4">{catLabel}</div>
             <h1 className="font-display text-4xl md:text-5xl font-medium text-ink leading-tight mb-2">{entry.title}</h1>
             {entry.titleArabic && (
-              <div className="arabic text-gold-300 text-xl leading-loose mt-2 mb-5" style={{direction:"rtl"}}>{entry.titleArabic}</div>
+              <div className="arabic-display-modern text-gold-300 text-xl leading-loose mt-2 mb-5" style={{direction:"rtl"}}>{entry.titleArabic}</div>
             )}
 
             {/* Rumusan masalah */}

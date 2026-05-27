@@ -5,9 +5,9 @@ const { useState, useEffect, useRef } = React;
 /* ── Inline styles injected once ──────────────────────────────── */
 const LANDING_STYLES = `
   /* ── Fonts ── */
-  .kali-display  { font-family: "Lalezar", "Noto Naskh Arabic", serif; direction: rtl; }
-  .kali-elegant  { font-family: "Aref Ruqaa", "Scheherazade New", serif; direction: rtl; }
-  .kali-body     { font-family: "Scheherazade New", "Noto Naskh Arabic", serif; direction: rtl; }
+  .kali-display  { font-family: "Reem Kufi", "Noto Kufi Arabic", sans-serif; direction: rtl; }
+  .kali-elegant  { font-family: "Aref Ruqaa", "Amiri", serif; direction: rtl; }
+  .kali-body     { font-family: "Noto Naskh Arabic", "Amiri", serif; direction: rtl; }
 
   /* ── Keyframes ── */
   @keyframes floatY {
@@ -809,7 +809,7 @@ const MapelShowcase = () => {
             const col = facultyColors[m.faculty] || facultyColors["Umum"];
             return (
               <div key={i} className="mapel-pill flex flex-col gap-1.5">
-                <div className="arabic text-gold-300 text-right" style={{ fontSize: "20px", lineHeight: 1.6 }}>{m.ar}</div>
+                <div className="arabic-ui text-gold-300 text-right" style={{ fontSize: "20px", lineHeight: 1.6 }}>{m.ar}</div>
                 <div className="flex items-center justify-between gap-2">
                   <span className="text-sm font-medium text-ink">{m.id}</span>
                   <span className="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0"

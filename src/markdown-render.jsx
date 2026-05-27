@@ -42,7 +42,7 @@ const renderMarkdown = (raw) => {
     // :bismillah: shortcode
     if (line.trim() === ":bismillah:") {
       flushList();
-      html.push(`<div class="text-center my-6"><div class="arabic text-gold-300 text-2xl leading-loose" style="direction:rtl">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div></div>`);
+      html.push(`<div class="text-center my-6"><div class="arabic-display-modern text-gold-300 text-2xl leading-loose" style="direction:rtl">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ</div></div>`);
       continue;
     }
 

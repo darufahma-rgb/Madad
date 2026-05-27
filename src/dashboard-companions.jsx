@@ -209,7 +209,7 @@ const IntentionStrip = () => {
           </div>
 
           <div className="text-center mb-5">
-            <div className="arabic text-xl md:text-2xl leading-[1.9] mb-3"
+            <div className="arabic-display-classical text-xl md:text-2xl leading-[1.9] mb-3"
               style={{color:"rgba(201,168,106,0.88)", direction:"rtl"}}>
               {display.arabic}
             </div>
@@ -419,7 +419,7 @@ const ReflectionCard = () => {
           <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 flex items-center justify-center gap-2">
             <span className="w-4 h-px bg-gold-500/60"/>Dari kurasahmu
           </div>
-          <div className="arabic text-xl leading-loose mb-2" style={{color:"rgba(201,168,106,0.78)",direction:"rtl"}}>
+          <div className="arabic-display-classical text-xl leading-loose mb-2" style={{color:"rgba(201,168,106,0.78)",direction:"rtl"}}>
             قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ
           </div>
           <p className="text-sm text-ink-muted italic mb-5">
