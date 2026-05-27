@@ -698,7 +698,7 @@ const MAPEL_GUIDES = [
     ],
     tips: [
       "Aturan emas: tulis sendiri dulu, koreksi kemudian. Bukan minta ChatGPT tulis untuk kamu.",
-      "Buat 'jurnal insya'" di Kurasah — tulis satu paragraf Arab per hari tentang apapun. Minta koreksi ChatGPT.",
+      "Buat 'jurnal insya' di Kurasah — tulis satu paragraf Arab per hari tentang apapun. Minta koreksi ChatGPT.",
       "Untuk kosakata, minta ChatGPT berikan 10 kata baru per hari dengan contoh kalimatnya — ini cara terbaik perbesar vocab.",
     ],
   },
