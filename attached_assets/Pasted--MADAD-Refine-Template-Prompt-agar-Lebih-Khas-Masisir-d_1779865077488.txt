@@ -1,0 +1,546 @@
+# MADAD — Refine Template Prompt agar Lebih Khas Masisir (dengan Teks Arab)
+
+## Konteks
+
+Saat ini MADAD punya banyak prompt template yang di-copy user ke AI (ChatGPT/Claude/dll):
+
+- **37 `starterPrompt`** di `src/data.jsx` — per AI tool × learning style
+- **`buildPrompt()`** di `src/pages/muqaranah-detail.jsx` — prompt diskusi qoul ulama
+- **`copyAIPrompt()`** di `src/pages/muqaranah-form.jsx` — bantu susun muqaranah
+- Template body catatan di `catatKeKurasah()`
+
+**Masalah saat ini:** prompt-prompt itu **bagus secara struktur**, tapi terlalu *Indonesia generic* — gak terasa kalau user-nya thalib Azhari. Tidak ada istilah Arab, tidak ada konteks kitab, tidak meminta AI menjawab dengan format yang familiar bagi Masisir.
+
+**Tujuan refine ini:** semua prompt yang **berhubungan langsung dengan ilmu Azhari** harus terasa seperti dibuat oleh seorang thalib di rihaab Al-Azhar — termasuk:
+- Menyertakan istilah Arab transliterasi yang dipakai sehari-hari di Mesir
+- Meminta AI **menyertakan teks Arab** saat menyebut ayat, hadits, kaidah, atau kutipan kitab
+- Meminta AI **menyebut sumber kitab** dengan nama Arab-nya
+- Format jawaban yang sesuai ekspektasi akademik Azhari
+
+---
+
+## Filosofi Refine (BACA DULU)
+
+### Tiga Kategori Prompt — Treatment Berbeda
+
+**Kategori A — Prompt Berkaitan Ilmu Syar'i / Azhari**
+Prompt yang topiknya: tafsir, hadits, fiqh, ushul, nahwu, sharaf, balaghah, mustholah, aqidah, dll.
+→ **WAJIB** tambahkan:
+- Permintaan agar AI sertakan **teks Arab asli** untuk ayat/hadits/kaidah
+- Permintaan agar AI sebut **nama kitab Arab** sebagai sumber (Al-Umm, Al-Mughni, Alfiyah, dll)
+- Istilah Arab transliterasi: dalil, wajh istidlal, qoul, ta'rif, qaidah, mas'alah
+- Format jawaban yang punya struktur ilmiah klasik (matan + syarh, atau ta'rif + dalil + tatbiq)
+
+**Kategori B — Prompt Generic Tapi untuk Konteks Belajar Azhari**
+Prompt yang topiknya umum (ringkasan, peta konsep, soal latihan) tapi user-nya Masisir.
+→ **TAMBAH** instruksi:
+- "Bahasa Indonesia akademik dengan istilah Arab transliterasi"
+- "Sertakan istilah Arab original (dengan harakat) untuk konsep kunci"
+- "Anggap aku sudah familiar dengan terminologi kitab klasik"
+
+**Kategori C — Prompt Tool-Specific**
+Prompt yang spesifik untuk fitur tool (OCR foto kitab, cari murattil, cari paper, dll).
+→ **TIDAK PERLU** dirombak besar-besaran. Cukup pastikan istilah teknis Azhari dipakai (murattil bukan "reciter", matan bukan "text", dll).
+
+---
+
+## Refine Pattern — Template Universal
+
+Setiap prompt Kategori A & B harus mengandung **3 elemen baru**:
+
+### 1. Pembukaan Konteks Azhari (1 kalimat)
+Ganti pembukaan generic "Aku mau memahami..." dengan pembukaan yang menyebut konteks Azhari:
+- ✅ "Aku thalib di Al-Azhar yang sedang mempelajari..."
+- ✅ "Sebagai mahasiswa Azhari, aku ingin mendalami..."
+- ✅ "Aku sedang muthala'ah kitab [X] untuk materi [Y]..."
+
+### 2. Permintaan Arabic Inline
+Tambahkan instruksi eksplisit di tengah/akhir prompt:
+- ✅ "Saat menyebut ayat, hadits, atau kaidah, **selalu sertakan teks Arab asli** (dengan harakat lengkap untuk yang krusial) sebelum terjemahannya."
+- ✅ "Gunakan istilah Arab transliterasi (qoul, dalil, wajh istidlal, ta'rif, qaidah) — jangan terjemahkan ke Inggris."
+
+### 3. Permintaan Sumber Kitab dalam Bahasa Arab
+- ✅ "Sebutkan sumber kitab dalam nama Arab-nya (contoh: *Al-Umm*, *Al-Mughni*, *Sharh Al-Mahalli*) — bukan terjemahan."
+- ✅ "Bila merujuk pendapat ulama, sebut nama lengkap Arab-nya (al-Imām al-Shāfi'ī, bukan 'Imam Syafii')."
+
+---
+
+## Yang Harus Di-Refine Spesifik
+
+### 1. `src/data.jsx` — 37 `starterPrompt`
+
+Refine **per learning style** karena pattern-nya konsisten. Berikut **template baru** yang harus menggantikan yang lama. Pertahankan struktur logic-nya, tapi ganti copy-nya:
+
+#### ChatGPT — `discussion`
+**Lama:**
+> "Berperanlah sebagai tutor Azhari yang sabar. Aku mau memahami konsep [TOPIK]..."
+
+**Baru:**
+```
+Berperanlah sebagai tutor Azhari yang sabar dan terbiasa dengan turuq tadris klasik. Aku thalib di Al-Azhar yang sedang mempelajari konsep [TOPIK]. Jangan beri penjelasan langsung — tanyakan dulu ma 'indī (apa yang sudah aku tahu), lalu bimbing dengan as'ilah taqrīriyyah (pertanyaan-pertanyaan bertahap) sampai aku menemukan jawabannya sendiri.
+
+Saat menyebut ayat, hadits, atau kaidah, selalu sertakan teks Arab asli (dengan harakat) sebelum terjemahan. Gunakan istilah Arab transliterasi seperti ta'rīf, dalīl, wajh istidlāl — jangan diterjemahkan. Mulai dengan satu pertanyaan pembuka.
+```
+
+#### ChatGPT — `summary`
+**Lama:**
+> "Buatkan ringkasan dari materi berikut: [PASTE MATERI]..."
+
+**Baru:**
+```
+Aku thalib Azhari yang sedang muthāla'ah materi berikut: [PASTE MATERI]
+
+Buatkan talkhīsh dengan format:
+1. Ta'rīf (definisi inti) — sertakan istilah Arab asli + terjemah
+2. 5 poin utama (1 baris per poin) — pakai terminologi kitab klasik
+3. Satu kalimat penutup yang menangkap jawhar al-masʾalah
+4. Sebutkan 1 poin paling fundamental dan kenapa ia menjadi madār al-bāb
+
+Saat ada istilah teknis, tulis Arab + transliterasi. Contoh: قياس (qiyās), إجماع (ijmā').
+```
+
+#### ChatGPT — `visual` (peta konsep)
+**Lama:**
+> "Buatkan peta konsep [TOPIK] dalam format hierarki bertingkat..."
+
+**Baru:**
+```
+Aku thalib Azhari. Buatkan kharīṭah dzihniyyah (peta konsep) untuk [TOPIK] dalam format hierarki bertingkat (indentasi).
+
+Struktur:
+- Akar (jadhr) = tema utama → tulis dengan nama Arab + transliterasi
+- Cabang (furū') = sub-tema utama
+- Daun (waraqāt) = istilah kunci
+
+Untuk setiap istilah teknis, tulis: [Arab dengan harakat] (transliterasi) — terjemah singkat.
+Maksimal 3 level kedalaman. Pakai terminologi kitab klasik, bukan terjemahan modern.
+```
+
+#### ChatGPT — `practice` (latihan soal)
+**Lama:**
+> "Beri aku 10 soal latihan tentang [TOPIK]..."
+
+**Baru:**
+```
+Aku thalib Azhari, mau drill materi [TOPIK]. Beri 10 soal latihan dengan tingkat bertahap (mubtadi' → mutawassith → mutaqaddim).
+
+Format tiap soal:
+- Pakai gaya tanya khas imtiḥān Azhari ("'Arrif...", "Wadhdhih...", "Bayyin al-farq bayna...", "Mā ḥukm... ma'a al-dalīl?")
+- Untuk soal yang melibatkan ayat/hadits/matan, sertakan teks Arab asli
+- Boleh sisipkan satu soal i'rāb atau syarḥ ibārah kalau topiknya nahwu/balaghah
+
+Tampilkan tanpa jawaban dulu. Aku akan jawab semua, lalu kamu koreksi per nomor dengan menyebut kaidah yang dilanggar dan rujukan ke matan standar (Alfiyah, Al-Waraqāt, dll).
+```
+
+#### ChatGPT — `memorization` (hafalan)
+**Lama:**
+> "Aku menghafal [SURAT/MATAN]. Bikin sesi tasmi'..."
+
+**Baru:**
+```
+Aku thalib Azhari, sedang menghafal [SURAT/MATAN — sebutkan Arab + Latin]. Bikin sesi tasmī' untukku:
+
+- Sebut potongan ayat/bait secara acak — tulis dalam Arab dengan harakat
+- Aku akan lanjutkan
+- Jika aku ragu, beri 3 huruf pertama dari kalimat selanjutnya sebagai isyārah halus
+- Setelah 10 putaran, beri daftar mawādhi' (posisi/ayat) yang perlu murāja'ah ulang
+- Sertakan saran tahsīn/tajwīd kalau ada potongan yang biasanya keliru
+```
+
+#### ChatGPT — `reading` (pendekatan runtut)
+**Lama:**
+> "Jelaskan konsep [TOPIK] dalam bentuk esai naratif 3 paragraf..."
+
+**Baru:**
+```
+Aku thalib Azhari yang lebih nyaman belajar dengan qirā'ah naratif (bukan poin-poin). Jelaskan konsep [TOPIK] dalam 3 paragraf yang mengalir:
+
+- Paragraf 1: siyāq (konteks) dan ta'rīf — sertakan teks Arab asli untuk definisi kunci
+- Paragraf 2: penjelasan inti dengan dalil — sertakan ayat/hadits/kaidah dalam Arab + terjemah
+- Paragraf 3: taṭbīq (aplikasi) dan furū' (contoh kasus)
+
+Gaya bahasa: Indonesia akademik dengan istilah Arab transliterasi. Pakai struktur seperti syarḥ kitab klasik — runtut dari ʿāmm ke khāṣṣ.
+```
+
+---
+
+#### Claude — `discussion`
+**Lama:**
+> "Saya mahasiswa Azhar yang sedang belajar [TOPIK]..."
+
+**Baru:**
+```
+Aku thalib Al-Azhar yang sedang mendalami [TOPIK]. Aku ingin munāqasyah (diskusi mendalam), bukan sekadar penjelasan satu arah.
+
+Bimbingan diskusi:
+- Mulai dengan menanyakan ma 'indī (apa yang sudah aku tahu)
+- Bimbing dengan dialog bertahap — tantang asumsiku saat perlu (tanqīḥ al-manāṭ)
+- Saat membahas ayat/hadits/kaidah, selalu kutip teks Arab asli sebelum terjemah
+- Gunakan istilah Arab: dalīl, wajh istidlāl, ta'rīf, qaidah, mas'alah, ḥukm — jangan terjemahkan
+- Bila menyebut pendapat ulama, sebut nama Arab-nya lengkap (al-Imām al-Shāfi'ī, Ibn Taymiyyah)
+- Bila merujuk kitab, sebut nama Arab-nya (Al-Umm, Al-Muhadhdhab, Al-Mughnī)
+
+Mari mulai — tanyakan dulu apa yang sudah aku pahami.
+```
+
+#### Claude — `summary` (ringkas kitab)
+**Lama:**
+> "Ringkas bab berikut dari kitab [NAMA]: [PASTE TEKS]..."
+
+**Baru:**
+```
+Aku thalib Azhari sedang muthāla'ah bab berikut dari kitab [NAMA KITAB Arab + Latin]:
+
+[PASTE TEKS]
+
+Buatkan talkhīsh dengan format:
+1. **Ta'rīf inti** — sertakan teks Arab asli dari definisi yang muncul di bab
+2. **3 sub-tema utama** (al-mabāḥith al-raʾīsiyyah) — pakai istilah Arab
+3. **Per sub-tema:** 
+   - Poin inti
+   - Contoh konkret
+   - Dalīl utama dalam Arab (ayat/hadits/kaidah) + terjemah
+4. **Khulāṣah** (ringkasan akhir) dalam 1 paragraf
+5. Tandai dengan [⚠️] bila ada bagian yang kamu tidak yakin sumbernya
+
+Gaya: Indonesia akademik. Istilah teknis tetap Arab transliterasi.
+```
+
+#### Claude — `visual` (peta konsep kitab)
+**Lama:**
+> "Buatkan pohon konsep kitab [NAMA KITAB]..."
+
+**Baru:**
+```
+Aku thalib Azhari. Buatkan shajarat al-mafāhīm (pohon konsep) kitab [NAMA KITAB — Arab + Latin] dengan struktur:
+
+- **Jadhr (akar)**: tema utama kitab — Arab + terjemah
+- **5-7 furū' raʾīsiyyah (cabang utama)**: bab-bab inti — gunakan judul bab dalam Arab
+- **3 sub-furū' per cabang**: sub-bab atau topik turunan
+- **1 mithāl (contoh) per sub-cabang**: contoh klasik dari kitab tersebut
+
+Setelah selesai, jelaskan dalam 1 paragraf bagaimana ʿalāqah (hubungan) antar cabang utama saling mendukung. Sebutkan apakah kitab ini termasuk genre matan, syarḥ, atau ḥāsyiyah.
+```
+
+#### Claude — `practice` (i'rab)
+**Lama:**
+> "Beri aku 5 kalimat Arab untuk diirab..."
+
+**Baru:**
+```
+Aku thalib Azhari yang sedang melatih i'rāb. Beri 5 jumlah (kalimat Arab) untuk di-i'rāb dengan tingkat kesulitan bertahap:
+
+- Jumlah 1-2: ismiyyah/fi'liyyah basit (mubtada'-khabar, fi'l-fā'il-maf'ūl)
+- Jumlah 3-4: mengandung syibh al-jumlah, ḥāl, atau tamyīz
+- Jumlah 5: mengandung naskh (kāna wa akhawātuhā, inna wa akhawātuhā) atau iḍāfah berlapis
+
+Tulis tiap jumlah dengan **harakat lengkap**. Jangan kasih jawaban dulu.
+
+Setelah aku i'rāb, koreksi dengan:
+- Sebut kaidah yang dilanggar (kalau ada)
+- Rujukan ke matan nahwu standar: Alfiyat Ibn Mālik (sebut bait nomor berapa kalau ingat), Al-Ājurrūmiyyah, atau Qaṭr al-Nadā
+- Saran tambahan: bagaimana cara membedakan i'rāb yang sering rancu
+```
+
+#### Claude — `memorization` (murajaah)
+**Lama:**
+> "Aku menghafal [MATAN/SURAT] dengan target..."
+
+**Baru:**
+```
+Aku thalib Azhari, sedang menghafal [MATAN/SURAT — sebutkan Arab + Latin, dan dari kitab apa kalau matan] dengan target khatam [X HARI].
+
+Buatkan jadwal murāja'ah dengan pendekatan spaced repetition (hari 1, 3, 7, 14, 21) dalam tabel:
+| Hari | Bagian | Fokus | Catatan |
+
+Tambahan:
+- Berikan 3 mawāḍi' (bagian) yang biasanya paling bikin ragu dalam matan/surat ini, beserta mnemonic Arab (qā'idah lafẓiyyah atau muqārabah ṣawtiyyah)
+- Saran adab murāja'ah: kapan waktu terbaik (ba'da Fajr, ba'da 'Asr), kondisi fisik, dll
+- Sertakan dua khaṣīṣah (kekhasan) dari matan/surat ini yang bisa dijadikan "pegangan" memori
+```
+
+#### Claude — `reading` (muthala'ah kitab)
+**Lama:**
+> "Ini paragraf dari kitab [NAMA KITAB]: [PASTE]..."
+
+**Baru:**
+```
+Aku thalib Azhari sedang muthāla'ah paragraf berikut dari kitab [NAMA KITAB — Arab + Latin]:
+
+[PASTE TEKS Arab]
+
+Lakukan analisis bertahap:
+
+1. **Tarjamah ḥarfiyyah** (terjemahan harfiah) — kata per kata
+2. **Tarjamah ma'nawiyyah** (parafrase akademik) — Indonesia mengalir
+3. **Syarḥ al-muṣṭalaḥāt** (penjelasan istilah teknis) — untuk setiap istilah, tulis: [Arab dengan harakat] (transliterasi) — definisi
+4. **Maqṣūd al-muʾallif** (maksud inti penulis) dalam 1 kalimat
+5. **Khilāf** (perbedaan pendapat ulama) bila ada — sebut nama ulama dengan transliterasi Arab dan kitab rujukan dalam nama Arab
+
+Bila ada bagian yang ambigu atau bisa multi-tafsir, sebut secara jujur dan tawarkan dua kemungkinan tafsir.
+```
+
+---
+
+#### Gemini — `discussion`
+**Lama:**
+> "Mari diskusi tentang [TOPIK]. Untuk setiap klaim faktual..."
+
+**Baru:**
+```
+Aku thalib Azhari sedang mendalami [TOPIK]. Mari munāqasyah dengan pendekatan jadal 'ilmī (diskusi akademik):
+
+- Untuk setiap klaim faktual atau pendapat ulama, sertakan link sumber web yang terpercaya
+- Saat mengutip ayat/hadits/kaidah, sertakan teks Arab asli + sebut sumber (nama surah-ayat, kitab hadits + bab + no)
+- Bila menyebut pendapat ulama, gunakan nama Arab transliterasi: al-Imām al-Shāfi'ī, Ibn Taymiyyah, al-Ghazālī
+- Bila kamu tidak yakin atau sumbernya lemah (ḍa'īf), sebutkan secara jujur
+
+Mulai dengan menanyakan ma 'indī tentang topik ini.
+```
+
+#### Gemini — `visual` (OCR kitab)
+**Lama:**
+> "Aku upload foto halaman kitab. Transkripsikan teks Arabnya..."
+
+**Baru:**
+```
+Aku thalib Azhari upload foto halaman kitab. Lakukan:
+
+1. **Transkrip teks Arab** dengan harakat lengkap — tulis ulang dari foto persis seperti tertulis di kitab
+2. **Tarjamah** ke Bahasa Indonesia akademik (mengalir, bukan harfiah)
+3. **Syarḥ muṣṭalaḥāt** — daftar istilah teknis yang muncul: [Arab dengan harakat] (transliterasi) — definisi singkat
+4. **Identifikasi kitab** kalau memungkinkan: judul Arab, penulis (nama Arab), dan genre (matan/syarḥ/ḥāsyiyah)
+
+Jika ada bagian foto yang tidak terbaca jelas, tandai dengan [???] di transkrip Arab dan jelaskan posisi-nya (sudut, samar, dll).
+```
+
+---
+
+#### Perplexity — `discussion`
+**Lama:**
+> "Saya mau diskusi konsep [TOPIK] berdasarkan kitab yang sudah saya upload..."
+
+**Baru:**
+```
+Aku thalib Azhari sedang mendalami konsep [TOPIK] berdasarkan kitab [NAMA KITAB Arab + Latin] yang sudah aku upload.
+
+Aturan diskusi:
+- Jawab pertanyaanku dengan **selalu merujuk halaman spesifik** dari sumber upload, bukan dari pengetahuan umum
+- Sertakan teks Arab asli untuk kutipan langsung dari kitab
+- Bila kitab tidak membahas pertanyaanku, sebut secara eksplisit: "Tidak ditemukan dalam kitab ini" — jangan dipaksakan
+- Bila ada perbedaan antara pendapat di kitab ini dan pendapat masyhūr, sebutkan dengan jelas
+- Gunakan istilah Arab transliterasi: dalīl, ḥujjah, ta'rīf, taqsīm
+
+Mulai dengan menyebut bab pertama yang mau aku dalami.
+```
+
+---
+
+#### NotebookLM — `discussion`
+Sama treatment dengan Perplexity, karena keduanya source-grounded. Tambahkan instruksi untuk sertakan kutipan Arab dari source.
+
+#### DeepSeek — variasi prompt
+Treatment sama dengan Claude (karena karakteristik mirip untuk reasoning panjang).
+
+---
+
+### 2. `src/pages/muqaranah-detail.jsx` — `buildPrompt()`
+
+**Refine fungsi `buildPrompt()` jadi:**
+
+```js
+const buildPrompt = () => {
+  const viewsText = entry.views.map((v, idx) => {
+    const arab = v.evidence?.arabic ? `\n  Dalil (Arab): ${v.evidence.arabic}` : "";
+    const terj = v.evidence?.translation ? `\n  Terjemah: ${v.evidence.translation}` : "";
+    const wajh = v.reasoning ? `\n  Wajh istidlāl: ${v.reasoning}` : "";
+    const sumber = v.source ? `\n  Sumber: ${v.source}` : "";
+    return `${idx+1}. ${v.scholar} — ${v.scholarArabic || ""} (${v.school})
+  Qoul: ${v.position}${arab}${terj}${wajh}${sumber}`;
+  }).join("\n\n");
+
+  return `Aku thalib di Al-Azhar yang sedang mempelajari mas'alah berikut:
+
+**Mas'alah:** ${entry.title}
+${entry.titleArabic ? `**Bil-'Arabiyyah:** ${entry.titleArabic}` : ""}
+
+**Taṣwīr al-Mas'alah (Rumusan Masalah):**
+${entry.question}
+
+**Aqwāl al-'Ulamā':**
+${viewsText}
+
+Tolong bantu aku merenungkan mas'alah ini dengan adab thalib:
+
+1. Apa sesungguhnya mawḍi' al-khilāf (titik perbedaan) di sini? Apakah perbedaannya lafẓī, ma'nawī, atau ḥaqīqī?
+2. Apa thamarat al-khilāf (konsekuensi praktis) dari masing-masing qoul dalam ibadah/muamalah sehari-hari?
+3. Bagaimana adab seorang thalib menyikapi khilāf ini? — terutama saat berinteraksi dengan saudara yang mengikuti madzhab berbeda
+
+**Aturan jawaban:**
+- Saat mengutip ayat, hadits, atau kaidah ushul, **selalu sertakan teks Arab asli** dengan harakat sebelum terjemah
+- Gunakan istilah Arab transliterasi: dalīl, ḥujjah, qiyās, istiḥsān, mafhūm mukhālafah, wajh istidlāl
+- Sebut nama ulama dalam transliterasi Arab (al-Imām al-Shāfi'ī, bukan "Imam Syafii")
+- Sebut nama kitab dalam Arab (Al-Umm, Al-Mughnī, Bidāyat al-Mujtahid)
+- **Jangan men-tarjīḥ** (memilih yang paling kuat) — itu hak guru-ku yang langsung mengajariku. Aku ingin paham, bukan disodorkan kesimpulan.`;
+};
+```
+
+### 3. `src/pages/muqaranah-form.jsx` — `copyAIPrompt()`
+
+**Refine jadi:**
+
+```js
+const copyAIPrompt = () => {
+  const ulama = views.map((v, idx) => 
+    `${idx+1}. ${v.scholar || "[nama ulama]"} (${v.school || "[madzhab]"})`
+  ).join("\n");
+  
+  const prompt = `Aku thalib Azhari sedang menyusun muqāranat al-aqwāl untuk mas'alah:
+
+**'Unwān (Judul):** ${title || "[JUDUL]"}
+**Taṣwīr al-Mas'alah:** ${question || "[RUMUSAN]"}
+
+Tolong bantu aku menyusun draft perbandingan dari ${views.length} ulama berikut:
+${ulama}
+
+**Format yang aku butuhkan per ulama:**
+
+1. **Qoul** — pendapat utama (bahasa Indonesia akademik)
+2. **Dalīl** — sertakan teks Arab asli (ayat/hadits/kaidah) dengan harakat + terjemah
+3. **Wajh istidlāl** — bagaimana ulama tersebut berdalil dari dalīl tersebut menuju qoul-nya (paragraf, bukan poin)
+4. **Mashdar** (sumber kitab) — sebut nama Arab kitab (contoh: *Al-Umm*, *Al-Mughnī*, *Sharḥ al-Mahallī*)
+
+**Aturan:**
+- Bahasa: Indonesia akademik dengan istilah Arab transliterasi
+- Untuk nama ulama, pakai transliterasi Arab (al-Imām Aḥmad ibn Ḥanbal, bukan "Imam Ahmad bin Hambal")
+- **Tanpa men-tarjīḥ** — aku ingin presentasi seimbang, biarkan aku yang merenungkan
+- Bila ada qoul yang dalīlnya lemah, sebutkan tapi tetap presentasikan dengan jujur
+
+Setelah kamu draft, aku akan paste hasilnya ke form MADAD dan tambahkan refleksi pribadiku.`;
+  
+  navigator.clipboard.writeText(prompt);
+  toast.push("Prompt AI disalin. Paste ke AI, lalu isi hasilnya di form ini.");
+};
+```
+
+### 4. Template Body Catatan di `catatKeKurasah()` — muqaranah-detail.jsx
+
+**Refine body template jadi:**
+
+```js
+const body = `## Taṣwīr al-Mas'alah
+
+${entry.question}
+
+${entry.titleArabic ? `> ${entry.titleArabic}\n` : ""}
+
+## Catatan Pribadiku
+
+*Tuliskan refleksi, ta'līq, atau pertanyaan yang muncul saat membaca muqāranah ini...*
+
+## Aqwāl al-'Ulamā'
+
+${entry.views.map(v => {
+  const arab = v.evidence?.arabic ? `\n> ${v.evidence.arabic}\n*${v.evidence?.translation || ""}*\n` : "";
+  return `### ${v.scholar} ${v.scholarArabic ? `(${v.scholarArabic})` : ""}
+**Madzhab:** ${v.school}
+
+**Qoul:** ${v.position}
+${arab}
+**Wajh istidlāl:** ${v.reasoning || "-"}
+
+**Mashdar:** ${v.source || "-"}`;
+}).join("\n\n---\n\n")}
+
+## Pertanyaan untuk Guru
+
+*(Pertanyaan yang ingin aku tanyakan saat talaqqi berikutnya)*
+
+1. 
+2. 
+3. 
+`;
+```
+
+Ini bikin kurasah jadi terstruktur kayak halaman kitab catatan thalib yang sebenarnya.
+
+---
+
+## File yang Perlu Dimodifikasi
+
+### Hanya 3 file:
+
+1. **`src/data.jsx`** — refine **semua 37 `starterPrompt`** mengikuti template baru per learning style + per tool
+2. **`src/pages/muqaranah-detail.jsx`** — refine `buildPrompt()` dan `body` di `catatKeKurasah()`
+3. **`src/pages/muqaranah-form.jsx`** — refine `copyAIPrompt()`
+
+**Tidak perlu** edit file lain. Tidak perlu tambah komponen baru. Ini purely **content refine pada string template**.
+
+---
+
+## Acceptance Criteria
+
+### Per Prompt (setiap dari 37 starterPrompt + 2 buildPrompt + 1 body):
+
+- [ ] Pembukaan menyebut konteks Azhari ("Aku thalib di Al-Azhar..." atau setara)
+- [ ] Ada instruksi eksplisit untuk AI agar menyertakan **teks Arab asli** saat mengutip ayat/hadits/kaidah
+- [ ] Istilah teknis dipakai dalam **transliterasi Arab** (qoul, dalīl, ta'rīf, wajh istidlāl, qaidah, mas'alah, taṣwīr, talkhīṣ, dll), bukan terjemahan Indonesia generik
+- [ ] Bila prompt menyebut "ulama", instruksinya minta nama Arab transliterasi (al-Imām al-Shāfi'ī, bukan "Imam Syafii")
+- [ ] Bila prompt menyebut "kitab", instruksinya minta nama Arab (Al-Umm, Al-Mughnī, Alfiyah)
+- [ ] Untuk prompt yang relevan, ada permintaan format jawaban ala syarḥ kitab atau imtiḥān Azhari
+
+### Pengecualian (Tidak Wajib Tambahin Arabic):
+
+- [ ] Prompt OCR foto kitab (Gemini visual) — sudah inherent Arab, tidak perlu instruksi tambahan kecuali untuk identifikasi kitab
+- [ ] Prompt cari murattil / qari (Gemini memorization) — tool-spesifik, cukup tambah istilah `tartīl`, `qārī`, `riwāyah`
+- [ ] Prompt cari paper akademis (Perplexity research) — bisa tetap generic, tapi tambah konteks "aku thalib Azhari mencari paper tentang..."
+- [ ] Prompt soal ringkasan artikel berita (Gemini summary) — generic, tapi tambah "perspektif keilmuan Azhari/Islam"
+
+### Style Check:
+
+- [ ] **Tidak ada prompt yang panjangnya lebih dari ~12 baris saat di-clipboard** — kalau lebih, padatkan
+- [ ] **Tidak ada Arab-overload** — istilah Arab hanya untuk konsep kunci, bukan setiap kata. Contoh ❌: "Aku thalib yang sedang muthāla'ah kitāb ḥālan li-musā'adatī fī fahm al-mas'alah" — ini bukan thalib, ini orang sok arab.
+- [ ] **Konsisten transliterasi**: pakai sistem yang sama di semua prompt. Saran: pakai macron untuk huruf panjang (ā, ī, ū) dan apostrofe untuk ayn ('), hamzah (ʾ). Atau pakai sistem sederhana ALA-LC. Pilih satu.
+- [ ] **Kalimat tetap Bahasa Indonesia** — Arab cuma sisipan istilah, bukan struktur kalimat. Contoh ✅: "saat menyebut dalīl, sertakan teks Arab" / Contoh ❌: "ḥīna dzikr al-dalīl, sertakan al-naṣṣ al-'arabī"
+
+### Test Manual:
+
+- [ ] Buka Dashboard → klik salah satu kartu rekomendasi → "Salin Prompt" → paste ke ChatGPT → cek apakah responnya terasa "Azhari" (menyertakan Arab + istilah klasik)
+- [ ] Buka `/paths/muqaranah/[id]` → klik "Tanya AI tentang ini" → cek prompt di clipboard punya struktur yang ditargetkan
+- [ ] Klik "Catat ke Kurasah" → cek body template punya section bilingual
+
+---
+
+## Catatan Penting
+
+### Tentang Sistem Transliterasi
+
+Pilih **satu sistem** dan konsisten di seluruh aplikasi. Rekomendasi gue:
+- **Pakai sistem sederhana** (bukan academic transliteration full diacritics): 
+  - Long vowels: `ā ī ū` (atau biarkan `aa ii uu` kalau dianggap terlalu rumit untuk Masisir umum)
+  - ʿAyn: `'` (apostrofe kiri) atau `‘`
+  - Hamzah: `'` (apostrofe kanan) atau `’`
+  - Tha marbuta: `ah` atau `at` tergantung konteks (idhāfah)
+  
+**Atau lebih simpel lagi**: pakai gaya transliterasi populer Masisir yang sudah familiar tanpa diakritik, contoh: "qoul, dalil, wajh istidlal, mas'alah, ta'rif, talqih" — yang penting Arabic letter di-quote langsung saat krusial.
+
+**Saran final**: pakai sistem sederhana tanpa diakritik untuk semua prompt UI (lebih mudah dibaca thalib Indonesia awam), tapi minta AI dalam **respons-nya** untuk pakai harakat lengkap pada teks Arab asli.
+
+### Tentang Estetika
+
+Refine ini **bukan** soal nge-flex pakai Arab. Tujuannya: **bikin AI tahu siapa user-nya**. Saat AI tahu user adalah thalib Azhari, jawabannya akan otomatis lebih relevan (sertakan Arab, format kayak kitab, sebut nama ulama dalam Arab).
+
+Yang **TIDAK BOLEH** terjadi:
+- ❌ Prompt jadi terlalu panjang sampai user males salin
+- ❌ Arabic overload yang malah bikin user Indonesia awam bingung
+- ❌ Pakai Arab fancy buat hal yang gak perlu (misal "marḥaban" untuk "halo")
+
+Yang **HARUS** terjadi:
+- ✅ Saat AI menjawab, **respon AI** terasa kayak penjelasan dari kakak senior di majelis talaqqi — sertakan Arab original, sebut ulama dengan hormat (al-Imām), rujuk kitab dengan nama Arab
+- ✅ User Masisir baca prompt dan langsung paham "oh ini emang dibuat buat kita"
+
+---
+
+Mulai. Kalau ragu apakah satu prompt termasuk kategori A/B/C, default ke **B** (tambah konteks Azhari + minta Arabic inline).
+
+والله ولي التوفيق.
