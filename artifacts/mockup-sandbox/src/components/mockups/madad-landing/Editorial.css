@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap');
+
+.madad-editorial {
+  font-family: 'Inter', system-ui, sans-serif;
+  color: #EDE8DC;
+  background-color: #0E0C1A;
+}
+
+.madad-editorial h1,
+.madad-editorial h2,
+.madad-editorial h3,
+.madad-editorial .font-serif {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.madad-editorial .font-arabic {
+  font-family: 'Amiri', serif;
+}
+
+.madad-editorial .animate-fade-up {
+  animation: fadeUp 1s ease-out forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.madad-editorial .animate-scale-fade {
+  animation: scaleFade 1.2s ease-out forwards;
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.madad-editorial .hover-lift {
+  transition: transform 0.3s ease-out, box-shadow 0.3s ease-out, border-color 0.3s ease-out;
+}
+
+.madad-editorial .hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+  border-color: rgba(201, 168, 108, 0.4);
+}
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleFade {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.madad-editorial .arabic-glow {
+  text-shadow: 0 0 80px rgba(201, 168, 108, 0.3);
+  background: linear-gradient(135deg, #FAF7F0 0%, #C9A86C 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 30px rgba(201, 168, 108, 0.2));
+}
+
+.madad-editorial .gold-gradient-text {
+  background: linear-gradient(to right, #C9A86C, #E6D09A);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
