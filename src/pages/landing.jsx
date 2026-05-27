@@ -4,6 +4,7 @@ const LandingPage = ({ onOpenLogin, onOpenPayment }) => {
   return (
     <div className="page-enter">
       <Hero onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment}/>
+      <MataPelajaranSection onOpenPayment={onOpenPayment}/>
       <BantuanSection/>
       <ToolsPreview/>
       <PromptPreview/>
@@ -31,22 +32,22 @@ const Hero = ({ onOpenLogin, onOpenPayment }) => (
           <Reveal>
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full chip-glass text-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-gold-400 shadow-[0_0_8px_rgba(201,168,106,0.9)]"/>
-              <span className="text-ink-muted">Premium AI Learning Companion · </span>
-              <span className="arabic text-gold-300 text-sm">للمصريين العائدين</span>
+              <span className="text-ink-muted">Konsultan Belajar AI · </span>
+              <span className="arabic text-gold-300 text-sm">لطلاب الأزهر الإندونيسيين</span>
             </div>
           </Reveal>
 
           <WordReveal
             as="h1"
-            text="Belajar lebih cerdas di Mesir, dengan AI yang paham kamu."
+            text="Konsultan belajarmu di Al-Azhar, untuk setiap mata pelajaran."
             className="mt-6 font-display text-5xl sm:text-6xl md:text-7xl lg:text-[80px] font-semibold text-ink leading-[1.0] tracking-tightest"
           />
 
           <Reveal delay={300}>
             <p className="mt-6 text-lg md:text-xl text-ink-muted leading-relaxed max-w-2xl">
-              Bukan sekadar daftar alat AI. MADAD memilihkan AI yang tepat untukmu,
-              memberi guide sesuai <em className="text-ink not-italic">caramu belajar</em>, dan memastikan
-              kamu sungguh-sungguh paham, bukan hanya copy-paste.
+              Fiqh, Hadith, Ushul, Nahwu, Tafsir, Aqidah — MADAD tahu AI mana yang paling
+              bantu di <em className="text-ink not-italic">setiap mata pelajaranmu</em>, dengan panduan sesuai caramu belajar.
+              Bukan copy-paste, tapi benar-benar paham.
             </p>
           </Reveal>
 
@@ -55,8 +56,8 @@ const Hero = ({ onOpenLogin, onOpenPayment }) => (
               <button onClick={onOpenPayment} className="btn btn-primary text-base px-7 py-3.5">
                 <Icon name="sparkles" className="w-4 h-4"/> Gabung Member
               </button>
-              <a href="#cara-kerja" onClick={(e)=>{e.preventDefault(); const el = document.getElementById("cara-kerja"); if (el) el.scrollIntoView({behavior:"smooth"});}} className="btn btn-ghost text-base px-6 py-3.5">
-                <Icon name="arrowDown" className="w-4 h-4"/> Lihat Cara Kerjanya
+              <a href="#mata-pelajaran" onClick={(e)=>{e.preventDefault(); const el = document.getElementById("mata-pelajaran"); if (el) el.scrollIntoView({behavior:"smooth"});}} className="btn btn-ghost text-base px-6 py-3.5">
+                <Icon name="arrowDown" className="w-4 h-4"/> Lihat Mata Pelajaran
               </a>
               <button onClick={onOpenLogin} className="text-sm text-ink-muted hover:text-ink ml-1 underline underline-offset-4">
                 Sudah punya kode?
@@ -67,6 +68,11 @@ const Hero = ({ onOpenLogin, onOpenPayment }) => (
           <Reveal delay={650}>
             <div className="mt-12 flex items-center gap-8">
               <div className="text-center">
+                <div className="font-display text-4xl text-gold-400 font-semibold num leading-none">10+</div>
+                <div className="text-[11px] text-ink-soft uppercase tracking-wider mt-1.5">Mata Pelajaran</div>
+              </div>
+              <div className="w-px h-8 bg-line"/>
+              <div className="text-center">
                 <div className="font-display text-4xl text-gold-400 font-semibold num leading-none">6</div>
                 <div className="text-[11px] text-ink-soft uppercase tracking-wider mt-1.5">AI Tools</div>
               </div>
@@ -74,11 +80,6 @@ const Hero = ({ onOpenLogin, onOpenPayment }) => (
               <div className="text-center">
                 <div className="font-display text-4xl text-gold-400 font-semibold num leading-none">36</div>
                 <div className="text-[11px] text-ink-soft uppercase tracking-wider mt-1.5">Adaptive Guides</div>
-              </div>
-              <div className="w-px h-8 bg-line"/>
-              <div className="text-center">
-                <div className="font-display text-4xl text-gold-400 font-semibold num leading-none">3</div>
-                <div className="text-[11px] text-ink-soft uppercase tracking-wider mt-1.5">Learning Paths</div>
               </div>
             </div>
           </Reveal>
@@ -142,6 +143,75 @@ const HeroComposition = () => (
     </div>
   </div>
 );
+
+/* ---------------- MATA PELAJARAN AL-AZHAR ---------------- */
+const MataPelajaranSection = ({ onOpenPayment }) => {
+  const MAPEL = [
+    { subject: "Fiqh", arabic: "الفِقْهُ", ai: "Claude", aiColor: "#D97757", tip: "Bedah qoul, wajh istidlal, tarjih antar mazhab", icon: "layers" },
+    { subject: "Ushul Fiqh", arabic: "أُصُولُ الفِقْهِ", ai: "ChatGPT", aiColor: "#10A37F", tip: "Drill kaidah, diskusi istidlal bertahap", icon: "bookOpen" },
+    { subject: "Hadith & Musthalah", arabic: "الحَدِيثُ", ai: "Perplexity", aiColor: "#1FB6B6", tip: "Takhrij, telusur sanad, klasifikasi hadith", icon: "search" },
+    { subject: "Tafsir & Ulum Al-Quran", arabic: "التَّفْسِيرُ", ai: "Claude", aiColor: "#D97757", tip: "Analisis tafsir mendalam, perbandingan mufassir", icon: "quote" },
+    { subject: "Nahwu & Sharaf", arabic: "النَّحْوُ وَالصَّرْفُ", ai: "ChatGPT", aiColor: "#10A37F", tip: "Drill i'rab, soal sharaf, koreksi interaktif", icon: "pen" },
+    { subject: "Aqidah & Kalam", arabic: "العَقِيدَةُ", ai: "Claude", aiColor: "#D97757", tip: "Bedah argumen, klasifikasi aliran, analisis tekstual", icon: "shield" },
+    { subject: "Balaghah", arabic: "البَلَاغَةُ", ai: "Claude", aiColor: "#D97757", tip: "Analisis uslub, identifikasi majas, latihan taste", icon: "sparkles" },
+    { subject: "Makalah Azhari", arabic: "البَحْثُ العِلْمِيُّ", ai: "ChatGPT", aiColor: "#10A37F", tip: "Outline, drafting, editing — gaya penulisan Azhari", icon: "clipboard" },
+    { subject: "Riset & Referensi", arabic: "البَحْثُ وَالمَصَادِرُ", ai: "Perplexity", aiColor: "#1FB6B6", tip: "Cari sumber tertelusur, buku klasik, artikel akademik", icon: "compass" },
+    { subject: "Hafalan Matan & Quran", arabic: "التَّحْفِيظُ", ai: "ChatGPT", aiColor: "#10A37F", tip: "Sesi tasmi' interaktif, murajaah, spaced repetition", icon: "refresh" },
+  ];
+
+  return (
+    <section id="mata-pelajaran" className="section">
+      <div className="container-x">
+        <Reveal className="mb-12">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/70"/>Konsultasi per Mata Pelajaran
+          </div>
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-5">
+            <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.05] max-w-2xl">
+              Setiap mata pelajaran, ada AI dan strategi yang tepat.
+            </h2>
+            <p className="text-ink-muted text-base max-w-sm md:text-right leading-relaxed">
+              MADAD tidak bilang "pakai ChatGPT". MADAD bilang <em className="text-ink not-italic">bagaimana</em> pakai ChatGPT untuk Nahwu — dan kenapa Claude lebih baik untuk Fiqh.
+            </p>
+          </div>
+        </Reveal>
+
+        <Reveal stagger className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-8">
+          {MAPEL.map((m) => (
+            <div key={m.subject} className="card-glass p-5 hov-lift flex flex-col gap-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="w-9 h-9 rounded-lg bg-violet-500/12 text-violet-300 flex items-center justify-center flex-shrink-0">
+                  <Icon name={m.icon} className="w-4 h-4"/>
+                </div>
+                <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full border"
+                  style={{background: m.aiColor + "18", color: m.aiColor, borderColor: m.aiColor + "35"}}>
+                  {m.ai}
+                </span>
+              </div>
+              <div>
+                <div className="font-display text-base font-semibold text-ink leading-tight">{m.subject}</div>
+                <div className="arabic text-xs text-gold-300/70 mt-0.5">{m.arabic}</div>
+              </div>
+              <p className="text-[12px] text-ink-muted leading-relaxed mt-auto">{m.tip}</p>
+            </div>
+          ))}
+        </Reveal>
+
+        <Reveal>
+          <div className="card-glass p-6 md:p-8 border-gold-500/15 bg-gold-500/3 flex flex-col md:flex-row items-center gap-6">
+            <div className="flex-1">
+              <div className="text-sm font-semibold text-ink mb-1">Ini baru gambaran umum.</div>
+              <p className="text-sm text-ink-muted leading-relaxed">Setelah onboarding, MADAD akan tahu persis kamu di bidang apa dan belajar dengan cara seperti apa — lalu kasih panduan spesifik: prompt, langkah, dan strategi per mata pelajaranmu.</p>
+            </div>
+            <button onClick={onOpenPayment} className="btn btn-primary text-sm px-6 py-3 flex-shrink-0">
+              <Icon name="sparkles" className="w-4 h-4"/> Mulai Konsultasi
+            </button>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+};
 
 /* ---------------- BANTUAN ---------------- */
 const BantuanSection = () => (

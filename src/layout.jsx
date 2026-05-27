@@ -36,7 +36,7 @@ const Brand = ({ size = 36 }) => (
     <LogoMark size={size}/>
     <span className="flex flex-col leading-tight">
       <span className="font-display text-lg font-semibold text-ink tracking-tight whitespace-nowrap">Madad</span>
-      <span className="hidden sm:block text-[10px] uppercase tracking-[0.22em] text-ink-muted">AI Companion · Masisir</span>
+      <span className="hidden sm:block text-[10px] uppercase tracking-[0.22em] text-ink-muted">Konsultan Belajar AI · Masisir</span>
     </span>
   </a>
 );
