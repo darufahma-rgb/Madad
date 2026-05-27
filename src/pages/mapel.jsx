@@ -9,6 +9,113 @@ const useMapelParam = () => {
   return new URLSearchParams(q).get("id");
 };
 
+const STYLE_META = {
+  discussion:   { icon: "messageSquare", label: "Diskusi & Tanya-Jawab",   badge: "Kamu belajar terbaik lewat diskusi" },
+  summary:      { icon: "clipboard",     label: "Rangkuman & Catatan",       badge: "Kamu belajar terbaik lewat merangkum" },
+  visual:       { icon: "layers",        label: "Visual & Diagram",          badge: "Kamu belajar terbaik lewat visualisasi" },
+  practice:     { icon: "refresh",       label: "Latihan Soal",              badge: "Kamu belajar terbaik lewat latihan" },
+  memorization: { icon: "star",          label: "Hafalan & Repetisi",        badge: "Kamu belajar terbaik lewat hafalan" },
+  reading:      { icon: "bookOpen",      label: "Baca & Telaah Mendalam",    badge: "Kamu belajar terbaik lewat membaca" },
+};
+
+const FACULTY_NAMES = {
+  syariah:     "Syariah",
+  ushuluddin:  "Ushuluddin",
+  bahasa:      "Bahasa Arab",
+  umum:        "Lintas Jurusan",
+};
+
+/* ============================================================
+   PERSONALIZATION PANEL — tampil di atas setiap halaman mapel
+   ============================================================ */
+const PersonalizationPanel = ({ guide, profile }) => {
+  const toast = useToast();
+  const [copiedKey, setCopiedKey] = React.useState(null);
+
+  const styles = (profile?.learningStyle || []).filter(s => guide.styleGuide?.[s]);
+  if (!styles.length) return null;
+
+  const copyPrompt = (text, key) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedKey(key);
+      toast.push("Prompt tersalin — paste ke " + guide.aiName + " sekarang.");
+      setTimeout(() => setCopiedKey(null), 2500);
+    });
+  };
+
+  return (
+    <section className="pb-8">
+      <div className="container-x">
+        <Reveal className="rounded-2xl overflow-hidden border border-violet-400/25 bg-violet-500/5">
+          <div className="px-6 py-4 bg-violet-500/10 border-b border-violet-400/15 flex flex-wrap items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-violet-500/20 text-violet-300 flex items-center justify-center flex-shrink-0">
+              <Icon name="spark" className="w-4 h-4"/>
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-semibold text-ink">Panduan untuk cara belajarmu</div>
+              <div className="text-xs text-ink-soft mt-0.5">Prompt dan strategi yang paling cocok dengan gaya belajar yang kamu pilih</div>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {styles.map(s => (
+                <span key={s} className="text-[10px] px-2.5 py-1 rounded-full bg-violet-500/20 text-violet-200 border border-violet-400/30 font-medium">
+                  {STYLE_META[s]?.label || s}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-6 space-y-7">
+            {styles.map(styleId => {
+              const sg = guide.styleGuide[styleId];
+              const meta = STYLE_META[styleId] || {};
+              return (
+                <div key={styleId}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 rounded-md bg-violet-500/15 text-violet-300 flex items-center justify-center flex-shrink-0">
+                      <Icon name={meta.icon || "star"} className="w-3.5 h-3.5"/>
+                    </div>
+                    <span className="text-xs font-semibold text-violet-300 uppercase tracking-wider">{meta.label}</span>
+                  </div>
+
+                  {sg.tip && (
+                    <div className="ml-8 mb-4 p-3 rounded-lg bg-violet-500/8 border border-violet-400/15">
+                      <p className="text-sm text-ink-muted leading-relaxed">{sg.tip}</p>
+                    </div>
+                  )}
+
+                  {sg.prompts?.length > 0 && (
+                    <div className="ml-8 space-y-3">
+                      {sg.prompts.map((prompt, pi) => {
+                        const key = styleId + "-" + pi;
+                        return (
+                          <div key={pi} className="rounded-xl bg-night-950/60 border border-line p-4">
+                            <div className="flex items-center justify-between gap-3 mb-3">
+                              <div className="text-xs font-semibold text-ink">{prompt.label}</div>
+                              <button
+                                onClick={() => copyPrompt(prompt.text, key)}
+                                className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg border transition-all flex-shrink-0 ${copiedKey === key ? "bg-mint-500/15 text-mint-500 border-mint-500/30" : "bg-white/4 text-ink-muted border-line hover:border-violet-400/30 hover:text-ink"}`}>
+                                <Icon name={copiedKey === key ? "check" : "copy"} className="w-3 h-3"/>
+                                {copiedKey === key ? "Tersalin!" : "Salin"}
+                              </button>
+                            </div>
+                            <div className="text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap nice-scroll overflow-x-auto">
+                              {prompt.text}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+};
+
 const MapelPage = () => {
   const { session, profile } = useAuth();
   const mapelId = useMapelParam();
@@ -32,22 +139,29 @@ const MapelPage = () => {
    LIST PAGE
    ============================================================ */
 const MapelListPage = ({ profile }) => {
-  const [faculty, setFaculty] = React.useState("semua");
+  const userFaculty = profile?.faculty || profile?.field;
+  const [faculty, setFaculty] = React.useState(userFaculty || "semua");
 
   const FACULTY_TABS = [
-    { id: "semua",       label: "Semua", count: MAPEL_GUIDES.length },
-    { id: "syariah",     label: "Syariah", count: MAPEL_GUIDES.filter(g => g.faculty === "syariah").length },
-    { id: "ushuluddin",  label: "Ushuluddin", count: MAPEL_GUIDES.filter(g => g.faculty === "ushuluddin").length },
-    { id: "bahasa",      label: "Bahasa Arab", count: MAPEL_GUIDES.filter(g => g.faculty === "bahasa").length },
-    { id: "umum",        label: "Lintas Mapel", count: MAPEL_GUIDES.filter(g => g.faculty === "umum").length },
+    { id: "semua",       label: "Semua",        count: MAPEL_GUIDES.length },
+    { id: "syariah",     label: "Syariah",       count: MAPEL_GUIDES.filter(g => g.faculty === "syariah").length },
+    { id: "ushuluddin",  label: "Ushuluddin",    count: MAPEL_GUIDES.filter(g => g.faculty === "ushuluddin").length },
+    { id: "bahasa",      label: "Bahasa Arab",   count: MAPEL_GUIDES.filter(g => g.faculty === "bahasa").length },
+    { id: "umum",        label: "Lintas Mapel",  count: MAPEL_GUIDES.filter(g => g.faculty === "umum").length },
   ];
 
   const filtered = faculty === "semua"
     ? MAPEL_GUIDES
-    : MAPEL_GUIDES.filter(g => g.faculty === faculty);
+    : MAPEL_GUIDES.filter(g => g.faculty === faculty || g.faculty === "umum");
 
-  const userField = profile?.field;
-  const isMyFaculty = (g) => userField && g.faculty === userField;
+  const isMyFaculty = (g) => userFaculty && g.faculty === userFaculty;
+
+  const myMapel = userFaculty
+    ? MAPEL_GUIDES.filter(g => g.faculty === userFaculty)
+    : [];
+
+  const userStyles = profile?.learningStyle || [];
+  const hasPersonalization = userStyles.length > 0 && myMapel.length > 0;
 
   return (
     <div className="page-enter">
@@ -60,8 +174,56 @@ const MapelListPage = ({ profile }) => {
 
       <section className="pb-6">
         <div className="container-x">
+
+          {/* Personalized Recommendation Banner */}
+          {hasPersonalization && (
+            <Reveal className="mb-10">
+              <div className="rounded-2xl overflow-hidden border border-violet-400/20 bg-violet-500/5">
+                <div className="px-6 py-4 bg-violet-500/10 border-b border-violet-400/15 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-violet-500/20 text-violet-300 flex items-center justify-center flex-shrink-0">
+                      <Icon name="spark" className="w-4 h-4"/>
+                    </div>
+                    <div>
+                      <div className="text-sm font-semibold text-ink">Mapel Fakultas {FACULTY_NAMES[userFaculty] || userFaculty}</div>
+                      <div className="text-xs text-ink-soft mt-0.5">
+                        Setiap halaman mapel ini punya prompt khusus untuk gaya belajarmu:
+                        {userStyles.map(s => STYLE_META[s]?.label).filter(Boolean).map((l, i) => (
+                          <span key={i} className="ml-1 text-violet-300 font-medium">{l}{i < userStyles.length - 1 ? "," : ""}</span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] px-2.5 py-1 rounded-full bg-violet-500/15 text-violet-200 border border-violet-400/25 font-medium uppercase tracking-wider">
+                    Dipersonalisasi
+                  </span>
+                </div>
+                <div className="p-5 grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {myMapel.map(guide => (
+                    <button key={guide.id} onClick={() => navigate("/mapel?id=" + guide.id)}
+                      className="text-left rounded-xl bg-night-900/60 border border-violet-400/15 p-4 hover:border-violet-400/35 hover:bg-violet-500/8 transition-all group">
+                      <div className="flex items-start gap-3 mb-2">
+                        <div className="w-8 h-8 rounded-lg bg-violet-500/12 text-violet-300 flex items-center justify-center flex-shrink-0">
+                          <Icon name={guide.icon} className="w-4 h-4"/>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-semibold text-ink leading-tight">{guide.subject}</div>
+                          <div className="arabic text-xs text-gold-300/70 mt-0.5">{guide.arabic}</div>
+                        </div>
+                      </div>
+                      <p className="text-xs text-ink-soft leading-relaxed mb-3">{guide.tagline}</p>
+                      <div className="flex items-center gap-1 text-xs text-violet-300 font-medium group-hover:gap-2 transition-all">
+                        <Icon name="arrowRight" className="w-3.5 h-3.5"/> Buka panduan
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+          )}
+
           <Reveal>
-            <div className="card-glass p-5 mb-10 flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="card-glass p-5 mb-8 flex flex-col sm:flex-row items-start sm:items-center gap-4">
               <div className="w-10 h-10 rounded-xl bg-gold-500/15 text-gold-300 flex items-center justify-center flex-shrink-0">
                 <Icon name="info" className="w-5 h-5"/>
               </div>
@@ -220,6 +382,9 @@ const MapelDetailPage = ({ guide, profile }) => {
         </div>
       </section>
 
+      {/* Personalization Panel — prompt & strategi per gaya belajar */}
+      <PersonalizationPanel guide={guide} profile={profile}/>
+
       {/* Use Cases */}
       <section className="pb-8">
         <div className="container-x">
@@ -266,7 +431,7 @@ const MapelDetailPage = ({ guide, profile }) => {
         <div className="container-x">
           <Reveal className="mb-6">
             <h2 className="font-display text-2xl font-semibold text-ink">Prompt siap pakai</h2>
-            <p className="text-sm text-ink-muted mt-2">Salin prompt di bawah, paste ke {guide.aiName}, lalu ganti bagian dalam [KURUNG SIKU] sesuai kebutuhanmu.</p>
+            <p className="text-sm text-ink-muted mt-2">Prompt umum untuk semua orang. Salin, paste ke {guide.aiName}, ganti bagian dalam [KURUNG SIKU]. Prompt khusus gaya belajarmu ada di atas.</p>
           </Reveal>
           <Reveal className="space-y-4">
             {guide.prompts.map((prompt, i) => (
