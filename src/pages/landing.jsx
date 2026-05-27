@@ -1,182 +1,793 @@
-/* Madad — Landing page (reworked, ringkas) */
+/* Madad — Landing page v3: full redesign dengan animasi dan kaligrafi */
 
+const { useState, useEffect, useRef } = React;
+
+/* ── Inline styles injected once ──────────────────────────────── */
+const LANDING_STYLES = `
+  @keyframes floatY {
+    0%,100% { transform: translateY(0px) rotate(0deg); }
+    50%      { transform: translateY(-18px) rotate(1.5deg); }
+  }
+  @keyframes floatY2 {
+    0%,100% { transform: translateY(0px) rotate(0deg); }
+    50%      { transform: translateY(-12px) rotate(-1deg); }
+  }
+  @keyframes shimmerText {
+    0%   { background-position: 200% center; }
+    100% { background-position: -200% center; }
+  }
+  @keyframes rotateSlow {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  @keyframes pulseRing {
+    0%   { transform: scale(1);   opacity: 0.6; }
+    70%  { transform: scale(1.5); opacity: 0; }
+    100% { transform: scale(1.5); opacity: 0; }
+  }
+  @keyframes marqueeLTR {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: none; }
+  }
+  @keyframes drawLine {
+    from { stroke-dashoffset: 400; }
+    to   { stroke-dashoffset: 0; }
+  }
+  @keyframes fadeScale {
+    from { opacity: 0; transform: scale(0.94); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  @keyframes goldGlow {
+    0%,100% { text-shadow: 0 0 20px rgba(201,168,106,0.3); }
+    50%      { text-shadow: 0 0 40px rgba(201,168,106,0.7), 0 0 80px rgba(201,168,106,0.3); }
+  }
+  @keyframes borderSpin {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+  }
+  .landing-float  { animation: floatY 7s ease-in-out infinite; }
+  .landing-float2 { animation: floatY2 9s ease-in-out infinite; }
+  .landing-rotate { animation: rotateSlow 40s linear infinite; }
+  .landing-glow   { animation: goldGlow 3s ease-in-out infinite; }
+  .marquee-track  { animation: marqueeLTR 28s linear infinite; }
+
+  .gradient-text-live {
+    background: linear-gradient(120deg, #DBC8FF 0%, #E8D0A0 30%, #A970FF 60%, #DBC8FF 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmerText 4s linear infinite;
+  }
+  .section-full { min-height: 100vh; display: flex; align-items: center; }
+  .hero-kali {
+    font-family: "Noto Naskh Arabic", Amiri, serif;
+    direction: rtl;
+    line-height: 1.8;
+    background: linear-gradient(180deg, rgba(201,168,106,0.9) 0%, rgba(201,168,106,0.25) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    pointer-events: none;
+    user-select: none;
+  }
+  .pain-item {
+    border-left: 2px solid rgba(124,77,255,0.3);
+    padding-left: 16px;
+    transition: border-color .3s ease;
+  }
+  .pain-item:hover { border-color: rgba(201,168,106,0.7); }
+  .mapel-pill {
+    background: rgba(17,6,31,0.7);
+    border: 1px solid rgba(169,112,255,0.14);
+    border-radius: 10px;
+    padding: 10px 14px;
+    transition: all .2s ease;
+    backdrop-filter: blur(12px);
+  }
+  .mapel-pill:hover {
+    border-color: rgba(201,168,106,0.45);
+    background: rgba(201,168,106,0.07);
+    transform: translateY(-2px);
+  }
+  .step-connector {
+    width: 2px;
+    background: linear-gradient(180deg, rgba(124,77,255,0.6) 0%, rgba(201,168,106,0.4) 100%);
+    flex-shrink: 0;
+  }
+  .price-badge {
+    background: linear-gradient(135deg, rgba(201,168,106,0.22) 0%, rgba(201,168,106,0.08) 100%);
+    border: 1px solid rgba(201,168,106,0.35);
+    border-radius: 12px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: #E8D0A0;
+    font-weight: 500;
+  }
+  .ticker-wrap { overflow: hidden; width: 100%; }
+  .vs-pill {
+    background: rgba(25,11,56,0.8);
+    border: 1px solid rgba(169,112,255,0.2);
+    border-radius: 8px;
+    padding: 14px 18px;
+  }
+  .cta-border-anim {
+    position: relative;
+    background: linear-gradient(#080312, #080312) padding-box,
+                linear-gradient(135deg, rgba(201,168,106,0.8), rgba(124,77,255,0.6), rgba(201,168,106,0.8)) border-box;
+    border: 1px solid transparent;
+    border-radius: 20px;
+  }
+`;
+
+const StyleInject = () => {
+  useEffect(() => {
+    const id = "landing-styles-v3";
+    if (!document.getElementById(id)) {
+      const el = document.createElement("style");
+      el.id = id;
+      el.textContent = LANDING_STYLES;
+      document.head.appendChild(el);
+    }
+    return () => {};
+  }, []);
+  return null;
+};
+
+/* ── Counter yang naik otomatis ─────────────────────────────── */
+const CountUp = ({ target, suffix = "", duration = 1800 }) => {
+  const [val, setVal] = useState(0);
+  const ref = useRef(null);
+  const started = useRef(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !started.current) {
+        started.current = true;
+        const start = Date.now();
+        const tick = () => {
+          const elapsed = Date.now() - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const ease = 1 - Math.pow(1 - progress, 3);
+          setVal(Math.round(ease * target));
+          if (progress < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      }
+    }, { threshold: 0.4 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [target, duration]);
+  return <span ref={ref}>{val}{suffix}</span>;
+};
+
+/* ── Komponen utama ─────────────────────────────────────────── */
 const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
   <div className="page-enter">
-    <HeroNew onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment}/>
-    <MasisirShowcase/>
-    <ThreeSteps/>
-    <PricingMini onOpenPayment={onOpenPayment}/>
-    <FinalCTA onOpenPayment={onOpenPayment}/>
+    <StyleInject />
+    <LandingHero onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment} />
+    <StatsBanner />
+    <PainSection />
+    <SolutionSection />
+    <FeaturesSection />
+    <MapelShowcase />
+    <HowItWorks />
+    <PricingSection onOpenPayment={onOpenPayment} />
+    <FinalCTA onOpenPayment={onOpenPayment} />
   </div>
 );
 
-/* ── 1. HERO ─────────────────────────────────────────────────── */
-const HeroNew = ({ onOpenLogin, onOpenPayment }) => (
-  <section className="relative overflow-hidden pt-12 md:pt-20 pb-20 md:pb-28">
-    <Blob color="rgba(124,77,255,0.38)" size={700} top={-220} right={-120}/>
-    <Blob color="rgba(201,168,106,0.16)" size={540} top={260} left={-180}/>
-    <div className="absolute inset-0 pattern-stars opacity-40 pointer-events-none"/>
-    <div className="container-x relative">
-      <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+/* ══════════════════════════════════════════════════════════════
+   1. HERO — Full viewport, kaligrafi besar, emotional headline
+   ══════════════════════════════════════════════════════════════ */
+const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
+  <section className="relative overflow-hidden" style={{ minHeight: "100vh", display: "flex", alignItems: "center", paddingTop: "80px" }}>
 
-        {/* Kolom kiri — teks */}
+    {/* Background blobs */}
+    <Blob color="rgba(124,77,255,0.32)" size={900} top={-300} right={-200} />
+    <Blob color="rgba(201,168,106,0.14)" size={700} top={300} left={-250} />
+    <Blob color="rgba(92,53,204,0.22)" size={600} top={100} left={200} />
+
+    {/* Pattern */}
+    <div className="absolute inset-0 pattern-stars opacity-30 pointer-events-none" />
+
+    {/* Kaligrafi besar di background ─ floating */}
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
+      <div className="landing-float" style={{ opacity: 0.055 }}>
+        <div className="hero-kali" style={{ fontSize: "clamp(120px,22vw,280px)", fontWeight: 700, letterSpacing: "0.02em" }}>
+          اقْرَأْ
+        </div>
+      </div>
+    </div>
+
+    {/* Ornamen kaligrafi kanan ─ melayang */}
+    <div className="absolute right-8 top-1/3 pointer-events-none select-none hidden lg:block landing-float2">
+      <div className="hero-kali" style={{ fontSize: "72px", opacity: 0.18, fontWeight: 400 }}>
+        بِسْمِ اللَّهِ
+      </div>
+    </div>
+
+    {/* Ornamen kiri */}
+    <div className="absolute left-4 bottom-1/3 pointer-events-none select-none hidden lg:block landing-float" style={{ animationDelay: "2s" }}>
+      <div className="hero-kali" style={{ fontSize: "48px", opacity: 0.13, fontWeight: 400 }}>
+        وَمَا أُوتِيتُم
+      </div>
+      <div className="hero-kali" style={{ fontSize: "48px", opacity: 0.13, fontWeight: 400 }}>
+        مِّنَ الْعِلْمِ
+      </div>
+    </div>
+
+    <div className="container-x relative w-full">
+      <div className="max-w-3xl mx-auto text-center">
+
+        {/* Chip */}
+        <Reveal>
+          <div className="chip chip-glass text-xs mb-7 inline-flex items-center gap-2 mx-auto">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-gold-400" />
+            </span>
+            Untuk Masisir Al-Azhar · Dibuat khusus, bukan adaptasi
+          </div>
+        </Reveal>
+
+        {/* Headline besar */}
+        <Reveal delay={100}>
+          <h1 className="font-display leading-[1.03] tracking-tightest mb-6" style={{ fontSize: "clamp(48px,7vw,88px)", fontWeight: 600 }}>
+            <span className="text-ink">Kuliah di Azhar itu</span>{" "}
+            <span className="gradient-text-live">berat.</span>
+            <br />
+            <span className="text-ink">MADAD bikin lebih</span>{" "}
+            <span className="text-gold-300">ringan.</span>
+          </h1>
+        </Reveal>
+
+        {/* Sub */}
+        <Reveal delay={220}>
+          <p className="text-ink-muted leading-relaxed mx-auto mb-10" style={{ fontSize: "clamp(16px,2vw,20px)", maxWidth: "620px" }}>
+            Panduan AI yang mengerti maqarrar Al-Azhar — dari Fiqh, Hadith, Ushul, sampai Nahwu dan Balaghah.
+            Bukan AI biasa, tapi<span className="text-gold-300 font-medium"> konsultan belajar pribadi</span> yang menyesuaikan gaya belajarmu.
+          </p>
+        </Reveal>
+
+        {/* CTAs */}
+        <Reveal delay={360}>
+          <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
+            <button onClick={onOpenPayment}
+              className="btn btn-gold text-base px-8 py-4"
+              style={{ fontSize: "16px", boxShadow: "0 0 40px rgba(201,168,106,0.35), 0 1px 0 rgba(255,255,255,0.35) inset" }}>
+              <Icon name="sparkles" className="w-5 h-5" />
+              Gabung Member — Rp 49.000
+            </button>
+            <button onClick={onOpenLogin}
+              className="btn btn-ghost text-base px-6 py-4" style={{ fontSize: "15px" }}>
+              Sudah punya kode? Login →
+            </button>
+          </div>
+        </Reveal>
+
+        {/* Social proof mini */}
+        <Reveal delay={480}>
+          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-ink-soft">
+            {[
+              { icon: "check", text: "Sekali bayar, akses seumur hidup" },
+              { icon: "shield", text: "Kode dikirim via WhatsApp" },
+              { icon: "book", text: "16+ mata pelajaran Al-Azhar" },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <Icon name={item.icon} className="w-3.5 h-3.5 text-gold-400" />
+                <span>{item.text}</span>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </div>
+
+      {/* Scroll indicator */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-ink-soft">
+        <span className="text-[11px] tracking-[0.15em] uppercase">Scroll</span>
+        <div className="w-px h-8 bg-gradient-to-b from-violet-400/50 to-transparent" />
+      </div>
+    </div>
+  </section>
+);
+
+/* ══════════════════════════════════════════════════════════════
+   2. STATS BANNER — angka nyata yang bergerak
+   ══════════════════════════════════════════════════════════════ */
+const StatsBanner = () => (
+  <section className="py-14 border-y" style={{ borderColor: "rgba(169,112,255,0.1)" }}>
+    <div className="container-x">
+      <Reveal stagger className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-0 md:divide-x" style={{ "--tw-divide-opacity": 1 }}>
+        {[
+          { num: 16,    suf: "+",   label: "Mata pelajaran Al-Azhar" },
+          { num: 6,     suf: "×",   label: "Gaya belajar berbeda" },
+          { num: 96,    suf: "+",   label: "Panduan prompt siap pakai" },
+          { num: 49,    suf: "rb",  label: "Sekali bayar, akses penuh" },
+        ].map((s, i) => (
+          <div key={i} className="text-center px-6">
+            <div className="font-display font-semibold gradient-text mb-1" style={{ fontSize: "clamp(36px,5vw,56px)", lineHeight: 1 }}>
+              <CountUp target={s.num} suffix={s.suf} />
+            </div>
+            <div className="text-sm text-ink-muted">{s.label}</div>
+          </div>
+        ))}
+      </Reveal>
+    </div>
+  </section>
+);
+
+/* ══════════════════════════════════════════════════════════════
+   3. PAIN SECTION — realita Masisir
+   ══════════════════════════════════════════════════════════════ */
+const PainSection = () => (
+  <section className="section relative overflow-hidden">
+    <Blob color="rgba(124,77,255,0.12)" size={600} top={-100} left={-200} />
+
+    <div className="container-x">
+      <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+
+        {/* Kiri — teks */}
         <div>
           <Reveal>
-            <div className="chip chip-glass text-xs mb-6 inline-flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-pulse"/>
-              MADAD · Untuk Masisir Al-Azhar
+            <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">
+              — Kamu tidak sendirian
             </div>
           </Reveal>
           <Reveal delay={80}>
-            <h1 className="font-display text-5xl sm:text-6xl md:text-[72px] font-semibold text-ink leading-[1.0] tracking-tightest">
-              Belajar materi Azhar, jadi lebih ringan.
-            </h1>
+            <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08] mb-6">
+              Pernah rasakan ini di Kairo?
+            </h2>
           </Reveal>
-          <Reveal delay={200}>
-            <p className="mt-6 text-lg text-ink-muted leading-relaxed max-w-lg">
-              Panduan AI khusus untuk thalib Azhari — dari Nahwu, Tafsir, Fiqh, sampai Mustholah Hadits.
+          <Reveal delay={160}>
+            <p className="text-ink-muted leading-relaxed mb-8 text-base">
+              Belajar di Al-Azhar itu privilege — tapi juga tantangan yang tidak ringan. Bahasa Arab bukan bahasa ibu, maqarrar ribuan halaman, ujian syafahi di depan dosen, tanpa teman belajar yang selalu ada.
             </p>
           </Reveal>
-          <Reveal delay={340}>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <button onClick={onOpenPayment} className="btn btn-gold text-base px-7 py-3.5">
-                <Icon name="sparkles" className="w-4 h-4"/> Gabung Member
-              </button>
-              <button onClick={onOpenLogin}
-                className="text-sm text-ink-muted hover:text-ink transition-colors underline underline-offset-4">
-                Sudah punya kode? Login →
-              </button>
-            </div>
-          </Reveal>
-        </div>
 
-        {/* Kolom kanan — feature cards */}
-        <div className="hidden lg:flex flex-col gap-3">
-          <Reveal delay={300}>
+          <Reveal stagger delay={200} className="space-y-5">
             {[
-              { icon: "sparkles", title: "Guide per gaya belajar", hint: "Tiap AI dipakai beda untuk Nahwu, Tafsir, atau Fiqh — sesuai caramu." },
-              { icon: "layers",   title: "Muqaranah qoul ulama",   hint: "Pendapat 4 madzhab side-by-side dengan dalil dan wajh istidlal." },
-              { icon: "book",     title: "Kurasah pribadi",         hint: "Catatan, talkhish, dan ta'liq — semua dalam satu tempat." },
-            ].map((c, i) => (
-              <div key={i} className="card-glass p-4 flex items-start gap-4 hov-lift">
-                <div className="w-9 h-9 rounded-lg bg-gold-500/12 text-gold-300 flex items-center justify-center flex-shrink-0">
-                  <Icon name={c.icon} className="w-4 h-4"/>
-                </div>
-                <div>
-                  <div className="font-display text-base font-semibold text-ink">{c.title}</div>
-                  <div className="text-sm text-ink-muted mt-0.5">{c.hint}</div>
-                </div>
+              { emoji: "📚", text: "Duduk berjam-jam dengan maqarrar tebal — tapi tidak tahu mau mulai dari mana" },
+              { emoji: "🎤", text: "Syafahi besok pagi. Kamu masih bingung bedain qoul 4 mazhab dalam bahasa Arab" },
+              { emoji: "🤯", text: "Dosen ngomong dalam bahasa Arab satu jam, tapi setengahnya tidak masuk" },
+              { emoji: "💭", text: "Mau pakai ChatGPT tapi tidak tahu prompt apa yang harus diketik" },
+              { emoji: "😔", text: "Hafalan matan tidak nempel karena tidak paham konteks dan hubungan antar bab" },
+            ].map((item, i) => (
+              <div key={i} className="pain-item flex items-start gap-3">
+                <span className="text-xl flex-shrink-0">{item.emoji}</span>
+                <p className="text-sm text-ink-muted leading-relaxed">{item.text}</p>
               </div>
             ))}
           </Reveal>
         </div>
+
+        {/* Kanan — kaligrafi dekoratif */}
+        <Reveal delay={300} className="hidden lg:flex flex-col items-center justify-center">
+          <div className="relative">
+            {/* Ring dekoratif */}
+            <div className="landing-rotate absolute inset-0 m-auto rounded-full"
+              style={{ width: "320px", height: "320px", border: "1px solid rgba(201,168,106,0.15)", top: 0, left: 0 }} />
+            <div className="landing-rotate absolute inset-0 m-auto rounded-full"
+              style={{ width: "260px", height: "260px", border: "1px dashed rgba(124,77,255,0.2)", animationDirection: "reverse", top: "30px", left: "30px" }} />
+
+            {/* Kaligrafi tengah */}
+            <div className="relative z-10 text-center p-16">
+              <div className="arabic text-gold-300 landing-glow" style={{ fontSize: "52px", fontWeight: 600, lineHeight: 2 }}>
+                طَلَبُ الْعِلْمِ
+              </div>
+              <div className="arabic text-gold-400" style={{ fontSize: "40px", fontWeight: 400, lineHeight: 2 }}>
+                فَرِيضَةٌ
+              </div>
+              <div className="arabic text-ink-muted" style={{ fontSize: "28px", lineHeight: 2 }}>
+                عَلَى كُلِّ مُسْلِمٍ
+              </div>
+              <p className="text-xs text-ink-soft mt-4 italic">"Menuntut ilmu itu wajib atas setiap Muslim." — HR. Ibn Majah</p>
+            </div>
+          </div>
+        </Reveal>
+
       </div>
     </div>
-    <div className="divider-arabesque mt-4"/>
   </section>
 );
 
-/* ── 2. MASISIR SHOWCASE ─────────────────────────────────────── */
-const MasisirShowcase = () => (
-  <section className="section">
+/* ══════════════════════════════════════════════════════════════
+   4. SOLUTION — MADAD vs AI generik
+   ══════════════════════════════════════════════════════════════ */
+const SolutionSection = () => (
+  <section className="section relative overflow-hidden">
+    <Blob color="rgba(201,168,106,0.10)" size={700} top={-150} right={-200} />
+
     <div className="container-x">
-      <Reveal className="text-center mb-10">
-        <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3">— Dirancang untuk Thalib Azhari</div>
-        <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.05]">
-          Untukmu yang belajar di Mesir.
+      <Reveal className="text-center mb-12">
+        <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">— Kenapa MADAD beda</div>
+        <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08] mb-4">
+          AI sudah ada di mana-mana.<br />
+          <span className="gradient-text">Yang tahu maqarrar Azhar, belum ada.</span>
         </h2>
+        <p className="text-ink-muted max-w-lg mx-auto">
+          ChatGPT bisa menjawab pertanyaan fiqh secara umum. Tapi siapa yang tahu Anda sedang belajar Bidayatul Mujtahid di Syariah Azhar, dan butuh perbandingan 4 mazhab dalam bahasa yang mudah dipahami?
+        </p>
       </Reveal>
-      <Reveal stagger className="grid md:grid-cols-3 gap-5 mb-10">
-        {[
-          { icon: "sparkles", title: "Guide per gaya belajar", body: "Tiap AI dipakai beda untuk Nahwu, Tafsir, atau Fiqh — sesuai caramu." },
-          { icon: "layers",   title: "Muqaranah qoul ulama",   body: "Pendapat 4 madzhab side-by-side dengan dalil dan wajh istidlal." },
-          { icon: "book",     title: "Kurasah pribadi",         body: "Catatan, talkhish, dan ta'liq — semua dalam satu tempat." },
-        ].map((c, i) => (
-          <div key={i} className="card-glass p-7 hov-lift">
-            <div className="w-10 h-10 rounded-xl bg-gold-500/12 text-gold-300 flex items-center justify-center mb-4">
-              <Icon name={c.icon} className="w-5 h-5"/>
-            </div>
-            <div className="font-display text-xl font-semibold text-ink mb-2">{c.title}</div>
-            <div className="text-sm text-ink-muted leading-relaxed">{c.body}</div>
+
+      {/* Comparison table */}
+      <Reveal stagger className="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto mb-12">
+
+        {/* AI Biasa */}
+        <div className="vs-pill">
+          <div className="text-xs uppercase tracking-[0.18em] text-ink-soft mb-4 flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-rose-600" />
+            AI Biasa
           </div>
-        ))}
+          <div className="space-y-3">
+            {[
+              "Tidak tahu kamu di Azhar",
+              "Jawaban generik, tanpa konteks",
+              "Tidak tahu gaya belajarmu",
+              "Harus bikin prompt sendiri",
+              "Tidak tahu kurikulum Azhar",
+            ].map((t, i) => (
+              <div key={i} className="flex items-center gap-2.5 text-sm text-ink-muted">
+                <span className="text-rose-600 font-bold text-xs flex-shrink-0">✕</span>
+                <span>{t}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* MADAD */}
+        <div className="vs-pill" style={{ background: "rgba(201,168,106,0.06)", borderColor: "rgba(201,168,106,0.3)" }}>
+          <div className="text-xs uppercase tracking-[0.18em] text-gold-400 mb-4 flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-gold-400" />
+            MADAD
+          </div>
+          <div className="space-y-3">
+            {[
+              "Dirancang khusus untuk Masisir",
+              "Guide spesifik per mata pelajaran",
+              "Adaptif sesuai gaya belajarmu",
+              "96+ prompt siap salin-tempel",
+              "Mengerti maqarrar Azhar",
+            ].map((t, i) => (
+              <div key={i} className="flex items-center gap-2.5 text-sm text-ink">
+                <Icon name="check" className="w-4 h-4 text-gold-400 flex-shrink-0" strokeWidth={2.5} />
+                <span>{t}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </Reveal>
-      <Reveal className="text-center">
-        <div className="text-xs text-ink-soft mb-4">Mengintegrasikan AI yang sudah kamu kenal</div>
-        <div className="flex items-center justify-center gap-6 flex-wrap">
-          {["Claude", "ChatGPT", "Gemini", "NotebookLM", "Perplexity", "DeepSeek"].map((n) => (
-            <span key={n} className="text-sm font-mono text-ink-muted opacity-50 hover:opacity-100 transition-opacity">{n}</span>
+
+      {/* AI tools ticker */}
+      <Reveal>
+        <div className="text-center text-xs text-ink-soft mb-4">Mengintegrasikan semua AI yang kamu kenal</div>
+        <div className="ticker-wrap">
+          <div className="marquee-track flex gap-10 whitespace-nowrap">
+            {["Claude", "ChatGPT", "Gemini", "NotebookLM", "Perplexity", "DeepSeek", "Claude", "ChatGPT", "Gemini", "NotebookLM", "Perplexity", "DeepSeek"].map((n, i) => (
+              <span key={i} className="text-sm font-mono text-ink-muted opacity-40 hover:opacity-80 transition-opacity">{n}</span>
+            ))}
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+);
+
+/* ══════════════════════════════════════════════════════════════
+   5. FEATURES — 6 fitur utama
+   ══════════════════════════════════════════════════════════════ */
+const FeaturesSection = () => {
+  const features = [
+    {
+      icon: "sparkles",
+      title: "Adaptive per gaya belajarmu",
+      body: "Pilih cara belajarmu: diskusi, visual, hafalan, latihan soal, atau baca. Setiap panduan menyesuaikan diri.",
+      badge: "Personal",
+      color: "rgba(124,77,255,0.15)",
+      borderColor: "rgba(124,77,255,0.3)",
+    },
+    {
+      icon: "book",
+      title: "Guide per mata pelajaran",
+      body: "16+ panduan spesifik: Fiqh, Ushul, Hadith, Tafsir, Nahwu, Balaghah — masing-masing dengan konteks Azhari.",
+      badge: "16+ Mapel",
+      color: "rgba(201,168,106,0.12)",
+      borderColor: "rgba(201,168,106,0.3)",
+    },
+    {
+      icon: "copy",
+      title: "Prompt siap salin-tempel",
+      body: "Tidak perlu mikir mau ngetik apa. Buka panduan, salin prompt, paste ke AI, langsung dapat jawaban.",
+      badge: "96+ Prompt",
+      color: "rgba(110,231,183,0.08)",
+      borderColor: "rgba(110,231,183,0.2)",
+    },
+    {
+      icon: "layers",
+      title: "Muqaranah qoul ulama",
+      body: "Bandingkan pendapat 4 mazhab side-by-side dengan dalil, wajh istidlal, dan penjelasan mudah.",
+      badge: "4 Mazhab",
+      color: "rgba(124,77,255,0.12)",
+      borderColor: "rgba(124,77,255,0.25)",
+    },
+    {
+      icon: "edit",
+      title: "Kurasah pribadi",
+      body: "Catatan markdown dengan dukungan teks Arab. Talkhish, ta'liq, dan resume maqarrar dalam satu tempat.",
+      badge: "Catatan",
+      color: "rgba(201,168,106,0.08)",
+      borderColor: "rgba(201,168,106,0.2)",
+    },
+    {
+      icon: "star",
+      title: "Companion harian",
+      body: "Niat belajar, ritme harian, dan refleksi singkat — supaya belajarmu berkesinambungan dan bermakna.",
+      badge: "Harian",
+      color: "rgba(124,77,255,0.1)",
+      borderColor: "rgba(124,77,255,0.2)",
+    },
+  ];
+
+  return (
+    <section className="section relative overflow-hidden">
+      <Blob color="rgba(124,77,255,0.14)" size={800} top={-200} right={-300} />
+
+      <div className="container-x">
+        <Reveal className="text-center mb-14">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">— Apa yang kamu dapat</div>
+          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08]">
+            Satu tempat untuk semua<br />kebutuhan belajar di Azhar.
+          </h2>
+        </Reveal>
+
+        <Reveal stagger className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {features.map((f, i) => (
+            <div key={i} className="card-glass hov-lift p-6 flex flex-col gap-4"
+              style={{ borderColor: f.borderColor }}>
+              <div className="flex items-start justify-between">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                  style={{ background: f.color, border: `1px solid ${f.borderColor}` }}>
+                  <Icon name={f.icon} className="w-5 h-5 text-gold-300" />
+                </div>
+                <span className="text-[10px] uppercase tracking-[0.12em] px-2 py-1 rounded-full"
+                  style={{ background: f.color, color: "#D9BD85", border: `1px solid ${f.borderColor}` }}>
+                  {f.badge}
+                </span>
+              </div>
+              <div>
+                <div className="font-display text-lg font-semibold text-ink mb-1.5">{f.title}</div>
+                <div className="text-sm text-ink-muted leading-relaxed">{f.body}</div>
+              </div>
+            </div>
+          ))}
+        </Reveal>
+      </div>
+    </section>
+  );
+};
+
+/* ══════════════════════════════════════════════════════════════
+   6. MAPEL SHOWCASE — grid semua mata pelajaran
+   ══════════════════════════════════════════════════════════════ */
+const MapelShowcase = () => {
+  const mapels = [
+    { ar: "الفقه",          id: "Fiqh",            faculty: "Syariah" },
+    { ar: "أصول الفقه",    id: "Ushul Fiqh",       faculty: "Syariah" },
+    { ar: "القواعد",        id: "Qawaid Fiqhiyyah", faculty: "Syariah" },
+    { ar: "المعاملات",      id: "Muamalat",         faculty: "Syariah" },
+    { ar: "تاريخ التشريع", id: "Tarikh Tasyri",    faculty: "Syariah" },
+    { ar: "الحديث",         id: "Hadith",           faculty: "Ushuluddin" },
+    { ar: "التفسير",        id: "Tafsir",           faculty: "Ushuluddin" },
+    { ar: "العقيدة",        id: "Aqidah",           faculty: "Ushuluddin" },
+    { ar: "السيرة",         id: "Sirah Nabawi",     faculty: "Ushuluddin" },
+    { ar: "المنطق",         id: "Mantiq",           faculty: "Ushuluddin" },
+    { ar: "النحو",          id: "Nahwu",            faculty: "Bahasa Arab" },
+    { ar: "البلاغة",        id: "Balaghah",         faculty: "Bahasa Arab" },
+    { ar: "الإنشاء",        id: "Insya",            faculty: "Bahasa Arab" },
+    { ar: "الأدب",          id: "Adab",             faculty: "Bahasa Arab" },
+    { ar: "المقال",         id: "Penulisan Makalah", faculty: "Umum" },
+    { ar: "الحفظ",          id: "Hafalan Matan",    faculty: "Umum" },
+  ];
+
+  const facultyColors = {
+    "Syariah":     { bg: "rgba(124,77,255,0.12)", border: "rgba(124,77,255,0.28)", text: "#C5A0FF" },
+    "Ushuluddin":  { bg: "rgba(201,168,106,0.10)", border: "rgba(201,168,106,0.28)", text: "#E8D0A0" },
+    "Bahasa Arab": { bg: "rgba(110,231,183,0.08)", border: "rgba(110,231,183,0.2)", text: "#6EE7B7" },
+    "Umum":        { bg: "rgba(180,150,255,0.06)", border: "rgba(180,150,255,0.16)", text: "#B8AACC" },
+  };
+
+  return (
+    <section className="section relative overflow-hidden">
+      <Blob color="rgba(201,168,106,0.08)" size={600} top={-100} left={-200} />
+
+      <div className="container-x">
+        <Reveal className="text-center mb-12">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">— Cakupan mata pelajaran</div>
+          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08] mb-4">
+            Dari Fiqh sampai Balaghah,<br />
+            <span className="gradient-text">semua ada panduannya.</span>
+          </h2>
+          <p className="text-ink-muted max-w-md mx-auto text-sm">
+            16 mata pelajaran Al-Azhar dengan panduan AI spesifik per subjek — bukan jawaban copy-paste yang sama untuk semua.
+          </p>
+        </Reveal>
+
+        <Reveal stagger className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-8">
+          {mapels.map((m, i) => {
+            const col = facultyColors[m.faculty] || facultyColors["Umum"];
+            return (
+              <div key={i} className="mapel-pill flex flex-col gap-1.5">
+                <div className="arabic text-gold-300 text-right" style={{ fontSize: "20px", lineHeight: 1.6 }}>{m.ar}</div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-sm font-medium text-ink">{m.id}</span>
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0"
+                    style={{ background: col.bg, border: `1px solid ${col.border}`, color: col.text }}>
+                    {m.faculty}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </Reveal>
+
+        {/* Bottom note */}
+        <Reveal className="text-center text-xs text-ink-soft">
+          Panduan terus diperbarui · Mata pelajaran lebih banyak akan hadir
+        </Reveal>
+      </div>
+    </section>
+  );
+};
+
+/* ══════════════════════════════════════════════════════════════
+   7. HOW IT WORKS — 3 langkah vertikal dengan animasi
+   ══════════════════════════════════════════════════════════════ */
+const HowItWorks = () => {
+  const steps = [
+    {
+      num: "01",
+      kali: "نِيَّة",
+      title: "Isi profil belajarmu",
+      body: "4 pertanyaan singkat: fakultas, semester, mata pelajaran yang sulit, dan gaya belajarmu. Tidak sampai 2 menit.",
+      detail: "Onboarding cepat · Bisa diubah kapan saja",
+    },
+    {
+      num: "02",
+      kali: "عِلْم",
+      title: "Dapat panduan yang personal",
+      body: "MADAD menampilkan panduan AI yang disesuaikan — mata pelajaran yang relevan, prompt yang cocok dengan caramu belajar.",
+      detail: "Adaptive · Per fakultas · Per gaya belajar",
+    },
+    {
+      num: "03",
+      kali: "فَهْم",
+      title: "Belajar lebih efektif setiap hari",
+      body: "Salin prompt, pakai di AI favoritmu, dan mulai belajar. Simpan hasil di kurasah. Ulang besok.",
+      detail: "Claude · ChatGPT · Gemini · NotebookLM",
+    },
+  ];
+
+  return (
+    <section className="section relative overflow-hidden">
+      <Blob color="rgba(124,77,255,0.12)" size={700} top={0} right={-300} />
+
+      <div className="container-x">
+        <Reveal className="text-center mb-14">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">— Cara pakainya</div>
+          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08]">
+            Tiga langkah, langsung jalan.
+          </h2>
+        </Reveal>
+
+        <div className="max-w-2xl mx-auto">
+          {steps.map((s, i) => (
+            <Reveal key={i} delay={i * 120}>
+              <div className="flex gap-6 md:gap-10 mb-0">
+
+                {/* Kiri: nomor + connector */}
+                <div className="flex flex-col items-center" style={{ minWidth: "56px" }}>
+                  <div className="w-14 h-14 rounded-2xl card-glass-strong flex items-center justify-center flex-shrink-0"
+                    style={{ border: "1px solid rgba(201,168,106,0.3)" }}>
+                    <span className="font-display text-gold-300 font-semibold text-lg">{s.num}</span>
+                  </div>
+                  {i < steps.length - 1 && (
+                    <div className="step-connector flex-1 my-2" style={{ width: "2px", minHeight: "60px" }} />
+                  )}
+                </div>
+
+                {/* Kanan: konten */}
+                <div className="pb-10 flex-1">
+                  <div className="flex items-start gap-4 mb-3">
+                    <div>
+                      <div className="arabic text-gold-400 opacity-60 mb-1" style={{ fontSize: "22px", lineHeight: 1.6 }}>{s.kali}</div>
+                      <h3 className="font-display text-2xl font-semibold text-ink">{s.title}</h3>
+                    </div>
+                  </div>
+                  <p className="text-ink-muted leading-relaxed mb-3">{s.body}</p>
+                  <div className="text-xs text-ink-soft">{s.detail}</div>
+                </div>
+              </div>
+            </Reveal>
           ))}
         </div>
-      </Reveal>
-    </div>
-  </section>
-);
+      </div>
+    </section>
+  );
+};
 
-/* ── 3. THREE STEPS ──────────────────────────────────────────── */
-const ThreeSteps = () => (
-  <section className="section pt-0">
-    <div className="container-x">
-      <Reveal className="text-center mb-10">
-        <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3">— Bagaimana cara kerjanya</div>
-        <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink">Tiga langkah, sudah jalan.</h2>
-      </Reveal>
-      <Reveal className="grid md:grid-cols-3 gap-6">
-        {[
-          { num: "01", title: "Pilih fakultas & gaya belajarmu", body: "Onboarding 4 pertanyaan singkat." },
-          { num: "02", title: "Dapat rekomendasi AI personal",   body: "MADAD pilihkan tool & guide yang cocok." },
-          { num: "03", title: "Mulai belajar dengan tenang",     body: "Companion harian, muqaranah, kurasah — semua siap." },
-        ].map((s, i) => (
-          <div key={i} className="card-glass p-7 hov-lift relative">
-            {i < 2 && (
-              <div className="hidden md:block absolute top-10 -right-3 w-6 h-px z-10"
-                style={{background:"linear-gradient(to right,rgba(201,168,106,0.5),transparent)"}}/>
-            )}
-            <div className="font-display text-5xl font-semibold gradient-text leading-none mb-4">{s.num}</div>
-            <div className="font-display text-lg font-semibold text-ink mb-2">{s.title}</div>
-            <div className="text-sm text-ink-muted">{s.body}</div>
-          </div>
-        ))}
-      </Reveal>
-    </div>
-  </section>
-);
+/* ══════════════════════════════════════════════════════════════
+   8. PRICING — satu kartu, strong conversion
+   ══════════════════════════════════════════════════════════════ */
+const PricingSection = ({ onOpenPayment }) => (
+  <section className="section relative overflow-hidden">
+    <Blob color="rgba(201,168,106,0.15)" size={700} top={-100} right={-200} />
+    <Blob color="rgba(124,77,255,0.12)" size={500} top={200} left={-150} />
 
-/* ── 4. PRICING MINI ─────────────────────────────────────────── */
-const PricingMini = ({ onOpenPayment }) => (
-  <section className="section pt-0">
     <div className="container-x">
-      <Reveal className="max-w-[520px] mx-auto">
-        <div className="text-center mb-6">
-          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3">— Investasi Ilmu</div>
-          <h2 className="font-display text-4xl font-semibold text-ink">Sekali bayar, akses penuh.</h2>
-        </div>
-        <div className="card-glass-strong p-8 relative overflow-hidden">
-          <Blob color="rgba(201,168,106,0.20)" size={260} top={-80} right={-60}/>
-          <div className="relative">
-            <div className="chip chip-gold text-xs mb-5 inline-flex">Member MADAD</div>
-            <div className="flex items-start gap-1 leading-none mb-6">
-              <span className="font-display text-xl text-gold-400 mt-3">Rp</span>
-              <span className="font-display text-[80px] font-semibold text-gold-300 leading-none tracking-tight">49</span>
-              <span className="font-display text-xl text-gold-400 mt-3">.000</span>
+      <Reveal className="text-center mb-12">
+        <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">— Investasi ilmu</div>
+        <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08] mb-4">
+          Satu harga. Akses selamanya.
+        </h2>
+        <p className="text-ink-muted max-w-md mx-auto">
+          Tidak ada biaya bulanan, tidak ada tiered plan yang membingungkan. Bayar sekali, belajar selamanya.
+        </p>
+      </Reveal>
+
+      <Reveal className="max-w-[480px] mx-auto">
+        <div className="cta-border-anim relative overflow-hidden">
+          <Blob color="rgba(201,168,106,0.18)" size={300} top={-60} right={-60} />
+          <div className="relative p-8 md:p-10">
+
+            {/* Badge */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="chip chip-gold text-xs">Member MADAD</div>
+              <div className="price-badge">Akses Seumur Hidup</div>
             </div>
-            <div className="space-y-2.5 mb-7">
+
+            {/* Harga */}
+            <div className="flex items-end gap-1 leading-none mb-2">
+              <span className="font-display text-2xl text-gold-400 mb-2">Rp</span>
+              <span className="font-display font-semibold text-gold-300 leading-none"
+                style={{ fontSize: "clamp(64px,12vw,88px)" }}>49</span>
+              <span className="font-display text-2xl text-gold-400 mb-2">.000</span>
+            </div>
+            <p className="text-xs text-ink-soft mb-8">Harga perkenalan · Bisa naik kapan saja</p>
+
+            {/* Fitur */}
+            <div className="space-y-3 mb-8">
               {[
-                "Adaptive guide 6 AI × 6 gaya belajar",
-                "Muqaranah qoul ulama (Library + buat sendiri)",
-                "Kurasah pribadi dengan markdown & teks Arab",
+                "Panduan AI untuk 16+ mata pelajaran Al-Azhar",
+                "Adaptive per 6 gaya belajar berbeda",
+                "96+ prompt siap pakai — tinggal salin-tempel",
+                "Muqaranah qoul ulama (library + buat sendiri)",
+                "Kurasah pribadi dengan teks Arab & markdown",
                 "Companion harian: niat, ritme, refleksi",
+                "Semua update fitur baru — gratis selamanya",
               ].map((f, i) => (
-                <div key={i} className="flex items-center gap-2.5 text-sm text-ink">
-                  <Icon name="check" className="w-4 h-4 text-gold-400 flex-shrink-0" strokeWidth={2.5}/> {f}
+                <div key={i} className="flex items-start gap-3 text-sm text-ink">
+                  <Icon name="check" className="w-4 h-4 text-gold-400 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
+                  <span>{f}</span>
                 </div>
               ))}
             </div>
-            <button onClick={onOpenPayment} className="btn btn-gold w-full text-base py-3.5 shadow-[0_0_30px_rgba(201,168,106,0.25)]">
-              <Icon name="sparkles" className="w-4 h-4"/> Bayar via Lynk.id
+
+            {/* CTA button */}
+            <button onClick={onOpenPayment}
+              className="btn btn-gold w-full text-base py-4 mb-4"
+              style={{ fontSize: "16px", boxShadow: "0 0 50px rgba(201,168,106,0.4), 0 1px 0 rgba(255,255,255,0.35) inset" }}>
+              <Icon name="sparkles" className="w-5 h-5" />
+              Bayar via Lynk.id — Rp 49.000
             </button>
-            <p className="mt-3 text-[11px] text-ink-soft text-center">
-              Setelah bayar, kode dikirim admin via WhatsApp.
+
+            <p className="text-[11px] text-ink-soft text-center leading-relaxed">
+              Setelah bayar, kode akses dikirim admin via WhatsApp dalam 1×24 jam.
+              <br />Pertanyaan? Hubungi admin langsung.
             </p>
           </div>
         </div>
@@ -185,20 +796,54 @@ const PricingMini = ({ onOpenPayment }) => (
   </section>
 );
 
-/* ── 5. FINAL CTA ────────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════════
+   9. FINAL CTA — kaligrafi + emotional close
+   ══════════════════════════════════════════════════════════════ */
 const FinalCTA = ({ onOpenPayment }) => (
-  <section className="section pt-0 pb-24 text-center">
-    <div className="container-x max-w-xl mx-auto">
-      <div className="divider-arabesque mb-10"/>
-      <Reveal>
-        <div className="arabic text-3xl text-gold-300 leading-loose mb-3">قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ</div>
-        <p className="text-ink-muted italic text-sm mb-1">"Ikatlah ilmu dengan tulisan."</p>
-        <p className="text-ink-soft text-xs mb-8">— Atsar</p>
-        <button onClick={onOpenPayment} className="btn btn-primary text-base px-8 py-3.5">
-          Mulai perjalananmu di MADAD
-        </button>
+  <section className="relative overflow-hidden pb-32 pt-16">
+    <Blob color="rgba(124,77,255,0.15)" size={700} top={-100} left={-200} />
+    <Blob color="rgba(201,168,106,0.12)" size={500} top={0} right={-150} />
+
+    <div className="container-x">
+      <div className="divider-arabesque mb-16" />
+
+      {/* Kaligrafi besar di tengah */}
+      <Reveal className="text-center mb-10">
+        <div className="arabic landing-glow mb-2" style={{ fontSize: "clamp(42px,8vw,80px)", fontWeight: 700, lineHeight: 1.8, color: "#D9BD85" }}>
+          وَقُل رَّبِّ زِدْنِي عِلْمًا
+        </div>
+        <p className="text-ink-muted italic text-base mb-1">"Dan katakanlah: Ya Tuhanku, tambahkanlah ilmuku."</p>
+        <p className="text-ink-soft text-sm mb-12">— QS. Thaha: 114</p>
       </Reveal>
-      <div className="divider-arabesque mt-10"/>
+
+      {/* Penutup copy */}
+      <Reveal className="text-center max-w-2xl mx-auto mb-10">
+        <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08] mb-6">
+          Kamu sudah ada di Kairo.<br />
+          <span className="gradient-text-live">Sekarang belajar lebih cerdas.</span>
+        </h2>
+        <p className="text-ink-muted leading-relaxed mb-8 text-base">
+          Ribuan Masisir sudah menghadapi ujian syafahi, hafalan matan, dan makalah yang sama sepertimu.
+          Yang membedakan bukan kemampuan — tapi <span className="text-ink font-medium">cara belajarnya.</span>
+        </p>
+
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <button onClick={onOpenPayment}
+            className="btn btn-gold text-base px-10 py-4"
+            style={{ fontSize: "17px", boxShadow: "0 0 60px rgba(201,168,106,0.45), 0 1px 0 rgba(255,255,255,0.35) inset" }}>
+            <Icon name="sparkles" className="w-5 h-5" />
+            Mulai dengan MADAD — Rp 49.000
+          </button>
+        </div>
+
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-ink-soft">
+          <span>✓ Tidak ada biaya bulanan</span>
+          <span>✓ Akses langsung setelah bayar</span>
+          <span>✓ Dibuat khusus untuk Masisir</span>
+        </div>
+      </Reveal>
+
+      <div className="divider-arabesque mt-16" />
     </div>
   </section>
 );
