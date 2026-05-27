@@ -1,0 +1,418 @@
+# MADAD — Audit Mendalam Repository
+
+> Audit dilakukan pada repo `darufahma-rgb/Madad` (zip per 27 Mei 2026).
+> Skala fokus: **disiplin design.md**, **anti-pattern check**, **security**, **gap fitur**, **mobile/edge case**.
+
+---
+
+## 🟢 TL;DR — Yang Sudah Bagus
+
+Implementasi prompt sebelumnya **dilakukan dengan kualitas tinggi**. Specifically:
+
+- ✅ **Companion modules (Niat / Ritme / Refleksi)** sudah benar-benar mengikuti disiplin sanctuary — tidak ada streak counter, tidak ada 🔥 emoji, microcopy adaptif sudah pas, gold accent dipakai tepat di moment spiritual.
+- ✅ **Seed Muqaranah 6 entry** kualitas akademiknya sangat tinggi — pakai dalil Quran lengkap dengan ayat & terjemah, wajh istidlal mengalir bukan bullet, sumber kitab disebutkan.
+- ✅ **Branding cleanup** sudah dilakukan: "MADAD" sebagai brand utama, "AIGYPT" hanya sebagai logo mark visual, footer "Designed & Developed by Dar Dev" present.
+- ✅ **Color discipline**: gold accent (`#C9A86A`) hanya di teks Arab, divider, atsar — konsisten dengan design.md.
+- ✅ **Mobile responsive di Muqaranah detail** (accordion mode) thoughtful.
+- ✅ **Markdown renderer** Arab auto-detect jalan, `:bismillah:` shortcode rendered dengan ornament.
+- ✅ Code clean — **tidak ada satu pun `console.log`** di production code.
+
+Sekarang, ke yang harus diperbaiki.
+
+---
+
+## 🔴 CRITICAL — Harus Diperbaiki Segera
+
+### #1 — XSS Vulnerability di Kurasah Editor
+
+**Lokasi:** `src/markdown-render.jsx` line 6-111 + `src/pages/kurasah-editor.jsx` line 199 (`dangerouslySetInnerHTML`)
+
+**Masalah:** Markdown renderer **tidak meng-escape HTML user input**. Kalau user nulis di catatan:
+```
+<script>alert('XSS')</script>
+<img src=x onerror="fetch('/api/steal?cookie='+document.cookie)">
+```
+…itu akan **execute** saat preview di-render. Karena ini single-user localStorage app, dampak terbatas, **tapi:**
+- User bisa accidentally nulis HTML dari paste (misal dari kitab online yang punya HTML)
+- Kalau nanti ada feature import/export atau share antar user, ini langsung jadi attack vector
+- Ini melanggar prinsip "least surprise" — markdown harusnya aman
+
+**Fix:**
+```js
+const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => ({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+}[c]));
+
+// Lalu di setiap line processing, escape DULU sebelum apply markdown:
+const inline = (text) => {
+  return escapeHtml(text)
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="...">$1</strong>')
+    // ...dst
+};
+
+// Di blockquote arabic, paragraf, semua tempat yang inject teks user → escape dulu.
+```
+
+**Prioritas: 🔴 sangat tinggi.** Ini fix 15 menit, dampaknya besar.
+
+---
+
+### #2 — Admin PIN Hardcoded & Ditampilkan di UI
+
+**Lokasi:**
+- `src/data.jsx:614` → `const ADMIN_PIN = "9090";`
+- `src/pages/admin.jsx:91` → menampilkan PIN sebagai "Demo PIN: 9090" di login screen
+
+**Masalah:**
+- Siapapun yang akses `/admin` (link-nya bahkan **ada di footer publik** — `src/layout.jsx:170`) bisa lihat PIN dan masuk
+- Admin panel punya akses ke: generate member code, lihat semua data onboarding, edit guide, settings
+- Ini bukan demo project — repo udah ada Lynk.id integration untuk payment
+
+**Fix:**
+1. Hapus baris "Demo PIN:" dari admin login screen
+2. Hapus link "Admin" dari footer publik (akses via direct URL saja)
+3. Ganti PIN dari "9090" ke yang lebih panjang dan random
+4. Idealnya: simpan PIN di-hash di constant (SHA-256), compare dengan hash di runtime. Bukan plaintext.
+5. Long-term: tambahkan rate limiting (max 5 attempt per 10 menit) dan log audit attempts
+
+**Prioritas: 🔴 sangat tinggi.** Production blocker.
+
+---
+
+### #3 — Payment Modal Auto-Confirm Tanpa Verifikasi
+
+**Lokasi:** `src/layout.jsx:298-301`
+
+**Masalah:**
+```js
+const handlePayClick = () => {
+  window.open("https://lynk.id/madad", "_blank", "noopener,noreferrer");
+  setTimeout(() => setPaid(true), 800);  // ← 800ms setelah klik, auto "paid" state
+};
+```
+
+User klik tombol "Bayar via Lynk.id" → tab Lynk terbuka. 800ms kemudian modal otomatis berubah ke screen "Terima kasih! Pembayaran sedang diproses" — **terlepas dari apakah user benar-benar bayar**.
+
+Implikasi:
+- User bisa close tab Lynk tanpa bayar, modal terus nunjukin "Pembayaran sedang diproses"
+- Ini misleading — user mungkin nunggu kode admin, padahal admin gak akan dapat notifikasi karena gak ada transaksi
+- User experience kacau: "Loh kok belum dikirim kode-nya ya?"
+
+**Fix:** Ganti `setTimeout(() => setPaid(true), 800)` jadi state baru "menunggu konfirmasi", dan munculkan tombol manual "Saya sudah bayar, lanjut" yang user klik sendiri **setelah benar-benar selesai checkout di Lynk**. Atau lebih baik: pakai Lynk webhook untuk konfirm otomatis (kalau Lynk support).
+
+**Prioritas: 🔴 tinggi.** Mengganggu trust flow.
+
+---
+
+## 🟡 IMPORTANT — Anti-Pattern & Gap dari Design.md
+
+### #4 — Emoji 🎉 di Onboarding & Paths (Anti-Pattern Sanctuary)
+
+**Lokasi:**
+- `src/pages/onboarding.jsx:77` → `toast.push("Dashboard personal sudah siap 🎉");`
+- `src/pages/paths.jsx:20` → `toast.push(\`"${module.title}" selesai 🎉\`);`
+- `src/pages/paths.jsx:128` → `<div className="text-5xl mb-3">🎉</div>` (saat path 100%)
+
+**Masalah:** Emoji 🎉 (party popper) adalah **classic SaaS celebration pattern**. Ini melanggar mood `calm, intelligent, focused, subtly spiritual` di design.md. Sanctuary tidak meledak-meledak ketika user menyelesaikan sesuatu.
+
+**Fix:** 
+- Onboarding finish → `toast.push("Dashboard personal sudah siap untukmu.")`
+- Module selesai → `toast.push("'${title}' tercatat selesai.")` atau pakai Arabic appropriate `بَارَكَ اللهُ فِيكَ` di toast (subtle gold)
+- Path 100% completion screen: ganti 🎉 dengan **ornamen kaligrafi** (Arabic completion phrase: `الْحَمْدُ لِلَّهِ الَّذِي بِنِعْمَتِهِ تَتِمُّ الصَّالِحَاتُ` — "Segala puji bagi Allah yang dengan nikmat-Nya segala kebaikan menjadi sempurna"). Atau ornamen geometric medallion.
+
+**Prioritas: 🟡 tinggi.** Ini melanggar prinsip explicit di prompt sanctuary.
+
+---
+
+### #5 — Stage Icon ⚡ dan 🚀 (Productivity App Aesthetic)
+
+**Lokasi:**
+- `src/auth.jsx:186` → `{ id: "growing", icon: "⚡", label: "Bertumbuh" }`
+- `src/auth.jsx:187` → `{ id: "ready", icon: "🚀", label: "AI-ready" }`
+- `src/data.jsx:564 & 579` → same icons di data
+
+**Masalah:** ⚡ (lightning bolt) dan 🚀 (rocket) adalah ikon **paling stereotypical "hustle/productivity"** yang ada. Ini langsung mengingatkan orang pada Twitter promotion, growth-hacking content, hustle culture. Bertentangan dengan sanctuary mood.
+
+**Fix:** Ganti dengan ikon yang lebih thalib-friendly:
+- "Starting" 🌱 (yang sudah ada — OK, simbol pertumbuhan natural)
+- "Growing" → ✦ atau 🌿 (tumbuhan yang lebih besar) atau pakai bulan sabit 🌙 (purnama naik)
+- "AI-ready" → 🕌 (masjid — destination of knowledge) atau 📜 (kitab) atau bulan penuh ⚪
+
+Atau lebih baik lagi: **bikin custom SVG icon** kecil di `icons.jsx` — `seedling`, `tree`, `lantern` — dengan style line-art halus yang sesuai sanctuary feel. Emoji-as-icon is a shortcut yang harus dihindari di production.
+
+**Prioritas: 🟡 sedang-tinggi.**
+
+---
+
+### #6 — Landing Page TIDAK Menyebut Fitur Baru
+
+**Lokasi:** `src/pages/landing.jsx` — full file scan, 0 mention
+
+**Masalah:**
+- Tidak ada satu pun mention "Muqaranah", "Kurasah", "Niat Hari Ini", atau "Ritme Belajar" di landing
+- Calon Masisir yang lihat landing **gak tahu fitur-fitur premium yang baru**
+- Payment modal masih iklan "6 AI Tools · 36 Adaptive Guides · 3 Learning Paths" sebagai value prop utama
+- Stats di hero "6 AI Tools · 36 Adaptive Guides · 3 Learning Paths" — fitur baru lebih unik dari ini, malah disembunyikan
+
+**Fix:** Tambahkan section di landing antara `EthicsTeaser` dan `PricingSection`:
+- Section "Yang Membedakan MADAD" dengan 3 kartu showcase:
+  - **Muqaranah** — preview side-by-side qoul ulama dengan teks Arab
+  - **Kurasah** — preview kurasah dengan markdown render
+  - **Niat & Ritme** — preview companion dashboard
+- Update `PaymentModal` features list — tambah:
+  - "Muqaranah: 6 kajian klasik + buat sendiri"
+  - "Kurasah: notebook untuk catatan & refleksi"
+  - "Companion harian: niat, ritme, refleksi"
+- Update hero stat: `6 AI Tools · 6 Muqaranah · ∞ Kurasah` (lebih sanctuary)
+
+**Prioritas: 🟡 tinggi.** Lo udah punya fitur bagus, tapi gak kelihatan oleh prospect.
+
+---
+
+### #7 — Mobile Navbar Tidak Punya Akses Kurasah
+
+**Lokasi:** `src/layout.jsx:121-129`
+
+**Masalah:** Di **desktop**, tombol icon Kurasah (book) ada di navbar samping avatar. Di **mobile menu**, link-nya **hilang**. User mobile harus akses Kurasah via tombol floating QuickNote saja (yang hanya muncul di dashboard).
+
+**Fix:** Di mobile menu list (line 120-130), kalau session active, tambahkan link Kurasah:
+```jsx
+{session && (
+  <a onClick={() => { navigate("/kurasah"); setOpen(false); }}
+     className="px-3 py-3 text-base rounded-lg text-ink-muted hover:bg-white/4 flex items-center gap-2">
+    <Icon name="book" className="w-4 h-4"/> Kurasah
+  </a>
+)}
+```
+
+**Prioritas: 🟡 sedang.** Fitur ada tapi gak reachable di mobile = wasted feature.
+
+---
+
+### #8 — Footer Expose Link Admin Publik
+
+**Lokasi:** `src/layout.jsx:170`
+
+**Masalah:** Footer publik menampilkan link "Admin" yang ke `/admin`. Calon Masisir yang penasaran tinggal klik, ketemu form PIN, lihat "Demo PIN: 9090", masuk.
+
+**Fix:** Hapus link Admin dari footer. Admin akses hanya via direct URL `domain.com/#/admin` yang admin tahu sendiri.
+
+**Prioritas: 🟡 sedang.** (Tapi bareng-bareng dengan #2 jadi 🔴.)
+
+---
+
+### #9 — Script Loading Order Fragile
+
+**Lokasi:** `index.html` lines 219-241
+
+**Masalah:** `dashboard.jsx` (line 226) di-load **sebelum** `dashboard-companions.jsx` (line 240). Karena `dashboard.jsx` reference `IntentionStrip`, `RhythmCard`, `ReflectionCard` di JSX, JavaScript hoisting + window-attached pattern bikin ini **kebetulan jalan** (karena reference di evaluate saat React render, bukan saat script execute). Tapi ini fragile — di browser tertentu atau dengan timing tertentu bisa error.
+
+Sama untuk `paths.jsx` (line 228) yang reference `markPresenceToday`.
+
+**Fix:** Reorder script tags supaya dependency lower-level di-load duluan:
+```
+1. icons, ui, data, auth, layout (foundation)
+2. muqaranah-data, intentions-data (data layers)
+3. markdown-render, quick-note, dashboard-companions (shared components)
+4. pages/* (yang reference semua di atas)
+5. app.jsx (last)
+```
+
+**Prioritas: 🟡 sedang.** Fix sebelum bug random terjadi di production.
+
+---
+
+### #10 — Tidak Ada Meta Tags untuk SEO/Sharing
+
+**Lokasi:** `index.html` line 1-12
+
+**Masalah:** Tidak ada `<meta name="description">`, `<meta property="og:image">`, `<meta property="og:title">`, `<meta property="og:description">`, `<meta name="twitter:card">`, atau favicon. Saat link MADAD di-share ke WhatsApp/Telegram/Twitter, preview-nya **kosong dan jelek** — cuma URL doang.
+
+Ini critical untuk produk yang segmen-nya Masisir — mereka pasti share via WhatsApp group. Preview yang jelek = persepsi product yang murahan.
+
+**Fix:** Tambah ke `<head>`:
+```html
+<meta name="description" content="MADAD — Premium AI learning sanctuary untuk Masisir. Belajar lebih cerdas dengan AI yang paham caramu belajar." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="MADAD — Panduan Belajar dengan AI untuk Masisir" />
+<meta property="og:description" content="Premium AI learning sanctuary untuk Masisir. Companion harian: niat, ritme, refleksi. Muqaranah qoul ulama. Kurasah pribadi." />
+<meta property="og:image" content="/assets/og-image.png" />
+<meta property="og:url" content="https://madad.app" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" type="image/png" href="/assets/aigypt-logo.png" />
+<link rel="apple-touch-icon" href="/assets/aigypt-logo.png" />
+```
+
+Plus bikin `og-image.png` 1200x630 dengan logo + tagline + tone sanctuary.
+
+**Prioritas: 🟡 tinggi.** Affecting first impression saat share.
+
+---
+
+## 🟢 NICE-TO-HAVE — Polish & Future
+
+### #11 — Loading State Tidak Ada Saat Babel Compile
+
+**Konteks:** Babel standalone compile semua `.jsx` di browser saat first load — di koneksi lambat (atau Mesir lagi internet jelek), user lihat **blank screen 3-5 detik** sebelum app muncul. Tidak ada loading indicator.
+
+**Fix:** Tambahkan di `<div id="root">` placeholder loading state:
+```html
+<div id="root">
+  <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#C9A86A;">
+    <div style="font-family:'Noto Naskh Arabic',serif;font-size:1.5rem;direction:rtl;opacity:0.7;">
+      بِسْمِ اللَّهِ
+    </div>
+    <div style="margin-top:1rem;font-family:'Crimson Pro',serif;color:#7A6F99;font-size:0.85rem;">
+      MADAD sedang membuka pintu sanctuary...
+    </div>
+  </div>
+</div>
+```
+React render akan auto-replace `#root` content saat mount.
+
+---
+
+### #12 — Tidak Ada Offline Indicator
+
+**Konteks:** Masisir sering akses dari koneksi unstable (Cairo internet bisa flaky). Kalau app offline, semua tetep "kelihatan jalan" karena localStorage, tapi misalnya export Kurasah ke Google Drive (kalau nanti ada feature ini) atau payment akan fail tanpa user tahu kenapa.
+
+**Fix (low priority):** Tambah listener untuk `online`/`offline` event di app.jsx, tampilkan strip kecil "Sedang offline — perubahan tetap tersimpan" di atas navbar.
+
+---
+
+### #13 — Empty State di Tab "Buatan Saya" Muqaranah Layout Bug
+
+**Lokasi:** `src/pages/muqaranah.jsx:168-181`
+
+**Masalah:** Empty state pakai `<div className="pattern-stars opacity-5 absolute inset-0 pointer-events-none rounded-xl"/>` tapi parent-nya tidak `position: relative` — pattern stars-nya akan absolute relatif ke section, bukan ke card itu sendiri. Visually mostly fine karena opacity 5%, tapi technically broken.
+
+**Fix:** Wrap container empty state-nya dengan `relative`.
+
+---
+
+### #14 — `useMemoC` di ReflectionCard Tidak Re-trigger saat Notes Berubah
+
+**Lokasi:** `src/dashboard-companions.jsx:410-412`
+
+```js
+const note      = useMemoC(() => getReflectionOfTheDay(), []);
+const allNotes  = useMemoC(() => loadNotes(), []);
+```
+
+Dependency array `[]` artinya hanya di-compute sekali saat mount. Kalau user buat catatan baru terus kembali ke dashboard tanpa full refresh, ReflectionCard mungkin nampilin data lama.
+
+**Fix:** Tambahkan listener event `madad:refresh`:
+```js
+const [, setTick] = useStateC(0);
+useEffectC(() => {
+  const h = () => setTick(t => t + 1);
+  window.addEventListener("madad:refresh", h);
+  return () => window.removeEventListener("madad:refresh", h);
+}, []);
+const note      = useMemoC(() => getReflectionOfTheDay(), [tick]);
+```
+Tapi sebenarnya ini edge case — refleksi seed-by-date, gak akan ganti dalam hari yang sama anyway. Low priority.
+
+---
+
+### #15 — Tidak Ada Onboarding "Skip" untuk Demo User
+
+Calon member yang lihat landing → klik "Sudah punya kode?" → kalau punya kode demo, mereka onboarding-nya nanya gaya belajar, dst. Ini friction untuk demo run-through. **Tidak critical.**
+
+---
+
+### #16 — Sanctuary Greeting Adaptif berdasarkan Waktu Cairo
+
+**Future enhancement:** Greeting di Dashboard sekarang static "Assalamu'alaikum [name] 🌙". Bisa adaptive:
+- Pagi (subuh-dzuhur Cairo): `صَبَاحَ النُّورِ` + "Selamat pagi"
+- Siang (dzuhur-ashar): "Bagaimana belajarmu hari ini?"
+- Sore (ashar-maghrib): `مَسَاءَ النُّورِ`
+- Malam: 🌙 emoji yang udah ada
+
+Plus emoji 🌙 di greeting itu **OK karena spiritual context** (bulan sabit). Tapi pertimbangkan ganti ke SVG custom buat konsistensi sanctuary.
+
+---
+
+### #17 — Tidak Ada Confirm Saat Logout
+
+User klik "Logout" di navbar — langsung logout tanpa konfirmasi. Untuk sanctuary feel, masuk-keluar harusnya intentional. Mungkin tambah konfirmasi halus: "Yakin ingin keluar? Sampai jumpa lagi."
+
+---
+
+### #18 — Quick Note Floating Button Hanya di Dashboard + Muqaranah Detail
+
+**Lokasi:** dashboard.jsx line 190, muqaranah-detail.jsx line 270
+
+**Masalah:** Quick Note button cuma muncul di 2 page. Di Tool Guide, Learning Path, Ethics — gak ada. Padahal prompt design awal niat-nya **universal** (mount di semua page member-only).
+
+**Fix:** Pindah `<QuickNoteButton/>` ke `app.jsx` jadi sibling dari `<main>` — conditional: `{session && profile?.onboarded && !isAdmin && <QuickNoteButton/>}`. Lalu hapus dari masing-masing page.
+
+---
+
+### #19 — Print/Export Muqaranah ke PDF Tidak Ada
+
+Masisir kadang butuh print materi atau export ke PDF buat referensi offline saat ke kelas. Sekarang gak ada fitur ini. **Future enhancement** — bisa pakai `window.print()` dengan stylesheet print khusus.
+
+---
+
+### #20 — Tag System di Kurasah Tidak Konsisten Antar Source
+
+Kurasah notes punya `tags: string[]` (free-form). Saat user save dari Muqaranah, tag auto-set `[entry.category]` (e.g., "fiqh"). Bagus. **Tapi** tidak ada constraint atau suggestion bahwa user sebaiknya pakai tag yang sama untuk topic serupa. Bisa ada `aqidah`, `Aqidah`, `aqeedah`, `aqaid` semua untuk topic sama. Lowercase enforcement udah ada (line 93 editor), tapi typo masih bisa terjadi.
+
+**Future:** Suggest tags dari yang sudah ada saat user ketik (sudah ada di editor line 136, tapi tidak ada di QuickNote modal). Tambahkan di QuickNote juga.
+
+---
+
+## Summary — Action Items Prioritas
+
+### 🔴 Fix segera (1-2 jam total):
+1. Escape HTML di markdown renderer (XSS fix)
+2. Hapus tampilan "Demo PIN" dari admin login + hapus link Admin dari footer publik
+3. Ganti logic payment auto-confirm jadi manual "Saya sudah bayar"
+
+### 🟡 Polish sanctuary (2-3 jam total):
+4. Hapus semua 🎉 emoji + replace dengan ornamen Arabic/Arabesque
+5. Ganti ⚡ dan 🚀 stage icons dengan SVG custom atau emoji yang lebih tenang
+6. Add Muqaranah/Kurasah/Companion ke Landing + PaymentModal features
+7. Mobile menu: tambah link Kurasah
+8. Reorder script tags di index.html
+9. Add meta tags SEO + favicon + og:image
+
+### 🟢 Quality of life (kalau ada waktu):
+10. Loading state saat Babel compile
+11. ReflectionCard listener madad:refresh
+12. QuickNoteButton universal (di semua page member)
+13. Tag suggestion di QuickNote modal
+14. Logout confirmation halus
+15. Sanctuary greeting time-adaptive
+
+---
+
+## Yang Masih Kurang (Fitur Level)
+
+Fitur-fitur yang **belum ada** dan gue rekomendasikan masuk roadmap setelah polish:
+
+### A. Wirid / Adab Harian Thalib (Future Companion)
+Strip kecil di dashboard yang menampilkan satu adab thalib hari itu (rotasi dari pool ~30 adab dari kitab Adab Al-'Alim wal Muta'allim, Tadzkirah As-Sami', dll). Format: 1 kalimat singkat + sumber kitab. Tujuan: memberi *nasihat thalib* harian, bukan tip productivity.
+
+### B. Mode Tahsin / Tilawah Tracker
+Sub-modul di Learning Path untuk Masisir yang lagi tahsin Qur'an. Tracking simple: surat apa, juz berapa, target khatam berapa lama. Tetap pakai pola "kehadiran" bukan "streak".
+
+### C. Jadwal Doros Al-Azhar Generic (Optional)
+Calendar view kustom untuk user input jadwal kelas mereka di Azhar/mahad — supaya bisa rencanakan kapan pakai AI dan kapan tidak (saat di kelas). Tetap simpel — bukan Google Calendar replacement.
+
+### D. Komunitas (Hati-hati)
+**Hindari fitur sosial yang bikin distraction.** Kalau pun mau, paling jauh: "Berbagi Muqaranah Buatanmu" lewat link sharable yang readonly (public). Tidak ada komen, like, atau interaksi sosial lain. Sanctuary harus tetap quiet.
+
+### E. Hafalan Helper Sederhana
+Sub-fitur di Learning Path — flashcard sederhana untuk hafalan istilah ushul/musthalah. Tetap dalam tone sanctuary, tidak gamified.
+
+---
+
+## Penutup
+
+Repo ini **state-nya udah sangat decent** — implementasi 3 modul terakhir dilakukan dengan disiplin sanctuary yang impressive. Yang menahan dia dari "production-grade premium" adalah 3 critical issue (#1, #2, #3) plus polish anti-pattern (#4, #5) yang nyelinap dari implementasi sebelumnya.
+
+**Estimasi 4-6 jam fokus untuk semua 🔴 + 🟡** dan repo ini siap launch dengan kepala tegak.
+
+والله ولي التوفيق.
