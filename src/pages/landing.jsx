@@ -1,16 +1,28 @@
-/* Madad — Landing page v3: full redesign dengan animasi dan kaligrafi */
+/* Madad — Landing page v4: cinematic redesign dengan font Arab hidup dan pola geometrik Islam */
 
 const { useState, useEffect, useRef } = React;
 
 /* ── Inline styles injected once ──────────────────────────────── */
 const LANDING_STYLES = `
+  /* ── Fonts ── */
+  .kali-display  { font-family: "Lalezar", "Noto Naskh Arabic", serif; direction: rtl; }
+  .kali-elegant  { font-family: "Aref Ruqaa", "Scheherazade New", serif; direction: rtl; }
+  .kali-body     { font-family: "Scheherazade New", "Noto Naskh Arabic", serif; direction: rtl; }
+
+  /* ── Keyframes ── */
   @keyframes floatY {
     0%,100% { transform: translateY(0px) rotate(0deg); }
-    50%      { transform: translateY(-18px) rotate(1.5deg); }
+    50%      { transform: translateY(-22px) rotate(1deg); }
   }
   @keyframes floatY2 {
     0%,100% { transform: translateY(0px) rotate(0deg); }
-    50%      { transform: translateY(-12px) rotate(-1deg); }
+    33%      { transform: translateY(-14px) rotate(-0.8deg); }
+    66%      { transform: translateY(-8px) rotate(0.4deg); }
+  }
+  @keyframes floatSlow {
+    0%,100% { transform: translateY(0px) translateX(0px); }
+    25%      { transform: translateY(-10px) translateX(6px); }
+    75%      { transform: translateY(6px) translateX(-4px); }
   }
   @keyframes shimmerText {
     0%   { background-position: 200% center; }
@@ -20,88 +32,178 @@ const LANDING_STYLES = `
     from { transform: rotate(0deg); }
     to   { transform: rotate(360deg); }
   }
+  @keyframes rotateReverse {
+    from { transform: rotate(360deg); }
+    to   { transform: rotate(0deg); }
+  }
   @keyframes pulseRing {
-    0%   { transform: scale(1);   opacity: 0.6; }
-    70%  { transform: scale(1.5); opacity: 0; }
-    100% { transform: scale(1.5); opacity: 0; }
+    0%   { transform: scale(1);   opacity: 0.5; }
+    70%  { transform: scale(1.6); opacity: 0; }
+    100% { transform: scale(1.6); opacity: 0; }
   }
   @keyframes marqueeLTR {
     0%   { transform: translateX(0); }
     100% { transform: translateX(-50%); }
   }
-  @keyframes countUp {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: none; }
-  }
-  @keyframes drawLine {
-    from { stroke-dashoffset: 400; }
-    to   { stroke-dashoffset: 0; }
-  }
-  @keyframes fadeScale {
-    from { opacity: 0; transform: scale(0.94); }
-    to   { opacity: 1; transform: scale(1); }
-  }
   @keyframes goldGlow {
-    0%,100% { text-shadow: 0 0 20px rgba(201,168,106,0.3); }
-    50%      { text-shadow: 0 0 40px rgba(201,168,106,0.7), 0 0 80px rgba(201,168,106,0.3); }
+    0%,100% { text-shadow: 0 0 24px rgba(201,168,106,0.4), 0 2px 8px rgba(0,0,0,0.5); }
+    50%      { text-shadow: 0 0 60px rgba(201,168,106,0.85), 0 0 120px rgba(201,168,106,0.35), 0 2px 8px rgba(0,0,0,0.5); }
   }
-  @keyframes borderSpin {
+  @keyframes goldGlowSubtle {
+    0%,100% { text-shadow: 0 0 16px rgba(201,168,106,0.25); }
+    50%      { text-shadow: 0 0 36px rgba(201,168,106,0.55), 0 0 70px rgba(201,168,106,0.2); }
+  }
+  @keyframes scanBeam {
+    0%   { transform: translateX(-120%) skewX(-12deg); opacity: 0; }
+    8%   { opacity: 1; }
+    92%  { opacity: 0.6; }
+    100% { transform: translateX(220%) skewX(-12deg); opacity: 0; }
+  }
+  @keyframes starAppear {
+    0%   { opacity: 0; transform: scale(0); }
+    50%  { opacity: 1; transform: scale(1); }
+    100% { opacity: 0; transform: scale(0); }
+  }
+  @keyframes breathe {
+    0%,100% { transform: scale(1); opacity: 0.6; }
+    50%      { transform: scale(1.08); opacity: 1; }
+  }
+  @keyframes inkReveal {
+    0%   { opacity: 0; transform: translateY(16px) scale(0.97); filter: blur(4px); }
+    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+  }
+  @keyframes borderFlow {
     0%   { background-position: 0% 50%; }
-    100% { background-position: 200% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
-  .landing-float  { animation: floatY 7s ease-in-out infinite; }
-  .landing-float2 { animation: floatY2 9s ease-in-out infinite; }
-  .landing-rotate { animation: rotateSlow 40s linear infinite; }
-  .landing-glow   { animation: goldGlow 3s ease-in-out infinite; }
-  .marquee-track  { animation: marqueeLTR 28s linear infinite; }
+  @keyframes patternDrift {
+    0%   { background-position: 0px 0px; }
+    100% { background-position: 80px 80px; }
+  }
+
+  /* ── Utility classes ── */
+  .landing-float        { animation: floatY 8s ease-in-out infinite; }
+  .landing-float2       { animation: floatY2 11s ease-in-out infinite; }
+  .landing-float-slow   { animation: floatSlow 14s ease-in-out infinite; }
+  .landing-rotate       { animation: rotateSlow 50s linear infinite; }
+  .landing-rotate-rev   { animation: rotateReverse 38s linear infinite; }
+  .landing-breathe      { animation: breathe 5s ease-in-out infinite; }
+  .landing-glow         { animation: goldGlow 3.5s ease-in-out infinite; }
+  .landing-glow-subtle  { animation: goldGlowSubtle 5s ease-in-out infinite; }
+  .landing-ink-reveal   { animation: inkReveal 0.9s cubic-bezier(0.22,1,0.36,1) both; }
+  .marquee-track        { animation: marqueeLTR 28s linear infinite; }
 
   .gradient-text-live {
-    background: linear-gradient(120deg, #DBC8FF 0%, #E8D0A0 30%, #A970FF 60%, #DBC8FF 100%);
-    background-size: 200% auto;
+    background: linear-gradient(120deg, #DBC8FF 0%, #E8D0A0 28%, #A970FF 55%, #E8D0A0 78%, #DBC8FF 100%);
+    background-size: 300% auto;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    animation: shimmerText 4s linear infinite;
+    animation: shimmerText 5s linear infinite;
   }
-  .section-full { min-height: 100vh; display: flex; align-items: center; }
+
+  /* ── Hero background calligraphy — Lalezar font ── */
   .hero-kali {
-    font-family: "Noto Naskh Arabic", Amiri, serif;
+    font-family: "Lalezar", "Noto Naskh Arabic", serif;
     direction: rtl;
-    line-height: 1.8;
-    background: linear-gradient(180deg, rgba(201,168,106,0.9) 0%, rgba(201,168,106,0.25) 100%);
+    line-height: 1.4;
+    background: linear-gradient(160deg, rgba(217,189,133,0.95) 0%, rgba(201,168,106,0.6) 50%, rgba(169,112,255,0.3) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     pointer-events: none;
     user-select: none;
   }
-  .pain-item {
-    border-left: 2px solid rgba(124,77,255,0.3);
-    padding-left: 16px;
-    transition: border-color .3s ease;
+  .hero-kali-side {
+    font-family: "Aref Ruqaa", serif;
+    direction: rtl;
+    line-height: 1.9;
+    pointer-events: none;
+    user-select: none;
   }
-  .pain-item:hover { border-color: rgba(201,168,106,0.7); }
+
+  /* ── Islamic geometric pattern overlay ── */
+  .pattern-geo {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cpolygon points='40,4 47,22 66,16 54,33 72,40 54,47 66,64 47,58 40,76 33,58 14,64 26,47 8,40 26,33 14,16 33,22' fill='none' stroke='rgba(201,168,106,0.12)' stroke-width='0.7'/%3E%3Cpolygon points='40,16 46,28 59,28 59,52 46,52 40,64 34,52 21,52 21,28 34,28' fill='none' stroke='rgba(169,112,255,0.07)' stroke-width='0.5'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    animation: patternDrift 40s linear infinite;
+  }
+
+  /* ── Scan-beam light ── */
+  .scan-beam {
+    position: absolute;
+    top: -20%;
+    left: 0;
+    width: 140px;
+    height: 140%;
+    background: linear-gradient(90deg, transparent 0%, rgba(217,189,133,0.06) 40%, rgba(217,189,133,0.12) 50%, rgba(217,189,133,0.06) 60%, transparent 100%);
+    animation: scanBeam 9s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  /* ── Floating star sparks ── */
+  .star-spark {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: rgba(217,189,133,0.9);
+    animation: starAppear 4s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  /* ── Ornament ring system ── */
+  .ring-outer { border: 1px solid rgba(201,168,106,0.12); border-radius: 50%; }
+  .ring-mid   { border: 1px dashed rgba(124,77,255,0.18); border-radius: 50%; }
+  .ring-inner { border: 1px solid rgba(201,168,106,0.22); border-radius: 50%; }
+
+  .section-full { min-height: 100vh; display: flex; align-items: center; }
+
+  .pain-item {
+    border-left: 2px solid rgba(124,77,255,0.25);
+    padding-left: 16px;
+    transition: border-color .3s ease, background .3s ease;
+    border-radius: 0 6px 6px 0;
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+  .pain-item:hover {
+    border-color: rgba(201,168,106,0.65);
+    background: rgba(201,168,106,0.03);
+  }
   .mapel-pill {
-    background: rgba(17,6,31,0.7);
-    border: 1px solid rgba(169,112,255,0.14);
+    background: rgba(17,6,31,0.75);
+    border: 1px solid rgba(169,112,255,0.12);
     border-radius: 10px;
     padding: 10px 14px;
-    transition: all .2s ease;
-    backdrop-filter: blur(12px);
+    transition: all .25s ease;
+    backdrop-filter: blur(14px);
+    position: relative;
+    overflow: hidden;
   }
+  .mapel-pill::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(201,168,106,0.06) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity .25s ease;
+  }
+  .mapel-pill:hover::before { opacity: 1; }
   .mapel-pill:hover {
-    border-color: rgba(201,168,106,0.45);
-    background: rgba(201,168,106,0.07);
-    transform: translateY(-2px);
+    border-color: rgba(201,168,106,0.4);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px -8px rgba(201,168,106,0.2);
   }
   .step-connector {
     width: 2px;
-    background: linear-gradient(180deg, rgba(124,77,255,0.6) 0%, rgba(201,168,106,0.4) 100%);
+    background: linear-gradient(180deg, rgba(124,77,255,0.5) 0%, rgba(201,168,106,0.35) 100%);
     flex-shrink: 0;
   }
   .price-badge {
-    background: linear-gradient(135deg, rgba(201,168,106,0.22) 0%, rgba(201,168,106,0.08) 100%);
-    border: 1px solid rgba(201,168,106,0.35);
+    background: linear-gradient(135deg, rgba(201,168,106,0.2) 0%, rgba(201,168,106,0.06) 100%);
+    border: 1px solid rgba(201,168,106,0.3);
     border-radius: 12px;
     padding: 4px 12px;
     font-size: 12px;
@@ -110,17 +212,38 @@ const LANDING_STYLES = `
   }
   .ticker-wrap { overflow: hidden; width: 100%; }
   .vs-pill {
-    background: rgba(25,11,56,0.8);
-    border: 1px solid rgba(169,112,255,0.2);
-    border-radius: 8px;
-    padding: 14px 18px;
+    background: rgba(22,9,50,0.85);
+    border: 1px solid rgba(169,112,255,0.18);
+    border-radius: 10px;
+    padding: 16px 20px;
+    backdrop-filter: blur(12px);
   }
   .cta-border-anim {
     position: relative;
     background: linear-gradient(#080312, #080312) padding-box,
-                linear-gradient(135deg, rgba(201,168,106,0.8), rgba(124,77,255,0.6), rgba(201,168,106,0.8)) border-box;
+                linear-gradient(135deg, rgba(201,168,106,0.85), rgba(124,77,255,0.65), rgba(201,168,106,0.85)) border-box;
+    background-size: 200% 200%;
     border: 1px solid transparent;
     border-radius: 20px;
+    animation: borderFlow 6s ease infinite;
+  }
+  .feature-card-glow:hover {
+    box-shadow: 0 0 0 1px rgba(201,168,106,0.2), 0 16px 48px -12px rgba(124,77,255,0.3);
+  }
+  .kali-center-text {
+    font-family: "Lalezar", serif;
+    direction: rtl;
+    line-height: 1.5;
+  }
+  .step-kali {
+    font-family: "Aref Ruqaa", serif;
+    direction: rtl;
+    line-height: 1.8;
+  }
+  .final-cta-kali {
+    font-family: "Lalezar", serif;
+    direction: rtl;
+    line-height: 1.6;
   }
 `;
 
@@ -182,42 +305,89 @@ const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
   </div>
 );
 
+/* ── Star sparks dekoratif ─────────────────────────────────── */
+const StarSparks = () => {
+  const sparks = [
+    { top: "18%", left: "12%", delay: "0s", size: 3 },
+    { top: "72%", left: "8%",  delay: "1.4s", size: 2 },
+    { top: "35%", left: "88%", delay: "0.7s", size: 3 },
+    { top: "62%", left: "82%", delay: "2.1s", size: 2 },
+    { top: "14%", left: "55%", delay: "3.2s", size: 2 },
+    { top: "88%", left: "45%", delay: "1.8s", size: 3 },
+    { top: "48%", left: "4%",  delay: "2.6s", size: 2 },
+    { top: "22%", left: "76%", delay: "0.3s", size: 2 },
+  ];
+  return (
+    <>
+      {sparks.map((s, i) => (
+        <div key={i} className="star-spark" style={{
+          top: s.top, left: s.left,
+          width: s.size, height: s.size,
+          animationDelay: s.delay,
+          animationDuration: `${3.5 + i * 0.4}s`,
+        }} />
+      ))}
+    </>
+  );
+};
+
 /* ══════════════════════════════════════════════════════════════
    1. HERO — Full viewport, kaligrafi besar, emotional headline
    ══════════════════════════════════════════════════════════════ */
 const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
   <section className="relative overflow-hidden" style={{ minHeight: "100vh", display: "flex", alignItems: "center", paddingTop: "80px" }}>
 
-    {/* Background blobs */}
-    <Blob color="rgba(124,77,255,0.32)" size={900} top={-300} right={-200} />
-    <Blob color="rgba(201,168,106,0.14)" size={700} top={300} left={-250} />
-    <Blob color="rgba(92,53,204,0.22)" size={600} top={100} left={200} />
+    {/* Background blobs — lebih dalam dan dramatis */}
+    <Blob color="rgba(124,77,255,0.38)" size={1000} top={-350} right={-250} />
+    <Blob color="rgba(201,168,106,0.13)" size={800} top={250} left={-300} />
+    <Blob color="rgba(92,53,204,0.28)" size={700} top={80} left={150} />
+    <Blob color="rgba(201,168,106,0.08)" size={500} top={400} right={100} />
 
-    {/* Pattern */}
-    <div className="absolute inset-0 pattern-stars opacity-30 pointer-events-none" />
+    {/* Islamic geometric pattern overlay */}
+    <div className="absolute inset-0 pattern-geo opacity-100 pointer-events-none" style={{ opacity: 0.6 }} />
 
-    {/* Kaligrafi besar di background ─ floating */}
+    {/* Pattern stars layer */}
+    <div className="absolute inset-0 pattern-stars opacity-20 pointer-events-none" />
+
+    {/* Radial glow behind calligraphy */}
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      <div style={{
+        width: "600px", height: "600px",
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(201,168,106,0.07) 0%, rgba(124,77,255,0.05) 40%, transparent 70%)",
+        filter: "blur(40px)",
+      }} />
+    </div>
+
+    {/* Scan beam cahaya */}
+    <div className="scan-beam" style={{ animationDelay: "2s" }} />
+
+    {/* Star sparks */}
+    <StarSparks />
+
+    {/* Kaligrafi besar di background — Lalezar, sangat dramatis */}
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-      <div className="landing-float" style={{ opacity: 0.055 }}>
-        <div className="hero-kali" style={{ fontSize: "clamp(120px,22vw,280px)", fontWeight: 700, letterSpacing: "0.02em" }}>
+      <div className="landing-float" style={{ opacity: 0.065 }}>
+        <div className="hero-kali" style={{ fontSize: "clamp(130px,24vw,320px)", letterSpacing: "0.01em" }}>
           اقْرَأْ
         </div>
       </div>
     </div>
 
-    {/* Ornamen kaligrafi kanan ─ melayang */}
-    <div className="absolute right-8 top-1/3 pointer-events-none select-none hidden lg:block landing-float2">
-      <div className="hero-kali" style={{ fontSize: "72px", opacity: 0.18, fontWeight: 400 }}>
+    {/* Ornamen kaligrafi kanan — Aref Ruqaa */}
+    <div className="absolute right-6 top-1/3 pointer-events-none select-none hidden lg:flex flex-col items-end gap-1 landing-float2" style={{ animationDelay: "1s" }}>
+      <div className="hero-kali-side text-gold-400" style={{ fontSize: "64px", opacity: 0.22, lineHeight: 1.6 }}>
         بِسْمِ اللَّهِ
       </div>
+      <div className="w-16 h-px ml-auto" style={{ background: "linear-gradient(90deg, transparent, rgba(201,168,106,0.3))" }} />
     </div>
 
-    {/* Ornamen kiri */}
-    <div className="absolute left-4 bottom-1/3 pointer-events-none select-none hidden lg:block landing-float" style={{ animationDelay: "2s" }}>
-      <div className="hero-kali" style={{ fontSize: "48px", opacity: 0.13, fontWeight: 400 }}>
+    {/* Ornamen kiri — Aref Ruqaa */}
+    <div className="absolute left-4 bottom-1/3 pointer-events-none select-none hidden lg:block landing-float-slow" style={{ animationDelay: "3s" }}>
+      <div className="hero-kali-side text-violet-300" style={{ fontSize: "38px", opacity: 0.16, lineHeight: 2, textAlign: "right" }}>
         وَمَا أُوتِيتُم
       </div>
-      <div className="hero-kali" style={{ fontSize: "48px", opacity: 0.13, fontWeight: 400 }}>
+      <div className="hero-kali-side text-violet-300" style={{ fontSize: "38px", opacity: 0.16, lineHeight: 2, textAlign: "right" }}>
         مِّنَ الْعِلْمِ
       </div>
     </div>
@@ -225,8 +395,15 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
     <div className="container-x relative w-full">
       <div className="max-w-3xl mx-auto text-center">
 
-        {/* Chip */}
+        {/* Arabic ornament kecil di atas chip */}
         <Reveal>
+          <div className="kali-elegant text-gold-500 mb-3 opacity-40 landing-glow-subtle" style={{ fontSize: "22px", letterSpacing: "0.1em" }}>
+            ✦ ─────── ✦ ─────── ✦
+          </div>
+        </Reveal>
+
+        {/* Chip */}
+        <Reveal delay={50}>
           <div className="chip chip-glass text-xs mb-7 inline-flex items-center gap-2 mx-auto">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75" />
@@ -237,7 +414,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         </Reveal>
 
         {/* Headline besar */}
-        <Reveal delay={100}>
+        <Reveal delay={120}>
           <h1 className="font-display leading-[1.03] tracking-tightest mb-6" style={{ fontSize: "clamp(48px,7vw,88px)", fontWeight: 600 }}>
             <span className="text-ink">Kuliah di Azhar itu</span>{" "}
             <span className="gradient-text-live">berat.</span>
@@ -248,7 +425,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         </Reveal>
 
         {/* Sub */}
-        <Reveal delay={220}>
+        <Reveal delay={240}>
           <p className="text-ink-muted leading-relaxed mx-auto mb-10" style={{ fontSize: "clamp(16px,2vw,20px)", maxWidth: "620px" }}>
             Panduan AI yang mengerti maqarrar Al-Azhar — dari Fiqh, Hadith, Ushul, sampai Nahwu dan Balaghah.
             Bukan AI biasa, tapi<span className="text-gold-300 font-medium"> konsultan belajar pribadi</span> yang menyesuaikan gaya belajarmu.
@@ -256,11 +433,11 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         </Reveal>
 
         {/* CTAs */}
-        <Reveal delay={360}>
+        <Reveal delay={380}>
           <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
             <button onClick={onOpenPayment}
               className="btn btn-gold text-base px-8 py-4"
-              style={{ fontSize: "16px", boxShadow: "0 0 40px rgba(201,168,106,0.35), 0 1px 0 rgba(255,255,255,0.35) inset" }}>
+              style={{ fontSize: "16px", boxShadow: "0 0 50px rgba(201,168,106,0.4), 0 0 100px rgba(201,168,106,0.15), 0 1px 0 rgba(255,255,255,0.35) inset" }}>
               <Icon name="sparkles" className="w-5 h-5" />
               Gabung Member — Rp 49.000
             </button>
@@ -272,7 +449,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         </Reveal>
 
         {/* Social proof mini */}
-        <Reveal delay={480}>
+        <Reveal delay={500}>
           <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-ink-soft">
             {[
               { icon: "check", text: "Sekali bayar, akses seumur hidup" },
@@ -286,12 +463,19 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
             ))}
           </div>
         </Reveal>
+
+        {/* Arabic ornament bawah */}
+        <Reveal delay={600}>
+          <div className="kali-display text-gold-500 mt-8 opacity-20 landing-breathe" style={{ fontSize: "28px", letterSpacing: "0.15em" }}>
+            ﷽
+          </div>
+        </Reveal>
       </div>
 
       {/* Scroll indicator */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-ink-soft">
         <span className="text-[11px] tracking-[0.15em] uppercase">Scroll</span>
-        <div className="w-px h-8 bg-gradient-to-b from-violet-400/50 to-transparent" />
+        <div className="w-px h-10 bg-gradient-to-b from-violet-400/60 to-transparent" style={{ animation: "floatY 2s ease-in-out infinite" }} />
       </div>
     </div>
   </section>
@@ -370,23 +554,26 @@ const PainSection = () => (
         <Reveal delay={300} className="hidden lg:flex flex-col items-center justify-center">
           <div className="relative">
             {/* Ring dekoratif */}
-            <div className="landing-rotate absolute inset-0 m-auto rounded-full"
-              style={{ width: "320px", height: "320px", border: "1px solid rgba(201,168,106,0.15)", top: 0, left: 0 }} />
-            <div className="landing-rotate absolute inset-0 m-auto rounded-full"
-              style={{ width: "260px", height: "260px", border: "1px dashed rgba(124,77,255,0.2)", animationDirection: "reverse", top: "30px", left: "30px" }} />
+            <div className="landing-rotate ring-outer absolute"
+              style={{ width: "340px", height: "340px", top: "50%", left: "50%", transform: "translate(-50%,-50%)", position: "absolute" }} />
+            <div className="landing-rotate-rev ring-mid absolute"
+              style={{ width: "275px", height: "275px", top: "50%", left: "50%", transform: "translate(-50%,-50%)", position: "absolute" }} />
+            <div className="landing-breathe ring-inner absolute"
+              style={{ width: "210px", height: "210px", top: "50%", left: "50%", transform: "translate(-50%,-50%)", position: "absolute" }} />
 
-            {/* Kaligrafi tengah */}
+            {/* Kaligrafi tengah — Lalezar display + Aref Ruqaa elegant */}
             <div className="relative z-10 text-center p-16">
-              <div className="arabic text-gold-300 landing-glow" style={{ fontSize: "52px", fontWeight: 600, lineHeight: 2 }}>
+              <div className="kali-display text-gold-300 landing-glow" style={{ fontSize: "58px", lineHeight: 1.7 }}>
                 طَلَبُ الْعِلْمِ
               </div>
-              <div className="arabic text-gold-400" style={{ fontSize: "40px", fontWeight: 400, lineHeight: 2 }}>
+              <div className="kali-display text-gold-400 landing-glow-subtle" style={{ fontSize: "46px", lineHeight: 1.7 }}>
                 فَرِيضَةٌ
               </div>
-              <div className="arabic text-ink-muted" style={{ fontSize: "28px", lineHeight: 2 }}>
+              <div className="kali-elegant text-ink-muted" style={{ fontSize: "30px", lineHeight: 1.9 }}>
                 عَلَى كُلِّ مُسْلِمٍ
               </div>
-              <p className="text-xs text-ink-soft mt-4 italic">"Menuntut ilmu itu wajib atas setiap Muslim." — HR. Ibn Majah</p>
+              <div className="w-16 h-px mx-auto my-3" style={{ background: "linear-gradient(90deg, transparent, rgba(201,168,106,0.4), transparent)" }} />
+              <p className="text-xs text-ink-soft italic">"Menuntut ilmu itu wajib atas setiap Muslim." — HR. Ibn Majah</p>
             </div>
           </div>
         </Reveal>
@@ -652,6 +839,7 @@ const HowItWorks = () => {
     {
       num: "01",
       kali: "نِيَّة",
+      kaliMeaning: "Niyyah",
       title: "Isi profil belajarmu",
       body: "4 pertanyaan singkat: fakultas, semester, mata pelajaran yang sulit, dan gaya belajarmu. Tidak sampai 2 menit.",
       detail: "Onboarding cepat · Bisa diubah kapan saja",
@@ -659,6 +847,7 @@ const HowItWorks = () => {
     {
       num: "02",
       kali: "عِلْم",
+      kaliMeaning: "'Ilm",
       title: "Dapat panduan yang personal",
       body: "MADAD menampilkan panduan AI yang disesuaikan — mata pelajaran yang relevan, prompt yang cocok dengan caramu belajar.",
       detail: "Adaptive · Per fakultas · Per gaya belajar",
@@ -666,6 +855,7 @@ const HowItWorks = () => {
     {
       num: "03",
       kali: "فَهْم",
+      kaliMeaning: "Fahm",
       title: "Belajar lebih efektif setiap hari",
       body: "Salin prompt, pakai di AI favoritmu, dan mulai belajar. Simpan hasil di kurasah. Ulang besok.",
       detail: "Claude · ChatGPT · Gemini · NotebookLM",
@@ -704,7 +894,10 @@ const HowItWorks = () => {
                 <div className="pb-10 flex-1">
                   <div className="flex items-start gap-4 mb-3">
                     <div>
-                      <div className="arabic text-gold-400 opacity-60 mb-1" style={{ fontSize: "22px", lineHeight: 1.6 }}>{s.kali}</div>
+                      <div className="flex items-baseline gap-2 mb-1">
+                        <div className="step-kali text-gold-400" style={{ fontSize: "26px", lineHeight: 1.6 }}>{s.kali}</div>
+                        <span className="text-xs text-gold-600 font-mono tracking-wide">{s.kaliMeaning}</span>
+                      </div>
                       <h3 className="font-display text-2xl font-semibold text-ink">{s.title}</h3>
                     </div>
                   </div>
@@ -807,11 +1000,15 @@ const FinalCTA = ({ onOpenPayment }) => (
     <div className="container-x">
       <div className="divider-arabesque mb-16" />
 
-      {/* Kaligrafi besar di tengah */}
+      {/* Kaligrafi besar di tengah — Lalezar, sangat hidup */}
       <Reveal className="text-center mb-10">
-        <div className="arabic landing-glow mb-2" style={{ fontSize: "clamp(42px,8vw,80px)", fontWeight: 700, lineHeight: 1.8, color: "#D9BD85" }}>
+        <div className="text-gold-600 opacity-40 mb-4 landing-breathe" style={{ fontSize: "18px", letterSpacing: "0.3em" }}>
+          ✦ ─────────── ✦ ─────────── ✦
+        </div>
+        <div className="final-cta-kali landing-glow mb-1" style={{ fontSize: "clamp(44px,9vw,90px)", color: "#D9BD85" }}>
           وَقُل رَّبِّ زِدْنِي عِلْمًا
         </div>
+        <div className="w-24 h-px mx-auto my-4" style={{ background: "linear-gradient(90deg, transparent, rgba(201,168,106,0.5), transparent)" }} />
         <p className="text-ink-muted italic text-base mb-1">"Dan katakanlah: Ya Tuhanku, tambahkanlah ilmuku."</p>
         <p className="text-ink-soft text-sm mb-12">— QS. Thaha: 114</p>
       </Reveal>

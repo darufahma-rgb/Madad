@@ -1,0 +1,242 @@
+# MADAD — Rekomendasi Font Arab per Use Case
+
+## TL;DR
+
+Saat ini lo pakai **Noto Naskh Arabic** untuk semua. Itu OK tapi **tidak optimal** — Naskh adalah font *body text*, jadi terasa kurang punya presence saat dipakai di heading besar, dan kurang elegant untuk kutipan ayat yang butuh weight emosional.
+
+**Rekomendasi gue: 3-tier system.**
+
+| Tier | Use Case | Font | Pairing dengan teks Latin |
+|---|---|---|---|
+| **Display** | Heading besar, judul section, kaligrafi atsar | **Reem Kufi** atau **Aref Ruqaa** | Crimson Pro |
+| **Body** | Paragraf, dalil, terjemah, body kitab | **Noto Naskh Arabic** (yang sekarang) | Inter |
+| **UI / Inline** | Chip, label, nama ulama inline, footnote | **Noto Kufi Arabic** atau **IBM Plex Sans Arabic** | Inter |
+
+Semua tersedia free di Google Fonts. Tinggal tambah ke link Google Fonts existing.
+
+---
+
+## Analisis Mendalam Setiap Font
+
+### Tier 1 — Display (Heading & Decorative Quote)
+
+Pakai untuk: ukuran ≥ text-2xl, heading section, ayat/atsar besar yang jadi visual anchor, judul Muqaranah, Bismillah ornament.
+
+#### ★ Pilihan #1 — **Reem Kufi**
+- **Karakter:** Modern kufi geometris, clean, sangat premium
+- **Sweet spot:** Heading 2xl-7xl
+- **Mood:** Linear/Apple meets Islamic — *exactly* sanctuary vibe MADAD
+- **Kekurangan:** Tidak ideal untuk body text panjang (terlalu geometric, capek dibaca > 2 baris)
+- **Contoh pemakaian di MADAD:**
+  - Bismillah ornament: `بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ`
+  - Judul section landing (kalau ada Arab heading)
+  - "Muqaranah" → `المقارنة`
+  - "Kurasah" → `كراستي`
+
+#### ★ Pilihan #2 — **Aref Ruqaa**
+- **Karakter:** Style ruqʿah (gaya tulis tangan Arab klasik), warm, sangat *thalib-flavor*
+- **Sweet spot:** Heading 3xl-6xl, kutipan dengan emotional weight
+- **Mood:** Cairo old-school, terasa kayak tulisan tangan ustadz di papan tulis
+- **Kekurangan:** Tidak modern — kalau dipakai sembarangan bisa konflik dengan vibe Linear/Apple
+- **Contoh pemakaian:**
+  - Atsar di Kurasah empty state: `قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ` ← **ini paling cocok pakai Aref Ruqaa**
+  - Greeting `السلام عليكم` di Dashboard hero
+  - Niat klasik di IntentionStrip
+
+**Saran kombinasi:** Pakai **Reem Kufi** untuk ornamental modern (Bismillah, brand mark Arab), pakai **Aref Ruqaa** untuk emotional quote (atsar, hadits, niat). Dua-duanya jangan dipakai untuk body text.
+
+#### Pilihan #3 (Alternatif) — **Scheherazade New**
+- **Karakter:** Naskh tradisional yang scale-nya bagus dari kecil ke besar
+- **Sweet spot:** Universal, bisa display dan body (tapi tidak unggul di dua-duanya)
+- **Kapan dipakai:** Kalau lo cuma mau 1 font dan males maintain 2-3 font. Tapi gue rekomendasi **tidak**.
+
+#### Pilihan #4 (Decorative khusus) — **Amiri Quran**
+- Khusus untuk teks Qur'an dengan harakat lengkap dan tanda waqaf
+- Sangat akurat secara mushaf, tapi terasa "old academic"
+- **Pakai kalau:** ada section khusus tilawah/hafalan yang nampilin ayat Qur'an dengan format mushaf
+- **Jangan pakai untuk:** UI generic atau heading non-Qur'an
+
+---
+
+### Tier 2 — Body (Paragraf, Dalil, Terjemah)
+
+Pakai untuk: paragraf Arab > 2 baris, dalil panjang, terjemahan harfiah, body kitab di Kurasah.
+
+#### ★ Pilihan #1 (yang sudah dipakai) — **Noto Naskh Arabic**
+- **Karakter:** Naskh klasik versi Google, readability tinggi, harakat jelas
+- **Sweet spot:** Body text ukuran sm-xl, paragraf panjang
+- **Mood:** Netral akademik — sempurna untuk content
+- **Kekurangan:** Kurang punya presence di display besar (3xl+), itu bukan job-nya
+- **Verdict:** **Pertahankan** untuk body. Just don't use it for big headings.
+
+#### Pilihan #2 (Alternatif) — **Amiri**
+- **Karakter:** Naskh klasik gaya Bulaq/Kairo (era Mesir lama)
+- **Sweet spot:** Body text dengan emotional warmth
+- **Mood:** Cairo classical — sangat *Masisir*
+- **Kekurangan:** Sedikit lebih "old-feel" dibanding Noto, tidak cocok untuk UI modern
+- **Pakai kalau:** lo mau ngerasain Cairo lebih kuat. Tapi gue rekomendasi tetep Noto untuk konsistensi modern.
+
+#### Pilihan #3 — **Lateef**
+- Naskh ringan, sangat readable, tapi sedikit kurang character. Skip.
+
+---
+
+### Tier 3 — UI / Inline (Chip, Label, Footnote, Nama Ulama)
+
+Pakai untuk: text-xs sampai text-sm, chip madzhab Arab, nama ulama inline di prose, footnote sumber kitab, tag Arab.
+
+#### ★ Pilihan #1 — **Noto Kufi Arabic**
+- **Karakter:** Kufi modern sans-serif, geometri lebih clean dari Reem Kufi
+- **Sweet spot:** Inline UI element, label kecil, button text
+- **Mood:** Tech-forward, matches Inter
+- **Pairing dengan Inter:** EXCELLENT — sama-sama clean, sama-sama sans
+- **Kekurangan:** Tidak cocok untuk paragraf > 1 baris (geometric fatigue)
+- **Contoh pemakaian:**
+  - Chip madzhab: `الشافعية` 
+  - Tag muqaranah: `الفقه`, `الأصول`
+  - Inline scholar name reference dalam prose
+  - Footnote sumber: `الأم · المغني`
+
+#### ★ Pilihan #2 — **IBM Plex Sans Arabic**
+- **Karakter:** Sans-serif Arab yang sangat premium (dibuat oleh IBM, paired dengan IBM Plex)
+- **Sweet spot:** UI label, navigation, button
+- **Mood:** International corporate-clean, paling "tech product feel"
+- **Pairing dengan Inter:** GOOD — keduanya sans modern
+- **Kekurangan:** Bisa terasa terlalu corporate untuk vibe spiritual MADAD kalau dipakai berlebihan
+- **Pakai kalau:** lo mau UI Arab terasa lebih "produk" daripada "manuscript"
+
+#### Pilihan #3 — **Cairo** (font Google)
+- Sans-serif Arab modern dengan beberapa weight
+- Lebih playful dan rounder dari Noto Kufi
+- **Tidak rekomendasi** untuk MADAD — terlalu friendly/casual, melanggar sanctuary mood
+
+---
+
+## Saran Implementasi Konkret untuk MADAD
+
+### Stack Final yang Gue Rekomendasi
+
+```css
+/* TIER 1 — DISPLAY */
+.arabic-display-modern    { font-family: "Reem Kufi", "Noto Kufi Arabic", sans-serif; }
+.arabic-display-classical { font-family: "Aref Ruqaa", "Amiri", serif; }
+
+/* TIER 2 — BODY (existing, tinggal rename biar konsisten) */
+.arabic                   { font-family: "Noto Naskh Arabic", "Amiri", serif; }
+
+/* TIER 3 — UI INLINE */
+.arabic-ui                { font-family: "Noto Kufi Arabic", "Noto Naskh Arabic", sans-serif; }
+```
+
+### Update Google Fonts URL
+
+Ganti link yang sekarang:
+```html
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+```
+
+Jadi:
+```html
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&family=Aref+Ruqaa:wght@400;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+```
+
+Total 4 family Arab — load size masih reasonable (~200-300KB extra, di-cache CDN Google).
+
+### Aturan Pemakaian per Element MADAD
+
+Berikut **mapping konkret** dari penggunaan Arab saat ini di MADAD ke font baru:
+
+| File · Element | Sekarang | Recommend |
+|---|---|---|
+| Dashboard greeting `السلام عليكم` (text-2xl) | `arabic` | **`arabic-display-classical`** (Aref Ruqaa) — emotional welcome |
+| Dashboard atsar `قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ` (text-xl) | `arabic` | **`arabic-display-classical`** — emotional quote |
+| Muqaranah Bismillah ornament (text-2xl) | `arabic` | **`arabic-display-modern`** (Reem Kufi) — ornamental modern |
+| Muqaranah `بَيْنَ الْأَقْوَالِ نَتَأَمَّلُ` tagline (text-xl) | `arabic` | **`arabic-display-modern`** — modern tagline |
+| Muqaranah judul masalah Arab `حكم قراءة...` (text-3xl) | `arabic` | **`arabic-display-modern`** — heading kitab |
+| Nama ulama Arab `الإمام الشافعي` di kolom (text-base) | `arabic` | **`arabic`** (Noto Naskh, kept) — readable inline |
+| Dalil/ayat Arab di blockquote (text-lg-xl) | `arabic` | **`arabic`** (Noto Naskh, kept) — readable body |
+| Chip madzhab `الشافعية` (text-sm) | `arabic` | **`arabic-ui`** (Noto Kufi) — UI label |
+| Tag muqaranah `الفقه` (text-xs) | `arabic` | **`arabic-ui`** — UI chip |
+| Footnote sumber `الأم · المغني` (text-xs) | `arabic` | **`arabic-ui`** — footnote |
+| Onboarding option label `أصول الدين` (text-xl) | `arabic` | **`arabic-ui`** — selectable label |
+| Niat Hari Ini Arabic body (text-2xl) | `arabic` | **`arabic-display-classical`** — emotional niat |
+| Ethics atsar `إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ` (text-3xl) | `arabic` | **`arabic-display-classical`** — emotional hadits |
+| Kurasah editor `:bismillah:` shortcode render | `arabic` | **`arabic-display-modern`** — ornamental |
+| Final CTA landing atsar `قَيِّدُوا الْعِلْمَ` | `arabic` | **`arabic-display-classical`** — emotional anchor |
+
+### Pattern Sederhana yang Bisa Dipegang
+
+Kalau lo bingung pas implement, pakai aturan ini:
+
+1. **Ayat / hadits / atsar / niat / doa = `arabic-display-classical`** (Aref Ruqaa) — semua yang emosional/spiritual
+2. **Ornament dekoratif (Bismillah, tagline brand, judul masalah) = `arabic-display-modern`** (Reem Kufi) — yang punya fungsi visual anchor modern
+3. **Paragraf Arab > 2 baris (terjemah, body kitab, dalil panjang) = `arabic`** (Noto Naskh) — yang dibaca, bukan dilihat
+4. **UI element kecil (chip, tag, label, footnote) = `arabic-ui`** (Noto Kufi) — yang fungsional
+
+---
+
+## Visual Test — Cara Cek Cepat Mana yang Bagus
+
+Buka [Google Fonts Arabic](https://fonts.google.com/?subset=arabic) dan paste teks berikut di 3 candidate (Reem Kufi, Aref Ruqaa, Amiri Quran):
+
+```
+السلام عليكم
+قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ
+بَيْنَ الْأَقْوَالِ نَتَأَمَّلُ
+حكم قراءة البسملة في الفاتحة
+```
+
+Set ukuran 48px. Compare side by side. Lo akan langsung lihat:
+- **Reem Kufi:** clean, modern, scalable — terasa "produk Apple"
+- **Aref Ruqaa:** warm, tulisan tangan, terasa "kelas talaqqi di Masjid Husain"
+- **Amiri Quran:** sangat akurat mushaf, terasa "halaman kitab Bulaq cetakan lama"
+
+Gue rekomendasi kombinasi **Reem Kufi + Aref Ruqaa** untuk dua jenis emotional register yang beda. Itu yang paling sanctuary MADAD.
+
+---
+
+## Yang Harus Dihindari
+
+### Font Arab yang JANGAN Dipakai untuk MADAD
+
+❌ **Tajawal** — sans-serif Arab yang terlalu generic startup-y, melanggar sanctuary
+❌ **Almarai** — terlalu casual, vibe-nya kayak app delivery makanan
+❌ **El Messiri** — terlalu dekoratif, hard to read, melanggar prinsip "calm"
+❌ **Mada** — terlalu thin, contrast buruk di dark mode MADAD
+❌ **Markazi Text** — designed untuk Latin-Arab seamless mix, tapi kurang character standalone
+
+### Anti-Pattern Implementasi
+
+❌ Pakai 5+ font Arab — bikin loading lambat, inconsistent. **Max 3 tier**.
+❌ Pakai font display untuk body — paragraf > 2 baris pakai Reem Kufi = mata capek
+❌ Pakai font body untuk display — heading 5xl pakai Noto Naskh = terasa flat, kurang authority
+❌ Skip preload preconnect — tetap pakai `<link rel="preconnect">` yang sudah ada
+❌ Random pakai diakritik di teks UI — harakat hanya untuk teks emosional (ayat, atsar, niat), bukan untuk UI label
+
+---
+
+## Kalau Lo Mau Versi Minimal (1 Font Tambahan Aja)
+
+Kalau pertimbangan loading size atau kompleksitas, gue rekomendasi **tambah cuma 1 font** sebagai display:
+
+**Pilih: Aref Ruqaa** (kalau prioritas spiritual/Masisir feel) **atau Reem Kufi** (kalau prioritas modern/Linear feel).
+
+Gue personally rekomendasi **Aref Ruqaa** — karena MADAD identity-nya udah strong modern dari Inter+Crimson Pro+purple palette. Yang masih kurang adalah **kehangatan Cairo**. Aref Ruqaa menambahkan layer itu tanpa konflik dengan modern aesthetic.
+
+Implementasinya tinggal:
+```html
+<!-- Tambah ke link Google Fonts existing -->
+&family=Aref+Ruqaa:wght@400;700
+```
+
+```css
+.arabic-display { font-family: "Aref Ruqaa", "Amiri", "Noto Naskh Arabic", serif; }
+```
+
+Lalu pakai class `arabic-display` untuk: atsar, niat, hadits, salam besar. Sisanya tetap pakai `arabic` yang sudah ada.
+
+---
+
+## Saran Akhir
+
+Kalau lo mau gue tulis **prompt Replit untuk implement font system ini** (3-tier dengan mapping konkret per element), bilang aja — gue susun yang langsung paste-able. Atau kalau lo cuma mau eksperimen dulu, coba Aref Ruqaa di Kurasah empty state dulu (atsar `قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ`). Lo akan langsung ngerasain bedanya.
