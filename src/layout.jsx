@@ -441,11 +441,11 @@ const PageHeader = ({ kicker, title, subtitle, arabic, children, right }) => (
           {kicker && <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>{kicker}
           </div>}
-          {arabic && <div className="arabic-display-classical text-2xl text-violet-200/60 mb-3">{arabic}</div>}
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-ink leading-[1.05] tracking-tightest max-w-3xl">
+          {arabic && <div className="arabic-display-classical text-xl md:text-2xl text-violet-200/60 mb-3">{arabic}</div>}
+          <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-semibold text-ink leading-[1.05] tracking-tightest max-w-3xl">
             {title}
           </h1>
-          {subtitle && <p className="mt-5 text-lg text-ink-muted max-w-2xl leading-relaxed">{subtitle}</p>}
+          {subtitle && <p className="mt-4 text-base md:text-lg text-ink-muted max-w-2xl leading-relaxed">{subtitle}</p>}
           {children}
         </div>
         {right && <div>{right}</div>}

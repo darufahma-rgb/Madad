@@ -84,7 +84,7 @@ const PathsPage = () => {
                       <div className="text-xs text-ink-muted">{path.modules.filter(m => progress.modules?.[`${path.id}.${m.id}`]?.completed).length} dari {path.modules.length} modul selesai</div>
                     </div>
                     <div className="md:col-span-4 md:text-right">
-                      <div className="font-display text-7xl font-bold gradient-text num leading-none">{pct}<span className="text-3xl">%</span></div>
+                      <div className="font-display text-5xl md:text-7xl font-bold gradient-text num leading-none">{pct}<span className="text-2xl md:text-3xl">%</span></div>
                     </div>
                   </div>
                 </Reveal>

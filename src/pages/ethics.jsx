@@ -12,7 +12,7 @@ const EthicsPage = () => {
 
       <section className="pb-12">
         <div className="container-x">
-          <Reveal className="card-glass-strong p-10 md:p-14 mb-12 relative overflow-hidden">
+          <Reveal className="card-glass-strong p-6 md:p-10 lg:p-14 mb-12 relative overflow-hidden">
             <Blob color="rgba(201,168,106,0.22)" size={400} top={-150} right={-100}/>
             <div className="absolute top-0 right-0 h-full w-1/3 opacity-15 pointer-events-none">
               <Arch className="w-full h-full" color="rgba(212,165,116,0.3)"/>
@@ -62,7 +62,7 @@ const EthicsPage = () => {
 
           {/* Halusinasi warning */}
           <Reveal>
-            <div className="rounded-3xl bg-gradient-to-br from-rose-600/20 via-rose-600/10 to-transparent border border-rose-600/30 p-8 md:p-12 relative overflow-hidden">
+            <div className="rounded-3xl bg-gradient-to-br from-rose-600/20 via-rose-600/10 to-transparent border border-rose-600/30 p-6 md:p-10 lg:p-12 relative overflow-hidden">
               <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full bg-rose-600/10 blur-3xl"/>
               <div className="relative max-w-3xl">
                 <div className="flex items-center gap-3 mb-5">

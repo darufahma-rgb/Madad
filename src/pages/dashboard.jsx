@@ -46,7 +46,7 @@ const DashboardPage = () => {
         <div className="container-x relative">
           <Reveal>
             <div className="arabic-display-classical text-2xl text-gold-300 mb-3">{greeting.arabic}</div>
-            <h1 className="font-display text-5xl md:text-[68px] font-semibold text-ink leading-[1.0] tracking-tightest">
+            <h1 className="font-display text-4xl md:text-5xl lg:text-[68px] font-semibold text-ink leading-[1.0] tracking-tightest">
               {greeting.text},{" "}
               <span className="gradient-text">{firstName}.</span>
             </h1>
@@ -101,7 +101,7 @@ const DashboardPage = () => {
               Semua adaptive guide <Icon name="arrowRight" className="w-3.5 h-3.5"/>
             </a>
           </Reveal>
-          <Reveal stagger className="grid md:grid-cols-3 gap-4">
+          <Reveal stagger className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
             {recs.map((rec, i) => <RecommendationCard key={rec.toolId} rec={rec} index={i} profile={profile}/>)}
           </Reveal>
         </div>
@@ -119,7 +119,7 @@ const DashboardPage = () => {
             </div>
             <h2 className="font-display text-3xl md:text-4xl font-semibold text-ink">Learning path</h2>
           </Reveal>
-          <Reveal stagger className="grid md:grid-cols-3 gap-4">
+          <Reveal stagger className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
             {LEARNING_PATHS.map((path) => {
               const pct = computePathProgress(path.id);
               return (

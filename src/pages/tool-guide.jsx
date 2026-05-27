@@ -174,15 +174,15 @@ const SingleToolGuide = ({ toolId, profile }) => {
           <div key={activeStyle} className="page-enter grid md:grid-cols-12 gap-5">
             <div className="md:col-span-7 space-y-5">
               {/* When */}
-              <Reveal className="card-glass p-7">
+              <Reveal className="card-glass p-5 md:p-7">
                 <div className="text-xs uppercase tracking-wider text-gold-400 mb-2 flex items-center gap-2">
                   <Icon name="info" className="w-3.5 h-3.5"/> Kapan dipakai
                 </div>
-                <p className="text-ink leading-relaxed text-lg">{guide.when}</p>
+                <p className="text-ink leading-relaxed text-base md:text-lg">{guide.when}</p>
               </Reveal>
 
               {/* Steps */}
-              <Reveal className="card-glass p-7">
+              <Reveal className="card-glass p-5 md:p-7">
                 <div className="text-xs uppercase tracking-wider text-gold-400 mb-4 flex items-center gap-2">
                   <Icon name="list" className="w-3.5 h-3.5"/> Cara mulai · {style.label}
                 </div>

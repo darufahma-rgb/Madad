@@ -98,7 +98,7 @@ const MuqaranahPage = () => {
             <div className="text-center max-w-2xl mx-auto">
               <div className="divider-arabesque opacity-40 mb-8"/>
               <div className="arabic-display-modern text-gold-300 text-2xl leading-loose mb-3" style={{direction:"rtl"}}>بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
-              <h1 className="font-display text-5xl md:text-6xl font-semibold text-ink mb-3">Muqaranah</h1>
+              <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-ink mb-3">Muqaranah</h1>
               <div className="arabic-display-modern text-gold-300 text-xl leading-loose mb-5" style={{direction:"rtl"}}>بَيْنَ الْأَقْوَالِ نَتَأَمَّلُ</div>
               <p className="text-ink-muted leading-relaxed text-base max-w-xl mx-auto mb-2">
                 Ruang untuk merenungi perbedaan pendapat para ulama, bukan untuk menghakimi, melainkan untuk memahami keluasan ilmu dan adab dalam menyikapi khilaf.
