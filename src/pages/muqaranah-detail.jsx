@@ -114,23 +114,38 @@ const MuqaranahDetailPage = () => {
   );
 
   const buildPrompt = () => {
-    const viewsText = entry.views.map(v =>
-      `- ${v.scholar} (${v.school}): ${v.position}. Dalil: ${v.evidence?.arabic || ""}, ${v.evidence?.translation || ""}`
-    ).join("\n");
-    return `Aku sedang mempelajari masalah ini dalam tradisi Azhari:
+    const viewsText = entry.views.map((v, idx) => {
+      const arab = v.evidence?.arabic ? `\n  Dalil (Arab): ${v.evidence.arabic}` : "";
+      const terj = v.evidence?.translation ? `\n  Terjemah: ${v.evidence.translation}` : "";
+      const wajh = v.reasoning ? `\n  Wajh istidlal: ${v.reasoning}` : "";
+      const sumber = v.source ? `\n  Sumber: ${v.source}` : "";
+      return `${idx+1}. ${v.scholar} — ${v.scholarArabic || ""} (${v.school})
+  Qoul: ${v.position}${arab}${terj}${wajh}${sumber}`;
+    }).join("\n\n");
 
-Masalah: ${entry.title}
-Rumusan: ${entry.question}
+    return `Aku thalib di Al-Azhar yang sedang mempelajari mas'alah berikut:
 
-Beberapa pendapat ulama:
+**Mas'alah:** ${entry.title}
+${entry.titleArabic ? `**Bil-'Arabiyyah:** ${entry.titleArabic}` : ""}
+
+**Tashwir al-Mas'alah (Rumusan Masalah):**
+${entry.question}
+
+**Aqwal al-'Ulama':**
 ${viewsText}
 
-Tolong bantu aku merenungkan:
-1. Apa sesungguhnya titik khilaf di sini?
-2. Bagaimana konsekuensi praktisnya di kehidupan ibadah sehari-hari?
-3. Bagaimana adab seorang thalib menyikapi khilaf ini?
+Tolong bantu aku merenungkan mas'alah ini dengan adab thalib:
 
-Jawab dengan bahasa yang sederhana, jangan men-tarjih. Aku ingin paham, bukan disodorkan kesimpulan.`;
+1. Apa sesungguhnya mawdhi' al-khilaf (titik perbedaan) di sini? Apakah perbedaannya lafzhi, ma'nawi, atau haqiqi?
+2. Apa thamarat al-khilaf (konsekuensi praktis) dari masing-masing qoul dalam ibadah/muamalah sehari-hari?
+3. Bagaimana adab seorang thalib menyikapi khilaf ini? — terutama saat berinteraksi dengan saudara yang mengikuti madzhab berbeda
+
+**Aturan jawaban:**
+- Saat mengutip ayat, hadits, atau kaidah ushul, selalu sertakan teks Arab asli dengan harakat sebelum terjemah
+- Gunakan istilah Arab transliterasi: dalil, hujjah, qiyas, istihsan, mafhum mukhalafah, wajh istidlal
+- Sebut nama ulama dalam transliterasi Arab (al-Imam al-Syafi'i, bukan "Imam Syafii")
+- Sebut nama kitab dalam Arab (Al-Umm, Al-Mughni, Bidayat al-Mujtahid)
+- Jangan men-tarjih (memilih yang paling kuat) — itu hak guru-ku yang langsung mengajariku. Aku ingin paham, bukan disodorkan kesimpulan.`;
   };
 
   const copyPrompt = (url) => {
@@ -145,7 +160,10 @@ Jawab dengan bahasa yang sederhana, jangan men-tarjih. Aku ingin paham, bukan di
     const notes = loadNotes();
     const now = new Date().toISOString();
     const noteId = "note_" + Date.now();
-    const body = `## Rumusan Masalah\n\n${entry.question}\n\n## Catatan Pribadi\n\n_Tuliskan refleksimu di sini..._\n\n## Pendapat Ulama\n\n${entry.views.map(v => `**${v.scholar}** (${v.school}): ${v.position}`).join("\n\n")}`;
+    const body = `## Tashwir al-Mas'alah\n\n${entry.question}\n\n${entry.titleArabic ? `> ${entry.titleArabic}\n\n` : ""}## Catatan Pribadiku\n\n*Tuliskan refleksi, ta'liq, atau pertanyaan yang muncul saat membaca muqaranah ini...*\n\n## Aqwal al-'Ulama'\n\n${entry.views.map(v => {
+      const arab = v.evidence?.arabic ? `\n> ${v.evidence.arabic}\n*${v.evidence?.translation || ""}*\n` : "";
+      return `### ${v.scholar} ${v.scholarArabic ? `(${v.scholarArabic})` : ""}\n**Madzhab:** ${v.school}\n\n**Qoul:** ${v.position}\n${arab}\n**Wajh istidlal:** ${v.reasoning || "-"}\n\n**Mashdar:** ${v.source || "-"}`;
+    }).join("\n\n---\n\n")}\n\n## Pertanyaan untuk Guru\n\n*(Pertanyaan yang ingin aku tanyakan saat talaqqi berikutnya)*\n\n1. \n2. \n3. `;
     const note = {
       id: noteId,
       title: entry.title,

@@ -141,11 +141,33 @@ const MuqaranahFormPage = () => {
   };
 
   const copyAIPrompt = () => {
-    const prompt = `Aku ingin menyusun perbandingan qoul ulama untuk masalah: ${title || "[JUDUL]"}
-Rumusan masalah: ${question || "[RUMUSAN]"}
-Tolong bantu aku menyusun draft perbandingan dari ${views.length} ulama berikut: ${views.map(v => v.scholar || "[nama ulama]").join(", ")}
-Format yang aku butuh per ulama: qoul, dalil (sertakan teks Arab jika ada), wajh istidlal, dan kitab sumber.
-Bahasa Indonesia akademik, tanpa men-tarjih.`;
+    const ulama = views.map((v, idx) =>
+      `${idx+1}. ${v.scholar || "[nama ulama]"} (${v.school || "[madzhab]"})`
+    ).join("\n");
+
+    const prompt = `Aku thalib Azhari sedang menyusun muqaranat al-aqwal untuk mas'alah:
+
+**'Unwan (Judul):** ${title || "[JUDUL]"}
+**Tashwir al-Mas'alah:** ${question || "[RUMUSAN]"}
+
+Tolong bantu aku menyusun draft perbandingan dari ${views.length} ulama berikut:
+${ulama}
+
+**Format yang aku butuhkan per ulama:**
+
+1. **Qoul** — pendapat utama (bahasa Indonesia akademik)
+2. **Dalil** — sertakan teks Arab asli (ayat/hadits/kaidah) dengan harakat + terjemah
+3. **Wajh istidlal** — bagaimana ulama tersebut berdalil dari dalil tersebut menuju qoul-nya (paragraf, bukan poin)
+4. **Mashdar** (sumber kitab) — sebut nama Arab kitab (contoh: Al-Umm, Al-Mughni, Syarh al-Mahalli)
+
+**Aturan:**
+- Bahasa: Indonesia akademik dengan istilah Arab transliterasi
+- Untuk nama ulama, pakai transliterasi Arab (al-Imam Ahmad ibn Hanbal, bukan "Imam Ahmad bin Hambal")
+- Tanpa men-tarjih — aku ingin presentasi seimbang, biarkan aku yang merenungkan
+- Bila ada qoul yang dalilnya lemah, sebutkan tapi tetap presentasikan dengan jujur
+
+Setelah kamu draft, aku akan paste hasilnya ke form MADAD dan tambahkan refleksi pribadiku.`;
+
     navigator.clipboard.writeText(prompt);
     toast.push("Prompt AI disalin. Paste ke AI, lalu isi hasilnya di form ini.");
   };

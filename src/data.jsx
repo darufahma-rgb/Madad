@@ -134,7 +134,7 @@ const AI_TOOLS = [
           "Jawab pertanyaan AI dengan jujur. Setiap jawabanmu jadi titik tolak penjelasan berikutnya.",
           "Setelah cukup, minta ringkasan 5 poin sebagai penutup sesi diskusi.",
         ],
-        starterPrompt: "Berperanlah sebagai tutor Azhari yang sabar. Aku mau memahami konsep [TOPIK]. Jangan beri penjelasan langsung, tanyakan dulu pemahamanku, lalu bimbing dengan pertanyaan-pertanyaan bertahap sampai aku menemukan jawabannya sendiri. Mulai dengan satu pertanyaan pembuka.",
+        starterPrompt: "Berperanlah sebagai tutor Azhari yang sabar dan terbiasa dengan turuq tadris klasik. Aku thalib di Al-Azhar yang sedang mempelajari konsep [TOPIK]. Jangan beri penjelasan langsung — tanyakan dulu ma 'indi (apa yang sudah aku tahu), lalu bimbing dengan as'ilah taqririyyah (pertanyaan-pertanyaan bertahap) sampai aku menemukan jawabannya sendiri.\n\nSaat menyebut ayat, hadits, atau kaidah, selalu sertakan teks Arab asli (dengan harakat) sebelum terjemahan. Gunakan istilah Arab transliterasi seperti ta'rif, dalil, wajh istidlal — jangan diterjemahkan. Mulai dengan satu pertanyaan pembuka.",
       },
       summary: {
         when: "Kamu butuh intisari cepat dari materi panjang sebelum baca detail.",
@@ -143,7 +143,7 @@ const AI_TOOLS = [
           "Minta 5 poin utama + 1 kalimat ringkasan akhir.",
           "Tanya lagi: 'Poin mana yang paling sering keluar di ujian?' supaya prioritas jelas.",
         ],
-        starterPrompt: "Buatkan ringkasan dari materi berikut: [PASTE MATERI]. Format: 5 poin utama (1 baris per poin) + 1 kalimat penutup. Setelah itu beri tahu 1 poin yang paling fundamental dan kenapa.",
+        starterPrompt: "Aku thalib Azhari yang sedang mutala'ah materi berikut: [PASTE MATERI]\n\nBuatkan talkhish dengan format:\n1. Ta'rif (definisi inti) — sertakan istilah Arab asli + terjemah\n2. 5 poin utama (1 baris per poin) — pakai terminologi kitab klasik\n3. Satu kalimat penutup yang menangkap jawhar al-mas'alah\n4. Sebutkan 1 poin paling fundamental dan kenapa ia menjadi madar al-bab\n\nSaat ada istilah teknis, tulis Arab + transliterasi. Contoh: قياس (qiyas), إجماع (ijma').",
       },
       visual: {
         when: "Kamu lebih cepat paham lewat diagram, hierarki, dan peta konsep.",
@@ -152,7 +152,7 @@ const AI_TOOLS = [
           "Minta visualisasi sederhana dalam bentuk ASCII tree atau bullet hierarchy.",
           "Gambar ulang manual di buku catatanmu, itu yang mengikat memori.",
         ],
-        starterPrompt: "Buatkan peta konsep [TOPIK] dalam format hierarki bertingkat (indentasi). Akar = tema utama, cabang = sub-tema, daun = istilah kunci. Maksimal 3 level kedalaman.",
+        starterPrompt: "Aku thalib Azhari. Buatkan kharitah dzihniyyah (peta konsep) untuk [TOPIK] dalam format hierarki bertingkat (indentasi).\n\nStruktur:\n- Akar (jadhr) = tema utama → tulis dengan nama Arab + transliterasi\n- Cabang (furu') = sub-tema utama\n- Daun (waraqat) = istilah kunci\n\nUntuk setiap istilah teknis, tulis: [Arab dengan harakat] (transliterasi) — terjemah singkat.\nMaksimal 3 level kedalaman. Pakai terminologi kitab klasik, bukan terjemahan modern.",
       },
       practice: {
         when: "Belajarmu paling kuat saat langsung mengerjakan latihan dengan feedback.",
@@ -161,7 +161,7 @@ const AI_TOOLS = [
           "Kerjakan satu per satu, jangan lihat jawaban dulu.",
           "Setelah selesai, kirim jawabanmu, minta koreksi per nomor dengan kaidah yang dilanggar.",
         ],
-        starterPrompt: "Beri aku 10 soal latihan tentang [TOPIK] tingkat bertahap dari mudah ke sulit. Tampilkan tanpa jawaban dulu. Aku akan jawab semua, lalu kamu koreksi per nomor.",
+        starterPrompt: "Aku thalib Azhari, mau drill materi [TOPIK]. Beri 10 soal latihan dengan tingkat bertahap (mubtadi' → mutawassith → mutaqaddim).\n\nFormat tiap soal:\n- Pakai gaya tanya khas imtihan Azhari (\"'Arrif...\", \"Wadhdhih...\", \"Bayyin al-farq bayna...\", \"Ma hukm... ma'a al-dalil?\")\n- Untuk soal yang melibatkan ayat/hadits/matan, sertakan teks Arab asli\n- Boleh sisipkan satu soal i'rab atau syarh ibarah kalau topiknya nahwu/balaghah\n\nTampilkan tanpa jawaban dulu. Aku akan jawab semua, lalu kamu koreksi per nomor dengan menyebut kaidah yang dilanggar dan rujukan ke matan standar (Alfiyah, Al-Waraqat, dll).",
       },
       memorization: {
         when: "Materi yang sedang kamu hafal butuh drill aktif & spaced repetition.",
@@ -170,7 +170,7 @@ const AI_TOOLS = [
           "Mulai sesi tasmi': AI sebut potongan, kamu lanjutkan.",
           "Tutup sesi dengan daftar ayat/baris yang ragu, untuk murajaah hari berikutnya.",
         ],
-        starterPrompt: "Aku menghafal [SURAT/MATAN]. Bikin sesi tasmi': sebut potongan ayat secara acak, aku lanjutkan. Jika aku ragu, beri 3 huruf pertama sebagai petunjuk halus. Di akhir, beri daftar ayat yang perlu murajaah ulang.",
+        starterPrompt: "Aku thalib Azhari, sedang menghafal [SURAT/MATAN — sebutkan Arab + Latin]. Bikin sesi tasmi' untukku:\n\n- Sebut potongan ayat/bait secara acak — tulis dalam Arab dengan harakat\n- Aku akan lanjutkan\n- Jika aku ragu, beri 3 huruf pertama dari kalimat selanjutnya sebagai isyarah halus\n- Setelah 10 putaran, beri daftar mawadhi' (posisi/ayat) yang perlu muraja'ah ulang\n- Sertakan saran tahsin/tajwid kalau ada potongan yang biasanya keliru",
       },
       reading: {
         when: "Kamu lebih nyaman dengan pendekatan teks runtut, paragraf yang mengalir, bukan poin pendek.",
@@ -179,7 +179,7 @@ const AI_TOOLS = [
           "Tanya pertanyaan lanjutan setelah tiap paragraf untuk memperdalam.",
           "Tulis ulang dengan kata-katamu sendiri sebagai latihan tafahhum.",
         ],
-        starterPrompt: "Jelaskan konsep [TOPIK] dalam bentuk esai naratif 3 paragraf, bukan poin. Paragraf 1: konteks dan definisi. Paragraf 2: penjelasan inti. Paragraf 3: aplikasi & contoh. Gunakan bahasa yang mengalir.",
+        starterPrompt: "Aku thalib Azhari yang lebih nyaman belajar dengan qira'ah naratif (bukan poin-poin). Jelaskan konsep [TOPIK] dalam 3 paragraf yang mengalir:\n\n- Paragraf 1: siyaq (konteks) dan ta'rif — sertakan teks Arab asli untuk definisi kunci\n- Paragraf 2: penjelasan inti dengan dalil — sertakan ayat/hadits/kaidah dalam Arab + terjemah\n- Paragraf 3: tatbiq (aplikasi) dan furu' (contoh kasus)\n\nGaya bahasa: Indonesia akademik dengan istilah Arab transliterasi. Pakai struktur seperti syarh kitab klasik — runtut dari 'amm ke khass.",
       },
     },
   },
@@ -203,7 +203,7 @@ const AI_TOOLS = [
           "Tantang setiap kesimpulannya: 'Kenapa begitu?' / 'Bisa beri pandangan lawan?'",
           "Tutup dengan minta sintesis 5 kalimat.",
         ],
-        starterPrompt: "Saya mahasiswa Azhar yang sedang belajar [TOPIK]. Aku ingin diskusi mendalam, bukan sekadar penjelasan. Mulai dengan menanyakan apa yang sudah aku tahu, lalu bimbing dengan dialog. Tantang asumsiku saat perlu.",
+        starterPrompt: "Aku thalib Al-Azhar yang sedang mendalami [TOPIK]. Aku ingin munaqasyah (diskusi mendalam), bukan sekadar penjelasan satu arah.\n\nBimbingan diskusi:\n- Mulai dengan menanyakan ma 'indi (apa yang sudah aku tahu)\n- Bimbing dengan dialog bertahap — tantang asumsiku saat perlu (tanqih al-manat)\n- Saat membahas ayat/hadits/kaidah, selalu kutip teks Arab asli sebelum terjemah\n- Gunakan istilah Arab: dalil, wajh istidlal, ta'rif, qaidah, mas'alah, hukm — jangan terjemahkan\n- Bila menyebut pendapat ulama, sebut nama Arab-nya lengkap (al-Imam al-Syafi'i, Ibn Taymiyyah)\n- Bila merujuk kitab, sebut nama Arab-nya (Al-Umm, Al-Muhadhdhab, Al-Mughni)\n\nMari mulai — tanyakan dulu apa yang sudah aku pahami.",
       },
       summary: {
         when: "Meringkas matan klasik atau syarah panjang menjadi peta yang bisa dipahami cepat.",
@@ -212,7 +212,7 @@ const AI_TOOLS = [
           "Minta ringkasan struktural: definisi → poin utama → contoh → khilafiyyah (jika ada).",
           "Verifikasi terms teknis ke kitab asli, Claude paling jujur kalau tidak yakin.",
         ],
-        starterPrompt: "Ringkas bab berikut dari kitab [NAMA]: [PASTE TEKS]. Format: (1) definisi inti, (2) 3 sub-tema utama, (3) per sub-tema: poin + contoh + dalil utama, (4) ringkasan akhir 1 paragraf. Tandai bila ada bagian yang kamu tidak yakin sumbernya.",
+        starterPrompt: "Aku thalib Azhari sedang mutala'ah bab berikut dari kitab [NAMA KITAB Arab + Latin]:\n\n[PASTE TEKS]\n\nBuatkan talkhish dengan format:\n1. Ta'rif inti — sertakan teks Arab asli dari definisi yang muncul di bab\n2. 3 sub-tema utama (al-mabahith al-ra'isiyyah) — pakai istilah Arab\n3. Per sub-tema: poin inti + contoh konkret + dalil utama dalam Arab (ayat/hadits/kaidah) + terjemah\n4. Khulasah (ringkasan akhir) dalam 1 paragraf\n5. Tandai dengan [⚠️] bila ada bagian yang kamu tidak yakin sumbernya\n\nGaya: Indonesia akademik. Istilah teknis tetap Arab transliterasi.",
       },
       visual: {
         when: "Butuh peta konsep yang terstruktur dari materi kompleks.",
@@ -221,7 +221,7 @@ const AI_TOOLS = [
           "Minta hubungan antar cabang dijelaskan (mana prasyarat, mana konsekuensi).",
           "Tulis ulang di kertas atau aplikasi mind-map.",
         ],
-        starterPrompt: "Buatkan pohon konsep kitab [NAMA KITAB]. Format: akar (tema utama), 5-7 cabang (bab inti), 3 sub-cabang per bab, 1 contoh per sub-cabang. Setelah selesai, jelaskan hubungan antar cabang utama dalam 1 paragraf.",
+        starterPrompt: "Aku thalib Azhari. Buatkan shajarat al-mafahim (pohon konsep) kitab [NAMA KITAB — Arab + Latin] dengan struktur:\n\n- Jadhr (akar): tema utama kitab — Arab + terjemah\n- 5-7 furu' ra'isiyyah (cabang utama): bab-bab inti — gunakan judul bab dalam Arab\n- 3 sub-furu' per cabang: sub-bab atau topik turunan\n- 1 mithal (contoh) per sub-cabang: contoh klasik dari kitab tersebut\n\nSetelah selesai, jelaskan dalam 1 paragraf bagaimana 'alaqah (hubungan) antar cabang utama saling mendukung. Sebutkan apakah kitab ini termasuk genre matan, syarh, atau hasyiyah.",
       },
       practice: {
         when: "Latihan i'rab, tashrif, atau tatbiq kaidah dengan koreksi teliti.",
@@ -230,7 +230,7 @@ const AI_TOOLS = [
           "Kerjakan sendiri, kirim jawaban.",
           "Claude akan koreksi dengan menyebut kaidah & rujukan, paling teliti di antara semua AI.",
         ],
-        starterPrompt: "Beri aku 5 kalimat Arab untuk diirab dengan tingkat kesulitan bertahap. Jangan kasih jawaban dulu. Setelah aku i'rab, koreksi dengan menyebut kaidah yang dilanggar dan rujukan ke matan nahwu standar.",
+        starterPrompt: "Aku thalib Azhari yang sedang melatih i'rab. Beri 5 jumlah (kalimat Arab) untuk di-i'rab dengan tingkat kesulitan bertahap:\n\n- Jumlah 1-2: ismiyyah/fi'liyyah basit (mubtada'-khabar, fi'l-fa'il-maf'ul)\n- Jumlah 3-4: mengandung syibh al-jumlah, hal, atau tamyiz\n- Jumlah 5: mengandung naskh (kana wa akhawatiha, inna wa akhawatiha) atau idafah berlapis\n\nTulis tiap jumlah dengan harakat lengkap. Jangan kasih jawaban dulu.\n\nSetelah aku i'rab, koreksi dengan:\n- Sebut kaidah yang dilanggar (kalau ada)\n- Rujukan ke matan nahwu standar: Alfiyat Ibn Malik, Al-Ajurrumiyyah, atau Qatr al-Nada\n- Saran tambahan: cara membedakan i'rab yang sering rancu",
       },
       memorization: {
         when: "Membuat skema hafalan yang strategis, bukan brute force.",
@@ -239,7 +239,7 @@ const AI_TOOLS = [
           "Minta jadwal spaced repetition (hari 1, 3, 7, 14, 21).",
           "Minta mnemonic untuk poin yang sulit dihafal.",
         ],
-        starterPrompt: "Aku menghafal [MATAN/SURAT] dengan target [X HARI]. Buatkan jadwal murajaah berbasis spaced repetition (hari 1, 3, 7, 14, 21) dalam tabel. Tambahkan mnemonic untuk 3 bagian yang paling sering bikin ragu.",
+        starterPrompt: "Aku thalib Azhari, sedang menghafal [MATAN/SURAT — sebutkan Arab + Latin, dan dari kitab apa kalau matan] dengan target khatam [X HARI].\n\nBuatkan jadwal muraja'ah dengan pendekatan spaced repetition (hari 1, 3, 7, 14, 21) dalam tabel:\n| Hari | Bagian | Fokus | Catatan |\n\nTambahan:\n- Berikan 3 mawadhi' yang biasanya paling bikin ragu, beserta mnemonic Arab\n- Saran adab muraja'ah: waktu terbaik (ba'da Fajr, ba'da 'Asr), kondisi fisik, dll\n- Sertakan dua khasishoh dari matan/surat ini yang bisa dijadikan \"pegangan\" memori",
       },
       reading: {
         when: "Memahami kitab klasik secara mendalam, paragraf demi paragraf.",
@@ -248,7 +248,7 @@ const AI_TOOLS = [
           "Lalu minta parafrase akademik.",
           "Tanya lanjutan untuk setiap istilah teknis yang muncul.",
         ],
-        starterPrompt: "Ini paragraf dari kitab [NAMA KITAB]: [PASTE]. Lakukan: (1) terjemahan harfiah, (2) parafrase akademik, (3) penjelasan tiap istilah teknis, (4) maksud inti penulis dalam 1 kalimat. Sebut jika ada khilaf ulama dalam pemahaman paragraf ini.",
+        starterPrompt: "Aku thalib Azhari sedang mutala'ah paragraf berikut dari kitab [NAMA KITAB — Arab + Latin]:\n\n[PASTE TEKS Arab]\n\nLakukan analisis bertahap:\n\n1. Tarjamah harfiyyah (terjemahan harfiah) — kata per kata\n2. Tarjamah ma'nawiyyah (parafrase akademik) — Indonesia mengalir\n3. Syarh al-mustalahat (penjelasan istilah teknis) — untuk setiap istilah: [Arab dengan harakat] (transliterasi) — definisi\n4. Maqsud al-mu'allif (maksud inti penulis) dalam 1 kalimat\n5. Khilaf (perbedaan pendapat ulama) bila ada — sebut nama ulama dan kitab rujukan dalam nama Arab\n\nBila ada bagian yang ambigu, sebut secara jujur dan tawarkan dua kemungkinan tafsir.",
       },
     },
   },
@@ -271,7 +271,7 @@ const AI_TOOLS = [
           "Mulai diskusi & minta Gemini selalu sertakan sumber web saat relevan.",
           "Verifikasi link yang dia bagikan, terutama untuk klaim fiqh.",
         ],
-        starterPrompt: "Mari diskusi tentang [TOPIK]. Untuk setiap klaim faktual, sertakan link sumbernya. Jika kamu tidak yakin atau sumbernya lemah, sebutkan secara jujur.",
+        starterPrompt: "Aku thalib Azhari sedang mendalami [TOPIK]. Mari munaqasyah dengan pendekatan jadal 'ilmi (diskusi akademik):\n\n- Untuk setiap klaim faktual atau pendapat ulama, sertakan link sumber web yang terpercaya\n- Saat mengutip ayat/hadits/kaidah, sertakan teks Arab asli + sebut sumber (nama surah-ayat, kitab hadits + bab + no)\n- Bila menyebut pendapat ulama, gunakan nama Arab transliterasi: al-Imam al-Syafi'i, Ibn Taymiyyah, al-Ghazali\n- Bila kamu tidak yakin atau sumbernya lemah (da'if), sebutkan secara jujur\n\nMulai dengan menanyakan ma 'indi tentang topik ini.",
       },
       summary: {
         when: "Meringkas artikel/berita kontemporer terkait Azhar atau dunia Islam.",
@@ -279,7 +279,7 @@ const AI_TOOLS = [
           "Tempel link artikel atau judul yang mau diringkas.",
           "Minta ringkasan 5 poin + tanggapan dari perspektif Islam.",
         ],
-        starterPrompt: "Ringkas artikel berikut: [URL/JUDUL]. Format: 5 poin utama + 1 paragraf tanggapan dari perspektif keilmuan Islam.",
+        starterPrompt: "Aku thalib Azhari. Ringkas artikel atau konten berikut: [URL/JUDUL/PASTE]. Format: 5 poin utama + 1 paragraf tanggapan dari perspektif keilmuan Islam. Bila ada istilah syar'i yang muncul, sertakan Arab aslinya.",
       },
       visual: {
         when: "Foto matan atau halaman kitab yang sulit terbaca, Gemini bisa OCR dengan baik.",
@@ -288,7 +288,7 @@ const AI_TOOLS = [
           "Upload ke Gemini, minta transkrip Arab + terjemahan.",
           "Cek hasil transkripsi karena bisa salah pada huruf serupa.",
         ],
-        starterPrompt: "Aku upload foto halaman kitab. Transkripsikan teks Arabnya dengan harakat, lalu terjemahkan ke Indonesia. Jika ada bagian yang tidak terbaca jelas di foto, tandai dengan [???].",
+        starterPrompt: "Aku thalib Azhari upload foto halaman kitab. Lakukan:\n\n1. Transkrip teks Arab dengan harakat lengkap — tulis ulang persis seperti di kitab\n2. Tarjamah ke Bahasa Indonesia akademik (mengalir, bukan harfiah)\n3. Syarh mustalahat — daftar istilah teknis: [Arab dengan harakat] (transliterasi) — definisi singkat\n4. Identifikasi kitab bila memungkinkan: judul Arab, penulis (nama Arab), genre (matan/syarh/hasyiyah)\n\nBila ada bagian foto yang tidak terbaca, tandai dengan [???] dan jelaskan posisinya.",
       },
       practice: {
         when: "Drill tashrif atau kosakata dengan sumber suplemen dari web.",
@@ -296,7 +296,7 @@ const AI_TOOLS = [
           "Minta latihan acak.",
           "Minta sumber online tambahan untuk latihan lebih lanjut.",
         ],
-        starterPrompt: "Beri aku 10 latihan tashrif acak (level dasar). Setelah aku selesai, koreksi dan rekomendasikan 1 website atau channel YouTube untuk latihan lanjut.",
+        starterPrompt: "Aku thalib Azhari, mau drill tashrif atau kosakata Arab. Beri 10 latihan acak (level dasar hingga menengah). Tulis setiap soal dengan harakat lengkap. Setelah aku selesai, koreksi dan rekomendasikan 1 sumber online atau channel YouTube untuk latihan lanjut.",
       },
       memorization: {
         when: "Cari murattil favorit atau tasmi' audio sebagai pendamping hafalan.",
@@ -304,7 +304,7 @@ const AI_TOOLS = [
           "Minta rekomendasi qari dari Mesir untuk surat tertentu.",
           "Minta link YouTube atau platform yang resmi.",
         ],
-        starterPrompt: "Rekomendasikan 3 qari kontemporer dari Mesir untuk membantu hafalan [SURAT]. Untuk setiap qari, sebutkan kelebihan tajwidnya & beri 1 link YouTube ke bacaan surat tersebut.",
+        starterPrompt: "Rekomendasikan 3 qari' kontemporer dari Mesir untuk membantu hafalan [SURAT]. Untuk setiap qari', sebutkan: kelebihan tartil dan tajwidnya, riwayah bacaan yang digunakan, dan 1 link YouTube ke bacaan surat tersebut.",
       },
       reading: {
         when: "Membaca jurnal kontemporer atau penelitian terbaru.",
@@ -312,7 +312,7 @@ const AI_TOOLS = [
           "Minta Gemini mencari paper terkini tentang topik.",
           "Minta ringkasan terstruktur dari setiap paper.",
         ],
-        starterPrompt: "Cari 3 paper akademis terbaru (5 tahun terakhir) tentang [TOPIK]. Untuk masing-masing: judul, penulis, abstrak singkat, dan link sumber. Beri tahu jika tidak menemukan paper yang relevan.",
+        starterPrompt: "Aku thalib Azhari mencari paper akademis terbaru (5 tahun terakhir) tentang [TOPIK]. Untuk masing-masing: judul, penulis, abstrak singkat, dan link sumber. Beri tahu jika tidak menemukan paper yang relevan.",
       },
     },
   },
@@ -336,7 +336,7 @@ const AI_TOOLS = [
           "Mulai chat, setiap jawaban akan otomatis cite halaman sumber.",
           "Klik citation untuk loncat ke halaman tersebut.",
         ],
-        starterPrompt: "Saya mau diskusi konsep [TOPIK] berdasarkan kitab yang sudah saya upload. Jawab pertanyaanku dengan selalu merujuk ke halaman spesifik dari sumber, bukan dari pengetahuan umum.",
+        starterPrompt: "Aku thalib Azhari mau diskusi konsep [TOPIK] berdasarkan kitab yang sudah aku upload. Jawab pertanyaanku dengan selalu merujuk ke halaman spesifik dari sumber — bukan pengetahuan umum. Saat mengutip langsung dari kitab, sertakan teks Arab asli-nya. Bila kitab tidak membahas pertanyaanku, katakan secara eksplisit.",
       },
       summary: {
         when: "Bikin ringkasan otomatis dari kitab panjang yang kamu upload.",
@@ -345,7 +345,7 @@ const AI_TOOLS = [
           "Pakai tombol \"Briefing doc\" atau \"Summary\" yang muncul otomatis.",
           "Atau minta: 'Ringkas bab [X] dalam 5 poin dengan halaman rujukan.'",
         ],
-        starterPrompt: "Ringkas bab [NAMA BAB] dari kitab yang saya upload. Format: 5 poin utama + halaman rujukan untuk setiap poin + 1 paragraf intisari.",
+        starterPrompt: "Aku thalib Azhari. Ringkas bab [NAMA BAB] dari kitab yang aku upload. Format: 5 poin utama + halaman rujukan untuk setiap poin + 1 paragraf intisari. Bila ada istilah teknis Arab, sertakan Arab aslinya.",
       },
       visual: {
         when: "Bikin mind-map dari koleksi kitab untuk satu mata kuliah.",
@@ -354,7 +354,7 @@ const AI_TOOLS = [
           "Minta peta konsep yang menghubungkan kitab-kitab tersebut.",
           "Gunakan fitur \"Mind map\" jika sudah tersedia di akunmu.",
         ],
-        starterPrompt: "Berdasarkan semua kitab yang sudah saya upload, buatkan peta konsep yang menghubungkan tema-tema utamanya. Tunjukkan bagian mana yang dibahas di beberapa kitab dan bagian unik per kitab.",
+        starterPrompt: "Aku thalib Azhari. Berdasarkan semua kitab yang sudah aku upload, buatkan peta konsep yang menghubungkan tema-tema utamanya. Gunakan nama bab dalam Arab bila memungkinkan. Tunjukkan bagian mana yang dibahas di beberapa kitab dan bagian unik per kitab.",
       },
       practice: {
         when: "Latihan soal yang sumbernya khusus dari kitab kamu.",
@@ -363,7 +363,7 @@ const AI_TOOLS = [
           "Minta soal latihan dengan rujukan halaman.",
           "Kerjakan, lalu minta koreksi berbasis halaman tersebut.",
         ],
-        starterPrompt: "Buat 10 soal latihan tentang [TOPIK] berbasis kitab yang aku upload. Setiap soal sertakan referensi halaman ke kitab. Tampilkan tanpa jawaban dulu.",
+        starterPrompt: "Aku thalib Azhari. Buat 10 soal latihan tentang [TOPIK] berbasis kitab yang aku upload. Pakai gaya tanya imtihan Azhari (\"'Arrif...\", \"Bayyin...\", \"Ma hukm...\"). Setiap soal sertakan referensi halaman ke kitab. Tampilkan tanpa jawaban dulu.",
       },
       memorization: {
         when: "Murajaah matan dengan referensi syarah otomatis.",
@@ -371,7 +371,7 @@ const AI_TOOLS = [
           "Upload matan + syarah ke 1 notebook.",
           "Minta drill hafalan, AI akan jelaskan dari syarah jika kamu ragu.",
         ],
-        starterPrompt: "Aku menghafal matan [NAMA] yang sudah saya upload. Bikin sesi drill: sebut potongan, aku lanjutkan. Jika aku ragu, jelaskan dari syarah yang juga saya upload.",
+        starterPrompt: "Aku thalib Azhari menghafal matan [NAMA] yang sudah aku upload. Bikin sesi drill: sebut potongan Arab dengan harakat, aku lanjutkan. Jika aku ragu, jelaskan dari syarah yang juga aku upload. Tulis semua potongan dengan harakat lengkap.",
       },
       reading: {
         when: "Tafahhum bertahap, baca kitab dengan AI sebagai pendamping.",
@@ -380,7 +380,7 @@ const AI_TOOLS = [
           "Untuk setiap paragraf musykil, tanya AI dengan menyebut halaman.",
           "AI hanya menjawab dari kitabmu, tidak mengarang.",
         ],
-        starterPrompt: "Saya sedang baca kitab yang saya upload, halaman [X]. Tolong jelaskan paragraf yang dimulai dengan kata '[KATA AWAL]', terjemahkan, parafrase, dan jelaskan istilah teknis. Selalu rujuk ke halaman ini.",
+        starterPrompt: "Aku thalib Azhari sedang baca kitab yang aku upload, halaman [X]. Tolong jelaskan paragraf yang dimulai dengan kata '[KATA AWAL]': terjemahkan, parafrase, dan jelaskan istilah teknis Arab-nya. Gunakan nama kitab dalam Arab. Selalu rujuk ke halaman sumber.",
       },
     },
   },
@@ -403,7 +403,7 @@ const AI_TOOLS = [
           "Tanyakan pertanyaan diskusi.",
           "Klik setiap link sitasi untuk verifikasi.",
         ],
-        starterPrompt: "Diskusikan [TOPIK]. Untuk setiap poin, sebutkan sumber akademisnya. Jika sumbernya hanya blog atau forum, tandai jelas sebagai sumber lemah.",
+        starterPrompt: "Aku thalib Azhari sedang mendalami konsep [TOPIK] berdasarkan kitab [NAMA KITAB Arab + Latin] yang sudah aku upload.\n\nAturan diskusi:\n- Jawab dengan selalu merujuk halaman spesifik dari sumber upload, bukan pengetahuan umum\n- Sertakan teks Arab asli untuk kutipan langsung dari kitab\n- Bila kitab tidak membahas pertanyaanku, sebut eksplisit: \"Tidak ditemukan dalam kitab ini\"\n- Bila ada perbedaan antara pendapat di kitab ini dan pendapat masyhur, sebutkan dengan jelas\n- Gunakan istilah Arab: dalil, hujjah, ta'rif, taqsim\n\nMulai dengan menyebut bab pertama yang mau aku dalami.",
       },
       summary: {
         when: "Riset awal cepat, apa saja yang ditulis tentang topik ini.",
@@ -412,7 +412,7 @@ const AI_TOOLS = [
           "Minta ringkasan 5 sudut pandang utama.",
           "Simpan list sumber untuk dibaca lengkap nanti.",
         ],
-        starterPrompt: "Apa saja sudut pandang utama tentang [TOPIK] menurut literatur akademis? Beri 5 sudut pandang dengan 1 sumber kuat per sudut.",
+        starterPrompt: "Aku thalib Azhari, mau riset awal tentang [TOPIK]. Apa saja sudut pandang utama dalam literatur akademis? Beri 5 sudut pandang dengan 1 sumber kuat per sudut. Bila ada perspektif ulama atau keilmuan Islam, prioritaskan.",
       },
       visual: {
         when: "Petakan landscape penelitian, siapa berdebat dengan siapa.",
@@ -420,7 +420,7 @@ const AI_TOOLS = [
           "Tanyakan posisi para tokoh utama.",
           "Minta tabel perbandingan posisi mereka.",
         ],
-        starterPrompt: "Buatkan tabel perbandingan posisi 4-6 tokoh akademis utama tentang [TOPIK]. Kolom: Nama | Posisi | Argumen Inti | Sumber Utama.",
+        starterPrompt: "Aku thalib Azhari. Buatkan tabel perbandingan posisi 4-6 tokoh akademis atau ulama tentang [TOPIK]. Kolom: Nama | Posisi | Argumen Inti | Sumber Utama. Untuk nama ulama, gunakan transliterasi Arab (al-Imam al-Syafi'i, dll).",
       },
       practice: {
         when: "Verifikasi referensi yang kamu temukan di tempat lain.",
@@ -428,7 +428,7 @@ const AI_TOOLS = [
           "Tempel kutipan/klaim yang ingin dicek.",
           "Tanyakan: 'Apakah ini akurat? Apa sumbernya?'",
         ],
-        starterPrompt: "Verifikasi klaim berikut: '[PASTE KLAIM]'. Apakah akurat? Apa sumber asli yang valid? Jika tidak ditemukan, katakan dengan jelas.",
+        starterPrompt: "Aku thalib Azhari. Verifikasi klaim berikut: '[PASTE KLAIM]'. Apakah akurat? Apa sumber asli yang valid? Bila merujuk ayat atau hadits, apakah teks Arab dan terjemahannya tepat? Jika tidak ditemukan, katakan dengan jelas.",
       },
       memorization: {
         when: "Kurang relevan untuk hafalan, gunakan ChatGPT atau Claude.",
@@ -436,7 +436,7 @@ const AI_TOOLS = [
           "Untuk hafalan, beralih ke ChatGPT atau NotebookLM.",
           "Perplexity lebih cocok mencari materi yang akan dihafal, bukan drill-nya.",
         ],
-        starterPrompt: "Cari teks lengkap dari [MATAN/SURAT] dengan sumber yang valid (idealnya dari situs resmi).",
+        starterPrompt: "Aku thalib Azhari mencari teks lengkap [MATAN/SURAT] dari sumber yang valid. Idealnya dari situs resmi atau repositori kitab terpercaya. Sertakan teks Arab dengan harakat dan terjemah standar.",
       },
       reading: {
         when: "Membangun bab landasan teori untuk makalah.",
@@ -445,7 +445,7 @@ const AI_TOOLS = [
           "Minta perpaduan 3-5 sumber jadi 1 paragraf landasan teori.",
           "Selalu cek ulang setiap sitasi.",
         ],
-        starterPrompt: "Saya menulis makalah tentang [TOPIK]. Bantu susun paragraf landasan teori dengan menggabungkan minimal 3 sumber akademis. Tampilkan paragraf + daftar sumber di bawahnya.",
+        starterPrompt: "Aku thalib Azhari menulis makalah tentang [TOPIK]. Bantu susun paragraf landasan teori dengan menggabungkan minimal 3 sumber akademis. Bila ada sumber dari ulama atau lembaga Islam (Al-Azhar, ISESCO, dll), prioritaskan. Tampilkan paragraf + daftar sumber.",
       },
     },
   },
@@ -467,7 +467,7 @@ const AI_TOOLS = [
           "Highlight paragraf yang sedang ditulis, klik \"Refine\".",
           "Minta diskusi/tantang argumenmu.",
         ],
-        starterPrompt: "Saya sedang menulis paragraf ini di makalah saya: [PASTE]. Tantang argumennya, apa kelemahan logikanya? Saran kalimat alternatif yang lebih kuat?",
+        starterPrompt: "Aku thalib Azhari sedang menulis paragraf ini di makalah: [PASTE]. Tantang argumennya — apa kelemahan logikanya dari perspektif akademik Islam? Saran kalimat alternatif yang lebih kuat?",
       },
       summary: {
         when: "Ringkas PDF panjang langsung dari Word atau Edge.",
@@ -475,7 +475,7 @@ const AI_TOOLS = [
           "Buka PDF di Edge atau attach di Copilot.",
           "Klik \"Summarize\" atau minta ringkasan dengan format spesifik.",
         ],
-        starterPrompt: "Ringkas PDF yang saya buka. Format: 5 poin utama + 3 kutipan langsung penting + 1 paragraf kesimpulan. Sertakan nomor halaman untuk setiap kutipan.",
+        starterPrompt: "Aku thalib Azhari. Ringkas PDF yang sedang aku buka. Format: 5 poin utama + 3 kutipan langsung penting + 1 paragraf kesimpulan. Sertakan nomor halaman untuk setiap kutipan. Bila ada istilah teknis Arab, pertahankan istilah aslinya.",
       },
       visual: {
         when: "Bikin tabel atau diagram langsung di Word.",
@@ -483,7 +483,7 @@ const AI_TOOLS = [
           "Posisi cursor di tempat tabel/diagram mau dimasukkan.",
           "Minta Copilot generate tabel/diagram berdasarkan deskripsi.",
         ],
-        starterPrompt: "Buatkan tabel perbandingan [TOPIK] dengan kolom [...]. Sisipkan langsung di Word di posisi cursor saat ini.",
+        starterPrompt: "Aku thalib Azhari. Buatkan tabel perbandingan [TOPIK] dengan kolom yang relevan. Sisipkan langsung di Word. Bila kolom menyebut nama ulama atau kitab, gunakan nama Arab-nya.",
       },
       practice: {
         when: "Latihan menulis terbimbing, tulis paragraf, dapat feedback real-time.",
@@ -492,7 +492,7 @@ const AI_TOOLS = [
           "Highlight → Copilot → 'Rewrite' atau 'Critique'.",
           "Bandingkan versimu dengan saran AI, ambil yang masuk akal.",
         ],
-        starterPrompt: "Critique paragraf saya berikut sebagai dosen pembimbing skripsi: [PASTE]. Tunjukkan kelemahan logika, masalah bahasa, dan 1 versi revisi.",
+        starterPrompt: "Aku thalib Azhari. Critique paragraf makalahku berikut sebagai pembimbing akademik: [PASTE]. Tunjukkan kelemahan logika, masalah bahasa, dan 1 versi revisi. Perhatikan apakah terminologi Islam digunakan dengan tepat.",
       },
       memorization: {
         when: "Kurang cocok untuk drill hafalan, gunakan ChatGPT.",
@@ -500,7 +500,7 @@ const AI_TOOLS = [
           "Beralih ke ChatGPT atau NotebookLM untuk hafalan.",
           "Copilot lebih kuat untuk menulis dan dokumen.",
         ],
-        starterPrompt: "Untuk hafalan, gunakan ChatGPT atau NotebookLM.",
+        starterPrompt: "Untuk hafalan matan atau Qur'an, gunakan ChatGPT atau NotebookLM yang lebih optimal untuk sesi tasmi' dan drill.",
       },
       reading: {
         when: "Pendamping baca PDF makalah/buku akademik.",
@@ -509,7 +509,7 @@ const AI_TOOLS = [
           "Aktifkan sidebar Copilot.",
           "Tanyakan paragraf demi paragraf saat baca.",
         ],
-        starterPrompt: "Saya baca PDF ini di Edge. Bantu saya pahami paragraf yang dimulai dengan kalimat '[PASTE KATA AWAL]', jelaskan dalam bahasa lebih sederhana.",
+        starterPrompt: "Aku thalib Azhari sedang baca PDF ini di Edge. Bantu aku pahami paragraf yang dimulai dengan '[PASTE KATA AWAL]'. Jelaskan dalam bahasa akademik, dan perhatikan bila ada istilah Arab atau syar'i yang memerlukan penjelasan lebih.",
       },
     },
   },
