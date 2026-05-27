@@ -35,11 +35,11 @@ const MapelListPage = ({ profile }) => {
   const [faculty, setFaculty] = React.useState("semua");
 
   const FACULTY_TABS = [
-    { id: "semua",      label: "Semua" },
-    { id: "syariah",   label: "Syariah" },
-    { id: "ushuluddin",label: "Ushuluddin" },
-    { id: "bahasa",    label: "Bahasa Arab" },
-    { id: "umum",      label: "Lainnya" },
+    { id: "semua",       label: "Semua", count: MAPEL_GUIDES.length },
+    { id: "syariah",     label: "Syariah", count: MAPEL_GUIDES.filter(g => g.faculty === "syariah").length },
+    { id: "ushuluddin",  label: "Ushuluddin", count: MAPEL_GUIDES.filter(g => g.faculty === "ushuluddin").length },
+    { id: "bahasa",      label: "Bahasa Arab", count: MAPEL_GUIDES.filter(g => g.faculty === "bahasa").length },
+    { id: "umum",        label: "Lintas Mapel", count: MAPEL_GUIDES.filter(g => g.faculty === "umum").length },
   ];
 
   const filtered = faculty === "semua"
@@ -75,8 +75,9 @@ const MapelListPage = ({ profile }) => {
           <Reveal className="flex flex-wrap gap-2 mb-8">
             {FACULTY_TABS.map(t => (
               <button key={t.id} onClick={() => setFaculty(t.id)}
-                className={`text-sm px-4 py-2 rounded-full border transition-colors ${faculty === t.id ? "bg-violet-500/20 text-violet-200 border-violet-400/40" : "bg-white/3 text-ink-muted border-line hover:border-violet-400/25"}`}>
+                className={`text-sm px-4 py-2 rounded-full border transition-colors flex items-center gap-2 ${faculty === t.id ? "bg-violet-500/20 text-violet-200 border-violet-400/40" : "bg-white/3 text-ink-muted border-line hover:border-violet-400/25"}`}>
                 {t.label}
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${faculty === t.id ? "bg-violet-400/25 text-violet-200" : "bg-white/8 text-ink-soft"}`}>{t.count}</span>
               </button>
             ))}
           </Reveal>
