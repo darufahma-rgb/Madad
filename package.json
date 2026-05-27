@@ -1,0 +1,12 @@
+{
+  "name": "madad",
+  "version": "1.0.0",
+  "description": "MADAD - AI Learning Companion for Masisir Al-Azhar",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
