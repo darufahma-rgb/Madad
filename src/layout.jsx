@@ -1,0 +1,418 @@
+/* Madad, Navbar, Footer, Login Modal, Payment Modal, Router utils */
+
+const ROUTES_PUBLIC = ["/", "/ethics"];
+const ROUTES_MEMBER = ["/onboarding", "/dashboard", "/tools", "/paths"];
+
+const useRoute = () => {
+  const parse = () => {
+    const h = window.location.hash || "#/";
+    return h.startsWith("#") ? h.slice(1) : h;
+  };
+  const [path, setPath] = useState(parse());
+  useEffect(() => {
+    const onHash = () => { setPath(parse()); window.scrollTo({ top: 0, behavior: "instant" }); };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  return path;
+};
+
+const navigate = (to) => { window.location.hash = "#" + to; };
+
+const NavLink = ({ to, children, className = "", onClick }) => {
+  const path = useRoute();
+  const active = path === to || (to !== "/" && path.startsWith(to));
+  const handle = (e) => { e.preventDefault(); onClick && onClick(); navigate(to); };
+  return (
+    <a href={"#" + to} onClick={handle} className={`nav-link px-3.5 py-2 text-[14.5px] rounded-lg transition-colors ${active ? "text-ink font-medium active" : "text-ink-muted hover:text-ink"} ${className}`}>
+      {children}
+    </a>
+  );
+};
+
+/* ---------------- Brand ---------------- */
+const Brand = ({ size = 36 }) => (
+  <a href="#/" onClick={(e)=>{e.preventDefault(); navigate("/");}} className="flex items-center gap-2.5">
+    <LogoMark size={size}/>
+    <span className="flex flex-col leading-tight">
+      <span className="font-display text-lg font-semibold text-ink tracking-tight whitespace-nowrap">Madad</span>
+      <span className="hidden sm:block text-[10px] uppercase tracking-[0.22em] text-ink-muted">AI Companion · Masisir</span>
+    </span>
+  </a>
+);
+
+/* ---------------- Navbar ---------------- */
+const Navbar = ({ onOpenLogin, onOpenPayment }) => {
+  const [open, setOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const { session, logout } = useAuth();
+  const path = useRoute();
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  useEffect(() => { setOpen(false); }, [path]);
+
+  const memberLinks = [
+    { to: "/dashboard", label: "Dashboard" },
+    { to: "/tools",     label: "Tool Guide" },
+    { to: "/paths",     label: "Learning Path" },
+    { to: "/ethics",    label: "Etika" },
+  ];
+  const publicLinks = [
+    { to: "/#preview",  label: "Preview" },
+    { to: "/#tools",    label: "AI Tools" },
+    { to: "/ethics",    label: "Etika" },
+  ];
+  const links = session ? memberLinks : publicLinks;
+
+  return (
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "bg-night-900/70 backdrop-blur-xl border-b border-line" : "bg-transparent"}`}>
+      <div className="container-x flex items-center justify-between h-16 md:h-[72px]">
+        <Brand/>
+        <nav className="hidden md:flex items-center gap-1">
+          {links.map(l => l.to.startsWith("/#")
+            ? <a key={l.to} href={l.to.slice(1)} onClick={(e) => { e.preventDefault(); const id = l.to.split("#")[1]; const el = document.getElementById(id); if (el) el.scrollIntoView({behavior:"smooth"}); }} className="nav-link px-3.5 py-2 text-[14.5px] text-ink-muted hover:text-ink rounded-lg">{l.label}</a>
+            : <NavLink key={l.to} to={l.to}>{l.label}</NavLink>
+          )}
+        </nav>
+        <div className="hidden md:flex items-center gap-2">
+          {session ? (
+            <>
+              <button
+                onClick={() => navigate("/kurasah")}
+                title="Kurasah"
+                className="w-9 h-9 rounded-lg text-ink-muted hover:text-ink hover:bg-white/5 transition-colors flex items-center justify-center">
+                <Icon name="book" className="w-4 h-4"/>
+              </button>
+              <div className="px-3 py-1.5 rounded-lg chip-glass text-xs">
+                <span className="text-ink-muted">Member:</span> <span className="text-ink font-medium">{session.name}</span>
+              </div>
+              <button onClick={logout} className="btn btn-ghost text-sm py-2 px-3">Logout</button>
+            </>
+          ) : (
+            <>
+              <button onClick={onOpenLogin} className="btn btn-ghost text-sm py-2 px-4">
+                <Icon name="user" className="w-4 h-4"/> Login Member
+              </button>
+              <button onClick={onOpenPayment} className="btn btn-primary text-sm py-2.5 px-4">
+                <Icon name="sparkles" className="w-4 h-4"/> Gabung Member
+              </button>
+            </>
+          )}
+        </div>
+        <button onClick={() => setOpen(true)} className="md:hidden w-10 h-10 inline-flex items-center justify-center rounded-lg text-ink hover:bg-white/5">
+          <Icon name="menu" className="w-5 h-5"/>
+        </button>
+      </div>
+      {open && (
+        <div className="fixed inset-0 z-[60] md:hidden">
+          <div className="absolute inset-0 bg-night-950/70 modal-back" onClick={() => setOpen(false)}/>
+          <div className="absolute top-0 right-0 bottom-0 w-[82%] max-w-sm bg-night-900 border-l border-line p-6 flex flex-col">
+            <div className="flex items-center justify-between mb-8">
+              <Brand/>
+              <button onClick={() => setOpen(false)} className="w-9 h-9 rounded-lg text-ink hover:bg-white/5">
+                <Icon name="x" className="w-5 h-5 mx-auto"/>
+              </button>
+            </div>
+            <nav className="flex flex-col gap-1">
+              {links.map(l => (
+                l.to.startsWith("/#") ? null : (
+                  <a key={l.to} href={"#" + l.to}
+                     onClick={(e)=>{ e.preventDefault(); navigate(l.to); setOpen(false); }}
+                     className={`px-3 py-3 text-base rounded-lg ${path === l.to ? "bg-white/8 text-ink font-medium" : "text-ink-muted hover:bg-white/4"}`}>
+                    {l.label}
+                  </a>
+                )
+              ))}
+            </nav>
+            <div className="mt-auto pt-6 border-t border-line flex flex-col gap-2">
+              {session ? (
+                <button onClick={() => { logout(); setOpen(false); }} className="btn btn-ghost w-full">Logout</button>
+              ) : (
+                <>
+                  <button onClick={() => { setOpen(false); onOpenPayment && onOpenPayment(); }} className="btn btn-primary w-full">
+                    <Icon name="sparkles" className="w-4 h-4"/> Gabung Member
+                  </button>
+                  <button onClick={() => { setOpen(false); onOpenLogin(); }} className="btn btn-ghost w-full">
+                    <Icon name="user" className="w-4 h-4"/> Login Member
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+};
+
+/* ---------------- Footer ---------------- */
+const Footer = () => (
+  <footer className="mt-20 border-t border-line">
+    <div className="container-x py-12">
+      <div className="flex flex-col md:flex-row items-start justify-between gap-8">
+        <div className="max-w-md">
+          <Brand size={40}/>
+          <p className="mt-5 text-sm text-ink-muted leading-relaxed">
+            AI learning companion premium untuk Masisir, memahami materi lebih cepat,
+            mengerjakan tugas lebih cerdas, dengan AI yang sesuai cara belajarmu.
+          </p>
+        </div>
+        <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
+          <a href="#/" onClick={(e)=>{e.preventDefault(); navigate("/");}} className="text-ink-muted hover:text-ink">Beranda</a>
+          <a href="#/ethics" onClick={(e)=>{e.preventDefault(); navigate("/ethics");}} className="text-ink-muted hover:text-ink">Etika</a>
+          <a href="#/dashboard" onClick={(e)=>{e.preventDefault(); navigate("/dashboard");}} className="text-ink-muted hover:text-ink">Dashboard</a>
+          <a href="#/tools" onClick={(e)=>{e.preventDefault(); navigate("/tools");}} className="text-ink-muted hover:text-ink">Tool Guide</a>
+          <a href="#/paths" onClick={(e)=>{e.preventDefault(); navigate("/paths");}} className="text-ink-muted hover:text-ink">Learning Path</a>
+          <a href="#/admin" onClick={(e)=>{e.preventDefault(); navigate("/admin");}} className="text-ink-soft hover:text-ink-muted">Admin</a>
+        </div>
+      </div>
+      <div className="divider-arabesque mt-10 opacity-50"/>
+      <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+        <div className="text-ink-soft">© {new Date().getFullYear()} Madad · All rights reserved.</div>
+        <div className="text-ink-muted tracking-wider">
+          Designed & Developed by <span className="text-gold-400 font-medium">Dar Dev</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+);
+
+/* ---------------- Login Modal ---------------- */
+const LoginModal = ({ open, onClose, onSuccess }) => {
+  const [code, setCode] = useState("");
+  const [status, setStatus] = useState(null);  // { ok, status, member }
+  const [conflict, setConflict] = useState(null);  // member for device conflict
+  const { login } = useAuth();
+  const inputRef = useRef(null);
+  const toast = useToast();
+
+  useEffect(() => {
+    if (open) {
+      setCode("");
+      setStatus(null);
+      setConflict(null);
+      setTimeout(() => inputRef.current?.focus(), 100);
+    }
+  }, [open]);
+
+  const submit = (e) => {
+    e?.preventDefault();
+    const c = code.trim().toUpperCase();
+    if (!c) return;
+    const result = login(c);
+    if (result.ok) {
+      toast.push("Selamat datang, " + result.member.name);
+      onSuccess && onSuccess(result);
+    } else if (result.status === "device_conflict") {
+      setConflict(result.member);
+    } else {
+      setStatus(result);
+    }
+  };
+
+  const takeover = () => {
+    const result = login(code.trim().toUpperCase(), { forceTakeover: true });
+    if (result.ok) {
+      toast.push("Berhasil login di device ini");
+      setConflict(null);
+      onSuccess && onSuccess(result);
+    }
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} size="md">
+      <div className="p-7 md:p-8">
+        <div className="flex items-center justify-between mb-1">
+          <span className="chip chip-violet">🔐 Member Access</span>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5 flex items-center justify-center">
+            <Icon name="x" className="w-4 h-4"/>
+          </button>
+        </div>
+
+        {conflict ? (
+          <div className="mt-3">
+            <h2 className="font-display text-2xl font-semibold text-ink mb-2">Member sedang aktif di device lain</h2>
+            <p className="text-sm text-ink-muted leading-relaxed mb-5">
+              Kode <span className="font-mono text-gold-300">{conflict.code}</span> sedang aktif di:
+              <span className="text-ink ml-1">{conflict.device}</span>.
+              Lanjutkan akan otomatis logout device sebelumnya.
+            </p>
+            <div className="flex gap-2">
+              <button onClick={() => setConflict(null)} className="btn btn-ghost flex-1">Batal</button>
+              <button onClick={takeover} className="btn btn-primary flex-1">Lanjut di device ini</button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="mt-3">
+            <h2 className="font-display text-2xl font-semibold text-ink mb-2">Masukkan kode akses member</h2>
+            <p className="text-sm text-ink-muted mb-6">Format: <span className="font-mono text-gold-300">MSR-XXXX-XXXX</span></p>
+            <input
+              ref={inputRef}
+              value={code}
+              onChange={(e) => { setCode(e.target.value.toUpperCase()); setStatus(null); }}
+              placeholder="MSR-XXXX-XXXX"
+              className="code-input w-full bg-white/5 border border-line rounded-xl px-5 py-4 text-xl text-ink placeholder:text-ink-soft focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/30"
+              maxLength={13}
+            />
+            {status && !status.ok && (
+              <div className="mt-3 px-4 py-2.5 rounded-lg bg-rose-600/10 border border-rose-600/30 text-rose-600 text-sm flex items-start gap-2">
+                <Icon name="alert" className="w-4 h-4 mt-0.5 flex-shrink-0"/>
+                <span>
+                  {status.status === "not_found" && "Kode tidak ditemukan. Cek lagi atau hubungi admin."}
+                  {status.status === "expired" && "Kode sudah expired. Hubungi admin untuk renewal."}
+                  {status.status === "disabled" && "Kode dinonaktifkan. Hubungi admin."}
+                </span>
+              </div>
+            )}
+            <button type="submit" disabled={code.length < 8} className={`btn btn-primary w-full mt-5 ${code.length < 8 ? "opacity-50 cursor-not-allowed" : ""}`}>
+              Masuk <Icon name="arrowRight" className="w-4 h-4"/>
+            </button>
+            <div className="mt-5 pt-5 border-t border-line text-xs text-ink-soft text-center leading-relaxed">
+              Belum punya kode?<br/>
+              Daftar sebagai member Madad untuk mendapatkan akses.
+            </div>
+            <div className="mt-4 text-center">
+              <button type="button" onClick={() => setCode("MSR-DEMO-1234")} className="text-xs text-violet-300 hover:text-violet-200 underline underline-offset-2">
+                Coba dengan kode demo: MSR-DEMO-1234
+              </button>
+            </div>
+          </form>
+        )}
+      </div>
+    </Modal>
+  );
+};
+
+/* ---------------- Payment Modal ---------------- */
+const PaymentModal = ({ open, onClose, onOpenLogin }) => {
+  const [paid, setPaid] = useState(false);
+
+  useEffect(() => {
+    if (!open) { setPaid(false); }
+  }, [open]);
+
+  const handlePayClick = () => {
+    window.open("https://lynk.id/madad", "_blank", "noopener,noreferrer");
+    setTimeout(() => setPaid(true), 800);
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} size="md">
+      <div className="p-7 md:p-8">
+        <div className="flex items-center justify-between mb-1">
+          <span className="chip chip-gold">✨ Gabung Member</span>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5 flex items-center justify-center">
+            <Icon name="x" className="w-4 h-4"/>
+          </button>
+        </div>
+
+        {paid ? (
+          <div className="mt-6 text-center py-4">
+            <div className="w-16 h-16 rounded-full bg-mint-500/20 text-mint-500 flex items-center justify-center mx-auto mb-5">
+              <Icon name="check" className="w-8 h-8" strokeWidth={2.4}/>
+            </div>
+            <div className="arabic text-2xl text-gold-300 mb-3">جَزَاكَ اللهُ خَيْرًا</div>
+            <h2 className="font-display text-2xl font-semibold text-ink mb-3">Terima kasih!</h2>
+            <p className="text-ink-muted text-sm leading-relaxed mb-6 max-w-xs mx-auto">
+              Pembayaran sedang diproses. Kode akses akan dikirimkan oleh admin setelah konfirmasi pembayaran.
+            </p>
+            <div className="card-glass p-4 mb-6 text-left">
+              <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-2">Apa selanjutnya?</div>
+              <ol className="text-sm text-ink-muted space-y-2">
+                <li className="flex items-start gap-2"><span className="text-violet-300 font-semibold">1.</span> Admin akan memverifikasi pembayaran</li>
+                <li className="flex items-start gap-2"><span className="text-violet-300 font-semibold">2.</span> Kode akses dikirimkan via WhatsApp</li>
+                <li className="flex items-start gap-2"><span className="text-violet-300 font-semibold">3.</span> Login & mulai journey-mu</li>
+              </ol>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={onClose} className="btn btn-ghost flex-1 text-sm">Tutup</button>
+              <button onClick={() => { onClose(); onOpenLogin && onOpenLogin(); }} className="btn btn-primary flex-1 text-sm">
+                <Icon name="user" className="w-4 h-4"/> Sudah punya kode?
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="mt-4">
+            <h2 className="font-display text-2xl font-semibold text-ink mb-1">Akses Premium Madad</h2>
+            <p className="text-sm text-ink-muted mb-6 leading-relaxed">
+              Onboarding 3 pertanyaan, lalu dashboard personal langsung jalan.
+            </p>
+
+            <div className="card-glass-strong p-5 mb-5 relative overflow-hidden">
+              <Blob color="rgba(124,77,255,0.28)" size={200} top={-60} right={-60}/>
+              <div className="relative">
+                <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-3">Yang kamu dapat</div>
+                <div className="space-y-2.5 mb-5">
+                  {[
+                    { i: "sparkles", t: "Rekomendasi AI personal sesuai profil belajarmu" },
+                    { i: "bookOpen", t: "36 adaptive guide (6 AI × 6 gaya belajar)" },
+                    { i: "layers",   t: "3 learning path terstruktur (Beginner → Advanced)" },
+                    { i: "refresh",  t: "Progress tracking & habit belajar berkelanjutan" },
+                  ].map((f, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <span className="w-7 h-7 rounded-lg bg-violet-500/15 text-violet-300 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Icon name={f.i} className="w-3.5 h-3.5"/>
+                      </span>
+                      <span className="text-sm text-ink leading-relaxed">{f.t}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between pt-4 border-t border-line">
+                  <div>
+                    <div className="text-[11px] uppercase tracking-wider text-ink-muted">Pembayaran via</div>
+                    <div className="font-display text-lg font-semibold text-gold-300 mt-0.5">Lynk.id</div>
+                  </div>
+                  <span className="chip chip-violet">Sekali bayar</span>
+                </div>
+              </div>
+            </div>
+
+            <button onClick={handlePayClick} className="btn btn-gold w-full text-base py-3.5 mb-3">
+              <Icon name="arrowRight" className="w-4 h-4"/> Bayar via Lynk.id
+            </button>
+            <p className="text-center text-xs text-ink-soft">
+              Setelah bayar, kode akses dikirim admin. Proses cepat & manual.
+            </p>
+            <div className="mt-4 pt-4 border-t border-line text-center">
+              <button onClick={() => { onClose(); onOpenLogin && onOpenLogin(); }} className="text-xs text-violet-300 hover:text-violet-200 underline underline-offset-2">
+                Sudah punya kode akses? Login di sini
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+};
+
+/* ---------------- Page Header (used by member pages) ---------------- */
+const PageHeader = ({ kicker, title, subtitle, arabic, children, right }) => (
+  <section className="relative pt-12 md:pt-16 pb-10 md:pb-12 overflow-hidden">
+    <div className="container-x relative">
+      <div className="flex items-start justify-between gap-8 flex-wrap">
+        <div className="flex-1 min-w-0">
+          {kicker && <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/70"/>{kicker}
+          </div>}
+          {arabic && <div className="arabic text-2xl text-violet-200/60 mb-3">{arabic}</div>}
+          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl font-semibold text-ink leading-[1.05] tracking-tightest max-w-3xl">
+            {title}
+          </h1>
+          {subtitle && <p className="mt-5 text-lg text-ink-muted max-w-2xl leading-relaxed">{subtitle}</p>}
+          {children}
+        </div>
+        {right && <div>{right}</div>}
+      </div>
+    </div>
+  </section>
+);
+
+Object.assign(window, {
+  ROUTES_PUBLIC, ROUTES_MEMBER,
+  useRoute, navigate, NavLink, Brand,
+  Navbar, Footer, LoginModal, PaymentModal, PageHeader,
+});

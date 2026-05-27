@@ -1,0 +1,278 @@
+/* Madad, Muqaranah Detail Page */
+
+const ViewColumn = ({ view, isMobile }) => {
+  const [collapsed, setCollapsed] = React.useState(isMobile);
+
+  const content = (
+    <div className="space-y-5">
+      {/* Header */}
+      <div>
+        <span className="chip chip-glass text-[10px] uppercase tracking-wider mb-3 inline-block">{view.school}</span>
+        <h3 className="font-display text-xl font-semibold text-ink leading-snug">{view.scholar}</h3>
+        <div className="arabic text-gold-300 text-base leading-loose mt-1" style={{direction:"rtl"}}>{view.scholarArabic}</div>
+      </div>
+
+      <div className="divider-arabesque opacity-25"/>
+
+      {/* Qoul */}
+      <div>
+        <div className="text-[10px] uppercase tracking-wider text-ink-soft mb-2 font-medium">Qoul</div>
+        <p className="text-sm text-ink leading-relaxed font-display">{view.position}</p>
+      </div>
+
+      {/* Dalil */}
+      {view.evidence && (
+        <div>
+          <div className="text-[10px] uppercase tracking-wider text-ink-soft mb-2 font-medium">Dalil</div>
+          <div className="rounded-xl border border-gold-400/15 bg-gold-500/5 p-4">
+            <div className="arabic text-gold-200 text-lg leading-loose mb-3" style={{direction:"rtl",textAlign:"right"}}>
+              {view.evidence.arabic}
+            </div>
+            {view.evidence.translation && (
+              <p className="text-xs text-ink-muted italic leading-relaxed border-t border-white/5 pt-3 mt-1">
+                {view.evidence.translation}
+              </p>
+            )}
+            {view.evidence.notes && (
+              <p className="text-xs text-ink-soft leading-relaxed mt-2">{view.evidence.notes}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Wajh Istidlal */}
+      {view.reasoning && (
+        <div>
+          <div className="text-[10px] uppercase tracking-wider text-ink-soft mb-2 font-medium">Wajh Istidlal</div>
+          <p className="text-sm text-ink-muted leading-relaxed">{view.reasoning}</p>
+        </div>
+      )}
+
+      {/* Source */}
+      {view.source && (
+        <div className="pt-3 border-t border-line">
+          <p className="text-[11px] text-ink-soft">Sumber: <span className="text-ink-muted">{view.source}</span></p>
+        </div>
+      )}
+    </div>
+  );
+
+  if (!isMobile) return (
+    <div className="card-glass rounded-xl p-6 h-full border border-line" style={{borderTop:"2px solid rgba(201,168,106,0.2)"}}>
+      {content}
+    </div>
+  );
+
+  return (
+    <div className="card-glass rounded-xl border border-line overflow-hidden" style={{borderTop:"2px solid rgba(201,168,106,0.2)"}}>
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="w-full flex items-center justify-between p-4 text-left">
+        <div>
+          <div className="font-display text-base font-semibold text-ink">{view.scholar}</div>
+          <div className="arabic text-gold-300 text-sm mt-0.5" style={{direction:"rtl"}}>{view.scholarArabic}</div>
+        </div>
+        <Icon name={collapsed ? "chevronDown" : "chevronUp"} className="w-4 h-4 text-ink-soft flex-shrink-0"/>
+      </button>
+      {!collapsed && <div className="px-4 pb-5">{content}</div>}
+    </div>
+  );
+};
+
+const MuqaranahDetailPage = () => {
+  const { session, profile } = useAuth();
+  const path = useRoute();
+  const toast = useToast();
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
+
+  React.useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  React.useEffect(() => {
+    if (!session) navigate("/");
+    else if (!profile?.onboarded) navigate("/onboarding");
+  }, [session, profile]);
+
+  if (!session || !profile?.onboarded) return null;
+
+  // Resolve entry
+  const params = new URLSearchParams(path.includes("?") ? path.split("?")[1] : "");
+  const id = params.get("id");
+  const allEntries = [...MUQARANAH_LIBRARY, ...loadCustomMuqaranah()];
+  const entry = allEntries.find(e => e.id === id);
+
+  if (!entry) return (
+    <div className="page-enter min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-ink-muted mb-4">Muqaranah tidak ditemukan.</p>
+        <button onClick={() => navigate("/paths/muqaranah")} className="btn btn-ghost">Kembali</button>
+      </div>
+    </div>
+  );
+
+  const buildPrompt = () => {
+    const viewsText = entry.views.map(v =>
+      `- ${v.scholar} (${v.school}): ${v.position}. Dalil: ${v.evidence?.arabic || ""}, ${v.evidence?.translation || ""}`
+    ).join("\n");
+    return `Aku sedang mempelajari masalah ini dalam tradisi Azhari:
+
+Masalah: ${entry.title}
+Rumusan: ${entry.question}
+
+Beberapa pendapat ulama:
+${viewsText}
+
+Tolong bantu aku merenungkan:
+1. Apa sesungguhnya titik khilaf di sini?
+2. Bagaimana konsekuensi praktisnya di kehidupan ibadah sehari-hari?
+3. Bagaimana adab seorang thalib menyikapi khilaf ini?
+
+Jawab dengan bahasa yang sederhana, jangan men-tarjih. Aku ingin paham, bukan disodorkan kesimpulan.`;
+  };
+
+  const copyPrompt = (url) => {
+    const prompt = buildPrompt();
+    navigator.clipboard.writeText(prompt).then(() => {
+      toast.push("Prompt disalin. Diskusikan dengan adab.");
+      if (url) setTimeout(() => window.open(url, "_blank"), 500);
+    });
+  };
+
+  const catatKeKurasah = () => {
+    const notes = loadNotes();
+    const now = new Date().toISOString();
+    const noteId = "note_" + Date.now();
+    const body = `## Rumusan Masalah\n\n${entry.question}\n\n## Catatan Pribadi\n\n_Tuliskan refleksimu di sini..._\n\n## Pendapat Ulama\n\n${entry.views.map(v => `**${v.scholar}** (${v.school}): ${v.position}`).join("\n\n")}`;
+    const note = {
+      id: noteId,
+      title: entry.title,
+      body,
+      tags: [entry.category],
+      source: { type: "muqaranah", id: entry.id, label: entry.title },
+      createdAt: now,
+      updatedAt: now,
+    };
+    saveNotes([note, ...notes]);
+    toast.push("Tersimpan ke Kurasah!");
+    setTimeout(() => navigate("/kurasah?id=" + noteId), 600);
+  };
+
+  const catLabel = { fiqh:"Fiqh", ushul:"Ushul Fiqh", aqidah:"Aqidah", hadits:"Hadits/Musthola" }[entry.category] || entry.category;
+
+  const views2col = entry.views.length <= 2;
+  const views4col = entry.views.length <= 4 && !views2col;
+
+  return (
+    <div className="page-enter">
+      {/* Header */}
+      <section className="section pb-6">
+        <div className="container-x">
+          <Reveal>
+            <div className="text-xs text-ink-soft mb-6 flex items-center gap-2 flex-wrap">
+              <button onClick={() => navigate("/paths")} className="hover:text-ink-muted">Learning Path</button>
+              <span className="opacity-40">/</span>
+              <button onClick={() => navigate("/paths/muqaranah")} className="hover:text-ink-muted">Muqaranah</button>
+              <span className="opacity-40">/</span>
+              <span className="text-ink-muted truncate max-w-xs">{entry.title}</span>
+            </div>
+
+            <div className="chip chip-glass text-[11px] uppercase tracking-wider mb-4">{catLabel}</div>
+            <h1 className="font-display text-4xl md:text-5xl font-medium text-ink leading-tight mb-2">{entry.title}</h1>
+            {entry.titleArabic && (
+              <div className="arabic text-gold-300 text-xl leading-loose mt-2 mb-5" style={{direction:"rtl"}}>{entry.titleArabic}</div>
+            )}
+
+            {/* Rumusan masalah */}
+            <div className="max-w-3xl border-l-2 border-gold-500/40 pl-5 py-2 my-6">
+              <div className="text-[10px] uppercase tracking-wider text-ink-soft mb-2">Rumusan Masalah</div>
+              <p className="text-ink-muted leading-relaxed italic">{entry.question}</p>
+            </div>
+
+            <div className="divider-arabesque opacity-30"/>
+
+            {/* Action row */}
+            <div className="flex items-center gap-3 flex-wrap mt-6">
+              <button onClick={catatKeKurasah} className="btn btn-primary text-sm py-2.5 px-5">
+                <Icon name="bookmark" className="w-4 h-4"/> Catat ke Kurasah
+              </button>
+              <button onClick={() => copyPrompt(null)} className="btn btn-ghost text-sm py-2.5 px-5">
+                <Icon name="copy" className="w-4 h-4"/> Salin Prompt AI
+              </button>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Views */}
+      <section className="pb-12">
+        <div className="container-x">
+          {/* Desktop grid */}
+          <div className="hidden md:block">
+            <Reveal stagger className={`grid gap-5 ${views2col ? "grid-cols-2" : views4col ? "grid-cols-2" : "grid-cols-2"}`}>
+              {entry.views.map((v, i) => (
+                <ViewColumn key={i} view={v} isMobile={false}/>
+              ))}
+            </Reveal>
+          </div>
+
+          {/* Mobile accordion */}
+          <div className="md:hidden space-y-3">
+            {entry.views.map((v, i) => (
+              <ViewColumn key={i} view={v} isMobile={true}/>
+            ))}
+          </div>
+
+          {/* Titik Perbedaan */}
+          {entry.notes && (
+            <Reveal className="mt-12">
+              <div className="card-glass-strong p-7 rounded-xl border border-line">
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-1 h-10 rounded-full bg-gradient-to-b from-violet-400 to-gold-400/60"/>
+                  <div>
+                    <div className="text-[10px] uppercase tracking-wider text-ink-soft">Refleksi</div>
+                    <h2 className="font-display text-xl font-semibold text-ink">Titik Perbedaan</h2>
+                  </div>
+                </div>
+                <p className="text-ink-muted leading-relaxed max-w-3xl">{entry.notes}</p>
+              </div>
+            </Reveal>
+          )}
+
+          {/* Diskusi AI */}
+          <Reveal className="mt-8">
+            <div className="card-glass rounded-xl border border-gold-400/15 p-7" style={{background:"rgba(201,168,106,0.04)"}}>
+              <div className="divider-arabesque opacity-20 mb-6"/>
+              <h3 className="font-display text-xl font-semibold text-ink mb-2">Ingin paham lebih dalam?</h3>
+              <p className="text-sm text-ink-muted leading-relaxed mb-5 max-w-2xl">
+                Salin prompt ini dan ajak AI berdiskusi. Ingat: jadikan jawaban AI bahan refleksi, bukan pengganti <em>talaqqi</em> dengan guru.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <button onClick={() => copyPrompt("https://chat.openai.com")} className="btn btn-ghost text-sm py-2.5 px-4">
+                  <Icon name="copy" className="w-4 h-4"/> Salin &amp; Buka ChatGPT
+                </button>
+                <button onClick={() => copyPrompt("https://claude.ai")} className="btn btn-ghost text-sm py-2.5 px-4">
+                  <Icon name="copy" className="w-4 h-4"/> Salin &amp; Buka Claude
+                </button>
+                <button onClick={() => copyPrompt(null)} className="btn btn-ghost text-sm py-2.5 px-4">
+                  <Icon name="copy" className="w-4 h-4"/> Salin saja
+                </button>
+              </div>
+              <div className="divider-arabesque opacity-20 mt-6"/>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Quick note button */}
+      <QuickNoteButton
+        contextLabel={entry.title}
+        contextSource={{ type:"muqaranah", id: entry.id, label: entry.title }}
+      />
+    </div>
+  );
+};
+
+window.MuqaranahDetailPage = MuqaranahDetailPage;
