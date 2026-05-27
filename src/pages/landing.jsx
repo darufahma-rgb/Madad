@@ -337,14 +337,14 @@ const StarSparks = () => {
 const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
   <section className="relative overflow-hidden" style={{ minHeight: "100vh", display: "flex", alignItems: "center", paddingTop: "80px" }}>
 
-    {/* Background blobs — lebih dalam dan dramatis */}
+    {/* Background blobs */}
     <Blob color="rgba(124,77,255,0.38)" size={1000} top={-350} right={-250} />
     <Blob color="rgba(201,168,106,0.13)" size={800} top={250} left={-300} />
     <Blob color="rgba(92,53,204,0.28)" size={700} top={80} left={150} />
     <Blob color="rgba(201,168,106,0.08)" size={500} top={400} right={100} />
 
     {/* Islamic geometric pattern overlay */}
-    <div className="absolute inset-0 pattern-geo opacity-100 pointer-events-none" style={{ opacity: 0.6 }} />
+    <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.6, backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cpolygon points='40,4 47,22 66,16 54,33 72,40 54,47 66,64 47,58 40,76 33,58 14,64 26,47 8,40 26,33 14,16 33,22' fill='none' stroke='rgba(201,168,106,0.12)' stroke-width='0.7'/%3E%3Cpolygon points='40,16 46,28 59,28 59,52 46,52 40,64 34,52 21,52 21,28 34,28' fill='none' stroke='rgba(169,112,255,0.07)' stroke-width='0.5'/%3E%3C/svg%3E\")", backgroundRepeat: "repeat" }} />
 
     {/* Pattern stars layer */}
     <div className="absolute inset-0 pattern-stars opacity-20 pointer-events-none" />
@@ -359,15 +359,9 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
       }} />
     </div>
 
-    {/* Scan beam cahaya */}
-    <div className="scan-beam" style={{ animationDelay: "2s" }} />
-
-    {/* Star sparks */}
-    <StarSparks />
-
-    {/* Kaligrafi besar di background — Lalezar, sangat dramatis */}
+    {/* Kaligrafi besar di background */}
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-      <div className="landing-float" style={{ opacity: 0.065 }}>
+      <div style={{ opacity: 0.065 }}>
         <div className="hero-kali" style={{ fontSize: "clamp(130px,24vw,320px)", letterSpacing: "0.01em" }}>
           اقْرَأْ
         </div>
@@ -375,7 +369,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
     </div>
 
     {/* Ornamen kaligrafi kanan — Aref Ruqaa */}
-    <div className="absolute right-6 top-1/3 pointer-events-none select-none hidden lg:flex flex-col items-end gap-1 landing-float2" style={{ animationDelay: "1s" }}>
+    <div className="absolute right-6 top-1/3 pointer-events-none select-none hidden lg:flex flex-col items-end gap-1">
       <div className="hero-kali-side text-gold-400" style={{ fontSize: "64px", opacity: 0.22, lineHeight: 1.6 }}>
         بِسْمِ اللَّهِ
       </div>
@@ -383,7 +377,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
     </div>
 
     {/* Ornamen kiri — Aref Ruqaa */}
-    <div className="absolute left-4 bottom-1/3 pointer-events-none select-none hidden lg:block landing-float-slow" style={{ animationDelay: "3s" }}>
+    <div className="absolute left-4 bottom-1/3 pointer-events-none select-none hidden lg:block">
       <div className="hero-kali-side text-violet-300" style={{ fontSize: "38px", opacity: 0.16, lineHeight: 2, textAlign: "right" }}>
         وَمَا أُوتِيتُم
       </div>
@@ -397,7 +391,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
 
         {/* Arabic ornament kecil di atas chip */}
         <Reveal>
-          <div className="kali-elegant text-gold-500 mb-3 opacity-40 landing-glow-subtle" style={{ fontSize: "22px", letterSpacing: "0.1em" }}>
+          <div className="kali-elegant text-gold-500 mb-3 opacity-40" style={{ fontSize: "22px", letterSpacing: "0.1em" }}>
             ✦ ─────── ✦ ─────── ✦
           </div>
         </Reveal>
@@ -405,10 +399,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         {/* Chip */}
         <Reveal delay={50}>
           <div className="chip chip-glass text-xs mb-7 inline-flex items-center gap-2 mx-auto">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-gold-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-gold-400" />
-            </span>
+            <span className="inline-flex rounded-full h-2 w-2 bg-gold-400" />
             Untuk Masisir Al-Azhar · Dibuat khusus, bukan adaptasi
           </div>
         </Reveal>
@@ -417,7 +408,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         <Reveal delay={120}>
           <h1 className="font-display leading-[1.03] tracking-tightest mb-6" style={{ fontSize: "clamp(48px,7vw,88px)", fontWeight: 600 }}>
             <span className="text-ink">Kuliah di Azhar itu</span>{" "}
-            <span className="gradient-text-live">berat.</span>
+            <span className="gradient-text">berat.</span>
             <br />
             <span className="text-ink">MADAD bikin lebih</span>{" "}
             <span className="text-gold-300">ringan.</span>
@@ -466,7 +457,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
 
         {/* Arabic ornament bawah */}
         <Reveal delay={600}>
-          <div className="kali-display text-gold-500 mt-8 opacity-20 landing-breathe" style={{ fontSize: "28px", letterSpacing: "0.15em" }}>
+          <div className="kali-display text-gold-500 mt-8 opacity-20" style={{ fontSize: "28px", letterSpacing: "0.15em" }}>
             ﷽
           </div>
         </Reveal>
@@ -475,7 +466,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
       {/* Scroll indicator */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-ink-soft">
         <span className="text-[11px] tracking-[0.15em] uppercase">Scroll</span>
-        <div className="w-px h-10 bg-gradient-to-b from-violet-400/60 to-transparent" style={{ animation: "floatY 2s ease-in-out infinite" }} />
+        <div className="w-px h-10 bg-gradient-to-b from-violet-400/60 to-transparent" />
       </div>
     </div>
   </section>
