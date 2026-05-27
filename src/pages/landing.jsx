@@ -6,106 +6,12 @@ const { useState, useEffect, useRef } = React;
 const LANDING_STYLES = `
   /* ── Fonts ── */
   .kali-display  { font-family: "Reem Kufi", "Noto Kufi Arabic", sans-serif; direction: rtl; }
-  .kali-elegant  { font-family: "Aref Ruqaa", "Amiri", serif; direction: rtl; }
-  .kali-body     { font-family: "Noto Naskh Arabic", "Amiri", serif; direction: rtl; }
+  .kali-elegant  { font-family: "Aref Ruqaa", serif; direction: rtl; }
+  .kali-body     { font-family: "Noto Naskh Arabic", serif; direction: rtl; }
 
-  /* ── Keyframes ── */
-  @keyframes floatY {
-    0%,100% { transform: translateY(0px) rotate(0deg); }
-    50%      { transform: translateY(-22px) rotate(1deg); }
-  }
-  @keyframes floatY2 {
-    0%,100% { transform: translateY(0px) rotate(0deg); }
-    33%      { transform: translateY(-14px) rotate(-0.8deg); }
-    66%      { transform: translateY(-8px) rotate(0.4deg); }
-  }
-  @keyframes floatSlow {
-    0%,100% { transform: translateY(0px) translateX(0px); }
-    25%      { transform: translateY(-10px) translateX(6px); }
-    75%      { transform: translateY(6px) translateX(-4px); }
-  }
-  @keyframes shimmerText {
-    0%   { background-position: 200% center; }
-    100% { background-position: -200% center; }
-  }
-  @keyframes rotateSlow {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-  }
-  @keyframes rotateReverse {
-    from { transform: rotate(360deg); }
-    to   { transform: rotate(0deg); }
-  }
-  @keyframes pulseRing {
-    0%   { transform: scale(1);   opacity: 0.5; }
-    70%  { transform: scale(1.6); opacity: 0; }
-    100% { transform: scale(1.6); opacity: 0; }
-  }
-  @keyframes marqueeLTR {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-  }
-  @keyframes goldGlow {
-    0%,100% { text-shadow: 0 0 24px rgba(201,168,106,0.4), 0 2px 8px rgba(0,0,0,0.5); }
-    50%      { text-shadow: 0 0 60px rgba(201,168,106,0.85), 0 0 120px rgba(201,168,106,0.35), 0 2px 8px rgba(0,0,0,0.5); }
-  }
-  @keyframes goldGlowSubtle {
-    0%,100% { text-shadow: 0 0 16px rgba(201,168,106,0.25); }
-    50%      { text-shadow: 0 0 36px rgba(201,168,106,0.55), 0 0 70px rgba(201,168,106,0.2); }
-  }
-  @keyframes scanBeam {
-    0%   { transform: translateX(-120%) skewX(-12deg); opacity: 0; }
-    8%   { opacity: 1; }
-    92%  { opacity: 0.6; }
-    100% { transform: translateX(220%) skewX(-12deg); opacity: 0; }
-  }
-  @keyframes starAppear {
-    0%   { opacity: 0; transform: scale(0); }
-    50%  { opacity: 1; transform: scale(1); }
-    100% { opacity: 0; transform: scale(0); }
-  }
-  @keyframes breathe {
-    0%,100% { transform: scale(1); opacity: 0.6; }
-    50%      { transform: scale(1.08); opacity: 1; }
-  }
-  @keyframes inkReveal {
-    0%   { opacity: 0; transform: translateY(16px) scale(0.97); filter: blur(4px); }
-    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
-  }
-  @keyframes borderFlow {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  @keyframes patternDrift {
-    0%   { background-position: 0px 0px; }
-    100% { background-position: 80px 80px; }
-  }
-
-  /* ── Utility classes ── */
-  .landing-float        { animation: floatY 8s ease-in-out infinite; }
-  .landing-float2       { animation: floatY2 11s ease-in-out infinite; }
-  .landing-float-slow   { animation: floatSlow 14s ease-in-out infinite; }
-  .landing-rotate       { animation: rotateSlow 50s linear infinite; }
-  .landing-rotate-rev   { animation: rotateReverse 38s linear infinite; }
-  .landing-breathe      { animation: breathe 5s ease-in-out infinite; }
-  .landing-glow         { animation: goldGlow 3.5s ease-in-out infinite; }
-  .landing-glow-subtle  { animation: goldGlowSubtle 5s ease-in-out infinite; }
-  .landing-ink-reveal   { animation: inkReveal 0.9s cubic-bezier(0.22,1,0.36,1) both; }
-  .marquee-track        { animation: marqueeLTR 28s linear infinite; }
-
-  .gradient-text-live {
-    background: linear-gradient(120deg, #DBC8FF 0%, #E8D0A0 28%, #A970FF 55%, #E8D0A0 78%, #DBC8FF 100%);
-    background-size: 300% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: shimmerText 5s linear infinite;
-  }
-
-  /* ── Hero background calligraphy — Lalezar font ── */
+  /* ── Hero background calligraphy ── */
   .hero-kali {
-    font-family: "Lalezar", "Noto Naskh Arabic", serif;
+    font-family: "Reem Kufi", "Noto Kufi Arabic", sans-serif;
     direction: rtl;
     line-height: 1.4;
     background: linear-gradient(160deg, rgba(217,189,133,0.95) 0%, rgba(201,168,106,0.6) 50%, rgba(169,112,255,0.3) 100%);
@@ -123,78 +29,18 @@ const LANDING_STYLES = `
     user-select: none;
   }
 
-  /* ── Islamic geometric pattern overlay ── */
-  .pattern-geo {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cpolygon points='40,4 47,22 66,16 54,33 72,40 54,47 66,64 47,58 40,76 33,58 14,64 26,47 8,40 26,33 14,16 33,22' fill='none' stroke='rgba(201,168,106,0.12)' stroke-width='0.7'/%3E%3Cpolygon points='40,16 46,28 59,28 59,52 46,52 40,64 34,52 21,52 21,28 34,28' fill='none' stroke='rgba(169,112,255,0.07)' stroke-width='0.5'/%3E%3C/svg%3E");
-    background-repeat: repeat;
-    animation: patternDrift 40s linear infinite;
-  }
-
-  /* ── Scan-beam light ── */
-  .scan-beam {
-    position: absolute;
-    top: -20%;
-    left: 0;
-    width: 140px;
-    height: 140%;
-    background: linear-gradient(90deg, transparent 0%, rgba(217,189,133,0.06) 40%, rgba(217,189,133,0.12) 50%, rgba(217,189,133,0.06) 60%, transparent 100%);
-    animation: scanBeam 9s ease-in-out infinite;
-    pointer-events: none;
-  }
-
-  /* ── Floating star sparks ── */
-  .star-spark {
-    position: absolute;
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background: rgba(217,189,133,0.9);
-    animation: starAppear 4s ease-in-out infinite;
-    pointer-events: none;
-  }
-
-  /* ── Ornament ring system ── */
-  .ring-outer { border: 1px solid rgba(201,168,106,0.12); border-radius: 50%; }
-  .ring-mid   { border: 1px dashed rgba(124,77,255,0.18); border-radius: 50%; }
-  .ring-inner { border: 1px solid rgba(201,168,106,0.22); border-radius: 50%; }
-
-  .section-full { min-height: 100vh; display: flex; align-items: center; }
-
   .pain-item {
     border-left: 2px solid rgba(124,77,255,0.25);
     padding-left: 16px;
-    transition: border-color .3s ease, background .3s ease;
     border-radius: 0 6px 6px 0;
     padding-top: 4px;
     padding-bottom: 4px;
-  }
-  .pain-item:hover {
-    border-color: rgba(201,168,106,0.65);
-    background: rgba(201,168,106,0.03);
   }
   .mapel-pill {
     background: rgba(17,6,31,0.75);
     border: 1px solid rgba(169,112,255,0.12);
     border-radius: 10px;
     padding: 10px 14px;
-    transition: all .25s ease;
-    backdrop-filter: blur(14px);
-    position: relative;
-    overflow: hidden;
-  }
-  .mapel-pill::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(201,168,106,0.06) 0%, transparent 60%);
-    opacity: 0;
-    transition: opacity .25s ease;
-  }
-  .mapel-pill:hover::before { opacity: 1; }
-  .mapel-pill:hover {
-    border-color: rgba(201,168,106,0.4);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px -8px rgba(201,168,106,0.2);
   }
   .step-connector {
     width: 2px;
@@ -210,30 +56,16 @@ const LANDING_STYLES = `
     color: #E8D0A0;
     font-weight: 500;
   }
-  .ticker-wrap { overflow: hidden; width: 100%; }
   .vs-pill {
     background: rgba(22,9,50,0.85);
     border: 1px solid rgba(169,112,255,0.18);
     border-radius: 10px;
     padding: 16px 20px;
-    backdrop-filter: blur(12px);
   }
-  .cta-border-anim {
-    position: relative;
-    background: linear-gradient(#080312, #080312) padding-box,
-                linear-gradient(135deg, rgba(201,168,106,0.85), rgba(124,77,255,0.65), rgba(201,168,106,0.85)) border-box;
-    background-size: 200% 200%;
-    border: 1px solid transparent;
+  .cta-card {
+    background: linear-gradient(160deg, rgba(25,11,56,0.9) 0%, rgba(14,6,25,0.85) 100%);
+    border: 1px solid rgba(201,168,106,0.35);
     border-radius: 20px;
-    animation: borderFlow 6s ease infinite;
-  }
-  .feature-card-glow:hover {
-    box-shadow: 0 0 0 1px rgba(201,168,106,0.2), 0 16px 48px -12px rgba(124,77,255,0.3);
-  }
-  .kali-center-text {
-    font-family: "Lalezar", serif;
-    direction: rtl;
-    line-height: 1.5;
   }
   .step-kali {
     font-family: "Aref Ruqaa", serif;
@@ -241,7 +73,7 @@ const LANDING_STYLES = `
     line-height: 1.8;
   }
   .final-cta-kali {
-    font-family: "Lalezar", serif;
+    font-family: "Reem Kufi", sans-serif;
     direction: rtl;
     line-height: 1.6;
   }
@@ -261,33 +93,13 @@ const StyleInject = () => {
   return null;
 };
 
-/* ── Counter yang naik otomatis ─────────────────────────────── */
-const CountUp = ({ target, suffix = "", duration = 1800 }) => {
-  const [val, setVal] = useState(0);
-  const ref = useRef(null);
-  const started = useRef(false);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !started.current) {
-        started.current = true;
-        const start = Date.now();
-        const tick = () => {
-          const elapsed = Date.now() - start;
-          const progress = Math.min(elapsed / duration, 1);
-          const ease = 1 - Math.pow(1 - progress, 3);
-          setVal(Math.round(ease * target));
-          if (progress < 1) requestAnimationFrame(tick);
-        };
-        requestAnimationFrame(tick);
-      }
-    }, { threshold: 0.4 });
-    io.observe(el);
-    return () => io.disconnect();
-  }, [target, duration]);
-  return <span ref={ref}>{val}{suffix}</span>;
-};
+/* ── Counter statis ─────────────────────────────────────────── */
+const CountUp = ({ target, suffix = "" }) => <span>{target}{suffix}</span>;
+
+/* ── Reveal passthrough (no animation overhead) ─────────────── */
+const Reveal = ({ children, className = "", style, delay, stagger, ...rest }) => (
+  <div className={className} style={style} {...rest}>{children}</div>
+);
 
 /* ── Komponen utama ─────────────────────────────────────────── */
 const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
@@ -305,31 +117,6 @@ const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
   </div>
 );
 
-/* ── Star sparks dekoratif ─────────────────────────────────── */
-const StarSparks = () => {
-  const sparks = [
-    { top: "18%", left: "12%", delay: "0s", size: 3 },
-    { top: "72%", left: "8%",  delay: "1.4s", size: 2 },
-    { top: "35%", left: "88%", delay: "0.7s", size: 3 },
-    { top: "62%", left: "82%", delay: "2.1s", size: 2 },
-    { top: "14%", left: "55%", delay: "3.2s", size: 2 },
-    { top: "88%", left: "45%", delay: "1.8s", size: 3 },
-    { top: "48%", left: "4%",  delay: "2.6s", size: 2 },
-    { top: "22%", left: "76%", delay: "0.3s", size: 2 },
-  ];
-  return (
-    <>
-      {sparks.map((s, i) => (
-        <div key={i} className="star-spark" style={{
-          top: s.top, left: s.left,
-          width: s.size, height: s.size,
-          animationDelay: s.delay,
-          animationDuration: `${3.5 + i * 0.4}s`,
-        }} />
-      ))}
-    </>
-  );
-};
 
 /* ══════════════════════════════════════════════════════════════
    1. HERO — Full viewport, kaligrafi besar, emotional headline
@@ -345,9 +132,6 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
 
     {/* Islamic geometric pattern overlay */}
     <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.6, backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cpolygon points='40,4 47,22 66,16 54,33 72,40 54,47 66,64 47,58 40,76 33,58 14,64 26,47 8,40 26,33 14,16 33,22' fill='none' stroke='rgba(201,168,106,0.12)' stroke-width='0.7'/%3E%3Cpolygon points='40,16 46,28 59,28 59,52 46,52 40,64 34,52 21,52 21,28 34,28' fill='none' stroke='rgba(169,112,255,0.07)' stroke-width='0.5'/%3E%3C/svg%3E\")", backgroundRepeat: "repeat" }} />
-
-    {/* Pattern stars layer */}
-    <div className="absolute inset-0 pattern-stars opacity-20 pointer-events-none" />
 
     {/* Radial glow behind calligraphy */}
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -502,7 +286,6 @@ const StatsBanner = () => (
    ══════════════════════════════════════════════════════════════ */
 const PainSection = () => (
   <section className="section relative overflow-hidden">
-    <Blob color="rgba(124,77,255,0.12)" size={600} top={-100} left={-200} />
 
     <div className="container-x">
       <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
@@ -542,32 +325,21 @@ const PainSection = () => (
         </div>
 
         {/* Kanan — kaligrafi dekoratif */}
-        <Reveal delay={300} className="hidden lg:flex flex-col items-center justify-center">
-          <div className="relative">
-            {/* Ring dekoratif */}
-            <div className="landing-rotate ring-outer absolute"
-              style={{ width: "340px", height: "340px", top: "50%", left: "50%", transform: "translate(-50%,-50%)", position: "absolute" }} />
-            <div className="landing-rotate-rev ring-mid absolute"
-              style={{ width: "275px", height: "275px", top: "50%", left: "50%", transform: "translate(-50%,-50%)", position: "absolute" }} />
-            <div className="landing-breathe ring-inner absolute"
-              style={{ width: "210px", height: "210px", top: "50%", left: "50%", transform: "translate(-50%,-50%)", position: "absolute" }} />
-
-            {/* Kaligrafi tengah — Lalezar display + Aref Ruqaa elegant */}
-            <div className="relative z-10 text-center p-16">
-              <div className="kali-display text-gold-300 landing-glow" style={{ fontSize: "58px", lineHeight: 1.7 }}>
-                طَلَبُ الْعِلْمِ
-              </div>
-              <div className="kali-display text-gold-400 landing-glow-subtle" style={{ fontSize: "46px", lineHeight: 1.7 }}>
-                فَرِيضَةٌ
-              </div>
-              <div className="kali-elegant text-ink-muted" style={{ fontSize: "30px", lineHeight: 1.9 }}>
-                عَلَى كُلِّ مُسْلِمٍ
-              </div>
-              <div className="w-16 h-px mx-auto my-3" style={{ background: "linear-gradient(90deg, transparent, rgba(201,168,106,0.4), transparent)" }} />
-              <p className="text-xs text-ink-soft italic">"Menuntut ilmu itu wajib atas setiap Muslim." — HR. Ibn Majah</p>
+        <div className="hidden lg:flex flex-col items-center justify-center">
+          <div className="card-glass rounded-2xl text-center p-12">
+            <div className="kali-display text-gold-300" style={{ fontSize: "58px", lineHeight: 1.7 }}>
+              طَلَبُ الْعِلْمِ
             </div>
+            <div className="kali-display text-gold-400" style={{ fontSize: "46px", lineHeight: 1.7 }}>
+              فَرِيضَةٌ
+            </div>
+            <div className="kali-elegant text-ink-muted" style={{ fontSize: "30px", lineHeight: 1.9 }}>
+              عَلَى كُلِّ مُسْلِمٍ
+            </div>
+            <div className="w-16 h-px mx-auto my-3" style={{ background: "linear-gradient(90deg, transparent, rgba(201,168,106,0.4), transparent)" }} />
+            <p className="text-xs text-ink-soft italic">"Menuntut ilmu itu wajib atas setiap Muslim." — HR. Ibn Majah</p>
           </div>
-        </Reveal>
+        </div>
 
       </div>
     </div>
@@ -579,7 +351,6 @@ const PainSection = () => (
    ══════════════════════════════════════════════════════════════ */
 const SolutionSection = () => (
   <section className="section relative overflow-hidden">
-    <Blob color="rgba(201,168,106,0.10)" size={700} top={-150} right={-200} />
 
     <div className="container-x">
       <Reveal className="text-center mb-12">
@@ -641,17 +412,12 @@ const SolutionSection = () => (
         </div>
       </Reveal>
 
-      {/* AI tools ticker */}
-      <Reveal>
-        <div className="text-center text-xs text-ink-soft mb-4">Mengintegrasikan semua AI yang kamu kenal</div>
-        <div className="ticker-wrap">
-          <div className="marquee-track flex gap-10 whitespace-nowrap">
-            {["Claude", "ChatGPT", "Gemini", "NotebookLM", "Perplexity", "DeepSeek", "Claude", "ChatGPT", "Gemini", "NotebookLM", "Perplexity", "DeepSeek"].map((n, i) => (
-              <span key={i} className="text-sm font-mono text-ink-muted opacity-40 hover:opacity-80 transition-opacity">{n}</span>
-            ))}
-          </div>
-        </div>
-      </Reveal>
+      <div className="text-center text-xs text-ink-soft mb-4">Mengintegrasikan semua AI yang kamu kenal</div>
+      <div className="flex flex-wrap justify-center gap-6">
+        {["Claude", "ChatGPT", "Gemini", "NotebookLM", "Perplexity", "DeepSeek"].map((n, i) => (
+          <span key={i} className="text-sm font-mono text-ink-muted opacity-50">{n}</span>
+        ))}
+      </div>
     </div>
   </section>
 );
@@ -713,7 +479,6 @@ const FeaturesSection = () => {
 
   return (
     <section className="section relative overflow-hidden">
-      <Blob color="rgba(124,77,255,0.14)" size={800} top={-200} right={-300} />
 
       <div className="container-x">
         <Reveal className="text-center mb-14">
@@ -781,8 +546,6 @@ const MapelShowcase = () => {
 
   return (
     <section className="section relative overflow-hidden">
-      <Blob color="rgba(201,168,106,0.08)" size={600} top={-100} left={-200} />
-
       <div className="container-x">
         <Reveal className="text-center mb-12">
           <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">— Cakupan mata pelajaran</div>
@@ -855,7 +618,6 @@ const HowItWorks = () => {
 
   return (
     <section className="section relative overflow-hidden">
-      <Blob color="rgba(124,77,255,0.12)" size={700} top={0} right={-300} />
 
       <div className="container-x">
         <Reveal className="text-center mb-14">
@@ -909,8 +671,6 @@ const HowItWorks = () => {
    ══════════════════════════════════════════════════════════════ */
 const PricingSection = ({ onOpenPayment }) => (
   <section className="section relative overflow-hidden">
-    <Blob color="rgba(201,168,106,0.15)" size={700} top={-100} right={-200} />
-    <Blob color="rgba(124,77,255,0.12)" size={500} top={200} left={-150} />
 
     <div className="container-x">
       <Reveal className="text-center mb-12">
@@ -924,9 +684,8 @@ const PricingSection = ({ onOpenPayment }) => (
       </Reveal>
 
       <Reveal className="max-w-[480px] mx-auto">
-        <div className="cta-border-anim relative overflow-hidden">
-          <Blob color="rgba(201,168,106,0.18)" size={300} top={-60} right={-60} />
-          <div className="relative p-8 md:p-10">
+        <div className="cta-card relative overflow-hidden">
+          <div className="p-8 md:p-10">
 
             {/* Badge */}
             <div className="flex items-center justify-between mb-6">
@@ -985,30 +744,26 @@ const PricingSection = ({ onOpenPayment }) => (
    ══════════════════════════════════════════════════════════════ */
 const FinalCTA = ({ onOpenPayment }) => (
   <section className="relative overflow-hidden pb-32 pt-16">
-    <Blob color="rgba(124,77,255,0.15)" size={700} top={-100} left={-200} />
-    <Blob color="rgba(201,168,106,0.12)" size={500} top={0} right={-150} />
-
     <div className="container-x">
       <div className="divider-arabesque mb-16" />
 
-      {/* Kaligrafi besar di tengah — Lalezar, sangat hidup */}
-      <Reveal className="text-center mb-10">
-        <div className="text-gold-600 opacity-40 mb-4 landing-breathe" style={{ fontSize: "18px", letterSpacing: "0.3em" }}>
+      <div className="text-center mb-10">
+        <div className="text-gold-600 opacity-40 mb-4" style={{ fontSize: "18px", letterSpacing: "0.3em" }}>
           ✦ ─────────── ✦ ─────────── ✦
         </div>
-        <div className="final-cta-kali landing-glow mb-1" style={{ fontSize: "clamp(44px,9vw,90px)", color: "#D9BD85" }}>
+        <div className="final-cta-kali mb-1" style={{ fontSize: "clamp(44px,9vw,90px)", color: "#D9BD85" }}>
           وَقُل رَّبِّ زِدْنِي عِلْمًا
         </div>
         <div className="w-24 h-px mx-auto my-4" style={{ background: "linear-gradient(90deg, transparent, rgba(201,168,106,0.5), transparent)" }} />
         <p className="text-ink-muted italic text-base mb-1">"Dan katakanlah: Ya Tuhanku, tambahkanlah ilmuku."</p>
         <p className="text-ink-soft text-sm mb-12">— QS. Thaha: 114</p>
-      </Reveal>
+      </div>
 
       {/* Penutup copy */}
-      <Reveal className="text-center max-w-2xl mx-auto mb-10">
+      <div className="text-center max-w-2xl mx-auto mb-10">
         <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08] mb-6">
           Kamu sudah ada di Kairo.<br />
-          <span className="gradient-text-live">Sekarang belajar lebih cerdas.</span>
+          <span className="gradient-text">Sekarang belajar lebih cerdas.</span>
         </h2>
         <p className="text-ink-muted leading-relaxed mb-8 text-base">
           Ribuan Masisir sudah menghadapi ujian syafahi, hafalan matan, dan makalah yang sama sepertimu.
@@ -1029,7 +784,7 @@ const FinalCTA = ({ onOpenPayment }) => (
           <span>✓ Akses langsung setelah bayar</span>
           <span>✓ Dibuat khusus untuk Masisir</span>
         </div>
-      </Reveal>
+      </div>
 
       <div className="divider-arabesque mt-16" />
     </div>
