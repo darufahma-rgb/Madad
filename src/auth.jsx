@@ -183,8 +183,8 @@ const computeStage = () => {
   const progress = getProgress();
   const totalDone = Object.keys(progress.modules || {}).filter(k => progress.modules[k]?.completed).length;
   if (totalDone < 3) return { id: "starting", icon: "🌱", label: "Baru mulai" };
-  if (totalDone < 8) return { id: "growing", icon: "⚡", label: "Bertumbuh" };
-  return { id: "ready", icon: "🚀", label: "AI-ready" };
+  if (totalDone < 8) return { id: "growing", icon: "🌿", label: "Bertumbuh" };
+  return { id: "ready", icon: "🌙", label: "AI-ready" };
 };
 
 /* ---------- Admin auth ---------- */

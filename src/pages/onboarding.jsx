@@ -74,7 +74,7 @@ const OnboardingPage = () => {
       // Save profile, redirect to dashboard
       const finalProfile = { ...data, onboarded: true, onboardedAt: new Date().toISOString() };
       saveProfile(finalProfile);
-      toast.push("Dashboard personal sudah siap 🎉");
+      toast.push("Dashboard personal sudah siap untukmu.");
       setTimeout(() => navigate("/dashboard"), 400);
     }
   };

@@ -127,6 +127,13 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
                   </a>
                 )
               ))}
+              {session && (
+                <a href="#/kurasah"
+                   onClick={(e)=>{ e.preventDefault(); navigate("/kurasah"); setOpen(false); }}
+                   className={`px-3 py-3 text-base rounded-lg flex items-center gap-2 ${path === "/kurasah" ? "bg-white/8 text-ink font-medium" : "text-ink-muted hover:bg-white/4"}`}>
+                  <Icon name="book" className="w-4 h-4"/> Kurasah
+                </a>
+              )}
             </nav>
             <div className="mt-auto pt-6 border-t border-line flex flex-col gap-2">
               {session ? (

@@ -7,6 +7,7 @@ const LandingPage = ({ onOpenLogin, onOpenPayment }) => {
       <BantuanSection/>
       <ToolsPreview/>
       <PromptPreview/>
+      <FeaturesShowcase onOpenPayment={onOpenPayment}/>
       <EthicsTeaser/>
       <PricingSection onOpenPayment={onOpenPayment} onOpenLogin={onOpenLogin}/>
       <JoinCTA onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment}/>
@@ -367,6 +368,105 @@ const AdaptiveTeaser = () => (
           </div>
         </div>
       </div>
+    </div>
+  </section>
+);
+
+/* ---------------- FEATURES SHOWCASE ---------------- */
+const FeaturesShowcase = ({ onOpenPayment }) => (
+  <section className="section pt-0">
+    <div className="container-x">
+      <Reveal className="text-center max-w-2xl mx-auto mb-14">
+        <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 flex items-center justify-center gap-2">
+          <span className="w-6 h-px bg-gold-500/70"/>Yang Membedakan MADAD<span className="w-6 h-px bg-gold-500/70"/>
+        </div>
+        <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.05]">
+          Bukan hanya guide. <em className="text-gold-300 not-italic">Ekosistem belajar</em> yang lengkap.
+        </h2>
+        <p className="mt-4 text-ink-muted text-lg max-w-xl mx-auto">Tiga fitur yang tidak ada di tempat lain — dirancang khusus untuk cara belajar thalibul ilmi.</p>
+      </Reveal>
+
+      <Reveal stagger className="grid md:grid-cols-3 gap-5 mb-8">
+        {/* Muqaranah */}
+        <div className="card-glass-strong p-6 hov-lift relative overflow-hidden flex flex-col">
+          <Blob color="rgba(201,168,106,0.18)" size={200} top={-60} right={-60}/>
+          <div className="relative flex-1 flex flex-col">
+            <div className="w-10 h-10 rounded-xl bg-gold-500/15 text-gold-300 flex items-center justify-center mb-4">
+              <Icon name="layers" className="w-5 h-5"/>
+            </div>
+            <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1">Muqaranah</div>
+            <h3 className="font-display text-xl font-semibold text-ink mb-3">Perbandingan Qoul Ulama</h3>
+            <p className="text-sm text-ink-muted leading-relaxed mb-5 flex-1">
+              Bandingkan pendapat ulama lintas mazhab secara terstruktur. Dilengkapi dalil Al-Quran, wajh istidlal, dan sumber kitab — bukan sekadar poin-poin.
+            </p>
+            <div className="card-glass p-4 rounded-xl">
+              <div className="text-[10px] uppercase tracking-wider text-gold-400 mb-2">Contoh kajian</div>
+              <div className="arabic text-base text-gold-200 leading-loose mb-1">حُكْمُ قِرَاءَةِ الفَاتِحَةِ لِلْمَأْمُومِ</div>
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 border border-violet-500/20">Syafi'i</span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-gold-500/10 text-gold-300 border border-gold-500/20">Hanafi</span>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-ink-muted border border-line">+2 mazhab</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Kurasah */}
+        <div className="card-glass-strong p-6 hov-lift relative overflow-hidden flex flex-col">
+          <Blob color="rgba(124,77,255,0.18)" size={200} top={-60} left={-60}/>
+          <div className="relative flex-1 flex flex-col">
+            <div className="w-10 h-10 rounded-xl bg-violet-500/15 text-violet-300 flex items-center justify-center mb-4">
+              <Icon name="book" className="w-5 h-5"/>
+            </div>
+            <div className="text-[11px] uppercase tracking-wider text-violet-300 mb-1">Kurasah</div>
+            <h3 className="font-display text-xl font-semibold text-ink mb-3">Catatan Pribadi Thalibul Ilmi</h3>
+            <p className="text-sm text-ink-muted leading-relaxed mb-5 flex-1">
+              Catatan digital yang mendukung Markdown, teks Arab, dan shortcode seperti <span className="font-mono text-violet-200/80 text-xs">:bismillah:</span> — untuk mencatat ilmu seperti yang ulama ajarkan: قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ.
+            </p>
+            <div className="card-glass p-4 rounded-xl font-mono text-xs text-ink-muted leading-relaxed space-y-1">
+              <div><span className="text-violet-300">## </span><span className="text-ink">Ringkasan Dars Ushul</span></div>
+              <div className="text-gold-200/70 text-right" style={{direction:"rtl",fontFamily:"Noto Naskh Arabic,serif"}}>الأَمْرُ يَقْتَضِي الوُجُوبَ</div>
+              <div><span className="text-violet-300">**</span>Wajh istidlal:<span className="text-violet-300">**</span> ...</div>
+              <div className="text-ink-soft">→ Export Markdown</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Companion Harian */}
+        <div className="card-glass-strong p-6 hov-lift relative overflow-hidden flex flex-col">
+          <Blob color="rgba(124,77,255,0.14)" size={200} bottom={-60} right={-60}/>
+          <div className="relative flex-1 flex flex-col">
+            <div className="w-10 h-10 rounded-xl bg-violet-500/15 text-violet-300 flex items-center justify-center mb-4">
+              <Icon name="sparkles" className="w-5 h-5"/>
+            </div>
+            <div className="text-[11px] uppercase tracking-wider text-violet-300 mb-1">Companion Harian</div>
+            <h3 className="font-display text-xl font-semibold text-ink mb-3">Niat, Ritme & Refleksi</h3>
+            <p className="text-sm text-ink-muted leading-relaxed mb-5 flex-1">
+              Setiap hari diawali niat yang diniatkan, bukan sekadar to-do list. Ritme belajar dicatat, bukan di-streak. Refleksi diakhiri dengan muhasabah.
+            </p>
+            <div className="card-glass p-4 rounded-xl space-y-3">
+              {[
+                { label: "Niat Hari Ini", arabic: "نَوَيْتُ طَلَبَ الْعِلْمِ لِلَّهِ", color: "gold" },
+                { label: "Ritme Belajar", val: "Hadir hari ini", color: "violet" },
+              ].map((item, i) => (
+                <div key={i} className="flex items-center justify-between gap-3">
+                  <span className="text-[11px] text-ink-muted">{item.label}</span>
+                  {item.arabic
+                    ? <span className="arabic text-xs text-gold-300">{item.arabic}</span>
+                    : <span className={`text-[10px] px-2 py-0.5 rounded border ${item.color === "violet" ? "bg-violet-500/10 text-violet-300 border-violet-500/20" : "bg-gold-500/10 text-gold-300 border-gold-500/20"}`}>{item.val}</span>
+                  }
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Reveal>
+
+      <Reveal className="text-center">
+        <button onClick={onOpenPayment} className="btn btn-primary text-base px-8 py-3.5">
+          <Icon name="sparkles" className="w-4 h-4"/> Akses Semua Fitur
+        </button>
+      </Reveal>
     </div>
   </section>
 );

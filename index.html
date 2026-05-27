@@ -4,6 +4,16 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>MADAD — Panduan Belajar dengan AI untuk Masisir</title>
+<meta name="description" content="MADAD — Premium AI learning sanctuary untuk Masisir. Belajar lebih cerdas dengan AI yang paham caramu belajar. Muqaranah ulama, Kurasah pribadi, companion harian." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="MADAD — Panduan Belajar dengan AI untuk Masisir" />
+<meta property="og:description" content="Premium AI learning sanctuary untuk Masisir. Companion harian: niat, ritme, refleksi. Muqaranah qoul ulama. Kurasah pribadi. 6 AI Tools · 36 Adaptive Guides." />
+<meta property="og:image" content="/assets/aigypt-logo.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="MADAD — Panduan Belajar dengan AI untuk Masisir" />
+<meta name="twitter:description" content="Premium AI learning sanctuary untuk Masisir. Companion harian: niat, ritme, refleksi. Muqaranah qoul ulama. Kurasah pribadi." />
+<link rel="icon" type="image/png" href="/assets/aigypt-logo.png" />
+<link rel="apple-touch-icon" href="/assets/aigypt-logo.png" />
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -215,12 +225,20 @@
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
 
-<!-- App -->
+<!-- App: Foundation -->
 <script type="text/babel" data-presets="env,react" src="src/icons.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/ui.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/data.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/auth.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/layout.jsx"></script>
+<!-- Data layers -->
+<script type="text/babel" data-presets="env,react" src="src/muqaranah-data.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/intentions-data.jsx"></script>
+<!-- Shared components -->
+<script type="text/babel" data-presets="env,react" src="src/markdown-render.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/quick-note.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/dashboard-companions.jsx"></script>
+<!-- Pages -->
 <script type="text/babel" data-presets="env,react" src="src/pages/landing.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/onboarding.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/dashboard.jsx"></script>
@@ -228,16 +246,12 @@
 <script type="text/babel" data-presets="env,react" src="src/pages/paths.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/ethics.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/admin.jsx"></script>
-<script type="text/babel" data-presets="env,react" src="src/muqaranah-data.jsx"></script>
-<script type="text/babel" data-presets="env,react" src="src/markdown-render.jsx"></script>
-<script type="text/babel" data-presets="env,react" src="src/quick-note.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/muqaranah.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/muqaranah-detail.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/muqaranah-form.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/kurasah.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/kurasah-editor.jsx"></script>
-<script type="text/babel" data-presets="env,react" src="src/intentions-data.jsx"></script>
-<script type="text/babel" data-presets="env,react" src="src/dashboard-companions.jsx"></script>
+<!-- App shell (last) -->
 <script type="text/babel" data-presets="env,react" src="src/app.jsx"></script>
 </body>
 </html>

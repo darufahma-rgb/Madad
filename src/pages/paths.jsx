@@ -17,7 +17,7 @@ const PathsPage = () => {
   const handleComplete = (path, module) => {
     markModuleComplete(path.id, module.id);
     setLastActivity(module.title, path.id, module.id);
-    toast.push(`"${module.title}" selesai 🎉`);
+    toast.push(`"${module.title}" tercatat selesai.`);
   };
 
   return (
@@ -125,8 +125,9 @@ const PathsPage = () => {
                       <Blob color="rgba(201,168,106,0.32)" size={300} top={-100} left={-50}/>
                       <Blob color="rgba(124,77,255,0.28)" size={250} bottom={-100} right={-50}/>
                       <div className="relative">
-                        <div className="text-5xl mb-3">🎉</div>
-                        <h3 className="font-display text-2xl font-semibold text-ink mb-2">Level {path.level} selesai!</h3>
+                        <div className="arabic text-3xl text-gold-300 mb-2 leading-loose">الْحَمْدُ لِلَّهِ الَّذِي بِنِعْمَتِهِ تَتِمُّ الصَّالِحَاتُ</div>
+                        <p className="text-xs text-gold-400/70 mb-4 italic">"Segala puji bagi Allah yang dengan nikmat-Nya segala kebaikan menjadi sempurna."</p>
+                        <h3 className="font-display text-2xl font-semibold text-ink mb-2">Level {path.level} selesai.</h3>
                         <p className="text-ink-muted">Lanjut ke level berikutnya untuk workflow yang lebih dalam.</p>
                       </div>
                     </div>
