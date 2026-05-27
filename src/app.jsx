@@ -6,6 +6,11 @@ const App = () => {
   const [loginOpen, setLoginOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
 
+  useEffect(() => {
+    const s = document.getElementById("splash");
+    if (s) { s.style.opacity = "0"; setTimeout(() => s.remove(), 580); }
+  }, []);
+
   // Auto-redirect logic on path change
   useEffect(() => {
     // Member-only routes
@@ -72,6 +77,7 @@ const App = () => {
       </div>
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} onSuccess={handleLoginSuccess}/>
       <PaymentModal open={paymentOpen} onClose={() => setPaymentOpen(false)} onOpenLogin={openLogin}/>
+      {session && !path.startsWith("/kurasah") && !isAdmin && <QuickNoteButton/>}
     </ToastProvider>
   );
 };

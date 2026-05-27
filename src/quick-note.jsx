@@ -1,15 +1,20 @@
 /* Madad, Quick Note Floating Button + Modal */
 
+const QUICK_NOTE_TAGS = ["Fiqh","Ushul","Hadith","Tafsir","Nahwu","Aqidah","Balaghah","Makalah","Hafalan","Dars","Penting"];
+
 const QuickNoteModal = ({ open, onClose, contextLabel, contextSource }) => {
   const [title, setTitle] = React.useState("");
   const [body, setBody] = React.useState("");
+  const [tags, setTags] = React.useState([]);
   const [saving, setSaving] = React.useState(false);
   const toast = useToast();
   const path = useRoute();
 
   React.useEffect(() => {
-    if (open) { setTitle(""); setBody(""); }
+    if (open) { setTitle(""); setBody(""); setTags([]); }
   }, [open]);
+
+  const toggleTag = (tag) => setTags(prev => prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]);
 
   const handleSave = (andNavigate = false) => {
     if (!title.trim() && !body.trim()) return;
@@ -20,7 +25,7 @@ const QuickNoteModal = ({ open, onClose, contextLabel, contextSource }) => {
       id: "note_" + Date.now() + "_" + Math.random().toString(36).slice(2,6),
       title: title.trim() || "Catatan tanpa judul",
       body: body.trim(),
-      tags: [],
+      tags: tags,
       source: contextSource || null,
       createdAt: now,
       updatedAt: now,
@@ -68,6 +73,21 @@ const QuickNoteModal = ({ open, onClose, contextLabel, contextSource }) => {
           rows={6}
           className="w-full bg-white/3 rounded-xl p-4 text-sm text-ink-muted placeholder-ink-soft outline-none focus:bg-white/5 transition-colors resize-none leading-relaxed border border-line focus:border-violet-400/30"
         />
+
+        <div className="mt-4">
+          <div className="text-[10px] uppercase tracking-wider text-ink-soft mb-2">Saran tag</div>
+          <div className="flex flex-wrap gap-1.5">
+            {QUICK_NOTE_TAGS.map(tag => {
+              const active = tags.includes(tag);
+              return (
+                <button key={tag} type="button" onClick={() => toggleTag(tag)}
+                  className={`text-[11px] px-2.5 py-1 rounded-lg border transition-colors ${active ? "bg-violet-500/20 text-violet-200 border-violet-400/40" : "bg-white/3 text-ink-muted border-line hover:border-violet-400/25 hover:text-ink-soft"}`}>
+                  {tag}
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
         <div className="flex items-center gap-3 mt-4">
           <button

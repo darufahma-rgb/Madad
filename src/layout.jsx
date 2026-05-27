@@ -45,6 +45,7 @@ const Brand = ({ size = 36 }) => (
 const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
   const { session, logout } = useAuth();
   const path = useRoute();
 
@@ -53,7 +54,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-  useEffect(() => { setOpen(false); }, [path]);
+  useEffect(() => { setOpen(false); setConfirmLogout(false); }, [path]);
 
   const memberLinks = [
     { to: "/dashboard", label: "Dashboard" },
@@ -90,7 +91,14 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
               <div className="px-3 py-1.5 rounded-lg chip-glass text-xs">
                 <span className="text-ink-muted">Member:</span> <span className="text-ink font-medium">{session.name}</span>
               </div>
-              <button onClick={logout} className="btn btn-ghost text-sm py-2 px-3">Logout</button>
+              {confirmLogout ? (
+                <span className="flex items-center gap-1">
+                  <button onClick={() => { logout(); setConfirmLogout(false); }} className="text-sm text-rose-400 hover:text-rose-300 px-2 py-1 rounded-lg hover:bg-rose-500/10 transition-colors font-medium">Ya, keluar</button>
+                  <button onClick={() => setConfirmLogout(false)} className="text-sm text-ink-muted hover:text-ink px-2 py-1 rounded-lg transition-colors">Batal</button>
+                </span>
+              ) : (
+                <button onClick={() => setConfirmLogout(true)} className="btn btn-ghost text-sm py-2 px-3">Logout</button>
+              )}
             </>
           ) : (
             <>
@@ -137,7 +145,14 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
             </nav>
             <div className="mt-auto pt-6 border-t border-line flex flex-col gap-2">
               {session ? (
-                <button onClick={() => { logout(); setOpen(false); }} className="btn btn-ghost w-full">Logout</button>
+                confirmLogout ? (
+                  <div className="flex gap-2">
+                    <button onClick={() => { logout(); setOpen(false); setConfirmLogout(false); }} className="flex-1 btn text-sm py-2.5 text-rose-400 border border-rose-500/30 bg-rose-500/8 hover:bg-rose-500/15 transition-colors">Ya, keluar</button>
+                    <button onClick={() => setConfirmLogout(false)} className="flex-1 btn btn-ghost text-sm py-2.5">Batal</button>
+                  </div>
+                ) : (
+                  <button onClick={() => setConfirmLogout(true)} className="btn btn-ghost w-full">Logout</button>
+                )
               ) : (
                 <>
                   <button onClick={() => { setOpen(false); onOpenPayment && onOpenPayment(); }} className="btn btn-primary w-full">

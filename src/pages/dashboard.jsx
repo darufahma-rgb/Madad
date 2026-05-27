@@ -1,5 +1,15 @@
 /* Madad, Personal Dashboard */
 
+const getCairoGreeting = () => {
+  const h = (new Date().getUTCHours() + 3) % 24;
+  if (h >= 3  && h < 6)  return { text: "Marhaban, ya Syahid al-Fajr", arabic: "مَرْحَباً يَا شَاهِدَ الفَجْرِ", sub: "Waktu yang paling mulia untuk menuntut ilmu." };
+  if (h >= 6  && h < 12) return { text: "Selamat pagi dari Kairo",     arabic: "صَبَاحُ الخَيْرِ",           sub: "Semoga pagi ini penuh barakah dan faedah." };
+  if (h >= 12 && h < 15) return { text: "Selamat siang",               arabic: "نَهَارُكُمْ سَعِيدٌ",        sub: "Teruskan dars dan catatanmu hari ini." };
+  if (h >= 15 && h < 18) return { text: "Selamat sore",                arabic: "مَسَاءُ الخَيْرِ",           sub: "Waktu Ashar — waktunya murajaah yang tenang." };
+  if (h >= 18 && h < 22) return { text: "Selamat malam",               arabic: "مَسَاءُ النُّورِ",           sub: "Malam yang tenang di Kairo — waktumu untuk refleksi." };
+  return                         { text: "Selamat malam",               arabic: "لَيْلَةٌ مُبَارَكَةٌ",      sub: "Istirahat yang cukup adalah bagian dari belajar." };
+};
+
 const DashboardPage = () => {
   const { session, profile, progress, clearProfile } = useAuth();
 
@@ -20,6 +30,7 @@ const DashboardPage = () => {
   const fieldLabel = FIELDS.find(f => f.id === profile.field)?.label || "-";
   const firstName = session.name.split(" ")[0];
   const topRec = recs[0];
+  const greeting = getCairoGreeting();
 
   return (
     <div className="page-enter">
@@ -31,17 +42,16 @@ const DashboardPage = () => {
         <div className="absolute inset-0 pattern-stars opacity-25 pointer-events-none"/>
         <div className="container-x relative">
           <Reveal>
-            <div className="arabic text-2xl text-gold-300 mb-3">السلام عليكم</div>
+            <div className="arabic text-2xl text-gold-300 mb-3">{greeting.arabic}</div>
             <h1 className="font-display text-5xl md:text-[68px] font-semibold text-ink leading-[1.0] tracking-tightest">
-              Assalamu'alaikum,{" "}
-              <span className="gradient-text">{firstName}</span>{" "}
-              <span className="text-gold-300">🌙</span>
+              {greeting.text},{" "}
+              <span className="gradient-text">{firstName}.</span>
             </h1>
             <p className="mt-5 text-ink-muted text-lg max-w-2xl leading-relaxed">
-              Dashboard ini disusun khusus untukmu, gaya{" "}
+              {greeting.sub}{" "}
+              Dashboard disusun untuk gaya{" "}
               <span className="text-ink font-medium">{styleLabel.toLowerCase()}</span>,
               bidang <span className="text-ink font-medium">{fieldLabel.toLowerCase()}</span>.
-              Madad paham cara belajarmu.
             </p>
           </Reveal>
         </div>
