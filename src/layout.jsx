@@ -58,6 +58,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
 
   const memberLinks = [
     { to: "/dashboard", label: "Dashboard" },
+    { to: "/mapel",     label: "Panduan Mapel" },
     { to: "/tools",     label: "Tool Guide" },
     { to: "/paths",     label: "Learning Path" },
     { to: "/ethics",    label: "Etika" },

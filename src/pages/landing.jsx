@@ -45,9 +45,8 @@ const Hero = ({ onOpenLogin, onOpenPayment }) => (
 
           <Reveal delay={300}>
             <p className="mt-6 text-lg md:text-xl text-ink-muted leading-relaxed max-w-2xl">
-              Fiqh, Hadith, Ushul, Nahwu, Tafsir, Aqidah — MADAD tahu AI mana yang paling
-              bantu di <em className="text-ink not-italic">setiap mata pelajaranmu</em>, dengan panduan sesuai caramu belajar.
-              Bukan copy-paste, tapi benar-benar paham.
+              MADAD tidak menyediakan AI-nya — MADAD memberi <em className="text-ink not-italic">panduan cara pakainya</em> untuk setiap mata pelajaran Al-Azharmu.
+              Fiqh, Hadith, Ushul, Nahwu, Tafsir — buka Claude, pakai prompt ini, pahami lebih dalam.
             </p>
           </Reveal>
 
