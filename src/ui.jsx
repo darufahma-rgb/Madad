@@ -162,16 +162,25 @@ const Blob = ({ color = "rgba(124,77,255,0.38)", size = 400, top, left, right, b
 );
 
 /* ---------------- Tool icon (logo image or monogram fallback) ---------------- */
-const ToolIcon = ({ tool, size = "w-11 h-11", rounded = "rounded-xl", className = "" }) => (
-  <span
-    className={`${size} ${rounded} flex items-center justify-center overflow-hidden flex-shrink-0 ${className}`}
-  >
-    {tool.logo
-      ? <img src={tool.logo} alt={tool.name} className="w-full h-full object-contain p-1" style={{ filter: "brightness(0) invert(1)" }}/>
-      : <span className="text-xs font-mono font-bold text-white">{tool.monogram}</span>
-    }
-  </span>
-);
+const ToolIcon = ({ tool, size = "w-11 h-11", rounded = "rounded-xl", className = "" }) => {
+  const bg = tool.logoBg || tool.color || "#1a1a2e";
+  const pad = tool.logoPad || "p-1.5";
+  const filter = tool.logoFilter || "none";
+  return (
+    <span
+      className={`${size} ${rounded} flex items-center justify-center overflow-hidden flex-shrink-0 ${className}`}
+      style={{ background: bg }}
+    >
+      {tool.logo
+        ? <img src={tool.logo} alt={tool.name}
+            className={`w-full h-full object-contain ${pad}`}
+            style={{ filter }}
+          />
+        : <span className="text-xs font-mono font-bold text-white">{tool.monogram}</span>
+      }
+    </span>
+  );
+};
 
 /* ============ EXPORTS ============ */
 Object.assign(window, {
