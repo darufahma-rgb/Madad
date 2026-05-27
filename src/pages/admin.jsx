@@ -87,9 +87,6 @@ const AdminLogin = ({ onLogin }) => {
             />
             {error && <div className="mt-3 text-sm text-rose-600">PIN salah.</div>}
             <button type="submit" className="btn btn-primary w-full mt-5">Masuk</button>
-            <div className="mt-5 text-center text-xs text-ink-soft">
-              Demo PIN: <span className="font-mono text-gold-300">{ADMIN_PIN}</span>
-            </div>
           </form>
         </div>
       </div>

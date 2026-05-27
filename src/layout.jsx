@@ -167,7 +167,6 @@ const Footer = () => (
           <a href="#/dashboard" onClick={(e)=>{e.preventDefault(); navigate("/dashboard");}} className="text-ink-muted hover:text-ink">Dashboard</a>
           <a href="#/tools" onClick={(e)=>{e.preventDefault(); navigate("/tools");}} className="text-ink-muted hover:text-ink">Tool Guide</a>
           <a href="#/paths" onClick={(e)=>{e.preventDefault(); navigate("/paths");}} className="text-ink-muted hover:text-ink">Learning Path</a>
-          <a href="#/admin" onClick={(e)=>{e.preventDefault(); navigate("/admin");}} className="text-ink-soft hover:text-ink-muted">Admin</a>
         </div>
       </div>
       <div className="divider-arabesque mt-10 opacity-50"/>
@@ -292,12 +291,14 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
   const [paid, setPaid] = useState(false);
 
   useEffect(() => {
-    if (!open) { setPaid(false); }
+    if (!open) { setPaid(false); setWaitingConfirm(false); }
   }, [open]);
+
+  const [waitingConfirm, setWaitingConfirm] = useState(false);
 
   const handlePayClick = () => {
     window.open("https://lynk.id/madad", "_blank", "noopener,noreferrer");
-    setTimeout(() => setPaid(true), 800);
+    setWaitingConfirm(true);
   };
 
   return (
@@ -371,12 +372,30 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
               </div>
             </div>
 
-            <button onClick={handlePayClick} className="btn btn-gold w-full text-base py-3.5 mb-3">
-              <Icon name="arrowRight" className="w-4 h-4"/> Bayar via Lynk.id
-            </button>
-            <p className="text-center text-xs text-ink-soft">
-              Setelah bayar, kode akses dikirim admin. Proses cepat & manual.
-            </p>
+            {waitingConfirm ? (
+              <div className="space-y-3">
+                <div className="card-glass p-4 text-center rounded-xl border border-gold-500/20">
+                  <p className="text-sm text-ink-muted leading-relaxed">
+                    Selesaikan pembayaran di tab Lynk.id yang baru terbuka, lalu klik tombol di bawah.
+                  </p>
+                </div>
+                <button onClick={() => setPaid(true)} className="btn btn-gold w-full text-base py-3.5">
+                  <Icon name="check" className="w-4 h-4"/> Saya sudah selesai bayar
+                </button>
+                <button onClick={() => setWaitingConfirm(false)} className="text-center w-full text-xs text-ink-soft hover:text-ink-muted">
+                  Kembali
+                </button>
+              </div>
+            ) : (
+              <>
+                <button onClick={handlePayClick} className="btn btn-gold w-full text-base py-3.5 mb-3">
+                  <Icon name="arrowRight" className="w-4 h-4"/> Bayar via Lynk.id
+                </button>
+                <p className="text-center text-xs text-ink-soft">
+                  Setelah bayar, kode akses dikirim admin. Proses cepat & manual.
+                </p>
+              </>
+            )}
             <div className="mt-4 pt-4 border-t border-line text-center">
               <button onClick={() => { onClose(); onOpenLogin && onOpenLogin(); }} className="text-xs text-violet-300 hover:text-violet-200 underline underline-offset-2">
                 Sudah punya kode akses? Login di sini

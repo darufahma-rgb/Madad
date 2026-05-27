@@ -6,6 +6,8 @@
 const renderMarkdown = (raw) => {
   if (!raw || typeof raw !== "string") return "";
 
+  const escapeHtml = (s) => s.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
   const lines = raw.split("\n");
   const html = [];
   let listBuffer = [];
@@ -23,7 +25,7 @@ const renderMarkdown = (raw) => {
   };
 
   const inline = (text) => {
-    return text
+    return escapeHtml(text)
       .replace(/\*\*(.+?)\*\*/g, '<strong class="text-ink font-semibold">$1</strong>')
       .replace(/\*(.+?)\*/g, '<em class="text-ink-muted italic">$1</em>')
       .replace(/`(.+?)`/g, '<code class="font-mono text-xs bg-white/8 px-1.5 py-0.5 rounded text-violet-200">$1</code>');
@@ -70,7 +72,7 @@ const renderMarkdown = (raw) => {
       flushList();
       const content = line.slice(2);
       if (isMostlyArabic(content)) {
-        html.push(`<blockquote class="border-l-2 border-gold-500/50 pl-4 my-4"><p class="arabic text-gold-200 text-lg leading-loose" style="direction:rtl;text-align:right">${content}</p></blockquote>`);
+        html.push(`<blockquote class="border-l-2 border-gold-500/50 pl-4 my-4"><p class="arabic text-gold-200 text-lg leading-loose" style="direction:rtl;text-align:right">${escapeHtml(content)}</p></blockquote>`);
       } else {
         html.push(`<blockquote class="border-l-2 border-violet-500/40 pl-4 my-4 italic text-ink-muted">${inline(content)}</blockquote>`);
       }
@@ -100,7 +102,7 @@ const renderMarkdown = (raw) => {
     // Regular paragraph, auto-detect Arabic
     flushList();
     if (isMostlyArabic(line)) {
-      html.push(`<p class="arabic text-gold-200 text-lg leading-loose my-3" style="direction:rtl;text-align:right">${line}</p>`);
+      html.push(`<p class="arabic text-gold-200 text-lg leading-loose my-3" style="direction:rtl;text-align:right">${escapeHtml(line)}</p>`);
     } else {
       html.push(`<p class="text-ink-muted leading-relaxed my-3">${inline(line)}</p>`);
     }
