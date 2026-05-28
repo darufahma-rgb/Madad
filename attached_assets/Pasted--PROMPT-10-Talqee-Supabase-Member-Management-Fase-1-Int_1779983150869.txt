@@ -1,0 +1,753 @@
+# PROMPT 10 — Talqee: Supabase Member Management (Fase 1)
+
+> Integrasi Supabase untuk member management. Data user (kurasah, niat, dll) tetap di localStorage — itu Fase 2 nanti. Fokus Fase 1: admin bisa manage member dari device mana saja, login validation pakai Supabase.
+
+---
+
+## Konteks & Tujuan
+
+Sekarang data member hardcoded di `src/data.jsx` dan tersimpan di localStorage browser admin. Masalahnya:
+- Admin tambah member dari laptop → data hilang saat buka admin dari HP
+- Tidak ada satu sumber kebenaran untuk data member
+- Tidak scalable
+
+**Fase 1 ini solve:** tabel `members` pindah ke Supabase. Admin panel baca/tulis ke Supabase. Login user validasi ke Supabase. Semua device sync otomatis.
+
+**Yang TIDAK berubah di Fase 1:**
+- Data user pribadi (kurasah, niat, progress, muqaranah) tetap localStorage
+- Arsitektur frontend (Babel standalone, tidak ada bundler)
+- Semua fitur existing tetap jalan
+
+---
+
+## Kredensial Supabase (ISI SEBELUM RUN)
+
+```
+SUPABASE_URL  = "GANTI_DENGAN_URL_DARI_SUPABASE_DASHBOARD"
+SUPABASE_ANON_KEY = "GANTI_DENGAN_ANON_KEY_DARI_SUPABASE_DASHBOARD"
+```
+
+Cara dapat:
+1. Buka supabase.com → project lo → Settings → API
+2. Copy "Project URL" dan "anon public" key
+3. Ganti 2 placeholder di atas sebelum run prompt ini
+
+---
+
+## BAGIAN 0 — Setup Database di Supabase (MANUAL, bukan Replit)
+
+**Sebelum run prompt ini di Replit**, lo harus setup database di Supabase dashboard dulu. Ini tidak bisa diautomasi dari frontend.
+
+### STEP 0.1 — Buat Tabel `members`
+
+Buka Supabase Dashboard → SQL Editor → New Query → paste & run:
+
+```sql
+-- Tabel utama members
+CREATE TABLE members (
+  id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  code        TEXT UNIQUE NOT NULL,
+  name        TEXT NOT NULL,
+  whatsapp    TEXT,
+  duration    INTEGER DEFAULT 30,
+  status      TEXT DEFAULT 'active' CHECK (status IN ('active','expired','disabled')),
+  created_at  TIMESTAMPTZ DEFAULT now(),
+  expires_at  DATE NOT NULL,
+  device      TEXT,
+  device_id   TEXT,
+  last_login  TIMESTAMPTZ,
+  notes       TEXT
+);
+
+-- Index untuk lookup cepat by code (paling sering dipakai)
+CREATE INDEX idx_members_code ON members(code);
+CREATE INDEX idx_members_status ON members(status);
+```
+
+### STEP 0.2 — Setup Row Level Security (RLS)
+
+Masih di SQL Editor, run query berikut:
+
+```sql
+-- Aktifkan RLS
+ALTER TABLE members ENABLE ROW LEVEL SECURITY;
+
+-- Policy 1: User biasa bisa SELECT hanya baris miliknya sendiri (berdasarkan code)
+-- Ini dipakai saat login: query "WHERE code = input_user"
+CREATE POLICY "user_read_own" ON members
+  FOR SELECT
+  TO anon
+  USING (true);
+-- Catatan: kita allow SELECT semua tapi batasi dari application layer.
+-- Policy ini memungkinkan lookup by code tanpa expose semua data.
+
+-- Policy 2: Hanya service role (admin) yang bisa INSERT, UPDATE, DELETE
+-- Dari frontend anon key, write operations diblokir kecuali via admin flow
+-- yang kita proteksi dengan PIN check di application layer
+CREATE POLICY "admin_all" ON members
+  FOR ALL
+  TO anon
+  USING (true)
+  WITH CHECK (true);
+
+-- Catatan keamanan: RLS kita simple karena admin auth dilakukan di
+-- application layer (PIN check). Untuk Fase 2, ini bisa diperketat
+-- dengan Supabase Auth proper.
+```
+
+### STEP 0.3 — Migrate Data Member Existing
+
+Masih di SQL Editor, run query berikut untuk migrate 6 member demo yang ada:
+
+```sql
+INSERT INTO members (code, name, whatsapp, duration, status, created_at, expires_at, device, device_id, last_login) VALUES
+  ('MSR-DEMO-1234', 'Demo Member',       '+201xxxxxxxxx', 30, 'active',   '2025-12-01', '2026-12-31', null, null, null),
+  ('MSR-AHMD-X7K9', 'Ahmad Fauzi',       '+201111111111', 90, 'active',   '2025-11-15', '2026-02-15', 'iPhone · Cairo', null, null),
+  ('MSR-FATM-Z3P2', 'Fatimah Az-Zahra',  '+201222222222', 30, 'active',   '2025-12-10', '2026-01-10', 'Pixel · Nasr City', null, null),
+  ('MSR-UMAR-Q8L5', 'Umar Khalid',       '+201333333333', 60, 'active',   '2025-11-30', '2026-01-30', null, null, null),
+  ('MSR-NUSY-B4R7', 'Nusyaibah Rifqi',   '+201444444444', 30, 'expired',  '2025-10-01', '2025-11-01', 'iPhone · Hayy 10', null, null),
+  ('MSR-RIZK-T6M9', 'Rizki Pratama',     '+201555555555', 30, 'disabled', '2025-11-20', '2025-12-20', null, null, null);
+```
+
+Setelah 3 step di atas selesai di Supabase Dashboard, baru run prompt ini di Replit.
+
+---
+
+## BAGIAN 1 — Setup Supabase Client di Frontend
+
+### STEP 1.1 — Load Supabase SDK di `index.html`
+
+Tambahkan **sebelum** semua script Babel, di bagian `<head>` atau awal `<body>`:
+
+```html
+<!-- Supabase SDK via CDN (load sebelum semua script app) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+```
+
+### STEP 1.2 — Buat File `src/supabase.jsx`
+
+File baru ini berisi Supabase client + semua fungsi yang berkaitan dengan member di Supabase:
+
+```jsx
+/* Talqee — Supabase Client & Member API
+   Fase 1: member management via Supabase.
+   Data user pribadi (kurasah, niat, dll) tetap localStorage — Fase 2.
+*/
+
+/* ============ CONFIG ============ */
+const SUPABASE_URL     = "GANTI_DENGAN_URL_DARI_SUPABASE_DASHBOARD";
+const SUPABASE_ANON_KEY = "GANTI_DENGAN_ANON_KEY_DARI_SUPABASE_DASHBOARD";
+
+// Init client (SDK udah di-load via CDN di index.html)
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ============ STATUS ============ */
+// Track apakah Supabase bisa dijangkau
+let _supabaseOnline = true;
+
+const checkSupabase = async () => {
+  try {
+    const { error } = await _supabase.from("members").select("id").limit(1);
+    _supabaseOnline = !error;
+  } catch {
+    _supabaseOnline = false;
+  }
+  return _supabaseOnline;
+};
+
+/* ============ MEMBER API ============ */
+
+// GET: semua member (untuk admin panel)
+const sbGetAllMembers = async () => {
+  const { data, error } = await _supabase
+    .from("members")
+    .select("*")
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  return data.map(sbToMember); // normalize ke format existing
+};
+
+// GET: 1 member by code (untuk login validation)
+const sbGetMemberByCode = async (code) => {
+  const { data, error } = await _supabase
+    .from("members")
+    .select("*")
+    .eq("code", code.trim().toUpperCase())
+    .single();
+  if (error) {
+    if (error.code === "PGRST116") return null; // not found
+    throw error;
+  }
+  return sbToMember(data);
+};
+
+// INSERT: tambah member baru
+const sbAddMember = async (member) => {
+  const row = memberToSb(member);
+  const { data, error } = await _supabase
+    .from("members")
+    .insert([row])
+    .select()
+    .single();
+  if (error) throw error;
+  return sbToMember(data);
+};
+
+// UPDATE: update field member (status, device, dll)
+const sbUpdateMember = async (code, updates) => {
+  const row = memberToSb(updates);
+  const { data, error } = await _supabase
+    .from("members")
+    .update(row)
+    .eq("code", code)
+    .select()
+    .single();
+  if (error) throw error;
+  return sbToMember(data);
+};
+
+// UPDATE: bind device saat login
+const sbBindDevice = async (code, deviceId, deviceLabel) => {
+  return sbUpdateMember(code, {
+    deviceId,
+    device: deviceLabel,
+    lastLogin: new Date().toISOString(),
+  });
+};
+
+// UPDATE: reset device (admin action)
+const sbResetDevice = async (code) => {
+  return sbUpdateMember(code, { deviceId: null, device: null });
+};
+
+/* ============ FORMAT CONVERTERS ============ */
+// Supabase row → format yang dipakai existing code
+const sbToMember = (row) => {
+  if (!row) return null;
+  return {
+    code:       row.code,
+    name:       row.name,
+    whatsapp:   row.whatsapp || "",
+    duration:   row.duration || 30,
+    status:     row.status || "active",
+    createdAt:  row.created_at ? row.created_at.slice(0, 10) : "",
+    expiresAt:  row.expires_at || "",
+    device:     row.device || null,
+    deviceId:   row.device_id || null,
+    lastLogin:  row.last_login || null,
+    notes:      row.notes || "",
+    // Keep supabase id for reference
+    _id:        row.id,
+  };
+};
+
+// Format existing code → Supabase row
+const memberToSb = (member) => {
+  const row = {};
+  if (member.code !== undefined)       row.code       = member.code;
+  if (member.name !== undefined)       row.name       = member.name;
+  if (member.whatsapp !== undefined)   row.whatsapp   = member.whatsapp;
+  if (member.duration !== undefined)   row.duration   = member.duration;
+  if (member.status !== undefined)     row.status     = member.status;
+  if (member.expiresAt !== undefined)  row.expires_at = member.expiresAt;
+  if (member.device !== undefined)     row.device     = member.device;
+  if (member.deviceId !== undefined)   row.device_id  = member.deviceId;
+  if (member.lastLogin !== undefined)  row.last_login = member.lastLogin;
+  if (member.notes !== undefined)      row.notes      = member.notes;
+  // created_at diset otomatis by DB, jangan override
+  return row;
+};
+
+/* ============ FALLBACK (offline) ============ */
+// Kalau Supabase tidak bisa dijangkau, fallback ke localStorage
+// Ini penting untuk resilience (koneksi jelek di Mesir)
+const sbGetAllMembersFallback = () => {
+  try {
+    const raw = localStorage.getItem("madad_members");
+    return raw ? JSON.parse(raw) : DEFAULT_MEMBERS;
+  } catch { return DEFAULT_MEMBERS; }
+};
+
+/* ============ EXPORT ============ */
+Object.assign(window, {
+  _supabase,
+  checkSupabase,
+  sbGetAllMembers,
+  sbGetMemberByCode,
+  sbAddMember,
+  sbUpdateMember,
+  sbBindDevice,
+  sbResetDevice,
+  sbGetAllMembersFallback,
+});
+```
+
+### STEP 1.3 — Tambah Script Tag di `index.html`
+
+Tambahkan **setelah** Supabase CDN tapi **sebelum** `src/auth.jsx`:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script type="text/babel" data-presets="env,react" src="src/supabase.jsx"></script>
+<!-- lalu auth.jsx, data.jsx, dll seperti biasa -->
+```
+
+---
+
+## BAGIAN 2 — Update Auth System (`src/auth.jsx`)
+
+Ini bagian terbesar — update fungsi login dan loadMembers supaya pakai Supabase, dengan fallback localStorage kalau offline.
+
+### STEP 2.1 — Update fungsi `tryLogin`
+
+Ganti implementasi `tryLogin` yang sekarang (pakai `loadMembers()` dari localStorage) jadi pakai Supabase dengan graceful fallback:
+
+```js
+const tryLogin = async (code, opts = {}) => {
+  const { forceTakeover = false } = opts;
+  const deviceId    = getDeviceId();
+  const deviceLabel = getDeviceLabel();
+
+  let member = null;
+
+  // Coba Supabase dulu
+  try {
+    member = await sbGetMemberByCode(code);
+  } catch (err) {
+    console.warn("Supabase unreachable, fallback to localStorage:", err.message);
+    // Fallback: cari di localStorage members
+    const members = sbGetAllMembersFallback();
+    member = members.find(m => m.code === code.trim().toUpperCase()) || null;
+  }
+
+  if (!member) return { ok: false, status: LOGIN_RESULT.NOT_FOUND };
+  if (member.status === "disabled") return { ok: false, status: LOGIN_RESULT.DISABLED };
+  if (member.status === "expired")  return { ok: false, status: LOGIN_RESULT.EXPIRED, member };
+
+  // Single device policy
+  if (member.deviceId && member.deviceId !== deviceId && !forceTakeover) {
+    return {
+      ok: false,
+      status: LOGIN_RESULT.DEVICE_CONFLICT,
+      existingDevice: member.device,
+      member,
+    };
+  }
+
+  // Bind device & update lastLogin di Supabase
+  try {
+    await sbBindDevice(member.code, deviceId, deviceLabel);
+  } catch (err) {
+    // Jika Supabase offline, update localStorage saja
+    console.warn("Cannot update device in Supabase:", err.message);
+    const members = sbGetAllMembersFallback();
+    const idx = members.findIndex(m => m.code === member.code);
+    if (idx !== -1) {
+      members[idx] = { ...members[idx], device: deviceLabel, deviceId, lastLogin: new Date().toISOString() };
+      localStorage.setItem("madad_members", JSON.stringify(members));
+    }
+  }
+
+  const session = { code: member.code, name: member.name, deviceId };
+  localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
+
+  return { ok: true, session, member };
+};
+```
+
+**Catatan penting:** `tryLogin` sekarang `async`. Pastikan semua caller-nya menggunakan `await` atau `.then()`. Utamanya di `src/layout.jsx` (login form submit handler) — update jadi:
+
+```jsx
+// Di LoginModal submit handler:
+const handleLogin = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  const result = await login(code, { forceTakeover });
+  setLoading(false);
+  if (result.ok) { /* ... */ }
+  // ... rest sama
+};
+```
+
+### STEP 2.2 — Update `validateSession`
+
+Session validation juga perlu cek ke Supabase (pastikan member masih active, tidak di-disable admin):
+
+```js
+const validateSession = async () => {
+  const raw = localStorage.getItem(STORAGE_KEYS.SESSION);
+  if (!raw) return null;
+  try {
+    const s = JSON.parse(raw);
+    if (!s?.code) return null;
+
+    // Cek ke Supabase apakah member masih valid
+    let member = null;
+    try {
+      member = await sbGetMemberByCode(s.code);
+    } catch {
+      // Offline — percaya session yang ada
+      return s;
+    }
+
+    if (!member || member.status === "disabled") {
+      localStorage.removeItem(STORAGE_KEYS.SESSION);
+      return null;
+    }
+
+    // Cek device conflict (admin reset device)
+    if (member.deviceId && member.deviceId !== s.deviceId) {
+      localStorage.removeItem(STORAGE_KEYS.SESSION);
+      return null;
+    }
+
+    return s;
+  } catch {
+    localStorage.removeItem(STORAGE_KEYS.SESSION);
+    return null;
+  }
+};
+```
+
+### STEP 2.3 — Update `useAuth` Hook untuk Async
+
+`useAuth` perlu handle async init karena sekarang validateSession adalah async:
+
+```js
+const useAuth = () => {
+  const [state, setState] = useStateC({
+    session: null,
+    profile: null,
+    progress: null,
+    loading: true, // loading state saat pertama kali
+  });
+
+  useEffectC(() => {
+    let cancelled = false;
+
+    const init = async () => {
+      const session = await validateSession();
+      if (cancelled) return;
+      const profile  = session ? getProfile() : null;
+      const progress = session ? getProgress() : null;
+      setState({ session, profile, progress, loading: false });
+    };
+
+    init();
+
+    // Refresh listener tetap sama
+    const onRefresh = () => init();
+    window.addEventListener("talqee-auth-refresh", onRefresh);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("talqee-auth-refresh", onRefresh);
+    };
+  }, []);
+
+  // ... return sama seperti sebelumnya, tambah `loading`
+  return {
+    ...state,
+    login: (code, opts) => tryLogin(code, opts),
+    logout: () => { /* ... sama */ },
+    // ... dll
+  };
+};
+```
+
+Di `src/app.jsx`, handle loading state — tampilkan loading indicator kecil saat `loading === true` (sebelum session divalidasi):
+
+```jsx
+const App = () => {
+  const { session, profile, loading } = useAuth();
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-night-950">
+      <div className="text-center">
+        <div className="arabic-classic text-gold-300 text-3xl mb-2" style={{direction:"rtl"}}>تلقي</div>
+        <div className="text-xs text-ink-soft">Memuat...</div>
+      </div>
+    </div>
+  );
+
+  // ... routing seperti biasa
+};
+```
+
+---
+
+## BAGIAN 3 — Update Admin Panel (`src/pages/admin.jsx`)
+
+Admin panel sekarang baca/tulis langsung ke Supabase. Semua device yang buka admin panel akan lihat data member yang sama.
+
+### STEP 3.1 — Update `AdminMembers` Component
+
+Ganti state management yang sekarang (pakai `loadMembers()`) jadi async fetch dari Supabase:
+
+```jsx
+const AdminMembers = () => {
+  const toast = useToast();
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [selected, setSelected] = useState(null);
+
+  // Load members dari Supabase
+  const loadFromSupabase = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await sbGetAllMembers();
+      setMembers(data);
+    } catch (err) {
+      setError("Tidak bisa terhubung ke Supabase: " + err.message);
+      // Fallback ke localStorage
+      setMembers(sbGetAllMembersFallback());
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { loadFromSupabase(); }, []);
+
+  // Add member
+  const handleAdd = async (formData) => {
+    try {
+      const now = new Date();
+      const expires = new Date(now);
+      expires.setDate(now.getDate() + Number(formData.duration));
+      const newMember = {
+        code:      generateCode(members),
+        name:      formData.name,
+        whatsapp:  formData.whatsapp,
+        duration:  Number(formData.duration),
+        status:    "active",
+        expiresAt: expires.toISOString().split("T")[0],
+      };
+      const added = await sbAddMember(newMember);
+      setMembers(prev => [added, ...prev]);
+      toast.push(`Member "${added.name}" ditambahkan. Kode: ${added.code}`);
+    } catch (err) {
+      toast.push("Gagal tambah member: " + err.message);
+    }
+  };
+
+  // Update member
+  const handleUpdate = async (code, updates) => {
+    try {
+      const updated = await sbUpdateMember(code, updates);
+      setMembers(prev => prev.map(m => m.code === code ? updated : m));
+      toast.push("Member diupdate.");
+    } catch (err) {
+      toast.push("Gagal update: " + err.message);
+    }
+  };
+
+  // Reset device
+  const handleResetDevice = async (code) => {
+    try {
+      await sbResetDevice(code);
+      setMembers(prev => prev.map(m => m.code === code ? {...m, device: null, deviceId: null} : m));
+      toast.push("Device direset. Member bisa login dari device lain.");
+    } catch (err) {
+      toast.push("Gagal reset device: " + err.message);
+    }
+  };
+
+  const filtered = members.filter(m => {
+    const matchSearch = !search || m.name.toLowerCase().includes(search.toLowerCase()) || m.code.toLowerCase().includes(search.toLowerCase()) || (m.whatsapp || "").includes(search);
+    const matchStatus = statusFilter === "all" || m.status === statusFilter;
+    return matchSearch && matchStatus;
+  });
+
+  if (loading) return (
+    <div className="flex items-center justify-center py-20">
+      <div className="text-ink-muted text-sm">Memuat data member dari Supabase...</div>
+    </div>
+  );
+
+  if (error) return (
+    <div className="card-glass p-6 border border-rose-600/30">
+      <div className="text-rose-600 text-sm mb-2">{error}</div>
+      <p className="text-ink-soft text-xs mb-4">Menampilkan data dari cache lokal. Periksa koneksi dan kredensial Supabase.</p>
+      <button onClick={loadFromSupabase} className="btn-ghost text-sm px-4 py-2">Coba lagi</button>
+    </div>
+  );
+
+  return (
+    <div>
+      {/* ... render member list yang sudah ada, tinggal connect ke handleAdd, handleUpdate, handleResetDevice */}
+      {/* Button refresh manual */}
+      <button onClick={loadFromSupabase} className="btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5">
+        <Icon name="refresh" className="w-3 h-3"/> Refresh
+      </button>
+      {/* ... rest of UI sama */}
+    </div>
+  );
+};
+```
+
+### STEP 3.2 — Update `AdminDashboard` Stats
+
+Stats (total member, active, expired) sekarang dari data Supabase yang sudah di-fetch. Tidak perlu perubahan besar — cukup pastikan `members` state yang di-load dari Supabase dipakai sebagai source of truth.
+
+### STEP 3.3 — Tambah Indikator Supabase Connection di Admin
+
+Di header admin, tambah indicator kecil:
+
+```jsx
+const [sbStatus, setSbStatus] = useState("checking"); // "online" | "offline" | "checking"
+
+useEffect(() => {
+  checkSupabase().then(ok => setSbStatus(ok ? "online" : "offline"));
+}, []);
+
+// Render di header admin:
+<div className="flex items-center gap-2 text-xs">
+  <span className={`w-2 h-2 rounded-full ${sbStatus === "online" ? "bg-gold-400" : sbStatus === "offline" ? "bg-rose-600" : "bg-ink-soft animate-pulse"}`}/>
+  <span className="text-ink-soft">
+    {sbStatus === "online" ? "Supabase terhubung" : sbStatus === "offline" ? "Supabase offline (cache)" : "Mengecek..."}
+  </span>
+</div>
+```
+
+---
+
+## BAGIAN 4 — Hapus Hardcoded Members dari `src/data.jsx`
+
+Setelah Supabase terintegrasi dan tested, hapus `DEFAULT_MEMBERS` array dari `src/data.jsx`:
+
+```js
+// HAPUS ini (sekitar line 604-620):
+const DEFAULT_MEMBERS = [ ... ];
+
+// Dan hapus dari window export:
+Object.assign(window, {
+  // ... hapus: DEFAULT_MEMBERS,
+});
+```
+
+**PENTING:** Hapus ini HANYA setelah:
+- Supabase terisi data (STEP 0.3 sudah dirun)
+- Login berhasil dari Supabase
+- Admin panel berhasil load member dari Supabase
+
+Jangan hapus sebelum tested — ini safety net kalau Supabase offline.
+
+---
+
+## BAGIAN 5 — Error Handling & UX
+
+### STEP 5.1 — Toast untuk Supabase Errors
+
+Di login flow, kalau Supabase timeout/error, user harus tahu tapi tidak takut:
+
+```js
+// Di layout.jsx login handler, kalau ada error Supabase:
+if (result.error === "supabase_unreachable") {
+  toast.push("Koneksi lambat — mencoba offline mode.");
+}
+```
+
+### STEP 5.2 — Loading State di Login Modal
+
+Login sekarang async — tambah loading indicator saat proses validasi:
+
+```jsx
+<button type="submit" disabled={loading} className="btn-primary w-full py-3.5 mt-4">
+  {loading ? (
+    <span className="flex items-center justify-center gap-2">
+      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
+      Memverifikasi...
+    </span>
+  ) : "Masuk"}
+</button>
+```
+
+---
+
+## Acceptance Criteria
+
+### Supabase Connection
+- [ ] Buka admin panel → indikator "Supabase terhubung" (dot gold) muncul
+- [ ] Data member load dari Supabase (bukan localStorage)
+- [ ] Tambah member baru dari admin → member muncul di Supabase dashboard (verify di supabase.com)
+- [ ] Buka admin dari device/browser lain → member baru tetap muncul (sync!)
+- [ ] Disable member dari admin → user yang sedang login di-kick saat session check berikutnya
+
+### Login Flow
+- [ ] Login dengan kode yang ada di Supabase → berhasil
+- [ ] Login dengan kode expired → ditolak dengan pesan yang benar
+- [ ] Login dengan kode disabled → ditolak
+- [ ] Login dengan kode tidak ada → "Kode tidak ditemukan"
+- [ ] Loading spinner muncul saat proses login berlangsung
+- [ ] Login tetap bisa dilakukan saat Supabase offline (fallback ke localStorage)
+
+### Admin Panel
+- [ ] Load member dari Supabase (bukan hardcoded)
+- [ ] Tambah member → tersimpan ke Supabase, muncul di list tanpa refresh
+- [ ] Update status member → update di Supabase
+- [ ] Reset device → device field cleared di Supabase
+- [ ] Tombol refresh manual jalan
+- [ ] Error state tampil kalau Supabase tidak bisa dijangkau
+
+### Data Existing Tidak Terganggu
+- [ ] Kurasah user tetap ada (localStorage)
+- [ ] Niat, ritme, refleksi tetap ada (localStorage)
+- [ ] Progress Learning Path tetap ada (localStorage)
+- [ ] Muqaranah custom tetap ada (localStorage)
+
+### Security
+- [ ] SUPABASE_URL dan ANON_KEY sudah diisi (bukan placeholder)
+- [ ] Service role key TIDAK dipakai di frontend (hanya anon key)
+- [ ] Admin PIN sudah diganti dari "9090" ke yang lebih kuat
+
+### Resilience
+- [ ] Matikan WiFi → login tetap bisa (pakai cache)
+- [ ] Matikan WiFi → admin panel tampil cache dengan warning
+- [ ] Nyalakan WiFi lagi → klik refresh → data Supabase kembali
+
+---
+
+## Catatan Penting
+
+### Tentang Async di Babel Standalone
+
+`async/await` bekerja di Babel standalone dengan `data-presets="env,react"`. Tapi ada satu hal: pastikan error tidak ditelan diam-diam. Selalu tambah `try/catch` dan handle error case.
+
+### Urutan Script di `index.html` (Penting)
+
+```html
+<!-- 1. Supabase CDN (PERTAMA, sebelum semua) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
+<!-- 2. Foundation Talqee -->
+<script type="text/babel" data-presets="env,react" src="src/supabase.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/data.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/auth.jsx"></script>
+
+<!-- 3. Semua file lain seperti biasa -->
+```
+
+### Checklist Manual Sebelum Run
+
+- [ ] Supabase SQL (STEP 0.1-0.3) sudah dirun di Supabase Dashboard
+- [ ] `SUPABASE_URL` di `src/supabase.jsx` sudah diisi
+- [ ] `SUPABASE_ANON_KEY` di `src/supabase.jsx` sudah diisi
+- [ ] Verify di Supabase Dashboard → Table Editor → tabel `members` ada dan terisi
+
+### Setelah Fase 1 Berhasil
+
+Fase 2 (sync data user: kurasah, niat, progress) bisa dikerjakan nanti dengan tambah tabel:
+- `user_notes` (kurasah)
+- `user_progress` (learning path)
+- `user_intentions` (niat harian)
+- `user_presence` (ritme belajar)
+- `user_muqaranah` (custom muqaranah)
+
+Tapi itu nanti — setelah Fase 1 stabil dan ada user real.
+
+---
+
+والله ولي التوفيق. Mulai dari BAGIAN 0 (setup Supabase dashboard) sebelum run Replit.
