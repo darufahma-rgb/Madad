@@ -1,22 +1,67 @@
-/* Talqih — Landing page v5: ringkas, 5 section, show don't tell */
+/* Talqih — Landing page v6: hero premium 2-kolom, geometric bg */
 
 const { useState, useEffect } = React;
 
 const LANDING_STYLES = `
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap');
+
   .kali-display  { font-family: "Reem Kufi","Noto Kufi Arabic",sans-serif; direction:rtl; }
   .kali-elegant  { font-family: "Aref Ruqaa",serif; direction:rtl; }
-  .hero-kali     { font-family:"Reem Kufi",sans-serif; direction:rtl;
-    background:linear-gradient(160deg,rgba(217,189,133,.9),rgba(201,168,106,.5),rgba(169,112,255,.25));
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-    pointer-events:none; user-select:none; }
-  .hero-kali-side{ font-family:"Aref Ruqaa",serif; direction:rtl; pointer-events:none; user-select:none; }
+  .hero-headline { font-family: "Playfair Display","Georgia",serif; }
   .hov-lift      { transition:transform .2s ease, box-shadow .2s ease; cursor:pointer; }
   .hov-lift:hover{ transform:translateY(-3px); box-shadow:0 12px 40px -12px rgba(201,168,106,.2); }
+
+  @keyframes geo-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+  }
+  .hero-geo-bg {
+    animation: geo-spin 60s linear infinite;
+    transform-origin: center center;
+  }
+
+  @keyframes card-float {
+    0%,100% { transform: translateY(0px); }
+    50%      { transform: translateY(-6px); }
+  }
+  .hero-card-float {
+    animation: card-float 4s ease-in-out infinite;
+  }
+
+  .btn-hero-gold {
+    display:inline-flex; align-items:center; gap:8px;
+    background: linear-gradient(135deg, #D4A017, #F0C040);
+    color: #1a1a1a;
+    font-weight: 600;
+    padding: 16px 32px;
+    border-radius: 50px;
+    font-size: 15px;
+    border: none;
+    cursor: pointer;
+    transition: transform .2s ease, filter .2s ease;
+    white-space: nowrap;
+  }
+  .btn-hero-gold:hover { transform: scale(1.03); filter: brightness(1.1); }
+
+  .btn-hero-dark {
+    display:inline-flex; align-items:center; gap:8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    font-weight: 500;
+    padding: 16px 32px;
+    border-radius: 50px;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background .2s ease;
+    white-space: nowrap;
+  }
+  .btn-hero-dark:hover { background: rgba(255,255,255,0.15); }
 `;
 
 const StyleInject = () => {
   useEffect(() => {
-    const id = "landing-styles-v5";
+    const id = "landing-styles-v6";
     if (!document.getElementById(id)) {
       const el = document.createElement("style");
       el.id = id; el.textContent = LANDING_STYLES;
@@ -30,39 +75,93 @@ const Reveal = ({ children, className = "", style, ...rest }) => (
   <div className={className} style={style} {...rest}>{children}</div>
 );
 
-/* ── Hero Composition — 3 stacked glass cards ───────────────── */
-const HeroComposition = () => (
-  <div className="relative h-[400px] w-full">
-    {/* Card 3 back-left */}
-    <div className="absolute left-0 top-14 w-48 card-glass p-4 rounded-xl"
-      style={{ zIndex:10, opacity:.42, transform:"rotate(-2.5deg)" }}>
-      <div className="text-[9px] uppercase tracking-wider text-violet-300 mb-1.5">✦ AI Rekomendasi</div>
-      <div className="text-sm font-semibold text-ink mb-0.5">NotebookLM</div>
-      <div className="text-[11px] text-ink-soft">Sesuai: hafalan matan</div>
-      <div className="text-[11px] text-ink-soft">Untuk: Nahwu Dasar</div>
-    </div>
-    {/* Card 2 back-right */}
-    <div className="absolute right-0 top-8 w-52 card-glass p-4 rounded-xl"
-      style={{ zIndex:20, opacity:.62, transform:"rotate(1.8deg)" }}>
-      <div className="text-[9px] uppercase tracking-wider text-gold-400 mb-1.5">Prompt: I'rab Kalimat</div>
-      <div className="text-[11px] text-ink-muted leading-relaxed font-mono">
-        "Aku thalib di Al-Azhar<br/>yang sedang muthala'ah<br/>bab Marfu'at..."
+/* ── Islamic Geometric Background ───────────────────────────── */
+const HeroGeoBg = () => (
+  <div className="absolute inset-0 pointer-events-none select-none overflow-hidden">
+    <svg
+      className="hero-geo-bg"
+      style={{ position:"absolute", width:"200%", height:"200%", top:"-50%", left:"-50%" }}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <defs>
+        <pattern id="islamic-star" patternUnits="userSpaceOnUse" width="80" height="80">
+          {/* 8-pointed star */}
+          <polygon
+            points="40,6 47.5,25.5 64,14 53.5,31 73,34.5 54.5,41 66,57.5 46,49 40,68 34,49 14,57.5 25.5,41 7,34.5 26.5,31 16,14 32.5,25.5"
+            fill="none" stroke="#7C4DFF" strokeWidth="0.7"
+          />
+          {/* Small center diamond */}
+          <polygon
+            points="40,32 44,40 40,48 36,40"
+            fill="none" stroke="#C9A86A" strokeWidth="0.4" opacity="0.6"
+          />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#islamic-star)" opacity="0.10"/>
+    </svg>
+  </div>
+);
+
+/* ── Hero Preview Card ───────────────────────────────────────── */
+const HeroCard = () => (
+  <div className="hero-card-float">
+    <div
+      className="rounded-[20px] p-7 relative overflow-hidden"
+      style={{
+        background: "rgba(255,255,255,0.06)",
+        backdropFilter: "blur(16px)",
+        border: "1px solid rgba(255,255,255,0.12)",
+        boxShadow: "0 0 60px rgba(139,92,246,0.20), 0 24px 48px rgba(0,0,0,0.35)",
+        width: "100%",
+        maxWidth: "360px",
+      }}
+    >
+      {/* Subtle inner glow top */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"/>
+
+      {/* Arabic title top-right */}
+      <div className="flex items-start justify-between mb-4">
+        <div/>
+        <div
+          className="arabic-display text-gold-300 leading-none"
+          style={{ fontSize:"38px", direction:"rtl", fontFamily:'"Reem Kufi","Noto Kufi Arabic",sans-serif' }}
+        >
+          النحو
+        </div>
       </div>
-      <div className="mt-2 text-[10px] text-violet-300 font-medium">→ Salin ke Claude</div>
-    </div>
-    {/* Card 1 front */}
-    <div className="absolute left-1/2 -translate-x-1/2 top-0 w-64 card-glass-strong p-5 rounded-2xl"
-      style={{ zIndex:30, border:"1px solid rgba(201,168,106,.28)", boxShadow:"0 0 40px rgba(201,168,106,.08)" }}>
-      <div className="arabic-display text-gold-300 text-2xl mb-1" style={{direction:"rtl"}}>النحو</div>
-      <div className="font-display text-base font-semibold text-ink mb-0.5">Nahwu Dasar</div>
-      <div className="text-[11px] text-ink-soft mb-3">Ilmu Sintaksis Arab</div>
-      <div className="flex flex-wrap gap-1.5 mb-3">
-        <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/20">Claude</span>
-        <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold-500/10 text-gold-300 border border-gold-500/20">NotebookLM</span>
+
+      {/* Maddah name */}
+      <div className="mb-1">
+        <div className="font-display text-xl font-semibold text-ink">Nahwu Dasar</div>
+        <div className="text-sm text-ink-soft">Ilmu Sintaksis Arab</div>
       </div>
-      <div className="h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent mb-3"/>
-      <div className="text-[11px] text-ink-muted">17 template prompt</div>
-      <div className="text-[10px] text-ink-soft mt-1">Pahami · Hafal · Latihan · Ujian</div>
+
+      {/* AI chips */}
+      <div className="flex flex-wrap gap-1.5 mt-3 mb-4">
+        <span className="text-[11px] px-2.5 py-1 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/25 font-medium">Claude</span>
+        <span className="text-[11px] px-2.5 py-1 rounded-full bg-gold-500/10 text-gold-300 border border-gold-500/22 font-medium">NotebookLM</span>
+      </div>
+
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4"/>
+
+      {/* Stats */}
+      <div className="mb-1 text-sm text-ink">
+        <span className="font-semibold text-gold-300">17</span>
+        <span className="text-ink-muted"> template prompt</span>
+      </div>
+      <div className="text-xs text-ink-soft mb-4">Pahami · Hafal · Latihan · Ujian</div>
+
+      {/* AI Recommendation box */}
+      <div className="rounded-xl p-3.5" style={{ background:"rgba(124,77,255,0.10)", border:"1px solid rgba(124,77,255,0.18)" }}>
+        <div className="text-[10px] uppercase tracking-wider text-violet-300 font-medium mb-2 flex items-center gap-1.5">
+          <span className="text-gold-400">✦</span> AI Rekomendasi
+        </div>
+        <div className="text-sm font-semibold text-ink mb-1">NotebookLM</div>
+        <div className="text-[11px] text-ink-muted leading-relaxed">
+          Sesuai: hafalan matan<br/>Untuk: Nahwu Dasar
+        </div>
+      </div>
     </div>
   </div>
 );
@@ -71,105 +170,104 @@ const HeroComposition = () => (
    1. HERO
    ══════════════════════════════════════════════════════════════ */
 const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
-  <section className="relative overflow-hidden"
-    style={{ minHeight:"100vh", display:"flex", alignItems:"center", paddingTop:"80px" }}>
-    <div className="pattern-talqih"/>
-    <Blob color="rgba(124,77,255,.30)" size={900} top={-300} right={-200}/>
-    <Blob color="rgba(201,168,106,.09)" size={700} top={200} left={-250}/>
+  <section
+    className="relative overflow-hidden"
+    style={{ minHeight:"100vh", display:"flex", alignItems:"center", paddingTop:"80px" }}
+  >
+    {/* Geometric Islamic background pattern */}
+    <HeroGeoBg/>
 
-    {/* Kaligrafi background */}
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-      <div className="hero-kali" style={{ fontSize:"clamp(110px,22vw,290px)", opacity:.055, letterSpacing:".01em" }}>
-        اقْرَأْ
-      </div>
-    </div>
-    <div className="absolute right-6 top-1/3 pointer-events-none select-none hidden lg:flex flex-col items-end">
-      <div className="hero-kali-side text-gold-400" style={{ fontSize:"54px", opacity:.17, lineHeight:1.6 }}>
-        بِسْمِ اللَّهِ
-      </div>
-    </div>
-    <div className="absolute left-4 bottom-1/3 pointer-events-none select-none hidden lg:block">
-      <div className="hero-kali-side text-violet-300" style={{ fontSize:"34px", opacity:.13, lineHeight:2, textAlign:"right" }}>
-        وَمَا أُوتِيتُم
-      </div>
-      <div className="hero-kali-side text-violet-300" style={{ fontSize:"34px", opacity:.13, lineHeight:2, textAlign:"right" }}>
-        مِّنَ الْعِلْمِ
-      </div>
-    </div>
+    {/* Soft color blobs */}
+    <Blob color="rgba(124,77,255,.28)" size={900} top={-280} right={-180}/>
+    <Blob color="rgba(201,168,106,.07)" size={700} top={250} left={-220}/>
+    <Blob color="rgba(124,77,255,.12)" size={500} bottom={-150} left={100}/>
 
-    <div className="container-x relative w-full py-16">
-      <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-
-        {/* Kiri — copy */}
+    <div className="container-x relative w-full py-20">
+      <div
+        className="grid items-center gap-16 lg:gap-20"
+        style={{ gridTemplateColumns:"minmax(0,3fr) minmax(0,2fr)" }}
+      >
+        {/* ── Kolom Kiri (60%) ── */}
         <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-xs mb-5">
+          {/* Breadcrumb pill */}
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-8"
+            style={{ background:"rgba(124,77,255,0.12)", border:"1px solid rgba(124,77,255,0.25)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>
-            <span className="text-violet-300 font-medium">Talqih</span>
-            <span className="text-ink-soft">·</span>
-            <span className="text-ink-muted">Panduan AI untuk Masisir</span>
+            <span className="text-violet-300 font-medium text-xs">Talqih</span>
+            <span className="text-white/30 text-xs">·</span>
+            <span className="text-white/55 text-xs">Panduan AI untuk Masisir</span>
           </div>
 
-          <div className="arabic-classic text-gold-300 text-base mb-3" style={{direction:"rtl", lineHeight:1.8}}>
-            تَلْقِيح
-          </div>
-
-          <h1 className="font-display font-semibold leading-[1.05] text-ink mb-5"
-            style={{ fontSize:"clamp(38px,5.5vw,70px)" }}>
+          {/* Headline */}
+          <h1
+            className="hero-headline font-semibold text-white mb-6"
+            style={{
+              fontSize: "clamp(40px, 5.5vw, 76px)",
+              lineHeight: 1.08,
+              letterSpacing: "-0.02em",
+            }}
+          >
             Belajar materi Azhar,<br/>
-            <span className="bg-gradient-to-r from-violet-300 via-violet-400 to-gold-400 bg-clip-text text-transparent">
-              dipahami dengan AI.
+            dipahami dengan<br/>
+            <span style={{
+              background: "linear-gradient(90deg, #A78BFA 0%, #C9A86A 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}>
+              AI.
             </span>
           </h1>
 
-          <p className="text-lg text-ink-muted leading-relaxed mb-8 max-w-xl">
+          {/* Subheadline */}
+          <p style={{ fontSize:"18px", color:"rgba(255,255,255,0.65)", lineHeight:1.65, maxWidth:"460px", marginBottom:"40px" }}>
             Panduan + template prompt + rekomendasi AI personal untuk Masisir semua tingkat — dari Mustawa sampai S2.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 items-start mb-5">
-            <button onClick={() => navigate("/sample/nahwu")}
-              className="btn btn-gold text-base px-7 py-3.5"
-              style={{ boxShadow:"0 0 40px rgba(201,168,106,.35), 0 1px 0 rgba(255,255,255,.3) inset" }}>
+          {/* CTA Buttons */}
+          <div className="flex flex-wrap gap-4 items-center mb-6">
+            <button
+              onClick={() => navigate("/sample/nahwu")}
+              className="btn-hero-gold"
+              style={{ boxShadow:"0 0 40px rgba(212,160,23,.40), 0 1px 0 rgba(255,255,255,.25) inset" }}
+            >
               Cobain Sample Gratis →
             </button>
-            <button onClick={onOpenPayment} className="btn btn-ghost text-base px-7 py-3.5">
+            <button onClick={onOpenPayment} className="btn-hero-dark">
               Gabung Member · 49k
             </button>
           </div>
 
-          <div className="text-sm text-ink-soft mb-8">
+          {/* Login link */}
+          <div style={{ fontSize:"14px", color:"rgba(255,255,255,0.45)", marginBottom:"36px" }}>
             Sudah punya kode?{" "}
-            <button onClick={onOpenLogin}
-              className="text-violet-300 hover:text-violet-200 underline underline-offset-2">
+            <button
+              onClick={onOpenLogin}
+              style={{ color:"#A78BFA", textDecoration:"underline", textUnderlineOffset:"3px", background:"none", border:"none", cursor:"pointer", fontSize:"14px" }}
+            >
               Masuk di sini
             </button>
           </div>
 
-          <div className="flex flex-wrap gap-5 text-xs text-ink-soft">
+          {/* Feature checkmarks */}
+          <div className="flex flex-wrap gap-5">
             {["36 Maddah lengkap","540+ template prompt","Bayar sekali, akses selamanya"].map((t, i) => (
-              <span key={i} className="flex items-center gap-1.5">
-                <Icon name="check" className="w-3.5 h-3.5 text-gold-400"/>{t}
+              <span key={i} className="flex items-center gap-2 text-xs" style={{ color:"rgba(255,255,255,0.45)" }}>
+                <Icon name="check" className="w-3.5 h-3.5 text-gold-400 flex-shrink-0"/>{t}
               </span>
             ))}
           </div>
         </div>
 
-        {/* Kanan — 3 stacked cards, hidden di mobile */}
-        <div className="hidden lg:block">
-          <HeroComposition/>
+        {/* ── Kolom Kanan (40%) — desktop only ── */}
+        <div className="hidden lg:flex justify-center items-center">
+          <HeroCard/>
         </div>
+      </div>
 
-        {/* Mobile: Card 1 saja */}
-        <div className="lg:hidden max-w-xs mx-auto w-full">
-          <div className="card-glass-strong p-5 rounded-2xl" style={{ border:"1px solid rgba(201,168,106,.2)" }}>
-            <div className="arabic-display text-gold-300 text-2xl mb-1" style={{direction:"rtl"}}>النحو</div>
-            <div className="font-display text-base font-semibold text-ink mb-2">Sample: Nahwu Dasar</div>
-            <div className="flex gap-1.5 mb-2">
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/20">Claude</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold-500/10 text-gold-300 border border-gold-500/20">NotebookLM</span>
-            </div>
-            <div className="text-[11px] text-ink-muted">17 template prompt · Gratis tanpa login</div>
-          </div>
-        </div>
+      {/* Mobile card — below CTA */}
+      <div className="lg:hidden mt-12 flex justify-center">
+        <HeroCard/>
       </div>
     </div>
   </section>

@@ -1,0 +1,179 @@
+Rapikan dan upgrade hero section website Talqih ini.
+Berikut yang harus diubah dan diperbaiki:
+
+---
+
+## MASALAH YANG HARUS DIPERBAIKI
+
+1. Layout hero berantakan — elemen mengambang tidak teratur
+2. Animasi teks Arab di background terlalu kecil dan tidak impactful
+3. Kartu "Nahwu Dasar" di kanan posisinya tanggung dan terpotong
+4. Ukuran headline terlalu kecil untuk hero section
+5. Spacing dan alignment antar elemen tidak konsisten
+
+---
+
+## YANG HARUS DIUBAH
+
+### 1. LAYOUT HERO — BUAT 2 KOLOM YANG BERSIH
+
+Kolom Kiri (60%):
+- Breadcrumb: "Talqih · Panduan AI untuk Masisir"
+- Headline besar:
+  Line 1: "Belajar materi Azhar,"  → warna putih
+  Line 2: "dipahami dengan"        → warna putih  
+  Line 3: "AI."                    → gradient ungu ke emas
+- Font size headline: minimum 72px desktop, 40px mobile
+- Subheadline di bawahnya, warna abu terang, font size 18px
+- Dua tombol CTA berdampingan:
+  Tombol 1: "Cobain Sample Gratis →" → warna emas/gold solid
+  Tombol 2: "Gabung Member · 49k"   → warna gelap dengan border
+- Link "Sudah punya kode? Masuk di sini" di bawah tombol
+
+Kolom Kanan (40%):
+- Kartu preview "Nahwu Dasar" yang terlihat penuh dan rapi
+- Kartu harus muat seluruh isinya — tidak terpotong
+- Tambahkan subtle glow/shadow di belakang kartu
+- Posisi: center vertical, sedikit floating dengan animasi
+
+---
+
+### 2. ANIMASI BACKGROUND — GANTI TOTAL
+
+Hapus animasi teks Arab mengambang yang sekarang.
+Ganti dengan salah satu ini (pilih yang paling smooth):
+
+OPSI A — Geometric Islamic Pattern (REKOMENDASI):
+- Pattern geometri islami (bintang 8 sudut berulang)
+- Dibuat dari SVG murni
+- Warna: ungu sangat gelap dengan opacity 0.08-0.12
+- Animasi: rotate sangat lambat (60s per rotasi penuh)
+- Ukuran: full cover background, bukan hanya pojok
+
+OPSI B — Floating Kaligrafi Besar:
+- 2-3 kata Arab kaligrafi (contoh: العلم، النور، الحكمة)
+- Ukuran BESAR — masing-masing minimal 300px
+- Opacity sangat rendah: 0.04-0.07
+- Animasi: float naik turun sangat lambat (15s cycle)
+  satu naik sementara yang lain turun (staggered)
+- Posisi: tersebar di background, tidak menghalangi konten
+
+OPSI C — Gradient Orbs:
+- 3 lingkaran gradient blur besar (seperti mesh gradient)
+- Warna: ungu tua, biru gelap, sedikit emas
+- Ukuran: masing-masing 600-800px diameter
+- Animasi: bergerak sangat lambat melingkar (30s cycle)
+- Filter: blur(80px) agar sangat soft
+
+---
+
+### 3. KARTU PREVIEW (kolom kanan)
+
+Kartu harus berisi:
+┌─────────────────────────────┐
+│  النحو           (pojok kanan atas, besar, emas) │
+│                             │
+│  Nahwu Dasar                │
+│  Ilmu Sintaksis Arab        │
+│                             │
+│  [Claude] [NotebookLM]      │  ← chip/badge
+│                             │
+│  17 template prompt         │
+│  Pahami · Hafal · Latihan · Ujian │
+│                             │
+│  ✦ AI REKOMENDASI           │
+│  NotebookLM                 │
+│  Sesuai: hafalan matan      │
+│  Untuk: Nahwu Dasar         │
+└─────────────────────────────┘
+
+Styling kartu:
+- Background: rgba(255,255,255,0.06) dengan backdrop-filter blur
+- Border: 1px solid rgba(255,255,255,0.12)
+- Border radius: 20px
+- Padding: 28px
+- Box shadow: 0 0 60px rgba(139,92,246,0.2)
+- Animasi: float naik turun 4px, 4s cycle, ease-in-out infinite
+
+---
+
+### 4. TYPOGRAPHY
+
+Headline:
+- Font: serif yang elegan (bisa Google Fonts: Playfair Display
+  atau Cormorant Garamond)
+- Size: clamp(48px, 6vw, 80px)
+- Line height: 1.1
+- Letter spacing: -0.02em
+
+Kata "AI." di akhir:
+- Gradient: from #A78BFA (ungu) to #D4A017 (emas)
+- Background-clip: text
+
+Subheadline:
+- Font: Inter atau sistem sans-serif
+- Size: 18px
+- Color: rgba(255,255,255,0.65)
+- Max-width: 480px
+
+---
+
+### 5. TOMBOL CTA
+
+Tombol Gold "Cobain Sample Gratis →":
+- Background: linear-gradient(135deg, #D4A017, #F0C040)
+- Color: #1a1a1a (teks gelap)
+- Padding: 16px 32px
+- Border-radius: 50px
+- Font-weight: 600
+- Hover: scale(1.03) + brightness(1.1)
+- Transition: all 0.2s ease
+
+Tombol Dark "Gabung Member · 49k":
+- Background: rgba(255,255,255,0.08)
+- Border: 1px solid rgba(255,255,255,0.2)
+- Color: white
+- Padding: 16px 32px
+- Border-radius: 50px
+- Hover: background rgba(255,255,255,0.15)
+
+---
+
+### 6. SPACING & LAYOUT GLOBAL
+
+- Hero section: min-height 100vh, display flex, align-items center
+- Container: max-width 1200px, padding horizontal 48px
+- Gap antara kolom kiri dan kanan: 80px
+- Breadcrumb margin-bottom: 32px
+- Headline margin-bottom: 24px
+- Subheadline margin-bottom: 40px
+- Gap antar tombol: 16px
+
+---
+
+### 7. MOBILE RESPONSIVE (max-width: 768px)
+
+- Layout: 1 kolom (stack vertikal)
+- Kartu preview: sembunyikan atau perkecil di bawah CTA
+- Headline: 40px
+- Padding horizontal: 24px
+- Tombol: full width
+
+---
+
+## YANG TIDAK BOLEH DIUBAH
+
+- Nama "Talqih" dan tagline "PANDUAN AI · MASISIR"
+- Warna dominan: dark purple/navy (#0F0A2A atau serupa)
+- Navbar yang sudah ada
+- Teks headline dan subheadline (hanya styling yang diubah)
+- Fungsionalitas tombol yang sudah ada
+
+---
+
+## HASIL AKHIR YANG DIHARAPKAN
+
+Hero section terlihat seperti landing page SaaS premium —
+bersih, impactful, dan terasa mahal. Bukan ramai.
+Semua elemen punya tempat yang jelas.
+Animasi smooth dan tidak mengganggu keterbacaan.
