@@ -474,6 +474,54 @@ const DashboardPage = () => {
       {/* 5. ADAPTIVE GUIDE QUICK */}
       {topRec && <AdaptiveGuideQuick profile={profile} topRec={topRec}/>}
 
+      {/* 5b. SIAP IMTIHAN */}
+      <section className="pb-8">
+        <div className="container-x">
+          <Reveal className="mb-5 flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-2 flex items-center gap-2">
+                <span className="w-5 h-px bg-gold-500/60"/>
+                Persiapan ujian
+              </div>
+              <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink flex items-center gap-3">
+                Siap Imtihan
+                <span className="arabic-display text-base text-gold-400" style={{direction:"rtl"}}>الاستعداد للامتحان</span>
+              </h2>
+            </div>
+            <button onClick={() => navigate("/siap-imtihan")}
+              className="text-sm text-violet-400 hover:text-violet-300 inline-flex items-center gap-1.5 transition-colors">
+              Buka lengkap <Icon name="arrowRight" className="w-3.5 h-3.5"/>
+            </button>
+          </Reveal>
+
+          <Reveal>
+            <div className="flex md:grid md:grid-cols-4 gap-3 overflow-x-auto md:overflow-visible
+                            no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+              {IMTIHAN_MODES.map(mode => (
+                <button key={mode.id}
+                  onClick={() => navigate("/siap-imtihan")}
+                  className={`flex-shrink-0 w-[70vw] sm:w-auto md:w-auto card-glass p-4 text-left
+                              hov-lift active:scale-[0.97] transition-transform cursor-pointer
+                              ${mode.color === "gold" ? "border-gold-500/15" : "border-violet-500/15"}`}>
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${
+                    mode.color === "gold" ? "bg-gold-500/15" : "bg-violet-500/15"
+                  }`}>
+                    <Icon name={mode.icon} className={`w-4 h-4 ${
+                      mode.color === "gold" ? "text-gold-300" : "text-violet-300"
+                    }`}/>
+                  </div>
+                  <div className="font-display text-sm font-semibold text-ink mb-1">{mode.label}</div>
+                  <div className="text-[11px] text-ink-muted leading-relaxed line-clamp-2">{mode.desc}</div>
+                  <div className={`mt-2 text-[10px] font-medium ${
+                    mode.color === "gold" ? "text-gold-400" : "text-violet-400"
+                  }`}>{mode.tag}</div>
+                </button>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
       {/* 6. LEARNING PATHS */}
       <section className="pb-8">
         <div className="container-x">

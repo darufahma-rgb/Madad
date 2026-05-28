@@ -314,6 +314,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
               <div className="text-xs text-ink-soft mb-0.5">Member</div>
               <div className="text-ink font-medium">{session.name}</div>
             </div>
+            <SheetLink icon="target" label="Siap Imtihan" onClick={() => { navigate("/siap-imtihan"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="bookOpen" label="Learning Path" onClick={() => { navigate("/paths"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="shield" label="Etika" onClick={() => { navigate("/ethics"); setMobileSheetOpen(false); }}/>
             <div className="border-t border-line mt-2 pt-2">

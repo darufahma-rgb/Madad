@@ -71,6 +71,7 @@ const App = () => {
   else if (path.startsWith("/mapel"))                       { page = <MapelPage/>; routeLabel = "Panduan Mapel"; }
   else if (path === "/maddah" || path === "/maddah/")      { page = <MaddahHubPage/>; routeLabel = "Maddah"; }
   else if (path.startsWith("/maddah/"))                    { page = <MaddahDetailPage/>; routeLabel = "Maddah"; }
+  else if (path === "/siap-imtihan" || path.startsWith("/siap-imtihan")) { page = <SiapImtihanPage/>; routeLabel = "Siap Imtihan"; }
 
   // QuickNote muncul di semua halaman member yang sudah onboarded, kecuali admin & public
   const showQuickNote = session && profile?.onboarded && !isAdmin && !isPublic;
