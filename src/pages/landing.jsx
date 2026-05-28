@@ -268,8 +268,8 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         {/* Sub-headline */}
         <Reveal delay={180}>
           <p className="text-lg md:text-xl mb-10 max-w-xl" style={{ color:"rgba(255,255,255,0.62)", lineHeight:1.65 }}>
-            Panduan lengkap + template prompt untuk pahami materi Al-Azhar.
-            Untuk Masisir semua tingkat, dari Darul Lughoh (DL) sampai S2.
+            Panduan lengkap + template prompt untuk pahami mata kuliah di Al-Azhar.
+            Teruntuk Masisir semua tingkat, dari Darul Lughoh (DL) sampai S2.
           </p>
         </Reveal>
 
@@ -330,7 +330,7 @@ const SampleMaddahSection = () => (
           <span className="w-6 h-px bg-gold-500/70"/>COBAIN DULU<span className="w-6 h-px bg-gold-500/70"/>
         </div>
         <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
-          Cara belajar Nahwu yang belum pernah diajarkan dosen.
+          Cara belajar Nahwu yang mudah dan efektif
         </h2>
         <p className="text-ink-muted text-base max-w-xl mx-auto">
           Tanpa daftar. Tanpa bayar. Kalau setelah ini kamu tidak merasa beda, tidak perlu lanjut.
