@@ -545,7 +545,7 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
               <button onClick={onOpenPayment}
                 className="btn btn-gold w-full py-4 text-base font-medium"
                 style={{ boxShadow:"0 0 50px rgba(201,168,106,.4), 0 1px 0 rgba(255,255,255,.3) inset" }}>
-                Bayar via Lynk.id →
+                Join Member Sekarang!
               </button>
               <p className="text-xs text-ink-soft text-center mt-4">
                 Setelah bayar, kode dikirim admin via WhatsApp.
