@@ -133,3 +133,188 @@ Object.assign(window, {
   sbResetDevice,
   sbGetAllMembersFallback,
 });
+
+/* ============================================================
+   USER DATA API (Fase 2) — Sync data pribadi user ke Supabase
+   Pola: localStorage dulu (instant), Supabase background (sync)
+   ============================================================ */
+
+const getMemberCode = () => {
+  try {
+    const s = JSON.parse(localStorage.getItem("madad_session") || "{}");
+    return s.code || null;
+  } catch { return null; }
+};
+
+/* ── NOTES (Kurasah) ── */
+
+const sbSaveNote = async (note) => {
+  const code = getMemberCode();
+  if (!code) return;
+  const { error } = await _supabase.from("user_notes").upsert({
+    member_code: code,
+    note_id:    note.id,
+    title:      note.title || "",
+    body:       note.body  || "",
+    tags:       note.tags  || [],
+    source:     note.source || null,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "member_code,note_id" });
+  if (error) throw error;
+};
+
+const sbDeleteNote = async (noteId) => {
+  const code = getMemberCode();
+  if (!code) return;
+  await _supabase.from("user_notes")
+    .delete().eq("member_code", code).eq("note_id", noteId);
+};
+
+const sbLoadNotes = async () => {
+  const code = getMemberCode();
+  if (!code) return null;
+  const { data, error } = await _supabase.from("user_notes")
+    .select("*").eq("member_code", code).order("updated_at", { ascending: false });
+  if (error) throw error;
+  return data.map(r => ({
+    id: r.note_id, title: r.title, body: r.body,
+    tags: r.tags || [], source: r.source,
+    createdAt: r.created_at, updatedAt: r.updated_at,
+  }));
+};
+
+/* ── PROGRESS ── */
+
+const sbSaveProgress = async (progress) => {
+  const code = getMemberCode();
+  if (!code) return;
+  await _supabase.from("user_progress").upsert({
+    member_code: code, progress,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "member_code" });
+};
+
+const sbLoadProgress = async () => {
+  const code = getMemberCode();
+  if (!code) return null;
+  const { data } = await _supabase.from("user_progress")
+    .select("progress").eq("member_code", code).single();
+  return data?.progress || null;
+};
+
+/* ── INTENTIONS (Niat) ── */
+
+const sbSaveIntention = async (intentionData) => {
+  const code = getMemberCode();
+  if (!code) return;
+  const today = new Date().toISOString().slice(0, 10);
+  await _supabase.from("user_intentions").upsert({
+    member_code: code, today_date: today,
+    intention:  intentionData,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "member_code,today_date" });
+};
+
+const sbLoadIntentions = async () => {
+  const code = getMemberCode();
+  if (!code) return null;
+  const { data } = await _supabase.from("user_intentions")
+    .select("today_date,intention").eq("member_code", code)
+    .order("today_date", { ascending: false }).limit(60);
+  if (!data) return null;
+  const result = { daysWithIntention: [] };
+  data.forEach(r => {
+    if (r.today_date === new Date().toISOString().slice(0, 10)) {
+      Object.assign(result, r.intention || {}, { todayDate: r.today_date });
+    }
+    result.daysWithIntention.push(r.today_date);
+  });
+  return result;
+};
+
+/* ── PRESENCE (Ritme) ── */
+
+const sbSavePresence = async (presence) => {
+  const code = getMemberCode();
+  if (!code) return;
+  await _supabase.from("user_presence").upsert({
+    member_code: code, days_present: presence.daysPresent || [],
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "member_code" });
+};
+
+const sbLoadPresence = async () => {
+  const code = getMemberCode();
+  if (!code) return null;
+  const { data } = await _supabase.from("user_presence")
+    .select("days_present").eq("member_code", code).single();
+  return data ? { daysPresent: data.days_present || [] } : null;
+};
+
+/* ── MUQARANAH CUSTOM ── */
+
+const sbSaveMuqaranah = async (entry) => {
+  const code = getMemberCode();
+  if (!code) return;
+  await _supabase.from("user_muqaranah").upsert({
+    member_code: code, entry_id: entry.id, data: entry,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "member_code,entry_id" });
+};
+
+const sbDeleteMuqaranah = async (entryId) => {
+  const code = getMemberCode();
+  if (!code) return;
+  await _supabase.from("user_muqaranah")
+    .delete().eq("member_code", code).eq("entry_id", entryId);
+};
+
+const sbLoadMuqaranah = async () => {
+  const code = getMemberCode();
+  if (!code) return null;
+  const { data } = await _supabase.from("user_muqaranah")
+    .select("data").eq("member_code", code).order("updated_at", { ascending: false });
+  return data ? data.map(r => r.data) : null;
+};
+
+/* ── SYNC ENGINE ── */
+
+// Pull semua data dari Supabase ke localStorage (saat login / app load)
+const sbPullAllUserData = async () => {
+  const results = await Promise.allSettled([
+    sbLoadNotes().then(d => d && d.length > 0 && localStorage.setItem("madad_notes", JSON.stringify(d))),
+    sbLoadProgress().then(d => d && localStorage.setItem("madad_progress", JSON.stringify(d))),
+    sbLoadIntentions().then(d => d && localStorage.setItem("madad_intentions", JSON.stringify(d))),
+    sbLoadPresence().then(d => d && localStorage.setItem("madad_presence", JSON.stringify(d))),
+    sbLoadMuqaranah().then(d => d && d.length > 0 && localStorage.setItem("madad_muqaranah_custom", JSON.stringify(d))),
+  ]);
+  const failed = results.filter(r => r.status === "rejected").length;
+  return { success: results.length - failed, failed };
+};
+
+// Push data dari localStorage ke Supabase (background, saat login pertama kali)
+const sbPushAllUserData = async () => {
+  const get = (key, fb) => { try { return JSON.parse(localStorage.getItem(key)) || fb; } catch { return fb; } };
+  const notes      = get("madad_notes", []);
+  const progress   = get("madad_progress", {});
+  const intentions = get("madad_intentions", {});
+  const presence   = get("madad_presence", { daysPresent: [] });
+  const muqaranah  = get("madad_muqaranah_custom", []);
+  await Promise.allSettled([
+    ...notes.map(n => sbSaveNote(n)),
+    sbSaveProgress(progress),
+    sbSaveIntention(intentions),
+    sbSavePresence(presence),
+    ...muqaranah.map(m => sbSaveMuqaranah(m)),
+  ]);
+};
+
+Object.assign(window, {
+  getMemberCode,
+  sbLoadNotes, sbSaveNote, sbDeleteNote,
+  sbLoadProgress, sbSaveProgress,
+  sbLoadIntentions, sbSaveIntention,
+  sbLoadPresence, sbSavePresence,
+  sbLoadMuqaranah, sbSaveMuqaranah, sbDeleteMuqaranah,
+  sbPullAllUserData, sbPushAllUserData,
+});

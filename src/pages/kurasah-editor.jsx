@@ -25,7 +25,8 @@ const KurasahEditorPage = () => {
   const [tags, setTags] = React.useState([]);
   const [tagInput, setTagInput] = React.useState("");
   const [source, setSource] = React.useState(null);
-  const [saveStatus, setSaveStatus] = React.useState("saved"); // "saved" | "saving" | "unsaved"
+  const [saveStatus,  setSaveStatus]  = React.useState("saved"); // "saved" | "saving" | "unsaved"
+  const [syncStatus,  setSyncStatus]  = React.useState("idle");  // "idle" | "syncing" | "synced" | "offline"
   const [tab, setTab] = React.useState("edit"); // "edit" | "preview"
   const [showDelete, setShowDelete] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
@@ -78,6 +79,10 @@ const KurasahEditorPage = () => {
     markPresenceToday();
     setNote(updated);
     setSaveStatus("saved");
+    setSyncStatus("syncing");
+    sbSaveNote(updated)
+      .then(() => setSyncStatus("synced"))
+      .catch(() => setSyncStatus("offline"));
   }, []);
 
   const scheduleAutoSave = React.useCallback((t, b, tg, src, n) => {
@@ -125,12 +130,18 @@ const KurasahEditorPage = () => {
   const handleDelete = () => {
     const allNotes = loadNotes();
     saveNotes(allNotes.filter(n => n.id !== note?.id));
+    if (note?.id) sbDeleteNote(note.id).catch(() => {});
     window.dispatchEvent(new Event("madad:refresh"));
     navigate("/kurasah");
     toast.push("Catatan dihapus.");
   };
 
-  const statusText = { saved: "Tersimpan otomatis", saving: "Menyimpan...", unsaved: "Ada perubahan..." }[saveStatus];
+  const statusText = saveStatus !== "saved"
+    ? { saving: "Menyimpan...", unsaved: "Ada perubahan..." }[saveStatus]
+    : syncStatus === "syncing" ? "Menyinkron..."
+    : syncStatus === "synced"  ? "Tersimpan & tersinkron"
+    : syncStatus === "offline" ? "Offline — tersimpan lokal"
+    : "Tersimpan otomatis";
 
   const allExistingTags = [...new Set(loadNotes().flatMap(n => n.tags))].filter(t => !tags.includes(t));
   const tagSuggestions = tagInput ? allExistingTags.filter(t => t.startsWith(tagInput.toLowerCase())).slice(0,5) : [];
@@ -298,7 +309,12 @@ const KurasahEditorPage = () => {
         {/* Footer bar */}
         <div className="flex items-center justify-between mt-4 py-3 border-t border-line">
           <div className="text-[11px] text-ink-soft flex items-center gap-1.5">
-            <div className={`w-1.5 h-1.5 rounded-full ${saveStatus === "saved" ? "bg-mint-500" : saveStatus === "saving" ? "bg-gold-400" : "bg-violet-400"}`}/>
+            <div className={`w-1.5 h-1.5 rounded-full ${
+              saveStatus !== "saved"   ? (saveStatus === "saving" ? "bg-gold-400" : "bg-violet-400") :
+              syncStatus === "syncing" ? "bg-violet-400 animate-pulse" :
+              syncStatus === "offline" ? "bg-rose-600" :
+              "bg-mint-500"
+            }`}/>
             {statusText}
           </div>
           <div className="flex items-center gap-2">

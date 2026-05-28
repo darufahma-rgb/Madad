@@ -1,0 +1,141 @@
+# PROMPT 12 — Talqee: Starter Pack di Dashboard
+
+Tambahkan kartu "Starter Pack" di dashboard — prompt siap salin yang memperkenalkan user ke AI berdasarkan data profil mereka.
+
+## Lokasi
+
+Di `src/pages/dashboard.jsx`, taruh setelah section Greeting, sebelum Maddah-mu.
+
+## Implementasi
+
+Tambahkan komponen `<StarterPackCard>`:
+
+```jsx
+const StarterPackCard = ({ profile, session }) => {
+  const toast = useToast();
+
+  // Generate prompt dari data profil user
+  const facultyData = (typeof FACULTIES !== "undefined")
+    ? FACULTIES.find(f => f.id === profile?.faculty) : null;
+  const fakultas  = facultyData?.label || profile?.faculty || "Al-Azhar";
+  const jurusan   = profile?.major && facultyData?.majors
+    ? facultyData.majors.find(m => m.id === profile.major)?.label : null;
+  const levelData = (typeof LEVELS !== "undefined")
+    ? LEVELS.find(l => l.id === profile?.level) : null;
+  const tingkat   = levelData?.label || profile?.level || "";
+  const nama      = session?.name || "Aku";
+
+  const gayaLabels = {
+    reading:      "lebih nyaman belajar dengan membaca teks bertahap",
+    summary:      "lebih suka ringkasan terstruktur dan poin kunci",
+    discussion:   "paham lewat tanya jawab dan dialog",
+    practice:     "belajar paling efektif lewat latihan langsung",
+    memorization: "fokus ke hafalan dengan repetisi sistematis",
+    visual:       "lebih cepat paham lewat peta konsep",
+  };
+  const gaya = (profile?.learningStyle || [])
+    .map(s => gayaLabels[s]).filter(Boolean).join(", dan ") || "kombinasi";
+
+  const levelInstruksi = {
+    mustawa: "Pakai bahasa Indonesia yang mudah. Setiap istilah Arab wajib disertai terjemah.",
+    "1": "Pakai bahasa Indonesia akademik dasar. Istilah Arab boleh transliterasi natural.",
+    "2": "Pakai bahasa Indonesia akademik. Sertakan terjemah untuk istilah baru.",
+    "3": "Pakai bahasa Indonesia akademik. Istilah Arab teknis tanpa perlu terjemah.",
+    "4": "Bahas dengan kedalaman level lanjut. Boleh rujuk kitab mutawassith.",
+    "5": "Sama dengan Tingkat IV.",
+    pasca: "Bahasa akademik tingkat riset. Boleh masuk jadal ulama dan sumber primer.",
+  }[profile?.level] || "Pakai bahasa Indonesia akademik.";
+
+  const prompt =
+`Assalamu'alaikum. Mulai sekarang bantu aku belajar materi Al-Azhar. Kenali dulu siapa aku:
+
+PROFIL
+- Nama: ${nama}
+- Tingkat: ${tingkat}
+- Fakultas: ${fakultas}${jurusan ? ` — ${jurusan}` : ""}
+- Cara belajar: aku ${gaya}
+
+CARA MEMBANTUKU
+- Bahasa pengantar: Indonesia akademik
+- ${levelInstruksi}
+- Saat sebut ayat/hadits/kaidah: sertakan teks Arab asli dengan harakat, lalu terjemahnya
+- Saat sebut istilah teknis: tulis Arab + transliterasi. Contoh: قياس (qiyas)
+- Saat sebut ulama: transliterasi natural. Saat sebut kitab: nama Arab (Al-Umm, Fathul Bari)
+
+CATATAN PENTING
+- Kamu alat bantu, BUKAN pengganti guru/syaikh-ku
+- Kalau tidak yakin, katakan jujur
+- Jangan men-tarjih dalam masalah khilafiyah — sajikan semua pendapat
+
+Kalau paham, jawab singkat: "Wa'alaikumussalam, siap membantu." Lalu tunggu pertanyaanku.`;
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(prompt);
+    toast.push("Starter Pack tersalin — paste ke AI di awal chat.");
+  };
+
+  return (
+    <section className="pb-6">
+      <div className="container-x">
+        <Reveal>
+          <div className="card-glass p-5 md:p-6 relative overflow-hidden">
+            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gold-500/8 blur-3xl pointer-events-none"/>
+            <div className="relative flex flex-col md:flex-row md:items-start gap-4">
+              <div className="flex-1">
+                <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-1.5 font-medium">
+                  ✦ Starter Pack
+                </div>
+                <h3 className="font-display text-lg md:text-xl font-semibold text-ink mb-1">
+                  Kenalkan dirimu ke AI
+                </h3>
+                <p className="text-sm text-ink-muted leading-relaxed max-w-lg">
+                  Salin prompt ini ke AI di awal sesi belajar. AI langsung tahu siapa kamu, tingkatmu, dan cara menjelaskan yang paling pas.
+                </p>
+              </div>
+              <button
+                onClick={handleCopy}
+                className="btn-primary text-sm px-5 py-2.5 flex items-center gap-2 flex-shrink-0 self-start"
+              >
+                <Icon name="copy" className="w-3.5 h-3.5"/>
+                Salin Starter Pack
+              </button>
+            </div>
+
+            {/* Preview 2 baris pertama prompt */}
+            <div className="mt-4 p-3 rounded-lg bg-white/3 border border-line">
+              <p className="text-xs text-ink-soft font-mono leading-relaxed line-clamp-2">
+                {prompt.slice(0, 160)}...
+              </p>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+};
+```
+
+## Mount di Dashboard
+
+Di `DashboardPage` return, tambahkan setelah Greeting section:
+
+```jsx
+{/* Starter Pack */}
+<StarterPackCard profile={profile} session={session}/>
+
+{/* Maddah-mu (existing) */}
+<MaddahHeroSection profile={profile}/>
+```
+
+## Acceptance Criteria
+
+- [ ] Kartu muncul di dashboard setelah greeting, sebelum Maddah-mu
+- [ ] Konten prompt ter-generate dari data profil: nama, tingkat, fakultas, jurusan, gaya belajar
+- [ ] Instruksi level bahasa sesuai tingkat user (Mustawa vs S2 beda)
+- [ ] Klik "Salin Starter Pack" → prompt tersalin, toast confirm muncul
+- [ ] Preview 2 baris prompt terlihat di kartu
+- [ ] Card responsive mobile (stack vertikal, tombol full-width)
+- [ ] Gold accent subtle, tidak noisy
+- [ ] Tidak ada console error
+
+والله ولي التوفيق.

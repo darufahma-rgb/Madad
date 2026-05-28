@@ -122,6 +122,8 @@ const tryLogin = async (code, { forceTakeover = false } = {}) => {
     loggedInAt: new Date().toISOString(),
   };
   localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
+  // Tarik data user dari Supabase ke localStorage (background, non-blocking)
+  sbPullAllUserData().catch(e => console.warn("Pull failed:", e.message));
   return { ok: true, status: LOGIN_RESULT.OK, member, session };
 };
 
@@ -183,6 +185,7 @@ const getProgress = () => {
 };
 const saveProgress = (progress) => {
   localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(progress));
+  sbSaveProgress(progress).catch(() => {});
 };
 const markModuleComplete = (pathId, moduleId) => {
   const p = getProgress();
@@ -312,6 +315,7 @@ const loadNotes = () => {
 const saveNotes = (notes) => {
   localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(notes));
   window.dispatchEvent(new Event("madad:refresh"));
+  notes.forEach(n => sbSaveNote(n).catch(() => {}));
 };
 
 /* ============ EXPORTS ============ */

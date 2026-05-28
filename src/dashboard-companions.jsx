@@ -64,6 +64,7 @@ const markPresenceToday = () => {
   if (!d.daysPresent.includes(today)) d.daysPresent.push(today);
   d.lastMarkedDate = today;
   localStorage.setItem("madad_presence", JSON.stringify(d));
+  sbSavePresence(d).catch(() => {});
 };
 
 const getWeekRhythm = () => {
@@ -96,6 +97,7 @@ const loadIntentions = () => {
 
 const saveIntentions = (data) => {
   localStorage.setItem("madad_intentions", JSON.stringify(data));
+  sbSaveIntention(data).catch(() => {});
 };
 
 const commitTodayIntention = (intention) => {

@@ -364,6 +364,7 @@ const loadCustomMuqaranah = () => {
 
 const saveCustomMuqaranah = (data) => {
   localStorage.setItem("madad_muqaranah_custom", JSON.stringify(data));
+  if (Array.isArray(data)) data.forEach(m => sbSaveMuqaranah(m).catch(() => {}));
 };
 
 window.MUQARANAH_LIBRARY = MUQARANAH_LIBRARY;
