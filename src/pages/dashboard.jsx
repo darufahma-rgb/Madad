@@ -1,4 +1,4 @@
-/* Madad, Personal Dashboard */
+/* Talqih, Personal Dashboard */
 
 const getCairoGreeting = () => {
   const h = (new Date().getUTCHours() + 3) % 24;
@@ -57,7 +57,7 @@ const DashboardPage = () => {
                 {majorLabel ? ` · ${majorLabel}` : ""}
                 {levelLabel ? ` · ${levelLabel}` : ""}
               </span>.
-              Madad paham cara belajarmu.
+              Talqih paham cara belajarmu.
             </p>
           </Reveal>
         </div>
@@ -316,7 +316,7 @@ const StageCard = ({ className = "", stage }) => (
       <p className="text-xs text-ink-muted leading-relaxed">
         {stage.id === "starting" && "Baru mulai, fokus di learning path Beginner dulu."}
         {stage.id === "growing" && "Berkembang pesat, lanjut ke Intermediate untuk workflow lebih dalam."}
-        {stage.id === "ready" && "AI-ready, kamu siap untuk multi-AI workflow riset advanced."}
+        {stage.id === "ready" && "Siap menjelajah, kamu siap untuk multi-AI workflow riset advanced."}
       </p>
     </div>
   </div>

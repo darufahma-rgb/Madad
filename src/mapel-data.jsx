@@ -1,4 +1,4 @@
-/* Madad — Panduan Mata Pelajaran Al-Azhar
+/* Talqih — Panduan Mata Pelajaran Al-Azhar
    Panduan cara pakai AI untuk setiap mata pelajaran.
    Konteks: Masisir (mahasiswa Indonesia di Al-Azhar, Kairo).
 */

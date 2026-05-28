@@ -1,4 +1,4 @@
-/* Madad, Ethics page (public, always accessible) */
+/* Talqih, Ethics page (public, always accessible) */
 
 const EthicsPage = () => {
   return (

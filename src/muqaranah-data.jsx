@@ -1,4 +1,4 @@
-/* Madad, Muqaranah Library Seed Data (6 entries) */
+/* Talqih, Muqaranah Library Seed Data (6 entries) */
 
 const MUQARANAH_LIBRARY = [
   {

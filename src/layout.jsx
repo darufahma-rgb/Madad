@@ -1,4 +1,4 @@
-/* Madad, Navbar, Footer, Login Modal, Payment Modal, Router utils */
+/* Talqih, Navbar, Footer, Login Modal, Payment Modal, Router utils */
 
 const ROUTES_PUBLIC = ["/", "/ethics"];
 const ROUTES_MEMBER = ["/onboarding", "/dashboard", "/tools", "/paths"];
@@ -35,8 +35,8 @@ const Brand = ({ size = 36 }) => (
   <a href="#/" onClick={(e)=>{e.preventDefault(); navigate("/");}} className="flex items-center gap-2.5">
     <LogoMark size={size}/>
     <span className="flex flex-col leading-tight">
-      <span className="font-display text-lg font-semibold text-ink tracking-tight whitespace-nowrap">Madad</span>
-      <span className="hidden sm:block text-[10px] uppercase tracking-[0.22em] text-ink-muted">Konsultan Belajar AI · Masisir</span>
+      <span className="font-display text-lg font-semibold text-ink tracking-tight whitespace-nowrap">Talqih</span>
+      <span className="hidden sm:block text-[10px] uppercase tracking-[0.22em] text-ink-muted">Panduan AI · Masisir</span>
     </span>
   </a>
 );
@@ -94,7 +94,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
               </div>
               {confirmLogout ? (
                 <span className="flex items-center gap-1">
-                  <button onClick={() => { logout(); setConfirmLogout(false); }} className="text-sm text-rose-400 hover:text-rose-300 px-2 py-1 rounded-lg hover:bg-rose-500/10 transition-colors font-medium">Ya, keluar</button>
+                  <button onClick={() => { logout(); setConfirmLogout(false); }} className="text-sm text-rose-600 hover:text-rose-600/80 px-2 py-1 rounded-lg hover:bg-rose-600/10 transition-colors font-medium">Ya, keluar</button>
                   <button onClick={() => setConfirmLogout(false)} className="text-sm text-ink-muted hover:text-ink px-2 py-1 rounded-lg transition-colors">Batal</button>
                 </span>
               ) : (
@@ -148,7 +148,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
               {session ? (
                 confirmLogout ? (
                   <div className="flex gap-2">
-                    <button onClick={() => { logout(); setOpen(false); setConfirmLogout(false); }} className="flex-1 btn text-sm py-2.5 text-rose-400 border border-rose-500/30 bg-rose-500/8 hover:bg-rose-500/15 transition-colors">Ya, keluar</button>
+                    <button onClick={() => { logout(); setOpen(false); setConfirmLogout(false); }} className="flex-1 btn text-sm py-2.5 text-rose-600 border border-rose-600/30 bg-rose-600/8 hover:bg-rose-600/15 transition-colors">Ya, keluar</button>
                     <button onClick={() => setConfirmLogout(false)} className="flex-1 btn btn-ghost text-sm py-2.5">Batal</button>
                   </div>
                 ) : (
@@ -194,9 +194,10 @@ const Footer = () => (
       </div>
       <div className="divider-arabesque mt-10 opacity-50"/>
       <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
-        <div className="text-ink-soft">© {new Date().getFullYear()} Madad · All rights reserved.</div>
-        <div className="text-ink-muted tracking-wider">
-          Designed & Developed by <span className="text-gold-400 font-medium">Dar Dev</span>
+        <div className="text-ink-soft">© {new Date().getFullYear()} Talqih · All rights reserved.</div>
+        <div className="text-ink-muted tracking-wider flex flex-col items-end gap-1">
+          <span className="text-ink-soft font-medium">Talqih — Panduan Belajar Al-Azhar dengan AI</span>
+          <span>Designed & Developed by <span className="text-gold-400 font-medium">Dar Dev</span></span>
         </div>
       </div>
     </div>
@@ -295,7 +296,7 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
             </button>
             <div className="mt-5 pt-5 border-t border-line text-xs text-ink-soft text-center leading-relaxed">
               Belum punya kode?<br/>
-              Daftar sebagai member Madad untuk mendapatkan akses.
+              Daftar sebagai member Talqih untuk mendapatkan akses.
             </div>
             <div className="mt-4 text-center">
               <button type="button" onClick={() => setCode("MSR-DEMO-1234")} className="text-xs text-violet-300 hover:text-violet-200 underline underline-offset-2">
@@ -361,7 +362,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
           </div>
         ) : (
           <div className="mt-4">
-            <h2 className="font-display text-2xl font-semibold text-ink mb-1">Akses Premium Madad</h2>
+            <h2 className="font-display text-2xl font-semibold text-ink mb-1">Akses Premium Talqih</h2>
             <p className="text-sm text-ink-muted mb-6 leading-relaxed">
               Onboarding 3 pertanyaan, lalu dashboard personal langsung jalan.
             </p>

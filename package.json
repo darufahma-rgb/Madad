@@ -1,7 +1,7 @@
 {
-  "name": "madad",
+  "name": "talqih",
   "version": "1.0.0",
-  "description": "MADAD - AI Learning Companion for Masisir Al-Azhar",
+  "description": "Talqih - Panduan Belajar Al-Azhar dengan AI untuk Masisir",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"

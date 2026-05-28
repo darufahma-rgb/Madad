@@ -1,4 +1,4 @@
-/* Madad, Kurasah (Notebook) Landing Page */
+/* Talqih, Kurasah (Notebook) Landing Page */
 
 const TAG_COLORS = [
   "rgba(124,77,255,0.18)", "rgba(169,112,255,0.18)", "rgba(201,168,106,0.15)",

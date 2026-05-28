@@ -1,4 +1,4 @@
-/* Madad, Muqaranah Form (Susun Custom) */
+/* Talqih, Muqaranah Form (Susun Custom) */
 
 const BLANK_VIEW = () => ({
   scholar: "", scholarArabic: "", school: "",
@@ -27,7 +27,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
             <button
               type="button"
               onClick={e => { e.stopPropagation(); onRemove(); }}
-              className="p-1.5 rounded-lg text-ink-soft hover:text-red-400 hover:bg-red-500/10 transition-colors">
+              className="p-1.5 rounded-lg text-ink-soft hover:text-rose-600 hover:bg-rose-600/10 transition-colors">
               <Icon name="x" className="w-3.5 h-3.5"/>
             </button>
           )}
@@ -166,7 +166,7 @@ ${ulama}
 - Tanpa men-tarjih — aku ingin presentasi seimbang, biarkan aku yang merenungkan
 - Bila ada qoul yang dalilnya lemah, sebutkan tapi tetap presentasikan dengan jujur
 
-Setelah kamu draft, aku akan paste hasilnya ke form MADAD dan tambahkan refleksi pribadiku.`;
+Setelah kamu draft, aku akan paste hasilnya ke form Talqih dan tambahkan refleksi pribadiku.`;
 
     navigator.clipboard.writeText(prompt);
     toast.push("Prompt AI disalin. Paste ke AI, lalu isi hasilnya di form ini.");

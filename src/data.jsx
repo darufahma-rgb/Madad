@@ -1,4 +1,4 @@
-/* Madad, All product data
+/* Talqih, All product data
    - Personalization metadata
    - AI tools with adaptive guide variants
    - Learning paths
@@ -693,7 +693,7 @@ const LEARNING_PATHS = [
     id: "intermediate",
     level: "Intermediate",
     label: "Bertumbuh",
-    icon: "⚡",
+    icon: "🌿",
     color: "#A07BFA",
     desc: "Workflow untuk memahami kitab klasik, menulis makalah, dan murajaah sistematis.",
     modules: [
@@ -707,8 +707,8 @@ const LEARNING_PATHS = [
   {
     id: "advanced",
     level: "Advanced",
-    label: "AI-ready",
-    icon: "🚀",
+    label: "Siap menjelajah",
+    icon: "🕌",
     color: "#E5C18A",
     desc: "Riset akademik tingkat lanjut, multi-AI workflow, dan produktivitas kelas pakar.",
     modules: [

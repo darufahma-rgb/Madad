@@ -1,0 +1,1478 @@
+# PROMPT 2 — Talqih: Landing Page Baru
+
+> Ini **Prompt 2 dari 5** dalam roadmap rebrand Talqih. Prerequisite: **Prompt 1 sudah selesai** (rebrand, color refactor, font Arab 3-tier, pattern hero).
+> Kalau Prompt 1 belum dijalankan, JANGAN run prompt ini dulu.
+
+---
+
+## Konteks
+
+Landing page MADAD saat ini punya **7 section panjang** (Hero, BantuanSection, ToolsPreview, PromptPreview, AdaptiveTeaser, EthicsTeaser, PricingSection, JoinCTA) dengan total 514 baris. Banyak paragraf 5-10 baris yang bikin user males baca.
+
+**Target Talqih:** landing page yang **ringkas, eye-catching, langsung ke value**, dengan **sample Maddah Nahwu yang gratis bisa diakses publik** sebagai demo. Total maksimal **~250 baris**, total 5 section pendek.
+
+**Demographic target:** Masisir Indonesia, mostly buka via HP. Mereka **males baca panjang**, tapi mau langsung ngerasain value sebelum bayar.
+
+---
+
+## Filosofi Landing Page Talqih (BACA DULU)
+
+### Prinsip Utama
+
+**1. Less Text, More Visual**  
+Setiap paragraf max 2 baris. Setiap kalimat max 18 kata. Kalau lebih, pecah atau hapus.
+
+**2. Show, Don't Tell**  
+Daripada jelasin "AI bagus untuk belajar", langsung tunjukin **sample Maddah Nahwu yang bisa dicobain**. User experience > marketing copy.
+
+**3. One Strong CTA per Section**  
+Maks 2 button per section. Lebih dari itu = bingungin user.
+
+**4. Mobile First**  
+Mostly Masisir buka via HP — landing harus enak di-scroll cepat di mobile (width 375px).
+
+**5. Bahasa Talqih**  
+- Indonesia santai-akademik (khas Masisir)
+- Istilah Arab transliterasi natural: thalib, maddah, muthala'ah, talaqqi, tahsin
+- Boleh sisipkan teks Arab pendek dengan terjemah (untuk emotional anchor, bukan filler)
+- HINDARI: "Dalam era digital...", opening generic, stats sales-y, FAQ panjang, testimonial palsu
+
+### Yang DIHAPUS dari Landing Sekarang
+
+Hapus components berikut secara permanen dari `landing.jsx`:
+- `BantuanSection` — section panjang yang menjelaskan kapan AI dipakai
+- `PromptPreview` — preview prompt yang verbose, akan digantikan dengan **sample Maddah Nahwu** yang lebih konkret
+- `AdaptiveTeaser` — penjelasan adaptive guide yang panjang, sekarang jadi 1 kartu kecil
+- `EthicsTeaser` sebagai section besar — tetap ada tapi cuma sebagai link kecil di footer/CTA
+- `JoinCTA` lama — diganti dengan `FinalCTA` yang lebih ringkas
+
+### Yang DIPERTAHANKAN tapi DIRINGKAS
+
+- `Hero` — dirombak jadi lebih singkat (max 18 kata headline)
+- `ToolsPreview` — diringkas jadi logo strip (bukan grid kartu lengkap)
+- `PricingSection` — diringkas jadi 1 kartu mini di tengah
+
+---
+
+## Stack Teknis (Existing)
+
+- React 18 via CDN + Babel Standalone
+- Tailwind CDN (sudah punya color palette Talqih dari Prompt 1)
+- localStorage untuk state
+- Komponen pakai `const Name = (props) => { ... }` tanpa export
+- Helper UI existing: `<Reveal>`, `<Blob>`, `<Icon>`, `<ToolIcon>`, class `card-glass`, `btn-primary`, `chip-glass`, `container-x`, `section`, `pattern-talqih` (dari Prompt 1)
+
+---
+
+## STRUKTUR LANDING BARU — 5 Section Pendek
+
+```
+1. HERO (split kiri-kanan, max 1.2 viewport)
+2. SAMPLE MADDAH NAHWU (showcase demo gratis)
+3. CARA KERJANYA (3 langkah sederhana)
+4. SEMUA MADDAH (preview grid 36 maddah)
+5. PRICING + FINAL CTA (digabung jadi 1 section)
+```
+
+Plus footer existing (gak diubah).
+
+---
+
+## SECTION 1 — HERO
+
+### Layout Visual
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  [pattern-talqih subtle dari Prompt 1]                          │
+│  [Blob purple atas-kanan]  [Blob gold tengah-kiri]              │
+│                                                                  │
+│  ┌─────────────────────────────┐  ┌──────────────────────────┐  │
+│  │  Eyebrow chip               │  │                          │  │
+│  │  ✦ Talqih · Untuk Masisir   │  │  [Visual mockup card]    │  │
+│  │                             │  │   3 stacked glass cards   │  │
+│  │  Headline besar (font-      │  │   - Maddah preview        │  │
+│  │  display, max 8 kata)       │  │   - Prompt template       │  │
+│  │  "Belajar materi Azhar,     │  │   - AI rec card          │  │
+│  │   dipahami dengan AI."     │  │                          │  │
+│  │                             │  │   (subtle gold glow)     │  │
+│  │  Sub-headline 1 kalimat     │  │                          │  │
+│  │  (text-ink-muted)           │  │                          │  │
+│  │                             │  │                          │  │
+│  │  [Cobain Sample] [Member]   │  └──────────────────────────┘  │
+│  │  ↓ Sudah punya kode?       │                                 │
+│  └─────────────────────────────┘                                 │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Konten Detail
+
+**Eyebrow chip (1 baris):**
+```jsx
+<div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-xs">
+  <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>
+  <span className="text-violet-300 font-medium">Talqih</span>
+  <span className="text-ink-soft">·</span>
+  <span className="text-ink-muted">Panduan AI untuk Masisir</span>
+</div>
+```
+
+**Arabic eyebrow (kecil, gold, di atas headline):**
+```jsx
+<div className="arabic-classic text-gold-300 text-base mt-6 mb-3" style={{direction:"rtl"}}>
+  تَلْقِيح
+</div>
+```
+
+**Headline (font-display, max 8 kata):**
+```jsx
+<h1 className="font-display text-5xl md:text-7xl font-semibold leading-[1.05] text-ink">
+  Belajar materi Azhar,
+  <br/>
+  <span className="bg-gradient-to-r from-violet-300 via-violet-400 to-gold-400 bg-clip-text text-transparent">dipahami dengan AI.</span>
+</h1>
+```
+
+**Sub-headline (1 kalimat, max 18 kata):**
+```jsx
+<p className="mt-6 text-lg md:text-xl text-ink-muted leading-relaxed max-w-xl">
+  Panduan + template prompt + rekomendasi AI personal untuk Masisir semua tingkat — dari Mustawa sampai S2.
+</p>
+```
+
+**CTA row:**
+```jsx
+<div className="mt-10 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+  <button 
+    onClick={() => navigate("/sample-nahwu")} 
+    className="btn-primary px-7 py-3.5 text-base font-medium"
+  >
+    Cobain Sample Gratis →
+  </button>
+  <button 
+    onClick={onOpenPayment} 
+    className="btn-ghost px-7 py-3.5 text-base"
+  >
+    Gabung Member · 49k
+  </button>
+</div>
+
+<div className="mt-5 text-sm text-ink-soft">
+  Sudah punya kode? <button onClick={onOpenLogin} className="text-violet-300 hover:text-violet-200 underline underline-offset-2">Masuk di sini</button>
+</div>
+```
+
+**Trust indicator subtle (BUKAN sales-y stats):**
+```jsx
+<div className="mt-12 flex items-center gap-6 text-xs text-ink-soft">
+  <span className="flex items-center gap-2">
+    <Icon name="check" className="w-3.5 h-3.5 text-gold-400"/>
+    36 Maddah lengkap
+  </span>
+  <span className="flex items-center gap-2">
+    <Icon name="check" className="w-3.5 h-3.5 text-gold-400"/>
+    540+ template prompt
+  </span>
+  <span className="flex items-center gap-2">
+    <Icon name="check" className="w-3.5 h-3.5 text-gold-400"/>
+    Bayar sekali, akses selamanya
+  </span>
+</div>
+```
+
+### Visual Mockup di Kanan (Hero Composition)
+
+Buat komponen baru `<HeroComposition/>` yang menampilkan **3 stacked glass cards** dengan offset position (bukan jajar). Setiap card preview dari fitur konkret Talqih:
+
+**Card 1 (depan, paling jelas):**
+```
+┌────────────────────────────────┐
+│  المقارنة بين الأقوال          │  ← arabic-display gold
+│  Tafsir Tahlili                │  ← title
+│  AI: Claude · Sonnet 3.5       │
+│  ━━━━━━━━━━━━━━━━━━━━━━━━     │
+│  15 template prompt           │
+│  → Pahami · Hafal · Latihan   │
+└────────────────────────────────┘
+```
+
+**Card 2 (di belakang kanan, sedikit offset):**
+```
+┌──────────────────────────┐
+│  Prompt: Tafsir Ayat     │
+│  ──────────────────────  │
+│  "Aku thalib Tingkat III │
+│   di Tafsir, sedang      │
+│   muthala'ah QS..."      │
+│  [salin]                 │
+└──────────────────────────┘
+```
+
+**Card 3 (paling belakang kiri):**
+```
+┌──────────────────────────┐
+│  ✨ AI Recommendation    │
+│  Claude — top pick       │
+│  Sesuai gaya: diskusi    │
+│  Untuk: Tafsir Tahlili   │
+└──────────────────────────┘
+```
+
+Card 1 paling visible (z-index 30, opacity 100), Card 2 (z-index 20, opacity 75, offset +30px x +30px y), Card 3 (z-index 10, opacity 50, offset -20px x +60px y).
+
+Background semua card: `card-glass-strong` dengan gold border 1px subtle untuk Card 1. Hover lift halus.
+
+**Mobile:** Hide composition kanan, hero full-width dengan content tengah. Atau show cuma Card 1 di bawah text.
+
+---
+
+## SECTION 2 — SAMPLE MADDAH NAHWU (BARU — INTI DEMO)
+
+### Filosofi Section
+
+Ini section paling penting di landing. **Show, don't tell** — daripada jelasin "Talqih bagus untuk belajar", kasih user pengalaman langsung dengan 1 Maddah lengkap (Nahwu Dasar) yang **bisa diakses tanpa member**.
+
+User klik tombol → buka halaman sample Maddah Nahwu lengkap (yang dibuat di prompt ini).
+
+### Visual Section
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ─ COBAIN DULU                                                   │
+│                                                                  │
+│  Sample lengkap: Nahwu Dasar                                     │
+│                                                                  │
+│  Tanpa daftar, tanpa bayar. Cobain workflow Talqih dengan        │
+│  1 Maddah lengkap — semua prompt, AI rec, tutorial.              │
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐   │
+│  │ [Glass card preview Maddah Nahwu]                        │   │
+│  │                                                          │   │
+│  │  النحو                                                    │   │
+│  │  Nahwu — Ilmu Sintaksis Arab                            │   │
+│  │                                                          │   │
+│  │  AI Rekomendasi: NotebookLM + Claude                    │   │
+│  │  ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐ ┌────┐             │   │
+│  │  │ 4  │ │ 3  │ │ 3  │ │ 2  │ │ 2  │ │ 3  │             │   │
+│  │  │Pah.│ │Haf.│ │Lat.│ │Uji.│ │Tal.│ │Eks.│             │   │
+│  │  └────┘ └────┘ └────┘ └────┘ └────┘ └────┘             │   │
+│  │  17 prompt template siap pakai                          │   │
+│  │                                                          │   │
+│  │  [Buka Sample Nahwu →]                                  │   │
+│  └──────────────────────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Implementasi Section
+
+```jsx
+const SampleMaddahSection = ({ onOpenPayment }) => (
+  <section className="section pt-0 relative">
+    <div className="container-x">
+      <Reveal className="mb-10 text-center">
+        <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+          <span className="w-6 h-px bg-gold-500/70"/>
+          COBAIN DULU
+          <span className="w-6 h-px bg-gold-500/70"/>
+        </div>
+        <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
+          Sample lengkap: <span className="text-gold-300">Nahwu Dasar</span>
+        </h2>
+        <p className="text-ink-muted text-base md:text-lg max-w-xl mx-auto leading-relaxed">
+          Tanpa daftar, tanpa bayar. Cobain workflow Talqih dengan 1 Maddah lengkap.
+        </p>
+      </Reveal>
+
+      <Reveal>
+        <div className="max-w-3xl mx-auto">
+          <div className="card-glass-strong p-8 md:p-10 relative overflow-hidden hov-lift cursor-pointer transition-all"
+               onClick={() => navigate("/sample/nahwu")}>
+            {/* Subtle gold glow corner */}
+            <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-gold-500/8 blur-3xl pointer-events-none"/>
+            
+            {/* Header */}
+            <div className="flex items-start justify-between mb-6 gap-4">
+              <div>
+                <div className="arabic-display text-gold-300 text-3xl md:text-4xl mb-2" style={{direction:"rtl"}}>
+                  النحو
+                </div>
+                <h3 className="font-display text-2xl md:text-3xl font-semibold text-ink">
+                  Nahwu — Ilmu Sintaksis Arab
+                </h3>
+                <p className="text-sm text-ink-muted mt-2">
+                  Universal · Diambil semua fakultas Adaby
+                </p>
+              </div>
+              <span className="chip-glass text-[10px] flex-shrink-0">GRATIS</span>
+            </div>
+
+            {/* AI Rec */}
+            <div className="mb-6 p-4 rounded-xl bg-violet-500/8 border border-violet-500/15">
+              <div className="text-xs uppercase tracking-wider text-violet-300 mb-2 font-medium">
+                AI yang direkomendasikan
+              </div>
+              <div className="flex items-center gap-3 text-sm text-ink">
+                <span className="font-semibold">NotebookLM</span>
+                <span className="text-ink-soft">+</span>
+                <span className="font-semibold">Claude</span>
+              </div>
+            </div>
+
+            {/* Prompt count grid */}
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-6">
+              {[
+                { count: 4, label: "Pahami" },
+                { count: 3, label: "Hafal" },
+                { count: 3, label: "Latihan" },
+                { count: 2, label: "Ujian" },
+                { count: 2, label: "Talaqqi" },
+                { count: 3, label: "Eksplor" },
+              ].map((cat, i) => (
+                <div key={i} className="text-center p-3 rounded-lg bg-white/3 border border-line">
+                  <div className="font-display text-xl text-ink font-semibold">{cat.count}</div>
+                  <div className="text-[10px] text-ink-soft uppercase tracking-wider mt-1">{cat.label}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="text-center text-sm text-ink-muted mb-6">
+              17 template prompt siap pakai
+            </div>
+
+            <div className="flex justify-center">
+              <span className="btn-primary px-6 py-3 text-sm pointer-events-none">
+                Buka Sample Nahwu →
+              </span>
+            </div>
+          </div>
+
+          <p className="text-center text-xs text-ink-soft mt-5">
+            Sample ini gratis selamanya · Untuk 35 Maddah lain, gabung member 49k
+          </p>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+);
+```
+
+---
+
+## SECTION 3 — CARA KERJANYA
+
+### Filosofi
+
+Calon user perlu tahu **flow konkret**: bayar → onboarding → langsung pakai. 3 langkah simple, tanpa drama.
+
+### Visual
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ─ BAGAIMANA TALQIH BEKERJA                                      │
+│                                                                  │
+│        01 ─────── 02 ─────── 03                                  │
+│         │          │          │                                  │
+│      Bayar 49k   Jawab profile  Akses semua                     │
+│      via Lynk    fakultas, dll  36 Maddah                       │
+│                                                                  │
+│      Admin       Personalisasi   Workflow                       │
+│      kirim kode  AI sesuai gaya  belajar siap                   │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Implementasi
+
+```jsx
+const HowItWorks = () => {
+  const steps = [
+    { 
+      num: "01", 
+      title: "Bayar 49k", 
+      sub: "Sekali bayar, akses selamanya",
+      desc: "Bayar via Lynk.id, admin kirim kode member via WhatsApp." 
+    },
+    { 
+      num: "02", 
+      title: "Jawab profile", 
+      sub: "5 pertanyaan singkat",
+      desc: "Fakultas, jurusan, tingkat, gaya belajarmu — biar prompt-nya pas." 
+    },
+    { 
+      num: "03", 
+      title: "Mulai belajar", 
+      sub: "Workflow + 540+ prompt",
+      desc: "Dashboard tunjukin AI cocok, prompt per Maddah siap pakai." 
+    },
+  ];
+
+  return (
+    <section className="section pt-0">
+      <div className="container-x">
+        <Reveal className="mb-12 text-center">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/70"/>
+            BAGAIMANA TALQIH BEKERJA
+          </div>
+          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
+            Tiga langkah, langsung jalan.
+          </h2>
+        </Reveal>
+
+        <div className="grid md:grid-cols-3 gap-6 md:gap-4 relative">
+          {/* Connector line desktop only */}
+          <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent"/>
+          
+          {steps.map((s, i) => (
+            <Reveal key={i} delay={i * 100}>
+              <div className="text-center px-6">
+                <div className="relative inline-block mb-5">
+                  <div className="font-display text-5xl md:text-6xl font-semibold bg-gradient-to-br from-violet-300 to-gold-400 bg-clip-text text-transparent">
+                    {s.num}
+                  </div>
+                </div>
+                <h3 className="font-display text-xl md:text-2xl font-semibold text-ink mb-1">
+                  {s.title}
+                </h3>
+                <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">
+                  {s.sub}
+                </div>
+                <p className="text-sm text-ink-muted leading-relaxed">
+                  {s.desc}
+                </p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+```
+
+---
+
+## SECTION 4 — SEMUA MADDAH (Preview Grid)
+
+### Filosofi
+
+User mau tahu **apa aja yang dicover** sebelum bayar. Bukan list teks, tapi grid visual yang langsung kelihatan "wah lengkap banget".
+
+### Visual
+
+Grid 6 fakultas, masing-masing punya badge count Maddah:
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ─ 36 MADDAH LENGKAP                                             │
+│                                                                  │
+│  Untuk semua fakultas rumpun agama dan bahasa.                   │
+│                                                                  │
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐                   │
+│  │ Ushuluddin │ │  Syariah   │ │ Lughah     │                   │
+│  │ أصول الدين │ │ الشريعة   │ │ اللغة     │                   │
+│  │            │ │            │ │            │                   │
+│  │ • Tafsir   │ │ • Fiqh     │ │ • Nahwu    │                   │
+│  │ • Hadits   │ │ • Ushul    │ │ • Sharaf   │                   │
+│  │ • Aqidah   │ │ • Qawa'id  │ │ • Balaghah │                   │
+│  │ + 4 lain   │ │ + 2 lain   │ │ + 4 lain   │                   │
+│  └────────────┘ └────────────┘ └────────────┘                   │
+│  ┌────────────┐ ┌────────────┐ ┌────────────┐                   │
+│  │  Dirasat   │ │   Tarikh   │ │  Dakwah    │                   │
+│  │ + 5 maddah │ │ + 4 maddah │ │ + 3 maddah │                   │
+│  └────────────┘ └────────────┘ └────────────┘                   │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Implementasi
+
+```jsx
+const AllMaddahPreview = () => {
+  const fakultasMaddah = [
+    {
+      label: "Ushuluddin & Quran",
+      arabic: "أصول الدين",
+      count: 7,
+      sample: ["Tafsir Tahlili", "Tafsir Maudhu'i", "'Ulum Al-Qur'an", "Hadits"],
+      color: "from-violet-500/15 to-violet-700/5",
+    },
+    {
+      label: "Hadits & Mustholah",
+      arabic: "الحديث",
+      count: 5,
+      sample: ["Hadits Tahlili", "Mustholah", "Manahij Muhadditsin", "Takhrij"],
+      color: "from-violet-400/12 to-violet-600/4",
+    },
+    {
+      label: "Syariah & Fiqh",
+      arabic: "الشريعة",
+      count: 5,
+      sample: ["Fiqh Madzhabi", "Fiqh Muqaran", "Ushul Fiqh", "Qawa'id"],
+      color: "from-gold-500/10 to-gold-700/3",
+    },
+    {
+      label: "Aqidah & Pemikiran",
+      arabic: "العقيدة",
+      count: 5,
+      sample: ["Tauhid", "Firaq", "Filsafat Islam", "Mantiq", "Tasawwuf"],
+      color: "from-violet-500/12 to-night-700",
+    },
+    {
+      label: "Lughah Arabiyah",
+      arabic: "اللغة العربية",
+      count: 7,
+      sample: ["Nahwu", "Sharaf", "Balaghah", "Adab", "Naqd Adabi"],
+      color: "from-gold-400/10 to-violet-600/5",
+    },
+    {
+      label: "Tarikh, Dakwah & Tarbiyah",
+      arabic: "التاريخ والدعوة",
+      count: 7,
+      sample: ["Sirah", "Tarikh Tasyri'", "Hadharah", "Dakwah", "Adyan"],
+      color: "from-violet-600/10 to-gold-600/5",
+    },
+  ];
+
+  return (
+    <section className="section pt-0">
+      <div className="container-x">
+        <Reveal className="mb-12 text-center">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/70"/>
+            36 MADDAH LENGKAP
+          </div>
+          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
+            Untuk semua fakultas rumpun agama dan bahasa.
+          </h2>
+        </Reveal>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {fakultasMaddah.map((f, i) => (
+            <Reveal key={i} delay={i * 60}>
+              <div className={`card-glass p-6 hov-lift bg-gradient-to-br ${f.color} relative overflow-hidden h-full`}>
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <div className="arabic-display text-gold-300 text-2xl mb-1" style={{direction:"rtl"}}>
+                      {f.arabic}
+                    </div>
+                    <h3 className="font-display text-lg font-semibold text-ink">
+                      {f.label}
+                    </h3>
+                  </div>
+                  <span className="text-xs px-2 py-1 rounded bg-violet-500/15 text-violet-300 border border-violet-500/20 font-medium">
+                    {f.count} Maddah
+                  </span>
+                </div>
+                
+                <ul className="space-y-1.5">
+                  {f.sample.slice(0, 4).map((s, j) => (
+                    <li key={j} className="flex items-center gap-2 text-sm text-ink-muted">
+                      <span className="w-1 h-1 rounded-full bg-gold-400"/>
+                      {s}
+                    </li>
+                  ))}
+                  {f.count > 4 && (
+                    <li className="text-xs text-ink-soft italic mt-2">
+                      + {f.count - 4} maddah lainnya
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+
+        <Reveal className="mt-10 text-center">
+          <p className="text-sm text-ink-soft">
+            Total 540+ template prompt · Disesuaikan untuk Mustawa sampai S2
+          </p>
+        </Reveal>
+      </div>
+    </section>
+  );
+};
+```
+
+---
+
+## SECTION 5 — PRICING + FINAL CTA (Digabung)
+
+### Filosofi
+
+Pricing + Final CTA digabung jadi 1 section yang kuat di akhir. Bukan section pricing besar dengan banyak option — 1 card center, 49k, jelas, langsung.
+
+### Visual
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  ─ INVESTASI ILMU                                                │
+│                                                                  │
+│  Bayar sekali. Akses 36 Maddah selamanya.                        │
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────┐     │
+│  │  [Glow gold subtle]                                     │     │
+│  │                                                         │     │
+│  │  Member Talqih                                          │     │
+│  │                                                         │     │
+│  │  Rp 49.000                                              │     │
+│  │  ─ One-time, no subscription                           │     │
+│  │                                                         │     │
+│  │  ✓ 36 Maddah lengkap + 540+ prompt template            │     │
+│  │  ✓ AI recommendation personal (per gaya & tingkat)     │     │
+│  │  ✓ Muqaranah qoul ulama 4 madzhab                      │     │
+│  │  ✓ Kurasah pribadi dengan markdown & teks Arab         │     │
+│  │  ✓ Companion harian: niat, ritme, refleksi             │     │
+│  │  ✓ Update fitur seumur hidup                           │     │
+│  │                                                         │     │
+│  │  [Bayar via Lynk.id →]                                 │     │
+│  │                                                         │     │
+│  │  Setelah bayar, kode dikirim admin via WhatsApp.       │     │
+│  └────────────────────────────────────────────────────────┘     │
+│                                                                  │
+│  ─── divider arabesque ───                                       │
+│                                                                  │
+│  قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ                                              │
+│  "Ikatlah ilmu dengan tulisan."                                  │
+│  — Atsar                                                         │
+│                                                                  │
+│  [Sudah punya kode? Masuk]                                       │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+### Implementasi
+
+```jsx
+const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
+  <section className="section pt-0 pb-32">
+    <div className="container-x">
+      <Reveal className="text-center mb-10">
+        <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+          <span className="w-6 h-px bg-gold-500/70"/>
+          INVESTASI ILMU
+        </div>
+        <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
+          Bayar sekali. Akses 36 Maddah selamanya.
+        </h2>
+      </Reveal>
+
+      <Reveal>
+        <div className="max-w-lg mx-auto">
+          <div className="card-glass-strong p-8 md:p-10 relative overflow-hidden">
+            <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-gold-500/12 blur-3xl pointer-events-none"/>
+            <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-violet-500/12 blur-3xl pointer-events-none"/>
+            
+            <div className="relative">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/20 text-xs text-gold-300 mb-5">
+                <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>
+                Member Talqih
+              </div>
+
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="font-display text-5xl md:text-6xl font-semibold bg-gradient-to-br from-gold-300 to-gold-500 bg-clip-text text-transparent">
+                  Rp 49.000
+                </span>
+              </div>
+              <div className="text-xs text-ink-soft uppercase tracking-wider mb-6">
+                One-time · No subscription
+              </div>
+
+              <ul className="space-y-3 mb-8">
+                {[
+                  "36 Maddah lengkap + 540+ template prompt",
+                  "AI recommendation per gaya & tingkat belajarmu",
+                  "Muqaranah qoul ulama 4 madzhab",
+                  "Kurasah pribadi dengan markdown & teks Arab",
+                  "Companion harian: niat, ritme, refleksi",
+                  "Update fitur seumur hidup",
+                ].map((feat, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-ink">
+                    <Icon name="check" className="w-4 h-4 text-gold-400 flex-shrink-0 mt-0.5"/>
+                    <span>{feat}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <button 
+                onClick={onOpenPayment}
+                className="btn-primary w-full py-4 text-base font-medium"
+              >
+                Bayar via Lynk.id →
+              </button>
+
+              <p className="text-xs text-ink-soft text-center mt-4">
+                Setelah bayar, kode dikirim admin via WhatsApp.
+              </p>
+            </div>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* Atsar penutup */}
+      <Reveal className="mt-20 text-center max-w-lg mx-auto">
+        <div className="flex items-center justify-center gap-4 mb-8">
+          <span className="h-px flex-1 max-w-[80px] bg-gradient-to-r from-transparent to-gold-500/40"/>
+          <Icon name="star" className="w-3 h-3 text-gold-400/60"/>
+          <span className="h-px flex-1 max-w-[80px] bg-gradient-to-l from-transparent to-gold-500/40"/>
+        </div>
+        
+        <div className="arabic-classic text-gold-300 text-3xl md:text-4xl leading-loose mb-3" style={{direction:"rtl"}}>
+          قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ
+        </div>
+        <p className="text-base text-ink-muted italic mb-1">
+          "Ikatlah ilmu dengan tulisan."
+        </p>
+        <p className="text-xs text-ink-soft">
+          — Atsar
+        </p>
+
+        <div className="mt-12 text-sm text-ink-soft">
+          Sudah punya kode? <button onClick={onOpenLogin} className="text-violet-300 hover:text-violet-200 underline underline-offset-2 font-medium">Masuk di sini</button>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+);
+```
+
+---
+
+## ROOT LANDING COMPONENT
+
+Setelah semua section di atas, root `LandingPage` jadi sangat ringkas:
+
+```jsx
+const LandingPage = ({ onOpenLogin, onOpenPayment }) => {
+  return (
+    <div className="page-enter">
+      <Hero onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment}/>
+      <SampleMaddahSection onOpenPayment={onOpenPayment}/>
+      <HowItWorks/>
+      <AllMaddahPreview/>
+      <PricingAndCTA onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment}/>
+    </div>
+  );
+};
+```
+
+---
+
+## SAMPLE MADDAH PAGE — `/sample/nahwu`
+
+### Filosofi
+
+Halaman ini adalah **inti demo**. User klik tombol di landing → buka full page Maddah Nahwu yang accessible **TANPA login/member**. Mereka bisa lihat workflow lengkap: ringkasan, AI rec, 17 prompt template, tutorial.
+
+**Tapi:** prompt-nya **generic level** (gak adaptive per tingkat user, karena belum login/onboarded). Ada banner subtle yang bilang "Untuk prompt yang disesuaikan tingkatmu, gabung member".
+
+### Route Baru di `src/app.jsx`
+
+Tambah handler route untuk `/sample/nahwu`:
+
+```jsx
+} else if (path.startsWith("/sample/nahwu")) {
+  return <SampleNahwuPage/>;
+}
+```
+
+Posisikan **sebelum** route protected (yang butuh session), karena ini publik. Sebaiknya di antara route landing dan route member.
+
+### File Baru: `src/pages/sample-nahwu.jsx`
+
+Buat file baru ini dengan struktur:
+
+```jsx
+/* Talqih — Sample Maddah Nahwu (publik, accessible tanpa member) */
+
+const SampleNahwuPage = () => {
+  // Sample data — embedded di sini, bukan dari muqaranah-data atau Maddah system
+  const sampleData = {
+    name: "Nahwu Dasar",
+    nameArabic: "النحو",
+    description: "Ilmu yang mempelajari kaidah-kaidah penyusunan kalimat dalam Bahasa Arab — i'rab, kedudukan kata, hukum kalimat fi'liyyah dan ismiyyah.",
+    descriptionArabic: "علم يبحث في قواعد تركيب الجملة العربية",
+    kitabUtama: [
+      { nama: "Al-Ajurrumiyyah", penulis: "Ibnu Ajurrum", arabic: "الآجرومية" },
+      { nama: "Alfiyah Ibnu Malik", penulis: "Ibnu Malik", arabic: "ألفية ابن مالك" },
+      { nama: "Qatr An-Nada", penulis: "Ibnu Hisyam", arabic: "قطر الندى" },
+    ],
+    recommendedAI: [
+      {
+        tool: "notebooklm",
+        name: "NotebookLM",
+        strength: "Hafal kaidah, drill matan, parsing kitab",
+        why: "Nahwu butuh hafalan matan klasik. NotebookLM bisa di-upload kitab Alfiyah/Ajurrumiyyah, lalu dia tanya-jawab berdasarkan source itu — tidak halusinasi."
+      },
+      {
+        tool: "claude",
+        name: "Claude",
+        strength: "I'rab kalimat panjang, syarah ibarah klasik",
+        why: "Claude excellent untuk parsing kalimat Arab dengan harakat, analisis i'rab kompleks, dan menjelaskan ibarah kitab klasik dengan akurat."
+      },
+    ],
+    tutorial: {
+      steps: [
+        {
+          title: "Sebelum mulai",
+          body: "Siapkan: (1) Kitab nahwu yang sedang kamu pelajari (Ajurrumiyyah / Alfiyah / kitab kampus), (2) Bab atau tema spesifik yang mau dipahami, (3) Contoh kalimat dari kitab kalau ada."
+        },
+        {
+          title: "Pilih AI sesuai kebutuhan",
+          body: "Mau hafal matan? Pakai NotebookLM — upload PDF kitab, suruh dia drill. Mau i'rab kalimat? Pakai Claude — paste kalimat Arab, minta i'rab lengkap."
+        },
+        {
+          title: "Salin prompt yang sesuai",
+          body: "Dari 17 prompt di bawah, pilih sesuai tujuanmu hari ini. Salin, paste ke AI, ganti placeholder [TOPIK] / [KALIMAT] / [KITAB] dengan input kamu."
+        },
+        {
+          title: "Selalu cek dengan guru",
+          body: "Jawaban AI bukan pengganti syaikh. Hasil AI adalah talqih — penyubur pemahaman. Tetap verifikasi di majelis talaqqi atau bertanya ke senior."
+        },
+      ]
+    },
+    prompts: {
+      pahami: [
+        {
+          title: "Pahami Bab Nahwu",
+          targetAI: "claude",
+          template: `Aku thalib di Al-Azhar yang sedang mempelajari Nahwu, khususnya bab [BAB - contoh: Marfu'at, Manshubat, Majrurat, dst].
+
+Jelaskan kepada aku:
+1. Definisi bab ini secara singkat
+2. Kaidah utamanya — sertakan teks Arab kaidah dengan harakat
+3. 3 contoh kalimat Arab dengan harakat lengkap dan i'rab-nya
+4. Hubungan bab ini dengan bab nahwu lain yang sudah aku pelajari
+
+Bahasa: Indonesia akademik. Sertakan teks Arab original saat menyebut kaidah atau istilah teknis (misal: المرفوعات, المنصوبات). Sebut sumber rujukan dari kitab klasik (Alfiyah, Ajurrumiyyah, dll) bila relevan.`
+        },
+        {
+          title: "Bedakan Istilah Mirip",
+          targetAI: "claude",
+          template: `Aku thalib Nahwu, sering bingung membedakan dua istilah yang mirip:
+
+[ISTILAH 1] vs [ISTILAH 2]
+Contoh: Mubtada vs Khabar, Fa'il vs Maf'ul bih, Hal vs Tamyiz, dll.
+
+Tolong jelaskan:
+1. Definisi masing-masing — sertakan teks Arab (misal: المبتدأ, الخبر)
+2. Tanda pengenal di kalimat (cara membedakan saat baca teks)
+3. 3 contoh kalimat Arab yang menunjukkan perbedaan jelas — dengan harakat dan i'rab
+4. Trik mengingat perbedaannya
+
+Bahasa: Indonesia akademik dengan teks Arab original untuk semua istilah teknis.`
+        },
+        {
+          title: "Pahami I'rab Sebuah Kalimat",
+          targetAI: "claude",
+          template: `Aku thalib Nahwu, mau memahami i'rab kalimat berikut:
+
+[PASTE KALIMAT ARAB DENGAN HARAKAT]
+
+Tolong jelaskan:
+1. Terjemahan harfiah kalimat ke Indonesia
+2. I'rab setiap kata — sebut: jenis kata (isim/fi'il/harf), kedudukan (marfu'/manshub/majrur/majzum), tanda i'rab-nya
+3. Kaidah nahwu yang berlaku di kalimat ini — sertakan referensi bait Alfiyah kalau ada
+4. Apakah ada bagian yang punya 2 kemungkinan i'rab? Jelaskan keduanya.
+
+Bahasa pengantar Indonesia. Istilah nahwu tetap Arab transliterasi (mubtada, khabar, fa'il, maf'ul, dll). Sertakan teks Arab dengan harakat saat referensi kaidah.`
+        },
+        {
+          title: "Hubungan Antar Bab Nahwu",
+          targetAI: "claude",
+          template: `Aku thalib di Al-Azhar yang sedang muthala'ah kitab nahwu, dan ingin memahami big picture-nya.
+
+Tolong buatkan peta hubungan antar bab utama Nahwu:
+- Mubtada wa Khabar
+- Fi'il wa Fa'il
+- Manshubat (Maf'ul bih, Hal, Tamyiz, Mustatsna, Munada, dll)
+- Marfu'at
+- Majrurat
+- Asma' wa Af'al
+
+Untuk setiap bab:
+1. Definisi singkat dengan teks Arab
+2. Bab apa yang menjadi pondasinya (apa yang harus dipahami dulu)
+3. Bab apa yang dibangun darinya (lanjutan apa setelahnya)
+
+Format: ringkas, terstruktur, mudah dilihat alurnya. Sertakan teks Arab original untuk istilah.`
+        },
+      ],
+      hafal: [
+        {
+          title: "Drill Hafalan Matan",
+          targetAI: "notebooklm",
+          template: `Aku upload matan [NAMA KITAB - contoh: Ajurrumiyyah / Alfiyah]. Bantu aku hafalan dengan sesi tasmi':
+
+1. Sebut potongan matan secara acak (1 kalimat atau 1 bait), tulis dalam Arab dengan harakat
+2. Aku akan lanjutkan
+3. Kalau aku ragu, beri 3 huruf pertama dari kalimat selanjutnya sebagai isyarah
+4. Setelah 10 putaran, beri daftar bagian yang perlu murajaah ulang
+
+Fokus drill: [BAB SPESIFIK - kalau ada]`
+        },
+        {
+          title: "Mnemonic Kaidah Sulit",
+          targetAI: "claude",
+          template: `Aku thalib Nahwu, kesulitan hafal kaidah berikut:
+
+[TULIS KAIDAH NAHWU YANG SULIT - misal: tanda-tanda i'rab Asma'ul Khamsah, atau syarat manshubat, dll]
+
+Buatkan untukku:
+1. Mnemonic Indonesia yang mudah diingat
+2. Mnemonic Arab (qa'idah lafzhiyyah atau muqarabah shawtiyyah) kalau ada yang masyhur
+3. Trik visual atau cerita pendek untuk lock-in di memori
+4. Bait Alfiyah yang relate ke kaidah ini (sertakan dengan harakat)
+
+Bahasa Indonesia akademik dengan teks Arab original.`
+        },
+        {
+          title: "Jadwal Murajaah Matan",
+          targetAI: "chatgpt",
+          template: `Aku thalib di Al-Azhar, sedang menghafal matan [NAMA KITAB] dengan target khatam [X HARI/MINGGU].
+
+Buatkan jadwal murajaah dengan pendekatan spaced repetition dalam tabel:
+| Hari | Bagian Baru | Murajaah | Catatan |
+
+Aturan:
+- Spaced repetition (hari 1, 3, 7, 14, 21)
+- Sertakan time-of-day suggestion (ba'da Fajr untuk hafal baru, ba'da Asar untuk murajaah)
+- Tambahkan 3 mawadi' (bagian) yang biasanya paling bikin ragu di matan ini
+
+Bahasa Indonesia.`
+        },
+      ],
+      latihan: [
+        {
+          title: "10 Soal I'rab Bertingkat",
+          targetAI: "claude",
+          template: `Aku thalib Nahwu, mau drill i'rab. Beri 10 kalimat Arab dengan harakat lengkap untuk di-i'rab, tingkat bertahap:
+
+- Soal 1-3: Kalimat ismiyyah/fi'liyyah basit (mubtada-khabar, fi'l-fa'il-maf'ul)
+- Soal 4-6: Mengandung shibhul jumlah, hal, atau tamyiz
+- Soal 7-9: Mengandung naskh (kana wa akhawatuha, inna wa akhawatuha) atau idhafah berlapis
+- Soal 10: Kalimat panjang dengan multiple kaidah
+
+Tulis semua kalimat dengan harakat lengkap. JANGAN kasih jawaban dulu. 
+
+Setelah aku jawab semua, koreksi per nomor:
+- Sebut kaidah yang dilanggar (kalau ada)
+- Rujukan ke bait Alfiyah atau Ajurrumiyyah
+- Penjelasan ringkas
+
+Bahasa Indonesia, istilah Arab.`
+        },
+        {
+          title: "Tashrif Acak",
+          targetAI: "chatgpt",
+          template: `Beri aku 10 latihan tashrif acak untuk Nahwu/Sharaf tingkat [DASAR/MENENGAH/LANJUT]:
+
+Format: tulis kata akar (fi'l madhi 3 huruf), aku akan tashrif lengkap.
+
+Contoh: كَتَبَ → aku akan tulis kata madhi, mudhari', amr, fa'il, maf'ul, dll.
+
+Setelah aku jawab semua, koreksi per nomor dan kasih 1 rujukan kitab sharaf untuk latihan lanjut.`
+        },
+        {
+          title: "Bedah Ibarah Kitab",
+          targetAI: "claude",
+          template: `Ini paragraf dari kitab nahwu klasik:
+
+[PASTE TEKS ARAB DARI KITAB]
+
+Tolong analisis bertahap:
+1. Tarjamah harfiyah (kata per kata)
+2. Tarjamah ma'nawiyyah (Indonesia mengalir)
+3. Syarah istilah teknis (tulis Arab + transliterasi + definisi)
+4. Maksud inti penulis dalam 1 kalimat
+5. Bab nahwu apa yang dibahas di sini
+
+Bila ada bagian yang ambigu, sebut secara jujur.`
+        },
+      ],
+      ujian: [
+        {
+          title: "Soal Imtihan Tahriri Nahwu",
+          targetAI: "claude",
+          template: `Aku thalib di Al-Azhar, mau drill persiapan ujian Tahriri (tertulis) untuk maddah Nahwu.
+
+Beri 5 soal dengan gaya khas imtihan Azhari:
+- 'Arrif... (definisikan)
+- Wadhdhih al-farq bayna... (jelaskan perbedaan antara)
+- Mathiyl li... bi mithalin (beri contoh untuk... dengan satu contoh)
+- A'rib al-jumlah at-taliyah (i'rab kalimat berikut)
+- Bayyin... (jelaskan...)
+
+Topik fokus: [BAB - kalau ada]
+
+Tulis dalam Bahasa Arab (untuk membiasakan baca soal Azhar). Setelah aku jawab, koreksi dan beri model answer ideal.`
+        },
+        {
+          title: "Mock Syafawi (Ujian Lisan)",
+          targetAI: "chatgpt",
+          template: `Aku thalib Azhar, mau latihan ujian Syafawi (lisan) untuk Nahwu. 
+
+Bertindaklah sebagai dosen Azhar yang menguji. Tanyakan aku 5 pertanyaan bertahap:
+1. Mulai dengan definisi dasar
+2. Lanjut ke perbedaan istilah
+3. Tanya contoh kalimat
+4. Minta aku i'rab kalimat
+5. Tanya hubungan dengan bab lain
+
+Tunggu jawabanku setelah setiap pertanyaan. Tantang aku follow-up kalau jawabanku kurang lengkap. Setelah 5 pertanyaan selesai, beri evaluasi.
+
+Topik: [BAB - kalau ada]`
+        },
+      ],
+      talaqqi: [
+        {
+          title: "Review Pasca Talaqqi",
+          targetAI: "claude",
+          template: `Aku baru saja talaqqi dengan syaikh tentang bab [BAB NAHWU - misal: Marfu'at, Manshubat] dari kitab [NAMA KITAB].
+
+Materi yang dibahas syaikh:
+[PASTE CATATAN ATAU POIN-POIN KAJIAN]
+
+Tolong:
+1. Susun ulang catatanku jadi struktur yang lebih sistematis
+2. Tambahkan kaidah Arab original (dengan harakat) untuk poin-poin penting
+3. Beri 2-3 contoh kalimat tambahan yang relate untuk memperdalam
+4. Sebutkan apa yang sebaiknya aku tanyakan ke syaikh di sesi berikutnya (untuk klarifikasi atau pendalaman)
+
+Bahasa Indonesia, teks Arab untuk istilah dan kaidah.`
+        },
+        {
+          title: "Pahami Catatan yang Lupa",
+          targetAI: "claude",
+          template: `Aku punya catatan dari talaqqi Nahwu yang sebagiannya aku gak ingat konteksnya:
+
+[PASTE CATATAN YANG MEMBINGUNGKAN]
+
+Tolong:
+1. Bantu aku interpretasi maksud catatan ini berdasarkan konteks bab Nahwu
+2. Lengkapi penjelasan yang kurang
+3. Beri kemungkinan tafsir kalau catatannya ambigu
+4. Sebut bab nahwu apa yang sedang dibahas
+
+Bahasa Indonesia akademik.`
+        },
+      ],
+      eksplorasi: [
+        {
+          title: "Khilaf Nahwiyyin",
+          targetAI: "claude",
+          template: `Aku thalib di Al-Azhar, mau eksplorasi khilaf nahwiyyin (perbedaan pendapat ulama nahwu) tentang:
+
+[MASALAH NAHWU - misal: hukum 'amal harf, status idhafah lafzhiyyah, dll]
+
+Tolong jelaskan:
+1. Pendapat Bashriyyin (sertakan tokoh utama: Sibawaih, al-Khalil, dll)
+2. Pendapat Kufiyyin (sertakan tokoh utama: al-Kisa'i, al-Farra', dll)
+3. Dalil masing-masing — sertakan kalimat Arab atau ayat/syi'ir yang dijadikan hujjah
+4. Pendapat ulama mutaakhirin (Ibnu Malik, Ibnu Hisyam) — kecondongan ke mana
+
+Bahasa Indonesia akademik. Nama ulama transliterasi natural. Sertakan teks Arab untuk dalil dan istilah.
+
+Tanpa men-tarjih — biarkan aku yang merenungkan.`
+        },
+        {
+          title: "Aplikasi Nahwu di Tafsir",
+          targetAI: "claude",
+          template: `Aku thalib di Al-Azhar, mau lihat bagaimana ilmu Nahwu diaplikasikan dalam Tafsir Al-Qur'an.
+
+Pilih [JUMLAH] ayat yang punya khilaf nahwu yang mempengaruhi makna, contoh:
+- Ayat dengan perbedaan i'rab yang ubah makna
+- Ayat dengan possibility 2 wajh i'rab
+
+Untuk setiap ayat:
+1. Tulis ayat dengan harakat
+2. Sebut surah-ayat
+3. Jelaskan 2+ kemungkinan i'rab
+4. Bagaimana setiap i'rab mempengaruhi tafsir/makna
+5. Pendapat mufassir mana yang condong ke mana
+
+Bahasa Indonesia akademik. Ini membantu aku lihat aplikasi praktis Nahwu.`
+        },
+        {
+          title: "Syawahid Syi'r Klasik",
+          targetAI: "claude",
+          template: `Aku belajar Nahwu, mau lebih familiar dengan syawahid syi'r (bukti puisi klasik) yang dipakai kitab nahwu.
+
+Beri 5 bait syi'r klasik (dari masa Jahili / Shadr Islam / Umawi) yang sering dijadikan syahid untuk kaidah nahwu:
+
+Untuk setiap bait:
+1. Tulis bait dengan harakat lengkap
+2. Sebutkan penyair
+3. Kaidah nahwu apa yang dibuktikan bait ini
+4. Bagian mana dari bait yang jadi syahid (highlight)
+5. Tarjamah ringkas
+
+Bahasa Indonesia. Teks Arab dengan harakat penuh.`
+        },
+      ],
+    },
+  };
+
+  return (
+    <div className="page-enter">
+      {/* Header */}
+      <section className="relative pt-12 md:pt-16 pb-10 overflow-hidden">
+        <Blob color="rgba(124,77,255,0.20)" size={500} top={-150} right={-100}/>
+        
+        <div className="container-x relative">
+          <div className="mb-4">
+            <button onClick={() => navigate("/")} className="text-sm text-ink-soft hover:text-ink-muted inline-flex items-center gap-2">
+              ← Kembali ke landing
+            </button>
+          </div>
+
+          <div className="flex items-start justify-between flex-wrap gap-4 mb-2">
+            <div>
+              <div className="arabic-display text-gold-300 text-4xl md:text-5xl mb-2" style={{direction:"rtl"}}>
+                {sampleData.nameArabic}
+              </div>
+              <h1 className="font-display text-3xl md:text-4xl font-semibold text-ink">
+                {sampleData.name}
+              </h1>
+            </div>
+            <span className="chip-glass text-xs flex-shrink-0">SAMPLE GRATIS</span>
+          </div>
+
+          <p className="text-base md:text-lg text-ink-muted leading-relaxed max-w-2xl mt-4">
+            {sampleData.description}
+          </p>
+        </div>
+      </section>
+
+      {/* Sticky banner CTA */}
+      <div className="sticky top-16 md:top-[72px] z-30 border-y border-line bg-night-950/70 backdrop-blur-md">
+        <div className="container-x py-3 flex items-center justify-between gap-4 flex-wrap">
+          <div className="text-sm text-ink-muted">
+            <span className="text-gold-300 font-medium">✦ Ini sample gratis.</span>
+            {" "}Untuk 35 Maddah lain + prompt yang disesuaikan tingkatmu, gabung member.
+          </div>
+          <button 
+            onClick={() => navigate("/")} 
+            className="btn-primary text-sm px-4 py-2 flex-shrink-0"
+          >
+            Gabung Member 49k →
+          </button>
+        </div>
+      </div>
+
+      {/* Kitab Utama */}
+      <section className="section pt-10 pb-10">
+        <div className="container-x">
+          <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/70"/>
+            Kitab Utama
+          </h2>
+          <div className="grid md:grid-cols-3 gap-3">
+            {sampleData.kitabUtama.map((k, i) => (
+              <div key={i} className="card-glass p-5">
+                <div className="arabic-display text-gold-300 text-xl mb-1" style={{direction:"rtl"}}>
+                  {k.arabic}
+                </div>
+                <div className="font-display text-base font-semibold text-ink">{k.nama}</div>
+                <div className="text-xs text-ink-soft mt-1">{k.penulis}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* AI Recommendation */}
+      <section className="section pt-0 pb-10">
+        <div className="container-x">
+          <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/70"/>
+            AI yang Direkomendasikan
+          </h2>
+          <div className="grid md:grid-cols-2 gap-4">
+            {sampleData.recommendedAI.map((ai, i) => {
+              const tool = AI_TOOLS.find(t => t.id === ai.tool);
+              return (
+                <div key={i} className="card-glass-strong p-6">
+                  <div className="flex items-center gap-3 mb-3">
+                    {tool && <ToolIcon tool={tool} size="w-11 h-11"/>}
+                    <div>
+                      <div className="font-display text-lg font-semibold text-ink">{ai.name}</div>
+                      <div className="text-xs text-ink-soft">{ai.strength}</div>
+                    </div>
+                    {i === 0 && <span className="ml-auto chip-glass text-[10px] text-gold-300">TOP PICK</span>}
+                  </div>
+                  <p className="text-sm text-ink-muted leading-relaxed">
+                    {ai.why}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Tutorial */}
+      <section className="section pt-0 pb-10">
+        <div className="container-x">
+          <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/70"/>
+            Cara Pakai (4 langkah)
+          </h2>
+          <div className="space-y-3">
+            {sampleData.tutorial.steps.map((s, i) => (
+              <div key={i} className="card-glass p-5 flex gap-4 items-start">
+                <div className="font-display text-2xl text-gold-400 flex-shrink-0">{String(i+1).padStart(2, '0')}</div>
+                <div>
+                  <h3 className="font-display text-lg font-semibold text-ink mb-1">{s.title}</h3>
+                  <p className="text-sm text-ink-muted leading-relaxed">{s.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Prompts grouped */}
+      <section className="section pt-0 pb-16">
+        <div className="container-x">
+          <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-2 inline-flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/70"/>
+            Template Prompt
+          </h2>
+          <p className="text-sm text-ink-muted mb-8">
+            17 template siap pakai — salin, ganti placeholder, kirim ke AI.
+          </p>
+
+          {Object.entries(sampleData.prompts).map(([groupKey, prompts]) => {
+            const groupTitle = {
+              pahami: "✦ Pahami Konsep",
+              hafal: "✦ Hafalan",
+              latihan: "✦ Latihan & Drill",
+              ujian: "✦ Persiapan Ujian",
+              talaqqi: "✦ Review Pasca-Talaqqi",
+              eksplorasi: "✦ Eksplorasi Mendalam",
+            }[groupKey];
+
+            return (
+              <div key={groupKey} className="mb-10">
+                <h3 className="font-display text-xl font-semibold text-ink mb-4">{groupTitle}</h3>
+                <div className="space-y-3">
+                  {prompts.map((p, i) => (
+                    <SamplePromptCard key={i} prompt={p}/>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Footer CTA */}
+      <section className="section pt-0 pb-20">
+        <div className="container-x">
+          <div className="max-w-2xl mx-auto text-center card-glass-strong p-8 md:p-10 relative overflow-hidden">
+            <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-gold-500/12 blur-3xl pointer-events-none"/>
+            
+            <div className="relative">
+              <div className="arabic-classic text-gold-300 text-2xl md:text-3xl leading-loose mb-3" style={{direction:"rtl"}}>
+                وَقُلْ رَبِّ زِدْنِي عِلْمًا
+              </div>
+              <p className="text-sm text-ink-muted italic mb-1">
+                "Dan katakanlah: Ya Tuhanku, tambahkanlah ilmu kepadaku."
+              </p>
+              <p className="text-xs text-ink-soft mb-8">
+                — QS. Thaha: 114
+              </p>
+
+              <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink mb-3">
+                Suka? Akses 35 Maddah lain.
+              </h2>
+              <p className="text-sm text-ink-muted mb-6 max-w-md mx-auto">
+                Tafsir, Hadits, Fiqh, Ushul, Mustholah, Balaghah, dan 30+ lainnya — dengan prompt yang disesuaikan tingkatmu.
+              </p>
+              
+              <button 
+                onClick={() => navigate("/")} 
+                className="btn-primary px-7 py-3.5 text-base font-medium"
+              >
+                Gabung Member · Rp 49.000 →
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+/* Card untuk display 1 prompt sample */
+const SamplePromptCard = ({ prompt }) => {
+  const toast = useToast();
+  const tool = AI_TOOLS.find(t => t.id === prompt.targetAI);
+  
+  const handleCopy = () => {
+    navigator.clipboard.writeText(prompt.template);
+    toast.push("Prompt tersalin. Paste ke " + (tool?.name || "AI") + ".");
+  };
+
+  return (
+    <div className="card-glass p-5 hov-lift">
+      <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
+        <div className="flex items-center gap-3">
+          {tool && <ToolIcon tool={tool} size="w-9 h-9"/>}
+          <div>
+            <div className="font-display text-base font-semibold text-ink">{prompt.title}</div>
+            <div className="text-[11px] text-ink-soft">Untuk: {tool?.name || prompt.targetAI}</div>
+          </div>
+        </div>
+        <button 
+          onClick={handleCopy}
+          className="btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5"
+        >
+          <Icon name="copy" className="w-3 h-3"/>
+          Salin
+        </button>
+      </div>
+      <div className="p-3 rounded-lg bg-white/3 border border-line text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap clamp-3">
+        {prompt.template}
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## YANG HARUS DILAKUKAN
+
+### File yang Berubah / Dibuat
+
+**1. Rewrite `src/pages/landing.jsx`** — target jadi **<260 baris** (sekarang 514)
+- Hapus: `BantuanSection`, `PromptPreview`, `AdaptiveTeaser`, `EthicsTeaser`, `JoinCTA`, `PricingSection` (yang lama)
+- Pertahankan: `LandingPage`, `Hero` (rewrite), `HeroComposition` (rewrite jadi 3 stacked cards)
+- Buat baru: `SampleMaddahSection`, `HowItWorks`, `AllMaddahPreview`, `PricingAndCTA`
+- Ringkas `ToolsPreview` jadi tidak dipakai di landing (atau pakai logo strip kecil di hero composition area kalau perlu)
+- Pastikan `LandingPage` root component cuma render 5 section sesuai struktur baru
+
+**2. File baru: `src/pages/sample-nahwu.jsx`**
+- Lengkap dengan data Nahwu Dasar (kitab utama, AI rec, tutorial, 17 prompt template di 6 grup)
+- Component `SampleNahwuPage` dan `SamplePromptCard`
+- Accessible publik tanpa session
+
+**3. Update `index.html`** — tambah script tag untuk sample-nahwu sebelum `app.jsx`:
+```html
+<script type="text/babel" data-presets="env,react" src="src/pages/sample-nahwu.jsx"></script>
+```
+
+**4. Update `src/app.jsx`** — tambah route handler untuk `/sample/nahwu` di route resolution
+- Posisikan **sebelum** route protected member
+- Public route — tidak butuh session check
+
+**5. Tambah `pattern-talqih` di hero baru** — sudah dibuat class-nya di Prompt 1, tinggal apply
+
+---
+
+## Acceptance Criteria
+
+### Landing Page Performance
+- [ ] **landing.jsx total < 260 baris** (sekarang 514)
+- [ ] Total **scroll desktop max 4 viewport**, **mobile max 5 viewport**
+- [ ] **Tidak ada paragraf > 2 baris** di seluruh landing
+- [ ] Headline hero max 18 kata, sub-headline max 18 kata
+- [ ] **Tidak ada section** BantuanSection, PromptPreview, AdaptiveTeaser, EthicsTeaser besar di landing
+
+### Hero
+- [ ] Headline pakai gradient text "Belajar materi Azhar, dipahami dengan AI."
+- [ ] Sub-headline 1 kalimat tentang panduan AI untuk Masisir semua tingkat
+- [ ] 2 CTA buttons: "Cobain Sample Gratis →" + "Gabung Member · 49k"
+- [ ] Link "Sudah punya kode? Masuk di sini" subtle di bawah
+- [ ] Trust indicators 3 items dengan checkmark gold (36 Maddah, 540+ prompt, bayar sekali)
+- [ ] Hero composition kanan: 3 stacked glass cards dengan offset
+- [ ] Mobile: composition hidden atau show cuma Card 1 di bawah text
+- [ ] Pattern `pattern-talqih` ter-apply di hero section
+
+### Sample Maddah Section
+- [ ] Card preview Nahwu kelihatan kaya (judul Arab + Latin, AI rec, 6 box count prompt per kategori)
+- [ ] Klik card atau button → navigate ke `/sample/nahwu`
+- [ ] Hover lift halus
+- [ ] Microcopy "Sample ini gratis selamanya · Untuk 35 Maddah lain, gabung member 49k"
+
+### Sample Nahwu Page (`/sample/nahwu`)
+- [ ] Page accessible **tanpa login/session**
+- [ ] Header: judul Arab + Latin + chip "SAMPLE GRATIS"
+- [ ] Tombol "← Kembali ke landing" di atas
+- [ ] Sticky banner CTA di bawah navbar: "Ini sample gratis. Untuk 35 Maddah lain, gabung member"
+- [ ] Section Kitab Utama (3 cards: Ajurrumiyyah, Alfiyah, Qatr An-Nada)
+- [ ] Section AI Recommendation (2 cards: NotebookLM TOP PICK + Claude) dengan reasoning yang menjelaskan kenapa cocok untuk Nahwu
+- [ ] Section Tutorial 4 langkah (Sebelum mulai, Pilih AI, Salin prompt, Cek dengan guru)
+- [ ] Section Template Prompt: **17 prompt** dikelompokkan dalam 6 grup (Pahami 4, Hafal 3, Latihan 3, Ujian 2, Talaqqi 2, Eksplorasi 3)
+- [ ] Setiap prompt: tombol "Salin", target AI ditandai (icon + nama)
+- [ ] Klik "Salin" → prompt tersalin ke clipboard, toast confirmation
+- [ ] Footer page: ayat `وَقُلْ رَبِّ زِدْنِي عِلْمًا` dengan terjemah, CTA "Gabung Member 49k"
+
+### How It Works
+- [ ] 3 langkah dengan nomor besar gradient (01, 02, 03)
+- [ ] Connector line gold tipis horizontal di desktop (hidden di mobile)
+- [ ] Masing-masing: title + sub uppercase gold + 1 kalimat desc
+
+### All Maddah Preview
+- [ ] 6 cards untuk 6 grup fakultas (Ushuluddin/Quran, Hadits, Syariah, Aqidah, Lughah, Tarikh/Dakwah)
+- [ ] Setiap card: Arabic nama + label Indonesia + badge count maddah + 4 sample maddah + "+ N maddah lain"
+- [ ] Gradient subtle per card (mix violet & gold)
+
+### Pricing & CTA
+- [ ] 1 card pricing center, max-width 520px
+- [ ] Harga "Rp 49.000" dengan gradient gold
+- [ ] 6 features dengan checkmark gold
+- [ ] Tombol "Bayar via Lynk.id →"
+- [ ] Microcopy "Setelah bayar, kode dikirim admin via WhatsApp"
+- [ ] Section penutup: atsar `قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ` dengan ornamen divider
+- [ ] Link kecil "Sudah punya kode? Masuk di sini" di bawah
+
+### Mobile Responsiveness
+- [ ] Test di width 375px (iPhone SE) — semua section enak di-scroll, tidak ada horizontal scroll
+- [ ] Hero composition hidden atau Card 1 only di mobile
+- [ ] All Maddah grid → 1 kolom di mobile
+- [ ] Pricing card tetap centered & readable
+
+### Tone & Anti-Pattern
+- [ ] **Tidak ada** kata: "challenge", "mission", "goal", "target"
+- [ ] **Tidak ada** emoji 🔥 🏆 🎯 🚀 ⚡ 🎉
+- [ ] **Tidak ada** paragraf "Dalam era digital..." atau opening generic
+- [ ] **Tidak ada** testimonial palsu / stats sales-y palsu
+- [ ] **Tidak ada** FAQ panjang
+- [ ] Bahasa Indonesia santai-akademik dengan sisipan istilah Arab natural (thalib, maddah, muthala'ah)
+
+### Technical
+- [ ] Tidak ada console error
+- [ ] Babel script ordering: sample-nahwu.jsx loaded sebelum app.jsx
+- [ ] Route `/sample/nahwu` accessible tanpa session
+- [ ] localStorage data user existing tetap accessible
+
+---
+
+## Catatan Final
+
+### Bahasa Talqih Reminder
+
+Setiap copy yang lo tulis, baca ulang dengan pertanyaan: **"Apakah ini terdengar seperti senior Masisir yang ngomong ke junior, atau seperti marketing copy startup?"**
+
+✅ "Cobain workflow Talqih dengan 1 Maddah lengkap"  
+❌ "Try our revolutionary AI-powered learning experience"
+
+✅ "Untuk Masisir semua tingkat — dari Mustawa sampai S2"  
+❌ "Untuk siapa saja yang ingin belajar lebih efektif"
+
+✅ "Dashboard tunjukin AI cocok, prompt per Maddah siap pakai"  
+❌ "Powered by cutting-edge AI to maximize your learning potential"
+
+### Yang Akan Dilakukan di Prompt Selanjutnya
+
+Setelah Prompt 2 ini selesai, kita lanjut ke:
+- **Prompt 3**: Maddah System Foundation (data structure 36 Maddah + Maddah Hub page)
+- **Prompt 3.5**: Maddah Content (15+ prompt per Maddah, adaptive prompt system)
+- **Prompt 4**: Dashboard Rework (Maddah-mu hari ini hero, sanctuary secondary)
+- **Prompt 5**: Polish, Discoverability, Security Fixes
+
+**Jangan implement bagian-bagian itu sekarang.** Selesaikan Prompt 2 dulu sampai semua acceptance criteria ✓, baru lanjut.
+
+---
+
+والله ولي التوفيق. Mulai.

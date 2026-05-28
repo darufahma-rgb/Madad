@@ -1,4 +1,4 @@
-/* Madad, Learning Paths */
+/* Talqih, Learning Paths */
 
 const PathsPage = () => {
   const { session, profile, progress, markModuleComplete, setLastActivity } = useAuth();

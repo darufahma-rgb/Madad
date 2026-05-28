@@ -1,4 +1,4 @@
-/* Madad, Muqaranah Landing Page */
+/* Talqih, Muqaranah Landing Page */
 
 const CATEGORY_LABELS = { fiqh: "Fiqh", ushul: "Ushul Fiqh", aqidah: "Aqidah", hadits: "Hadits/Musthola" };
 
@@ -31,7 +31,7 @@ const MuqaranahCard = ({ entry, onOpen, isCustom, onDelete }) => {
           {isCustom && (
             <button
               onClick={e => { e.stopPropagation(); onDelete && onDelete(entry.id); }}
-              className="p-1.5 rounded-lg text-ink-soft hover:text-red-400 hover:bg-red-500/10 transition-colors ml-2">
+              className="p-1.5 rounded-lg text-ink-soft hover:text-rose-600 hover:bg-rose-600/10 transition-colors ml-2">
               <Icon name="x" className="w-3.5 h-3.5"/>
             </button>
           )}

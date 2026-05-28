@@ -1,4 +1,4 @@
-/* Madad, Quick Note Floating Button + Modal */
+/* Talqih, Quick Note Floating Button + Modal */
 
 const QUICK_NOTE_TAGS = ["Fiqh","Ushul","Hadith","Tafsir","Nahwu","Aqidah","Balaghah","Makalah","Hafalan","Dars","Penting"];
 

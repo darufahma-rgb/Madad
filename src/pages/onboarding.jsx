@@ -1,4 +1,4 @@
-/* Madad — Onboarding (faculty · level · major conditional) */
+/* Talqih — Onboarding (faculty · level · major conditional) */
 
 const OnboardingPage = () => {
   const { session, profile, saveProfile } = useAuth();

@@ -1,4 +1,4 @@
-/* Madad, App shell + routing */
+/* Talqih, App shell + routing */
 
 const App = () => {
   const path = useRoute();

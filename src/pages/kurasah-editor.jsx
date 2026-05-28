@@ -1,4 +1,4 @@
-/* Madad, Kurasah Editor */
+/* Talqih, Kurasah Editor */
 
 const TAG_COLORS_EDITOR = [
   "rgba(124,77,255,0.18)", "rgba(169,112,255,0.18)", "rgba(201,168,106,0.15)",
@@ -304,7 +304,7 @@ const KurasahEditorPage = () => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowDelete(true)}
-              className="btn btn-ghost text-sm py-1.5 px-3 text-ink-soft hover:text-red-400">
+              className="btn btn-ghost text-sm py-1.5 px-3 text-ink-soft hover:text-rose-600">
               <Icon name="x" className="w-3.5 h-3.5"/> Hapus
             </button>
             <button
@@ -326,7 +326,7 @@ const KurasahEditorPage = () => {
             <p className="text-sm text-ink-muted mb-6 leading-relaxed">Catatan akan dihapus permanen dari Kurasahmu. Tindakan ini tidak dapat dibatalkan.</p>
             <div className="flex gap-3">
               <button onClick={() => setShowDelete(false)} className="btn btn-ghost flex-1 py-2.5">Batal</button>
-              <button onClick={handleDelete} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-red-500/80 hover:bg-red-500 transition-colors">
+              <button onClick={handleDelete} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-white bg-rose-600/70 hover:bg-rose-600 transition-colors">
                 Ya, Hapus
               </button>
             </div>

@@ -1,4 +1,4 @@
-/* Madad, Intentions Data — pool 5 niat klasik */
+/* Talqih, Intentions Data — pool 5 niat klasik */
 
 const CLASSIC_INTENTIONS = [
   {

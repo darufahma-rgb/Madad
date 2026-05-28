@@ -1,0 +1,468 @@
+# PROMPT 1 — Talqih: Rebrand + Color Refactor + Visual Foundation
+
+> Ini adalah **Prompt 1 dari 5** dalam roadmap rebrand Talqih (sebelumnya MADAD). Prompt ini meletakkan fondasi visual untuk semua prompt berikutnya. Jangan lompat ke prompt lain sebelum prompt ini selesai.
+
+---
+
+## Konteks
+
+Website **MADAD** sekarang akan di-rebrand menjadi **Talqih** (تَلْقِيح).
+
+**Filosofi nama Talqih:**
+- Akar kata: ل-ق-ح (laqaha) — penyemaian, penyuburan, penyerbukan
+- Dari ungkapan Imam Ahmad bin Hanbal: *"al-'ilmu yulaqqahu bil-mudzakarah"* (ilmu disuburkan dengan diskusi/mengingatkan)
+- Backing turats: kitab klasik *Talqih Fuhum Ahl al-Athar* karya Ibnul Jauzi
+- Filosofi product: **AI bukan guru utama yang mengganti syaikh**, tapi *penyubur pemahaman* untuk thalib setelah talaqqi dengan guru atau muthala'ah kitab
+
+**Tagline resmi:**
+> **Talqih — Panduan Belajar Al-Azhar dengan AI**
+
+**Sub-tagline (untuk hero):**
+> Untuk Masisir semua tingkat — dari Mustawa sampai S2.
+
+**Identity stack:**
+- Brand utama: **Talqih**
+- Tagline: *Panduan Belajar Al-Azhar dengan AI*
+- Developer credit: **Dar Dev** (tetap)
+- Logo mark visual: **AIGYPT** (tetap sebagai simbol visual di logo, dipertahankan)
+
+---
+
+## Apa yang Berubah dari MADAD ke Talqih
+
+Yang berubah:
+1. **Nama brand** di semua copy → MADAD jadi Talqih
+2. **Color palette** → didisiplinin jadi 5 warna inti saja, hapus semua tersier (rose merah, mint hijau, dll)
+3. **Font Arab** → tambah 3 tier untuk display klasikal, display modern, dan UI inline
+4. **Hero section** → tambah pattern Islamic geometric subtle (3-5% opacity) sebagai layer texture
+5. **Meta tags** → update title, description, og tags ke Talqih
+
+Yang **TIDAK BERUBAH** di prompt ini:
+- Logo mark AIGYPT tetap sebagai visual icon (file `assets/aigypt-logo.png` tidak diganti)
+- Struktur file & routing — semua tetap di tempat yang sama
+- Fitur-fitur (Muqaranah, Kurasah, Niat, Ritme) — gak disentuh konten/logic-nya di prompt ini
+- localStorage keys (`madad_notes`, `madad_intentions`, dll) → **tetap** untuk backward compat user yang sudah ada data. Jangan rename ke `talqih_*`.
+
+---
+
+## Filosofi Visual Talqih (BACA DULU SEBELUM KODING)
+
+### Mood
+*Calm, intelligent, premium, focused, subtly spiritual, companion-like.*
+**Bukan**: hustle, productivity app, sales-y, ramai.
+
+### Color Discipline (NON-NEGOTIABLE)
+
+Saat ini codebase punya **warna tersier yang nyelinap** dari early development:
+- Rose/red (`bg-rose-600`, `text-rose-600`, `text-red-400`) — untuk error & destructive action
+- Mint green (`mint-500`, `mint-600`) — untuk success
+- Beberapa accent warna lain
+
+**Aturan baru:**
+- Background gradient pakai HANYA: purple (violet-600, violet-700, violet-900), gold (sangat subtle, max 6% opacity), dan night base
+- Action button: violet only
+- Destructive/error: pakai **purple-rose muted** (#C97B9B) — bukan merah pure. Lebih elegan, sesuai sanctuary mood.
+- Success: pakai **gold sutera** (#D4B27D) — bukan green. Sesuai filosofi spiritual.
+- Hapus semua referensi ke red, rose pure, mint, emerald, sky, amber, yellow
+
+### Font Hierarchy untuk Arab
+
+Saat ini cuma pakai 1 font Arab (Noto Naskh) untuk semua. Sekarang dibagi jadi 3 tier:
+
+| Tier | Pakai untuk | Font |
+|---|---|---|
+| **Display Klasikal** | Atsar, niat, ayat emosional, salam besar | **Aref Ruqaa** |
+| **Display Modern** | Bismillah ornament, judul section Arab, tagline brand | **Reem Kufi** |
+| **Body (existing)** | Paragraf dalil, terjemah, body kitab | **Noto Naskh Arabic** (tetap) |
+| **UI Inline** | Chip madzhab, tag, label kecil, footnote | **Noto Kufi Arabic** |
+
+### Pattern di Hero
+
+Tambah subtle Islamic geometric pattern sebagai SVG overlay di hero section dengan opacity **3-5%**. Cuma kerasa sebagai *texture*, gak boleh kelihatan jelas. Pilihan pattern: 8-point star (Khatam Sulaymani) atau zellige tile. Gue rekomendasi 8-point star karena lebih clean dan menggambarkan kesempurnaan.
+
+---
+
+## Stack Teknis (Sudah Ada — Ikuti Pola)
+
+- React 18 via CDN + Babel Standalone
+- Tailwind CDN dengan custom theme (di `index.html` line 14-41)
+- localStorage untuk semua state
+- Hash routing
+- Komponen pakai `const Name = (props) => { ... }` tanpa export
+
+---
+
+## YANG HARUS DILAKUKAN — STEP BY STEP
+
+### STEP 1 — Update Tailwind Config & CSS Foundation di `index.html`
+
+**Lokasi: `index.html` line 14-41 (tailwind.config) dan line 43-60+ (style)**
+
+#### 1.1 — Update color palette di tailwind config
+
+Ganti color object dengan ini (perhatikan: rose dan mint diganti dengan `accent-rose` (muted) dan `accent-success` (gold sutera) — bukan dihapus key-nya supaya gak break code yang reference, tapi diganti value-nya jadi sanctuary-compliant):
+
+```js
+colors: {
+  ink:    { DEFAULT: '#F5F0FF', muted: '#9B8DBA', soft: '#6B5F8C' },
+  night:  { 950: '#0A0514', 900: '#10071F', 800: '#150827', 700: '#1D0E36', 600: '#251245' },
+  violet: { 900: '#2A1656', 700: '#5C35CC', 600: '#7C4DFF', 500: '#7C4DFF', 400: '#A78BFA', 300: '#C5A0FF', 200: '#DBC8FF', 100: '#EFE5FF' },
+  gold:   { 700: '#9A7A3C', 600: '#B3904D', 500: '#C9A86A', 400: '#D9BD85', 300: '#E8D0A0', 100: '#F6EDD8' },
+  glass:  { DEFAULT: 'rgba(255,255,255,0.04)', raised: 'rgba(255,255,255,0.06)', strong: 'rgba(255,255,255,0.08)' },
+  line:   'rgba(180,150,255,0.12)',
+  // Warna fungsional — sanctuary compliant:
+  rose:   { 600: '#C97B9B', 700: '#A86483' },   // muted purple-rose untuk destructive
+  mint:   { 500: '#D4B27D', 600: '#B89865' },   // gold sutera untuk success
+},
+```
+
+**Catatan:** key `rose` dan `mint` tetap dipertahankan supaya kode yang sudah reference tidak break, tapi VALUE-nya diganti ke sanctuary-compliant. Yang penting: kalau ada referensi `bg-red-500`, `text-red-400`, `bg-rose-500` (tanpa angka 600/700) — itu pakai default Tailwind, harus diganti ke `bg-rose-600` (yang sekarang muted purple-rose) atau dihapus.
+
+#### 1.2 — Update Google Fonts URL
+
+**Lokasi: line 10**
+
+Ganti link yang sekarang dengan ini (tambah 3 font Arab baru: Aref Ruqaa, Reem Kufi, Noto Kufi Arabic):
+
+```html
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Aref+Ruqaa:wght@400;700&family=Reem+Kufi:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+```
+
+#### 1.3 — Update font config di tailwind
+
+Ganti `fontFamily` jadi:
+
+```js
+fontFamily: {
+  serif:           ['"Crimson Pro"', 'Georgia', 'serif'],
+  sans:            ['Inter', 'system-ui', 'sans-serif'],
+  mono:            ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
+  arabic:          ['"Noto Naskh Arabic"', 'Amiri', 'serif'],
+  'arabic-display': ['"Reem Kufi"', '"Noto Kufi Arabic"', 'sans-serif'],
+  'arabic-classic': ['"Aref Ruqaa"', '"Amiri"', 'serif'],
+  'arabic-ui':     ['"Noto Kufi Arabic"', '"Noto Naskh Arabic"', 'sans-serif'],
+},
+```
+
+#### 1.4 — Update body background gradient (eye-comfort)
+
+**Lokasi: line 47-55**
+
+Ganti body styling jadi (perhatikan: base color baru `#0A0514`, gradient lebih subtle):
+
+```css
+html, body { background: #0A0514; color: #F5F0FF; }
+body {
+  font-family: Inter, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(1100px 550px at 80% -8%, rgba(124,77,255,0.18), transparent 60%),
+    radial-gradient(800px 500px at -10% 30%, rgba(92,53,204,0.14), transparent 60%),
+    radial-gradient(900px 600px at 50% 100%, rgba(201,168,106,0.05), transparent 60%),
+    #0A0514;
+  background-attachment: fixed;
+}
+```
+
+#### 1.5 — Tambah CSS classes untuk font Arab tier
+
+**Lokasi: setelah `.arabic` class existing (sekitar line 59)**
+
+Tambahkan classes baru:
+
+```css
+.arabic           { font-family: "Noto Naskh Arabic", Amiri, serif; direction: rtl; line-height: 1.9; }
+.arabic-display   { font-family: "Reem Kufi", "Noto Kufi Arabic", sans-serif; direction: rtl; line-height: 1.6; letter-spacing: 0; }
+.arabic-classic   { font-family: "Aref Ruqaa", Amiri, serif; direction: rtl; line-height: 1.7; }
+.arabic-ui        { font-family: "Noto Kufi Arabic", "Noto Naskh Arabic", sans-serif; direction: rtl; line-height: 1.5; }
+```
+
+#### 1.6 — Tambah SVG Pattern Component utility
+
+**Lokasi: di `<style>` block, tambahkan class baru**
+
+```css
+.pattern-talqih {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23C9A86A' stroke-width='1'%3E%3Cpath d='M40 8 L52 20 L64 20 L52 32 L60 44 L40 36 L20 44 L28 32 L16 20 L28 20 Z M40 44 L52 56 L64 56 L52 68 L60 80 L40 72 L20 80 L28 68 L16 56 L28 56 Z'/%3E%3Ccircle cx='40' cy='40' r='2'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+```
+
+Ini SVG pattern 8-point star (Khatam Sulaymani) dengan gold subtle. Opacity 4%. Pakai sebagai child div di hero section dengan parent `position: relative`.
+
+#### 1.7 — Update title & meta tags
+
+**Lokasi: `<head>` line 1-12 area**
+
+Ganti title dan tambahkan meta tags lengkap:
+
+```html
+<title>Talqih — Panduan Belajar Al-Azhar dengan AI</title>
+<meta name="description" content="Talqih adalah panduan belajar materi Al-Azhar dengan AI untuk Masisir semua tingkat. Template prompt per Maddah, rekomendasi AI personal, dan workflow lengkap untuk persiapan ujian." />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Talqih — Panduan Belajar Al-Azhar dengan AI" />
+<meta property="og:description" content="Panduan belajar materi Al-Azhar dengan AI untuk Masisir semua tingkat. Template prompt, rekomendasi AI, dan workflow lengkap." />
+<meta property="og:image" content="/assets/aigypt-logo.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="icon" type="image/png" href="/assets/aigypt-logo.png" />
+<link rel="apple-touch-icon" href="/assets/aigypt-logo.png" />
+```
+
+---
+
+### STEP 2 — Global Search-and-Replace: MADAD → Talqih
+
+Lakukan find-and-replace **case-sensitive** di seluruh codebase:
+
+| Find | Replace |
+|---|---|
+| `MADAD` | `Talqih` |
+| `Madad` | `Talqih` |
+| `madad` (di copy/text aja, JANGAN di localStorage keys) | `talqih` |
+
+**File yang harus di-scan:**
+- `index.html` (title, meta, dll)
+- `src/app.jsx`
+- `src/auth.jsx`
+- `src/layout.jsx` (PaymentModal, Footer brand)
+- `src/ui.jsx`
+- `src/data.jsx`
+- Semua di `src/pages/*.jsx`
+- Semua di `src/dashboard-companions.jsx`, `src/quick-note.jsx`, `src/markdown-render.jsx`, `src/muqaranah-data.jsx`, `src/intentions-data.jsx`
+
+**⚠️ JANGAN diganti:**
+- localStorage keys: `madad_notes`, `madad_intentions`, `madad_presence`, `madad_muqaranah_custom`, `madad_*` (semua key di STORAGE_KEYS object di `src/auth.jsx`). Ini untuk backward compat — user yang udah punya data tetap bisa akses.
+- File `assets/aigypt-logo.png` — biarkan
+- Comment `/* AIGYPT Logo mark */` di `src/ui.jsx` line 138 — biarkan, ini referensi logo visual
+
+**Tambahan untuk Footer di `src/layout.jsx`:**
+- Hapus link "Admin" dari footer publik (security issue dari audit)
+- Pastikan footer copy: "Designed & Developed by **Dar Dev**"
+- Tambah baris kecil di atas Dar Dev: "**Talqih** — Panduan Belajar Al-Azhar dengan AI"
+
+---
+
+### STEP 3 — Update Logo & Brand Display di `src/layout.jsx`
+
+**Lokasi: Navbar Brand component (sekitar line 1-30 area)**
+
+Brand di navbar saat ini menampilkan:
+```
+[LogoMark] MADAD
+           AI COMPANION · MASISIR
+```
+
+Ganti jadi:
+```
+[LogoMark] Talqih
+           PANDUAN AI · MASISIR
+```
+
+Maintain styling yang sama (font-display untuk "Talqih", uppercase tracking-wide untuk subtitle).
+
+**Mobile responsive:** Pastikan "Talqih" tetap kelihatan, subtitle bisa hidden di mobile (`hidden sm:block`) — lihat pattern existing.
+
+---
+
+### STEP 4 — Hapus Anti-Pattern Visual (Sekalian Cleanup)
+
+#### 4.1 — Hapus emoji 🎉 (dari audit sebelumnya)
+
+**File yang harus di-fix:**
+
+- `src/pages/onboarding.jsx` — cari `toast.push("Dashboard personal sudah siap 🎉");` → ganti jadi: `toast.push("Dashboard personal sudah siap untukmu.");`
+- `src/pages/paths.jsx` — cari `toast.push(\`"${module.title}" selesai 🎉\`);` → ganti jadi: `toast.push(\`"${module.title}" tercatat selesai.\`);`
+- `src/pages/paths.jsx` — cari `<div className="text-5xl mb-3">🎉</div>` di section path 100% completion → ganti jadi ornamen Arabic completion. Pakai class baru `arabic-classic` untuk teks Arab kaligrafi:
+  ```jsx
+  <div className="arabic-classic text-3xl text-gold-300 leading-loose mb-3" style={{direction:"rtl"}}>
+    الْحَمْدُ لِلَّهِ الَّذِي بِنِعْمَتِهِ تَتِمُّ الصَّالِحَاتُ
+  </div>
+  <div className="text-xs text-ink-soft italic mt-2">
+    Segala puji bagi Allah yang dengan nikmat-Nya segala kebaikan menjadi sempurna.
+  </div>
+  ```
+
+#### 4.2 — Ganti emoji icon stage di `src/auth.jsx` dan `src/data.jsx`
+
+**Lokasi: `src/auth.jsx` line 186-187 dan `src/data.jsx` line 564, 579**
+
+Saat ini ada:
+- `{ id: "growing", icon: "⚡", label: "Bertumbuh" }` ← lightning bolt productivity vibe
+- `{ id: "ready", icon: "🚀", label: "AI-ready" }` ← rocket hustle vibe
+
+Ganti jadi:
+- `{ id: "growing", icon: "🌿", label: "Bertumbuh" }` ← tumbuhan (natural growth)
+- `{ id: "ready", icon: "🕌", label: "Siap menjelajah" }` ← masjid (destination of knowledge)
+
+Pastikan label "AI-ready" juga diganti ke "Siap menjelajah" supaya konsisten dengan vibe Talqih.
+
+#### 4.3 — Cleanup red/rose pure references
+
+**File-file dengan referensi red/rose pure yang harus dibersihkan:**
+
+`src/pages/kurasah-editor.jsx` line 307 & 329:
+- `hover:text-red-400` → `hover:text-rose-600` (rose-600 sekarang muted purple-rose, sanctuary-compliant)
+- `bg-red-500/80 hover:bg-red-500` → `bg-rose-600/70 hover:bg-rose-600`
+
+`src/pages/muqaranah-form.jsx` line 30:
+- `hover:text-red-400 hover:bg-red-500/10` → `hover:text-rose-600 hover:bg-rose-600/10`
+
+`src/pages/muqaranah.jsx` line 34:
+- Sama: `hover:text-red-400 hover:bg-red-500/10` → `hover:text-rose-600 hover:bg-rose-600/10`
+
+`src/pages/landing.jsx` line 239:
+- `bg-red-500/30 border border-red-500/40` → `bg-rose-600/30 border-rose-600/40`
+
+**Cek juga:** kalau ada `text-red-*`, `bg-red-*`, `border-red-*` di file lain — ganti semua ke `rose-600` (dengan angka 600, karena kita set value baru-nya di tier 600).
+
+---
+
+### STEP 5 — Tambah Pattern di Hero Landing Section
+
+**Lokasi: `src/pages/landing.jsx`, Hero component**
+
+Cari section hero (yang ada headline "Belajar..." atau sejenisnya). Saat ini struktur-nya:
+
+```jsx
+<section className="...relative...">
+  {/* blob purple + gold yang sudah ada */}
+  ...
+</section>
+```
+
+Tambahkan `<div className="pattern-talqih"/>` sebagai child pertama dalam section hero (sebelum blob/gradient):
+
+```jsx
+<section className="relative ...">
+  <div className="pattern-talqih"/>  {/* ← TAMBAH INI */}
+  {/* existing blob, gradient, content */}
+  ...
+</section>
+```
+
+Pattern akan render sebagai layer paling belakang dengan opacity 4%. Tidak boleh kelihatan menonjol — cuma texture subtle yang bikin hero kerasa "ada isinya".
+
+**JANGAN pasang pattern ini di section lain selain hero.** Kalau dipasang di mana-mana, jadi noise.
+
+---
+
+### STEP 6 — Update Storage Keys Comment (Documentation)
+
+**Lokasi: `src/auth.jsx`, di STORAGE_KEYS object**
+
+Tambah comment yang menjelaskan kenapa key-nya tetap `madad_*`:
+
+```js
+// NOTE: Storage keys tetap pakai prefix 'madad_' untuk backward compatibility
+// dengan user yang sudah punya data dari versi sebelumnya. 
+// Tidak perlu di-rename ke 'talqih_'.
+const STORAGE_KEYS = {
+  PROFILE: "madad_profile",
+  NOTES: "madad_notes",
+  // ... dll
+};
+```
+
+---
+
+## File yang Akan Di-Modify
+
+Summary file yang berubah:
+
+1. **`index.html`** — tailwind config, fontFamily, body bg, font classes, meta tags, title (~50 baris berubah)
+2. **`src/layout.jsx`** — navbar brand, footer, hapus link Admin (~10 baris)
+3. **`src/app.jsx`** — kalau ada referensi MADAD di kode (find-replace)
+4. **`src/auth.jsx`** — emoji icon stage, tambah comment STORAGE_KEYS (~5 baris)
+5. **`src/data.jsx`** — emoji icon stage, kalau ada MADAD (~5 baris)
+6. **`src/pages/onboarding.jsx`** — hapus emoji 🎉 (~1 baris)
+7. **`src/pages/paths.jsx`** — hapus emoji 🎉, ganti ornament Arab (~10 baris)
+8. **`src/pages/landing.jsx`** — tambah `<div className="pattern-talqih"/>` di hero, fix red references (~5 baris)
+9. **`src/pages/kurasah-editor.jsx`** — fix red references (~2 baris)
+10. **`src/pages/muqaranah-form.jsx`** — fix red references (~2 baris)
+11. **`src/pages/muqaranah.jsx`** — fix red references (~2 baris)
+
+**TIDAK perlu** buat file baru di prompt ini.
+
+---
+
+## Acceptance Criteria
+
+Setelah selesai, lakukan checklist ini satu per satu:
+
+### Branding
+- [ ] Buka halaman, judul tab browser jadi: "Talqih — Panduan Belajar Al-Azhar dengan AI"
+- [ ] Navbar logo text: "Talqih" + subtitle "PANDUAN AI · MASISIR"
+- [ ] Footer: "Talqih — Panduan Belajar Al-Azhar dengan AI" + "Designed & Developed by Dar Dev"
+- [ ] Link "Admin" sudah TIDAK ada di footer publik (security fix)
+- [ ] Cari "MADAD" / "Madad" di codebase (case-sensitive) — **0 results** di copy/text (kecuali di comment yang menjelaskan backward compat)
+- [ ] localStorage key tetap `madad_*` — buka DevTools → Application → Local Storage, key existing dengan data tetap accessible
+
+### Color Discipline
+- [ ] Background: warna dasar `#0A0514` (sedikit lebih warm dari sebelumnya `#080312`)
+- [ ] Tidak ada warna **pure red** (`#EF4444`, `#F87171`, `red-400`, `red-500`) di mana pun
+- [ ] Tidak ada warna **emerald/mint pure green** dipakai sebagai accent
+- [ ] Destructive button/text: pakai `rose-600` yang sekarang `#C97B9B` (muted purple-rose)
+- [ ] Success: pakai `mint-500` yang sekarang `#D4B27D` (gold sutera, bukan green)
+- [ ] Buka DevTools → cek computed style `body` — background dasar adalah `#0A0514`
+- [ ] Cek dengan eye-comfort: scroll dashboard 2-3 menit, mata kerasa enak (kontras gak terlalu tajam)
+
+### Typography Arab
+- [ ] Buka DevTools → Network → cek 3 font baru ter-load: Aref Ruqaa, Reem Kufi, Noto Kufi Arabic (dari Google Fonts)
+- [ ] Class `.arabic-display`, `.arabic-classic`, `.arabic-ui` available di Tailwind/CSS
+- [ ] Existing `.arabic` class TIDAK berubah behavior-nya
+
+### Pattern Hero
+- [ ] Buka landing page, hero section punya texture subtle di background
+- [ ] Pattern kelihatan halus (4% opacity) — tidak loud, tidak distracting
+- [ ] Pattern HANYA di hero, tidak muncul di section lain
+- [ ] Mobile responsive — pattern tetap muncul tapi tidak ganggu readability
+
+### Anti-Pattern Cleanup
+- [ ] Cari emoji 🎉 di codebase — **0 results**
+- [ ] Stage icon di dashboard: "Bertumbuh" 🌿 dan "Siap menjelajah" 🕌 (bukan ⚡ dan 🚀)
+- [ ] Section "Path 100% completion" di `src/pages/paths.jsx` sekarang tampilkan ornamen Arab dengan `arabic-classic` font, bukan emoji 🎉
+- [ ] Toast onboarding finish: "Dashboard personal sudah siap untukmu." (tanpa emoji)
+- [ ] Toast module selesai: "[Title] tercatat selesai." (tanpa emoji)
+
+### Compatibility Check
+- [ ] Buka semua existing pages: Dashboard, Tool Guide, Learning Path, Etika, Kurasah, Muqaranah, Admin — **tidak ada console error**
+- [ ] Refresh browser di tiap page — state localStorage tetap persist
+- [ ] User dengan profile existing (sebelum rebrand) bisa login & akses dashboard normally
+- [ ] Mobile responsive untuk semua page yang disentuh
+
+### Sanctuary Mood Final Check
+Buka landing page dan dashboard, baca slowly, tanya:
+- [ ] Apakah ada warna yang mencolok/bikin mata sakit? (Kalau ada → cari sumbernya, kemungkinan ada red/green yang belum dibersihkan)
+- [ ] Apakah hero terasa kosong tanpa pattern? (Cek apakah pattern udah ter-load — buka DevTools Inspector, cari `pattern-talqih`)
+- [ ] Apakah ada section yang masih kerasa "MADAD vibe" lama (lebih dingin/clinical)? Talqih harus terasa sedikit lebih *hangat* karena bg-nya pindah ke `#0A0514` yang slightly warmer.
+
+---
+
+## Catatan Penting
+
+### Backward Compatibility
+User yang sudah pakai MADAD versi sebelumnya tidak boleh kehilangan data mereka. localStorage keys tetap pakai prefix `madad_*`. Kalau lo tergoda untuk "merapikan" jadi `talqih_*` — **JANGAN**. Itu akan reset semua data user.
+
+### Visual Test Manual
+Setelah selesai, ambil screenshot landing page hero — sebelum dan sesudah. Compare:
+- **Sebelum:** dark purple solid dengan blob lampu warm
+- **Sesudah:** dark purple sedikit lebih warm, dengan texture 8-point star subtle, dan blob masih ada
+
+Kalau hasilnya hero terasa lebih "berisi tapi tetap tenang" — berhasil. Kalau hero kerasa lebih ramai/distracting — pattern opacity terlalu tinggi, turunkan ke 3%.
+
+### Yang Akan Dilakukan di Prompt Selanjutnya
+Setelah Prompt 1 ini selesai, kita akan lanjut ke:
+- **Prompt 2**: Landing Page Baru (5 section pendek, sample Maddah Nahwu accessible publik)
+- **Prompt 3**: Maddah System (data structure 36 Maddah, detail Maddah dengan 15+ prompt, adaptive prompt system)
+- **Prompt 4**: Dashboard Rework (Maddah-mu hari ini sebagai hero, sanctuary di-secondary)
+- **Prompt 5**: Polish, Discoverability, Security Fixes
+
+**Jangan implement bagian-bagian dari prompt itu sekarang.** Selesaikan Prompt 1 dulu sampai semua acceptance criteria ✓, baru lanjut.
+
+---
+
+والله ولي التوفيق. Mulai.

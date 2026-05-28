@@ -1,4 +1,4 @@
-/* Madad, Muqaranah Detail Page */
+/* Talqih, Muqaranah Detail Page */
 
 const ViewColumn = ({ view, isMobile }) => {
   const [collapsed, setCollapsed] = React.useState(isMobile);

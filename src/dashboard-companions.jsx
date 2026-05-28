@@ -1,4 +1,4 @@
-/* Madad, Dashboard Companion Modules
+/* Talqih, Dashboard Companion Modules
    1. IntentionStrip  — Niat Hari Ini
    2. RhythmCard      — Ritme Pekan Ini
    3. ReflectionCard  — Refleksi dari Kurasah */

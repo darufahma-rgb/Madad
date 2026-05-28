@@ -1,4 +1,4 @@
-/* Madad, Shared UI primitives (dark/premium) */
+/* Talqih, Shared UI primitives (dark/premium) */
 
 const { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } = React;
 

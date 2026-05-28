@@ -1,5 +1,8 @@
-/* Madad, auth system, profile, progress, single-device policy */
+/* Talqih, auth system, profile, progress, single-device policy */
 
+// NOTE: Storage keys tetap pakai prefix 'madad_' untuk backward compatibility
+// dengan user yang sudah punya data dari versi sebelumnya.
+// Tidak perlu di-rename ke 'talqih_'.
 const STORAGE_KEYS = {
   SESSION:          "madad_session",
   PROFILE:          "madad_profile",
@@ -195,7 +198,7 @@ const computeStage = () => {
   const totalDone = Object.keys(progress.modules || {}).filter(k => progress.modules[k]?.completed).length;
   if (totalDone < 3) return { id: "starting", icon: "🌱", label: "Baru mulai" };
   if (totalDone < 8) return { id: "growing", icon: "🌿", label: "Bertumbuh" };
-  return { id: "ready", icon: "🌙", label: "AI-ready" };
+  return { id: "ready", icon: "🕌", label: "Siap menjelajah" };
 };
 
 /* ---------- Admin auth ---------- */

@@ -1,4 +1,4 @@
-/* Madad — Landing page v4: cinematic redesign dengan font Arab hidup dan pola geometrik Islam */
+/* Talqih — Landing page v4: cinematic redesign dengan font Arab hidup dan pola geometrik Islam */
 
 const { useState, useEffect, useRef } = React;
 
@@ -123,6 +123,7 @@ const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
    ══════════════════════════════════════════════════════════════ */
 const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
   <section className="relative overflow-hidden" style={{ minHeight: "100vh", display: "flex", alignItems: "center", paddingTop: "80px" }}>
+    <div className="pattern-talqih"/>
 
     {/* Background blobs */}
     <Blob color="rgba(124,77,255,0.38)" size={1000} top={-350} right={-250} />
@@ -194,7 +195,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
             <span className="text-ink">Kuliah di Azhar itu</span>{" "}
             <span className="gradient-text">berat.</span>
             <br />
-            <span className="text-ink">MADAD bikin lebih</span>{" "}
+            <span className="text-ink">Talqih bikin lebih</span>{" "}
             <span className="text-gold-300">ringan.</span>
           </h1>
         </Reveal>
@@ -347,14 +348,14 @@ const PainSection = () => (
 );
 
 /* ══════════════════════════════════════════════════════════════
-   4. SOLUTION — MADAD vs AI generik
+   4. SOLUTION — Talqih vs AI generik
    ══════════════════════════════════════════════════════════════ */
 const SolutionSection = () => (
   <section className="section relative overflow-hidden">
 
     <div className="container-x">
       <Reveal className="text-center mb-12">
-        <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">— Kenapa MADAD beda</div>
+        <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">— Kenapa Talqih beda</div>
         <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08] mb-4">
           AI sudah ada di mana-mana.<br />
           <span className="gradient-text">Yang tahu maqarrar Azhar, belum ada.</span>
@@ -389,11 +390,11 @@ const SolutionSection = () => (
           </div>
         </div>
 
-        {/* MADAD */}
+        {/* Talqih */}
         <div className="vs-pill" style={{ background: "rgba(201,168,106,0.06)", borderColor: "rgba(201,168,106,0.3)" }}>
           <div className="text-xs uppercase tracking-[0.18em] text-gold-400 mb-4 flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-gold-400" />
-            MADAD
+            Talqih
           </div>
           <div className="space-y-3">
             {[
@@ -603,7 +604,7 @@ const HowItWorks = () => {
       kali: "عِلْم",
       kaliMeaning: "'Ilm",
       title: "Dapat panduan yang personal",
-      body: "MADAD menampilkan panduan AI yang disesuaikan — mata pelajaran yang relevan, prompt yang cocok dengan caramu belajar.",
+      body: "Talqih menampilkan panduan AI yang disesuaikan — mata pelajaran yang relevan, prompt yang cocok dengan caramu belajar.",
       detail: "Adaptive · Per fakultas · Per gaya belajar",
     },
     {
@@ -689,7 +690,7 @@ const PricingSection = ({ onOpenPayment }) => (
 
             {/* Badge */}
             <div className="flex items-center justify-between mb-6">
-              <div className="chip chip-gold text-xs">Member MADAD</div>
+              <div className="chip chip-gold text-xs">Member Talqih</div>
               <div className="price-badge">Akses Seumur Hidup</div>
             </div>
 
@@ -775,7 +776,7 @@ const FinalCTA = ({ onOpenPayment }) => (
             className="btn btn-gold text-base px-10 py-4"
             style={{ fontSize: "17px", boxShadow: "0 0 60px rgba(201,168,106,0.45), 0 1px 0 rgba(255,255,255,0.35) inset" }}>
             <Icon name="sparkles" className="w-5 h-5" />
-            Mulai dengan MADAD — Rp 49.000
+            Mulai dengan Talqih — Rp 49.000
           </button>
         </div>
 
