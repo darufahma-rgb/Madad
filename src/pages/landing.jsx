@@ -503,7 +503,7 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
           <span className="w-6 h-px bg-gold-500/70"/>INVESTASI ILMU
         </div>
         <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
-          Harga segelas kopi. Akses 540+ prompt seumur hidup.
+          Bayar sekali, belajar selamanya. 540+ prompt siap pakai.
         </h2>
       </Reveal>
 
