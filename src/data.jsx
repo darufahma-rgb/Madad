@@ -556,7 +556,7 @@ const AI_TOOLS = [
         steps: [
           "Sebelum buka Tarteel, minta AI (Claude/ChatGPT) list ayat mutasyabihat di surah target.",
           "Buka Tarteel, fokus drill di ayat-ayat yang AI sebut rawan tertukar.",
-          "Setelah sesi, catat progres di Kurasah Talqee.",
+          "Setelah sesi, catat progres di Kurasah Talqeeh.",
         ],
         starterPrompt: "Aku mau hafal [SURAH]. Sebelum mulai, berikan:\n1. Daftar ayat-ayat yang mirip (mutasyabihat) di surah ini — tulis teks Arabnya dengan harakat\n2. Perbedaan kecil yang biasanya bikin keliru\n3. Tips untuk membedakan masing-masing\n\nSetelah ini aku akan drill bacaan di Tarteel.",
       },

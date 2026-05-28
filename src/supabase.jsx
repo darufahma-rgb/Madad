@@ -1,4 +1,4 @@
-/* Talqee — Supabase Client & Member API (Fase 1)
+/* Talqeeh — Supabase Client & Member API (Fase 1)
    Member management via Supabase. Data user pribadi tetap localStorage.
 */
 

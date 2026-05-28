@@ -1,4 +1,4 @@
-/* Talqee — Welcome Page (muncul sekali setelah onboarding selesai) */
+/* Talqeeh — Welcome Page (muncul sekali setelah onboarding selesai) */
 
 const WelcomePage = () => {
   const { session, profile } = useAuth();

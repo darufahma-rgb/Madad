@@ -1,0 +1,168 @@
+# PROMPT: Fix BN-3/BN-13 (Brand Name) + BN-7 (Hapus Mapel)
+
+> Dua fix sekaligus. Kerjakan berurutan: brand name dulu, baru hapus Mapel.
+> Estimasi: 30-45 menit.
+
+---
+
+## FIX 1 — Konsistenkan Brand Name: "Talqeeh" (dengan h)
+
+### Konteks
+
+Saat ini ada dua versi nama yang campur-campur di codebase:
+- **"Talqeeh"** (dengan h) — yang benar, nama final brand
+- **"Talqee"** (tanpa h) — sisa dari penulisan lama, harus diubah
+
+### Files yang Harus Diupdate
+
+**`index.html`** — sudah benar (pakai Talqeeh), tidak perlu diubah.
+
+**`src/data.jsx` line 559:**
+```js
+// SEBELUM:
+"Setelah sesi, catat progres di Kurasah Talqee.",
+// SESUDAH:
+"Setelah sesi, catat progres di Kurasah Talqeeh.",
+```
+
+**`src/supabase.jsx` line 1 (comment header):**
+```js
+// SEBELUM:
+/* Talqee — Supabase Client & Member API (Fase 1)
+// SESUDAH:
+/* Talqeeh — Supabase Client & Member API (Fase 1)
+```
+
+**`src/auth.jsx` line 1 (comment header):**
+```js
+// SEBELUM:
+/* Talqih, auth system...  (atau Talqee)
+// SESUDAH:
+/* Talqeeh — auth system...
+```
+
+**`src/layout.jsx` line 1 (comment header) + teks UI:**
+```js
+// Header comment:
+/* Talqeeh, Navbar, Footer, Login Modal, Payment Modal, Router utils */
+
+// Cari semua "Talqee" dalam string UI (bukan comment) → ganti "Talqeeh"
+// Contoh di footer, payment modal copy, dsb.
+```
+
+**`src/pages/landing.jsx`:**
+Cari `Talqee` (tanpa h) dalam string/JSX → ganti `Talqeeh`
+
+**`src/pages/welcome.jsx` line 1:**
+```js
+/* Talqeeh — Welcome Page (muncul sekali setelah onboarding selesai) */
+```
+
+**`src/pages/admin.jsx`:**
+Ada campuran — cari `Talqee` (tanpa h) dalam copy/string UI → ganti `Talqeeh`
+Comment header dan copy yang bilang nama platform harus konsisten.
+
+### Cara Paling Aman
+
+Lakukan **find-and-replace case-sensitive** di seluruh `src/` folder:
+
+Cari: `Talqee` (tepat 6 karakter, tanpa h)
+Ganti: `Talqeeh`
+
+**Pengecualian — JANGAN ganti:**
+- Kata-kata yang mengandung huruf lain setelah "Talqee" (sudah Talqeeh, tidak akan match)
+- localStorage keys jika ada (tidak ada yang namanya `talqee_` — semua pakai `madad_`)
+- URL eksternal (`lynk.id/talqee` → **UPDATE juga** jadi `lynk.id/talqeeh` kalau itu URL Lynk yang benar, atau biarkan kalau URL Lynk memang "talqee")
+
+### Untuk URL Lynk di `src/layout.jsx`:
+Cek apakah URL `https://lynk.id/talqee` masih berlaku atau sudah diganti. Kalau Lynk-nya pakai "talqeeh", update. Kalau masih "talqee" di Lynk.id, biarkan URL-nya (jangan ubah URL eksternal, hanya nama brand di copy).
+
+### Acceptance Criteria BN-3/BN-13
+- [ ] Cari "Talqee" (tanpa h) di seluruh codebase → **0 results** dalam string UI/copy
+- [ ] Header/title tab browser: "Talqeeh — Panduan Belajar Al-Azhar dengan AI"
+- [ ] Footer: "Talqeeh" (konsisten)
+- [ ] Loading screen: "Membuka Talqeeh..." (sudah benar di index.html, verify)
+- [ ] Comment headers file boleh masih campur (low priority), yang penting string UI konsisten
+
+---
+
+## FIX 2 — Hapus Mapel System (BN-7)
+
+### Konteks
+
+Ada dua sistem mata pelajaran yang tumpang tindih:
+- `/maddah` — 36 Maddah dengan prompt templates (dipertahankan)
+- `/mapel` — 19 mata pelajaran dengan panduan AI (DIHAPUS)
+
+Keputusan: **Mapel dihapus karena Maddah sudah mencakup semua kebutuhan.**
+
+### Yang Harus Dihapus
+
+**File yang dihapus total:**
+- `src/mapel-data.jsx` — data 19 mata pelajaran
+- `src/pages/mapel.jsx` — halaman Mapel
+
+**`index.html`** — hapus 2 script tags:
+```html
+<!-- HAPUS kedua baris ini: -->
+<script type="text/babel" data-presets="env,react" src="src/mapel-data.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/pages/mapel.jsx"></script>
+```
+
+**`src/app.jsx` line 71** — hapus route Mapel:
+```js
+// HAPUS baris ini:
+else if (path.startsWith("/mapel")) { page = <MapelPage/>; routeLabel = "Panduan Mapel"; }
+```
+
+### Cek Referensi Lain
+
+Pastikan tidak ada komponen lain yang reference Mapel. Jalankan search:
+
+```
+Cari di src/: "mapel", "Mapel", "MAPEL", "MapelPage", "MAPEL_GUIDES"
+```
+
+Berdasarkan audit, referensi tersisa hanya di:
+- `src/app.jsx` (sudah dihandle di atas)
+- `src/pages/mapel.jsx` (file dihapus)
+- `src/mapel-data.jsx` (file dihapus)
+
+Kalau ketemu referensi lain → hapus juga.
+
+### Redirect /mapel ke /maddah
+
+Di `src/app.jsx`, setelah hapus route Mapel, tambahkan redirect supaya user yang punya bookmark `/mapel` tidak dapat blank screen:
+
+```js
+// Tambahkan sebelum fallback default:
+else if (path.startsWith("/mapel")) {
+  // Redirect ke Maddah Hub (pengganti Mapel)
+  navigate("/maddah");
+  page = <MaddahHubPage/>;
+  routeLabel = "Maddah";
+}
+```
+
+### Acceptance Criteria BN-7
+- [ ] File `src/mapel-data.jsx` tidak ada lagi
+- [ ] File `src/pages/mapel.jsx` tidak ada lagi
+- [ ] Dua script tags Mapel sudah tidak ada di `index.html`
+- [ ] Route `/mapel` di `app.jsx` sudah dihapus
+- [ ] Cari "MapelPage", "MAPEL_GUIDES", "mapel-data" di codebase → **0 results**
+- [ ] Buka URL `/#/mapel` di browser → redirect ke `/#/maddah` (tidak error)
+- [ ] Semua halaman lain tetap berfungsi normal (tidak ada komponen yang crash karena Mapel hilang)
+- [ ] Script count di index.html berkurang dari 32 → 30 (2 script dihapus)
+- [ ] Tidak ada console error
+
+---
+
+## Acceptance Criteria Global
+
+- [ ] Brand "Talqeeh" konsisten di semua UI copy (tanpa pengecualian)
+- [ ] Mapel sistem tidak ada di mana pun
+- [ ] Tidak ada console error setelah kedua fix
+- [ ] Semua halaman existing tetap berfungsi: Dashboard, Maddah, Muqaranah, Kurasah, Tools, Admin
+- [ ] Mobile responsive tetap oke
+
+والله ولي التوفيق.

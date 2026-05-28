@@ -1,4 +1,4 @@
-/* Talqee — Siap Imtihan Page
+/* Talqeeh — Siap Imtihan Page
    Section di dashboard yang jadi landing, plus halaman penuh /siap-imtihan
 */
 

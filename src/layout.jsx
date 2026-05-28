@@ -1,4 +1,4 @@
-/* Talqee, Navbar, Footer, Login Modal, Payment Modal, Router utils */
+/* Talqeeh — Navbar, Footer, Login Modal, Payment Modal, Router utils */
 
 const ROUTES_PUBLIC = ["/", "/ethics"];
 const ROUTES_MEMBER = ["/onboarding", "/dashboard", "/tools", "/paths"];
