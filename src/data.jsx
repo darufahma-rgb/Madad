@@ -526,6 +526,85 @@ const AI_TOOLS = [
       },
     },
   },
+  {
+    id: "tarteel",
+    name: "Tarteel",
+    by: "Tarteel AI",
+    monogram: "ت",
+    logo: null,
+    logoBg: null,
+    brandColor: "#1A7A4A",
+    color: "#1A7A4A",
+    tier: "Gratis + Premium",
+    link: "https://tarteel.ai",
+    description: "AI khusus Qur'an — mendengar bacaanmu secara real-time dan langsung koreksi kalau ada kesalahan tajwid atau makhraj. Teman terbaik untuk hafalan dan tahsin.",
+    bestAt: ["Tahsin tilawah", "Hafalan interaktif", "Koreksi tajwid real-time"],
+    guides: {
+      discussion: {
+        when: "Kamu mau 'berdiskusi' dengan Qur'an — baca, dengar koreksi, baca ulang. Loop aktif yang membangun kesadaran tilawah.",
+        steps: [
+          "Buka tarteel.ai di browser atau app — login atau lanjut sebagai tamu.",
+          "Pilih surah yang mau dibaca, aktifkan mode 'Listening'.",
+          "Baca dengan suara jelas — Tarteel akan highlight kalau ada kesalahan.",
+          "Ulangi ayat yang merah/koreksi sampai hijau (benar).",
+          "Setelah satu halaman, lihat summary kesalahan — catat di Kurasah.",
+        ],
+        starterPrompt: "Aku mau sesi tahsin aktif. Aku akan baca [SURAH] ayat [X–Y]. Setelah aku selesai baca, bantu aku analisis:\n1. Hukum tajwid apa yang ada di ayat-ayat ini yang perlu diperhatikan?\n2. Makhraj huruf mana yang biasanya keliru di ayat ini?\n3. Tempat-tempat waqaf yang disarankan (tanda waqaf)\n\nAku akan cek bacaanku di Tarteel, lalu bandingkan dengan catatanmu.",
+      },
+      summary: {
+        when: "Mau ringkasan sebelum sesi hafalan — tau dulu mana ayat yang mirip (mutasyabihat) supaya tidak tertukar.",
+        steps: [
+          "Sebelum buka Tarteel, minta AI (Claude/ChatGPT) list ayat mutasyabihat di surah target.",
+          "Buka Tarteel, fokus drill di ayat-ayat yang AI sebut rawan tertukar.",
+          "Setelah sesi, catat progres di Kurasah Talqee.",
+        ],
+        starterPrompt: "Aku mau hafal [SURAH]. Sebelum mulai, berikan:\n1. Daftar ayat-ayat yang mirip (mutasyabihat) di surah ini — tulis teks Arabnya dengan harakat\n2. Perbedaan kecil yang biasanya bikin keliru\n3. Tips untuk membedakan masing-masing\n\nSetelah ini aku akan drill bacaan di Tarteel.",
+      },
+      visual: {
+        when: "Kamu visual learner — mau lihat peta hafalan secara jelas sebelum mulai baca.",
+        steps: [
+          "Minta AI buatkan 'peta hafalan' surah (struktur tema per kelompok ayat).",
+          "Buka Tarteel, gunakan peta ini sebagai navigasi saat baca.",
+          "Setiap kelompok ayat jadi satu unit drill.",
+        ],
+        starterPrompt: "Buatkan peta hafalan [SURAH] dalam format hierarki:\n- Kelompok ayat (misal: 1-7, 8-16, dll)\n- Tema tiap kelompok (1 kalimat)\n- Kata kunci pembuka tiap kelompok (teks Arab dengan harakat)\n\nIni akan aku pakai sebagai navigasi saat drill di Tarteel AI.",
+      },
+      practice: {
+        when: "Latihan intensif hafalan — baca, koreksi, ulang. Ini mode utama Tarteel.",
+        steps: [
+          "Buka Tarteel → pilih mode 'Memorization' atau 'Challenge'.",
+          "Mode Memorization: baca, Tarteel lanjutkan kalau kamu stuck — bantu mengingat.",
+          "Mode Challenge: teks disembunyikan, kamu baca dari ingatan penuh.",
+          "Tarteel langsung koreksi kalau ada kata yang salah — ulangi sampai benar.",
+          "Setelah sesi, screenshot hasil sesi dan catat poin lemah di Kurasah.",
+        ],
+        starterPrompt: "Aku baru selesai sesi drill hafalan [SURAH] ayat [X–Y] di Tarteel. Hasil: ada [N] kesalahan di [sebutkan ayat/kata yang keliru].\n\nBantu aku:\n1. Analisis kenapa bagian itu sering keliru (pola tertentu?)\n2. Buat mnemonic atau trik untuk mengingat bagian itu\n3. Susun jadwal murajaah 7 hari ke depan untuk surah ini dengan spaced repetition",
+      },
+      memorization: {
+        when: "Ini spesialisasi utama Tarteel — hafalan dengan AI yang mendengar dan mengoreksi secara real-time.",
+        steps: [
+          "Buka tarteel.ai → Login (akun gratis sudah cukup untuk fitur dasar).",
+          "Pilih surah target → klik 'Memorize'.",
+          "Tarteel tampilkan ayat satu per satu. Baca dengan suara. AI evaluasi.",
+          "Kalau salah: Tarteel highlight kata yang keliru, ulangi sampai benar.",
+          "Kalau stuck: Tarteel bisa baca 3 kata berikutnya sebagai isyarah (hint).",
+          "Setelah khatam target: review statsnya — ayat mana yang paling sering salah.",
+        ],
+        starterPrompt: "Aku sedang menghafal [SURAH], target khatam dalam [X hari].\n\nBantu aku:\n1. Bagi [jumlah ayat] ayat menjadi paket harian yang masuk akal\n2. Waktu terbaik hafal vs murajaah (berdasarkan ilmu tahfidz klasik)\n3. Daftar 5 ayat yang paling rawan keliru di surah ini — tulis teks Arabnya dengan harakat\n4. Tanda-tanda tajwid khusus di surah ini yang perlu diperhatikan\n\nAku akan pakai Tarteel untuk drill praktisnya.",
+      },
+      reading: {
+        when: "Kamu tipe yang suka baca tartil pelan-pelan dan dengar koreksi satu per satu — bukan drill cepat.",
+        steps: [
+          "Buka Tarteel → pilih mode 'Recitation' atau 'Listening'.",
+          "Baca tartil, satu ayat per tarikan napas.",
+          "Jangan buru-buru — biarkan Tarteel mengevaluasi tiap ayat.",
+          "Kalau ada koreksi, berhenti, baca ulang ayat itu 3 kali baru lanjut.",
+          "Di akhir, export atau catat ayat-ayat yang dapat koreksi.",
+        ],
+        starterPrompt: "Aku tipe yang suka baca tartil pelan dan teliti. Bantu aku persiapan sesi tilawah [SURAH]:\n\n1. Hukum tajwid yang paling dominan di surah ini\n2. Ayat-ayat yang punya bacaan khusus (gunnah panjang, ikhfa, dll) — tulis teks Arab\n3. Etika tilawah yang disarankan ulama sebelum mulai\n4. Doa sebelum tilawah\n\nSetelah persiapan ini, aku akan baca di Tarteel dengan santai.",
+      },
+    },
+  },
 ];
 
 /* ============ RECOMMENDATION RULES ============ */
@@ -560,6 +639,7 @@ const recommend = (profile) => {
     addScore("notebooklm", 2, "rujuk ke kitab yang kamu upload");
   }
   if (struggles.includes("hafalan")) {
+    addScore("tarteel", 5, "AI yang mendengar bacaanmu real-time dan koreksi tajwid langsung — spesialis hafalan");
     addScore("chatgpt", 3, "mode suara untuk tasmi'");
     addScore("notebooklm", 1, "ringkasan dari syarah yang kamu upload");
   }
@@ -586,6 +666,7 @@ const recommend = (profile) => {
     addScore("claude", 1, "koreksi paling teliti");
   }
   if (styles.includes("memorization")) {
+    addScore("tarteel", 5, "hafalan interaktif dengan koreksi suara real-time — spesialis Qur'an");
     addScore("chatgpt", 2, "sesi tasmi' interaktif via mode suara");
     addScore("notebooklm", 1, "untuk integrasi dengan syarah");
   }
