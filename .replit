@@ -37,3 +37,8 @@ externalPort = 80
 [[ports]]
 localPort = 23636
 externalPort = 3001
+
+[userenv]
+
+[userenv.shared]
+SUPABASE_URL = "https://rhgecuchhkrcwuxenrfb.supabase.co"
