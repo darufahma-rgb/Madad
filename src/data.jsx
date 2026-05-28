@@ -743,7 +743,7 @@ const DEFAULT_MEMBERS = [
 ];
 
 /* ============ ADMIN AUTH (super simple) ============ */
-const ADMIN_PIN = "9090";
+const ADMIN_PIN = "TLQH-2026-9X4K";
 
 /* ============ EXPORTS ============ */
 Object.assign(window, {

@@ -56,13 +56,18 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   }, []);
   useEffect(() => { setOpen(false); setConfirmLogout(false); }, [path]);
 
+  // 5 nav utama member — Maddah-first
   const memberLinks = [
-    { to: "/dashboard", label: "Dashboard" },
-    { to: "/maddah",    label: "Maddah" },
-    { to: "/mapel",     label: "Panduan Mapel" },
-    { to: "/tools",     label: "Tool Guide" },
-    { to: "/paths",     label: "Learning Path" },
-    { to: "/ethics",    label: "Etika" },
+    { to: "/dashboard",        label: "Dashboard" },
+    { to: "/maddah",           label: "Maddah" },
+    { to: "/paths/muqaranah",  label: "Muqaranah" },
+    { to: "/kurasah",          label: "Kurasah" },
+    { to: "/tools",            label: "Tool Guide" },
+  ];
+  // Link tambahan untuk mobile menu
+  const memberLinksExtra = [
+    { to: "/paths",            label: "Learning Path" },
+    { to: "/ethics",           label: "Etika" },
   ];
   const publicLinks = [
     { to: "/#preview",  label: "Preview" },
@@ -84,12 +89,6 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
         <div className="hidden md:flex items-center gap-2">
           {session ? (
             <>
-              <button
-                onClick={() => navigate("/kurasah")}
-                title="Kurasah"
-                className="w-9 h-9 rounded-lg text-ink-muted hover:text-ink hover:bg-white/5 transition-colors flex items-center justify-center">
-                <Icon name="book" className="w-4 h-4"/>
-              </button>
               <div className="px-3 py-1.5 rounded-lg chip-glass text-xs">
                 <span className="text-ink-muted">Member:</span> <span className="text-ink font-medium">{session.name}</span>
               </div>
@@ -120,7 +119,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
       {open && (
         <div className="fixed inset-0 z-[60] md:hidden">
           <div className="absolute inset-0 bg-night-950/70 modal-back" onClick={() => setOpen(false)}/>
-          <div className="absolute top-0 right-0 bottom-0 w-[82%] max-w-sm bg-night-900 border-l border-line p-6 flex flex-col">
+          <div className="absolute top-0 right-0 bottom-0 w-[82%] max-w-sm bg-night-900 border-l border-line p-6 flex flex-col overflow-y-auto">
             <div className="flex items-center justify-between mb-8">
               <Brand/>
               <button onClick={() => setOpen(false)} className="w-9 h-9 rounded-lg text-ink hover:bg-white/5">
@@ -128,22 +127,24 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
               </button>
             </div>
             <nav className="flex flex-col gap-1">
+              {/* Primary links */}
               {links.map(l => (
                 l.to.startsWith("/#") ? null : (
                   <a key={l.to} href={"#" + l.to}
                      onClick={(e)=>{ e.preventDefault(); navigate(l.to); setOpen(false); }}
-                     className={`px-3 py-3 text-base rounded-lg ${path === l.to ? "bg-white/8 text-ink font-medium" : "text-ink-muted hover:bg-white/4"}`}>
+                     className={`px-3 py-3 text-base rounded-lg ${path === l.to || (l.to !== "/" && path.startsWith(l.to)) ? "bg-white/8 text-ink font-medium" : "text-ink-muted hover:bg-white/4"}`}>
                     {l.label}
                   </a>
                 )
               ))}
-              {session && (
-                <a href="#/kurasah"
-                   onClick={(e)=>{ e.preventDefault(); navigate("/kurasah"); setOpen(false); }}
-                   className={`px-3 py-3 text-base rounded-lg flex items-center gap-2 ${path === "/kurasah" ? "bg-white/8 text-ink font-medium" : "text-ink-muted hover:bg-white/4"}`}>
-                  <Icon name="book" className="w-4 h-4"/> Kurasah
+              {/* Extra links (mobile only) */}
+              {session && memberLinksExtra.map(l => (
+                <a key={l.to} href={"#" + l.to}
+                   onClick={(e)=>{ e.preventDefault(); navigate(l.to); setOpen(false); }}
+                   className={`px-3 py-3 text-base rounded-lg ${path === l.to ? "bg-white/8 text-ink font-medium" : "text-ink-muted hover:bg-white/4"}`}>
+                  {l.label}
                 </a>
-              )}
+              ))}
             </nav>
             <div className="mt-auto pt-6 border-t border-line flex flex-col gap-2">
               {session ? (
@@ -187,9 +188,11 @@ const Footer = () => (
         </div>
         <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
           <a href="#/" onClick={(e)=>{e.preventDefault(); navigate("/");}} className="text-ink-muted hover:text-ink">Beranda</a>
-          <a href="#/ethics" onClick={(e)=>{e.preventDefault(); navigate("/ethics");}} className="text-ink-muted hover:text-ink">Etika</a>
-          <a href="#/dashboard" onClick={(e)=>{e.preventDefault(); navigate("/dashboard");}} className="text-ink-muted hover:text-ink">Dashboard</a>
+          <a href="#/maddah" onClick={(e)=>{e.preventDefault(); navigate("/maddah");}} className="text-ink-muted hover:text-ink">Maddah</a>
+          <a href="#/paths/muqaranah" onClick={(e)=>{e.preventDefault(); navigate("/paths/muqaranah");}} className="text-ink-muted hover:text-ink">Muqaranah</a>
+          <a href="#/kurasah" onClick={(e)=>{e.preventDefault(); navigate("/kurasah");}} className="text-ink-muted hover:text-ink">Kurasah</a>
           <a href="#/tools" onClick={(e)=>{e.preventDefault(); navigate("/tools");}} className="text-ink-muted hover:text-ink">Tool Guide</a>
+          <a href="#/ethics" onClick={(e)=>{e.preventDefault(); navigate("/ethics");}} className="text-ink-muted hover:text-ink">Etika</a>
           <a href="#/paths" onClick={(e)=>{e.preventDefault(); navigate("/paths");}} className="text-ink-muted hover:text-ink">Learning Path</a>
         </div>
       </div>
@@ -198,7 +201,7 @@ const Footer = () => (
         <div className="text-ink-soft">© {new Date().getFullYear()} Talqih · All rights reserved.</div>
         <div className="text-ink-muted tracking-wider flex flex-col items-end gap-1">
           <span className="text-ink-soft font-medium">Talqih — Panduan Belajar Al-Azhar dengan AI</span>
-          <span>Designed & Developed by <span className="text-gold-400 font-medium">Dar Dev</span></span>
+          <span>Designed &amp; Developed by <span className="text-gold-400 font-medium">Dar Dev</span></span>
         </div>
       </div>
     </div>
@@ -208,8 +211,8 @@ const Footer = () => (
 /* ---------------- Login Modal ---------------- */
 const LoginModal = ({ open, onClose, onSuccess }) => {
   const [code, setCode] = useState("");
-  const [status, setStatus] = useState(null);  // { ok, status, member }
-  const [conflict, setConflict] = useState(null);  // member for device conflict
+  const [status, setStatus] = useState(null);
+  const [conflict, setConflict] = useState(null);
   const { login } = useAuth();
   const inputRef = useRef(null);
   const toast = useToast();
@@ -314,16 +317,19 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
 /* ---------------- Payment Modal ---------------- */
 const PaymentModal = ({ open, onClose, onOpenLogin }) => {
   const [paid, setPaid] = useState(false);
+  const [waitingConfirm, setWaitingConfirm] = useState(false);
 
   useEffect(() => {
     if (!open) { setPaid(false); setWaitingConfirm(false); }
   }, [open]);
 
-  const [waitingConfirm, setWaitingConfirm] = useState(false);
-
   const handlePayClick = () => {
-    window.open("https://lynk.id/madad", "_blank", "noopener,noreferrer");
+    window.open("https://lynk.id/talqih", "_blank", "noopener,noreferrer");
     setWaitingConfirm(true);
+  };
+
+  const handleConfirmPaid = () => {
+    setPaid(true);
   };
 
   return (
@@ -338,11 +344,11 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
 
         {paid ? (
           <div className="mt-6 text-center py-4">
-            <div className="w-16 h-16 rounded-full bg-mint-500/20 text-mint-500 flex items-center justify-center mx-auto mb-5">
+            <div className="w-16 h-16 rounded-full bg-violet-500/20 text-violet-300 flex items-center justify-center mx-auto mb-5">
               <Icon name="check" className="w-8 h-8" strokeWidth={2.4}/>
             </div>
             <div className="arabic-display-classical text-2xl text-gold-300 mb-3">جَزَاكَ اللهُ خَيْرًا</div>
-            <h2 className="font-display text-2xl font-semibold text-ink mb-3">Terima kasih!</h2>
+            <h2 className="font-display text-2xl font-semibold text-ink mb-3">Terima kasih</h2>
             <p className="text-ink-muted text-sm leading-relaxed mb-6 max-w-xs mx-auto">
               Pembayaran sedang diproses. Kode akses akan dikirimkan oleh admin setelah konfirmasi pembayaran.
             </p>
@@ -351,7 +357,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
               <ol className="text-sm text-ink-muted space-y-2">
                 <li className="flex items-start gap-2"><span className="text-violet-300 font-semibold">1.</span> Admin akan memverifikasi pembayaran</li>
                 <li className="flex items-start gap-2"><span className="text-violet-300 font-semibold">2.</span> Kode akses dikirimkan via WhatsApp</li>
-                <li className="flex items-start gap-2"><span className="text-violet-300 font-semibold">3.</span> Login & mulai journey-mu</li>
+                <li className="flex items-start gap-2"><span className="text-violet-300 font-semibold">3.</span> Login &amp; mulai journey-mu</li>
               </ol>
             </div>
             <div className="flex gap-2">
@@ -374,11 +380,11 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
                 <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-3">Yang kamu dapat</div>
                 <div className="space-y-2.5 mb-5">
                   {[
+                    { i: "layers",   t: "36 Maddah Al-Azhar dengan 540 prompt template AI" },
                     { i: "sparkles", t: "Adaptive guide untuk 6 AI × 6 gaya belajar" },
-                    { i: "layers",   t: "Muqaranah qoul ulama (Library + buat sendiri)" },
+                    { i: "scale",    t: "Muqaranah qoul ulama (Library + buat sendiri)" },
                     { i: "book",     t: "Kurasah pribadi dengan markdown & teks Arab" },
                     { i: "heart",    t: "Companion harian: niat, ritme, refleksi" },
-                    { i: "user",     t: "Personalisasi per fakultas Al-Azhar" },
                   ].map((f, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <span className="w-7 h-7 rounded-lg bg-violet-500/15 text-violet-300 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -402,10 +408,10 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
               <div className="space-y-3">
                 <div className="card-glass p-4 text-center rounded-xl border border-gold-500/20">
                   <p className="text-sm text-ink-muted leading-relaxed">
-                    Selesaikan pembayaran di tab Lynk.id yang baru terbuka, lalu klik tombol di bawah.
+                    Selesaikan pembayaran di tab Lynk.id yang terbuka, lalu klik tombol di bawah.
                   </p>
                 </div>
-                <button onClick={() => setPaid(true)} className="btn btn-gold w-full text-base py-3.5">
+                <button onClick={handleConfirmPaid} className="btn btn-gold w-full text-base py-3.5">
                   <Icon name="check" className="w-4 h-4"/> Saya sudah selesai bayar
                 </button>
                 <button onClick={() => setWaitingConfirm(false)} className="text-center w-full text-xs text-ink-soft hover:text-ink-muted">
@@ -418,7 +424,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
                   <Icon name="arrowRight" className="w-4 h-4"/> Bayar via Lynk.id
                 </button>
                 <p className="text-center text-xs text-ink-soft">
-                  Setelah bayar, kode akses dikirim admin. Proses cepat & manual.
+                  Klik "Bayar" → selesaikan di Lynk.id → kembali dan konfirmasi.
                 </p>
               </>
             )}

@@ -338,7 +338,6 @@ const DashboardPage = () => {
         </div>
       </section>
 
-      <QuickNoteButton/>
     </div>
   );
 };

@@ -284,11 +284,6 @@ Tolong bantu aku merenungkan mas'alah ini dengan adab thalib:
         </div>
       </section>
 
-      {/* Quick note button */}
-      <QuickNoteButton
-        contextLabel={entry.title}
-        contextSource={{ type:"muqaranah", id: entry.id, label: entry.title }}
-      />
     </div>
   );
 };

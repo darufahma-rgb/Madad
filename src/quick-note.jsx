@@ -8,7 +8,6 @@ const QuickNoteModal = ({ open, onClose, contextLabel, contextSource }) => {
   const [tags, setTags] = React.useState([]);
   const [saving, setSaving] = React.useState(false);
   const toast = useToast();
-  const path = useRoute();
 
   React.useEffect(() => {
     if (open) { setTitle(""); setBody(""); setTags([]); }
@@ -108,8 +107,34 @@ const QuickNoteModal = ({ open, onClose, contextLabel, contextSource }) => {
   );
 };
 
-const QuickNoteButton = ({ contextLabel, contextSource }) => {
+/* Auto-detect context dari URL hash */
+const useQuickNoteContext = () => {
+  const path = window.location.hash.slice(1);
+
+  if (path.startsWith("/paths/muqaranah?id=")) {
+    const id = new URLSearchParams(path.split("?")[1]).get("id");
+    const entry = (typeof getMuqaranahById !== "undefined") ? getMuqaranahById(id) : null;
+    if (entry) return {
+      contextLabel: "Muqaranah: " + entry.title,
+      contextSource: { type: "muqaranah", id: entry.id, label: entry.title },
+    };
+  }
+
+  if (path.startsWith("/maddah/") && path !== "/maddah/") {
+    const id = path.match(/\/maddah\/([\w-]+)/)?.[1];
+    const maddah = (typeof getMaddahById !== "undefined") ? getMaddahById(id) : null;
+    if (maddah) return {
+      contextLabel: "Maddah: " + maddah.name,
+      contextSource: { type: "maddah", id: maddah.id, label: maddah.name },
+    };
+  }
+
+  return { contextLabel: null, contextSource: null };
+};
+
+const QuickNoteButton = () => {
   const [open, setOpen] = React.useState(false);
+  const { contextLabel, contextSource } = useQuickNoteContext();
 
   return (
     <>

@@ -14,7 +14,7 @@ const App = () => {
   // Auto-redirect logic on path change
   useEffect(() => {
     // Member-only routes
-    const memberOnly = ["/dashboard", "/tools", "/paths", "/onboarding", "/kurasah"];
+    const memberOnly = ["/dashboard", "/tools", "/paths", "/onboarding", "/kurasah", "/maddah"];
     const isMemberRoute = memberOnly.some(r => path === r || path.startsWith(r + "?") || path.startsWith(r + "/"));
     if (isMemberRoute && !session) {
       navigate("/");
@@ -40,6 +40,7 @@ const App = () => {
   const openLogin  = () => { setPaymentOpen(false); setLoginOpen(true); };
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
+  const isPublic = path === "/" || path.startsWith("/sample/") || path === "/ethics";
 
   // Admin gets its own layout (no public nav/footer)
   if (isAdmin) {
@@ -70,6 +71,9 @@ const App = () => {
   else if (path === "/maddah" || path === "/maddah/")      { page = <MaddahHubPage/>; routeLabel = "Maddah"; }
   else if (path.startsWith("/maddah/"))                    { page = <MaddahDetailPage/>; routeLabel = "Maddah"; }
 
+  // QuickNote muncul di semua halaman member yang sudah onboarded, kecuali admin & public
+  const showQuickNote = session && profile?.onboarded && !isAdmin && !isPublic;
+
   return (
     <ToastProvider>
       <div data-screen-label={routeLabel} className="min-h-screen flex flex-col">
@@ -81,7 +85,7 @@ const App = () => {
       </div>
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} onSuccess={handleLoginSuccess}/>
       <PaymentModal open={paymentOpen} onClose={() => setPaymentOpen(false)} onOpenLogin={openLogin}/>
-      {session && !path.startsWith("/kurasah") && !isAdmin && <QuickNoteButton/>}
+      {showQuickNote && <QuickNoteButton/>}
     </ToastProvider>
   );
 };

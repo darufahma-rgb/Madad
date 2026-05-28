@@ -247,7 +247,6 @@ const KurasahPage = () => {
         </div>
       </section>
 
-      <QuickNoteButton/>
     </div>
   );
 };
