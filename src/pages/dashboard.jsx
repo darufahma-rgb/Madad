@@ -59,7 +59,23 @@ const MaddahHeroSection = ({ profile }) => {
           </button>
         </Reveal>
 
-        <Reveal stagger className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {/* Mobile: horizontal scroll */}
+        <div
+          className="md:hidden"
+          style={{
+            display:"flex",gap:"12px",overflowX:"auto",scrollbarWidth:"none",
+            WebkitOverflowScrolling:"touch",paddingBottom:"8px",
+            marginLeft:"-20px",marginRight:"-20px",paddingLeft:"20px",paddingRight:"20px",
+          }}
+        >
+          {myMaddahs.map(m => (
+            <div key={m.id} style={{minWidth:"75vw",maxWidth:"280px",flexShrink:0}}>
+              <MaddahDashCard maddah={m}/>
+            </div>
+          ))}
+        </div>
+        {/* Desktop: grid */}
+        <Reveal stagger className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {myMaddahs.map((m) => (
             <MaddahDashCard key={m.id} maddah={m}/>
           ))}
@@ -199,21 +215,60 @@ const DashboardPage = () => {
         <div className="absolute inset-0 pattern-stars opacity-25 pointer-events-none"/>
         <div className="container-x relative">
           <Reveal>
-            <div className="arabic-classic text-2xl text-gold-300 mb-3" style={{direction:"rtl"}}>
-              السلام عليكم
+            {/* ── MOBILE ── */}
+            <div className="md:hidden" style={{paddingTop:"8px"}}>
+              <div
+                className="arabic-classic text-gold-300 mb-2"
+                style={{display:"block",textAlign:"left",direction:"rtl",width:"fit-content",fontSize:"clamp(18px,5vw,24px)"}}
+              >
+                السلام عليكم
+              </div>
+              <h1 className="font-display text-ink leading-tight mb-3"
+                style={{fontSize:"32px",fontWeight:700}}>
+                Assalamu'alaikum,<br/>
+                <span className="gradient-text">{firstName}</span>{" "}
+                <span className="text-gold-300">🌙</span>
+              </h1>
+              <div style={{height:"1px",background:"rgba(255,255,255,0.1)",marginBottom:"12px"}}/>
+              <div className="flex flex-wrap gap-2">
+                {facultyLabel && (
+                  <span style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
+                    {facultyLabel}
+                  </span>
+                )}
+                {majorLabel && (
+                  <span style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
+                    {majorLabel}
+                  </span>
+                )}
+                {levelLabel && (
+                  <span style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
+                    {levelLabel}
+                  </span>
+                )}
+              </div>
+              <p style={{fontSize:"14px",color:"rgba(255,255,255,0.5)",fontStyle:"italic",marginTop:"12px"}}>
+                Talqee siap menemani belajarmu hari ini.
+              </p>
             </div>
-            <h1 className="font-display text-4xl md:text-5xl lg:text-[68px] font-semibold text-ink leading-[1.0] tracking-tightest">
-              Assalamu'alaikum,{" "}
-              <span className="gradient-text">{firstName}</span>{" "}
-              <span className="text-gold-300">🌙</span>
-            </h1>
-            <p className="mt-5 text-ink-muted text-lg max-w-2xl leading-relaxed">
-              <span className="text-ink font-medium">{facultyLabel}</span>
-              {majorLabel ? <> · <span className="text-ink font-medium">{majorLabel}</span></> : null}
-              {levelLabel ? <> · <span className="text-ink font-medium">{levelLabel}</span></> : null}
-              {". "}
-              Talqee siap menemani belajarmu hari ini.
-            </p>
+            {/* ── DESKTOP ── */}
+            <div className="hidden md:block">
+              <div className="arabic-classic text-2xl text-gold-300 mb-3" style={{display:"block",textAlign:"left",direction:"rtl",width:"fit-content"}}>
+                السلام عليكم
+              </div>
+              <h1 className="font-display text-4xl md:text-5xl lg:text-[68px] font-semibold text-ink leading-[1.0] tracking-tightest">
+                Assalamu'alaikum,{" "}
+                <span className="gradient-text">{firstName}</span>{" "}
+                <span className="text-gold-300">🌙</span>
+              </h1>
+              <p className="mt-5 text-ink-muted text-lg max-w-2xl leading-relaxed">
+                <span className="text-ink font-medium">{facultyLabel}</span>
+                {majorLabel ? <> · <span className="text-ink font-medium">{majorLabel}</span></> : null}
+                {levelLabel ? <> · <span className="text-ink font-medium">{levelLabel}</span></> : null}
+                {". "}
+                Talqee siap menemani belajarmu hari ini.
+              </p>
+            </div>
           </Reveal>
         </div>
       </section>

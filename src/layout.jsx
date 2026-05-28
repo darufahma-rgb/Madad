@@ -526,11 +526,10 @@ const MobileTabBar = () => {
   if (path.startsWith("/admin") || path === "/onboarding") return null;
 
   const tabs = [
-    { to: "/dashboard",       label: "Beranda",   icon: "home" },
-    { to: "/maddah",          label: "Maddah",    icon: "layers" },
-    { to: "/paths/muqaranah", label: "Muqaranah", icon: "scale" },
-    { to: "/kurasah",         label: "Kurasah",   icon: "bookOpen" },
-    { to: "/tools",           label: "Tools",     icon: "sparkles" },
+    { to: "/dashboard",  label: "Beranda",  icon: "home" },
+    { to: "/maddah",     label: "Maddah",   icon: "layers" },
+    { to: "/tools",      label: "Prompt",   icon: "sparkles" },
+    { to: "/kurasah",    label: "Kurasah",  icon: "bookOpen" },
   ];
 
   const isActive = (to) => {
@@ -540,8 +539,14 @@ const MobileTabBar = () => {
 
   return (
     <nav
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-line bg-night-950/90 backdrop-blur-xl"
-      style={{ paddingBottom: "var(--safe-bottom)" }}
+      className="md:hidden fixed bottom-0 left-0 right-0 z-[100] border-t"
+      style={{
+        background: "rgba(15,10,42,0.95)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderTopColor: "rgba(255,255,255,0.08)",
+        paddingBottom: "env(safe-area-inset-bottom)",
+      }}
     >
       <div className="flex items-stretch justify-around h-16">
         {tabs.map(tab => {
@@ -550,16 +555,20 @@ const MobileTabBar = () => {
             <button
               key={tab.to}
               onClick={() => navigate(tab.to)}
-              className="flex-1 flex flex-col items-center justify-center gap-1 relative"
+              className="flex-1 flex flex-col items-center justify-center gap-0.5 relative"
             >
               {active && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-violet-400"/>
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-1 rounded-full" style={{background:"#A78BFA"}}/>
               )}
               <Icon
                 name={tab.icon}
-                className={"w-[22px] h-[22px] transition-colors " + (active ? "text-violet-300" : "text-ink-soft")}
+                className={"w-5 h-5 transition-colors " + (active ? "text-violet-400" : "")}
+                style={active ? {} : {color:"rgba(255,255,255,0.4)"}}
               />
-              <span className={"text-[10px] leading-none transition-colors " + (active ? "text-violet-200 font-medium" : "text-ink-soft")}>
+              <span
+                className={"text-[10px] leading-none transition-colors mt-0.5 " + (active ? "font-bold" : "")}
+                style={{color: active ? "#A78BFA" : "rgba(255,255,255,0.4)"}}
+              >
                 {tab.label}
               </span>
             </button>

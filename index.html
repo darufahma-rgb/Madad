@@ -205,6 +205,24 @@
   .word-reveal.in span:nth-child(6) { transition-delay: 350ms; }
   .word-reveal.in span:nth-child(7) { transition-delay: 420ms; }
 
+  /* Mobile tab bar padding */
+  main.has-tabbar { padding-bottom: 80px; }
+
+  /* Mobile general polish */
+  @media (max-width: 768px) {
+    body, #root { overflow-x: hidden; }
+    .container-x { padding-left: 20px !important; padding-right: 20px !important; }
+    section.pb-8 { margin-bottom: 0; }
+    section.pb-20 { padding-bottom: 32px; }
+    .overflow-x-auto::-webkit-scrollbar,
+    [style*="overflow-x"]::-webkit-scrollbar { display: none; }
+    h1.font-display { font-size: clamp(24px, 7vw, 32px); }
+    h2.font-display { font-size: clamp(20px, 6vw, 28px); }
+    .arabic-display, .arabic-classic, .arabic-display-classical, .arabic-display-modern {
+      font-size: clamp(18px, 5vw, 28px) !important;
+    }
+  }
+
   /* Page transition */
   .page-enter { animation: pageIn .4s ease both; }
   @keyframes pageIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }

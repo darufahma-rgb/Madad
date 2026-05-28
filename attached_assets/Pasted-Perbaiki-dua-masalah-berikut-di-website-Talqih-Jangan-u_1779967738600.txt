@@ -1,0 +1,179 @@
+Perbaiki dua masalah berikut di website Talqih.
+Jangan ubah apapun selain yang disebutkan di bawah.
+
+---
+
+## MASALAH 1 — POSISI TEKS ARAB DI HALAMAN MADDAH
+
+Masalah:
+Teks Arab "المواد الدراسية" posisinya rata kanan (text-align: right).
+Harus dipindah ke rata kiri — tapi arah tulisan Arab tetap RTL.
+
+Fix:
+Cari semua elemen dekoratif teks Arab di halaman Maddah.
+Ubah styling-nya menjadi:
+  display: block
+  text-align: left
+  direction: rtl
+  width: fit-content
+
+Hasilnya: teks Arab mulai dari kiri halaman,
+tapi hurufnya tetap terbaca dari kanan ke kiri.
+
+Berlakukan hal yang sama untuk semua teks Arab dekoratif
+di halaman lain yang punya masalah serupa.
+
+---
+
+## MASALAH 2 — DASHBOARD MOBILE (TOTAL REVAMP)
+
+Target: tampilan mobile dashboard harus terasa
+seperti native app — bukan website yang diperkecil.
+
+Breakpoint yang diubah: max-width 768px
+
+---
+
+### A. GREETING SECTION (Assalamu'alaikum)
+
+Layout sekarang: teks menumpuk tidak rapi
+Layout baru:
+
+┌─────────────────────────────┐
+│  السلام عليكم  (kanan, gold)│
+│                             │
+│  Assalamu'alaikum,          │
+│  Demo 🌙                    │
+│  (nama dalam warna accent)  │
+│                             │
+│  ─────────────────────────  │
+│  Syariah wal Qanun          │
+│  Syariah Islamiyah · 4 thn  │
+│  Dirasat 'Ulya              │
+│  (chip/badge kecil, bukan   │
+│   teks panjang satu baris)  │
+│                             │
+│  "Talqee siap menemani      │
+│   belajarmu hari ini."      │
+│  (italic, warna redup)      │
+└─────────────────────────────┘
+
+Styling greeting:
+- Padding: 24px 20px
+- Nama user: font-size 32px, font-weight 700
+- Info jurusan: tampilkan sebagai chip/badge pill
+  background: rgba(255,255,255,0.08)
+  border: 1px solid rgba(255,255,255,0.12)
+  border-radius: 20px
+  padding: 4px 12px
+  font-size: 12px
+  display: inline-flex
+  Chips ditampilkan wrap, bukan satu baris panjang
+- Teks "Talqee siap...": font-size 14px,
+  color rgba(255,255,255,0.5), font-style italic
+  margin-top: 12px
+
+---
+
+### B. SECTION "MADDAH-MU"
+
+Layout baru:
+
+┌─────────────────────────────┐
+│  ── MADDAH UNTUK FAKULTAS   │
+│     & TINGKATMU             │
+│                             │
+│  Maddah-mu          Semua → │
+│  (judul kiri)  (link kanan) │
+└─────────────────────────────┘
+
+Lalu kartu Maddah ditampilkan sebagai:
+- Horizontal scroll (swipeable) — BUKAN grid vertikal
+- Setiap kartu lebar: 75vw, max 280px
+- Tinggi kartu: auto
+- Gap antar kartu: 12px
+- Padding kiri container: 20px
+  (kartu pertama tidak nempel ke tepi)
+- Scrollbar: hidden (scrollbar-width: none)
+
+Styling kartu Maddah:
+- background: rgba(255,255,255,0.05)
+- border: 1px solid rgba(255,255,255,0.1)
+- border-radius: 16px
+- padding: 20px
+- Teks Arab pojok kanan atas: font-size 18px, warna gold
+- Nama maddah: font-size 18px, font-weight 700
+- Tombol/link "Buka": full width, di bawah kartu
+
+---
+
+### C. BOTTOM NAVIGATION BAR (TAMBAH BARU)
+
+Tambahkan fixed bottom nav bar untuk mobile:
+position: fixed
+bottom: 0
+left: 0
+right: 0
+height: 64px
+background: rgba(15, 10, 42, 0.95)
+backdrop-filter: blur(20px)
+border-top: 1px solid rgba(255,255,255,0.08)
+z-index: 100
+padding-bottom: env(safe-area-inset-bottom)
+
+Isi 4 tab (kiri ke kanan):
+1. 🏠  Beranda     → /dashboard
+2. 📚  Maddah      → /maddah
+3. ⚡  Prompt      → /prompt (atau nama route yang sesuai)
+4. 👤  Profil      → /profile (atau nama route yang sesuai)
+
+Styling tiap tab:
+- display: flex, flex-direction: column, align-items: center
+- Ikon: font-size 20px
+- Label: font-size 10px, margin-top 2px
+- Warna default: rgba(255,255,255,0.4)
+- Warna aktif: #A78BFA (ungu) + label muncul bold
+- Active indicator: titik kecil 4px di atas ikon
+
+Tambahkan padding-bottom: 80px ke main content
+agar konten tidak tertutup bottom nav.
+
+---
+
+### D. GENERAL MOBILE POLISH
+
+Semua halaman di mobile:
+
+1. Hapus horizontal overflow — tidak ada scroll kanan
+   overflow-x: hidden pada body dan main container
+
+2. Padding container mobile:
+   padding: 0 20px
+   (konsisten di semua section)
+
+3. Semua font heading di mobile:
+   font-size: clamp(24px, 7vw, 32px)
+
+4. Semua tombol CTA di mobile:
+   width: 100%
+   padding: 16px
+   border-radius: 14px
+   font-size: 16px
+
+5. Spacing antar section mobile:
+   margin-bottom: 32px (bukan 80px seperti desktop)
+
+6. Teks Arab dekoratif di semua halaman:
+   font-size: clamp(18px, 5vw, 28px)
+   (tidak terlalu besar, tidak terpotong)
+
+---
+
+## YANG TIDAK BOLEH DIUBAH
+
+- Semua tampilan desktop (min-width: 769px)
+- Semua konten teks dan data
+- Warna, font, dan design system yang sudah ada
+- Fungsionalitas semua tombol dan link
+- Navbar desktop yang sudah ada
+- Semua halaman selain yang disebutkan

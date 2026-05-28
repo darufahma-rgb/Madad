@@ -85,7 +85,7 @@ const MaddahHubPage = () => {
             <span className="w-6 h-px bg-gold-500/70"/>
             36 MADDAH
           </div>
-          <div className="arabic-display text-gold-300 text-3xl md:text-4xl mb-3" style={{direction:"rtl"}}>
+          <div className="arabic-display text-gold-300 text-3xl md:text-4xl mb-3" style={{display:"block",textAlign:"left",direction:"rtl",width:"fit-content"}}>
             المواد الدراسية
           </div>
           <h1 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
