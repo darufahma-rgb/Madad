@@ -214,7 +214,7 @@ const IntentionStrip = () => {
               {display.arabic}
             </div>
             <p className="text-sm text-ink-muted italic leading-relaxed max-w-xl mx-auto"
-              style={{fontFamily:"'Crimson Pro',Georgia,serif"}}>
+              style={{fontFamily:"'DM Sans',system-ui,sans-serif"}}>
               "{display.translation || display.text}"
             </p>
           </div>
@@ -465,7 +465,7 @@ const ReflectionCard = () => {
           <p className="text-sm text-ink-muted italic mb-4">{dLabel}, kamu menulis:</p>
 
           <blockquote className="text-ink leading-relaxed mb-5 pl-4 border-l-2 border-gold-400/20"
-            style={{fontFamily:"'Crimson Pro',Georgia,serif",fontSize:"1.05rem"}}>
+            style={{fontFamily:"'DM Sans',system-ui,sans-serif",fontSize:"1.05rem"}}>
             "{snippet}"
           </blockquote>
 

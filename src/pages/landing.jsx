@@ -223,7 +223,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
               fontSize: "clamp(18px, 2.2vw, 30px)",
               fontWeight: 400,
               fontStyle: "italic",
-              fontFamily: '"Crimson Pro", Georgia, serif',
+              fontFamily: '"DM Sans", system-ui, sans-serif',
               marginTop: "14px",
               background: "linear-gradient(90deg, #C9A86A 0%, #E8D0A0 60%, #A78BFA 100%)",
               WebkitBackgroundClip: "text",
