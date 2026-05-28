@@ -1,0 +1,505 @@
+# PROMPT 3B — Talqih: Isi Konten 33 Maddah Sisanya
+
+> Ini **Prompt 3 bagian B** dalam roadmap Talqih.
+> **Prerequisite:** Prompt 3A sudah selesai (data structure + 3 Maddah lengkap: Tafsir Tahlili, Nahwu, Ushul Fiqh + adaptive engine + Hub + Detail page).
+> Kalau 3A belum jalan & tested, JANGAN run prompt ini.
+
+---
+
+## Konteks & Tujuan
+
+Di Prompt 3A, kita sudah bangun:
+- Data structure 36 Maddah di `src/maddah-data.jsx`
+- 3 Maddah **lengkap** sebagai template kualitas: **Tafsir Tahlili**, **Nahwu**, **Ushul Fiqh**
+- 33 Maddah lainnya masih **skeleton** (metadata ada, tapi `kitabUtama: []`, `recommendedAI: []`, `tutorial: {}`, `prompts: { semua kosong }`)
+
+**Tugas Prompt 3B:** isi konten lengkap untuk **33 Maddah skeleton** — masing-masing dengan kitabUtama, recommendedAI, tutorial, dan prompt template di 6 kategori.
+
+**INI TUGAS BESAR.** Jangan kerjakan sekaligus. Kerjakan **per batch** (lihat pembagian batch di bawah), selesaikan satu batch dengan kualitas tinggi, baru lanjut batch berikutnya. Setelah tiap batch, verifikasi tidak ada error sebelum lanjut.
+
+---
+
+## ⚠️ ATURAN ANTI-SHORTCUT (BACA & PATUHI)
+
+Tugas ini rawan dikerjakan asal-asalan karena volumenya besar. **JANGAN:**
+
+❌ **Copy-paste prompt antar Maddah dengan cuma ganti nama.** Prompt untuk Hadits Tahlili HARUS beda secara substansi dari Tafsir Tahlili — karena ilmunya beda (sanad/matan vs ayat/munasabah).
+
+❌ **Bikin prompt generic yang bisa dipakai Maddah apa aja.** Setiap prompt harus spesifik ke karakteristik Maddah-nya. Prompt Balaghah harus bahas majaz/isti'arah/kinayah; prompt Mantiq harus bahas qadhiyyah/qiyas/burhan.
+
+❌ **Skip riset keilmuan.** Kalau gak yakin kitab utama atau tokoh suatu Maddah, JANGAN ngarang. Gunakan data yang sudah gue sediakan di spec per-Maddah di bawah.
+
+❌ **Bikin tutorial yang sama untuk semua Maddah.** Tutorial Tahfidz beda dari tutorial Fiqh Muqaran.
+
+✅ **YANG HARUS DILAKUKAN:** untuk setiap Maddah, pikirkan: "Apa yang spesifik dibutuhkan thalib saat belajar Maddah INI? Prompt apa yang benar-benar berguna untuk INI, bukan untuk Maddah lain?"
+
+**Self-check setiap selesai 1 Maddah:** baca 3 prompt random dari Maddah itu. Tanya: "Apakah prompt ini bisa dipindah ke Maddah lain tanpa perubahan? Kalau YA, berarti terlalu generic — perbaiki."
+
+---
+
+## Pattern Referensi (dari 3A)
+
+Setiap Maddah HARUS mengikuti struktur ini (persis seperti Tafsir Tahlili/Nahwu/Ushul Fiqh di 3A):
+
+```js
+{
+  id: "...",                    // SUDAH ADA, jangan ubah
+  name: "...",                  // SUDAH ADA
+  nameArabic: "...",            // SUDAH ADA
+  category: "...",              // SUDAH ADA
+  fakultas: [...],              // SUDAH ADA
+  jurusan: [...],               // SUDAH ADA
+  tingkat: [...],               // SUDAH ADA
+  description: "...",           // SUDAH ADA
+  descriptionArabic: "...",     // SUDAH ADA
+  
+  // YANG HARUS DIISI:
+  kitabUtama: [
+    { nama: "...", arabic: "...", penulis: "..." },
+    // 2-4 kitab
+  ],
+  recommendedAI: [
+    { tool: "...", rank: 1, strength: "...", why: "..." },
+    // 1-3 AI, why HARUS spesifik kenapa cocok untuk Maddah INI
+  ],
+  tutorial: {
+    overview: "...",
+    steps: [
+      { title: "...", body: "..." },
+      // 3-4 langkah, SPESIFIK untuk Maddah ini
+    ],
+  },
+  prompts: {
+    pahami: [ /* lihat tier count di bawah */ ],
+    hafal: [ ... ],
+    latihan: [ ... ],
+    ujian: [ ... ],
+    talaqqi: [ ... ],
+    eksplorasi: [ ... ],
+  },
+}
+```
+
+### Struktur Setiap Prompt
+
+```js
+{
+  title: "...",              // judul spesifik, deskriptif
+  targetAI: "claude",        // claude | chatgpt | gemini | notebooklm | perplexity | deepseek
+  template: `...`,           // prompt dengan placeholder adaptive
+}
+```
+
+### Placeholder Wajib di Setiap Template
+
+Setiap prompt template HARUS pakai placeholder ini (di-resolve otomatis oleh adaptive engine dari 3A):
+- `[TINGKATAN]` — auto-fill tingkat user
+- `[FAKULTAS]` — auto-fill fakultas user
+- `[JURUSAN]` — auto-fill jurusan user (atau kosong)
+- `[GAYA_BELAJAR]` — auto-fill gaya belajar user
+- `[MADDAH]` — auto-fill nama Maddah
+- `[LEVEL_BAHASA]` — auto-fill instruction level bahasa (taruh di akhir prompt)
+
+Plus placeholder **manual** (user isi sendiri, JANGAN di-resolve) — pakai untuk input spesifik:
+- `[TULIS AYAT...]`, `[PASTE TEKS...]`, `[BAB]`, `[KAIDAH]`, `[TOPIK]`, dll
+
+### Aturan Bahasa Prompt (PENTING)
+
+Konsisten dengan positioning Talqih:
+- **Bahasa Indonesia pengantar**, Arab sebagai sisipan kontekstual
+- Minta AI sertakan teks Arab (ayat/hadits/kaidah) dengan harakat
+- Istilah teknis Arab transliterasi **natural** (mubtada, dalil, sanad) — BUKAN academic diacritic (mubtadāʾ, dalīl, sanād)
+- Nama ulama transliterasi natural (Imam Syafi'i, Ibnu Hajar) — bukan al-Imām al-Shāfiʿī
+- Nama kitab dalam transliterasi Arab (Al-Umm, Fathul Bari)
+- Minta AI **jangan men-tarjih** di prompt eksplorasi khilaf — biarkan thalib merenungkan dengan gurunya
+
+---
+
+## TIER JUMLAH PROMPT PER MADDAH
+
+Tidak semua Maddah dapat 15 prompt. Disesuaikan dengan seberapa sering dipakai Masisir:
+
+### Tier A — Maddah Inti (15 prompt: pahami 4, hafal 2, latihan 3, ujian 2, talaqqi 2, eksplorasi 2)
+Maddah yang dipakai mayoritas Masisir, sering diujikan:
+- Hadits Tahlili
+- Mustholah Hadits
+- Fiqh (Madzhabi)
+- Fiqh Muqaran
+- Tauhid
+- Sharaf
+- Balaghah
+- 'Ulum Al-Qur'an
+- Tarikh Tasyri'
+- Sirah Nabawiyah
+
+### Tier B — Maddah Menengah (12 prompt: pahami 3, hafal 2, latihan 2, ujian 2, talaqqi 1, eksplorasi 2)
+Maddah penting tapi lebih spesialis:
+- Tafsir Maudhu'i
+- Manahij Al-Mufassirin
+- Hadits Maudhu'i
+- Manahij Al-Muhadditsin
+- Takhrij Hadits
+- Qawa'id Fiqhiyyah
+- Ahwal Syakhshiyah
+- 'Aqidah & Firaq
+- Adab (Sastra Arab)
+- Tarikh Islam
+
+### Tier C — Maddah Spesialis (8-10 prompt: pahami 3, hafal 1, latihan 2, ujian 1, talaqqi 1, eksplorasi 1-2)
+Maddah yang dipakai jurusan tertentu atau lebih jarang:
+- Al-Qur'an (Tahfidz & Tilawah)
+- Tajwid
+- Qira'at
+- Filsafat Islam
+- Mantiq
+- Tasawwuf
+- 'Arudh wal Qawafi
+- Fiqh Al-Lughah
+- Naqd Adabi
+- Hadharah Islamiyyah
+- Dakwah & I'lam
+- Adyan (Perbandingan Agama)
+
+---
+
+## PEMBAGIAN BATCH (Kerjakan Berurutan)
+
+Kerjakan **satu batch sampai selesai & tested**, baru lanjut batch berikutnya. Setelah tiap batch, pastikan: tidak ada syntax error, Maddah detail page render dengan benar, prompt ter-resolve adaptive.
+
+**BATCH 1 — Rumpun Qurani & Haditsi (11 Maddah)**
+quran-tahfidz, tajwid, tafsir-maudhui, ulum-quran, manahij-mufassirin, qiraat, hadits-tahlili, hadits-maudhui, mustholah-hadits, manahij-muhadditsin, takhrij-hadits
+
+**BATCH 2 — Rumpun Fiqhi & Aqdi (9 Maddah)**
+fiqh-madzhabi, fiqh-muqaran, qawaid-fiqhiyyah, ahwal-syakhsiyah, tauhid, firaq, filsafat-islam, mantiq, tasawwuf
+
+**BATCH 3 — Rumpun Lughawi (5 Maddah)**
+sharaf, balaghah, adab, arudh, fiqh-lughah, naqd-adabi
+(catatan: nahwu sudah lengkap di 3A)
+
+**BATCH 4 — Rumpun Tarikhi & Dakwah (6 Maddah)**
+sirah-nabawiyah, tarikh-tasyri, tarikh-islam, hadharah, dakwah, adyan
+
+---
+
+## SPEC PER-MADDAH (Konten Keilmuan)
+
+Berikut data keilmuan yang AKURAT untuk setiap Maddah. **Gunakan ini** — jangan ngarang kitab/tokoh. Untuk prompt, kembangkan sendiri sesuai karakter Maddah dengan mengikuti pattern 3A.
+
+---
+
+### BATCH 1 — QURANI & HADITSI
+
+#### `quran-tahfidz` — Al-Qur'an (Tahfidz & Tilawah) [Tier C]
+- **Kitab/Rujukan:** Mushaf Madinah, Mushaf Bil-Qira'at, kitab At-Tibyan fi Adab Hamalatil Qur'an (Imam Nawawi)
+- **AI Rec:** NotebookLM (rank 1 — drill hafalan dengan source mushaf), Gemini (rank 2 — OCR & cari murattil untuk tahsin)
+- **Tutorial fokus:** persiapan hafalan harian, teknik muraja'ah, manajemen mutasyabihat
+- **Prompt fokus:** drill tasmi', jadwal hafalan, identifikasi ayat mutasyabihat, tips tahsin tilawah. Eksplorasi: keutamaan surat/ayat tertentu.
+
+#### `tajwid` — Tajwid [Tier C]
+- **Kitab:** Tuhfatul Athfal (Sulaiman Al-Jamzuri), Hidayatul Mustafid, Matan Al-Jazariyyah (Ibnul Jazari)
+- **AI Rec:** NotebookLM (rank 1 — hafal matan Jazariyyah), Claude (rank 2 — penjelasan kaidah tajwid)
+- **Tutorial fokus:** memahami hukum tajwid teoretis (praktik tetap butuh talaqqi musyafahah dengan guru!)
+- **Prompt fokus:** pahami hukum nun mati/tanwin, mad, qalqalah, drill matan Jazariyyah/Tuhfatul Athfal. CATATAN: di tutorial, TEKANKAN bahwa tajwid praktis (makhraj, sifat) WAJIB talaqqi langsung — AI cuma bantu sisi teori.
+
+#### `tafsir-maudhui` — Tafsir Maudhu'i [Tier B]
+- **Kitab:** Al-Bidayah fit Tafsir Al-Maudhu'i (Abdul Hayy Al-Farmawi), At-Tafsir Al-Maudhu'i (Mushthafa Muslim)
+- **AI Rec:** Claude (rank 1 — kumpulkan & analisis ayat tematik), Perplexity (rank 2 — cari ayat terkait tema)
+- **Tutorial fokus:** langkah tafsir maudhu'i (tentukan tema → kumpulkan ayat → urutkan → analisis → simpulkan)
+- **Prompt fokus:** kumpulkan ayat satu tema, susun outline tafsir tematik, analisis perkembangan tema dalam Qur'an. Beda dari Tahlili: ini lintas-ayat, bukan per-ayat.
+
+#### `ulum-quran` — 'Ulum Al-Qur'an [Tier A]
+- **Kitab:** Al-Itqan fi 'Ulumil Qur'an (As-Suyuthi), Manahilul 'Irfan (Az-Zarqani), Mabahits fi 'Ulumil Qur'an (Manna' Al-Qaththan)
+- **AI Rec:** Claude (rank 1 — navigasi topik ulumul Qur'an), NotebookLM (rank 2 — drill definisi & klasifikasi)
+- **Tutorial fokus:** memahami cabang-cabang ulumul Qur'an (asbabun nuzul, makki-madani, nasikh-mansukh, dll)
+- **Prompt fokus:** pahami konsep (asbabun nuzul, makki-madani, muhkam-mutasyabih), drill klasifikasi ayat, khilaf ulama soal nasikh-mansukh.
+
+#### `manahij-mufassirin` — Manahij Al-Mufassirin [Tier B]
+- **Kitab:** At-Tafsir wal Mufassirun (Adz-Dzahabi), Manahijul Mufassirin (Manna' Al-Qaththan)
+- **AI Rec:** Claude (rank 1 — analisis & banding manhaj), Perplexity (rank 2 — verifikasi karakteristik mufassir)
+- **Tutorial fokus:** mengenali ciri manhaj tafsir (bil ma'tsur, bir ra'yi, fiqhi, sufi, 'ilmi, adabi-ijtima'i)
+- **Prompt fokus:** identifikasi manhaj dari kutipan tafsir, banding manhaj 2 mufassir, analisis kelebihan/kekurangan tiap manhaj.
+
+#### `qiraat` — Qira'at [Tier C]
+- **Kitab:** Asy-Syathibiyyah (Hirzul Amani — Imam Syathibi), An-Nasyr fil Qira'atil 'Asyr (Ibnul Jazari), Taqrib An-Nasyr
+- **AI Rec:** NotebookLM (rank 1 — drill matan Syathibiyyah), Claude (rank 2 — penjelasan ushul qira'at)
+- **Tutorial fokus:** memahami ushul qira'at & farsy. CATATAN: qira'at praktis WAJIB talaqqi dengan sanad — AI cuma bantu sisi teori matan.
+- **Prompt fokus:** pahami perbedaan qira'at sab'ah, drill matan Syathibiyyah, identifikasi qira'at dari contoh.
+
+#### `hadits-tahlili` — Hadits Tahlili [Tier A]
+- **Kitab:** Fathul Bari (Ibnu Hajar), Syarh Shahih Muslim (Imam Nawawi), Subulus Salam (Ash-Shan'ani)
+- **AI Rec:** Claude (rank 1 — analisis sanad & matan, syarah hadits panjang), Perplexity (rank 2 — verifikasi takhrij)
+- **Tutorial fokus:** analisis hadits per hadits (sanad → rijal → matan → syarah → istinbat)
+- **Prompt fokus:** analisis sanad & matan hadits, syarah hadits dari kitab, istinbat hukum dari hadits, drill matan Arba'in. Beda dari Tafsir: fokus sanad/rijal/matan, bukan ayat/munasabah.
+
+#### `hadits-maudhui` — Hadits Maudhu'i [Tier B]
+- **Kitab:** Riyadhus Shalihin (Imam Nawawi sebagai contoh tematik), At-Targhib wat Tarhib (Al-Mundziri)
+- **AI Rec:** Claude (rank 1 — kumpulkan & analisis hadits tematik), NotebookLM (rank 2 — navigasi kitab hadits)
+- **Tutorial fokus:** kumpulkan hadits satu tema, urutkan, analisis komprehensif
+- **Prompt fokus:** kumpulkan hadits satu tema, susun outline tematik, banding hadits yang tampak bertentangan (mukhtaliful hadits).
+
+#### `mustholah-hadits` — Mustholah Hadits [Tier A]
+- **Kitab:** Nukhbatul Fikar (Ibnu Hajar), Taysir Mustholahil Hadits (Mahmud Ath-Thahhan), Al-Baiquniyyah (Al-Baiquni)
+- **AI Rec:** NotebookLM (rank 1 — drill matan Baiquniyyah/Nukhbah), Claude (rank 2 — penjelasan istilah & klasifikasi)
+- **Tutorial fokus:** memahami klasifikasi hadits & istilah rijal
+- **Prompt fokus:** pahami istilah (shahih/hasan/dha'if/mawdhu'), bedakan istilah mirip (mursal/munqathi'/mu'dhal), drill matan Baiquniyyah, latihan klasifikasi hadits, khilaf soal hadits dha'if untuk fadhail.
+
+#### `manahij-muhadditsin` — Manahij Al-Muhadditsin [Tier B]
+- **Kitab:** Manhaj An-Naqd fi 'Ulumil Hadits (Nuruddin 'Itr), kajian muqaddimah kitab-kitab hadits
+- **AI Rec:** Claude (rank 1 — analisis manhaj imam hadits), Perplexity (rank 2 — verifikasi karakteristik)
+- **Tutorial fokus:** mengenali syarat & manhaj tiap imam (Bukhari, Muslim, Tirmidzi, Abu Dawud, dll)
+- **Prompt fokus:** banding manhaj Bukhari vs Muslim, pahami syarat shahih tiap imam, identifikasi kitab dari karakteristik.
+
+#### `takhrij-hadits` — Takhrij Hadits [Tier B]
+- **Kitab:** Ushul At-Takhrij wa Dirasatil Asanid (Mahmud Ath-Thahhan), Tuhfatul Asyraf (Al-Mizzi)
+- **AI Rec:** Perplexity (rank 1 — cari sumber hadits di web), Claude (rank 2 — analisis jalur sanad)
+- **Tutorial fokus:** metode takhrij (via lafal awal, via tema, via perawi atas, dll). CATATAN: AI bisa salah/halusinasi soal sanad — WAJIB verifikasi ke kitab asli atau aplikasi hadits terpercaya.
+- **Prompt fokus:** cari sumber hadits, analisis jalur sanad, latihan takhrij bertahap. TEKANKAN verifikasi manual.
+
+---
+
+### BATCH 2 — FIQHI & AQDI
+
+#### `fiqh-madzhabi` — Fiqh (Madzhabi) [Tier A]
+- **Kitab:** (tergantung madzhab) Syafi'i: Al-Yaqut An-Nafis, Fathul Qarib, Al-Muhadzdzab. Hanafi: Nurul Idhah, Mukhtashar Al-Quduri. Maliki: Ar-Risalah (Ibnu Abi Zaid), Al-Akhdhari. Hanbali: Akhshar Al-Mukhtashar, Ar-Raudh Al-Murbi'.
+- **AI Rec:** NotebookLM (rank 1 — drill matan fiqh), Claude (rank 2 — penjelasan furu' & dalil)
+- **Tutorial fokus:** belajar fiqh per madzhab (TANYAKAN user madzhab apa lewat placeholder). Tutorial harus ingatkan: sesuaikan dengan madzhab yang dipelajari.
+- **Prompt fokus:** pahami bab fiqh (thaharah, shalat, zakat, dll), drill matan, latihan kasus fiqh, khilaf dalam satu madzhab. Placeholder `[MADZHAB]` untuk user isi.
+
+#### `fiqh-muqaran` — Fiqh Muqaran [Tier A]
+- **Kitab:** Bidayatul Mujtahid (Ibnu Rusyd), Al-Fiqh Al-Islami wa Adillatuh (Wahbah Az-Zuhaili), Al-Mughni (Ibnu Qudamah)
+- **AI Rec:** Claude (rank 1 — banding madzhab + dalil + tarjih), Perplexity (rank 2 — verifikasi pendapat)
+- **Tutorial fokus:** metode muqaranah (rumusan masalah → pendapat tiap madzhab → dalil → wajh istidlal → tarjih)
+- **Prompt fokus:** banding pendapat 4 madzhab dalam satu masalah, analisis dalil tiap madzhab, identifikasi sebab khilaf. CATATAN: ini Maddah yang relate banget dengan fitur Muqaranah — di tutorial bisa arahkan user ke fitur Muqaranah Talqih.
+
+#### `qawaid-fiqhiyyah` — Qawa'id Fiqhiyyah [Tier B]
+- **Kitab:** Al-Asybah wan Nazha'ir (As-Suyuthi), Al-Wajiz fi Idhah Qawa'idil Fiqh (Al-Burnu), Al-Qawa'id Al-Fiqhiyyah (matan manzhumah)
+- **AI Rec:** NotebookLM (rank 1 — hafal kaidah), Claude (rank 2 — aplikasi kaidah ke furu')
+- **Tutorial fokus:** memahami 5 kaidah asasiyah + kaidah turunan, aplikasi ke kasus
+- **Prompt fokus:** pahami kaidah (al-umuru bi maqashidiha, dll), drill hafal kaidah, latihan aplikasi kaidah ke kasus fiqh, identifikasi kaidah dari masalah.
+
+#### `ahwal-syakhsiyah` — Ahwal Syakhshiyah [Tier B]
+- **Kitab:** Al-Ahwal Asy-Syakhshiyyah (Muhammad Abu Zahrah), kitab fiqh bab munakahat & mawarits
+- **AI Rec:** Claude (rank 1 — analisis kasus keluarga & faraidh), NotebookLM (rank 2 — drill kaidah mawarits)
+- **Tutorial fokus:** fiqh keluarga (nikah, talaq, 'iddah) + faraidh (warisan)
+- **Prompt fokus:** pahami bab munakahat, latihan hitung faraidh (pembagian warisan), kasus ahwal syakhshiyah, khilaf madzhab soal talaq/nikah.
+
+#### `tauhid` — Tauhid [Tier A]
+- **Kitab:** Jawharatut Tauhid (Al-Laqqani), Ummul Barahin (As-Sanusi), Kifayatul 'Awam, Al-'Aqidah Ath-Thahawiyyah
+- **AI Rec:** NotebookLM (rank 1 — drill matan Jawharatut Tauhid), Claude (rank 2 — penjelasan sifat & dalil aqli-naqli)
+- **Tutorial fokus:** memahami sifat wajib/mustahil/jaiz bagi Allah & Rasul, dalil aqli & naqli
+- **Prompt fokus:** pahami 20 sifat (Asy'ariyyah), drill matan Jawharah, dalil aqli untuk sifat Allah, bedakan konsep (mis. sifat ma'ani vs ma'nawiyyah). CATATAN: Al-Azhar mayoritas Asy'ari-Maturidi — sesuaikan.
+
+#### `firaq` — 'Aqidah & Firaq [Tier B]
+- **Kitab:** Al-Milal wan Nihal (Asy-Syahrastani), Al-Farqu bainal Firaq (Al-Baghdadi), Maqalatul Islamiyyin (Al-Asy'ari)
+- **AI Rec:** Claude (rank 1 — banding aliran & analisis pemikiran), Perplexity (rank 2 — verifikasi sejarah firaq)
+- **Tutorial fokus:** mengenali aliran (Asy'ariyyah, Maturidiyyah, Mu'tazilah, Khawarij, Syiah, dll) + pokok pemikiran
+- **Prompt fokus:** pahami pokok pemikiran satu aliran, banding 2 aliran, analisis sebab kemunculan firaq, khilaf teologis (mis. konsep iman, sifat Allah).
+
+#### `filsafat-islam` — Filsafat Islam [Tier C]
+- **Kitab:** Tahafutul Falasifah (Al-Ghazali), kajian pemikiran Al-Kindi, Al-Farabi, Ibnu Sina, Ibnu Rusyd
+- **AI Rec:** Claude (rank 1 — analisis pemikiran filsafat kompleks), ChatGPT (rank 2 — diskusi konsep abstrak)
+- **Tutorial fokus:** memahami pemikiran filosof muslim + kritik dari mutakallimin
+- **Prompt fokus:** pahami pemikiran satu filosof, banding filsafat vs kalam, analisis kritik Al-Ghazali terhadap filosof.
+
+#### `mantiq` — Mantiq [Tier C]
+- **Kitab:** Idhahul Mubham (As-Sullam — Al-Akhdhari), Matan As-Sullam Al-Munawraq, Idhahul Mubham fi Ma'ani As-Sullam
+- **AI Rec:** NotebookLM (rank 1 — drill matan Sullam), Claude (rank 2 — penjelasan qiyas & qadhiyyah)
+- **Tutorial fokus:** memahami konsep logika (kulli-juz'i, qadhiyyah, qiyas, burhan)
+- **Prompt fokus:** pahami konsep mantiq, drill matan Sullam, latihan susun qiyas mantiqi, identifikasi mughalathah (sesat pikir).
+
+#### `tasawwuf` — Tasawwuf [Tier C]
+- **Kitab:** Ihya 'Ulumiddin (Al-Ghazali), Al-Hikam (Ibnu 'Atha'illah), Ar-Risalah Al-Qusyairiyyah
+- **AI Rec:** Claude (rank 1 — analisis konsep tasawwuf & syarah hikam), ChatGPT (rank 2 — refleksi tazkiyah)
+- **Tutorial fokus:** memahami maqamat & ahwal, tazkiyatun nafs. CATATAN: tekankan tasawwuf amali butuh bimbingan mursyid, AI cuma bantu sisi ilmu.
+- **Prompt fokus:** pahami konsep (maqamat, ahwal, tazkiyah), syarah Al-Hikam, refleksi tazkiyatun nafs.
+
+---
+
+### BATCH 3 — LUGHAWI
+
+#### `sharaf` — Sharaf [Tier A]
+- **Kitab:** Al-Amtsilah At-Tashrifiyyah, Matan Al-Bina wal Asas, Syadzal 'Arf fi Fannish Sharf, Nazhmul Maqshud
+- **AI Rec:** NotebookLM (rank 1 — drill wazn & tashrif), Claude (rank 2 — analisis bina kata)
+- **Tutorial fokus:** memahami tashrif istilahi & lughawi, wazn, i'lal & ibdal
+- **Prompt fokus:** pahami wazn fi'il, drill tashrif, latihan i'lal/ibdal, identifikasi wazn dari kata. Beda dari Nahwu: fokus bentuk kata, bukan i'rab kalimat.
+
+#### `balaghah` — Balaghah [Tier A]
+- **Kitab:** Al-Balaghah Al-Wadhihah ('Ali Al-Jarim), Jawahirul Balaghah (Al-Hasyimi), 'Uqudul Juman (As-Suyuthi)
+- **AI Rec:** Claude (rank 1 — analisis majaz/isti'arah & i'jaz), NotebookLM (rank 2 — drill istilah balaghah)
+- **Tutorial fokus:** memahami 3 cabang ('ilmu ma'ani, bayan, badi') + aplikasi ke i'jaz Qur'an
+- **Prompt fokus:** pahami konsep (isti'arah, kinayah, majaz, tasybih), analisis balaghah ayat Qur'an, latihan identifikasi uslub balaghi, bedakan istilah mirip (isti'arah vs majaz mursal).
+
+#### `adab` — Adab (Sastra Arab) [Tier B]
+- **Kitab:** Al-Mu'allaqat, diwan penyair klasik, Tarikhul Adabil 'Arabi (Ahmad Hasan Az-Zayyat), Al-Wasith fil Adab
+- **AI Rec:** Claude (rank 1 — analisis & syarah teks sastra), NotebookLM (rank 2 — navigasi diwan)
+- **Tutorial fokus:** memahami periode sastra (Jahili-Hadits) + analisis teks puisi/prosa
+- **Prompt fokus:** pahami karakteristik sastra per periode, syarah bait puisi klasik, analisis tema & uslub, banding penyair.
+
+#### `arudh` — 'Arudh wal Qawafi [Tier C]
+- **Kitab:** Matnul Kafi fi 'Ilmayil 'Arudh wal Qawafi, Ahdal fil 'Arudh, Mizanudz Dzahab (Ahmad Al-Hasyimi)
+- **AI Rec:** Claude (rank 1 — analisis wazn syi'ir & taf'ilah), NotebookLM (rank 2 — drill bahr)
+- **Tutorial fokus:** memahami taqthi' (memotong bait jadi taf'ilah) & identifikasi bahr
+- **Prompt fokus:** pahami bahr (Thawil, Kamil, Wafir, dll), latihan taqthi' bait, identifikasi bahr dari syi'ir, pahami qafiyah.
+
+#### `fiqh-lughah` — Fiqh Al-Lughah [Tier C]
+- **Kitab:** Fiqhul Lughah (Ats-Tsa'alibi), Al-Khasha'ish (Ibnu Jinni), Fiqhul Lughah wa Sirrul 'Arabiyyah
+- **AI Rec:** Claude (rank 1 — analisis perkembangan makna & isytiqaq), Perplexity (rank 2 — verifikasi etimologi)
+- **Tutorial fokus:** memahami isytiqaq, taraduf, addhad, perkembangan makna
+- **Prompt fokus:** pahami isytiqaq (derivasi kata), analisis taraduf/addhad, telusuri perkembangan makna kata.
+
+#### `naqd-adabi` — Naqd Adabi [Tier C]
+- **Kitab:** An-Naqd Al-Adabi (Ahmad Asy-Syayib), 'Iyarusy Syi'r (Ibnu Thabathaba), Naqdusy Syi'r (Qudamah bin Ja'far)
+- **AI Rec:** Claude (rank 1 — kritik & evaluasi karya sastra), ChatGPT (rank 2 — diskusi manhaj naqd)
+- **Tutorial fokus:** memahami manhaj naqd klasik & modern, kriteria evaluasi karya
+- **Prompt fokus:** pahami manhaj naqd, latihan kritik bait/teks, banding manhaj naqd klasik vs modern.
+
+---
+
+### BATCH 4 — TARIKHI & DAKWAH
+
+#### `sirah-nabawiyah` — Sirah Nabawiyah [Tier A]
+- **Kitab:** Ar-Rahiqul Makhtum (Al-Mubarakfuri), Sirah Ibnu Hisyam, Fiqhus Sirah (Al-Buthi & Al-Ghazali)
+- **AI Rec:** Claude (rank 1 — analisis peristiwa & istinbat pelajaran), NotebookLM (rank 2 — navigasi kronologi)
+- **Tutorial fokus:** memahami kronologi sirah + istinbat pelajaran dakwah/syariat
+- **Prompt fokus:** pahami fase sirah (Makkah/Madinah), analisis peristiwa & hikmah, istinbat pelajaran dakwah, kronologi ghazwah.
+
+#### `tarikh-tasyri` — Tarikh Tasyri' [Tier A]
+- **Kitab:** Tarikhut Tasyri' Al-Islami (Manna' Al-Qaththan), Tarikhul Fiqhil Islami (Muhammad Ali As-Sayis)
+- **AI Rec:** Claude (rank 1 — analisis fase legislasi), Perplexity (rank 2 — verifikasi sejarah)
+- **Tutorial fokus:** memahami fase tasyri' (Nabi → Sahabat → Tabi'in → kodifikasi madzhab → modern)
+- **Prompt fokus:** pahami fase tasyri', analisis perkembangan fiqh per fase, banding metode istinbat Sahabat, sejarah kodifikasi madzhab.
+
+#### `tarikh-islam` — Tarikh Islam [Tier B]
+- **Kitab:** Al-Bidayah wan Nihayah (Ibnu Katsir), Tarikhul Umam wal Muluk (Ath-Thabari), Tarikhul Islam (Adz-Dzahabi)
+- **AI Rec:** Claude (rank 1 — analisis peristiwa & sebab-akibat), Perplexity (rank 2 — verifikasi tanggal & tokoh)
+- **Tutorial fokus:** memahami kronologi daulah (Khulafa → Umawi → Abbasi → dst) + analisis
+- **Prompt fokus:** pahami periode daulah, analisis sebab kebangkitan/kemunduran, peran tokoh, banding daulah.
+
+#### `hadharah` — Hadharah Islamiyyah [Tier C]
+- **Kitab:** Hadharatul Islam (kajian), Madzahirul Hadharatil Islamiyyah, kajian kontribusi sains muslim
+- **AI Rec:** Claude (rank 1 — analisis aspek peradaban), Perplexity (rank 2 — verifikasi kontribusi ilmiah)
+- **Tutorial fokus:** memahami aspek peradaban (ilmu, seni, arsitektur, institusi)
+- **Prompt fokus:** pahami kontribusi peradaban Islam, analisis institusi keilmuan, peran ilmuwan muslim.
+
+#### `dakwah` — Dakwah & I'lam [Tier C]
+- **Kitab:** Ushulud Da'wah (Abdul Karim Zaidan), Fiqhud Da'wah, kajian manhaj dakwah
+- **AI Rec:** ChatGPT (rank 1 — susun materi & strategi dakwah), Claude (rank 2 — analisis manhaj)
+- **Tutorial fokus:** memahami ushul & manhaj dakwah, adaptasi ke media modern
+- **Prompt fokus:** pahami ushul dakwah, susun materi dakwah, analisis manhaj dakwah Rasul, strategi dakwah digital.
+
+#### `adyan` — Adyan (Perbandingan Agama) [Tier C]
+- **Kitab:** Izharul Haq (Rahmatullah Al-Hindi), Al-Jawabus Shahih (Ibnu Taimiyyah), kajian muqaranatul adyan
+- **AI Rec:** Claude (rank 1 — analisis komparatif & dialog), Perplexity (rank 2 — verifikasi data agama)
+- **Tutorial fokus:** memahami pokok ajaran agama lain dari perspektif Islam + adab dialog. CATATAN: tekankan objektivitas akademik & adab.
+- **Prompt fokus:** pahami pokok ajaran agama tertentu, analisis komparatif konsep (mis. konsep tuhan), siapkan dialog antaragama yang beradab.
+
+---
+
+## Contoh Pengembangan Prompt (Untuk Referensi)
+
+Supaya jelas standar kualitas, ini contoh 1 prompt "pahami" untuk **Mustholah Hadits** yang BENAR (spesifik, bukan generic):
+
+```js
+{
+  title: "Bedakan Klasifikasi Hadits Dha'if",
+  targetAI: "claude",
+  template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Sedang muthala'ah [MADDAH].
+
+Aku sering bingung membedakan jenis-jenis hadits dha'if berdasarkan sebab kelemahannya:
+
+[SEBUTKAN JENIS YANG MAU DIBEDAKAN - mis. Mursal vs Munqathi' vs Mu'dhal vs Mu'allaq]
+
+Tolong jelaskan:
+1. Definisi masing-masing dengan teks Arab istilahnya (berharakat)
+2. Letak terputusnya sanad untuk tiap jenis (gambarkan posisinya)
+3. Contoh konkret untuk tiap jenis
+4. Apakah ada perbedaan hukum mengamalkannya
+5. Pendapat ulama tentang kehujjahan masing-masing
+
+[LEVEL_BAHASA]
+
+Sertakan teks Arab untuk istilah teknis (مرسل، منقطع، معضل). Sebut rujukan dari Nukhbatul Fikar atau Taysir Mustholah kalau relevan.`
+}
+```
+
+Perhatikan: prompt ini **TIDAK BISA** dipindah ke Maddah lain — ia spesifik ke klasifikasi hadits dha'if. Itu standarnya.
+
+---
+
+## YANG HARUS DILAKUKAN
+
+1. **Edit `src/maddah-data.jsx`** — isi konten untuk 33 Maddah skeleton (kitabUtama, recommendedAI, tutorial, prompts) mengikuti:
+   - Tier jumlah prompt (A=15, B=12, C=8-10)
+   - Spec keilmuan per-Maddah di atas
+   - Pattern dari 3 Maddah yang sudah lengkap di 3A
+2. Kerjakan **per batch** (1→2→3→4), test setelah tiap batch
+3. Pertahankan struktur data yang sudah ada — jangan ubah id, name, category, fakultas, tingkat, description yang sudah di-set
+
+---
+
+## Acceptance Criteria
+
+### Kelengkapan
+- [ ] Semua 36 Maddah punya konten penuh (3 dari 3A + 33 dari 3B)
+- [ ] `getMaddahCompletionCount()` return `{ total: 36, withContent: 36 }`
+- [ ] Tier A Maddah punya 15 prompt, Tier B 12, Tier C 8-10
+- [ ] Setiap Maddah punya kitabUtama (2-4), recommendedAI (1-3), tutorial (3-4 steps)
+
+### Kualitas Konten (Anti-Generic)
+- [ ] **Spot check 5 Maddah random**: baca 3 prompt tiap Maddah → tidak ada yang bisa dipindah ke Maddah lain tanpa perubahan
+- [ ] Prompt Hadits fokus sanad/matan/rijal (BUKAN ayat/munasabah)
+- [ ] Prompt Balaghah fokus majaz/isti'arah/badi' (BUKAN i'rab)
+- [ ] Prompt Mantiq fokus qiyas/qadhiyyah/burhan
+- [ ] Prompt Faraidh (Ahwal Syakhshiyah) ada latihan hitung warisan
+- [ ] Kitab utama AKURAT per Maddah (gunakan spec di atas, jangan ngarang)
+- [ ] AI rec `why` spesifik kenapa cocok untuk Maddah itu
+
+### Catatan Khusus Maddah Tertentu
+- [ ] Tajwid & Qira'at: tutorial TEKANKAN bahwa praktik wajib talaqqi langsung (musyafahah), AI cuma bantu teori
+- [ ] Takhrij Hadits: tutorial TEKANKAN verifikasi manual (AI bisa halusinasi sanad)
+- [ ] Tasawwuf: tutorial TEKANKAN tasawwuf amali butuh mursyid
+- [ ] Fiqh Madzhabi: ada placeholder `[MADZHAB]` untuk user isi
+- [ ] Fiqh Muqaran: tutorial arahkan ke fitur Muqaranah Talqih
+- [ ] Adyan: tutorial TEKANKAN objektivitas akademik & adab dialog
+
+### Adaptive & Bahasa
+- [ ] Semua prompt pakai placeholder `[TINGKATAN]`, `[FAKULTAS]`, `[GAYA_BELAJAR]`, `[MADDAH]`, `[LEVEL_BAHASA]`
+- [ ] Bahasa Indonesia pengantar, Arab sisipan kontekstual
+- [ ] Istilah Arab transliterasi natural (bukan diacritic berat)
+- [ ] Prompt eksplorasi khilaf ada instruksi "jangan men-tarjih"
+- [ ] Minta AI sertakan teks Arab berharakat untuk dalil/kaidah
+
+### Technical
+- [ ] Tidak ada syntax error di maddah-data.jsx (test load page)
+- [ ] Maddah Hub: semua 36 Maddah tidak ada lagi badge "Segera" (semua punya content)
+- [ ] Buka 5 Maddah detail random → render lengkap, prompt ter-resolve adaptive
+- [ ] Tidak ada console error
+- [ ] Mobile responsive
+
+### Per-Batch Verification
+- [ ] Setelah Batch 1 (11 Maddah Qurani+Haditsi): test, no error, lanjut
+- [ ] Setelah Batch 2 (9 Maddah Fiqhi+Aqdi): test, no error, lanjut
+- [ ] Setelah Batch 3 (5 Maddah Lughawi): test, no error, lanjut
+- [ ] Setelah Batch 4 (6 Maddah Tarikhi+Dakwah): test, no error, selesai
+
+---
+
+## Catatan Final
+
+### Tentang Beban Kerja
+
+Ini ~450-500 prompt total. Wajar kalau butuh beberapa sesi. **Kualitas > kecepatan.** Lebih baik 8 prompt berkualitas tinggi yang spesifik daripada 15 prompt generic yang copy-paste.
+
+### Kalau Ragu Soal Keilmuan
+
+Spec per-Maddah di atas sudah gue siapkan dengan akurat. Kalau butuh detail lebih (mis. nama bab spesifik dalam suatu kitab), **JANGAN ngarang**. Lebih baik prompt yang general-tapi-benar daripada spesifik-tapi-salah. Akurasi keilmuan adalah amanah — ini untuk thalib Al-Azhar yang akan pakai untuk belajar agama.
+
+### Setelah 3B Selesai
+
+Lanjut ke:
+- **Prompt 4**: Dashboard Rework — integrate Maddah system ("Maddah-mu hari ini" jadi hero)
+- **Prompt 5**: Polish, security fixes (XSS, admin PIN, payment), discoverability final
+
+---
+
+والله ولي التوفيق. Mulai dari Batch 1.

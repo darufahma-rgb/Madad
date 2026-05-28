@@ -66,7 +66,9 @@ const App = () => {
   else if (path === "/kurasah" && !path.includes("?id=")) { page = <KurasahPage/>; routeLabel = "Kurasah"; }
   else if (path.startsWith("/kurasah?id="))               { page = <KurasahEditorPage/>; routeLabel = "Kurasah Editor"; }
   else if (path === "/kurasah/new")                        { page = <KurasahEditorPage/>; routeLabel = "Catatan Baru"; }
-  else if (path.startsWith("/mapel"))                      { page = <MapelPage/>; routeLabel = "Panduan Mapel"; }
+  else if (path.startsWith("/mapel"))                       { page = <MapelPage/>; routeLabel = "Panduan Mapel"; }
+  else if (path === "/maddah" || path === "/maddah/")      { page = <MaddahHubPage/>; routeLabel = "Maddah"; }
+  else if (path.startsWith("/maddah/"))                    { page = <MaddahDetailPage/>; routeLabel = "Maddah"; }
 
   return (
     <ToastProvider>
