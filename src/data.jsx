@@ -669,7 +669,7 @@ const LEARNING_PATHS = [
   {
     id: "beginner",
     level: "Beginner",
-    label: "Baru mulai",
+    label: "Tholibun Jadid 🌱",
     icon: "🌱",
     color: "#6EE7B7",
     desc: "Mengenal AI, prompt dasar, dan etika penggunaan untuk pemula.",

@@ -249,6 +249,7 @@ const PathsPage = () => {
                       <div className="h-1.5 bg-white/5 rounded-full overflow-hidden mb-2">
                         <div className="h-full transition-all duration-700 rounded-full" style={{width: `${pct}%`, background: `linear-gradient(90deg, ${path.color}, #C9A86A)`}}/>
                       </div>
+                      <p style={{ fontSize:"13px", color:"rgba(255,255,255,0.5)", fontStyle:"italic", marginBottom:"4px" }}>Kamu sudah lebih maju dari kebanyakan Masisir yang belum tahu cara pakai AI sama sekali.</p>
                       <div className="text-xs text-ink-muted">{path.modules.filter(m => progress.modules?.[`${path.id}.${m.id}`]?.completed).length} dari {path.modules.length} modul selesai</div>
                     </div>
                     <div className="md:col-span-4 md:text-right">
@@ -280,7 +281,7 @@ const PathsPage = () => {
                             <button
                               onClick={() => handleOpenModule(path, module)}
                               className="btn btn-primary text-xs py-2 px-4 flex-shrink-0">
-                              Mulai modul <Icon name="arrowRight" className="w-3.5 h-3.5"/>
+                              Yuk mulai <Icon name="arrowRight" className="w-3.5 h-3.5"/>
                             </button>
                           )}
                         </div>

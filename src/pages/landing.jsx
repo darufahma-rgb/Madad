@@ -207,21 +207,21 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
               letterSpacing: "-0.02em",
             }}
           >
-            Belajar materi Azhar,<br/>
-            dipahami dengan<br/>
+            Kitab susah, jadi mudah.<br/>
+            Materi lama, jadi cepat.<br/>
             <span style={{
               background: "linear-gradient(90deg, #A78BFA 0%, #C9A86A 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
             }}>
-              AI.
+              Ini cara baru belajar di Azhar.
             </span>
           </h1>
 
           {/* Subheadline */}
           <p style={{ fontSize:"18px", color:"rgba(255,255,255,0.65)", lineHeight:1.65, maxWidth:"460px", marginBottom:"40px" }}>
-            Panduan + template prompt + rekomendasi AI personal untuk Masisir semua tingkat — dari Mustawa sampai S2.
+            Panduan + prompt + workflow AI yang dirancang khusus untuk cara belajar di Al-Azhar — dari Nahwu sampai Ushul Fiqh, dari Mustawa sampai S2.
           </p>
 
           {/* CTA Buttons */}
@@ -284,10 +284,10 @@ const SampleMaddahSection = () => (
           <span className="w-6 h-px bg-gold-500/70"/>COBAIN DULU<span className="w-6 h-px bg-gold-500/70"/>
         </div>
         <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
-          Sample lengkap: <span className="text-gold-300">Nahwu Dasar</span>
+          Dalam 10 menit, kamu akan mengerti cara belajar Nahwu yang belum pernah diajarkan dosen.
         </h2>
         <p className="text-ink-muted text-base max-w-xl mx-auto">
-          Tanpa daftar, tanpa bayar. Cobain workflow Talqih dengan 1 Maddah lengkap.
+          Tanpa daftar. Tanpa bayar. Kalau setelah ini kamu tidak merasa beda, tidak perlu lanjut.
         </p>
       </Reveal>
       <Reveal>
@@ -355,7 +355,7 @@ const HowItWorks = () => {
             <span className="w-6 h-px bg-gold-500/70"/>BAGAIMANA TALQIH BEKERJA
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
-            Tiga langkah, langsung jalan.
+            Dari buka website sampai paham kitab — kurang dari 5 menit.
           </h2>
         </Reveal>
         <div className="grid md:grid-cols-3 gap-8 relative">
@@ -410,7 +410,7 @@ const AllMaddahPreview = () => {
             <span className="w-6 h-px bg-gold-500/70"/>36 MADDAH LENGKAP
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
-            Untuk semua fakultas rumpun agama dan bahasa.
+            Jurusan apapun. Semester berapapun. Talqih ada untuk kamu.
           </h2>
         </Reveal>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -457,7 +457,7 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
           <span className="w-6 h-px bg-gold-500/70"/>INVESTASI ILMU
         </div>
         <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
-          Bayar sekali. Akses 36 Maddah selamanya.
+          Harga segelas kopi. Akses seumur hidup ke 540+ prompt yang dirancang khusus untuk Masisir.
         </h2>
       </Reveal>
 
@@ -476,7 +476,7 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
                   Rp 49.000
                 </span>
               </div>
-              <div className="text-xs text-ink-soft uppercase tracking-wider mb-6">One-time · No subscription</div>
+              <div className="text-xs text-ink-soft uppercase tracking-wider mb-6">Sekali bayar · Berlaku selamanya</div>
               <ul className="space-y-3 mb-8">
                 {[
                   "36 Maddah lengkap + 540+ template prompt",

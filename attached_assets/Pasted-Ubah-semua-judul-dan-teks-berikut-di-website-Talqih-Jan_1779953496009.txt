@@ -1,0 +1,127 @@
+Ubah semua judul dan teks berikut di website Talqih.
+Jangan ubah apapun selain teks yang disebutkan di bawah.
+Jangan ubah styling, layout, warna, atau komponen apapun.
+
+---
+
+## SECTION 1 — HERO
+
+Headline (3 baris):
+SEBELUM:
+"Belajar materi Azhar, dipahami dengan AI."
+
+SESUDAH:
+Baris 1: "Kitab susah, jadi mudah."         → warna putih
+Baris 2: "Materi lama, jadi cepat."          → warna putih  
+Baris 3: "Ini cara baru belajar di Azhar."   → gradient ungu ke emas
+
+Subheadline:
+SEBELUM:
+"Panduan + template prompt + rekomendasi AI personal
+untuk Masisir semua tingkat — dari Mustawa sampai S2."
+
+SESUDAH:
+"Panduan + prompt + workflow AI yang dirancang khusus
+untuk cara belajar di Al-Azhar — dari Nahwu sampai
+Ushul Fiqh, dari Mustawa sampai S2."
+
+---
+
+## SECTION 2 — HOW IT WORKS
+
+Label atas:
+SEBELUM: "BAGAIMANA TALQIH BEKERJA"
+SESUDAH: "BAGAIMANA TALQIH BEKERJA" (tidak berubah)
+
+Judul utama:
+SEBELUM: "Tiga langkah, langsung jalan."
+SESUDAH: "Dari buka website sampai paham kitab —
+          kurang dari 5 menit."
+
+---
+
+## SECTION 3 — DAFTAR MADDAH
+
+Label atas:
+SEBELUM: "36 MADDAH LENGKAP"
+SESUDAH: "36 MADDAH LENGKAP" (tidak berubah)
+
+Judul utama:
+SEBELUM: "Untuk semua fakultas rumpun agama dan bahasa."
+SESUDAH: "Jurusan apapun. Semester berapapun.
+          Talqih ada untuk kamu."
+
+---
+
+## SECTION 4 — SAMPLE GRATIS
+
+Label atas:
+SEBELUM: "COBAIN DULU"
+SESUDAH: "COBAIN DULU" (tidak berubah)
+
+Judul utama:
+SEBELUM: "Sample lengkap: Nahwu Dasar"
+SESUDAH: "Dalam 10 menit, kamu akan mengerti cara
+          belajar Nahwu yang belum pernah
+          diajarkan dosen."
+
+Subheadline:
+SEBELUM: "Tanpa daftar, tanpa bayar. Cobain workflow
+          Talqih dengan 1 Maddah lengkap."
+SESUDAH: "Tanpa daftar. Tanpa bayar. Kalau setelah ini
+          kamu tidak merasa beda, tidak perlu lanjut."
+
+---
+
+## SECTION 5 — PRICING
+
+Label atas:
+SEBELUM: "INVESTASI ILMU"
+SESUDAH: "INVESTASI ILMU" (tidak berubah)
+
+Judul utama:
+SEBELUM: "Bayar sekali. Akses 36 Maddah selamanya."
+SESUDAH: "Harga segelas kopi.
+          Akses seumur hidup ke 540+ prompt yang
+          dirancang khusus untuk Masisir."
+
+Teks kecil di bawah harga (Rp 49.000):
+SEBELUM: "ONE-TIME · NO SUBSCRIPTION"
+SESUDAH: "SEKALI BAYAR · BERLAKU SELAMANYA" 
+
+---
+
+## SECTION 6 — DASHBOARD / PROGRESS
+
+Label level:
+SEBELUM: "BEGINNER"
+SESUDAH: "BEGINNER" (tidak berubah)
+
+Judul level:
+SEBELUM: "Baru mulai"
+SESUDAH: "Tholibun Jadid 🌱"
+
+Teks motivasi (tambahkan tepat di bawah progress bar,
+sebelum teks "2 dari 5 modul selesai"):
+TAMBAHKAN TEKS BARU:
+"Kamu sudah lebih maju dari kebanyakan Masisir
+yang belum tahu cara pakai AI sama sekali."
+Styling: font-size 13px, color rgba(255,255,255,0.5),
+font-style italic
+
+Tombol aksi modul:
+SEBELUM: "Mulai modul →"
+SESUDAH: "Yuk mulai →"
+
+---
+
+## YANG TIDAK BOLEH DIUBAH
+
+- Semua styling, warna, font-size, dan layout
+- Semua komponen interaktif (tombol, progress bar, kartu)
+- Semua teks yang tidak disebutkan di atas
+- Nama "Talqih" di manapun ia muncul
+- Teks Arab di seluruh halaman
+- Harga "Rp 49.000" dan "49k"
+- Semua checklist item di pricing card
+- Footer dan navbar
