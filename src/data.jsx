@@ -532,7 +532,7 @@ const AI_TOOLS = [
     by: "Tarteel AI",
     monogram: "ت",
     logo: "/assets/tarteel-logo.png",
-    logoBg: "#FFFFFF",
+    logoBg: "#2C2C2E",
     brandColor: "#1A7A4A",
     color: "#1A7A4A",
     tier: "Gratis + Premium",
