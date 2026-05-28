@@ -324,11 +324,6 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
           </div>
         </Reveal>
 
-        {/* Card showcase — focal point */}
-        <Reveal delay={400}>
-          <HeroShowcaseCard/>
-        </Reveal>
-
       </div>
     </div>
   </section>
