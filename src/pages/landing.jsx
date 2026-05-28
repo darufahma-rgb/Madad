@@ -372,7 +372,7 @@ const SampleMaddahSection = () => (
             </div>
           </div>
           <p className="text-center text-xs text-ink-soft mt-4">
-            Sample ini gratis selamanya · Untuk 35 Maddah lain, gabung member <s>79k</s> 49k/selamanya
+            Sample ini gratis selamanya · Untuk 35 Maddah lain, gabung member.
           </p>
         </div>
       </Reveal>
@@ -385,7 +385,7 @@ const SampleMaddahSection = () => (
    ══════════════════════════════════════════════════════════════ */
 const HowItWorks = () => {
   const steps = [
-    { num:"01", title:"Bayar 49k", sub:"Sekali bayar, akses selamanya",
+    { num:"01", title:"Gabung Member", sub:"Sekali bayar, akses selamanya",
       desc:"Bayar via Lynk.id, admin kirim kode member via WhatsApp." },
     { num:"02", title:"Jawab profile", sub:"5 pertanyaan singkat",
       desc:"Fakultas, jurusan, tingkat, gaya belajarmu. Supaya prompt-nya pas." },
