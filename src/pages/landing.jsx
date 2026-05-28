@@ -230,13 +230,17 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
 
         {/* Arabic brand */}
         <Reveal delay={0}>
-          <div className="arabic-classic text-gold-300 mb-5 leading-none" style={{
-            direction: "rtl",
-            fontFamily: '"Aref Ruqaa","Amiri",serif',
-            fontSize: "clamp(36px, 5vw, 56px)",
-          }}>
-            تَلْقِيح
-          </div>
+          <img
+            src="/assets/talqee-logo.png"
+            alt="Talqee"
+            style={{
+              width: "72px",
+              height: "auto",
+              display: "block",
+              margin: "0 auto 20px",
+              filter: "drop-shadow(0 0 20px rgba(167, 139, 250, 0.35))",
+            }}
+          />
         </Reveal>
 
         {/* Eyebrow chip */}
