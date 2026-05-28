@@ -205,6 +205,23 @@ const Footer = () => (
         </div>
       </div>
     </div>
+    <div
+      className="arabic-classic w-full text-right overflow-hidden select-none pointer-events-none"
+      style={{
+        fontSize: "clamp(80px, 18vw, 240px)",
+        lineHeight: 1,
+        color: "transparent",
+        WebkitTextStroke: "1px rgba(212,178,125,0.13)",
+        letterSpacing: "-0.02em",
+        direction: "rtl",
+        paddingRight: "4vw",
+        paddingBottom: "0.1em",
+        marginTop: "-0.15em",
+      }}
+      aria-hidden="true"
+    >
+      تلقيح
+    </div>
   </footer>
 );
 
