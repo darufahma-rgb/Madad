@@ -180,10 +180,45 @@ const ToolIcon = ({ tool, size = "w-11 h-11", rounded = "rounded-xl", className 
   );
 };
 
+/* ── Bottom Sheet (naik dari bawah di mobile, modal tengah di desktop) ── */
+const BottomSheet = ({ children, onClose, title, maxHeight = "85vh" }) => (
+  <div className="fixed inset-0 z-[70] flex items-end md:items-center md:justify-center" onClick={onClose}>
+    <div className="absolute inset-0 bg-night-950/70 backdrop-blur-sm"/>
+    <div
+      className="relative w-full md:max-w-lg bg-night-800 border-t md:border border-line rounded-t-3xl md:rounded-2xl sheet-enter overflow-hidden"
+      style={{ maxHeight, paddingBottom: "var(--safe-bottom)" }}
+      onClick={e => e.stopPropagation()}
+    >
+      <div className="md:hidden flex justify-center pt-3 pb-1">
+        <div className="w-10 h-1 rounded-full bg-white/20"/>
+      </div>
+      {title && (
+        <div className="px-5 py-3 border-b border-line flex items-center justify-between">
+          <h3 className="font-display text-base font-semibold text-ink">{title}</h3>
+          <button onClick={onClose} className="text-ink-soft hover:text-ink w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5">
+            <Icon name="x" className="w-4 h-4"/>
+          </button>
+        </div>
+      )}
+      <div className="overflow-y-auto scroll-touch px-2 py-3" style={{ maxHeight: "calc(" + maxHeight + " - 100px)" }}>
+        {children}
+      </div>
+    </div>
+  </div>
+);
+
+const SheetLink = ({ icon, label, onClick }) => (
+  <button onClick={onClick} className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-ink-muted hover:text-ink hover:bg-white/5 transition-colors">
+    <Icon name={icon} className="w-5 h-5 flex-shrink-0"/>
+    <span className="text-sm font-medium">{label}</span>
+  </button>
+);
+
 /* ============ EXPORTS ============ */
 Object.assign(window, {
   Reveal, WordReveal,
   ToastProvider, useToast,
   CopyButton, Modal, Stars,
   LogoMark, Arch, Blob, ToolIcon,
+  BottomSheet, SheetLink,
 });

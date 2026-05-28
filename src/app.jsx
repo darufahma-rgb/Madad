@@ -73,12 +73,13 @@ const App = () => {
 
   // QuickNote muncul di semua halaman member yang sudah onboarded, kecuali admin & public
   const showQuickNote = session && profile?.onboarded && !isAdmin && !isPublic;
+  const isMember = session && profile?.onboarded;
 
   return (
     <ToastProvider>
       <div data-screen-label={routeLabel} className="min-h-screen flex flex-col">
         <Navbar onOpenLogin={openLogin} onOpenPayment={openPayment}/>
-        <main className="flex-1">
+        <main className={"flex-1" + (isMember ? " has-tabbar" : "")}>
           {page}
         </main>
         <Footer/>
@@ -86,6 +87,7 @@ const App = () => {
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} onSuccess={handleLoginSuccess}/>
       <PaymentModal open={paymentOpen} onClose={() => setPaymentOpen(false)} onOpenLogin={openLogin}/>
       {showQuickNote && <QuickNoteButton/>}
+      {isMember && <MobileTabBar/>}
     </ToastProvider>
   );
 };

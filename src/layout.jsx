@@ -1,4 +1,4 @@
-/* Talqih, Navbar, Footer, Login Modal, Payment Modal, Router utils */
+/* Talqee, Navbar, Footer, Login Modal, Payment Modal, Router utils */
 
 const ROUTES_PUBLIC = ["/", "/ethics"];
 const ROUTES_MEMBER = ["/onboarding", "/dashboard", "/tools", "/paths"];
@@ -46,6 +46,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [confirmLogout, setConfirmLogout] = useState(false);
+  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const { session, logout } = useAuth();
   const path = useRoute();
 
@@ -54,7 +55,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-  useEffect(() => { setOpen(false); setConfirmLogout(false); }, [path]);
+  useEffect(() => { setOpen(false); setConfirmLogout(false); setMobileSheetOpen(false); }, [path]);
 
   // 5 nav utama member — Maddah-first
   const memberLinks = [
@@ -112,11 +113,26 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
             </>
           )}
         </div>
-        <button onClick={() => setOpen(true)} className="md:hidden w-10 h-10 inline-flex items-center justify-center rounded-lg text-ink hover:bg-white/5">
-          <Icon name="menu" className="w-5 h-5"/>
-        </button>
+        {/* Mobile: avatar untuk member, hamburger untuk tamu */}
+        <div className="md:hidden">
+          {session ? (
+            <button
+              onClick={() => setMobileSheetOpen(true)}
+              className="w-9 h-9 rounded-full bg-violet-500/15 border border-violet-500/25 flex items-center justify-center text-violet-200 text-sm font-semibold"
+            >
+              {(session.name || "T").charAt(0).toUpperCase()}
+            </button>
+          ) : (
+            <div className="flex items-center gap-1">
+              <button onClick={onOpenLogin} className="text-sm text-violet-300 font-medium px-3 py-2">Masuk</button>
+              <button onClick={() => setOpen(true)} className="w-9 h-9 inline-flex items-center justify-center rounded-lg text-ink hover:bg-white/5">
+                <Icon name="menu" className="w-5 h-5"/>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
-      {open && (
+      {open && !session && (
         <div className="fixed inset-0 z-[60] md:hidden">
           <div className="absolute inset-0 bg-night-950/70 modal-back" onClick={() => setOpen(false)}/>
           <div className="absolute top-0 right-0 bottom-0 w-[82%] max-w-sm bg-night-900 border-l border-line p-6 flex flex-col overflow-y-auto">
@@ -169,6 +185,28 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
             </div>
           </div>
         </div>
+      )}
+      {/* Mobile account sheet */}
+      {mobileSheetOpen && session && (
+        <BottomSheet onClose={() => setMobileSheetOpen(false)} title="Akun">
+          <div className="space-y-1">
+            <div className="px-3 py-3 mb-1">
+              <div className="text-xs text-ink-soft mb-0.5">Member</div>
+              <div className="text-ink font-medium">{session.name}</div>
+            </div>
+            <SheetLink icon="bookOpen" label="Learning Path" onClick={() => { navigate("/paths"); setMobileSheetOpen(false); }}/>
+            <SheetLink icon="shield" label="Etika" onClick={() => { navigate("/ethics"); setMobileSheetOpen(false); }}/>
+            <div className="border-t border-line mt-2 pt-2">
+              <button
+                onClick={() => { logout(); setMobileSheetOpen(false); }}
+                className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-rose-400 hover:bg-white/5 transition-colors"
+              >
+                <Icon name="x" className="w-5 h-5 flex-shrink-0"/>
+                <span className="text-sm font-medium">Logout</span>
+              </button>
+            </div>
+          </div>
+        </BottomSheet>
       )}
     </header>
   );
@@ -479,8 +517,62 @@ const PageHeader = ({ kicker, title, subtitle, arabic, children, right }) => (
   </section>
 );
 
+/* ---------------- Mobile Tab Bar ---------------- */
+const MobileTabBar = () => {
+  const { session, profile } = useAuth();
+  const path = useRoute();
+
+  if (!session || !profile?.onboarded) return null;
+  if (path.startsWith("/admin") || path === "/onboarding") return null;
+
+  const tabs = [
+    { to: "/dashboard",       label: "Beranda",   icon: "home" },
+    { to: "/maddah",          label: "Maddah",    icon: "layers" },
+    { to: "/paths/muqaranah", label: "Muqaranah", icon: "scale" },
+    { to: "/kurasah",         label: "Kurasah",   icon: "bookOpen" },
+    { to: "/tools",           label: "Tools",     icon: "sparkles" },
+  ];
+
+  const isActive = (to) => {
+    if (to === "/dashboard") return path === "/dashboard" || path === "/";
+    return path.startsWith(to);
+  };
+
+  return (
+    <nav
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-line bg-night-950/90 backdrop-blur-xl"
+      style={{ paddingBottom: "var(--safe-bottom)" }}
+    >
+      <div className="flex items-stretch justify-around h-16">
+        {tabs.map(tab => {
+          const active = isActive(tab.to);
+          return (
+            <button
+              key={tab.to}
+              onClick={() => navigate(tab.to)}
+              className="flex-1 flex flex-col items-center justify-center gap-1 relative"
+            >
+              {active && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-violet-400"/>
+              )}
+              <Icon
+                name={tab.icon}
+                className={"w-[22px] h-[22px] transition-colors " + (active ? "text-violet-300" : "text-ink-soft")}
+              />
+              <span className={"text-[10px] leading-none transition-colors " + (active ? "text-violet-200 font-medium" : "text-ink-soft")}>
+                {tab.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+};
+
 Object.assign(window, {
   ROUTES_PUBLIC, ROUTES_MEMBER,
   useRoute, navigate, NavLink, Brand,
   Navbar, Footer, LoginModal, PaymentModal, PageHeader,
+  MobileTabBar,
 });
