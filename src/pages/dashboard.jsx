@@ -212,7 +212,7 @@ const DashboardPage = () => {
               {majorLabel ? <> · <span className="text-ink font-medium">{majorLabel}</span></> : null}
               {levelLabel ? <> · <span className="text-ink font-medium">{levelLabel}</span></> : null}
               {". "}
-              Talqih siap menemani belajarmu hari ini.
+              Talqee siap menemani belajarmu hari ini.
             </p>
           </Reveal>
         </div>

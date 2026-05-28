@@ -169,7 +169,7 @@ const MapelListPage = ({ profile }) => {
         kicker="Panduan Mata Pelajaran"
         arabic="دَلِيلُ المَوَادِّ الدِّرَاسِيَّةِ"
         title="Cara pakai AI untuk setiap dars di Al-Azhar."
-        subtitle="Talqih tidak menyediakan AI — Talqih memberi panduan langkah demi langkah cara pakainya untuk setiap mata pelajaranmu. Buka Claude. Pakai prompt ini. Pahami lebih dalam."
+        subtitle="Talqee tidak menyediakan AI — Talqih memberi panduan langkah demi langkah cara pakainya untuk setiap mata pelajaranmu. Buka Claude. Pakai prompt ini. Pahami lebih dalam."
       />
 
       <section className="pb-6">
@@ -229,7 +229,7 @@ const MapelListPage = ({ profile }) => {
               </div>
               <div>
                 <div className="text-sm font-semibold text-ink mb-0.5">Cara pakai halaman ini</div>
-                <p className="text-sm text-ink-muted leading-relaxed">Pilih mata pelajaran → baca panduan → buka AI yang direkomendasikan → pakai prompt yang sudah disiapkan. Bukan AI-nya yang kamu dapatkan dari Talqih, tapi <em className="text-ink not-italic">panduan cara pakainya</em>.</p>
+                <p className="text-sm text-ink-muted leading-relaxed">Pilih mata pelajaran → baca panduan → buka AI yang direkomendasikan → pakai prompt yang sudah disiapkan. Bukan AI-nya yang kamu dapatkan dari Talqee, tapi <em className="text-ink not-italic">panduan cara pakainya</em>.</p>
               </div>
             </div>
           </Reveal>

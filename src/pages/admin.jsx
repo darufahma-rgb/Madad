@@ -16,7 +16,7 @@ const AdminPage = () => {
         <div className="container-x py-4 flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <span className="chip chip-gold text-[10px]">ADMIN</span>
-            <span className="font-display text-lg font-semibold text-ink">Talqih Control Center</span>
+            <span className="font-display text-lg font-semibold text-ink">Talqee Control Center</span>
           </div>
           <div className="flex gap-1 flex-wrap">
             {[
@@ -74,7 +74,7 @@ const AdminLogin = ({ onLogin }) => {
         <Blob color="rgba(124,77,255,0.35)" size={300} top={-100} right={-100}/>
         <div className="relative">
           <span className="chip chip-gold text-[10px] mb-3 inline-flex">ADMIN ACCESS</span>
-          <h2 className="font-display text-3xl font-semibold text-ink mb-1">Talqih Control Center</h2>
+          <h2 className="font-display text-3xl font-semibold text-ink mb-1">Talqee Control Center</h2>
           <p className="text-sm text-ink-muted mb-6">Masukkan PIN admin untuk lanjut.</p>
           <form onSubmit={submit}>
             <input

@@ -409,7 +409,7 @@ const HowItWorks = () => {
       <div className="container-x">
         <Reveal className="mb-12 text-center">
           <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
-            <span className="w-6 h-px bg-gold-500/70"/>BAGAIMANA TALQIH BEKERJA
+            <span className="w-6 h-px bg-gold-500/70"/>BAGAIMANA TALQEE BEKERJA
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
             Buka website. Paham kitab. Lima menit.
@@ -467,7 +467,7 @@ const AllMaddahPreview = () => {
             <span className="w-6 h-px bg-gold-500/70"/>36 MADDAH LENGKAP
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
-            Jurusan apapun. Semester berapapun. Talqih ada untuk kamu.
+            Jurusan apapun. Semester berapapun. Talqee ada untuk kamu.
           </h2>
         </Reveal>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -526,7 +526,7 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
             <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-violet-500/12 blur-3xl pointer-events-none"/>
             <div className="relative">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/20 text-xs text-gold-300 mb-5">
-                <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>Member Talqih
+                <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>Member Talqee
               </div>
               <div className="flex items-baseline gap-3 mb-1">
                 <span className="text-lg text-ink-soft line-through">Rp 79.000</span>

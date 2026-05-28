@@ -50,5 +50,5 @@ http.createServer((req, res) => {
     res.end(data);
   });
 }).listen(PORT, '0.0.0.0', () => {
-  console.log(`Talqih server running on port ${PORT}`);
+  console.log(`Talqee server running on port ${PORT}`);
 });

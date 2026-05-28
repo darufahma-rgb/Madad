@@ -3492,7 +3492,7 @@ Jelaskan:
     fakultas: ["syariah", "dirasat"],
     jurusan: [],
     tingkat: ["3", "4", "5", "pasca"],
-    description: "Perbandingan fiqh antar 4 madzhab — dalil, wajh istidlal, tarjih ulama. Ilmu inti di Fakultas Syariah. Cocok juga dipadukan dengan fitur Muqaranah di Talqih.",
+    description: "Perbandingan fiqh antar 4 madzhab — dalil, wajh istidlal, tarjih ulama. Ilmu inti di Fakultas Syariah. Cocok juga dipadukan dengan fitur Muqaranah di Talqee.",
     descriptionArabic: "مقارنة الفقه بين المذاهب",
     kitabUtama: [
       { nama: "Bidayatul Mujtahid",            arabic: "بداية المجتهد",              penulis: "Ibnu Rusyd Al-Hafid" },
@@ -3509,7 +3509,7 @@ Jelaskan:
         { title: "Rumuskan masalah dengan jelas",      body: "Tentukan masalah yang diperbandingkan dengan spesifik (mis. 'Hukum isbal sarung dalam shalat' bukan 'Pakaian dalam Islam')." },
         { title: "Kumpulkan pendapat 4 madzhab",       body: "Untuk tiap madzhab: apa pendapatnya, dalil apa yang digunakan, cara istidlal bagaimana. Claude bisa bantu ini, tapi verifikasi ke Bidayatul Mujtahid atau kitab muqaranah." },
         { title: "Identifikasi sebab khilaf",          body: "Kebanyakan khilaf bersumber dari: perbedaan riwayat hadits, perbedaan pemahaman lafal, atau perbedaan kaidah ushul. Identifikasi akar perbedaan." },
-        { title: "Manfaatkan fitur Muqaranah Talqih",  body: "Untuk menyusun muqaranah terstruktur, gunakan fitur Muqaranah di Talqih. AI membantu draft, kamu verify dan lengkapi." },
+        { title: "Manfaatkan fitur Muqaranah Talqee",  body: "Untuk menyusun muqaranah terstruktur, gunakan fitur Muqaranah di Talqee. AI membantu draft, kamu verify dan lengkapi." },
       ],
     },
     prompts: {
@@ -3645,7 +3645,7 @@ Bantu aku menyusun draft dengan format:
 
 [LEVEL_BAHASA]
 
-TIP: Setelah draft ini, gunakan fitur Muqaranah di Talqih untuk menyimpan dan melengkapi.`,
+TIP: Setelah draft ini, gunakan fitur Muqaranah di Talqee untuk menyimpan dan melengkapi.`,
         },
         {
           title: "Bedah Masalah dari Al-Mughni",
