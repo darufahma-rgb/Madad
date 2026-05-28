@@ -1,0 +1,756 @@
+# PROMPT 15 — Talqee: Mobile Native-App Layout
+
+> Transformasi tampilan mobile (<768px) supaya terasa seperti native app, bukan website desktop dikecilin.
+> Desktop (md: ke atas) TIDAK boleh berubah sama sekali — semua perubahan wajib di dalam breakpoint mobile.
+> Kerjakan per layer, dari foundation ke komponen.
+
+---
+
+## Prinsip Native Mobile (Pegang Ini)
+
+```
+WEBSITE MOBILE (jelek)     →    NATIVE APP MOBILE (target)
+─────────────────────────       ──────────────────────────
+Padding besar (64px)            Padding compact (16-24px)
+Card padding p-6/p-7            Card padding p-3/p-4
+Heading font-display besar      Heading proporsional
+1 layout untuk semua screen     Layout khusus mobile
+Hamburger menu                  Bottom tab bar
+Modal di tengah                 Bottom sheet dari bawah
+Scroll panjang tiap section     Konten padat, density tinggi
+Tap target kecil                Tap target min 44px
+```
+
+**Aturan wajib:**
+- Semua perubahan di dalam `@media (max-width: 767px)` atau class `md:` prefix
+- Desktop TIDAK berubah — test setelah selesai di desktop
+- Touch target minimum 44px height untuk semua tombol interaktif
+- Font body minimum 14px (cegah iOS auto-zoom saat tap input)
+- Input font-size minimum 16px (cegah iOS zoom)
+
+---
+
+## LAYER 1 — CSS Foundation di `index.html`
+
+Ini yang paling impactful. Ganti/tambah CSS mobile foundation:
+
+```css
+/* ── MOBILE FOUNDATION ── */
+@media (max-width: 767px) {
+
+  /* Container lebih sempit */
+  .container-x { padding: 0 16px; }
+
+  /* Section padding drastis dikurangi */
+  .section { padding: 32px 0; }
+
+  /* Card mobile — lebih compact */
+  .card-glass       { border-radius: 14px; }
+  .card-glass-strong { border-radius: 16px; }
+
+  /* Button mobile — touch friendly */
+  .btn { padding: 11px 18px; font-size: 14px; border-radius: 10px; }
+  .btn-primary { box-shadow: 0 8px 20px -8px rgba(124,77,255,0.5); }
+
+  /* Chip mobile */
+  .chip { padding: 4px 9px; font-size: 11px; }
+
+  /* Font display mobile — scale down */
+  .font-display { letter-spacing: -0.01em; }
+
+  /* Hapus hover lift di mobile (tidak ada hover) */
+  .hov-lift:hover { transform: none; }
+  .hov-lift:active { transform: scale(0.98); opacity: 0.9; }
+
+  /* Arabic mobile */
+  .arabic { font-size: 90%; }
+  .arabic-display { font-size: 90%; }
+  .arabic-classic { font-size: 90%; }
+
+  /* Body text */
+  body { font-size: 15px; }
+}
+
+/* ── BOTTOM TAB BAR SAFE AREA ── */
+:root {
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tab-bar-h:   60px;
+}
+
+@media (max-width: 767px) {
+  /* Semua page member butuh padding bawah untuk tab bar */
+  .mobile-page-wrap {
+    padding-bottom: calc(var(--tab-bar-h) + var(--safe-bottom) + 8px);
+  }
+}
+
+/* ── SCROLL BEHAVIOR MOBILE ── */
+@media (max-width: 767px) {
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  * { -webkit-tap-highlight-color: transparent; }
+}
+
+/* ── MOBILE CAROUSEL ── */
+.mobile-scroll {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.mobile-scroll > * {
+  scroll-snap-align: start;
+  flex-shrink: 0;
+}
+```
+
+Update juga meta di `<head>`:
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="theme-color" content="#0A0514"/>
+```
+
+---
+
+## LAYER 2 — Bottom Tab Bar di `src/layout.jsx`
+
+Navigasi utama mobile pindah ke bawah. Hapus hamburger menu lama untuk member.
+
+### STEP 2.1 — Komponen `MobileTabBar`
+
+Tambah setelah closing tag `Navbar` di layout.jsx:
+
+```jsx
+const MobileTabBar = ({ session, profile, path }) => {
+  if (!session || !profile?.onboarded) return null;
+
+  const tabs = [
+    { to: "/dashboard",       icon: "home",     label: "Beranda"   },
+    { to: "/maddah",          icon: "layers",   label: "Maddah"    },
+    { to: "/paths/muqaranah", icon: "scale",    label: "Muqaranah" },
+    { to: "/kurasah",         icon: "notebook", label: "Kurasah"   },
+    { to: "/tools",           icon: "sparkles", label: "Tools"     },
+  ];
+
+  const active = (to) => {
+    if (to === "/dashboard") return path === "/dashboard" || path === "/" || path === "";
+    return path.startsWith(to);
+  };
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-line"
+      style={{
+        background: "rgba(10,5,20,0.92)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        paddingBottom: "var(--safe-bottom)",
+      }}>
+      <div className="flex items-stretch" style={{ height: "var(--tab-bar-h)" }}>
+        {tabs.map(tab => {
+          const isActive = active(tab.to);
+          return (
+            <button key={tab.to} onClick={() => navigate(tab.to)}
+              className="flex-1 flex flex-col items-center justify-center gap-0.5 relative"
+              style={{ minHeight: 44 }}>
+              {/* Active indicator */}
+              {isActive && (
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full bg-violet-400"/>
+              )}
+              <Icon name={tab.icon}
+                className={`w-[22px] h-[22px] transition-colors ${isActive ? "text-violet-300" : "text-ink-soft"}`}/>
+              <span className={`text-[10px] transition-colors leading-none ${isActive ? "text-violet-200 font-medium" : "text-ink-soft"}`}>
+                {tab.label}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+};
+```
+
+### STEP 2.2 — Sembunyikan Hamburger Menu untuk Member
+
+Di Navbar, hamburger menu sekarang cuma tampil untuk user yang belum login (landing/publik):
+
+```jsx
+{/* Hamburger — hanya untuk non-member atau publik */}
+{(!session || !profile?.onboarded) && (
+  <button onClick={() => setOpen(true)} className="md:hidden w-10 h-10 ...">
+    <Icon name="menu" .../>
+  </button>
+)}
+
+{/* Member mobile — avatar untuk account sheet */}
+{session && profile?.onboarded && (
+  <button onClick={() => setMobileAccountOpen(true)}
+    className="md:hidden w-9 h-9 rounded-full bg-violet-500/15 border border-violet-500/25 flex items-center justify-center text-violet-200 text-sm font-semibold">
+    {session.name.charAt(0).toUpperCase()}
+  </button>
+)}
+```
+
+### STEP 2.3 — Account Bottom Sheet (Ganti Hamburger)
+
+```jsx
+{/* Account sheet — mobile only */}
+{mobileAccountOpen && (
+  <div className="md:hidden fixed inset-0 z-[60]" onClick={() => setMobileAccountOpen(false)}>
+    <div className="absolute inset-0 bg-night-950/70 backdrop-blur-sm"/>
+    <div className="absolute bottom-0 left-0 right-0 bg-night-800 border-t border-line rounded-t-2xl overflow-hidden"
+      style={{ paddingBottom: "var(--safe-bottom)" }}
+      onClick={e => e.stopPropagation()}>
+      {/* Drag handle */}
+      <div className="flex justify-center pt-3 pb-1">
+        <div className="w-10 h-1 rounded-full bg-white/20"/>
+      </div>
+      {/* Member info */}
+      <div className="px-5 py-3 border-b border-line">
+        <div className="text-xs text-ink-soft">Member Talqee</div>
+        <div className="text-ink font-medium">{session?.name}</div>
+      </div>
+      {/* Links */}
+      <div className="p-3 space-y-1">
+        {[
+          { icon: "bookOpen", label: "Learning Path",   to: "/paths" },
+          { icon: "shield",   label: "Etika Pakai AI",  to: "/ethics" },
+        ].map(item => (
+          <button key={item.to}
+            onClick={() => { navigate(item.to); setMobileAccountOpen(false); }}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-ink-muted hover:text-ink hover:bg-white/5 transition-colors"
+            style={{ minHeight: 44 }}>
+            <Icon name={item.icon} className="w-5 h-5"/>
+            <span className="text-sm font-medium">{item.label}</span>
+          </button>
+        ))}
+        <button onClick={() => { logout(); setMobileAccountOpen(false); }}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-600 hover:bg-rose-600/8 transition-colors"
+          style={{ minHeight: 44 }}>
+          <Icon name="logout" className="w-5 h-5"/>
+          <span className="text-sm font-medium">Logout</span>
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+```
+
+### STEP 2.4 — Mount Tab Bar
+
+Di `src/app.jsx`, dalam Layout member, tambahkan:
+
+```jsx
+<MobileTabBar session={session} profile={profile} path={path}/>
+```
+
+Dan tambahkan class `mobile-page-wrap` ke `<main>`:
+
+```jsx
+<main className="flex-1 mobile-page-wrap">
+  {renderPage()}
+</main>
+```
+
+---
+
+## LAYER 3 — Header Mobile Compact
+
+Header navbar di mobile terlalu tinggi. Kompakkan:
+
+Di `src/layout.jsx`, update header height class:
+
+```jsx
+{/* h-16 desktop → h-12 mobile */}
+<div className="container-x flex items-center justify-between h-12 md:h-[72px]">
+```
+
+Header sticky dengan background lebih solid di mobile:
+
+```jsx
+<header className={`sticky top-0 z-40 transition-all ${
+  scrolled
+    ? "bg-night-900/92 backdrop-blur-xl border-b border-line"
+    : "bg-transparent"
+}`} style={{ paddingTop: "var(--safe-top)" }}>
+```
+
+---
+
+## LAYER 4 — Dashboard Mobile
+
+Dashboard adalah halaman yang paling sering dibuka. Ini yang paling penting dibenerin.
+
+Di `src/pages/dashboard.jsx`, terapkan compact mobile di setiap section:
+
+### Greeting
+
+```jsx
+{/* Sebelum: pt-12 md:pt-16 */}
+{/* Sesudah: */}
+<section className="relative pt-6 md:pt-12 pb-4 md:pb-8 overflow-hidden">
+
+  {/* Heading lebih kecil di mobile */}
+  <h1 className="font-display text-4xl md:text-5xl lg:text-[64px] font-semibold text-ink leading-[1.0]">
+    {/* tetap */}
+  </h1>
+
+  {/* Arabic salam — lebih kecil di mobile */}
+  <div className="arabic-classic text-xl md:text-2xl text-gold-300 mb-2 md:mb-3" style={{direction:"rtl"}}>
+    السلام عليكم
+  </div>
+
+  {/* Subtitle compact di mobile */}
+  <p className="mt-3 md:mt-5 text-base md:text-lg text-ink-muted max-w-2xl leading-relaxed">
+    {/* tetap */}
+  </p>
+</section>
+```
+
+### Starter Pack Card
+
+```jsx
+{/* Card padding compact di mobile */}
+<div className="card-glass p-4 md:p-6 relative overflow-hidden">
+  <div className="flex items-start justify-between gap-3 flex-wrap">
+    {/* Tombol full-width di mobile */}
+    <button className="btn-primary text-sm px-4 py-2.5 w-full md:w-auto flex items-center justify-center gap-2">
+```
+
+### Maddah Hero Section
+
+```jsx
+{/* Horizontal scroll carousel di mobile (native feel) */}
+<div className="flex md:grid md:grid-cols-3 gap-3 overflow-x-auto md:overflow-visible
+                no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 mobile-scroll">
+  {myMaddahs.map(m => (
+    <div key={m.id}
+      className="w-[78vw] md:w-auto flex-shrink-0 md:flex-shrink
+                 card-glass p-4 cursor-pointer active:scale-[0.97] transition-transform">
+      {/* isi card tetap */}
+    </div>
+  ))}
+</div>
+```
+
+### Continue + Stage Grid
+
+```jsx
+{/* Mobile: stack vertikal, Stage card compact */}
+<div className="grid md:grid-cols-12 gap-3 md:gap-4">
+  <ContinueCard className="md:col-span-8" progress={progress}/>
+  <StageCard    className="md:col-span-4" stage={stage}/>
+</div>
+```
+
+Di `StageCard` & `ContinueCard`, update padding:
+
+```jsx
+{/* Ganti p-7 → p-4 md:p-7 */}
+<div className={`${className} card-glass-strong p-4 md:p-7 relative overflow-hidden`}>
+```
+
+### AI Recommendation
+
+```jsx
+{/* Mobile: 1 kolom scroll horizontal */}
+<div className="flex md:grid md:grid-cols-3 gap-3 overflow-x-auto md:overflow-visible
+                no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 mobile-scroll">
+  {recs.map((rec, i) => (
+    <div key={rec.toolId} className="w-[78vw] md:w-auto flex-shrink-0 md:flex-shrink">
+      <RecommendationCard rec={rec} index={i} profile={profile}/>
+    </div>
+  ))}
+</div>
+```
+
+### Quick Actions
+
+```jsx
+{/* Mobile: 2 kolom (bukan 4) */}
+<div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
+  {/* cards */}
+</div>
+```
+
+Di `QuickAction` component, update untuk mobile:
+
+```jsx
+const QuickAction = ({ icon, title, desc, to, onClick, color = "violet" }) => (
+  <button onClick={onClick || (() => navigate(to))}
+    className="card-glass p-3 md:p-4 hov-lift text-left transition-all active:scale-[0.97]"
+    style={{ minHeight: 44 }}>
+    <div className={`w-8 h-8 md:w-9 md:h-9 rounded-lg mb-2 md:mb-3 flex items-center justify-center
+      ${color === "gold" ? "bg-gold-500/15" : "bg-violet-500/15"}`}>
+      <Icon name={icon} className={`w-4 h-4 ${color === "gold" ? "text-gold-300" : "text-violet-300"}`}/>
+    </div>
+    <div className="font-display text-sm md:text-base font-semibold text-ink mb-0.5">{title}</div>
+    <div className="text-[11px] md:text-xs text-ink-muted leading-relaxed">{desc}</div>
+  </button>
+);
+```
+
+---
+
+## LAYER 5 — Maddah Hub Mobile
+
+Di `src/pages/maddah-hub.jsx`:
+
+```jsx
+{/* Header compact */}
+<section className="relative pt-6 md:pt-12 pb-4 overflow-hidden">
+  <h1 className="font-display text-3xl md:text-5xl font-semibold text-ink">
+    Semua Maddah.
+  </h1>
+</section>
+
+{/* Filter sticky lebih tipis */}
+<section className="sticky top-12 md:top-[72px] z-30 border-b border-line"
+  style={{ background: "rgba(10,5,20,0.92)", backdropFilter: "blur(20px)" }}>
+  <div className="container-x py-3">
+    {/* Search bar */}
+    <input className="... text-base" {/* min 16px untuk cegah iOS zoom */}
+      style={{ fontSize: 16 }}/>
+    
+    {/* Category chips — horizontal scroll */}
+    <div className="flex gap-2 overflow-x-auto no-scrollbar mt-2 pb-1">
+      {/* chips */}
+    </div>
+  </div>
+</section>
+
+{/* Grid 1 kolom mobile */}
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+  {filtered.map(m => <MaddahCard key={m.id} maddah={m}/>)}
+</div>
+```
+
+`MaddahCard` mobile compact:
+
+```jsx
+const MaddahCard = ({ maddah }) => (
+  <div onClick={() => navigate("/maddah/" + maddah.id)}
+    className="card-glass p-4 cursor-pointer active:scale-[0.98] transition-transform">
+    
+    {/* Row: Arabic kiri, badge kanan */}
+    <div className="flex items-start justify-between gap-2 mb-2">
+      <div>
+        <div className="arabic-display text-gold-300 text-lg mb-0.5" style={{direction:"rtl"}}>
+          {maddah.nameArabic}
+        </div>
+        <h3 className="font-display text-base font-semibold text-ink">{maddah.name}</h3>
+      </div>
+      {/* badge jika ada */}
+    </div>
+    <p className="text-xs text-ink-muted line-clamp-2 leading-relaxed mb-2">{maddah.description}</p>
+    <div className="flex items-center justify-between text-xs text-ink-soft">
+      <span>Tingkat {maddah.tingkat.filter(t=>t!=="mustawa"&&t!=="pasca").join(", ") || "Semua"}</span>
+      {hasContent && <span className="text-gold-400">{totalPrompts} prompt</span>}
+    </div>
+  </div>
+);
+```
+
+---
+
+## LAYER 6 — Maddah Detail Mobile
+
+Di `src/pages/maddah-detail.jsx`:
+
+```jsx
+{/* Header compact */}
+<section className="relative pt-6 md:pt-10 pb-4 overflow-hidden">
+  <button onClick={() => navigate("/maddah")}
+    className="text-sm text-ink-soft inline-flex items-center gap-1.5 mb-3"
+    style={{ minHeight: 44 }}>
+    <Icon name="arrowLeft" className="w-4 h-4"/> Maddah
+  </button>
+  
+  {/* Arabic + nama */}
+  <div className="arabic-display text-gold-300 text-3xl md:text-5xl mb-1" style={{direction:"rtl"}}>
+    {maddah.nameArabic}
+  </div>
+  <h1 className="font-display text-2xl md:text-4xl font-semibold text-ink">{maddah.name}</h1>
+</section>
+
+{/* Kitab Utama — horizontal scroll di mobile */}
+<div className="flex md:grid md:grid-cols-4 gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 mobile-scroll mb-6">
+  {maddah.kitabUtama.map((k,i) => (
+    <div key={i} className="w-40 md:w-auto flex-shrink-0 md:flex-shrink card-glass p-3">
+      {/* isi tetap */}
+    </div>
+  ))}
+</div>
+
+{/* Tab prompt — horizontal scroll sticky */}
+<div className="sticky top-12 md:top-[72px] z-20 border-b border-line mb-4"
+  style={{ background: "rgba(10,5,20,0.92)", backdropFilter: "blur(16px)" }}>
+  <div className="flex gap-2 overflow-x-auto no-scrollbar px-4 md:px-0 py-2 -mx-4 md:mx-0">
+    {MADDAH_PROMPT_KINDS.map(kind => {
+      const count = maddah.prompts[kind.id]?.length || 0;
+      if (!count) return null;
+      return (
+        <button key={kind.id} onClick={() => setActiveKind(kind.id)}
+          className={`flex-shrink-0 px-3 py-2 rounded-lg text-xs transition-colors flex items-center gap-1.5
+            ${activeKind === kind.id
+              ? "bg-violet-500/20 text-violet-200 border border-violet-500/30"
+              : "bg-white/3 text-ink-muted border border-line"}`}
+          style={{ minHeight: 36 }}>
+          {kind.label}
+          <span className="text-[10px] opacity-60">{count}</span>
+        </button>
+      );
+    })}
+  </div>
+</div>
+```
+
+`PromptCard` mobile — tombol full-width:
+
+```jsx
+{/* Di mobile, tombol stack vertikal */}
+<div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
+  <button onClick={handleCopy}
+    className="btn-ghost text-xs px-3 py-2.5 flex items-center justify-center gap-1.5 w-full sm:w-auto"
+    style={{ minHeight: 44 }}>
+    <Icon name="copy" className="w-3 h-3"/>
+    {copied ? "Tersalin ✓" : "Salin"}
+  </button>
+  {tool?.link && (
+    <button onClick={handleCopyAndOpen}
+      className="btn-primary text-xs px-3 py-2.5 flex items-center justify-center gap-1.5 w-full sm:w-auto"
+      style={{ minHeight: 44 }}>
+      Buka {tool.name} <Icon name="external" className="w-3 h-3"/>
+    </button>
+  )}
+</div>
+```
+
+---
+
+## LAYER 7 — Kurasah & Editor Mobile
+
+Di `src/pages/kurasah.jsx`:
+
+```jsx
+{/* Header compact */}
+<section className="pt-6 md:pt-12 pb-4">
+  <h1 className="font-display text-3xl md:text-4xl font-semibold text-ink mb-2">Kurasah</h1>
+  {/* Action buttons — row compact */}
+  <div className="flex gap-2 flex-wrap">
+    <button className="btn-primary text-sm px-4 py-2.5" style={{minHeight:44}}>Tulis Catatan</button>
+    <button className="btn-ghost text-sm px-3 py-2.5" style={{minHeight:44}}>Export</button>
+  </div>
+</section>
+
+{/* Grid 1 kolom mobile */}
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+```
+
+Di `src/pages/kurasah-editor.jsx`, layout 2-pane tidak cocok untuk mobile:
+
+```jsx
+{/* Mobile: tab toggle Edit/Preview (bukan 2 pane) */}
+<div className="md:hidden flex border-b border-line mb-4">
+  {["edit","preview"].map(m => (
+    <button key={m} onClick={() => setMobileMode(m)}
+      className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
+        mobileMode === m ? "text-violet-200 border-b-2 border-violet-400" : "text-ink-muted"
+      }`}
+      style={{minHeight:44}}>
+      {m === "edit" ? "Edit" : "Preview"}
+    </button>
+  ))}
+</div>
+
+{/* Desktop: 2 pane side by side */}
+<div className="hidden md:grid md:grid-cols-2 gap-4">
+  {/* editor pane */}
+  {/* preview pane */}
+</div>
+
+{/* Mobile: tampilkan sesuai tab aktif */}
+<div className="md:hidden">
+  {mobileMode === "edit" && /* editor */ }
+  {mobileMode === "preview" && /* preview */ }
+</div>
+```
+
+---
+
+## LAYER 8 — Landing Mobile
+
+Di `src/pages/landing.jsx`, hero section:
+
+```jsx
+{/* Mobile: center layout, card di bawah */}
+<section className="relative overflow-hidden pt-10 md:pt-20 pb-8 md:pb-16">
+  <div className="container-x relative">
+    <div className="text-center flex flex-col items-center max-w-3xl mx-auto">
+
+      {/* Arabic — lebih kecil mobile */}
+      <div className="arabic-classic text-gold-300 text-2xl md:text-4xl mb-3" style={{direction:"rtl"}}>
+        تَلْقِيح
+      </div>
+
+      {/* Headline — scale down aggressively di mobile */}
+      <h1 className="font-display text-4xl md:text-6xl lg:text-8xl font-semibold leading-[1.0] text-ink mb-4">
+        Paham <span className="gradient-text">Muqarrar</span>
+        <br/>dengan AI.
+      </h1>
+
+      {/* Sub — 1 kalimat di mobile */}
+      <p className="text-base md:text-lg text-ink-muted max-w-sm md:max-w-xl mb-7 leading-relaxed">
+        Panduan lengkap + prompt untuk pahami materi Al-Azhar. Semua tingkat.
+      </p>
+
+      {/* CTAs — stack di mobile */}
+      <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mb-4">
+        <button onClick={() => navigate("/sample/nahwu")}
+          className="btn-primary px-6 py-3.5 text-base font-medium w-full sm:w-auto"
+          style={{minHeight:48}}>
+          Cobain Sample Gratis →
+        </button>
+        <button onClick={onOpenPayment}
+          className="btn-ghost px-6 py-3.5 text-base w-full sm:w-auto"
+          style={{minHeight:48}}>
+          Gabung Member
+        </button>
+      </div>
+
+      {/* Trust row — compact mobile */}
+      <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 text-xs text-ink-soft mb-10">
+        {["36 Maddah", "540+ prompt", "Bayar sekali"].map((t,i) => (
+          <span key={i} className="flex items-center gap-1.5">
+            <Icon name="check" className="w-3 h-3 text-gold-400"/>{t}
+          </span>
+        ))}
+      </div>
+
+      {/* Card showcase — full width mobile */}
+      <div className="w-full max-w-sm md:max-w-md">
+        <HeroShowcaseCard/>
+      </div>
+    </div>
+  </div>
+</section>
+```
+
+---
+
+## LAYER 9 — Input Fields (Cegah iOS Auto-Zoom)
+
+iOS auto-zoom terjadi saat input font-size < 16px. Fix di semua form:
+
+Di `index.html` style:
+
+```css
+@media (max-width: 767px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+```
+
+---
+
+## LAYER 10 — QuickNote Universal
+
+QuickNote button harus ada di semua page member. Pindahkan ke `src/app.jsx`:
+
+```jsx
+{/* Di dalam Layout member, setelah <main> */}
+{session && profile?.onboarded && (
+  <QuickNoteButton/>
+)}
+```
+
+Hapus QuickNoteButton dari dashboard.jsx, kurasah.jsx, muqaranah-detail.jsx (sudah dipindah ke app.jsx).
+
+Di QuickNote komponen, pastikan modal muncul sebagai **bottom sheet di mobile**:
+
+```jsx
+{/* QuickNote modal — bottom sheet di mobile, centered di desktop */}
+<div className="fixed inset-0 z-[70] flex items-end md:items-center justify-center"
+  onClick={onClose}>
+  <div className="absolute inset-0 bg-night-950/70 backdrop-blur-sm"/>
+  <div className="relative w-full md:max-w-lg bg-night-800 border-t md:border border-line
+                  rounded-t-2xl md:rounded-2xl overflow-hidden"
+    style={{ paddingBottom: "var(--safe-bottom)" }}
+    onClick={e => e.stopPropagation()}>
+    {/* Drag handle mobile */}
+    <div className="md:hidden flex justify-center pt-3 pb-1">
+      <div className="w-10 h-1 rounded-full bg-white/20"/>
+    </div>
+    {/* ... konten QuickNote tetap */}
+  </div>
+</div>
+```
+
+---
+
+## Acceptance Criteria
+
+### Foundation
+- [ ] Section padding di mobile: 32px (bukan 64px)
+- [ ] Container padding di mobile: 16px
+- [ ] Card radius mobile: 14px (sedikit lebih kecil)
+- [ ] Input font-size minimum 16px (test di iOS — tidak ada auto-zoom)
+- [ ] Tap highlight transparan (tidak ada flash biru/abu saat tap)
+
+### Bottom Tab Bar
+- [ ] Muncul di mobile untuk member onboarded
+- [ ] 5 tab: Beranda, Maddah, Muqaranah, Kurasah, Tools
+- [ ] Indikator aktif: garis violet di atas + warna icon/label
+- [ ] Tidak muncul di desktop (md: ke atas)
+- [ ] Konten tidak tertutup tab bar (padding bawah)
+- [ ] Tab bar hormati safe-area bawah (iPhone)
+
+### Header Mobile
+- [ ] Header h-12 di mobile (lebih tipis dari h-16)
+- [ ] Hamburger menu hanya untuk publik/non-member
+- [ ] Member mobile: avatar → account bottom sheet
+- [ ] Account sheet punya: info member, Learning Path, Etika, Logout
+
+### Dashboard Mobile
+- [ ] Greeting heading lebih kecil (text-4xl mobile)
+- [ ] Maddah-mu: horizontal scroll carousel (swipe)
+- [ ] AI Recommendation: horizontal scroll carousel
+- [ ] Quick Actions: 2 kolom (bukan 4)
+- [ ] Card padding p-4 di mobile (bukan p-7)
+
+### Maddah Hub Mobile
+- [ ] Grid 1 kolom
+- [ ] Filter sticky dengan horizontal scroll chips
+- [ ] MaddahCard compact (padding p-4, font lebih kecil)
+
+### Maddah Detail Mobile
+- [ ] Header compact (pt-6)
+- [ ] Kitab utama: horizontal scroll
+- [ ] Tab prompt: sticky horizontal scroll di bawah header
+- [ ] Tombol salin prompt: full-width di mobile
+
+### Kurasah Editor Mobile
+- [ ] Tab toggle Edit/Preview (bukan 2 pane side by side)
+- [ ] Edit pane: textarea full-width
+- [ ] Preview pane: full-width render
+
+### Landing Mobile
+- [ ] Headline text-4xl di mobile
+- [ ] CTA buttons stack vertikal, full-width
+- [ ] Card showcase full-width
+
+### Touch & Interaction
+- [ ] Semua tombol minimum height 44px
+- [ ] Active state: scale(0.97) untuk card yang di-tap
+- [ ] Tidak ada hover effect di mobile (tidak ada mouse hover)
+
+### Desktop Tidak Berubah
+- [ ] Buka di desktop (≥768px) → IDENTIK dengan sebelum prompt ini
+- [ ] Tidak ada class yang mengubah desktop layout
+
+---
+
+والله ولي التوفيق. Mulai dari Layer 1 (CSS foundation) — ini yang paling impactful.
