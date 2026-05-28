@@ -368,8 +368,8 @@ const Footer = () => (
       style={{
         fontSize: "clamp(80px, 18vw, 240px)",
         lineHeight: 1,
-        color: "transparent",
-        WebkitTextStroke: "1px rgba(212,178,125,0.13)",
+        color: "rgba(212,178,125,0.18)",
+        WebkitTextStroke: "1px rgba(212,178,125,0.80)",
         letterSpacing: "-0.02em",
         direction: "rtl",
         paddingRight: "4vw",
