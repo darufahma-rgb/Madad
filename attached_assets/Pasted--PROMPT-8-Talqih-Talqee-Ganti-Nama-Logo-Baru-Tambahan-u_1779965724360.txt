@@ -1,0 +1,148 @@
+# PROMPT 8 — Talqih → Talqee: Ganti Nama + Logo Baru
+
+> Tambahan untuk roadmap. Mengganti nama brand "Talqih" → "Talqee" di seluruh app, dan mengganti logo dengan file baru yang sudah diupload.
+
+---
+
+## Konteks
+
+Rebrand minor: nama "Talqih" diganti jadi **"Talqee"** (ejaan lebih accessible, pengucapan lebih jelas: tal-kii). Filosofi tetap sama (penyemaian/penyuburan pemahaman ilmu dengan AI). Logo diganti dengan desain baru: house/mihrab outline dengan kaligrafi Arab "تلقي" di dalamnya.
+
+Struktur brand:
+- **Nama utama:** Talqee
+- **Signature/by-line:** AIGYPT
+- **Tagline:** Panduan Belajar Al-Azhar dengan AI
+- **Arabic:** تَلْقِيح (kaligrafi di logo)
+
+---
+
+## BAGIAN 1 — Ganti Logo
+
+### STEP 1.1 — Simpan File Logo
+
+File logo baru sudah diupload. Simpan ke `assets/talqee-logo.png` (atau nama yang konsisten). Logo ini: putih di atas transparan/hitam — cocok untuk dark background Talqee.
+
+Kalau file logo lama `assets/aigypt-logo.png` masih dipakai, **ganti referensinya** ke logo baru, ATAU timpa file lama dengan yang baru supaya semua referensi otomatis update.
+
+### STEP 1.2 — Update Komponen LogoMark di `src/ui.jsx`
+
+Cari komponen `LogoMark` (sekitar line 138-145 yang pakai `assets/aigypt-logo.png`). Update src ke logo baru:
+
+```jsx
+const LogoMark = ({ size = 40 }) => (
+  <span className="inline-flex items-center justify-center rounded-xl flex-shrink-0"
+    style={{ width: size, height: size, background: "linear-gradient(135deg, #7C4DFF, #5C35CC)" }}>
+    <img 
+      src="assets/talqee-logo.png" 
+      alt="Talqee" 
+      style={{ width: size * 0.72, height: size * 0.72, objectFit: "contain" }}
+    />
+  </span>
+);
+```
+
+Catatan: logo baru putih, jadi TIDAK perlu filter apa-apa — biarkan tampil natural di atas background gradient violet. Sesuaikan `size * 0.72` kalau logo terlihat terlalu besar/kecil dalam container.
+
+### STEP 1.3 — Favicon & Meta
+
+Update favicon di `index.html` ke logo baru:
+```html
+<link rel="icon" type="image/png" href="assets/talqee-logo.png" />
+<link rel="apple-touch-icon" href="assets/talqee-logo.png" />
+<meta property="og:image" content="assets/talqee-logo.png" />
+```
+
+---
+
+## BAGIAN 2 — Ganti Nama Talqih → Talqee
+
+### STEP 2.1 — Global Find & Replace
+
+Cari **case-sensitive** di SELURUH codebase dan ganti:
+
+| Find | Replace |
+|---|---|
+| `Talqih` | `Talqee` |
+| `talqih` (di copy/text, BUKAN localStorage key) | `talqee` |
+| `TALQIH` | `TALQEE` |
+
+**File yang harus discan:**
+- `index.html` (title, meta, loading placeholder)
+- Semua `src/*.jsx` dan `src/pages/*.jsx`
+
+**⚠️ JANGAN ganti:**
+- localStorage keys (`madad_notes`, `madad_intentions`, dll) — biarkan untuk backward compat
+- Kaligrafi Arab تَلْقِيح — biarkan (itu nama Arab asli, tetap otentik)
+
+### STEP 2.2 — Update Navbar Brand di `src/layout.jsx`
+
+```jsx
+[LogoMark] Talqee
+           PANDUAN AI · MASISIR
+```
+
+Pastikan teks "Talqee" (bukan Talqih) dengan font-display.
+
+### STEP 2.3 — Update Loading Placeholder di `index.html`
+
+Kalau ada loading placeholder (dari Prompt 5), update teks "Membuka Talqih..." → "Membuka Talqee...". Kaligrafi تَلْقِيح tetap.
+
+### STEP 2.4 — Update Title & Meta
+
+```html
+<title>Talqee — Panduan Belajar Al-Azhar dengan AI</title>
+<meta name="description" content="Talqee adalah panduan belajar materi Al-Azhar dengan AI untuk Masisir semua tingkat..." />
+<meta property="og:title" content="Talqee — Panduan Belajar Al-Azhar dengan AI" />
+```
+
+### STEP 2.5 — Update URL Lynk (kalau perlu)
+
+Kalau payment URL pakai `lynk.id/talqih`, update ke `lynk.id/talqee` (atau URL aktual). Konfirmasi dengan admin URL yang benar.
+
+---
+
+## BAGIAN 3 — Starter Pack & Prompt Templates
+
+Cek apakah ada string "Talqih" di dalam:
+- `generateStarterPack()` di adaptive-prompt.jsx — kalau ada "Talqih" di teks starter pack, ganti ke "Talqee"
+- Prompt templates di maddah-data.jsx & sample-nahwu.jsx — kalau ada referensi brand, ganti
+
+Catatan: kebanyakan prompt template TIDAK menyebut nama brand (mereka pakai "Aku thalib di Al-Azhar..."), jadi kemungkinan minimal. Tapi tetap cek.
+
+---
+
+## Acceptance Criteria
+
+### Logo
+- [ ] Logo baru tampil di navbar (house/mihrab dengan kaligrafi Arab)
+- [ ] Logo tampil natural (putih), tidak terdistorsi atau kena filter aneh
+- [ ] Favicon update ke logo baru (cek tab browser)
+- [ ] Logo proporsional dalam container (tidak kepotong/kekecilan)
+
+### Nama
+- [ ] Cari "Talqih" di codebase → 0 results (kecuali kaligrafi Arab & localStorage keys)
+- [ ] Navbar tampilkan "Talqee"
+- [ ] Title tab browser: "Talqee — Panduan Belajar Al-Azhar dengan AI"
+- [ ] Loading placeholder: "Membuka Talqee..."
+- [ ] Footer: "Talqee — ..." + "Designed & Developed by Dar Dev"
+- [ ] Hero section (kalau ada teks brand): "Talqee"
+- [ ] Starter pack & prompt: tidak ada "Talqih" tersisa
+
+### Compatibility
+- [ ] localStorage keys tetap `madad_*` — data user existing tetap utuh
+- [ ] Kaligrafi Arab تَلْقِيح tetap otentik (tidak diubah)
+- [ ] Tidak ada console error
+- [ ] Tidak ada broken image (logo) di mana pun
+- [ ] Mobile responsive — logo & nama tetap rapih di mobile
+
+---
+
+## Catatan untuk Admin (Manual)
+
+Sebelum deploy:
+1. Pastikan file `assets/talqee-logo.png` benar-benar terupload ke project
+2. Kalau punya versi logo PNG dengan padding/ukuran berbeda untuk favicon (square, kecil), bisa siapkan terpisah supaya favicon tajam
+3. Update URL Lynk.id ke yang benar
+4. Pertimbangkan bikin og-image khusus (1200x630) dengan logo Talqee + tagline untuk preview share WhatsApp
+
+والله ولي التوفيق. Mulai.

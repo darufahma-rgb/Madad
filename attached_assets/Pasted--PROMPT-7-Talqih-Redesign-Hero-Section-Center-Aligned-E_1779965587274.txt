@@ -1,0 +1,207 @@
+# PROMPT 7 — Talqih: Redesign Hero Section (Center-Aligned, Elegant)
+
+> Tambahan untuk roadmap Talqih. HANYA mengubah Hero section di `src/pages/landing.jsx`. Section lain (Sample Maddah, Cara Kerja, dll) TIDAK disentuh.
+
+---
+
+## Konteks
+
+Hero landing Talqih sekarang split kiri-kanan (text kiri, card Maddah kanan). Aku ingin **redesign jadi center-aligned** — simpel, elegant, premium, "wah". Semua konten di tengah, vertikal, dengan komposisi yang punya presence kuat tapi tetap tenang (sanctuary mood).
+
+Brand: **Talqih** — Panduan Belajar Al-Azhar dengan AI. Color: dark midnight purple (#0A0514 bg), violet (#7C4DFF), gold (#C9A86A). Font: Crimson Pro (display), Inter (body), Aref Ruqaa (arabic-classic), Reem Kufi (arabic-display).
+
+---
+
+## Layout Hero Baru (Center-Aligned)
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  [pattern-talqih bintang subtle + blob violet/gold]              │
+│                                                                  │
+│                      تَلْقِيح                                      │  ← arabic-classic gold, besar, center
+│                                                                  │
+│              ✦ Panduan AI untuk Masisir ✦                       │  ← eyebrow chip center
+│                                                                  │
+│                  Paham Muqarrar                                  │  ← headline display besar, center
+│                  dengan AI.                                      │     gradient di "Muqarrar"
+│                                                                  │
+│      Panduan lengkap + template prompt untuk pahami              │  ← sub 1-2 baris, center, max-w
+│        materi Al-Azhar. Untuk Masisir semua tingkat.             │
+│                                                                  │
+│         [Cobain Sample Gratis →]  [Gabung · 79k 49k]            │  ← 2 CTA center
+│                                                                  │
+│              Sudah punya kode? Masuk di sini                     │  ← link kecil center
+│                                                                  │
+│     ✓ 36 Maddah   ✓ 540+ prompt   ✓ Bayar sekali               │  ← trust row center
+│                                                                  │
+│         ┌─────────────────────────────────────┐                 │
+│         │  [Card Nahwu preview — center,       │                 │  ← card showcase di BAWAH,
+│         │   melayang, jadi focal point]        │                 │     center, sebagai puncak
+│         └─────────────────────────────────────┘                 │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+Prinsip: **vertikal flow ke bawah, semua center**. Card Maddah Nahwu pindah dari kanan → ke bawah sebagai grand finale, melayang dengan glow elegan.
+
+---
+
+## Implementasi — Ganti Komponen `Hero` di `src/pages/landing.jsx`
+
+```jsx
+const Hero = ({ onOpenLogin, onOpenPayment }) => (
+  <section className="relative overflow-hidden pt-20 md:pt-28 pb-16">
+    {/* Background layers */}
+    <div className="pattern-talqih"/>
+    <Blob color="rgba(124,77,255,0.22)" size={700} top={-250} left={-100}/>
+    <Blob color="rgba(201,168,106,0.10)" size={500} top={200} right={-150}/>
+    {/* Radial vignette untuk fokus ke tengah */}
+    <div className="absolute inset-0 pointer-events-none" style={{
+      background: "radial-gradient(ellipse 70% 60% at 50% 35%, transparent 30%, rgba(10,5,20,0.4) 100%)"
+    }}/>
+
+    <div className="container-x relative">
+      <div className="max-w-3xl mx-auto text-center flex flex-col items-center">
+
+        {/* Arabic brand — Aref Ruqaa, besar */}
+        <Reveal>
+          <div className="arabic-classic text-gold-300 text-4xl md:text-5xl mb-5 leading-none" style={{direction:"rtl"}}>
+            تَلْقِيح
+          </div>
+        </Reveal>
+
+        {/* Eyebrow chip */}
+        <Reveal delay={60}>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-xs mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>
+            <span className="text-violet-200 font-medium">Panduan AI untuk Masisir</span>
+          </div>
+        </Reveal>
+
+        {/* Headline */}
+        <Reveal delay={120}>
+          <h1 className="font-display text-6xl md:text-8xl font-semibold leading-[0.98] text-ink mb-6 tracking-tight">
+            Paham{" "}
+            <span className="bg-gradient-to-br from-violet-300 via-violet-400 to-gold-400 bg-clip-text text-transparent">Muqarrar</span>
+            <br/>
+            dengan AI.
+          </h1>
+        </Reveal>
+
+        {/* Sub-headline */}
+        <Reveal delay={180}>
+          <p className="text-lg md:text-xl text-ink-muted leading-relaxed max-w-xl mb-10">
+            Panduan lengkap + template prompt untuk pahami materi Al-Azhar.
+            Untuk Masisir semua tingkat — dari Mustawa sampai S2.
+          </p>
+        </Reveal>
+
+        {/* CTA */}
+        <Reveal delay={240}>
+          <div className="flex flex-col sm:flex-row gap-3 items-center justify-center mb-5">
+            <button onClick={() => navigate("/sample/nahwu")} className="btn-primary px-8 py-4 text-base font-medium">
+              Cobain Sample Gratis →
+            </button>
+            <button onClick={onOpenPayment} className="btn-ghost px-8 py-4 text-base">
+              Gabung Member · <span className="line-through text-ink-soft mr-1">79k</span> <span className="text-gold-300 font-semibold">49k</span>
+            </button>
+          </div>
+        </Reveal>
+
+        {/* Login link */}
+        <Reveal delay={300}>
+          <div className="text-sm text-ink-soft mb-10">
+            Sudah punya kode? <button onClick={onOpenLogin} className="text-violet-300 hover:text-violet-200 underline underline-offset-2 font-medium">Masuk di sini</button>
+          </div>
+        </Reveal>
+
+        {/* Trust row */}
+        <Reveal delay={340}>
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-ink-soft mb-16">
+            {["36 Maddah lengkap", "540+ template prompt", "Bayar sekali, akses selamanya"].map((t, i) => (
+              <span key={i} className="flex items-center gap-2">
+                <Icon name="check" className="w-3.5 h-3.5 text-gold-400"/>{t}
+              </span>
+            ))}
+          </div>
+        </Reveal>
+
+        {/* Card showcase — focal point di bawah, melayang */}
+        <Reveal delay={400}>
+          <HeroShowcaseCard/>
+        </Reveal>
+
+      </div>
+    </div>
+  </section>
+);
+
+/* Card Maddah preview — melayang sebagai puncak hero */
+const HeroShowcaseCard = () => (
+  <div className="relative w-full max-w-md mx-auto">
+    {/* Glow di belakang card */}
+    <div className="absolute -inset-4 bg-gradient-to-br from-violet-500/20 to-gold-500/10 blur-3xl rounded-full pointer-events-none"/>
+    
+    <div className="card-glass-strong p-7 relative text-left">
+      {/* Arabic di pojok */}
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <h3 className="font-display text-2xl font-semibold text-ink">Nahwu Dasar</h3>
+          <p className="text-sm text-ink-muted">Ilmu Sintaksis Arab</p>
+        </div>
+        <div className="arabic-display text-gold-300 text-3xl leading-none" style={{direction:"rtl"}}>النحو</div>
+      </div>
+
+      {/* AI chips */}
+      <div className="flex gap-2 mb-5">
+        <span className="px-3 py-1 rounded-full bg-violet-500/15 border border-violet-500/25 text-xs text-violet-200">Claude</span>
+        <span className="px-3 py-1 rounded-full bg-white/5 border border-line text-xs text-ink-muted">NotebookLM</span>
+      </div>
+
+      {/* Prompt count */}
+      <div className="mb-5">
+        <div className="text-ink"><span className="font-display text-xl font-semibold">17</span> <span className="text-sm text-ink-muted">template prompt</span></div>
+        <div className="text-xs text-ink-soft mt-1">Pahami · Hafal · Latihan · Ujian</div>
+      </div>
+
+      {/* AI rec box */}
+      <div className="p-4 rounded-xl bg-gold-500/8 border border-gold-500/15">
+        <div className="text-[10px] uppercase tracking-wider text-gold-300 mb-1.5 font-medium">✦ AI Rekomendasi</div>
+        <div className="font-display text-base font-semibold text-ink mb-0.5">NotebookLM</div>
+        <div className="text-xs text-ink-muted">Sesuai: hafalan matan · Untuk: Nahwu Dasar</div>
+      </div>
+    </div>
+  </div>
+);
+```
+
+---
+
+## Detail Estetik (Penting untuk "Wah")
+
+1. **Radial vignette** di background — bikin mata otomatis fokus ke konten tengah. Sudah include di kode.
+2. **Glow di belakang card** — gradient violet→gold blur, bikin card terasa "melayang" premium.
+3. **Stagger animation** — tiap elemen muncul berurutan (delay 60ms increment) via `<Reveal delay={...}>`. Kalau `Reveal` belum support prop `delay`, tambahkan: `style={{ animationDelay: delay + 'ms' }}` di komponen Reveal, atau pakai yang sudah ada.
+4. **Headline besar** — `text-6xl md:text-8xl` dengan `tracking-tight` dan `leading-[0.98]` biar punch.
+5. **Arabic تَلْقِيح di paling atas** — Aref Ruqaa, gold, jadi pembuka yang elegan & spiritual.
+6. **Spacing generous** — margin antar elemen lega (mb-5 sampai mb-16), napas = kemewahan.
+
+---
+
+## Acceptance Criteria
+
+- [ ] Hero center-aligned — semua elemen di tengah, flow vertikal ke bawah
+- [ ] Urutan: تَلْقِيح (Aref Ruqaa gold) → eyebrow chip → headline "Paham Muqarrar dengan AI" → sub → 2 CTA → login link → trust row → card Nahwu melayang
+- [ ] Headline "Muqarrar" pakai gradient violet→gold
+- [ ] Card Nahwu jadi focal point di bawah dengan glow blur di belakangnya (terasa melayang)
+- [ ] Radial vignette bikin fokus ke tengah
+- [ ] Stagger animation (elemen muncul berurutan)
+- [ ] Harga "79k 49k" dengan 79k coret (strikethrough)
+- [ ] Pattern bintang + blob tetap ada di background
+- [ ] Mobile responsive (375px) — headline mengecil proporsional, card full-width
+- [ ] Tidak ada console error
+- [ ] Section lain di landing TIDAK berubah (cuma Hero)
+- [ ] Mood tetap sanctuary: tenang, elegan, gold cuma untuk Arab & accent
+
+---
+
+والله ولي التوفيق. Mulai.

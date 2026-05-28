@@ -1,0 +1,407 @@
+# PROMPT 9 — Talqee: Mobile Native-App Experience
+
+> Membuat Talqee terasa seperti aplikasi native mobile di HP, dengan fungsi identik versi desktop. Fokus: bottom tab bar, compact sizing, bottom sheets, touch-friendly. Desktop TIDAK berubah.
+
+---
+
+## Konteks & Prinsip
+
+Mayoritas user Talqee (Masisir) akses via HP. Saat ini web responsive tapi masih terasa "website yang diciutkan", bukan app native. Tujuan: di layar mobile (<768px), Talqee terasa seperti **aplikasi native** — sambil mempertahankan SEMUA fungsi desktop.
+
+**Prinsip native-app:**
+1. **Bottom Tab Bar** menggantikan hamburger menu untuk navigasi utama
+2. **Compact header** — tipis, sticky, judul halaman + back button kontekstual
+3. **Touch targets ≥ 44px** — semua tombol/link mudah dipencet jempol
+4. **Bottom sheets** menggantikan modal tengah (naik dari bawah)
+5. **Compact spacing & sizing** — padding rapat, font proporsional, density tinggi tapi tetap lega
+6. **Safe area** — hormati notch (atas) & home indicator (bawah) iPhone
+7. **No horizontal scroll** — semua muat dalam viewport
+
+**Aturan emas:** SEMUA perubahan mobile pakai breakpoint `< md` (max-width 767px). Desktop (`md:` ke atas) TIDAK boleh berubah sama sekali.
+
+---
+
+## BAGIAN 1 — Viewport & Foundation
+
+### STEP 1.1 — Meta Viewport di `index.html`
+
+Pastikan meta viewport mendukung safe-area & mencegah zoom:
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="theme-color" content="#0A0514" />
+```
+
+### STEP 1.2 — CSS Safe Area & Mobile Utilities di `index.html`
+
+Tambah di `<style>`:
+
+```css
+/* Safe area variables */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --tabbar-height: 64px;
+}
+
+/* Mobile: beri ruang bawah untuk tab bar + safe area */
+@media (max-width: 767px) {
+  .has-tabbar { padding-bottom: calc(var(--tabbar-height) + var(--safe-bottom) + 16px); }
+  /* Compact container padding di mobile */
+  .container-x { padding-left: 1rem; padding-right: 1rem; }
+}
+
+/* Bottom sheet animation */
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.sheet-enter { animation: sheet-up 0.28s cubic-bezier(0.32, 0.72, 0, 1); }
+
+/* Smooth momentum scroll */
+.scroll-touch { -webkit-overflow-scrolling: touch; }
+
+/* Hide scrollbar tapi tetap scroll (mobile carousel) */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Touch tap highlight off */
+@media (max-width: 767px) {
+  * { -webkit-tap-highlight-color: transparent; }
+}
+```
+
+---
+
+## BAGIAN 2 — Bottom Tab Bar (Navigasi Mobile)
+
+### STEP 2.1 — Buat Komponen `<MobileTabBar>` di `src/layout.jsx`
+
+Tab bar fixed di bawah, hanya muncul di mobile untuk member yang login. 5 tab utama:
+
+```jsx
+const MobileTabBar = () => {
+  const { session, profile } = useAuth();
+  const path = window.location.hash.slice(1) || "/";
+  
+  // Hanya untuk member onboarded, sembunyikan di admin/landing/onboarding
+  if (!session || !profile?.onboarded) return null;
+  if (path.startsWith("/admin") || path.startsWith("/onboarding")) return null;
+
+  const tabs = [
+    { to: "/dashboard",       label: "Beranda",   icon: "home" },
+    { to: "/maddah",          label: "Maddah",    icon: "layers" },
+    { to: "/paths/muqaranah", label: "Muqaranah", icon: "scale" },
+    { to: "/kurasah",         label: "Kurasah",   icon: "notebook" },
+    { to: "/tools",           label: "Tools",     icon: "sparkles" },
+  ];
+
+  const isActive = (to) => {
+    if (to === "/dashboard") return path === "/dashboard" || path === "/";
+    return path.startsWith(to);
+  };
+
+  return (
+    <nav 
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t border-line bg-night-950/90 backdrop-blur-xl"
+      style={{ paddingBottom: "var(--safe-bottom)" }}
+    >
+      <div className="flex items-stretch justify-around h-16">
+        {tabs.map(tab => {
+          const active = isActive(tab.to);
+          return (
+            <button
+              key={tab.to}
+              onClick={() => navigate(tab.to)}
+              className="flex-1 flex flex-col items-center justify-center gap-1 relative"
+            >
+              {active && <span className="absolute top-0 w-8 h-0.5 rounded-full bg-violet-400"/>}
+              <Icon name={tab.icon} className={`w-5 h-5 transition-colors ${active ? "text-violet-300" : "text-ink-soft"}`}/>
+              <span className={`text-[10px] transition-colors ${active ? "text-violet-200 font-medium" : "text-ink-soft"}`}>{tab.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+};
+```
+
+### STEP 2.2 — Mount Tab Bar di `src/app.jsx`
+
+Setelah `<main>`, tambah:
+```jsx
+{session && profile?.onboarded && <MobileTabBar/>}
+```
+
+Pastikan `<MobileTabBar>` di-export ke window di layout.jsx.
+
+### STEP 2.3 — Beri Ruang Bawah untuk Tab Bar
+
+Wrapper konten member harus punya class `has-tabbar` di mobile supaya konten tidak ketutup tab bar. Di app.jsx atau layout, pada `<main>` member:
+```jsx
+<main className="flex-1 has-tabbar md:pb-0">
+```
+
+---
+
+## BAGIAN 3 — Compact Mobile Header
+
+### STEP 3.1 — Modifikasi Navbar Desktop jadi Compact di Mobile
+
+Navbar existing (desktop) tetap. Di mobile, sembunyikan nav links horizontal (sudah pindah ke tab bar). Header mobile jadi tipis: logo + nama + (opsional back button kontekstual).
+
+Di `src/layout.jsx`, header:
+
+```jsx
+<header className={`sticky top-0 z-40 transition-all ${scrolled ? "bg-night-900/80 backdrop-blur-xl border-b border-line" : "bg-transparent"}`}
+  style={{ paddingTop: "var(--safe-top)" }}>
+  <div className="container-x flex items-center justify-between h-14 md:h-[72px]">
+    <Brand/>
+    
+    {/* Desktop nav — sembunyi di mobile */}
+    <nav className="hidden md:flex items-center gap-1">
+      {/* ... existing desktop links ... */}
+    </nav>
+    
+    {/* Desktop actions — sembunyi di mobile */}
+    <div className="hidden md:flex items-center gap-2">
+      {/* ... existing member info + logout ... */}
+    </div>
+
+    {/* Mobile: cuma avatar/menu kecil untuk logout & profil */}
+    <div className="md:hidden">
+      {session ? (
+        <button onClick={() => setMobileSheetOpen(true)} className="w-9 h-9 rounded-full bg-violet-500/15 border border-violet-500/25 flex items-center justify-center text-violet-200 text-sm font-medium">
+          {session.name.charAt(0).toUpperCase()}
+        </button>
+      ) : (
+        <button onClick={onOpenLogin} className="text-sm text-violet-300 font-medium">Masuk</button>
+      )}
+    </div>
+  </div>
+</header>
+```
+
+### STEP 3.2 — Mobile Account Sheet
+
+Tombol avatar di mobile buka bottom sheet berisi: nama member, link ke Learning Path & Etika (yang tidak masuk tab bar), dan Logout.
+
+```jsx
+{mobileSheetOpen && (
+  <BottomSheet onClose={() => setMobileSheetOpen(false)} title="Akun">
+    <div className="space-y-1">
+      <div className="px-4 py-3 mb-2">
+        <div className="text-xs text-ink-soft">Member</div>
+        <div className="text-ink font-medium">{session.name}</div>
+      </div>
+      <SheetLink icon="bookOpen" label="Learning Path" onClick={() => { navigate("/paths"); setMobileSheetOpen(false); }}/>
+      <SheetLink icon="shield" label="Etika" onClick={() => { navigate("/ethics"); setMobileSheetOpen(false); }}/>
+      <button onClick={logout} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-600 hover:bg-white/5 transition-colors">
+        <Icon name="logout" className="w-5 h-5"/>
+        <span className="text-sm font-medium">Logout</span>
+      </button>
+    </div>
+  </BottomSheet>
+)}
+```
+
+---
+
+## BAGIAN 4 — Bottom Sheet Component (Ganti Modal di Mobile)
+
+### STEP 4.1 — Komponen `<BottomSheet>` Universal
+
+Buat komponen reusable di `src/ui.jsx`:
+
+```jsx
+const BottomSheet = ({ children, onClose, title, maxHeight = "85vh" }) => (
+  <div className="fixed inset-0 z-[70] flex items-end md:items-center md:justify-center" onClick={onClose}>
+    {/* Backdrop */}
+    <div className="absolute inset-0 bg-night-950/70 backdrop-blur-sm"/>
+    {/* Sheet (mobile: dari bawah; desktop: modal tengah) */}
+    <div 
+      className="relative w-full md:max-w-lg bg-night-800 border-t md:border border-line rounded-t-3xl md:rounded-2xl sheet-enter md:animate-none overflow-hidden"
+      style={{ maxHeight, paddingBottom: "var(--safe-bottom)" }}
+      onClick={e => e.stopPropagation()}
+    >
+      {/* Drag handle (mobile only) */}
+      <div className="md:hidden flex justify-center pt-3 pb-1">
+        <div className="w-10 h-1 rounded-full bg-white/20"/>
+      </div>
+      {title && (
+        <div className="px-5 py-3 border-b border-line flex items-center justify-between">
+          <h3 className="font-display text-lg font-semibold text-ink">{title}</h3>
+          <button onClick={onClose} className="text-ink-soft hover:text-ink w-8 h-8 flex items-center justify-center">✕</button>
+        </div>
+      )}
+      <div className="overflow-y-auto scroll-touch px-5 py-4" style={{ maxHeight: `calc(${maxHeight} - 80px)` }}>
+        {children}
+      </div>
+    </div>
+  </div>
+);
+
+const SheetLink = ({ icon, label, onClick }) => (
+  <button onClick={onClick} className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-ink-muted hover:text-ink hover:bg-white/5 transition-colors">
+    <Icon name={icon} className="w-5 h-5"/>
+    <span className="text-sm font-medium">{label}</span>
+  </button>
+);
+```
+
+Export `BottomSheet` dan `SheetLink` ke window.
+
+### STEP 4.2 — Konversi Modal Existing ke BottomSheet di Mobile
+
+Untuk komponen yang pakai modal tengah (ModuleRunner, QuickNote, Muqaranah AI prompt, Login, Payment) — di mobile, render sebagai bottom sheet. Cara termudah: bungkus konten modal existing dengan logika responsive, ATAU pakai `<BottomSheet>` yang sudah auto-handle (mobile dari bawah, desktop tengah) seperti di STEP 4.1.
+
+Prioritas konversi (yang paling sering dipakai di mobile):
+1. **PromptCard "Lihat lengkap"** → bottom sheet menampilkan prompt penuh + tombol salin
+2. **QuickNote** → bottom sheet dari bawah
+3. **ModuleRunner** (misi) → bottom sheet
+4. **Login & Payment modal** → bottom sheet
+
+---
+
+## BAGIAN 5 — Compact Sizing & Spacing (Mobile)
+
+### STEP 5.1 — Aturan Sizing Mobile
+
+Terapkan compact sizing di mobile via breakpoint. Pattern umum:
+
+**Headings:**
+- Hero headline: desktop `text-8xl` → mobile `text-5xl`
+- Section heading: desktop `text-4xl` → mobile `text-2xl` atau `text-3xl`
+
+**Cards:**
+- Padding: desktop `p-6/p-8` → mobile `p-4/p-5`
+- Gap antar card: desktop `gap-4` → mobile `gap-3`
+
+**Spacing section:**
+- Desktop `section` py besar → mobile py lebih kecil (mis. `py-8` di mobile vs `py-16` desktop)
+
+**Font body:**
+- Pertahankan readability — body min `text-sm` (14px), jangan lebih kecil
+
+### STEP 5.2 — Terapkan di Halaman Utama
+
+Pastikan halaman ini compact & rapi di mobile:
+
+**Dashboard:**
+- Greeting headline mengecil (`text-3xl` mobile)
+- Maddah grid → 1 kolom di mobile (sudah responsive, verify)
+- Sanctuary row (Niat/Ritme) → stack vertikal
+- Quick actions → 2 kolom di mobile (bukan 4)
+
+**Maddah Hub:**
+- Search bar full-width
+- Category chips → horizontal scroll (no-scrollbar)
+- Maddah cards → 1 kolom
+
+**Maddah Detail:**
+- Tab kategori prompt → horizontal scroll
+- Prompt cards → full-width, padding compact
+- Tombol "Salin & Buka AI" → full-width di mobile (lebih mudah dipencet)
+
+**Landing:**
+- Hero (dari Prompt 7) → headline mengecil, card showcase full-width
+- All Maddah grid → 1 kolom
+
+### STEP 5.3 — Touch Targets
+
+Semua tombol/link interaktif minimal tinggi 44px di mobile. Khususnya:
+- Tombol "Salin" prompt → `py-3` minimal di mobile
+- Tab bar items → sudah h-16 (64px), OK
+- Card yang clickable → seluruh card jadi tap target (sudah cursor-pointer, OK)
+
+---
+
+## BAGIAN 6 — Horizontal Scroll Carousels (Mobile)
+
+Untuk konten yang di desktop grid, di mobile bisa jadi horizontal scroll (lebih native):
+
+- **Maddah-mu di Dashboard** → mobile: horizontal scroll carousel (swipe), desktop: grid
+- **Category chips** → horizontal scroll
+- **AI recommendation cards** → horizontal scroll di mobile
+
+Pattern:
+```jsx
+{/* Desktop grid, mobile horizontal scroll */}
+<div className="flex md:grid md:grid-cols-3 gap-3 overflow-x-auto md:overflow-visible no-scrollbar scroll-touch -mx-4 px-4 md:mx-0 md:px-0">
+  {items.map(item => (
+    <div key={item.id} className="w-[80%] md:w-auto flex-shrink-0 md:flex-shrink">
+      {/* card */}
+    </div>
+  ))}
+</div>
+```
+
+Terapkan minimal untuk "Maddah-mu" di dashboard (paling impactful).
+
+---
+
+## Acceptance Criteria
+
+### Bottom Tab Bar
+- [ ] Tab bar muncul di bawah HANYA di mobile (<768px), untuk member onboarded
+- [ ] 5 tab: Beranda, Maddah, Muqaranah, Kurasah, Tools — dengan icon + label
+- [ ] Tab aktif punya indikator (garis violet atas + warna icon/label berubah)
+- [ ] Tab bar TIDAK muncul di: landing publik, onboarding, admin, desktop
+- [ ] Konten tidak ketutup tab bar (ada padding bawah `has-tabbar`)
+- [ ] Tab bar hormati safe-area bawah (iPhone home indicator)
+
+### Header Mobile
+- [ ] Header tipis di mobile (h-14), logo + nama Talqee + avatar
+- [ ] Nav links horizontal SEMBUNYI di mobile (pindah ke tab bar)
+- [ ] Avatar tap → buka account sheet (nama, Learning Path, Etika, Logout)
+- [ ] Header hormati safe-area atas (notch)
+
+### Bottom Sheets
+- [ ] BottomSheet naik dari bawah dengan animasi smooth di mobile
+- [ ] Drag handle (garis kecil) muncul di atas sheet (mobile)
+- [ ] Desktop: BottomSheet render sebagai modal tengah (bukan dari bawah)
+- [ ] QuickNote, ModuleRunner, prompt detail → pakai bottom sheet di mobile
+- [ ] Tap backdrop → tutup sheet
+
+### Compact Sizing
+- [ ] Hero headline mengecil proporsional di mobile (tidak overflow)
+- [ ] Card padding lebih rapat di mobile (p-4/p-5)
+- [ ] Dashboard quick actions → 2 kolom di mobile
+- [ ] Maddah/Muqaranah cards → 1 kolom di mobile
+- [ ] Tidak ada teks/heading yang overflow atau kepotong
+- [ ] Body text tetap readable (min 14px)
+
+### Touch & Scroll
+- [ ] Semua tombol mudah dipencet (≥44px tinggi efektif)
+- [ ] Category chips & tab kategori prompt → horizontal scroll smooth
+- [ ] "Maddah-mu" dashboard → horizontal swipe carousel di mobile
+- [ ] TIDAK ada horizontal scroll yang gak disengaja (body)
+- [ ] No zoom saat tap input (font-size input ≥16px untuk cegah iOS auto-zoom)
+
+### Fungsi Identik
+- [ ] SEMUA fungsi desktop tersedia di mobile (Maddah, prompt copy, Kurasah, Muqaranah, Niat, dll)
+- [ ] Tidak ada fitur yang hilang/unreachable di mobile
+- [ ] Adaptive prompt tetap ter-resolve di mobile
+- [ ] Starter pack, misi interaktif, semua jalan di mobile
+
+### Desktop Tidak Berubah
+- [ ] Buka di desktop → tampilan SAMA seperti sebelum prompt ini (tidak ada regression)
+- [ ] Tab bar tidak muncul di desktop
+- [ ] Navbar desktop tetap horizontal seperti biasa
+
+### General
+- [ ] Tidak ada console error
+- [ ] Test di 375px (iPhone SE), 390px (iPhone 14), 360px (Android) — semua rapi
+- [ ] localStorage data tetap utuh
+- [ ] Theme color & safe-area bekerja (status bar gelap di iOS)
+
+---
+
+## Catatan
+
+- **Prioritas tertinggi:** Bottom Tab Bar (BAGIAN 2) — ini yang paling bikin terasa native. Kerjakan ini dulu & test.
+- **Quick win kedua:** Compact sizing (BAGIAN 5) — langsung bikin mobile terasa rapi.
+- **Bottom sheets (BAGIAN 4)** bisa bertahap — konversi yang paling sering dipakai dulu (QuickNote, prompt detail).
+- Kalau ada komponen mobile yang pecah/overflow, prioritaskan fix layout daripada nambah fitur.
+
+والله ولي التوفيق. Mulai dari Bottom Tab Bar.

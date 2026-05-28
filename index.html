@@ -92,6 +92,19 @@
   h1, .hero-headline { letter-spacing: -0.04em; }
   h2 { letter-spacing: -0.025em; }
   h3, h4 { letter-spacing: -0.015em; }
+  @keyframes reveal-in {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .reveal-anim { animation: reveal-in 0.55s ease both; }
+  .reveal-d-0   { animation-delay:   0ms; }
+  .reveal-d-60  { animation-delay:  60ms; }
+  .reveal-d-120 { animation-delay: 120ms; }
+  .reveal-d-180 { animation-delay: 180ms; }
+  .reveal-d-240 { animation-delay: 240ms; }
+  .reveal-d-300 { animation-delay: 300ms; }
+  .reveal-d-340 { animation-delay: 340ms; }
+  .reveal-d-400 { animation-delay: 400ms; }
   .font-display { font-family: "DM Sans", system-ui, sans-serif; }
   .num { font-variant-numeric: tabular-nums; }
   .arabic                   { font-family: "Noto Naskh Arabic", Amiri, serif; direction: rtl; line-height: 1.9; }

@@ -3,11 +3,10 @@
 const { useState, useEffect } = React;
 
 const LANDING_STYLES = `
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap');
-
   .kali-display  { font-family: "Reem Kufi","Noto Kufi Arabic",sans-serif; direction:rtl; }
   .kali-elegant  { font-family: "Aref Ruqaa",serif; direction:rtl; }
-  .hero-headline { font-family: "Playfair Display","Georgia",serif; }
+  .hero-headline { font-family: "DM Sans",system-ui,sans-serif; }
+
   .hov-lift      { transition:transform .2s ease, box-shadow .2s ease; cursor:pointer; }
   .hov-lift:hover{ transform:translateY(-3px); box-shadow:0 12px 40px -12px rgba(201,168,106,.2); }
 
@@ -71,8 +70,12 @@ const StyleInject = () => {
   return null;
 };
 
-const Reveal = ({ children, className = "", style, ...rest }) => (
-  <div className={className} style={style} {...rest}>{children}</div>
+const Reveal = ({ children, className = "", style, delay = 0, ...rest }) => (
+  <div
+    className={"reveal-anim reveal-d-" + delay + (className ? " " + className : "")}
+    style={style}
+    {...rest}
+  >{children}</div>
 );
 
 /* ── Islamic Geometric Background ───────────────────────────── */
@@ -166,97 +169,136 @@ const HeroCard = () => (
   </div>
 );
 
+/* ── Hero Showcase Card (floating focal point) ───────────────── */
+const HeroShowcaseCard = () => (
+  <div className="relative w-full max-w-md mx-auto">
+    {/* Glow behind card */}
+    <div className="absolute pointer-events-none" style={{
+      inset: "-24px",
+      background: "linear-gradient(135deg, rgba(124,77,255,0.25), rgba(201,168,106,0.12))",
+      filter: "blur(48px)",
+      borderRadius: "50%",
+    }}/>
+    <div className="card-glass-strong p-7 relative text-left">
+      {/* Top row */}
+      <div className="flex items-start justify-between mb-4">
+        <div>
+          <div className="font-display text-2xl font-semibold text-ink">Nahwu Dasar</div>
+          <div className="text-sm text-ink-muted mt-0.5">Ilmu Sintaksis Arab</div>
+        </div>
+        <div className="arabic-display text-gold-300 text-3xl leading-none" style={{direction:"rtl",fontFamily:'"Reem Kufi","Noto Kufi Arabic",sans-serif'}}>النحو</div>
+      </div>
+      {/* AI chips */}
+      <div className="flex gap-2 mb-5">
+        <span className="text-[11px] px-2.5 py-1 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/25 font-medium">Claude</span>
+        <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-ink-muted font-medium">NotebookLM</span>
+      </div>
+      {/* Stats */}
+      <div className="mb-1 text-sm text-ink">
+        <span className="font-semibold text-lg text-gold-300">17</span>
+        <span className="text-ink-muted"> template prompt</span>
+      </div>
+      <div className="text-xs text-ink-soft mb-5">Pahami · Hafal · Latihan · Ujian</div>
+      {/* AI rec box */}
+      <div className="rounded-xl p-4" style={{ background:"rgba(201,168,106,0.07)", border:"1px solid rgba(201,168,106,0.15)" }}>
+        <div className="text-[10px] uppercase tracking-wider text-gold-300 mb-1.5 font-medium flex items-center gap-1">
+          <span>✦</span> AI Rekomendasi
+        </div>
+        <div className="font-semibold text-base text-ink mb-0.5">NotebookLM</div>
+        <div className="text-xs text-ink-muted">Sesuai: hafalan matan · Untuk: Nahwu Dasar</div>
+      </div>
+    </div>
+  </div>
+);
+
 /* ══════════════════════════════════════════════════════════════
    1. HERO
    ══════════════════════════════════════════════════════════════ */
 const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
-  <section
-    className="relative overflow-hidden"
-    style={{ minHeight:"100vh", display:"flex", alignItems:"flex-start", paddingTop:"80px" }}
-  >
-    {/* Geometric Islamic background pattern */}
+  <section className="relative overflow-hidden pt-20 md:pt-28 pb-20">
+    {/* Background */}
     <HeroGeoBg/>
+    <Blob color="rgba(124,77,255,0.22)" size={700} top={-200} left={-100}/>
+    <Blob color="rgba(201,168,106,0.10)" size={500} top={300} right={-150}/>
+    {/* Radial vignette — fokus ke tengah */}
+    <div className="absolute inset-0 pointer-events-none" style={{
+      background: "radial-gradient(ellipse 75% 65% at 50% 40%, transparent 25%, rgba(10,5,20,0.45) 100%)"
+    }}/>
 
-    {/* Soft color blobs */}
-    <Blob color="rgba(124,77,255,.28)" size={900} top={-280} right={-180}/>
-    <Blob color="rgba(201,168,106,.07)" size={700} top={250} left={-220}/>
-    <Blob color="rgba(124,77,255,.12)" size={500} bottom={-150} left={100}/>
+    <div className="container-x relative">
+      <div className="max-w-3xl mx-auto text-center flex flex-col items-center">
 
-    <div className="container-x relative w-full pt-4 pb-16">
-      <div
-        className="grid items-center gap-16 lg:gap-20"
-        style={{ gridTemplateColumns:"minmax(0,3fr) minmax(0,2fr)" }}
-      >
-        {/* ── Kolom Kiri (60%) ── */}
-        <div>
-          {/* Breadcrumb pill */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full mb-8"
-            style={{ background:"rgba(124,77,255,0.12)", border:"1px solid rgba(124,77,255,0.25)" }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>
-            <span className="text-violet-300 font-medium text-xs">Talqih</span>
-            <span className="text-white/30 text-xs">·</span>
-            <span className="text-white/55 text-xs">Panduan AI untuk Masisir</span>
+        {/* Arabic brand */}
+        <Reveal delay={0}>
+          <div className="arabic-classic text-gold-300 mb-5 leading-none" style={{
+            direction: "rtl",
+            fontFamily: '"Aref Ruqaa","Amiri",serif',
+            fontSize: "clamp(36px, 5vw, 56px)",
+          }}>
+            تَلْقِيح
           </div>
+        </Reveal>
 
-          {/* Headline */}
-          <h1
-            className="hero-headline text-white mb-6"
-            style={{
-              fontFamily: '"DM Sans", system-ui, sans-serif',
-              lineHeight: 1.06,
-              letterSpacing: "-0.04em",
-            }}
-          >
-            <span style={{ display: "block", fontSize: "clamp(48px, 6.5vw, 88px)", fontWeight: 800, fontFamily: '"DM Sans", system-ui, sans-serif' }}>
-              Paham{" "}
-              <span style={{
-                fontFamily: '"DM Sans", system-ui, sans-serif',
-                background: "linear-gradient(90deg, #A78BFA 0%, #C4A0FF 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}>Muqarrar</span>
-            </span>
-            <span style={{ display: "block", fontSize: "clamp(36px, 4.8vw, 66px)", fontWeight: 700, fontFamily: '"DM Sans", system-ui, sans-serif', color: "rgba(255,255,255,0.9)", letterSpacing: "-0.03em" }}>
-              dengan AI.
-            </span>
+        {/* Eyebrow chip */}
+        <Reveal delay={60}>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-8" style={{
+            background: "rgba(124,77,255,0.10)",
+            border: "1px solid rgba(124,77,255,0.22)",
+          }}>
+            <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>
+            <span className="text-violet-200 font-medium text-xs">Panduan AI untuk Masisir</span>
+          </div>
+        </Reveal>
+
+        {/* Headline */}
+        <Reveal delay={120}>
+          <h1 className="hero-headline text-white mb-6" style={{
+            fontFamily: '"DM Sans",system-ui,sans-serif',
+            fontSize: "clamp(52px, 8vw, 96px)",
+            fontWeight: 800,
+            lineHeight: 0.98,
+            letterSpacing: "-0.04em",
+          }}>
+            Paham{" "}
             <span style={{
-              display: "block",
-              fontSize: "clamp(18px, 2.2vw, 30px)",
-              fontWeight: 500,
-              fontFamily: '"DM Sans", system-ui, sans-serif',
-              marginTop: "14px",
-              background: "linear-gradient(90deg, #C9A86A 0%, #E8D0A0 60%, #A78BFA 100%)",
+              background: "linear-gradient(135deg, #A78BFA 0%, #C4A0FF 50%, #C9A86A 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-              letterSpacing: "-0.01em",
-            }}>
-              Cara belajar baru untuk Masisir.
-            </span>
+            }}>Muqarrar</span>
+            <br/>
+            dengan AI.
           </h1>
+        </Reveal>
 
-          {/* Subheadline */}
-          <p style={{ fontSize:"18px", color:"rgba(255,255,255,0.65)", lineHeight:1.65, maxWidth:"460px", marginBottom:"40px" }}>
-            Panduan Lengkap + Prompt untuk pahami Muqarrar Al-Azhar dengan Mudah dan Efektif.
+        {/* Sub-headline */}
+        <Reveal delay={180}>
+          <p className="text-lg md:text-xl mb-10 max-w-xl" style={{ color:"rgba(255,255,255,0.62)", lineHeight:1.65 }}>
+            Panduan lengkap + template prompt untuk pahami materi Al-Azhar.
+            Untuk Masisir semua tingkat — dari Mustawa sampai S2.
           </p>
+        </Reveal>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-wrap gap-4 items-center mb-6">
+        {/* CTA */}
+        <Reveal delay={240}>
+          <div className="flex flex-col sm:flex-row gap-3 items-center justify-center mb-5">
             <button
               onClick={() => navigate("/sample/nahwu")}
               className="btn-hero-gold"
-              style={{ boxShadow:"0 0 40px rgba(212,160,23,.40), 0 1px 0 rgba(255,255,255,.25) inset" }}
+              style={{ boxShadow:"0 0 40px rgba(212,160,23,.35), 0 1px 0 rgba(255,255,255,.25) inset" }}
             >
               Cobain Sample Gratis →
             </button>
             <button onClick={onOpenPayment} className="btn-hero-dark">
-              Gabung Member · <span style={{textDecoration:"line-through",opacity:.6}}>79k</span> 49k
+              Gabung Member · <span style={{textDecoration:"line-through", opacity:.55, marginRight:"2px"}}>79k</span>
+              <span style={{color:"#D9BD85", fontWeight:600}}>49k</span>
             </button>
           </div>
+        </Reveal>
 
-          {/* Login link */}
-          <div style={{ fontSize:"14px", color:"rgba(255,255,255,0.45)", marginBottom:"36px" }}>
+        {/* Login link */}
+        <Reveal delay={300}>
+          <div className="mb-10 text-sm" style={{ color:"rgba(255,255,255,0.42)" }}>
             Sudah punya kode?{" "}
             <button
               onClick={onOpenLogin}
@@ -265,26 +307,24 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
               Masuk di sini
             </button>
           </div>
+        </Reveal>
 
-          {/* Feature checkmarks */}
-          <div className="flex flex-wrap gap-5">
+        {/* Trust row */}
+        <Reveal delay={340}>
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-16">
             {["36 Maddah lengkap","540+ template prompt","Bayar sekali, akses selamanya"].map((t, i) => (
-              <span key={i} className="flex items-center gap-2 text-xs" style={{ color:"rgba(255,255,255,0.45)" }}>
+              <span key={i} className="flex items-center gap-2 text-xs" style={{ color:"rgba(255,255,255,0.42)" }}>
                 <Icon name="check" className="w-3.5 h-3.5 text-gold-400 flex-shrink-0"/>{t}
               </span>
             ))}
           </div>
-        </div>
+        </Reveal>
 
-        {/* ── Kolom Kanan (40%) — desktop only ── */}
-        <div className="hidden lg:flex justify-center items-center">
-          <HeroCard/>
-        </div>
-      </div>
+        {/* Card showcase — focal point */}
+        <Reveal delay={400}>
+          <HeroShowcaseCard/>
+        </Reveal>
 
-      {/* Mobile card — below CTA */}
-      <div className="lg:hidden mt-12 flex justify-center">
-        <HeroCard/>
       </div>
     </div>
   </section>
