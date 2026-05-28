@@ -109,23 +109,7 @@ const MaddahHeroSection = ({ profile }) => {
           </button>
         </Reveal>
 
-        {/* Mobile: horizontal scroll */}
-        <div
-          className="md:hidden"
-          style={{
-            display:"flex",gap:"12px",overflowX:"auto",scrollbarWidth:"none",
-            WebkitOverflowScrolling:"touch",paddingBottom:"8px",
-            marginLeft:"-20px",marginRight:"-20px",paddingLeft:"20px",paddingRight:"20px",
-          }}
-        >
-          {myMaddahs.map(m => (
-            <div key={m.id} style={{minWidth:"75vw",maxWidth:"280px",flexShrink:0}}>
-              <MaddahDashCard maddah={m}/>
-            </div>
-          ))}
-        </div>
-        {/* Desktop: grid */}
-        <Reveal stagger className="hidden md:grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Reveal stagger className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {myMaddahs.map((m) => (
             <MaddahDashCard key={m.id} maddah={m}/>
           ))}
