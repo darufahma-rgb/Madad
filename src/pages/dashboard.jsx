@@ -5,8 +5,8 @@ const getCairoGreeting = () => {
   if (h >= 3  && h < 6)  return { text: "Marhaban, ya Syahid al-Fajr", arabic: "مَرْحَباً يَا شَاهِدَ الفَجْرِ", sub: "Waktu yang paling mulia untuk menuntut ilmu." };
   if (h >= 6  && h < 12) return { text: "Selamat pagi dari Kairo",     arabic: "صَبَاحُ الخَيْرِ",           sub: "Semoga pagi ini penuh barakah dan faedah." };
   if (h >= 12 && h < 15) return { text: "Selamat siang",               arabic: "نَهَارُكُمْ سَعِيدٌ",        sub: "Teruskan dars dan catatanmu hari ini." };
-  if (h >= 15 && h < 18) return { text: "Selamat sore",                arabic: "مَسَاءُ الخَيْرِ",           sub: "Waktu Ashar — waktunya murajaah yang tenang." };
-  if (h >= 18 && h < 22) return { text: "Selamat malam",               arabic: "مَسَاءُ النُّورِ",           sub: "Malam yang tenang di Kairo — waktumu untuk refleksi." };
+  if (h >= 15 && h < 18) return { text: "Selamat sore",                arabic: "مَسَاءُ الخَيْرِ",           sub: "Waktu Ashar. Waktunya murajaah yang tenang." };
+  if (h >= 18 && h < 22) return { text: "Selamat malam",               arabic: "مَسَاءُ النُّورِ",           sub: "Malam yang tenang di Kairo. Waktumu untuk refleksi." };
   return                         { text: "Selamat malam",               arabic: "لَيْلَةٌ مُبَارَكَةٌ",      sub: "Istirahat yang cukup adalah bagian dari belajar." };
 };
 
@@ -623,7 +623,7 @@ const StarterPackDashCard = () => {
         <Icon name="copy" className="w-5 h-5"/>
       </div>
       <div className="font-display text-base font-semibold text-ink mb-1.5">Salin Starter Pack</div>
-      <p className="text-xs text-ink-muted leading-relaxed">Kenalkan dirimu ke AI di awal sesi — jawaban jadi lebih tepat sasaran</p>
+      <p className="text-xs text-ink-muted leading-relaxed">Kenalkan dirimu ke AI di awal sesi. Jawaban jadi lebih tepat sasaran.</p>
     </button>
   );
 };

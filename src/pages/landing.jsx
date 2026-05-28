@@ -221,7 +221,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
 
           {/* Subheadline */}
           <p style={{ fontSize:"18px", color:"rgba(255,255,255,0.65)", lineHeight:1.65, maxWidth:"460px", marginBottom:"40px" }}>
-            Panduan + prompt + workflow AI yang dirancang khusus untuk cara belajar di Al-Azhar — dari Nahwu sampai Ushul Fiqh, dari Mustawa sampai S2.
+            Panduan + prompt + workflow AI yang dirancang khusus untuk cara belajar di Al-Azhar. Dari Nahwu sampai Ushul Fiqh, dari Mustawa sampai S2.
           </p>
 
           {/* CTA Buttons */}
@@ -284,7 +284,7 @@ const SampleMaddahSection = () => (
           <span className="w-6 h-px bg-gold-500/70"/>COBAIN DULU<span className="w-6 h-px bg-gold-500/70"/>
         </div>
         <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
-          Dalam 10 menit, kamu akan mengerti cara belajar Nahwu yang belum pernah diajarkan dosen.
+          Cara belajar Nahwu yang belum pernah diajarkan dosen.
         </h2>
         <p className="text-ink-muted text-base max-w-xl mx-auto">
           Tanpa daftar. Tanpa bayar. Kalau setelah ini kamu tidak merasa beda, tidak perlu lanjut.
@@ -343,7 +343,7 @@ const HowItWorks = () => {
     { num:"01", title:"Bayar 49k", sub:"Sekali bayar, akses selamanya",
       desc:"Bayar via Lynk.id, admin kirim kode member via WhatsApp." },
     { num:"02", title:"Jawab profile", sub:"5 pertanyaan singkat",
-      desc:"Fakultas, jurusan, tingkat, gaya belajarmu — biar prompt-nya pas." },
+      desc:"Fakultas, jurusan, tingkat, gaya belajarmu. Supaya prompt-nya pas." },
     { num:"03", title:"Mulai belajar", sub:"Workflow + 540+ prompt",
       desc:"Dashboard tunjukin AI cocok, prompt per Maddah siap pakai." },
   ];
@@ -355,7 +355,7 @@ const HowItWorks = () => {
             <span className="w-6 h-px bg-gold-500/70"/>BAGAIMANA TALQIH BEKERJA
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
-            Dari buka website sampai paham kitab — kurang dari 5 menit.
+            Buka website. Paham kitab. Lima menit.
           </h2>
         </Reveal>
         <div className="grid md:grid-cols-3 gap-8 relative">
@@ -457,7 +457,7 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
           <span className="w-6 h-px bg-gold-500/70"/>INVESTASI ILMU
         </div>
         <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
-          Harga segelas kopi. Akses seumur hidup ke 540+ prompt yang dirancang khusus untuk Masisir.
+          Harga segelas kopi. Akses 540+ prompt seumur hidup.
         </h2>
       </Reveal>
 
@@ -516,7 +516,7 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
           قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ
         </div>
         <p className="text-base text-ink-muted italic mb-1">"Ikatlah ilmu dengan tulisan."</p>
-        <p className="text-xs text-ink-soft">— Atsar</p>
+        <p className="text-xs text-ink-soft">(Atsar)</p>
         <div className="mt-10 text-sm text-ink-soft">
           Sudah punya kode?{" "}
           <button onClick={onOpenLogin}

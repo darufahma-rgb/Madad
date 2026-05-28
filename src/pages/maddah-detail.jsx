@@ -213,7 +213,7 @@ const MaddahDetailPage = () => {
               <div className="relative flex items-start justify-between gap-4 flex-wrap">
                 <div className="flex-1 min-w-0">
                   <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1 font-medium">Mulai di sini</div>
-                  <h2 className="font-display text-xl font-semibold text-ink">Starter Pack — Kenalkan dirimu ke AI</h2>
+                  <h2 className="font-display text-xl font-semibold text-ink">Starter Pack: Kenalkan dirimu ke AI</h2>
                   <p className="text-sm text-ink-muted mt-1 max-w-lg leading-relaxed">
                     Salin ini ke AI di awal sesi. Setelah AI kenal profilmu, semua jawaban jadi lebih pas dengan tingkat dan gayamu.
                   </p>

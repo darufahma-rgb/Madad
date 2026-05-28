@@ -440,7 +440,7 @@ Untuk setiap bait:
             <span className="w-6 h-px bg-gold-500/70"/>Template Prompt
           </h2>
           <p className="text-sm text-ink-muted mb-8">
-            17 template siap pakai — salin, ganti placeholder, kirim ke AI.
+            17 template siap pakai. Salin, ganti placeholder, kirim ke AI.
           </p>
           {Object.entries(sampleData.prompts).map(([key, prompts]) => {
             const meta = groupMeta[key];
@@ -477,7 +477,7 @@ Untuk setiap bait:
                 Suka? Akses 35 Maddah lain.
               </h2>
               <p className="text-sm text-ink-muted mb-6 max-w-md mx-auto">
-                Tafsir, Hadits, Fiqh, Ushul, Mustholah, Balaghah, dan 30+ lainnya — dengan prompt yang disesuaikan tingkatmu.
+                Tafsir, Hadits, Fiqh, Ushul, Mustholah, Balaghah, dan 30+ lainnya. Prompt disesuaikan dengan tingkatmu.
               </p>
               <button onClick={() => navigate("/")} className="btn btn-gold px-7 py-3.5 text-base font-medium"
                 style={{ boxShadow:"0 0 40px rgba(201,168,106,.35), 0 1px 0 rgba(255,255,255,.3) inset" }}>
