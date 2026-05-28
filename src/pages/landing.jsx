@@ -220,7 +220,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
 
           {/* Subheadline */}
           <p style={{ fontSize:"18px", color:"rgba(255,255,255,0.65)", lineHeight:1.65, maxWidth:"460px", marginBottom:"40px" }}>
-            Panduan + prompt + workflow AI yang dirancang khusus untuk cara belajar di Al-Azhar. Dari Nahwu sampai Ushul Fiqh, dari Mustawa sampai S2.
+            Panduan Lengkap + Prompt untuk pahami Muqarrar Al-Azhar dengan Mudah dan Efektif.
           </p>
 
           {/* CTA Buttons */}
