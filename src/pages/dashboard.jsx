@@ -329,11 +329,13 @@ const DashboardPage = () => {
             </div>
             <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">Aksi cepat</h2>
           </Reveal>
-          <Reveal stagger className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <Reveal stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
             <QuickAction icon="layers"    title="Semua Maddah"    desc="36 mata pelajaran + 540 prompt template"       to="/maddah"             color="violet"/>
             <QuickAction icon="bookOpen"  title="Adaptive guide"  desc="Guide tiap AI sesuai gaya belajarmu"           to="/tools"              color="gold"/>
             <QuickAction icon="scale"     title="Muqaranah"       desc="Banding qoul ulama 4 madzhab"                  to="/paths/muqaranah"    color="violet"/>
             <QuickAction icon="notebook"  title="Kurasah"         desc="Catatan & ta'liq belajarmu"                    to="/kurasah"            color="gold"/>
+            <QuickAction icon="pen"       title="Learning Path"   desc="Modul bertahap dari pemula ke AI-ready"        to="/paths"              color="violet"/>
+            <StarterPackDashCard/>
           </Reveal>
         </div>
       </section>
@@ -603,6 +605,26 @@ const AdaptiveGuideQuick = ({ profile, topRec }) => {
         </Reveal>
       </div>
     </section>
+  );
+};
+
+/* ============ STARTER PACK DASH CARD ============ */
+const StarterPackDashCard = () => {
+  const { session, profile } = useAuth();
+  const toast = useToast();
+  const handleCopy = () => {
+    const pack = generateStarterPack(profile, session);
+    navigator.clipboard.writeText(pack);
+    toast.push("Starter Pack tersalin. Paste ke AI di awal chat.");
+  };
+  return (
+    <button onClick={handleCopy} className="card-glass p-5 hov-lift text-left group w-full">
+      <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3.5 bg-gold-500/12 text-gold-300 group-hover:bg-gold-500/20 transition-colors">
+        <Icon name="copy" className="w-5 h-5"/>
+      </div>
+      <div className="font-display text-base font-semibold text-ink mb-1.5">Salin Starter Pack</div>
+      <p className="text-xs text-ink-muted leading-relaxed">Kenalkan dirimu ke AI di awal sesi — jawaban jadi lebih tepat sasaran</p>
+    </button>
   );
 };
 

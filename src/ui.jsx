@@ -161,22 +161,20 @@ const Blob = ({ color = "rgba(124,77,255,0.38)", size = 400, top, left, right, b
   }}/>
 );
 
-/* ---------------- Tool icon (logo image or monogram fallback) ---------------- */
+/* ---------------- Tool icon (brand-colored monogram) ---------------- */
 const ToolIcon = ({ tool, size = "w-11 h-11", rounded = "rounded-xl", className = "" }) => {
-  const bg = tool.logoBg || tool.color || "#1a1a2e";
-  const pad = tool.logoPad || "p-1.5";
-  const filter = tool.logoFilter || "none";
+  const bg = tool.brandColor || tool.color || "#7C4DFF";
   return (
     <span
       className={`${size} ${rounded} flex items-center justify-center overflow-hidden flex-shrink-0 ${className}`}
-      style={{ background: bg }}
+      style={{
+        background: `linear-gradient(135deg, ${bg}, ${bg}BB)`,
+        boxShadow: `0 2px 12px ${bg}40, inset 0 1px 0 rgba(255,255,255,0.18)`,
+      }}
     >
       {tool.logo
-        ? <img src={tool.logo} alt={tool.name}
-            className={`w-full h-full object-contain ${pad}`}
-            style={{ filter }}
-          />
-        : <span className="text-xs font-mono font-bold text-white">{tool.monogram}</span>
+        ? <img src={tool.logo} alt={tool.name} className="w-full h-full object-contain p-1.5"/>
+        : <span className="text-sm font-bold text-white tracking-tight leading-none" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.35)" }}>{tool.monogram}</span>
       }
     </span>
   );

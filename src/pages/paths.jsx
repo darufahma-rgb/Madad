@@ -1,8 +1,170 @@
-/* Talqih, Learning Paths */
+/* Talqih, Learning Paths + ModuleRunner */
 
+/* ============ MODULE RUNNER COMPONENTS ============ */
+
+const MateriContent = ({ content }) => (
+  <div className="space-y-6">
+    {content.body.map((section, i) => (
+      <div key={i}>
+        <h3 className="font-display text-lg font-semibold text-ink mb-2">{section.heading}</h3>
+        <p className="text-sm text-ink-muted leading-relaxed whitespace-pre-line">{section.text}</p>
+      </div>
+    ))}
+    {content.keyPoints?.length > 0 && (
+      <div className="p-4 rounded-xl bg-gold-500/8 border border-gold-500/18 mt-2">
+        <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-3 font-medium">Poin Kunci</div>
+        <ul className="space-y-2">
+          {content.keyPoints.map((p, i) => (
+            <li key={i} className="flex items-start gap-2.5 text-sm text-ink">
+              <span className="w-1.5 h-1.5 rounded-full bg-gold-400 mt-2 flex-shrink-0"/>
+              <span>{p}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>
+);
+
+const PraktikContent = ({ content }) => {
+  const toast = useToast();
+  return (
+    <div className="space-y-5">
+      <p className="text-sm text-ink-muted leading-relaxed">{content.intro}</p>
+      <div>
+        <div className="text-[11px] uppercase tracking-wider text-violet-300 mb-3 font-medium">Langkah-langkah</div>
+        <ol className="space-y-3">
+          {content.steps.map((s, i) => (
+            <li key={i} className="flex items-start gap-3 text-sm text-ink-muted">
+              <span className="w-6 h-6 rounded-full bg-violet-500/15 text-violet-300 text-[11px] font-semibold flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
+              <span className="leading-relaxed">{s}</span>
+            </li>
+          ))}
+        </ol>
+      </div>
+      {content.practicePrompt && (
+        <div className="rounded-xl bg-white/3 border border-line overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-line">
+            <div className="text-[11px] uppercase tracking-wider text-gold-400 font-medium">Prompt untuk dicoba</div>
+            <button
+              onClick={() => { navigator.clipboard.writeText(content.practicePrompt); toast.push("Prompt tersalin. Paste ke AI."); }}
+              className="flex items-center gap-1.5 text-xs text-ink-muted hover:text-ink px-2.5 py-1 rounded-lg hover:bg-white/5 transition-colors">
+              <Icon name="copy" className="w-3 h-3"/> Salin
+            </button>
+          </div>
+          <pre className="text-xs text-ink-muted font-mono leading-relaxed whitespace-pre-wrap p-4 max-h-52 overflow-y-auto">{content.practicePrompt}</pre>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const TourContent = ({ content }) => {
+  const [step, setStep] = useState(0);
+  const stops  = content.stops || [];
+  const stop   = stops[step];
+  const tool   = stop ? AI_TOOLS.find(t => t.id === stop.tool) : null;
+
+  if (!stop) return null;
+
+  return (
+    <div>
+      <p className="text-sm text-ink-muted leading-relaxed mb-5">{content.intro}</p>
+      <div className="card-glass p-5 mb-5 min-h-[140px] relative overflow-hidden">
+        <Blob color="rgba(124,77,255,0.15)" size={220} top={-60} right={-60}/>
+        <div className="relative">
+          <div className="flex items-center gap-3 mb-3">
+            {tool && <ToolIcon tool={tool} size="w-12 h-12"/>}
+            <h3 className="font-display text-lg font-semibold text-ink leading-snug">{stop.title}</h3>
+          </div>
+          <p className="text-sm text-ink-muted leading-relaxed">{stop.body}</p>
+        </div>
+      </div>
+      <div className="flex items-center justify-between">
+        <button
+          onClick={() => setStep(Math.max(0, step - 1))}
+          disabled={step === 0}
+          className="btn btn-ghost text-sm px-4 py-2 disabled:opacity-30 disabled:cursor-not-allowed">
+          ← Sebelumnya
+        </button>
+        <div className="flex gap-1.5">
+          {stops.map((_, i) => (
+            <button key={i} onClick={() => setStep(i)}
+              className={`w-2 h-2 rounded-full transition-all ${i === step ? "bg-violet-400 scale-110" : "bg-white/20 hover:bg-white/40"}`}/>
+          ))}
+        </div>
+        <button
+          onClick={() => setStep(Math.min(stops.length - 1, step + 1))}
+          disabled={step === stops.length - 1}
+          className="btn btn-ghost text-sm px-4 py-2 disabled:opacity-30 disabled:cursor-not-allowed">
+          Selanjutnya →
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const ModuleRunner = ({ pathId, module, onClose, onComplete }) => {
+  const content = module.content;
+
+  const completeBtnLabel =
+    content?.type === "materi"  ? "Tandai sudah dibaca" :
+    content?.type === "praktik" ? "Tandai sudah dicoba" :
+    "Selesai";
+
+  return (
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-night-950/80 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <div
+        className="card-glass-strong max-w-2xl w-full max-h-[88vh] overflow-y-auto rounded-2xl relative"
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Close btn */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-10 w-8 h-8 rounded-lg text-ink-soft hover:text-ink hover:bg-white/8 flex items-center justify-center transition-colors">
+          <Icon name="x" className="w-4 h-4"/>
+        </button>
+
+        <div className="p-6 md:p-8">
+          {/* Header */}
+          <div className="mb-6 pr-8">
+            <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1.5 flex items-center gap-2">
+              <span>{module.kind}</span>
+              <span className="opacity-40">·</span>
+              <span>{module.duration}</span>
+            </div>
+            <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">{module.title}</h2>
+          </div>
+
+          {/* Content */}
+          {content?.type === "materi"  && <MateriContent content={content}/>}
+          {content?.type === "praktik" && <PraktikContent content={content}/>}
+          {content?.type === "tour"    && <TourContent content={content}/>}
+          {!content && (
+            <p className="text-sm text-ink-muted text-center py-8">Konten modul ini sedang disiapkan.</p>
+          )}
+
+          {/* Footer */}
+          <div className="mt-8 pt-5 border-t border-line flex gap-3 justify-end">
+            <button onClick={onClose} className="btn btn-ghost text-sm px-4 py-2.5">Tutup</button>
+            <button onClick={onComplete} className="btn btn-primary text-sm px-5 py-2.5">
+              <Icon name="check" className="w-4 h-4"/> {completeBtnLabel}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ============ PATHS PAGE ============ */
 const PathsPage = () => {
   const { session, profile, progress, markModuleComplete, setLastActivity } = useAuth();
   const [openPath, setOpenPath] = useState(LEARNING_PATHS[0].id);
+  const [activeModule, setActiveModule] = useState(null);
   const toast = useToast();
   const stage = useMemo(() => computeStage(), [progress]);
 
@@ -14,10 +176,16 @@ const PathsPage = () => {
 
   if (!session || !profile?.onboarded) return null;
 
-  const handleComplete = (path, module) => {
-    markModuleComplete(path.id, module.id);
-    setLastActivity(module.title, path.id, module.id);
-    toast.push(`"${module.title}" tercatat selesai.`);
+  const handleOpenModule = (path, module) => {
+    setActiveModule({ pathId: path.id, module });
+  };
+
+  const handleComplete = () => {
+    if (!activeModule) return;
+    markModuleComplete(activeModule.pathId, activeModule.module.id);
+    setLastActivity(activeModule.module.title, activeModule.pathId, activeModule.module.id);
+    toast.push(`"${activeModule.module.title}" tercatat selesai.`);
+    setActiveModule(null);
   };
 
   return (
@@ -95,8 +263,8 @@ const PathsPage = () => {
                     return (
                       <div key={module.id} className={`card-glass p-5 transition-all ${done ? "opacity-65" : "hov-lift"}`}>
                         <div className="flex items-center gap-4">
-                          <span className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${done ? "bg-mint-500/20 text-mint-500" : "bg-violet-500/15 text-violet-300"}`}>
-                            {done ? <Icon name="check" className="w-5 h-5" strokeWidth={2.4}/> : <span className="font-display text-base font-semibold num">{i+1}</span>}
+                          <span className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${done ? "bg-gold-500/20 text-gold-400" : "bg-violet-500/15 text-violet-300"}`}>
+                            {done ? <Icon name="check" className="w-5 h-5" strokeWidth={2.4}/> : <span className="font-display text-base font-semibold num">{i + 1}</span>}
                           </span>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
@@ -109,7 +277,9 @@ const PathsPage = () => {
                           {done ? (
                             <span className="chip chip-glass text-[10px]">Selesai</span>
                           ) : (
-                            <button onClick={() => handleComplete(path, module)} className="btn btn-primary text-xs py-2 px-4">
+                            <button
+                              onClick={() => handleOpenModule(path, module)}
+                              className="btn btn-primary text-xs py-2 px-4 flex-shrink-0">
                               Mulai modul <Icon name="arrowRight" className="w-3.5 h-3.5"/>
                             </button>
                           )}
@@ -160,25 +330,23 @@ const PathsPage = () => {
                     Ruang untuk merenungi perbedaan pendapat para ulama secara adil. Tersedia 6 tema kajian dari Fiqh, Ushul, Aqidah, dan Hadits, beserta dalil, wajh istidlal, dan sumber kitab aslinya.
                   </p>
                   <p className="text-ink-soft text-sm border-l-2 border-gold-500/30 pl-4 italic">
-                    "Ikhtilaf ulama adalah rahmat, memahaminya adalah ilmu." 
+                    "Ikhtilaf ulama adalah rahmat, memahaminya adalah ilmu."
                   </p>
                 </div>
                 <div className="md:col-span-4 flex flex-col gap-4">
                   <div className="grid grid-cols-2 gap-3 text-center">
                     {[
-                      { num:"6", label:"Kajian" },
+                      { num:"6",  label:"Kajian" },
                       { num:"4+", label:"Pendapat per kajian" },
-                      { num:"∞", label:"Buatan sendiri" },
-                    ].map((s,i) => (
+                      { num:"∞",  label:"Buatan sendiri" },
+                    ].map((s, i) => (
                       <div key={i} className={`card-glass p-3 rounded-xl ${i === 2 ? "col-span-2" : ""}`}>
                         <div className="font-display text-2xl font-bold gradient-text num">{s.num}</div>
                         <div className="text-[10px] text-ink-muted mt-0.5">{s.label}</div>
                       </div>
                     ))}
                   </div>
-                  <button
-                    onClick={() => navigate("/paths/muqaranah")}
-                    className="btn btn-primary w-full text-sm py-3.5">
+                  <button onClick={() => navigate("/paths/muqaranah")} className="btn btn-primary w-full text-sm py-3.5">
                     <Icon name="scale" className="w-4 h-4"/> Masuk ke Ruang Muqaranah
                   </button>
                 </div>
@@ -188,6 +356,16 @@ const PathsPage = () => {
           </Reveal>
         </div>
       </section>
+
+      {/* Module Runner Modal */}
+      {activeModule && (
+        <ModuleRunner
+          pathId={activeModule.pathId}
+          module={activeModule.module}
+          onClose={() => setActiveModule(null)}
+          onComplete={handleComplete}
+        />
+      )}
     </div>
   );
 };

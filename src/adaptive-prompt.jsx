@@ -95,9 +95,53 @@ const resolveGenericPrompt = (template, maddahName) => {
     .replace(/\[LEVEL_BAHASA\]/g, LEVEL_BAHASA_INSTRUCTION["2"]);
 };
 
+/* ============ STARTER PACK GENERATOR ============ */
+
+const generateStarterPack = (profile, session) => {
+  const tingkatan  = profile?.level   ? (TINGKATAN_LABEL[profile.level]   || "thalib") : "thalib";
+  const fakultas   = profile?.faculty ? (FAKULTAS_LABEL[profile.faculty]  || "Al-Azhar") : "Al-Azhar";
+  const jurusan    = profile?.major   ? (JURUSAN_LABEL[profile.major]     || "") : "";
+  const nama       = session?.name    || "";
+
+  let gaya = "kombinasi berbagai pendekatan";
+  if (profile?.learningStyle?.length > 0) {
+    const labels = profile.learningStyle.map(s => GAYA_BELAJAR_LABEL[s]).filter(Boolean);
+    if (labels.length === 1)      gaya = labels[0];
+    else if (labels.length === 2) gaya = labels.join(" dan ");
+    else                          gaya = labels.slice(0, -1).join(", ") + " dan " + labels[labels.length - 1];
+  }
+
+  const levelBahasa = profile?.level
+    ? (LEVEL_BAHASA_INSTRUCTION[profile.level] || LEVEL_BAHASA_INSTRUCTION["2"])
+    : LEVEL_BAHASA_INSTRUCTION["2"];
+
+  return `Assalamu'alaikum. Mulai sekarang, kamu akan membantuku belajar materi Al-Azhar. Kenali dulu siapa aku:
+
+PROFILKU
+- Aku ${nama ? nama + ", " : ""}seorang ${tingkatan}
+- Belajar di ${fakultas}${jurusan ? jurusan : ""}
+- Cara belajarku: aku ${gaya}
+
+CARA KAMU MEMBANTUKU
+- Bahasa pengantar: Indonesia akademik
+- ${levelBahasa}
+- Saat menyebut ayat, hadits, atau kaidah: WAJIB sertakan teks Arab asli dengan harakat, lalu terjemahnya
+- Saat menyebut istilah teknis: tulis Arab + transliterasi (contoh: قِيَاسٌ (qiyas))
+- Saat menyebut ulama: pakai nama transliterasi natural (Imam Syafi'i, Ibnu Hajar)
+- Saat menyebut kitab: pakai nama Arab (Al-Umm, Fathul Bari)
+
+ADAB PENTING
+- Kamu adalah alat bantu, BUKAN pengganti guru atau syaikh-ku
+- Kalau kamu tidak yakin atau informasinya lemah, katakan dengan jujur
+- Jangan men-tarjih (memilih pendapat terkuat) dalam masalah khilafiyyah — sajikan semua pendapat, biar aku yang merenungkan bersama guruku
+
+Kalau kamu paham, jawab singkat: "Wa'alaikumussalam, siap membantu." Lalu tunggu pertanyaan pertamaku.`;
+};
+
 Object.assign(window, {
   resolveAdaptivePrompt,
   resolveGenericPrompt,
+  generateStarterPack,
   TINGKATAN_LABEL,
   FAKULTAS_LABEL,
   LEVEL_BAHASA_INSTRUCTION,

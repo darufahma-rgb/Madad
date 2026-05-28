@@ -1,5 +1,22 @@
 /* Talqih — Maddah Detail: halaman per Maddah dengan adaptive prompt */
 
+/* ---- Starter Pack Button ---- */
+const StarterPackButton = ({ profile, session }) => {
+  const toast = useToast();
+  const handleCopy = () => {
+    const pack = generateStarterPack(profile, session);
+    navigator.clipboard.writeText(pack);
+    toast.push("Starter Pack tersalin. Paste ke AI di awal chat.");
+  };
+  return (
+    <button
+      onClick={handleCopy}
+      className="btn btn-primary text-sm px-4 py-2.5 flex items-center gap-2 flex-shrink-0">
+      <Icon name="copy" className="w-3.5 h-3.5"/> Salin Starter Pack
+    </button>
+  );
+};
+
 const PromptCard = ({ prompt, maddah, profile }) => {
   const toast = useToast();
   const tool  = AI_TOOLS.find(t => t.id === prompt.targetAI);
@@ -188,6 +205,23 @@ const MaddahDetailPage = () => {
               </div>
             </section>
           )}
+
+          {/* Starter Pack */}
+          <section className="container-x mb-8">
+            <div className="card-glass-strong p-6 relative overflow-hidden">
+              <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-gold-500/10 blur-3xl pointer-events-none"/>
+              <div className="relative flex items-start justify-between gap-4 flex-wrap">
+                <div className="flex-1 min-w-0">
+                  <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1 font-medium">Mulai di sini</div>
+                  <h2 className="font-display text-xl font-semibold text-ink">Starter Pack — Kenalkan dirimu ke AI</h2>
+                  <p className="text-sm text-ink-muted mt-1 max-w-lg leading-relaxed">
+                    Salin ini ke AI di awal sesi. Setelah AI kenal profilmu, semua jawaban jadi lebih pas dengan tingkat dan gayamu.
+                  </p>
+                </div>
+                <StarterPackButton profile={profile} session={session}/>
+              </div>
+            </div>
+          </section>
 
           {/* Prompts — Tab by Kind */}
           <section className="container-x pb-20">
