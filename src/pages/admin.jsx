@@ -31,21 +31,23 @@ const AdminPage = () => {
               </span>
             </div>
           </div>
-          <div className="flex gap-1 flex-wrap">
+          <div className="flex gap-1 flex-wrap overflow-x-auto">
             {[
-              { id: "dashboard", label: "Dashboard", icon: "grid" },
-              { id: "members",   label: "Member Access", icon: "users" },
-              { id: "onboarding", label: "Onboarding Data", icon: "list" },
-              { id: "guides",    label: "AI Guide Manager", icon: "sparkles" },
-              { id: "settings",  label: "Settings", icon: "shield" },
+              { id: "dashboard",  label: "Overview",          icon: "grid" },
+              { id: "members",    label: "Members",           icon: "users" },
+              { id: "maddah",     label: "Maddah Analytics",  icon: "layers" },
+              { id: "muqaranah",  label: "Muqaranah",         icon: "scale" },
+              { id: "onboarding", label: "Onboarding Data",   icon: "list" },
+              { id: "guides",     label: "Guide Manager",     icon: "sparkles" },
+              { id: "settings",   label: "Settings",          icon: "shield" },
             ].map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
-                className={`px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition ${tab === t.id ? "bg-violet-500/15 text-violet-200 border border-violet-400/30" : "text-ink-muted hover:text-ink hover:bg-white/5"}`}>
+                className={`px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition flex-shrink-0 ${tab === t.id ? "bg-violet-500/15 text-violet-200 border border-violet-400/30" : "text-ink-muted hover:text-ink hover:bg-white/5"}`}>
                 <Icon name={t.icon} className="w-4 h-4"/>
                 <span className="hidden md:inline">{t.label}</span>
               </button>
             ))}
-            <button onClick={() => { setAdminLoggedIn(false); setLoggedIn(false); }} className="px-3 py-2 rounded-lg text-sm text-ink-muted hover:text-rose-600 ml-2">
+            <button onClick={() => { setAdminLoggedIn(false); setLoggedIn(false); }} className="px-3 py-2 rounded-lg text-sm text-ink-muted hover:text-rose-600 ml-2 flex-shrink-0">
               Logout
             </button>
           </div>
@@ -53,11 +55,13 @@ const AdminPage = () => {
       </section>
 
       <div className="container-x py-10">
-        {tab === "dashboard" && <AdminDashboard/>}
-        {tab === "members" && <AdminMembers/>}
+        {tab === "dashboard"  && <AdminDashboard/>}
+        {tab === "members"    && <AdminMembers/>}
+        {tab === "maddah"     && <AdminMaddahAnalytics/>}
+        {tab === "muqaranah"  && <AdminMuqaranahPanel/>}
         {tab === "onboarding" && <AdminOnboarding/>}
-        {tab === "guides" && <AdminGuides/>}
-        {tab === "settings" && <AdminSettings/>}
+        {tab === "guides"     && <AdminGuides/>}
+        {tab === "settings"   && <AdminSettings/>}
       </div>
     </div>
   );
@@ -122,48 +126,84 @@ const AdminDashboard = () => {
   const disabled = members.filter(m => m.status === "disabled").length;
   const bound    = members.filter(m => m.device).length;
 
+  const maddahActivity = (() => {
+    try { return JSON.parse(localStorage.getItem("talqee_maddah_activity") || "{}"); }
+    catch { return {}; }
+  })();
+  const totalPromptsUsed = Object.values(maddahActivity).reduce((s, a) => s + (a.promptsCopied || 0), 0);
+  const totalMaddahOpens = Object.values(maddahActivity).reduce((s, a) => s + (a.opens || 0), 0);
+
+  const notesCount = (() => {
+    try { return (JSON.parse(localStorage.getItem("madad_notes") || "[]")).length; }
+    catch { return 0; }
+  })();
+
   return (
     <div>
       <h1 className="font-display text-4xl font-semibold text-ink mb-2">Overview</h1>
-      <p className="text-ink-muted mb-8">Ringkasan member dan aktivitas platform.</p>
+      <p className="text-ink-muted mb-8">Ringkasan platform Talqee.</p>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <StatCard label="Total Member" value={members.length} icon="users" color="violet"/>
-        <StatCard label="Active" value={active} icon="check" color="mint"/>
-        <StatCard label="Device Bound" value={bound} icon="user" color="gold"/>
-        <StatCard label="Expired" value={expired + disabled} icon="alert" color="rose"/>
+      <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Member</div>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard label="Total Member"  value={members.length}       icon="users"  color="violet"/>
+        <StatCard label="Active"        value={active}               icon="check"  color="mint"/>
+        <StatCard label="Device Bound"  value={bound}                icon="user"   color="gold"/>
+        <StatCard label="Expired/Off"   value={expired + disabled}   icon="alert"  color="rose"/>
+      </div>
+
+      <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Engagement</div>
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <StatCard label="Prompt Disalin"   value={totalPromptsUsed} icon="copy"     color="violet"/>
+        <StatCard label="Maddah Dibuka"    value={totalMaddahOpens} icon="layers"   color="gold"/>
+        <StatCard label="Catatan Kurasah"  value={notesCount}       icon="notebook" color="violet"/>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-5">
-        <div className="card-glass p-7">
-          <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Aktivitas Terakhir</div>
-          <h3 className="font-display text-xl font-semibold text-ink mb-4">Member terbaru login</h3>
-          <div className="space-y-2.5">
-            {members.filter(m => m.lastLogin).sort((a,b) => (b.lastLogin||"").localeCompare(a.lastLogin||"")).slice(0, 5).map(m => (
-              <div key={m.code} className="flex items-center justify-between text-sm p-2.5 rounded-lg bg-white/3">
-                <div>
-                  <div className="text-ink font-medium">{m.name}</div>
-                  <div className="text-xs text-ink-soft">{m.device || "Belum bind"}</div>
+        <div className="card-glass p-6">
+          <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Login Terakhir</div>
+          <div className="space-y-2">
+            {members
+              .filter(m => m.lastLogin)
+              .sort((a,b) => (b.lastLogin||"").localeCompare(a.lastLogin||""))
+              .slice(0, 5)
+              .map(m => (
+                <div key={m.code} className="flex items-center justify-between text-sm p-2.5 rounded-lg bg-white/3">
+                  <div>
+                    <div className="text-ink font-medium">{m.name}</div>
+                    <div className="text-xs text-ink-soft">{m.device || "—"}</div>
+                  </div>
+                  <div className="text-xs text-ink-muted">{new Date(m.lastLogin).toLocaleDateString("id-ID")}</div>
                 </div>
-                <div className="text-xs text-ink-muted">{new Date(m.lastLogin).toLocaleDateString("id-ID")}</div>
-              </div>
-            ))}
+              ))}
             {members.filter(m => m.lastLogin).length === 0 && (
               <div className="text-sm text-ink-muted py-4 text-center">Belum ada login.</div>
             )}
           </div>
         </div>
-        <div className="card-glass p-7">
-          <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Content Engine</div>
-          <h3 className="font-display text-xl font-semibold text-ink mb-4">Update mingguan</h3>
-          <ul className="space-y-2.5 text-sm">
-            <li className="flex items-start gap-2 text-ink"><Icon name="check" className="w-4 h-4 text-mint-500 mt-0.5"/> 1 prompt baru / minggu</li>
-            <li className="flex items-start gap-2 text-ink"><Icon name="check" className="w-4 h-4 text-mint-500 mt-0.5"/> 1 workflow baru / minggu</li>
-            <li className="flex items-start gap-2 text-ink"><Icon name="check" className="w-4 h-4 text-mint-500 mt-0.5"/> 1 AI guide update / minggu</li>
-          </ul>
-          <div className="mt-5 pt-5 border-t border-line text-xs text-ink-muted">
-            Status: <span className="text-mint-500 font-medium">Alive</span> · Last published: {new Date().toLocaleDateString("id-ID")}
-          </div>
+
+        <div className="card-glass p-6">
+          <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Maddah Terpopuler</div>
+          {Object.keys(maddahActivity).length === 0 ? (
+            <div className="text-sm text-ink-muted py-4 text-center">Belum ada data aktivitas.</div>
+          ) : (
+            <div className="space-y-2">
+              {Object.entries(maddahActivity)
+                .sort((a,b) => (b[1].opens || 0) - (a[1].opens || 0))
+                .slice(0, 5)
+                .map(([id, act]) => {
+                  const maddah = typeof getMaddahById !== "undefined" ? getMaddahById(id) : null;
+                  return (
+                    <div key={id} className="flex items-center justify-between text-sm p-2.5 rounded-lg bg-white/3">
+                      <div>
+                        <div className="text-ink font-medium">{maddah?.name || id}</div>
+                        <div className="text-xs text-ink-soft">{act.promptsCopied || 0} prompt disalin</div>
+                      </div>
+                      <div className="text-xs text-violet-300 font-medium">{act.opens} buka</div>
+                    </div>
+                  );
+                })}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -344,8 +384,79 @@ const StatusPill = ({ status }) => {
   return <span className={`chip text-[10px] border ${s.c}`}>{s.l}</span>;
 };
 
+const getMemberProfile = (code) => {
+  try { return JSON.parse(localStorage.getItem("madad_profile_" + code) || "null"); }
+  catch { return null; }
+};
+
+const MemberProfileModal = ({ member, onClose }) => {
+  const profile = getMemberProfile(member.code);
+  return (
+    <Modal open onClose={onClose} size="md">
+      <div className="p-7">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-display text-2xl font-semibold text-ink">{member.name}</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5"><Icon name="x" className="w-4 h-4 mx-auto"/></button>
+        </div>
+        <div className="space-y-3 text-sm mb-4">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-white/3">
+            <span className="text-ink-soft">Kode</span>
+            <span className="font-mono text-gold-300">{member.code}</span>
+          </div>
+          <div className="flex items-center justify-between p-3 rounded-lg bg-white/3">
+            <span className="text-ink-soft">Status</span>
+            <StatusPill status={member.status}/>
+          </div>
+          {member.device && (
+            <div className="flex items-center justify-between p-3 rounded-lg bg-white/3">
+              <span className="text-ink-soft">Device</span>
+              <span className="text-ink text-xs">{member.device}</span>
+            </div>
+          )}
+          {member.lastLogin && (
+            <div className="flex items-center justify-between p-3 rounded-lg bg-white/3">
+              <span className="text-ink-soft">Login terakhir</span>
+              <span className="text-ink">{new Date(member.lastLogin).toLocaleDateString("id-ID")}</span>
+            </div>
+          )}
+        </div>
+        {profile ? (
+          <div className="p-4 rounded-xl bg-white/3 border border-line">
+            <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Profil Onboarding</div>
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div>
+                <div className="text-xs text-ink-soft mb-0.5">Fakultas</div>
+                <div className="text-ink">{profile.faculty || "—"}</div>
+              </div>
+              <div>
+                <div className="text-xs text-ink-soft mb-0.5">Tingkat</div>
+                <div className="text-ink">{profile.level || "—"}</div>
+              </div>
+              {profile.major && (
+                <div>
+                  <div className="text-xs text-ink-soft mb-0.5">Jurusan</div>
+                  <div className="text-ink">{profile.major}</div>
+                </div>
+              )}
+              <div>
+                <div className="text-xs text-ink-soft mb-0.5">Gaya Belajar</div>
+                <div className="text-ink">{(profile.learningStyle || []).join(", ") || "—"}</div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 rounded-xl bg-white/3 border border-line text-sm text-ink-muted text-center">
+            Member belum menyelesaikan onboarding.
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+};
+
 const MemberActions = ({ member, updateMember, onDelete }) => {
   const [open, setOpen] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
   const toast = useToast();
   const close = () => setOpen(false);
   return (
@@ -356,7 +467,11 @@ const MemberActions = ({ member, updateMember, onDelete }) => {
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={close}/>
-          <div className="absolute right-0 top-full mt-1 z-20 card-glass-strong shadow-glass w-48 py-1.5 text-sm">
+          <div className="absolute right-0 top-full mt-1 z-20 card-glass-strong shadow-glass w-52 py-1.5 text-sm">
+            <button onClick={() => { setShowProfile(true); close(); }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5 flex items-center gap-2">
+              <Icon name="user" className="w-3.5 h-3.5 text-ink-soft"/> Lihat Profil
+            </button>
+            <div className="my-1 h-px bg-line"/>
             {member.status !== "disabled" && (
               <button onClick={() => { updateMember(member.code, { status: "disabled" }); toast.push("Member disabled"); close(); }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5">Disable</button>
             )}
@@ -374,6 +489,7 @@ const MemberActions = ({ member, updateMember, onDelete }) => {
           </div>
         </>
       )}
+      {showProfile && <MemberProfileModal member={member} onClose={() => setShowProfile(false)}/>}
     </div>
   );
 };
@@ -416,7 +532,7 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
 
   const copyCode = () => { navigator.clipboard.writeText(generatedCode); toast.push("Kode tersalin"); };
   const sendWA = () => {
-    const text = `Halo ${name}!%0A%0AKode akses AIGYPT-mu sudah aktif:%0A%0A*${generatedCode}*%0A%0ABuka https://aigypt.app → Login Member → masukkan kode di atas.%0A%0A--Tim AIGYPT`;
+    const text = `Halo ${name}!%0A%0AKode akses Talqee-mu sudah aktif:%0A%0A*${generatedCode}*%0A%0ABuka Talqee → Login Member → masukkan kode di atas.%0A%0A--Tim Talqee`;
     window.open(`https://wa.me/${whatsapp.replace(/\D/g,"")}?text=${text}`, "_blank");
   };
 
@@ -481,50 +597,89 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
 
 /* ============== ONBOARDING DATA ============== */
 const AdminOnboarding = () => {
-  // Mock aggregated data, in a real system this would come from server.
-  // We'll generate from members + a stable mock distribution.
-  const data = {
-    totalResponses: 142,
-    struggles: [
-      { id: "arab", n: 86 }, { id: "makalah", n: 72 }, { id: "referensi", n: 54 },
-      { id: "hafalan", n: 48 }, { id: "fokus", n: 31 },
-    ],
-    faculties: [
-      { id: "syariah", n: 52 }, { id: "lughah", n: 38 }, { id: "ushuluddin", n: 24 },
-      { id: "dirasat", n: 16 }, { id: "quran", n: 8 }, { id: "umum", n: 4 },
-    ],
-    levels: [
-      { id: "1", n: 38 }, { id: "2", n: 34 }, { id: "3", n: 28 },
-      { id: "4", n: 22 }, { id: "mustawa", n: 12 }, { id: "pasca", n: 8 },
-    ],
-    styles: [
-      { id: "discussion", n: 64 }, { id: "summary", n: 58 }, { id: "reading", n: 46 },
-      { id: "practice", n: 42 }, { id: "memorization", n: 38 }, { id: "visual", n: 32 },
-    ],
+  const members = loadMembers();
+
+  const profiles = members.map(m => {
+    try { return JSON.parse(localStorage.getItem("madad_profile_" + m.code) || "null"); }
+    catch { return null; }
+  }).filter(Boolean);
+
+  const total = profiles.length;
+
+  const toCount = (arr, key) => {
+    const count = {};
+    arr.forEach(p => (Array.isArray(p[key]) ? p[key] : [p[key]]).filter(Boolean).forEach(v => {
+      count[v] = (count[v] || 0) + 1;
+    }));
+    return count;
   };
+
+  const facultyCount  = toCount(profiles, "faculty");
+  const levelCount    = toCount(profiles, "level");
+  const struggleCount = toCount(profiles, "struggle");
+  const styleCount    = toCount(profiles, "learningStyle");
+
+  const toItems = (obj, labelMap) =>
+    Object.entries(obj)
+      .sort((a,b) => b[1] - a[1])
+      .map(([id, n]) => ({ label: labelMap?.[id] || id, n }))
+      .filter(it => it.label);
+
+  const facultyLabels = Object.fromEntries(
+    (typeof FACULTIES !== "undefined" ? FACULTIES : []).map(f => [f.id, f.label])
+  );
+  const levelLabels = Object.fromEntries(
+    (typeof LEVELS !== "undefined" ? LEVELS : []).map(l => [l.id, l.label || l.short])
+  );
+  const struggleLabels = Object.fromEntries(
+    (typeof STRUGGLES !== "undefined" ? STRUGGLES : []).map(s => [s.id, s.label])
+  );
+  const styleLabels = Object.fromEntries(
+    (typeof LEARNING_STYLES !== "undefined" ? LEARNING_STYLES : []).map(s => [s.id, s.label])
+  );
+
+  const facultyItems  = toItems(facultyCount,  facultyLabels);
+  const levelItems    = toItems(levelCount,     levelLabels);
+  const struggleItems = toItems(struggleCount,  struggleLabels);
+  const styleItems    = toItems(styleCount,     styleLabels);
+
+  if (total === 0) return (
+    <div>
+      <h1 className="font-display text-4xl font-semibold text-ink mb-1">Onboarding Data</h1>
+      <p className="text-ink-muted mb-8">Belum ada data onboarding dari member.</p>
+      <div className="card-glass p-8 text-center text-ink-muted text-sm">
+        Data akan muncul setelah member menyelesaikan onboarding.
+      </div>
+    </div>
+  );
 
   return (
     <div>
       <h1 className="font-display text-4xl font-semibold text-ink mb-1">Onboarding Data</h1>
-      <p className="text-ink-muted mb-8">Total respons: <span className="text-ink font-medium num">{data.totalResponses}</span> dari sesi onboarding.</p>
+      <p className="text-ink-muted mb-8">
+        Data real dari <span className="text-ink font-medium">{total}</span> member yang sudah onboarding.
+      </p>
 
       <div className="grid lg:grid-cols-2 gap-5 mb-5">
-        <AggCard title="Fakultas" items={data.faculties.map(s => ({ label: FACULTIES.find(x => x.id === s.id)?.label, n: s.n }))}/>
-        <AggCard title="Tingkat" items={data.levels.map(s => ({ label: LEVELS.find(x => x.id === s.id)?.label, n: s.n }))}/>
+        {facultyItems.length > 0 && <AggCard title="Fakultas" items={facultyItems}/>}
+        {levelItems.length > 0 && <AggCard title="Tingkat" items={levelItems}/>}
       </div>
       <div className="grid lg:grid-cols-2 gap-5">
-        <AggCard title="Top Struggles" items={data.struggles.map(s => ({ label: STRUGGLES.find(x => x.id === s.id)?.label, n: s.n }))}/>
-        <AggCard title="Gaya Belajar" items={data.styles.map(s => ({ label: LEARNING_STYLES.find(x => x.id === s.id)?.label, n: s.n }))}/>
+        {struggleItems.length > 0 && <AggCard title="Struggles Utama" items={struggleItems}/>}
+        {styleItems.length > 0 && <AggCard title="Gaya Belajar" items={styleItems}/>}
       </div>
 
-      <div className="mt-6 card-glass p-6">
-        <div className="text-xs uppercase tracking-wider text-gold-400 mb-2">Insight</div>
-        <p className="text-ink leading-relaxed">
-          Pengguna paling banyak butuh bantuan di area <span className="text-gold-300 font-medium">Materi Arab</span> &amp; <span className="text-gold-300 font-medium">Makalah</span>.
-          Gaya belajar dominan: <span className="text-gold-300 font-medium">Diskusi</span> dan <span className="text-gold-300 font-medium">Ringkasan Cepat</span>.
-          Prioritaskan content engine untuk dua kombinasi ini.
-        </p>
-      </div>
+      {total > 0 && (
+        <div className="mt-6 card-glass p-6">
+          <div className="text-xs uppercase tracking-wider text-gold-400 mb-2">Insight</div>
+          <p className="text-ink leading-relaxed text-sm">
+            {facultyItems[0] && <>Mayoritas member dari <span className="text-gold-300 font-medium">{facultyItems[0].label}</span>. </>}
+            {struggleItems[0] && <>Struggle terbanyak: <span className="text-gold-300 font-medium">{struggleItems[0].label}</span>. </>}
+            {styleItems[0] && <>Gaya belajar dominan: <span className="text-gold-300 font-medium">{styleItems[0].label}</span>. </>}
+            Prioritaskan konten untuk kombinasi ini.
+          </p>
+        </div>
+      )}
     </div>
   );
 };
@@ -551,6 +706,200 @@ const AggCard = ({ title, items }) => {
   );
 };
 
+/* ============== MADDAH ANALYTICS ============== */
+const AdminMaddahAnalytics = () => {
+  const maddahActivity = (() => {
+    try { return JSON.parse(localStorage.getItem("talqee_maddah_activity") || "{}"); }
+    catch { return {}; }
+  })();
+
+  const entries = Object.entries(maddahActivity)
+    .map(([id, act]) => {
+      const maddah = typeof getMaddahById !== "undefined" ? getMaddahById(id) : null;
+      return { id, name: maddah?.name || id, arabic: maddah?.nameArabic, category: maddah?.category, ...act };
+    })
+    .sort((a,b) => (b.opens || 0) - (a.opens || 0));
+
+  const totalOpens   = entries.reduce((s, e) => s + (e.opens || 0), 0);
+  const totalPrompts = entries.reduce((s, e) => s + (e.promptsCopied || 0), 0);
+
+  const byCategory = {};
+  entries.forEach(e => {
+    const cat = e.category || "lainnya";
+    if (!byCategory[cat]) byCategory[cat] = { opens: 0, prompts: 0 };
+    byCategory[cat].opens   += e.opens || 0;
+    byCategory[cat].prompts += e.promptsCopied || 0;
+  });
+
+  if (entries.length === 0) return (
+    <div>
+      <h1 className="font-display text-4xl font-semibold text-ink mb-1">Maddah Analytics</h1>
+      <p className="text-ink-muted mb-8">Belum ada aktivitas Maddah tercatat.</p>
+      <div className="card-glass p-8 text-center text-ink-muted text-sm">
+        Data akan muncul setelah user membuka halaman Maddah.
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      <h1 className="font-display text-4xl font-semibold text-ink mb-1">Maddah Analytics</h1>
+      <p className="text-ink-muted mb-8">Aktivitas penggunaan Maddah oleh user.</p>
+
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <StatCard label="Total Buka"     value={totalOpens}     icon="layers" color="violet"/>
+        <StatCard label="Prompt Disalin" value={totalPrompts}   icon="copy"   color="gold"/>
+        <StatCard label="Maddah Aktif"   value={entries.length} icon="check"  color="violet"/>
+      </div>
+
+      <div className="grid lg:grid-cols-2 gap-5">
+        <div className="card-glass p-6">
+          <div className="text-xs uppercase tracking-wider text-gold-400 mb-4">Top Maddah — Paling Sering Dibuka</div>
+          <div className="space-y-2">
+            {entries.slice(0, 8).map((e, i) => (
+              <div key={e.id} className="flex items-center gap-3 p-2.5 rounded-lg bg-white/3">
+                <div className="w-6 text-center font-display text-base text-ink-soft">{i+1}</div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm text-ink font-medium truncate">{e.name}</div>
+                  {e.arabic && <div className="text-[11px] text-gold-300 arabic-display" style={{direction:"rtl"}}>{e.arabic}</div>}
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <div className="text-sm text-violet-300 font-medium">{e.opens} buka</div>
+                  <div className="text-[11px] text-ink-soft">{e.promptsCopied || 0} prompt</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="card-glass p-6">
+          <div className="text-xs uppercase tracking-wider text-gold-400 mb-4">Aktivitas per Kategori</div>
+          {Object.entries(byCategory).length > 0 ? (
+            <div className="space-y-3">
+              {Object.entries(byCategory)
+                .sort((a,b) => b[1].opens - a[1].opens)
+                .map(([cat, data]) => {
+                  const catLabel = (typeof MADDAH_CATEGORIES !== "undefined"
+                    ? MADDAH_CATEGORIES.find(c => c.id === cat)?.label
+                    : null) || cat;
+                  const maxOpens = Math.max(...Object.values(byCategory).map(d => d.opens), 1);
+                  return (
+                    <div key={cat}>
+                      <div className="flex items-center justify-between text-sm mb-1">
+                        <span className="text-ink capitalize">{catLabel}</span>
+                        <span className="text-xs text-ink-muted">{data.opens} buka · {data.prompts} prompt</span>
+                      </div>
+                      <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-violet-500 to-gold-400" style={{width:`${(data.opens/maxOpens)*100}%`}}/>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          ) : <div className="text-sm text-ink-muted text-center py-4">Belum ada data kategori.</div>}
+
+          {entries.filter(e => (e.promptsCopied || 0) > 0).length > 0 && (
+            <div className="mt-5 pt-4 border-t border-line">
+              <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Prompt Paling Banyak Disalin</div>
+              {entries
+                .filter(e => (e.promptsCopied || 0) > 0)
+                .sort((a,b) => (b.promptsCopied || 0) - (a.promptsCopied || 0))
+                .slice(0, 3)
+                .map(e => (
+                  <div key={e.id} className="flex items-center justify-between text-sm py-1.5">
+                    <span className="text-ink truncate">{e.name}</span>
+                    <span className="text-gold-300 font-medium ml-2">{e.promptsCopied}×</span>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ============== MUQARANAH PANEL ============== */
+const AdminMuqaranahPanel = () => {
+  const library = (typeof MUQARANAH_LIBRARY !== "undefined" ? MUQARANAH_LIBRARY : null)
+    || (typeof window !== "undefined" && window.MUQARANAH_LIBRARY ? window.MUQARANAH_LIBRARY : null)
+    || (typeof MADDAHS_LIBRARY !== "undefined" ? MADDAHS_LIBRARY : null)
+    || [];
+
+  const custom = (() => {
+    try { return JSON.parse(localStorage.getItem("madad_muqaranah_custom") || "[]"); }
+    catch { return []; }
+  })();
+
+  const catLabels = { fiqh: "Fiqh", ushul: "Ushul", aqidah: "Aqidah", hadits: "Hadits", lughah: "Lughah" };
+  const totalUlama = library.reduce((s,e) => s + (e.views?.length || 0), 0);
+  const uniqueCats = [...new Set(library.map(e => e.category).filter(Boolean))].length;
+
+  return (
+    <div>
+      <h1 className="font-display text-4xl font-semibold text-ink mb-1">Muqaranah</h1>
+      <p className="text-ink-muted mb-8">
+        Library: <span className="text-ink font-medium">{library.length}</span> entri ·
+        Buatan user: <span className="text-ink font-medium">{custom.length}</span> entri
+      </p>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard label="Library"      value={library.length} icon="layers"   color="violet"/>
+        <StatCard label="Buatan User"  value={custom.length}  icon="pen"      color="gold"/>
+        <StatCard label="Total Ulama"  value={totalUlama}     icon="users"    color="violet"/>
+        <StatCard label="Kategori"     value={uniqueCats}     icon="list"     color="gold"/>
+      </div>
+
+      <div className="card-glass p-6 mb-5">
+        <div className="text-xs uppercase tracking-wider text-gold-400 mb-4">
+          Library Muqaranah ({library.length})
+        </div>
+        {library.length === 0 ? (
+          <div className="text-sm text-ink-muted text-center py-4">
+            Library kosong — pastikan muqaranah-data.jsx sudah dimuat.
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {library.map((entry, i) => (
+              <div key={entry.id || i} className="flex items-start justify-between gap-3 p-3 rounded-lg bg-white/3">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm text-ink font-medium truncate">{entry.title}</div>
+                  <div className="text-xs text-ink-soft mt-0.5 line-clamp-1">{entry.question}</div>
+                </div>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {entry.category && (
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/15 text-violet-300 border border-violet-500/20">
+                      {catLabels[entry.category] || entry.category}
+                    </span>
+                  )}
+                  <span className="text-xs text-ink-soft">{entry.views?.length || 0} qoul</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {custom.length > 0 && (
+        <div className="card-glass p-6">
+          <div className="text-xs uppercase tracking-wider text-gold-400 mb-4">Buatan User ({custom.length})</div>
+          <div className="space-y-2">
+            {custom.map((entry, i) => (
+              <div key={i} className="flex items-start justify-between gap-3 p-3 rounded-lg bg-white/3">
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm text-ink font-medium truncate">{entry.title || "(Tanpa judul)"}</div>
+                  <div className="text-xs text-ink-soft mt-0.5">{entry.views?.length || 0} qoul ulama</div>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded bg-gold-500/10 text-gold-300 border border-gold-500/20 flex-shrink-0">User</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 /* ============== AI GUIDE MANAGER ============== */
 const AdminGuides = () => {
   const [selectedTool, setSelectedTool] = useState(AI_TOOLS[0].id);
@@ -558,31 +907,80 @@ const AdminGuides = () => {
   const tool = AI_TOOLS.find(t => t.id === selectedTool);
   const guide = tool.guides[selectedStyle];
 
+  const [editedGuide, setEditedGuide] = useState(null);
+  const [saved, setSaved] = useState(false);
+  const toast = useToast();
+
+  const loadGuide = (toolId, styleId) => {
+    try {
+      const overrides = JSON.parse(localStorage.getItem("talqee_guide_overrides") || "{}");
+      return overrides[`${toolId}_${styleId}`] || AI_TOOLS.find(t => t.id === toolId)?.guides?.[styleId];
+    } catch { return AI_TOOLS.find(t => t.id === toolId)?.guides?.[styleId]; }
+  };
+
+  useEffect(() => {
+    const g = loadGuide(selectedTool, selectedStyle);
+    setEditedGuide(g ? JSON.parse(JSON.stringify(g)) : {});
+    setSaved(false);
+  }, [selectedTool, selectedStyle]);
+
+  const handleSave = () => {
+    try {
+      const overrides = JSON.parse(localStorage.getItem("talqee_guide_overrides") || "{}");
+      overrides[`${selectedTool}_${selectedStyle}`] = editedGuide;
+      localStorage.setItem("talqee_guide_overrides", JSON.stringify(overrides));
+      setSaved(true);
+      toast.push("Guide tersimpan.");
+      setTimeout(() => setSaved(false), 3000);
+    } catch { toast.push("Gagal menyimpan."); }
+  };
+
+  const handleReset = () => {
+    if (!confirm("Reset guide ini ke default?")) return;
+    try {
+      const overrides = JSON.parse(localStorage.getItem("talqee_guide_overrides") || "{}");
+      delete overrides[`${selectedTool}_${selectedStyle}`];
+      localStorage.setItem("talqee_guide_overrides", JSON.stringify(overrides));
+      const g = AI_TOOLS.find(t => t.id === selectedTool)?.guides?.[selectedStyle];
+      setEditedGuide(g ? JSON.parse(JSON.stringify(g)) : {});
+      toast.push("Guide direset ke default.");
+    } catch { toast.push("Gagal reset."); }
+  };
+
+  if (!editedGuide) return <div className="text-ink-muted py-10 text-center">Memuat guide...</div>;
+
   return (
     <div>
-      <h1 className="font-display text-4xl font-semibold text-ink mb-1">AI Guide Manager</h1>
-      <p className="text-ink-muted mb-8">36 adaptive guide variants (6 tools × 6 learning styles). Edit konten per kombinasi.</p>
+      <h1 className="font-display text-4xl font-semibold text-ink mb-1">Guide Manager</h1>
+      <p className="text-ink-muted mb-8">Edit adaptive guide per AI × gaya belajar. Perubahan tersimpan ke localStorage.</p>
 
       <div className="grid lg:grid-cols-12 gap-5">
         <div className="lg:col-span-3 space-y-4">
           <div className="card-glass p-4">
-            <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Tools</div>
+            <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">AI Tool</div>
             <div className="space-y-1">
-              {AI_TOOLS.map(t => (
-                <button key={t.id} onClick={() => setSelectedTool(t.id)}
-                  className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-2.5 ${selectedTool === t.id ? "bg-violet-500/15 text-ink border border-violet-400/30" : "text-ink-muted hover:bg-white/5 hover:text-ink"}`}>
-                  <span className="w-7 h-7 rounded-md flex items-center justify-center text-[9px] font-mono font-bold text-white" style={{background: t.color}}>{t.monogram}</span>
-                  <span className="font-medium">{t.name}</span>
-                </button>
-              ))}
+              {AI_TOOLS.map(t => {
+                const hasOverride = (() => {
+                  try { const o = JSON.parse(localStorage.getItem("talqee_guide_overrides") || "{}"); return !!o[`${t.id}_${selectedStyle}`]; }
+                  catch { return false; }
+                })();
+                return (
+                  <button key={t.id} onClick={() => setSelectedTool(t.id)}
+                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-2.5 transition ${selectedTool === t.id ? "bg-violet-500/15 text-ink border border-violet-400/30" : "text-ink-muted hover:bg-white/5 hover:text-ink"}`}>
+                    <ToolIcon tool={t} size="w-7 h-7"/>
+                    <span className="font-medium flex-1">{t.name}</span>
+                    {hasOverride && <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>}
+                  </button>
+                );
+              })}
             </div>
           </div>
           <div className="card-glass p-4">
-            <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Style</div>
+            <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Gaya Belajar</div>
             <div className="space-y-1">
-              {LEARNING_STYLES.map(s => (
+              {(typeof LEARNING_STYLES !== "undefined" ? LEARNING_STYLES : []).map(s => (
                 <button key={s.id} onClick={() => setSelectedStyle(s.id)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${selectedStyle === s.id ? "bg-violet-500/15 text-ink" : "text-ink-muted hover:bg-white/5 hover:text-ink"}`}>
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition ${selectedStyle === s.id ? "bg-violet-500/15 text-ink" : "text-ink-muted hover:bg-white/5 hover:text-ink"}`}>
                   <span className="text-base">{s.emoji}</span>
                   <span>{s.label}</span>
                 </button>
@@ -591,40 +989,43 @@ const AdminGuides = () => {
           </div>
         </div>
 
-        <div className="lg:col-span-9 space-y-5">
-          <div className="card-glass p-6 flex items-center gap-3">
-            <span className="w-12 h-12 rounded-xl flex items-center justify-center text-sm font-mono font-bold text-white" style={{background: tool.color}}>{tool.monogram}</span>
+        <div className="lg:col-span-9 space-y-4">
+          <div className="card-glass p-5 flex items-center gap-3">
+            <ToolIcon tool={tool} size="w-12 h-12"/>
             <div className="flex-1">
-              <div className="text-xs uppercase tracking-wider text-gold-400">{LEARNING_STYLES.find(s => s.id === selectedStyle)?.label} guide</div>
+              <div className="text-xs uppercase tracking-wider text-gold-400">
+                {(typeof LEARNING_STYLES !== "undefined" ? LEARNING_STYLES : []).find(s => s.id === selectedStyle)?.label} guide
+              </div>
               <div className="font-display text-2xl text-ink font-semibold">{tool.name}</div>
             </div>
-            <span className="chip chip-violet">Editing</span>
+            {saved && <span className="chip chip-gold text-xs">✓ Tersimpan</span>}
           </div>
-          <div className="card-glass p-6">
+
+          <div className="card-glass p-5">
             <div className="text-xs uppercase tracking-wider text-gold-400 mb-2">Kapan dipakai</div>
-            <textarea defaultValue={guide.when} className="w-full bg-white/5 border border-line rounded-lg px-4 py-3 text-ink text-sm focus:outline-none focus:border-violet-400 min-h-[80px]" readOnly/>
+            <textarea
+              value={editedGuide.when || ""}
+              onChange={e => setEditedGuide({...editedGuide, when: e.target.value})}
+              className="w-full bg-white/5 border border-line rounded-lg px-4 py-3 text-ink text-sm focus:outline-none focus:border-violet-400 min-h-[80px] resize-y"
+            />
           </div>
-          <div className="card-glass p-6">
-            <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Langkah-langkah</div>
-            <ol className="space-y-2">
-              {guide.steps.map((step, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <span className="w-6 h-6 rounded-md bg-violet-500/15 text-violet-200 text-xs flex items-center justify-center font-bold flex-shrink-0">{i+1}</span>
-                  <input defaultValue={step} className="flex-1 bg-white/5 border border-line rounded-lg px-3 py-2 text-ink text-sm focus:outline-none focus:border-violet-400" readOnly/>
-                </li>
-              ))}
-            </ol>
+
+          <div className="card-glass p-5">
+            <div className="text-xs uppercase tracking-wider text-gold-400 mb-2">Starter Prompt</div>
+            <textarea
+              value={editedGuide.starterPrompt || ""}
+              onChange={e => setEditedGuide({...editedGuide, starterPrompt: e.target.value})}
+              className="w-full bg-white/5 border border-line rounded-lg px-4 py-3 text-ink font-mono text-xs focus:outline-none focus:border-violet-400 min-h-[200px] resize-y"
+            />
           </div>
-          <div className="card-glass p-6">
-            <div className="text-xs uppercase tracking-wider text-gold-400 mb-2">Starter prompt</div>
-            <textarea defaultValue={guide.starterPrompt} className="w-full bg-white/5 border border-line rounded-lg px-4 py-3 text-ink font-mono text-xs focus:outline-none focus:border-violet-400 min-h-[180px]" readOnly/>
-          </div>
-          <div className="flex gap-2 justify-end">
-            <button disabled className="btn btn-ghost opacity-50 cursor-not-allowed">Save (preview only)</button>
-            <button disabled className="btn btn-primary opacity-50 cursor-not-allowed">Publish</button>
-          </div>
-          <div className="text-xs text-ink-soft text-center">
-            Edit live di prototype dimatikan. Di production, perubahan akan disimpan ke database konten.
+
+          <div className="flex gap-3 justify-between">
+            <button onClick={handleReset} className="btn btn-ghost text-sm px-4 py-2 text-rose-600 border border-rose-600/20 hover:bg-rose-600/10">
+              Reset ke default
+            </button>
+            <button onClick={handleSave} className="btn btn-primary text-sm px-6 py-2">
+              Simpan Guide
+            </button>
           </div>
         </div>
       </div>
@@ -633,40 +1034,96 @@ const AdminGuides = () => {
 };
 
 /* ============== SETTINGS ============== */
-const AdminSettings = () => (
-  <div className="max-w-2xl">
-    <h1 className="font-display text-4xl font-semibold text-ink mb-1">Settings</h1>
-    <p className="text-ink-muted mb-8">Konfigurasi platform.</p>
-    <div className="space-y-4">
-      <div className="card-glass p-6">
-        <div className="text-xs uppercase tracking-wider text-gold-400 mb-2">Brand</div>
-        <div className="space-y-3">
-          <div>
-            <label className="text-xs text-ink-muted block mb-1">Nama platform</label>
-            <input defaultValue="AIGYPT" className="w-full bg-white/5 border border-line rounded-lg px-4 py-2.5 text-ink"/>
+const AdminSettings = () => {
+  const toast = useToast();
+
+  const loadSettings = () => {
+    try { return JSON.parse(localStorage.getItem("talqee_admin_settings") || "{}"); }
+    catch { return {}; }
+  };
+
+  const [settings, setSettings] = useState(() => ({
+    platformName: "Talqee",
+    tagline:      "Panduan Belajar Al-Azhar dengan AI",
+    whatsapp:     "+201xxxxxxxxx",
+    lynkUrl:      "https://lynk.id/talqee",
+    ...loadSettings(),
+  }));
+  const [saved, setSaved] = useState(false);
+
+  const handleSave = () => {
+    localStorage.setItem("talqee_admin_settings", JSON.stringify(settings));
+    setSaved(true);
+    toast.push("Settings tersimpan.");
+    setTimeout(() => setSaved(false), 3000);
+  };
+
+  const Field = ({ label, value, onChange, mono = false, hint }) => (
+    <div>
+      <label className="text-xs text-ink-muted block mb-1">{label}</label>
+      <input
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className={`w-full bg-white/5 border border-line rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-violet-400 ${mono ? "font-mono" : ""}`}
+      />
+      {hint && <div className="text-[11px] text-ink-soft mt-1">{hint}</div>}
+    </div>
+  );
+
+  return (
+    <div className="max-w-2xl">
+      <h1 className="font-display text-4xl font-semibold text-ink mb-1">Settings</h1>
+      <p className="text-ink-muted mb-8">Konfigurasi platform Talqee.</p>
+
+      <div className="space-y-4">
+        <div className="card-glass p-6 space-y-3">
+          <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Brand</div>
+          <Field label="Nama platform" value={settings.platformName}
+            onChange={v => setSettings({...settings, platformName: v})}/>
+          <Field label="Tagline" value={settings.tagline}
+            onChange={v => setSettings({...settings, tagline: v})}/>
+        </div>
+
+        <div className="card-glass p-6 space-y-3">
+          <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Operasional</div>
+          <Field label="WhatsApp Admin" value={settings.whatsapp} mono
+            onChange={v => setSettings({...settings, whatsapp: v})}
+            hint="Nomor ini untuk distribusi kode member setelah bayar."/>
+          <Field label="URL Lynk.id" value={settings.lynkUrl} mono
+            onChange={v => setSettings({...settings, lynkUrl: v})}
+            hint="URL halaman pembayaran di Lynk.id."/>
+        </div>
+
+        <div className="flex justify-between items-center">
+          <div className="text-xs text-ink-soft">
+            {saved ? "✓ Tersimpan ke localStorage" : "Perubahan belum disimpan"}
           </div>
-          <div>
-            <label className="text-xs text-ink-muted block mb-1">Tagline</label>
-            <input defaultValue="Panduan Belajar dengan AI untuk Masisir" className="w-full bg-white/5 border border-line rounded-lg px-4 py-2.5 text-ink"/>
-          </div>
+          <button onClick={handleSave} className="btn btn-primary px-6 py-2.5 text-sm">
+            Simpan Settings
+          </button>
+        </div>
+
+        <div className="card-glass p-6 border border-rose-600/20">
+          <div className="text-xs uppercase tracking-wider text-rose-600 mb-2">Danger Zone</div>
+          <p className="text-sm text-ink-muted mb-3">
+            Hapus semua data lokal — member, profil, progress, catatan. Tidak bisa diundo.
+          </p>
+          <button onClick={() => {
+            if (!confirm("Yakin hapus SEMUA data lokal? Ini tidak bisa diundo.")) return;
+            const typed = prompt("Ketik 'HAPUS' untuk konfirmasi:");
+            if (typed !== "HAPUS") { alert("Dibatalkan."); return; }
+            Object.values(typeof STORAGE_KEYS !== "undefined" ? STORAGE_KEYS : {})
+              .forEach(k => localStorage.removeItem(k));
+            ["talqee_maddah_activity","talqee_guide_overrides","talqee_admin_settings"]
+              .forEach(k => localStorage.removeItem(k));
+            window.location.reload();
+          }} className="btn btn-ghost text-sm text-rose-600 border border-rose-600/30 hover:bg-rose-600/10 px-4 py-2">
+            Reset semua data
+          </button>
         </div>
       </div>
-      <div className="card-glass p-6">
-        <div className="text-xs uppercase tracking-wider text-gold-400 mb-2">WhatsApp Admin</div>
-        <input defaultValue="+201xxxxxxxxx" className="w-full bg-white/5 border border-line rounded-lg px-4 py-2.5 text-ink font-mono"/>
-      </div>
-      <div className="card-glass p-6">
-        <div className="text-xs uppercase tracking-wider text-gold-400 mb-2">Reset</div>
-        <p className="text-sm text-ink-muted mb-3">Hapus semua data lokal, member, profil, progress.</p>
-        <button onClick={() => {
-          if (confirm("Hapus SEMUA data lokal? Ini tidak bisa diundo.")) {
-            Object.values(STORAGE_KEYS).forEach(k => localStorage.removeItem(k));
-            window.location.reload();
-          }
-        }} className="btn btn-ghost text-rose-600 border-rose-600/30 hover:bg-rose-600/10">Reset semua data</button>
-      </div>
     </div>
-  </div>
-);
+  );
+};
 
 window.AdminPage = AdminPage;

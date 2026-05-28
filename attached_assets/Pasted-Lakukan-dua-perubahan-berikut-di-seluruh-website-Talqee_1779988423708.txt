@@ -1,0 +1,93 @@
+Lakukan dua perubahan berikut di seluruh website Talqeeh.
+Jangan ubah apapun selain yang disebutkan di bawah.
+
+---
+
+## PERUBAHAN 1 — UPLOAD & GANTI LOGO
+
+Upload file logo baru yang disediakan (Talqih_Logo.png)
+ke folder assets/images/ atau public/ project ini.
+Beri nama file: talqeeh-logo.png
+
+Ganti SEMUA kemunculan logo lama di seluruh website
+dengan logo baru ini. Cari di:
+
+1. Navbar / header (desktop & mobile)
+2. Splash screen loading
+3. Footer
+4. Halaman login / register / kode member
+5. Tab browser (favicon) — crop bagian ikon
+   rumah/kaligrafi saja tanpa teks untuk favicon
+6. Meta og:image kalau ada
+7. Semua tempat lain yang menampilkan logo
+
+Ketentuan tampilan logo baru:
+
+Navbar desktop:
+- Height: 36px, width: auto (proporsional)
+- Background logo hitam → set ke transparent
+  menggunakan CSS: mix-blend-mode: screen
+  ATAU gunakan filter: invert(0) karena logo
+  sudah putih di atas hitam, cocok untuk
+  background dark website ini
+- Jangan stretch atau crop
+
+Navbar mobile:
+- Height: 32px, width: auto
+
+Splash screen:
+- Width: 130px, height: auto
+- Tetap gunakan animasi glow pulse yang sudah ada
+- Background hitam logo akan menyatu dengan
+  background splash yang gelap (#0A0714)
+  tambahkan: style="mix-blend-mode: screen"
+  agar background hitam logo transparan
+
+Footer:
+- Height: 48px, width: auto, opacity: 0.85
+
+---
+
+## PERUBAHAN 2 — GANTI NAMA "Talqee" → "Talqeeh"
+
+Cari dan ganti SEMUA kemunculan teks berikut
+di seluruh codebase:
+
+Ganti: "Talqee"   → "Talqeeh"
+Ganti: "Talqih"   → "Talqeeh"
+Ganti: "Talqih"   → "Talqeeh"
+
+Lokasi yang WAJIB dicek:
+1. <title> tag di index.html / _document
+2. Navbar — teks nama di samping logo
+3. Splash screen — teks nama (kalau masih ada)
+4. Footer — nama brand
+5. Meta tags: og:title, og:site_name, description
+6. Halaman login: "Masuk ke Talqee"
+7. Dashboard greeting: "Talqee siap menemani..."
+8. Semua teks tombol yang menyebut nama brand
+9. Semua alt text gambar/logo
+10. Halaman pricing: "Member Talqee"
+11. File manifest.json (PWA name kalau ada)
+12. README atau komentar kode (kalau ada)
+
+PENGECUALIAN — jangan ganti:
+- URL/route/slug di kode (tetap biarkan
+  sebagai variable internal)
+- Nama file (kecuali yang disebutkan di atas)
+- Teks Arab (تلقيح) — biarkan apa adanya
+
+---
+
+## CEK AKHIR
+
+Setelah selesai, pastikan:
+□ Logo baru muncul di navbar, splash, dan footer
+□ Background hitam logo tidak terlihat
+  (menyatu dengan background dark website)
+□ Tidak ada lagi teks "Talqee" atau "Talqih"
+  yang terlihat oleh user
+□ Favicon sudah diupdate
+□ Title tab browser sudah berubah ke "Talqeeh"
+
+Jangan ubah apapun selain yang disebutkan di atas.
