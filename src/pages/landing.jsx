@@ -202,34 +202,35 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
           <h1
             className="hero-headline text-white mb-6"
             style={{
+              fontFamily: '"DM Sans", system-ui, sans-serif',
               lineHeight: 1.06,
-              letterSpacing: "-0.02em",
+              letterSpacing: "-0.04em",
             }}
           >
-            <span style={{ display: "block", fontSize: "clamp(48px, 6.5vw, 88px)", fontWeight: 800 }}>
+            <span style={{ display: "block", fontSize: "clamp(48px, 6.5vw, 88px)", fontWeight: 800, fontFamily: '"DM Sans", system-ui, sans-serif' }}>
               Paham{" "}
               <span style={{
+                fontFamily: '"DM Sans", system-ui, sans-serif',
                 background: "linear-gradient(90deg, #A78BFA 0%, #C4A0FF 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
               }}>Muqarrar</span>
             </span>
-            <span style={{ display: "block", fontSize: "clamp(36px, 4.8vw, 66px)", fontWeight: 700, color: "rgba(255,255,255,0.9)", letterSpacing: "-0.01em" }}>
+            <span style={{ display: "block", fontSize: "clamp(36px, 4.8vw, 66px)", fontWeight: 700, fontFamily: '"DM Sans", system-ui, sans-serif', color: "rgba(255,255,255,0.9)", letterSpacing: "-0.03em" }}>
               dengan AI.
             </span>
             <span style={{
               display: "block",
               fontSize: "clamp(18px, 2.2vw, 30px)",
-              fontWeight: 400,
-              fontStyle: "italic",
+              fontWeight: 500,
               fontFamily: '"DM Sans", system-ui, sans-serif',
               marginTop: "14px",
               background: "linear-gradient(90deg, #C9A86A 0%, #E8D0A0 60%, #A78BFA 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
-              letterSpacing: "0.01em",
+              letterSpacing: "-0.01em",
             }}>
               Cara belajar baru untuk Masisir.
             </span>
