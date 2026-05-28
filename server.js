@@ -30,6 +30,16 @@ http.createServer((req, res) => {
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
+      // SPA fallback — serve index.html for navigable paths (no file extension)
+      const ext = path.extname(urlPath);
+      if (!ext) {
+        fs.readFile(path.join(ROOT, 'index.html'), (err2, html) => {
+          if (err2) { res.writeHead(500); res.end('Server error'); return; }
+          res.writeHead(200, { 'Content-Type': 'text/html' });
+          res.end(html);
+        });
+        return;
+      }
       res.writeHead(404, { 'Content-Type': 'text/plain' });
       res.end('Not found');
       return;

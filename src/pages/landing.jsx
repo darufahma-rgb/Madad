@@ -1,663 +1,276 @@
-/* Talqih — Landing page v4: cinematic redesign dengan font Arab hidup dan pola geometrik Islam */
+/* Talqih — Landing page v5: ringkas, 5 section, show don't tell */
 
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect } = React;
 
-/* ── Inline styles injected once ──────────────────────────────── */
 const LANDING_STYLES = `
-  /* ── Fonts ── */
-  .kali-display  { font-family: "Reem Kufi", "Noto Kufi Arabic", sans-serif; direction: rtl; }
-  .kali-elegant  { font-family: "Aref Ruqaa", serif; direction: rtl; }
-  .kali-body     { font-family: "Noto Naskh Arabic", serif; direction: rtl; }
-
-  /* ── Hero background calligraphy ── */
-  .hero-kali {
-    font-family: "Reem Kufi", "Noto Kufi Arabic", sans-serif;
-    direction: rtl;
-    line-height: 1.4;
-    background: linear-gradient(160deg, rgba(217,189,133,0.95) 0%, rgba(201,168,106,0.6) 50%, rgba(169,112,255,0.3) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    pointer-events: none;
-    user-select: none;
-  }
-  .hero-kali-side {
-    font-family: "Aref Ruqaa", serif;
-    direction: rtl;
-    line-height: 1.9;
-    pointer-events: none;
-    user-select: none;
-  }
-
-  .pain-item {
-    border-left: 2px solid rgba(124,77,255,0.25);
-    padding-left: 16px;
-    border-radius: 0 6px 6px 0;
-    padding-top: 4px;
-    padding-bottom: 4px;
-  }
-  .mapel-pill {
-    background: rgba(17,6,31,0.75);
-    border: 1px solid rgba(169,112,255,0.12);
-    border-radius: 10px;
-    padding: 10px 14px;
-  }
-  .step-connector {
-    width: 2px;
-    background: linear-gradient(180deg, rgba(124,77,255,0.5) 0%, rgba(201,168,106,0.35) 100%);
-    flex-shrink: 0;
-  }
-  .price-badge {
-    background: linear-gradient(135deg, rgba(201,168,106,0.2) 0%, rgba(201,168,106,0.06) 100%);
-    border: 1px solid rgba(201,168,106,0.3);
-    border-radius: 12px;
-    padding: 4px 12px;
-    font-size: 12px;
-    color: #E8D0A0;
-    font-weight: 500;
-  }
-  .vs-pill {
-    background: rgba(22,9,50,0.85);
-    border: 1px solid rgba(169,112,255,0.18);
-    border-radius: 10px;
-    padding: 16px 20px;
-  }
-  .cta-card {
-    background: linear-gradient(160deg, rgba(25,11,56,0.9) 0%, rgba(14,6,25,0.85) 100%);
-    border: 1px solid rgba(201,168,106,0.35);
-    border-radius: 20px;
-  }
-  .step-kali {
-    font-family: "Aref Ruqaa", serif;
-    direction: rtl;
-    line-height: 1.8;
-  }
-  .final-cta-kali {
-    font-family: "Reem Kufi", sans-serif;
-    direction: rtl;
-    line-height: 1.6;
-  }
+  .kali-display  { font-family: "Reem Kufi","Noto Kufi Arabic",sans-serif; direction:rtl; }
+  .kali-elegant  { font-family: "Aref Ruqaa",serif; direction:rtl; }
+  .hero-kali     { font-family:"Reem Kufi",sans-serif; direction:rtl;
+    background:linear-gradient(160deg,rgba(217,189,133,.9),rgba(201,168,106,.5),rgba(169,112,255,.25));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    pointer-events:none; user-select:none; }
+  .hero-kali-side{ font-family:"Aref Ruqaa",serif; direction:rtl; pointer-events:none; user-select:none; }
+  .hov-lift      { transition:transform .2s ease, box-shadow .2s ease; cursor:pointer; }
+  .hov-lift:hover{ transform:translateY(-3px); box-shadow:0 12px 40px -12px rgba(201,168,106,.2); }
 `;
 
 const StyleInject = () => {
   useEffect(() => {
-    const id = "landing-styles-v3";
+    const id = "landing-styles-v5";
     if (!document.getElementById(id)) {
       const el = document.createElement("style");
-      el.id = id;
-      el.textContent = LANDING_STYLES;
+      el.id = id; el.textContent = LANDING_STYLES;
       document.head.appendChild(el);
     }
-    return () => {};
   }, []);
   return null;
 };
 
-/* ── Counter statis ─────────────────────────────────────────── */
-const CountUp = ({ target, suffix = "" }) => <span>{target}{suffix}</span>;
-
-/* ── Reveal passthrough (no animation overhead) ─────────────── */
-const Reveal = ({ children, className = "", style, delay, stagger, ...rest }) => (
+const Reveal = ({ children, className = "", style, ...rest }) => (
   <div className={className} style={style} {...rest}>{children}</div>
 );
 
-/* ── Komponen utama ─────────────────────────────────────────── */
-const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
-  <div className="page-enter">
-    <StyleInject />
-    <LandingHero onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment} />
-    <StatsBanner />
-    <PainSection />
-    <SolutionSection />
-    <FeaturesSection />
-    <MapelShowcase />
-    <HowItWorks />
-    <PricingSection onOpenPayment={onOpenPayment} />
-    <FinalCTA onOpenPayment={onOpenPayment} />
+/* ── Hero Composition — 3 stacked glass cards ───────────────── */
+const HeroComposition = () => (
+  <div className="relative h-[400px] w-full">
+    {/* Card 3 back-left */}
+    <div className="absolute left-0 top-14 w-48 card-glass p-4 rounded-xl"
+      style={{ zIndex:10, opacity:.42, transform:"rotate(-2.5deg)" }}>
+      <div className="text-[9px] uppercase tracking-wider text-violet-300 mb-1.5">✦ AI Rekomendasi</div>
+      <div className="text-sm font-semibold text-ink mb-0.5">NotebookLM</div>
+      <div className="text-[11px] text-ink-soft">Sesuai: hafalan matan</div>
+      <div className="text-[11px] text-ink-soft">Untuk: Nahwu Dasar</div>
+    </div>
+    {/* Card 2 back-right */}
+    <div className="absolute right-0 top-8 w-52 card-glass p-4 rounded-xl"
+      style={{ zIndex:20, opacity:.62, transform:"rotate(1.8deg)" }}>
+      <div className="text-[9px] uppercase tracking-wider text-gold-400 mb-1.5">Prompt: I'rab Kalimat</div>
+      <div className="text-[11px] text-ink-muted leading-relaxed font-mono">
+        "Aku thalib di Al-Azhar<br/>yang sedang muthala'ah<br/>bab Marfu'at..."
+      </div>
+      <div className="mt-2 text-[10px] text-violet-300 font-medium">→ Salin ke Claude</div>
+    </div>
+    {/* Card 1 front */}
+    <div className="absolute left-1/2 -translate-x-1/2 top-0 w-64 card-glass-strong p-5 rounded-2xl"
+      style={{ zIndex:30, border:"1px solid rgba(201,168,106,.28)", boxShadow:"0 0 40px rgba(201,168,106,.08)" }}>
+      <div className="arabic-display text-gold-300 text-2xl mb-1" style={{direction:"rtl"}}>النحو</div>
+      <div className="font-display text-base font-semibold text-ink mb-0.5">Nahwu Dasar</div>
+      <div className="text-[11px] text-ink-soft mb-3">Ilmu Sintaksis Arab</div>
+      <div className="flex flex-wrap gap-1.5 mb-3">
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/20">Claude</span>
+        <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold-500/10 text-gold-300 border border-gold-500/20">NotebookLM</span>
+      </div>
+      <div className="h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent mb-3"/>
+      <div className="text-[11px] text-ink-muted">17 template prompt</div>
+      <div className="text-[10px] text-ink-soft mt-1">Pahami · Hafal · Latihan · Ujian</div>
+    </div>
   </div>
 );
 
-
 /* ══════════════════════════════════════════════════════════════
-   1. HERO — Full viewport, kaligrafi besar, emotional headline
+   1. HERO
    ══════════════════════════════════════════════════════════════ */
 const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
-  <section className="relative overflow-hidden" style={{ minHeight: "100vh", display: "flex", alignItems: "center", paddingTop: "80px" }}>
+  <section className="relative overflow-hidden"
+    style={{ minHeight:"100vh", display:"flex", alignItems:"center", paddingTop:"80px" }}>
     <div className="pattern-talqih"/>
+    <Blob color="rgba(124,77,255,.30)" size={900} top={-300} right={-200}/>
+    <Blob color="rgba(201,168,106,.09)" size={700} top={200} left={-250}/>
 
-    {/* Background blobs */}
-    <Blob color="rgba(124,77,255,0.38)" size={1000} top={-350} right={-250} />
-    <Blob color="rgba(201,168,106,0.13)" size={800} top={250} left={-300} />
-    <Blob color="rgba(92,53,204,0.28)" size={700} top={80} left={150} />
-    <Blob color="rgba(201,168,106,0.08)" size={500} top={400} right={100} />
-
-    {/* Islamic geometric pattern overlay */}
-    <div className="absolute inset-0 pointer-events-none" style={{ opacity: 0.6, backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cpolygon points='40,4 47,22 66,16 54,33 72,40 54,47 66,64 47,58 40,76 33,58 14,64 26,47 8,40 26,33 14,16 33,22' fill='none' stroke='rgba(201,168,106,0.12)' stroke-width='0.7'/%3E%3Cpolygon points='40,16 46,28 59,28 59,52 46,52 40,64 34,52 21,52 21,28 34,28' fill='none' stroke='rgba(169,112,255,0.07)' stroke-width='0.5'/%3E%3C/svg%3E\")", backgroundRepeat: "repeat" }} />
-
-    {/* Radial glow behind calligraphy */}
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-      <div style={{
-        width: "600px", height: "600px",
-        borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(201,168,106,0.07) 0%, rgba(124,77,255,0.05) 40%, transparent 70%)",
-        filter: "blur(40px)",
-      }} />
-    </div>
-
-    {/* Kaligrafi besar di background */}
+    {/* Kaligrafi background */}
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden">
-      <div style={{ opacity: 0.065 }}>
-        <div className="hero-kali" style={{ fontSize: "clamp(130px,24vw,320px)", letterSpacing: "0.01em" }}>
-          اقْرَأْ
-        </div>
+      <div className="hero-kali" style={{ fontSize:"clamp(110px,22vw,290px)", opacity:.055, letterSpacing:".01em" }}>
+        اقْرَأْ
       </div>
     </div>
-
-    {/* Ornamen kaligrafi kanan — Aref Ruqaa */}
-    <div className="absolute right-6 top-1/3 pointer-events-none select-none hidden lg:flex flex-col items-end gap-1">
-      <div className="hero-kali-side text-gold-400" style={{ fontSize: "64px", opacity: 0.22, lineHeight: 1.6 }}>
+    <div className="absolute right-6 top-1/3 pointer-events-none select-none hidden lg:flex flex-col items-end">
+      <div className="hero-kali-side text-gold-400" style={{ fontSize:"54px", opacity:.17, lineHeight:1.6 }}>
         بِسْمِ اللَّهِ
       </div>
-      <div className="w-16 h-px ml-auto" style={{ background: "linear-gradient(90deg, transparent, rgba(201,168,106,0.3))" }} />
     </div>
-
-    {/* Ornamen kiri — Aref Ruqaa */}
     <div className="absolute left-4 bottom-1/3 pointer-events-none select-none hidden lg:block">
-      <div className="hero-kali-side text-violet-300" style={{ fontSize: "38px", opacity: 0.16, lineHeight: 2, textAlign: "right" }}>
+      <div className="hero-kali-side text-violet-300" style={{ fontSize:"34px", opacity:.13, lineHeight:2, textAlign:"right" }}>
         وَمَا أُوتِيتُم
       </div>
-      <div className="hero-kali-side text-violet-300" style={{ fontSize: "38px", opacity: 0.16, lineHeight: 2, textAlign: "right" }}>
+      <div className="hero-kali-side text-violet-300" style={{ fontSize:"34px", opacity:.13, lineHeight:2, textAlign:"right" }}>
         مِّنَ الْعِلْمِ
       </div>
     </div>
 
-    <div className="container-x relative w-full">
-      <div className="max-w-3xl mx-auto text-center">
+    <div className="container-x relative w-full py-16">
+      <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
-        {/* Arabic ornament kecil di atas chip */}
-        <Reveal>
-          <div className="kali-elegant text-gold-500 mb-3 opacity-40" style={{ fontSize: "22px", letterSpacing: "0.1em" }}>
-            ✦ ─────── ✦ ─────── ✦
-          </div>
-        </Reveal>
-
-        {/* Chip */}
-        <Reveal delay={50}>
-          <div className="chip chip-glass text-xs mb-7 inline-flex items-center gap-2 mx-auto">
-            <span className="inline-flex rounded-full h-2 w-2 bg-gold-400" />
-            Untuk Masisir Al-Azhar · Dibuat khusus, bukan adaptasi
-          </div>
-        </Reveal>
-
-        {/* Headline besar */}
-        <Reveal delay={120}>
-          <h1 className="font-display leading-[1.03] tracking-tightest mb-6" style={{ fontSize: "clamp(48px,7vw,88px)", fontWeight: 600 }}>
-            <span className="text-ink">Kuliah di Azhar itu</span>{" "}
-            <span className="gradient-text">berat.</span>
-            <br />
-            <span className="text-ink">Talqih bikin lebih</span>{" "}
-            <span className="text-gold-300">ringan.</span>
-          </h1>
-        </Reveal>
-
-        {/* Sub */}
-        <Reveal delay={240}>
-          <p className="text-ink-muted leading-relaxed mx-auto mb-10" style={{ fontSize: "clamp(16px,2vw,20px)", maxWidth: "620px" }}>
-            Panduan AI yang mengerti maqarrar Al-Azhar — dari Fiqh, Hadith, Ushul, sampai Nahwu dan Balaghah.
-            Bukan AI biasa, tapi<span className="text-gold-300 font-medium"> konsultan belajar pribadi</span> yang menyesuaikan gaya belajarmu.
-          </p>
-        </Reveal>
-
-        {/* CTAs */}
-        <Reveal delay={380}>
-          <div className="flex flex-wrap items-center justify-center gap-4 mb-10">
-            <button onClick={onOpenPayment}
-              className="btn btn-gold text-base px-8 py-4"
-              style={{ fontSize: "16px", boxShadow: "0 0 50px rgba(201,168,106,0.4), 0 0 100px rgba(201,168,106,0.15), 0 1px 0 rgba(255,255,255,0.35) inset" }}>
-              <Icon name="sparkles" className="w-5 h-5" />
-              Gabung Member — Rp 49.000
-            </button>
-            <button onClick={onOpenLogin}
-              className="btn btn-ghost text-base px-6 py-4" style={{ fontSize: "15px" }}>
-              Sudah punya kode? Login →
-            </button>
-          </div>
-        </Reveal>
-
-        {/* Social proof mini */}
-        <Reveal delay={500}>
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs text-ink-soft">
-            {[
-              { icon: "check", text: "Sekali bayar, akses seumur hidup" },
-              { icon: "shield", text: "Kode dikirim via WhatsApp" },
-              { icon: "book", text: "16+ mata pelajaran Al-Azhar" },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-1.5">
-                <Icon name={item.icon} className="w-3.5 h-3.5 text-gold-400" />
-                <span>{item.text}</span>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-
-        {/* Arabic ornament bawah */}
-        <Reveal delay={600}>
-          <div className="kali-display text-gold-500 mt-8 opacity-20" style={{ fontSize: "28px", letterSpacing: "0.15em" }}>
-            ﷽
-          </div>
-        </Reveal>
-      </div>
-
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-ink-soft">
-        <span className="text-[11px] tracking-[0.15em] uppercase">Scroll</span>
-        <div className="w-px h-10 bg-gradient-to-b from-violet-400/60 to-transparent" />
-      </div>
-    </div>
-  </section>
-);
-
-/* ══════════════════════════════════════════════════════════════
-   2. STATS BANNER — angka nyata yang bergerak
-   ══════════════════════════════════════════════════════════════ */
-const StatsBanner = () => (
-  <section className="py-14 border-y" style={{ borderColor: "rgba(169,112,255,0.1)" }}>
-    <div className="container-x">
-      <Reveal stagger className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-0 md:divide-x" style={{ "--tw-divide-opacity": 1 }}>
-        {[
-          { num: 16,    suf: "+",   label: "Mata pelajaran Al-Azhar" },
-          { num: 6,     suf: "×",   label: "Gaya belajar berbeda" },
-          { num: 96,    suf: "+",   label: "Panduan prompt siap pakai" },
-          { num: 49,    suf: "rb",  label: "Sekali bayar, akses penuh" },
-        ].map((s, i) => (
-          <div key={i} className="text-center px-6">
-            <div className="font-display font-semibold gradient-text mb-1" style={{ fontSize: "clamp(36px,5vw,56px)", lineHeight: 1 }}>
-              <CountUp target={s.num} suffix={s.suf} />
-            </div>
-            <div className="text-sm text-ink-muted">{s.label}</div>
-          </div>
-        ))}
-      </Reveal>
-    </div>
-  </section>
-);
-
-/* ══════════════════════════════════════════════════════════════
-   3. PAIN SECTION — realita Masisir
-   ══════════════════════════════════════════════════════════════ */
-const PainSection = () => (
-  <section className="section relative overflow-hidden">
-
-    <div className="container-x">
-      <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-
-        {/* Kiri — teks */}
+        {/* Kiri — copy */}
         <div>
-          <Reveal>
-            <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">
-              — Kamu tidak sendirian
-            </div>
-          </Reveal>
-          <Reveal delay={80}>
-            <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08] mb-6">
-              Pernah rasakan ini di Kairo?
-            </h2>
-          </Reveal>
-          <Reveal delay={160}>
-            <p className="text-ink-muted leading-relaxed mb-8 text-base">
-              Belajar di Al-Azhar itu privilege — tapi juga tantangan yang tidak ringan. Bahasa Arab bukan bahasa ibu, maqarrar ribuan halaman, ujian syafahi di depan dosen, tanpa teman belajar yang selalu ada.
-            </p>
-          </Reveal>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-xs mb-5">
+            <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>
+            <span className="text-violet-300 font-medium">Talqih</span>
+            <span className="text-ink-soft">·</span>
+            <span className="text-ink-muted">Panduan AI untuk Masisir</span>
+          </div>
 
-          <Reveal stagger delay={200} className="space-y-5">
-            {[
-              { emoji: "📚", text: "Duduk berjam-jam dengan maqarrar tebal — tapi tidak tahu mau mulai dari mana" },
-              { emoji: "🎤", text: "Syafahi besok pagi. Kamu masih bingung bedain qoul 4 mazhab dalam bahasa Arab" },
-              { emoji: "🤯", text: "Dosen ngomong dalam bahasa Arab satu jam, tapi setengahnya tidak masuk" },
-              { emoji: "💭", text: "Mau pakai ChatGPT tapi tidak tahu prompt apa yang harus diketik" },
-              { emoji: "😔", text: "Hafalan matan tidak nempel karena tidak paham konteks dan hubungan antar bab" },
-            ].map((item, i) => (
-              <div key={i} className="pain-item flex items-start gap-3">
-                <span className="text-xl flex-shrink-0">{item.emoji}</span>
-                <p className="text-sm text-ink-muted leading-relaxed">{item.text}</p>
-              </div>
+          <div className="arabic-classic text-gold-300 text-base mb-3" style={{direction:"rtl", lineHeight:1.8}}>
+            تَلْقِيح
+          </div>
+
+          <h1 className="font-display font-semibold leading-[1.05] text-ink mb-5"
+            style={{ fontSize:"clamp(38px,5.5vw,70px)" }}>
+            Belajar materi Azhar,<br/>
+            <span className="bg-gradient-to-r from-violet-300 via-violet-400 to-gold-400 bg-clip-text text-transparent">
+              dipahami dengan AI.
+            </span>
+          </h1>
+
+          <p className="text-lg text-ink-muted leading-relaxed mb-8 max-w-xl">
+            Panduan + template prompt + rekomendasi AI personal untuk Masisir semua tingkat — dari Mustawa sampai S2.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3 items-start mb-5">
+            <button onClick={() => navigate("/sample/nahwu")}
+              className="btn btn-gold text-base px-7 py-3.5"
+              style={{ boxShadow:"0 0 40px rgba(201,168,106,.35), 0 1px 0 rgba(255,255,255,.3) inset" }}>
+              Cobain Sample Gratis →
+            </button>
+            <button onClick={onOpenPayment} className="btn btn-ghost text-base px-7 py-3.5">
+              Gabung Member · 49k
+            </button>
+          </div>
+
+          <div className="text-sm text-ink-soft mb-8">
+            Sudah punya kode?{" "}
+            <button onClick={onOpenLogin}
+              className="text-violet-300 hover:text-violet-200 underline underline-offset-2">
+              Masuk di sini
+            </button>
+          </div>
+
+          <div className="flex flex-wrap gap-5 text-xs text-ink-soft">
+            {["36 Maddah lengkap","540+ template prompt","Bayar sekali, akses selamanya"].map((t, i) => (
+              <span key={i} className="flex items-center gap-1.5">
+                <Icon name="check" className="w-3.5 h-3.5 text-gold-400"/>{t}
+              </span>
             ))}
-          </Reveal>
-        </div>
-
-        {/* Kanan — kaligrafi dekoratif */}
-        <div className="hidden lg:flex flex-col items-center justify-center">
-          <div className="card-glass rounded-2xl text-center p-12">
-            <div className="kali-display text-gold-300" style={{ fontSize: "58px", lineHeight: 1.7 }}>
-              طَلَبُ الْعِلْمِ
-            </div>
-            <div className="kali-display text-gold-400" style={{ fontSize: "46px", lineHeight: 1.7 }}>
-              فَرِيضَةٌ
-            </div>
-            <div className="kali-elegant text-ink-muted" style={{ fontSize: "30px", lineHeight: 1.9 }}>
-              عَلَى كُلِّ مُسْلِمٍ
-            </div>
-            <div className="w-16 h-px mx-auto my-3" style={{ background: "linear-gradient(90deg, transparent, rgba(201,168,106,0.4), transparent)" }} />
-            <p className="text-xs text-ink-soft italic">"Menuntut ilmu itu wajib atas setiap Muslim." — HR. Ibn Majah</p>
           </div>
         </div>
 
+        {/* Kanan — 3 stacked cards, hidden di mobile */}
+        <div className="hidden lg:block">
+          <HeroComposition/>
+        </div>
+
+        {/* Mobile: Card 1 saja */}
+        <div className="lg:hidden max-w-xs mx-auto w-full">
+          <div className="card-glass-strong p-5 rounded-2xl" style={{ border:"1px solid rgba(201,168,106,.2)" }}>
+            <div className="arabic-display text-gold-300 text-2xl mb-1" style={{direction:"rtl"}}>النحو</div>
+            <div className="font-display text-base font-semibold text-ink mb-2">Sample: Nahwu Dasar</div>
+            <div className="flex gap-1.5 mb-2">
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/20">Claude</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-gold-500/10 text-gold-300 border border-gold-500/20">NotebookLM</span>
+            </div>
+            <div className="text-[11px] text-ink-muted">17 template prompt · Gratis tanpa login</div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 );
 
 /* ══════════════════════════════════════════════════════════════
-   4. SOLUTION — Talqih vs AI generik
+   2. SAMPLE MADDAH
    ══════════════════════════════════════════════════════════════ */
-const SolutionSection = () => (
-  <section className="section relative overflow-hidden">
-
+const SampleMaddahSection = () => (
+  <section className="section pt-0">
     <div className="container-x">
-      <Reveal className="text-center mb-12">
-        <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">— Kenapa Talqih beda</div>
-        <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08] mb-4">
-          AI sudah ada di mana-mana.<br />
-          <span className="gradient-text">Yang tahu maqarrar Azhar, belum ada.</span>
+      <Reveal className="mb-10 text-center">
+        <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+          <span className="w-6 h-px bg-gold-500/70"/>COBAIN DULU<span className="w-6 h-px bg-gold-500/70"/>
+        </div>
+        <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
+          Sample lengkap: <span className="text-gold-300">Nahwu Dasar</span>
         </h2>
-        <p className="text-ink-muted max-w-lg mx-auto">
-          ChatGPT bisa menjawab pertanyaan fiqh secara umum. Tapi siapa yang tahu Anda sedang belajar Bidayatul Mujtahid di Syariah Azhar, dan butuh perbandingan 4 mazhab dalam bahasa yang mudah dipahami?
+        <p className="text-ink-muted text-base max-w-xl mx-auto">
+          Tanpa daftar, tanpa bayar. Cobain workflow Talqih dengan 1 Maddah lengkap.
         </p>
       </Reveal>
-
-      {/* Comparison table */}
-      <Reveal stagger className="grid md:grid-cols-2 gap-4 max-w-3xl mx-auto mb-12">
-
-        {/* AI Biasa */}
-        <div className="vs-pill">
-          <div className="text-xs uppercase tracking-[0.18em] text-ink-soft mb-4 flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-rose-600" />
-            AI Biasa
-          </div>
-          <div className="space-y-3">
-            {[
-              "Tidak tahu kamu di Azhar",
-              "Jawaban generik, tanpa konteks",
-              "Tidak tahu gaya belajarmu",
-              "Harus bikin prompt sendiri",
-              "Tidak tahu kurikulum Azhar",
-            ].map((t, i) => (
-              <div key={i} className="flex items-center gap-2.5 text-sm text-ink-muted">
-                <span className="text-rose-600 font-bold text-xs flex-shrink-0">✕</span>
-                <span>{t}</span>
+      <Reveal>
+        <div className="max-w-3xl mx-auto">
+          <div className="card-glass-strong p-8 md:p-10 relative overflow-hidden hov-lift"
+            onClick={() => navigate("/sample/nahwu")}>
+            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gold-500/8 blur-3xl pointer-events-none"/>
+            <div className="flex items-start justify-between mb-6 gap-4">
+              <div>
+                <div className="arabic-display text-gold-300 text-3xl md:text-4xl mb-2" style={{direction:"rtl"}}>النحو</div>
+                <h3 className="font-display text-2xl md:text-3xl font-semibold text-ink">
+                  Nahwu — Ilmu Sintaksis Arab
+                </h3>
+                <p className="text-sm text-ink-muted mt-1">Universal · Diambil semua fakultas Adaby</p>
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Talqih */}
-        <div className="vs-pill" style={{ background: "rgba(201,168,106,0.06)", borderColor: "rgba(201,168,106,0.3)" }}>
-          <div className="text-xs uppercase tracking-[0.18em] text-gold-400 mb-4 flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-gold-400" />
-            Talqih
-          </div>
-          <div className="space-y-3">
-            {[
-              "Dirancang khusus untuk Masisir",
-              "Guide spesifik per mata pelajaran",
-              "Adaptif sesuai gaya belajarmu",
-              "96+ prompt siap salin-tempel",
-              "Mengerti maqarrar Azhar",
-            ].map((t, i) => (
-              <div key={i} className="flex items-center gap-2.5 text-sm text-ink">
-                <Icon name="check" className="w-4 h-4 text-gold-400 flex-shrink-0" strokeWidth={2.5} />
-                <span>{t}</span>
+              <span className="chip-glass text-[10px] flex-shrink-0">GRATIS</span>
+            </div>
+            <div className="mb-6 p-4 rounded-xl bg-violet-500/8 border border-violet-500/15">
+              <div className="text-xs uppercase tracking-wider text-violet-300 mb-2 font-medium">AI yang direkomendasikan</div>
+              <div className="flex items-center gap-3 text-sm text-ink">
+                <span className="font-semibold">NotebookLM</span>
+                <span className="text-ink-soft">+</span>
+                <span className="font-semibold">Claude</span>
               </div>
-            ))}
+            </div>
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-5">
+              {[{n:4,l:"Pahami"},{n:3,l:"Hafal"},{n:3,l:"Latihan"},{n:2,l:"Ujian"},{n:2,l:"Talaqqi"},{n:3,l:"Eksplor"}].map((c,i)=>(
+                <div key={i} className="text-center p-3 rounded-lg bg-white/3 border border-line">
+                  <div className="font-display text-xl text-ink font-semibold">{c.n}</div>
+                  <div className="text-[10px] text-ink-soft uppercase tracking-wider mt-1">{c.l}</div>
+                </div>
+              ))}
+            </div>
+            <div className="text-center text-sm text-ink-muted mb-5">17 template prompt siap pakai</div>
+            <div className="flex justify-center">
+              <span className="btn btn-gold px-6 py-3 text-sm pointer-events-none">Buka Sample Nahwu →</span>
+            </div>
           </div>
+          <p className="text-center text-xs text-ink-soft mt-4">
+            Sample ini gratis selamanya · Untuk 35 Maddah lain, gabung member 49k
+          </p>
         </div>
       </Reveal>
-
-      <div className="text-center text-xs text-ink-soft mb-4">Mengintegrasikan semua AI yang kamu kenal</div>
-      <div className="flex flex-wrap justify-center gap-6">
-        {["Claude", "ChatGPT", "Gemini", "NotebookLM", "Perplexity", "DeepSeek"].map((n, i) => (
-          <span key={i} className="text-sm font-mono text-ink-muted opacity-50">{n}</span>
-        ))}
-      </div>
     </div>
   </section>
 );
 
 /* ══════════════════════════════════════════════════════════════
-   5. FEATURES — 6 fitur utama
-   ══════════════════════════════════════════════════════════════ */
-const FeaturesSection = () => {
-  const features = [
-    {
-      icon: "sparkles",
-      title: "Adaptive per gaya belajarmu",
-      body: "Pilih cara belajarmu: diskusi, visual, hafalan, latihan soal, atau baca. Setiap panduan menyesuaikan diri.",
-      badge: "Personal",
-      color: "rgba(124,77,255,0.15)",
-      borderColor: "rgba(124,77,255,0.3)",
-    },
-    {
-      icon: "book",
-      title: "Guide per mata pelajaran",
-      body: "16+ panduan spesifik: Fiqh, Ushul, Hadith, Tafsir, Nahwu, Balaghah — masing-masing dengan konteks Azhari.",
-      badge: "16+ Mapel",
-      color: "rgba(201,168,106,0.12)",
-      borderColor: "rgba(201,168,106,0.3)",
-    },
-    {
-      icon: "copy",
-      title: "Prompt siap salin-tempel",
-      body: "Tidak perlu mikir mau ngetik apa. Buka panduan, salin prompt, paste ke AI, langsung dapat jawaban.",
-      badge: "96+ Prompt",
-      color: "rgba(110,231,183,0.08)",
-      borderColor: "rgba(110,231,183,0.2)",
-    },
-    {
-      icon: "layers",
-      title: "Muqaranah qoul ulama",
-      body: "Bandingkan pendapat 4 mazhab side-by-side dengan dalil, wajh istidlal, dan penjelasan mudah.",
-      badge: "4 Mazhab",
-      color: "rgba(124,77,255,0.12)",
-      borderColor: "rgba(124,77,255,0.25)",
-    },
-    {
-      icon: "edit",
-      title: "Kurasah pribadi",
-      body: "Catatan markdown dengan dukungan teks Arab. Talkhish, ta'liq, dan resume maqarrar dalam satu tempat.",
-      badge: "Catatan",
-      color: "rgba(201,168,106,0.08)",
-      borderColor: "rgba(201,168,106,0.2)",
-    },
-    {
-      icon: "star",
-      title: "Companion harian",
-      body: "Niat belajar, ritme harian, dan refleksi singkat — supaya belajarmu berkesinambungan dan bermakna.",
-      badge: "Harian",
-      color: "rgba(124,77,255,0.1)",
-      borderColor: "rgba(124,77,255,0.2)",
-    },
-  ];
-
-  return (
-    <section className="section relative overflow-hidden">
-
-      <div className="container-x">
-        <Reveal className="text-center mb-14">
-          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">— Apa yang kamu dapat</div>
-          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08]">
-            Satu tempat untuk semua<br />kebutuhan belajar di Azhar.
-          </h2>
-        </Reveal>
-
-        <Reveal stagger className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {features.map((f, i) => (
-            <div key={i} className="card-glass hov-lift p-6 flex flex-col gap-4"
-              style={{ borderColor: f.borderColor }}>
-              <div className="flex items-start justify-between">
-                <div className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                  style={{ background: f.color, border: `1px solid ${f.borderColor}` }}>
-                  <Icon name={f.icon} className="w-5 h-5 text-gold-300" />
-                </div>
-                <span className="text-[10px] uppercase tracking-[0.12em] px-2 py-1 rounded-full"
-                  style={{ background: f.color, color: "#D9BD85", border: `1px solid ${f.borderColor}` }}>
-                  {f.badge}
-                </span>
-              </div>
-              <div>
-                <div className="font-display text-lg font-semibold text-ink mb-1.5">{f.title}</div>
-                <div className="text-sm text-ink-muted leading-relaxed">{f.body}</div>
-              </div>
-            </div>
-          ))}
-        </Reveal>
-      </div>
-    </section>
-  );
-};
-
-/* ══════════════════════════════════════════════════════════════
-   6. MAPEL SHOWCASE — grid semua mata pelajaran
-   ══════════════════════════════════════════════════════════════ */
-const MapelShowcase = () => {
-  const mapels = [
-    { ar: "الفقه",          id: "Fiqh",            faculty: "Syariah" },
-    { ar: "أصول الفقه",    id: "Ushul Fiqh",       faculty: "Syariah" },
-    { ar: "القواعد",        id: "Qawaid Fiqhiyyah", faculty: "Syariah" },
-    { ar: "المعاملات",      id: "Muamalat",         faculty: "Syariah" },
-    { ar: "تاريخ التشريع", id: "Tarikh Tasyri",    faculty: "Syariah" },
-    { ar: "الحديث",         id: "Hadith",           faculty: "Ushuluddin" },
-    { ar: "التفسير",        id: "Tafsir",           faculty: "Ushuluddin" },
-    { ar: "العقيدة",        id: "Aqidah",           faculty: "Ushuluddin" },
-    { ar: "السيرة",         id: "Sirah Nabawi",     faculty: "Ushuluddin" },
-    { ar: "المنطق",         id: "Mantiq",           faculty: "Ushuluddin" },
-    { ar: "النحو",          id: "Nahwu",            faculty: "Bahasa Arab" },
-    { ar: "البلاغة",        id: "Balaghah",         faculty: "Bahasa Arab" },
-    { ar: "الإنشاء",        id: "Insya",            faculty: "Bahasa Arab" },
-    { ar: "الأدب",          id: "Adab",             faculty: "Bahasa Arab" },
-    { ar: "المقال",         id: "Penulisan Makalah", faculty: "Umum" },
-    { ar: "الحفظ",          id: "Hafalan Matan",    faculty: "Umum" },
-  ];
-
-  const facultyColors = {
-    "Syariah":     { bg: "rgba(124,77,255,0.12)", border: "rgba(124,77,255,0.28)", text: "#C5A0FF" },
-    "Ushuluddin":  { bg: "rgba(201,168,106,0.10)", border: "rgba(201,168,106,0.28)", text: "#E8D0A0" },
-    "Bahasa Arab": { bg: "rgba(110,231,183,0.08)", border: "rgba(110,231,183,0.2)", text: "#6EE7B7" },
-    "Umum":        { bg: "rgba(180,150,255,0.06)", border: "rgba(180,150,255,0.16)", text: "#B8AACC" },
-  };
-
-  return (
-    <section className="section relative overflow-hidden">
-      <div className="container-x">
-        <Reveal className="text-center mb-12">
-          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">— Cakupan mata pelajaran</div>
-          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08] mb-4">
-            Dari Fiqh sampai Balaghah,<br />
-            <span className="gradient-text">semua ada panduannya.</span>
-          </h2>
-          <p className="text-ink-muted max-w-md mx-auto text-sm">
-            16 mata pelajaran Al-Azhar dengan panduan AI spesifik per subjek — bukan jawaban copy-paste yang sama untuk semua.
-          </p>
-        </Reveal>
-
-        <Reveal stagger className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-8">
-          {mapels.map((m, i) => {
-            const col = facultyColors[m.faculty] || facultyColors["Umum"];
-            return (
-              <div key={i} className="mapel-pill flex flex-col gap-1.5">
-                <div className="arabic-ui text-gold-300 text-right" style={{ fontSize: "20px", lineHeight: 1.6 }}>{m.ar}</div>
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm font-medium text-ink">{m.id}</span>
-                  <span className="text-[9px] px-1.5 py-0.5 rounded-full flex-shrink-0"
-                    style={{ background: col.bg, border: `1px solid ${col.border}`, color: col.text }}>
-                    {m.faculty}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </Reveal>
-
-        {/* Bottom note */}
-        <Reveal className="text-center text-xs text-ink-soft">
-          Panduan terus diperbarui · Mata pelajaran lebih banyak akan hadir
-        </Reveal>
-      </div>
-    </section>
-  );
-};
-
-/* ══════════════════════════════════════════════════════════════
-   7. HOW IT WORKS — 3 langkah vertikal dengan animasi
+   3. HOW IT WORKS
    ══════════════════════════════════════════════════════════════ */
 const HowItWorks = () => {
   const steps = [
-    {
-      num: "01",
-      kali: "نِيَّة",
-      kaliMeaning: "Niyyah",
-      title: "Isi profil belajarmu",
-      body: "4 pertanyaan singkat: fakultas, semester, mata pelajaran yang sulit, dan gaya belajarmu. Tidak sampai 2 menit.",
-      detail: "Onboarding cepat · Bisa diubah kapan saja",
-    },
-    {
-      num: "02",
-      kali: "عِلْم",
-      kaliMeaning: "'Ilm",
-      title: "Dapat panduan yang personal",
-      body: "Talqih menampilkan panduan AI yang disesuaikan — mata pelajaran yang relevan, prompt yang cocok dengan caramu belajar.",
-      detail: "Adaptive · Per fakultas · Per gaya belajar",
-    },
-    {
-      num: "03",
-      kali: "فَهْم",
-      kaliMeaning: "Fahm",
-      title: "Belajar lebih efektif setiap hari",
-      body: "Salin prompt, pakai di AI favoritmu, dan mulai belajar. Simpan hasil di kurasah. Ulang besok.",
-      detail: "Claude · ChatGPT · Gemini · NotebookLM",
-    },
+    { num:"01", title:"Bayar 49k", sub:"Sekali bayar, akses selamanya",
+      desc:"Bayar via Lynk.id, admin kirim kode member via WhatsApp." },
+    { num:"02", title:"Jawab profile", sub:"5 pertanyaan singkat",
+      desc:"Fakultas, jurusan, tingkat, gaya belajarmu — biar prompt-nya pas." },
+    { num:"03", title:"Mulai belajar", sub:"Workflow + 540+ prompt",
+      desc:"Dashboard tunjukin AI cocok, prompt per Maddah siap pakai." },
   ];
-
   return (
-    <section className="section relative overflow-hidden">
-
+    <section className="section pt-0">
       <div className="container-x">
-        <Reveal className="text-center mb-14">
-          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">— Cara pakainya</div>
-          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08]">
+        <Reveal className="mb-12 text-center">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/70"/>BAGAIMANA TALQIH BEKERJA
+          </div>
+          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
             Tiga langkah, langsung jalan.
           </h2>
         </Reveal>
-
-        <div className="max-w-2xl mx-auto">
+        <div className="grid md:grid-cols-3 gap-8 relative">
+          <div className="hidden md:block absolute top-10 left-[16%] right-[16%] h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent"/>
           {steps.map((s, i) => (
-            <Reveal key={i} delay={i * 120}>
-              <div className="flex gap-6 md:gap-10 mb-0">
-
-                {/* Kiri: nomor + connector */}
-                <div className="flex flex-col items-center" style={{ minWidth: "56px" }}>
-                  <div className="w-14 h-14 rounded-2xl card-glass-strong flex items-center justify-center flex-shrink-0"
-                    style={{ border: "1px solid rgba(201,168,106,0.3)" }}>
-                    <span className="font-display text-gold-300 font-semibold text-lg">{s.num}</span>
-                  </div>
-                  {i < steps.length - 1 && (
-                    <div className="step-connector flex-1 my-2" style={{ width: "2px", minHeight: "60px" }} />
-                  )}
+            <Reveal key={i}>
+              <div className="text-center px-4">
+                <div className="font-display text-5xl md:text-6xl font-semibold bg-gradient-to-br from-violet-300 to-gold-400 bg-clip-text text-transparent mb-5">
+                  {s.num}
                 </div>
-
-                {/* Kanan: konten */}
-                <div className="pb-10 flex-1">
-                  <div className="flex items-start gap-4 mb-3">
-                    <div>
-                      <div className="flex items-baseline gap-2 mb-1">
-                        <div className="step-kali text-gold-400" style={{ fontSize: "26px", lineHeight: 1.6 }}>{s.kali}</div>
-                        <span className="text-xs text-gold-600 font-mono tracking-wide">{s.kaliMeaning}</span>
-                      </div>
-                      <h3 className="font-display text-2xl font-semibold text-ink">{s.title}</h3>
-                    </div>
-                  </div>
-                  <p className="text-ink-muted leading-relaxed mb-3">{s.body}</p>
-                  <div className="text-xs text-ink-soft">{s.detail}</div>
-                </div>
+                <h3 className="font-display text-xl md:text-2xl font-semibold text-ink mb-1">{s.title}</h3>
+                <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">{s.sub}</div>
+                <p className="text-sm text-ink-muted leading-relaxed">{s.desc}</p>
               </div>
             </Reveal>
           ))}
@@ -668,128 +281,166 @@ const HowItWorks = () => {
 };
 
 /* ══════════════════════════════════════════════════════════════
-   8. PRICING — satu kartu, strong conversion
+   4. ALL MADDAH PREVIEW
    ══════════════════════════════════════════════════════════════ */
-const PricingSection = ({ onOpenPayment }) => (
-  <section className="section relative overflow-hidden">
+const AllMaddahPreview = () => {
+  const groups = [
+    { label:"Ushuluddin & Quran", arabic:"أصول الدين", count:7,
+      color:"from-violet-500/15 to-violet-700/5",
+      sample:["Tafsir Tahlili","Tafsir Maudhu'i","'Ulum Al-Qur'an","Hadits"] },
+    { label:"Hadits & Mustholah", arabic:"الحديث", count:5,
+      color:"from-violet-400/12 to-violet-600/4",
+      sample:["Hadits Tahlili","Mustholah","Manahij Muhadditsin","Takhrij"] },
+    { label:"Syariah & Fiqh", arabic:"الشريعة", count:5,
+      color:"from-gold-500/10 to-gold-700/3",
+      sample:["Fiqh Madzhabi","Fiqh Muqaran","Ushul Fiqh","Qawa'id"] },
+    { label:"Aqidah & Pemikiran", arabic:"العقيدة", count:5,
+      color:"from-violet-500/12 to-night-800",
+      sample:["Tauhid","Firaq","Filsafat Islam","Mantiq","Tasawwuf"] },
+    { label:"Lughah Arabiyah", arabic:"اللغة العربية", count:7,
+      color:"from-gold-400/10 to-violet-600/5",
+      sample:["Nahwu","Sharaf","Balaghah","Adab","Naqd Adabi"] },
+    { label:"Tarikh, Dakwah & Tarbiyah", arabic:"التاريخ والدعوة", count:7,
+      color:"from-violet-600/10 to-gold-600/5",
+      sample:["Sirah","Tarikh Tasyri'","Hadharah","Dakwah","Adyan"] },
+  ];
+  return (
+    <section className="section pt-0">
+      <div className="container-x">
+        <Reveal className="mb-12 text-center">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/70"/>36 MADDAH LENGKAP
+          </div>
+          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
+            Untuk semua fakultas rumpun agama dan bahasa.
+          </h2>
+        </Reveal>
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {groups.map((f, i) => (
+            <Reveal key={i}>
+              <div className={`card-glass p-6 hov-lift bg-gradient-to-br ${f.color} h-full`}>
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <div className="arabic-display text-gold-300 text-2xl mb-1" style={{direction:"rtl"}}>{f.arabic}</div>
+                    <h3 className="font-display text-lg font-semibold text-ink">{f.label}</h3>
+                  </div>
+                  <span className="text-xs px-2 py-1 rounded bg-violet-500/15 text-violet-300 border border-violet-500/20 font-medium flex-shrink-0 ml-2">
+                    {f.count} Maddah
+                  </span>
+                </div>
+                <ul className="space-y-1.5">
+                  {f.sample.slice(0,4).map((s, j) => (
+                    <li key={j} className="flex items-center gap-2 text-sm text-ink-muted">
+                      <span className="w-1 h-1 rounded-full bg-gold-400 flex-shrink-0"/>{s}
+                    </li>
+                  ))}
+                  {f.count > 4 && <li className="text-xs text-ink-soft italic mt-1">+ {f.count - 4} maddah lainnya</li>}
+                </ul>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+        <Reveal className="mt-10 text-center">
+          <p className="text-sm text-ink-soft">Total 540+ template prompt · Disesuaikan untuk Mustawa sampai S2</p>
+        </Reveal>
+      </div>
+    </section>
+  );
+};
 
+/* ══════════════════════════════════════════════════════════════
+   5. PRICING + FINAL CTA
+   ══════════════════════════════════════════════════════════════ */
+const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
+  <section className="section pt-0 pb-32">
     <div className="container-x">
-      <Reveal className="text-center mb-12">
-        <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">— Investasi ilmu</div>
-        <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08] mb-4">
-          Satu harga. Akses selamanya.
+      <Reveal className="text-center mb-10">
+        <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+          <span className="w-6 h-px bg-gold-500/70"/>INVESTASI ILMU
+        </div>
+        <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
+          Bayar sekali. Akses 36 Maddah selamanya.
         </h2>
-        <p className="text-ink-muted max-w-md mx-auto">
-          Tidak ada biaya bulanan, tidak ada tiered plan yang membingungkan. Bayar sekali, belajar selamanya.
-        </p>
       </Reveal>
 
-      <Reveal className="max-w-[480px] mx-auto">
-        <div className="cta-card relative overflow-hidden">
-          <div className="p-8 md:p-10">
-
-            {/* Badge */}
-            <div className="flex items-center justify-between mb-6">
-              <div className="chip chip-gold text-xs">Member Talqih</div>
-              <div className="price-badge">Akses Seumur Hidup</div>
+      <Reveal>
+        <div className="max-w-lg mx-auto">
+          <div className="card-glass-strong p-8 md:p-10 relative overflow-hidden"
+            style={{ border:"1px solid rgba(201,168,106,.22)" }}>
+            <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-gold-500/12 blur-3xl pointer-events-none"/>
+            <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-violet-500/12 blur-3xl pointer-events-none"/>
+            <div className="relative">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/20 text-xs text-gold-300 mb-5">
+                <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>Member Talqih
+              </div>
+              <div className="flex items-baseline gap-1 mb-1">
+                <span className="font-display text-5xl md:text-6xl font-semibold bg-gradient-to-br from-gold-300 to-gold-500 bg-clip-text text-transparent">
+                  Rp 49.000
+                </span>
+              </div>
+              <div className="text-xs text-ink-soft uppercase tracking-wider mb-6">One-time · No subscription</div>
+              <ul className="space-y-3 mb-8">
+                {[
+                  "36 Maddah lengkap + 540+ template prompt",
+                  "AI recommendation per gaya & tingkat belajarmu",
+                  "Muqaranah qoul ulama 4 madzhab",
+                  "Kurasah pribadi dengan markdown & teks Arab",
+                  "Companion harian: niat, ritme, refleksi",
+                  "Update fitur seumur hidup",
+                ].map((feat, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm text-ink">
+                    <Icon name="check" className="w-4 h-4 text-gold-400 flex-shrink-0 mt-0.5"/>
+                    <span>{feat}</span>
+                  </li>
+                ))}
+              </ul>
+              <button onClick={onOpenPayment}
+                className="btn btn-gold w-full py-4 text-base font-medium"
+                style={{ boxShadow:"0 0 50px rgba(201,168,106,.4), 0 1px 0 rgba(255,255,255,.3) inset" }}>
+                Bayar via Lynk.id →
+              </button>
+              <p className="text-xs text-ink-soft text-center mt-4">
+                Setelah bayar, kode dikirim admin via WhatsApp.
+              </p>
             </div>
-
-            {/* Harga */}
-            <div className="flex items-end gap-1 leading-none mb-2">
-              <span className="font-display text-2xl text-gold-400 mb-2">Rp</span>
-              <span className="font-display font-semibold text-gold-300 leading-none"
-                style={{ fontSize: "clamp(64px,12vw,88px)" }}>49</span>
-              <span className="font-display text-2xl text-gold-400 mb-2">.000</span>
-            </div>
-            <p className="text-xs text-ink-soft mb-8">Harga perkenalan · Bisa naik kapan saja</p>
-
-            {/* Fitur */}
-            <div className="space-y-3 mb-8">
-              {[
-                "Panduan AI untuk 16+ mata pelajaran Al-Azhar",
-                "Adaptive per 6 gaya belajar berbeda",
-                "96+ prompt siap pakai — tinggal salin-tempel",
-                "Muqaranah qoul ulama (library + buat sendiri)",
-                "Kurasah pribadi dengan teks Arab & markdown",
-                "Companion harian: niat, ritme, refleksi",
-                "Semua update fitur baru — gratis selamanya",
-              ].map((f, i) => (
-                <div key={i} className="flex items-start gap-3 text-sm text-ink">
-                  <Icon name="check" className="w-4 h-4 text-gold-400 flex-shrink-0 mt-0.5" strokeWidth={2.5} />
-                  <span>{f}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* CTA button */}
-            <button onClick={onOpenPayment}
-              className="btn btn-gold w-full text-base py-4 mb-4"
-              style={{ fontSize: "16px", boxShadow: "0 0 50px rgba(201,168,106,0.4), 0 1px 0 rgba(255,255,255,0.35) inset" }}>
-              <Icon name="sparkles" className="w-5 h-5" />
-              Bayar via Lynk.id — Rp 49.000
-            </button>
-
-            <p className="text-[11px] text-ink-soft text-center leading-relaxed">
-              Setelah bayar, kode akses dikirim admin via WhatsApp dalam 1×24 jam.
-              <br />Pertanyaan? Hubungi admin langsung.
-            </p>
           </div>
+        </div>
+      </Reveal>
+
+      {/* Atsar penutup */}
+      <Reveal className="mt-20 text-center max-w-lg mx-auto">
+        <div className="flex items-center justify-center gap-4 mb-8">
+          <span className="h-px flex-1 max-w-[80px] bg-gradient-to-r from-transparent to-gold-500/40"/>
+          <Icon name="star" className="w-3 h-3 text-gold-400/60"/>
+          <span className="h-px flex-1 max-w-[80px] bg-gradient-to-l from-transparent to-gold-500/40"/>
+        </div>
+        <div className="arabic-classic text-gold-300 text-3xl md:text-4xl leading-loose mb-3" style={{direction:"rtl"}}>
+          قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ
+        </div>
+        <p className="text-base text-ink-muted italic mb-1">"Ikatlah ilmu dengan tulisan."</p>
+        <p className="text-xs text-ink-soft">— Atsar</p>
+        <div className="mt-10 text-sm text-ink-soft">
+          Sudah punya kode?{" "}
+          <button onClick={onOpenLogin}
+            className="text-violet-300 hover:text-violet-200 underline underline-offset-2 font-medium">
+            Masuk di sini
+          </button>
         </div>
       </Reveal>
     </div>
   </section>
 );
 
-/* ══════════════════════════════════════════════════════════════
-   9. FINAL CTA — kaligrafi + emotional close
-   ══════════════════════════════════════════════════════════════ */
-const FinalCTA = ({ onOpenPayment }) => (
-  <section className="relative overflow-hidden pb-32 pt-16">
-    <div className="container-x">
-      <div className="divider-arabesque mb-16" />
-
-      <div className="text-center mb-10">
-        <div className="text-gold-600 opacity-40 mb-4" style={{ fontSize: "18px", letterSpacing: "0.3em" }}>
-          ✦ ─────────── ✦ ─────────── ✦
-        </div>
-        <div className="final-cta-kali mb-1" style={{ fontSize: "clamp(44px,9vw,90px)", color: "#D9BD85" }}>
-          وَقُل رَّبِّ زِدْنِي عِلْمًا
-        </div>
-        <div className="w-24 h-px mx-auto my-4" style={{ background: "linear-gradient(90deg, transparent, rgba(201,168,106,0.5), transparent)" }} />
-        <p className="text-ink-muted italic text-base mb-1">"Dan katakanlah: Ya Tuhanku, tambahkanlah ilmuku."</p>
-        <p className="text-ink-soft text-sm mb-12">— QS. Thaha: 114</p>
-      </div>
-
-      {/* Penutup copy */}
-      <div className="text-center max-w-2xl mx-auto mb-10">
-        <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08] mb-6">
-          Kamu sudah ada di Kairo.<br />
-          <span className="gradient-text">Sekarang belajar lebih cerdas.</span>
-        </h2>
-        <p className="text-ink-muted leading-relaxed mb-8 text-base">
-          Ribuan Masisir sudah menghadapi ujian syafahi, hafalan matan, dan makalah yang sama sepertimu.
-          Yang membedakan bukan kemampuan — tapi <span className="text-ink font-medium">cara belajarnya.</span>
-        </p>
-
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <button onClick={onOpenPayment}
-            className="btn btn-gold text-base px-10 py-4"
-            style={{ fontSize: "17px", boxShadow: "0 0 60px rgba(201,168,106,0.45), 0 1px 0 rgba(255,255,255,0.35) inset" }}>
-            <Icon name="sparkles" className="w-5 h-5" />
-            Mulai dengan Talqih — Rp 49.000
-          </button>
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-6 text-xs text-ink-soft">
-          <span>✓ Tidak ada biaya bulanan</span>
-          <span>✓ Akses langsung setelah bayar</span>
-          <span>✓ Dibuat khusus untuk Masisir</span>
-        </div>
-      </div>
-
-      <div className="divider-arabesque mt-16" />
-    </div>
-  </section>
+/* ── Root ─────────────────────────────────────────────────────── */
+const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
+  <div className="page-enter">
+    <StyleInject/>
+    <LandingHero onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment}/>
+    <SampleMaddahSection/>
+    <HowItWorks/>
+    <AllMaddahPreview/>
+    <PricingAndCTA onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment}/>
+  </div>
 );
 
 window.LandingPage = LandingPage;
