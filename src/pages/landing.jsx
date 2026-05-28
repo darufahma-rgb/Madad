@@ -172,7 +172,7 @@ const HeroCard = () => (
 const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
   <section
     className="relative overflow-hidden"
-    style={{ minHeight:"100vh", display:"flex", alignItems:"center", paddingTop:"80px" }}
+    style={{ minHeight:"100vh", display:"flex", alignItems:"flex-start", paddingTop:"80px" }}
   >
     {/* Geometric Islamic background pattern */}
     <HeroGeoBg/>
@@ -182,7 +182,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
     <Blob color="rgba(201,168,106,.07)" size={700} top={250} left={-220}/>
     <Blob color="rgba(124,77,255,.12)" size={500} bottom={-150} left={100}/>
 
-    <div className="container-x relative w-full py-20">
+    <div className="container-x relative w-full pt-4 pb-16">
       <div
         className="grid items-center gap-16 lg:gap-20"
         style={{ gridTemplateColumns:"minmax(0,3fr) minmax(0,2fr)" }}
