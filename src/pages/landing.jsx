@@ -284,8 +284,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
               Cobain Sample Gratis →
             </button>
             <button onClick={onOpenPayment} className="btn-hero-dark">
-              Gabung Member · <span style={{textDecoration:"line-through", opacity:.55, marginRight:"2px"}}>79k</span>
-              <span style={{color:"#D9BD85", fontWeight:600}}>49k</span>
+              Gabung Member
             </button>
           </div>
         </Reveal>

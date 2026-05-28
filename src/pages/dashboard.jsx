@@ -10,6 +10,56 @@ const getCairoGreeting = () => {
   return                         { text: "Selamat malam",               arabic: "لَيْلَةٌ مُبَارَكَةٌ",      sub: "Istirahat yang cukup adalah bagian dari belajar." };
 };
 
+/* ============ RECENT MADDAH ROW ============ */
+const RecentMaddahRow = () => {
+  const activity = (typeof loadMaddahActivity !== "undefined") ? loadMaddahActivity() : {};
+
+  const recentIds = Object.entries(activity)
+    .filter(([, act]) => act.opens > 0)
+    .sort((a, b) => (b[1].lastOpen || "").localeCompare(a[1].lastOpen || ""))
+    .slice(0, 3)
+    .map(([id]) => id);
+
+  if (recentIds.length === 0) return null;
+
+  const recentMaddahs = recentIds
+    .map(id => (typeof getMaddahById !== "undefined") ? getMaddahById(id) : null)
+    .filter(Boolean);
+
+  if (recentMaddahs.length === 0) return null;
+
+  return (
+    <section className="pb-6">
+      <div className="container-x">
+        <Reveal className="mb-4 flex items-center justify-between">
+          <div className="text-xs uppercase tracking-[0.2em] text-gold-400 flex items-center gap-2">
+            <span className="w-5 h-px bg-gold-500/60"/>
+            Terakhir kamu buka
+          </div>
+        </Reveal>
+        <Reveal>
+          <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3">
+            {recentMaddahs.map(m => {
+              const act = activity[m.id];
+              return (
+                <div key={m.id}
+                  onClick={() => navigate("/maddah/" + m.id)}
+                  className="flex-shrink-0 w-[75vw] md:w-auto card-glass p-4 cursor-pointer hov-lift">
+                  <div className="arabic-display text-gold-300 text-lg mb-1" style={{direction:"rtl"}}>{m.nameArabic}</div>
+                  <div className="font-display text-sm font-semibold text-ink mb-1">{m.name}</div>
+                  {act?.promptsCopied > 0 && (
+                    <div className="text-[11px] text-violet-300">{act.promptsCopied} prompt dipakai</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+};
+
 /* ============ MADDAH HERO SECTION ============ */
 const MaddahHeroSection = ({ profile }) => {
   const myMaddahs = useMemo(() => {
@@ -376,6 +426,9 @@ const DashboardPage = () => {
 
       {/* 2. STARTER PACK */}
       <StarterPackCard profile={profile} session={session}/>
+
+      {/* 2b. RECENT MADDAH */}
+      <RecentMaddahRow/>
 
       {/* 3. MADDAH-MU (HERO BARU) */}
       <MaddahHeroSection profile={profile}/>

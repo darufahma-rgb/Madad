@@ -14,6 +14,7 @@ const STORAGE_KEYS = {
   MUQARANAH_CUSTOM: "madad_muqaranah_custom",
   INTENTIONS:       "madad_intentions",
   PRESENCE:         "madad_presence",
+  MADDAH_ACTIVITY:  "talqee_maddah_activity",
 };
 
 /* ---------- Device ID ---------- */
@@ -318,6 +319,31 @@ const saveNotes = (notes) => {
   notes.forEach(n => sbSaveNote(n).catch(() => {}));
 };
 
+/* ---------- Maddah Activity Tracking ---------- */
+const loadMaddahActivity = () => {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.MADDAH_ACTIVITY)) || {}; }
+  catch { return {}; }
+};
+
+const saveMaddahActivity = (activity) => {
+  localStorage.setItem(STORAGE_KEYS.MADDAH_ACTIVITY, JSON.stringify(activity));
+};
+
+const trackMaddahOpen = (maddahId) => {
+  const activity = loadMaddahActivity();
+  if (!activity[maddahId]) activity[maddahId] = { opens: 0, promptsCopied: 0, lastOpen: null };
+  activity[maddahId].opens += 1;
+  activity[maddahId].lastOpen = new Date().toISOString();
+  saveMaddahActivity(activity);
+};
+
+const trackPromptCopied = (maddahId) => {
+  const activity = loadMaddahActivity();
+  if (!activity[maddahId]) activity[maddahId] = { opens: 0, promptsCopied: 0, lastOpen: null };
+  activity[maddahId].promptsCopied += 1;
+  saveMaddahActivity(activity);
+};
+
 /* ============ EXPORTS ============ */
 Object.assign(window, {
   STORAGE_KEYS, LOGIN_RESULT,
@@ -329,5 +355,6 @@ Object.assign(window, {
   computePathProgress, computeStage,
   isAdminLoggedIn, setAdminLoggedIn,
   loadNotes, saveNotes,
+  loadMaddahActivity, trackMaddahOpen, trackPromptCopied,
   useAuth,
 });

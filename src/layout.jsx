@@ -41,6 +41,120 @@ const Brand = ({ size = 36 }) => (
   </a>
 );
 
+/* ---------------- Global Search ---------------- */
+const GlobalSearch = () => {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setOpen(true); }
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  useEffect(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 50);
+    else setQuery("");
+  }, [open]);
+
+  useEffect(() => {
+    window._openGlobalSearch = () => setOpen(true);
+    return () => { delete window._openGlobalSearch; };
+  }, []);
+
+  const results = useMemo(() => {
+    if (!query.trim() || query.length < 2) return [];
+    const q = query.toLowerCase();
+    const out = [];
+    if (typeof MADDAHS !== "undefined") {
+      MADDAHS.forEach(m => {
+        if (m.name.toLowerCase().includes(q) || m.nameArabic.includes(query) || m.description?.toLowerCase().includes(q)) {
+          out.push({ type: "maddah", id: m.id, title: m.name, sub: m.description?.slice(0, 60), arabic: m.nameArabic, to: "/maddah/" + m.id });
+        }
+        if (m.prompts) {
+          Object.values(m.prompts).flat().forEach(p => {
+            if (p.title?.toLowerCase().includes(q)) {
+              out.push({ type: "prompt", id: m.id + "_" + p.title, title: p.title, sub: "Prompt di " + m.name, to: "/maddah/" + m.id });
+            }
+          });
+        }
+      });
+    }
+    const lib = (typeof MUQARANAH_LIBRARY !== "undefined" ? MUQARANAH_LIBRARY : null)
+             || (typeof MADDAHS_MUQARANAH !== "undefined" ? MADDAHS_MUQARANAH : null)
+             || (window.MUQARANAH_LIBRARY || window.MADDAHS_MUQARANAH || []);
+    lib.forEach(e => {
+      if (e.title?.toLowerCase().includes(q) || e.titleArabic?.includes(query) || e.question?.toLowerCase().includes(q)) {
+        out.push({ type: "muqaranah", id: e.id, title: e.title, sub: e.question?.slice(0, 60), to: "/paths/muqaranah?id=" + e.id });
+      }
+    });
+    return out.slice(0, 8);
+  }, [query]);
+
+  if (!open) return (
+    <button
+      onClick={() => setOpen(true)}
+      className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/4 border border-line text-ink-soft text-sm hover:bg-white/6 transition-colors"
+    >
+      <Icon name="search" className="w-3.5 h-3.5"/>
+      <span>Cari...</span>
+      <kbd className="ml-1 text-[10px] text-ink-soft bg-white/5 border border-line px-1.5 py-0.5 rounded">⌘K</kbd>
+    </button>
+  );
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-start justify-center pt-20 px-4 bg-night-950/70 backdrop-blur-sm" onClick={() => setOpen(false)}>
+      <div className="w-full max-w-xl bg-night-800 border border-line rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-line">
+          <Icon name="search" className="w-4 h-4 text-ink-soft flex-shrink-0"/>
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Cari Maddah, prompt, muqaranah..."
+            className="flex-1 bg-transparent text-ink text-sm outline-none placeholder-ink-soft"
+          />
+          {query && <button onClick={() => setQuery("")} className="text-ink-soft hover:text-ink text-xs">✕</button>}
+          <kbd className="text-[10px] text-ink-soft bg-white/5 border border-line px-1.5 py-0.5 rounded">Esc</kbd>
+        </div>
+        <div className="max-h-80 overflow-y-auto">
+          {query.length >= 2 && results.length === 0 && (
+            <div className="px-4 py-8 text-center text-sm text-ink-soft">Tidak ditemukan untuk "{query}"</div>
+          )}
+          {query.length < 2 && (
+            <div className="px-4 py-4 text-xs text-ink-soft">Ketik minimal 2 karakter...</div>
+          )}
+          {results.map((r, i) => (
+            <button key={i} onClick={() => { navigate(r.to); setOpen(false); }}
+              className="w-full flex items-start gap-3 px-4 py-3 hover:bg-white/4 transition-colors text-left">
+              <div className={`mt-0.5 w-6 h-6 rounded flex items-center justify-center flex-shrink-0 text-[10px] font-bold
+                ${r.type === "maddah" ? "bg-violet-500/20 text-violet-300" : r.type === "prompt" ? "bg-gold-500/15 text-gold-300" : "bg-white/8 text-ink-soft"}`}>
+                {r.type === "maddah" ? "M" : r.type === "prompt" ? "P" : "Q"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm text-ink font-medium truncate">{r.title}</div>
+                {r.sub && <div className="text-xs text-ink-soft truncate mt-0.5">{r.sub}</div>}
+              </div>
+              {r.arabic && <div className="text-sm text-gold-300 arabic-display flex-shrink-0" style={{direction:"rtl"}}>{r.arabic}</div>}
+            </button>
+          ))}
+        </div>
+        {results.length > 0 && (
+          <div className="px-4 py-2 border-t border-line text-[11px] text-ink-soft flex gap-3">
+            <span className="w-5 h-5 rounded bg-violet-500/20 text-violet-300 text-[9px] font-bold flex items-center justify-center">M</span> Maddah
+            <span className="w-5 h-5 rounded bg-gold-500/15 text-gold-300 text-[9px] font-bold flex items-center justify-center">P</span> Prompt
+            <span className="w-5 h-5 rounded bg-white/8 text-ink-soft text-[9px] font-bold flex items-center justify-center">Q</span> Muqaranah
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 /* ---------------- Navbar ---------------- */
 const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   const [open, setOpen] = useState(false);
@@ -87,6 +201,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
             : <NavLink key={l.to} to={l.to}>{l.label}</NavLink>
           )}
         </nav>
+        {session && <GlobalSearch/>}
         <div className="hidden md:flex items-center gap-2">
           {session ? (
             <>
@@ -114,7 +229,12 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
           )}
         </div>
         {/* Mobile: avatar untuk member, hamburger untuk tamu */}
-        <div className="md:hidden">
+        <div className="md:hidden flex items-center gap-1">
+          {session && (
+            <button onClick={() => window._openGlobalSearch && window._openGlobalSearch()} className="w-9 h-9 flex items-center justify-center text-ink-soft">
+              <Icon name="search" className="w-5 h-5"/>
+            </button>
+          )}
           {session ? (
             <button
               onClick={() => setMobileSheetOpen(true)}

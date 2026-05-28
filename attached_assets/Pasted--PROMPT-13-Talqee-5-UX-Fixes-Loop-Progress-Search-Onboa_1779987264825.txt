@@ -1,0 +1,695 @@
+# PROMPT 13 — Talqee: 5 UX Fixes (Loop, Progress, Search, Onboarding, Harga)
+
+> 5 perbaikan terpisah. Kerjakan berurutan, test tiap bagian sebelum lanjut.
+
+---
+
+## FIX 1 — Hapus Harga dari Tombol "Gabung Member"
+
+Harga hanya tampil di section Pricing, bukan di tombol CTA.
+
+**File: `src/pages/landing.jsx`**
+
+Cari dan ganti:
+```jsx
+// SEBELUM (line ~429):
+<Icon name="sparkles" className="w-4 h-4"/> Gabung Sekarang · Rp49.000
+
+// SESUDAH:
+<Icon name="sparkles" className="w-4 h-4"/> Gabung Sekarang
+```
+
+```jsx
+// SEBELUM (line ~502):
+<Icon name="sparkles" className="w-4 h-4"/> Gabung Sekarang · Rp49.000
+
+// SESUDAH:
+<Icon name="sparkles" className="w-4 h-4"/> Gabung Sekarang
+```
+
+**File: `src/layout.jsx`** — semua tombol "Gabung Member":
+```jsx
+// Ganti semua instance yang ada harga:
+// "Gabung Member · 49k" → "Gabung Member"
+// "Gabung · Rp49.000" → "Gabung Member"
+// Pastikan tetap ada icon sparkles
+```
+
+**Acceptance:** Tidak ada angka harga di tombol manapun. Harga hanya di section Pricing (card Rp49.000).
+
+---
+
+## FIX 2 — Tutup Loop: "Simpan Hasil AI ke Kurasah"
+
+**Masalah:** User salin prompt → pergi ke ChatGPT/Claude → dapat jawaban → balik ke Talqee ngapain? Loop tidak tertutup.
+
+**Solusi:** Setelah user salin prompt, muncul prompt UI kecil yang invite user paste jawaban AI ke Kurasah.
+
+### STEP 2.1 — Update `PromptCard` di `src/pages/maddah-detail.jsx`
+
+Tambahkan state `copied` dan tampilkan panel "Simpan hasil AI" setelah salin:
+
+```jsx
+const PromptCard = ({ prompt, maddah, profile }) => {
+  const toast = useToast();
+  const tool = AI_TOOLS.find(t => t.id === prompt.targetAI);
+  const [showFullPreview, setShowFullPreview] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const resolvedPrompt = resolveAdaptivePrompt(prompt.template, profile, maddah.name);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(resolvedPrompt);
+    toast.push(`Prompt tersalin — paste ke ${tool?.name || "AI"}.`);
+    setCopied(true);
+  };
+
+  const handleSaveToKurasah = () => {
+    // Pre-fill kurasah dengan template siap pakai
+    const noteTemplate = `## Prompt yang dipakai\n**Maddah:** ${maddah.name}\n**Tujuan:** ${prompt.title}\n\n---\n\n## Jawaban AI\n\n*Paste jawaban AI di sini...*\n\n---\n\n## Catatanku\n\n*Tulis refleksi atau poin penting dari jawaban AI...*`;
+    
+    // Buat note baru dengan template, navigate ke editor
+    const newNote = {
+      id: "note_" + Date.now(),
+      title: `${maddah.name} — ${prompt.title}`,
+      body: noteTemplate,
+      tags: [maddah.category, maddah.id],
+      source: { type: "maddah", id: maddah.id, label: maddah.name },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    const existing = loadNotes();
+    saveNotes([newNote, ...existing]);
+    navigate("/kurasah?id=" + newNote.id);
+    toast.push("Catatan dibuat — paste jawaban AI di sana.");
+  };
+
+  return (
+    <div className="card-glass p-5">
+      {/* Header — sama seperti sebelumnya */}
+      <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
+        <div className="flex items-center gap-3 flex-1">
+          {tool && <ToolIcon tool={tool} size="w-9 h-9"/>}
+          <div>
+            <div className="font-display text-base font-semibold text-ink">{prompt.title}</div>
+            <div className="text-[11px] text-ink-soft">Untuk: {tool?.name || prompt.targetAI}</div>
+          </div>
+        </div>
+        <div className="flex gap-2 flex-shrink-0 flex-wrap">
+          <button onClick={handleCopy} className="btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5">
+            <Icon name="copy" className="w-3 h-3"/>
+            {copied ? "Tersalin ✓" : "Salin"}
+          </button>
+          {tool?.link && (
+            <button
+              onClick={() => { handleCopy(); setTimeout(() => window.open(tool.link, "_blank"), 300); }}
+              className="btn-primary text-xs px-3 py-1.5 flex items-center gap-1.5"
+            >
+              Salin & Buka {tool.name}
+              <Icon name="external" className="w-3 h-3"/>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Prompt preview */}
+      <div className="p-3 rounded-lg bg-white/3 border border-line mb-3">
+        <div className={`text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap ${!showFullPreview ? "line-clamp-3" : ""}`}>
+          {resolvedPrompt}
+        </div>
+        <button onClick={() => setShowFullPreview(!showFullPreview)} className="text-[11px] text-violet-300 hover:text-violet-200 mt-2">
+          {showFullPreview ? "Sembunyikan" : "Lihat lengkap"}
+        </button>
+      </div>
+
+      {/* Panel "Simpan hasil AI" — muncul SETELAH prompt disalin */}
+      {copied && (
+        <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-gold-500/8 border border-gold-500/20 animate-fade-in">
+          <div className="text-xs text-ink-muted leading-relaxed">
+            <span className="text-gold-300 font-medium">Sudah dapat jawaban dari AI?</span>
+            {" "}Simpan ke Kurasah supaya tidak hilang.
+          </div>
+          <button
+            onClick={handleSaveToKurasah}
+            className="btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5 flex-shrink-0 border border-gold-500/30 text-gold-300 hover:bg-gold-500/10"
+          >
+            <Icon name="notebook" className="w-3 h-3"/>
+            Simpan ke Kurasah
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+```
+
+### STEP 2.2 — Tambah `animate-fade-in` ke CSS di `index.html`
+
+```css
+@keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.animate-fade-in { animation: fade-in 0.25s ease forwards; }
+```
+
+**Acceptance:**
+- [ ] Salin prompt → muncul panel gold "Sudah dapat jawaban dari AI?"
+- [ ] Klik "Simpan ke Kurasah" → note baru dibuat dengan template (judul Maddah + kategori prompt), navigate ke editor
+- [ ] Editor Kurasah sudah ter-isi template (prompt dipakai + space untuk jawaban AI + refleksi)
+- [ ] Panel hanya muncul setelah klik salin, tidak dari awal
+
+---
+
+## FIX 3 — Progress & Sense of Journey di Maddah
+
+**Masalah:** User buka Tafsir, pakai prompt, tutup — tidak ada jejak. Tidak ada "gue udah sampai mana."
+
+**Solusi:** Track Maddah yang pernah dibuka + prompt yang pernah disalin. Tampilkan di Maddah Hub dan Dashboard.
+
+### STEP 3.1 — Track di `src/auth.jsx`
+
+Tambah helper untuk Maddah activity tracking:
+
+```js
+// Di STORAGE_KEYS:
+MADDAH_ACTIVITY: "talqee_maddah_activity",
+
+// Helper functions:
+const loadMaddahActivity = () => {
+  try { return JSON.parse(localStorage.getItem("talqee_maddah_activity")) || {}; }
+  catch { return {}; }
+};
+
+const saveMaddahActivity = (activity) => {
+  localStorage.setItem("talqee_maddah_activity", JSON.stringify(activity));
+};
+
+// Panggil ini saat user buka Maddah detail:
+const trackMaddahOpen = (maddahId) => {
+  const activity = loadMaddahActivity();
+  if (!activity[maddahId]) activity[maddahId] = { opens: 0, promptsCopied: 0, lastOpen: null };
+  activity[maddahId].opens += 1;
+  activity[maddahId].lastOpen = new Date().toISOString();
+  saveMaddahActivity(activity);
+};
+
+// Panggil ini saat user salin prompt:
+const trackPromptCopied = (maddahId) => {
+  const activity = loadMaddahActivity();
+  if (!activity[maddahId]) activity[maddahId] = { opens: 0, promptsCopied: 0, lastOpen: null };
+  activity[maddahId].promptsCopied += 1;
+  saveMaddahActivity(activity);
+};
+
+// Export:
+Object.assign(window, {
+  // ... existing exports
+  loadMaddahActivity, trackMaddahOpen, trackPromptCopied,
+});
+```
+
+### STEP 3.2 — Panggil Tracking di `src/pages/maddah-detail.jsx`
+
+```jsx
+// Di MaddahDetailPage, useEffect saat mount:
+useEffectC(() => {
+  if (maddah && session) trackMaddahOpen(maddah.id);
+}, [maddah?.id]);
+
+// Di PromptCard handleCopy, setelah copy:
+trackPromptCopied(maddah.id);
+```
+
+### STEP 3.3 — Tampilkan Activity di `MaddahCard` (Maddah Hub)
+
+Di komponen `MaddahCard` di `src/pages/maddah-hub.jsx`, tambahkan badge activity:
+
+```jsx
+const MaddahCard = ({ maddah }) => {
+  const activity = loadMaddahActivity();
+  const act = activity[maddah.id];
+  const isVisited = act && act.opens > 0;
+  const promptCount = act?.promptsCopied || 0;
+
+  return (
+    <div onClick={() => navigate("/maddah/" + maddah.id)}
+      className={`card-glass p-5 hov-lift cursor-pointer transition-all group relative overflow-hidden
+        ${isVisited ? "border-l-2 border-l-violet-500/40" : ""}`}>
+      
+      {/* Badge "Sudah dikunjungi" */}
+      {isVisited && (
+        <div className="absolute top-3 right-3 flex items-center gap-1 text-[10px] text-violet-300">
+          <span className="w-1.5 h-1.5 rounded-full bg-violet-400"/>
+          {promptCount > 0 ? `${promptCount} prompt dipakai` : "Pernah dibuka"}
+        </div>
+      )}
+
+      <div className="flex items-start gap-3 mb-3">
+        <div className="flex-1">
+          <div className="arabic-display text-gold-300 text-xl mb-1" style={{direction:"rtl"}}>
+            {maddah.nameArabic}
+          </div>
+          <h3 className="font-display text-lg font-semibold text-ink">{maddah.name}</h3>
+        </div>
+      </div>
+      <p className="text-sm text-ink-muted leading-relaxed line-clamp-2 mb-3">{maddah.description}</p>
+      <div className="flex items-center justify-between text-xs text-ink-soft">
+        <span>{maddah.tingkat.includes("mustawa") ? "Semua tingkat" : `Tingkat ${maddah.tingkat.filter(t => t !== "mustawa" && t !== "pasca").join(", ")}`}</span>
+        {hasContent && <span className="text-gold-400">{totalPrompts} prompt</span>}
+      </div>
+    </div>
+  );
+};
+```
+
+### STEP 3.4 — "Maddah yang Sering Kamu Buka" di Dashboard
+
+Di `src/pages/dashboard.jsx`, di antara StarterPack dan MaddahHeroSection, tambahkan:
+
+```jsx
+const RecentMaddahRow = ({ profile }) => {
+  const activity = loadMaddahActivity();
+  
+  // Ambil 3 Maddah yang paling sering dibuka, urutkan by lastOpen
+  const recentIds = Object.entries(activity)
+    .filter(([, act]) => act.opens > 0)
+    .sort((a, b) => (b[1].lastOpen || "").localeCompare(a[1].lastOpen || ""))
+    .slice(0, 3)
+    .map(([id]) => id);
+
+  if (recentIds.length === 0) return null;
+
+  const recentMaddahs = recentIds.map(id => getMaddahById(id)).filter(Boolean);
+
+  return (
+    <section className="pb-6">
+      <div className="container-x">
+        <Reveal className="mb-4 flex items-center justify-between">
+          <div className="text-xs uppercase tracking-[0.2em] text-gold-400 flex items-center gap-2">
+            <span className="w-5 h-px bg-gold-500/60"/>
+            Terakhir kamu buka
+          </div>
+        </Reveal>
+        <Reveal className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3">
+          {recentMaddahs.map(m => {
+            const act = activity[m.id];
+            return (
+              <div key={m.id}
+                onClick={() => navigate("/maddah/" + m.id)}
+                className="flex-shrink-0 w-[75%] md:w-auto card-glass p-4 cursor-pointer hov-lift">
+                <div className="arabic-display text-gold-300 text-lg mb-1" style={{direction:"rtl"}}>{m.nameArabic}</div>
+                <div className="font-display text-sm font-semibold text-ink mb-1">{m.name}</div>
+                {act?.promptsCopied > 0 && (
+                  <div className="text-[11px] text-violet-300">{act.promptsCopied} prompt dipakai</div>
+                )}
+              </div>
+            );
+          })}
+        </Reveal>
+      </div>
+    </section>
+  );
+};
+
+// Mount di DashboardPage setelah StarterPackCard:
+<RecentMaddahRow profile={profile}/>
+```
+
+**Acceptance:**
+- [ ] Buka Maddah detail → tercatat di activity (localStorage)
+- [ ] Salin prompt → `promptsCopied` +1
+- [ ] Maddah Hub: Maddah yang pernah dibuka punya border kiri violet + badge "N prompt dipakai"
+- [ ] Dashboard: row "Terakhir kamu buka" muncul kalau ada riwayat (horizontal scroll mobile)
+- [ ] Kalau belum buka Maddah apapun → row tidak muncul (tidak ada empty state kosong)
+
+---
+
+## FIX 4 — Search Global
+
+**Masalah:** User mau cari "i'rab" atau "mafhum mukhalafah" — harus navigasi manual. Friction.
+
+**Solusi:** Search bar global di navbar yang nyari lintas Maddah, prompt, dan Muqaranah.
+
+### STEP 4.1 — Komponen `<GlobalSearch>` di `src/layout.jsx`
+
+```jsx
+const GlobalSearch = () => {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const inputRef = useRefC(null);
+
+  // Open dengan keyboard shortcut (Ctrl/Cmd + K)
+  useEffectC(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setOpen(true);
+      }
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  useEffectC(() => {
+    if (open) setTimeout(() => inputRef.current?.focus(), 50);
+    else setQuery("");
+  }, [open]);
+
+  // Search logic
+  const results = useMemoCR(() => {
+    if (!query.trim() || query.length < 2) return [];
+    const q = query.toLowerCase();
+    const out = [];
+
+    // Cari di MADDAHS
+    if (typeof MADDAHS !== "undefined") {
+      MADDAHS.forEach(m => {
+        const match = m.name.toLowerCase().includes(q)
+          || m.nameArabic.includes(query)
+          || m.description.toLowerCase().includes(q);
+        if (match) out.push({ type: "maddah", id: m.id, title: m.name, sub: m.description?.slice(0, 60), arabic: m.nameArabic, to: "/maddah/" + m.id });
+      });
+    }
+
+    // Cari di prompt templates (di MADDAHS yang punya konten)
+    if (typeof MADDAHS !== "undefined") {
+      MADDAHS.forEach(m => {
+        if (!m.prompts) return;
+        Object.values(m.prompts).flat().forEach(p => {
+          if (p.title?.toLowerCase().includes(q)) {
+            out.push({ type: "prompt", id: m.id + "_" + p.title, title: p.title, sub: "Prompt di " + m.name, to: "/maddah/" + m.id });
+          }
+        });
+      });
+    }
+
+    // Cari di Muqaranah Library
+    if (typeof MADDAHS_MUQARANAH !== "undefined" || typeof MUQARANAH_LIBRARY !== "undefined") {
+      const lib = window.MUQARANAH_LIBRARY || window.MADDAHS_MUQARANAH || [];
+      lib.forEach(e => {
+        if (e.title?.toLowerCase().includes(q) || e.titleArabic?.includes(query) || e.question?.toLowerCase().includes(q)) {
+          out.push({ type: "muqaranah", id: e.id, title: e.title, sub: e.question?.slice(0, 60), to: "/paths/muqaranah?id=" + e.id });
+        }
+      });
+    }
+
+    return out.slice(0, 8); // max 8 results
+  }, [query]);
+
+  if (!open) return (
+    <button
+      onClick={() => setOpen(true)}
+      className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/4 border border-line text-ink-soft text-sm hover:bg-white/6 transition-colors"
+    >
+      <Icon name="search" className="w-3.5 h-3.5"/>
+      <span>Cari...</span>
+      <kbd className="ml-1 text-[10px] text-ink-soft bg-white/5 border border-line px-1.5 py-0.5 rounded">⌘K</kbd>
+    </button>
+  );
+
+  return (
+    <div className="fixed inset-0 z-[80] flex items-start justify-center pt-20 px-4 bg-night-950/70 backdrop-blur-sm" onClick={() => setOpen(false)}>
+      <div className="w-full max-w-xl bg-night-800 border border-line rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+        {/* Input */}
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-line">
+          <Icon name="search" className="w-4 h-4 text-ink-soft flex-shrink-0"/>
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Cari Maddah, prompt, muqaranah..."
+            className="flex-1 bg-transparent text-ink text-sm outline-none placeholder-ink-soft"
+          />
+          {query && (
+            <button onClick={() => setQuery("")} className="text-ink-soft hover:text-ink text-xs">✕</button>
+          )}
+          <kbd className="text-[10px] text-ink-soft bg-white/5 border border-line px-1.5 py-0.5 rounded">Esc</kbd>
+        </div>
+
+        {/* Results */}
+        <div className="max-h-80 overflow-y-auto">
+          {query.length >= 2 && results.length === 0 && (
+            <div className="px-4 py-8 text-center text-sm text-ink-soft">
+              Tidak ditemukan untuk "{query}"
+            </div>
+          )}
+          {query.length < 2 && (
+            <div className="px-4 py-4 text-xs text-ink-soft">Ketik minimal 2 karakter...</div>
+          )}
+          {results.map((r, i) => (
+            <button key={i} onClick={() => { navigate(r.to); setOpen(false); }}
+              className="w-full flex items-start gap-3 px-4 py-3 hover:bg-white/4 transition-colors text-left">
+              <div className={`mt-0.5 w-6 h-6 rounded flex items-center justify-center flex-shrink-0 text-[10px] font-bold
+                ${r.type === "maddah" ? "bg-violet-500/20 text-violet-300" :
+                  r.type === "prompt" ? "bg-gold-500/15 text-gold-300" :
+                  "bg-white/8 text-ink-soft"}`}>
+                {r.type === "maddah" ? "M" : r.type === "prompt" ? "P" : "Q"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm text-ink font-medium truncate">{r.title}</div>
+                {r.sub && <div className="text-xs text-ink-soft truncate mt-0.5">{r.sub}</div>}
+              </div>
+              {r.arabic && (
+                <div className="text-sm text-gold-300 arabic-display flex-shrink-0" style={{direction:"rtl"}}>{r.arabic}</div>
+              )}
+            </button>
+          ))}
+        </div>
+
+        {results.length > 0 && (
+          <div className="px-4 py-2 border-t border-line text-[11px] text-ink-soft flex gap-3">
+            <span className="w-5 h-5 rounded bg-violet-500/20 text-violet-300 text-[9px] font-bold flex items-center justify-center">M</span> Maddah
+            <span className="w-5 h-5 rounded bg-gold-500/15 text-gold-300 text-[9px] font-bold flex items-center justify-center">P</span> Prompt
+            <span className="w-5 h-5 rounded bg-white/8 text-ink-soft text-[9px] font-bold flex items-center justify-center">Q</span> Muqaranah
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Tambahkan useMemoCR ke window jika belum ada (alias useMemo):
+// window.useMemoCR = window.useMemoCR || React.useMemo;
+```
+
+### STEP 4.2 — Mount GlobalSearch di Navbar
+
+Di komponen navbar desktop (antara nav links dan action buttons):
+
+```jsx
+<GlobalSearch/>
+```
+
+Di mobile, tambahkan search button di header mobile:
+
+```jsx
+// Di mobile header, sebelum avatar:
+<button onClick={() => setSearchOpen(true)} className="md:hidden w-9 h-9 flex items-center justify-center text-ink-soft">
+  <Icon name="search" className="w-5 h-5"/>
+</button>
+```
+
+**Acceptance:**
+- [ ] Desktop: search bar muncul di navbar, Ctrl/Cmd+K membukanya
+- [ ] Mobile: icon search di header, tap buka overlay
+- [ ] Ketik "nahwu" → muncul Maddah Nahwu
+- [ ] Ketik "i'rab" → muncul prompt dan Maddah yang relate
+- [ ] Ketik "basmalah" → muncul Muqaranah yang relate
+- [ ] Klik result → navigate ke halaman yang benar, search tutup
+- [ ] Escape → tutup search
+- [ ] Tidak ada console error saat search
+
+---
+
+## FIX 5 — Welcome Moment Setelah Onboarding
+
+**Masalah:** Setelah bayar 49k dan isi onboarding, user langsung di-dump ke dashboard biasa. Momen antusias tertinggi dilewatkan.
+
+**Solusi:** Halaman "Welcome" khusus setelah onboarding selesai — tampilkan Maddah-nya, starter pack, dan prompt pertama yang bisa langsung dicoba.
+
+### STEP 5.1 — Update Redirect di `src/pages/onboarding.jsx`
+
+Ganti redirect dari `/dashboard` ke `/welcome` setelah onboarding:
+
+```jsx
+// SEBELUM (line ~78):
+setTimeout(() => navigate("/dashboard"), 400);
+
+// SESUDAH:
+setTimeout(() => navigate("/welcome"), 400);
+```
+
+### STEP 5.2 — Buat `src/pages/welcome.jsx`
+
+```jsx
+/* Talqee — Welcome Page (muncul sekali setelah onboarding selesai) */
+
+const WelcomePage = () => {
+  const { session, profile } = useAuth();
+  const toast = useToast();
+
+  if (!session || !profile?.onboarded) { navigate("/"); return null; }
+
+  // Get Maddah untuk user ini
+  const myMaddahs = (typeof getMaddahsForProfile !== "undefined")
+    ? getMaddahsForProfile(profile).filter(m => m.prompts && Object.values(m.prompts).some(a => a.length > 0)).slice(0, 3)
+    : [];
+
+  const firstName = session.name.split(" ")[0];
+
+  // Generate starter pack
+  const starterPack = (typeof generateStarterPack !== "undefined")
+    ? generateStarterPack(profile, session)
+    : "";
+
+  const handleCopyStarter = () => {
+    navigator.clipboard.writeText(starterPack);
+    toast.push("Starter Pack tersalin — paste ke AI di awal chat.");
+  };
+
+  return (
+    <div className="page-enter min-h-screen relative overflow-hidden">
+      {/* Background */}
+      <div className="absolute inset-0 pattern-talqih opacity-50 pointer-events-none"/>
+      <Blob color="rgba(124,77,255,0.25)" size={600} top={-200} right={-100}/>
+      <Blob color="rgba(201,168,106,0.12)" size={400} top={300} left={-150}/>
+
+      <div className="container-x relative py-16 md:py-24 max-w-3xl mx-auto">
+
+        {/* Header */}
+        <Reveal className="text-center mb-12">
+          <div className="arabic-classic text-gold-300 text-3xl mb-4" style={{direction:"rtl"}}>
+            أَهْلاً وَسَهْلاً
+          </div>
+          <h1 className="font-display text-5xl md:text-6xl font-semibold text-ink leading-tight mb-4">
+            Selamat datang,<br/>
+            <span className="bg-gradient-to-br from-violet-300 to-gold-400 bg-clip-text text-transparent">{firstName}.</span>
+          </h1>
+          <p className="text-lg text-ink-muted max-w-lg mx-auto leading-relaxed">
+            Talqee sudah mengenalmu. Dashboard sudah disiapkan khusus untukmu.
+          </p>
+        </Reveal>
+
+        {/* Maddah-mu */}
+        {myMaddahs.length > 0 && (
+          <Reveal className="mb-10">
+            <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-4 flex items-center gap-2">
+              <span className="w-5 h-px bg-gold-500/60"/>
+              Maddah untuk fakultas & tingkatmu
+            </div>
+            <div className="grid md:grid-cols-3 gap-3">
+              {myMaddahs.map(m => (
+                <div key={m.id} onClick={() => navigate("/maddah/" + m.id)}
+                  className="card-glass p-4 cursor-pointer hov-lift">
+                  <div className="arabic-display text-gold-300 text-xl mb-1" style={{direction:"rtl"}}>{m.nameArabic}</div>
+                  <div className="font-display text-base font-semibold text-ink mb-1">{m.name}</div>
+                  <div className="text-xs text-ink-soft">
+                    {Object.values(m.prompts).reduce((s, a) => s + a.length, 0)} prompt
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        )}
+
+        {/* Starter Pack */}
+        {starterPack && (
+          <Reveal className="mb-10">
+            <div className="card-glass-strong p-6 relative overflow-hidden">
+              <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gold-500/10 blur-3xl pointer-events-none"/>
+              <div className="relative">
+                <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-2 font-medium">✦ Langkah pertama</div>
+                <h3 className="font-display text-xl font-semibold text-ink mb-2">Kenalkan dirimu ke AI</h3>
+                <p className="text-sm text-ink-muted mb-4 leading-relaxed">
+                  Sebelum mulai, paste ini ke AI favoritmu. AI langsung tahu siapa kamu dan cara menjelaskan yang paling pas.
+                </p>
+                <div className="p-3 rounded-lg bg-white/3 border border-line mb-4">
+                  <p className="text-xs text-ink-soft font-mono leading-relaxed line-clamp-3">{starterPack.slice(0, 200)}...</p>
+                </div>
+                <button onClick={handleCopyStarter} className="btn-primary px-5 py-2.5 text-sm flex items-center gap-2">
+                  <Icon name="copy" className="w-3.5 h-3.5"/>
+                  Salin Starter Pack
+                </button>
+              </div>
+            </div>
+          </Reveal>
+        )}
+
+        {/* CTA ke Dashboard */}
+        <Reveal className="text-center">
+          <button
+            onClick={() => navigate("/dashboard")}
+            className="btn-primary px-8 py-4 text-base font-medium"
+          >
+            Masuk ke Dashboardku →
+          </button>
+          <p className="text-xs text-ink-soft mt-3">
+            Halaman ini hanya muncul sekali. Selamat belajar!
+          </p>
+        </Reveal>
+
+      </div>
+    </div>
+  );
+};
+```
+
+### STEP 5.3 — Tambah Route di `src/app.jsx`
+
+```jsx
+} else if (path === "/welcome") {
+  return <WelcomePage/>;
+}
+```
+
+Posisikan sebelum route dashboard.
+
+### STEP 5.4 — Tambah Script Tag di `index.html`
+
+```html
+<script type="text/babel" data-presets="env,react" src="src/pages/welcome.jsx"></script>
+```
+
+Sebelum `app.jsx`.
+
+**Acceptance:**
+- [ ] Selesai onboarding → redirect ke `/welcome` (bukan `/dashboard`)
+- [ ] Welcome page tampilkan: salam Arab + nama user + Maddah yang relevan + starter pack
+- [ ] Klik Maddah → buka detail Maddah
+- [ ] Salin Starter Pack → tersalin, toast confirm
+- [ ] "Masuk ke Dashboardku" → navigate ke `/dashboard`
+- [ ] User yang langsung akses `/welcome` tanpa session → redirect ke `/`
+- [ ] Halaman rapi di mobile
+
+---
+
+## Acceptance Criteria Global
+
+### Fix 1
+- [ ] Semua tombol "Gabung Member" tidak ada harga — hanya di pricing section
+
+### Fix 2
+- [ ] Panel "Simpan ke Kurasah" muncul setelah prompt disalin
+- [ ] Note dibuat dengan template yang tepat, navigate ke editor
+
+### Fix 3
+- [ ] Maddah activity ter-track di localStorage
+- [ ] Maddah Hub: badge activity di Maddah yang pernah dibuka
+- [ ] Dashboard: "Terakhir kamu buka" row muncul kalau ada riwayat
+
+### Fix 4
+- [ ] Search global jalan (Maddah, prompt, muqaranah)
+- [ ] Desktop: Ctrl+K membuka search
+- [ ] Mobile: icon search membuka overlay
+
+### Fix 5
+- [ ] Onboarding selesai → welcome page
+- [ ] Welcome page: salam + Maddah + starter pack + CTA dashboard
+
+### General
+- [ ] Tidak ada console error
+- [ ] Mobile responsive semua fix
+- [ ] localStorage data tetap utuh
+
+---
+
+والله ولي التوفيق. Mulai dari Fix 1 (paling cepat), lanjut berurutan.

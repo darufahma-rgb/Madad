@@ -4,11 +4,23 @@ const MaddahCard = ({ maddah }) => {
   const hasContent  = maddah.prompts && Object.values(maddah.prompts).some(arr => arr.length > 0);
   const totalPrompts = hasContent ? Object.values(maddah.prompts).reduce((s, arr) => s + arr.length, 0) : 0;
 
+  const activity = (typeof loadMaddahActivity !== "undefined") ? loadMaddahActivity() : {};
+  const act = activity[maddah.id];
+  const isVisited = act && act.opens > 0;
+  const promptCount = act?.promptsCopied || 0;
+
   return (
     <div
       onClick={() => navigate("/maddah/" + maddah.id)}
-      className="card-glass p-5 hov-lift cursor-pointer group"
+      className={`card-glass p-5 hov-lift cursor-pointer group relative overflow-hidden ${isVisited ? "border-l-2 border-l-violet-500/40" : ""}`}
     >
+      {isVisited && (
+        <div className="absolute top-3 right-3 flex items-center gap-1 text-[10px] text-violet-300">
+          <span className="w-1.5 h-1.5 rounded-full bg-violet-400"/>
+          {promptCount > 0 ? `${promptCount} prompt dipakai` : "Pernah dibuka"}
+        </div>
+      )}
+
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex-1 min-w-0">
           <div className="arabic-display text-gold-300 text-xl mb-1 group-hover:text-gold-200 transition-colors" style={{direction:"rtl"}}>
@@ -16,7 +28,7 @@ const MaddahCard = ({ maddah }) => {
           </div>
           <h3 className="font-display text-lg font-semibold text-ink leading-snug">{maddah.name}</h3>
         </div>
-        {!hasContent && (
+        {!hasContent && !isVisited && (
           <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 border border-violet-500/20 flex-shrink-0 mt-1">
             Segera
           </span>

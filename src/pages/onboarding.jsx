@@ -99,7 +99,7 @@ const OnboardingPage = () => {
       const finalProfile = { ...data, onboarded: true, onboardedAt: new Date().toISOString() };
       saveProfile(finalProfile);
       toast.push("Dashboard personal sudah siap untukmu.");
-      setTimeout(() => navigate("/dashboard"), 400);
+      setTimeout(() => navigate("/welcome"), 400);
     }
   };
 

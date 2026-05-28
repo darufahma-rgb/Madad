@@ -21,18 +21,40 @@ const PromptCard = ({ prompt, maddah, profile }) => {
   const toast = useToast();
   const tool  = AI_TOOLS.find(t => t.id === prompt.targetAI);
   const [showFull, setShowFull] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const resolvedPrompt = resolveAdaptivePrompt(prompt.template, profile, maddah.name);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(resolvedPrompt);
     toast.push("Prompt tersalin. Paste ke " + (tool?.name || "AI") + ".");
+    setCopied(true);
+    if (typeof trackPromptCopied !== "undefined") trackPromptCopied(maddah.id);
   };
 
   const handleCopyAndOpen = () => {
     navigator.clipboard.writeText(resolvedPrompt);
     toast.push("Prompt tersalin. Membuka " + tool?.name + "...");
+    setCopied(true);
+    if (typeof trackPromptCopied !== "undefined") trackPromptCopied(maddah.id);
     if (tool?.link) setTimeout(() => window.open(tool.link, "_blank"), 400);
+  };
+
+  const handleSaveToKurasah = () => {
+    const noteTemplate = `## Prompt yang dipakai\n**Maddah:** ${maddah.name}\n**Tujuan:** ${prompt.title}\n\n---\n\n## Jawaban AI\n\n*Paste jawaban AI di sini...*\n\n---\n\n## Catatanku\n\n*Tulis refleksi atau poin penting dari jawaban AI...*`;
+    const newNote = {
+      id: "note_" + Date.now(),
+      title: `${maddah.name} — ${prompt.title}`,
+      body: noteTemplate,
+      tags: [maddah.category, maddah.id],
+      source: { type: "maddah", id: maddah.id, label: maddah.name },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    const existing = loadNotes();
+    saveNotes([newNote, ...existing]);
+    navigate("/kurasah?id=" + newNote.id);
+    toast.push("Catatan dibuat — paste jawaban AI di sana.");
   };
 
   return (
@@ -47,7 +69,7 @@ const PromptCard = ({ prompt, maddah, profile }) => {
         </div>
         <div className="flex gap-2 flex-shrink-0">
           <button onClick={handleCopy} className="btn btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5">
-            <Icon name="copy" className="w-3 h-3"/>Salin
+            <Icon name="copy" className="w-3 h-3"/>{copied ? "Tersalin ✓" : "Salin"}
           </button>
           {tool?.link && (
             <button onClick={handleCopyAndOpen} className="btn btn-primary text-xs px-3 py-1.5 flex items-center gap-1.5">
@@ -57,7 +79,7 @@ const PromptCard = ({ prompt, maddah, profile }) => {
         </div>
       </div>
 
-      <div className="p-3 rounded-lg bg-white/3 border border-line">
+      <div className="p-3 rounded-lg bg-white/3 border border-line mb-3">
         <div className={`text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap ${!showFull ? "line-clamp-4" : ""}`}>
           {resolvedPrompt}
         </div>
@@ -65,6 +87,22 @@ const PromptCard = ({ prompt, maddah, profile }) => {
           {showFull ? "Sembunyikan" : "Lihat lengkap"}
         </button>
       </div>
+
+      {copied && (
+        <div className="flex items-center justify-between gap-3 p-3 rounded-lg bg-gold-500/8 border border-gold-500/20 animate-fade-in">
+          <div className="text-xs text-ink-muted leading-relaxed">
+            <span className="text-gold-300 font-medium">Sudah dapat jawaban dari AI?</span>
+            {" "}Simpan ke Kurasah supaya tidak hilang.
+          </div>
+          <button
+            onClick={handleSaveToKurasah}
+            className="btn btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5 flex-shrink-0 border border-gold-500/30 text-gold-300 hover:bg-gold-500/10"
+          >
+            <Icon name="notebook" className="w-3 h-3"/>
+            Simpan
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -79,6 +117,12 @@ const MaddahDetailPage = () => {
   const maddah    = maddahId ? getMaddahById(maddahId) : null;
 
   const [activeKind, setActiveKind] = useState("pahami");
+
+  useEffect(() => {
+    if (maddah && session && typeof trackMaddahOpen !== "undefined") {
+      trackMaddahOpen(maddah.id);
+    }
+  }, [maddah?.id]);
 
   if (!session) { navigate("/"); return null; }
 
