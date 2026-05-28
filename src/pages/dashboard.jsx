@@ -363,7 +363,7 @@ const DashboardPage = () => {
       <section className="relative pt-4 md:pt-16 pb-6 md:pb-8 overflow-hidden">
         <Blob color="rgba(124,77,255,0.22)" size={600} top={-200} right={-100}/>
         <Blob color="rgba(201,168,106,0.10)" size={400} top={100} left={-150}/>
-        <div className="absolute inset-0 pattern-stars opacity-[0.04] pointer-events-none"/>
+
         <div className="container-x relative">
           <Reveal>
             {/* ── MOBILE ── */}
