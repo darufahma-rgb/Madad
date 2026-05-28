@@ -39,9 +39,14 @@ const QuickNoteModal = ({ open, onClose, contextLabel, contextSource }) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center px-4 pb-6 sm:pb-0">
+    <div className="fixed inset-0 z-[80] flex items-end sm:items-center justify-center sm:px-4 sm:pb-0">
       <div className="absolute inset-0 bg-night-950/70 backdrop-blur-sm" onClick={onClose}/>
-      <div className="relative w-full max-w-lg card-glass-strong rounded-2xl p-6 shadow-2xl page-enter">
+      <div className="relative w-full sm:max-w-lg card-glass-strong rounded-t-2xl sm:rounded-2xl p-5 sm:p-6 shadow-2xl page-enter"
+        style={{ paddingBottom: "max(24px, calc(var(--safe-bottom) + 16px))" }}>
+        {/* Drag handle — mobile only */}
+        <div className="sm:hidden flex justify-center mb-4 -mt-1">
+          <div className="w-10 h-1 rounded-full bg-white/25"/>
+        </div>
         <div className="flex items-center justify-between mb-5">
           <div>
             <h3 className="font-display text-xl font-semibold text-ink">Catatan Cepat</h3>

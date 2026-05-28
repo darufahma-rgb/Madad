@@ -305,13 +305,35 @@
   /* ── Mobile Native Feel ── */
   @media (max-width: 767px) {
     body { font-size: 15px; }
+
+    /* Container tighter */
+    .container-x { padding: 0 16px; }
+
+    /* Card radius compact */
+    .card-glass        { border-radius: 14px; }
+    .card-glass-strong { border-radius: 16px; }
+
+    /* Button compact + touch-friendly */
+    .btn          { padding: 10px 16px; font-size: 14px; border-radius: 10px; min-height: 44px; }
+    .btn-primary  { box-shadow: 0 8px 20px -8px rgba(124,77,255,0.5); }
+    .btn-primary:hover { transform: none; }
+    .btn-gold:hover    { transform: none; }
+
+    /* Chip compact */
+    .chip { padding: 4px 9px; font-size: 11px; }
+
+    /* Font display */
+    .font-display { letter-spacing: -0.01em; }
+
+    /* Hover kill on touch devices */
     .hov-lift:hover { transform: none !important; box-shadow: none !important; border-color: inherit !important; }
     .hov-lift:active { transform: scale(0.98) !important; opacity: 0.92; }
-    .btn { padding: 10px 16px; font-size: 14px; }
-    .btn-primary:hover { transform: none; }
-    .btn-gold:hover { transform: none; }
-    .arabic { font-size: 90%; }
-    .arabic-display, .arabic-classic, .arabic-display-classical { font-size: 90%; }
+
+    /* Arabic scale down */
+    .arabic, .arabic-display, .arabic-classic, .arabic-display-classical { font-size: 90%; }
+
+    /* Prevent iOS auto-zoom on input focus */
+    input, textarea, select { font-size: 16px !important; }
   }
   /* Mobile carousel — swipeable rows */
   .mobile-scroll {

@@ -857,12 +857,14 @@ const QuickAction = ({ icon, title, desc, to, onClick, color = "violet" }) => {
   };
   const isGold = color === "gold";
   return (
-    <a href={to ? "#" + to : "#"} onClick={handle} className="card-glass p-5 hov-lift block group">
-      <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3.5 transition-colors ${isGold ? "bg-gold-500/12 text-gold-300 group-hover:bg-gold-500/20" : "bg-violet-500/12 text-violet-300 group-hover:bg-violet-500/20"}`}>
-        <Icon name={icon} className="w-5 h-5"/>
+    <a href={to ? "#" + to : "#"} onClick={handle}
+      className="card-glass p-3 md:p-5 hov-lift block group"
+      style={{ minHeight: 80 }}>
+      <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-3.5 transition-colors ${isGold ? "bg-gold-500/12 text-gold-300 group-hover:bg-gold-500/20" : "bg-violet-500/12 text-violet-300 group-hover:bg-violet-500/20"}`}>
+        <Icon name={icon} className="w-4 h-4 md:w-5 md:h-5"/>
       </div>
-      <div className="font-display text-base font-semibold text-ink mb-1.5">{title}</div>
-      <p className="text-xs text-ink-muted leading-relaxed">{desc}</p>
+      <div className="font-display text-sm md:text-base font-semibold text-ink mb-0.5 md:mb-1.5">{title}</div>
+      <p className="text-[11px] md:text-xs text-ink-muted leading-relaxed">{desc}</p>
     </a>
   );
 };

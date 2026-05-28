@@ -31,7 +31,7 @@ const NoteCard = ({ note, onClick }) => {
   return (
     <div
       onClick={() => onClick(note)}
-      className="card-glass hov-lift cursor-pointer border border-line hover:border-violet-400/30 rounded-xl p-5 flex flex-col gap-3 transition-all">
+      className="card-glass hov-lift cursor-pointer border border-line hover:border-violet-400/30 rounded-xl p-4 md:p-5 flex flex-col gap-2 md:gap-3 transition-all" style={{ minHeight: 44 }}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-wrap gap-1.5">
           {note.tags.slice(0,3).map(t => (
@@ -175,13 +175,13 @@ const KurasahPage = () => {
                 : notes.length > 0 ? `${notes.length} catatan` : "Belum ada catatan."}
               right={
                 <div className="flex items-center gap-2">
-                  <button onClick={handleExport} className="btn btn-ghost text-sm py-2 px-3">
+                  <button onClick={handleExport} className="btn btn-ghost text-sm py-2 px-3" style={{ minHeight: 44 }}>
                     <Icon name="download" className="w-4 h-4"/> Export
                   </button>
-                  <button onClick={() => fileRef.current?.click()} className="btn btn-ghost text-sm py-2 px-3">
+                  <button onClick={() => fileRef.current?.click()} className="btn btn-ghost text-sm py-2 px-3" style={{ minHeight: 44 }}>
                     <Icon name="upload" className="w-4 h-4"/> Import
                   </button>
-                  <button onClick={() => navigate("/kurasah/new")} className="btn btn-primary text-sm py-2 px-4">
+                  <button onClick={() => navigate("/kurasah/new")} className="btn btn-primary text-sm py-2 px-4" style={{ minHeight: 44 }}>
                     <Icon name="pen" className="w-4 h-4"/> Tulis Baru
                   </button>
                 </div>
@@ -238,7 +238,7 @@ const KurasahPage = () => {
           ) : filtered.length === 0 ? (
             <div className="py-16 text-center text-ink-muted text-sm">Tidak ada catatan yang cocok.</div>
           ) : (
-            <Reveal stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Reveal stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {filtered.map(n => (
                 <NoteCard key={n.id} note={n} onClick={n => navigate("/kurasah?id=" + n.id)}/>
               ))}
