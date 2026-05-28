@@ -137,10 +137,8 @@ const Stars = ({ value = 0, max = 5, className = "" }) => (
 
 /* ---------------- Talqee Logo mark ---------------- */
 const LogoMark = ({ size = 36, className = "" }) => (
-  <span className={`inline-flex items-center justify-center rounded-xl overflow-hidden relative ${className}`}
-        style={{ width: size, height: size, background: "linear-gradient(140deg, #7C4DFF 0%, #190B38 100%)", boxShadow: "0 1px 0 rgba(255,255,255,0.14) inset, 0 8px 24px -8px rgba(124,77,255,0.65)" }}>
-    <img src="assets/talqee-logo.png" alt="Talqee" style={{ width: size * 0.72, height: size * 0.72, objectFit: "contain" }}/>
-    <span style={{ position: "absolute", inset: 0, background: "radial-gradient(circle at 30% 20%, rgba(201,168,106,0.18), transparent 60%)" }}/>
+  <span className={"inline-flex items-center justify-center " + className} style={{ width: size, height: size }}>
+    <img src="assets/talqee-logo.png" alt="Talqee" style={{ width: size, height: size, objectFit: "contain" }}/>
   </span>
 );
 
