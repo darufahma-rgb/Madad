@@ -1,0 +1,293 @@
+# Talqee — Bottleneck Audit Report
+## Berdasarkan Kode Aktual (v2, 28 Mei 2026)
+
+---
+
+## Yang Udah Beres (Positif dulu)
+
+Sebelum masuk ke masalah, gue catat apa yang udah bagus dari audit kode ini:
+
+- ✅ **XSS fix sudah ada** — `escapeHtml()` di markdown-render.jsx terpasang dan dipanggil dengan benar
+- ✅ **Supabase credentials diamankan via server** — `fetch('/api/config')` bukan hardcoded di frontend
+- ✅ **Payment flow sudah manual confirm** — `handleConfirmPaid()` ada, tidak auto-timeout lagi
+- ✅ **Loading state ada** — spinner + teks "Membuka Talqeeh..." ada di index.html
+- ✅ **Maddah content penuh** — 35 Maddah punya prompt (bukan skeleton lagi)
+- ✅ **Welcome page setelah onboarding** — navigate ke `/welcome` setelah selesai
+- ✅ **Admin PIN sudah diganti** — `admin.jsx` pakai "260520", bukan "9090" lagi
+- ✅ **Supabase integration** — auth via Supabase sudah ada dengan fallback localStorage
+
+---
+
+## 🔴 BOTTLENECK KRITIS — Harus Diperbaiki Sebelum Launch
+
+### BN-1 — Dua ADMIN_PIN yang Berbeda (Security Conflict)
+
+**File:** `src/data.jsx:1080` + `src/pages/admin.jsx:5`
+
+```js
+// data.jsx — tidak dipakai admin panel
+const ADMIN_PIN = "TLQH-2026-9X4K";
+
+// admin.jsx — yang BENAR-BENAR dipakai
+const ADMIN_PIN = "260520";  // ← ini yang active
+```
+
+**Masalah:**
+- Admin panel define PIN-nya sendiri (`260520`) dan **tidak pakai** yang dari `data.jsx`
+- `data.jsx` define PIN berbeda (`TLQH-2026-9X4K`) yang tidak pernah dipakai untuk login admin
+- Kalau ada orang yang baca source code `data.jsx` dan coba PIN itu di admin — tidak masuk. Tapi kalau baca `admin.jsx` dan lihat line 5 — langsung dapat akses
+- Ini konfusing dan rawan bug maintenance
+
+**Fix:** Hapus `ADMIN_PIN` dari `data.jsx` (dan dari `window` export). Pertahankan hanya di `admin.jsx`. Atau sebaliknya — tapi konsisten satu tempat.
+
+---
+
+### BN-2 — React Development Build di Production
+
+**File:** `index.html:400-401`
+
+```html
+react.development.js   ← ini yang dipakai
+react-dom.development.js
+```
+
+**Masalah serius:**
+- Development build React **3-4x lebih besar** dari production build (~850KB vs ~130KB untuk React+ReactDOM)
+- Development build lebih lambat karena ada banyak warning checks dan debugging overhead
+- Untuk user di Cairo dengan internet lambat, ini bisa bedain 5 detik vs 15 detik loading
+- Plus: console di browser user penuh dengan React warnings/DevTools messages
+
+**Fix:** Ganti ke production builds:
+```html
+<!-- GANTI: -->
+react.development.js → react.production.min.js
+react-dom.development.js → react-dom.production.min.js
+```
+
+Satu baris fix, dampak terbesar di semua bottleneck ini.
+
+---
+
+### BN-3 — Typo Brand di Semua Meta Tags
+
+**File:** `index.html:10-17`
+
+```html
+<title>Talqeeh — ...</title>          <!-- "Talqeeh" bukan "Talqee" -->
+<meta og:title="Talqeeh — ...">
+<meta og:image="/assets/talqeeh-logo.png">
+<link rel="icon" href="/assets/talqeeh-logo.png">
+```
+
+**Masalah:**
+- Brand lo adalah **"Talqee"** tapi title, meta, favicon semua bilang **"Talqeeh"** (ada h di akhir)
+- Saat link dishare ke WhatsApp/Telegram, preview akan tampilkan "Talqeeh" — keliatan tidak profesional
+- Loading placeholder juga bilang "Membuka Talqeeh..."
+- File logo: ada `talqee-logo.png` dan `talqeeh-logo.png` di assets — mana yang benar?
+
+**Fix:** Tentukan satu nama final, ganti semua referensi konsisten.
+
+---
+
+### BN-4 — Kurasah Editor Bug Belum Diperbaiki
+
+**File:** `src/pages/kurasah-editor.jsx:19-20`
+
+```js
+// Masih pakai pola lama — re-compute setiap render
+const noteId = params.get("id");
+const isNew = path === "/kurasah/new" || path.startsWith("/kurasah/new");
+// ...
+}, [noteId, isNew]);  // ← useEffect fire setiap kali noteId "berubah"
+```
+
+**Fix dari Prompt 17 belum diapply.** Bug ketik 1 huruf → reset masih ada.
+
+---
+
+### BN-5 — Script Loading Order: maddah-data.jsx Setelah mapel.jsx
+
+**File:** `index.html:433-440`
+
+```html
+<script src="src/mapel-data.jsx"></script>   <!-- line 433 -->
+<script src="src/pages/mapel.jsx"></script>  <!-- line 434 -->
+...
+<script src="src/maddah-data.jsx"></script>  <!-- line 437 — TERLAMBAT -->
+<script src="src/pages/maddah-hub.jsx"></script>
+```
+
+**Masalah:** `mapel.jsx` mungkin reference data dari `maddah-data.jsx`, tapi `maddah-data.jsx` di-load SETELAH `mapel.jsx`. Kalau ada reference di `mapel.jsx` ke variabel dari `maddah-data.jsx` → runtime error saat halaman mapel dibuka.
+
+**Fix:** Pindahkan `maddah-data.jsx` dan `adaptive-prompt.jsx` ke sebelum `mapel-data.jsx`.
+
+---
+
+### BN-6 — Tidak Ada Error Boundary
+
+**File:** Semua halaman
+
+Tidak satu pun halaman punya error boundary. Kalau komponen crash (localStorage corrupt, data missing, network error dari Supabase) → seluruh app jadi blank screen putih.
+
+Untuk user yang pertama kali coba Talqee dan ini terjadi → immediate churn, tidak akan kembali.
+
+**Fix:** Tambah ErrorBoundary minimal di level page di `app.jsx`.
+
+---
+
+## 🟡 PENTING — Bikin Produk Terasa Professional
+
+### BN-7 — Mapel vs Maddah: Dua Sistem yang Tumpang Tindih
+
+**Temuan paling menarik dari audit ini.**
+
+Di codebase sekarang ada **DUA sistem mata pelajaran yang berbeda**:
+- `/maddah` — Maddah system (36 Maddah, template prompt per kategori)
+- `/mapel` — Mapel system (19 mata pelajaran, panduan cara pakai AI per mapel + personalisasi style belajar)
+
+Keduanya punya data terpisah (`maddah-data.jsx` dan `mapel-data.jsx`), halaman terpisah, dan **tidak terhubung satu sama lain**.
+
+**Masalah:**
+- User bingung: ada dua tempat berbeda untuk hal yang sama
+- Mapel system sebenarnya **lebih bagus dari Maddah** untuk beberapa hal — ada `PersonalizationPanel` yang adapt ke learning style user, ada `whyThisAI` yang lebih explanatory
+- Maddah system lebih komprehensif untuk prompt templates
+- Nav member tidak include link ke `/mapel` sama sekali — **user tidak tahu Mapel ada**
+
+**Ini bukan bottleneck kecil** — ini masalah IA (Information Architecture) fundamental yang bikin produk confusing.
+
+**Opsi solusi:**
+1. **Merge** — Mapel jadi sub-bagian dari Maddah (Maddah dapat `PersonalizationPanel` dari Mapel)
+2. **Differentiasi jelas** — Mapel = "Panduan cara pakai AI", Maddah = "Prompt templates". Pisahkan dengan labeling yang jelas dan kedua-duanya masuk nav
+3. **Pilih satu, hapus yang lain** — Mapel lebih contextual, Maddah lebih comprehensive
+
+Gue rekomendasikan **opsi 2** dengan labeling: Mapel = "Panduan AI" (entry point casual), Maddah = "Prompt Templates" (untuk yang mau detail).
+
+---
+
+### BN-8 — 32 Script Tags = Waktu Load Sangat Panjang
+
+**File:** `index.html`
+
+32 file JSX di-load dan dikompilasi secara sequential via Babel standalone. Setiap file = 1 HTTP request + 1 Babel compile time.
+
+Di WiFi bagus (20Mbps): ~8-12 detik
+Di koneksi Cairo medioker: **20-30+ detik**
+
+Masisir yang buka Talqee dengan data HP atau WiFi kampus yang sering lemot akan nunggu lama sekali — atau abandon.
+
+**Quick fix (tanpa bundler):** Gabungkan beberapa file kecil menjadi satu. Contoh: gabungkan semua `src/pages/*.jsx` yang kecil (ethics, paths, welcome, onboarding) menjadi satu file. Target: kurangi dari 32 ke ~20 script tags.
+
+**Real fix (setelah launch):** Migrate ke Vite/bundler yang proper. Tapi ini besar, lakukan post-launch.
+
+---
+
+### BN-9 — Single Device Policy Masih 1 Device
+
+**File:** `src/auth.jsx:103`
+
+```js
+if (member.deviceId && member.deviceId !== deviceId && !forceTakeover) {
+  return { ok: false, status: LOGIN_RESULT.DEVICE_CONFLICT };
+}
+```
+
+Masih 1 device per member. User beli laptop baru, pinjam HP teman untuk demo, atau HP mati → harus minta admin reset manual.
+
+Untuk produk yang dijual 49k dan targetnya mahasiswa — ini friction yang tidak perlu.
+
+**Fix:** Izinkan 2 device, atau self-service reset 1x per 30 hari.
+
+---
+
+### BN-10 — Tidak Ada Cara Distribusi Kode Otomatis
+
+Flow masih manual: user bayar Lynk → admin cek WA → kirim kode.
+
+Tidak ada notifikasi real-time ke admin. Tidak ada antrian pembayaran yang tervisual di admin panel.
+
+**Minimum fix sebelum launch:** Di admin panel, tambah section "Pembayaran Masuk" yang list member dengan status "pending_kode" (belum dapat kode). Setidaknya admin punya dashboard untuk track ini.
+
+---
+
+## 🟢 MINOR — Bisa Diperbaiki Kapan Saja
+
+### BN-11 — Tombol Support/Bantuan Tidak Ada
+
+Tidak ada floating button "Hubungi Admin" atau "Bantuan" di mana pun. User stuck → tidak tahu harus ke mana.
+
+**Fix 5 menit:** Floating button kecil yang buka WA admin (nomor dari Settings admin).
+
+### BN-12 — Mapel Tidak Ada di Bottom Tab Bar (Mobile)
+
+Tab bar mobile: Dashboard · Maddah · Muqaranah · Kurasah · Tools
+
+Mapel tidak ada. User mobile tidak akan tahu Mapel exist.
+
+### BN-13 — "Talqeeh" Bukan Hanya di Meta Tags
+
+Juga ada di:
+- Footer layout.jsx: `"Talqeeh — Panduan Belajar Al-Azhar dengan AI"`
+- File logo: `talqeeh-logo.png` (vs `talqee-logo.png`)
+
+Perlu satu audit find-replace menyeluruh.
+
+---
+
+## Prioritas Fix Sebelum Launch
+
+```
+WAJIB (hari ini):
+1. React development → production build (BN-2) — 5 menit, dampak terbesar
+2. Typo Talqeeh → Talqee konsisten (BN-3) — 15 menit
+3. Fix admin PIN duplikat (BN-1) — 5 menit
+4. Fix Kurasah editor bug (BN-4) — dari Prompt 17, apply sekarang
+
+SEBELUM LAUNCH:
+5. Error Boundary (BN-6) — 30 menit
+6. Fix script loading order (BN-5) — 5 menit
+7. Putuskan strategi Mapel vs Maddah (BN-7) — keputusan arsitektur, lakukan dulu
+8. Tambah button support/bantuan (BN-11) — 10 menit
+
+SEGERA SETELAH LAUNCH:
+9. Self-service device reset (BN-9)
+10. Dashboard distribusi kode (BN-10)
+11. Kurangi script tags via merge file (BN-8)
+```
+
+---
+
+## Satu Kalimat per Bottleneck
+
+| # | Bottleneck | Severity | Fix Time |
+|---|---|---|---|
+| BN-1 | Dua admin PIN berbeda | 🔴 | 5 menit |
+| BN-2 | React dev build di production | 🔴 | 5 menit |
+| BN-3 | Typo "Talqeeh" di meta/title | 🔴 | 15 menit |
+| BN-4 | Kurasah editor bug belum fix | 🔴 | 30 menit |
+| BN-5 | Script loading order salah | 🔴 | 5 menit |
+| BN-6 | Tidak ada error boundary | 🔴 | 30 menit |
+| BN-7 | Mapel vs Maddah tumpang tindih | 🟡 | Keputusan dulu |
+| BN-8 | 32 script tags terlalu banyak | 🟡 | Post-launch |
+| BN-9 | Single device terlalu ketat | 🟡 | 1 jam |
+| BN-10 | Distribusi kode masih manual | 🟡 | 2 jam |
+| BN-11 | Tidak ada tombol support | 🟢 | 10 menit |
+| BN-12 | Mapel tidak ada di mobile nav | 🟢 | 10 menit |
+| BN-13 | Typo tersebar di layout + assets | 🟢 | 15 menit |
+
+---
+
+## Rekomendasi Urutan Kerja Hari Ini
+
+**Kerjakan dalam urutan ini — total estimasi 2 jam:**
+
+1. **BN-2** (React prod build) → buka `index.html`, ganti 2 baris
+2. **BN-1** (admin PIN duplikat) → hapus dari `data.jsx`
+3. **BN-3 + BN-13** (typo Talqeeh) → satu find-replace sekaligus
+4. **BN-5** (script order) → pindahkan maddah-data ke atas mapel-data
+5. **BN-4** (kurasah bug) → apply fix dari Prompt 17
+6. **BN-6** (error boundary) → buat 1 komponen, wrap di app.jsx
+7. **BN-11** (tombol support) → floating button WA
+
+Setelah 7 hal ini selesai — lo siap launch dengan kepala tegak.
+
+**BN-7 (Mapel vs Maddah)** perlu lo putuskan sendiri dulu sebelum dikerjakan — ini soal arah produk, bukan hanya coding.

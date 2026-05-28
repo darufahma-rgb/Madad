@@ -1,5 +1,50 @@
 /* Talqih, App shell + routing */
 
+/* ── Error Boundary (BN-6) ── */
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error, info) {
+    console.error("Talqeeh ErrorBoundary:", error, info?.componentStack);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{
+          minHeight:"100vh", display:"flex", flexDirection:"column",
+          alignItems:"center", justifyContent:"center",
+          background:"#0A0514", padding:"24px", textAlign:"center",
+        }}>
+          <div style={{fontFamily:"Aref Ruqaa,serif",fontSize:"2rem",color:"#C9A86A",marginBottom:"12px"}}>
+            تَلْقِيح
+          </div>
+          <h2 style={{fontFamily:"DM Sans,sans-serif",color:"#F5F0FF",fontSize:"1.25rem",marginBottom:"8px"}}>
+            Ada yang tidak beres
+          </h2>
+          <p style={{color:"#9B8DBA",fontSize:"0.9rem",marginBottom:"24px",maxWidth:"320px",lineHeight:"1.6"}}>
+            Coba refresh halaman. Kalau masalah berlanjut, hubungi admin Talqeeh.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            style={{
+              background:"linear-gradient(160deg,#A970FF,#7C4DFF)", color:"#F5F0FF",
+              border:"none", borderRadius:"12px", padding:"12px 28px",
+              fontSize:"15px", cursor:"pointer", fontFamily:"DM Sans,sans-serif",
+            }}>
+            Refresh Halaman
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 const App = () => {
   const path = useRoute();
   const { session, profile } = useAuth();
@@ -82,13 +127,14 @@ const App = () => {
       <div data-screen-label={routeLabel} className="min-h-screen flex flex-col">
         <Navbar onOpenLogin={openLogin} onOpenPayment={openPayment}/>
         <main className={"flex-1" + (isMember ? " has-tabbar" : "")}>
-          {page}
+          <ErrorBoundary>{page}</ErrorBoundary>
         </main>
         <Footer/>
       </div>
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} onSuccess={handleLoginSuccess}/>
       <PaymentModal open={paymentOpen} onClose={() => setPaymentOpen(false)} onOpenLogin={openLogin}/>
       {showQuickNote && <QuickNoteButton/>}
+      {isMember && <SupportButton/>}
       {isMember && <MobileTabBar/>}
     </ToastProvider>
   );

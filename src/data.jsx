@@ -1076,14 +1076,11 @@ const DEFAULT_MEMBERS = [
   { code: "MSR-RIZK-T6M9", name: "Rizki Pratama",       whatsapp: "+201555555555", duration: 30, status: "disabled", createdAt: "2025-11-20", expiresAt: "2025-12-20", device: null },
 ];
 
-/* ============ ADMIN AUTH (super simple) ============ */
-const ADMIN_PIN = "TLQH-2026-9X4K";
-
 /* ============ EXPORTS ============ */
 Object.assign(window, {
   STRUGGLES, FIELDS, FACULTIES, LEVELS, LEARNING_STYLES,
   AI_TOOLS, recommend,
   LEARNING_PATHS, allModules,
   ETHICS_POINTS,
-  DEFAULT_MEMBERS, ADMIN_PIN,
+  DEFAULT_MEMBERS,
 });
