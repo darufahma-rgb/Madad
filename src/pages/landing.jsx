@@ -215,7 +215,7 @@ const HeroShowcaseCard = () => (
    1. HERO
    ══════════════════════════════════════════════════════════════ */
 const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
-  <section className="relative overflow-hidden pt-20 md:pt-28 pb-20">
+  <section className="relative overflow-hidden pt-8 md:pt-28 pb-12 md:pb-20">
     {/* Background */}
     <HeroGeoBg/>
     <Blob color="rgba(124,77,255,0.22)" size={700} top={-200} left={-100}/>
@@ -248,7 +248,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         <Reveal delay={120}>
           <h1 className="hero-headline text-white mb-6" style={{
             fontFamily: '"DM Sans",system-ui,sans-serif',
-            fontSize: "clamp(52px, 8vw, 96px)",
+            fontSize: "clamp(38px, 8vw, 96px)",
             fontWeight: 800,
             lineHeight: 0.98,
             letterSpacing: "-0.04em",
@@ -275,15 +275,15 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
 
         {/* CTA */}
         <Reveal delay={240}>
-          <div className="flex flex-col sm:flex-row gap-3 items-center justify-center mb-5">
+          <div className="flex flex-col sm:flex-row gap-3 items-center justify-center mb-5 w-full sm:w-auto px-4 sm:px-0">
             <button
               onClick={() => navigate("/sample/nahwu")}
-              className="btn-hero-gold"
-              style={{ boxShadow:"0 0 40px rgba(212,160,23,.35), 0 1px 0 rgba(255,255,255,.25) inset" }}
+              className="btn-hero-gold w-full sm:w-auto"
+              style={{ boxShadow:"0 0 40px rgba(212,160,23,.35), 0 1px 0 rgba(255,255,255,.25) inset", justifyContent:"center" }}
             >
               Cobain Sample Gratis →
             </button>
-            <button onClick={onOpenPayment} className="btn-hero-dark">
+            <button onClick={onOpenPayment} className="btn-hero-dark w-full sm:w-auto" style={{justifyContent:"center"}}>
               Gabung Member
             </button>
           </div>

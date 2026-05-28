@@ -67,13 +67,13 @@ const PromptCard = ({ prompt, maddah, profile }) => {
             <div className="text-[11px] text-ink-soft mt-0.5">Untuk: {tool?.name || prompt.targetAI}</div>
           </div>
         </div>
-        <div className="flex gap-2 flex-shrink-0">
-          <button onClick={handleCopy} className="btn btn-ghost text-xs px-3 py-1.5 flex items-center gap-1.5">
+        <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0 w-full sm:w-auto">
+          <button onClick={handleCopy} className="btn btn-ghost text-xs px-3 py-2.5 flex items-center justify-center gap-1.5 w-full sm:w-auto" style={{minHeight:44}}>
             <Icon name="copy" className="w-3 h-3"/>{copied ? "Tersalin ✓" : "Salin"}
           </button>
           {tool?.link && (
-            <button onClick={handleCopyAndOpen} className="btn btn-primary text-xs px-3 py-1.5 flex items-center gap-1.5">
-              Salin & Buka<Icon name="external" className="w-3 h-3"/>
+            <button onClick={handleCopyAndOpen} className="btn btn-primary text-xs px-3 py-2.5 flex items-center justify-center gap-1.5 w-full sm:w-auto" style={{minHeight:44}}>
+              Buka {tool.name}<Icon name="external" className="w-3 h-3"/>
             </button>
           )}
         </div>
@@ -143,7 +143,7 @@ const MaddahDetailPage = () => {
     <div className="page-enter">
 
       {/* Header */}
-      <section className="relative pt-10 pb-8 overflow-hidden">
+      <section className="relative pt-4 md:pt-10 pb-6 md:pb-8 overflow-hidden">
         <Blob color="rgba(124,77,255,0.18)" size={500} top={-150} right={-100}/>
         <div className="container-x relative">
           <button onClick={() => navigate("/maddah")}
@@ -188,9 +188,9 @@ const MaddahDetailPage = () => {
               <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
                 <span className="w-6 h-px bg-gold-500/70"/>Kitab Utama
               </h2>
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="flex md:grid md:grid-cols-4 gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 mobile-scroll pb-1 md:pb-0">
                 {maddah.kitabUtama.map((k, i) => (
-                  <div key={i} className="card-glass p-4">
+                  <div key={i} className="card-glass p-4 w-44 md:w-auto flex-shrink-0 md:flex-shrink">
                     <div className="arabic-display text-gold-300 text-lg mb-1" style={{direction:"rtl"}}>{k.arabic}</div>
                     <div className="font-display text-sm font-semibold text-ink">{k.nama}</div>
                     <div className="text-[11px] text-ink-soft mt-1">{k.penulis}</div>

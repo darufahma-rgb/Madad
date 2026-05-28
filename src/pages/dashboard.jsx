@@ -360,7 +360,7 @@ const DashboardPage = () => {
     <div className="page-enter">
 
       {/* 1. GREETING (ringkas) */}
-      <section className="relative pt-12 md:pt-16 pb-8 overflow-hidden">
+      <section className="relative pt-4 md:pt-16 pb-6 md:pb-8 overflow-hidden">
         <Blob color="rgba(124,77,255,0.22)" size={600} top={-200} right={-100}/>
         <Blob color="rgba(201,168,106,0.10)" size={400} top={100} left={-150}/>
         <div className="absolute inset-0 pattern-stars opacity-25 pointer-events-none"/>
@@ -457,7 +457,15 @@ const DashboardPage = () => {
               Semua adaptive guide <Icon name="arrowRight" className="w-3.5 h-3.5"/>
             </a>
           </Reveal>
-          <Reveal stagger className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {/* Mobile: horizontal scroll carousel */}
+          <div className="md:hidden flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 mobile-scroll pb-2">
+            {recs.map((rec, i) => (
+              <div key={rec.toolId} className="w-[80vw] flex-shrink-0">
+                <RecommendationCard rec={rec} index={i} profile={profile}/>
+              </div>
+            ))}
+          </div>
+          <Reveal stagger className="hidden md:grid md:grid-cols-3 gap-4">
             {recs.map((rec, i) => <RecommendationCard key={rec.toolId} rec={rec} index={i} profile={profile}/>)}
           </Reveal>
         </div>
@@ -541,7 +549,7 @@ const DashboardPage = () => {
             </div>
             <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">Aksi cepat</h2>
           </Reveal>
-          <Reveal stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <Reveal stagger className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
             <QuickAction icon="layers"    title="Semua Maddah"    desc="36 mata pelajaran + 540 prompt template"       to="/maddah"             color="violet"/>
             <QuickAction icon="bookOpen"  title="Adaptive guide"  desc="Guide tiap AI sesuai gaya belajarmu"           to="/tools"              color="gold"/>
             <QuickAction icon="scale"     title="Muqaranah"       desc="Banding qoul ulama 4 madzhab"                  to="/paths/muqaranah"    color="violet"/>
@@ -607,7 +615,7 @@ const ContinueCard = ({ className = "", progress }) => {
   const last = progress?.lastActivity;
   if (!last) {
     return (
-      <div className={`${className} card-glass-strong p-7 relative overflow-hidden`}>
+      <div className={`${className} card-glass-strong p-4 md:p-7 relative overflow-hidden`}>
         <Blob color="rgba(124,77,255,0.18)" size={250} top={-80} right={-80}/>
         <div className="relative flex items-start gap-4">
           <span className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-400 to-violet-600 text-white flex items-center justify-center shadow-glow flex-shrink-0">
@@ -634,7 +642,7 @@ const ContinueCard = ({ className = "", progress }) => {
     );
   }
   return (
-    <div className={`${className} card-glass-strong p-7 relative overflow-hidden`}>
+    <div className={`${className} card-glass-strong p-4 md:p-7 relative overflow-hidden`}>
       <Blob color="rgba(124,77,255,0.15)" size={200} top={-60} right={-60}/>
       <div className="relative">
         <div className="flex items-center gap-2 mb-3">
@@ -652,7 +660,7 @@ const ContinueCard = ({ className = "", progress }) => {
 
 /* ============ STAGE CARD ============ */
 const StageCard = ({ className = "", stage }) => (
-  <div className={`${className} card-glass p-7 relative overflow-hidden`}>
+  <div className={`${className} card-glass p-4 md:p-7 relative overflow-hidden`}>
     <div className="absolute -top-10 -right-10 w-36 h-36 rounded-full opacity-25 pointer-events-none"
       style={{background: "radial-gradient(circle, #C9A86A, transparent 60%)"}}/>
     <div className="relative">
@@ -749,7 +757,7 @@ const AdaptiveGuideQuick = ({ profile, topRec }) => {
           </h2>
         </Reveal>
 
-        <Reveal className="card-glass-strong p-7 md:p-10 relative overflow-hidden">
+        <Reveal className="card-glass-strong p-4 md:p-10 relative overflow-hidden">
           <Blob color={tool.color + "30"} size={380} top={-100} right={-100}/>
           <Blob color="rgba(124,77,255,0.12)" size={280} bottom={-80} left={-60}/>
           <div className="relative grid md:grid-cols-12 gap-8">

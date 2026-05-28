@@ -12,7 +12,7 @@ const MaddahCard = ({ maddah }) => {
   return (
     <div
       onClick={() => navigate("/maddah/" + maddah.id)}
-      className={`card-glass p-5 hov-lift cursor-pointer group relative overflow-hidden ${isVisited ? "border-l-2 border-l-violet-500/40" : ""}`}
+      className={`card-glass p-4 md:p-5 hov-lift cursor-pointer group relative overflow-hidden ${isVisited ? "border-l-2 border-l-violet-500/40" : ""}`}
     >
       {isVisited && (
         <div className="absolute top-3 right-3 flex items-center gap-1 text-[10px] text-violet-300">
@@ -90,7 +90,7 @@ const MaddahHubPage = () => {
     <div className="page-enter">
 
       {/* Header */}
-      <section className="relative pt-12 pb-8 overflow-hidden">
+      <section className="relative pt-6 md:pt-12 pb-6 md:pb-8 overflow-hidden">
         <Blob color="rgba(124,77,255,0.18)" size={500} top={-150} right={-100}/>
         <div className="container-x relative">
           <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 inline-flex items-center gap-2">
@@ -111,7 +111,7 @@ const MaddahHubPage = () => {
       </section>
 
       {/* Filter Bar — sticky */}
-      <div className="sticky top-16 md:top-[72px] z-30 border-y border-line bg-night-950/70 backdrop-blur-md">
+      <div className="sticky top-12 md:top-[72px] z-30 border-y border-line bg-night-950/70 backdrop-blur-md">
         <div className="container-x py-4">
           <div className="relative mb-3">
             <input
@@ -184,7 +184,7 @@ const MaddahHubPage = () => {
                   <h2 className="font-display text-xl md:text-2xl text-ink font-semibold">{category.label}</h2>
                   <span className="text-xs text-ink-soft">{maddahs.length} Maddah</span>
                 </div>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {maddahs.map(m => <MaddahCard key={m.id} maddah={m}/>)}
                 </div>
               </div>

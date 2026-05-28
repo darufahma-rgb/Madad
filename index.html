@@ -298,9 +298,34 @@
 
   /* Section */
   .section { padding: 96px 0; }
-  @media (max-width: 768px) { .section { padding: 64px 0; } }
+  @media (max-width: 768px) { .section { padding: 40px 0; } }
   .container-x { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
   @media (max-width: 640px) { .container-x { padding: 0 20px; } }
+
+  /* ── Mobile Native Feel ── */
+  @media (max-width: 767px) {
+    body { font-size: 15px; }
+    .hov-lift:hover { transform: none !important; box-shadow: none !important; border-color: inherit !important; }
+    .hov-lift:active { transform: scale(0.98) !important; opacity: 0.92; }
+    .btn { padding: 10px 16px; font-size: 14px; }
+    .btn-primary:hover { transform: none; }
+    .btn-gold:hover { transform: none; }
+    .arabic { font-size: 90%; }
+    .arabic-display, .arabic-classic, .arabic-display-classical { font-size: 90%; }
+  }
+  /* Mobile carousel — swipeable rows */
+  .mobile-scroll {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .mobile-scroll::-webkit-scrollbar { display: none; }
+  .mobile-scroll > * {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+  }
 
   /* Nav link underline */
   .nav-link { position: relative; }

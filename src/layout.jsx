@@ -192,8 +192,8 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   const links = session ? memberLinks : publicLinks;
 
   return (
-    <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "bg-night-900/70 backdrop-blur-xl border-b border-line" : "bg-transparent"}`}>
-      <div className="container-x flex items-center justify-between h-16 md:h-[72px]">
+    <header className={`sticky top-0 z-50 transition-all duration-300 ${scrolled ? "bg-night-900/70 backdrop-blur-xl border-b border-line" : "bg-transparent"}`} style={{ paddingTop: "var(--safe-top)" }}>
+      <div className="container-x flex items-center justify-between h-12 md:h-[72px]">
         <Brand/>
         <nav className="hidden md:flex items-center gap-1">
           {links.map(l => l.to.startsWith("/#")
@@ -622,7 +622,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
 
 /* ---------------- Page Header (used by member pages) ---------------- */
 const PageHeader = ({ kicker, title, subtitle, arabic, children, right }) => (
-  <section className="relative pt-12 md:pt-16 pb-10 md:pb-12 overflow-hidden">
+  <section className="relative pt-6 md:pt-12 pb-8 md:pb-12 overflow-hidden">
     <div className="container-x relative">
       <div className="flex items-start justify-between gap-8 flex-wrap">
         <div className="flex-1 min-w-0">
@@ -651,10 +651,11 @@ const MobileTabBar = () => {
   if (path.startsWith("/admin") || path === "/onboarding") return null;
 
   const tabs = [
-    { to: "/dashboard",  label: "Beranda",  icon: "home" },
-    { to: "/maddah",     label: "Maddah",   icon: "layers" },
-    { to: "/tools",      label: "Prompt",   icon: "sparkles" },
-    { to: "/kurasah",    label: "Kurasah",  icon: "bookOpen" },
+    { to: "/dashboard",       label: "Beranda",   icon: "home" },
+    { to: "/maddah",          label: "Maddah",    icon: "layers" },
+    { to: "/paths/muqaranah", label: "Muqaranah", icon: "scale" },
+    { to: "/kurasah",         label: "Kurasah",   icon: "bookOpen" },
+    { to: "/tools",           label: "Prompt",    icon: "sparkles" },
   ];
 
   const isActive = (to) => {

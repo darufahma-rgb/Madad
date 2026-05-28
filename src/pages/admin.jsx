@@ -2,6 +2,8 @@
    /admin, PIN gate, then tabbed control center
 */
 
+const ADMIN_PIN = window.ADMIN_PIN;
+
 const AdminPage = () => {
   const [loggedIn, setLoggedIn] = useState(isAdminLoggedIn());
   const [tab, setTab] = useState("dashboard");
