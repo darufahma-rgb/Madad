@@ -727,8 +727,8 @@ const SupportButton = () => {
       aria-label="Hubungi Admin"
       title="Butuh bantuan? Hubungi admin"
       style={{
-        position:"fixed", bottom:"88px", right:"16px", zIndex:49,
-        width:"44px", height:"44px", borderRadius:"50%",
+        position:"fixed", bottom:"84px", right:"24px", zIndex:49,
+        width:"52px", height:"52px", borderRadius:"50%",
         background:"linear-gradient(160deg,#25D366,#128C7E)",
         border:"none", cursor:"pointer", display:"flex",
         alignItems:"center", justifyContent:"center",
