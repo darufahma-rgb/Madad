@@ -214,7 +214,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
             }}>
-              Ini cara baru belajar di Azhar.
+              Ini cara baru efektif Masisir belajar.
             </span>
           </h1>
 
