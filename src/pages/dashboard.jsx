@@ -361,6 +361,7 @@ const DashboardPage = () => {
 
       {/* 1. GREETING (ringkas) */}
       <section className="relative pt-4 md:pt-16 pb-6 md:pb-8 overflow-hidden">
+        <div className="hero-light-beam"/>
         <Blob color="rgba(124,77,255,0.22)" size={600} top={-200} right={-100}/>
         <Blob color="rgba(201,168,106,0.10)" size={400} top={100} left={-150}/>
 
@@ -377,7 +378,7 @@ const DashboardPage = () => {
               <h1 className="font-display text-ink leading-tight mb-3"
                 style={{fontSize:"32px",fontWeight:700}}>
                 Assalamu'alaikum,<br/>
-                <span className="gradient-text">{firstName}</span>{" "}
+                <span className="gradient-text-anim">{firstName}</span>{" "}
                 <span className="text-gold-300">🌙</span>
               </h1>
               <div style={{height:"1px",background:"rgba(255,255,255,0.1)",marginBottom:"12px"}}/>
@@ -409,7 +410,7 @@ const DashboardPage = () => {
               </div>
               <h1 className="font-display text-4xl md:text-5xl lg:text-[68px] font-semibold text-ink leading-[1.0] tracking-tightest">
                 Assalamu'alaikum,{" "}
-                <span className="gradient-text">{firstName}</span>{" "}
+                <span className="gradient-text-anim">{firstName}</span>{" "}
                 <span className="text-gold-300">🌙</span>
               </h1>
               <p className="mt-5 text-ink-muted text-lg max-w-2xl leading-relaxed">

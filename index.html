@@ -373,6 +373,39 @@
 
   /* Smooth scrollbars hide for filter chips */
   .gradient-text { background: linear-gradient(135deg, #DBC8FF 0%, #C9A86A 55%, #A970FF 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+
+  /* Hero title light animations */
+  @keyframes gradient-shift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  .gradient-text-anim {
+    background: linear-gradient(90deg, #DBC8FF, #C9A86A, #A970FF, #DBC8FF);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: gradient-shift 5s ease infinite;
+  }
+  @keyframes hero-beam {
+    0%   { transform: translateX(-100%) skewX(-20deg); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: 1; }
+    100% { transform: translateX(200%) skewX(-20deg); opacity: 0; }
+  }
+  .hero-light-beam {
+    position: absolute;
+    inset-block: 0;
+    width: 35%;
+    background: linear-gradient(90deg, transparent, rgba(169,112,255,0.07), rgba(201,168,106,0.05), transparent);
+    animation: hero-beam 6s ease-in-out infinite;
+    animation-delay: 1.2s;
+    pointer-events: none;
+    border-radius: 50%;
+    filter: blur(8px);
+  }
 </style>
 </head>
 <body>
