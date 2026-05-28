@@ -836,8 +836,9 @@ Beri 3 contoh aplikasi kaidah ushul di nawazil (masalah kontemporer): identifika
       { nama: "At-Tibyan fi Adab Hamalatil Qur'an", arabic: "التبيان في آداب حملة القرآن", penulis: "Imam Nawawi" },
     ],
     recommendedAI: [
-      { tool: "notebooklm", rank: 1, strength: "Drill hafalan, deteksi mutasyabihat, jadwal murajaah", why: "Upload mushaf atau daftar ayat mutasyabihat, lalu NotebookLM bisa drill tasmi' dari source yang tepat tanpa halusinasi teks ayat." },
-      { tool: "gemini",     rank: 2, strength: "Bantu cari audio murattil, tips tahsin tilawah",      why: "Gemini bisa browsing dan temukan referensi audio tilawah dari murattil tertentu untuk pendengar dan referensi tahsin." },
+      { tool: "tarteel",    rank: 1, strength: "Koreksi tajwid real-time, drill hafalan interaktif",  why: "Tarteel mendengar bacaanmu langsung dan koreksi kalau ada kesalahan tajwid atau makhraj — spesialis hafalan dan tahsin Al-Qur'an, tidak ada AI lain yang bisa ini." },
+      { tool: "notebooklm", rank: 2, strength: "Drill mutasyabihat, jadwal murajaah dari source",     why: "Upload mushaf atau daftar ayat mutasyabihat, lalu NotebookLM bisa drill tasmi' dari source yang tepat tanpa halusinasi teks ayat." },
+      { tool: "gemini",     rank: 3, strength: "Cari audio murattil, tips tahsin tilawah",            why: "Gemini bisa browsing dan temukan referensi audio tilawah dari murattil tertentu untuk pendengar dan referensi tahsin." },
     ],
     tutorial: {
       overview: "AI bisa bantu sisi manajemen hafalan — bukan gantikan talaqqi musyafahah dengan guru.",
