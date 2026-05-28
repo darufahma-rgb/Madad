@@ -520,13 +520,13 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/20 text-xs text-gold-300 mb-5">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>Member Talqee
               </div>
-              <div className="flex items-baseline gap-3 mb-1">
-                <span className="text-lg text-ink-soft line-through">Rp 79.000</span>
-                <span className="font-display text-5xl md:text-6xl font-semibold bg-gradient-to-br from-gold-300 to-gold-500 bg-clip-text text-transparent">
+              <div className="mb-1">
+                <span className="text-sm text-ink-soft line-through block mb-1">Rp 79.000</span>
+                <span className="font-display text-5xl md:text-6xl font-semibold bg-gradient-to-br from-gold-300 to-gold-500 bg-clip-text text-transparent block leading-tight">
                   Rp 49.000
                 </span>
               </div>
-              <div className="text-xs text-ink-soft uppercase tracking-wider mb-6">Sekali bayar · Berlaku selamanya</div>
+              <div className="text-xs text-ink-soft uppercase tracking-wider mb-6 mt-2">Sekali bayar · Berlaku selamanya</div>
               <ul className="space-y-3 mb-8">
                 {[
                   "36 Maddah lengkap + 540+ template prompt",
