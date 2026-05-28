@@ -2,15 +2,36 @@
    Member management via Supabase. Data user pribadi tetap localStorage.
 */
 
-const SUPABASE_URL      = "https://rhgecuchhkrcwuxenrfb.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoZ2VjdWNoaGtyY3d1eGVucmZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5Njg1NDcsImV4cCI6MjA5NTU0NDU0N30.5bAzm8NHKYiHa6qtdn4jlJffF7m_MPZDhIWPTCUGZr0";
+let _supabase = null;
+let _supabaseReady = false;
+let _supabaseReadyCallbacks = [];
 
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const _onSupabaseReady = (fn) => {
+  if (_supabaseReady) { fn(); return; }
+  _supabaseReadyCallbacks.push(fn);
+};
+
+// Load config from server (keeps credentials out of source code)
+fetch('/api/config')
+  .then(r => r.json())
+  .then(({ supabaseUrl, supabaseAnonKey }) => {
+    _supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+    _supabaseReady = true;
+    _supabaseReadyCallbacks.forEach(fn => fn());
+    _supabaseReadyCallbacks = [];
+  })
+  .catch(err => {
+    console.error('Failed to load app config:', err);
+  });
+
+const _getClient = () => _supabase;
 
 /* ── Status check ── */
 const checkSupabase = async () => {
   try {
-    const { error } = await _supabase.from("members").select("id").limit(1);
+    const client = _getClient();
+    if (!client) return false;
+    const { error } = await client.from("members").select("id").limit(1);
     return !error;
   } catch { return false; }
 };
@@ -51,7 +72,9 @@ const memberToSb = (member) => {
 
 /* ── CRUD ── */
 const sbGetAllMembers = async () => {
-  const { data, error } = await _supabase
+  const client = _getClient();
+  if (!client) throw new Error("Supabase not ready");
+  const { data, error } = await client
     .from("members")
     .select("*")
     .order("created_at", { ascending: false });
@@ -60,7 +83,9 @@ const sbGetAllMembers = async () => {
 };
 
 const sbGetMemberByCode = async (code) => {
-  const { data, error } = await _supabase
+  const client = _getClient();
+  if (!client) throw new Error("Supabase not ready");
+  const { data, error } = await client
     .from("members")
     .select("*")
     .eq("code", code.trim().toUpperCase())
@@ -73,8 +98,10 @@ const sbGetMemberByCode = async (code) => {
 };
 
 const sbAddMember = async (member) => {
+  const client = _getClient();
+  if (!client) throw new Error("Supabase not ready");
   const row = memberToSb(member);
-  const { data, error } = await _supabase
+  const { data, error } = await client
     .from("members")
     .insert([row])
     .select()
@@ -84,8 +111,10 @@ const sbAddMember = async (member) => {
 };
 
 const sbUpdateMember = async (code, updates) => {
+  const client = _getClient();
+  if (!client) throw new Error("Supabase not ready");
   const row = memberToSb(updates);
-  const { data, error } = await _supabase
+  const { data, error } = await client
     .from("members")
     .update(row)
     .eq("code", code)
@@ -96,7 +125,9 @@ const sbUpdateMember = async (code, updates) => {
 };
 
 const sbDeleteMember = async (code) => {
-  const { error } = await _supabase.from("members").delete().eq("code", code);
+  const client = _getClient();
+  if (!client) throw new Error("Supabase not ready");
+  const { error } = await client.from("members").delete().eq("code", code);
   if (error) throw error;
 };
 
@@ -122,7 +153,8 @@ const sbGetAllMembersFallback = () => {
 };
 
 Object.assign(window, {
-  _supabase,
+  _supabase: _getClient(),
+  _onSupabaseReady,
   checkSupabase,
   sbGetAllMembers,
   sbGetMemberByCode,
@@ -149,9 +181,11 @@ const getMemberCode = () => {
 /* ── NOTES (Kurasah) ── */
 
 const sbSaveNote = async (note) => {
+  const client = _getClient();
+  if (!client) return;
   const code = getMemberCode();
   if (!code) return;
-  const { error } = await _supabase.from("user_notes").upsert({
+  const { error } = await client.from("user_notes").upsert({
     member_code: code,
     note_id:    note.id,
     title:      note.title || "",
@@ -164,16 +198,20 @@ const sbSaveNote = async (note) => {
 };
 
 const sbDeleteNote = async (noteId) => {
+  const client = _getClient();
+  if (!client) return;
   const code = getMemberCode();
   if (!code) return;
-  await _supabase.from("user_notes")
+  await client.from("user_notes")
     .delete().eq("member_code", code).eq("note_id", noteId);
 };
 
 const sbLoadNotes = async () => {
+  const client = _getClient();
+  if (!client) return null;
   const code = getMemberCode();
   if (!code) return null;
-  const { data, error } = await _supabase.from("user_notes")
+  const { data, error } = await client.from("user_notes")
     .select("*").eq("member_code", code).order("updated_at", { ascending: false });
   if (error) throw error;
   return data.map(r => ({
@@ -186,18 +224,22 @@ const sbLoadNotes = async () => {
 /* ── PROGRESS ── */
 
 const sbSaveProgress = async (progress) => {
+  const client = _getClient();
+  if (!client) return;
   const code = getMemberCode();
   if (!code) return;
-  await _supabase.from("user_progress").upsert({
+  await client.from("user_progress").upsert({
     member_code: code, progress,
     updated_at: new Date().toISOString(),
   }, { onConflict: "member_code" });
 };
 
 const sbLoadProgress = async () => {
+  const client = _getClient();
+  if (!client) return null;
   const code = getMemberCode();
   if (!code) return null;
-  const { data } = await _supabase.from("user_progress")
+  const { data } = await client.from("user_progress")
     .select("progress").eq("member_code", code).single();
   return data?.progress || null;
 };
@@ -205,10 +247,12 @@ const sbLoadProgress = async () => {
 /* ── INTENTIONS (Niat) ── */
 
 const sbSaveIntention = async (intentionData) => {
+  const client = _getClient();
+  if (!client) return;
   const code = getMemberCode();
   if (!code) return;
   const today = new Date().toISOString().slice(0, 10);
-  await _supabase.from("user_intentions").upsert({
+  await client.from("user_intentions").upsert({
     member_code: code, today_date: today,
     intention:  intentionData,
     updated_at: new Date().toISOString(),
@@ -216,9 +260,11 @@ const sbSaveIntention = async (intentionData) => {
 };
 
 const sbLoadIntentions = async () => {
+  const client = _getClient();
+  if (!client) return null;
   const code = getMemberCode();
   if (!code) return null;
-  const { data } = await _supabase.from("user_intentions")
+  const { data } = await client.from("user_intentions")
     .select("today_date,intention").eq("member_code", code)
     .order("today_date", { ascending: false }).limit(60);
   if (!data) return null;
@@ -235,18 +281,22 @@ const sbLoadIntentions = async () => {
 /* ── PRESENCE (Ritme) ── */
 
 const sbSavePresence = async (presence) => {
+  const client = _getClient();
+  if (!client) return;
   const code = getMemberCode();
   if (!code) return;
-  await _supabase.from("user_presence").upsert({
+  await client.from("user_presence").upsert({
     member_code: code, days_present: presence.daysPresent || [],
     updated_at: new Date().toISOString(),
   }, { onConflict: "member_code" });
 };
 
 const sbLoadPresence = async () => {
+  const client = _getClient();
+  if (!client) return null;
   const code = getMemberCode();
   if (!code) return null;
-  const { data } = await _supabase.from("user_presence")
+  const { data } = await client.from("user_presence")
     .select("days_present").eq("member_code", code).single();
   return data ? { daysPresent: data.days_present || [] } : null;
 };
@@ -254,25 +304,31 @@ const sbLoadPresence = async () => {
 /* ── MUQARANAH CUSTOM ── */
 
 const sbSaveMuqaranah = async (entry) => {
+  const client = _getClient();
+  if (!client) return;
   const code = getMemberCode();
   if (!code) return;
-  await _supabase.from("user_muqaranah").upsert({
+  await client.from("user_muqaranah").upsert({
     member_code: code, entry_id: entry.id, data: entry,
     updated_at: new Date().toISOString(),
   }, { onConflict: "member_code,entry_id" });
 };
 
 const sbDeleteMuqaranah = async (entryId) => {
+  const client = _getClient();
+  if (!client) return;
   const code = getMemberCode();
   if (!code) return;
-  await _supabase.from("user_muqaranah")
+  await client.from("user_muqaranah")
     .delete().eq("member_code", code).eq("entry_id", entryId);
 };
 
 const sbLoadMuqaranah = async () => {
+  const client = _getClient();
+  if (!client) return null;
   const code = getMemberCode();
   if (!code) return null;
-  const { data } = await _supabase.from("user_muqaranah")
+  const { data } = await client.from("user_muqaranah")
     .select("data").eq("member_code", code).order("updated_at", { ascending: false });
   return data ? data.map(r => r.data) : null;
 };
