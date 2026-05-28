@@ -4,7 +4,7 @@
 */
 
 const TINGKATAN_LABEL = {
-  mustawa: "thalib Mustawa (persiapan bahasa)",
+  mustawa: "thalib Darul Lughoh / DL (persiapan bahasa)",
   "1":     "thalib Tingkat I",
   "2":     "thalib Tingkat II",
   "3":     "thalib Tingkat III",

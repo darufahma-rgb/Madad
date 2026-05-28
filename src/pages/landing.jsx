@@ -269,7 +269,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         <Reveal delay={180}>
           <p className="text-lg md:text-xl mb-10 max-w-xl" style={{ color:"rgba(255,255,255,0.62)", lineHeight:1.65 }}>
             Panduan lengkap + template prompt untuk pahami materi Al-Azhar.
-            Untuk Masisir semua tingkat — dari Mustawa sampai S2.
+            Untuk Masisir semua tingkat, dari Darul Lughoh (DL) sampai S2.
           </p>
         </Reveal>
 
@@ -485,7 +485,7 @@ const AllMaddahPreview = () => {
           ))}
         </div>
         <Reveal className="mt-10 text-center">
-          <p className="text-sm text-ink-soft">Total 540+ template prompt · Disesuaikan untuk Mustawa sampai S2</p>
+          <p className="text-sm text-ink-soft">Total 540+ template prompt · Disesuaikan untuk Darul Lughoh (DL) sampai S2</p>
         </Reveal>
       </div>
     </section>

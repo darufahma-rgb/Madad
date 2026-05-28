@@ -85,7 +85,7 @@ const FACULTIES = [
 
 /* ============ TINGKAT KULIAH ============ */
 const LEVELS = [
-  { id: "mustawa", label: "Mustawa / Daurah Lughah",         short: "Persiapan",      arabic: "مستوى" },
+  { id: "mustawa", label: "Darul Lughoh (DL)",                short: "DL",             arabic: "مستوى" },
   { id: "1",       label: "Tingkat I",                        short: "Awwal",          arabic: "الأولى" },
   { id: "2",       label: "Tingkat II",                       short: "Tsani",          arabic: "الثانية" },
   { id: "3",       label: "Tingkat III",                      short: "Tsalits",        arabic: "الثالثة" },

@@ -30,7 +30,7 @@ const MaddahCard = ({ maddah }) => {
           <Icon name="layers" className="w-3 h-3"/>
           {maddah.tingkat.length >= 6
             ? "Semua tingkat"
-            : `Tingkat ${maddah.tingkat.filter(t => t !== "mustawa" && t !== "pasca").join(", ")}${maddah.tingkat.includes("mustawa") ? " + Mustawa" : ""}${maddah.tingkat.includes("pasca") ? " + S2/S3" : ""}`
+            : `Tingkat ${maddah.tingkat.filter(t => t !== "mustawa" && t !== "pasca").join(", ")}${maddah.tingkat.includes("mustawa") ? " + DL" : ""}${maddah.tingkat.includes("pasca") ? " + S2/S3" : ""}`
           }
         </div>
         {hasContent && (
