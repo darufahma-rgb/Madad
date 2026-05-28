@@ -243,16 +243,6 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
           />
         </Reveal>
 
-        {/* Eyebrow chip */}
-        <Reveal delay={60}>
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-8" style={{
-            background: "rgba(124,77,255,0.10)",
-            border: "1px solid rgba(124,77,255,0.22)",
-          }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>
-            <span className="text-violet-200 font-medium text-xs">Panduan AI untuk Masisir</span>
-          </div>
-        </Reveal>
 
         {/* Headline */}
         <Reveal delay={120}>
