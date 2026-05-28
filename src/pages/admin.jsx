@@ -2,7 +2,7 @@
    /admin, PIN gate, then tabbed control center
 */
 
-const ADMIN_PIN = window.ADMIN_PIN;
+const ADMIN_PIN = "260520";
 
 const AdminPage = () => {
   const [loggedIn, setLoggedIn] = useState(isAdminLoggedIn());
