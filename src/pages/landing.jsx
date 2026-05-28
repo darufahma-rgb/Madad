@@ -200,21 +200,38 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
 
           {/* Headline */}
           <h1
-            className="hero-headline font-semibold text-white mb-6"
+            className="hero-headline text-white mb-6"
             style={{
-              fontSize: "clamp(40px, 5.5vw, 76px)",
-              lineHeight: 1.08,
+              lineHeight: 1.06,
               letterSpacing: "-0.02em",
             }}
           >
-            Paham Muqarrar dengan AI.<br/>
+            <span style={{ display: "block", fontSize: "clamp(48px, 6.5vw, 88px)", fontWeight: 800 }}>
+              Paham{" "}
+              <span style={{
+                background: "linear-gradient(90deg, #A78BFA 0%, #C4A0FF 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}>Muqarrar</span>
+            </span>
+            <span style={{ display: "block", fontSize: "clamp(36px, 4.8vw, 66px)", fontWeight: 700, color: "rgba(255,255,255,0.9)", letterSpacing: "-0.01em" }}>
+              dengan AI.
+            </span>
             <span style={{
-              background: "linear-gradient(90deg, #A78BFA 0%, #C9A86A 100%)",
+              display: "block",
+              fontSize: "clamp(18px, 2.2vw, 30px)",
+              fontWeight: 400,
+              fontStyle: "italic",
+              fontFamily: '"Crimson Pro", Georgia, serif',
+              marginTop: "14px",
+              background: "linear-gradient(90deg, #C9A86A 0%, #E8D0A0 60%, #A78BFA 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
+              letterSpacing: "0.01em",
             }}>
-              Ini cara baru efektif Masisir belajar.
+              Cara belajar baru untuk Masisir.
             </span>
           </h1>
 
