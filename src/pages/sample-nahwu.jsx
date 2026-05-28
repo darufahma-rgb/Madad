@@ -363,7 +363,7 @@ Untuk setiap bait:
             {" "}Untuk 35 Maddah lain + prompt yang disesuaikan tingkatmu, gabung member.
           </div>
           <button onClick={() => navigate("/")} className="btn btn-gold text-sm px-4 py-2 flex-shrink-0">
-            Gabung Member 49k →
+            Gabung Member · <span style={{textDecoration:"line-through",opacity:.6}}>79k</span> 49k →
           </button>
         </div>
       </div>
@@ -481,7 +481,7 @@ Untuk setiap bait:
               </p>
               <button onClick={() => navigate("/")} className="btn btn-gold px-7 py-3.5 text-base font-medium"
                 style={{ boxShadow:"0 0 40px rgba(201,168,106,.35), 0 1px 0 rgba(255,255,255,.3) inset" }}>
-                Gabung Member · Rp 49.000 →
+                Gabung Member · <span style={{textDecoration:"line-through",opacity:.6}}>Rp 79.000</span> Rp 49.000 →
               </button>
             </div>
           </div>

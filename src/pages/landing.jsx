@@ -234,7 +234,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
               Cobain Sample Gratis →
             </button>
             <button onClick={onOpenPayment} className="btn-hero-dark">
-              Gabung Member · 49k
+              Gabung Member · <span style={{textDecoration:"line-through",opacity:.6}}>79k</span> 49k
             </button>
           </div>
 
@@ -327,7 +327,7 @@ const SampleMaddahSection = () => (
             </div>
           </div>
           <p className="text-center text-xs text-ink-soft mt-4">
-            Sample ini gratis selamanya · Untuk 35 Maddah lain, gabung member 49k
+            Sample ini gratis selamanya · Untuk 35 Maddah lain, gabung member <s>79k</s> 49k/selamanya
           </p>
         </div>
       </Reveal>
@@ -471,7 +471,8 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/20 text-xs text-gold-300 mb-5">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>Member Talqih
               </div>
-              <div className="flex items-baseline gap-1 mb-1">
+              <div className="flex items-baseline gap-3 mb-1">
+                <span className="text-lg text-ink-soft line-through">Rp 79.000</span>
                 <span className="font-display text-5xl md:text-6xl font-semibold bg-gradient-to-br from-gold-300 to-gold-500 bg-clip-text text-transparent">
                   Rp 49.000
                 </span>
