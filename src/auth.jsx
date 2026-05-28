@@ -82,26 +82,37 @@ const LOGIN_RESULT = {
   DEVICE_CONFLICT: "device_conflict",
 };
 
-const tryLogin = (code, { forceTakeover = false } = {}) => {
-  const member = findMember(code);
-  if (!member) return { ok: false, status: LOGIN_RESULT.NOT_FOUND };
-  if (member.status === "disabled") return { ok: false, status: LOGIN_RESULT.DISABLED, member };
-  if (member.status === "expired") return { ok: false, status: LOGIN_RESULT.EXPIRED, member };
-
-  const deviceId = getDeviceId();
+const tryLogin = async (code, { forceTakeover = false } = {}) => {
+  const deviceId    = getDeviceId();
   const deviceLabel = getDeviceLabel();
 
-  // Single device policy
-  if (member.device && member.deviceId && member.deviceId !== deviceId && !forceTakeover) {
+  let member = null;
+  try {
+    member = await sbGetMemberByCode(code);
+  } catch (err) {
+    console.warn("Supabase unreachable, fallback ke localStorage:", err.message);
+    const all = sbGetAllMembersFallback();
+    member = all.find(m => m.code === code.trim().toUpperCase()) || null;
+  }
+
+  if (!member) return { ok: false, status: LOGIN_RESULT.NOT_FOUND };
+  if (member.status === "disabled") return { ok: false, status: LOGIN_RESULT.DISABLED, member };
+  if (member.status === "expired")  return { ok: false, status: LOGIN_RESULT.EXPIRED, member };
+
+  if (member.deviceId && member.deviceId !== deviceId && !forceTakeover) {
     return { ok: false, status: LOGIN_RESULT.DEVICE_CONFLICT, member };
   }
 
-  // Bind device
-  const members = loadMembers();
-  const idx = members.findIndex(m => m.code === member.code);
-  if (idx >= 0) {
-    members[idx] = { ...members[idx], device: deviceLabel, deviceId, lastLogin: new Date().toISOString() };
-    saveMembers(members);
+  try {
+    await sbBindDevice(member.code, deviceId, deviceLabel);
+  } catch (err) {
+    console.warn("Tidak bisa update device ke Supabase:", err.message);
+    const all = sbGetAllMembersFallback();
+    const idx = all.findIndex(m => m.code === member.code);
+    if (idx !== -1) {
+      all[idx] = { ...all[idx], device: deviceLabel, deviceId, lastLogin: new Date().toISOString() };
+      localStorage.setItem("madad_members", JSON.stringify(all));
+    }
   }
 
   const session = {
@@ -215,32 +226,74 @@ const setAdminLoggedIn = (v) => {
 const { useState: useStateAuth, useEffect: useEffectAuth, useCallback: useCallbackAuth } = React;
 
 const useAuth = () => {
-  const [session, setSession] = useStateAuth(getSession());
-  const [profile, setProfileState] = useStateAuth(getProfile());
-  const [progress, setProgressState] = useStateAuth(getProgress());
+  const [session,       setSession]       = useStateAuth(getSession());
+  const [profile,       setProfileState]  = useStateAuth(getProfile());
+  const [progress,      setProgressState] = useStateAuth(getProgress());
+  const [loginLoading,  setLoginLoading]  = useStateAuth(false);
 
-  const refresh = useCallbackAuth(() => {
+  const fireRefresh = () => window.dispatchEvent(new Event("madad:refresh"));
+
+  const syncFromStorage = useCallbackAuth(() => {
     setSession(getSession());
     setProfileState(getProfile());
     setProgressState(getProgress());
   }, []);
 
   useEffectAuth(() => {
-    const onStorage = () => refresh();
-    window.addEventListener("storage", onStorage);
-    window.addEventListener("madad:refresh", onStorage);
+    window.addEventListener("storage",       syncFromStorage);
+    window.addEventListener("madad:refresh", syncFromStorage);
     return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("madad:refresh", onStorage);
+      window.removeEventListener("storage",       syncFromStorage);
+      window.removeEventListener("madad:refresh", syncFromStorage);
     };
-  }, [refresh]);
+  }, [syncFromStorage]);
 
-  const fireRefresh = () => window.dispatchEvent(new Event("madad:refresh"));
+  // Background Supabase session validation (non-blocking)
+  useEffectAuth(() => {
+    const s = getSession();
+    if (!s) return;
+    (async () => {
+      try {
+        const member = await sbGetMemberByCode(s.code);
+        if (!member || member.status === "disabled") {
+          logout();
+          setSession(null);
+          setProfileState(null);
+          setProgressState(null);
+          fireRefresh();
+        } else if (member.deviceId && member.deviceId !== s.deviceId) {
+          logout();
+          setSession(null);
+          setProfileState(null);
+          setProgressState(null);
+          fireRefresh();
+        }
+      } catch (e) {
+        // Supabase offline — percaya session dari localStorage
+      }
+    })();
+  }, []);
+
+  const login = async (code, opts) => {
+    setLoginLoading(true);
+    try {
+      const r = await tryLogin(code, opts);
+      if (r.ok) {
+        setSession(getSession());
+        setProfileState(getProfile());
+        setProgressState(getProgress());
+        fireRefresh();
+      }
+      return r;
+    } finally {
+      setLoginLoading(false);
+    }
+  };
 
   return {
-    session, profile, progress,
-    login: (code, opts) => { const r = tryLogin(code, opts); if (r.ok) fireRefresh(); return r; },
-    logout: () => { logout(); fireRefresh(); },
+    session, profile, progress, loginLoading,
+    login,
+    logout: () => { logout(); setSession(null); setProfileState(null); setProgressState(null); fireRefresh(); },
     saveProfile: (p) => { saveProfile(p); fireRefresh(); },
     clearProfile: () => { clearProfile(); fireRefresh(); },
     markModuleComplete: (pathId, mId) => { markModuleComplete(pathId, mId); fireRefresh(); },

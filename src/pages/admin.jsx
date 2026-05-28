@@ -5,6 +5,13 @@
 const AdminPage = () => {
   const [loggedIn, setLoggedIn] = useState(isAdminLoggedIn());
   const [tab, setTab] = useState("dashboard");
+  const [sbStatus, setSbStatus] = useState("checking");
+
+  useEffect(() => {
+    if (loggedIn) {
+      checkSupabase().then(ok => setSbStatus(ok ? "online" : "offline"));
+    }
+  }, [loggedIn]);
 
   if (!loggedIn) {
     return <AdminLogin onLogin={() => setLoggedIn(true)}/>;
@@ -17,6 +24,12 @@ const AdminPage = () => {
           <div className="flex items-center gap-3">
             <span className="chip chip-gold text-[10px]">ADMIN</span>
             <span className="font-display text-lg font-semibold text-ink">Talqee Control Center</span>
+            <div className="flex items-center gap-1.5 text-xs ml-1">
+              <span className={`w-2 h-2 rounded-full ${sbStatus === "online" ? "bg-gold-400" : sbStatus === "offline" ? "bg-rose-600" : "bg-ink-soft animate-pulse"}`}/>
+              <span className="text-ink-soft hidden sm:inline">
+                {sbStatus === "online" ? "Supabase terhubung" : sbStatus === "offline" ? "Supabase offline" : "Mengecek..."}
+              </span>
+            </div>
           </div>
           <div className="flex gap-1 flex-wrap">
             {[
@@ -96,11 +109,18 @@ const AdminLogin = ({ onLogin }) => {
 
 /* ============== DASHBOARD ============== */
 const AdminDashboard = () => {
-  const members = loadMembers();
-  const active = members.filter(m => m.status === "active").length;
-  const expired = members.filter(m => m.status === "expired").length;
+  const [members, setMembers] = useState([]);
+
+  useEffect(() => {
+    sbGetAllMembers()
+      .then(setMembers)
+      .catch(() => setMembers(sbGetAllMembersFallback()));
+  }, []);
+
+  const active   = members.filter(m => m.status === "active").length;
+  const expired  = members.filter(m => m.status === "expired").length;
   const disabled = members.filter(m => m.status === "disabled").length;
-  const bound = members.filter(m => m.device).length;
+  const bound    = members.filter(m => m.device).length;
 
   return (
     <div>
@@ -170,17 +190,50 @@ const StatCard = ({ label, value, icon, color }) => {
 
 /* ============== MEMBERS ============== */
 const AdminMembers = () => {
-  const [members, setMembers] = useState(loadMembers());
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState(null);
   const [genOpen, setGenOpen] = useState(false);
-  const [search, setSearch] = useState("");
+  const [search,  setSearch]  = useState("");
   const toast = useToast();
 
-  const refresh = () => setMembers(loadMembers());
+  const loadFromSupabase = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await sbGetAllMembers();
+      setMembers(data);
+    } catch (err) {
+      setError("Tidak bisa terhubung ke Supabase: " + err.message);
+      setMembers(sbGetAllMembersFallback());
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const updateMember = (code, patch) => {
-    const next = loadMembers().map(m => m.code === code ? { ...m, ...patch } : m);
-    saveMembers(next);
-    refresh();
+  useEffect(() => { loadFromSupabase(); }, []);
+
+  const updateMember = async (code, patch) => {
+    try {
+      const updated = await sbUpdateMember(code, patch);
+      setMembers(prev => prev.map(m => m.code === code ? updated : m));
+    } catch (err) {
+      toast.push("Gagal update: " + err.message);
+    }
+  };
+
+  const deleteMember = async (code, name) => {
+    try {
+      await sbDeleteMember(code);
+      setMembers(prev => prev.filter(m => m.code !== code));
+      toast.push(`Member "${name}" dihapus.`);
+    } catch (err) {
+      toast.push("Gagal hapus: " + err.message);
+    }
+  };
+
+  const handleAdd = (newMember) => {
+    setMembers(prev => [newMember, ...prev]);
   };
 
   const filtered = members.filter(m =>
@@ -201,10 +254,25 @@ const AdminMembers = () => {
           <h1 className="font-display text-4xl font-semibold text-ink mb-1">Member Access</h1>
           <p className="text-ink-muted">Kelola kode akses, device, dan status member.</p>
         </div>
-        <button onClick={() => setGenOpen(true)} className="btn btn-primary">
-          <Icon name="sparkles" className="w-4 h-4"/> Generate Kode Baru
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={loadFromSupabase} className="btn btn-ghost text-xs px-3 py-2 flex items-center gap-1.5">
+            <Icon name="refresh" className="w-3.5 h-3.5"/> Refresh
+          </button>
+          <button onClick={() => setGenOpen(true)} className="btn btn-primary">
+            <Icon name="sparkles" className="w-4 h-4"/> Generate Kode Baru
+          </button>
+        </div>
       </div>
+      {error && (
+        <div className="card-glass p-4 border border-rose-600/30 mb-4 flex items-center gap-3">
+          <Icon name="alert" className="w-4 h-4 text-rose-600 flex-shrink-0"/>
+          <div className="flex-1">
+            <div className="text-rose-600 text-sm">{error}</div>
+            <div className="text-ink-soft text-xs">Menampilkan data cache lokal.</div>
+          </div>
+          <button onClick={loadFromSupabase} className="text-xs text-violet-300 hover:text-violet-200 underline">Coba lagi</button>
+        </div>
+      )}
 
       <div className="card-glass p-4 mb-4">
         <div className="relative">
@@ -249,7 +317,7 @@ const AdminMembers = () => {
                   </td>
                   <td className="px-4 py-3.5 text-xs text-ink-muted num">{m.expiresAt}</td>
                   <td className="px-4 py-3.5 text-right">
-                    <MemberActions member={m} updateMember={updateMember} onDelete={() => { const next = loadMembers().filter(x => x.code !== m.code); saveMembers(next); refresh(); toast.push("Member dihapus"); }}/>
+                    <MemberActions member={m} updateMember={updateMember} onDelete={() => deleteMember(m.code, m.name)}/>
                   </td>
                 </tr>
               ))}
@@ -261,7 +329,7 @@ const AdminMembers = () => {
         </div>
       </div>
 
-      <GenerateModal open={genOpen} onClose={() => setGenOpen(false)} onCreated={refresh}/>
+      <GenerateModal open={genOpen} onClose={() => setGenOpen(false)} members={members} onAdd={handleAdd}/>
     </div>
   );
 };
@@ -310,34 +378,40 @@ const MemberActions = ({ member, updateMember, onDelete }) => {
   );
 };
 
-const GenerateModal = ({ open, onClose, onCreated }) => {
+const GenerateModal = ({ open, onClose, members, onAdd }) => {
   const [name, setName] = useState("");
   const [whatsapp, setWhatsapp] = useState("+20");
   const [duration, setDuration] = useState(30);
   const [generatedCode, setGeneratedCode] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
-    if (open) { setName(""); setWhatsapp("+20"); setDuration(30); setGeneratedCode(null); }
+    if (open) { setName(""); setWhatsapp("+20"); setDuration(30); setGeneratedCode(null); setSubmitting(false); }
   }, [open]);
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e?.preventDefault();
-    if (!name.trim()) return;
-    const existing = loadMembers().map(m => m.code);
-    const code = generateCode(existing);
-    const now = new Date();
-    const expires = new Date(now); expires.setDate(now.getDate() + Number(duration));
-    const newMember = {
-      code, name: name.trim(), whatsapp, duration: Number(duration),
-      status: "active", createdAt: now.toISOString().split("T")[0],
-      expiresAt: expires.toISOString().split("T")[0], device: null,
-    };
-    const all = loadMembers();
-    all.unshift(newMember);
-    saveMembers(all);
-    setGeneratedCode(code);
-    onCreated();
+    if (!name.trim() || submitting) return;
+    setSubmitting(true);
+    try {
+      const existing = (members || []).map(m => m.code);
+      const code = generateCode(existing);
+      const now = new Date();
+      const expires = new Date(now); expires.setDate(now.getDate() + Number(duration));
+      const newMember = {
+        code, name: name.trim(), whatsapp, duration: Number(duration),
+        status: "active",
+        expiresAt: expires.toISOString().split("T")[0],
+      };
+      const added = await sbAddMember(newMember);
+      setGeneratedCode(added.code);
+      onAdd && onAdd(added);
+    } catch (err) {
+      toast.push("Gagal tambah member: " + err.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const copyCode = () => { navigator.clipboard.writeText(generatedCode); toast.push("Kode tersalin"); };
@@ -374,8 +448,13 @@ const GenerateModal = ({ open, onClose, onCreated }) => {
                 ))}
               </div>
             </div>
-            <button type="submit" disabled={!name.trim()} className={`btn btn-primary w-full ${!name.trim() ? "opacity-50 cursor-not-allowed" : ""}`}>
-              Generate <Icon name="sparkles" className="w-4 h-4"/>
+            <button type="submit" disabled={!name.trim() || submitting} className={`btn btn-primary w-full ${!name.trim() || submitting ? "opacity-50 cursor-not-allowed" : ""}`}>
+              {submitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
+                  Menyimpan...
+                </span>
+              ) : <><Icon name="sparkles" className="w-4 h-4"/> Generate</>}
             </button>
           </form>
         ) : (

@@ -268,7 +268,7 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
   const [code, setCode] = useState("");
   const [status, setStatus] = useState(null);
   const [conflict, setConflict] = useState(null);
-  const { login } = useAuth();
+  const { login, loginLoading } = useAuth();
   const inputRef = useRef(null);
   const toast = useToast();
 
@@ -281,11 +281,11 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
     }
   }, [open]);
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e?.preventDefault();
     const c = code.trim().toUpperCase();
-    if (!c) return;
-    const result = login(c);
+    if (!c || loginLoading) return;
+    const result = await login(c);
     if (result.ok) {
       toast.push("Selamat datang, " + result.member.name);
       onSuccess && onSuccess(result);
@@ -296,8 +296,8 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
     }
   };
 
-  const takeover = () => {
-    const result = login(code.trim().toUpperCase(), { forceTakeover: true });
+  const takeover = async () => {
+    const result = await login(code.trim().toUpperCase(), { forceTakeover: true });
     if (result.ok) {
       toast.push("Berhasil login di device ini");
       setConflict(null);
@@ -350,8 +350,13 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
                 </span>
               </div>
             )}
-            <button type="submit" disabled={code.length < 8} className={`btn btn-primary w-full mt-5 ${code.length < 8 ? "opacity-50 cursor-not-allowed" : ""}`}>
-              Masuk <Icon name="arrowRight" className="w-4 h-4"/>
+            <button type="submit" disabled={code.length < 8 || loginLoading} className={`btn btn-primary w-full mt-5 ${code.length < 8 || loginLoading ? "opacity-50 cursor-not-allowed" : ""}`}>
+              {loginLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
+                  Memverifikasi...
+                </span>
+              ) : <>Masuk <Icon name="arrowRight" className="w-4 h-4"/></>}
             </button>
             <div className="mt-5 pt-5 border-t border-line text-xs text-ink-soft text-center leading-relaxed">
               Belum punya kode?<br/>

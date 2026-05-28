@@ -1,0 +1,429 @@
+# PROMPT 11 — Talqee: Supabase Fase 2 (User Data Sync)
+
+> Prerequisite: Prompt 10 (Fase 1) sudah selesai & stabil. Supabase sudah connect, member management jalan.
+> Fase 2: data user pribadi (kurasah, progress, niat, ritme, muqaranah custom) pindah ke Supabase. User ganti HP → data tetap ada.
+
+---
+
+## BAGIAN 0 — Setup Database (Manual di Supabase Dashboard dulu)
+
+SQL Editor Supabase → New Query → run:
+
+```sql
+-- Tabel kurasah (catatan user)
+CREATE TABLE user_notes (
+  id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  member_code TEXT NOT NULL REFERENCES members(code) ON DELETE CASCADE,
+  note_id     TEXT NOT NULL,
+  title       TEXT,
+  body        TEXT,
+  tags        JSONB DEFAULT '[]',
+  source      JSONB,
+  created_at  TIMESTAMPTZ DEFAULT now(),
+  updated_at  TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(member_code, note_id)
+);
+
+-- Tabel progress learning path
+CREATE TABLE user_progress (
+  id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  member_code TEXT NOT NULL REFERENCES members(code) ON DELETE CASCADE,
+  progress    JSONB NOT NULL DEFAULT '{}',
+  updated_at  TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(member_code)
+);
+
+-- Tabel niat harian
+CREATE TABLE user_intentions (
+  id           UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  member_code  TEXT NOT NULL REFERENCES members(code) ON DELETE CASCADE,
+  today_date   DATE NOT NULL,
+  intention    JSONB,
+  updated_at   TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(member_code, today_date)
+);
+
+-- Tabel ritme/presence
+CREATE TABLE user_presence (
+  id           UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  member_code  TEXT NOT NULL REFERENCES members(code) ON DELETE CASCADE,
+  days_present JSONB DEFAULT '[]',
+  updated_at   TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(member_code)
+);
+
+-- Tabel muqaranah custom buatan user
+CREATE TABLE user_muqaranah (
+  id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  member_code TEXT NOT NULL REFERENCES members(code) ON DELETE CASCADE,
+  entry_id    TEXT NOT NULL,
+  data        JSONB NOT NULL,
+  created_at  TIMESTAMPTZ DEFAULT now(),
+  updated_at  TIMESTAMPTZ DEFAULT now(),
+  UNIQUE(member_code, entry_id)
+);
+
+-- RLS untuk semua tabel user
+ALTER TABLE user_notes      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_progress   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_intentions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_presence   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_muqaranah  ENABLE ROW LEVEL SECURITY;
+
+-- Policy: anon bisa baca/tulis (auth di application layer via member_code)
+CREATE POLICY "anon_all" ON user_notes      FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all" ON user_progress   FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all" ON user_intentions FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all" ON user_presence   FOR ALL TO anon USING (true) WITH CHECK (true);
+CREATE POLICY "anon_all" ON user_muqaranah  FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- Index performa
+CREATE INDEX idx_notes_member      ON user_notes(member_code);
+CREATE INDEX idx_progress_member   ON user_progress(member_code);
+CREATE INDEX idx_intentions_member ON user_intentions(member_code, today_date);
+CREATE INDEX idx_presence_member   ON user_presence(member_code);
+CREATE INDEX idx_muqaranah_member  ON user_muqaranah(member_code);
+```
+
+---
+
+## BAGIAN 1 — Tambah User Data API ke `src/supabase.jsx`
+
+Append ke file yang sudah ada (JANGAN timpa):
+
+```js
+/* ============ USER DATA API (Fase 2) ============ */
+
+// Helper: get member_code dari session
+const getMemberCode = () => {
+  try {
+    const s = JSON.parse(localStorage.getItem("madad_session") || "{}");
+    return s.code || null;
+  } catch { return null; }
+};
+
+// ── NOTES (Kurasah) ──
+
+const sbSaveNote = async (note) => {
+  const code = getMemberCode();
+  if (!code) throw new Error("No session");
+  const { error } = await _supabase.from("user_notes").upsert({
+    member_code: code,
+    note_id:    note.id,
+    title:      note.title,
+    body:       note.body,
+    tags:       note.tags || [],
+    source:     note.source || null,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "member_code,note_id" });
+  if (error) throw error;
+};
+
+const sbDeleteNote = async (noteId) => {
+  const code = getMemberCode();
+  if (!code) return;
+  await _supabase.from("user_notes")
+    .delete().eq("member_code", code).eq("note_id", noteId);
+};
+
+const sbLoadNotes = async () => {
+  const code = getMemberCode();
+  if (!code) return null;
+  const { data, error } = await _supabase.from("user_notes")
+    .select("*").eq("member_code", code).order("updated_at", { ascending: false });
+  if (error) throw error;
+  return data.map(r => ({
+    id: r.note_id, title: r.title, body: r.body,
+    tags: r.tags || [], source: r.source,
+    createdAt: r.created_at, updatedAt: r.updated_at,
+  }));
+};
+
+// ── PROGRESS ──
+
+const sbSaveProgress = async (progress) => {
+  const code = getMemberCode();
+  if (!code) return;
+  await _supabase.from("user_progress").upsert({
+    member_code: code, progress,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "member_code" });
+};
+
+const sbLoadProgress = async () => {
+  const code = getMemberCode();
+  if (!code) return null;
+  const { data } = await _supabase.from("user_progress")
+    .select("progress").eq("member_code", code).single();
+  return data?.progress || null;
+};
+
+// ── INTENTIONS (Niat) ──
+
+const sbSaveIntention = async (intentionData) => {
+  const code = getMemberCode();
+  if (!code) return;
+  const today = new Date().toISOString().slice(0, 10);
+  await _supabase.from("user_intentions").upsert({
+    member_code: code, today_date: today,
+    intention: intentionData,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "member_code,today_date" });
+};
+
+const sbLoadIntentions = async () => {
+  const code = getMemberCode();
+  if (!code) return null;
+  const { data } = await _supabase.from("user_intentions")
+    .select("today_date,intention").eq("member_code", code)
+    .order("today_date", { ascending: false }).limit(60);
+  if (!data) return null;
+  const result = { daysWithIntention: [] };
+  data.forEach(r => {
+    if (r.today_date === new Date().toISOString().slice(0, 10)) {
+      Object.assign(result, r.intention || {}, { todayDate: r.today_date });
+    }
+    result.daysWithIntention.push(r.today_date);
+  });
+  return result;
+};
+
+// ── PRESENCE (Ritme) ──
+
+const sbSavePresence = async (presence) => {
+  const code = getMemberCode();
+  if (!code) return;
+  await _supabase.from("user_presence").upsert({
+    member_code: code, days_present: presence.daysPresent || [],
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "member_code" });
+};
+
+const sbLoadPresence = async () => {
+  const code = getMemberCode();
+  if (!code) return null;
+  const { data } = await _supabase.from("user_presence")
+    .select("days_present").eq("member_code", code).single();
+  return data ? { daysPresent: data.days_present || [] } : null;
+};
+
+// ── MUQARANAH CUSTOM ──
+
+const sbSaveMuqaranah = async (entry) => {
+  const code = getMemberCode();
+  if (!code) return;
+  await _supabase.from("user_muqaranah").upsert({
+    member_code: code, entry_id: entry.id, data: entry,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "member_code,entry_id" });
+};
+
+const sbDeleteMuqaranah = async (entryId) => {
+  const code = getMemberCode();
+  if (!code) return;
+  await _supabase.from("user_muqaranah")
+    .delete().eq("member_code", code).eq("entry_id", entryId);
+};
+
+const sbLoadMuqaranah = async () => {
+  const code = getMemberCode();
+  if (!code) return null;
+  const { data } = await _supabase.from("user_muqaranah")
+    .select("data").eq("member_code", code).order("updated_at", { ascending: false });
+  return data ? data.map(r => r.data) : null;
+};
+
+/* ============ SYNC ENGINE ============ */
+
+// Pull semua data dari Supabase ke localStorage (saat login / app load)
+const sbPullAllUserData = async () => {
+  const results = await Promise.allSettled([
+    sbLoadNotes().then(d => d && localStorage.setItem("madad_notes", JSON.stringify(d))),
+    sbLoadProgress().then(d => d && localStorage.setItem("madad_progress", JSON.stringify(d))),
+    sbLoadIntentions().then(d => d && localStorage.setItem("madad_intentions", JSON.stringify(d))),
+    sbLoadPresence().then(d => d && localStorage.setItem("madad_presence", JSON.stringify(d))),
+    sbLoadMuqaranah().then(d => d && localStorage.setItem("madad_muqaranah_custom", JSON.stringify(d))),
+  ]);
+  const failed = results.filter(r => r.status === "rejected").length;
+  return { success: results.length - failed, failed };
+};
+
+// Push data dari localStorage ke Supabase (background sync)
+const sbPushAllUserData = async () => {
+  const get = (key, fallback) => {
+    try { return JSON.parse(localStorage.getItem(key)) || fallback; } catch { return fallback; }
+  };
+  const notes     = get("madad_notes", []);
+  const progress  = get("madad_progress", {});
+  const intentions = get("madad_intentions", {});
+  const presence  = get("madad_presence", { daysPresent: [] });
+  const muqaranah = get("madad_muqaranah_custom", []);
+
+  await Promise.allSettled([
+    ...notes.map(n => sbSaveNote(n)),
+    sbSaveProgress(progress),
+    sbSaveIntention(intentions),
+    sbSavePresence(presence),
+    ...muqaranah.map(m => sbSaveMuqaranah(m)),
+  ]);
+};
+
+Object.assign(window, {
+  sbLoadNotes, sbSaveNote, sbDeleteNote,
+  sbLoadProgress, sbSaveProgress,
+  sbLoadIntentions, sbSaveIntention,
+  sbLoadPresence, sbSavePresence,
+  sbLoadMuqaranah, sbSaveMuqaranah, sbDeleteMuqaranah,
+  sbPullAllUserData, sbPushAllUserData,
+});
+```
+
+---
+
+## BAGIAN 2 — Integrasi ke `src/auth.jsx`
+
+### STEP 2.1 — Pull data saat login berhasil
+
+Di `tryLogin`, setelah `localStorage.setItem(STORAGE_KEYS.SESSION, ...)`, tambahkan:
+
+```js
+// Tarik data dari Supabase ke localStorage (background, non-blocking)
+sbPullAllUserData().catch(e => console.warn("Pull failed:", e.message));
+```
+
+### STEP 2.2 — Pull data saat app load (sudah login)
+
+Di `validateSession`, setelah return session valid, tambahkan:
+
+```js
+// Sync data dari Supabase ke localStorage kalau ada koneksi
+sbPullAllUserData().catch(() => {/* offline, pakai cache */});
+```
+
+---
+
+## BAGIAN 3 — Sync Otomatis saat Data Berubah
+
+Tambahkan push ke Supabase di setiap fungsi save. **Pola: localStorage dulu (instant), lalu sync Supabase di background.**
+
+### STEP 3.1 — `saveNotes` di `src/auth.jsx`
+
+```js
+const saveNotes = (notes) => {
+  localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(notes));
+  // Background sync — tidak blocking UI
+  if (getMemberCode()) {
+    notes.forEach(n => sbSaveNote(n).catch(() => {}));
+  }
+};
+```
+
+### STEP 3.2 — `saveProgress` di `src/auth.jsx`
+
+```js
+const saveProgress = (progress) => {
+  localStorage.setItem(STORAGE_KEYS.PROGRESS, JSON.stringify(progress));
+  sbSaveProgress(progress).catch(() => {});
+};
+```
+
+### STEP 3.3 — `saveIntentions` di `src/dashboard-companions.jsx`
+
+Di fungsi `saveIntentions` (atau `commitTodayIntention`):
+
+```js
+// Setelah localStorage.setItem:
+sbSaveIntention(newIntentionsData).catch(() => {});
+```
+
+### STEP 3.4 — `markPresenceToday` di `src/auth.jsx`
+
+```js
+// Setelah update localStorage:
+sbSavePresence(newPresence).catch(() => {});
+```
+
+### STEP 3.5 — Kurasah custom muqaranah saves
+
+Di `muqaranah-form.jsx` dan `muqaranah.jsx`, setiap kali `saveCustomMuqaranah()`:
+
+```js
+// Setelah save ke localStorage:
+newList.forEach(m => sbSaveMuqaranah(m).catch(() => {}));
+```
+
+### STEP 3.6 — Delete sync
+
+Di kurasah editor saat user hapus note:
+
+```js
+// Setelah hapus dari localStorage:
+sbDeleteNote(noteId).catch(() => {});
+```
+
+---
+
+## BAGIAN 4 — Indikator Sync di UI (Opsional tapi Bagus)
+
+Di kurasah editor, tambahkan status sync subtle:
+
+```jsx
+const [syncStatus, setSyncStatus] = useState("saved"); // "saved" | "syncing" | "offline"
+
+const handleSave = async (notes) => {
+  saveNotes(notes); // localStorage instant
+  setSyncStatus("syncing");
+  try {
+    await Promise.all(notes.map(n => sbSaveNote(n)));
+    setSyncStatus("saved");
+  } catch {
+    setSyncStatus("offline");
+  }
+};
+
+// Render di footer editor:
+<span className="text-xs text-ink-soft flex items-center gap-1.5">
+  {syncStatus === "syncing" && <><span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse"/> Menyinkron...</>}
+  {syncStatus === "saved"   && <><span className="w-1.5 h-1.5 rounded-full bg-gold-400"/> Tersimpan & tersinkron</>}
+  {syncStatus === "offline" && <><span className="w-1.5 h-1.5 rounded-full bg-rose-600"/> Offline — tersimpan lokal</>}
+</span>
+```
+
+---
+
+## Acceptance Criteria
+
+### Cross-Device Sync
+- [ ] Login di HP → buka kurasah → ada catatan yang dibuat di laptop sebelumnya
+- [ ] Tulis catatan di HP → login di laptop → catatan muncul
+- [ ] Progress Learning Path sync antar device
+- [ ] Niat hari ini sync (kalau commit pagi di HP, sore di laptop sudah tercommit)
+- [ ] Ritme/presence sync
+
+### Offline Resilience
+- [ ] Matikan WiFi → tulis catatan → catatan tersimpan di localStorage
+- [ ] Nyalakan WiFi → catatan tersinkron ke Supabase (background push)
+- [ ] Indikator "Offline — tersimpan lokal" muncul saat tidak ada koneksi
+
+### Data Integrity
+- [ ] Data localStorage TIDAK dihapus (Supabase tambahan, bukan pengganti)
+- [ ] Kalau Supabase kosong (user baru) tapi localStorage ada → push ke Supabase otomatis saat login
+- [ ] Kalau Supabase ada data (user lama, ganti HP) → pull ke localStorage otomatis saat login
+
+### No Regression
+- [ ] Semua fitur yang sudah ada tetap jalan (Kurasah, Muqaranah, Niat, Ritme, dll)
+- [ ] Tidak ada console error
+- [ ] Performance tidak drop — sync selalu background, tidak blocking UI
+
+---
+
+## Catatan
+
+**Pola "localStorage dulu, Supabase background"** adalah pilihan yang tepat untuk Talqee karena:
+- UI tetap instant (tidak nunggu network)
+- Offline tetap jalan
+- Sync terjadi diam-diam tanpa ganggu user
+
+Ini battle-tested pattern yang dipakai apps seperti Notion, Linear, dan Bear.
+
+والله ولي التوفيق.
