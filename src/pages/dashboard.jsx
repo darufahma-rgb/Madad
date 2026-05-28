@@ -1,4 +1,4 @@
-/* Talqih, Personal Dashboard */
+/* Talqih, Personal Dashboard — Prompt 4: Maddah-First */
 
 const getCairoGreeting = () => {
   const h = (new Date().getUTCHours() + 3) % 24;
@@ -10,6 +10,152 @@ const getCairoGreeting = () => {
   return                         { text: "Selamat malam",               arabic: "لَيْلَةٌ مُبَارَكَةٌ",      sub: "Istirahat yang cukup adalah bagian dari belajar." };
 };
 
+/* ============ MADDAH HERO SECTION ============ */
+const MaddahHeroSection = ({ profile }) => {
+  const myMaddahs = useMemo(() => {
+    const filtered = getMaddahsForProfile(profile);
+    const withContent = filtered.filter(m =>
+      m.prompts && Object.values(m.prompts).some(arr => arr.length > 0)
+    );
+    const withoutContent = filtered.filter(m =>
+      !m.prompts || !Object.values(m.prompts).some(arr => arr.length > 0)
+    );
+    return [...withContent, ...withoutContent].slice(0, 6);
+  }, [profile]);
+
+  if (myMaddahs.length === 0) {
+    return (
+      <section className="pb-8">
+        <div className="container-x">
+          <div className="card-glass p-6 text-center">
+            <p className="text-ink-muted mb-3">Belum ada Maddah yang cocok dengan profilmu.</p>
+            <button onClick={() => navigate("/maddah")} className="btn btn-ghost text-sm">
+              Lihat semua Maddah
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="pb-8">
+      <div className="container-x">
+        <Reveal className="mb-6 flex items-end justify-between flex-wrap gap-3">
+          <div>
+            <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 flex items-center gap-2">
+              <span className="w-6 h-px bg-gold-500/60"/>
+              Maddah untuk fakultas & tingkatmu
+            </div>
+            <h2 className="font-display text-3xl md:text-4xl font-semibold text-ink">
+              Maddah-mu
+            </h2>
+          </div>
+          <button
+            onClick={() => navigate("/maddah")}
+            className="text-sm text-violet-400 hover:text-violet-300 inline-flex items-center gap-1.5 transition-colors"
+          >
+            Semua 36 Maddah <Icon name="arrowRight" className="w-3.5 h-3.5"/>
+          </button>
+        </Reveal>
+
+        <Reveal stagger className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {myMaddahs.map((m) => (
+            <MaddahDashCard key={m.id} maddah={m}/>
+          ))}
+        </Reveal>
+      </div>
+    </section>
+  );
+};
+
+/* ============ MADDAH CARD untuk Dashboard ============ */
+const MaddahDashCard = ({ maddah }) => {
+  const hasContent = maddah.prompts && Object.values(maddah.prompts).some(arr => arr.length > 0);
+  const totalPrompts = hasContent
+    ? Object.values(maddah.prompts).reduce((s, arr) => s + arr.length, 0)
+    : 0;
+  const topAI = maddah.recommendedAI?.[0];
+  const topAITool = topAI ? AI_TOOLS.find(t => t.id === topAI.tool) : null;
+
+  return (
+    <div
+      onClick={() => navigate("/maddah/" + maddah.id)}
+      className="card-glass p-5 hov-lift cursor-pointer transition-all group relative overflow-hidden"
+    >
+      <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-violet-500/8 blur-2xl pointer-events-none"/>
+
+      <div className="relative">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex-1">
+            <div
+              className="arabic-display-classical text-gold-300 text-xl mb-1 group-hover:text-gold-200 transition-colors"
+              style={{direction:"rtl"}}
+            >
+              {maddah.nameArabic}
+            </div>
+            <h3 className="font-display text-lg font-semibold text-ink">{maddah.name}</h3>
+          </div>
+          {!hasContent && (
+            <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 border border-violet-500/20 flex-shrink-0 mt-1">
+              Segera
+            </span>
+          )}
+        </div>
+
+        {hasContent && topAITool && (
+          <div className="flex items-center gap-2.5 mb-3 p-2.5 rounded-lg bg-white/3 border border-line">
+            <ToolIcon tool={topAITool} size="w-8 h-8"/>
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] text-ink-soft uppercase tracking-wider">AI rekomendasi</div>
+              <div className="text-sm text-ink font-medium truncate">{topAITool.name}</div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between text-xs">
+          {hasContent ? (
+            <>
+              <span className="text-gold-400">{totalPrompts} prompt template</span>
+              <span className="inline-flex items-center gap-1 text-violet-400 group-hover:gap-2 transition-all">
+                Buka <Icon name="arrowRight" className="w-3 h-3"/>
+              </span>
+            </>
+          ) : (
+            <span className="text-ink-soft">Konten segera hadir</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+/* ============ SANCTUARY ROW (companion compact) ============ */
+const SanctuaryRow = () => {
+  return (
+    <section className="pb-8">
+      <div className="container-x">
+        <Reveal className="mb-5">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/60"/>
+            Teman belajarmu
+          </div>
+          <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">
+            Ditemani sepanjang belajar
+          </h2>
+        </Reveal>
+
+        <div className="grid lg:grid-cols-2 gap-4 mb-4">
+          <IntentionStrip/>
+          <RhythmCard/>
+        </div>
+        <ReflectionCard/>
+      </div>
+    </section>
+  );
+};
+
+/* ============ DASHBOARD PAGE ============ */
 const DashboardPage = () => {
   const { session, profile, progress, clearProfile } = useAuth();
 
@@ -24,53 +170,58 @@ const DashboardPage = () => {
 
   if (!session || !profile?.onboarded) return null;
 
-  const styleLabel = profile.learningStyle?.[0]
-    ? LEARNING_STYLES.find(s => s.id === profile.learningStyle[0])?.label
-    : "campuran";
-  const facultyData = FACULTIES.find(f => f.id === profile.faculty);
-  const facultyLabel = facultyData?.label || FIELDS.find(f => f.id === profile.field)?.label || "-";
-  const majorLabel = profile.major ? facultyData?.majors.find(m => m.id === profile.major)?.label : null;
-  const levelLabel = LEVELS.find(l => l.id === profile.level)?.short || "";
   const firstName = session.name.split(" ")[0];
   const topRec = recs[0];
   const greeting = getCairoGreeting();
 
+  // Faculty / Major / Level labels — backward-compat
+  const facultyData = (typeof FACULTIES !== "undefined")
+    ? FACULTIES.find(f => f.id === profile.faculty)
+    : null;
+  const facultyLabel = facultyData?.label
+    || (typeof FAKULTAS_LABEL !== "undefined" ? FAKULTAS_LABEL[profile.faculty] : null)
+    || (typeof FIELDS !== "undefined" ? FIELDS.find(f => f.id === profile.field)?.label : null)
+    || "Al-Azhar";
+  const majorLabel = profile.major && facultyData?.majors
+    ? facultyData.majors.find(m => m.id === profile.major)?.label
+    : null;
+  const levelLabel = (typeof LEVELS !== "undefined" && profile.level)
+    ? (LEVELS.find(l => l.id === profile.level)?.short || LEVELS.find(l => l.id === profile.level)?.label || null)
+    : null;
+
   return (
     <div className="page-enter">
 
-      {/* 1. GREETING */}
-      <section className="relative pt-12 md:pt-16 pb-10 overflow-hidden">
+      {/* 1. GREETING (ringkas) */}
+      <section className="relative pt-12 md:pt-16 pb-8 overflow-hidden">
         <Blob color="rgba(124,77,255,0.22)" size={600} top={-200} right={-100}/>
         <Blob color="rgba(201,168,106,0.10)" size={400} top={100} left={-150}/>
         <div className="absolute inset-0 pattern-stars opacity-25 pointer-events-none"/>
         <div className="container-x relative">
           <Reveal>
-            <div className="arabic-display-classical text-2xl text-gold-300 mb-3">{greeting.arabic}</div>
+            <div className="arabic-classic text-2xl text-gold-300 mb-3" style={{direction:"rtl"}}>
+              السلام عليكم
+            </div>
             <h1 className="font-display text-4xl md:text-5xl lg:text-[68px] font-semibold text-ink leading-[1.0] tracking-tightest">
-              {greeting.text},{" "}
-              <span className="gradient-text">{firstName}.</span>
+              Assalamu'alaikum,{" "}
+              <span className="gradient-text">{firstName}</span>{" "}
+              <span className="text-gold-300">🌙</span>
             </h1>
             <p className="mt-5 text-ink-muted text-lg max-w-2xl leading-relaxed">
-              Dashboard ini disusun khusus untukmu —{" "}
-              <span className="text-ink font-medium">
-                {facultyLabel}
-                {majorLabel ? ` · ${majorLabel}` : ""}
-                {levelLabel ? ` · ${levelLabel}` : ""}
-              </span>.
-              Talqih paham cara belajarmu.
+              <span className="text-ink font-medium">{facultyLabel}</span>
+              {majorLabel ? <> · <span className="text-ink font-medium">{majorLabel}</span></> : null}
+              {levelLabel ? <> · <span className="text-ink font-medium">{levelLabel}</span></> : null}
+              {". "}
+              Talqih siap menemani belajarmu hari ini.
             </p>
           </Reveal>
         </div>
       </section>
 
-      {/* [COMPANION 1] NIAT HARI INI */}
-      <section className="pb-6">
-        <div className="container-x">
-          <IntentionStrip/>
-        </div>
-      </section>
+      {/* 2. MADDAH-MU (HERO BARU) */}
+      <MaddahHeroSection profile={profile}/>
 
-      {/* 2. CONTINUE LEARNING + STAGE */}
+      {/* 3. CONTINUE LEARNING + STAGE */}
       <section className="pb-8">
         <div className="container-x">
           <Reveal className="grid md:grid-cols-12 gap-4">
@@ -80,14 +231,7 @@ const DashboardPage = () => {
         </div>
       </section>
 
-      {/* [COMPANION 2] RITME PEKAN INI */}
-      <section className="pb-6">
-        <div className="container-x">
-          <RhythmCard/>
-        </div>
-      </section>
-
-      {/* 3. AI RECOMMENDATIONS */}
+      {/* 4. AI RECOMMENDATIONS */}
       <section className="pb-8">
         <div className="container-x">
           <Reveal className="mb-6 flex items-end justify-between flex-wrap gap-3">
@@ -95,7 +239,7 @@ const DashboardPage = () => {
               <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 flex items-center gap-2">
                 <span className="w-6 h-px bg-gold-500/60"/>Rekomendasi personal
               </div>
-              <h2 className="font-display text-3xl md:text-4xl font-semibold text-ink">AI yang paling cocok untukmu</h2>
+              <h2 className="font-display text-3xl md:text-4xl font-semibold text-ink">AI yang cocok untuk gaya belajarmu</h2>
             </div>
             <a href="#/tools" onClick={(e)=>{e.preventDefault(); navigate("/tools");}} className="text-sm text-violet-400 hover:text-violet-300 inline-flex items-center gap-1.5 transition-colors">
               Semua adaptive guide <Icon name="arrowRight" className="w-3.5 h-3.5"/>
@@ -107,10 +251,10 @@ const DashboardPage = () => {
         </div>
       </section>
 
-      {/* 4. ADAPTIVE GUIDE */}
+      {/* 5. ADAPTIVE GUIDE QUICK */}
       {topRec && <AdaptiveGuideQuick profile={profile} topRec={topRec}/>}
 
-      {/* 5. LEARNING PATHS */}
+      {/* 6. LEARNING PATHS */}
       <section className="pb-8">
         <div className="container-x">
           <Reveal className="mb-6">
@@ -155,14 +299,7 @@ const DashboardPage = () => {
         </div>
       </section>
 
-      {/* [COMPANION 3] REFLEKSI DARI KURASAH */}
-      <section className="pb-6">
-        <div className="container-x">
-          <ReflectionCard/>
-        </div>
-      </section>
-
-      {/* 6. KURASAH TERAKHIR */}
+      {/* 7. KURASAH TERAKHIR */}
       <section className="pb-8">
         <div className="container-x">
           <Reveal className="mb-5 flex items-end justify-between flex-wrap gap-3">
@@ -180,25 +317,23 @@ const DashboardPage = () => {
         </div>
       </section>
 
-      {/* 7. PROGRESS & QUICK ACTIONS */}
+      {/* 8. SANCTUARY ROW (Teman Belajar — compact) */}
+      <SanctuaryRow/>
+
+      {/* 9. AKSI CEPAT */}
       <section className="pb-20">
         <div className="container-x">
           <Reveal className="mb-6">
             <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 flex items-center gap-2">
-              <span className="w-6 h-px bg-gold-500/60"/>Aksi & Progress
+              <span className="w-6 h-px bg-gold-500/60"/>Aksi cepat
             </div>
             <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">Aksi cepat</h2>
           </Reveal>
           <Reveal stagger className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            <QuickAction icon="bookOpen" title="Adaptive guide" desc="Guide sesuai gaya belajarmu untuk setiap AI" to="/tools" color="violet"/>
-            <QuickAction icon="layers" title="Learning paths" desc="Modul terstruktur 3 level dari Beginner" to="/paths" color="gold"/>
-            <QuickAction icon="shield" title="Etika & Adab" desc="Pakai AI dengan adab thalabul ilmi" to="/ethics" color="violet"/>
-            <QuickAction icon="refresh" title="Perbarui profil" desc="Ubah jawaban onboarding" onClick={() => {
-              if (confirm("Reset jawaban onboarding dan ulangi?")) {
-                clearProfile();
-                navigate("/onboarding");
-              }
-            }} color="gold"/>
+            <QuickAction icon="layers"    title="Semua Maddah"    desc="36 mata pelajaran + 540 prompt template"       to="/maddah"             color="violet"/>
+            <QuickAction icon="bookOpen"  title="Adaptive guide"  desc="Guide tiap AI sesuai gaya belajarmu"           to="/tools"              color="gold"/>
+            <QuickAction icon="scale"     title="Muqaranah"       desc="Banding qoul ulama 4 madzhab"                  to="/paths/muqaranah"    color="violet"/>
+            <QuickAction icon="notebook"  title="Kurasah"         desc="Catatan & ta'liq belajarmu"                    to="/kurasah"            color="gold"/>
           </Reveal>
         </div>
       </section>
@@ -269,12 +404,12 @@ const ContinueCard = ({ className = "", progress }) => {
             <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1.5">Mulai journey-mu</div>
             <div className="font-display text-xl text-ink font-semibold mb-2">Belum ada aktivitas</div>
             <p className="text-sm text-ink-muted mb-5 leading-relaxed">
-              Mulai dari learning path Beginner atau langsung ke adaptive guide
-              untuk AI yang direkomendasikan untukmu.
+              Mulai dari Maddah yang cocok untuk profilmu, atau buka adaptive guide
+              untuk AI yang direkomendasikan.
             </p>
             <div className="flex gap-2 flex-wrap">
-              <a href="#/paths" onClick={(e)=>{e.preventDefault(); navigate("/paths");}} className="btn btn-primary text-sm py-2.5 px-4">
-                Mulai Beginner <Icon name="arrowRight" className="w-3.5 h-3.5"/>
+              <a href="#/maddah" onClick={(e)=>{e.preventDefault(); navigate("/maddah");}} className="btn btn-primary text-sm py-2.5 px-4">
+                Buka Maddah <Icon name="arrowRight" className="w-3.5 h-3.5"/>
               </a>
               <a href="#/tools" onClick={(e)=>{e.preventDefault(); navigate("/tools");}} className="btn btn-ghost text-sm py-2.5 px-4">
                 Buka tool guide
@@ -406,7 +541,6 @@ const AdaptiveGuideQuick = ({ profile, topRec }) => {
           <Blob color="rgba(124,77,255,0.12)" size={280} bottom={-80} left={-60}/>
           <div className="relative grid md:grid-cols-12 gap-8">
 
-            {/* Left: guide content */}
             <div className="md:col-span-7">
               <div className="flex items-center gap-4 mb-6">
                 <ToolIcon tool={tool} size="w-14 h-14" rounded="rounded-2xl"/>
@@ -439,7 +573,6 @@ const AdaptiveGuideQuick = ({ profile, topRec }) => {
               </ol>
             </div>
 
-            {/* Right: prompt + CTA */}
             <div className="md:col-span-5 flex flex-col">
               <div className="rounded-xl overflow-hidden border border-line flex-1 mb-4">
                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-line" style={{background:"rgba(124,77,255,0.12)"}}>

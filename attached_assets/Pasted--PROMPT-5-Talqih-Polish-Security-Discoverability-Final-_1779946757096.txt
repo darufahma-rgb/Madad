@@ -1,0 +1,434 @@
+# PROMPT 5 — Talqih: Polish, Security & Discoverability (Final)
+
+> Ini **Prompt 5 dari 5** — penutup roadmap Talqih.
+> **Prerequisite:** Prompt 1-4 sudah selesai (rebrand, landing, Maddah system, dashboard rework).
+> Setelah prompt ini, Talqih siap launch.
+
+---
+
+## Konteks
+
+Talqih sudah punya: brand & visual baru, landing dengan sample Maddah, sistem 36 Maddah dengan adaptive prompt, dan dashboard Maddah-first. Yang tersisa adalah **merapikan hal-hal kritis** sebelum launch:
+
+1. **Security fixes** — 3 isu serius dari audit awal (XSS, admin PIN, payment auto-confirm)
+2. **Discoverability** — Kurasah & Muqaranah naik ke navbar utama (bukan icon tersembunyi)
+3. **QuickNote universal** — floating button di semua page member
+4. **Onboarding** — pastikan sudah pakai sistem fakultas+tingkat+jurusan
+5. **Final anti-pattern sweep** — bersihkan sisa emoji/warna/copy yang gak sesuai
+
+Ini prompt **cleanup & hardening** — bukan fitur baru besar. Tapi penting untuk kualitas launch.
+
+---
+
+## BAGIAN 1 — SECURITY FIXES (Prioritas Tertinggi)
+
+### Fix 1.1 — XSS di Markdown Renderer
+
+**Lokasi:** `src/markdown-render.jsx`
+
+**Masalah:** Fungsi `renderMarkdown()` tidak meng-escape HTML dari input user sebelum apply markdown. Hasil di-render via `dangerouslySetInnerHTML` di kurasah-editor.jsx line 199. Kalau user nulis `<script>` atau `<img onerror=...>` di catatan, itu akan execute.
+
+**Fix:** Tambahkan fungsi escape HTML dan apply di SETIAP tempat yang inject teks user. Edit `src/markdown-render.jsx`:
+
+Tambahkan helper escape di awal fungsi `renderMarkdown`:
+
+```js
+const renderMarkdown = (raw) => {
+  if (!raw || typeof raw !== "string") return "";
+
+  // ── HTML escape (XSS protection) ──
+  const esc = (s) => String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+
+  const lines = raw.split("\n");
+  // ... rest sama
+```
+
+Lalu di fungsi `inline()`, **escape DULU sebelum apply markdown** (supaya tag markdown kita tetap jalan tapi HTML user di-neutralize):
+
+```js
+const inline = (text) => {
+  return esc(text)   // ← ESCAPE DULU
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="text-ink font-semibold">$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em class="text-ink-muted italic">$1</em>')
+    .replace(/`(.+?)`/g, '<code class="font-mono text-xs bg-white/8 px-1.5 py-0.5 rounded text-violet-200">$1</code>');
+};
+```
+
+**Penting:** pastikan SEMUA tempat yang masukin teks user ke HTML output lewat `inline()` atau di-escape manual. Cek di seluruh fungsi `renderMarkdown` — heading, blockquote, list item, paragraf, semua harus lewat `esc()` atau `inline()`. Bagian yang bukan teks user (class CSS, tag HTML yang kita generate sendiri) tidak perlu di-escape.
+
+**Test:** Buat catatan baru di Kurasah dengan isi: `<script>alert('xss')</script>` dan `<img src=x onerror="alert(1)">`. Preview harus menampilkan teks literal `<script>...` sebagai teks biasa, BUKAN execute.
+
+### Fix 1.2 — Admin PIN Hardcoded & Ditampilkan
+
+**Lokasi:** `src/data.jsx:614` + `src/pages/admin.jsx:91`
+
+**Masalah:**
+- PIN "9090" hardcoded di source
+- Ditampilkan terang-terangan di login screen: "Demo PIN: 9090"
+- (Link Admin di footer publik sudah dihapus di Prompt 1, verify masih hilang)
+
+**Fix:**
+
+**1.2a — Hapus tampilan PIN dari login screen.** Di `src/pages/admin.jsx`, hapus baris yang menampilkan "Demo PIN":
+
+```jsx
+// HAPUS bagian ini (sekitar line 90-92):
+<div className="mt-5 text-center text-xs text-ink-soft">
+  Demo PIN: <span className="font-mono text-gold-300">{ADMIN_PIN}</span>
+</div>
+```
+
+Ganti dengan helper text netral (tanpa bocorin PIN):
+
+```jsx
+<div className="mt-5 text-center text-xs text-ink-soft">
+  Akses khusus admin Talqih.
+</div>
+```
+
+**1.2b — Ganti PIN ke yang lebih kuat.** Di `src/data.jsx:614`, ganti PIN dari "9090" ke PIN yang lebih panjang dan tidak obvious:
+
+```js
+const ADMIN_PIN = "TLQH-2026-9X4K";  // ganti dengan PIN pilihan admin yang panjang
+```
+
+**Catatan:** idealnya PIN ini di-hash, tapi karena arsitektur client-only localStorage tanpa backend, hashing di client tidak menambah security signifikan (attacker bisa baca source). Yang penting: **jangan ditampilkan di UI**, dan **pakai PIN yang tidak mudah ditebak**. Beri tahu admin (lo) untuk ganti PIN ini ke value rahasia pilihan sendiri sebelum deploy.
+
+**1.2c — Verify link Admin sudah hilang dari footer.** Cek `src/layout.jsx` footer — pastikan tidak ada `<a href="#/admin">` atau link "Admin" yang accessible publik. Admin diakses via direct URL `domain.com/#/admin` yang cuma admin tahu.
+
+### Fix 1.3 — Payment Modal Auto-Confirm
+
+**Lokasi:** `src/layout.jsx:299-300`
+
+**Masalah:**
+```js
+window.open("https://lynk.id/madad", "_blank", "noopener,noreferrer");
+setTimeout(() => setPaid(true), 800);  // ← auto "paid" 800ms setelah klik
+```
+User klik tombol bayar → 800ms kemudian modal otomatis berubah ke "Pembayaran sedang diproses" — terlepas apakah user benar-benar bayar. Misleading.
+
+**Fix:** Ganti auto-timeout dengan **konfirmasi manual user**. Edit handler:
+
+```jsx
+const handlePayClick = () => {
+  window.open("https://lynk.id/talqih", "_blank", "noopener,noreferrer");  // update URL ke talqih juga
+  // JANGAN auto-set paid. Tunggu user konfirmasi manual.
+};
+
+const handleConfirmPaid = () => {
+  setPaid(true);
+};
+```
+
+UI: setelah user klik "Bayar via Lynk.id", tab Lynk terbuka. Di modal, tampilkan state baru: tombol "Saya sudah bayar" yang user klik **setelah** benar-benar selesai checkout. Baru itu munculkan screen "Pembayaran sedang diproses, kode akan dikirim admin".
+
+```jsx
+{!paid ? (
+  <div>
+    <button onClick={handlePayClick} className="btn-primary w-full py-4">
+      Bayar via Lynk.id →
+    </button>
+    <button 
+      onClick={handleConfirmPaid} 
+      className="btn-ghost w-full py-3 mt-3 text-sm"
+    >
+      Saya sudah selesai bayar
+    </button>
+    <p className="text-xs text-ink-soft text-center mt-3">
+      Klik "Bayar via Lynk.id" → selesaikan pembayaran → kembali ke sini dan klik "Saya sudah selesai bayar".
+    </p>
+  </div>
+) : (
+  <div className="text-center">
+    {/* screen "Pembayaran sedang diproses, kode dikirim admin via WhatsApp" */}
+  </div>
+)}
+```
+
+**Catatan:** ini bukan verifikasi pembayaran real (itu butuh webhook Lynk). Tapi minimal flow-nya jujur — user yang konfirmasi sendiri, bukan timer otomatis yang bohong.
+
+Update juga URL Lynk dari `lynk.id/madad` → `lynk.id/talqih` (atau URL Lynk aktual lo).
+
+---
+
+## BAGIAN 2 — DISCOVERABILITY
+
+### Fix 2.1 — Navbar: Kurasah & Muqaranah jadi Nav Utama
+
+**Lokasi:** `src/layout.jsx:58-63`
+
+**Masalah:** Kurasah cuma icon button kecil di samping avatar. Muqaranah tersembunyi di dalam /paths. User yang gak explore gak akan nemu.
+
+**Fix:** Tambahkan ke `memberLinks` dan struktur ulang navbar. Karena Talqih sekarang Maddah-first, urutan nav:
+
+```jsx
+const memberLinks = [
+  { to: "/dashboard",        label: "Dashboard" },
+  { to: "/maddah",           label: "Maddah" },
+  { to: "/paths/muqaranah",  label: "Muqaranah" },
+  { to: "/kurasah",          label: "Kurasah" },
+  { to: "/tools",            label: "Tool Guide" },
+];
+```
+
+**Catatan:** "Learning Path" dan "Etika" tidak hilang — tapi karena navbar bisa terlalu penuh, pindahkan keduanya. Opsi:
+- "Etika" → pindah ke footer atau jadi link di dashboard
+- "Learning Path" → tetap accessible via `/paths`, bisa dari quick action dashboard
+
+Kalau navbar jadi terlalu panjang di desktop (>5 item bikin sempit), pertimbangkan:
+- Desktop: tampilkan 5 utama (Dashboard, Maddah, Muqaranah, Kurasah, Tool Guide)
+- Item lain (Learning Path, Etika) masuk ke dropdown "Lainnya" atau footer
+
+**Hapus icon button Kurasah** yang lama (line 84-89) karena sekarang Kurasah sudah jadi nav link utama — redundant.
+
+### Fix 2.2 — Mobile Menu: Tambahkan Semua Link
+
+**Lokasi:** `src/layout.jsx` mobile menu section
+
+**Masalah:** Mobile menu mungkin tidak punya semua link (terutama Kurasah yang dulu icon-only).
+
+**Fix:** Pastikan mobile menu (hamburger) menampilkan SEMUA member links yang sama dengan desktop:
+- Dashboard, Maddah, Muqaranah, Kurasah, Tool Guide, Learning Path, Etika
+
+Mobile menu boleh lebih panjang dari desktop karena vertical scroll. Pastikan semua fitur reachable di mobile.
+
+### Fix 2.3 — QuickNote Button Universal
+
+**Lokasi:** `src/app.jsx` + hapus dari masing-masing page
+
+**Masalah:** `<QuickNoteButton/>` cuma di-mount di dashboard.jsx, kurasah.jsx, muqaranah-detail.jsx. Di Maddah detail, Tool Guide, Learning Path, Etika — gak ada.
+
+**Fix:** Pindahkan `<QuickNoteButton/>` ke `app.jsx` sebagai sibling dari `<main>`, conditional render untuk member yang sudah onboarded dan bukan di halaman admin:
+
+Di `src/app.jsx`, di dalam layout member (setelah `<main>`):
+
+```jsx
+<main className="flex-1">
+  {renderPage()}
+</main>
+{session && profile?.onboarded && <QuickNoteButton/>}
+```
+
+Lalu **hapus** `<QuickNoteButton/>` dari:
+- `src/pages/dashboard.jsx` (line 190)
+- `src/pages/kurasah.jsx` (line 250)
+- `src/pages/muqaranah-detail.jsx` (line 270)
+
+**Catatan:** Di muqaranah-detail, QuickNoteButton dipanggil dengan props `contextLabel` dan `contextSource` (untuk auto-link note ke muqaranah). Karena sekarang di-mount global di app.jsx, context-aware linking ini hilang. Solusi: buat QuickNoteButton **detect context dari URL** sendiri:
+
+```jsx
+// Di src/quick-note.jsx, dalam QuickNoteButton:
+const QuickNoteButton = () => {
+  // Auto-detect context dari URL
+  const path = window.location.hash.slice(1);
+  let contextLabel = null;
+  let contextSource = null;
+  
+  if (path.startsWith("/paths/muqaranah?id=")) {
+    const id = new URLSearchParams(path.split("?")[1]).get("id");
+    const entry = (typeof getMuqaranahById !== "undefined") ? getMuqaranahById(id) : null;
+    if (entry) {
+      contextLabel = "Muqaranah: " + entry.title;
+      contextSource = { type: "muqaranah", id: entry.id, label: entry.title };
+    }
+  } else if (path.startsWith("/maddah/")) {
+    const id = path.match(/\/maddah\/([\w-]+)/)?.[1];
+    const maddah = (typeof getMaddahById !== "undefined") ? getMaddahById(id) : null;
+    if (maddah) {
+      contextLabel = "Maddah: " + maddah.name;
+      contextSource = { type: "maddah", id: maddah.id, label: maddah.name };
+    }
+  }
+  
+  // ... rest of component pakai contextLabel & contextSource yang ter-detect
+};
+```
+
+Ini bikin QuickNote tetap context-aware (auto-link ke Muqaranah atau Maddah yang lagi dibuka) tapi sekarang available di semua page.
+
+---
+
+## BAGIAN 3 — ONBOARDING VERIFICATION
+
+### Fix 3.1 — Pastikan Onboarding Pakai Sistem Baru
+
+**Lokasi:** `src/pages/onboarding.jsx` + `src/data.jsx`
+
+**Konteks:** Di percakapan sebelumnya kita rencanakan onboarding pakai fakultas + tingkat + jurusan (conditional). Pastikan ini sudah terimplementasi. Kalau BELUM, implementasikan sekarang:
+
+- Question: Fakultas (6 opsi: Ushuluddin, Syariah, Lughah, Dirasat, Qur'an, Umum)
+- Question: Tingkat (Mustawa, I, II, III, IV, V, Pasca)
+- Question (conditional): Jurusan — hanya muncul kalau fakultas punya jurusan DAN tingkat user >= batas penjurusan
+- Question: Struggle (multi-select, existing)
+- Question: Learning Style (multi-select, existing)
+
+Pastikan data `FACULTIES` dan `LEVELS` ada di `src/data.jsx` (lihat detail di percakapan sebelumnya — kalau belum ada, buat sekarang dengan struktur yang sudah didefinisikan).
+
+Profile output: `{ faculty, level, major (atau null), struggle, learningStyle, onboarded: true }`
+
+**Migration untuk user lama:** Pastikan ada `migrateProfile()` yang convert `profile.field` lama → `profile.faculty` baru, supaya user existing tidak perlu re-onboarding.
+
+**Jika onboarding sistem baru SUDAH terimplementasi** (dari prompt sebelumnya), cukup verify:
+- [ ] Onboarding nanya fakultas, tingkat, jurusan conditional, struggle, learning style
+- [ ] Profile tersimpan dengan field `faculty`, `level`, `major`
+- [ ] Adaptive prompt di Maddah detail ter-resolve dengan benar dari profile ini
+
+---
+
+## BAGIAN 4 — FINAL ANTI-PATTERN SWEEP
+
+Lakukan pencarian menyeluruh di SEMUA file dan bersihkan:
+
+### 4.1 — Emoji Anti-Pattern
+
+Cari di seluruh `src/`:
+- `🎉` `🔥` `🏆` `🎯` `🚀` `⚡` `💪` `👏` `🔝` `🎊` `🏅`
+
+Setiap yang ketemu:
+- Kalau di toast/celebration → hapus, ganti dengan teks tenang
+- Kalau di icon stage/label → ganti dengan emoji tenang (🌿 🕌 🌙 📖 ✦) atau SVG icon
+- **Pengecualian:** 🌙 di greeting OK (bulan sabit, spiritual), 🌿 untuk growth stage OK
+
+### 4.2 — Warna Non-Sanctuary
+
+Cari di seluruh `src/`:
+- `red-400` `red-500` `red-600` (Tailwind default red) → ganti ke `rose-600` (yang sudah di-set jadi muted purple-rose)
+- `green-` `emerald-` `mint` pure → ganti ke `gold` atau hapus
+- `blue-` `sky-` `cyan-` → ganti ke `violet`
+- `yellow-` `amber-` `orange-` → ganti ke `gold`
+
+### 4.3 — Sisa Brand "Madad"
+
+Cari `MADAD` / `Madad` (case-sensitive) di copy/text:
+- Semua ganti ke `Talqih`
+- **KECUALI** localStorage keys (`madad_notes`, dll) — biarkan untuk backward compat
+- File comment header (`/* Madad, ... */`) → update ke `/* Talqih, ... */` (opsional, kosmetik)
+
+### 4.4 — Copy Anti-Pattern
+
+Baca semua copy UI, cari:
+- Kata "challenge", "mission", "goal", "target" dalam konteks gamifikasi → ganti bahasa yang lebih tenang
+- Celebration berlebihan ("Selamat!", "Hebat!", "Keren!") → ganti dengan apresiasi tenang ("Tercatat", "Barakallahu fik")
+
+---
+
+## BAGIAN 5 — LOADING STATE (Polish)
+
+### Fix 5.1 — Loading Placeholder Saat Babel Compile
+
+**Lokasi:** `index.html`, dalam `<div id="root">`
+
+**Masalah:** Babel standalone compile semua jsx di browser — di koneksi lambat (Mesir!), user lihat blank screen 3-5 detik.
+
+**Fix:** Isi `<div id="root">` dengan loading placeholder yang akan auto-replaced saat React mount:
+
+```html
+<div id="root">
+  <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#0A0514;">
+    <div style="font-family:'Aref Ruqaa','Amiri',serif;font-size:2rem;color:#C9A86A;direction:rtl;opacity:0.85;margin-bottom:1rem;">
+      تَلْقِيح
+    </div>
+    <div style="font-family:'Crimson Pro',serif;color:#9B8DBA;font-size:0.9rem;">
+      Membuka Talqih...
+    </div>
+    <div style="margin-top:1.5rem;width:32px;height:32px;border:2px solid rgba(124,77,255,0.2);border-top-color:#7C4DFF;border-radius:50%;animation:talqih-spin 0.8s linear infinite;"></div>
+  </div>
+</div>
+<style>
+  @keyframes talqih-spin { to { transform: rotate(360deg); } }
+</style>
+```
+
+React akan auto-replace konten `#root` saat mount. Loading ini cuma muncul sebelum app siap.
+
+---
+
+## Acceptance Criteria
+
+### Security
+- [ ] **XSS test:** buat catatan Kurasah berisi `<script>alert(1)</script>` → preview tampilkan sebagai teks literal, TIDAK execute
+- [ ] **XSS test 2:** `<img src=x onerror="alert(1)">` → tidak execute
+- [ ] Admin login screen TIDAK menampilkan PIN lagi (no "Demo PIN: ...")
+- [ ] PIN admin di data.jsx bukan "9090" lagi (sudah diganti yang lebih kuat)
+- [ ] Link "Admin" tidak ada di footer publik
+- [ ] Payment modal: klik "Bayar via Lynk.id" → TIDAK auto-confirm. Ada tombol manual "Saya sudah selesai bayar"
+- [ ] Payment URL update ke lynk.id/talqih (atau URL aktual)
+
+### Discoverability
+- [ ] Navbar member punya: Dashboard, Maddah, Muqaranah, Kurasah, Tool Guide (5 utama)
+- [ ] Kurasah & Muqaranah sekarang nav link utama (BUKAN icon tersembunyi)
+- [ ] Icon button Kurasah lama (di samping avatar) sudah dihapus (redundant)
+- [ ] Mobile menu punya semua link (Dashboard, Maddah, Muqaranah, Kurasah, Tool Guide, Learning Path, Etika)
+- [ ] Learning Path & Etika tetap accessible (via nav/footer/quick action)
+
+### QuickNote Universal
+- [ ] QuickNote floating button muncul di SEMUA page member: Dashboard, Maddah hub, Maddah detail, Muqaranah, Kurasah, Tool Guide, Learning Path, Etika
+- [ ] QuickNote TIDAK muncul di: landing publik, sample Maddah publik, halaman admin
+- [ ] QuickNote di Maddah detail → auto-detect context, note ter-link ke Maddah itu
+- [ ] QuickNote di Muqaranah detail → auto-detect context, note ter-link ke Muqaranah itu
+- [ ] QuickNote sudah dihapus dari masing-masing page (dashboard, kurasah, muqaranah-detail) — sekarang cuma di app.jsx
+
+### Onboarding
+- [ ] Onboarding pakai fakultas + tingkat + jurusan conditional (sistem baru)
+- [ ] Profile tersimpan dengan `faculty`, `level`, `major`
+- [ ] User lama dengan `profile.field` ter-migrate otomatis, tidak perlu re-onboarding
+- [ ] Adaptive prompt di Maddah ter-resolve dengan benar dari profile
+
+### Anti-Pattern Sweep
+- [ ] Cari emoji 🎉🔥🏆🎯🚀⚡ di src/ → 0 results (kecuali 🌙🌿 yang OK)
+- [ ] Cari `red-400/500/600` Tailwind default → 0 results (semua jadi rose-600)
+- [ ] Cari `emerald/green/sky/blue/yellow/amber` → 0 results
+- [ ] Cari "MADAD"/"Madad" di copy → 0 results (kecuali localStorage keys & comments)
+- [ ] Tidak ada copy "challenge/mission/goal" gamifikasi
+
+### Loading State
+- [ ] Refresh browser di koneksi lambat → muncul loading "Talqih" dengan spinner sebelum app load
+- [ ] Loading auto-hilang saat app ready
+
+### Final Launch Check
+- [ ] Buka semua page: landing, sample Nahwu, dashboard, Maddah hub, Maddah detail, Muqaranah, Kurasah, Tool Guide, Learning Path, Etika, admin → semua render tanpa error
+- [ ] Mobile responsive semua page (test 375px)
+- [ ] Tidak ada console error/warning di seluruh app
+- [ ] localStorage data user existing tetap utuh (cek DevTools)
+- [ ] Flow lengkap jalan: landing → cobain sample → bayar (manual confirm) → login → onboarding → dashboard Maddah-first → buka Maddah → salin prompt adaptive → catat ke Kurasah
+
+---
+
+## Catatan Penutup
+
+### Yang Sudah Selesai (Roadmap Lengkap)
+
+Setelah Prompt 5 ini, Talqih sudah:
+1. ✅ Rebrand lengkap (MADAD → Talqih) + color discipline + font Arab 3-tier
+2. ✅ Landing page ringkas dengan sample Maddah gratis (Nahwu)
+3. ✅ Sistem 36 Maddah dengan adaptive prompt per tingkat & gaya belajar
+4. ✅ Dashboard Maddah-first (sanctuary jadi pendamping)
+5. ✅ Security hardened, discoverability fixed, anti-pattern bersih
+
+### Sebelum Launch — Checklist Manual untuk Lo (Bukan untuk Replit)
+
+Hal-hal yang HARUS lo lakukan manual sebelum go-live:
+1. **Ganti ADMIN_PIN** ke value rahasia pilihan sendiri (jangan pakai yang di prompt ini — itu cuma placeholder)
+2. **Verify URL Lynk.id** — pastikan `lynk.id/talqih` benar atau ganti ke URL produk aktual
+3. **Buat og-image.png** 1200x630 untuk preview share WhatsApp/social (logo Talqih + tagline)
+4. **Test payment flow** end-to-end dengan transaksi real kecil
+5. **Siapkan sistem distribusi kode member** — admin generate kode → kirim WhatsApp setelah konfirmasi bayar
+6. **Backup** — pastikan ada cara restore kalau ada bug pasca-launch
+
+### Yang Bisa Dikembangkan Pasca-Launch (Future)
+
+Setelah launch dan ada user real, pertimbangkan:
+- Backend real (Supabase/Firebase) untuk member management & payment webhook — supaya tidak manual kirim kode
+- Analytics: Maddah mana paling sering dibuka, prompt mana paling sering di-copy
+- Feedback loop: user bisa rate prompt ("ini membantu / kurang")
+- Expand Maddah content berdasarkan request user
+- Wirid/adab harian (companion tambahan yang kita bahas dulu)
+
+---
+
+والله ولي التوفيق. Ini prompt terakhir — setelah ini Talqih siap dilihat dunia. Mulai.

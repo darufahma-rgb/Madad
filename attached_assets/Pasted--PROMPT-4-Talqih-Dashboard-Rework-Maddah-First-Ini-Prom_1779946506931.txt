@@ -1,0 +1,518 @@
+# PROMPT 4 — Talqih: Dashboard Rework (Maddah-First)
+
+> Ini **Prompt 4 dari 5** dalam roadmap Talqih.
+> **Prerequisite:** Prompt 1, 2, 3A, 3B sudah selesai (rebrand, landing, Maddah system lengkap).
+> Kalau Maddah system belum jalan, JANGAN run prompt ini.
+
+---
+
+## Konteks
+
+Dashboard Talqih saat ini masih **sanctuary-first** — section pertama setelah greeting adalah "Niat Hari Ini", lalu Continue Learning, Ritme, baru AI Recommendation.
+
+**Masalahnya:** ini tidak sesuai positioning Talqih yang sudah kita lurusin. User bayar 49k karena mau **belajar materi Al-Azhar dengan AI** — bukan karena butuh sanctuary untuk catat niat harian. Saat user buka dashboard, hal pertama yang harus dia lihat adalah: **"Maddah-ku hari ini + AI yang cocok untuk masing-masing"** — bukan niat.
+
+**Tujuan Prompt 4:** rework dashboard supaya **Maddah-first**. Sanctuary elements (Niat, Ritme, Refleksi) tetap ada tapi **diturunkan jadi sekunder** — bukan dihapus, tapi bukan di posisi utama.
+
+---
+
+## Filosofi Dashboard Baru (BACA DULU)
+
+### Mental Model User Saat Buka Dashboard
+
+User Talqih buka dashboard dengan pikiran:
+1. *"Maddah apa yang mau gue pelajarin hari ini?"* → harus langsung kelihatan
+2. *"AI mana yang cocok buat Maddah itu?"* → harus jelas per Maddah
+3. *"Lanjutin yang kemarin"* → continue dari Maddah terakhir
+4. *(Background) "Gue ditemani dalam belajar"* → sanctuary sebagai atmosfer, bukan fokus
+
+### Prinsip Hierarki Baru
+
+**Tier 1 (Hero — paling atas, paling prominent):**
+- Greeting personal (dipertahankan tapi diringkas)
+- **"Maddah-mu" — grid Maddah dari fakultas+tingkat user, dengan AI rekomendasi per Maddah**
+
+**Tier 2 (Penting — di tengah):**
+- Continue Learning (Maddah/aktivitas terakhir)
+- AI Recommendation umum (top AI untuk gaya belajar user)
+
+**Tier 3 (Pendukung — bawah):**
+- Learning Path (dipertahankan)
+- Kurasah terakhir
+
+**Tier 4 (Sanctuary — paling bawah / sidebar tipis):**
+- Niat Hari Ini → jadi strip tipis di bawah, atau collapse
+- Ritme Pekan Ini → jadi compact widget
+- Refleksi Kurasah → tetap tapi di bawah
+
+### Yang TIDAK Berubah
+
+- Companion components (`IntentionStrip`, `RhythmCard`, `ReflectionCard`, `KurasahRecentCards`) — **logic-nya tidak disentuh**, cuma **posisi & ukuran**-nya yang berubah
+- `markPresenceToday()` tetap dipanggil saat mount
+- QuickNoteButton tetap ada
+- Sanctuary mood (gold accent untuk spiritual, dll) tetap dijaga
+
+---
+
+## Stack Teknis (Existing)
+
+- React 18 + Babel Standalone
+- Maddah system dari Prompt 3A/3B: `MADDAHS`, `getMaddahsForProfile()`, `getMaddahById()`, `MADDAH_CATEGORIES`
+- Helper: `recommend()`, `computeStage()`, `useAuth()`, `<Reveal>`, `<Blob>`, `<Icon>`, `<ToolIcon>`
+- Companion: `<IntentionStrip>`, `<RhythmCard>`, `<ReflectionCard>`, `<KurasahRecentCards>`, `<QuickNoteButton>`
+- Adaptive: `TINGKATAN_LABEL`, `FAKULTAS_LABEL` dari adaptive-prompt.jsx
+
+---
+
+## LAYOUT DASHBOARD BARU
+
+```
+┌──────────────────────────────────────────────────────────────────┐
+│  1. GREETING (ringkas)                                           │
+│     Assalamu'alaikum [Name]                                      │
+│     [Fakultas] · [Jurusan] · [Tingkat]                          │
+├──────────────────────────────────────────────────────────────────┤
+│  2. ✦ MADDAH-MU (HERO BARU — paling prominent)                  │
+│     Grid Maddah dari fakultas+tingkat user                       │
+│     Tiap card: nama Maddah + AI rekomendasi + jumlah prompt      │
+│     [Lihat semua Maddah →]                                       │
+├──────────────────────────────────────────────────────────────────┤
+│  3. CONTINUE LEARNING + AI TOP PICK (split)                      │
+│     Kiri: lanjut dari terakhir | Kanan: AI utama untuk gaya     │
+├──────────────────────────────────────────────────────────────────┤
+│  4. AI RECOMMENDATION (3 AI cocok untuk gaya belajar)            │
+├──────────────────────────────────────────────────────────────────┤
+│  5. LEARNING PATH (dipertahankan)                                │
+├──────────────────────────────────────────────────────────────────┤
+│  6. KURASAH TERAKHIR                                             │
+├──────────────────────────────────────────────────────────────────┤
+│  7. ✦ TEMAN BELAJAR (sanctuary — compact, 1 row)               │
+│     [Niat hari ini] [Ritme pekan ini] [Refleksi]                │
+│     3 kolom compact, bukan full-width masing-masing             │
+├──────────────────────────────────────────────────────────────────┤
+│  8. AKSI CEPAT (quick actions)                                   │
+└──────────────────────────────────────────────────────────────────┘
+```
+
+**Perubahan utama dari layout lama:**
+- Niat (IntentionStrip) **pindah dari posisi #2 (atas) → ke #7 (sanctuary row, compact)**
+- Ritme (RhythmCard) **pindah dari posisi #3 → ke #7 (sanctuary row, compact)**
+- Refleksi (ReflectionCard) **tetap di bawah, masuk #7 sanctuary row**
+- **Maddah-mu jadi hero #2** (sebelumnya tidak ada)
+- AI Recommendation tetap, tapi turun sedikit
+
+---
+
+## YANG HARUS DILAKUKAN
+
+### STEP 1 — Buat Komponen Baru `<MaddahHeroSection>` di dashboard.jsx
+
+Komponen hero baru yang menampilkan Maddah dari fakultas+tingkat user, dengan AI rekomendasi per Maddah.
+
+```jsx
+/* ============ MADDAH HERO (section utama dashboard) ============ */
+const MaddahHeroSection = ({ profile }) => {
+  // Get maddah untuk profile user (filter faculty + level)
+  const myMaddahs = useMemo(() => {
+    const filtered = getMaddahsForProfile(profile);
+    // Prioritaskan yang punya content (bukan skeleton)
+    const withContent = filtered.filter(m => 
+      m.prompts && Object.values(m.prompts).some(arr => arr.length > 0)
+    );
+    const withoutContent = filtered.filter(m => 
+      !m.prompts || !Object.values(m.prompts).some(arr => arr.length > 0)
+    );
+    // Tampilkan max 6: prioritas yang ada content
+    return [...withContent, ...withoutContent].slice(0, 6);
+  }, [profile]);
+
+  if (myMaddahs.length === 0) {
+    return (
+      <section className="pb-8">
+        <div className="container-x">
+          <div className="card-glass p-6 text-center">
+            <p className="text-ink-muted mb-3">Belum ada Maddah yang cocok dengan profilmu.</p>
+            <button onClick={() => navigate("/maddah")} className="btn-ghost text-sm">
+              Lihat semua Maddah
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="pb-8">
+      <div className="container-x">
+        <Reveal className="mb-6 flex items-end justify-between flex-wrap gap-3">
+          <div>
+            <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 flex items-center gap-2">
+              <span className="w-6 h-px bg-gold-500/60"/>
+              Maddah untuk fakultas & tingkatmu
+            </div>
+            <h2 className="font-display text-3xl md:text-4xl font-semibold text-ink">
+              Maddah-mu
+            </h2>
+          </div>
+          <button 
+            onClick={() => navigate("/maddah")} 
+            className="text-sm text-violet-400 hover:text-violet-300 inline-flex items-center gap-1.5 transition-colors"
+          >
+            Semua 36 Maddah <Icon name="arrowRight" className="w-3.5 h-3.5"/>
+          </button>
+        </Reveal>
+
+        <Reveal stagger className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {myMaddahs.map((m) => (
+            <MaddahDashCard key={m.id} maddah={m}/>
+          ))}
+        </Reveal>
+      </div>
+    </section>
+  );
+};
+
+/* ====== MADDAH CARD untuk Dashboard ====== */
+const MaddahDashCard = ({ maddah }) => {
+  const hasContent = maddah.prompts && Object.values(maddah.prompts).some(arr => arr.length > 0);
+  const totalPrompts = hasContent ? Object.values(maddah.prompts).reduce((s, arr) => s + arr.length, 0) : 0;
+  const topAI = maddah.recommendedAI?.[0];
+  const topAITool = topAI ? AI_TOOLS.find(t => t.id === topAI.tool) : null;
+
+  return (
+    <div
+      onClick={() => navigate("/maddah/" + maddah.id)}
+      className="card-glass p-5 hov-lift cursor-pointer transition-all group relative overflow-hidden"
+    >
+      {/* Subtle category-colored glow */}
+      <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-violet-500/8 blur-2xl pointer-events-none"/>
+      
+      <div className="relative">
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <div className="flex-1">
+            <div className="arabic-display text-gold-300 text-xl mb-1 group-hover:text-gold-200 transition-colors" style={{direction:"rtl"}}>
+              {maddah.nameArabic}
+            </div>
+            <h3 className="font-display text-lg font-semibold text-ink">{maddah.name}</h3>
+          </div>
+          {!hasContent && (
+            <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 border border-violet-500/20 flex-shrink-0">
+              Segera
+            </span>
+          )}
+        </div>
+
+        {hasContent && topAITool && (
+          <div className="flex items-center gap-2.5 mb-3 p-2.5 rounded-lg bg-white/3 border border-line">
+            <ToolIcon tool={topAITool} size="w-8 h-8"/>
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] text-ink-soft uppercase tracking-wider">AI rekomendasi</div>
+              <div className="text-sm text-ink font-medium truncate">{topAITool.name}</div>
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between text-xs">
+          {hasContent ? (
+            <>
+              <span className="text-gold-400">{totalPrompts} prompt template</span>
+              <span className="inline-flex items-center gap-1 text-violet-400 group-hover:gap-2 transition-all">
+                Buka <Icon name="arrowRight" className="w-3 h-3"/>
+              </span>
+            </>
+          ) : (
+            <span className="text-ink-soft">Konten segera hadir</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+### STEP 2 — Buat Komponen `<SanctuaryRow>` (Companion Compact)
+
+Bungkus 3 companion (Niat, Ritme, Refleksi) jadi 1 row compact. Ini menggantikan 3 section terpisah yang full-width.
+
+```jsx
+/* ============ SANCTUARY ROW (companion compact) ============ */
+const SanctuaryRow = () => {
+  return (
+    <section className="pb-8">
+      <div className="container-x">
+        <Reveal className="mb-5">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/60"/>
+            Teman belajarmu
+          </div>
+          <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">
+            Ditemani sepanjang belajar
+          </h2>
+        </Reveal>
+
+        {/* 
+          Companion components dirender di sini, tapi dalam layout grid compact.
+          IntentionStrip, RhythmCard, ReflectionCard logic-nya TIDAK diubah,
+          cuma di-wrap dalam grid yang lebih kecil.
+        */}
+        <div className="grid lg:grid-cols-2 gap-4 mb-4">
+          <IntentionStrip/>
+          <RhythmCard/>
+        </div>
+        <ReflectionCard/>
+      </div>
+    </section>
+  );
+};
+```
+
+**CATATAN:** Kalau `IntentionStrip` dan `RhythmCard` saat ini di-desain full-width dan jadi terlalu besar dalam grid 2-kolom, mungkin perlu sedikit penyesuaian internal styling supaya muat. Tapi **jangan ubah logic-nya** — cuma pastikan mereka responsive dalam container yang lebih sempit. Kalau perlu, tambahkan prop `compact={true}` ke komponen-komponen itu untuk varian styling yang lebih kecil, TAPI ini opsional — kalau sudah responsive, biarkan.
+
+### STEP 3 — Update Greeting (Ringkas + Faculty/Major/Level)
+
+Greeting saat ini reference `profile.field` (sistem lama). Update ke `profile.faculty` + `profile.major` + `profile.level` (sistem baru dari onboarding rework).
+
+Ganti bagian greeting subtitle:
+
+```jsx
+{/* 1. GREETING */}
+<section className="relative pt-12 md:pt-16 pb-8 overflow-hidden">
+  <Blob color="rgba(124,77,255,0.22)" size={600} top={-200} right={-100}/>
+  <Blob color="rgba(201,168,106,0.10)" size={400} top={100} left={-150}/>
+  <div className="absolute inset-0 pattern-stars opacity-25 pointer-events-none"/>
+  <div className="container-x relative">
+    <Reveal>
+      <div className="arabic-classic text-2xl text-gold-300 mb-3" style={{direction:"rtl"}}>السلام عليكم</div>
+      <h1 className="font-display text-5xl md:text-[64px] font-semibold text-ink leading-[1.0] tracking-tightest">
+        Assalamu'alaikum,{" "}
+        <span className="gradient-text">{firstName}</span>{" "}
+        <span className="text-gold-300">🌙</span>
+      </h1>
+      <p className="mt-5 text-ink-muted text-lg max-w-2xl leading-relaxed">
+        {facultyLabel}
+        {majorLabel ? <> · <span className="text-ink font-medium">{majorLabel}</span></> : null}
+        {levelLabel ? <> · <span className="text-ink font-medium">{levelLabel}</span></> : null}
+        {". "}
+        Talqih siap menemani belajarmu hari ini.
+      </p>
+    </Reveal>
+  </div>
+</section>
+```
+
+Di bagian atas component, hitung label-nya:
+
+```jsx
+const DashboardPage = () => {
+  const { session, profile, progress, clearProfile } = useAuth();
+  const recs = useMemo(() => profile ? recommend(profile) : [], [profile]);
+  const stage = useMemo(() => computeStage(), [progress]);
+
+  useEffect(() => {
+    if (!session) { navigate("/"); return; }
+    if (!profile?.onboarded) { navigate("/onboarding"); return; }
+    markPresenceToday();
+  }, [session, profile]);
+
+  if (!session || !profile?.onboarded) return null;
+
+  const firstName = session.name.split(" ")[0];
+  const topRec = recs[0];
+
+  // ── Faculty/Major/Level labels (sistem baru) ──
+  const facultyData = (typeof FACULTIES !== "undefined") 
+    ? FACULTIES.find(f => f.id === profile.faculty) 
+    : null;
+  const facultyLabel = facultyData?.label 
+    || (typeof FAKULTAS_LABEL !== "undefined" ? FAKULTAS_LABEL[profile.faculty] : null)
+    || "Al-Azhar";
+  const majorLabel = profile.major && facultyData?.majors
+    ? facultyData.majors.find(m => m.id === profile.major)?.label
+    : null;
+  const levelLabel = (typeof LEVELS !== "undefined" && profile.level)
+    ? LEVELS.find(l => l.id === profile.level)?.label
+    : null;
+
+  return (
+    // ... layout
+  );
+};
+```
+
+**Catatan backward-compat:** kalau `FACULTIES`/`LEVELS` belum ada (misal onboarding rework belum dijalankan), fallback ke `FAKULTAS_LABEL` dari adaptive-prompt.jsx, atau default "Al-Azhar". Pakai guard `typeof ... !== "undefined"`.
+
+### STEP 4 — Susun Ulang Layout Root Dashboard
+
+Ganti urutan section di `DashboardPage` return jadi:
+
+```jsx
+return (
+  <div className="page-enter">
+
+    {/* 1. GREETING (ringkas) */}
+    {/* ... greeting section dari STEP 3 ... */}
+
+    {/* 2. MADDAH-MU (HERO BARU) */}
+    <MaddahHeroSection profile={profile}/>
+
+    {/* 3. CONTINUE LEARNING + STAGE (dipertahankan) */}
+    <section className="pb-8">
+      <div className="container-x">
+        <Reveal className="grid md:grid-cols-12 gap-4">
+          <ContinueCard className="md:col-span-8" progress={progress}/>
+          <StageCard className="md:col-span-4" stage={stage}/>
+        </Reveal>
+      </div>
+    </section>
+
+    {/* 4. AI RECOMMENDATION (dipertahankan) */}
+    <section className="pb-8">
+      <div className="container-x">
+        <Reveal className="mb-6 flex items-end justify-between flex-wrap gap-3">
+          <div>
+            <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 flex items-center gap-2">
+              <span className="w-6 h-px bg-gold-500/60"/>Rekomendasi personal
+            </div>
+            <h2 className="font-display text-3xl md:text-4xl font-semibold text-ink">AI yang cocok untuk gaya belajarmu</h2>
+          </div>
+          <a href="#/tools" onClick={(e)=>{e.preventDefault(); navigate("/tools");}} className="text-sm text-violet-400 hover:text-violet-300 inline-flex items-center gap-1.5 transition-colors">
+            Semua adaptive guide <Icon name="arrowRight" className="w-3.5 h-3.5"/>
+          </a>
+        </Reveal>
+        <Reveal stagger className="grid md:grid-cols-3 gap-4">
+          {recs.map((rec, i) => <RecommendationCard key={rec.toolId} rec={rec} index={i} profile={profile}/>)}
+        </Reveal>
+      </div>
+    </section>
+
+    {/* 5. ADAPTIVE GUIDE QUICK (dipertahankan) */}
+    {topRec && <AdaptiveGuideQuick profile={profile} topRec={topRec}/>}
+
+    {/* 6. LEARNING PATH (dipertahankan) */}
+    {/* ... learning path section, tidak berubah ... */}
+
+    {/* 7. KURASAH TERAKHIR (dipertahankan) */}
+    {/* ... kurasah recent section, tidak berubah ... */}
+
+    {/* 8. SANCTUARY ROW (companion compact — BARU) */}
+    <SanctuaryRow/>
+
+    {/* 9. AKSI CEPAT (update link Maddah) */}
+    <section className="pb-20">
+      <div className="container-x">
+        <Reveal className="mb-6">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/60"/>Aksi cepat
+          </div>
+          <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">Aksi cepat</h2>
+        </Reveal>
+        <Reveal stagger className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <QuickAction icon="layers" title="Semua Maddah" desc="36 mata pelajaran + 540 prompt" to="/maddah" color="violet"/>
+          <QuickAction icon="bookOpen" title="Adaptive guide" desc="Guide tiap AI sesuai gayamu" to="/tools" color="gold"/>
+          <QuickAction icon="scale" title="Muqaranah" desc="Banding qoul ulama 4 madzhab" to="/paths/muqaranah" color="violet"/>
+          <QuickAction icon="notebook" title="Kurasah" desc="Catatan & ta'liq belajarmu" to="/kurasah" color="gold"/>
+        </Reveal>
+      </div>
+    </section>
+
+    <QuickNoteButton/>
+  </div>
+);
+```
+
+**Catatan penting tentang urutan companion:**
+- IntentionStrip, RhythmCard, ReflectionCard **dipindahkan masuk ke `<SanctuaryRow>`** (section #8)
+- **Hapus** 3 section terpisah companion yang lama (yang full-width di posisi #2 Niat, #3 Ritme, dan Refleksi sebelum Kurasah)
+- Section Continue Learning **tidak lagi** punya companion di antaranya
+
+### STEP 5 — Update Quick Actions Links
+
+Quick actions lama mengarah ke /tools, /paths, /ethics, dan reset profile. Update jadi lebih relevan dengan Maddah-first:
+- "Semua Maddah" → `/maddah` (BARU, prominent)
+- "Adaptive guide" → `/tools`
+- "Muqaranah" → `/paths/muqaranah` (naikkan discoverability!)
+- "Kurasah" → `/kurasah` (naikkan discoverability!)
+
+Hapus "Perbarui profil" dari quick action (pindahkan ke menu setting/profile kalau ada, atau biarkan accessible dari tempat lain). Ini supaya quick action fokus ke fitur utama, bukan utility.
+
+---
+
+## Acceptance Criteria
+
+### Hierarki Baru
+- [ ] Section pertama setelah greeting adalah **"Maddah-mu"** (BUKAN Niat lagi)
+- [ ] Niat Hari Ini sekarang ada di section "Teman belajarmu" di bawah (bukan di atas)
+- [ ] Ritme Pekan Ini ada di section "Teman belajarmu" (compact, bukan full-width)
+- [ ] Refleksi Kurasah ada di section "Teman belajarmu"
+- [ ] Urutan section: Greeting → Maddah-mu → Continue+Stage → AI Rec → Adaptive Guide → Learning Path → Kurasah → Teman Belajar (sanctuary) → Aksi Cepat
+
+### Maddah Hero Section
+- [ ] Menampilkan max 6 Maddah dari fakultas+tingkat user
+- [ ] Maddah dengan konten diprioritaskan tampil duluan (sebelum skeleton)
+- [ ] Tiap card: nama Arab (arabic-display), nama Indonesia, AI rekomendasi #1 (icon + nama), jumlah prompt
+- [ ] Maddah skeleton tampil badge "Segera"
+- [ ] Klik card → navigate ke `/maddah/[id]`
+- [ ] Tombol "Semua 36 Maddah →" navigate ke `/maddah`
+- [ ] Kalau user tidak punya Maddah yang cocok → empty state dengan link ke /maddah
+
+### Greeting
+- [ ] Subtitle menampilkan `[Fakultas] · [Jurusan] · [Tingkat]` (bukan field+style lama)
+- [ ] Jurusan hilang kalau user belum dijurus (null)
+- [ ] Backward-compat: kalau FACULTIES/LEVELS belum ada, fallback graceful (tidak error/blank)
+- [ ] Greeting Arab "السلام عليكم" pakai font `arabic-classic` (Aref Ruqaa)
+
+### Sanctuary Row (Compact)
+- [ ] 3 companion (Niat, Ritme, Refleksi) ada dalam 1 section "Teman belajarmu"
+- [ ] Niat & Ritme dalam grid 2-kolom di desktop, stack di mobile
+- [ ] Refleksi di bawahnya (full-width dalam row sanctuary)
+- [ ] Logic companion TIDAK berubah (niat masih bisa di-commit, ritme masih track, refleksi masih ambil note lama)
+- [ ] Mobile responsive — companion tidak pecah/overflow
+
+### Quick Actions
+- [ ] 4 quick action: Semua Maddah, Adaptive guide, Muqaranah, Kurasah
+- [ ] Muqaranah & Kurasah sekarang accessible dari quick action (fix discoverability)
+- [ ] Klik masing-masing navigate ke route yang benar
+
+### Technical
+- [ ] Tidak ada console error
+- [ ] `markPresenceToday()` tetap dipanggil saat mount dashboard
+- [ ] QuickNoteButton tetap muncul
+- [ ] Companion components (IntentionStrip dll) tidak error dalam container baru
+- [ ] Mobile responsive seluruh dashboard (test 375px)
+- [ ] User existing dengan profile lama (`profile.field`) tetap bisa akses dashboard (greeting fallback graceful)
+
+### Sanctuary Mood Check
+- [ ] Gold accent tetap untuk spiritual moments (salam, atsar di refleksi)
+- [ ] Tidak ada warna pure red/green
+- [ ] Tidak ada emoji 🎉/🔥/🚀 yang nyelinap
+- [ ] Dashboard tetap terasa tenang, tidak ramai meski Maddah jadi prominent
+
+### Positioning Check (Penting)
+Buka dashboard, bayangkan kamu user baru yang baru bayar 49k. Tanya:
+- [ ] Apakah hal pertama yang gue lihat (setelah greeting) langsung kasih tau "ini yang bisa gue pelajarin"? → harus YA (Maddah-mu)
+- [ ] Apakah gue ngerasa "wah ini emang buat belajar materi Azhar"? → harus YA
+- [ ] Apakah niat/ritme terasa seperti bonus companion, bukan fitur utama? → harus YA
+
+---
+
+## Catatan Penting
+
+### Kenapa Sanctuary Tidak Dihapus
+
+Lo bilang sanctuary ini untuk "teman belajar masisir — buka AI sambil buka buku, ditemani website ini." Itu tetap valid. Tapi posisinya **bukan yang pertama dilihat**. User datang untuk Maddah, lalu *ditemani* oleh sanctuary. Makanya sanctuary turun ke bawah dengan judul "Teman belajarmu" — framing-nya sebagai pendamping, bukan tujuan utama.
+
+### Companion Logic Jangan Disentuh
+
+`IntentionStrip`, `RhythmCard`, `ReflectionCard` punya logic localStorage (niat, presence, reflection). **Jangan ubah logic itu.** Cuma posisi & container yang berubah. Kalau styling-nya pecah dalam container yang lebih sempit, sesuaikan styling-nya saja (responsive), bukan logic-nya.
+
+### Yang Akan Dilakukan di Prompt 5 (Terakhir)
+
+- Fix security: XSS di markdown, admin PIN, payment auto-confirm
+- Discoverability final: navbar Kurasah & Muqaranah jadi nav utama (bukan icon tersembunyi)
+- QuickNoteButton universal di semua page member
+- Onboarding refinement (kalau belum)
+- Final polish & anti-pattern sweep
+
+---
+
+والله ولي التوفيق. Mulai.
