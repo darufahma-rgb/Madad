@@ -15,9 +15,14 @@ const KurasahEditorPage = () => {
   const path = useRoute();
   const toast = useToast();
 
-  const params = new URLSearchParams(path.includes("?") ? path.split("?")[1] : "");
-  const noteId = params.get("id");
-  const isNew = path === "/kurasah/new" || path.startsWith("/kurasah/new");
+  const noteId = React.useMemo(() => {
+    const params = new URLSearchParams(path.includes("?") ? path.split("?")[1] : "");
+    return params.get("id");
+  }, []);
+
+  const isNew = React.useMemo(() => {
+    return path === "/kurasah/new" || path.startsWith("/kurasah/new");
+  }, []);
 
   const [note, setNote] = React.useState(null);
   const [title, setTitle] = React.useState("");
@@ -77,7 +82,6 @@ const KurasahEditorPage = () => {
       : [updated, ...allNotes];
     saveNotes(newList);
     markPresenceToday();
-    setNote(updated);
     setSaveStatus("saved");
     setSyncStatus("syncing");
     sbSaveNote(updated)
@@ -91,8 +95,15 @@ const KurasahEditorPage = () => {
     saveTimer.current = setTimeout(() => persistSave(t, b, tg, src, n), 800);
   }, [persistSave]);
 
-  const handleTitleChange = (v) => { setTitle(v); scheduleAutoSave(v, body, tags, source, note); };
-  const handleBodyChange = (v) => { setBody(v); scheduleAutoSave(title, v, tags, source, note); };
+  const handleTitleChange = React.useCallback((v) => {
+    setTitle(v);
+    scheduleAutoSave(v, body, tags, source, note);
+  }, [body, tags, source, note, scheduleAutoSave]);
+
+  const handleBodyChange = React.useCallback((v) => {
+    setBody(v);
+    scheduleAutoSave(title, v, tags, source, note);
+  }, [title, tags, source, note, scheduleAutoSave]);
 
   const addTag = (t) => {
     const clean = t.trim().toLowerCase();
@@ -194,6 +205,7 @@ const KurasahEditorPage = () => {
       </div>
       {/* Body */}
       <textarea
+        key="kurasah-body-editor"
         ref={bodyRef}
         value={body}
         onChange={e => handleBodyChange(e.target.value)}
@@ -225,6 +237,7 @@ const KurasahEditorPage = () => {
 
         {/* Title */}
         <input
+          key="kurasah-title-editor"
           value={title}
           onChange={e => handleTitleChange(e.target.value)}
           placeholder="Judul catatan..."
