@@ -207,8 +207,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
               letterSpacing: "-0.02em",
             }}
           >
-            Kitab susah, jadi mudah.<br/>
-            Materi lama, jadi cepat.<br/>
+            Paham Muqarrar dengan AI.<br/>
             <span style={{
               background: "linear-gradient(90deg, #A78BFA 0%, #C9A86A 100%)",
               WebkitBackgroundClip: "text",
