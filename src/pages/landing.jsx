@@ -503,8 +503,11 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
           <span className="w-6 h-px bg-gold-500/70"/>INVESTASI ILMU
         </div>
         <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
-          Bayar sekali, belajar selamanya. 540+ prompt siap pakai.
+          Bayar sekali, belajar selamanya.
         </h2>
+        <p className="text-ink-muted text-base md:text-lg mt-4 max-w-xl mx-auto leading-relaxed">
+          Dapatkan 540+ Prompt siap pakai untuk bantu kamu belajar + update selamanya
+        </p>
       </Reveal>
 
       <Reveal>
