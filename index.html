@@ -16,7 +16,30 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Aref+Ruqaa:wght@400;700&family=Reem+Kufi:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Aref+Ruqaa:wght@400;700&family=Reem+Kufi:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  @font-face {
+    font-family: 'DM Sans';
+    src: url('/assets/fonts/DMSans-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'DM Sans';
+    src: url('/assets/fonts/DMSans-Bold.ttf') format('truetype');
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'DM Sans';
+    src: url('/assets/fonts/DMSans-ExtraBold.ttf') format('truetype');
+    font-weight: 800;
+    font-style: normal;
+    font-display: swap;
+  }
+</style>
 
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
@@ -35,7 +58,7 @@
         },
         fontFamily: {
           serif:            ['"Crimson Pro"', 'Georgia', 'serif'],
-          sans:             ['Inter', 'system-ui', 'sans-serif'],
+          sans:             ['"DM Sans"', 'system-ui', 'sans-serif'],
           mono:             ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
           arabic:           ['"Noto Naskh Arabic"', 'Amiri', 'serif'],
           'arabic-display': ['"Reem Kufi"', '"Noto Kufi Arabic"', 'sans-serif'],
@@ -57,7 +80,7 @@
   :root { color-scheme: dark; }
   html, body { background: #0A0514; color: #F5F0FF; overflow-x: hidden; }
   body {
-    font-family: Inter, system-ui, sans-serif;
+    font-family: 'DM Sans', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     background:
       radial-gradient(1100px 550px at 80% -8%, rgba(124,77,255,0.18), transparent 60%),
@@ -66,6 +89,7 @@
       #0A0514;
     background-attachment: fixed;
   }
+  h1, h2, h3, h4, .hero-headline { letter-spacing: -0.275481em; }
   .font-display { font-family: "Crimson Pro", Georgia, serif; letter-spacing: -0.018em; }
   .num { font-variant-numeric: tabular-nums; }
   .arabic                   { font-family: "Noto Naskh Arabic", Amiri, serif; direction: rtl; line-height: 1.9; }
