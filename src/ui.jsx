@@ -135,10 +135,10 @@ const Stars = ({ value = 0, max = 5, className = "" }) => (
   </div>
 );
 
-/* ---------------- Talqee Logo mark ---------------- */
+/* ---------------- Talqeeh Logo mark ---------------- */
 const LogoMark = ({ size = 36, className = "" }) => (
   <span className={"inline-flex items-center justify-center " + className} style={{ width: size, height: size }}>
-    <img src="assets/talqee-logo.png" alt="Talqee" style={{ width: size, height: size, objectFit: "contain" }}/>
+    <img src="/assets/talqeeh-logo.png" alt="Talqeeh" style={{ width: size, height: size, objectFit: "contain", mixBlendMode: "screen" }}/>
   </span>
 );
 

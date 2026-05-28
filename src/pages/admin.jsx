@@ -23,7 +23,7 @@ const AdminPage = () => {
         <div className="container-x py-4 flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-3">
             <span className="chip chip-gold text-[10px]">ADMIN</span>
-            <span className="font-display text-lg font-semibold text-ink">Talqee Control Center</span>
+            <span className="font-display text-lg font-semibold text-ink">Talqeeh Control Center</span>
             <div className="flex items-center gap-1.5 text-xs ml-1">
               <span className={`w-2 h-2 rounded-full ${sbStatus === "online" ? "bg-gold-400" : sbStatus === "offline" ? "bg-rose-600" : "bg-ink-soft animate-pulse"}`}/>
               <span className="text-ink-soft hidden sm:inline">
@@ -91,7 +91,7 @@ const AdminLogin = ({ onLogin }) => {
         <Blob color="rgba(124,77,255,0.35)" size={300} top={-100} right={-100}/>
         <div className="relative">
           <span className="chip chip-gold text-[10px] mb-3 inline-flex">ADMIN ACCESS</span>
-          <h2 className="font-display text-3xl font-semibold text-ink mb-1">Talqee Control Center</h2>
+          <h2 className="font-display text-3xl font-semibold text-ink mb-1">Talqeeh Control Center</h2>
           <p className="text-sm text-ink-muted mb-6">Masukkan PIN admin untuk lanjut.</p>
           <form onSubmit={submit}>
             <input
@@ -141,7 +141,7 @@ const AdminDashboard = () => {
   return (
     <div>
       <h1 className="font-display text-4xl font-semibold text-ink mb-2">Overview</h1>
-      <p className="text-ink-muted mb-8">Ringkasan platform Talqee.</p>
+      <p className="text-ink-muted mb-8">Ringkasan platform Talqeeh.</p>
 
       <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Member</div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -532,7 +532,7 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
 
   const copyCode = () => { navigator.clipboard.writeText(generatedCode); toast.push("Kode tersalin"); };
   const sendWA = () => {
-    const text = `Halo ${name}!%0A%0AKode akses Talqee-mu sudah aktif:%0A%0A*${generatedCode}*%0A%0ABuka Talqee → Login Member → masukkan kode di atas.%0A%0A--Tim Talqee`;
+    const text = `Halo ${name}!%0A%0AKode akses Talqeeh-mu sudah aktif:%0A%0A*${generatedCode}*%0A%0ABuka Talqeeh → Login Member → masukkan kode di atas.%0A%0A--Tim Talqeeh`;
     window.open(`https://wa.me/${whatsapp.replace(/\D/g,"")}?text=${text}`, "_blank");
   };
 
@@ -1043,7 +1043,7 @@ const AdminSettings = () => {
   };
 
   const [settings, setSettings] = useState(() => ({
-    platformName: "Talqee",
+    platformName: "Talqeeh",
     tagline:      "Panduan Belajar Al-Azhar dengan AI",
     whatsapp:     "+201xxxxxxxxx",
     lynkUrl:      "https://lynk.id/talqee",
@@ -1073,7 +1073,7 @@ const AdminSettings = () => {
   return (
     <div className="max-w-2xl">
       <h1 className="font-display text-4xl font-semibold text-ink mb-1">Settings</h1>
-      <p className="text-ink-muted mb-8">Konfigurasi platform Talqee.</p>
+      <p className="text-ink-muted mb-8">Konfigurasi platform Talqeeh.</p>
 
       <div className="space-y-4">
         <div className="card-glass p-6 space-y-3">

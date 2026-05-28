@@ -231,8 +231,8 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         {/* Arabic brand */}
         <Reveal delay={0}>
           <img
-            src="/assets/talqee-logo.png"
-            alt="Talqee"
+            src="/assets/talqeeh-logo.png"
+            alt="Talqeeh"
             style={{
               width: "72px",
               height: "auto",
@@ -455,7 +455,7 @@ const AllMaddahPreview = () => {
             <span className="w-6 h-px bg-gold-500/70"/>36 MADDAH LENGKAP
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
-            Jurusan apapun. Semester berapapun. Talqee ada untuk kamu.
+            Jurusan apapun. Semester berapapun. Talqeeh ada untuk kamu.
           </h2>
         </Reveal>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -517,7 +517,7 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
             <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-violet-500/12 blur-3xl pointer-events-none"/>
             <div className="relative">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/20 text-xs text-gold-300 mb-5">
-                <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>Member Talqee
+                <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>Member Talqeeh
               </div>
               <div className="mb-1">
                 <span className="text-sm text-ink-soft line-through block mb-1">Rp 79.000</span>

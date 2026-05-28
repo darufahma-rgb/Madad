@@ -40,7 +40,7 @@ const WelcomePage = () => {
             <span className="bg-gradient-to-br from-violet-300 to-gold-400 bg-clip-text text-transparent">{firstName}.</span>
           </h1>
           <p className="text-lg text-ink-muted max-w-lg mx-auto leading-relaxed">
-            Talqee sudah mengenalmu. Dashboard sudah disiapkan khusus untukmu.
+            Talqeeh sudah mengenalmu. Dashboard sudah disiapkan khusus untukmu.
           </p>
         </Reveal>
 

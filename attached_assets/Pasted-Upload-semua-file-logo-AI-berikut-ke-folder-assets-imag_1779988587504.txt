@@ -1,0 +1,91 @@
+Upload semua file logo AI berikut ke folder 
+assets/images/ai-tools/ di project ini:
+
+ChatGPT.png      → logo ChatGPT
+Claude.png       → logo Claude  
+Gemini.webp      → logo Gemini
+Copilot.png      → logo Microsoft Copilot
+perplexity-ai-icon.webp  → logo Perplexity
+NotebookLM.webp  → logo NotebookLM
+
+---
+
+## GANTI SEMUA LOGO AI DI SELURUH WEBSITE
+
+Cari SEMUA tempat di website yang menampilkan 
+nama atau logo tools AI berikut, lalu ganti 
+ikonnya dengan file yang sudah diupload:
+
+| Nama Tool | File Logo |
+|---|---|
+| ChatGPT | assets/images/ai-tools/ChatGPT.png |
+| Claude | assets/images/ai-tools/Claude.png |
+| Gemini | assets/images/ai-tools/Gemini.webp |
+| Copilot | assets/images/ai-tools/Copilot.png |
+| Perplexity | assets/images/ai-tools/perplexity-ai-icon.webp |
+| NotebookLM | assets/images/ai-tools/NotebookLM.webp |
+
+Lokasi yang WAJIB dicek dan diganti:
+1. Halaman Tool Guide / perbandingan AI tools
+2. Chip/badge rekomendasi AI di kartu Maddah
+   (contoh: chip "Claude" dan "NotebookLM" 
+   di kartu Nahwu Dasar)
+3. Section "AI Rekomendasi" di dalam kartu Maddah
+4. Halaman onboarding kalau ada pilihan tools
+5. Dashboard kalau ada tampilan tools
+6. Semua tempat lain yang menampilkan nama tools
+
+---
+
+## STYLING LOGO DI SETIAP KONTEKS
+
+### Chip / Badge kecil (di kartu Maddah):
+- Tampilkan logo di KIRI teks nama tool
+- Ukuran logo: 16px × 16px
+- Border-radius: 4px
+- object-fit: cover
+- Layout chip: 
+  [logo 16px] [spasi 6px] [nama tool]
+- Contoh: 🟢 ChatGPT  →  [img] ChatGPT
+
+### Kartu tool besar (halaman Tool Guide):
+- Ukuran logo: 40px × 40px
+- Border-radius: 10px
+- object-fit: cover
+- Posisi: pojok kiri atas kartu atau 
+  center di atas nama tool
+
+### Logo dengan background hitam/gelap
+(Copilot, Perplexity, NotebookLM):
+- Tambahkan CSS:
+  background: rgba(255,255,255,0.08)
+  padding: 3px
+  border-radius: (sesuaikan + 3px dari ukuran)
+  
+### Logo dengan background putih
+(NotebookLM):
+- Tambahkan CSS:
+  background: white
+  padding: 2px
+  border-radius: (sesuaikan)
+
+### Logo transparan / tanpa background
+(Gemini, Claude):
+- Tidak perlu background tambahan
+- Tampilkan langsung
+
+---
+
+## KETENTUAN UMUM
+
+- Jangan ubah teks nama tool — hanya tambahkan
+  logo di sampingnya
+- Jangan ubah warna, ukuran, atau styling 
+  chip/kartu yang sudah ada
+- Jangan ubah fungsionalitas apapun
+- Pastikan logo tidak blur atau terdistorsi —
+  gunakan object-fit: contain kalau perlu
+- Semua logo harus muncul konsisten di semua 
+  halaman yang menyebut nama tool tersebut
+
+Jangan ubah apapun selain penambahan logo ini.

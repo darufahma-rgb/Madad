@@ -35,7 +35,7 @@ const Brand = ({ size = 36 }) => (
   <a href="#/" onClick={(e)=>{e.preventDefault(); navigate("/");}} className="flex items-center gap-2.5">
     <LogoMark size={size}/>
     <span className="flex flex-col leading-tight">
-      <span className="font-display text-lg font-semibold text-ink tracking-tight whitespace-nowrap">Talqee</span>
+      <span className="font-display text-lg font-semibold text-ink tracking-tight whitespace-nowrap">Talqeeh</span>
       <span className="hidden sm:block text-[10px] uppercase tracking-[0.22em] text-ink-muted">Panduan AI · Masisir</span>
     </span>
   </a>
@@ -356,9 +356,9 @@ const Footer = () => (
       </div>
       <div className="divider-arabesque mt-10 opacity-50"/>
       <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
-        <div className="text-ink-soft">© {new Date().getFullYear()} Talqee · All rights reserved.</div>
+        <div className="text-ink-soft">© {new Date().getFullYear()} Talqeeh · All rights reserved.</div>
         <div className="text-ink-muted tracking-wider flex flex-col items-end gap-1">
-          <span className="text-ink-soft font-medium">Talqee — Panduan Belajar Al-Azhar dengan AI</span>
+          <span className="text-ink-soft font-medium">Talqeeh — Panduan Belajar Al-Azhar dengan AI</span>
           <span>Designed &amp; Developed by <span className="text-gold-400 font-medium">Dar Dev</span></span>
         </div>
       </div>
@@ -480,7 +480,7 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
             </button>
             <div className="mt-5 pt-5 border-t border-line text-xs text-ink-soft text-center leading-relaxed">
               Belum punya kode?<br/>
-              Daftar sebagai member Talqee untuk mendapatkan akses.
+              Daftar sebagai member Talqeeh untuk mendapatkan akses.
             </div>
             <div className="mt-4 text-center">
               <button type="button" onClick={() => setCode("MSR-DEMO-1234")} className="text-xs text-violet-300 hover:text-violet-200 underline underline-offset-2">
@@ -549,7 +549,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
           </div>
         ) : (
           <div className="mt-4">
-            <h2 className="font-display text-2xl font-semibold text-ink mb-1">Akses Premium Talqee</h2>
+            <h2 className="font-display text-2xl font-semibold text-ink mb-1">Akses Premium Talqeeh</h2>
             <p className="text-sm text-ink-muted mb-6 leading-relaxed">
               Onboarding 3 pertanyaan, lalu dashboard personal langsung jalan.
             </p>

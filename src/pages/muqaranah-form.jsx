@@ -166,7 +166,7 @@ ${ulama}
 - Tanpa men-tarjih — aku ingin presentasi seimbang, biarkan aku yang merenungkan
 - Bila ada qoul yang dalilnya lemah, sebutkan tapi tetap presentasikan dengan jujur
 
-Setelah kamu draft, aku akan paste hasilnya ke form Talqee dan tambahkan refleksi pribadiku.`;
+Setelah kamu draft, aku akan paste hasilnya ke form Talqeeh dan tambahkan refleksi pribadiku.`;
 
     navigator.clipboard.writeText(prompt);
     toast.push("Prompt AI disalin. Paste ke AI, lalu isi hasilnya di form ini.");

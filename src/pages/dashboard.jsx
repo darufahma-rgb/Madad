@@ -399,7 +399,7 @@ const DashboardPage = () => {
                 )}
               </div>
               <p style={{fontSize:"14px",color:"rgba(255,255,255,0.5)",fontStyle:"italic",marginTop:"12px"}}>
-                Talqee siap menemani belajarmu hari ini.
+                Talqeeh siap menemani belajarmu hari ini.
               </p>
             </div>
             {/* ── DESKTOP ── */}
@@ -417,7 +417,7 @@ const DashboardPage = () => {
                 {majorLabel ? <> · <span className="text-ink font-medium">{majorLabel}</span></> : null}
                 {levelLabel ? <> · <span className="text-ink font-medium">{levelLabel}</span></> : null}
                 {". "}
-                Talqee siap menemani belajarmu hari ini.
+                Talqeeh siap menemani belajarmu hari ini.
               </p>
             </div>
           </Reveal>
