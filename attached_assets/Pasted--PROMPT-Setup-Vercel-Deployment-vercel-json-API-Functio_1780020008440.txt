@@ -1,0 +1,362 @@
+# PROMPT: Setup Vercel Deployment (vercel.json + API Functions)
+
+Website Talqeeh perlu dikonfigurasi supaya bisa di-deploy ke Vercel dengan benar. Sekarang saat di-deploy ke Vercel, app tidak bisa load karena:
+1. File `.jsx` tidak di-serve dengan MIME type yang benar
+2. Tidak ada `vercel.json` untuk konfigurasi routing
+3. `server.js` pakai `http.createServer` yang tidak kompatibel dengan Vercel serverless
+
+---
+
+## YANG HARUS DILAKUKAN
+
+### LANGKAH 1 — Buat `vercel.json` di root project
+
+Buat file baru `vercel.json` di root (sejajar dengan `index.html`) dengan isi:
+
+```json
+{
+  "version": 2,
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "routes": [
+    {
+      "src": "/api/config",
+      "dest": "/api/config.js"
+    },
+    {
+      "src": "/api/webhook/trakteer",
+      "dest": "/api/webhook/trakteer.js"
+    },
+    {
+      "src": "/api/health",
+      "dest": "/api/health.js"
+    },
+    {
+      "src": "/src/(.*)\\.jsx",
+      "dest": "/src/$1.jsx",
+      "headers": {
+        "Content-Type": "application/javascript; charset=utf-8",
+        "Cache-Control": "public, max-age=3600"
+      }
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/(.*)\\.(?:png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf)",
+      "dest": "/$1.$2",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/src/(.*)\\.jsx",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### LANGKAH 2 — Buat folder `api/` dengan 3 file
+
+Buat struktur folder berikut di root project:
+
+```
+api/
+├── config.js
+├── health.js
+└── webhook/
+    └── trakteer.js
+```
+
+#### File `api/config.js`
+
+```javascript
+module.exports = (req, res) => {
+  if (req.method !== 'GET') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.status(200).json({
+    supabaseUrl:     process.env.SUPABASE_URL      || '',
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
+  });
+};
+```
+
+#### File `api/health.js`
+
+```javascript
+module.exports = (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.status(200).json({
+    status:    'ok',
+    supabase:  !!process.env.SUPABASE_URL,
+    fonnte:    !!process.env.FONNTE_TOKEN,
+    trakteer:  !!process.env.TRAKTEER_SECRET,
+    timestamp: new Date().toISOString(),
+  });
+};
+```
+
+#### File `api/webhook/trakteer.js`
+
+```javascript
+const crypto = require('crypto');
+const https  = require('https');
+
+const SUPABASE_URL         = process.env.SUPABASE_URL         || '';
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+const FONNTE_TOKEN         = process.env.FONNTE_TOKEN         || '';
+const TRAKTEER_SECRET      = process.env.TRAKTEER_SECRET      || '';
+const ADMIN_WA             = process.env.ADMIN_WA             || '';
+const EXPECTED_AMOUNT      = 49000;
+
+/* ── Helpers ── */
+const generateCode = () => {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const rand = n => Array.from({length: n}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+  return `MSR-${rand(4)}-${rand(4)}`;
+};
+
+const getExpiry = (days = 30) => {
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d.toISOString().split('T')[0];
+};
+
+const verifySignature = (payload, sig) => {
+  if (!TRAKTEER_SECRET) return true;
+  const expected = crypto.createHmac('sha256', TRAKTEER_SECRET).update(payload).digest('hex');
+  return expected === sig;
+};
+
+const httpPost = (url, headers, body) => new Promise((resolve, reject) => {
+  const u = new URL(url);
+  const data = typeof body === 'string' ? body : JSON.stringify(body);
+  const req = https.request({
+    hostname: u.hostname,
+    path: u.pathname + u.search,
+    method: 'POST',
+    headers: { ...headers, 'Content-Length': Buffer.byteLength(data) },
+  }, res => {
+    let d = '';
+    res.on('data', c => d += c);
+    res.on('end', () => {
+      try { resolve({ status: res.statusCode, data: JSON.parse(d) }); }
+      catch { resolve({ status: res.statusCode, data: d }); }
+    });
+  });
+  req.on('error', reject);
+  req.write(data);
+  req.end();
+});
+
+const supabaseInsert = (table, body) => httpPost(
+  `${SUPABASE_URL}/rest/v1/${table}`,
+  {
+    'Content-Type':  'application/json',
+    'apikey':        SUPABASE_SERVICE_KEY,
+    'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+    'Prefer':        'return=representation',
+  },
+  body
+);
+
+const sendWA = async (to, msg) => {
+  if (!FONNTE_TOKEN) { console.log('[WA] Token tidak ada, skip'); return; }
+  let num = to.replace(/[^0-9]/g, '');
+  if (num.startsWith('0')) num = '62' + num.slice(1);
+  if (!num.startsWith('62')) num = '62' + num;
+  return httpPost(
+    'https://api.fonnte.com/send',
+    {
+      'Authorization': FONNTE_TOKEN,
+      'Content-Type':  'application/x-www-form-urlencoded',
+    },
+    `target=${num}&message=${encodeURIComponent(msg)}&countryCode=62`
+  );
+};
+
+const memberMsg = (name, code) =>
+`Assalamu'alaikum ${name.split(' ')[0]} 🌙
+
+Alhamdulillah, pembayaran Talqeeh diterima!
+
+Kode akses member-mu:
+
+*${code}*
+
+Cara masuk:
+1. Buka website Talqeeh
+2. Klik "Login Member"
+3. Masukkan kode di atas
+
+Kode ini khusus untukmu — jangan dishare ya.
+
+Setelah masuk, isi profil singkat (fakultas, tingkat, gaya belajar) supaya semua prompt disesuaikan untukmu.
+
+Semoga bermanfaat! Bismillah 📚
+— Talqeeh`;
+
+/* ── Main Handler ── */
+module.exports = async (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
+  if (req.method === 'OPTIONS') { res.status(204).end(); return; }
+  if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
+
+  // Baca body
+  const rawBody = await new Promise(resolve => {
+    let d = '';
+    req.on('data', c => d += c);
+    req.on('end', () => resolve(d));
+  });
+
+  try {
+    // 1. Verifikasi signature Trakteer
+    const sig = req.headers['x-trakteer-signature'] || '';
+    if (!verifySignature(rawBody, sig)) {
+      console.warn('[Webhook] Signature invalid');
+      res.status(401).json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const data = JSON.parse(rawBody);
+    console.log('[Webhook] Data masuk:', JSON.stringify(data));
+
+    // 2. Parse data dari Trakteer
+    const trakteerId = data.id || data.transaction_id || String(Date.now());
+    const buyerName  = data.supporter_name || data.name || 'Member';
+    const amount     = parseInt(data.amount || data.total || 0);
+
+    // Ambil nomor WA dari form_data (field yang dibuat di setup produk Trakteer)
+    let buyerWa = '';
+    if (data.form_data && typeof data.form_data === 'object') {
+      const waKey = Object.keys(data.form_data).find(k =>
+        k.toLowerCase().includes('whatsapp') ||
+        k.toLowerCase().includes('wa') ||
+        k.toLowerCase().includes('nomor') ||
+        k.toLowerCase().includes('phone')
+      );
+      if (waKey) buyerWa = data.form_data[waKey];
+    }
+
+    // 3. Validasi nominal
+    if (amount < EXPECTED_AMOUNT) {
+      console.warn(`[Webhook] Nominal tidak sesuai: ${amount}`);
+      if (ADMIN_WA) {
+        await sendWA(ADMIN_WA,
+          `[Talqeeh] ⚠️ Pembayaran nominal tidak sesuai\nNama: ${buyerName}\nNominal: Rp ${amount.toLocaleString('id-ID')}\nPerlu cek manual.`
+        );
+      }
+      res.status(200).json({ ok: false, reason: 'amount_mismatch' });
+      return;
+    }
+
+    // 4. Generate kode member unik
+    const code = generateCode();
+
+    // 5. Simpan member baru ke Supabase
+    const memberRes = await supabaseInsert('members', {
+      code,
+      name:           buyerName,
+      whatsapp:       buyerWa,
+      duration:       30,
+      status:         'active',
+      expires_at:     getExpiry(30),
+      payment_source: 'trakteer',
+      payment_id:     trakteerId,
+    });
+    console.log('[Supabase] Member saved, status:', memberRes.status);
+
+    // 6. Log ke tabel pending_payments
+    await supabaseInsert('pending_payments', {
+      trakteer_id: trakteerId,
+      buyer_name:  buyerName,
+      buyer_wa:    buyerWa,
+      amount,
+      status:      'processed',
+      member_code: code,
+    }).catch(e => console.warn('[Supabase] Payment log gagal:', e.message));
+
+    // 7. Kirim kode ke user via WA
+    if (buyerWa) {
+      await sendWA(buyerWa, memberMsg(buyerName, code));
+      console.log(`[WA] Kode ${code} dikirim ke ${buyerWa}`);
+    } else {
+      console.warn('[WA] Nomor WA tidak ditemukan — kode tidak dikirim ke user');
+    }
+
+    // 8. Notifikasi ke admin
+    if (ADMIN_WA) {
+      await sendWA(ADMIN_WA,
+        `[Talqeeh] ✅ Member baru!\nNama: ${buyerName}\nWA: ${buyerWa || 'tidak ada'}\nKode: ${code}\nStatus: Sudah dikirim otomatis`
+      );
+    }
+
+    res.status(200).json({ ok: true, code });
+
+  } catch (err) {
+    console.error('[Webhook] Error:', err.message);
+    // Return 200 supaya Trakteer tidak retry terus
+    res.status(200).json({ ok: false, error: err.message });
+  }
+};
+```
+
+---
+
+### LANGKAH 3 — Pertahankan `server.js` yang ada
+
+**Jangan ubah `server.js`** — file ini tetap dipakai untuk development di Replit. Vercel akan menggunakan folder `api/` untuk serverless functions, bukan `server.js`.
+
+---
+
+### LANGKAH 4 — Tambah `package.json` update (kalau belum ada `engines`)
+
+Pastikan `package.json` punya:
+
+```json
+{
+  "engines": {
+    "node": ">=18"
+  }
+}
+```
+
+---
+
+## Acceptance Criteria
+
+- [ ] File `vercel.json` ada di root project (sejajar `index.html`)
+- [ ] Folder `api/` ada dengan 3 file: `config.js`, `health.js`, `webhook/trakteer.js`
+- [ ] Struktur folder benar (tidak ada typo nama file)
+- [ ] Isi tiap file sesuai kode di atas (tidak ada yang diedit/diubah)
+- [ ] `server.js` lama TIDAK diubah (tetap ada untuk Replit)
+- [ ] Tidak ada console error
+
+Setelah Replit selesai, langkah selanjutnya yang harus dilakukan MANUAL di Vercel Dashboard (bukan di Replit):
+1. Set Environment Variables: SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_KEY, FONNTE_TOKEN, TRAKTEER_SECRET, ADMIN_WA
+2. Redeploy project
+3. Test: buka `https://[domain].vercel.app/api/health` → harus return `{"status":"ok",...}`
+
+والله ولي التوفيق.
