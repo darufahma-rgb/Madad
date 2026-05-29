@@ -43,6 +43,49 @@ const IMTIHAN_MODES = [
   },
 ];
 
+const TALKHISAN_MODES = [
+  {
+    id: "faham",
+    label: "Faham Isi",
+    labelArabic: "فَهْمُ الْمُحْتَوَى",
+    icon: "lightbulb",
+    color: "violet",
+    desc: "Terjemah + penjelasan istilah teknis dari talkhisanmu — bahasa mudah, tetap akurat.",
+    targetAI: "claude",
+    forPhoto: true,
+  },
+  {
+    id: "hafal",
+    label: "Poin Hafalan",
+    labelArabic: "نِقَاطُ الْحِفْظِ",
+    icon: "refresh",
+    color: "gold",
+    desc: "Ekstrak poin-poin kunci + buat mnemonic supaya cepat hafal sebelum ujian.",
+    targetAI: "claude",
+    forPhoto: true,
+  },
+  {
+    id: "drill",
+    label: "Jadikan Soal",
+    labelArabic: "تَحْوِيلٌ إِلَى أَسْئِلَة",
+    icon: "target",
+    color: "violet",
+    desc: "Ubah isi talkhisan jadi soal latihan bergaya imtihan Azhari — lengkap dengan model jawaban.",
+    targetAI: "claude",
+    forPhoto: true,
+  },
+  {
+    id: "syafawi",
+    label: "Mock Syafawi",
+    labelArabic: "مُحَاكَاةُ الشَّفَوِي",
+    icon: "messageSquare",
+    color: "gold",
+    desc: "AI berperan sebagai dosen yang nguji berdasarkan isi talkhisanmu — persis simulasi ujian lisan.",
+    targetAI: "chatgpt",
+    forPhoto: false,
+  },
+];
+
 /* ============ PROMPT GENERATOR ============ */
 
 const generateImtihanPrompt = (mode, maddah, profile) => {
@@ -143,6 +186,340 @@ Mulai sekarang. Tanya pertanyaan pertamamu.`,
 };
 
 window.generateImtihanPrompt = generateImtihanPrompt;
+
+const generateTalkhisanPrompt = (modeId, teks, profile) => {
+  const fakultas = (typeof FAKULTAS_LABEL !== "undefined")
+    ? (FAKULTAS_LABEL[profile?.faculty] || "Al-Azhar") : "Al-Azhar";
+  const tingkat = (typeof TINGKATAN_LABEL !== "undefined")
+    ? (TINGKATAN_LABEL[profile?.level] || "thalib") : "thalib";
+
+  const isiTalkhisan = teks?.trim()
+    ? teks.trim()
+    : "[PASTE TEKS ARAB TALKHISANMU DI SINI — atau ikuti instruksi foto di bawah]";
+
+  const prompts = {
+
+    faham: `Aku ${tingkat} di ${fakultas} Al-Azhar. Aku punya talkhisan (ringkasan materi ujian) dalam bahasa Arab dan butuh bantuanmu memahaminya.
+
+Ini isi talkhisanku:
+"""
+${isiTalkhisan}
+"""
+
+Tolong bantu aku memahaminya dengan cara berikut:
+
+1. **Tarjamah keseluruhan** — terjemahkan ke Indonesia akademik yang mengalir (bukan harfiyah kaku)
+
+2. **Bedah istilah teknis** — untuk setiap istilah teknis yang muncul, buat tabel:
+   | Istilah Arab | Transliterasi | Definisi singkat |
+
+3. **Poin utama** — ringkas inti pembahasan dalam 5-7 poin bullet yang mudah dipahami
+
+4. **Yang sering keliru** — sebutkan bagian mana yang biasanya membingungkan dan kenapa
+
+Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab transliterasi. Teks Arab dengan harakat saat kutip.`,
+
+    hafal: `Aku ${tingkat} di ${fakultas} Al-Azhar. Imtihan sudah dekat dan aku butuh hafal talkhisan ini dengan cepat.
+
+Ini isi talkhisanku:
+"""
+${isiTalkhisan}
+"""
+
+Bantu aku hafal efektif dengan:
+
+1. **Ekstrak poin kunci** — buat daftar poin yang WAJIB diingat (format: poin pendek, padat, mudah diingat)
+
+2. **Mnemonic Indonesia** — untuk kelompok poin yang banyak (mis. 5 rukun, 4 syarat), buat akronim atau cerita singkat dalam bahasa Indonesia yang mudah diingat
+
+3. **Kata kunci Arab** — untuk setiap poin, sebutkan kata kunci Arab-nya (1-3 kata) yang bisa jadi "anchor" memori
+
+4. **Urutan logis** — kalau ada urutan yang membantu hafalan (dari umum ke khusus, kronologis, dll), tunjukkan strukturnya
+
+5. **Pertanyaan self-test** — 5 pertanyaan singkat untuk aku test diri sendiri setelah belajar
+
+Bahasa Indonesia. Istilah Arab tetap ada sebagai anchor.`,
+
+    drill: `Aku ${tingkat} di ${fakultas} Al-Azhar, sedang persiapan imtihan. Aku punya talkhisan dan mau mengubahnya jadi soal latihan.
+
+Ini isi talkhisanku:
+"""
+${isiTalkhisan}
+"""
+
+Buat 8 soal latihan bergaya imtihan Al-Azhar dari isi talkhisan ini:
+
+Format soal yang harus ada (campur):
+- "عَرِّفْ..." (definisikan) — 2 soal
+- "بَيِّنْ الْفَرْقَ بَيْنَ... وَ..." (jelaskan perbedaan) — 2 soal  
+- "اذْكُرْ... مَعَ الدَّلِيلِ" (sebutkan beserta dalil) — 2 soal
+- "مَا حُكْمُ... مَعَ التَّعْلِيلِ" (apa hukum + alasan) — 1 soal
+- "وَضِّحْ..." (jelaskan/uraikan) — 1 soal
+
+Aturan:
+- Tulis soal dalam Bahasa Arab (membiasakan baca soal Azhari)
+- Beri terjemah Indonesia di bawah tiap soal (italic)
+- JANGAN beri jawaban dulu — aku akan jawab sendiri
+- Setelah aku jawab semua, koreksi dengan model jawaban ideal
+
+Pastikan soal benar-benar dari isi talkhisan yang aku berikan — bukan soal umum.`,
+
+    syafawi: `Aku ${tingkat} di ${fakultas} Al-Azhar, mau latihan ujian Syafawi berdasarkan talkhisanku.
+
+Ini isi talkhisanku:
+"""
+${isiTalkhisan}
+"""
+
+Bertindaklah sebagai dosen Al-Azhar yang menguji aku dalam ujian lisan. Semua pertanyaanmu harus BERDASARKAN isi talkhisan di atas — jangan tanya di luar itu.
+
+Aturan sesi:
+- Mulai dengan 1 pertanyaan dari isi talkhisan (level dasar)
+- Tunggu jawabanku sebelum lanjut
+- Kalau jawabanku benar tapi kurang lengkap: tanya follow-up sesuai talkhisan
+- Kalau jawaban kurang tepat: tanya balik "apa dalilnya?" atau "bagaimana menurut talkhisan?"
+- Setelah 6-8 pertanyaan, naikkan level ke pembahasan lebih dalam
+- Di akhir: evaluasi jujur — bagian mana yang sudah kuasai, mana yang perlu diperdalam
+
+Format pertanyaan: campur Arab dan Indonesia seperti dosen Azhari asli.
+
+Mulai sekarang — tanya pertanyaan pertamamu.`,
+  };
+
+  return prompts[modeId] || "";
+};
+
+window.generateTalkhisanPrompt = generateTalkhisanPrompt;
+
+/* ============ KOMPONEN TALKHISAN ============ */
+
+const TalkhisanSection = ({ profile }) => {
+  const toast = useToast();
+  const [activeMode, setActiveMode] = useState("faham");
+  const [teksInput, setTeksInput] = useState("");
+  const [inputType, setInputType] = useState("teks");
+  const [copied, setCopied] = useState(false);
+
+  const mode = TALKHISAN_MODES.find(m => m.id === activeMode);
+  const resolvedPrompt = generateTalkhisanPrompt(activeMode, teksInput, profile);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(resolvedPrompt);
+    setCopied(true);
+    toast.push("Prompt tersalin — paste ke AI.");
+    setTimeout(() => setCopied(false), 3000);
+  };
+
+  const handleCopyAndOpen = () => {
+    navigator.clipboard.writeText(resolvedPrompt);
+    const toolId = mode?.targetAI || "claude";
+    const tool = AI_TOOLS.find(t => t.id === toolId);
+    if (tool?.link) setTimeout(() => window.open(tool.link, "_blank"), 300);
+    toast.push(`Prompt tersalin — membuka ${tool?.name}...`);
+  };
+
+  const targetTool = AI_TOOLS.find(t => t.id === (mode?.targetAI || "claude"));
+
+  return (
+    <div className="card-glass-strong p-5 md:p-6 relative overflow-hidden">
+      <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gold-500/8 blur-3xl pointer-events-none"/>
+      <div className="relative">
+
+        {/* Header */}
+        <div className="mb-5">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="arabic-display text-gold-300 text-xl" style={{direction:"rtl"}}>تَلْخِيص</div>
+            <div className="text-xs uppercase tracking-wider text-gold-400 font-medium">Bedah Talkhisan</div>
+          </div>
+          <p className="text-sm text-ink-muted leading-relaxed">
+            Punya talkhisan ujian? Pilih mode, tempel teksnya, salin prompt ke AI.
+          </p>
+        </div>
+
+        {/* Input type toggle */}
+        <div className="flex gap-2 mb-4">
+          <button
+            onClick={() => setInputType("teks")}
+            className={`flex-1 py-2 rounded-lg text-sm border transition-colors ${
+              inputType === "teks"
+                ? "bg-violet-500/20 text-violet-200 border-violet-500/30"
+                : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
+            }`}>
+            📋 Teks (copy dari PDF)
+          </button>
+          <button
+            onClick={() => setInputType("foto")}
+            className={`flex-1 py-2 rounded-lg text-sm border transition-colors ${
+              inputType === "foto"
+                ? "bg-gold-500/15 text-gold-200 border-gold-500/30"
+                : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
+            }`}>
+            📷 Foto / Tulisan Tangan
+          </button>
+        </div>
+
+        {/* Input area — teks */}
+        {inputType === "teks" && (
+          <div className="mb-4">
+            <label className="text-xs text-ink-soft mb-1.5 block">
+              Paste teks Arab talkhisanmu di sini:
+            </label>
+            <textarea
+              value={teksInput}
+              onChange={e => setTeksInput(e.target.value)}
+              placeholder="الحمد لله رب العالمين... (paste teks Arab dari PDF talkhisanmu)"
+              className="w-full bg-white/4 border border-line rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-soft outline-none focus:border-violet-400/40 transition-colors resize-none arabic"
+              style={{ minHeight: 120, direction: "rtl", fontSize: 15, lineHeight: 1.8 }}
+              rows={5}
+            />
+            <div className="flex justify-between text-xs text-ink-soft mt-1">
+              <span>{teksInput.length > 0 ? `${teksInput.length} karakter` : "Kosong — prompt akan pakai placeholder"}</span>
+              {teksInput && (
+                <button onClick={() => setTeksInput("")} className="text-rose-600 hover:text-rose-500">
+                  Hapus
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Input area — foto */}
+        {inputType === "foto" && (
+          <div className="mb-4 p-4 rounded-xl bg-gold-500/8 border border-gold-500/20">
+            <div className="text-xs uppercase tracking-wider text-gold-300 mb-2 font-medium">
+              📷 Cara pakai dengan foto talkhisan
+            </div>
+            <ol className="space-y-2 text-sm text-ink-muted">
+              <li className="flex gap-2">
+                <span className="text-gold-400 font-medium flex-shrink-0">1.</span>
+                <span>Salin prompt di bawah (pilih mode dulu)</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-gold-400 font-medium flex-shrink-0">2.</span>
+                <span>Buka <strong className="text-ink">Claude</strong> atau <strong className="text-ink">Gemini</strong> — keduanya bisa baca foto</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-gold-400 font-medium flex-shrink-0">3.</span>
+                <span>Upload foto talkhisanmu (klik ikon paperclip/attachment)</span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-gold-400 font-medium flex-shrink-0">4.</span>
+                <span>Paste prompt di bawah foto → kirim</span>
+              </li>
+            </ol>
+            <p className="text-xs text-ink-soft mt-2">
+              AI akan baca teks Arab dari fotomu dan jalankan mode yang kamu pilih.
+            </p>
+          </div>
+        )}
+
+        {/* Mode tabs */}
+        <div className="mb-4">
+          <label className="text-xs text-ink-soft mb-2 block">Pilih mode:</label>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 pb-1">
+            {TALKHISAN_MODES.map(m => (
+              <button
+                key={m.id}
+                onClick={() => setActiveMode(m.id)}
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs border transition-colors ${
+                  activeMode === m.id
+                    ? m.color === "gold"
+                      ? "bg-gold-500/15 text-gold-200 border-gold-500/30"
+                      : "bg-violet-500/15 text-violet-200 border-violet-500/30"
+                    : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
+                }`}
+                style={{minHeight: 36}}>
+                <Icon name={m.icon} className="w-3.5 h-3.5"/>
+                <span>{m.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Mode description */}
+        {mode && (
+          <div className="flex items-start gap-2 mb-4 p-3 rounded-lg bg-white/3 border border-line">
+            <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 mt-0.5 ${
+              mode.color === "gold" ? "bg-gold-500/15" : "bg-violet-500/15"
+            }`}>
+              <Icon name={mode.icon} className={`w-3.5 h-3.5 ${
+                mode.color === "gold" ? "text-gold-300" : "text-violet-300"
+              }`}/>
+            </div>
+            <div>
+              <div className="text-sm font-medium text-ink">{mode.label}</div>
+              <div className="text-xs text-ink-muted mt-0.5 leading-relaxed">{mode.desc}</div>
+              {inputType === "foto" && !mode.forPhoto && (
+                <div className="text-xs text-rose-600 mt-1">
+                  ⚠️ Mode ini lebih optimal dengan teks — pertimbangkan switch ke tab Teks
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Preview prompt */}
+        <div className="p-3 rounded-lg bg-white/3 border border-line mb-4">
+          <div className="text-xs text-ink-soft mb-1.5">Preview prompt:</div>
+          <div className="text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap line-clamp-4">
+            {resolvedPrompt.slice(0, 250)}...
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={handleCopy}
+            className="btn-ghost text-xs px-4 py-2.5 flex items-center gap-1.5"
+            style={{minHeight: 40}}>
+            <Icon name="copy" className="w-3.5 h-3.5"/>
+            {copied ? "Tersalin ✓" : "Salin Prompt"}
+          </button>
+          {targetTool && (
+            <button
+              onClick={handleCopyAndOpen}
+              className="btn-primary text-xs px-4 py-2.5 flex items-center gap-1.5"
+              style={{minHeight: 40}}>
+              Salin & Buka {targetTool.name}
+              <Icon name="external" className="w-3 h-3"/>
+            </button>
+          )}
+        </div>
+
+        {/* Loop closer — simpan ke Kurasah setelah dapat hasil */}
+        {copied && (
+          <div className="mt-3 flex items-center justify-between gap-2 p-3 rounded-lg bg-gold-500/8 border border-gold-500/20">
+            <p className="text-xs text-ink-muted">
+              <span className="text-gold-300 font-medium">Sudah dapat jawaban AI?</span>
+              {" "}Simpan ke Kurasah supaya bisa review lagi.
+            </p>
+            <button
+              onClick={() => {
+                const newNote = {
+                  id: "note_" + Date.now(),
+                  title: `Talkhisan — ${mode?.label || "Bedah"}`,
+                  body: `## Mode\n${mode?.label}\n\n## Isi Talkhisan\n\n${teksInput || "*[foto/scan]*"}\n\n## Hasil AI\n\n*Paste jawaban AI di sini...*\n\n## Poin penting\n\n1. \n2. \n3. `,
+                  tags: ["talkhisan", "siap-imtihan"],
+                  source: { type: "talkhisan", label: "Bedah Talkhisan" },
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                };
+                if (typeof loadNotes !== "undefined" && typeof saveNotes !== "undefined") {
+                  saveNotes([newNote, ...loadNotes()]);
+                }
+                navigate("/kurasah?id=" + newNote.id);
+              }}
+              className="btn-ghost text-xs px-3 py-1.5 border border-gold-500/20 text-gold-300 hover:bg-gold-500/8 flex-shrink-0"
+              style={{minHeight: 36}}>
+              <Icon name="notebook" className="w-3 h-3 mr-1"/>
+              Simpan
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 /* ============ KOMPONEN PROMPT CARD ============ */
 
@@ -406,6 +783,28 @@ const SiapImtihanPage = () => {
         </div>
       </section>
 
+      {/* SECTION BEDAH TALKHISAN */}
+      <section className="pb-8">
+        <div className="container-x">
+          <Reveal className="mb-5">
+            <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-2 flex items-center gap-2">
+              <span className="w-5 h-px bg-gold-500/60"/>
+              Punya talkhisan?
+            </div>
+            <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">
+              Bedah Talkhisan
+              <span className="arabic-display text-lg text-gold-300 ml-3" style={{direction:"rtl"}}>تَلْخِيص</span>
+            </h2>
+            <p className="text-sm text-ink-muted mt-1 max-w-xl">
+              Upload foto atau paste teks talkhisanmu — Talqeeh bantu kamu faham, hafal, drill soal, atau simulasi syafawi dari isi talkhisan itu.
+            </p>
+          </Reveal>
+          <Reveal>
+            <TalkhisanSection profile={profile}/>
+          </Reveal>
+        </div>
+      </section>
+
       {/* Tips ujian Azhari */}
       <section className="pb-12">
         <div className="container-x">
@@ -457,4 +856,7 @@ const SiapImtihanPage = () => {
 
 window.SiapImtihanPage = SiapImtihanPage;
 window.IMTIHAN_MODES = IMTIHAN_MODES;
+window.TALKHISAN_MODES = TALKHISAN_MODES;
 window.generateImtihanPrompt = generateImtihanPrompt;
+window.generateTalkhisanPrompt = generateTalkhisanPrompt;
+window.TalkhisanSection = TalkhisanSection;

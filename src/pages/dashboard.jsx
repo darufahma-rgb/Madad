@@ -502,6 +502,21 @@ const DashboardPage = () => {
                   }`}>{mode.tag}</div>
                 </button>
               ))}
+              {/* Card teaser Talkhisan — di akhir row Siap Imtihan */}
+              <button
+                onClick={() => navigate("/siap-imtihan")}
+                className="flex-shrink-0 w-[70vw] sm:w-auto md:w-auto card-glass p-4 text-left
+                           hov-lift active:scale-[0.97] transition-transform cursor-pointer
+                           border-gold-500/15">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3 bg-gold-500/15">
+                  <div className="arabic-display text-gold-300 text-base" style={{direction:"rtl"}}>ت</div>
+                </div>
+                <div className="font-display text-sm font-semibold text-ink mb-1">Bedah Talkhisan</div>
+                <div className="text-[11px] text-ink-muted leading-relaxed line-clamp-2">
+                  Punya talkhisan ujian? Faham, hafal, drill, atau mock syafawi dari talkhisanmu
+                </div>
+                <div className="mt-2 text-[10px] font-medium text-gold-400">Teks · Foto</div>
+              </button>
             </div>
           </Reveal>
         </div>
