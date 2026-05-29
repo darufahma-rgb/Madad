@@ -24,9 +24,9 @@ const WelcomePage = () => {
 
   return (
     <div className="page-enter min-h-screen relative overflow-hidden">
-      <div className="absolute inset-0 pattern-talqih opacity-50 pointer-events-none"/>
-      <Blob color="rgba(124,77,255,0.25)" size={600} top={-200} right={-100}/>
-      <Blob color="rgba(201,168,106,0.12)" size={400} top={300} left={-150}/>
+      <Blob color="rgba(124,77,255,0.18)" size={600} top={-200} right={-150}/>
+      <Blob color="rgba(201,168,106,0.08)" size={400} top={200} left={-100}/>
+      <div className="pattern-talqih"/>
 
       <div className="container-x relative py-16 md:py-24 max-w-3xl mx-auto">
 

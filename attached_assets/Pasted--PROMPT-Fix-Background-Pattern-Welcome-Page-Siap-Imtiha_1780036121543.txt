@@ -1,0 +1,97 @@
+# PROMPT: Fix Background Pattern — Welcome Page & Siap Imtihan
+
+Background di welcome page dan siap imtihan terlalu ramai dan berantakan.
+Root cause: pattern SVG terlalu besar + opacity Tailwind override CSS yang sudah diset.
+
+---
+
+## FIX 1 — Update CSS Pattern di `index.html`
+
+Ganti definisi `.pattern-talqih` yang sekarang (sekitar line 169-176) dengan yang lebih halus:
+
+```css
+/* GANTI yang lama dengan ini: */
+.pattern-talqih {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23C9A86A' stroke-width='0.5' stroke-opacity='0.18'%3E%3Cpath d='M60 20 L68 36 L84 36 L72 46 L76 62 L60 52 L44 62 L48 46 L36 36 L52 36 Z'/%3E%3Ccircle cx='60' cy='60' r='1.5' fill='%23C9A86A' fill-opacity='0.12'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 120px 120px;
+  opacity: 0.035;
+}
+```
+
+Perubahan kunci:
+- Pattern lebih besar (120x120 vs 80x80) → tile lebih jarang, lebih elegan
+- `stroke-width` dikurangi (0.5 vs 1) → garis lebih tipis
+- `stroke-opacity` dikurangi (0.18 vs default) → lebih samar
+- `opacity` CSS di-set ke 0.035 → sangat subtle
+
+---
+
+## FIX 2 — Hapus Override Opacity di `src/pages/welcome.jsx`
+
+Cari baris:
+```jsx
+<div className="absolute inset-0 pattern-talqih opacity-50 pointer-events-none"/>
+```
+
+Ganti jadi:
+```jsx
+<div className="pattern-talqih"/>
+```
+
+Class `opacity-50` Tailwind yang override CSS dihapus. Pattern sekarang mengikuti opacity dari CSS (0.035).
+
+---
+
+## FIX 3 — Hapus Override Opacity di `src/pages/siap-imtihan.jsx`
+
+Cari baris:
+```jsx
+<div className="absolute inset-0 pattern-talqih opacity-40 pointer-events-none"/>
+```
+
+Ganti jadi:
+```jsx
+<div className="pattern-talqih"/>
+```
+
+---
+
+## FIX 4 — Perbaiki Background Welcome Page
+
+Welcome page sekarang hanya punya pattern sebagai background — kurang depth.
+Tambahkan blob gradient yang lebih elegan di `src/pages/welcome.jsx`.
+
+Cari section header welcome page, tambahkan dua blob sebelum konten:
+
+```jsx
+<section className="relative ...">
+  {/* Hapus pattern-talqih yang lama */}
+  
+  {/* Ganti dengan blob gradient yang elegan */}
+  <Blob color="rgba(124,77,255,0.18)" size={600} top={-200} right={-150}/>
+  <Blob color="rgba(201,168,106,0.08)" size={400} top={200} left={-100}/>
+  
+  {/* Pattern tetap ada tapi sebagai layer tipis */}
+  <div className="pattern-talqih"/>
+  
+  {/* ... konten lainnya tetap */}
+</section>
+```
+
+---
+
+## Acceptance Criteria
+
+- [ ] Buka welcome page → background bersih, pattern hampir tidak terlihat (hanya texture halus)
+- [ ] Buka siap-imtihan → background sama, bersih
+- [ ] Pattern masih ada kalau dilihat dekat-dekat tapi tidak mengganggu konten
+- [ ] Ada blob gradient ungu dan gold yang subtle sebagai depth
+- [ ] Tidak ada background yang "berantakan" atau terlalu ramai
+- [ ] Konten (teks, kartu) jadi lebih menonjol karena background lebih tenang
+- [ ] Halaman lain tidak terpengaruh
+
+والله ولي التوفيق.

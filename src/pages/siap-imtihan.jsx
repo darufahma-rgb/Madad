@@ -688,7 +688,7 @@ const SiapImtihanPage = () => {
     <div className="page-enter mobile-page-wrap">
       {/* Header */}
       <section className="relative pt-6 md:pt-12 pb-6 overflow-hidden">
-        <div className="absolute inset-0 pattern-talqih opacity-40 pointer-events-none"/>
+        <div className="pattern-talqih"/>
         <Blob color="rgba(124,77,255,0.2)" size={500} top={-150} right={-80}/>
 
         <div className="container-x relative">
