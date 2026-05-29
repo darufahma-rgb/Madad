@@ -91,7 +91,20 @@ const LEVELS = [
   { id: "3",       label: "Tingkat III",                      short: "Tsalits",        arabic: "الثالثة" },
   { id: "4",       label: "Tingkat IV",                       short: "Robi'",          arabic: "الرابعة" },
   { id: "5",       label: "Tingkat V (Syariah wal Qanun)",    short: "Khamis",         arabic: "الخامسة" },
-  { id: "pasca",   label: "Pasca-sarjana (S2/S3)",            short: "Dirasat 'Ulya",  arabic: "دراسات عليا" },
+  {
+    id: "s2_kuliyyat",
+    label: "S2 — Kuliyyat Ulum (1 tahun)",
+    short: "Kuliyyat Ulum",
+    arabic: "كليات العلوم",
+    desc: "Program Maajistir intensif 1 tahun — kuliah + risalah",
+  },
+  {
+    id: "s2_dirasat",
+    label: "S2 — Dirasat Ulya (2 tahun)",
+    short: "Dirasat Ulya",
+    arabic: "الدراسات العليا",
+    desc: "Program Maajistir reguler 2 tahun — kuliah + risalah",
+  },
 ];
 
 /* ============ STUDY FIELDS (alias untuk backward compat) ============ */

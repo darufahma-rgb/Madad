@@ -1,9 +1,127 @@
-/* Talqih — Onboarding (faculty · level · major conditional) */
+/* Talqih — Onboarding (faculty · level · major conditional · S2 maddah) */
+
+const S2SetupStep = ({ profile, onSave }) => {
+  const [maddahList, setMaddahList] = useState(
+    (profile.s2Maddah || []).filter(m => !m.isPreset).length > 0
+      ? profile.s2Maddah.filter(m => !m.isPreset)
+      : [{ nama: "", kitab: "", id: Date.now() }]
+  );
+
+  const addMaddah = () => {
+    if (maddahList.length >= 7) return;
+    setMaddahList(prev => [...prev, { nama: "", kitab: "", id: Date.now() + Math.random() }]);
+  };
+
+  const updateMaddah = (id, field, value) => {
+    setMaddahList(prev => prev.map(m => m.id === id ? { ...m, [field]: value } : m));
+  };
+
+  const removeMaddah = (id) => {
+    if (maddahList.length <= 1) return;
+    setMaddahList(prev => prev.filter(m => m.id !== id));
+  };
+
+  const handleNext = () => {
+    const validMaddah = maddahList.filter(m => m.nama.trim());
+    const withManahij = [
+      { nama: "Manahij Bahts Ilmi", kitab: "مناهج البحث العلمي", id: "manahij", isPreset: true },
+      ...validMaddah,
+    ];
+    onSave(withManahij);
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto w-full pt-4">
+      <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Langkah tambahan — S2</div>
+      <div className="arabic-classic text-gold-300 text-2xl mb-2" style={{direction:"rtl"}}>
+        مَوَادُّ الدِّرَاسَةِ
+      </div>
+      <h2 className="font-display text-3xl font-semibold text-ink mb-2">
+        Maddah S2-mu
+      </h2>
+      <p className="text-ink-muted mb-8 leading-relaxed">
+        Masukkan maddah yang sedang kamu ambil semester ini.
+        Tambahkan kitab yang dipakai — ini yang bikin AI langsung paham konteksnya.
+      </p>
+
+      {/* Manahij Bahts Ilmi — preset */}
+      <div className="card-glass p-4 mb-3 border border-gold-500/20">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[10px] bg-gold-500/15 text-gold-300 px-2 py-0.5 rounded border border-gold-500/20">
+            Otomatis — wajib semua jurusan
+          </span>
+        </div>
+        <div className="text-sm font-medium text-ink">Manahij Bahts Ilmi</div>
+        <div className="text-xs text-ink-soft arabic-display" style={{direction:"rtl"}}>
+          مناهج البحث العلمي
+        </div>
+      </div>
+
+      {/* Input maddah user */}
+      <div className="space-y-3 mb-4">
+        {maddahList.map((m, i) => (
+          <div key={m.id} className="card-glass p-4 relative">
+            <div className="text-xs uppercase tracking-wider text-ink-soft mb-3">
+              Maddah {i + 1}
+            </div>
+            <div className="mb-2">
+              <label className="text-xs text-ink-soft mb-1 block">
+                Nama maddah (Indonesia atau Arab):
+              </label>
+              <input
+                value={m.nama}
+                onChange={e => updateMaddah(m.id, "nama", e.target.value)}
+                placeholder="mis. Fiqh Nawazil / فقه النوازل"
+                className="w-full bg-white/5 border border-line rounded-lg px-3 py-2.5 text-sm text-ink outline-none focus:border-violet-400/40 transition-colors"
+                style={{fontSize: 16}}
+              />
+            </div>
+            <div>
+              <label className="text-xs text-ink-soft mb-1 block">
+                Kitab muqarrar yang dipakai:
+                <span className="text-ink-soft/60 ml-1">(opsional tapi sangat membantu)</span>
+              </label>
+              <input
+                value={m.kitab}
+                onChange={e => updateMaddah(m.id, "kitab", e.target.value)}
+                placeholder="mis. Al-Fiqh al-Islami wa Adillatuh / نظرية الضرورة"
+                className="w-full bg-white/5 border border-line rounded-lg px-3 py-2.5 text-sm text-ink outline-none focus:border-violet-400/40 transition-colors"
+                style={{fontSize: 16}}
+              />
+              <p className="text-[11px] text-ink-soft/60 mt-1">
+                AI akan menyesuaikan penjelasan berdasarkan kitab ini
+              </p>
+            </div>
+            {maddahList.length > 1 && (
+              <button
+                onClick={() => removeMaddah(m.id)}
+                className="absolute top-3 right-3 text-xs text-ink-soft hover:text-rose-400 transition-colors p-1">
+                ✕
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {maddahList.length < 7 && (
+        <button
+          onClick={addMaddah}
+          className="w-full py-2.5 rounded-lg border border-dashed border-line text-sm text-ink-soft hover:border-violet-400/40 hover:text-ink transition-colors mb-8">
+          + Tambah maddah lain
+        </button>
+      )}
+
+      <button onClick={handleNext} className="btn btn-primary w-full py-3.5">
+        Lanjut <Icon name="arrowRight" className="w-4 h-4"/>
+      </button>
+    </div>
+  );
+};
 
 const OnboardingPage = () => {
   const { session, profile, saveProfile } = useAuth();
   const [step, setStep] = useState(0);
-  const [data, setData] = useState({ faculty: null, level: null, major: null, struggle: [], learningStyle: [] });
+  const [data, setData] = useState({ faculty: null, level: null, major: null, struggle: [], learningStyle: [], s2Maddah: null });
   const toast = useToast();
 
   useEffect(() => { if (!session) navigate("/"); }, [session]);
@@ -35,11 +153,17 @@ const OnboardingPage = () => {
       multi: false,
       iconType: "arabic",
       conditional: (d) => {
+        if (d.level === "s2_kuliyyat" || d.level === "s2_dirasat") return false;
         const fac = FACULTIES.find(f => f.id === d.faculty);
         if (!fac || !fac.majorsStartLevel || fac.majors.length === 0) return false;
-        const lvlNum = d.level === "mustawa" ? 0 : d.level === "pasca" ? 99 : parseInt(d.level);
-        return lvlNum >= fac.majorsStartLevel;
+        const lvlNum = d.level === "mustawa" ? 0 : parseInt(d.level);
+        return !isNaN(lvlNum) && lvlNum >= fac.majorsStartLevel;
       },
+    },
+    {
+      key: "s2_setup",
+      kind: "s2_setup",
+      conditional: (d) => d.level === "s2_kuliyyat" || d.level === "s2_dirasat",
     },
     {
       key: "struggle",
@@ -91,15 +215,30 @@ const OnboardingPage = () => {
     }
   };
 
+  const doFinish = (finalData) => {
+    const finalProfile = { ...finalData, onboarded: true, onboardedAt: new Date().toISOString() };
+    saveProfile(finalProfile);
+    toast.push("Dashboard personal sudah siap untukmu.");
+    setTimeout(() => navigate("/welcome"), 400);
+  };
+
   const onNext = () => {
     const active = getActiveQuestions(data);
     if (step < active.length - 1) {
       setStep(step + 1);
     } else {
-      const finalProfile = { ...data, onboarded: true, onboardedAt: new Date().toISOString() };
-      saveProfile(finalProfile);
-      toast.push("Dashboard personal sudah siap untukmu.");
-      setTimeout(() => navigate("/welcome"), 400);
+      doFinish(data);
+    }
+  };
+
+  const handleS2Save = (s2Maddah) => {
+    const newData = { ...data, s2Maddah };
+    setData(newData);
+    const active = getActiveQuestions(newData);
+    if (step < active.length - 1) {
+      setStep(step + 1);
+    } else {
+      doFinish(newData);
     }
   };
 
@@ -134,6 +273,8 @@ const OnboardingPage = () => {
         <div key={step} className="page-enter flex-1 flex flex-col">
           {cur?.kind === "intro" ? (
             <Intro session={session} onNext={onNext}/>
+          ) : cur?.kind === "s2_setup" ? (
+            <S2SetupStep profile={data} onSave={handleS2Save}/>
           ) : (
             <QuestionStep
               question={cur}
@@ -144,8 +285,8 @@ const OnboardingPage = () => {
           )}
         </div>
 
-        {/* Nav */}
-        {cur?.kind !== "intro" && (
+        {/* Nav — hide outer button for s2_setup (it has its own) */}
+        {cur?.kind !== "intro" && cur?.kind !== "s2_setup" && (
           <div className="max-w-2xl mx-auto w-full mt-10 flex items-center justify-between">
             <button onClick={onBack} className="btn btn-ghost">
               <Icon name="chevronLeft" className="w-4 h-4"/> Kembali
@@ -153,6 +294,13 @@ const OnboardingPage = () => {
             <button onClick={onNext} disabled={!canNext}
               className={`btn btn-primary ${!canNext ? "opacity-40 cursor-not-allowed" : ""}`}>
               {isLast ? "Selesai & buka dashboard" : "Lanjut"} <Icon name="arrowRight" className="w-4 h-4"/>
+            </button>
+          </div>
+        )}
+        {cur?.kind === "s2_setup" && (
+          <div className="max-w-2xl mx-auto w-full mt-6">
+            <button onClick={onBack} className="btn btn-ghost">
+              <Icon name="chevronLeft" className="w-4 h-4"/> Kembali
             </button>
           </div>
         )}

@@ -59,7 +59,7 @@ const App = () => {
   // Auto-redirect logic on path change
   useEffect(() => {
     // Member-only routes
-    const memberOnly = ["/dashboard", "/tools", "/paths", "/onboarding", "/kurasah", "/maddah"];
+    const memberOnly = ["/dashboard", "/tools", "/paths", "/onboarding", "/kurasah", "/maddah", "/s2-maddah"];
     const isMemberRoute = memberOnly.some(r => path === r || path.startsWith(r + "?") || path.startsWith(r + "/"));
     if (isMemberRoute && !session) {
       navigate("/");
@@ -117,6 +117,7 @@ const App = () => {
   else if (path === "/maddah" || path === "/maddah/")      { page = <MaddahHubPage/>; routeLabel = "Maddah"; }
   else if (path.startsWith("/maddah/"))                    { page = <MaddahDetailPage/>; routeLabel = "Maddah"; }
   else if (path === "/siap-imtihan" || path.startsWith("/siap-imtihan")) { page = <SiapImtihanPage/>; routeLabel = "Siap Imtihan"; }
+  else if (path === "/s2-maddah" || path.startsWith("/s2-maddah")) { page = <S2MaddahPage/>; routeLabel = "Maddah S2"; }
 
   // QuickNote muncul di semua halaman member yang sudah onboarded, kecuali admin & public
   const showQuickNote = session && profile?.onboarded && !isAdmin && !isPublic;

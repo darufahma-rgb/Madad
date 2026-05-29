@@ -419,6 +419,48 @@ const DashboardPage = () => {
       {/* 2b. RECENT MADDAH */}
       <RecentMaddahRow/>
 
+      {/* 2c. S2 MADDAH CARD — hanya muncul untuk user S2 */}
+      {(profile?.level === "s2_kuliyyat" || profile?.level === "s2_dirasat") && (
+        <section className="pb-6">
+          <div className="container-x">
+            <Reveal>
+              <div className="card-glass-strong p-5 md:p-6 relative overflow-hidden cursor-pointer hov-lift"
+                onClick={() => navigate("/s2-maddah")}>
+                <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gold-500/8 blur-3xl pointer-events-none"/>
+                <div className="relative flex items-start justify-between gap-4">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="arabic-display text-gold-300 text-lg" style={{direction:"rtl"}}>
+                        دراسات عليا
+                      </div>
+                      <span className="text-[10px] bg-gold-500/15 text-gold-300 px-2 py-0.5 rounded border border-gold-500/20">
+                        {profile.level === "s2_kuliyyat" ? "Kuliyyat Ulum" : "Dirasat Ulya"}
+                      </span>
+                    </div>
+                    <h3 className="font-display text-lg font-semibold text-ink mb-1">
+                      Maddah S2-mu
+                    </h3>
+                    <p className="text-sm text-ink-muted leading-relaxed">
+                      {(profile.s2Maddah || []).length > 0
+                        ? `${profile.s2Maddah.length} maddah · Prompt riset + risalah tersedia`
+                        : "Tambahkan maddah yang sedang kamu ambil"
+                      }
+                    </p>
+                    {(profile.s2Maddah || []).slice(0, 3).map(m => (
+                      <div key={m.id} className="text-xs text-ink-soft mt-1 flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-violet-400 flex-shrink-0"/>
+                        {m.nama}
+                      </div>
+                    ))}
+                  </div>
+                  <Icon name="arrowRight" className="w-5 h-5 text-ink-soft flex-shrink-0 mt-1"/>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </section>
+      )}
+
       {/* 3. MADDAH-MU (HERO BARU) */}
       <MaddahHeroSection profile={profile}/>
 

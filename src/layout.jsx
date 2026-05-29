@@ -651,7 +651,15 @@ const MobileTabBar = () => {
   if (!session || !profile?.onboarded) return null;
   if (path.startsWith("/admin") || path === "/onboarding") return null;
 
-  const tabs = [
+  const isS2 = profile?.level === "s2_kuliyyat" || profile?.level === "s2_dirasat";
+
+  const tabs = isS2 ? [
+    { to: "/dashboard",       label: "Beranda",  icon: "home" },
+    { to: "/s2-maddah",       label: "Maddah",   icon: "layers" },
+    { to: "/siap-imtihan",    label: "Imtihan",  icon: "target" },
+    { to: "/kurasah",         label: "Kurasah",  icon: "bookOpen" },
+    { to: "/tools",           label: "Prompt",   icon: "sparkles" },
+  ] : [
     { to: "/dashboard",       label: "Beranda",   icon: "home" },
     { to: "/maddah",          label: "Maddah",    icon: "layers" },
     { to: "/paths/muqaranah", label: "Muqaranah", icon: "scale" },

@@ -4,13 +4,15 @@
 */
 
 const TINGKATAN_LABEL = {
-  mustawa: "thalib Darul Lughoh / DL (persiapan bahasa)",
-  "1":     "thalib Tingkat I",
-  "2":     "thalib Tingkat II",
-  "3":     "thalib Tingkat III",
-  "4":     "thalib Tingkat IV",
-  "5":     "thalib Tingkat V",
-  pasca:   "mahasiswa Pasca-sarjana",
+  mustawa:     "thalib Darul Lughoh / DL (persiapan bahasa)",
+  "1":         "thalib Tingkat I",
+  "2":         "thalib Tingkat II",
+  "3":         "thalib Tingkat III",
+  "4":         "thalib Tingkat IV",
+  "5":         "thalib Tingkat V",
+  pasca:       "mahasiswa Pasca-sarjana",
+  s2_kuliyyat: "mahasiswa S2 Kuliyyat Ulum (Maajistir 1 tahun)",
+  s2_dirasat:  "mahasiswa S2 Dirasat Ulya (Maajistir 2 tahun)",
 };
 
 const FAKULTAS_LABEL = {
@@ -50,6 +52,20 @@ const LEVEL_BAHASA_INSTRUCTION = {
   "4":     `Pakai bahasa Indonesia akademik dengan istilah Arab transliterasi. Bahas dengan kedalaman setara level lanjut. Boleh sertakan rujukan kitab mutawassith dan mutaakhir.`,
   "5":     `Pakai bahasa Indonesia akademik dengan istilah Arab transliterasi. Bahas dengan kedalaman setara level lanjut. Boleh sertakan rujukan kitab mutawassith dan mutaakhir.`,
   pasca:   `Pakai bahasa akademik tingkat riset. Boleh masuk ke pembahasan jadal ulama, kritik manhaj, dan referensi mutaqaddim/mutaakhir. Sertakan teks Arab original dari sumber primer bila relevan.`,
+  s2_kuliyyat: `Pakai bahasa akademik tingkat riset S2. Kedalaman pembahasan setara diskusi seminar akademik:
+- Analisis kritis dan jadal ilmi (perdebatan akademik) antar ulama
+- Perbandingan metodologi (manhaj muqaran) antar aliran
+- Rujuk sumber primer (kutub turats) + sekunder kontemporer
+- Sertakan teks Arab original dari sumber bila mengutip
+- Bahasa Arab akademik tingkat tinggi saat cantumkan istilah
+- Tidak perlu jelaskan istilah dasar — user sudah di level riset`,
+  s2_dirasat: `Pakai bahasa akademik tingkat riset S2. Kedalaman pembahasan setara diskusi seminar akademik:
+- Analisis kritis dan jadal ilmi antar ulama
+- Perbandingan metodologi (manhaj muqaran) antar aliran
+- Rujuk sumber primer + sekunder
+- Sertakan teks Arab original bila mengutip
+- Bahasa Arab akademik tingkat tinggi
+- Tidak perlu jelaskan istilah dasar`,
 };
 
 /* ============ MAIN RESOLVER ============ */
@@ -138,10 +154,56 @@ ADAB PENTING
 Kalau kamu paham, jawab singkat: "Wa'alaikumussalam, siap membantu." Lalu tunggu pertanyaan pertamaku.`;
 };
 
+/* ============ S2 MADDAH CONTEXT ============ */
+
+const resolveS2MaddahContext = (maddah) => {
+  if (!maddah) return "";
+  const nama = maddah.nama || "";
+  const kitab = maddah.kitab || "";
+  let context = `Maddah yang sedang dipelajari: ${nama}`;
+  if (kitab) {
+    context += `\nKitab muqarrar yang dipakai: ${kitab}`;
+    context += `\n(Sesuaikan penjelasan dengan pendekatan dan terminologi kitab ini)`;
+  } else {
+    context += `\n(Identifikasi dulu konteks maddah ini dalam kurikulum S2 Al-Azhar, `;
+    context += `lalu tanyakan ke user kalau butuh klarifikasi kitab yang dipakai)`;
+  }
+  return context;
+};
+
+const generateS2Prompt = (template, profile, maddah) => {
+  if (!template) return "";
+  const jalur = profile?.level === "s2_kuliyyat"
+    ? "Kuliyyat Ulum (Maajistir 1 tahun)"
+    : "Dirasat Ulya (Maajistir 2 tahun)";
+  const fakultasData = (typeof FACULTIES !== "undefined")
+    ? FACULTIES.find(f => f.id === profile?.faculty) : null;
+  const fakultas = fakultasData?.label || "Al-Azhar";
+  const majorData = fakultasData?.majors?.find(m => m.id === profile?.major);
+  const jurusan = majorData?.label || "";
+  const tingkatan = TINGKATAN_LABEL[profile?.level] || "mahasiswa S2";
+  const levelBahasa = LEVEL_BAHASA_INSTRUCTION[profile?.level]
+    || LEVEL_BAHASA_INSTRUCTION["s2_kuliyyat"];
+  const maddahContext = resolveS2MaddahContext(maddah);
+  const gaya = (profile?.learningStyle || []).join(", ") || "kombinasi";
+  return template
+    .replace(/\[TINGKATAN\]/g,    tingkatan)
+    .replace(/\[JALUR_S2\]/g,     jalur)
+    .replace(/\[FAKULTAS\]/g,     fakultas)
+    .replace(/\[JURUSAN\]/g,      jurusan ? `jurusan ${jurusan}` : "")
+    .replace(/\[MADDAH_S2\]/g,    maddahContext)
+    .replace(/\[NAMA_MADDAH\]/g,  maddah?.nama || "[nama maddah]")
+    .replace(/\[KITAB\]/g,        maddah?.kitab || "[kitab muqarrar]")
+    .replace(/\[LEVEL_BAHASA\]/g, levelBahasa)
+    .replace(/\[GAYA_BELAJAR\]/g, gaya);
+};
+
 Object.assign(window, {
   resolveAdaptivePrompt,
   resolveGenericPrompt,
   generateStarterPack,
+  resolveS2MaddahContext,
+  generateS2Prompt,
   TINGKATAN_LABEL,
   FAKULTAS_LABEL,
   LEVEL_BAHASA_INSTRUCTION,

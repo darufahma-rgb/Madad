@@ -1,0 +1,971 @@
+# PROMPT 20 — Talqeeh: Fitur S2 Lengkap
+
+> Menambahkan dukungan penuh untuk mahasiswa S2 Al-Azhar.
+> Mencakup: onboarding update, input maddah mandiri + kitab, adaptive prompt S2,
+> dan fitur khusus risalah/tesis.
+> 
+> PRINSIP UTAMA:
+> - Maddah S2 TIDAK di-preset (data tidak bisa diverifikasi akurat)
+> - User input nama maddah + kitab yang dipakai → solve AI tidak kenal maddah
+> - Manahij Bahts Ilmi di-preset otomatis (dikonfirmasi wajib semua jurusan)
+> - Prompt adaptive berdasarkan: jalur + fakultas + jurusan + nama maddah + kitab + mode
+
+---
+
+## BAGIAN 1 — Update Data (`src/data.jsx`)
+
+### STEP 1.1 — Update LEVELS (Pisah S2 jadi dua jalur)
+
+Cari `const LEVELS = [` dan update entry `pasca`:
+
+```js
+// HAPUS entry pasca yang lama:
+{ id: "pasca", label: "Pasca-sarjana (S2/S3)", short: "Dirasat 'Ulya", arabic: "دراسات عليا" },
+
+// GANTI dengan dua entry baru:
+{
+  id: "s2_kuliyyat",
+  label: "S2 — Kuliyyat Ulum (1 tahun)",
+  short: "Kuliyyat Ulum",
+  arabic: "كليات العلوم",
+  desc: "Program Maajistir intensif 1 tahun — kuliah + risalah",
+},
+{
+  id: "s2_dirasat",
+  label: "S2 — Dirasat Ulya (2 tahun)",
+  short: "Dirasat Ulya",
+  arabic: "الدراسات العليا",
+  desc: "Program Maajistir reguler 2 tahun — kuliah + risalah",
+},
+```
+
+### STEP 1.2 — Update TINGKATAN_LABEL di `src/adaptive-prompt.jsx`
+
+Cari `const TINGKATAN_LABEL = {` dan update:
+
+```js
+const TINGKATAN_LABEL = {
+  mustawa:      "thalib Darul Lughah",
+  "1":          "thalib Tingkat I",
+  "2":          "thalib Tingkat II",
+  "3":          "thalib Tingkat III",
+  "4":          "thalib Tingkat IV",
+  "5":          "thalib Tingkat V",
+  // TAMBAH DUA ENTRY BARU:
+  s2_kuliyyat:  "mahasiswa S2 Kuliyyat Ulum (Maajistir 1 tahun)",
+  s2_dirasat:   "mahasiswa S2 Dirasat Ulya (Maajistir 2 tahun)",
+};
+```
+
+### STEP 1.3 — Update LEVEL_BAHASA_INSTRUCTION di `src/adaptive-prompt.jsx`
+
+Tambahkan instruksi khusus untuk dua level S2:
+
+```js
+// Cari LEVEL_BAHASA_INSTRUCTION, tambah setelah entry "pasca" (atau ganti pasca):
+s2_kuliyyat: `Pakai bahasa akademik tingkat riset S2. Kedalaman pembahasan setara diskusi seminar akademik:
+- Analisis kritis dan jadal ilmi (perdebatan akademik) antar ulama
+- Perbandingan metodologi (manhaj muqaran) antar aliran
+- Rujuk sumber primer (kutub turats) + sekunder kontemporer
+- Sertakan teks Arab original dari sumber bila mengutip
+- Bahasa Arab akademik tingkat tinggi saat cantumkan istilah
+- Tidak perlu jelaskan istilah dasar — user sudah di level riset`,
+
+s2_dirasat: `Pakai bahasa akademik tingkat riset S2. Kedalaman pembahasan setara diskusi seminar akademik:
+- Analisis kritis dan jadal ilmi antar ulama
+- Perbandingan metodologi (manhaj muqaran) antar aliran
+- Rujuk sumber primer + sekunder
+- Sertakan teks Arab original bila mengutip
+- Bahasa Arab akademik tingkat tinggi
+- Tidak perlu jelaskan istilah dasar`,
+```
+
+---
+
+## BAGIAN 2 — Update Onboarding (`src/pages/onboarding.jsx`)
+
+### STEP 2.1 — Deteksi Level S2
+
+Tambahkan helper di awal komponen:
+
+```jsx
+const isS2 = profile?.level === "s2_kuliyyat" || profile?.level === "s2_dirasat";
+```
+
+### STEP 2.2 — Tambah Step S2 (Muncul setelah step level)
+
+Setelah user pilih level S2, munculkan step tambahan khusus S2.
+Tambahkan step baru `s2_setup` setelah step `level`:
+
+```jsx
+// Di array steps atau flow onboarding, tambah kondisi:
+// Kalau level = s2_kuliyyat atau s2_dirasat → tampilkan step s2_setup
+
+const S2SetupStep = ({ profile, onUpdate }) => {
+  const [jalur] = [profile.level]; // sudah dipilih di step sebelumnya
+  const [maddahList, setMaddahList] = useState(
+    profile.s2Maddah || [{ nama: "", kitab: "", id: Date.now() }]
+  );
+
+  const addMaddah = () => {
+    if (maddahList.length >= 8) return;
+    setMaddahList(prev => [...prev, { nama: "", kitab: "", id: Date.now() }]);
+  };
+
+  const updateMaddah = (id, field, value) => {
+    setMaddahList(prev => prev.map(m => m.id === id ? {...m, [field]: value} : m));
+  };
+
+  const removeMaddah = (id) => {
+    if (maddahList.length <= 1) return;
+    setMaddahList(prev => prev.filter(m => m.id !== id));
+  };
+
+  const handleNext = () => {
+    const validMaddah = maddahList.filter(m => m.nama.trim());
+    // Selalu tambah Manahij Bahts Ilmi otomatis
+    const withManahij = [
+      { nama: "Manahij Bahts Ilmi", kitab: "مناهج البحث العلمي", id: "manahij", isPreset: true },
+      ...validMaddah,
+    ];
+    onUpdate({ s2Maddah: withManahij });
+  };
+
+  return (
+    <div>
+      {/* Header */}
+      <div className="arabic-classic text-gold-300 text-2xl mb-2 text-center" style={{direction:"rtl"}}>
+        مَوَادُّ الدِّرَاسَةِ
+      </div>
+      <h2 className="font-display text-2xl font-semibold text-ink mb-1 text-center">
+        Maddah S2-mu
+      </h2>
+      <p className="text-sm text-ink-muted mb-6 text-center max-w-md mx-auto leading-relaxed">
+        Masukkan maddah yang sedang kamu ambil semester ini.
+        Tambahkan juga kitab yang dipakai — ini yang bikin AI langsung paham konteksnya.
+      </p>
+
+      {/* Manahij Bahts Ilmi — preset, tidak bisa dihapus */}
+      <div className="card-glass p-4 mb-3 border border-gold-500/20">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-[10px] bg-gold-500/15 text-gold-300 px-2 py-0.5 rounded border border-gold-500/20">
+            Otomatis — wajib semua jurusan
+          </span>
+        </div>
+        <div className="text-sm font-medium text-ink">Manahij Bahts Ilmi</div>
+        <div className="text-xs text-ink-soft arabic-display" style={{direction:"rtl"}}>
+          مناهج البحث العلمي
+        </div>
+      </div>
+
+      {/* Input maddah user */}
+      <div className="space-y-3 mb-4">
+        {maddahList.map((m, i) => (
+          <div key={m.id} className="card-glass p-4 relative">
+            <div className="text-xs uppercase tracking-wider text-ink-soft mb-3">
+              Maddah {i + 1}
+            </div>
+
+            {/* Nama maddah */}
+            <div className="mb-2">
+              <label className="text-xs text-ink-soft mb-1 block">
+                Nama maddah (Indonesia atau Arab):
+              </label>
+              <input
+                value={m.nama}
+                onChange={e => updateMaddah(m.id, "nama", e.target.value)}
+                placeholder="mis. Fiqh Nawazil / فقه النوازل"
+                className="w-full bg-white/5 border border-line rounded-lg px-3 py-2.5 text-sm text-ink outline-none focus:border-violet-400/40 transition-colors"
+                style={{fontSize: 16}}
+              />
+            </div>
+
+            {/* Kitab yang dipakai */}
+            <div>
+              <label className="text-xs text-ink-soft mb-1 block">
+                Kitab muqarrar yang dipakai:
+                <span className="text-ink-soft/60 ml-1">(opsional tapi sangat membantu)</span>
+              </label>
+              <input
+                value={m.kitab}
+                onChange={e => updateMaddah(m.id, "kitab", e.target.value)}
+                placeholder="mis. Al-Fiqh al-Islami wa Adillatuh / نظرية الضرورة"
+                className="w-full bg-white/5 border border-line rounded-lg px-3 py-2.5 text-sm text-ink outline-none focus:border-violet-400/40 transition-colors"
+                style={{fontSize: 16}}
+              />
+              <p className="text-[11px] text-ink-soft/60 mt-1">
+                AI akan menyesuaikan penjelasan berdasarkan kitab ini
+              </p>
+            </div>
+
+            {/* Hapus */}
+            {maddahList.length > 1 && (
+              <button
+                onClick={() => removeMaddah(m.id)}
+                className="absolute top-3 right-3 text-xs text-ink-soft hover:text-rose-600 transition-colors">
+                ✕
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Tambah maddah */}
+      {maddahList.length < 7 && (
+        <button
+          onClick={addMaddah}
+          className="w-full py-2.5 rounded-lg border border-dashed border-line text-sm text-ink-soft hover:border-violet-400/40 hover:text-ink transition-colors mb-6">
+          + Tambah maddah lain
+        </button>
+      )}
+
+      <button onClick={handleNext} className="btn-primary w-full py-3.5">
+        Lanjut →
+      </button>
+    </div>
+  );
+};
+```
+
+### STEP 2.3 — Simpan ke Profile
+
+Di fungsi finishOnboarding atau handleComplete, pastikan `s2Maddah` tersimpan ke profile:
+
+```js
+const finalProfile = {
+  ...profile,
+  onboarded: true,
+  s2Maddah: isS2 ? profile.s2Maddah : undefined,
+};
+saveProfile(finalProfile);
+```
+
+---
+
+## BAGIAN 3 — Adaptive Prompt S2 (`src/adaptive-prompt.jsx`)
+
+### STEP 3.1 — Fungsi Resolve Maddah S2
+
+Tambahkan fungsi baru untuk generate context maddah S2:
+
+```js
+const resolveS2MaddahContext = (maddah) => {
+  if (!maddah) return "";
+  const nama = maddah.nama || "";
+  const kitab = maddah.kitab || "";
+
+  let context = `Maddah yang sedang dipelajari: ${nama}`;
+  if (kitab) {
+    context += `\nKitab muqarrar yang dipakai: ${kitab}`;
+    context += `\n(Sesuaikan penjelasan dengan pendekatan dan terminologi kitab ini)`;
+  } else {
+    context += `\n(Identifikasi dulu konteks maddah ini dalam kurikulum S2 Al-Azhar, `;
+    context += `lalu tanyakan ke user kalau butuh klarifikasi kitab yang dipakai)`;
+  }
+  return context;
+};
+```
+
+### STEP 3.2 — Fungsi Generate Prompt S2
+
+Tambahkan fungsi utama:
+
+```js
+const generateS2Prompt = (template, profile, maddah) => {
+  if (!template) return "";
+
+  const jalur = profile?.level === "s2_kuliyyat"
+    ? "Kuliyyat Ulum (Maajistir 1 tahun)"
+    : "Dirasat Ulya (Maajistir 2 tahun)";
+
+  const fakultasData = (typeof FACULTIES !== "undefined")
+    ? FACULTIES.find(f => f.id === profile?.faculty) : null;
+  const fakultas = fakultasData?.label || "Al-Azhar";
+
+  const majorData = fakultasData?.majors?.find(m => m.id === profile?.major);
+  const jurusan = majorData?.label || "";
+
+  const tingkatan = TINGKATAN_LABEL[profile?.level] || "mahasiswa S2";
+  const levelBahasa = LEVEL_BAHASA_INSTRUCTION[profile?.level]
+    || LEVEL_BAHASA_INSTRUCTION["s2_kuliyyat"];
+  const maddahContext = resolveS2MaddahContext(maddah);
+  const gaya = (profile?.learningStyle || []).join(", ") || "kombinasi";
+
+  return template
+    .replace(/\[TINGKATAN\]/g, tingkatan)
+    .replace(/\[JALUR_S2\]/g, jalur)
+    .replace(/\[FAKULTAS\]/g, fakultas)
+    .replace(/\[JURUSAN\]/g, jurusan ? `jurusan ${jurusan}` : "")
+    .replace(/\[MADDAH_S2\]/g, maddahContext)
+    .replace(/\[NAMA_MADDAH\]/g, maddah?.nama || "[nama maddah]")
+    .replace(/\[KITAB\]/g, maddah?.kitab || "[kitab muqarrar]")
+    .replace(/\[LEVEL_BAHASA\]/g, levelBahasa)
+    .replace(/\[GAYA_BELAJAR\]/g, gaya);
+};
+
+window.generateS2Prompt = generateS2Prompt;
+window.resolveS2MaddahContext = resolveS2MaddahContext;
+```
+
+---
+
+## BAGIAN 4 — Halaman Maddah S2 (`src/pages/s2-maddah.jsx`)
+
+Buat file baru `src/pages/s2-maddah.jsx`:
+
+```jsx
+/* Talqeeh — Halaman Maddah S2
+   Menampilkan maddah yang diinput user saat onboarding S2.
+   Setiap maddah punya prompt templates yang adaptive.
+*/
+
+/* ============ PROMPT TEMPLATES S2 ============ */
+
+const S2_PROMPT_TEMPLATES = {
+
+  pahami: `Aku [TINGKATAN] di [JALUR_S2], [FAKULTAS] [JURUSAN].
+
+[MADDAH_S2]
+Topik yang ingin aku pahami: [TOPIK]
+
+Bantu aku memahami topik ini setara level riset akademik S2:
+
+1. **Kontekstualisasi** — posisi topik ini dalam disiplin ilmu secara keseluruhan
+2. **Pengertian teknis** — definisi dari berbagai ulama/ahli dengan perbandingan
+   (sertakan teks Arab + sumber bila ada)
+3. **Inti pembahasan** — poin-poin substantif dengan kedalaman akademik
+4. **Jadal ilmi** — perdebatan akademik yang ada seputar topik ini
+5. **Relevansi kontemporer** — aplikasi atau perkembangan terkini
+
+[LEVEL_BAHASA]`,
+
+  drill: `Aku [TINGKATAN] di [JALUR_S2], [FAKULTAS] [JURUSAN].
+
+[MADDAH_S2]
+Topik untuk di-drill: [TOPIK]
+
+Buat 6 soal akademik S2 bergaya seminar Al-Azhar:
+
+Format soal (campur):
+- "حلِّل وناقش..." (analisis dan diskusikan) — 2 soal
+- "قارن بين منهج... ومنهج..." (bandingkan metodologi) — 2 soal
+- "ما موقف العلماء من... مع الترجيح" (pendapat ulama + tarjih) — 1 soal
+- "اكتب مقدمة بحثية عن..." (tulis pendahuluan riset tentang) — 1 soal
+
+Tulis soal dalam Bahasa Arab. Beri terjemah Indonesia di bawah tiap soal.
+JANGAN beri jawaban dulu — tunggu aku jawab, baru koreksi dengan standar akademik S2.
+
+[LEVEL_BAHASA]`,
+
+  literatur: `Aku [TINGKATAN] di [JALUR_S2], [FAKULTAS] [JURUSAN].
+
+[MADDAH_S2]
+Topik yang butuh review literatur: [TOPIK]
+
+Bantu aku review literatur akademik untuk topik ini:
+
+1. **Sumber primer klasik** (kutub turats) — kitab-kitab utama yang membahas topik ini
+   Format: Nama kitab (Arab) — Pengarang — Relevansinya untuk topik
+2. **Sumber kontemporer** — buku/majalah akademik terkini (pasca-1980)
+3. **Dirasat sabiqah** (penelitian terdahulu) — risalah/disertasi yang pernah membahas ini
+4. **Gap penelitian** — apa yang belum banyak diteliti dari topik ini
+5. **Rekomendasi fokus** — dari semua sumber, dari mana sebaiknya aku mulai
+
+Sertakan nama Arab untuk setiap kitab/sumber yang disebut.
+
+[LEVEL_BAHASA]`,
+
+  presentasi: `Aku [TINGKATAN] di [JALUR_S2], [FAKULTAS] [JURUSAN].
+
+[MADDAH_S2]
+Topik presentasi/makalah: [TOPIK]
+
+Bantu aku persiapan presentasi akademik S2:
+
+1. **Outline presentasi** — struktur 15-20 menit (pembukaan, isi, penutup)
+2. **Poin-poin kunci** — maksimal 5 poin utama yang harus tersampaikan
+3. **Argumen terkuat** — yang paling perlu ditekankan beserta dalilnya
+4. **Kemungkinan pertanyaan** — 5 pertanyaan yang mungkin ditanya dosen/peserta
+5. **Model jawaban** — jawaban singkat untuk tiap pertanyaan
+
+Bahasa presentasi: campuran Arab akademik + Indonesia (seperti seminar S2 Azhari).
+
+[LEVEL_BAHASA]`,
+};
+
+/* ============ PROMPT RISALAH ============ */
+
+const RISALAH_TEMPLATES = {
+
+  outline: `Aku [TINGKATAN] di [JALUR_S2], [FAKULTAS] [JURUSAN].
+Judul risalah (tesis): [JUDUL_RISALAH]
+
+Bantu aku buat outline risalah yang memenuhi standar akademik Al-Azhar:
+
+**Struktur yang dibutuhkan:**
+
+BAB I — PENDAHULUAN (مقدمة)
+- Latar belakang masalah (خلفية البحث)
+- Rumusan masalah (أسئلة البحث) — dalam bentuk pertanyaan
+- Tujuan penelitian (أهداف البحث)
+- Signifikansi penelitian (أهمية البحث)
+- Metodologi penelitian (منهج البحث)
+- Batasan penelitian (حدود البحث)
+- Sistematika penulisan (خطة البحث)
+
+BAB II, III, IV — ISI (berdasarkan judul)
+- Bagi topik menjadi bab-bab logis
+- Tiap bab punya sub-bab yang koheren
+- Urutan dari umum ke khusus, dari teori ke aplikasi
+
+BAB TERAKHIR — PENUTUP (خاتمة)
+- Kesimpulan (نتائج البحث)
+- Rekomendasi (توصيات)
+
+Berikan outline lengkap dengan judul Arab + Indonesia untuk setiap bab dan sub-bab.`,
+
+  rumusan: `Aku [TINGKATAN] di [JALUR_S2], [FAKULTAS] [JURUSAN].
+Judul risalah: [JUDUL_RISALAH]
+Area yang ingin diteliti: [TOPIK]
+
+Bantu aku merumuskan masalah penelitian yang tajam:
+
+1. **Analisis gap** — apa yang belum diteliti secara mendalam dari area ini?
+2. **3-5 rumusan masalah** — dalam bentuk pertanyaan penelitian yang spesifik
+   Format Arab: "ما..." / "كيف..." / "ما مدى..."
+   + terjemah Indonesia
+3. **Hipotesis awal** (فرضيات) — dugaan sementara untuk tiap pertanyaan
+4. **Batasan masalah** — apa yang di-scope out dari penelitian ini dan kenapa
+5. **Kebaruan penelitian** (الجدة والابتكار) — apa yang baru dari penelitian ini
+
+Standar: rumusan masalah harus spesifik, terukur, dan bisa dijawab melalui penelitian.`,
+
+  abstrak: `Aku [TINGKATAN] di [JALUR_S2], [FAKULTAS] [JURUSAN].
+Judul risalah: [JUDUL_RISALAH]
+
+Poin-poin utama risalah:
+[POIN_RISALAH]
+
+Bantu aku tulis abstrak bilingual (Arab + Indonesia) standar Al-Azhar:
+
+**ABSTRAK ARAB** (ملخص البحث):
+- Panjang: 200-250 kata Arab
+- Struktur: latar belakang → rumusan masalah → metodologi → temuan utama → kesimpulan
+- Bahasa: Arab akademik baku (فصحى معاصرة)
+- Akhiri dengan kata kunci (الكلمات المفتاحية): 5-7 kata kunci Arab
+
+**ABSTRAK INDONESIA**:
+- Terjemahan akademik dari abstrak Arab
+- Bukan terjemah harfiyah — sesuaikan dengan gaya akademik Indonesia
+- Akhiri dengan Kata Kunci: 5-7 kata kunci Indonesia`,
+
+  footnote: `Aku [TINGKATAN] di [JALUR_S2], [FAKULTAS] [JURUSAN].
+
+Bantu aku tulis footnote Arab yang benar untuk kutipan berikut:
+
+Informasi sumber:
+- Nama kitab/buku: [NAMA_KITAB]
+- Pengarang: [PENGARANG]
+- Penerbit & tahun: [PENERBIT_TAHUN]
+- Jilid & halaman: [JILID_HALAMAN]
+
+Berikan:
+1. **Format footnote pertama** (kutipan pertama kali — lengkap)
+2. **Format footnote singkat** (ibid / op.cit — kalau kutip ulang)
+3. **Format daftar pustaka** (قائمة المصادر والمراجع)
+
+Ikuti standar penulisan akademik Al-Azhar.`,
+};
+
+/* ============ KOMPONEN UTAMA ============ */
+
+const S2MaddahPage = () => {
+  const { session, profile } = useAuth();
+  const toast = useToast();
+  const [selectedMaddah, setSelectedMaddah] = useState(null);
+  const [activeTab, setActiveTab]   = useState("prompt");   // "prompt" | "risalah"
+  const [activeMode, setActiveMode] = useState("pahami");
+  const [topikInput, setTopikInput] = useState("");
+  const [judulRisalah, setJudulRisalah] = useState("");
+  const [risalahMode, setRisalahMode] = useState("outline");
+  const [poinRisalah, setPoinRisalah] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  if (!session || !profile?.onboarded) { navigate("/"); return null; }
+
+  const isS2 = profile?.level === "s2_kuliyyat" || profile?.level === "s2_dirasat";
+  if (!isS2) { navigate("/dashboard"); return null; }
+
+  const maddahList = profile?.s2Maddah || [];
+  const jalur = profile.level === "s2_kuliyyat" ? "Kuliyyat Ulum" : "Dirasat Ulya";
+
+  /* Resolve prompt */
+  const getPrompt = () => {
+    if (activeTab === "risalah") {
+      const template = RISALAH_TEMPLATES[risalahMode] || "";
+      return generateS2Prompt(
+        template
+          .replace(/\[JUDUL_RISALAH\]/g, judulRisalah || "[tulis judul risalahmu]")
+          .replace(/\[TOPIK\]/g, topikInput || "[tulis area yang ingin diteliti]")
+          .replace(/\[POIN_RISALAH\]/g, poinRisalah || "[tulis poin-poin utama risalah]"),
+        profile, selectedMaddah
+      );
+    }
+    const template = S2_PROMPT_TEMPLATES[activeMode] || "";
+    return generateS2Prompt(
+      template.replace(/\[TOPIK\]/g, topikInput || "[tulis topik spesifik yang ingin dibahas]"),
+      profile, selectedMaddah
+    );
+  };
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(getPrompt());
+    setCopied(true);
+    toast.push("Prompt tersalin — paste ke AI.");
+    setTimeout(() => setCopied(false), 3000);
+  };
+
+  const handleCopyAndOpen = (toolId) => {
+    navigator.clipboard.writeText(getPrompt());
+    const tool = AI_TOOLS.find(t => t.id === toolId);
+    if (tool?.link) setTimeout(() => window.open(tool.link, "_blank"), 300);
+    toast.push(`Tersalin — membuka ${tool?.name}...`);
+  };
+
+  /* Mode tabs */
+  const PROMPT_MODES = [
+    { id: "pahami",      label: "Pahami",       icon: "lightbulb",    desc: "Analisis kritis setara seminar S2" },
+    { id: "drill",       label: "Drill Soal",   icon: "target",       desc: "Soal bergaya ujian S2 Al-Azhar" },
+    { id: "literatur",   label: "Literatur",    icon: "bookOpen",     desc: "Review sumber & dirasat sabiqah" },
+    { id: "presentasi",  label: "Presentasi",   icon: "layers",       desc: "Persiapan makalah & seminar" },
+  ];
+
+  const RISALAH_MODES = [
+    { id: "outline",   label: "Outline Bab",     icon: "list" },
+    { id: "rumusan",   label: "Rumusan Masalah", icon: "search" },
+    { id: "abstrak",   label: "Abstrak",         icon: "pen" },
+    { id: "footnote",  label: "Footnote Arab",   icon: "bookmark" },
+  ];
+
+  return (
+    <div className="page-enter mobile-page-wrap">
+
+      {/* Header */}
+      <section className="relative pt-6 md:pt-12 pb-6 overflow-hidden">
+        <Blob color="rgba(124,77,255,0.2)" size={500} top={-150} right={-80}/>
+        <Blob color="rgba(201,168,106,0.1)" size={300} top={200} left={-100}/>
+        <div className="container-x relative">
+          <button onClick={() => navigate("/dashboard")}
+            className="text-sm text-ink-soft inline-flex items-center gap-1.5 mb-4"
+            style={{minHeight:40}}>
+            <Icon name="arrowLeft" className="w-4 h-4"/> Dashboard
+          </button>
+          <div className="arabic-classic text-gold-300 text-2xl mb-2" style={{direction:"rtl"}}>
+            مَوَادُّ الدِّرَاسَاتِ الْعُلْيَا
+          </div>
+          <h1 className="font-display text-3xl md:text-4xl font-semibold text-ink mb-2">
+            Maddah S2
+          </h1>
+          <p className="text-sm text-ink-muted max-w-lg leading-relaxed">
+            {jalur} · Prompt setara level riset akademik.
+          </p>
+        </div>
+      </section>
+
+      {/* Pilih Maddah */}
+      <section className="pb-6">
+        <div className="container-x">
+          <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">
+            Pilih Maddah
+          </div>
+          <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 pb-1">
+            {maddahList.map(m => (
+              <button key={m.id}
+                onClick={() => setSelectedMaddah(m)}
+                className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-sm border transition-colors text-left ${
+                  selectedMaddah?.id === m.id
+                    ? "bg-violet-500/20 text-violet-200 border-violet-500/30"
+                    : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
+                }`} style={{minHeight:44}}>
+                <div className="font-medium">{m.nama}</div>
+                {m.kitab && (
+                  <div className="text-[10px] text-ink-soft mt-0.5 truncate max-w-[150px]">
+                    {m.kitab}
+                  </div>
+                )}
+                {m.isPreset && (
+                  <span className="text-[9px] text-gold-400">✦ Wajib</span>
+                )}
+              </button>
+            ))}
+            {/* Tambah maddah baru */}
+            <button
+              onClick={() => navigate("/profil-s2")}
+              className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm border border-dashed border-line text-ink-soft hover:border-violet-400/40 hover:text-ink transition-colors"
+              style={{minHeight:44}}>
+              + Tambah
+            </button>
+          </div>
+          {selectedMaddah?.kitab && (
+            <p className="text-xs text-ink-soft mt-2">
+              Kitab: <span className="text-ink">{selectedMaddah.kitab}</span>
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* Tab: Prompt Maddah vs Risalah */}
+      <section className="pb-4">
+        <div className="container-x">
+          <div className="flex gap-2 p-1 bg-white/4 rounded-xl w-fit">
+            <button
+              onClick={() => setActiveTab("prompt")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeTab === "prompt"
+                  ? "bg-violet-500/25 text-violet-200"
+                  : "text-ink-muted hover:text-ink"
+              }`}>
+              Prompt Maddah
+            </button>
+            <button
+              onClick={() => setActiveTab("risalah")}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
+                activeTab === "risalah"
+                  ? "bg-gold-500/20 text-gold-200"
+                  : "text-ink-muted hover:text-ink"
+              }`}>
+              <div className="arabic-display text-xs" style={{direction:"rtl"}}>رسالة</div>
+              Risalah / Tesis
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* ── TAB: PROMPT MADDAH ── */}
+      {activeTab === "prompt" && (
+        <section className="pb-8">
+          <div className="container-x">
+            {/* Mode tabs */}
+            <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 pb-3 mb-5">
+              {PROMPT_MODES.map(mode => (
+                <button key={mode.id}
+                  onClick={() => setActiveMode(mode.id)}
+                  className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm border transition-colors ${
+                    activeMode === mode.id
+                      ? "bg-violet-500/15 text-violet-200 border-violet-500/30"
+                      : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
+                  }`} style={{minHeight:44}}>
+                  <Icon name={mode.icon} className="w-4 h-4"/>
+                  {mode.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Input topik */}
+            <div className="mb-4">
+              <label className="text-xs text-ink-soft mb-1.5 block">
+                Topik spesifik yang ingin dibahas:
+              </label>
+              <input
+                value={topikInput}
+                onChange={e => setTopikInput(e.target.value)}
+                placeholder="mis. hukum cryptocurrency · metode istinbat nawazil · i'jaz 'ilmi"
+                className="w-full bg-white/4 border border-line rounded-xl px-4 py-3 text-sm text-ink outline-none focus:border-violet-400/40 transition-colors"
+                style={{fontSize:16}}
+              />
+              {topikInput.trim().length > 0 && topikInput.trim().split(" ").length < 2 && (
+                <p className="text-xs text-amber-400 mt-1">
+                  💡 Coba lebih spesifik — mis. "hukum asuransi jiwa syariah"
+                </p>
+              )}
+            </div>
+
+            {/* Preview + Actions */}
+            <div className="card-glass p-5">
+              <div className="p-3 rounded-lg bg-white/3 border border-line mb-4">
+                <div className="text-xs text-ink-soft mb-1">Preview prompt:</div>
+                <p className="text-xs text-ink-muted leading-relaxed font-mono line-clamp-4 whitespace-pre-wrap">
+                  {getPrompt().slice(0, 300)}...
+                </p>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <button onClick={handleCopy}
+                  className="btn-ghost text-xs px-4 py-2.5 flex items-center gap-1.5"
+                  style={{minHeight:40}}>
+                  <Icon name="copy" className="w-3.5 h-3.5"/>
+                  {copied ? "Tersalin ✓" : "Salin Prompt"}
+                </button>
+                <button onClick={() => handleCopyAndOpen("claude")}
+                  className="btn-primary text-xs px-4 py-2.5 flex items-center gap-1.5"
+                  style={{minHeight:40}}>
+                  Salin & Buka Claude
+                  <Icon name="external" className="w-3 h-3"/>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── TAB: RISALAH ── */}
+      {activeTab === "risalah" && (
+        <section className="pb-8">
+          <div className="container-x">
+            <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">
+              ✦ Prompt Risalah / Tesis
+            </div>
+
+            {/* Judul risalah — input permanen untuk tab ini */}
+            <div className="mb-4">
+              <label className="text-xs text-ink-soft mb-1.5 block">
+                Judul risalahmu (sementara atau final):
+              </label>
+              <input
+                value={judulRisalah}
+                onChange={e => setJudulRisalah(e.target.value)}
+                placeholder="mis. Fiqh Nawazil dalam Transaksi Digital Kontemporer"
+                className="w-full bg-white/4 border border-line rounded-xl px-4 py-3 text-sm text-ink outline-none focus:border-gold-400/40 transition-colors"
+                style={{fontSize:16}}
+              />
+            </div>
+
+            {/* Risalah mode tabs */}
+            <div className="grid grid-cols-2 gap-2 mb-5">
+              {RISALAH_MODES.map(mode => (
+                <button key={mode.id}
+                  onClick={() => setRisalahMode(mode.id)}
+                  className={`flex items-center gap-2 p-3 rounded-xl text-sm border transition-colors text-left ${
+                    risalahMode === mode.id
+                      ? "bg-gold-500/15 text-gold-200 border-gold-500/30"
+                      : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
+                  }`}>
+                  <Icon name={mode.icon} className="w-4 h-4"/>
+                  {mode.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Input tambahan untuk mode abstrak */}
+            {risalahMode === "abstrak" && (
+              <div className="mb-4">
+                <label className="text-xs text-ink-soft mb-1.5 block">
+                  Poin-poin utama risalahmu (untuk abstrak):
+                </label>
+                <textarea
+                  value={poinRisalah}
+                  onChange={e => setPoinRisalah(e.target.value)}
+                  placeholder="1. Temuan pertama&#10;2. Temuan kedua&#10;3. Kesimpulan utama"
+                  className="w-full bg-white/4 border border-line rounded-xl px-4 py-3 text-sm text-ink outline-none focus:border-gold-400/40 transition-colors resize-none"
+                  style={{fontSize:16, minHeight:100}}
+                />
+              </div>
+            )}
+
+            {/* Input topik untuk rumusan masalah */}
+            {risalahMode === "rumusan" && (
+              <div className="mb-4">
+                <label className="text-xs text-ink-soft mb-1.5 block">
+                  Area yang ingin diteliti (lebih spesifik):
+                </label>
+                <input
+                  value={topikInput}
+                  onChange={e => setTopikInput(e.target.value)}
+                  placeholder="mis. penerapan fiqh nawazil pada platform fintech syariah"
+                  className="w-full bg-white/4 border border-line rounded-xl px-4 py-3 text-sm text-ink outline-none focus:border-gold-400/40 transition-colors"
+                  style={{fontSize:16}}
+                />
+              </div>
+            )}
+
+            {/* Preview + Actions */}
+            <div className="card-glass p-5 border border-gold-500/15">
+              <div className="p-3 rounded-lg bg-white/3 border border-line mb-4">
+                <div className="text-xs text-ink-soft mb-1">Preview prompt:</div>
+                <p className="text-xs text-ink-muted leading-relaxed font-mono line-clamp-4 whitespace-pre-wrap">
+                  {getPrompt().slice(0, 300)}...
+                </p>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <button onClick={handleCopy}
+                  className="btn-ghost text-xs px-4 py-2.5 flex items-center gap-1.5"
+                  style={{minHeight:40}}>
+                  <Icon name="copy" className="w-3.5 h-3.5"/>
+                  {copied ? "Tersalin ✓" : "Salin Prompt"}
+                </button>
+                <button onClick={() => handleCopyAndOpen("claude")}
+                  className="btn-primary text-xs px-4 py-2.5 flex items-center gap-1.5"
+                  style={{minHeight:40}}>
+                  Salin & Buka Claude
+                  <Icon name="external" className="w-3 h-3"/>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+    </div>
+  );
+};
+
+window.S2MaddahPage = S2MaddahPage;
+window.S2_PROMPT_TEMPLATES = S2_PROMPT_TEMPLATES;
+window.RISALAH_TEMPLATES = RISALAH_TEMPLATES;
+```
+
+---
+
+## BAGIAN 5 — Routing & Script (`src/app.jsx` + `index.html`)
+
+### STEP 5.1 — Tambah Route di `src/app.jsx`
+
+```jsx
+} else if (path === "/s2-maddah" || path.startsWith("/s2-maddah")) {
+  page = <S2MaddahPage/>;
+  routeLabel = "Maddah S2";
+}
+```
+
+### STEP 5.2 — Tambah Script di `index.html`
+
+Tambahkan sebelum `src/app.jsx`:
+```html
+<script type="text/babel" data-presets="env,react" src="src/pages/s2-maddah.jsx"></script>
+```
+
+---
+
+## BAGIAN 6 — Dashboard S2 Card
+
+Di `src/pages/dashboard.jsx`, tambahkan card khusus S2 yang muncul **hanya untuk user S2**:
+
+```jsx
+{/* S2 MADDAH CARD — hanya muncul untuk user S2 */}
+{(profile?.level === "s2_kuliyyat" || profile?.level === "s2_dirasat") && (
+  <section className="pb-6">
+    <div className="container-x">
+      <Reveal>
+        <div className="card-glass-strong p-5 md:p-6 relative overflow-hidden cursor-pointer hov-lift"
+          onClick={() => navigate("/s2-maddah")}>
+          <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-gold-500/8 blur-3xl pointer-events-none"/>
+          <div className="relative flex items-start justify-between gap-4">
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="arabic-display text-gold-300 text-lg" style={{direction:"rtl"}}>
+                  دراسات عليا
+                </div>
+                <span className="text-[10px] bg-gold-500/15 text-gold-300 px-2 py-0.5 rounded border border-gold-500/20">
+                  {profile.level === "s2_kuliyyat" ? "Kuliyyat Ulum" : "Dirasat Ulya"}
+                </span>
+              </div>
+              <h3 className="font-display text-lg font-semibold text-ink mb-1">
+                Maddah S2-mu
+              </h3>
+              <p className="text-sm text-ink-muted leading-relaxed">
+                {(profile.s2Maddah || []).length > 0
+                  ? `${profile.s2Maddah.length} maddah · Prompt riset + risalah tersedia`
+                  : "Tambahkan maddah yang sedang kamu ambil"
+                }
+              </p>
+              {/* List maddah singkat */}
+              {(profile.s2Maddah || []).slice(0, 3).map(m => (
+                <div key={m.id} className="text-xs text-ink-soft mt-1 flex items-center gap-1.5">
+                  <span className="w-1 h-1 rounded-full bg-violet-400"/>
+                  {m.nama}
+                </div>
+              ))}
+            </div>
+            <Icon name="arrowRight" className="w-5 h-5 text-ink-soft flex-shrink-0 mt-1"/>
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+)}
+```
+
+---
+
+## BAGIAN 7 — Bottom Tab Bar Update (Mobile)
+
+Di `src/layout.jsx`, update `MobileTabBar` untuk user S2 — ganti tab "Maddah" ke "/s2-maddah" kalau user S2:
+
+```jsx
+const tabs = isS2 ? [
+  { to: "/dashboard",  icon: "home",     label: "Beranda"  },
+  { to: "/s2-maddah",  icon: "layers",   label: "Maddah"   },
+  { to: "/siap-imtihan", icon: "target", label: "Imtihan"  },
+  { to: "/kurasah",    icon: "notebook", label: "Kurasah"  },
+  { to: "/tools",      icon: "sparkles", label: "Tools"    },
+] : [
+  // tab bar S1 yang sudah ada — tidak berubah
+];
+
+const isS2 = session && (
+  profile?.level === "s2_kuliyyat" ||
+  profile?.level === "s2_dirasat"
+);
+```
+
+---
+
+## Acceptance Criteria
+
+### Onboarding S2
+- [ ] Pilih level "S2 — Kuliyyat Ulum" atau "S2 — Dirasat Ulya" → muncul step input maddah
+- [ ] Manahij Bahts Ilmi otomatis ditambahkan (tidak bisa dihapus)
+- [ ] User bisa tambah maddah dengan nama + kitab (kitab opsional)
+- [ ] Bisa tambah hingga 7 maddah tambahan
+- [ ] Data maddah tersimpan di profile localStorage
+
+### Halaman S2 Maddah (/s2-maddah)
+- [ ] Hanya bisa diakses user S2 — user lain redirect ke dashboard
+- [ ] List maddah user tampil sebagai chip horizontal
+- [ ] Pilih maddah → prompt ter-generate dengan konteks maddah + kitab
+- [ ] 4 mode prompt: Pahami, Drill, Literatur, Presentasi
+- [ ] Input topik → prompt otomatis include topik
+- [ ] Validasi: topik terlalu pendek → hint minta lebih spesifik
+- [ ] Preview prompt muncul (line-clamp 4)
+- [ ] Salin prompt → tersalin, toast muncul
+- [ ] Salin & Buka Claude → copy + buka Claude
+
+### Tab Risalah
+- [ ] Input judul risalah → semua prompt risalah include judul
+- [ ] 4 mode: Outline Bab, Rumusan Masalah, Abstrak, Footnote Arab
+- [ ] Mode Abstrak: ada input poin-poin utama
+- [ ] Mode Rumusan: ada input area penelitian
+- [ ] Prompt risalah punya struktur Arab (مقدمة, أسئلة البحث, dll)
+
+### Adaptive Prompt
+- [ ] User S2 Kuliyyat Ulum → level bahasa "riset akademik S2"
+- [ ] Prompt include: jalur, fakultas, jurusan, nama maddah, kitab
+- [ ] Kalau kitab diisi → prompt minta AI sesuaikan dengan kitab itu
+- [ ] Kalau kitab kosong → prompt minta AI identifikasi dulu sebelum bantu
+
+### Dashboard
+- [ ] Card "Maddah S2" muncul HANYA untuk user S2
+- [ ] Card tampilkan nama jalur + jumlah maddah + preview nama maddah
+- [ ] Klik card → navigate ke /s2-maddah
+
+### Mobile Tab Bar
+- [ ] User S2: tab "Maddah" arahkan ke /s2-maddah (bukan /maddah)
+- [ ] User S1: tab bar tidak berubah
+
+### General
+- [ ] User S1 tidak terpengaruh sama sekali
+- [ ] Tidak ada console error
+- [ ] Mobile responsive
+
+---
+
+## Catatan Penting
+
+**Kenapa maddah tidak di-preset:**
+Data kurikulum S2 Al-Azhar tidak bisa diverifikasi akurat dari luar — bervariasi per tahun, per jurusan, dan terus berubah. User sendiri yang tahu persis maddah apa yang mereka ambil.
+
+**Kenapa kitab penting:**
+Nama maddah yang sama bisa dipakai dengan kitab yang berbeda antar universitas bahkan antar jurusan. Dengan kitab, AI punya konteks yang jauh lebih akurat dan spesifik — ini solve bottleneck utama "AI tidak kenal maddah S2 Azhari".
+
+**Manahij Bahts Ilmi di-preset:**
+Dikonfirmasi wajib semua jurusan S2 Al-Azhar — satu-satunya maddah yang cukup yakin untuk di-preset.
+
+والله ولي التوفيق. Mulai dari Bagian 1 (update LEVELS), lanjut berurutan.
