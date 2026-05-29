@@ -1,0 +1,161 @@
+# PROMPT: Fix Mobile UI — Background Smooth + WA Button + Tab Bar
+
+3 fix untuk tampilan mobile yang lebih rapi.
+
+---
+
+## FIX 1 — Background Section Atas Lebih Smooth (Dashboard)
+
+**Masalah:** Ada garis batas kasar antara section greeting (gelap dengan blob) dan section starter pack di bawahnya. Terasa "kotak-kotak", tidak smooth.
+
+**File:** `src/pages/dashboard.jsx`
+
+Cari section greeting mobile (sekitar line 347):
+```jsx
+<section className="relative pt-4 md:pt-16 pb-6 md:pb-8 overflow-hidden">
+```
+
+**Tambahkan** fade gradient di bagian bawah section greeting, tepat sebelum closing tag `</section>`:
+
+```jsx
+{/* Smooth fade ke section berikutnya — mobile only */}
+<div className="md:hidden absolute bottom-0 left-0 right-0 h-20 pointer-events-none"
+  style={{
+    background: "linear-gradient(to bottom, transparent, #0A0514)"
+  }}
+/>
+```
+
+Ini bikin transisi antara section greeting dan section di bawahnya jadi mulus seperti fade, bukan garis keras.
+
+---
+
+## FIX 2 — Tombol WA Tidak Ketutupan Tab Bar
+
+**Masalah:** Tombol WA posisi `bottom: 84px` — tapi tab bar tingginya 64px + safe area. Di beberapa HP tombol WA masih ketutupan atau terlalu mepet.
+
+**File:** `src/layout.jsx`, cari `SupportButton` component (sekitar line 730):
+
+```jsx
+// SEBELUM:
+position:"fixed", bottom:"84px", right:"24px", zIndex:49,
+```
+
+```jsx
+// SESUDAH:
+position:"fixed", 
+bottom: "calc(var(--tabbar-height, 64px) + var(--safe-bottom, 0px) + 20px)", 
+right:"20px", 
+zIndex:55,
+```
+
+Ini memastikan tombol WA selalu **20px di atas** tab bar, apapun tinggi tab bar dan safe area device.
+
+Juga perkecil sedikit ukuran tombol WA di mobile supaya tidak terlalu besar dan tidak ganggu konten:
+
+```jsx
+// SEBELUM:
+width:"52px", height:"52px",
+
+// SESUDAH:
+width:"46px", height:"46px",
+```
+
+---
+
+## FIX 3 — Tab Bar Lebih Compact & Proporsional
+
+**Masalah:** Tab bar tinggi 64px (h-16) terasa besar di mobile. Label teks terlalu besar. Ikon terlalu besar.
+
+**File:** `src/layout.jsx`, cari komponen `MobileTabBar`
+
+Cari `<div className="flex items-stretch justify-around h-16">`:
+```jsx
+// SEBELUM:
+<div className="flex items-stretch justify-around h-16">
+
+// SESUDAH:
+<div className="flex items-stretch justify-around" style={{height:"54px"}}>
+```
+
+Update `--tabbar-height` di `index.html` (cari `--tabbar-height: 64px`):
+```css
+/* SEBELUM: */
+--tabbar-height: 64px;
+
+/* SESUDAH: */
+--tabbar-height: 54px;
+```
+
+Update padding `has-tabbar` di `index.html` (cari `padding-bottom: 80px`):
+```css
+/* SEBELUM: */
+main.has-tabbar { padding-bottom: 80px; }
+
+/* SESUDAH: */
+main.has-tabbar { padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px) + 12px); }
+```
+
+Perkecil ikon dan label di tab bar:
+```jsx
+// Ikon: w-[22px] h-[22px] → w-5 h-5 (20px)
+<Icon name={tab.icon} className={`w-5 h-5 transition-colors ...`}/>
+
+// Label: text-[10px] → text-[9px]
+<span className={`text-[9px] transition-colors leading-none ...`}>
+```
+
+---
+
+## FIX 4 — Smooth Transition Antar Section (Global Mobile)
+
+**File:** `index.html`, tambahkan ke dalam `<style>` block:
+
+```css
+/* Mobile: smooth background antar section */
+@media (max-width: 767px) {
+  .page-enter > section:not(:first-child) {
+    position: relative;
+  }
+  .page-enter > section:not(:first-child)::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: linear-gradient(to bottom, rgba(10,5,20,0), rgba(10,5,20,0));
+    pointer-events: none;
+  }
+}
+```
+
+Ini untuk styling ke depan — pastikan tidak ada section yang punya background warna berbeda yang membuat garis keras di mobile.
+
+---
+
+## Acceptance Criteria
+
+### Background Smooth
+- [ ] Buka dashboard di mobile → transisi antara section greeting dan starter pack terasa smooth (fade, bukan garis kotak)
+- [ ] Tidak ada garis batas horizontal yang kasar antar section
+- [ ] Background tetap gelap konsisten di semua section
+
+### Tombol WA
+- [ ] Tombol WA tidak ketutupan tab bar — ada jarak minimal 20px di atas tab bar
+- [ ] Tombol WA tetap di pojok kanan bawah
+- [ ] Ukuran tombol WA 46x46px (sedikit lebih kecil dari sebelumnya)
+- [ ] Test di HP dengan notch — tombol WA tetap tidak ketutupan
+
+### Tab Bar
+- [ ] Tab bar tinggi 54px (lebih compact dari 64px sebelumnya)
+- [ ] Ikon dan label sedikit lebih kecil
+- [ ] Konten halaman tidak ketutupan tab bar (padding bawah sudah menyesuaikan)
+- [ ] Active indicator (garis atas) tetap kelihatan
+- [ ] Test di 375px — semua 5 tab tetap fit dalam satu baris
+
+### General
+- [ ] Tidak ada console error
+- [ ] Desktop tidak terpengaruh sama sekali
+
+والله ولي التوفيق.

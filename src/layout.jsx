@@ -675,7 +675,7 @@ const MobileTabBar = () => {
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
-      <div className="flex items-stretch justify-around h-16">
+      <div className="flex items-stretch justify-around" style={{height:"54px"}}>
         {tabs.map(tab => {
           const active = isActive(tab.to);
           return (
@@ -693,7 +693,7 @@ const MobileTabBar = () => {
                 style={active ? {} : {color:"rgba(255,255,255,0.4)"}}
               />
               <span
-                className={"text-[10px] leading-none transition-colors mt-0.5 " + (active ? "font-bold" : "")}
+                className={"text-[9px] leading-none transition-colors mt-0.5 " + (active ? "font-bold" : "")}
                 style={{color: active ? "#A78BFA" : "rgba(255,255,255,0.4)"}}
               >
                 {tab.label}
@@ -727,8 +727,10 @@ const SupportButton = () => {
       aria-label="Hubungi Admin"
       title="Butuh bantuan? Hubungi admin"
       style={{
-        position:"fixed", bottom:"84px", right:"24px", zIndex:49,
-        width:"52px", height:"52px", borderRadius:"50%",
+        position:"fixed",
+        bottom: "calc(var(--tabbar-height, 64px) + var(--safe-bottom, 0px) + 20px)",
+        right:"20px", zIndex:55,
+        width:"46px", height:"46px", borderRadius:"50%",
         background:"linear-gradient(160deg,#25D366,#128C7E)",
         border:"none", cursor:"pointer", display:"flex",
         alignItems:"center", justifyContent:"center",

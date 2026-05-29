@@ -407,6 +407,10 @@ const DashboardPage = () => {
             </div>
           </Reveal>
         </div>
+        {/* Smooth fade ke section berikutnya — mobile only */}
+        <div className="md:hidden absolute bottom-0 left-0 right-0 h-20 pointer-events-none"
+          style={{background: "linear-gradient(to bottom, transparent, #0A0514)"}}
+        />
       </section>
 
       {/* 2. STARTER PACK */}
