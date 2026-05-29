@@ -308,14 +308,14 @@ const KurasahEditorPage = () => {
         {/* Editor / Preview */}
         {isMobile ? (
           <div className="flex-1 card-glass rounded-xl overflow-hidden border border-line">
-            {tab === "edit" ? <EditorPane/> : <div className="p-5"><PreviewPane/></div>}
+            {tab === "edit" ? EditorPane() : <div className="p-5">{PreviewPane()}</div>}
           </div>
         ) : (
           <div className="flex-1 grid grid-cols-2 gap-5">
             <div className="flex flex-col card-glass rounded-xl overflow-hidden border border-line">
-              <EditorPane/>
+              {EditorPane()}
             </div>
-            <PreviewPane/>
+            {PreviewPane()}
           </div>
         )}
 
