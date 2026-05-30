@@ -1,0 +1,219 @@
+# PROMPT: Fix Maddah Umum Tsanawi + Struggles Tsanawi
+
+Dua fix sekaligus — keduanya terkait data yang tidak akurat untuk level Tsanawi.
+
+---
+
+## KONTEKS
+
+Berdasarkan konfirmasi dari user (pernah di Ma'had Al-Azhar):
+
+**Maddah Umum Tsanawi yang ADA:**
+- Bahasa Inggris ✅
+- Geografi ✅
+- Sejarah ✅
+- Mantiq ✅
+
+**Maddah Umum Tsanawi yang TIDAK ADA:**
+- Matematika ❌
+- Fisika, Kimia, Biologi (Sains) ❌
+- Psikologi ❌
+- Statistik ❌
+
+---
+
+## FIX 1 — Hapus Maddah Umum yang Salah dari `src/mahad-data.jsx`
+
+### 1.1 — Hapus entry-entry ini dari array MAHAD_MADDAH
+
+Cari dan hapus SELURUH object entry (dari `{` pembuka sampai `},` penutup) untuk:
+
+1. `id: "matematika-tsanawi"` — HAPUS
+2. `id: "fisika-tsanawi"` — HAPUS
+3. `id: "kimia-tsanawi"` — HAPUS
+4. `id: "biologi-tsanawi"` — HAPUS
+5. `id: "ilmu-nafs"` — HAPUS
+6. `id: "statistik-adabi"` — HAPUS
+7. `id: "falsafah-mantiq"` — HAPUS (diganti entry baru di bawah)
+
+### 1.2 — Update `geografi-tsanawi` dan `sejarah-tsanawi`: hapus filter jurusan
+
+Untuk kedua entry ini, hapus field `jurusan` kalau ada, dan ganti semua
+"Tsanawi Adabi" dalam teks prompt menjadi "Tsanawi":
+
+```js
+// HAPUS field ini dari geografi-tsanawi dan sejarah-tsanawi:
+jurusan: ["adabi"],  // atau jurusan: ["ilmi"] — apapun yang ada
+
+// GANTI dalam semua string prompt:
+"Tsanawi Adabi" → "Tsanawi"
+"Tsanawi Ilmi"  → "Tsanawi"
+```
+
+### 1.3 — Tambah entry Mantiq baru (gantikan falsafah-mantiq)
+
+Tambahkan entry baru setelah `sejarah-tsanawi`:
+
+```js
+{
+  id: "mantiq-tsanawi",
+  name: "Mantiq (Logika Islam)",
+  nameArabic: "الْمَنْطِقُ",
+  category: "umum",
+  jenjang: ["tsanawi"],
+  description: "Ilmu logika Islam — kaidah berpikir benar, definisi, proposisi, dan silogisme.",
+  topikUtama: [
+    "تعريف المنطق — Pengertian Mantiq",
+    "التصور والتصديق — Konsep dan penilaian",
+    "الكليات الخمس — Lima universal",
+    "الحد والرسم — Definisi (had) dan deskripsi (rasm)",
+    "القضايا المنطقية — Proposisi (qadhiyyah)",
+    "القياس — Silogisme (qiyas)",
+    "أنواع القياس — Jenis-jenis silogisme",
+    "المغالطات — Kesalahan logika",
+  ],
+  prompts: {
+    pahami: `Aku pelajar Ma'had Al-Azhar (Tsanawi) yang belajar Mantiq.
+
+Topik: [TOPIK]
+
+Jelaskan dengan cara yang bikin aku bisa berpikir logis:
+1. Pengertian sederhana + istilah Arabnya
+2. Contoh konkret dari kehidupan nyata
+3. Cara menggunakannya dalam berpikir sehari-hari
+4. Hubungannya dengan ilmu-ilmu Islam (fiqh, ushul, dll)
+5. Perbedaan dengan konsep Mantiq yang mirip
+
+Mantiq itu ilmu berpikir — bantu aku PAHAM logikanya, bukan sekedar hafal!`,
+
+    hafal: `Aku pelajar Ma'had Al-Azhar Tsanawi, mau hafal Mantiq: [TOPIK]
+
+Buat kartu hafalan:
+1. Definisi (Arab + terjemah)
+2. Pembagian/macam-macam (tabel: Arab + terjemah)
+3. Contoh untuk tiap macam
+4. Perbedaan dengan konsep yang mirip
+5. Cara mengingat dengan skema sederhana`,
+
+    latihan: `Aku pelajar Ma'had Al-Azhar Tsanawi, latihan Mantiq: [TOPIK]
+
+Buat soal:
+1. 2 soal definisi
+2. 2 soal identifikasi jenis
+3. 1 soal buat contoh sendiri
+4. JANGAN kasih jawaban dulu`,
+
+    ujian: `Aku pelajar Ma'had Al-Azhar Tsanawi, persiapan ujian Mantiq: [TOPIK]
+
+Rangkuman ujian:
+1. Definisi (Arab + terjemah)
+2. Pembagian/macam-macam (tabel)
+3. Contoh dari literatur Arab/Islam
+4. Perbedaan yang sering tertukar
+5. Soal yang biasa keluar`,
+  },
+},
+```
+
+---
+
+## FIX 2 — Update STRUGGLES Ma'had untuk Tsanawi
+
+Di file yang menyimpan `STRUGGLES_MAHAD` atau `MAHAD_STRUGGLES`
+(cari di `src/data.jsx` atau `src/pages/onboarding.jsx`),
+update opsi struggle untuk level Tsanawi supaya tidak ada
+"Matematika bahasa Arab" dan "Sains dalam bahasa Arab".
+
+### 2.1 — Temukan definisi struggles Ma'had
+
+Cari di codebase: `STRUGGLES_MAHAD`, `mahadStruggles`, atau array yang berisi
+opsi seperti "Matematika bahasa Arab", "Sains dalam bahasa Arab", dll.
+
+### 2.2 — Update struggles untuk level Tsanawi
+
+Struggles yang sekarang tampil (dari screenshot) dan perlu diubah:
+
+**HAPUS dari opsi Tsanawi:**
+- "Matematika bahasa Arab" — tidak ada di Tsanawi
+- "Sains dalam bahasa Arab" (Fisika, Kimia, Biologi) — tidak ada di Tsanawi
+
+**PERTAHANKAN untuk Tsanawi:**
+- "Sejarah & Geografi" ✅
+- "Hafalan Al-Qur'an" ✅
+- "Insya' (mengarang)" ✅
+- "Fahm Maqru'" ✅
+- "Nahwu & Sharaf dasar" ✅
+- "Bahasa Inggris" ✅
+
+**TAMBAH untuk Tsanawi (yang mungkin belum ada):**
+- "Mantiq" — pelajaran logika yang ada di Tsanawi
+
+### 2.3 — Cara implementasi
+
+Kalau struggles dibedakan per level/jenjang, tambahkan kondisi:
+
+```js
+// Kalau ada kondisi berdasarkan level:
+const getMahadStruggles = (level) => {
+  const isIdad = level?.startsWith("idad");
+  const isTsanawi = level?.startsWith("tsanawi");
+
+  const common = [
+    { id: "hafalan_quran", label: "Hafalan Al-Qur'an",
+      desc: "Murajaah dan penambahan hafalan", icon: "bookOpen" },
+    { id: "insya",         label: "Insya' (mengarang)",
+      desc: "Menulis karangan dalam bahasa Arab", icon: "pen" },
+    { id: "fahm_maqru",    label: "Fahm Maqru'",
+      desc: "Memahami teks soal ujian dalam bahasa Arab", icon: "book" },
+    { id: "nahwu_sharf",   label: "Nahwu & Sharaf",
+      desc: "Tata bahasa Arab", icon: "list" },
+    { id: "bahasa_inggris", label: "Bahasa Inggris",
+      desc: "Pelajaran bahasa Inggris", icon: "messageSquare" },
+  ];
+
+  const idadOnly = [
+    { id: "matematika_arab", label: "Matematika bahasa Arab",
+      desc: "Berhitung & rumus dalam bahasa Arab", icon: "target" },
+    { id: "sains_arab",      label: "Sains dalam bahasa Arab",
+      desc: "IPA dalam bahasa Arab", icon: "layers" },
+  ];
+
+  const tsanawiOnly = [
+    { id: "sejarah_geografi", label: "Sejarah & Geografi",
+      desc: "Pelajaran IPS dalam bahasa Arab", icon: "search" },
+    { id: "mantiq",           label: "Mantiq",
+      desc: "Ilmu logika Islam", icon: "layers" },
+  ];
+
+  if (isIdad)    return [...common, ...idadOnly];
+  if (isTsanawi) return [...common, ...tsanawiOnly];
+  return common;
+};
+```
+
+Kalau struggles tidak dibedakan (satu array untuk semua Ma'had), tambahkan
+kondisi di rendering onboarding — tampilkan struggle berdasarkan level user.
+
+---
+
+## Acceptance Criteria
+
+### Fix 1 — Maddah
+- [ ] User `tsanawi_1_adabi` → Maddah Umum: Bahasa Inggris, Geografi, Sejarah, Mantiq (4 saja)
+- [ ] User `tsanawi_2_ilmi` → Maddah Umum: Bahasa Inggris, Geografi, Sejarah, Mantiq (4 saja)
+- [ ] User `idad_2` → Maddah Umum: Matematika, Sains, Bahasa Inggris (3 saja)
+- [ ] Tidak ada Matematika Tsanawi, Fisika, Kimia, Biologi, Psikologi, Statistik di Tsanawi
+- [ ] Entry Mantiq baru ada dengan id `mantiq-tsanawi`
+
+### Fix 2 — Struggles
+- [ ] Onboarding user Tsanawi → opsi struggle TIDAK ada "Matematika bahasa Arab"
+- [ ] Onboarding user Tsanawi → opsi struggle TIDAK ada "Sains dalam bahasa Arab"
+- [ ] Onboarding user Tsanawi → ada opsi "Sejarah & Geografi" dan "Mantiq"
+- [ ] Onboarding user I'dadi → masih ada "Matematika bahasa Arab" dan "Sains dalam bahasa Arab"
+- [ ] Onboarding user I'dadi → TIDAK ada "Sejarah & Geografi" (tidak relevan untuk I'dadi)
+
+### General
+- [ ] Tidak ada console error
+- [ ] User S1 (Tingkat I-V) tidak terpengaruh
+
+والله ولي التوفيق.
