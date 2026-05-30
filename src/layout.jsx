@@ -358,25 +358,18 @@ const Footer = () => (
       <div className="divider-arabesque mt-10 opacity-50"/>
 
       {/* Khat Arab dekoratif — center, di atas copyright */}
-      <div
-        aria-hidden="true"
-        style={{
-          fontFamily: '"Reem Kufi", "Noto Kufi Arabic", sans-serif',
-          fontSize: "clamp(72px, 10vw, 140px)",
-          fontWeight: 700,
-          color: "rgba(212,178,125,0.12)",
-          WebkitTextStroke: "1.5px rgba(212,178,125,0.75)",
-          textAlign: "center",
-          display: "block",
-          lineHeight: 0.9,
-          letterSpacing: "0.05em",
-          marginTop: "24px",
-          marginBottom: "32px",
-          userSelect: "none",
-          pointerEvents: "none",
-        }}
-      >
-        تَلْقِيْح
+      <div aria-hidden="true" className="flex justify-center"
+        style={{marginTop:"24px", marginBottom:"32px", pointerEvents:"none", userSelect:"none"}}>
+        <img
+          src="/assets/khat-footer.png"
+          alt=""
+          style={{
+            width: "clamp(260px, 38vw, 540px)",
+            opacity: 0.18,
+            mixBlendMode: "screen",
+            filter: "brightness(1.1)",
+          }}
+        />
       </div>
 
       <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
