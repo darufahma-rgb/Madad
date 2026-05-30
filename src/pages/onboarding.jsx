@@ -143,15 +143,9 @@ const OnboardingPage = () => {
       title: "Kamu di tingkat apa sekarang?",
       hint: "Pilih tingkat atau jenjangmu saat ini",
       optionsFn: (d, mj) => {
-        const MAHAD_GRANULAR = [
-          "idad_1","idad_2","idad_3",
-          "tsanawi_1_adabi","tsanawi_1_ilmi",
-          "tsanawi_2_adabi","tsanawi_2_ilmi",
-          "tsanawi_3_adabi","tsanawi_3_ilmi",
-        ];
         if (!mj) {
           return [
-            ...LEVELS.filter(l => !MAHAD_GRANULAR.includes(l.id)),
+            ...LEVELS.filter(l => !l.id.startsWith("idad") && !l.id.startsWith("tsanawi")),
             {
               id: "__mahad_idad__",
               label: "I'dadi (Ma'had Al-Azhar)",

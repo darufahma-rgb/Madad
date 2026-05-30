@@ -1,0 +1,55 @@
+# PROMPT: Hapus Duplikasi Level Ma'had di Onboarding
+
+## Masalah
+
+Di halaman "Sekarang di tingkat berapa?" ada duplikasi:
+- **Atas (sudah benar):** Section "MA'HAD AL-AZHAR" dengan 2 opsi gateway: I'dadi dan Tsanawi
+- **Bawah (harus dihapus):** Di section "MASISIR — MAHASISWA", muncul lagi opsi "I'dadi (Ma'had Al-Azhar)" dan "Tsanawi (Ma'had Al-Azhar)" di antara S2 dan akhir list
+
+Yang perlu dipertahankan: section MA'HAD AL-AZHAR di atas (gateway I'dadi/Tsanawi).
+Yang perlu dihapus: entry I'dadi dan Tsanawi yang muncul di section bawah.
+
+---
+
+## Fix di `src/pages/onboarding.jsx`
+
+Cari bagian `optionsFn` (atau tempat di mana opsi level di-generate/filter).
+
+Di dalam fungsi yang menghasilkan opsi untuk step "level", cari kondisi yang menambahkan gateway Ma'had ke list opsi. Pastikan gateway Ma'had (`__mahad_idad__` dan `__mahad_tsanawi__`) HANYA ditambahkan ke section Ma'had di atas — dan **tidak ada duplikasi** di bagian bawah.
+
+Konkretnya: di dalam `optionsFn` atau logika filter LEVELS, pastikan level dengan id yang mengandung `"idad"` atau `"tsanawi"` (level aktual seperti `idad_1`, `tsanawi_2_ilmi`, dll) **tidak ikut masuk** ke dalam opsi yang ditampilkan langsung di list utama.
+
+Mereka hanya muncul setelah user klik gateway (I'dadi/Tsanawi) — bukan langsung terlihat di list awal.
+
+Pola yang mungkin perlu difix:
+
+```js
+// SEBELUM (kemungkinan): LEVELS langsung dipakai mentah-mentah
+// sehingga idad_1, idad_2, tsanawi_1_adabi, dll ikut muncul di list
+
+// SESUDAH: Filter LEVELS supaya level Ma'had tidak ikut di list utama
+const baseOptions = LEVELS.filter(l =>
+  !MAHAD_LEVEL_IDS.includes(l.id)
+  // MAHAD_LEVEL_IDS = ["idad_1","idad_2","idad_3","tsanawi_1_adabi", ...]
+);
+```
+
+Kalau `MAHAD_LEVEL_IDS` belum didefinisikan di scope yang tepat, gunakan check langsung:
+
+```js
+const baseOptions = LEVELS.filter(l =>
+  !l.id.startsWith("idad") && !l.id.startsWith("tsanawi")
+);
+```
+
+---
+
+## Acceptance Criteria
+
+- [ ] Buka step "Tingkat berapa?" → section "MA'HAD AL-AZHAR" di atas hanya punya 2 opsi: I'dadi dan Tsanawi
+- [ ] Section "MASISIR — MAHASISWA" di bawah hanya punya: DL, Tingkat I-V, Pasca, S2 Kuliyyat, S2 Dirasat
+- [ ] **Tidak ada** opsi "I'dadi (Ma'had Al-Azhar)" atau "Tsanawi (Ma'had Al-Azhar)" di section bawah
+- [ ] Klik I'dadi di atas → muncul sub-pilihan kelas (I'dadi 1, 2, 3) — flow tetap sama
+- [ ] Tidak ada console error
+
+والله ولي التوفيق.
