@@ -4,6 +4,7 @@
 */
 
 const MADDAH_CATEGORIES = [
+  { id: "mahad",    label: "Ma'had Al-Azhar",             arabic: "المعهد الأزهري",      color: "green"  },
   { id: "qurani",   label: "Quran & Tafsir",              arabic: "القرآن والتفسير",     color: "violet" },
   { id: "haditsi",  label: "Hadits & Mustholah",          arabic: "الحديث والمصطلح",     color: "violet" },
   { id: "fiqhi",    label: "Fiqh & Ushul",                arabic: "الفقه والأصول",       color: "gold" },
