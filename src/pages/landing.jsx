@@ -218,11 +218,11 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
   <section className="relative overflow-hidden pt-8 md:pt-28 pb-12 md:pb-20">
     {/* Background */}
     <HeroGeoBg/>
-    <Blob color="rgba(124,77,255,0.22)" size={700} top={-200} left={-100}/>
-    <Blob color="rgba(201,168,106,0.10)" size={500} top={300} right={-150}/>
+    <Blob color="rgba(62,207,142,0.14)" size={700} top={-200} left={-100}/>
+    <Blob color="rgba(201,168,106,0.08)" size={500} top={300} right={-150}/>
     {/* Radial vignette — fokus ke tengah */}
     <div className="absolute inset-0 pointer-events-none" style={{
-      background: "radial-gradient(ellipse 75% 65% at 50% 40%, transparent 25%, rgba(10,5,20,0.45) 100%)"
+      background: "radial-gradient(ellipse 75% 65% at 50% 40%, transparent 25%, rgba(12,12,12,0.45) 100%)"
     }}/>
 
     <div className="container-x relative">
@@ -238,7 +238,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
               height: "auto",
               display: "block",
               margin: "0 auto 20px",
-              filter: "drop-shadow(0 0 20px rgba(167, 139, 250, 0.35))",
+              filter: "drop-shadow(0 0 20px rgba(62, 207, 142, 0.30))",
             }}
           />
         </Reveal>
@@ -255,7 +255,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
           }}>
             Paham{" "}
             <span style={{
-              background: "linear-gradient(135deg, #A78BFA 0%, #C4A0FF 50%, #C9A86A 100%)",
+              background: "linear-gradient(135deg, #3ecf8e 0%, #4ade80 50%, #C9A86A 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
@@ -350,8 +350,8 @@ const SampleMaddahSection = () => (
               </div>
               <span className="chip-glass text-[10px] flex-shrink-0">GRATIS</span>
             </div>
-            <div className="mb-6 p-4 rounded-xl bg-violet-500/8 border border-violet-500/15">
-              <div className="text-xs uppercase tracking-wider text-violet-300 mb-2 font-medium">AI yang direkomendasikan</div>
+            <div className="mb-6 p-4 rounded-xl" style={{background:"rgba(62,207,142,0.06)",border:"1px solid rgba(62,207,142,0.15)"}}>
+              <div className="text-xs uppercase tracking-wider mb-2 font-medium" style={{color:"#3ecf8e"}}>AI yang direkomendasikan</div>
               <div className="flex items-center gap-3 text-sm text-ink">
                 <span className="font-semibold">NotebookLM</span>
                 <span className="text-ink-soft">+</span>
@@ -408,7 +408,7 @@ const HowItWorks = () => {
           {steps.map((s, i) => (
             <Reveal key={i}>
               <div className="text-center px-4">
-                <div className="font-display text-5xl md:text-6xl font-semibold bg-gradient-to-br from-violet-300 to-gold-400 bg-clip-text text-transparent mb-5">
+                <div className="font-display text-5xl md:text-6xl font-semibold bg-gradient-to-br from-emerald-300 to-gold-400 bg-clip-text text-transparent mb-5">
                   {s.num}
                 </div>
                 <h3 className="font-display text-xl md:text-2xl font-semibold text-ink mb-1">{s.title}</h3>
@@ -429,22 +429,22 @@ const HowItWorks = () => {
 const AllMaddahPreview = () => {
   const groups = [
     { label:"Ushuluddin & Quran", arabic:"أصول الدين", count:7,
-      color:"from-violet-500/15 to-violet-700/5",
+      color:"from-emerald-500/10 to-emerald-700/3",
       sample:["Tafsir Tahlili","Tafsir Maudhu'i","'Ulum Al-Qur'an","Hadits"] },
     { label:"Hadits & Mustholah", arabic:"الحديث", count:5,
-      color:"from-violet-400/12 to-violet-600/4",
+      color:"from-emerald-400/8 to-emerald-600/2",
       sample:["Hadits Tahlili","Mustholah","Manahij Muhadditsin","Takhrij"] },
     { label:"Syariah & Fiqh", arabic:"الشريعة", count:5,
       color:"from-gold-500/10 to-gold-700/3",
       sample:["Fiqh Madzhabi","Fiqh Muqaran","Ushul Fiqh","Qawa'id"] },
     { label:"Aqidah & Pemikiran", arabic:"العقيدة", count:5,
-      color:"from-violet-500/12 to-night-800",
+      color:"from-emerald-500/8 to-transparent",
       sample:["Tauhid","Firaq","Filsafat Islam","Mantiq","Tasawwuf"] },
     { label:"Lughah Arabiyah", arabic:"اللغة العربية", count:7,
-      color:"from-gold-400/10 to-violet-600/5",
+      color:"from-gold-400/10 to-emerald-600/4",
       sample:["Nahwu","Sharaf","Balaghah","Adab","Naqd Adabi"] },
     { label:"Tarikh, Dakwah & Tarbiyah", arabic:"التاريخ والدعوة", count:7,
-      color:"from-violet-600/10 to-gold-600/5",
+      color:"from-emerald-600/8 to-gold-600/4",
       sample:["Sirah","Tarikh Tasyri'","Hadharah","Dakwah","Adyan"] },
   ];
   return (
@@ -467,7 +467,7 @@ const AllMaddahPreview = () => {
                     <div className="arabic-display text-gold-300 text-2xl mb-1" style={{direction:"rtl"}}>{f.arabic}</div>
                     <h3 className="font-display text-lg font-semibold text-ink">{f.label}</h3>
                   </div>
-                  <span className="text-xs px-2 py-1 rounded bg-violet-500/15 text-violet-300 border border-violet-500/20 font-medium flex-shrink-0 ml-2">
+                  <span className="text-xs px-2 py-1 rounded font-medium flex-shrink-0 ml-2" style={{background:"rgba(62,207,142,0.10)",color:"#3ecf8e",border:"1px solid rgba(62,207,142,0.20)"}}>
                     {f.count} Maddah
                   </span>
                 </div>
@@ -514,7 +514,7 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
           <div className="card-glass-strong p-8 md:p-10 relative overflow-hidden"
             style={{ border:"1px solid rgba(201,168,106,.22)" }}>
             <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-gold-500/12 blur-3xl pointer-events-none"/>
-            <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full bg-violet-500/12 blur-3xl pointer-events-none"/>
+            <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full blur-3xl pointer-events-none" style={{background:"rgba(62,207,142,0.08)"}}/>
             <div className="relative">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/20 text-xs text-gold-300 mb-5">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>Member Talqeeh

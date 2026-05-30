@@ -317,9 +317,9 @@ const PathsPage = () => {
       <section className="pb-20">
         <div className="container-x">
           <Reveal>
-            <div className="relative rounded-2xl overflow-hidden" style={{border:"1px solid rgba(113,50,245,0.20)",background:"linear-gradient(135deg, rgba(25,11,56,0.9) 0%, rgba(14,6,25,0.85) 100%)"}}>
+            <div className="relative rounded-2xl overflow-hidden" style={{border:"1px solid rgba(62,207,142,0.16)",background:"rgba(255,255,255,0.04)"}}>
               <Blob color="rgba(201,168,106,0.14)" size={400} top={-120} right={-80}/>
-              <Blob color="rgba(124,77,255,0.18)" size={350} bottom={-100} left={-60}/>
+              <Blob color="rgba(62,207,142,0.10)" size={350} bottom={-100} left={-60}/>
               <div className="relative p-8 md:p-12 grid md:grid-cols-12 gap-8 items-center">
                 <div className="md:col-span-8">
                   <div className="flex items-center gap-3 mb-5">

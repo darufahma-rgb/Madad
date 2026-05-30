@@ -578,7 +578,7 @@ const PromptLibraryPage = () => {
       </section>
 
       {/* Tab bar */}
-      <section className="pb-2 sticky top-[48px] md:top-[72px] z-30" style={{ background: "rgba(10,5,20,0.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+      <section className="pb-2 sticky top-[48px] md:top-[72px] z-30" style={{ background: "rgba(12,12,12,0.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <div className="container-x">
           <div className="flex items-center gap-1 py-2">
             {tabs.map(tab => {
