@@ -61,7 +61,8 @@ const MUQARANAH_LIBRARY = [
         source: "Al-Mughni · Al-Insaf · Kasysyaf Al-Qina'"
       }
     ],
-    notes: "Akar perbedaan terletak pada status Basmalah: apakah ia ayat pertama dari setiap surat (Syafi'i, sebagian Hanbali), ayat tersendiri sebagai pembatas (Hanafi), atau bukan ayat surat sama sekali (Maliki). Konsekuensi paling nyata adalah ketika makmum Syafi'i shalat di belakang imam Maliki yang tidak membaca Basmalah, dalam hal ini para ulama sepakat bahwa shalat tetap sah karena perbedaan ini adalah khilaf mu'tabar."
+    notes: "Akar perbedaan terletak pada status Basmalah: apakah ia ayat pertama dari setiap surat (Syafi'i, sebagian Hanbali), ayat tersendiri sebagai pembatas (Hanafi), atau bukan ayat surat sama sekali (Maliki). Konsekuensi paling nyata adalah ketika makmum Syafi'i shalat di belakang imam Maliki yang tidak membaca Basmalah, dalam hal ini para ulama sepakat bahwa shalat tetap sah karena perbedaan ini adalah khilaf mu'tabar.",
+    rangkuman: "Basmalah itu dibaca atau tidak dalam shalat? Jawabannya tergantung madzhabmu. Syafi'i: wajib dibaca dan dikeraskan. Hanbali: dibaca tapi pelan. Hanafi: dibaca pelan, bukan bagian Al-Fatihah. Maliki: tidak perlu dibaca sama sekali. Intinya — semua sah, tidak ada yang salah. Kalau kamu makmum di belakang imam madzhab lain, shalatmu tetap sah.",
   },
 
   {
@@ -124,7 +125,8 @@ const MUQARANAH_LIBRARY = [
         source: "Al-Muhalla bil Atsar"
       }
     ],
-    notes: "Perbedaan ini berpangkal pada dua hal: (1) cara memahami qira'at ayat wudhu, nasb atau jar, dan (2) sejauh mana rukhshah dapat diterima atau bahkan diwajibkan. Untuk mahasiswa Masisir di Cairo dengan musim dingin yang menusuk, masalah ini sangat praktis. Para fuqaha kontemporer umumnya menggunakan pendapat Syafi'i atau Hanbali yang mensyaratkan kondisi lengkap."
+    notes: "Perbedaan ini berpangkal pada dua hal: (1) cara memahami qira'at ayat wudhu, nasb atau jar, dan (2) sejauh mana rukhshah dapat diterima atau bahkan diwajibkan. Untuk mahasiswa Masisir di Cairo dengan musim dingin yang menusuk, masalah ini sangat praktis. Para fuqaha kontemporer umumnya menggunakan pendapat Syafi'i atau Hanbali yang mensyaratkan kondisi lengkap.",
+    rangkuman: "Bolehkah mengusap sepatu saat wudhu tanpa melepasnya? Boleh — semua madzhab sepakat ini rukhshah yang sah. Bedanya hanya di syarat dan batas waktu: Syafi'i dan Hanbali: 1 hari untuk mukim, 3 hari untuk musafir. Hanafi: sama, tapi syaratnya lebih longgar. Maliki: tidak ada batas waktu selama tidak batal. Praktisnya: kalau kamu pakai sepatu saat sudah berwudhu, kamu boleh mengusapnya saat wudhu berikutnya.",
   },
 
   {
@@ -174,7 +176,8 @@ const MUQARANAH_LIBRARY = [
         source: "Al-Mu'tamad fi Ushul Al-Fiqh (Al-Bashri), dinukil sebagai mauqif An-Nazzham"
       }
     ],
-    notes: "Perdebatan ini lebih dari sekedar teori, ia berdampak langsung pada berapa banyak masalah yang dianggap 'tertutup' dan tidak boleh dikaji ulang. Jumhur menetapkan banyak masalah sebagai ijma' yang tidak boleh diingkari. Ibnu Hazm sangat membatasi ruang lingkup ijma'. Pendapat An-Nazzham tidak diterima umat Islam secara umum dan disebutkan di sini sebagai catatan sejarah."
+    notes: "Perdebatan ini lebih dari sekedar teori, ia berdampak langsung pada berapa banyak masalah yang dianggap 'tertutup' dan tidak boleh dikaji ulang. Jumhur menetapkan banyak masalah sebagai ijma' yang tidak boleh diingkari. Ibnu Hazm sangat membatasi ruang lingkup ijma'. Pendapat An-Nazzham tidak diterima umat Islam secara umum dan disebutkan di sini sebagai catatan sejarah.",
+    rangkuman: "Kalau semua ulama sepakat tentang sesuatu (ijma'), apakah itu jadi hukum yang wajib diikuti? Mayoritas ulama: ya, ijma' adalah dalil hukum yang mengikat. Bedanya hanya di definisi 'semua ulama' — siapa yang dihitung? Ulama masa sahabat saja? Atau semua zaman? Ini diskusi akademik yang tidak berdampak langsung ke ibadah sehari-hari, tapi penting dipahami untuk memahami kenapa ulama kadang berbeda pendapat.",
   },
 
   {
@@ -224,7 +227,8 @@ const MUQARANAH_LIBRARY = [
         source: "Raudhah An-Nazhar · Al-Mughni · Al-Musnad (muqaddimah)"
       }
     ],
-    notes: "Perbedaan ini berdampak luas: ratusan hukum fiqh yang bertumpu pada hadits mursal menjadi valid atau tidak valid tergantung posisi mana yang dianut. Imam Syafi'i yang paling ketat justru memberikan kontribusi terbesar dalam menstrukturkan ilmu hadits. Mahasiswa Syariah dan Hadits di Al-Azhar perlu memahami ini sebagai fondasi metodologi ijtihad."
+    notes: "Perbedaan ini berdampak luas: ratusan hukum fiqh yang bertumpu pada hadits mursal menjadi valid atau tidak valid tergantung posisi mana yang dianut. Imam Syafi'i yang paling ketat justru memberikan kontribusi terbesar dalam menstrukturkan ilmu hadits. Mahasiswa Syariah dan Hadits di Al-Azhar perlu memahami ini sebagai fondasi metodologi ijtihad.",
+    rangkuman: "Hadits mursal adalah hadits yang sanadnya terputus — perawi dari generasi tabi'in langsung meriwayatkan dari Nabi ﷺ tanpa menyebut sahabat perantaranya. Bolehkah dijadikan dalil? Syafi'i: tidak boleh kecuali ada penguat lain. Maliki dan Hanafi: boleh, bahkan cukup kuat. Hanbali: boleh dengan syarat. Dalam praktiknya, ini memengaruhi kenapa beberapa hukum fiqh berbeda antar madzhab — karena mereka berbeda dalam menerima atau menolak jenis hadits ini.",
   },
 
   {
@@ -287,7 +291,8 @@ const MUQARANAH_LIBRARY = [
         source: "Syarh Al-Ushul Al-Khamsah · Al-Mughni fi Abwab At-Tauhid"
       }
     ],
-    notes: "Ini adalah salah satu topik paling fundamental dalam ilmu kalam dan aqidah. Pemahaman yang jernih tentang perbedaan ini mencegah dua ekstrem yang berbahaya: Khawarij yang mengkafirkan pelaku dosa besar, dan Murji'ah yang menganggap amal tidak berdampak pada iman. Posisi Ahlus Sunnah adalah jalan tengah: amal merupakan bagian dari hakikat iman, pelaku dosa besar tidak kafir tapi imannya berkurang."
+    notes: "Ini adalah salah satu topik paling fundamental dalam ilmu kalam dan aqidah. Pemahaman yang jernih tentang perbedaan ini mencegah dua ekstrem yang berbahaya: Khawarij yang mengkafirkan pelaku dosa besar, dan Murji'ah yang menganggap amal tidak berdampak pada iman. Posisi Ahlus Sunnah adalah jalan tengah: amal merupakan bagian dari hakikat iman, pelaku dosa besar tidak kafir tapi imannya berkurang.",
+    rangkuman: "Iman itu apa saja komponennya? Semua sepakat: iman itu keyakinan dalam hati. Bedanya di lisan dan perbuatan — apakah keduanya bagian dari iman atau hanya buahnya? Ahlus Sunnah (Syafi'i, Maliki, Hanbali): iman mencakup hati, lisan, dan perbuatan — bisa bertambah dan berkurang. Hanafi (Maturidiyah): iman hanya di hati dan lisan, perbuatan adalah buahnya — tidak bertambah/berkurang di inti. Perbedaan ini lebih ke akademik — tidak memengaruhi ibadah harian.",
   },
 
   {
@@ -350,7 +355,8 @@ const MUQARANAH_LIBRARY = [
         source: "Muqaddimah Shahih Muslim · Hady As-Sari (muqaddimah Fathul Bari)"
       }
     ],
-    notes: "Perdebatan ini sangat relevan untuk kehidupan harian Masisir, banyak amalan dan dzikir yang beredar dalam group WhatsApp berbasis hadits dha'if. Posisi yang bijaksana: ikuti tiga syarat Ibnu Hajar, tapi jangan menyebarkannya kepada orang lain tanpa menyebut statusnya. Jangan langsung mengkritik orang yang mengamalkannya, tapi juga jangan menjadikan hadits dha'if sebagai landasan hukum yang kuat."
+    notes: "Perdebatan ini sangat relevan untuk kehidupan harian Masisir, banyak amalan dan dzikir yang beredar dalam group WhatsApp berbasis hadits dha'if. Posisi yang bijaksana: ikuti tiga syarat Ibnu Hajar, tapi jangan menyebarkannya kepada orang lain tanpa menyebut statusnya. Jangan langsung mengkritik orang yang mengamalkannya, tapi juga jangan menjadikan hadits dha'if sebagai landasan hukum yang kuat.",
+    rangkuman: "Bolehkah pakai hadits lemah (dha'if) untuk amalan keutamaan seperti dzikir atau doa tertentu? Ini khilaf nyata: Sebagian ulama (termasuk Imam Ahmad): boleh, asal tidak terlalu lemah dan bukan untuk hukum wajib/haram. Sebagian lain (Ibnu Hazm, dll): tidak boleh sama sekali — hadits dha'if tetap dha'if. Mayoritas ulama klasik mengambil jalan tengah: boleh untuk fadhail, bukan untuk hukum. Jadi amalan-amalan populer yang bersumber dari hadits dha'if — itu perdebatan nyata. Posisi aman: jangan jadikan dalil hukum wajib/haram, tapi jangan langsung menolak orang yang mengamalkannya.",
   },
 
   {
@@ -414,6 +420,7 @@ const MUQARANAH_LIBRARY = [
       },
     ],
     notes: "Khilaf ini adalah contoh klasik perbedaan dalam menilai keshahihan hadits. Syafi'iyyah dan Malikiyyah menilai dawam qunut Shubuh shahih; Hanafiyyah dan Hanabilah menilai sebaliknya. Konsekuensi praktis: makmum yang berbeda madzhab dengan imam biasanya mengikuti imam untuk menjaga persatuan shalat berjamaah.",
+    rangkuman: "Doa qunut setelah ruku' di shalat Shubuh — sunnah atau bid'ah? Syafi'i: sunnah yang dianjurkan setiap Shubuh. Maliki: sunnah tapi sebelum ruku'. Hanafi: tidak disunnahkan di Shubuh, hanya saat ada bencana (nazilah). Hanbali: tidak sunnah di Shubuh. Jadi kalau kamu Syafi'i dan imam tidak qunut — atau sebaliknya — itu bukan masalah, keduanya berdalil kuat. Tidak perlu protes atau risih.",
   },
 
   {
@@ -477,6 +484,7 @@ const MUQARANAH_LIBRARY = [
       },
     ],
     notes: "Ini salah satu khilaf yang paling sering dihadapi Masisir saat shalat berjamaah di Mesir. Praktik di masjid-masjid Al-Azhar umumnya mengikuti madzhab Syafi'i (makmum membaca Al-Fatihah di sela-sela bacaan imam). Akar perbedaan: cara memahami dan mengompromikan dua hadits yang tampak bertentangan.",
+    rangkuman: "Wajibkah makmum baca Al-Fatihah sendiri di belakang imam? Syafi'i: wajib dibaca makmum, selalu. Hanafi: tidak perlu, imam sudah mewakili. Maliki: tidak wajib, cukup diam dan dengarkan imam. Hanbali: wajib saat imam baca pelan (sirr), tidak wajib saat keras (jahr). Praktisnya: kalau kamu Syafi'i, tetap baca Fatihah. Kalau kamu Hanafi, cukup diam. Keduanya sah.",
   },
 
   {
@@ -527,6 +535,7 @@ const MUQARANAH_LIBRARY = [
       },
     ],
     notes: "Khilaf ini memiliki dampak besar dalam istinbat hukum fiqh. Bagi Jumhur yang menyatakan amr = wajib, ketika ada perintah tanpa qarinah, mereka langsung menetapkan wajib. Bagi yang menyatakan amr = sunnah, dibutuhkan qarinah tambahan untuk menetapkan wajib. Masalah ini dibahas di awal-awal kitab Ushul Fiqh.",
+    rangkuman: "Kalau Al-Qur'an atau hadits pakai kata perintah (seperti 'lakukanlah' atau 'wajib atas kalian') — apakah itu otomatis berarti wajib? Jumhur ulama ushul: ya, perintah tanpa qarinah (konteks) berarti wajib. Sebagian ulama: belum tentu, perlu dilihat konteksnya. Ini penting karena dari perbedaan prinsip ini, lahir perbedaan hukum fiqh — sesuatu yang satu ulama anggap wajib, ulama lain anggap sunnah.",
   },
 
   {
@@ -590,6 +599,7 @@ const MUQARANAH_LIBRARY = [
       },
     ],
     notes: "Ini salah satu tema sentral dalam ilmu kalam. Perbedaan antara Salaf/Ahlul Hadits dengan Asy'ariyyah terletak pada apakah 'amal masuk dalam definisi iman atau tidak. Al-Azhar secara umum mengikuti Asy'ariyyah. Penting untuk Masisir memahami posisi masing-masing tanpa mudah men-tabdi' atau men-takfir.",
+    rangkuman: "Apakah iman bisa naik dan turun? Ahlus Sunnah (Syafi'i, Maliki, Hanbali): ya, iman bertambah dengan taat dan berkurang dengan maksiat. Ini yang jadi dasar motivasi untuk terus beramal. Hanafi (sebagian): iman di hati tidak bertambah/berkurang, tapi buahnya (amal) yang berubah. Dalam praktik, perbedaan ini tidak mengubah kewajiban amal — semua tetap diwajibkan beribadah dan menjauhi maksiat.",
   },
 
   {
@@ -640,6 +650,7 @@ const MUQARANAH_LIBRARY = [
       },
     ],
     notes: "Ini khilaf metodologis yang sangat penting, terutama dalam perdebatan antara manhaj Salaf dan manhaj Asy'ariyyah/Maturidiyyah. Dampak praktisnya terlihat pada masalah-masalah seperti azab kubur, sifat Allah yang datang dari hadits ahad, dan lainnya. Masisir yang belajar di Al-Azhar akan sering menemui pembahasan ini dalam kitab Ushul dan Kalam.",
+    rangkuman: "Bolehkah hadits yang hanya diriwayatkan sedikit perawi (hadits ahad) dijadikan dasar aqidah/keyakinan? Ini khilaf penting: Jumhur (termasuk Syafi'i, Hanbali): boleh, kalau shahih bisa jadi dalil aqidah. Sebagian Hanafi dan Mu'tazilah: tidak cukup untuk aqidah — butuh dalil yang mutawatir (sangat banyak perawi). Implikasinya nyata: beberapa keyakinan tentang azab kubur, syafaat, dll — diterima sebagian madzhab tapi dipermasalahkan madzhab lain.",
   },
 
   {
@@ -703,6 +714,7 @@ const MUQARANAH_LIBRARY = [
       },
     ],
     notes: "Ini masalah yang sangat relevan untuk Masisir di Mesir — di mana satu masjid bisa diimami oleh ulama berbagai madzhab. Jumhur ulama menyatakan sah bermakmum kepada imam madzhab lain. Yang menjadi khilaf lebih detail adalah apakah makmum perlu 'mengulang' shalatnya jika tertentu bahwa imam melakukan hal yang membatalkan menurut madzhabnya. Al-Azhar dan ulama Mesir pada umumnya berpandangan sah dan tidak perlu diulang.",
+    rangkuman: "Sahkah shalat di belakang imam yang berbeda madzhab? Misalnya, makmum Syafi'i shalat di belakang imam Hanafi yang tidak baca Fatihah sendiri, atau imam Maliki yang tidak qunut. Jawaban jumhur: sah. Perbedaan madzhab dalam fiqh shalat tidak membatalkan shalat berjamaah — ini sudah menjadi kesepakatan ulama sejak lama. Di Masjidil Haram, imam bermazhab Hanbali tapi jutaan jamaah dari semua madzhab — itu sudah jadi bukti nyata.",
   }
 ];
 

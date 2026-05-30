@@ -243,6 +243,34 @@ Tolong bantu aku merenungkan mas'alah ini dengan adab thalib:
             ))}
           </div>
 
+          {/* Rangkuman Mudah */}
+          {entry.rangkuman && (
+            <Reveal className="mt-10">
+              <div className="card-glass p-6 rounded-xl relative overflow-hidden"
+                style={{border:"1px solid rgba(124,77,255,0.2)", background:"rgba(124,77,255,0.04)"}}>
+                <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-violet-500/10 blur-2xl pointer-events-none"/>
+                <div className="relative">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-8 h-8 rounded-lg bg-violet-500/15 flex items-center justify-center flex-shrink-0">
+                      <Icon name="lightbulb" className="w-4 h-4 text-violet-300"/>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase tracking-wider text-violet-400 font-medium">Intinya</div>
+                      <h2 className="font-display text-lg font-semibold text-ink leading-tight">Rangkuman dalam Bahasa Mudah</h2>
+                    </div>
+                  </div>
+                  <p className="text-sm text-ink-muted leading-relaxed">{entry.rangkuman}</p>
+                  <div className="mt-4 pt-4 border-t border-violet-500/15 flex items-start gap-2">
+                    <Icon name="info" className="w-3.5 h-3.5 text-violet-400 flex-shrink-0 mt-0.5"/>
+                    <p className="text-[11px] text-ink-soft leading-relaxed">
+                      Ini rangkuman sederhana untuk memudahkan pemahaman awal. Untuk kajian mendalam, baca pendapat ulama di atas dan diskusikan dengan guru.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          )}
+
           {/* Titik Perbedaan */}
           {entry.notes && (
             <Reveal className="mt-12">
