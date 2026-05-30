@@ -259,9 +259,15 @@ const StarterPackCard = ({ profile, session }) => {
   const levelData = (typeof LEVELS !== "undefined")
     ? LEVELS.find(l => l.id === profile?.level) : null;
   const tingkat   = levelData?.label || profile?.level || "";
-  // Ambil nama depan saja — lebih natural untuk disapa AI
+
   const namaLengkap = session?.name || "";
-  const nama = namaLengkap.split(" ")[0] || "Aku";
+  const namaDefault = namaLengkap.split(" ")[0] || "Aku";
+
+  const [customNama, setCustomNama] = React.useState(namaDefault);
+  const [catatanTambahan, setCatatanTambahan] = React.useState("");
+  const [expanded, setExpanded] = React.useState(false);
+
+  const nama = customNama.trim() || namaDefault;
 
   const gayaLabels = {
     reading:      "lebih nyaman belajar dengan membaca teks bertahap",
@@ -284,18 +290,22 @@ const StarterPackCard = ({ profile, session }) => {
     pasca: "Bahasa akademik tingkat riset. Boleh masuk jadal ulama dan sumber primer.",
   }[profile?.level] || "Pakai bahasa Indonesia akademik.";
 
-  const prompt = isMahad
-    ? (typeof generateMahadStarterPack !== "undefined" ? generateMahadStarterPack(profile, session) : "")
-    :
-`Assalamu'alaikum. Mulai sekarang bantu aku belajar materi Al-Azhar. Kenali dulu siapa aku:
+  const buildPrompt = () => {
+    if (isMahad) {
+      const base = (typeof generateMahadStarterPack !== "undefined")
+        ? generateMahadStarterPack(profile, { ...session, name: nama + (namaLengkap.includes(" ") ? " " + namaLengkap.split(" ").slice(1).join(" ") : "") })
+        : "";
+      return base + (catatanTambahan.trim() ? `\n\nINFO TAMBAHAN\n${catatanTambahan.trim()}` : "");
+    }
+    return `Assalamu'alaikum. Mulai sekarang bantu aku belajar materi Al-Azhar. Kenali dulu siapa aku:
 
 PROFIL
-- Namaku: ${nama}${namaLengkap !== nama ? ` (nama lengkap: ${namaLengkap})` : ""}
+- Namaku: ${nama}
 - Panggil aku: ${nama}
 - Tingkat: ${tingkat}
 - Fakultas: ${fakultas}${jurusan ? ` — ${jurusan}` : ""}
 - Cara belajar: aku ${gaya}
-
+${catatanTambahan.trim() ? `\nINFO TAMBAHAN\n${catatanTambahan.trim()}\n` : ""}
 CARA MEMBANTUKU
 - Bahasa pengantar: Indonesia akademik
 - ${levelInstruksi}
@@ -309,10 +319,26 @@ CATATAN PENTING
 - Jangan men-tarjih dalam masalah khilafiyah — sajikan semua pendapat
 
 Kalau paham, jawab singkat: "Wa'alaikumussalam, siap membantu." Lalu tunggu pertanyaanku.`;
+  };
+
+  const prompt = buildPrompt();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(prompt);
     toast.push("Starter Pack tersalin — paste ke AI di awal chat.");
+  };
+
+  const inputStyle = {
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    borderRadius: 10,
+    color: "var(--color-ink, #F1EDE4)",
+    outline: "none",
+    width: "100%",
+    fontSize: 13,
+    padding: "8px 12px",
+    fontFamily: "inherit",
+    transition: "border-color 0.15s",
   };
 
   return (
@@ -321,30 +347,74 @@ Kalau paham, jawab singkat: "Wa'alaikumussalam, siap membantu." Lalu tunggu pert
         <Reveal>
           <div className="card-glass p-5 md:p-6 relative overflow-hidden">
             <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-gold-500/8 blur-3xl pointer-events-none"/>
-            <div className="relative flex flex-col md:flex-row md:items-start gap-4">
-              <div className="flex-1">
-                <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-1.5 font-medium">
-                  ✦ Starter Pack
+            <div className="relative">
+              {/* Header row */}
+              <div className="flex flex-col md:flex-row md:items-start gap-4 mb-4">
+                <div className="flex-1">
+                  <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-1.5 font-medium">
+                    ✦ Starter Pack
+                  </div>
+                  <h3 className="font-display text-lg md:text-xl font-semibold text-ink mb-1">
+                    Kenalkan dirimu ke AI
+                  </h3>
+                  <p className="text-sm text-ink-muted leading-relaxed max-w-lg">
+                    Sesuaikan nama dan catatan di bawah — prompt otomatis terupdate.
+                  </p>
                 </div>
-                <h3 className="font-display text-lg md:text-xl font-semibold text-ink mb-1">
-                  Kenalkan dirimu ke AI
-                </h3>
-                <p className="text-sm text-ink-muted leading-relaxed max-w-lg">
-                  Salin prompt ini ke AI di awal sesi belajar. AI langsung tahu siapa kamu, tingkatmu, dan cara menjelaskan yang paling pas.
-                </p>
+                <button
+                  onClick={handleCopy}
+                  className="btn-primary text-sm px-5 py-2.5 flex items-center gap-2 flex-shrink-0 self-start"
+                >
+                  <Icon name="copy" className="w-3.5 h-3.5"/>
+                  Salin Starter Pack
+                </button>
               </div>
-              <button
-                onClick={handleCopy}
-                className="btn-primary text-sm px-5 py-2.5 flex items-center gap-2 flex-shrink-0 self-start"
-              >
-                <Icon name="copy" className="w-3.5 h-3.5"/>
-                Salin Starter Pack
-              </button>
-            </div>
-            <div className="mt-4 p-3 rounded-xl" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
-              <p className="text-xs text-ink-soft font-mono leading-relaxed line-clamp-2">
-                {prompt.slice(0, 160)}...
-              </p>
+
+              {/* Input fields */}
+              <div className="grid md:grid-cols-2 gap-3 mb-4">
+                <div>
+                  <label className="block text-[11px] uppercase tracking-[0.15em] text-ink-soft mb-1.5">
+                    Nama panggilan
+                  </label>
+                  <input
+                    type="text"
+                    value={customNama}
+                    onChange={e => setCustomNama(e.target.value)}
+                    placeholder={namaDefault}
+                    style={inputStyle}
+                    onFocus={e => e.target.style.borderColor = "rgba(62,207,142,0.5)"}
+                    onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.10)"}
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] uppercase tracking-[0.15em] text-ink-soft mb-1.5">
+                    Info tambahan <span className="normal-case text-ink-soft/60">(opsional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={catatanTambahan}
+                    onChange={e => setCatatanTambahan(e.target.value)}
+                    placeholder="cth: aku punya ujian minggu depan, fokus ke Fiqh Hanafi"
+                    style={inputStyle}
+                    onFocus={e => e.target.style.borderColor = "rgba(62,207,142,0.5)"}
+                    onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.10)"}
+                  />
+                </div>
+              </div>
+
+              {/* Prompt preview */}
+              <div className="rounded-xl overflow-hidden" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
+                <p className={`text-xs text-ink-soft font-mono leading-relaxed p-3 whitespace-pre-wrap ${expanded ? "" : "line-clamp-3"}`}>
+                  {prompt}
+                </p>
+                <button
+                  onClick={() => setExpanded(v => !v)}
+                  className="w-full text-center text-[11px] text-ink-soft/60 hover:text-ink-soft py-1.5 border-t transition-colors"
+                  style={{borderColor:"rgba(255,255,255,0.06)"}}
+                >
+                  {expanded ? "Sembunyikan ↑" : "Lihat selengkapnya ↓"}
+                </button>
+              </div>
             </div>
           </div>
         </Reveal>

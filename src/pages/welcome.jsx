@@ -12,14 +12,40 @@ const WelcomePage = () => {
 
   const firstName = session.name.split(" ")[0];
 
-  const starterPack = (typeof generateStarterPack !== "undefined")
-    ? generateStarterPack(profile, session)
-    : null;
+  const [customNama, setCustomNama] = React.useState(firstName);
+  const [catatanTambahan, setCatatanTambahan] = React.useState("");
+  const [expandedPreview, setExpandedPreview] = React.useState(false);
+
+  const namaAktif = customNama.trim() || firstName;
+
+  const sessionWithCustomNama = React.useMemo(() => ({
+    ...session,
+    name: namaAktif + (session.name.includes(" ") ? " " + session.name.split(" ").slice(1).join(" ") : ""),
+  }), [session, namaAktif]);
+
+  const starterPack = React.useMemo(() => {
+    if (typeof generateStarterPack === "undefined") return null;
+    const base = generateStarterPack(profile, sessionWithCustomNama);
+    return base + (catatanTambahan.trim() ? `\n\nINFO TAMBAHAN\n${catatanTambahan.trim()}` : "");
+  }, [profile, sessionWithCustomNama, catatanTambahan]);
 
   const handleCopyStarter = () => {
     if (!starterPack) return;
     navigator.clipboard.writeText(starterPack);
     toast.push("Starter Pack tersalin — paste ke AI di awal chat.");
+  };
+
+  const inputStyle = {
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(255,255,255,0.10)",
+    borderRadius: 10,
+    color: "var(--color-ink, #F1EDE4)",
+    outline: "none",
+    width: "100%",
+    fontSize: 13,
+    padding: "8px 12px",
+    fontFamily: "inherit",
+    transition: "border-color 0.15s",
   };
 
   return (
@@ -75,11 +101,55 @@ const WelcomePage = () => {
                 <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-2 font-medium">✦ Langkah pertama</div>
                 <h3 className="font-display text-xl font-semibold text-ink mb-2">Kenalkan dirimu ke AI</h3>
                 <p className="text-sm text-ink-muted mb-4 leading-relaxed">
-                  Sebelum mulai, paste ini ke AI favoritmu. AI langsung tahu siapa kamu dan cara menjelaskan yang paling pas.
+                  Sesuaikan nama dan info di bawah — prompt otomatis terupdate. Lalu paste ke AI favoritmu.
                 </p>
-                <div className="p-3 rounded-xl mb-4" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
-                  <p className="text-xs text-ink-soft font-mono leading-relaxed line-clamp-3">{starterPack.slice(0, 200)}...</p>
+
+                {/* Input fields */}
+                <div className="grid md:grid-cols-2 gap-3 mb-4">
+                  <div>
+                    <label className="block text-[11px] uppercase tracking-[0.15em] text-ink-soft mb-1.5">
+                      Nama panggilan
+                    </label>
+                    <input
+                      type="text"
+                      value={customNama}
+                      onChange={e => setCustomNama(e.target.value)}
+                      placeholder={firstName}
+                      style={inputStyle}
+                      onFocus={e => e.target.style.borderColor = "rgba(62,207,142,0.5)"}
+                      onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.10)"}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] uppercase tracking-[0.15em] text-ink-soft mb-1.5">
+                      Info tambahan <span className="normal-case text-ink-soft/60">(opsional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={catatanTambahan}
+                      onChange={e => setCatatanTambahan(e.target.value)}
+                      placeholder="cth: aku punya ujian minggu depan, fokus ke Nahwu"
+                      style={inputStyle}
+                      onFocus={e => e.target.style.borderColor = "rgba(62,207,142,0.5)"}
+                      onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.10)"}
+                    />
+                  </div>
                 </div>
+
+                {/* Preview */}
+                <div className="rounded-xl overflow-hidden mb-4" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
+                  <p className={`text-xs text-ink-soft font-mono leading-relaxed p-3 whitespace-pre-wrap ${expandedPreview ? "" : "line-clamp-3"}`}>
+                    {starterPack}
+                  </p>
+                  <button
+                    onClick={() => setExpandedPreview(v => !v)}
+                    className="w-full text-center text-[11px] text-ink-soft/60 hover:text-ink-soft py-1.5 border-t transition-colors"
+                    style={{borderColor:"rgba(255,255,255,0.06)"}}
+                  >
+                    {expandedPreview ? "Sembunyikan ↑" : "Lihat selengkapnya ↓"}
+                  </button>
+                </div>
+
                 <button onClick={handleCopyStarter} className="btn btn-primary px-5 py-2.5 text-sm flex items-center gap-2">
                   <Icon name="copy" className="w-3.5 h-3.5"/>
                   Salin Starter Pack
