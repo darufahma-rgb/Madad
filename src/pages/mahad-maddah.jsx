@@ -92,20 +92,25 @@ const MahadMaddahPage = () => {
               Belum ada maddah untuk kategori ini di levelmu.
             </div>
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {filtered.map(m => (
                 <button key={m.id}
                   onClick={() => navigate("/mahad-maddah/" + m.id)}
-                  className="card-glass p-4 text-left hov-lift active:scale-[0.97] transition-all">
-                  <div className="arabic-display text-gold-300 text-base mb-1.5 truncate"
+                  className="card-glass p-4 md:p-5 text-left hov-lift active:scale-[0.97] transition-all group relative overflow-hidden">
+                  <div className="arabic-display text-gold-300 text-xl mb-1 group-hover:text-gold-200 transition-colors"
                     style={{direction:"rtl"}}>
                     {m.nameArabic}
                   </div>
-                  <div className="font-display text-sm font-semibold text-ink mb-1.5 leading-snug">
+                  <h3 className="font-display text-lg font-semibold text-ink leading-snug mb-1">
                     {m.name}
-                  </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className={`text-[10px] px-2 py-0.5 rounded border ${
+                  </h3>
+                  {m.description && (
+                    <p className="text-sm text-ink-muted leading-relaxed line-clamp-2 mb-3">
+                      {m.description}
+                    </p>
+                  )}
+                  <div className="flex items-center justify-between gap-2 text-xs mt-2">
+                    <span className={`px-2 py-0.5 rounded border ${
                       m.category === "agama"
                         ? "bg-gold-500/10 text-gold-300 border-gold-500/20"
                         : "bg-violet-500/10 text-violet-300 border-violet-500/20"
