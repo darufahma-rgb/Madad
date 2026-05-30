@@ -1,0 +1,126 @@
+# PROMPT: Update Angka Maddah & Prompt di Seluruh Website
+
+Talqeeh sekarang punya lebih dari 36 Maddah karena sudah ditambah Ma'had.
+Update semua teks yang menyebut angka lama ke angka yang baru dan akurat.
+
+## Angka Baru yang Benar
+
+- **Maddah S1:** 35 maddah
+- **Maddah Ma'had:** 17 maddah
+- **Total Maddah:** 52 maddah
+- **Total Prompt S1:** 422 prompt templates
+- **Total Prompt Ma'had:** 68 prompt templates
+- **Total Prompt:** ~490 prompt templates
+- **AI Tools:** 7 tools
+
+---
+
+## File 1 — `src/maddah-data.jsx` (baris 2)
+
+```js
+// SEBELUM:
+// 36 mata kuliah Al-Azhar.
+
+// SESUDAH:
+// 35 mata kuliah S1 Al-Azhar + 17 maddah Ma'had.
+```
+
+---
+
+## File 2 — `src/pages/maddah-hub.jsx` (baris 1)
+
+```js
+// SEBELUM:
+/* Talqih — Maddah Hub: daftar semua 36 Maddah dengan filter & search */
+
+// SESUDAH:
+/* Talqeeh — Maddah Hub: daftar semua 35 Maddah S1 dengan filter & search */
+```
+
+---
+
+## File 3 — `src/pages/landing.jsx`
+
+**Baris ~392:**
+```js
+// SEBELUM:
+{ num:"03", title:"Mulai belajar", sub:"Workflow + 540+ prompt", ...}
+
+// SESUDAH:
+{ num:"03", title:"Mulai belajar", sub:"Workflow + 490+ prompt", ...}
+```
+
+**Baris ~487:**
+```jsx
+// SEBELUM:
+<p>Total 540+ template prompt · Disesuaikan untuk Darul Lughoh (DL) sampai S2</p>
+
+// SESUDAH:
+<p>Total 490+ template prompt · Disesuaikan untuk Ma'had, DL, sampai S2</p>
+```
+
+**Baris ~508:**
+```jsx
+// SEBELUM:
+Dapatkan 540+ Prompt siap pakai untuk bantu kamu belajar + update selamanya
+
+// SESUDAH:
+Dapatkan 490+ Prompt siap pakai untuk bantu kamu belajar + update selamanya
+```
+
+**Baris ~531:**
+```js
+// SEBELUM:
+"36 Maddah lengkap + 540+ template prompt",
+
+// SESUDAH:
+"52 Maddah lengkap (S1 + Ma'had) + 490+ template prompt",
+```
+
+---
+
+## File 4 — `src/pages/dashboard.jsx`
+
+**Baris ~108:**
+```jsx
+// SEBELUM:
+Semua 36 Maddah <Icon .../>
+
+// SESUDAH:
+Semua 35 Maddah S1 <Icon .../>
+```
+
+**Baris ~586:**
+```jsx
+// SEBELUM:
+desc="36 mata pelajaran + 540 prompt template"
+
+// SESUDAH:
+desc="35 maddah S1 + 490 prompt template"
+```
+
+---
+
+## File 5 — `src/layout.jsx`
+
+**Baris ~564:**
+```js
+// SEBELUM:
+{ i: "layers", t: "36 Maddah Al-Azhar dengan 540 prompt template AI" },
+
+// SESUDAH:
+{ i: "layers", t: "52 Maddah (S1 + Ma'had) dengan 490+ prompt template AI" },
+```
+
+---
+
+## Acceptance Criteria
+
+- [ ] Tidak ada lagi angka "36 Maddah" di seluruh website (kecuali di komentar lama yang tidak terlihat user)
+- [ ] Tidak ada lagi "540" di teks yang terlihat user
+- [ ] Landing page menampilkan angka baru yang akurat
+- [ ] Dashboard quick action menampilkan angka baru
+- [ ] Deskripsi di payment modal/fitur list sudah diupdate
+- [ ] Tidak ada console error
+
+والله ولي التوفيق.

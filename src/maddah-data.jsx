@@ -1,5 +1,5 @@
 /* Talqih — Maddah Data Structure
-   36 mata kuliah Al-Azhar.
+   35 mata kuliah S1 Al-Azhar + 17 maddah Ma'had.
    Prompt 3B: Semua 33 Maddah skeleton diisi lengkap.
 */
 

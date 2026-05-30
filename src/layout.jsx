@@ -573,7 +573,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
                 <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-3">Yang kamu dapat</div>
                 <div className="space-y-2.5 mb-5">
                   {[
-                    { i: "layers",   t: "36 Maddah Al-Azhar dengan 540 prompt template AI" },
+                    { i: "layers",   t: "52 Maddah (S1 + Ma'had) dengan 490+ prompt template AI" },
                     { i: "sparkles", t: "Adaptive guide untuk 6 AI × 6 gaya belajar" },
                     { i: "scale",    t: "Muqaranah qoul ulama (Library + buat sendiri)" },
                     { i: "book",     t: "Kurasah pribadi dengan markdown & teks Arab" },
