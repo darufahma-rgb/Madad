@@ -1,0 +1,339 @@
+# PROMPT: Fix 4 Bottleneck Kritis (BN-1 sampai BN-4)
+
+Empat fix berurutan. Kerjakan dari atas ke bawah, test tiap fix sebelum lanjut.
+
+---
+
+## FIX 1 — PromptCard Crash di `/maddah/[id]` (BN-1 KRITIS)
+
+**Root cause:** `resolveAdaptivePrompt(prompt.template, ...)` crash kalau
+`prompt.template` undefined atau null — dan tidak ada guard yang mencegahnya.
+
+**File:** `src/pages/maddah-detail.jsx`
+
+### 1.1 — Tambah guard di PromptCard
+
+Cari baris ini:
+```js
+const resolvedPrompt = resolveAdaptivePrompt(prompt.template, profile, maddah.name);
+```
+
+Ganti dengan:
+```js
+// Guard: kalau template tidak ada, jangan crash
+if (!prompt || !prompt.template) return null;
+const resolvedPrompt = resolveAdaptivePrompt(prompt.template, profile, maddah.name) || "";
+```
+
+### 1.2 — Guard di render loop
+
+Cari bagian di mana prompt cards di-render (biasanya `.map((p, i) => <PromptCard .../>)`):
+
+```jsx
+// SEBELUM:
+{(maddah.prompts[activeKind] || []).map((p, i) => (
+  <PromptCard key={i} prompt={p} maddah={maddah} profile={profile}/>
+))}
+
+// SESUDAH — filter prompt yang tidak valid:
+{(maddah.prompts[activeKind] || [])
+  .filter(p => p && p.template && p.targetAI)
+  .map((p, i) => (
+    <PromptCard key={i} prompt={p} maddah={maddah} profile={profile}/>
+  ))
+}
+```
+
+### 1.3 — Guard di hasContent check
+
+Cari:
+```js
+const hasContent = maddah.prompts && Object.values(maddah.prompts).some(arr => arr.length > 0);
+```
+
+Ganti dengan:
+```js
+const hasContent = maddah.prompts && Object.values(maddah.prompts).some(arr =>
+  Array.isArray(arr) && arr.some(p => p && p.template)
+);
+```
+
+**Test:** Buka salah satu halaman `/maddah/nahwu` atau `/maddah/tafsir` — harus tidak crash.
+
+---
+
+## FIX 2 — Starter Pack Ma'had Routing Salah (BN-2)
+
+**Root cause:** `adaptive-prompt.jsx` cek level Ma'had dengan string lama
+(`'idadi'`, `'tsanawi'`) — tidak cocok dengan level ID baru
+(`idad_1`, `tsanawi_2_ilmi`, dll).
+
+**File:** `src/adaptive-prompt.jsx`
+
+### 2.1 — Update kondisi deteksi level Ma'had
+
+Cari kondisi yang mirip seperti ini:
+```js
+if (profile?.level === 'idadi' || profile?.level === 'tsanawi') {
+```
+
+Atau:
+```js
+if (profile?.level?.startsWith('idadi') || profile?.level?.startsWith('tsanawi')) {
+```
+
+Ganti dengan:
+```js
+// Gunakan helper isMahadLevel yang sudah ada
+const isUserMahad = typeof isMahadLevel !== "undefined"
+  ? isMahadLevel(profile?.level)
+  : (profile?.level?.startsWith("idad") || profile?.level?.startsWith("tsanawi"));
+```
+
+Lalu ganti semua `profile?.level === 'idadi' || ...` dengan `isUserMahad`.
+
+### 2.2 — Update di generateStarterPack
+
+Di fungsi `generateStarterPack`, tambahkan deteksi Ma'had di awal fungsi:
+
+```js
+const generateStarterPack = (profile, session) => {
+  // Deteksi level Ma'had dengan cara yang benar
+  const isUserMahad = typeof isMahadLevel !== "undefined"
+    ? isMahadLevel(profile?.level)
+    : (profile?.level?.startsWith("idad") || profile?.level?.startsWith("tsanawi"));
+
+  // Kalau user Ma'had, gunakan generateMahadStarterPack
+  if (isUserMahad) {
+    return typeof generateMahadStarterPack !== "undefined"
+      ? generateMahadStarterPack(profile, session)
+      : generateMahadStarterPackFallback(profile, session);
+  }
+
+  // ... sisa kode S1 yang sudah ada tetap sama
+```
+
+---
+
+## FIX 3 — Starter Pack Ma'had Baca Field yang Tidak Ada (BN-3)
+
+**Root cause:** `generateMahadStarterPack` masih baca `profile.mahad_year`
+dan `profile.mahad_jurusan` — dua field ini sudah tidak dikumpulkan di onboarding.
+Seharusnya diekstrak dari `profile.level` yang granular.
+
+**File:** `src/adaptive-prompt.jsx` (atau file tempat `generateMahadStarterPack` didefinisikan)
+
+### 3.1 — Tambah helper ekstrak info dari level ID
+
+Tambahkan helper function sebelum `generateMahadStarterPack`:
+
+```js
+// Ekstrak info Ma'had dari level ID granular
+const parseMahadLevel = (level) => {
+  if (!level) return { jenjang: "Ma'had", kelas: "", jurusan: "", tingkat: "" };
+
+  if (level.startsWith("idad")) {
+    const num = level.replace("idad_", "");
+    return {
+      jenjang: "I'dadi",
+      kelas:   `Kelas ${num}`,
+      jurusan: "", // I'dadi tidak ada jurusan
+      tingkat: `I'dadi Kelas ${num} (Ma'had Al-Azhar)`,
+    };
+  }
+
+  if (level.startsWith("tsanawi")) {
+    // Format: tsanawi_[num]_[jurusan]
+    // Contoh: tsanawi_2_ilmi, tsanawi_3_adabi
+    const parts = level.split("_"); // ["tsanawi", "2", "ilmi"]
+    const num    = parts[1] || "";
+    const jur    = parts[2] || "";
+    const jurLabel = jur === "ilmi" ? "Jurusan Ilmi (IPA)" :
+                     jur === "adabi" ? "Jurusan Adabi (IPS)" : "";
+    return {
+      jenjang:  "Tsanawi",
+      kelas:    `Kelas ${num}`,
+      jurusan:  jurLabel,
+      tingkat:  `Tsanawi Kelas ${num}${jurLabel ? " " + jurLabel : ""} (Ma'had Al-Azhar)`,
+    };
+  }
+
+  return { jenjang: "Ma'had", kelas: "", jurusan: "", tingkat: level };
+};
+```
+
+### 3.2 — Update generateMahadStarterPack
+
+Cari `generateMahadStarterPack` dan update agar pakai `parseMahadLevel`:
+
+```js
+const generateMahadStarterPack = (profile, session) => {
+  const nama  = session?.name?.split(" ")[0] || "";
+  const info  = parseMahadLevel(profile?.level);
+
+  // Tentukan maddah umum berdasarkan jurusan dari level ID
+  let maddahUmum = "Matematika, Sains/IPA, dan Bahasa Inggris";
+  if (profile?.level?.includes("ilmi")) {
+    maddahUmum = "Matematika, Fisika, Kimia, Biologi, dan Bahasa Inggris";
+  } else if (profile?.level?.includes("adabi")) {
+    maddahUmum = "Matematika, Sejarah, Geografi, Filsafat & Mantiq, dan Bahasa Inggris";
+  }
+  // I'dadi: default (Matematika, Sains, Bahasa Inggris)
+
+  let gaya = "kombinasi berbagai pendekatan";
+  if (profile?.learningStyle?.length > 0) {
+    const GAYA = {
+      reading: "membaca teks bertahap",
+      summary: "ringkasan terstruktur",
+      discussion: "tanya jawab dan diskusi",
+      practice: "latihan langsung",
+      memorization: "hafalan dengan repetisi",
+      visual: "peta konsep visual",
+    };
+    const labels = profile.learningStyle.map(s => GAYA[s]).filter(Boolean);
+    if (labels.length === 1) gaya = labels[0];
+    else if (labels.length === 2) gaya = labels.join(" dan ");
+    else gaya = labels.slice(0,-1).join(", ") + " dan " + labels[labels.length-1];
+  }
+
+  return `Assalamu'alaikum! Mulai sekarang, kamu akan membantuku belajar.
+
+PROFILKU
+- Namaku: ${nama}${nama ? ` — panggil aku "${nama}"` : ""}
+- Aku pelajar ${info.tingkat}
+${info.jurusan ? `- Jurusan: ${info.jurusan}` : ""}
+- Cara belajarku: aku lebih suka ${gaya}
+
+MADDAH YANG AKU PELAJARI
+- Maddah Agama: Al-Qur'an & Tajwid, Tafsir, Hadits, Tauhid, Fiqh, Nahwu, Sharf, Sirah${info.jenjang === "Tsanawi" ? ", Balaghah" : ""}
+- Maddah Umum: ${maddahUmum}
+
+CARA KAMU MEMBANTUKU
+- Bahasa: Indonesia yang mudah dipahami (aku remaja, bukan mahasiswa dewasa)
+- Teks Arab: WAJIB selalu pakai harakat + terjemah bahasa Indonesia
+- Istilah Arab: selalu kasih artinya — jangan anggap aku sudah tahu
+- Kalau ada konsep sulit: jelaskan dengan analogi dari kehidupan sehari-hari
+- Untuk maddah umum (Matematika, Sains, dll): tunjukkan juga istilah Arabnya karena aku belajar dalam bahasa Arab
+
+PENTING
+- Kamu adalah teman belajar, bukan pengganti guru atau ustadz-ku
+- Kalau tidak yakin, katakan jujur
+- Beri semangat — aku sedang dalam proses belajar!
+
+Kalau paham, jawab: "Wa'alaikumussalam, siap menemani belajar!" Lalu tunggu pertanyaanku.`;
+};
+```
+
+Juga hapus fallback function `generateMahadStarterPackFallback` kalau ada, atau buat yang sederhana:
+
+```js
+const generateMahadStarterPackFallback = generateMahadStarterPack;
+```
+
+### 3.3 — Export di Object.assign
+
+Pastikan di `Object.assign(window, {...})` ada:
+```js
+generateMahadStarterPack,
+parseMahadLevel,
+```
+
+---
+
+## FIX 4 — Dashboard Baca `mahad_jurusan` yang Null (BN-4)
+
+**Root cause:** `src/pages/dashboard.jsx` baris ~211 mengakses
+`profile.mahad_jurusan` yang selalu `null` karena field ini tidak dikumpulkan.
+
+**File:** `src/pages/dashboard.jsx`
+
+### 4.1 — Cari dan ganti akses ke field lama
+
+Cari semua akses ke `profile.mahad_jurusan` dan `profile.mahad_year`:
+
+```js
+// HAPUS/GANTI semua:
+profile.mahad_jurusan
+profile.mahad_year
+profile?.mahad_jurusan
+profile?.mahad_year
+```
+
+Ganti dengan ekstraksi dari level ID menggunakan `parseMahadLevel`:
+
+```js
+// GANTI dengan:
+const mahadInfo = typeof parseMahadLevel !== "undefined"
+  ? parseMahadLevel(profile?.level)
+  : { jenjang: "", kelas: "", jurusan: "", tingkat: "" };
+
+// Lalu gunakan:
+mahadInfo.jurusan  // gantikan profile.mahad_jurusan
+mahadInfo.kelas    // gantikan profile.mahad_year (kalau dipakai untuk "tahun/kelas")
+mahadInfo.tingkat  // label lengkap
+```
+
+### 4.2 — Contoh penggunaan konkret
+
+Kalau sebelumnya ada kode seperti:
+```js
+// Contoh yang mungkin ada:
+const jurusanLabel = profile.mahad_jurusan === "ilmi" ? "IPA" : "IPS";
+// atau:
+<span>{profile.mahad_jurusan || "—"}</span>
+```
+
+Ganti dengan:
+```js
+const mahadInfo = parseMahadLevel(profile?.level);
+const jurusanLabel = mahadInfo.jurusan || "—";
+// atau:
+<span>{mahadInfo.jurusan || "—"}</span>
+```
+
+---
+
+## FIX 5 — Hapus File Lama (BN-5, minor)
+
+Kalau ada file `src/maddah-mahad-data.jsx` atau nama serupa yang tidak dimuat
+tapi masih ada di disk — hapus file tersebut supaya tidak ada risiko
+seseorang tidak sengaja menambahkan script tag-nya lagi.
+
+---
+
+## Acceptance Criteria
+
+### BN-1 — PromptCard
+- [ ] Buka `/maddah/nahwu` → halaman muncul normal, tidak crash
+- [ ] Buka semua maddah lainnya → tidak ada yang crash
+- [ ] Console tidak ada error dari PromptCard
+
+### BN-2 — Starter Pack routing
+- [ ] Login sebagai user dengan level `idad_1` → Starter Pack berisi teks Ma'had (bukan teks Masisir S1)
+- [ ] Login sebagai user `tsanawi_2_ilmi` → Starter Pack berisi teks Ma'had
+- [ ] Login sebagai user S1 (Tingkat III) → Starter Pack S1 tidak berubah
+
+### BN-3 — Starter Pack Ma'had info benar
+- [ ] User `idad_2` → Starter Pack: "I'dadi Kelas 2", maddah umum "Matematika, Sains, Bahasa Inggris"
+- [ ] User `tsanawi_3_ilmi` → Starter Pack: "Tsanawi Kelas 3 Jurusan Ilmi", maddah umum ada Fisika, Kimia, Biologi
+- [ ] User `tsanawi_1_adabi` → Starter Pack: maddah umum ada Sejarah, Geografi, Filsafat
+- [ ] Tidak ada placeholder kosong atau "undefined" di Starter Pack
+
+### BN-4 — Dashboard
+- [ ] User Ma'had buka dashboard → tidak ada error di console tentang `mahad_jurusan`
+- [ ] Info level ditampilkan dengan benar (dari `parseMahadLevel`)
+
+### General
+- [ ] Tidak ada console error
+- [ ] User S1 tidak terpengaruh sama sekali
+
+---
+
+## Urutan kerjakan
+
+1. **Fix 1 dulu** (PromptCard) — ini yang bikin halaman blank sekarang
+2. Test semua halaman maddah normal
+3. Fix 2, 3, 4 sekaligus (semua di adaptive-prompt.jsx dan dashboard.jsx)
+4. Fix 5 (hapus file lama)
+
+والله ولي التوفيق.
