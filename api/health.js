@@ -4,7 +4,6 @@ module.exports = (req, res) => {
     status:    'ok',
     supabase:  !!process.env.SUPABASE_URL,
     fonnte:    !!process.env.FONNTE_TOKEN,
-    trakteer:  !!process.env.TRAKTEER_SECRET,
     timestamp: new Date().toISOString(),
   });
 };
