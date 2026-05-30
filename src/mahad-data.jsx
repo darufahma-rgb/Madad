@@ -482,6 +482,139 @@ Rangkuman ujian:
     },
   },
 
+  // ── Insya' ──
+  {
+    id: "insya-mahad",
+    name: "Insya' (Mengarang Arab)",
+    nameArabic: "الْإِنْشَاءُ",
+    category: "agama",
+    jenjang: ["idad", "tsanawi"],
+    description: "Belajar menulis dan mengarang dalam bahasa Arab — dari kalimat sederhana hingga paragraf dan esai.",
+    topikUtama: [
+      "الجملة المفيدة — Kalimat sempurna",
+      "الفقرة — Paragraf (pembuka, isi, penutup)",
+      "الوصف — Mendeskripsikan orang/tempat/benda",
+      "السرد — Bercerita/narasi",
+      "الرسالة — Menulis surat (resmi & tidak resmi)",
+      "التلخيص — Meringkas teks Arab",
+      "التعبير عن الرأي — Mengungkapkan pendapat",
+      "الإنشاء الموجَّه — Mengarang terbimbing",
+      "الإنشاء الحر — Mengarang bebas",
+    ],
+    prompts: {
+      pahami: `Aku pelajar Ma'had Al-Azhar yang belajar Insya' (mengarang Arab).
+
+Topik: [TOPIK]
+
+Yang aku butuhkan:
+1. Penjelasan konsep/teknik menulis ini dengan bahasa Indonesia yang mudah
+2. Contoh tulisan Arab yang baik sesuai topik (dengan harakat)
+3. Unsur-unsur yang harus ada dalam tulisan ini
+4. Kata-kata dan frasa Arab yang berguna untuk topik ini (kosakata siap pakai)
+5. Kesalahan umum yang sering dilakukan pelajar Indonesia saat menulis Arab
+
+Aku ingin bisa menulis Arab dengan benar dan indah — bantu aku!`,
+
+      hafal: `Aku pelajar Ma'had Al-Azhar, mau hafal kosakata dan frasa untuk Insya': [TOPIK]
+
+Buat kartu hafalan:
+1. 15-20 kosakata Arab penting untuk topik ini (Arab + harakat + terjemah)
+2. 10 frasa/ungkapan siap pakai (pembuka, penghubung, penutup)
+3. Kata penghubung (أَدَوَاتُ الرَّبْطِ) yang sering dipakai dalam karangan
+4. Contoh kalimat menggunakan kosakata di atas`,
+
+      latihan: `Aku pelajar Ma'had Al-Azhar, latihan menulis Insya'.
+
+Topik mengarang: [TOPIK]
+
+Bantu aku berlatih:
+1. Berikan outline/kerangka karangan untuk topik ini (poin-poin Arab + terjemah)
+2. Aku akan tulis karangannya — tunggu dulu
+3. Setelah aku tulis, koreksi:
+   - Kesalahan nahwu dan sharf
+   - Kosakata yang bisa diganti lebih baik
+   - Struktur kalimat yang perlu diperbaiki
+   - Nilai tulisanku (1-10) dengan komentar
+
+Atau kalau aku minta contoh dulu, berikan contoh karangan Arab yang bagus tentang topik ini.`,
+
+      ujian: `Aku pelajar Ma'had Al-Azhar, persiapan ujian Insya': [TOPIK]
+
+Buat persiapan ujian:
+1. Outline karangan yang lengkap (struktur baku Ma'had)
+2. Kosakata wajib yang harus muncul dalam karangan tentang topik ini
+3. Frasa pembuka yang kuat (مقدمة)
+4. Frasa penutup yang baik (خاتمة)
+5. Contoh karangan pendek (10-15 kalimat) tentang topik ini sebagai referensi
+6. Hal yang sering membuat nilai Insya' turun di ujian`,
+    },
+  },
+
+  // ── Mutholaah ──
+  {
+    id: "mutholaah-mahad",
+    name: "Mutholaah (Membaca Pemahaman)",
+    nameArabic: "الْمُطَالَعَةُ",
+    category: "agama",
+    jenjang: ["idad", "tsanawi"],
+    description: "Membaca dan memahami teks Arab — dari teks sederhana hingga teks akademik.",
+    topikUtama: [
+      "القراءة الجهرية — Membaca nyaring dengan benar",
+      "فهم المقروء — Memahami isi teks",
+      "استخراج الأفكار الرئيسية — Menemukan ide pokok",
+      "الأفكار الفرعية — Ide pendukung",
+      "معنى المفردات من السياق — Makna kosakata dari konteks",
+      "الاستنتاج — Menyimpulkan isi teks",
+      "النصوص الأدبية — Teks sastra Arab",
+      "النصوص العلمية — Teks ilmiah/informatif",
+      "النصوص الدينية — Teks keagamaan",
+    ],
+    prompts: {
+      pahami: `Aku pelajar Ma'had Al-Azhar yang belajar Mutholaah (membaca pemahaman Arab).
+
+Topik/Jenis teks: [TOPIK]
+
+Yang aku butuhkan:
+1. Berikan contoh teks Arab pendek (8-12 baris) sesuai topik — dengan harakat lengkap
+2. Terjemah teks ke Indonesia (paragraf per paragraf)
+3. Penjelasan kosakata sulit yang muncul dalam teks (Arab + terjemah + cara bacanya)
+4. Ide pokok teks dalam 1-2 kalimat
+5. Tips cara memahami teks Arab dengan cepat tanpa harus terjemah kata per kata`,
+
+      hafal: `Aku pelajar Ma'had Al-Azhar, mau hafal kosakata dari teks Mutholaah: [TOPIK/TEKS]
+
+Bantu aku kuasai kosakata:
+1. Daftar kosakata sulit dari teks ini (Arab + harakat + terjemah + cara pakai dalam kalimat)
+2. Kelompokkan per tema (kata benda, kata kerja, sifat)
+3. Antonim dan sinonim untuk kosakata kunci
+4. Cara mengingat kosakata ini (asosiasi atau cerita)`,
+
+      latihan: `Aku pelajar Ma'had Al-Azhar, latihan Mutholaah.
+
+Jenis teks: [TOPIK]
+
+Buat latihan pemahaman:
+1. Berikan teks Arab (10-15 baris, dengan harakat)
+2. Buat 5 pertanyaan pemahaman dalam bahasa Arab (أَسْئِلَةُ الْفَهْمِ)
+   + terjemah Indonesia di bawah tiap pertanyaan
+3. JANGAN kasih jawaban dulu — tunggu aku jawab
+4. Setelah aku jawab, koreksi dengan:
+   - Jawaban yang benar (dalam Arab + terjemah)
+   - Kosakata yang aku salah pahami`,
+
+      ujian: `Aku pelajar Ma'had Al-Azhar, persiapan ujian Mutholaah: [TOPIK]
+
+Persiapan ujian:
+1. Berikan teks Arab sesuai level (dengan harakat) + terjemah
+2. Contoh soal yang biasa keluar di ujian Mutholaah:
+   - Soal pemahaman isi (فَهْمُ الْمَقْرُوء)
+   - Soal kosakata (اِسْتَخْرِجِ الْمُفْرَدَاتِ)
+   - Soal menentukan ide pokok (الْفِكْرَةُ الرَّئِيسِيَّة)
+   - Soal menyimpulkan (اِسْتَنْتِجْ)
+3. Tips menjawab soal Mutholaah dengan benar dan cepat`,
+    },
+  },
+
   // ══════════════ MADDAH UMUM — I'DADI ══════════════
 
   {
