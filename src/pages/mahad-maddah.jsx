@@ -69,7 +69,7 @@ const MahadMaddahPage = () => {
           <div className="flex gap-2">
             {categories.map(cat => (
               <button key={cat.id}
-                onClick={() => { setActiveCategory(cat.id); setSelectedMaddah(null); }}
+                onClick={() => setActiveCategory(cat.id)}
                 className={`px-4 py-2 rounded-lg text-sm border transition-colors ${
                   activeCategory === cat.id
                     ? "text-emerald-300 border-emerald-500/30"
