@@ -1,0 +1,115 @@
+# PROMPT: Fix Maddah Hub — Hapus Filter Ma'had yang Salah
+
+## Masalah
+
+Di halaman `/maddah` (Maddah Hub), Replit menambahkan filter "Ma'had" dan
+checkbox "Tampilkan hanya untuk Tsanawi" — tapi filter ini tidak berfungsi
+karena `MaddahHubPage` hanya membaca dari `MADDAHS` (S1), bukan `MAHAD_MADDAH`.
+
+Hasilnya: user klik filter "Ma'had" → "Tidak ada Maddah yang cocok dengan filter."
+
+## Solusi
+
+Maddah Ma'had punya halaman sendiri di `/mahad-maddah`.
+Jadi di `MaddahHubPage`:
+1. Hapus filter "Ma'had" dari category tabs
+2. Hapus checkbox "Tampilkan hanya untuk Tsanawi"
+3. Untuk user Ma'had, tambahkan banner redirect ke `/mahad-maddah`
+
+---
+
+## STEP 1 — Hapus filter Ma'had dari `src/pages/maddah-hub.jsx`
+
+### 1.1 — Hapus state yang tidak perlu
+
+Cari dan hapus state-state ini kalau ada:
+```js
+// HAPUS kalau ada:
+const [showOnlyTsanawi, setShowOnlyTsanawi] = useState(false);
+const [mahadFilter, setMahadFilter] = useState(false);
+```
+
+### 1.2 — Hapus dari CATEGORY_TABS / filter chips
+
+Cari bagian di mana category tabs di-render (biasanya ada array seperti
+`[{id:"all",...}, {id:"qurani",...}, ...]`).
+
+Hapus entry untuk "mahad" atau "Ma'had":
+```js
+// HAPUS entry ini kalau ada:
+{ id: "mahad", label: "Ma'had", icon: "🕌" },
+// atau apapun yang id-nya "mahad"
+```
+
+### 1.3 — Hapus checkbox "Tampilkan hanya untuk Tsanawi"
+
+Cari dan hapus seluruh elemen checkbox yang berkaitan dengan Tsanawi/Ma'had:
+```jsx
+// HAPUS ini (atau yang serupa):
+<input type="checkbox" ... /> Tampilkan hanya untuk Tsanawi
+```
+
+### 1.4 — Pastikan filter logic bersih
+
+Di fungsi filter `MADDAHS.filter(m => {...})`, pastikan tidak ada kondisi
+yang reference `mahad`, `tsanawi`, atau `idad`:
+
+```js
+// Filter yang bersih — hanya S1:
+const filtered = MADDAHS.filter(m => {
+  if (activeCategory !== "all" && m.category !== activeCategory) return false;
+  if (showOnlyMyFaculty && profile?.faculty && profile.faculty !== "umum") {
+    if (!m.fakultas.includes(profile.faculty)) return false;
+  }
+  if (searchQuery.trim()) {
+    const q = searchQuery.toLowerCase();
+    if (!m.name.toLowerCase().includes(q)
+      && !m.nameArabic.includes(searchQuery)
+      && !m.description.toLowerCase().includes(q)) return false;
+  }
+  return true;
+});
+```
+
+---
+
+## STEP 2 — Tambah Banner untuk User Ma'had
+
+Di `MaddahHubPage`, tambahkan banner di atas search bar yang muncul
+HANYA untuk user Ma'had:
+
+```jsx
+{/* Banner redirect untuk user Ma'had */}
+{typeof isMahadLevel !== "undefined" && isMahadLevel(profile?.level) && (
+  <div className="container-x mb-4">
+    <div
+      onClick={() => navigate("/mahad-maddah")}
+      className="flex items-center justify-between gap-3 p-4 rounded-xl
+                 bg-violet-500/10 border border-violet-500/25 cursor-pointer
+                 hover:bg-violet-500/15 transition-colors">
+      <div>
+        <div className="text-sm font-medium text-ink mb-0.5">
+          Maddah Ma'had Al-Azhar ada di halaman khusus
+        </div>
+        <div className="text-xs text-ink-muted">
+          Halaman ini untuk Masisir S1. Klik untuk buka Maddah Ma'had-mu.
+        </div>
+      </div>
+      <Icon name="arrowRight" className="w-5 h-5 text-violet-300 flex-shrink-0"/>
+    </div>
+  </div>
+)}
+```
+
+---
+
+## Acceptance Criteria
+
+- [ ] Buka `/maddah` → tidak ada filter "Ma'had" di category tabs
+- [ ] Tidak ada checkbox "Tampilkan hanya untuk Tsanawi"
+- [ ] Filter "Semua", "Quran & Tafsir", "Hadits", dll tetap berfungsi normal
+- [ ] User Ma'had → ada banner "Maddah Ma'had ada di halaman khusus" → klik → ke `/mahad-maddah`
+- [ ] User S1 → tidak ada banner (tidak terlihat)
+- [ ] Tidak ada console error
+
+والله ولي التوفيق.
