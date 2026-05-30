@@ -52,7 +52,7 @@
         colors: {
           ink:    { DEFAULT: '#F5F0FF', muted: '#9B8DBA', soft: '#6B5F8C' },
           night:  { 950: '#0A0514', 900: '#10071F', 800: '#150827', 700: '#1D0E36', 600: '#251245' },
-          violet: { 900: '#2A1656', 700: '#5C35CC', 600: '#7C4DFF', 500: '#7C4DFF', 400: '#A78BFA', 300: '#C5A0FF', 200: '#DBC8FF', 100: '#EFE5FF' },
+          violet: { 900: '#1e0f56', 700: '#5741d8', 600: '#7132f5', 500: '#7132f5', 400: '#9B7AFF', 300: '#C5A0FF', 200: '#DBC8FF', 100: '#EFE5FF' },
           gold:   { 700: '#9A7A3C', 600: '#B3904D', 500: '#C9A86A', 400: '#D9BD85', 300: '#E8D0A0', 100: '#F6EDD8' },
           glass:  { DEFAULT: 'rgba(255,255,255,0.04)', raised: 'rgba(255,255,255,0.06)', strong: 'rgba(255,255,255,0.08)' },
           line:   'rgba(180,150,255,0.12)',
@@ -117,46 +117,65 @@
   .arabic-display           { font-family: "Reem Kufi", "Noto Kufi Arabic", sans-serif; direction: rtl; line-height: 1.6; letter-spacing: 0; }
   .arabic-classic           { font-family: "Aref Ruqaa", Amiri, serif; direction: rtl; line-height: 1.7; }
 
-  /* Glass cards */
+  /* Glass cards — Kraken shadow system applied */
   .card-glass {
     background: rgba(17,6,31,0.55);
-    border: 1px solid rgba(169,112,255,0.12);
+    border: 1px solid rgba(113,50,245,0.13);
     border-radius: 16px;
     backdrop-filter: blur(24px) saturate(160%);
     -webkit-backdrop-filter: blur(24px) saturate(160%);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.16), 0 1px 0 rgba(255,255,255,0.03) inset;
   }
   .card-glass-strong {
-    background: linear-gradient(180deg, rgba(25,11,56,0.75), rgba(14,6,25,0.65));
-    border: 1px solid rgba(169,112,255,0.18);
-    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(25,11,56,0.75), rgba(14,6,25,0.68));
+    border: 1px solid rgba(113,50,245,0.20);
+    border-radius: 16px;
     backdrop-filter: blur(28px) saturate(180%);
     -webkit-backdrop-filter: blur(28px) saturate(180%);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.20), 0 1px 0 rgba(255,255,255,0.04) inset;
   }
 
-  /* Buttons */
-  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 500; border-radius: 12px; padding: 12px 20px; transition: all .2s ease; font-size: 15px; line-height: 1.2; }
-  .btn-primary {
-    background: linear-gradient(160deg, #A970FF 0%, #7C4DFF 100%);
-    color: #F5F0FF;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 12px 32px -10px rgba(124,77,255,0.55);
+  /* ── Kraken Design Variables ── */
+  :root {
+    --kraken-purple:       #7132f5;
+    --kraken-purple-dark:  #5741d8;
+    --kraken-purple-deep:  #5b1ecf;
+    --kraken-shadow:       rgba(0,0,0,0.12) 0px 4px 24px;
+    --kraken-shadow-micro: rgba(16,24,40,0.08) 0px 1px 4px;
   }
-  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 1px 0 rgba(255,255,255,0.22) inset, 0 16px 40px -10px rgba(169,112,255,0.7); }
+
+  /* Buttons — Kraken principles: solid primary, 12px radius, 13px 16px padding */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; border-radius: 12px; padding: 13px 16px; transition: background .18s ease, box-shadow .18s ease, transform .18s ease; font-size: 15px; line-height: 1.38; letter-spacing: -0.01em; }
+  .btn-primary {
+    background: var(--kraken-purple);
+    color: #F5F0FF;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.14) inset, 0 4px 20px rgba(113,50,245,0.38);
+  }
+  .btn-primary:hover { background: var(--kraken-purple-dark); transform: translateY(-1px); box-shadow: 0 1px 0 rgba(255,255,255,0.18) inset, 0 8px 28px rgba(113,50,245,0.52); }
   .btn-gold {
     background: linear-gradient(160deg, #D9BD85 0%, #C9A86A 100%);
     color: #190B38;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset, 0 12px 32px -12px rgba(201,168,106,0.45);
+    font-weight: 600;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.35) inset, 0 4px 20px rgba(201,168,106,0.38);
   }
-  .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 16px 40px -10px rgba(201,168,106,0.6); }
-  .btn-ghost { background: rgba(169,112,255,0.06); color: #F5F0FF; border: 1px solid rgba(169,112,255,0.18); }
-  .btn-ghost:hover { background: rgba(169,112,255,0.11); border-color: rgba(169,112,255,0.32); }
+  .btn-gold:hover { transform: translateY(-1px); box-shadow: 0 8px 28px rgba(201,168,106,0.52); }
+  .btn-ghost { background: rgba(113,50,245,0.08); color: #F5F0FF; border: 1px solid rgba(113,50,245,0.28); }
+  .btn-ghost:hover { background: rgba(113,50,245,0.14); border-color: rgba(113,50,245,0.45); }
+  /* Kraken Purple Subtle */
+  .btn-subtle { background: rgba(133,91,251,0.16); color: #C5A0FF; border: 1px solid rgba(113,50,245,0.22); border-radius: 12px; padding: 8px 14px; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; transition: background .18s ease; }
+  .btn-subtle:hover { background: rgba(133,91,251,0.24); }
 
   .chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 500; }
-  .chip-violet { background: rgba(124,77,255,0.18); color: #C5A0FF; border: 1px solid rgba(124,77,255,0.28); }
+  .chip-violet { background: rgba(113,50,245,0.18); color: #C5A0FF; border: 1px solid rgba(113,50,245,0.28); }
   .chip-gold { background: rgba(201,168,106,0.16); color: #E8D0A0; border: 1px solid rgba(201,168,106,0.28); }
-  .chip-glass { background: rgba(169,112,255,0.06); color: #B8AACC; border: 1px solid rgba(169,112,255,0.16); }
+  .chip-glass { background: rgba(113,50,245,0.07); color: #B8AACC; border: 1px solid rgba(113,50,245,0.18); }
+  /* Kraken Badges */
+  .badge-success { display: inline-flex; align-items: center; gap: 4px; background: rgba(20,158,97,0.16); color: #4ade80; border-radius: 6px; padding: 3px 8px; font-size: 12px; font-weight: 500; }
+  .badge-neutral { display: inline-flex; align-items: center; gap: 4px; background: rgba(104,107,130,0.14); color: #9B8DBA; border-radius: 8px; padding: 3px 8px; font-size: 12px; font-weight: 500; }
+  .badge-purple  { display: inline-flex; align-items: center; gap: 4px; background: rgba(113,50,245,0.18); color: #C5A0FF; border-radius: 6px; padding: 3px 8px; font-size: 12px; font-weight: 500; }
 
-  /* Focus */
-  :focus-visible { outline: 2px solid #D4A574; outline-offset: 2px; border-radius: 8px; }
+  /* Focus — Kraken purple */
+  :focus-visible { outline: 2px solid #7132f5; outline-offset: 2px; border-radius: 8px; }
 
   /* Decorative arabesque dot pattern */
   .pattern-stars {
@@ -239,13 +258,13 @@
   @keyframes fade-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
   .animate-fade-in { animation: fade-in 0.25s ease both; }
 
-  /* Hover lift */
-  .hov-lift { transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
-  .hov-lift:hover { transform: translateY(-2px); border-color: rgba(180,150,255,0.28); box-shadow: 0 24px 60px -22px rgba(139,92,246,0.45); }
+  /* Hover lift — Kraken elevation */
+  .hov-lift { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+  .hov-lift:hover { transform: translateY(-2px); border-color: rgba(113,50,245,0.30); box-shadow: 0 8px 32px rgba(113,50,245,0.22), 0 4px 24px rgba(0,0,0,0.20); }
 
   /* Glow ring */
   .glow-ring { box-shadow: 0 0 0 1px rgba(201,168,106,0.35), 0 0 32px rgba(201,168,106,0.18); }
-  .glow-violet { box-shadow: 0 0 0 1px rgba(124,77,255,0.40), 0 0 36px rgba(124,77,255,0.28); }
+  .glow-violet { box-shadow: 0 0 0 1px rgba(113,50,245,0.40), 0 0 36px rgba(113,50,245,0.28); }
 
   /* Scrollbar */
   .nice-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -327,7 +346,7 @@
 
     /* Button compact + touch-friendly */
     .btn          { padding: 10px 16px; font-size: 14px; border-radius: 10px; min-height: 44px; }
-    .btn-primary  { box-shadow: 0 8px 20px -8px rgba(124,77,255,0.5); }
+    .btn-primary  { box-shadow: 0 4px 16px rgba(113,50,245,0.4); }
     .btn-primary:hover { transform: none; }
     .btn-gold:hover    { transform: none; }
 
@@ -363,7 +382,7 @@
 
   /* Nav link underline */
   .nav-link { position: relative; }
-  .nav-link::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 6px; height: 2px; background: linear-gradient(90deg, #A970FF, transparent); transform: scaleX(0); transform-origin: left; transition: transform .25s ease; }
+  .nav-link::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 6px; height: 2px; background: linear-gradient(90deg, #7132f5, transparent); transform: scaleX(0); transform-origin: left; transition: transform .25s ease; }
   .nav-link:hover::after, .nav-link.active::after { transform: scaleX(1); }
 
   /* Code input cells */
@@ -384,7 +403,7 @@
   .star { width: 14px; height: 14px; }
 
   /* Smooth scrollbars hide for filter chips */
-  .gradient-text { background: linear-gradient(135deg, #DBC8FF 0%, #C9A86A 55%, #A970FF 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .gradient-text { background: linear-gradient(135deg, #DBC8FF 0%, #C9A86A 50%, #9B7AFF 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
   /* Hero title light animations */
   @keyframes gradient-shift {
@@ -393,7 +412,7 @@
     100% { background-position: 0% 50%; }
   }
   .gradient-text-anim {
-    background: linear-gradient(90deg, #DBC8FF, #C9A86A, #A970FF, #DBC8FF);
+    background: linear-gradient(90deg, #DBC8FF, #C9A86A, #9B7AFF, #DBC8FF);
     background-size: 300% 100%;
     -webkit-background-clip: text;
     background-clip: text;
@@ -411,7 +430,7 @@
     position: absolute;
     inset-block: 0;
     width: 35%;
-    background: linear-gradient(90deg, transparent, rgba(169,112,255,0.07), rgba(201,168,106,0.05), transparent);
+    background: linear-gradient(90deg, transparent, rgba(113,50,245,0.07), rgba(201,168,106,0.04), transparent);
     animation: hero-beam 6s ease-in-out infinite;
     animation-delay: 1.2s;
     pointer-events: none;
@@ -433,7 +452,7 @@
     <div style="font-family:'DM Sans',system-ui,sans-serif;color:#9B8DBA;font-size:0.9rem;">
       Membuka Talqeeh...
     </div>
-    <div style="margin-top:1.5rem;width:32px;height:32px;border:2px solid rgba(124,77,255,0.2);border-top-color:#7C4DFF;border-radius:50%;animation:talqih-spin 0.8s linear infinite;"></div>
+    <div style="margin-top:1.5rem;width:32px;height:32px;border:2px solid rgba(113,50,245,0.2);border-top-color:#7132f5;border-radius:50%;animation:talqih-spin 0.8s linear infinite;"></div>
   </div>
 </div>
 <style>@keyframes talqih-spin { to { transform: rotate(360deg); } }</style>
