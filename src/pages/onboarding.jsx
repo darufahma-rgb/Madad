@@ -171,8 +171,8 @@ const OnboardingPage = () => {
             ...masisirEntries,
           ];
         }
-        if (mj === "idad")    return LEVELS.filter(l => l.id.startsWith("idad"));
-        if (mj === "tsanawi") return LEVELS.filter(l => l.id.startsWith("tsanawi"));
+        if (mj === "idad")    return LEVELS.filter(l => l.id.startsWith("idad_"));
+        if (mj === "tsanawi") return LEVELS.filter(l => l.id.startsWith("tsanawi_"));
         return LEVELS;
       },
       multi: false,
