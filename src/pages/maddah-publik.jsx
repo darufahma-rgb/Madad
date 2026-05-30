@@ -79,7 +79,7 @@ const MaddahPublikPage = ({ onOpenPayment, onOpenLogin }) => {
               onClick={onOpenPayment}
               className="btn btn-primary px-6 py-3 text-sm font-medium flex items-center gap-2">
               <Icon name="sparkles" className="w-4 h-4"/>
-              Gabung Member — Rp 45.000
+              Gabung Member
             </button>
             <button onClick={onOpenLogin} className="btn btn-ghost px-6 py-3 text-sm">
               Sudah member? Login
@@ -227,7 +227,7 @@ const MaddahPublikPage = ({ onOpenPayment, onOpenLogin }) => {
               onClick={onOpenPayment}
               className="btn btn-primary px-8 py-3.5 text-base font-medium mx-auto flex items-center gap-2">
               <Icon name="sparkles" className="w-4 h-4"/>
-              Gabung Member — Rp 45.000 Selamanya
+              Gabung Member Selamanya
             </button>
             <p className="text-xs text-ink-soft mt-3">
               Bayar sekali · Akses selamanya · Update terus
