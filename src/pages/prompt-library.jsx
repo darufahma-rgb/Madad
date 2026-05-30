@@ -22,7 +22,7 @@ const MAHAD_PROMPTS = [
     subcat: "umum_arab",
     title: "Pahami Soal Matematika Berbahasa Arab",
     situation: "Dapat soal matematika dalam Arab tapi tidak paham maksudnya",
-    prompt: `Saya pelajar Ma'had Al-Azhar tingkat \
+    template: `Saya pelajar Ma'had Al-Azhar tingkat \
 [I'dadi/Tsanawi] Tahun [1/2/3].
 Saya dapat soal matematika dalam bahasa Arab
 tapi tidak paham maksudnya:
@@ -40,7 +40,7 @@ Tolong bantu saya:
     subcat: "umum_arab",
     title: "Kamus Istilah Matematika Arab-Indonesia",
     situation: "Tidak tahu istilah matematika dalam bahasa Arab",
-    prompt: `Saya pelajar Ma'had Al-Azhar. Tolong buatkan
+    template: `Saya pelajar Ma'had Al-Azhar. Tolong buatkan
 tabel istilah matematika untuk bab [nama bab]
 dengan format:
 
@@ -53,7 +53,7 @@ Bab yang saya minta: [isi nama bab]`,
     subcat: "umum_arab",
     title: "Latihan Soal Matematika Level Ma'had",
     situation: "Mau latihan soal sebelum ujian",
-    prompt: `Saya pelajar Ma'had Al-Azhar
+    template: `Saya pelajar Ma'had Al-Azhar
 [I'dadi/Tsanawi Ilmi/Tsanawi Adabi] Tahun [X].
 Tolong buat 10 soal latihan matematika tentang
 [nama topik] dengan level kesulitan ujian Ma'had.
@@ -68,7 +68,7 @@ Format:
     subcat: "umum_arab",
     title: "Pahami Konsep Sains dalam Bahasa Arab",
     situation: "Ada konsep fisika/kimia/biologi yang tidak dimengerti",
-    prompt: `Saya pelajar Tsanawi Ilmi Ma'had Al-Azhar.
+    template: `Saya pelajar Tsanawi Ilmi Ma'had Al-Azhar.
 Saya tidak paham konsep berikut dari pelajaran
 [Fisika/Kimia/Biologi]:
 
@@ -86,7 +86,7 @@ Tolong jelaskan:
     subcat: "umum_arab",
     title: "Kamus Istilah Sains Arab-Indonesia",
     situation: "Mau hafal istilah sains sebelum ujian",
-    prompt: `Tolong buatkan tabel istilah
+    template: `Tolong buatkan tabel istilah
 [Fisika/Kimia/Biologi] dalam bahasa Arab
 untuk bab [nama bab].
 
@@ -102,7 +102,7 @@ dan sering muncul di soal ujian.`,
     subcat: "umum_arab",
     title: "Pahami Peta & Konsep Geografi (Arab)",
     situation: "Ada materi geografi yang sulit dipahami",
-    prompt: `Saya pelajar Tsanawi Adabi Ma'had Al-Azhar.
+    template: `Saya pelajar Tsanawi Adabi Ma'had Al-Azhar.
 Saya tidak paham materi geografi berikut:
 
 [tulis topik atau teks dari buku]
@@ -120,7 +120,7 @@ Tolong:
     subcat: "insya",
     title: "Koreksi Insya' (Karangan Arab)",
     situation: "Sudah nulis tapi tidak yakin benar",
-    prompt: `Saya pelajar Ma'had Al-Azhar. Ini karangan
+    template: `Saya pelajar Ma'had Al-Azhar. Ini karangan
 bahasa Arab yang saya tulis untuk tugas/ujian.
 
 Tolong koreksi:
@@ -138,7 +138,7 @@ Karangan saya:
     subcat: "insya",
     title: "Bantu Kerangka Insya'",
     situation: "Dapat tugas insya' tapi bingung mulai dari mana",
-    prompt: `Saya pelajar Ma'had Al-Azhar dapat tugas insya'
+    template: `Saya pelajar Ma'had Al-Azhar dapat tugas insya'
 dengan tema: [tulis tema]
 Panjang yang diminta: [X] kata/baris
 
@@ -154,7 +154,7 @@ Bantu saya:
     subcat: "insya",
     title: "Latihan Fahm Maqru' (Teks Ujian)",
     situation: "Mau latihan memahami teks bacaan ujian",
-    prompt: `Saya pelajar Ma'had Al-Azhar. Berikan saya
+    template: `Saya pelajar Ma'had Al-Azhar. Berikan saya
 1 teks bacaan bahasa Arab level ujian
 [I'dadi/Tsanawi] dengan panjang sekitar
 150-200 kata.
@@ -171,7 +171,7 @@ Saya akan coba jawab dulu, baru minta koreksi.`,
     subcat: "hafalan",
     title: "Pahami Makna Sebelum Hafal",
     situation: "Mau hafal tapi ingin mengerti maknanya dulu",
-    prompt: `Sebelum saya menghafal [Surah X / ayat X-Y],
+    template: `Sebelum saya menghafal [Surah X / ayat X-Y],
 bantu saya pahami dulu:
 
 1. Tema utama bagian ini (dalam bahasa Indonesia)
@@ -187,7 +187,7 @@ Bagian yang mau saya hafal:
     subcat: "hafalan",
     title: "Latihan Cek Hafalan (Active Recall)",
     situation: "Baru murajaah dan mau tes diri sendiri",
-    prompt: `Saya baru murajaah [Surah X].
+    template: `Saya baru murajaah [Surah X].
 Buat 7 pertanyaan untuk menguji hafalan saya —
 dari yang mudah ke yang sulit.
 
@@ -205,7 +205,7 @@ Tunggu sampai saya menjawab semua.`,
     subcat: "hafalan",
     title: "Bantu Tajwid Ayat Ini",
     situation: "Tidak yakin cara baca yang benar",
-    prompt: `Tolong bantu saya periksa tajwid dari ayat ini:
+    template: `Tolong bantu saya periksa tajwid dari ayat ini:
 [paste ayat atau tulis ayatnya]
 
 Untuk setiap bagian yang ada hukum tajwidnya:
@@ -220,7 +220,7 @@ Untuk setiap bagian yang ada hukum tajwidnya:
     subcat: "ujian",
     title: "Buat Soal Latihan Ujian Ma'had",
     situation: "Ujian tinggal beberapa hari",
-    prompt: `Saya pelajar [I'dadi/Tsanawi] Ma'had Al-Azhar
+    template: `Saya pelajar [I'dadi/Tsanawi] Ma'had Al-Azhar
 mau ujian [nama maddah] dalam [X] hari.
 
 Materi yang diujikan: [daftar topik]
@@ -239,7 +239,7 @@ Kunci jawaban di bagian terpisah.`,
     subcat: "ujian",
     title: "Ringkasan Padat Sebelum Ujian",
     situation: "Waktu mepet, butuh ringkasan cepat",
-    prompt: `Ujian [nama maddah] saya [besok/X hari lagi].
+    template: `Ujian [nama maddah] saya [besok/X hari lagi].
 Buatkan ringkasan padat untuk bab: [nama bab]
 
 Format:
@@ -255,7 +255,7 @@ Bahasa: Indonesia dengan istilah Arabnya`,
     subcat: "ujian",
     title: "Cek Kelemahan Sebelum Ujian",
     situation: "Mau tahu bagian mana yang masih lemah",
-    prompt: `Saya akan ujian [maddah] dengan materi:
+    template: `Saya akan ujian [maddah] dengan materi:
 [daftar materi/bab]
 
 Buat 10 soal diagnostik yang mencakup
@@ -284,72 +284,85 @@ const MahadChip = () => (
 
 const PromptCard = ({ item }) => {
   const [expanded, setExpanded] = useState(false);
-  const toast = useToast();
+  const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(item.prompt);
-    toast.push("Prompt tersalin. Paste ke AI pilihanmu.");
+    navigator.clipboard.writeText(item.template);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const subcat = MAHAD_PROMPT_SUBCATS.find(s => s.id === item.subcat);
 
   return (
     <div
-      className="card-glass flex flex-col relative overflow-hidden"
-      style={{ border: "1px solid rgba(16,185,129,0.12)" }}
+      className="flex flex-col relative overflow-hidden"
+      style={{
+        background: "rgba(255,255,255,0.03)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: "16px",
+        padding: "18px",
+      }}
     >
-      {/* Green accent top */}
-      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: "linear-gradient(90deg, #10B981, transparent)" }}/>
+      {/* Badge */}
+      <div className="mb-2">
+        <MahadChip />
+      </div>
 
-      <div className="p-5 flex-1 flex flex-col">
-        {/* Header row */}
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div className="flex items-center gap-2 flex-wrap">
-            {subcat && (
-              <span className="text-[10px] text-ink-muted px-2 py-0.5 rounded-md" style={{ background: "rgba(255,255,255,0.06)" }}>
-                {subcat.emoji} {subcat.label}
-              </span>
-            )}
-          </div>
-          <MahadChip />
-        </div>
+      {/* Sub-category label */}
+      {subcat && subcat.id !== "all" && (
+        <p className="text-[11px] mb-1.5 uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>
+          {subcat.emoji} {subcat.label}
+        </p>
+      )}
 
-        {/* Title + Situation */}
-        <h3 className="font-display text-base font-semibold text-ink mb-1 leading-snug">{item.title}</h3>
-        <p className="text-xs text-ink-muted leading-relaxed mb-4 flex-1">{item.situation}</p>
+      {/* Title */}
+      <h3 className="font-display text-[15px] font-bold text-ink mb-2 leading-snug">{item.title}</h3>
 
-        {/* Prompt preview / expanded */}
-        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
-          <div
-            className="flex items-center justify-between px-3.5 py-2.5"
-            style={{ background: "rgba(16,185,129,0.08)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}
-          >
-            <span className="text-[10px] uppercase tracking-wider font-medium" style={{ color: "#10B981" }}>
-              Template Prompt
-            </span>
-            <button
-              onClick={() => setExpanded(v => !v)}
-              className="text-[10px] text-ink-muted hover:text-ink transition-colors px-2 py-0.5 rounded-md hover:bg-white/5"
-            >
-              {expanded ? "Sembunyikan" : "Lihat prompt"}
-            </button>
-          </div>
+      {/* Situation */}
+      <p className="text-[12px] mb-3" style={{ color: "rgba(255,255,255,0.45)" }}>📌 {item.situation}</p>
 
-          {expanded && (
-            <pre className="text-[12px] text-ink-muted font-mono leading-relaxed whitespace-pre-wrap p-4 max-h-64 overflow-y-auto nice-scroll" style={{ background: "rgba(0,0,0,0.25)" }}>
-              {item.prompt}
-            </pre>
-          )}
-        </div>
+      {/* Template preview / expanded */}
+      <div
+        className="mb-3 overflow-hidden"
+        style={{
+          background: "rgba(0,0,0,0.3)",
+          borderRadius: "10px",
+          padding: "12px",
+          maxHeight: expanded ? "600px" : "60px",
+          transition: "max-height 0.3s ease",
+          WebkitMaskImage: expanded ? "none" : "linear-gradient(black 30%, transparent)",
+          maskImage: expanded ? "none" : "linear-gradient(black 30%, transparent)",
+        }}
+      >
+        <pre className="font-mono text-[12px] leading-relaxed whitespace-pre-wrap m-0" style={{ color: "rgba(255,255,255,0.7)" }}>
+          {item.template}
+        </pre>
+      </div>
 
-        {/* Copy button */}
+      {/* Actions row */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => setExpanded(v => !v)}
+          className="flex-1 py-2.5 rounded-lg text-[12px] transition-colors"
+          style={{
+            border: "1px solid rgba(255,255,255,0.1)",
+            background: "transparent",
+            color: "rgba(255,255,255,0.5)",
+          }}
+        >
+          {expanded ? "Sembunyikan ▲" : "Lihat Prompt ▼"}
+        </button>
         <button
           onClick={handleCopy}
-          className="mt-3 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all hover:opacity-90 active:scale-[0.98]"
-          style={{ background: "rgba(16,185,129,0.15)", color: "#10B981", border: "1px solid rgba(16,185,129,0.25)" }}
+          className="flex-1 py-2.5 rounded-lg text-[12px] font-semibold transition-all"
+          style={{
+            background: copied ? "rgba(16,185,129,0.35)" : "rgba(16,185,129,0.2)",
+            color: "#10B981",
+            border: "none",
+          }}
         >
-          <Icon name="copy" className="w-3.5 h-3.5"/>
-          Salin Prompt
+          {copied ? "✓ Tersalin!" : "📋 Salin"}
         </button>
       </div>
     </div>

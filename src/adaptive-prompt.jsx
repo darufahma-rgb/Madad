@@ -127,51 +127,74 @@ const MAHAD_STRUGGLE_LABEL = {
 };
 
 const generateMahadStarterPack = (profile, session) => {
-  const nama    = session?.name || "";
-  const jenjang = profile?.level === 'idadi' ? "I'dadi" : "Tsanawi";
-  const tahun   = profile?.mahad_year || "?";
-  const jurusan = profile?.mahad_jurusan === 'adabi'
+  const nama      = session?.name || "";
+  const jenjang   = profile?.level === 'idadi' ? "I'dadi" : "Tsanawi";
+  const tahun     = profile?.mahad_year || "[isi tahunmu]";
+  const jurusan   = profile?.mahad_jurusan === 'adabi'
     ? "Adabi (أدبي) — Sastra & Sosial"
     : profile?.mahad_jurusan === 'ilmi'
     ? "Ilmi (علمي) — Sains & Matematika"
     : null;
   const usiaRange = profile?.level === 'idadi' ? "12–15" : "15–18";
+
   const maddahUmum = profile?.mahad_jurusan === 'ilmi'
-    ? "Matematika, Fisika, Kimia, Biologi, Geografi"
+    ? "Matematika, Fisika, Kimia, Biologi, Bahasa Inggris"
     : profile?.mahad_jurusan === 'adabi'
-    ? "Sejarah, Geografi, Ekonomi, Sosiologi"
-    : "Matematika, IPA, IPS";
-  const maddahAgama = "Al-Qur'an, Tauhid, Fiqh, Nahwu, Sharaf, Hadits, Sirah";
+    ? "Matematika, Sejarah, Geografi, Filsafat & Mantiq, Statistik, Bahasa Inggris"
+    : "Matematika, Sains (IPA), Bahasa Inggris, Studi Sosial";
+
   const struggles = (profile?.mahad_struggle || [])
     .map(s => MAHAD_STRUGGLE_LABEL[s]).filter(Boolean);
-  const tantangan = struggles.length > 0 ? struggles.join(", ") : "menyesuaikan dengan kurikulum";
+  const tantanganLines = struggles.length > 0
+    ? struggles.map(l => `• ${l}`).join('\n')
+    : "• Masih menyesuaikan diri dengan sistem belajar Ma'had";
+
+  const namaLine = nama ? `\nNama    : ${nama}` : "";
+  const jurusanLine = jurusan ? `\nJurusan : ${jurusan}` : "";
 
   return `Halo! Sebelum kita mulai belajar bareng, aku mau kenalin diri dulu ya.
 
-SIAPA AKU:
+══════════════════════════════════
+👤 SIAPA AKU
+══════════════════════════════════
 Aku pelajar Indonesia yang sekolah di Ma'had Al-Azhar Mesir.
-Tingkat  : ${jenjang} Tahun ${tahun}${jurusan ? `\nJurusan  : ${jurusan}` : ""}
-Usia     : sekitar ${usiaRange} tahun${nama ? `\nNama     : ${nama}` : ""}
+Tingkat : ${jenjang} Tahun ${tahun}${jurusanLine}
+Usia    : sekitar ${usiaRange} tahun${namaLine}
 
-MATA PELAJARAN YANG AKU PELAJARI:
-Agama   : ${maddahAgama}
-Umum    : ${maddahUmum}
+══════════════════════════════════
+📚 MATA PELAJARAN YANG AKU PELAJARI
+══════════════════════════════════
+Agama  : Al-Qur'an, Tauhid, Fiqh, Nahwu, Sharaf, Hadits, Sirah
+Umum   : ${maddahUmum}
 
-TANTANGAN TERBESARKU:
-${tantangan}
+══════════════════════════════════
+😅 TANTANGAN TERBESARKU SEKARANG
+══════════════════════════════════
+${tantanganLines}
 
-CARA TERBAIK MEMBANTUKU:
+══════════════════════════════════
+🤝 CARA TERBAIK MEMBANTUKU
+══════════════════════════════════
 → Jelaskan dengan bahasa Indonesia dulu, baru kasih istilah Arabnya
-→ Gunakan contoh yang mudah dan konkret
+→ Gunakan contoh yang mudah dan konkret dari kehidupan sehari-hari
 → Kalau aku tidak paham, jelaskan ulang dengan cara yang berbeda — sabar ya!
-→ Untuk maddah umum (matematika, sains): bantu aku pahami konsepnya DULU,
-  baru hubungkan dengan istilah Arabnya
-→ Untuk maddah agama: tetap ingatkan aku untuk verifikasi ke guru
+→ Untuk maddah umum (matematika, sains, dll): bantu aku pahami
+  konsepnya DULU, baru hubungkan dengan istilah Arabnya
+→ Untuk maddah agama: tetap ingatkan aku untuk verifikasi ke guru/ustadz
 
-HARI INI AKU MAU BELAJAR:
-[tulis mata pelajaran atau pertanyaanmu]
+══════════════════════════════════
+⚠️ CATATAN PENTING
+══════════════════════════════════
+• Aku masih belajar bahasa Arab — jangan terlalu teknis
+• Kalau kamu tidak yakin, bilang saja jangan mengarang
+• Untuk soal agama yang penting, aku akan tetap tanya ke guru
 
-Siap jadi teman belajarku?`;
+══════════════════════════════════
+🚀 HARI INI AKU MAU BELAJAR
+══════════════════════════════════
+[tulis mata pelajaran atau pertanyaanmu di sini]
+
+Siap jadi teman belajarku? 😊`;
 };
 
 /* ============ STARTER PACK GENERATOR ============ */
