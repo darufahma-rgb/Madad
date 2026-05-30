@@ -22,27 +22,82 @@ const MIME = {
   '.ttf': 'font/ttf',
 };
 
-http.createServer((req, res) => {
+const readBody = (req) => new Promise((resolve) => {
+  let d = '';
+  req.on('data', c => d += c);
+  req.on('end', () => resolve(d));
+});
+
+const json = (res, status, body) => {
+  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(body));
+};
+
+http.createServer(async (req, res) => {
   let urlPath = req.url.split('?')[0];
 
-  // Serve Supabase config securely from environment variables
-  if (urlPath === '/api/config') {
-    const config = {
-      supabaseUrl: process.env.SUPABASE_URL || '',
-      supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
-    };
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(config));
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
+  if (req.method === 'OPTIONS') {
+    res.writeHead(204);
+    res.end();
     return;
   }
 
+  // ── /api/config ──────────────────────────────────────────────────────
+  if (urlPath === '/api/config' && req.method === 'GET') {
+    json(res, 200, {
+      supabaseUrl:     process.env.SUPABASE_URL      || '',
+      supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
+    });
+    return;
+  }
+
+  // ── /api/health ───────────────────────────────────────────────────────
+  if (urlPath === '/api/health' && req.method === 'GET') {
+    json(res, 200, { ok: true });
+    return;
+  }
+
+  // ── /api/webhook/trakteer ─────────────────────────────────────────────
+  if (urlPath === '/api/webhook/trakteer' && req.method === 'POST') {
+    try {
+      const handler = require('./api/webhook/trakteer.js');
+      const rawBody = await readBody(req);
+      // Wrap req so handler can call req.on('data') — provide pre-buffered body
+      const wrappedReq = Object.assign(Object.create(req), {
+        method: req.method,
+        headers: req.headers,
+        _rawBody: rawBody,
+        on(event, cb) {
+          if (event === 'data') { cb(rawBody); return this; }
+          if (event === 'end')  { cb();        return this; }
+          return req.on(event, cb);
+        },
+      });
+      const wrappedRes = {
+        _status: 200,
+        _headers: {},
+        status(code) { this._status = code; return this; },
+        setHeader(k, v) { this._headers[k] = v; return this; },
+        json(body) { json(res, this._status, body); },
+        end(body) { res.writeHead(this._status, this._headers); res.end(body || ''); },
+      };
+      await handler(wrappedReq, wrappedRes);
+    } catch (err) {
+      console.error('[Webhook] Error:', err.message);
+      json(res, 500, { ok: false, error: err.message });
+    }
+    return;
+  }
+
+  // ── Static files ──────────────────────────────────────────────────────
   if (urlPath === '/') urlPath = '/index.html';
 
   const filePath = path.join(ROOT, urlPath);
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
-      // SPA fallback — serve index.html for navigable paths (no file extension)
       const ext = path.extname(urlPath);
       if (!ext) {
         fs.readFile(path.join(ROOT, 'index.html'), (err2, html) => {
