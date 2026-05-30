@@ -28,8 +28,37 @@ const readBody = (req) => new Promise((resolve) => {
   req.on('end', () => resolve(d));
 });
 
+const SECURITY_HEADERS = {
+  'X-Frame-Options': 'SAMEORIGIN',
+  'X-Content-Type-Options': 'nosniff',
+  'X-XSS-Protection': '1; mode=block',
+  'Referrer-Policy': 'strict-origin-when-cross-origin',
+  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  'Content-Security-Policy': [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://fonts.googleapis.com https://fonts.gstatic.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: https:",
+    "connect-src 'self' https://*.supabase.co https://api.fonnte.com",
+    "frame-ancestors 'self'",
+  ].join('; '),
+};
+
+const CACHE_HEADERS = {
+  'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+};
+
+const addSecurityHeaders = (res) => {
+  Object.entries(SECURITY_HEADERS).forEach(([k, v]) => res.setHeader(k, v));
+};
+
 const json = (res, status, body) => {
-  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.writeHead(status, {
+    'Content-Type': 'application/json',
+    'X-Content-Type-Options': 'nosniff',
+    'Access-Control-Allow-Origin': '*',
+  });
   res.end(JSON.stringify(body));
 };
 
@@ -102,6 +131,7 @@ http.createServer(async (req, res) => {
       if (!ext) {
         fs.readFile(path.join(ROOT, 'index.html'), (err2, html) => {
           if (err2) { res.writeHead(500); res.end('Server error'); return; }
+          addSecurityHeaders(res);
           res.writeHead(200, { 'Content-Type': 'text/html' });
           res.end(html);
         });
@@ -113,7 +143,8 @@ http.createServer(async (req, res) => {
     }
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME[ext] || 'application/octet-stream';
-    res.writeHead(200, { 'Content-Type': contentType });
+    addSecurityHeaders(res);
+    res.writeHead(200, { 'Content-Type': contentType, ...CACHE_HEADERS });
     res.end(data);
   });
 }).listen(PORT, '0.0.0.0', () => {

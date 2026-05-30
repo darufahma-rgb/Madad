@@ -20,7 +20,7 @@ class ErrorBoundary extends React.Component {
           alignItems:"center", justifyContent:"center",
           background:"#0A0514", padding:"24px", textAlign:"center",
         }}>
-          <div style={{fontFamily:"Aref Ruqaa,serif",fontSize:"2rem",color:"#C9A86A",marginBottom:"12px"}}>
+          <div style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:"2rem",color:"#C9A86A",marginBottom:"12px"}}>
             تَلْقِيح
           </div>
           <h2 style={{fontFamily:"DM Sans,sans-serif",color:"#F5F0FF",fontSize:"1.25rem",marginBottom:"8px"}}>
@@ -59,7 +59,11 @@ const App = () => {
   // Auto-redirect logic on path change
   useEffect(() => {
     // Member-only routes
-    const memberOnly = ["/dashboard", "/tools", "/paths", "/onboarding", "/kurasah", "/maddah", "/s2-maddah", "/prompt-library", "/mahad-maddah"];
+    const memberOnly = [
+    "/dashboard", "/tools", "/paths", "/onboarding",
+    "/kurasah", "/maddah", "/siap-imtihan",
+    "/s2-maddah", "/mahad-maddah", "/prompt-library",
+  ];
     const isMemberRoute = memberOnly.some(r => path === r || path.startsWith(r + "?") || path.startsWith(r + "/"));
     if (isMemberRoute && !session) {
       navigate("/");
@@ -114,7 +118,7 @@ const App = () => {
   else if (path === "/kurasah" && !path.includes("?id=")) { page = <KurasahPage/>; routeLabel = "Kurasah"; }
   else if (path.startsWith("/kurasah?id="))               { page = <KurasahEditorPage/>; routeLabel = "Kurasah Editor"; }
   else if (path === "/kurasah/new")                        { page = <KurasahEditorPage/>; routeLabel = "Catatan Baru"; }
-  else if (path.startsWith("/mapel"))                       { navigate("/maddah"); page = <MaddahHubPage/>; routeLabel = "Maddah"; }
+  else if (path.startsWith("/mapel"))                       { navigate("/maddah"); page = null; routeLabel = "Maddah"; }
   else if (path === "/maddah" || path === "/maddah/")      { page = <MaddahHubPage/>; routeLabel = "Maddah"; }
   else if (path.startsWith("/maddah/"))                    { page = <MaddahDetailPage/>; routeLabel = "Maddah"; }
   else if (path === "/siap-imtihan" || path.startsWith("/siap-imtihan")) { page = <SiapImtihanPage/>; routeLabel = "Siap Imtihan"; }

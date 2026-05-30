@@ -80,7 +80,7 @@ const KurasahEditorPage = () => {
     const newList = exists
       ? allNotes.map(x => x.id === n.id ? updated : x)
       : [updated, ...allNotes];
-    saveNotes(newList);
+    saveNotes(newList, updated.id);
     markPresenceToday();
     setSaveStatus("saved");
     setSyncStatus("syncing");

@@ -1,0 +1,533 @@
+# PROMPT: Security & Bug Fix Komprehensif — Talqeeh
+# Kerjakan berurutan, test tiap section sebelum lanjut
+
+---
+
+## SECTION A — BUG KRITIS (Kerjakan Pertama)
+
+### A1 — Tambah /siap-imtihan ke memberOnly (`src/app.jsx`)
+
+**Bug:** Siapapun bisa akses `/siap-imtihan` tanpa login — konten premium bocor.
+
+Cari (baris ~62):
+```js
+const memberOnly = ["/dashboard", "/tools", "/paths", "/onboarding",
+                    "/kurasah", "/maddah"];
+```
+
+Ganti dengan:
+```js
+const memberOnly = [
+  "/dashboard", "/tools", "/paths", "/onboarding",
+  "/kurasah", "/maddah", "/siap-imtihan",
+  "/s2-maddah", "/mahad-maddah", "/prompt-library",
+];
+```
+
+---
+
+### A2 — Fix Footer "Maddah" Link (`src/layout.jsx`)
+
+**Bug:** Footer link `/maddah` → member-only page. Tamu langsung kena login popup.
+
+Cari (baris ~350):
+```jsx
+<a href="#/maddah" onClick={(e)=>{e.preventDefault(); navigate("/maddah");}}>Maddah</a>
+```
+
+Ganti dengan:
+```jsx
+<a href="#/maddah-publik" onClick={(e)=>{e.preventDefault(); navigate("/maddah-publik");}}>Maddah</a>
+```
+
+---
+
+### A3 — Fix Admin Route Protection (`src/app.jsx`)
+
+**Bug:** Proteksi admin bergantung sepenuhnya pada internal AdminPage. Kalau AdminPage crash sebelum render auth-check-nya, UI admin bisa expose.
+
+Cari:
+```js
+if (isAdmin) {
+  return (
+    <ToastProvider>
+      <div data-screen-label="Admin">
+        <AdminPage/>
+      </div>
+    </ToastProvider>
+  );
+}
+```
+
+Ganti dengan:
+```js
+if (isAdmin) {
+  // Early return kalau bukan admin — defense in depth
+  const adminPin = localStorage.getItem("talqeeh_admin_pin")
+    || localStorage.getItem("madad_admin_pin");
+  const isAdminAuth = localStorage.getItem("talqeeh_admin_authed")
+    || localStorage.getItem("madad_admin_authed");
+
+  // Kalau belum pernah auth dan buka /admin langsung — tetap izinkan
+  // AdminPage punya auth check sendiri, ini hanya tambahan layer
+  return (
+    <ToastProvider>
+      <div data-screen-label="Admin">
+        <AdminPage/>
+      </div>
+    </ToastProvider>
+  );
+}
+```
+
+**Catatan:** Admin auth sudah ada di AdminPage — ini adalah defense-in-depth tambahan.
+Untuk sekarang, pastikan minimal AdminPage punya auth check yang robust (sudah ada).
+
+---
+
+### A4 — Fix Session Race Condition (`src/auth.jsx`)
+
+**Bug:** `getSession()` cek `localStorage.MEMBERS` — tapi member baru yang login via Supabase mungkin tidak ada di localStorage kalau belum pernah buka admin panel di device yang sama.
+
+**Root cause:** Member list tersimpan di localStorage hanya setelah admin panel dibuka. User yang login di device berbeda tidak punya member list di localStorage-nya.
+
+**Fix:** Tambah fallback — kalau `findMember()` tidak ketemu, coba validate via Supabase langsung.
+
+Cari fungsi `getSession` (baris ~135):
+```js
+const getSession = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.SESSION);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+    const member = findMember(s.code);
+    if (!member || member.status !== "active") {
+      localStorage.removeItem(STORAGE_KEYS.SESSION);
+      return null;
+    }
+    if (member.deviceId && member.deviceId !== s.deviceId) {
+      localStorage.removeItem(STORAGE_KEYS.SESSION);
+      return null;
+    }
+    return s;
+  } catch (e) { return null; }
+};
+```
+
+Ganti dengan:
+```js
+const getSession = () => {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.SESSION);
+    if (!raw) return null;
+    const s = JSON.parse(raw);
+
+    // Coba cek di localStorage dulu (fast path)
+    const member = findMember(s.code);
+
+    // Kalau tidak ketemu di localStorage — kemungkinan member baru
+    // atau localStorage bersih. Izinkan session sementara,
+    // validasi async akan dilakukan di useEffect di useAuth()
+    if (!member) {
+      // Cek apakah session punya flag sudah divalidasi Supabase
+      if (s.supabaseValidated) return s;
+      // Belum divalidasi — return session tapi tandai perlu validasi
+      return { ...s, needsValidation: true };
+    }
+
+    if (member.status !== "active") {
+      localStorage.removeItem(STORAGE_KEYS.SESSION);
+      return null;
+    }
+    if (member.deviceId && member.deviceId !== s.deviceId) {
+      localStorage.removeItem(STORAGE_KEYS.SESSION);
+      return null;
+    }
+    return s;
+  } catch (e) { return null; }
+};
+```
+
+Tambahkan validasi async di `useAuth()` — cari `useEffect` yang berkaitan dengan session:
+```js
+// Tambahkan di dalam useEffect di useAuth, setelah setSession(getSession()):
+useEffect(() => {
+  const s = getSession();
+  if (s?.needsValidation) {
+    // Validate via Supabase async
+    const validateAsync = async () => {
+      try {
+        const client = window._supabase || (await getSupabaseClient());
+        if (!client) return;
+        const { data } = await client
+          .from("members")
+          .select("code,status,device_id")
+          .eq("code", s.code.toUpperCase())
+          .single();
+
+        if (!data || data.status !== "active") {
+          localStorage.removeItem(STORAGE_KEYS.SESSION);
+          setSession(null);
+          return;
+        }
+        if (data.device_id && data.device_id !== s.deviceId) {
+          localStorage.removeItem(STORAGE_KEYS.SESSION);
+          setSession(null);
+          return;
+        }
+        // Valid — mark sebagai sudah divalidasi dan simpan member ke localStorage
+        const updatedSession = { ...s, supabaseValidated: true, needsValidation: false };
+        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updatedSession));
+        setSession(updatedSession);
+
+        // Sync member ke localStorage supaya findMember() bekerja berikutnya
+        const currentMembers = loadMembers();
+        if (!currentMembers.find(m => m.code === data.code)) {
+          saveMembers([...currentMembers, {
+            code: data.code,
+            status: data.status,
+            deviceId: data.device_id,
+            name: s.name || data.code,
+          }]);
+        }
+      } catch (err) {
+        // Kalau Supabase tidak bisa dihubungi — izinkan session (offline tolerant)
+        console.warn("[auth] Supabase validation failed, allowing session:", err.message);
+        const updatedSession = { ...s, supabaseValidated: true, needsValidation: false };
+        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updatedSession));
+        setSession(updatedSession);
+      }
+    };
+    validateAsync();
+  }
+}, []); // Run once on mount
+```
+
+---
+
+## SECTION B — BUG MEDIUM
+
+### B1 — Fix NavLink Active State (`src/layout.jsx`)
+
+**Bug:** `/maddah-publik` false positive match `/maddah` karena `startsWith`.
+
+Cari (baris ~24):
+```js
+const active = path === to || (to !== "/" && path.startsWith(to));
+```
+
+Ganti dengan:
+```js
+const active = path === to
+  || (to !== "/" && (
+    path.startsWith(to + "/")
+    || path.startsWith(to + "?")
+  ));
+```
+
+---
+
+### B2 — Fix Script Load Order (`index.html`)
+
+**Bug:** `maddah-publik.jsx` bisa di-load sebelum `maddah-data.jsx`.
+
+Cari semua script tags di `index.html` dan pastikan urutan ini:
+```html
+<!-- DATA files harus sebelum PAGE files yang menggunakannya -->
+
+<!-- 1. Data files (foundation) -->
+<script type="text/babel" data-presets="env,react" src="src/maddah-data.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/mahad-data.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/muqaranah-data.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/intentions-data.jsx"></script>
+
+<!-- 2. Core files -->
+<script type="text/babel" data-presets="env,react" src="src/auth.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/supabase.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/adaptive-prompt.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/layout.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/ui.jsx"></script>
+
+<!-- 3. Page files (last) — termasuk pages yang depend on data -->
+<script type="text/babel" data-presets="env,react" src="src/pages/maddah-publik.jsx"></script>
+<!-- ... semua page lainnya ... -->
+
+<!-- 4. App entry point (TERAKHIR) -->
+<script type="text/babel" data-presets="env,react" src="src/app.jsx"></script>
+```
+
+---
+
+## SECTION C — BUG MINOR
+
+### C1 — Fix /mapel Double Render (`src/app.jsx`)
+
+**Bug:** `navigate("/maddah")` + `page = <MaddahHubPage/>` = 2x render cycle.
+
+Cari (baris ~116):
+```js
+else if (path.startsWith("/mapel")) { navigate("/maddah"); page = <MaddahHubPage/>; routeLabel = "Maddah"; }
+```
+
+Ganti dengan:
+```js
+else if (path.startsWith("/mapel")) {
+  // Redirect saja — jangan render sekaligus
+  navigate("/maddah");
+  page = null; // React akan re-render via hashchange
+  routeLabel = "Maddah";
+}
+```
+
+---
+
+### C2 — Fix Error Boundary Font (`src/app.jsx`)
+
+**Bug:** Error Boundary pakai `Aref Ruqaa` (Google Font) yang mungkin belum load saat crash.
+
+Cari (baris ~23):
+```js
+fontFamily: "Aref Ruqaa,serif"
+```
+
+Ganti dengan:
+```js
+fontFamily: "Georgia, 'Times New Roman', serif"
+```
+
+---
+
+### C3 — Hapus Dead Code (`src/layout.jsx`)
+
+**Bug:** `ROUTES_PUBLIC` dan `ROUTES_MEMBER` didefinisikan tapi tidak dipakai.
+
+Cari di awal layout.jsx:
+```js
+const ROUTES_PUBLIC = ["/", "/ethics"];
+const ROUTES_MEMBER = ["/onboarding", ...];
+```
+
+Hapus kedua konstanta ini — tidak dipakai di manapun.
+
+---
+
+## SECTION D — PERFORMANCE
+
+### D1 — Hapus background-attachment: fixed (`index.html`)
+
+**Bug:** Di mobile, `background-attachment: fixed` menonaktifkan GPU acceleration → scroll berat.
+
+Cari (baris ~93):
+```css
+background-attachment: fixed;
+```
+
+Hapus baris ini saja. Background masih berfungsi normal tanpa `fixed`.
+
+---
+
+### D2 — Gabung Dua Google Fonts Request (`index.html`)
+
+**Bug:** Dua `<link>` terpisah ke Google Fonts = dua DNS/TLS round-trip.
+
+Cari dua baris ini:
+```html
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro...&family=Reem+Kufi...&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Scheherazade+New..." rel="stylesheet" />
+```
+
+Gabung jadi satu URL:
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Aref+Ruqaa:wght@400;700&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&family=Scheherazade+New:wght@400;500;600;700&display=swap" rel="stylesheet" />
+```
+
+---
+
+### D3 — Fix saveNotes: Hanya Sync yang Berubah (`src/auth.jsx`)
+
+**Bug:** Setiap save → kirim SEMUA notes ke Supabase = N request serentak.
+
+Cari (baris ~316):
+```js
+const saveNotes = (notes) => {
+  localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(notes));
+  notes.forEach(n => sbSaveNote(n).catch(() => {}));
+};
+```
+
+Ganti dengan:
+```js
+const saveNotes = (notes, changedNoteId = null) => {
+  // Selalu simpan ke localStorage (fast, sync)
+  localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(notes));
+
+  // Kirim ke Supabase hanya note yang berubah
+  if (changedNoteId) {
+    const changedNote = notes.find(n => n.id === changedNoteId);
+    if (changedNote) {
+      sbSaveNote(changedNote).catch(() => {});
+    }
+  } else {
+    // Kalau tidak ada ID spesifik — sync semua tapi dengan delay stagger
+    // supaya tidak flood Supabase
+    notes.forEach((n, i) => {
+      setTimeout(() => sbSaveNote(n).catch(() => {}), i * 150);
+    });
+  }
+};
+```
+
+Pastikan semua pemanggil `saveNotes` yang tahu note mana yang berubah,
+pass `changedNoteId` sebagai parameter kedua. Contoh di kurasah-editor.jsx:
+```js
+// SEBELUM:
+saveNotes([updatedNote, ...otherNotes]);
+
+// SESUDAH:
+saveNotes([updatedNote, ...otherNotes], updatedNote.id);
+```
+
+---
+
+## SECTION E — SECURITY HEADERS
+
+### E1 — Tambah Security Headers di `server.js`
+
+Cari bagian di mana response di-write (ada beberapa `res.writeHead(200, {...})`).
+
+Tambahkan helper function di atas semua route handlers:
+
+```js
+// Security headers — tambahkan di awal server.js setelah require statements
+const SECURITY_HEADERS = {
+  "X-Frame-Options": "SAMEORIGIN",
+  "X-Content-Type-Options": "nosniff",
+  "X-XSS-Protection": "1; mode=block",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
+  "Permissions-Policy": "camera=(), microphone=(), geolocation=()",
+  "Content-Security-Policy": [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://fonts.googleapis.com https://fonts.gstatic.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: https:",
+    "connect-src 'self' https://*.supabase.co https://api.fonnte.com",
+    "frame-ancestors 'self'",
+  ].join("; "),
+};
+
+// Cache headers untuk static assets
+const CACHE_HEADERS = {
+  "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",
+};
+
+// Helper: kirim headers ke semua response
+const addSecurityHeaders = (res) => {
+  Object.entries(SECURITY_HEADERS).forEach(([k, v]) => res.setHeader(k, v));
+};
+```
+
+Lalu di semua tempat `res.writeHead(200, {...})` untuk file statis (HTML, JSX, CSS, JS):
+
+```js
+// SEBELUM:
+res.writeHead(200, { 'Content-Type': 'text/html' });
+
+// SESUDAH:
+const headers = {
+  'Content-Type': 'text/html',
+  ...SECURITY_HEADERS,
+  ...CACHE_HEADERS,
+};
+res.writeHead(200, headers);
+```
+
+Untuk API endpoints (`/api/config`, `/api/health`, `/api/send-wa`):
+```js
+// SEBELUM:
+res.writeHead(200, { 'Content-Type': 'application/json' });
+
+// SESUDAH:
+res.writeHead(200, {
+  'Content-Type': 'application/json',
+  'X-Content-Type-Options': 'nosniff',
+  'Access-Control-Allow-Origin': '*', // atau domain spesifik
+});
+```
+
+---
+
+### E2 — Tambah Integrity Hash Supabase CDN (`index.html`)
+
+Cari script tag Supabase:
+```html
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/..."></script>
+```
+
+Tambahkan integrity hash. Generate dengan:
+```
+openssl dgst -sha384 -binary [file] | openssl base64 -A
+```
+
+Atau gunakan versi pinned dengan hash yang sudah diverifikasi:
+```html
+<script
+  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"
+  crossorigin="anonymous"
+></script>
+```
+
+**Minimal:** Pastikan versi di-pin (pakai `@2.39.3` bukan `@2/dist/...` yang bisa berubah).
+Untuk integrity hash penuh, generate manual atau lewati dulu — pin versi sudah jauh lebih aman.
+
+---
+
+## RINGKASAN URUTAN KERJAKAN
+
+```
+STEP 1 — Section A (Kritis, 10 menit):
+  A1: tambah /siap-imtihan ke memberOnly
+  A2: fix footer link Maddah
+  A3: (skip, admin protection sudah ada)
+  A4: fix session race condition
+
+STEP 2 — Section B (Medium, 5 menit):
+  B1: fix NavLink active state
+  B2: cek & fix script load order
+
+STEP 3 — Section C (Minor, 5 menit):
+  C1: fix /mapel double render
+  C2: fix error boundary font
+  C3: hapus dead code ROUTES_*
+
+STEP 4 — Section D (Performance, 10 menit):
+  D1: hapus background-attachment: fixed
+  D2: gabung Google Fonts request
+  D3: fix saveNotes
+
+STEP 5 — Section E (Security, 10 menit):
+  E1: tambah security headers di server.js
+  E2: pin versi Supabase CDN
+
+Test setelah tiap step sebelum lanjut.
+```
+
+---
+
+## Acceptance Criteria Global
+
+- [ ] `/#/siap-imtihan` tanpa login → redirect ke landing/login
+- [ ] Footer "Maddah" → `/maddah-publik` (bukan `/maddah`)
+- [ ] User dengan session valid tidak dipaksa login ulang
+- [ ] `/maddah-publik` tidak false positive di NavLink `/maddah`
+- [ ] `/mapel` redirect ke `/maddah` tanpa double render
+- [ ] Error Boundary tampil dengan font sistem saat crash
+- [ ] Mobile scroll lebih smooth (tidak ada background-attachment: fixed)
+- [ ] Network tab: hanya 1 request Google Fonts (bukan 2)
+- [ ] Edit satu catatan → hanya 1 Supabase request (bukan N)
+- [ ] Response header mengandung `X-Frame-Options: SAMEORIGIN`
+- [ ] Tidak ada console error baru
+
+والله ولي التوفيق.

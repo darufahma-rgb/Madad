@@ -19,8 +19,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Aref+Ruqaa:wght@400;700&family=Reem+Kufi:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet" />
-<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Scheherazade+New:wght@700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Aref+Ruqaa:wght@400;700&family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&family=Noto+Kufi+Arabic:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&family=Scheherazade+New:wght@400;500;600;700&display=swap" rel="stylesheet" />
 <style>
   @font-face {
     font-family: 'DM Sans';
@@ -91,7 +90,6 @@
       radial-gradient(700px 500px at -5% 40%, rgba(62,207,142,0.04), transparent 60%),
       radial-gradient(800px 600px at 50% 100%, rgba(201,168,106,0.04), transparent 60%),
       #0c0c0c;
-    background-attachment: fixed;
   }
   h1, .hero-headline { letter-spacing: -0.04em; }
   h2 { letter-spacing: -0.025em; }
@@ -465,7 +463,7 @@
 <style>@keyframes talqih-spin { to { transform: rotate(360deg); } }</style>
 
 <!-- Supabase SDK (load sebelum semua script app) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
 
 <!-- React -->
 <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js" crossorigin="anonymous"></script>
@@ -479,9 +477,12 @@
 <script type="text/babel" data-presets="env,react" src="src/supabase.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/auth.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/layout.jsx"></script>
-<!-- Data layers -->
+<!-- Data layers — harus sebelum pages yang menggunakannya -->
+<script type="text/babel" data-presets="env,react" src="src/maddah-data.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/mahad-data.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/muqaranah-data.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/intentions-data.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/adaptive-prompt.jsx"></script>
 <!-- Shared components -->
 <script type="text/babel" data-presets="env,react" src="src/markdown-render.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/quick-note.jsx"></script>
@@ -489,6 +490,9 @@
 <!-- Pages -->
 <script type="text/babel" data-presets="env,react" src="src/pages/landing.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/maddah-publik.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/pages/maddah-hub.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/pages/maddah-detail.jsx"></script>
+<script type="text/babel" data-presets="env,react" src="src/pages/mahad-maddah.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/sample-nahwu.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/onboarding.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/welcome.jsx"></script>
@@ -502,19 +506,10 @@
 <script type="text/babel" data-presets="env,react" src="src/pages/muqaranah-form.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/kurasah.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/kurasah-editor.jsx"></script>
-<!-- Maddah System -->
-<script type="text/babel" data-presets="env,react" src="src/maddah-data.jsx"></script>
-<script type="text/babel" data-presets="env,react" src="src/adaptive-prompt.jsx"></script>
-<script type="text/babel" data-presets="env,react" src="src/pages/maddah-hub.jsx"></script>
-<script type="text/babel" data-presets="env,react" src="src/pages/maddah-detail.jsx"></script>
-
 <script type="text/babel" data-presets="env,react" src="src/pages/prompt-library.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/siap-imtihan.jsx"></script>
 <script type="text/babel" data-presets="env,react" src="src/pages/s2-maddah.jsx"></script>
-
-<!-- App shell (last) -->
-<script type="text/babel" data-presets="env,react" src="src/mahad-data.jsx"></script>
-<script type="text/babel" data-presets="env,react" src="src/pages/mahad-maddah.jsx"></script>
+<!-- App shell (TERAKHIR) -->
 <script type="text/babel" data-presets="env,react" src="src/app.jsx"></script>
 </body>
 </html>

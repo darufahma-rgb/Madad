@@ -137,9 +137,18 @@ const getSession = () => {
     const raw = localStorage.getItem(STORAGE_KEYS.SESSION);
     if (!raw) return null;
     const s = JSON.parse(raw);
-    // Validate session still matches member record (device not reset by admin)
+
+    // Fast path: cek di localStorage dulu
     const member = findMember(s.code);
-    if (!member || member.status !== "active") {
+
+    // Member tidak ada di localStorage — kemungkinan device baru / localStorage bersih
+    // Izinkan session, validasi async di useAuth() akan konfirmasi ke Supabase
+    if (!member) {
+      if (s.supabaseValidated) return s;
+      return { ...s, needsValidation: true };
+    }
+
+    if (member.status !== "active") {
       localStorage.removeItem(STORAGE_KEYS.SESSION);
       return null;
     }
@@ -271,9 +280,28 @@ const useAuth = () => {
           setProfileState(null);
           setProgressState(null);
           fireRefresh();
+        } else if (s.needsValidation) {
+          // Session valid di Supabase — tandai & simpan member ke localStorage
+          const updatedSession = { ...s, supabaseValidated: true, needsValidation: false };
+          localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updatedSession));
+          setSession(updatedSession);
+          const currentMembers = loadMembers();
+          if (!currentMembers.find(m => m.code === member.code)) {
+            saveMembers([...currentMembers, {
+              code: member.code,
+              status: member.status,
+              deviceId: member.deviceId,
+              name: s.name || member.code,
+            }]);
+          }
         }
       } catch (e) {
-        // Supabase offline — percaya session dari localStorage
+        // Supabase offline — kalau butuh validasi, beri benefit of doubt
+        if (s.needsValidation) {
+          const updatedSession = { ...s, supabaseValidated: true, needsValidation: false };
+          localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updatedSession));
+          setSession(updatedSession);
+        }
       }
     })();
   }, []);
@@ -313,10 +341,19 @@ const loadNotes = () => {
     return raw ? JSON.parse(raw) : [];
   } catch (e) { return []; }
 };
-const saveNotes = (notes) => {
+const saveNotes = (notes, changedNoteId = null) => {
   localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(notes));
   window.dispatchEvent(new Event("madad:refresh"));
-  notes.forEach(n => sbSaveNote(n).catch(() => {}));
+  if (changedNoteId) {
+    // Hanya sync note yang berubah — 1 request saja
+    const changedNote = notes.find(n => n.id === changedNoteId);
+    if (changedNote) sbSaveNote(changedNote).catch(() => {});
+  } else {
+    // Sync semua, stagger supaya tidak flood Supabase
+    notes.forEach((n, i) => {
+      setTimeout(() => sbSaveNote(n).catch(() => {}), i * 150);
+    });
+  }
 };
 
 /* ---------- Maddah Activity Tracking ---------- */

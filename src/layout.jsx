@@ -1,7 +1,5 @@
 /* Talqeeh — Navbar, Footer, Login Modal, Payment Modal, Router utils */
 
-const ROUTES_PUBLIC = ["/", "/ethics"];
-const ROUTES_MEMBER = ["/onboarding", "/dashboard", "/tools", "/paths"];
 
 const useRoute = () => {
   const parse = () => {
@@ -21,7 +19,8 @@ const navigate = (to) => { window.location.hash = "#" + to; };
 
 const NavLink = ({ to, children, className = "", onClick }) => {
   const path = useRoute();
-  const active = path === to || (to !== "/" && path.startsWith(to));
+  const active = path === to
+    || (to !== "/" && (path.startsWith(to + "/") || path.startsWith(to + "?")));
   const handle = (e) => { e.preventDefault(); onClick && onClick(); navigate(to); };
   return (
     <a href={"#" + to} onClick={handle} className={`nav-link px-3.5 py-2 text-[14.5px] rounded-lg transition-colors ${active ? "text-ink font-medium active" : "text-ink-muted hover:text-ink"} ${className}`}>
@@ -348,7 +347,7 @@ const Footer = () => (
         </div>
         <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
           <a href="#/" onClick={(e)=>{e.preventDefault(); navigate("/");}} className="text-ink-muted hover:text-ink">Beranda</a>
-          <a href="#/maddah" onClick={(e)=>{e.preventDefault(); navigate("/maddah");}} className="text-ink-muted hover:text-ink">Maddah</a>
+          <a href="#/maddah-publik" onClick={(e)=>{e.preventDefault(); navigate("/maddah-publik");}} className="text-ink-muted hover:text-ink">Maddah</a>
           <a href="#/paths/muqaranah" onClick={(e)=>{e.preventDefault(); navigate("/paths/muqaranah");}} className="text-ink-muted hover:text-ink">Muqaranah</a>
           <a href="#/kurasah" onClick={(e)=>{e.preventDefault(); navigate("/kurasah");}} className="text-ink-muted hover:text-ink">Kurasah</a>
           <a href="#/tools" onClick={(e)=>{e.preventDefault(); navigate("/tools");}} className="text-ink-muted hover:text-ink">Tool Guide</a>
