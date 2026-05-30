@@ -561,7 +561,7 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
           <Icon name="star" className="w-3 h-3 text-gold-400/60"/>
           <span className="h-px flex-1 max-w-[80px] bg-gradient-to-l from-transparent to-gold-500/40"/>
         </div>
-        <div className="arabic-classic text-gold-300 text-3xl md:text-4xl leading-loose mb-3" style={{direction:"rtl"}}>
+        <div className="arabic-display text-gold-300 text-3xl md:text-4xl leading-loose mb-3" style={{direction:"rtl"}}>
           قَيِّدُوا الْعِلْمَ بِالْكِتَابَةِ
         </div>
         <p className="text-base text-ink-muted italic mb-1">"Ikatlah ilmu dengan tulisan."</p>
