@@ -1,0 +1,145 @@
+# PROMPT: Fix Maddah Umum Tsanawi — Data Akurat
+
+## Kurikulum yang Benar (dikonfirmasi langsung)
+
+Tsanawi (semua kelas, Adabi & Ilmi) — maddah umum:
+✅ Bahasa Inggris
+✅ Geografi
+✅ Mantiq (logika/filsafat)
+✅ Sejarah
+
+TIDAK ADA di Tsanawi:
+❌ Matematika
+❌ Fisika, Kimia, Biologi
+❌ Psikologi (Ilmu Nafs)
+❌ Statistik
+
+---
+
+## YANG HARUS DILAKUKAN di `src/mahad-data.jsx`
+
+### LANGKAH 1 — Hapus 7 maddah ini dari MAHAD_MADDAH
+
+Hapus SELURUH object entry untuk:
+1. `id: "matematika-tsanawi"`
+2. `id: "fisika-tsanawi"`
+3. `id: "kimia-tsanawi"`
+4. `id: "biologi-tsanawi"`
+5. `id: "ilmu-nafs"`
+6. `id: "statistik-adabi"`
+7. `id: "falsafah-mantiq"` — ini akan diganti versi baru di bawah
+
+### LANGKAH 2 — Update 3 maddah yang ada: hapus filter jurusan
+
+Untuk entry berikut, hapus field `jurusan` (atau field serupa yang membatasi ke Adabi/Ilmi):
+
+**`id: "geografi-tsanawi"`:**
+```js
+// HAPUS baris ini:
+jurusan: ["adabi"],
+
+// Ganti semua "Tsanawi Adabi" di dalam prompts jadi "Tsanawi"
+```
+
+**`id: "sejarah-tsanawi"`:**
+```js
+// HAPUS baris ini kalau ada:
+jurusan: ["adabi"],
+
+// Ganti semua "Tsanawi Adabi" di dalam prompts jadi "Tsanawi"
+```
+
+### LANGKAH 3 — Tambah/Update entry Mantiq
+
+Ganti entry `falsafah-mantiq` yang lama dengan entry baru yang lebih fokus ke Mantiq (sesuai kurikulum Ma'had — bukan filsafat barat):
+
+```js
+{
+  id: "mantiq-tsanawi",
+  name: "Mantiq (Logika Islam)",
+  nameArabic: "الْمَنْطِقُ",
+  category: "umum",
+  jenjang: ["tsanawi"],
+  description: "Ilmu logika Islam — kaidah berpikir benar, definisi, proposisi, dan silogisme.",
+  topikUtama: [
+    "تعريف المنطق وموضوعه — Pengertian dan objek Mantiq",
+    "التصور والتصديق — Konsep dan penilaian",
+    "الكليات الخمس — Lima universal (jins, nau', fashl, khasshah, 'ardh 'amm)",
+    "الحد والرسم — Definisi (had) dan deskripsi (rasm)",
+    "القضايا المنطقية — Proposisi (qadhiyyah)",
+    "القياس — Silogisme (qiyas)",
+    "أنواع القياس — Jenis-jenis silogisme",
+    "الاستقراء والتمثيل — Induksi dan analogi",
+    "المغالطات — Kesalahan logika (mughalathah)",
+  ],
+  prompts: {
+    pahami: `Aku pelajar Ma'had Al-Azhar (Tsanawi) yang belajar Mantiq.
+
+Topik: [TOPIK]
+
+Jelaskan dengan cara yang bikin aku bisa berpikir logis:
+1. Pengertian sederhana + istilah Arabnya
+2. Contoh konkret dari kehidupan nyata atau contoh dalam bahasa Arab
+3. Cara menggunakannya dalam berpikir sehari-hari
+4. Hubungannya dengan ilmu-ilmu Islam (fiqh, ushul, dll)
+5. Perbedaan dengan konsep Mantiq yang mirip
+
+Mantiq itu ilmu berpikir — bantu aku PAHAM logikanya, bukan sekedar hafal!`,
+
+    hafal: `Aku pelajar Ma'had Al-Azhar Tsanawi, mau hafal Mantiq: [TOPIK]
+
+Buat kartu hafalan:
+1. Definisi (Arab + terjemah, 1-2 kalimat)
+2. Pembagian/macam-macam dalam tabel (Arab + terjemah)
+3. Contoh untuk tiap macam (dalam Arab kalau bisa)
+4. Perbedaan dengan konsep yang mirip
+5. Cara mengingat dengan asosiasi atau skema sederhana`,
+
+    latihan: `Aku pelajar Ma'had Al-Azhar Tsanawi, latihan Mantiq: [TOPIK]
+
+Buat soal latihan:
+1. 2 soal definisi (apa yang dimaksud dengan...)
+2. 2 soal identifikasi (ini termasuk jenis apa?)
+3. 1 soal buat contoh sendiri (buatlah qiyas/had/qadhiyyah tentang...)
+4. JANGAN kasih jawaban dulu — tunggu jawabanku`,
+
+    ujian: `Aku pelajar Ma'had Al-Azhar Tsanawi, persiapan ujian Mantiq: [TOPIK]
+
+Rangkuman ujian:
+1. Definisi (Arab + terjemah)
+2. Pembagian/macam-macam (tabel rapi)
+3. Contoh dari literatur Arab/Islam
+4. Perbedaan dengan konsep yang sering tertukar
+5. Soal yang biasa keluar di ujian Tsanawi`,
+  },
+},
+```
+
+---
+
+## Hasil Akhir Maddah Umum
+
+Setelah fix:
+
+| Maddah | I'dadi | Tsanawi |
+|---|---|---|
+| Matematika | ✅ | ❌ |
+| Sains/IPA | ✅ | ❌ |
+| Bahasa Inggris | ✅ | ✅ |
+| Geografi | ❌ | ✅ (semua) |
+| Sejarah | ❌ | ✅ (semua) |
+| Mantiq | ❌ | ✅ (semua) |
+
+---
+
+## Acceptance Criteria
+
+- [ ] User `tsanawi_1_ilmi` → maddah umum: Bahasa Inggris, Geografi, Sejarah, Mantiq
+- [ ] User `tsanawi_3_adabi` → maddah umum: Bahasa Inggris, Geografi, Sejarah, Mantiq
+- [ ] User `idad_2` → maddah umum: Matematika, Sains, Bahasa Inggris (Geografi/Sejarah/Mantiq tidak muncul)
+- [ ] Tidak ada maddah Matematika/Fisika/Kimia/Biologi/Psikologi/Statistik di Tsanawi
+- [ ] Prompt Geografi dan Sejarah tidak lagi menyebut "Tsanawi Adabi" — cukup "Tsanawi"
+- [ ] Entry Mantiq baru punya id `mantiq-tsanawi` (bukan `falsafah-mantiq`)
+- [ ] Tidak ada console error
+
+والله ولي التوفيق.

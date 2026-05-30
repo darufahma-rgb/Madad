@@ -479,7 +479,7 @@ const QuestionStep = ({ question, options, value, onPick, mahadJenjang, onClearJ
                 ? "border-emerald-500/60"
                 : opt.isMahadGateway
                   ? "bg-white/4 border-emerald-600/25 hover:bg-white/6 hover:border-emerald-500/45"
-                  : "bg-white/4 border-white/8 hover:bg-white/6 hover:border-emerald-600/35"}`}
+                  : "bg-white/4 border-emerald-600/25 hover:bg-white/6 hover:border-emerald-500/45"}`}
               style={sel ? {background:"rgba(62,207,142,0.14)", borderColor:"rgba(62,207,142,0.55)", boxShadow:"0 0 0 1px rgba(62,207,142,0.22), 0 4px 20px rgba(62,207,142,0.18)"} : {}}>
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-start gap-0">
