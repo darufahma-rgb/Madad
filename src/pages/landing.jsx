@@ -269,7 +269,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         <Reveal delay={180}>
           <p className="text-lg md:text-xl mb-10 max-w-xl" style={{ color:"rgba(255,255,255,0.62)", lineHeight:1.65 }}>
             Panduan lengkap + template prompt untuk pahami mata kuliah di Al-Azhar.
-            Teruntuk Masisir semua tingkat, dari Darul Lughoh (DL) sampai S2.
+            Teruntuk Masisir semua tingkat, dari Ma'had, Darul Lughoh (DL) sampai S2.
           </p>
         </Reveal>
 
