@@ -362,16 +362,14 @@ const Footer = () => (
       <div
         aria-hidden="true"
         style={{
-          fontFamily: "'Scheherazade New', serif",
+          fontFamily: '"Reem Kufi", "Noto Kufi Arabic", sans-serif',
           fontSize: "clamp(72px, 10vw, 140px)",
           fontWeight: 700,
-          color: "transparent",
-          background: "linear-gradient(135deg, rgba(212,160,23,0.15) 0%, rgba(212,160,23,0.5) 40%, rgba(212,160,23,0.2) 100%)",
-          WebkitBackgroundClip: "text",
-          backgroundClip: "text",
+          color: "rgba(212,178,125,0.12)",
+          WebkitTextStroke: "1.5px rgba(212,178,125,0.75)",
           textAlign: "center",
           display: "block",
-          lineHeight: 1.2,
+          lineHeight: 0.9,
           letterSpacing: "0.05em",
           marginTop: "24px",
           marginBottom: "32px",
