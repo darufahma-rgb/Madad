@@ -1,0 +1,86 @@
+Perbaiki elemen khat Arab dekoratif di bagian 
+bawah footer website Talqeeh.
+
+---
+
+## YANG HARUS DIUBAH
+
+### 1. GANTI FONT
+
+Font sekarang: terlalu blur dan tidak terbaca
+Font baru: gunakan Google Font Arab yang stylish dan jelas
+
+Tambahkan di <head>:
+<link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Scheherazade+New:wght@700&display=swap" rel="stylesheet">
+
+Gunakan font: 'Scheherazade New', serif
+(jelas, elegan, stylish — cocok untuk dekorasi)
+
+---
+
+### 2. TEKS YANG DITAMPILKAN
+
+Ganti teks yang sekarang dengan:
+تَلْقِيْح
+
+(tulisan Talqeeh dalam khat Arab yang benar)
+
+---
+
+### 3. POSISI — PINDAH KE TENGAH
+
+Sekarang: pojok kanan bawah, terpotong
+Baru: center horizontal, di atas garis copyright
+
+Layout footer baru dari atas ke bawah:
+┌─────────────────────────────────────┐
+│  ─── ornamen garis yang sudah ada ──│
+│                                     │
+│         تَلْقِيْح                   │
+│      (center, besar, dekoratif)     │
+│                                     │
+│  © 2026 Talqeeh · All rights ...   │
+│  Designed & Developed by Dar Dev    │
+└─────────────────────────────────────┘
+
+---
+
+### 4. STYLING TEKS ARAB
+
+font-family  : 'Scheherazade New', serif
+font-size    : clamp(72px, 10vw, 140px)
+font-weight  : 700
+color        : transparent
+background   : linear-gradient(
+                 135deg,
+                 rgba(212,160,23,0.15) 0%,
+                 rgba(212,160,23,0.5) 40%,
+                 rgba(212,160,23,0.2) 100%
+               )
+-webkit-background-clip: text
+background-clip         : text
+text-align   : center
+display      : block
+line-height  : 1.2
+letter-spacing: 0.05em
+margin-bottom: 32px
+user-select  : none
+pointer-events: none
+
+---
+
+### 5. HAPUS ELEMEN LAMA
+
+Hapus khat Arab yang sebelumnya ada di pojok
+kanan bawah (yang terpotong dan blur itu).
+Ganti dengan elemen baru yang di tengah ini.
+
+---
+
+## YANG TIDAK BOLEH DIUBAH
+
+- Ornamen garis di atas footer
+- Teks copyright kiri
+- Teks "Designed & Developed by Dar Dev" kanan
+- Background dan warna footer
+- Semua halaman selain footer

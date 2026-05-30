@@ -19,11 +19,15 @@ const StarterPackButton = ({ profile, session }) => {
 
 const PromptCard = ({ prompt, maddah, profile }) => {
   const toast = useToast();
+
+  // Guard: kalau template tidak ada, jangan crash
+  if (!prompt || !prompt.template) return null;
+
   const tool  = AI_TOOLS.find(t => t.id === prompt.targetAI);
   const [showFull, setShowFull] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const resolvedPrompt = resolveAdaptivePrompt(prompt.template, profile, maddah.name);
+  const resolvedPrompt = resolveAdaptivePrompt(prompt.template, profile, maddah.name) || "";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(resolvedPrompt);
@@ -135,7 +139,9 @@ const MaddahDetailPage = () => {
     );
   }
 
-  const hasContent   = maddah.prompts && Object.values(maddah.prompts).some(arr => arr.length > 0);
+  const hasContent   = maddah.prompts && Object.values(maddah.prompts).some(arr =>
+    Array.isArray(arr) && arr.some(p => p && p.template)
+  );
   const totalPrompts = hasContent ? Object.values(maddah.prompts).reduce((s, arr) => s + arr.length, 0) : 0;
   const catLabel     = MADDAH_CATEGORIES.find(c => c.id === maddah.category)?.label;
 
@@ -304,9 +310,11 @@ const MaddahDetailPage = () => {
             </div>
 
             <div className="space-y-3">
-              {(maddah.prompts[activeKind] || []).map((p, i) => (
-                <PromptCard key={i} prompt={p} maddah={maddah} profile={profile}/>
-              ))}
+              {(maddah.prompts[activeKind] || [])
+                .filter(p => p && p.template && p.targetAI)
+                .map((p, i) => (
+                  <PromptCard key={i} prompt={p} maddah={maddah} profile={profile}/>
+                ))}
               {(maddah.prompts[activeKind] || []).length === 0 && (
                 <p className="text-sm text-ink-soft text-center py-8">
                   Belum ada prompt untuk kategori ini.

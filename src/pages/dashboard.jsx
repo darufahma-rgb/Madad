@@ -208,32 +208,37 @@ const SanctuaryRow = () => {
 /* ============ MA'HAD BADGE ============ */
 const MahadBadge = ({ profile }) => {
   const level = profile?.level;
-  const jurusan = profile?.mahad_jurusan;
-  if (level === 'idadi') {
+  const info  = typeof parseMahadLevel !== "undefined"
+    ? parseMahadLevel(level)
+    : { jenjang: "", jurusan: "" };
+
+  if (!level) return null;
+
+  if (level.startsWith("idad")) {
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
         style={{background:"rgba(16,185,129,0.15)",color:"#10B981",border:"1px solid rgba(16,185,129,0.30)"}}>
-        🌱 I'DADI
+        🌱 I'DADI · {info.kelas || ""}
       </span>
     );
   }
-  if (level === 'tsanawi') {
-    if (jurusan === 'adabi') return (
+  if (level.startsWith("tsanawi")) {
+    if (level.includes("adabi")) return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
         style={{background:"rgba(59,130,246,0.15)",color:"#3B82F6",border:"1px solid rgba(59,130,246,0.30)"}}>
-        📖 TSANAWI · ADABI
+        📖 TSANAWI · {info.kelas} · ADABI
       </span>
     );
-    if (jurusan === 'ilmi') return (
+    if (level.includes("ilmi")) return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
         style={{background:"rgba(139,92,246,0.15)",color:"#8B5CF6",border:"1px solid rgba(139,92,246,0.30)"}}>
-        ⚗️ TSANAWI · ILMI
+        ⚗️ TSANAWI · {info.kelas} · ILMI
       </span>
     );
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
         style={{background:"rgba(59,130,246,0.15)",color:"#3B82F6",border:"1px solid rgba(59,130,246,0.30)"}}>
-        📚 TSANAWI
+        📚 TSANAWI · {info.kelas}
       </span>
     );
   }

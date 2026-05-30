@@ -183,81 +183,100 @@ const MAHAD_STRUGGLE_LABEL = {
   english:      "Bahasa Inggris",
 };
 
+// Ekstrak info Ma'had dari level ID granular
+const parseMahadLevel = (level) => {
+  if (!level) return { jenjang: "Ma'had", kelas: "", jurusan: "", tingkat: "" };
+
+  if (level.startsWith("idad")) {
+    const num = level.replace("idad_", "");
+    return {
+      jenjang: "I'dadi",
+      kelas:   `Kelas ${num}`,
+      jurusan: "",
+      tingkat: `I'dadi Kelas ${num} (Ma'had Al-Azhar)`,
+    };
+  }
+
+  if (level.startsWith("tsanawi")) {
+    // Format: tsanawi_[num]_[jurusan]  contoh: tsanawi_2_ilmi, tsanawi_3_adabi
+    const parts   = level.split("_");
+    const num     = parts[1] || "";
+    const jur     = parts[2] || "";
+    const jurLabel = jur === "ilmi"  ? "Jurusan Ilmi (IPA)" :
+                     jur === "adabi" ? "Jurusan Adabi (IPS)" : "";
+    return {
+      jenjang:  "Tsanawi",
+      kelas:    `Kelas ${num}`,
+      jurusan:  jurLabel,
+      tingkat:  `Tsanawi Kelas ${num}${jurLabel ? " " + jurLabel : ""} (Ma'had Al-Azhar)`,
+    };
+  }
+
+  return { jenjang: "Ma'had", kelas: "", jurusan: "", tingkat: level };
+};
+
 const generateMahadStarterPack = (profile, session) => {
-  const nama      = session?.name || "";
-  const jenjang   = profile?.level === 'idadi' ? "I'dadi" : "Tsanawi";
-  const tahun     = profile?.mahad_year || "[isi tahunmu]";
-  const jurusan   = profile?.mahad_jurusan === 'adabi'
-    ? "Adabi (أدبي) — Sastra & Sosial"
-    : profile?.mahad_jurusan === 'ilmi'
-    ? "Ilmi (علمي) — Sains & Matematika"
-    : null;
-  const usiaRange = profile?.level === 'idadi' ? "12–15" : "15–18";
+  const nama  = session?.name?.split(" ")[0] || "";
+  const info  = parseMahadLevel(profile?.level);
 
-  const maddahUmum = profile?.mahad_jurusan === 'ilmi'
-    ? "Matematika, Fisika, Kimia, Biologi, Bahasa Inggris"
-    : profile?.mahad_jurusan === 'adabi'
-    ? "Matematika, Sejarah, Geografi, Filsafat & Mantiq, Statistik, Bahasa Inggris"
-    : "Matematika, Sains (IPA), Bahasa Inggris, Studi Sosial";
+  let maddahUmum = "Matematika, Sains/IPA, dan Bahasa Inggris";
+  if (profile?.level?.includes("ilmi")) {
+    maddahUmum = "Matematika, Fisika, Kimia, Biologi, dan Bahasa Inggris";
+  } else if (profile?.level?.includes("adabi")) {
+    maddahUmum = "Matematika, Sejarah, Geografi, Filsafat & Mantiq, dan Bahasa Inggris";
+  }
 
-  const struggles = (profile?.mahad_struggle || [])
-    .map(s => MAHAD_STRUGGLE_LABEL[s]).filter(Boolean);
-  const tantanganLines = struggles.length > 0
-    ? struggles.map(l => `• ${l}`).join('\n')
-    : "• Masih menyesuaikan diri dengan sistem belajar Ma'had";
+  let gaya = "kombinasi berbagai pendekatan";
+  if (profile?.learningStyle?.length > 0) {
+    const GAYA = {
+      reading:      "membaca teks bertahap",
+      summary:      "ringkasan terstruktur",
+      discussion:   "tanya jawab dan diskusi",
+      practice:     "latihan langsung",
+      memorization: "hafalan dengan repetisi",
+      visual:       "peta konsep visual",
+    };
+    const labels = profile.learningStyle.map(s => GAYA[s]).filter(Boolean);
+    if (labels.length === 1)      gaya = labels[0];
+    else if (labels.length === 2) gaya = labels.join(" dan ");
+    else                          gaya = labels.slice(0, -1).join(", ") + " dan " + labels[labels.length - 1];
+  }
 
-  const namaLine = nama ? `\nNama    : ${nama}` : "";
-  const jurusanLine = jurusan ? `\nJurusan : ${jurusan}` : "";
+  return `Assalamu'alaikum! Mulai sekarang, kamu akan membantuku belajar.
 
-  return `Halo! Sebelum kita mulai belajar bareng, aku mau kenalin diri dulu ya.
+PROFILKU
+- Namaku: ${nama}${nama ? ` — panggil aku "${nama}"` : ""}
+- Aku pelajar ${info.tingkat}
+${info.jurusan ? `- Jurusan: ${info.jurusan}` : ""}- Cara belajarku: aku lebih suka ${gaya}
 
-══════════════════════════════════
-👤 SIAPA AKU
-══════════════════════════════════
-Aku pelajar Indonesia yang sekolah di Ma'had Al-Azhar Mesir.
-Tingkat : ${jenjang} Tahun ${tahun}${jurusanLine}
-Usia    : sekitar ${usiaRange} tahun${namaLine}
+MADDAH YANG AKU PELAJARI
+- Maddah Agama: Al-Qur'an & Tajwid, Tafsir, Hadits, Tauhid, Fiqh, Nahwu, Sharf, Sirah${info.jenjang === "Tsanawi" ? ", Balaghah" : ""}
+- Maddah Umum: ${maddahUmum}
 
-══════════════════════════════════
-📚 MATA PELAJARAN YANG AKU PELAJARI
-══════════════════════════════════
-Agama  : Al-Qur'an, Tauhid, Fiqh, Nahwu, Sharaf, Hadits, Sirah
-Umum   : ${maddahUmum}
+CARA KAMU MEMBANTUKU
+- Bahasa: Indonesia yang mudah dipahami (aku remaja, bukan mahasiswa dewasa)
+- Teks Arab: WAJIB selalu pakai harakat + terjemah bahasa Indonesia
+- Istilah Arab: selalu kasih artinya — jangan anggap aku sudah tahu
+- Kalau ada konsep sulit: jelaskan dengan analogi dari kehidupan sehari-hari
+- Untuk maddah umum (Matematika, Sains, dll): tunjukkan juga istilah Arabnya karena aku belajar dalam bahasa Arab
 
-══════════════════════════════════
-😅 TANTANGAN TERBESARKU SEKARANG
-══════════════════════════════════
-${tantanganLines}
+PENTING
+- Kamu adalah teman belajar, bukan pengganti guru atau ustadz-ku
+- Kalau tidak yakin, katakan jujur
+- Beri semangat — aku sedang dalam proses belajar!
 
-══════════════════════════════════
-🤝 CARA TERBAIK MEMBANTUKU
-══════════════════════════════════
-→ Jelaskan dengan bahasa Indonesia dulu, baru kasih istilah Arabnya
-→ Gunakan contoh yang mudah dan konkret dari kehidupan sehari-hari
-→ Kalau aku tidak paham, jelaskan ulang dengan cara yang berbeda — sabar ya!
-→ Untuk maddah umum (matematika, sains, dll): bantu aku pahami
-  konsepnya DULU, baru hubungkan dengan istilah Arabnya
-→ Untuk maddah agama: tetap ingatkan aku untuk verifikasi ke guru/ustadz
-
-══════════════════════════════════
-⚠️ CATATAN PENTING
-══════════════════════════════════
-• Aku masih belajar bahasa Arab — jangan terlalu teknis
-• Kalau kamu tidak yakin, bilang saja jangan mengarang
-• Untuk soal agama yang penting, aku akan tetap tanya ke guru
-
-══════════════════════════════════
-🚀 HARI INI AKU MAU BELAJAR
-══════════════════════════════════
-[tulis mata pelajaran atau pertanyaanmu di sini]
-
-Siap jadi teman belajarku? 😊`;
+Kalau paham, jawab: "Wa'alaikumussalam, siap menemani belajar!" Lalu tunggu pertanyaanku.`;
 };
 
 /* ============ STARTER PACK GENERATOR ============ */
 
 const generateStarterPack = (profile, session) => {
-  if (profile?.level === 'idadi' || profile?.level === 'tsanawi') {
+  // Deteksi level Ma'had dengan cara yang benar (pakai isMahadLevel kalau tersedia)
+  const isUserMahad = typeof isMahadLevel !== "undefined"
+    ? isMahadLevel(profile?.level)
+    : (profile?.level?.startsWith("idad") || profile?.level?.startsWith("tsanawi"));
+
+  if (isUserMahad) {
     return generateMahadStarterPack(profile, session);
   }
 
@@ -352,6 +371,7 @@ Object.assign(window, {
   resolveGenericPrompt,
   generateStarterPack,
   generateMahadStarterPack,
+  parseMahadLevel,
   resolveS2MaddahContext,
   generateS2Prompt,
   TINGKATAN_LABEL,
