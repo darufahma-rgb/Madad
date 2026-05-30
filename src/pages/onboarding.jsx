@@ -144,8 +144,14 @@ const OnboardingPage = () => {
       hint: "Pilih tingkat atau jenjangmu saat ini",
       optionsFn: (d, mj) => {
         if (!mj) {
+          const masisirEntries = LEVELS.filter(l =>
+            !l.isMahad &&
+            !l.id.startsWith("idad") &&
+            !l.id.startsWith("tsanawi") &&
+            l.id !== "_sep_mahad"
+          );
           return [
-            ...LEVELS.filter(l => !l.id.startsWith("idad") && !l.id.startsWith("tsanawi")),
+            { id: "_sep_mahad", isSeparator: true, label: "MA'HAD AL-AZHAR" },
             {
               id: "__mahad_idad__",
               label: "I'dadi (Ma'had Al-Azhar)",
@@ -162,6 +168,7 @@ const OnboardingPage = () => {
               desc: "Ma'had Al-Azhar · Setingkat SMA",
               isMahadGateway: true,
             },
+            ...masisirEntries,
           ];
         }
         if (mj === "idad")    return LEVELS.filter(l => l.id.startsWith("idad"));
