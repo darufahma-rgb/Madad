@@ -181,7 +181,7 @@ const FootnoteFields = ({ values, onChange }) => {
             placeholder={f.placeholder}
             className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-ink outline-none transition-colors"
             style={{fontSize:16}}
-            onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+            onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
             onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
           />
         </div>
@@ -266,7 +266,7 @@ const S2MaddahPage = () => {
 
       {/* Header */}
       <section className="relative pt-6 md:pt-12 pb-6 overflow-hidden">
-        <Blob color="rgba(124,77,255,0.2)" size={500} top={-150} right={-80}/>
+        <Blob color="rgba(62,207,142,0.2)" size={500} top={-150} right={-80}/>
         <Blob color="rgba(201,168,106,0.1)" size={300} top={200} left={-100}/>
         <div className="container-x relative">
           <button onClick={() => navigate("/dashboard")}
@@ -298,10 +298,10 @@ const S2MaddahPage = () => {
                 onClick={() => setSelectedMaddah(m)}
                 className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-sm border font-medium transition-colors text-left ${
                   selectedMaddah?.id === m.id
-                    ? "text-violet-200 border-violet-600/35"
+                    ? "text-emerald-200 border-emerald-600/35"
                     : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
                 }`}
-                style={selectedMaddah?.id === m.id ? {background:"rgba(113,50,245,0.20)",minHeight:44} : {minHeight:44}}>
+                style={selectedMaddah?.id === m.id ? {background:"rgba(62,207,142,0.20)",minHeight:44} : {minHeight:44}}>
                 <div className="font-medium">{m.nama}</div>
                 {m.kitab && (
                   <div className="text-[10px] text-ink-soft mt-0.5 truncate max-w-[140px]">
@@ -316,7 +316,7 @@ const S2MaddahPage = () => {
             <button
               onClick={() => navigate("/onboarding")}
               className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm border border-dashed text-ink-soft hover:text-ink transition-colors"
-              style={{minHeight:44,borderColor:"rgba(113,50,245,0.28)"}}>
+              style={{minHeight:44,borderColor:"rgba(62,207,142,0.28)"}}>
               + Edit Maddah
             </button>
           </div>
@@ -353,10 +353,10 @@ const S2MaddahPage = () => {
               onClick={() => setActiveTab("prompt")}
               className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                 activeTab === "prompt"
-                  ? "text-violet-200"
+                  ? "text-emerald-200"
                   : "text-ink-muted hover:text-ink"
               }`}
-              style={activeTab === "prompt" ? {background:"rgba(113,50,245,0.22)"} : {}}>
+              style={activeTab === "prompt" ? {background:"rgba(62,207,142,0.22)"} : {}}>
               Prompt Maddah
             </button>
             <button
@@ -384,10 +384,10 @@ const S2MaddahPage = () => {
                   onClick={() => setActiveMode(mode.id)}
                   className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm border font-medium transition-colors ${
                     activeMode === mode.id
-                      ? "text-violet-200 border-violet-600/35"
+                      ? "text-emerald-200 border-emerald-600/35"
                       : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
                   }`}
-                  style={activeMode === mode.id ? {background:"rgba(113,50,245,0.20)",minHeight:44} : {minHeight:44}}>
+                  style={activeMode === mode.id ? {background:"rgba(62,207,142,0.20)",minHeight:44} : {minHeight:44}}>
                   <Icon name={mode.icon} className="w-4 h-4"/>
                   {mode.label}
                 </button>
@@ -405,7 +405,7 @@ const S2MaddahPage = () => {
                 placeholder="mis. hukum cryptocurrency · metode istinbat nawazil · i'jaz 'ilmi"
                 className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink outline-none transition-colors"
                 style={{fontSize:16}}
-                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
                 onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
               />
               {topikInput.trim().length > 0 && topikInput.trim().split(" ").length < 2 && (
@@ -461,7 +461,7 @@ const S2MaddahPage = () => {
                 placeholder="mis. Fiqh Nawazil dalam Transaksi Digital Kontemporer"
                 className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink outline-none transition-colors"
                 style={{fontSize:16}}
-                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
                 onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
               />
             </div>
@@ -494,7 +494,7 @@ const S2MaddahPage = () => {
                   placeholder={"1. Temuan pertama\n2. Temuan kedua\n3. Kesimpulan utama"}
                   className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink outline-none transition-colors resize-none"
                   style={{fontSize:16, minHeight:100}}
-                  onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                  onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
                   onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
                 />
               </div>
@@ -512,7 +512,7 @@ const S2MaddahPage = () => {
                   placeholder="mis. penerapan fiqh nawazil pada platform fintech syariah"
                   className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink outline-none transition-colors"
                   style={{fontSize:16}}
-                  onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                  onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
                   onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
                 />
               </div>

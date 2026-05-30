@@ -463,7 +463,7 @@ const MasisirTab = ({ profile }) => {
   const shortcuts = [
     {
       icon: "target",
-      color: "#7132f5",
+      color: "#3ecf8e",
       title: "Siap Imtihan",
       desc: "Prompt untuk kompres materi, drill soal Azhari, mock syafawi, dan analogi konsep sulit.",
       to: "/siap-imtihan",
@@ -479,7 +479,7 @@ const MasisirTab = ({ profile }) => {
     },
     {
       icon: "sparkles",
-      color: "#9B7AFF",
+      color: "#3ecf8e",
       title: "Adaptive Tool Guide",
       desc: "Guide cara pakai setiap AI (ChatGPT, Claude, Perplexity, dll) disesuaikan gaya belajarmu.",
       to: "/tools",
@@ -498,7 +498,7 @@ const MasisirTab = ({ profile }) => {
   return (
     <div>
       <Reveal className="mb-8">
-        <div className="rounded-2xl p-5" style={{ background: "rgba(113,50,245,0.08)", border: "1px solid rgba(113,50,245,0.18)" }}>
+        <div className="rounded-2xl p-5" style={{ background: "rgba(62,207,142,0.08)", border: "1px solid rgba(62,207,142,0.18)" }}>
           <p className="text-sm text-ink-muted leading-relaxed">
             Prompt-prompt untuk Masisir sudah terintegrasi langsung di setiap fitur Talqeeh di bawah ini.
             Pilih fitur yang kamu butuhkan — prompt akan muncul sesuai konteks.
@@ -560,7 +560,7 @@ const PromptLibraryPage = () => {
       {/* Header */}
       <section className="relative pt-10 pb-6 overflow-hidden">
         <Blob color="rgba(16,185,129,0.12)" size={420} top={-180} right={-80}/>
-        <Blob color="rgba(113,50,245,0.10)" size={300} top={-80} left={-100}/>
+        <Blob color="rgba(62,207,142,0.10)" size={300} top={-80} left={-100}/>
         <div className="container-x relative">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-[10px] uppercase tracking-[0.2em] text-ink-muted">Talqeeh</span>
@@ -589,7 +589,7 @@ const PromptLibraryPage = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all relative"
                   style={isActive
-                    ? { background: tab.id === "mahad" ? "rgba(16,185,129,0.15)" : "rgba(113,50,245,0.15)", color: tab.id === "mahad" ? "#10B981" : "#A78BFA", border: `1px solid ${tab.id === "mahad" ? "rgba(16,185,129,0.3)" : "rgba(113,50,245,0.3)"}` }
+                    ? { background: tab.id === "mahad" ? "rgba(16,185,129,0.15)" : "rgba(62,207,142,0.15)", color: tab.id === "mahad" ? "#10B981" : "#3ecf8e", border: `1px solid ${tab.id === "mahad" ? "rgba(16,185,129,0.3)" : "rgba(62,207,142,0.3)"}` }
                     : { background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.45)", border: "1px solid rgba(255,255,255,0.08)" }
                   }
                 >

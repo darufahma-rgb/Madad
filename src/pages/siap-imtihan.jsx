@@ -342,10 +342,10 @@ const TalkhisanSection = ({ profile }) => {
             onClick={() => setInputType("teks")}
             className={`flex-1 py-2 rounded-xl text-sm border font-medium transition-colors ${
               inputType === "teks"
-                ? "text-violet-200 border-violet-600/35"
+                ? "text-emerald-200 border-emerald-600/35"
                 : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
             }`}
-            style={inputType === "teks" ? {background:"rgba(113,50,245,0.20)"} : {}}>
+            style={inputType === "teks" ? {background:"rgba(62,207,142,0.20)"} : {}}>
             📋 Teks (copy dari PDF)
           </button>
           <button
@@ -370,7 +370,7 @@ const TalkhisanSection = ({ profile }) => {
               onChange={e => setTeksInput(e.target.value)}
               placeholder="الحمد لله رب العالمين... (paste teks Arab dari PDF talkhisanmu)"
               className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-soft outline-none transition-colors resize-none arabic"
-              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+              onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
               onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
               style={{ minHeight: 120, direction: "rtl", fontSize: 15, lineHeight: 1.8 }}
               rows={5}
@@ -428,10 +428,10 @@ const TalkhisanSection = ({ profile }) => {
                   activeMode === m.id
                     ? m.color === "gold"
                       ? "bg-gold-500/15 text-gold-200 border-gold-500/30"
-                      : "text-violet-200 border-violet-600/35"
+                      : "text-emerald-200 border-emerald-600/35"
                     : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
                 }`}
-                style={activeMode === m.id && m.color !== "gold" ? {background:"rgba(113,50,245,0.20)",minHeight:36} : {minHeight:36}}>
+                style={activeMode === m.id && m.color !== "gold" ? {background:"rgba(62,207,142,0.20)",minHeight:36} : {minHeight:36}}>
                 <Icon name={m.icon} className="w-3.5 h-3.5"/>
                 <span>{m.label}</span>
               </button>
@@ -444,9 +444,9 @@ const TalkhisanSection = ({ profile }) => {
           <div className="flex items-start gap-2 mb-4 p-3 rounded-xl border" style={{background:"rgba(255,255,255,0.03)",borderColor:"rgba(255,255,255,0.08)"}}>
             <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${
               mode.color === "gold" ? "bg-gold-500/15" : ""
-            }`} style={mode.color !== "gold" ? {background:"rgba(113,50,245,0.16)"} : {}}>
+            }`} style={mode.color !== "gold" ? {background:"rgba(62,207,142,0.16)"} : {}}>
               <Icon name={mode.icon} className={`w-3.5 h-3.5 ${
-                mode.color === "gold" ? "text-gold-300" : "text-violet-300"
+                mode.color === "gold" ? "text-gold-300" : "text-emerald-300"
               }`}/>
             </div>
             <div>
@@ -561,9 +561,9 @@ const ImtihanPromptCard = ({ mode, maddah, profile }) => {
 
   return (
     <div className={`card-glass p-5 md:p-6 border ${colorClass} relative overflow-hidden`}
-      style={mode.color !== "gold" ? {borderColor:"rgba(113,50,245,0.20)",background:"rgba(113,50,245,0.04)"} : {}}>
+      style={mode.color !== "gold" ? {borderColor:"rgba(62,207,142,0.20)",background:"rgba(62,207,142,0.04)"} : {}}>
       <div className={`absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl pointer-events-none ${
-        mode.color === "gold" ? "bg-gold-500/10" : "bg-violet-600/8"
+        mode.color === "gold" ? "bg-gold-500/10" : "bg-emerald-600/8"
       }`}/>
 
       <div className="relative">
@@ -573,9 +573,9 @@ const ImtihanPromptCard = ({ mode, maddah, profile }) => {
             <div className="flex items-center gap-2 mb-1">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
                 mode.color === "gold" ? "bg-gold-500/15" : ""
-              }`} style={mode.color !== "gold" ? {background:"rgba(113,50,245,0.18)"} : {}}>
+              }`} style={mode.color !== "gold" ? {background:"rgba(62,207,142,0.18)"} : {}}>
                 <Icon name={mode.icon} className={`w-4 h-4 ${
-                  mode.color === "gold" ? "text-gold-300" : "text-violet-300"
+                  mode.color === "gold" ? "text-gold-300" : "text-emerald-300"
                 }`}/>
               </div>
               <h3 className="font-display text-lg font-semibold text-ink">{mode.label}</h3>
@@ -588,7 +588,7 @@ const ImtihanPromptCard = ({ mode, maddah, profile }) => {
             mode.color === "gold"
               ? "bg-gold-500/10 text-gold-300 border-gold-500/20"
               : ""
-          }`} style={mode.color !== "gold" ? {background:"rgba(113,50,245,0.12)",color:"#c4aff9",borderColor:"rgba(113,50,245,0.28)"} : {}}>
+          }`} style={mode.color !== "gold" ? {background:"rgba(62,207,142,0.12)",color:"#c4aff9",borderColor:"rgba(62,207,142,0.28)"} : {}}>
             {mode.tag}
           </span>
         </div>
@@ -605,10 +605,10 @@ const ImtihanPromptCard = ({ mode, maddah, profile }) => {
               <button key={toolId} onClick={() => setTargetAI(toolId)}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs border font-medium transition-colors ${
                   targetAI === toolId
-                    ? "text-violet-200 border-violet-600/35"
+                    ? "text-emerald-200 border-emerald-600/35"
                     : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
                 }`}
-                style={targetAI === toolId ? {background:"rgba(113,50,245,0.18)"} : {}}>
+                style={targetAI === toolId ? {background:"rgba(62,207,142,0.18)"} : {}}>
                 <ToolIcon tool={tool} size="w-4 h-4" rounded="rounded-sm"/>
                 {tool.name}
               </button>
@@ -694,7 +694,7 @@ const SiapImtihanPage = () => {
       {/* Header */}
       <section className="relative pt-6 md:pt-12 pb-6 overflow-hidden">
         <div className="pattern-talqih"/>
-        <Blob color="rgba(124,77,255,0.2)" size={500} top={-150} right={-80}/>
+        <Blob color="rgba(62,207,142,0.2)" size={500} top={-150} right={-80}/>
 
         <div className="container-x relative">
           <button onClick={() => navigate("/dashboard")}
@@ -728,20 +728,20 @@ const SiapImtihanPage = () => {
             <button onClick={() => setActiveMaddah("")}
               className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm border font-medium transition-colors ${
                 activeMaddah === ""
-                  ? "text-violet-200 border-violet-600/35"
+                  ? "text-emerald-200 border-emerald-600/35"
                   : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
               }`}
-              style={activeMaddah === "" ? {background:"rgba(113,50,245,0.20)",minHeight:40} : {minHeight:40}}>
+              style={activeMaddah === "" ? {background:"rgba(62,207,142,0.20)",minHeight:40} : {minHeight:40}}>
               Umum
             </button>
             {myMaddahs.map(m => (
               <button key={m.id} onClick={() => setActiveMaddah(m.name)}
                 className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm border font-medium transition-colors ${
                   activeMaddah === m.name
-                    ? "text-violet-200 border-violet-600/35"
+                    ? "text-emerald-200 border-emerald-600/35"
                     : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
                 }`}
-                style={activeMaddah === m.name ? {background:"rgba(113,50,245,0.20)",minHeight:40} : {minHeight:40}}>
+                style={activeMaddah === m.name ? {background:"rgba(62,207,142,0.20)",minHeight:40} : {minHeight:40}}>
                 {m.name}
               </button>
             ))}
@@ -769,10 +769,10 @@ const SiapImtihanPage = () => {
                   activeMode === mode.id
                     ? mode.color === "gold"
                       ? "bg-gold-500/15 text-gold-200 border-gold-500/30"
-                      : "text-violet-200 border-violet-600/35"
+                      : "text-emerald-200 border-emerald-600/35"
                     : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
                 }`}
-                style={activeMode === mode.id && mode.color !== "gold" ? {background:"rgba(113,50,245,0.20)",minHeight:44} : {minHeight:44}}>
+                style={activeMode === mode.id && mode.color !== "gold" ? {background:"rgba(62,207,142,0.20)",minHeight:44} : {minHeight:44}}>
                 <Icon name={mode.icon} className="w-4 h-4"/>
                 <span className="font-medium">{mode.label}</span>
               </button>

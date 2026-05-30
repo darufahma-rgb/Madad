@@ -108,7 +108,7 @@ const GlobalSearch = () => {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-start justify-center pt-20 px-4 bg-night-950/70 backdrop-blur-sm" onClick={() => setOpen(false)}>
-      <div className="w-full max-w-xl bg-night-800 rounded-2xl shadow-2xl overflow-hidden" style={{border:"1px solid rgba(113,50,245,0.25)"}} onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-xl bg-night-800 rounded-2xl shadow-2xl overflow-hidden" style={{border:"1px solid rgba(62,207,142,0.25)"}} onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-3 px-4 py-3 border-b border-line">
           <Icon name="search" className="w-4 h-4 text-ink-soft flex-shrink-0"/>
           <input
@@ -132,7 +132,7 @@ const GlobalSearch = () => {
             <button key={i} onClick={() => { navigate(r.to); setOpen(false); }}
               className="w-full flex items-start gap-3 px-4 py-3 hover:bg-white/4 transition-colors text-left">
               <div className={`mt-0.5 w-6 h-6 rounded flex items-center justify-center flex-shrink-0 text-[10px] font-bold
-                ${r.type === "maddah" ? "bg-violet-500/20 text-violet-300" : r.type === "prompt" ? "bg-gold-500/15 text-gold-300" : "bg-white/8 text-ink-soft"}`}>
+                ${r.type === "maddah" ? "bg-emerald-500/20 text-emerald-300" : r.type === "prompt" ? "bg-gold-500/15 text-gold-300" : "bg-white/8 text-ink-soft"}`}>
                 {r.type === "maddah" ? "M" : r.type === "prompt" ? "P" : "Q"}
               </div>
               <div className="flex-1 min-w-0">
@@ -145,7 +145,7 @@ const GlobalSearch = () => {
         </div>
         {results.length > 0 && (
           <div className="px-4 py-2 border-t border-line text-[11px] text-ink-soft flex gap-3">
-            <span className="w-5 h-5 rounded bg-violet-500/20 text-violet-300 text-[9px] font-bold flex items-center justify-center">M</span> Maddah
+            <span className="w-5 h-5 rounded bg-emerald-500/20 text-emerald-300 text-[9px] font-bold flex items-center justify-center">M</span> Maddah
             <span className="w-5 h-5 rounded bg-gold-500/15 text-gold-300 text-[9px] font-bold flex items-center justify-center">P</span> Prompt
             <span className="w-5 h-5 rounded bg-white/8 text-ink-soft text-[9px] font-bold flex items-center justify-center">Q</span> Muqaranah
           </div>
@@ -238,14 +238,14 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
           {session ? (
             <button
               onClick={() => setMobileSheetOpen(true)}
-              className="w-9 h-9 rounded-full flex items-center justify-center text-violet-100 text-sm font-semibold"
-              style={{background:"rgba(113,50,245,0.18)",border:"1px solid rgba(113,50,245,0.30)"}}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-emerald-100 text-sm font-semibold"
+              style={{background:"rgba(62,207,142,0.18)",border:"1px solid rgba(62,207,142,0.30)"}}
             >
               {(session.name || "T").charAt(0).toUpperCase()}
             </button>
           ) : (
             <div className="flex items-center gap-1">
-              <button onClick={onOpenLogin} className="text-sm text-violet-300 font-medium px-3 py-2">Masuk</button>
+              <button onClick={onOpenLogin} className="text-sm text-emerald-300 font-medium px-3 py-2">Masuk</button>
               <button onClick={() => setOpen(true)} className="w-9 h-9 inline-flex items-center justify-center rounded-lg text-ink hover:bg-white/5">
                 <Icon name="menu" className="w-5 h-5"/>
               </button>
@@ -461,7 +461,7 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
               placeholder="MSR-XXXX-XXXX"
               className="code-input w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-xl text-ink placeholder:text-ink-soft focus:outline-none transition-colors"
               style={{borderRadius:12}}
-              onFocus={e => { e.target.style.borderColor="rgba(113,50,245,0.55)"; e.target.style.boxShadow="0 0 0 3px rgba(113,50,245,0.15)"; }}
+              onFocus={e => { e.target.style.borderColor="rgba(62,207,142,0.55)"; e.target.style.boxShadow="0 0 0 3px rgba(62,207,142,0.15)"; }}
               onBlur={e => { e.target.style.borderColor="rgba(255,255,255,0.10)"; e.target.style.boxShadow="none"; }}
               maxLength={13}
             />
@@ -488,7 +488,7 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
               Daftar sebagai member Talqeeh untuk mendapatkan akses.
             </div>
             <div className="mt-4 text-center">
-              <button type="button" onClick={() => setCode("MSR-DEMO-1234")} className="text-xs text-violet-300 hover:text-violet-200 underline underline-offset-2">
+              <button type="button" onClick={() => setCode("MSR-DEMO-1234")} className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
                 Coba dengan kode demo: MSR-DEMO-1234
               </button>
             </div>
@@ -529,7 +529,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
 
         {paid ? (
           <div className="mt-6 text-center py-4">
-            <div className="w-16 h-16 rounded-full text-violet-200 flex items-center justify-center mx-auto mb-5" style={{background:"rgba(113,50,245,0.18)",border:"1px solid rgba(113,50,245,0.30)"}}>
+            <div className="w-16 h-16 rounded-full text-emerald-200 flex items-center justify-center mx-auto mb-5" style={{background:"rgba(62,207,142,0.18)",border:"1px solid rgba(62,207,142,0.30)"}}>
               <Icon name="check" className="w-8 h-8" strokeWidth={2.4}/>
             </div>
             <div className="arabic-display-classical text-2xl text-gold-300 mb-3">جَزَاكَ اللهُ خَيْرًا</div>
@@ -540,9 +540,9 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
             <div className="card-glass p-4 mb-6 text-left">
               <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-2">Apa selanjutnya?</div>
               <ol className="text-sm text-ink-muted space-y-2">
-                <li className="flex items-start gap-2"><span className="text-violet-300 font-semibold">1.</span> Admin akan memverifikasi pembayaran</li>
-                <li className="flex items-start gap-2"><span className="text-violet-300 font-semibold">2.</span> Kode akses dikirimkan via WhatsApp</li>
-                <li className="flex items-start gap-2"><span className="text-violet-300 font-semibold">3.</span> Login &amp; mulai journey-mu</li>
+                <li className="flex items-start gap-2"><span className="text-emerald-300 font-semibold">1.</span> Admin akan memverifikasi pembayaran</li>
+                <li className="flex items-start gap-2"><span className="text-emerald-300 font-semibold">2.</span> Kode akses dikirimkan via WhatsApp</li>
+                <li className="flex items-start gap-2"><span className="text-emerald-300 font-semibold">3.</span> Login &amp; mulai journey-mu</li>
               </ol>
             </div>
             <div className="flex gap-2">
@@ -560,7 +560,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
             </p>
 
             <div className="card-glass-strong p-5 mb-5 relative overflow-hidden">
-              <Blob color="rgba(124,77,255,0.28)" size={200} top={-60} right={-60}/>
+              <Blob color="rgba(62,207,142,0.28)" size={200} top={-60} right={-60}/>
               <div className="relative">
                 <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-3">Yang kamu dapat</div>
                 <div className="space-y-2.5 mb-5">
@@ -572,7 +572,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
                     { i: "heart",    t: "Companion harian: niat, ritme, refleksi" },
                   ].map((f, i) => (
                     <div key={i} className="flex items-start gap-3">
-                      <span className="w-7 h-7 rounded-lg text-violet-300 flex items-center justify-center flex-shrink-0 mt-0.5" style={{background:"rgba(113,50,245,0.16)"}}>
+                      <span className="w-7 h-7 rounded-lg text-emerald-300 flex items-center justify-center flex-shrink-0 mt-0.5" style={{background:"rgba(62,207,142,0.16)"}}>
                         <Icon name={f.i} className="w-3.5 h-3.5"/>
                       </span>
                       <span className="text-sm text-ink leading-relaxed">{f.t}</span>
@@ -614,7 +614,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
               </>
             )}
             <div className="mt-4 pt-4 border-t border-line text-center">
-              <button onClick={() => { onClose(); onOpenLogin && onOpenLogin(); }} className="text-xs text-violet-300 hover:text-violet-200 underline underline-offset-2">
+              <button onClick={() => { onClose(); onOpenLogin && onOpenLogin(); }} className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
                 Sudah punya kode akses? Login di sini
               </button>
             </div>
@@ -634,7 +634,7 @@ const PageHeader = ({ kicker, title, subtitle, arabic, children, right }) => (
           {kicker && <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>{kicker}
           </div>}
-          {arabic && <div className="arabic-display-classical text-xl md:text-2xl text-violet-200/60 mb-3">{arabic}</div>}
+          {arabic && <div className="arabic-display-classical text-xl md:text-2xl text-emerald-200/60 mb-3">{arabic}</div>}
           <h1 className="font-display text-3xl md:text-4xl lg:text-5xl font-semibold text-ink leading-[1.05] tracking-tightest max-w-3xl">
             {title}
           </h1>
@@ -704,16 +704,16 @@ const MobileTabBar = () => {
               className="flex-1 flex flex-col items-center justify-center gap-0.5 relative"
             >
               {active && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-1 rounded-full" style={{background:"#A78BFA"}}/>
+                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-4 h-1 rounded-full" style={{background:"#3ecf8e"}}/>
               )}
               <Icon
                 name={tab.icon}
-                className={"w-5 h-5 transition-colors " + (active ? "text-violet-400" : "")}
+                className={"w-5 h-5 transition-colors " + (active ? "text-emerald-400" : "")}
                 style={active ? {} : {color:"rgba(255,255,255,0.4)"}}
               />
               <span
                 className={"text-[9px] leading-none transition-colors mt-0.5 " + (active ? "font-bold" : "")}
-                style={{color: active ? "#A78BFA" : "rgba(255,255,255,0.4)"}}
+                style={{color: active ? "#3ecf8e" : "rgba(255,255,255,0.4)"}}
               >
                 {tab.label}
               </span>

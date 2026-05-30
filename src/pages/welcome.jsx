@@ -24,7 +24,7 @@ const WelcomePage = () => {
 
   return (
     <div className="page-enter min-h-screen relative overflow-hidden">
-      <Blob color="rgba(124,77,255,0.18)" size={600} top={-200} right={-150}/>
+      <Blob color="rgba(62,207,142,0.18)" size={600} top={-200} right={-150}/>
       <Blob color="rgba(201,168,106,0.08)" size={400} top={200} left={-100}/>
       <div className="pattern-talqih"/>
 

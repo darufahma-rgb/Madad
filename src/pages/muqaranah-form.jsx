@@ -18,7 +18,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between p-4 text-left">
         <div className="flex items-center gap-3">
-          <span className="w-7 h-7 rounded-xl text-violet-200 text-xs flex items-center justify-center font-semibold" style={{background:"rgba(113,50,245,0.22)"}}>{idx + 1}</span>
+          <span className="w-7 h-7 rounded-xl text-emerald-200 text-xs flex items-center justify-center font-semibold" style={{background:"rgba(62,207,142,0.22)"}}>{idx + 1}</span>
           <span className="font-display text-base text-ink">{view.scholar || `Pendapat ${idx + 1}`}</span>
           {view.school && <span className="badge-neutral text-[10px]">{view.school}</span>}
         </div>
@@ -43,7 +43,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
               <input value={view.scholar} onChange={e => upd("scholar", e.target.value)}
                 placeholder="Imam Asy-Syafi'i"
                 className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink placeholder-ink-soft outline-none transition-colors"
-                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
                 onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
             </div>
             <div>
@@ -52,7 +52,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
                 placeholder="الإمام الشافعي"
                 className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink placeholder-ink-soft outline-none transition-colors arabic text-right"
                 style={{direction:"rtl"}}
-                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
                 onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
             </div>
           </div>
@@ -61,7 +61,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
             <input value={view.school} onChange={e => upd("school", e.target.value)}
               placeholder="Syafi'iyah"
               className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink placeholder-ink-soft outline-none transition-colors"
-              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+              onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
               onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
           </div>
           <div>
@@ -70,7 +70,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
               placeholder="Tuliskan pendapat ulama ini secara ringkas dan akurat..."
               rows={3}
               className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink placeholder-ink-soft outline-none transition-colors resize-none leading-relaxed"
-              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+              onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
               onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
           </div>
           <div className="rounded-xl bg-gold-500/5 border border-gold-400/15 p-4 space-y-3">
@@ -86,12 +86,12 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
               placeholder="Terjemah singkat..."
               rows={2}
               className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink-muted placeholder-ink-soft outline-none transition-colors resize-none leading-relaxed"
-              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.40)"}
+              onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.40)"}
               onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
             <input value={view.evidence.notes} onChange={e => updEv("notes", e.target.value)}
               placeholder="Catatan tambahan tentang dalil (opsional)"
               className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink-muted placeholder-ink-soft outline-none transition-colors"
-              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.40)"}
+              onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.40)"}
               onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
           </div>
           <div>
@@ -100,7 +100,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
               placeholder="Bagaimana ulama ini menyimpulkan pendapatnya dari dalil? Tuliskan secara mengalir, bukan bullet..."
               rows={3}
               className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink-muted placeholder-ink-soft outline-none transition-colors resize-none leading-relaxed"
-              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+              onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
               onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
           </div>
           <div>
@@ -108,7 +108,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
             <input value={view.source} onChange={e => upd("source", e.target.value)}
               placeholder="Al-Umm · Mughni Al-Muhtaj"
               className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink-muted placeholder-ink-soft outline-none transition-colors"
-              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+              onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
               onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
           </div>
         </div>
@@ -235,7 +235,7 @@ Setelah kamu draft, aku akan paste hasilnya ke form Talqeeh dan tambahkan reflek
             {/* Step 1: Identitas */}
             <Reveal className="card-glass rounded-xl p-6 space-y-4">
               <div className="flex items-center gap-3 mb-2">
-                <span className="w-7 h-7 rounded-xl text-violet-200 text-xs flex items-center justify-center font-semibold" style={{background:"rgba(113,50,245,0.22)"}}>1</span>
+                <span className="w-7 h-7 rounded-xl text-emerald-200 text-xs flex items-center justify-center font-semibold" style={{background:"rgba(62,207,142,0.22)"}}>1</span>
                 <span className="font-display text-lg text-ink">Identitas Masalah</span>
               </div>
               <div>
@@ -243,7 +243,7 @@ Setelah kamu draft, aku akan paste hasilnya ke form Talqeeh dan tambahkan reflek
                 <input value={title} onChange={e => setTitle(e.target.value)}
                   placeholder="Hukum Membaca Basmalah dalam Al-Fatihah"
                   className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-ink font-display text-lg placeholder-ink-soft outline-none transition-colors"
-                  onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                  onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
                   onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
               </div>
               <div>
@@ -260,8 +260,8 @@ Setelah kamu draft, aku akan paste hasilnya ke form Talqeeh dan tambahkan reflek
                 <div className="flex gap-2 flex-wrap">
                   {cats.map(c => (
                     <button key={c.id} type="button" onClick={() => setCategory(c.id)}
-                      className={`text-xs px-3 py-1.5 rounded-xl border font-medium transition-all ${category === c.id ? "text-violet-200 border-violet-600/35" : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"}`}
-                      style={category === c.id ? {background:"rgba(113,50,245,0.20)"} : {}}>
+                      className={`text-xs px-3 py-1.5 rounded-xl border font-medium transition-all ${category === c.id ? "text-emerald-200 border-emerald-600/35" : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"}`}
+                      style={category === c.id ? {background:"rgba(62,207,142,0.20)"} : {}}>
                       {c.label}
                     </button>
                   ))}
@@ -273,7 +273,7 @@ Setelah kamu draft, aku akan paste hasilnya ke form Talqeeh dan tambahkan reflek
                   placeholder="Tuliskan pertanyaan inti yang menjadi fokus muqaranah ini..."
                   rows={3}
                   className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink-muted placeholder-ink-soft outline-none transition-colors resize-none leading-relaxed"
-                  onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                  onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
                   onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
               </div>
             </Reveal>
@@ -281,7 +281,7 @@ Setelah kamu draft, aku akan paste hasilnya ke form Talqeeh dan tambahkan reflek
             {/* Step 2: Views */}
             <Reveal>
               <div className="flex items-center gap-3 mb-4">
-                <span className="w-7 h-7 rounded-xl text-violet-200 text-xs flex items-center justify-center font-semibold" style={{background:"rgba(113,50,245,0.22)"}}>2</span>
+                <span className="w-7 h-7 rounded-xl text-emerald-200 text-xs flex items-center justify-center font-semibold" style={{background:"rgba(62,207,142,0.22)"}}>2</span>
                 <span className="font-display text-lg text-ink">Pendapat Ulama</span>
                 <span className="text-xs text-ink-soft">(min 2, maks 6)</span>
               </div>
@@ -307,7 +307,7 @@ Setelah kamu draft, aku akan paste hasilnya ke form Talqeeh dan tambahkan reflek
             {/* Step 3: Notes */}
             <Reveal className="card-glass rounded-xl p-6">
               <div className="flex items-center gap-3 mb-4">
-                <span className="w-7 h-7 rounded-xl text-violet-200 text-xs flex items-center justify-center font-semibold" style={{background:"rgba(113,50,245,0.22)"}}>3</span>
+                <span className="w-7 h-7 rounded-xl text-emerald-200 text-xs flex items-center justify-center font-semibold" style={{background:"rgba(62,207,142,0.22)"}}>3</span>
                 <span className="font-display text-lg text-ink">Catatan Titik Khilaf</span>
                 <span className="text-xs text-ink-soft">(opsional)</span>
               </div>
@@ -315,7 +315,7 @@ Setelah kamu draft, aku akan paste hasilnya ke form Talqeeh dan tambahkan reflek
                 placeholder="Tuliskan akar perbedaan dan konsekuensi praktisnya. Bukan kesimpulan mana yang benar, tapi mengapa mereka berbeda..."
                 rows={4}
                 className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink-muted placeholder-ink-soft outline-none transition-colors resize-none leading-relaxed"
-                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
                 onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
             </Reveal>
 

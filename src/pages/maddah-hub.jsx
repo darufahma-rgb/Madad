@@ -39,8 +39,8 @@ const MaddahCard = ({ maddah }) => {
       className={`card-glass p-4 md:p-5 hov-lift cursor-pointer group relative overflow-hidden ${isVisited ? "border-l-2 border-l-violet-600/50" : ""}`}
     >
       {isVisited && (
-        <div className="absolute top-3 right-3 flex items-center gap-1 text-[10px] text-violet-300">
-          <span className="w-1.5 h-1.5 rounded-full bg-violet-500"/>
+        <div className="absolute top-3 right-3 flex items-center gap-1 text-[10px] text-emerald-300">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"/>
           {promptCount > 0 ? `${promptCount} prompt dipakai` : "Pernah dibuka"}
         </div>
       )}
@@ -176,7 +176,7 @@ const MaddahHubPage = () => {
 
       {/* Header */}
       <section className="relative pt-6 md:pt-12 pb-6 md:pb-8 overflow-hidden">
-        <Blob color={isMahad ? "rgba(16,185,129,0.12)" : "rgba(124,77,255,0.18)"} size={500} top={-150} right={-100}/>
+        <Blob color={isMahad ? "rgba(16,185,129,0.12)" : "rgba(62,207,142,0.18)"} size={500} top={-150} right={-100}/>
         <div className="container-x relative">
           <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 inline-flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>
@@ -210,7 +210,7 @@ const MaddahHubPage = () => {
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Cari Maddah (Indonesia atau Arab)..."
               className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-2.5 pr-10 text-sm text-ink placeholder-ink-soft outline-none transition-colors"
-              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+              onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
               onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
             />
             <Icon name="search" className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-soft pointer-events-none"/>
@@ -222,10 +222,10 @@ const MaddahHubPage = () => {
               onClick={() => { setActiveCategory("all"); setActiveMahadSub("all"); }}
               className={`flex-shrink-0 px-3 py-1.5 text-xs font-medium transition-colors rounded-xl border ${
                 activeCategory === "all"
-                  ? "text-violet-200 border-violet-600/35"
+                  ? "text-emerald-200 border-emerald-600/35"
                   : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7 hover:text-ink"
               }`}
-              style={activeCategory === "all" ? {background:"rgba(113,50,245,0.20)"} : {}}
+              style={activeCategory === "all" ? {background:"rgba(62,207,142,0.20)"} : {}}
             >
               {isMahad ? "Semua Ma'had" : "Semua"}
             </button>
@@ -237,11 +237,11 @@ const MaddahHubPage = () => {
                   activeCategory === cat.id
                     ? cat.id === "mahad"
                       ? "text-emerald-200 border-emerald-600/35"
-                      : "text-violet-200 border-violet-600/35"
+                      : "text-emerald-200 border-emerald-600/35"
                     : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7 hover:text-ink"
                 }`}
                 style={activeCategory === cat.id ? {
-                  background: cat.id === "mahad" ? "rgba(16,185,129,0.16)" : "rgba(113,50,245,0.20)"
+                  background: cat.id === "mahad" ? "rgba(16,185,129,0.16)" : "rgba(62,207,142,0.20)"
                 } : {}}
               >
                 {cat.id === "mahad" ? "🏫 Ma'had" : cat.label}
@@ -288,7 +288,7 @@ const MaddahHubPage = () => {
                 type="checkbox"
                 checked={showOnlyMyFaculty}
                 onChange={e => setShowOnlyMyFaculty(e.target.checked)}
-                className="rounded border-line accent-violet-500"
+                className="rounded border-line accent-emerald-500"
               />
               <span>Hanya untuk {FAKULTAS_LABEL[profile.faculty]}</span>
             </label>

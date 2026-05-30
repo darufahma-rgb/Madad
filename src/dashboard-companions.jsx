@@ -300,7 +300,7 @@ const IntentionStrip = () => {
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs text-ink-muted">Niat custom</span>
               <label className="flex items-center gap-1.5 text-xs text-ink-muted cursor-pointer select-none">
-                <input type="checkbox" checked={useArabic} onChange={e => setUseArabic(e.target.checked)} className="accent-violet-500"/>
+                <input type="checkbox" checked={useArabic} onChange={e => setUseArabic(e.target.checked)} className="accent-emerald-500"/>
                 Mode Arab
               </label>
             </div>
@@ -309,13 +309,13 @@ const IntentionStrip = () => {
               value={customText}
               onChange={e => { setCustomText(e.target.value); if (e.target.value) setSelClassic(null); }}
               className="w-full bg-night-900/60 border border-white/10 rounded-xl p-3 text-sm text-ink placeholder-ink-soft resize-none outline-none transition-colors"
-              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+              onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
               onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
               style={useArabic ? {direction:"rtl",fontFamily:"'Scheherazade New',serif",fontSize:"1.1rem",lineHeight:1.8} : {}}/>
           </div>
 
           <label className="flex items-center gap-2 text-xs text-ink-muted mb-5 cursor-pointer select-none">
-            <input type="checkbox" checked={saveDefault} onChange={e => setSaveDefault(e.target.checked)} className="accent-violet-500"/>
+            <input type="checkbox" checked={saveDefault} onChange={e => setSaveDefault(e.target.checked)} className="accent-emerald-500"/>
             Jadikan niat default-ku
           </label>
 
@@ -384,7 +384,7 @@ const RhythmCard = () => {
                     style={{borderColor:"#C9A86A",animation:"madadPulse 2.2s ease-in-out infinite"}}/>
                 ) : day.present ? (
                   <div className="w-[14px] h-[14px] rounded-full flex-shrink-0"
-                    style={{background:"#7C4DFF",boxShadow:"0 0 7px rgba(124,77,255,0.42)"}}/>
+                    style={{background:"#7C4DFF",boxShadow:"0 0 7px rgba(62,207,142,0.42)"}}/>
                 ) : (
                   <div className="w-[14px] h-[14px] rounded-full border flex-shrink-0"
                     style={{borderColor:"rgba(180,150,255,0.2)"}}/>
@@ -392,7 +392,7 @@ const RhythmCard = () => {
 
                 {tooltip === i && tip && (
                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1.5 rounded-lg text-[11px] text-ink whitespace-nowrap z-10 pointer-events-none"
-                    style={{background:"#1a0d2e",border:"1px solid rgba(124,77,255,0.22)"}}>
+                    style={{background:"#1a0d2e",border:"1px solid rgba(62,207,142,0.22)"}}>
                     {tip}
                   </div>
                 )}

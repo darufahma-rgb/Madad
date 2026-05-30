@@ -26,7 +26,7 @@ class ErrorBoundary extends React.Component {
           <h2 style={{fontFamily:"DM Sans,sans-serif",color:"#F5F0FF",fontSize:"1.25rem",marginBottom:"8px"}}>
             Ada yang tidak beres
           </h2>
-          <p style={{color:"#9B8DBA",fontSize:"0.9rem",marginBottom:"24px",maxWidth:"320px",lineHeight:"1.6"}}>
+          <p style={{color:"#6ee7b7",fontSize:"0.9rem",marginBottom:"24px",maxWidth:"320px",lineHeight:"1.6"}}>
             Coba refresh halaman. Kalau masalah berlanjut, hubungi admin Talqeeh.
           </p>
           <button

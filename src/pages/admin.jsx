@@ -44,7 +44,7 @@ const AdminPage = () => {
               { id: "settings",   label: "Settings",          icon: "shield" },
             ].map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
-                className={`px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition flex-shrink-0 ${tab === t.id ? "bg-violet-500/15 text-violet-200 border border-violet-400/30" : "text-ink-muted hover:text-ink hover:bg-white/5"}`}>
+                className={`px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition flex-shrink-0 ${tab === t.id ? "bg-emerald-500/15 text-emerald-200 border border-emerald-400/30" : "text-ink-muted hover:text-ink hover:bg-white/5"}`}>
                 <Icon name={t.icon} className="w-4 h-4"/>
                 <span className="hidden md:inline">{t.label}</span>
               </button>
@@ -90,7 +90,7 @@ const AdminLogin = ({ onLogin }) => {
   return (
     <div className="page-enter min-h-screen flex items-center justify-center px-4">
       <div className="card-glass-strong p-10 max-w-md w-full relative overflow-hidden">
-        <Blob color="rgba(124,77,255,0.35)" size={300} top={-100} right={-100}/>
+        <Blob color="rgba(62,207,142,0.35)" size={300} top={-100} right={-100}/>
         <div className="relative">
           <span className="chip chip-gold text-[10px] mb-3 inline-flex">ADMIN ACCESS</span>
           <h2 className="font-display text-3xl font-semibold text-ink mb-1">Talqeeh Control Center</h2>
@@ -103,7 +103,7 @@ const AdminLogin = ({ onLogin }) => {
               onChange={(e) => setPin(e.target.value)}
               placeholder="PIN"
               className={`code-input w-full bg-white/5 border rounded-xl px-5 py-4 text-2xl text-ink outline-none ${error ? "border-rose-600 ring-2 ring-rose-600/30" : "border-white/10"}`}
-              onFocus={e => { if (!error) e.target.style.borderColor="rgba(113,50,245,0.50)"; }}
+              onFocus={e => { if (!error) e.target.style.borderColor="rgba(62,207,142,0.50)"; }}
               onBlur={e => e.target.style.borderColor= error ? "" : "rgba(255,255,255,0.10)"}
             />
             {error && <div className="mt-3 text-sm text-rose-600">PIN salah.</div>}
@@ -202,7 +202,7 @@ const AdminDashboard = () => {
                         <div className="text-ink font-medium">{maddah?.name || id}</div>
                         <div className="text-xs text-ink-soft">{act.promptsCopied || 0} prompt disalin</div>
                       </div>
-                      <div className="text-xs text-violet-300 font-medium">{act.opens} buka</div>
+                      <div className="text-xs text-emerald-300 font-medium">{act.opens} buka</div>
                     </div>
                   );
                 })}
@@ -216,7 +216,7 @@ const AdminDashboard = () => {
 
 const StatCard = ({ label, value, icon, color }) => {
   const tone = {
-    violet: "bg-violet-500/15 text-violet-300",
+    violet: "bg-emerald-500/15 text-emerald-300",
     gold:   "bg-gold-500/15 text-gold-300",
     mint:   "bg-mint-500/15 text-mint-500",
     rose:   "bg-rose-600/15 text-rose-600",
@@ -314,7 +314,7 @@ const AdminMembers = () => {
             <div className="text-rose-600 text-sm">{error}</div>
             <div className="text-ink-soft text-xs">Menampilkan data cache lokal.</div>
           </div>
-          <button onClick={loadFromSupabase} className="text-xs text-violet-300 hover:text-violet-200 underline">Coba lagi</button>
+          <button onClick={loadFromSupabase} className="text-xs text-emerald-300 hover:text-emerald-200 underline">Coba lagi</button>
         </div>
       )}
 
@@ -324,7 +324,7 @@ const AdminMembers = () => {
           <input value={search} onChange={(e)=>setSearch(e.target.value)}
             placeholder="Cari nama atau kode..."
             className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-3 py-2.5 text-sm text-ink placeholder:text-ink-soft outline-none transition-colors"
-            onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+            onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
             onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
         </div>
       </div>
@@ -554,13 +554,13 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
             <div>
               <label className="text-xs uppercase tracking-wider text-ink-muted mb-1.5 block">Nama Member</label>
               <input value={name} onChange={(e)=>setName(e.target.value)} placeholder="Ahmad Fauzi" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink outline-none transition-colors"
-                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
                 onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
             </div>
             <div>
               <label className="text-xs uppercase tracking-wider text-ink-muted mb-1.5 block">WhatsApp</label>
               <input value={whatsapp} onChange={(e)=>setWhatsapp(e.target.value)} placeholder="+20xxxxxxxxxx" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink font-mono outline-none transition-colors"
-                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
                 onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
             </div>
             <div>
@@ -569,7 +569,7 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
                 {[30, 60, 90, 180].map(d => (
                   <button key={d} type="button" onClick={() => setDuration(d)}
                     className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${duration === d ? "text-white border-transparent" : "bg-white/5 text-ink-muted border-white/8 hover:bg-white/10"}`}
-                    style={duration === d ? {background:"rgba(113,50,245,0.85)"} : {}}>
+                    style={duration === d ? {background:"rgba(62,207,142,0.85)"} : {}}>
                     {d} hari
                   </button>
                 ))}
@@ -708,7 +708,7 @@ const AggCard = ({ title, items }) => {
               <span className="font-mono text-xs text-ink-muted num">{it.n}</span>
             </div>
             <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-violet-500 to-gold-400 transition-all" style={{width: `${(it.n/max)*100}%`}}/>
+              <div className="h-full bg-gradient-to-r from-emerald-500 to-gold-400 transition-all" style={{width: `${(it.n/max)*100}%`}}/>
             </div>
           </div>
         ))}
@@ -775,7 +775,7 @@ const AdminMaddahAnalytics = () => {
                   {e.arabic && <div className="text-[11px] text-gold-300 arabic-display" style={{direction:"rtl"}}>{e.arabic}</div>}
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <div className="text-sm text-violet-300 font-medium">{e.opens} buka</div>
+                  <div className="text-sm text-emerald-300 font-medium">{e.opens} buka</div>
                   <div className="text-[11px] text-ink-soft">{e.promptsCopied || 0} prompt</div>
                 </div>
               </div>
@@ -801,7 +801,7 @@ const AdminMaddahAnalytics = () => {
                         <span className="text-xs text-ink-muted">{data.opens} buka · {data.prompts} prompt</span>
                       </div>
                       <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-violet-500 to-gold-400" style={{width:`${(data.opens/maxOpens)*100}%`}}/>
+                        <div className="h-full bg-gradient-to-r from-emerald-500 to-gold-400" style={{width:`${(data.opens/maxOpens)*100}%`}}/>
                       </div>
                     </div>
                   );
@@ -879,7 +879,7 @@ const AdminMuqaranahPanel = () => {
                 </div>
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {entry.category && (
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/15 text-violet-300 border border-violet-500/20">
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/20">
                       {catLabels[entry.category] || entry.category}
                     </span>
                   )}
@@ -977,7 +977,7 @@ const AdminGuides = () => {
                 })();
                 return (
                   <button key={t.id} onClick={() => setSelectedTool(t.id)}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-2.5 transition ${selectedTool === t.id ? "bg-violet-500/15 text-ink border border-violet-400/30" : "text-ink-muted hover:bg-white/5 hover:text-ink"}`}>
+                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm flex items-center gap-2.5 transition ${selectedTool === t.id ? "bg-emerald-500/15 text-ink border border-emerald-400/30" : "text-ink-muted hover:bg-white/5 hover:text-ink"}`}>
                     <ToolIcon tool={t} size="w-7 h-7"/>
                     <span className="font-medium flex-1">{t.name}</span>
                     {hasOverride && <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>}
@@ -991,7 +991,7 @@ const AdminGuides = () => {
             <div className="space-y-1">
               {(typeof LEARNING_STYLES !== "undefined" ? LEARNING_STYLES : []).map(s => (
                 <button key={s.id} onClick={() => setSelectedStyle(s.id)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition ${selectedStyle === s.id ? "bg-violet-500/15 text-ink" : "text-ink-muted hover:bg-white/5 hover:text-ink"}`}>
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition ${selectedStyle === s.id ? "bg-emerald-500/15 text-ink" : "text-ink-muted hover:bg-white/5 hover:text-ink"}`}>
                   <span className="text-base">{s.emoji}</span>
                   <span>{s.label}</span>
                 </button>
@@ -1018,7 +1018,7 @@ const AdminGuides = () => {
               value={editedGuide.when || ""}
               onChange={e => setEditedGuide({...editedGuide, when: e.target.value})}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ink text-sm outline-none transition-colors min-h-[80px] resize-y"
-              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+              onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
               onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
             />
           </div>
@@ -1029,7 +1029,7 @@ const AdminGuides = () => {
               value={editedGuide.starterPrompt || ""}
               onChange={e => setEditedGuide({...editedGuide, starterPrompt: e.target.value})}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ink font-mono text-xs outline-none transition-colors min-h-[200px] resize-y"
-              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+              onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
               onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
             />
           </div>
@@ -1080,7 +1080,7 @@ const AdminSettings = () => {
         value={value}
         onChange={e => onChange(e.target.value)}
         className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink text-sm outline-none transition-colors ${mono ? "font-mono" : ""}`}
-        onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+        onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
         onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
       />
       {hint && <div className="text-[11px] text-ink-soft mt-1">{hint}</div>}

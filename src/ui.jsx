@@ -63,7 +63,7 @@ const ToastProvider = ({ children }) => {
       <div className="fixed z-[100] bottom-5 right-5 flex flex-col gap-2 pointer-events-none">
         {toasts.map((t) => (
           <div key={t.id} className="toast-slide pointer-events-auto card-glass-strong shadow-glow px-4 py-3 flex items-center gap-3 min-w-[240px]">
-            <span className={`w-7 h-7 rounded-full flex items-center justify-center ${t.kind === "error" ? "bg-rose-600/20 text-rose-600" : "bg-violet-500/20 text-violet-300"}`}>
+            <span className={`w-7 h-7 rounded-full flex items-center justify-center ${t.kind === "error" ? "bg-rose-600/20 text-rose-600" : "bg-emerald-500/20 text-emerald-300"}`}>
               <Icon name={t.kind === "error" ? "alert" : "check"} className="w-4 h-4" strokeWidth={2.2}/>
             </span>
             <span className="text-sm text-ink">{t.msg}</span>
@@ -153,7 +153,7 @@ const Arch = ({ className = "", color = "rgba(212,165,116,0.25)" }) => (
 );
 
 /* ---------------- Glow blob ---------------- */
-const Blob = ({ color = "rgba(124,77,255,0.38)", size = 400, top, left, right, bottom }) => (
+const Blob = ({ color = "rgba(62,207,142,0.38)", size = 400, top, left, right, bottom }) => (
   <div className="blob" style={{
     width: size, height: size, background: color, top, left, right, bottom
   }}/>
@@ -201,7 +201,7 @@ const BottomSheet = ({ children, onClose, title, maxHeight = "85vh" }) => (
     <div className="absolute inset-0 bg-night-950/70 backdrop-blur-sm"/>
     <div
       className="relative w-full md:max-w-lg bg-night-800 border-t md:border rounded-t-3xl md:rounded-2xl sheet-enter overflow-hidden"
-      style={{ maxHeight, paddingBottom: "var(--safe-bottom)", borderColor:"rgba(113,50,245,0.22)" }}
+      style={{ maxHeight, paddingBottom: "var(--safe-bottom)", borderColor:"rgba(62,207,142,0.22)" }}
       onClick={e => e.stopPropagation()}
     >
       <div className="md:hidden flex justify-center pt-3 pb-1">

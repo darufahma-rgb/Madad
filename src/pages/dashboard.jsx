@@ -48,7 +48,7 @@ const RecentMaddahRow = () => {
                   <div className="arabic-display text-gold-300 text-lg mb-1" style={{direction:"rtl"}}>{m.nameArabic}</div>
                   <div className="font-display text-sm font-semibold text-ink mb-1">{m.name}</div>
                   {act?.promptsCopied > 0 && (
-                    <div className="text-[11px] text-violet-300">{act.promptsCopied} prompt dipakai</div>
+                    <div className="text-[11px] text-emerald-300">{act.promptsCopied} prompt dipakai</div>
                   )}
                 </div>
               );
@@ -103,7 +103,7 @@ const MaddahHeroSection = ({ profile }) => {
           </div>
           <button
             onClick={() => navigate("/maddah")}
-            className="text-sm text-violet-400 hover:text-violet-300 inline-flex items-center gap-1.5 transition-colors"
+            className="text-sm text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1.5 transition-colors"
           >
             Semua 36 Maddah <Icon name="arrowRight" className="w-3.5 h-3.5"/>
           </button>
@@ -133,7 +133,7 @@ const MaddahDashCard = ({ maddah }) => {
       onClick={() => navigate("/maddah/" + maddah.id)}
       className="card-glass p-5 hov-lift cursor-pointer transition-all group relative overflow-hidden"
     >
-      <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-violet-500/8 blur-2xl pointer-events-none"/>
+      <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-emerald-500/8 blur-2xl pointer-events-none"/>
 
       <div className="relative">
         <div className="flex items-start justify-between gap-3 mb-3">
@@ -147,7 +147,7 @@ const MaddahDashCard = ({ maddah }) => {
             <h3 className="font-display text-lg font-semibold text-ink">{maddah.name}</h3>
           </div>
           {!hasContent && (
-            <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 border border-violet-500/20 flex-shrink-0 mt-1">
+            <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 flex-shrink-0 mt-1">
               Segera
             </span>
           )}
@@ -167,7 +167,7 @@ const MaddahDashCard = ({ maddah }) => {
           {hasContent ? (
             <>
               <span className="text-gold-400">{totalPrompts} prompt template</span>
-              <span className="inline-flex items-center gap-1 text-violet-400 group-hover:gap-2 transition-all">
+              <span className="inline-flex items-center gap-1 text-emerald-400 group-hover:gap-2 transition-all">
                 Buka <Icon name="arrowRight" className="w-3 h-3"/>
               </span>
             </>
@@ -388,7 +388,7 @@ const DashboardPage = () => {
       {/* 1. GREETING (ringkas) */}
       <section className="relative pt-4 md:pt-16 pb-6 md:pb-8 overflow-hidden">
         <div className="hero-light-beam"/>
-        <Blob color="rgba(124,77,255,0.22)" size={600} top={-200} right={-100}/>
+        <Blob color="rgba(62,207,142,0.22)" size={600} top={-200} right={-100}/>
         <Blob color="rgba(201,168,106,0.10)" size={400} top={100} left={-150}/>
 
         <div className="container-x relative">
@@ -505,7 +505,7 @@ const DashboardPage = () => {
                     </p>
                     {(profile.s2Maddah || []).slice(0, 3).map(m => (
                       <div key={m.id} className="text-xs text-ink-soft mt-1 flex items-center gap-1.5">
-                        <span className="w-1 h-1 rounded-full bg-violet-400 flex-shrink-0"/>
+                        <span className="w-1 h-1 rounded-full bg-emerald-400 flex-shrink-0"/>
                         {m.nama}
                       </div>
                     ))}
@@ -541,7 +541,7 @@ const DashboardPage = () => {
               </div>
               <h2 className="font-display text-3xl md:text-4xl font-semibold text-ink">AI yang cocok untuk gaya belajarmu</h2>
             </div>
-            <a href="#/tools" onClick={(e)=>{e.preventDefault(); navigate("/tools");}} className="text-sm text-violet-400 hover:text-violet-300 inline-flex items-center gap-1.5 transition-colors">
+            <a href="#/tools" onClick={(e)=>{e.preventDefault(); navigate("/tools");}} className="text-sm text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1.5 transition-colors">
               Semua adaptive guide <Icon name="arrowRight" className="w-3.5 h-3.5"/>
             </a>
           </Reveal>
@@ -577,7 +577,7 @@ const DashboardPage = () => {
               </h2>
             </div>
             <button onClick={() => navigate("/siap-imtihan")}
-              className="text-sm text-violet-400 hover:text-violet-300 inline-flex items-center gap-1.5 transition-colors">
+              className="text-sm text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1.5 transition-colors">
               Buka lengkap <Icon name="arrowRight" className="w-3.5 h-3.5"/>
             </button>
           </Reveal>
@@ -590,18 +590,18 @@ const DashboardPage = () => {
                   onClick={() => navigate("/siap-imtihan")}
                   className={`flex-shrink-0 w-[70vw] sm:w-auto md:w-auto card-glass p-4 text-left
                               hov-lift active:scale-[0.97] transition-transform cursor-pointer
-                              ${mode.color === "gold" ? "border-gold-500/15" : "border-violet-500/15"}`}>
+                              ${mode.color === "gold" ? "border-gold-500/15" : "border-emerald-500/15"}`}>
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${
-                    mode.color === "gold" ? "bg-gold-500/15" : "bg-violet-500/15"
+                    mode.color === "gold" ? "bg-gold-500/15" : "bg-emerald-500/15"
                   }`}>
                     <Icon name={mode.icon} className={`w-4 h-4 ${
-                      mode.color === "gold" ? "text-gold-300" : "text-violet-300"
+                      mode.color === "gold" ? "text-gold-300" : "text-emerald-300"
                     }`}/>
                   </div>
                   <div className="font-display text-sm font-semibold text-ink mb-1">{mode.label}</div>
                   <div className="text-[11px] text-ink-muted leading-relaxed line-clamp-2">{mode.desc}</div>
                   <div className={`mt-2 text-[10px] font-medium ${
-                    mode.color === "gold" ? "text-gold-400" : "text-violet-400"
+                    mode.color === "gold" ? "text-gold-400" : "text-emerald-400"
                   }`}>{mode.tag}</div>
                 </button>
               ))}
@@ -658,7 +658,7 @@ const DashboardPage = () => {
                     </div>
                     <div className="flex items-center justify-between text-xs text-ink-muted">
                       <span>{path.modules.length} modul</span>
-                      <span className="inline-flex items-center gap-1 text-violet-400">
+                      <span className="inline-flex items-center gap-1 text-emerald-400">
                         Mulai <Icon name="arrowRight" className="w-3 h-3"/>
                       </span>
                     </div>
@@ -680,7 +680,7 @@ const DashboardPage = () => {
               </div>
               <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">Catatan Terakhir</h2>
             </div>
-            <button onClick={() => navigate("/kurasah")} className="text-sm text-violet-400 hover:text-violet-300 inline-flex items-center gap-1.5 transition-colors">
+            <button onClick={() => navigate("/kurasah")} className="text-sm text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1.5 transition-colors">
               Lihat semua kurasah <Icon name="arrowRight" className="w-3.5 h-3.5"/>
             </button>
           </Reveal>
@@ -746,7 +746,7 @@ const KurasahRecentCards = () => {
         const snippet = (note.body || "").slice(0, 100).replace(/[#*`>]/g, "").trim();
         return (
           <button key={note.id} onClick={() => navigate("/kurasah?id=" + note.id)}
-            className="card-glass hov-lift text-left p-4 rounded-xl border border-white/8 hover:border-violet-400/30 transition-all">
+            className="card-glass hov-lift text-left p-4 rounded-xl border border-white/8 hover:border-emerald-400/30 transition-all">
             <div className="flex flex-wrap gap-1 mb-2">
               {note.tags.slice(0,2).map(t => (
                 <span key={t} className="badge-purple text-[10px]">{t}</span>
@@ -767,7 +767,7 @@ const ContinueCard = ({ className = "", progress }) => {
   if (!last) {
     return (
       <div className={`${className} card-glass-strong p-4 md:p-7 relative overflow-hidden`}>
-        <Blob color="rgba(124,77,255,0.18)" size={250} top={-80} right={-80}/>
+        <Blob color="rgba(62,207,142,0.18)" size={250} top={-80} right={-80}/>
         <div className="relative flex items-start gap-4">
           <span className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:"var(--kraken-purple)"}}>
 
@@ -795,7 +795,7 @@ const ContinueCard = ({ className = "", progress }) => {
   }
   return (
     <div className={`${className} card-glass-strong p-4 md:p-7 relative overflow-hidden`}>
-      <Blob color="rgba(124,77,255,0.15)" size={200} top={-60} right={-60}/>
+      <Blob color="rgba(62,207,142,0.15)" size={200} top={-60} right={-60}/>
       <div className="relative">
         <div className="flex items-center gap-2 mb-3">
           <span className="badge-purple text-[10px]">Continue Learning</span>
@@ -881,7 +881,7 @@ const RecommendationCard = ({ rec, index, profile }) => {
         </div>
         <a href={`#/tools?id=${tool.id}`}
           onClick={(e)=>{e.preventDefault(); navigate(`/tools?id=${tool.id}`);}}
-          className="mt-2 text-xs text-violet-400 hover:text-violet-300 text-center transition-colors">
+          className="mt-2 text-xs text-emerald-400 hover:text-emerald-300 text-center transition-colors">
           ✨ Tunjukkan cara mulai
         </a>
       </div>
@@ -905,13 +905,13 @@ const AdaptiveGuideQuick = ({ profile, topRec }) => {
             <span className="w-6 h-px bg-gold-500/60"/>Cara pakai AI sesuai gaya belajarmu
           </div>
           <h2 className="font-display text-3xl md:text-4xl font-semibold text-ink">
-            Adaptive guide · <span className="text-violet-300">{tool.name}</span>
+            Adaptive guide · <span className="text-emerald-300">{tool.name}</span>
           </h2>
         </Reveal>
 
         <Reveal className="card-glass-strong p-4 md:p-10 relative overflow-hidden">
           <Blob color={tool.color + "30"} size={380} top={-100} right={-100}/>
-          <Blob color="rgba(124,77,255,0.12)" size={280} bottom={-80} left={-60}/>
+          <Blob color="rgba(62,207,142,0.12)" size={280} bottom={-80} left={-60}/>
           <div className="relative grid md:grid-cols-12 gap-8">
 
             <div className="md:col-span-7">
@@ -937,7 +937,7 @@ const AdaptiveGuideQuick = ({ profile, topRec }) => {
               <ol className="space-y-3">
                 {guide.steps.slice(0, 3).map((step, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <span className="w-7 h-7 rounded-full text-violet-200 text-sm flex items-center justify-center font-semibold flex-shrink-0 mt-0.5" style={{background:"rgba(113,50,245,0.18)",border:"1px solid rgba(113,50,245,0.30)"}}>
+                    <span className="w-7 h-7 rounded-full text-emerald-200 text-sm flex items-center justify-center font-semibold flex-shrink-0 mt-0.5" style={{background:"rgba(62,207,142,0.18)",border:"1px solid rgba(62,207,142,0.30)"}}>
                       {i + 1}
                     </span>
                     <span className="text-sm text-ink leading-relaxed">{step}</span>
@@ -948,7 +948,7 @@ const AdaptiveGuideQuick = ({ profile, topRec }) => {
 
             <div className="md:col-span-5 flex flex-col">
               <div className="rounded-xl overflow-hidden flex-1 mb-4" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
-                <div className="flex items-center justify-between px-4 py-2.5 border-b border-line" style={{background:"rgba(113,50,245,0.12)"}}>
+                <div className="flex items-center justify-between px-4 py-2.5 border-b border-line" style={{background:"rgba(62,207,142,0.12)"}}>
                   <div className="text-[11px] uppercase tracking-wider text-gold-400 font-semibold flex items-center gap-1.5">
                     <Icon name="cpu" className="w-3 h-3"/> Starter prompt
                   </div>
@@ -1012,7 +1012,7 @@ const QuickAction = ({ icon, title, desc, to, onClick, color = "violet" }) => {
     <a href={to ? "#" + to : "#"} onClick={handle}
       className="card-glass p-3 md:p-5 hov-lift block group"
       style={{ minHeight: 80, borderRadius: 16 }}>
-      <div className={`w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center mb-2 md:mb-3.5 transition-colors ${isGold ? "bg-gold-500/12 text-gold-300 group-hover:bg-gold-500/20" : "text-violet-300 group-hover:bg-violet-500/20"}`} style={!isGold ? {background:"rgba(113,50,245,0.14)"} : {}}>
+      <div className={`w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center mb-2 md:mb-3.5 transition-colors ${isGold ? "bg-gold-500/12 text-gold-300 group-hover:bg-gold-500/20" : "text-emerald-300 group-hover:bg-emerald-500/20"}`} style={!isGold ? {background:"rgba(62,207,142,0.14)"} : {}}>
         <Icon name={icon} className="w-4 h-4 md:w-5 md:h-5"/>
       </div>
       <div className="font-display text-sm md:text-base font-semibold text-ink mb-0.5 md:mb-1.5">{title}</div>

@@ -83,7 +83,7 @@ const PromptCard = ({ prompt, maddah, profile }) => {
         <div className={`text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap ${!showFull ? "line-clamp-4" : ""}`}>
           {resolvedPrompt}
         </div>
-        <button onClick={() => setShowFull(!showFull)} className="text-[11px] text-violet-300 hover:text-violet-200 mt-2 block">
+        <button onClick={() => setShowFull(!showFull)} className="text-[11px] text-emerald-300 hover:text-emerald-200 mt-2 block">
           {showFull ? "Sembunyikan" : "Lihat lengkap"}
         </button>
       </div>
@@ -144,7 +144,7 @@ const MaddahDetailPage = () => {
 
       {/* Header */}
       <section className="relative pt-4 md:pt-10 pb-6 md:pb-8 overflow-hidden">
-        <Blob color="rgba(124,77,255,0.18)" size={500} top={-150} right={-100}/>
+        <Blob color="rgba(62,207,142,0.18)" size={500} top={-150} right={-100}/>
         <div className="container-x relative">
           <button onClick={() => navigate("/maddah")}
             className="text-sm text-ink-soft hover:text-ink inline-flex items-center gap-2 mb-5">
@@ -170,8 +170,8 @@ const MaddahDetailPage = () => {
       {/* Coming soon banner if no content */}
       {!hasContent && (
         <section className="container-x mb-8">
-          <div className="card-glass p-5 border border-violet-600/22 bg-violet-600/5 text-center">
-            <div className="text-violet-300 font-medium mb-1">Konten lengkap segera hadir</div>
+          <div className="card-glass p-5 border border-emerald-600/22 bg-emerald-600/5 text-center">
+            <div className="text-emerald-300 font-medium mb-1">Konten lengkap segera hadir</div>
             <div className="text-sm text-ink-muted">
               Maddah ini sedang disiapkan dengan tutorial dan 15+ prompt template.
               Stay tuned — akan tersedia di update berikutnya.
@@ -290,10 +290,10 @@ const MaddahDetailPage = () => {
                       onClick={() => setActiveKind(kind.id)}
                       className={`flex-shrink-0 px-3 md:px-4 py-2 text-xs md:text-sm font-medium transition-colors flex items-center gap-1.5 md:gap-2 rounded-xl border ${
                         activeKind === kind.id
-                          ? "text-violet-200 border-violet-600/35"
+                          ? "text-emerald-200 border-emerald-600/35"
                           : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7 hover:text-ink"
                       }`}
-                      style={activeKind === kind.id ? {background:"rgba(113,50,245,0.20)",minHeight:36} : {minHeight:36}}
+                      style={activeKind === kind.id ? {background:"rgba(62,207,142,0.20)",minHeight:36} : {minHeight:36}}
                     >
                       <span>{kind.label}</span>
                       <span className="text-[10px] opacity-70">{count}</span>

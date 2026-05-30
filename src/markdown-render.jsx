@@ -28,7 +28,7 @@ const renderMarkdown = (raw) => {
     return escapeHtml(text)
       .replace(/\*\*(.+?)\*\*/g, '<strong class="text-ink font-semibold">$1</strong>')
       .replace(/\*(.+?)\*/g, '<em class="text-ink-muted italic">$1</em>')
-      .replace(/`(.+?)`/g, '<code class="font-mono text-xs bg-white/8 px-1.5 py-0.5 rounded text-violet-200">$1</code>');
+      .replace(/`(.+?)`/g, '<code class="font-mono text-xs bg-white/8 px-1.5 py-0.5 rounded text-emerald-200">$1</code>');
   };
 
   const isMostlyArabic = (text) => {
@@ -74,7 +74,7 @@ const renderMarkdown = (raw) => {
       if (isMostlyArabic(content)) {
         html.push(`<blockquote class="border-l-2 border-gold-500/50 pl-4 my-4"><p class="arabic text-gold-200 text-lg leading-loose" style="direction:rtl;text-align:right">${escapeHtml(content)}</p></blockquote>`);
       } else {
-        html.push(`<blockquote class="border-l-2 border-violet-500/40 pl-4 my-4 italic text-ink-muted">${inline(content)}</blockquote>`);
+        html.push(`<blockquote class="border-l-2 border-emerald-500/40 pl-4 my-4 italic text-ink-muted">${inline(content)}</blockquote>`);
       }
       continue;
     }

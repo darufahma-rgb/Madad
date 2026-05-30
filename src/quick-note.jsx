@@ -58,9 +58,9 @@ const QuickNoteModal = ({ open, onClose, contextLabel, contextSource }) => {
         </div>
 
         {contextSource && (
-          <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-xl" style={{background:"rgba(113,50,245,0.12)",border:"1px solid rgba(113,50,245,0.25)"}}>
-            <Icon name="bookmark" className="w-3.5 h-3.5 text-violet-300 flex-shrink-0"/>
-            <span className="text-xs text-violet-200 truncate">Terhubung ke: {contextLabel}</span>
+          <div className="mb-4 flex items-center gap-2 px-3 py-2 rounded-xl" style={{background:"rgba(62,207,142,0.12)",border:"1px solid rgba(62,207,142,0.25)"}}>
+            <Icon name="bookmark" className="w-3.5 h-3.5 text-emerald-300 flex-shrink-0"/>
+            <span className="text-xs text-emerald-200 truncate">Terhubung ke: {contextLabel}</span>
           </div>
         )}
 
@@ -70,7 +70,7 @@ const QuickNoteModal = ({ open, onClose, contextLabel, contextSource }) => {
           placeholder="Judul catatan..."
           className="w-full bg-transparent text-ink font-display text-lg placeholder-ink-soft border-b pb-3 mb-4 outline-none transition-colors"
           style={{borderColor:"rgba(255,255,255,0.10)"}}
-          onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.55)"}
+          onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.55)"}
           onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
         />
         <textarea
@@ -80,7 +80,7 @@ const QuickNoteModal = ({ open, onClose, contextLabel, contextSource }) => {
           rows={6}
           className="w-full bg-white/4 rounded-xl p-4 text-sm text-ink-muted placeholder-ink-soft outline-none transition-colors resize-none leading-relaxed border"
           style={{borderColor:"rgba(255,255,255,0.09)"}}
-          onFocus={e => { e.target.style.borderColor="rgba(113,50,245,0.40)"; e.target.style.background="rgba(255,255,255,0.05)"; }}
+          onFocus={e => { e.target.style.borderColor="rgba(62,207,142,0.40)"; e.target.style.background="rgba(255,255,255,0.05)"; }}
           onBlur={e => { e.target.style.borderColor="rgba(255,255,255,0.09)"; e.target.style.background="rgba(255,255,255,0.04)"; }}
         />
 
@@ -91,8 +91,8 @@ const QuickNoteModal = ({ open, onClose, contextLabel, contextSource }) => {
               const active = tags.includes(tag);
               return (
                 <button key={tag} type="button" onClick={() => toggleTag(tag)}
-                  className={`text-[11px] px-2.5 py-1 rounded-lg font-medium border transition-colors ${active ? "text-violet-200 border-violet-600/35" : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"}`}
-                  style={active ? {background:"rgba(113,50,245,0.20)"} : {}}>
+                  className={`text-[11px] px-2.5 py-1 rounded-lg font-medium border transition-colors ${active ? "text-emerald-200 border-emerald-600/35" : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"}`}
+                  style={active ? {background:"rgba(62,207,142,0.20)"} : {}}>
                   {tag}
                 </button>
               );
@@ -153,8 +153,8 @@ const QuickNoteButton = () => {
       <button
         onClick={() => setOpen(true)}
         title="Tulis catatan cepat ke Kurasah"
-        className="fixed bottom-6 right-6 z-50 rounded-full card-glass-strong text-violet-200 hover:text-violet-100 transition-all shadow-lg flex items-center justify-center hov-lift"
-        style={{width:52,height:52,border:"1px solid rgba(113,50,245,0.40)",boxShadow:"0 4px 20px rgba(113,50,245,0.22)"}}>
+        className="fixed bottom-6 right-6 z-50 rounded-full card-glass-strong text-emerald-200 hover:text-emerald-100 transition-all shadow-lg flex items-center justify-center hov-lift"
+        style={{width:52,height:52,border:"1px solid rgba(62,207,142,0.40)",boxShadow:"0 4px 20px rgba(62,207,142,0.22)"}}>
         <Icon name="pen" className="w-5 h-5"/>
       </button>
       <QuickNoteModal

@@ -248,7 +248,7 @@ Tolong bantu aku merenungkan mas'alah ini dengan adab thalib:
             <Reveal className="mt-12">
               <div className="card-glass-strong p-7 rounded-xl" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="w-1 h-10 rounded-full bg-gradient-to-b from-violet-400 to-gold-400/60"/>
+                  <div className="w-1 h-10 rounded-full bg-gradient-to-b from-emerald-400 to-gold-400/60"/>
                   <div>
                     <div className="text-[10px] uppercase tracking-wider text-ink-soft">Refleksi</div>
                     <h2 className="font-display text-xl font-semibold text-ink">Titik Perbedaan</h2>

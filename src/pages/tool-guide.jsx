@@ -82,7 +82,7 @@ const ToolCardListItem = ({ tool, highlighted, reason }) => (
       <div className="font-display text-xl font-semibold text-ink">{tool.name}</div>
       <div className="text-xs text-ink-soft mb-3">{tool.by}</div>
       <p className="text-sm text-ink-muted leading-relaxed clamp-3 mb-4">{reason ? `Untukmu: ${reason}.` : tool.description}</p>
-      <div className="flex items-center justify-between text-xs text-violet-300">
+      <div className="flex items-center justify-between text-xs text-emerald-300">
         <span>Lihat adaptive guide</span>
         <Icon name="arrowRight" className="w-3.5 h-3.5"/>
       </div>
@@ -190,7 +190,7 @@ const SingleToolGuide = ({ toolId, profile }) => {
                 <ol className="space-y-4">
                   {guide.steps.map((step, i) => (
                     <li key={i} className="flex items-start gap-3">
-                      <span className="w-7 h-7 rounded-full text-violet-200 text-sm flex items-center justify-center font-semibold flex-shrink-0" style={{background:"rgba(113,50,245,0.18)",border:"1px solid rgba(113,50,245,0.30)"}}>{i+1}</span>
+                      <span className="w-7 h-7 rounded-full text-emerald-200 text-sm flex items-center justify-center font-semibold flex-shrink-0" style={{background:"rgba(62,207,142,0.18)",border:"1px solid rgba(62,207,142,0.30)"}}>{i+1}</span>
                       <span className="text-ink leading-relaxed pt-0.5">{step}</span>
                     </li>
                   ))}
@@ -199,7 +199,7 @@ const SingleToolGuide = ({ toolId, profile }) => {
 
               {/* Starter prompt */}
               <Reveal className="rounded-2xl overflow-hidden" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
-                <div className="flex items-center justify-between px-5 py-3 border-b border-line" style={{background:"rgba(113,50,245,0.12)"}}>
+                <div className="flex items-center justify-between px-5 py-3 border-b border-line" style={{background:"rgba(62,207,142,0.12)"}}>
                   <div className="text-xs uppercase tracking-wider text-gold-400 flex items-center gap-2">
                     <Icon name="cpu" className="w-3.5 h-3.5"/> Starter prompt
                   </div>

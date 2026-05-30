@@ -32,11 +32,11 @@ const PraktikContent = ({ content }) => {
     <div className="space-y-5">
       <p className="text-sm text-ink-muted leading-relaxed">{content.intro}</p>
       <div>
-        <div className="text-[11px] uppercase tracking-wider text-violet-300 mb-3 font-medium">Langkah-langkah</div>
+        <div className="text-[11px] uppercase tracking-wider text-emerald-300 mb-3 font-medium">Langkah-langkah</div>
         <ol className="space-y-3">
           {content.steps.map((s, i) => (
             <li key={i} className="flex items-start gap-3 text-sm text-ink-muted">
-              <span className="w-6 h-6 rounded-full text-violet-200 text-[11px] font-semibold flex items-center justify-center flex-shrink-0 mt-0.5" style={{background:"rgba(113,50,245,0.18)",border:"1px solid rgba(113,50,245,0.28)"}}>{i + 1}</span>
+              <span className="w-6 h-6 rounded-full text-emerald-200 text-[11px] font-semibold flex items-center justify-center flex-shrink-0 mt-0.5" style={{background:"rgba(62,207,142,0.18)",border:"1px solid rgba(62,207,142,0.28)"}}>{i + 1}</span>
               <span className="leading-relaxed">{s}</span>
             </li>
           ))}
@@ -71,7 +71,7 @@ const TourContent = ({ content }) => {
     <div>
       <p className="text-sm text-ink-muted leading-relaxed mb-5">{content.intro}</p>
       <div className="card-glass p-5 mb-5 min-h-[140px] relative overflow-hidden">
-        <Blob color="rgba(124,77,255,0.15)" size={220} top={-60} right={-60}/>
+        <Blob color="rgba(62,207,142,0.15)" size={220} top={-60} right={-60}/>
         <div className="relative">
           <div className="flex items-center gap-3 mb-3">
             {tool && <ToolIcon tool={tool} size="w-12 h-12"/>}
@@ -219,7 +219,7 @@ const PathsPage = () => {
                   className={`px-5 py-3 rounded-xl text-sm font-medium transition-all flex items-center gap-3 ${isOpen
                     ? "text-ink"
                     : "bg-white/4 text-ink-muted hover:bg-white/6 hover:text-ink border border-white/8"}`}
-              style={isOpen ? {background:"rgba(113,50,245,0.18)",border:"1px solid rgba(113,50,245,0.35)",boxShadow:"0 0 0 1px rgba(113,50,245,0.18), 0 4px 16px rgba(113,50,245,0.15)"} : {}}>
+              style={isOpen ? {background:"rgba(62,207,142,0.18)",border:"1px solid rgba(62,207,142,0.35)",boxShadow:"0 0 0 1px rgba(62,207,142,0.18), 0 4px 16px rgba(62,207,142,0.15)"} : {}}>
                   <span className="text-lg">{path.icon}</span>
                   <span>
                     <span className="block text-[10px] uppercase tracking-wider opacity-60">{path.level}</span>
@@ -266,8 +266,8 @@ const PathsPage = () => {
                     return (
                       <div key={module.id} className={`card-glass p-5 transition-all ${done ? "opacity-65" : "hov-lift"}`}>
                         <div className="flex items-center gap-4">
-                          <span className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${done ? "bg-gold-500/20 text-gold-400" : "text-violet-300"}`}
-                            style={!done ? {background:"rgba(113,50,245,0.18)"} : {}}>
+                          <span className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${done ? "bg-gold-500/20 text-gold-400" : "text-emerald-300"}`}
+                            style={!done ? {background:"rgba(62,207,142,0.18)"} : {}}>
                             {done ? <Icon name="check" className="w-5 h-5" strokeWidth={2.4}/> : <span className="font-display text-base font-semibold num">{i + 1}</span>}
                           </span>
                           <div className="flex-1 min-w-0">
@@ -297,7 +297,7 @@ const PathsPage = () => {
                   <Reveal className="mt-6">
                     <div className="card-glass-strong p-7 text-center relative overflow-hidden">
                       <Blob color="rgba(201,168,106,0.32)" size={300} top={-100} left={-50}/>
-                      <Blob color="rgba(124,77,255,0.28)" size={250} bottom={-100} right={-50}/>
+                      <Blob color="rgba(62,207,142,0.28)" size={250} bottom={-100} right={-50}/>
                       <div className="relative">
                         <div className="arabic-display-classical text-3xl text-gold-300 mb-2 leading-loose">الْحَمْدُ لِلَّهِ الَّذِي بِنِعْمَتِهِ تَتِمُّ الصَّالِحَاتُ</div>
                         <p className="text-xs text-gold-400/70 mb-4 italic">"Segala puji bagi Allah yang dengan nikmat-Nya segala kebaikan menjadi sempurna."</p>

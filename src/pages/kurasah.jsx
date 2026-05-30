@@ -1,7 +1,7 @@
 /* Talqih, Kurasah (Notebook) Landing Page */
 
 const TAG_COLORS = [
-  "rgba(124,77,255,0.18)", "rgba(169,112,255,0.18)", "rgba(201,168,106,0.15)",
+  "rgba(62,207,142,0.18)", "rgba(169,112,255,0.18)", "rgba(201,168,106,0.15)",
   "rgba(80,180,200,0.15)", "rgba(160,200,100,0.12)", "rgba(220,100,150,0.15)",
 ];
 
@@ -201,23 +201,23 @@ const KurasahPage = () => {
               <input value={search} onChange={e => setSearch(e.target.value)}
                 placeholder="Cari catatan, tag..."
                 className="w-full pl-11 pr-4 py-3 bg-white/4 border border-white/10 rounded-xl text-sm text-ink placeholder-ink-soft outline-none transition-all"
-                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
                 onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
             </div>
           </Reveal>
           <Reveal className="flex items-center gap-2 flex-wrap mb-2">
             {srcFilters.map(f => (
               <button key={f.id} onClick={() => setSourceFilter(f.id)}
-                className={`text-xs px-3 py-1.5 rounded-xl border font-medium transition-all ${sourceFilter === f.id ? "text-violet-200 border-violet-600/35" : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"}`}
-                style={sourceFilter === f.id ? {background:"rgba(113,50,245,0.20)"} : {}}>
+                className={`text-xs px-3 py-1.5 rounded-xl border font-medium transition-all ${sourceFilter === f.id ? "text-emerald-200 border-emerald-600/35" : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"}`}
+                style={sourceFilter === f.id ? {background:"rgba(62,207,142,0.20)"} : {}}>
                 {f.label}
               </button>
             ))}
             {allTags.length > 0 && <div className="w-px h-4 bg-line"/>}
             {allTags.slice(0,8).map(t => (
               <button key={t} onClick={() => setTagFilter(tagFilter === t ? "all" : t)}
-                className={`text-xs px-3 py-1.5 rounded-xl border font-medium transition-all ${tagFilter === t ? "text-violet-200 border-violet-600/35" : "text-ink-muted border-white/8 hover:bg-white/7"}`}
-                style={tagFilter === t ? {background:"rgba(113,50,245,0.20)"} : {background: getTagColor(t)}}>
+                className={`text-xs px-3 py-1.5 rounded-xl border font-medium transition-all ${tagFilter === t ? "text-emerald-200 border-emerald-600/35" : "text-ink-muted border-white/8 hover:bg-white/7"}`}
+                style={tagFilter === t ? {background:"rgba(62,207,142,0.20)"} : {background: getTagColor(t)}}>
                 {t}
               </button>
             ))}

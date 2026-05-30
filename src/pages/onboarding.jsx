@@ -74,7 +74,7 @@ const S2SetupStep = ({ profile, onSave }) => {
                 placeholder="mis. Fiqh Nawazil / فقه النوازل"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink outline-none transition-colors"
                 style={{fontSize: 16, borderRadius: 12}}
-                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.50)"}
+                onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.50)"}
                 onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
               />
             </div>
@@ -89,7 +89,7 @@ const S2SetupStep = ({ profile, onSave }) => {
                 placeholder="mis. Al-Fiqh al-Islami wa Adillatuh / نظرية الضرورة"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink outline-none transition-colors"
                 style={{fontSize: 16, borderRadius: 12}}
-                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.50)"}
+                onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.50)"}
                 onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
               />
               <p className="text-[11px] text-ink-soft/60 mt-1">
@@ -110,7 +110,7 @@ const S2SetupStep = ({ profile, onSave }) => {
       {maddahList.length < 7 && (
         <button
           onClick={addMaddah}
-          className="w-full py-2.5 rounded-xl border border-dashed text-sm text-ink-soft hover:text-ink transition-colors mb-8" style={{borderColor:"rgba(113,50,245,0.28)"}}>
+          className="w-full py-2.5 rounded-xl border border-dashed text-sm text-ink-soft hover:text-ink transition-colors mb-8" style={{borderColor:"rgba(62,207,142,0.28)"}}>
           + Tambah maddah lain
         </button>
       )}
@@ -299,7 +299,7 @@ const OnboardingPage = () => {
   return (
     <div className="page-enter min-h-screen flex flex-col">
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <Blob color="rgba(124,77,255,0.30)" size={520} top={-100} right={-100}/>
+        <Blob color="rgba(62,207,142,0.30)" size={520} top={-100} right={-100}/>
         <Blob color="rgba(201,168,106,0.15)" size={400} bottom={-100} left={-100}/>
       </div>
       <div className="container-x py-12 md:py-16 flex-1 flex flex-col relative">
@@ -378,7 +378,7 @@ const Intro = ({ session, onNext }) => (
           "Cara belajar yang paling nyaman",
         ].map((t, i) => (
           <li key={i} className="flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full text-violet-200 text-xs flex items-center justify-center font-semibold flex-shrink-0" style={{background:"rgba(113,50,245,0.20)",border:"1px solid rgba(113,50,245,0.30)"}}>
+            <span className="w-6 h-6 rounded-full text-emerald-200 text-xs flex items-center justify-center font-semibold flex-shrink-0" style={{background:"rgba(62,207,142,0.20)",border:"1px solid rgba(62,207,142,0.30)"}}>
               {i + 1}
             </span>
             {t}
@@ -425,9 +425,9 @@ const QuestionStep = ({ question, options, value, onPick }) => {
           return (
             <button key={opt.id} onClick={() => onPick(opt.id)}
               className={`text-left p-5 rounded-xl border transition-all relative ${sel
-                ? "border-violet-500/60"
-                : "bg-white/4 border-white/8 hover:bg-white/6 hover:border-violet-600/35"}`}
-              style={sel ? {background:"rgba(113,50,245,0.14)", borderColor:"rgba(113,50,245,0.55)", boxShadow:"0 0 0 1px rgba(113,50,245,0.22), 0 4px 20px rgba(113,50,245,0.18)"} : {}}>
+                ? "border-emerald-500/60"
+                : "bg-white/4 border-white/8 hover:bg-white/6 hover:border-emerald-600/35"}`}
+              style={sel ? {background:"rgba(62,207,142,0.14)", borderColor:"rgba(62,207,142,0.55)", boxShadow:"0 0 0 1px rgba(62,207,142,0.22), 0 4px 20px rgba(62,207,142,0.18)"} : {}}>
               <div className="flex items-start justify-between mb-2">
                 {question.iconType === "emoji" && <span className="text-3xl">{opt.emoji}</span>}
                 {(question.iconType === "arabic" || isArabicSmall) && (
@@ -436,7 +436,7 @@ const QuestionStep = ({ question, options, value, onPick }) => {
                   </span>
                 )}
                 {question.iconType === "lucide" && (
-                  <span className={`w-9 h-9 rounded-lg flex items-center justify-center ${sel ? "text-white" : "bg-white/8 text-violet-300"}`} style={sel ? {background:"var(--kraken-purple)"} : {}}>
+                  <span className={`w-9 h-9 rounded-lg flex items-center justify-center ${sel ? "text-white" : "bg-white/8 text-emerald-300"}`} style={sel ? {background:"var(--kraken-purple)"} : {}}>
                     <Icon name={opt.icon} className="w-4 h-4"/>
                   </span>
                 )}
@@ -445,7 +445,7 @@ const QuestionStep = ({ question, options, value, onPick }) => {
                     {sel && <Icon name="check" className="w-3 h-3" strokeWidth={3}/>}
                   </span>
                 )}
-                {!isMulti && sel && <Icon name="check" className="w-5 h-5 text-violet-300" strokeWidth={2.4}/>}
+                {!isMulti && sel && <Icon name="check" className="w-5 h-5 text-emerald-300" strokeWidth={2.4}/>}
               </div>
               <div className="font-display text-lg font-semibold text-ink">{opt.label}</div>
               {opt.desc && <div className="text-xs text-ink-muted mt-1 leading-relaxed">{opt.desc}</div>}

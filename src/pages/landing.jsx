@@ -141,7 +141,7 @@ const HeroCard = () => (
 
       {/* AI chips */}
       <div className="flex flex-wrap gap-1.5 mt-3 mb-4">
-        <span className="text-[11px] px-2.5 py-1 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/25 font-medium">Claude</span>
+        <span className="text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/25 font-medium">Claude</span>
         <span className="text-[11px] px-2.5 py-1 rounded-full bg-gold-500/10 text-gold-300 border border-gold-500/22 font-medium">NotebookLM</span>
       </div>
 
@@ -156,8 +156,8 @@ const HeroCard = () => (
       <div className="text-xs text-ink-soft mb-4">Pahami · Hafal · Latihan · Ujian</div>
 
       {/* AI Recommendation box */}
-      <div className="rounded-xl p-3.5" style={{ background:"rgba(124,77,255,0.10)", border:"1px solid rgba(124,77,255,0.18)" }}>
-        <div className="text-[10px] uppercase tracking-wider text-violet-300 font-medium mb-2 flex items-center gap-1.5">
+      <div className="rounded-xl p-3.5" style={{ background:"rgba(62,207,142,0.10)", border:"1px solid rgba(62,207,142,0.18)" }}>
+        <div className="text-[10px] uppercase tracking-wider text-emerald-300 font-medium mb-2 flex items-center gap-1.5">
           <span className="text-gold-400">✦</span> AI Rekomendasi
         </div>
         <div className="text-sm font-semibold text-ink mb-1">NotebookLM</div>
@@ -175,7 +175,7 @@ const HeroShowcaseCard = () => (
     {/* Glow behind card */}
     <div className="absolute pointer-events-none" style={{
       inset: "-24px",
-      background: "linear-gradient(135deg, rgba(124,77,255,0.25), rgba(201,168,106,0.12))",
+      background: "linear-gradient(135deg, rgba(62,207,142,0.25), rgba(201,168,106,0.12))",
       filter: "blur(48px)",
       borderRadius: "50%",
     }}/>
@@ -190,7 +190,7 @@ const HeroShowcaseCard = () => (
       </div>
       {/* AI chips */}
       <div className="flex gap-2 mb-5">
-        <span className="text-[11px] px-2.5 py-1 rounded-full bg-violet-500/15 text-violet-300 border border-violet-500/25 font-medium">Claude</span>
+        <span className="text-[11px] px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/25 font-medium">Claude</span>
         <span className="text-[11px] px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-ink-muted font-medium">NotebookLM</span>
       </div>
       {/* Stats */}
@@ -295,7 +295,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
             Sudah punya kode?{" "}
             <button
               onClick={onOpenLogin}
-              style={{ color:"#A78BFA", textDecoration:"underline", textUnderlineOffset:"3px", background:"none", border:"none", cursor:"pointer", fontSize:"14px" }}
+              style={{ color:"#3ecf8e", textDecoration:"underline", textUnderlineOffset:"3px", background:"none", border:"none", cursor:"pointer", fontSize:"14px" }}
             >
               Masuk di sini
             </button>
@@ -569,7 +569,7 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
         <div className="mt-10 text-sm text-ink-soft">
           Sudah punya kode?{" "}
           <button onClick={onOpenLogin}
-            className="text-violet-300 hover:text-violet-200 underline underline-offset-2 font-medium">
+            className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2 font-medium">
             Masuk di sini
           </button>
         </div>
