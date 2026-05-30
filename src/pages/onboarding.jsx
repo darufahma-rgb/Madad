@@ -212,7 +212,7 @@ const OnboardingPage = () => {
       key: "mahad_struggle",
       title: "Pelajaran mana yang paling jadi tantangan?",
       hint: "Boleh pilih lebih dari satu",
-      options: MAHAD_STRUGGLES,
+      optionsFn: (d) => getMahadStruggles(d.level),
       multi: true,
       iconType: "lucide",
       conditional: (d) => isMahadLevel(d.level),

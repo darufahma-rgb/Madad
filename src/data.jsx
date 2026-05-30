@@ -30,16 +30,28 @@ const STRUGGLES = [
 ];
 
 /* ============ STRUGGLES (Ma'had) ============ */
-const MAHAD_STRUGGLES = [
-  { id: "math_arab",    label: "Matematika bahasa Arab",   desc: "Berhitung & rumus dalam bahasa Arab",         icon: "target" },
-  { id: "sains_arab",   label: "Sains dalam bahasa Arab",  desc: "Fisika, Kimia, Biologi dalam bahasa Arab",    icon: "layers" },
-  { id: "sejarah_geo",  label: "Sejarah & Geografi",       desc: "Pelajaran IPS dalam bahasa Arab",             icon: "search" },
-  { id: "hafalan",      label: "Hafalan Al-Qur'an",        desc: "Murajaah dan penambahan hafalan",             icon: "book" },
-  { id: "insya",        label: "Insya' (mengarang)",       desc: "Menulis karangan dalam bahasa Arab",          icon: "pen" },
-  { id: "fahm_maqru",   label: "Fahm Maqru'",              desc: "Memahami teks soal ujian dalam bahasa Arab",  icon: "bookOpen" },
-  { id: "nahwu_sharaf", label: "Nahwu & Sharaf dasar",     desc: "Tata bahasa Arab tingkat awal",               icon: "list" },
-  { id: "english",      label: "Bahasa Inggris",           desc: "Pelajaran bahasa Inggris di sekolah",         icon: "messageSquare" },
+const _MAHAD_STRUGGLES_COMMON = [
+  { id: "hafalan",      label: "Hafalan Al-Qur'an",    desc: "Murajaah dan penambahan hafalan",            icon: "book" },
+  { id: "insya",        label: "Insya' (mengarang)",   desc: "Menulis karangan dalam bahasa Arab",         icon: "pen" },
+  { id: "fahm_maqru",   label: "Fahm Maqru'",          desc: "Memahami teks soal ujian dalam bahasa Arab", icon: "bookOpen" },
+  { id: "nahwu_sharaf", label: "Nahwu & Sharaf",       desc: "Tata bahasa Arab",                          icon: "list" },
+  { id: "english",      label: "Bahasa Inggris",       desc: "Pelajaran bahasa Inggris di sekolah",       icon: "messageSquare" },
 ];
+const _MAHAD_STRUGGLES_IDAD = [
+  { id: "math_arab",  label: "Matematika bahasa Arab",  desc: "Berhitung & rumus dalam bahasa Arab",       icon: "target" },
+  { id: "sains_arab", label: "Sains dalam bahasa Arab", desc: "Fisika, Kimia, Biologi dalam bahasa Arab",  icon: "layers" },
+];
+const _MAHAD_STRUGGLES_TSANAWI = [
+  { id: "sejarah_geo", label: "Sejarah & Geografi", desc: "Pelajaran IPS dalam bahasa Arab", icon: "search" },
+  { id: "mantiq",      label: "Mantiq",             desc: "Ilmu logika Islam",               icon: "layers" },
+];
+const getMahadStruggles = (level) => {
+  const isIdad    = level?.startsWith("idad");
+  const isTsanawi = level?.startsWith("tsanawi");
+  if (isIdad)    return [..._MAHAD_STRUGGLES_COMMON, ..._MAHAD_STRUGGLES_IDAD];
+  if (isTsanawi) return [..._MAHAD_STRUGGLES_COMMON, ..._MAHAD_STRUGGLES_TSANAWI];
+  return _MAHAD_STRUGGLES_COMMON;
+};
 
 /* ============ MA'HAD YEARS ============ */
 const MAHAD_YEARS = [
@@ -1150,4 +1162,5 @@ Object.assign(window, {
   LEARNING_PATHS, allModules,
   ETHICS_POINTS,
   DEFAULT_MEMBERS,
+  getMahadStruggles,
 });
