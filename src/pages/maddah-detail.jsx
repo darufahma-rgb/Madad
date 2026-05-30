@@ -142,8 +142,18 @@ const MaddahDetailPage = () => {
   const hasContent   = maddah.prompts && Object.values(maddah.prompts).some(arr =>
     Array.isArray(arr) && arr.some(p => p && p.template)
   );
-  const totalPrompts = hasContent ? Object.values(maddah.prompts).reduce((s, arr) => s + arr.length, 0) : 0;
+  const totalPrompts = hasContent
+    ? Object.values(maddah.prompts).reduce((s, arr) =>
+        s + (Array.isArray(arr) ? arr.length : 0), 0)
+    : 0;
   const catLabel     = MADDAH_CATEGORIES.find(c => c.id === maddah.category)?.label;
+
+  // Defensive: field opsional yang mungkin tidak ada di semua maddah
+  const kitabUtama    = Array.isArray(maddah.kitabUtama)    ? maddah.kitabUtama    : [];
+  const recommendedAI = Array.isArray(maddah.recommendedAI) ? maddah.recommendedAI : [];
+  const tutorial      = maddah.tutorial && Array.isArray(maddah.tutorial.steps)
+    ? maddah.tutorial
+    : { overview: "", steps: [] };
 
   return (
     <div className="page-enter">
@@ -189,13 +199,13 @@ const MaddahDetailPage = () => {
       {hasContent && (
         <>
           {/* Kitab Utama */}
-          {maddah.kitabUtama.length > 0 && (
+          {kitabUtama.length > 0 && (
             <section className="container-x mb-8">
               <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
                 <span className="w-6 h-px bg-gold-500/70"/>Kitab Utama
               </h2>
               <div className="flex md:grid md:grid-cols-4 gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 mobile-scroll pb-1 md:pb-0">
-                {maddah.kitabUtama.map((k, i) => (
+                {kitabUtama.map((k, i) => (
                   <div key={i} className="card-glass p-4 w-44 md:w-auto flex-shrink-0 md:flex-shrink">
                     <div className="arabic-display text-gold-300 text-lg mb-1" style={{direction:"rtl"}}>{k.arabic}</div>
                     <div className="font-display text-sm font-semibold text-ink">{k.nama}</div>
@@ -207,13 +217,13 @@ const MaddahDetailPage = () => {
           )}
 
           {/* AI Recommendation */}
-          {maddah.recommendedAI.length > 0 && (
+          {recommendedAI.length > 0 && (
             <section className="container-x mb-8">
               <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
                 <span className="w-6 h-px bg-gold-500/70"/>AI yang Direkomendasikan
               </h2>
               <div className="grid md:grid-cols-2 gap-4">
-                {maddah.recommendedAI.map((ai, i) => {
+                {recommendedAI.map((ai, i) => {
                   const tool = AI_TOOLS.find(t => t.id === ai.tool);
                   return (
                     <div key={i} className="card-glass-strong p-5">
@@ -234,16 +244,16 @@ const MaddahDetailPage = () => {
           )}
 
           {/* Tutorial */}
-          {maddah.tutorial.steps.length > 0 && (
+          {tutorial.steps.length > 0 && (
             <section className="container-x mb-10">
               <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
                 <span className="w-6 h-px bg-gold-500/70"/>Tutorial Pakai AI
               </h2>
-              {maddah.tutorial.overview && (
-                <p className="text-sm text-ink-muted mb-4">{maddah.tutorial.overview}</p>
+              {tutorial.overview && (
+                <p className="text-sm text-ink-muted mb-4">{tutorial.overview}</p>
               )}
               <div className="space-y-3">
-                {maddah.tutorial.steps.map((s, i) => (
+                {tutorial.steps.map((s, i) => (
                   <div key={i} className="card-glass p-4 flex gap-4 items-start">
                     <div className="font-display text-2xl text-gold-400 flex-shrink-0">{String(i+1).padStart(2,"0")}</div>
                     <div>
