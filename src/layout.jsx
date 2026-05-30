@@ -357,30 +357,38 @@ const Footer = () => (
         </div>
       </div>
       <div className="divider-arabesque mt-10 opacity-50"/>
-      <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+
+      {/* Khat Arab dekoratif — center, di atas copyright */}
+      <div
+        aria-hidden="true"
+        style={{
+          fontFamily: "'Scheherazade New', serif",
+          fontSize: "clamp(72px, 10vw, 140px)",
+          fontWeight: 700,
+          color: "transparent",
+          background: "linear-gradient(135deg, rgba(212,160,23,0.15) 0%, rgba(212,160,23,0.5) 40%, rgba(212,160,23,0.2) 100%)",
+          WebkitBackgroundClip: "text",
+          backgroundClip: "text",
+          textAlign: "center",
+          display: "block",
+          lineHeight: 1.2,
+          letterSpacing: "0.05em",
+          marginTop: "24px",
+          marginBottom: "32px",
+          userSelect: "none",
+          pointerEvents: "none",
+        }}
+      >
+        تَلْقِيْح
+      </div>
+
+      <div className="flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
         <div className="text-ink-soft">© {new Date().getFullYear()} Talqeeh · All rights reserved.</div>
         <div className="text-ink-muted tracking-wider flex flex-col items-end gap-1">
           <span className="text-ink-soft font-medium">Talqeeh — Panduan Belajar Al-Azhar dengan AI</span>
           <span>Designed &amp; Developed by <span className="text-gold-400 font-medium">Dar Dev</span></span>
         </div>
       </div>
-    </div>
-    <div
-      className="arabic-classic w-full text-right overflow-hidden select-none pointer-events-none"
-      style={{
-        fontSize: "clamp(80px, 18vw, 240px)",
-        lineHeight: 1,
-        color: "rgba(212,178,125,0.18)",
-        WebkitTextStroke: "1px rgba(212,178,125,0.80)",
-        letterSpacing: "-0.02em",
-        direction: "rtl",
-        paddingRight: "4vw",
-        paddingBottom: "0.1em",
-        marginTop: "-0.15em",
-      }}
-      aria-hidden="true"
-    >
-      تلقيح
     </div>
   </footer>
 );
