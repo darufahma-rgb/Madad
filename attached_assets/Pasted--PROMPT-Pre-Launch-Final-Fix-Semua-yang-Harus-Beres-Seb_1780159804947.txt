@@ -1,0 +1,503 @@
+# PROMPT: Pre-Launch Final Fix — Semua yang Harus Beres Sebelum Launch
+
+Kerjakan berurutan. Jangan skip. Test setelah tiap section.
+
+---
+
+## SECTION 1 — SECURITY (Paling Urgent)
+
+### 1.1 — Ganti Admin PIN
+
+File: `src/pages/admin.jsx` baris 5
+
+```js
+// SEBELUM:
+const ADMIN_PIN = "260520";
+
+// SESUDAH — ganti dengan PIN baru yang hanya lo yang tahu:
+const ADMIN_PIN = ""; // ← isi PIN baru lo di sini
+```
+
+---
+
+### 1.2 — Batasi CORS di API
+
+File: `api/config.js`
+
+```js
+// SEBELUM:
+module.exports = (req, res) => {
+  if (req.method !== 'GET') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.status(200).json({
+    supabaseUrl:     process.env.SUPABASE_URL      || '',
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
+  });
+};
+
+// SESUDAH:
+module.exports = (req, res) => {
+  if (req.method !== 'GET') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  const origin = req.headers.origin || '';
+  const allowed = [
+    'https://talqeeh.vercel.app',
+    'https://talqeeh.com',
+    'http://localhost:3000',
+    process.env.ALLOWED_ORIGIN || '',
+  ].filter(Boolean);
+
+  if (allowed.some(a => origin.startsWith(a)) || !origin) {
+    res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  }
+
+  res.status(200).json({
+    supabaseUrl:     process.env.SUPABASE_URL      || '',
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
+  });
+};
+```
+
+File: `api/health.js`
+
+```js
+// Ganti:
+res.setHeader('Access-Control-Allow-Origin', '*');
+// Jadi:
+res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+```
+
+---
+
+## SECTION 2 — BUAT `api/send-wa.js` (Fitur Kritis yang Hilang)
+
+Buat file BARU `api/send-wa.js`:
+
+```js
+const https = require('https');
+
+module.exports = async (req, res) => {
+  // CORS
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') { res.status(204).end(); return; }
+  if (req.method !== 'POST') {
+    res.status(405).json({ ok: false, error: 'Method not allowed' });
+    return;
+  }
+
+  // Baca body
+  const rawBody = await new Promise(resolve => {
+    let d = '';
+    req.on('data', c => d += c);
+    req.on('end', () => resolve(d));
+  });
+
+  try {
+    const { to, message } = JSON.parse(rawBody);
+
+    if (!to || !message) {
+      res.status(400).json({ ok: false, error: 'to dan message wajib diisi' });
+      return;
+    }
+
+    const FONNTE_TOKEN = process.env.FONNTE_TOKEN || '';
+    if (!FONNTE_TOKEN) {
+      res.status(500).json({ ok: false, error: 'FONNTE_TOKEN belum diset di environment variables Vercel' });
+      return;
+    }
+
+    // Normalize nomor WA
+    let num = to.replace(/[^0-9]/g, '');
+    if (num.startsWith('0')) num = '62' + num.slice(1);
+    if (!num.startsWith('62')) num = '62' + num;
+
+    // Kirim via Fonnte
+    const data = `target=${num}&message=${encodeURIComponent(message)}&countryCode=62`;
+
+    const result = await new Promise((resolve, reject) => {
+      const u = new URL('https://api.fonnte.com/send');
+      const reqFonnte = https.request({
+        hostname: u.hostname,
+        path: u.pathname,
+        method: 'POST',
+        headers: {
+          'Authorization': FONNTE_TOKEN,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Length': Buffer.byteLength(data),
+        },
+      }, resFonnte => {
+        let d = '';
+        resFonnte.on('data', c => d += c);
+        resFonnte.on('end', () => {
+          try { resolve({ status: resFonnte.statusCode, data: JSON.parse(d) }); }
+          catch { resolve({ status: resFonnte.statusCode, data: d }); }
+        });
+      });
+      reqFonnte.on('error', reject);
+      reqFonnte.write(data);
+      reqFonnte.end();
+    });
+
+    console.log('[send-wa] Kirim ke', num, '→', result.status);
+    res.status(200).json({ ok: true, result });
+
+  } catch (err) {
+    console.error('[send-wa] Error:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  }
+};
+```
+
+Tambahkan juga route di `vercel.json` — cari bagian `"routes"` dan tambahkan sebelum route `/(.*)\\.(?:png|...)`:
+
+```json
+{
+  "src": "/api/send-wa",
+  "dest": "/api/send-wa.js"
+},
+```
+
+---
+
+## SECTION 3 — FIX `vercel.json` ROUTE REGEX
+
+File: `vercel.json`
+
+Cari route yang broken ini:
+```json
+{
+  "src": "/(.*)\\.(?:png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf)",
+  "dest": "/$1.$2",
+  "headers": {
+    "Cache-Control": "public, max-age=31536000"
+  }
+}
+```
+
+Ganti dengan (fix: `$2` tidak ada, harus `$1` yang include extension):
+```json
+{
+  "src": "/(.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf))",
+  "dest": "/$1",
+  "headers": {
+    "Cache-Control": "public, max-age=31536000, immutable"
+  }
+}
+```
+
+Juga tambahkan route `send-wa` yang baru (dari Section 2) ke dalam routes array.
+
+vercel.json final yang lengkap dan benar:
+
+```json
+{
+  "version": 2,
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "routes": [
+    {
+      "src": "/api/config",
+      "dest": "/api/config.js"
+    },
+    {
+      "src": "/api/health",
+      "dest": "/api/health.js"
+    },
+    {
+      "src": "/api/send-wa",
+      "dest": "/api/send-wa.js"
+    },
+    {
+      "src": "/src/(.*)\\.jsx",
+      "dest": "/src/$1.jsx",
+      "headers": {
+        "Content-Type": "application/javascript; charset=utf-8",
+        "Cache-Control": "public, max-age=3600"
+      }
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/assets/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/(.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf))",
+      "dest": "/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/src/(.*)\\.jsx",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/javascript; charset=utf-8"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Catatan: Route `/api/webhook/trakteer` dihapus karena sudah tidak dipakai (pakai Lynk sekarang).
+
+---
+
+## SECTION 4 — FIX BUGS KECIL
+
+### 4.1 — Fix Mobile Hamburger Menu NavLink
+
+File: `src/layout.jsx`
+
+Cari (sekitar baris 271) di mobile menu — ada kondisi active state:
+```jsx
+path === l.to || (l.to !== "/" && path.startsWith(l.to))
+```
+
+Ganti dengan:
+```jsx
+path === l.to || (l.to !== "/" && (path.startsWith(l.to + "/") || path.startsWith(l.to + "?")))
+```
+
+---
+
+### 4.2 — Bersihkan State Onboarding
+
+File: `src/pages/onboarding.jsx`
+
+Cari initial state (sekitar baris 131):
+```js
+mahad_year: null, mahad_jurusan: null, mahad_struggle: [],
+```
+
+Ganti dengan:
+```js
+mahad_struggle: [],
+```
+
+Hapus `mahad_year: null` dan `mahad_jurusan: null` — field ini sudah tidak dikumpulkan.
+
+---
+
+### 4.3 — Fix Lynk URL Baca dari Settings
+
+File: `src/layout.jsx`
+
+Cari (sekitar baris 517):
+```js
+window.open("https://lynk.id/talqee", "_blank", "noopener,noreferrer");
+```
+
+Ganti dengan:
+```js
+const lynkUrl = localStorage.getItem("talqeeh_lynk_url") || "https://lynk.id/talqee";
+window.open(lynkUrl, "_blank", "noopener,noreferrer");
+```
+
+---
+
+### 4.4 — Hapus Dead Code
+
+File: `src/layout.jsx`
+
+Cari dan hapus dua konstanta yang tidak dipakai di mana pun:
+```js
+const ROUTES_PUBLIC = ["/", "/ethics"];      // hapus
+const ROUTES_MEMBER = ["/onboarding", ...];  // hapus
+```
+
+---
+
+### 4.5 — Fix /mapel Edge Case
+
+File: `src/app.jsx`
+
+Cari:
+```js
+else if (path.startsWith("/mapel")) { navigate("/maddah"); page = null; routeLabel = "Maddah"; }
+```
+
+Ganti dengan:
+```js
+else if (path.startsWith("/mapel")) {
+  // Preserve sub-path kalau ada (mis. /mapel/nahwu → /maddah/nahwu)
+  const subPath = path.replace(/^\/mapel/, '');
+  navigate("/maddah" + subPath);
+  page = null;
+  routeLabel = "Maddah";
+}
+```
+
+---
+
+## SECTION 5 — PERFORMA
+
+### 5.1 — Hapus background-attachment: fixed
+
+File: `index.html`
+
+Cari:
+```css
+background-attachment: fixed;
+```
+
+Hapus baris ini. Background tetap jalan normal, scroll jadi smooth di mobile.
+
+---
+
+### 5.2 — Fix saveNotes (Hanya Sync yang Berubah)
+
+File: `src/auth.jsx`
+
+Cari fungsi `saveNotes`:
+```js
+const saveNotes = (notes) => {
+  localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(notes));
+  notes.forEach(n => sbSaveNote(n).catch(() => {}));
+};
+```
+
+Ganti dengan:
+```js
+const saveNotes = (notes, changedNoteId = null) => {
+  // Selalu simpan ke localStorage
+  localStorage.setItem(STORAGE_KEYS.NOTES, JSON.stringify(notes));
+
+  // Kirim ke Supabase hanya note yang berubah
+  if (changedNoteId) {
+    const changed = notes.find(n => n.id === changedNoteId);
+    if (changed) sbSaveNote(changed).catch(() => {});
+  } else {
+    // Sync semua tapi stagger supaya tidak flood Supabase
+    notes.forEach((n, i) => {
+      setTimeout(() => sbSaveNote(n).catch(() => {}), i * 200);
+    });
+  }
+};
+```
+
+Pastikan semua tempat yang call `saveNotes` dengan note yang baru diubah,
+pass ID note sebagai parameter kedua. Contoh di `kurasah-editor.jsx`:
+```js
+// Cari pola seperti ini:
+saveNotes([updatedNote, ...restNotes]);
+
+// Ganti jadi:
+saveNotes([updatedNote, ...restNotes], updatedNote.id);
+```
+
+---
+
+## SECTION 6 — TAMBAH .gitignore
+
+Buat atau update file `.gitignore` di root project:
+
+```
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+.next/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Talqeeh specific — jangan commit ke repo
+attached_assets/
+artifacts/
+uploads/
+zipFile.zip
+*.zip
+.thumbnail
+
+# Replit specific
+.replit
+replit.nix
+```
+
+---
+
+## Acceptance Criteria
+
+### Security
+- [ ] Admin PIN sudah diganti (bukan "260520" lagi)
+- [ ] `/api/send-wa` return 200 saat di-test (bukan 404)
+- [ ] `/api/health` → `{ fonnte: true }` kalau FONNTE_TOKEN sudah diset di Vercel
+
+### Deployment
+- [ ] `vercel.json` tidak punya route `/api/webhook/trakteer`
+- [ ] `vercel.json` route image/font tidak pakai `$2`
+- [ ] Deploy Vercel berhasil tanpa error
+
+### Bug Fixes
+- [ ] Mobile menu: `/maddah-publik` tidak highlight link "Maddah" member
+- [ ] `/mapel/nahwu` redirect ke `/maddah/nahwu` (preserve sub-path)
+- [ ] Onboarding initial state tidak punya `mahad_year` dan `mahad_jurusan`
+
+### Performa
+- [ ] Mobile scroll smooth (tidak ada background-attachment: fixed)
+- [ ] Edit satu catatan → 1 Supabase request (bukan N)
+
+### .gitignore
+- [ ] `attached_assets/` tidak ikut di commit berikutnya
+- [ ] `zipFile.zip` tidak ikut di commit berikutnya
+
+---
+
+## Yang Harus Dilakukan Manual (Tidak Bisa Lewat Replit)
+
+Setelah prompt ini selesai, lakukan secara manual:
+
+1. **Jadikan repo GitHub private:**
+   GitHub → repo Madad → Settings → Danger Zone → Change visibility → Private
+
+2. **Hapus file sampah dari git history:**
+   ```bash
+   git rm zipFile.zip
+   git rm -r attached_assets/
+   git commit -m "chore: hapus file tidak perlu dari repo"
+   git push
+   ```
+
+3. **Set environment variables di Vercel:**
+   Vercel → project → Settings → Environment Variables:
+   - SUPABASE_URL
+   - SUPABASE_ANON_KEY
+   - SUPABASE_SERVICE_KEY
+   - FONNTE_TOKEN
+   - ADMIN_WA
+
+4. **Test kirim WA dari admin panel** setelah deploy
+
+والله ولي التوفيق.

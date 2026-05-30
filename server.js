@@ -45,8 +45,13 @@ const SECURITY_HEADERS = {
   ].join('; '),
 };
 
-const CACHE_HEADERS = {
-  'Cache-Control': 'public, max-age=3600, stale-while-revalidate=86400',
+// Aset statis (gambar, font) boleh di-cache lama
+// File kode (html, jsx, js) JANGAN di-cache — supaya update langsung berlaku
+const ASSET_EXTS = new Set(['.png','.jpg','.jpeg','.svg','.ico','.webp','.woff','.woff2','.ttf']);
+const getCacheHeader = (ext) => {
+  if (ASSET_EXTS.has(ext)) return 'public, max-age=31536000, immutable';
+  if (ext === '.css')       return 'public, max-age=3600';
+  return 'no-cache, no-store, must-revalidate'; // html, jsx, js — selalu fresh
 };
 
 const addSecurityHeaders = (res) => {
@@ -144,7 +149,7 @@ http.createServer(async (req, res) => {
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME[ext] || 'application/octet-stream';
     addSecurityHeaders(res);
-    res.writeHead(200, { 'Content-Type': contentType, ...CACHE_HEADERS });
+    res.writeHead(200, { 'Content-Type': contentType, 'Cache-Control': getCacheHeader(ext) });
     res.end(data);
   });
 }).listen(PORT, '0.0.0.0', () => {
