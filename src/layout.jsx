@@ -186,7 +186,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   ];
   const publicLinks = [
     { to: "/#preview",  label: "Preview" },
-    { to: "/#tools",    label: "AI Tools" },
+    { to: "/#tools",    label: "Maddah" },
     { to: "/ethics",    label: "Etika" },
   ];
   const links = session ? memberLinks : publicLinks;
