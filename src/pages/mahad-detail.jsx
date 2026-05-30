@@ -204,15 +204,20 @@ const MahadDetailPage = () => {
           <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 inline-flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>Topik yang Tersedia
           </h2>
-          <div className="flex flex-wrap gap-2 mb-2">
+          {/* Mobile: geser horizontal. Desktop: wrap biasa */}
+          <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
             {maddah.topikUtama.map((t, i) => (
               <span key={i}
-                className="text-[11px] px-2.5 py-1 rounded-lg bg-white/5 border border-line text-ink-muted">
+                className="flex-shrink-0 text-[11px] px-3 py-1.5 rounded-lg bg-white/5 border border-line text-ink-muted whitespace-nowrap"
+                style={{minHeight: 32}}>
                 {t}
               </span>
             ))}
           </div>
-          <p className="text-[11px] text-ink-soft mt-1">
+          <p className="text-[11px] text-ink-soft mt-1.5 md:hidden">
+            ← Geser untuk lihat semua topik
+          </p>
+          <p className="text-[11px] text-ink-soft mt-1 hidden md:block">
             Ketik salah satu topik ini saat menggunakan prompt di bawah
           </p>
         </section>
