@@ -36,15 +36,15 @@ const PraktikContent = ({ content }) => {
         <ol className="space-y-3">
           {content.steps.map((s, i) => (
             <li key={i} className="flex items-start gap-3 text-sm text-ink-muted">
-              <span className="w-6 h-6 rounded-full bg-violet-500/15 text-violet-300 text-[11px] font-semibold flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
+              <span className="w-6 h-6 rounded-full text-violet-200 text-[11px] font-semibold flex items-center justify-center flex-shrink-0 mt-0.5" style={{background:"rgba(113,50,245,0.18)",border:"1px solid rgba(113,50,245,0.28)"}}>{i + 1}</span>
               <span className="leading-relaxed">{s}</span>
             </li>
           ))}
         </ol>
       </div>
       {content.practicePrompt && (
-        <div className="rounded-xl bg-white/3 border border-line overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-line">
+        <div className="rounded-xl overflow-hidden" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
+          <div className="flex items-center justify-between px-4 py-3" style={{borderBottom:"1px solid rgba(255,255,255,0.07)"}}>
             <div className="text-[11px] uppercase tracking-wider text-gold-400 font-medium">Prompt untuk dicoba</div>
             <button
               onClick={() => { navigator.clipboard.writeText(content.practicePrompt); toast.push("Prompt tersalin. Paste ke AI."); }}
@@ -90,7 +90,8 @@ const TourContent = ({ content }) => {
         <div className="flex gap-1.5">
           {stops.map((_, i) => (
             <button key={i} onClick={() => setStep(i)}
-              className={`w-2 h-2 rounded-full transition-all ${i === step ? "bg-violet-400 scale-110" : "bg-white/20 hover:bg-white/40"}`}/>
+              className={`w-2 h-2 rounded-full transition-all`}
+              style={i === step ? {background:"var(--kraken-purple)",transform:"scale(1.15)"} : {}}/>
           ))}
         </div>
         <button
@@ -216,8 +217,9 @@ const PathsPage = () => {
               return (
                 <button key={path.id} onClick={() => setOpenPath(path.id)}
                   className={`px-5 py-3 rounded-xl text-sm font-medium transition-all flex items-center gap-3 ${isOpen
-                    ? "bg-white/8 text-ink border border-violet-400/40 shadow-glow"
-                    : "bg-white/3 text-ink-muted hover:bg-white/5 hover:text-ink border border-line"}`}>
+                    ? "text-ink"
+                    : "bg-white/4 text-ink-muted hover:bg-white/6 hover:text-ink border border-white/8"}`}
+              style={isOpen ? {background:"rgba(113,50,245,0.18)",border:"1px solid rgba(113,50,245,0.35)",boxShadow:"0 0 0 1px rgba(113,50,245,0.18), 0 4px 16px rgba(113,50,245,0.15)"} : {}}>
                   <span className="text-lg">{path.icon}</span>
                   <span>
                     <span className="block text-[10px] uppercase tracking-wider opacity-60">{path.level}</span>
@@ -264,7 +266,8 @@ const PathsPage = () => {
                     return (
                       <div key={module.id} className={`card-glass p-5 transition-all ${done ? "opacity-65" : "hov-lift"}`}>
                         <div className="flex items-center gap-4">
-                          <span className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${done ? "bg-gold-500/20 text-gold-400" : "bg-violet-500/15 text-violet-300"}`}>
+                          <span className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${done ? "bg-gold-500/20 text-gold-400" : "text-violet-300"}`}
+                            style={!done ? {background:"rgba(113,50,245,0.18)"} : {}}>
                             {done ? <Icon name="check" className="w-5 h-5" strokeWidth={2.4}/> : <span className="font-display text-base font-semibold num">{i + 1}</span>}
                           </span>
                           <div className="flex-1 min-w-0">
@@ -276,7 +279,7 @@ const PathsPage = () => {
                             <div className={`font-display text-base font-semibold ${done ? "text-ink-muted line-through" : "text-ink"}`}>{module.title}</div>
                           </div>
                           {done ? (
-                            <span className="chip chip-glass text-[10px]">Selesai</span>
+                            <span className="badge-neutral text-[10px]">Selesai</span>
                           ) : (
                             <button
                               onClick={() => handleOpenModule(path, module)}
@@ -314,7 +317,7 @@ const PathsPage = () => {
       <section className="pb-20">
         <div className="container-x">
           <Reveal>
-            <div className="relative rounded-2xl overflow-hidden border border-line" style={{background:"linear-gradient(135deg, rgba(25,11,56,0.9) 0%, rgba(14,6,25,0.85) 100%)"}}>
+            <div className="relative rounded-2xl overflow-hidden" style={{border:"1px solid rgba(113,50,245,0.20)",background:"linear-gradient(135deg, rgba(25,11,56,0.9) 0%, rgba(14,6,25,0.85) 100%)"}}>
               <Blob color="rgba(201,168,106,0.14)" size={400} top={-120} right={-80}/>
               <Blob color="rgba(124,77,255,0.18)" size={350} bottom={-100} left={-60}/>
               <div className="relative p-8 md:p-12 grid md:grid-cols-12 gap-8 items-center">

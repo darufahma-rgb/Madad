@@ -340,19 +340,20 @@ const TalkhisanSection = ({ profile }) => {
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setInputType("teks")}
-            className={`flex-1 py-2 rounded-lg text-sm border transition-colors ${
+            className={`flex-1 py-2 rounded-xl text-sm border font-medium transition-colors ${
               inputType === "teks"
-                ? "bg-violet-500/20 text-violet-200 border-violet-500/30"
-                : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
-            }`}>
+                ? "text-violet-200 border-violet-600/35"
+                : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
+            }`}
+            style={inputType === "teks" ? {background:"rgba(113,50,245,0.20)"} : {}}>
             📋 Teks (copy dari PDF)
           </button>
           <button
             onClick={() => setInputType("foto")}
-            className={`flex-1 py-2 rounded-lg text-sm border transition-colors ${
+            className={`flex-1 py-2 rounded-xl text-sm border font-medium transition-colors ${
               inputType === "foto"
                 ? "bg-gold-500/15 text-gold-200 border-gold-500/30"
-                : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
+                : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
             }`}>
             📷 Foto / Tulisan Tangan
           </button>
@@ -368,7 +369,9 @@ const TalkhisanSection = ({ profile }) => {
               value={teksInput}
               onChange={e => setTeksInput(e.target.value)}
               placeholder="الحمد لله رب العالمين... (paste teks Arab dari PDF talkhisanmu)"
-              className="w-full bg-white/4 border border-line rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-soft outline-none focus:border-violet-400/40 transition-colors resize-none arabic"
+              className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-soft outline-none transition-colors resize-none arabic"
+              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
               style={{ minHeight: 120, direction: "rtl", fontSize: 15, lineHeight: 1.8 }}
               rows={5}
             />
@@ -421,14 +424,14 @@ const TalkhisanSection = ({ profile }) => {
               <button
                 key={m.id}
                 onClick={() => setActiveMode(m.id)}
-                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs border transition-colors ${
+                className={`flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs border font-medium transition-colors ${
                   activeMode === m.id
                     ? m.color === "gold"
                       ? "bg-gold-500/15 text-gold-200 border-gold-500/30"
-                      : "bg-violet-500/15 text-violet-200 border-violet-500/30"
-                    : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
+                      : "text-violet-200 border-violet-600/35"
+                    : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
                 }`}
-                style={{minHeight: 36}}>
+                style={activeMode === m.id && m.color !== "gold" ? {background:"rgba(113,50,245,0.20)",minHeight:36} : {minHeight:36}}>
                 <Icon name={m.icon} className="w-3.5 h-3.5"/>
                 <span>{m.label}</span>
               </button>
@@ -438,10 +441,10 @@ const TalkhisanSection = ({ profile }) => {
 
         {/* Mode description */}
         {mode && (
-          <div className="flex items-start gap-2 mb-4 p-3 rounded-lg bg-white/3 border border-line">
-            <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 mt-0.5 ${
-              mode.color === "gold" ? "bg-gold-500/15" : "bg-violet-500/15"
-            }`}>
+          <div className="flex items-start gap-2 mb-4 p-3 rounded-xl border" style={{background:"rgba(255,255,255,0.03)",borderColor:"rgba(255,255,255,0.08)"}}>
+            <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${
+              mode.color === "gold" ? "bg-gold-500/15" : ""
+            }`} style={mode.color !== "gold" ? {background:"rgba(113,50,245,0.16)"} : {}}>
               <Icon name={mode.icon} className={`w-3.5 h-3.5 ${
                 mode.color === "gold" ? "text-gold-300" : "text-violet-300"
               }`}/>
@@ -459,7 +462,7 @@ const TalkhisanSection = ({ profile }) => {
         )}
 
         {/* Preview prompt */}
-        <div className="p-3 rounded-lg bg-white/3 border border-line mb-4">
+        <div className="p-3 rounded-xl mb-4" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
           <div className="text-xs text-ink-soft mb-1.5">Preview prompt:</div>
           <div className="text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap line-clamp-4">
             {resolvedPrompt.slice(0, 250)}...
@@ -554,12 +557,13 @@ const ImtihanPromptCard = ({ mode, maddah, profile }) => {
 
   const colorClass = mode.color === "gold"
     ? "border-gold-500/20 bg-gold-500/5"
-    : "border-violet-500/20 bg-violet-500/5";
+    : "";
 
   return (
-    <div className={`card-glass p-5 md:p-6 border ${colorClass} relative overflow-hidden`}>
+    <div className={`card-glass p-5 md:p-6 border ${colorClass} relative overflow-hidden`}
+      style={mode.color !== "gold" ? {borderColor:"rgba(113,50,245,0.20)",background:"rgba(113,50,245,0.04)"} : {}}>
       <div className={`absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl pointer-events-none ${
-        mode.color === "gold" ? "bg-gold-500/10" : "bg-violet-500/10"
+        mode.color === "gold" ? "bg-gold-500/10" : "bg-violet-600/8"
       }`}/>
 
       <div className="relative">
@@ -568,8 +572,8 @@ const ImtihanPromptCard = ({ mode, maddah, profile }) => {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${
-                mode.color === "gold" ? "bg-gold-500/15" : "bg-violet-500/15"
-              }`}>
+                mode.color === "gold" ? "bg-gold-500/15" : ""
+              }`} style={mode.color !== "gold" ? {background:"rgba(113,50,245,0.18)"} : {}}>
                 <Icon name={mode.icon} className={`w-4 h-4 ${
                   mode.color === "gold" ? "text-gold-300" : "text-violet-300"
                 }`}/>
@@ -583,8 +587,8 @@ const ImtihanPromptCard = ({ mode, maddah, profile }) => {
           <span className={`text-[10px] px-2 py-1 rounded-full border font-medium flex-shrink-0 ${
             mode.color === "gold"
               ? "bg-gold-500/10 text-gold-300 border-gold-500/20"
-              : "bg-violet-500/10 text-violet-300 border-violet-500/20"
-          }`}>
+              : ""
+          }`} style={mode.color !== "gold" ? {background:"rgba(113,50,245,0.12)",color:"#c4aff9",borderColor:"rgba(113,50,245,0.28)"} : {}}>
             {mode.tag}
           </span>
         </div>
@@ -599,11 +603,12 @@ const ImtihanPromptCard = ({ mode, maddah, profile }) => {
             if (!tool) return null;
             return (
               <button key={toolId} onClick={() => setTargetAI(toolId)}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs border transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs border font-medium transition-colors ${
                   targetAI === toolId
-                    ? "bg-violet-500/15 text-violet-200 border-violet-500/30"
-                    : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
-                }`}>
+                    ? "text-violet-200 border-violet-600/35"
+                    : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
+                }`}
+                style={targetAI === toolId ? {background:"rgba(113,50,245,0.18)"} : {}}>
                 <ToolIcon tool={tool} size="w-4 h-4" rounded="rounded-sm"/>
                 {tool.name}
               </button>
@@ -612,7 +617,7 @@ const ImtihanPromptCard = ({ mode, maddah, profile }) => {
         </div>
 
         {/* Preview prompt (3 baris) */}
-        <div className="p-3 rounded-lg bg-white/3 border border-line mb-4">
+        <div className="p-3 rounded-xl mb-4" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
           <p className="text-xs text-ink-soft font-mono leading-relaxed line-clamp-3 whitespace-pre-wrap">
             {prompt.slice(0, 220)}...
           </p>
@@ -721,20 +726,22 @@ const SiapImtihanPage = () => {
 
           <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 pb-1">
             <button onClick={() => setActiveMaddah("")}
-              className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm border transition-colors ${
+              className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm border font-medium transition-colors ${
                 activeMaddah === ""
-                  ? "bg-violet-500/20 text-violet-200 border-violet-500/30"
-                  : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
-              }`} style={{minHeight:40}}>
+                  ? "text-violet-200 border-violet-600/35"
+                  : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
+              }`}
+              style={activeMaddah === "" ? {background:"rgba(113,50,245,0.20)",minHeight:40} : {minHeight:40}}>
               Umum
             </button>
             {myMaddahs.map(m => (
               <button key={m.id} onClick={() => setActiveMaddah(m.name)}
-                className={`flex-shrink-0 px-4 py-2 rounded-lg text-sm border transition-colors ${
+                className={`flex-shrink-0 px-4 py-2 rounded-xl text-sm border font-medium transition-colors ${
                   activeMaddah === m.name
-                    ? "bg-violet-500/20 text-violet-200 border-violet-500/30"
-                    : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
-                }`} style={{minHeight:40}}>
+                    ? "text-violet-200 border-violet-600/35"
+                    : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
+                }`}
+                style={activeMaddah === m.name ? {background:"rgba(113,50,245,0.20)",minHeight:40} : {minHeight:40}}>
                 {m.name}
               </button>
             ))}
@@ -758,13 +765,14 @@ const SiapImtihanPage = () => {
           <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 pb-3 mb-6">
             {IMTIHAN_MODES.map(mode => (
               <button key={mode.id} onClick={() => setActiveMode(mode.id)}
-                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm border transition-colors ${
+                className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm border font-medium transition-colors ${
                   activeMode === mode.id
                     ? mode.color === "gold"
                       ? "bg-gold-500/15 text-gold-200 border-gold-500/30"
-                      : "bg-violet-500/15 text-violet-200 border-violet-500/30"
-                    : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
-                }`} style={{minHeight:44}}>
+                      : "text-violet-200 border-violet-600/35"
+                    : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
+                }`}
+                style={activeMode === mode.id && mode.color !== "gold" ? {background:"rgba(113,50,245,0.20)",minHeight:44} : {minHeight:44}}>
                 <Icon name={mode.icon} className="w-4 h-4"/>
                 <span className="font-medium">{mode.label}</span>
               </button>

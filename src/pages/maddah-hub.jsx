@@ -12,11 +12,11 @@ const MaddahCard = ({ maddah }) => {
   return (
     <div
       onClick={() => navigate("/maddah/" + maddah.id)}
-      className={`card-glass p-4 md:p-5 hov-lift cursor-pointer group relative overflow-hidden ${isVisited ? "border-l-2 border-l-violet-500/40" : ""}`}
+      className={`card-glass p-4 md:p-5 hov-lift cursor-pointer group relative overflow-hidden ${isVisited ? "border-l-2 border-l-violet-600/50" : ""}`}
     >
       {isVisited && (
         <div className="absolute top-3 right-3 flex items-center gap-1 text-[10px] text-violet-300">
-          <span className="w-1.5 h-1.5 rounded-full bg-violet-400"/>
+          <span className="w-1.5 h-1.5 rounded-full bg-violet-500"/>
           {promptCount > 0 ? `${promptCount} prompt dipakai` : "Pernah dibuka"}
         </div>
       )}
@@ -29,9 +29,7 @@ const MaddahCard = ({ maddah }) => {
           <h3 className="font-display text-lg font-semibold text-ink leading-snug">{maddah.name}</h3>
         </div>
         {!hasContent && !isVisited && (
-          <span className="text-[10px] px-2 py-0.5 rounded bg-violet-500/10 text-violet-300 border border-violet-500/20 flex-shrink-0 mt-1">
-            Segera
-          </span>
+          <span className="badge-neutral flex-shrink-0 mt-1">Segera</span>
         )}
       </div>
 
@@ -119,7 +117,9 @@ const MaddahHubPage = () => {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Cari Maddah (Indonesia atau Arab)..."
-              className="w-full bg-white/4 border border-line rounded-lg px-4 py-2.5 pr-10 text-sm text-ink placeholder-ink-soft outline-none focus:border-violet-400/40 transition-colors"
+              className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-2.5 pr-10 text-sm text-ink placeholder-ink-soft outline-none transition-colors"
+              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
             />
             <Icon name="search" className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-soft pointer-events-none"/>
           </div>
@@ -127,11 +127,12 @@ const MaddahHubPage = () => {
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
             <button
               onClick={() => setActiveCategory("all")}
-              className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs transition-colors ${
+              className={`flex-shrink-0 px-3 py-1.5 text-xs font-medium transition-colors rounded-xl border ${
                 activeCategory === "all"
-                  ? "bg-violet-500/20 text-violet-200 border border-violet-500/30"
-                  : "bg-white/3 text-ink-muted border border-line hover:bg-white/5"
+                  ? "text-violet-200 border-violet-600/35"
+                  : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7 hover:text-ink"
               }`}
+              style={activeCategory === "all" ? {background:"rgba(113,50,245,0.20)"} : {}}
             >
               Semua
             </button>
@@ -139,11 +140,12 @@ const MaddahHubPage = () => {
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs transition-colors ${
+                className={`flex-shrink-0 px-3 py-1.5 text-xs font-medium transition-colors rounded-xl border ${
                   activeCategory === cat.id
-                    ? "bg-violet-500/20 text-violet-200 border border-violet-500/30"
-                    : "bg-white/3 text-ink-muted border border-line hover:bg-white/5"
+                    ? "text-violet-200 border-violet-600/35"
+                    : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7 hover:text-ink"
                 }`}
+                style={activeCategory === cat.id ? {background:"rgba(113,50,245,0.20)"} : {}}
               >
                 {cat.label}
               </button>
@@ -156,7 +158,7 @@ const MaddahHubPage = () => {
                 type="checkbox"
                 checked={showOnlyMyFaculty}
                 onChange={e => setShowOnlyMyFaculty(e.target.checked)}
-                className="rounded border-line accent-violet-400"
+                className="rounded border-line accent-violet-500"
               />
               <span>Hanya untuk {FAKULTAS_LABEL[profile.faculty]}</span>
             </label>

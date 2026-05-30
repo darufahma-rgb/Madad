@@ -72,8 +72,10 @@ const S2SetupStep = ({ profile, onSave }) => {
                 value={m.nama}
                 onChange={e => updateMaddah(m.id, "nama", e.target.value)}
                 placeholder="mis. Fiqh Nawazil / فقه النوازل"
-                className="w-full bg-white/5 border border-line rounded-lg px-3 py-2.5 text-sm text-ink outline-none focus:border-violet-400/40 transition-colors"
-                style={{fontSize: 16}}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink outline-none transition-colors"
+                style={{fontSize: 16, borderRadius: 12}}
+                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.50)"}
+                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
               />
             </div>
             <div>
@@ -85,8 +87,10 @@ const S2SetupStep = ({ profile, onSave }) => {
                 value={m.kitab}
                 onChange={e => updateMaddah(m.id, "kitab", e.target.value)}
                 placeholder="mis. Al-Fiqh al-Islami wa Adillatuh / نظرية الضرورة"
-                className="w-full bg-white/5 border border-line rounded-lg px-3 py-2.5 text-sm text-ink outline-none focus:border-violet-400/40 transition-colors"
-                style={{fontSize: 16}}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink outline-none transition-colors"
+                style={{fontSize: 16, borderRadius: 12}}
+                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.50)"}
+                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
               />
               <p className="text-[11px] text-ink-soft/60 mt-1">
                 AI akan menyesuaikan penjelasan berdasarkan kitab ini
@@ -106,7 +110,7 @@ const S2SetupStep = ({ profile, onSave }) => {
       {maddahList.length < 7 && (
         <button
           onClick={addMaddah}
-          className="w-full py-2.5 rounded-lg border border-dashed border-line text-sm text-ink-soft hover:border-violet-400/40 hover:text-ink transition-colors mb-8">
+          className="w-full py-2.5 rounded-xl border border-dashed text-sm text-ink-soft hover:text-ink transition-colors mb-8" style={{borderColor:"rgba(113,50,245,0.28)"}}>
           + Tambah maddah lain
         </button>
       )}
@@ -264,8 +268,8 @@ const OnboardingPage = () => {
               <span className="text-ink-muted num">{progress}%</span>
             </div>
             <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-violet-500 to-gold-400 transition-all duration-500"
-                style={{width: `${progress}%`}}/>
+              <div className="h-full transition-all duration-500 rounded-full"
+                style={{width: `${progress}%`, background:"linear-gradient(90deg, var(--kraken-purple), #C9A86A)"}}/>
             </div>
           </div>
         )}
@@ -330,7 +334,7 @@ const Intro = ({ session, onNext }) => (
           "Cara belajar yang paling nyaman",
         ].map((t, i) => (
           <li key={i} className="flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-violet-500/20 text-violet-200 text-xs flex items-center justify-center font-semibold flex-shrink-0">
+            <span className="w-6 h-6 rounded-full text-violet-200 text-xs flex items-center justify-center font-semibold flex-shrink-0" style={{background:"rgba(113,50,245,0.20)",border:"1px solid rgba(113,50,245,0.30)"}}>
               {i + 1}
             </span>
             {t}
@@ -363,8 +367,9 @@ const QuestionStep = ({ question, options, value, onPick }) => {
           return (
             <button key={opt.id} onClick={() => onPick(opt.id)}
               className={`text-left p-5 rounded-xl border transition-all relative ${sel
-                ? "bg-violet-500/15 border-violet-400 shadow-glow"
-                : "bg-white/4 border-line hover:bg-white/6 hover:border-violet-500/40"}`}>
+                ? "border-violet-500/60"
+                : "bg-white/4 border-white/8 hover:bg-white/6 hover:border-violet-600/35"}`}
+              style={sel ? {background:"rgba(113,50,245,0.14)", borderColor:"rgba(113,50,245,0.55)", boxShadow:"0 0 0 1px rgba(113,50,245,0.22), 0 4px 20px rgba(113,50,245,0.18)"} : {}}>
               <div className="flex items-start justify-between mb-2">
                 {question.iconType === "emoji" && <span className="text-3xl">{opt.emoji}</span>}
                 {(question.iconType === "arabic" || isArabicSmall) && (
@@ -373,12 +378,12 @@ const QuestionStep = ({ question, options, value, onPick }) => {
                   </span>
                 )}
                 {question.iconType === "lucide" && (
-                  <span className={`w-9 h-9 rounded-lg flex items-center justify-center ${sel ? "bg-violet-500 text-white" : "bg-white/8 text-violet-300"}`}>
+                  <span className={`w-9 h-9 rounded-lg flex items-center justify-center ${sel ? "text-white" : "bg-white/8 text-violet-300"}`} style={sel ? {background:"var(--kraken-purple)"} : {}}>
                     <Icon name={opt.icon} className="w-4 h-4"/>
                   </span>
                 )}
                 {isMulti && (
-                  <span className={`w-5 h-5 rounded-md border flex items-center justify-center ${sel ? "bg-violet-500 border-violet-500 text-white" : "border-line"}`}>
+                  <span className={`w-5 h-5 rounded-md border flex items-center justify-center ${sel ? "text-white" : "border-white/15"}`} style={sel ? {background:"var(--kraken-purple)",borderColor:"var(--kraken-purple)"} : {}}>
                     {sel && <Icon name="check" className="w-3 h-3" strokeWidth={3}/>}
                   </span>
                 )}

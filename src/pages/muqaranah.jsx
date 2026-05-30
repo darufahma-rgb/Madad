@@ -9,13 +9,13 @@ const MuqaranahCard = ({ entry, onOpen, isCustom, onDelete }) => {
   return (
     <div
       onClick={() => onOpen(entry)}
-      className="relative card-glass hov-lift cursor-pointer group border border-line hover:border-violet-400/40 transition-all rounded-xl overflow-hidden"
+      className="relative card-glass hov-lift cursor-pointer group border border-white/8 hover:border-violet-400/35 transition-all rounded-xl overflow-hidden"
       style={{borderTopWidth:2, borderTopColor:"rgba(124,77,255,0.18)"}}>
       <div className="divider-arabesque opacity-20 mt-0 mb-0"/>
       <div className="p-5">
         <div className="flex items-start justify-between gap-3 mb-3">
-          <span className="chip chip-glass text-[11px] uppercase tracking-wider">{cat}</span>
-          {isCustom && <span className="chip chip-violet text-[10px]">Buatanmu</span>}
+          <span className="badge-neutral text-[11px] uppercase tracking-wider">{cat}</span>
+          {isCustom && <span className="badge-purple text-[10px]">Buatanmu</span>}
         </div>
         <h3 className="font-display text-lg font-semibold text-ink mb-1.5 leading-snug line-clamp-2 group-hover:text-violet-100 transition-colors">{entry.title}</h3>
         <p className="text-xs text-ink-muted leading-relaxed mb-4" style={{display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>
@@ -119,26 +119,30 @@ const MuqaranahPage = () => {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Cari masalah, ulama, atau kitab..."
-                className="w-full pl-11 pr-4 py-3.5 bg-white/4 border border-line rounded-xl text-sm text-ink placeholder-ink-soft outline-none focus:border-violet-400/40 focus:bg-white/6 transition-all"
+                className="w-full pl-11 pr-4 py-3.5 bg-white/4 border border-white/10 rounded-xl text-sm text-ink placeholder-ink-soft outline-none transition-all"
+                onFocus={e => { e.target.style.borderColor="rgba(113,50,245,0.45)"; e.target.style.background="rgba(255,255,255,0.06)"; }}
+                onBlur={e => { e.target.style.borderColor="rgba(255,255,255,0.10)"; e.target.style.background="rgba(255,255,255,0.04)"; }}
               />
             </div>
           </Reveal>
 
           <Reveal className="flex items-center gap-3 mb-5 flex-wrap">
             {/* Tabs */}
-            <div className="flex rounded-lg overflow-hidden border border-line">
+            <div className="flex rounded-xl overflow-hidden border" style={{borderColor:"rgba(113,50,245,0.22)"}}>
               {["library","custom"].map(t => (
                 <button key={t} onClick={() => setTab(t)}
-                  className={`px-5 py-2 text-sm transition-colors ${tab === t ? "bg-violet-500/20 text-violet-200 font-medium" : "text-ink-muted hover:text-ink hover:bg-white/4"}`}>
+                  className={`px-5 py-2 text-sm font-medium transition-colors ${tab === t ? "text-violet-200" : "text-ink-muted hover:text-ink hover:bg-white/4"}`}
+                  style={tab === t ? {background:"rgba(113,50,245,0.22)"} : {}}>
                   {t === "library" ? "Library" : "Buatan Saya"}
                 </button>
               ))}
             </div>
-            <div className="w-px h-5 bg-line hidden sm:block"/>
+            <div className="w-px h-5 bg-white/10 hidden sm:block"/>
             {/* Category chips */}
             {cats.map(c => (
               <button key={c.id} onClick={() => setCatFilter(c.id)}
-                className={`chip transition-all text-xs ${catFilter === c.id ? "chip-violet" : "chip-glass hover:bg-white/6"}`}>
+                className={`text-xs px-3 py-1.5 rounded-xl border font-medium transition-all ${catFilter === c.id ? "text-violet-200 border-violet-600/35" : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"}`}
+                style={catFilter === c.id ? {background:"rgba(113,50,245,0.20)"} : {}}>
                 {c.label}
               </button>
             ))}

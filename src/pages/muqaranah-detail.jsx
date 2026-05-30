@@ -7,7 +7,7 @@ const ViewColumn = ({ view, isMobile }) => {
     <div className="space-y-5">
       {/* Header */}
       <div>
-        <span className="chip chip-glass text-[10px] uppercase tracking-wider mb-3 inline-block">{view.school}</span>
+        <span className="badge-neutral text-[10px] uppercase tracking-wider mb-3 inline-block">{view.school}</span>
         <h3 className="font-display text-xl font-semibold text-ink leading-snug">{view.scholar}</h3>
         <div className="arabic text-gold-300 text-base leading-loose mt-1" style={{direction:"rtl"}}>{view.scholarArabic}</div>
       </div>
@@ -58,13 +58,13 @@ const ViewColumn = ({ view, isMobile }) => {
   );
 
   if (!isMobile) return (
-    <div className="card-glass rounded-xl p-6 h-full border border-line" style={{borderTop:"2px solid rgba(201,168,106,0.2)"}}>
+    <div className="card-glass rounded-xl p-6 h-full" style={{border:"1px solid rgba(255,255,255,0.08)",borderTop:"2px solid rgba(201,168,106,0.2)"}}>
       {content}
     </div>
   );
 
   return (
-    <div className="card-glass rounded-xl border border-line overflow-hidden" style={{borderTop:"2px solid rgba(201,168,106,0.2)"}}>
+    <div className="card-glass rounded-xl overflow-hidden" style={{border:"1px solid rgba(255,255,255,0.08)",borderTop:"2px solid rgba(201,168,106,0.2)"}}>
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="w-full flex items-center justify-between p-4 text-left">
@@ -197,7 +197,7 @@ Tolong bantu aku merenungkan mas'alah ini dengan adab thalib:
               <span className="text-ink-muted truncate max-w-xs">{entry.title}</span>
             </div>
 
-            <div className="chip chip-glass text-[11px] uppercase tracking-wider mb-4">{catLabel}</div>
+            <div className="badge-neutral text-[11px] uppercase tracking-wider mb-4">{catLabel}</div>
             <h1 className="font-display text-4xl md:text-5xl font-medium text-ink leading-tight mb-2">{entry.title}</h1>
             {entry.titleArabic && (
               <div className="arabic-display-modern text-gold-300 text-xl leading-loose mt-2 mb-5" style={{direction:"rtl"}}>{entry.titleArabic}</div>
@@ -246,7 +246,7 @@ Tolong bantu aku merenungkan mas'alah ini dengan adab thalib:
           {/* Titik Perbedaan */}
           {entry.notes && (
             <Reveal className="mt-12">
-              <div className="card-glass-strong p-7 rounded-xl border border-line">
+              <div className="card-glass-strong p-7 rounded-xl" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-1 h-10 rounded-full bg-gradient-to-b from-violet-400 to-gold-400/60"/>
                   <div>

@@ -230,7 +230,7 @@ const IntentionStrip = () => {
                   Alhamdulillah, sebagian besar
                 </button>
                 <button onClick={() => saveReflection("not_yet")}
-                  className="text-xs px-4 py-2 rounded-full border border-line text-ink-muted hover:text-ink hover:border-white/20 transition-all">
+                  className="text-xs px-4 py-2 rounded-full border border-white/10 text-ink-muted hover:text-ink hover:border-white/25 transition-all">
                   Belum, esok lagi
                 </button>
               </div>
@@ -281,7 +281,7 @@ const IntentionStrip = () => {
             {CLASSIC_INTENTIONS.map(c => (
               <button key={c.id}
                 onClick={() => { setSelClassic(c.id); setCustomText(""); }}
-                className={`w-full text-left p-3 rounded-xl border transition-all ${selClassic === c.id && !customText ? "border-gold-400/35 bg-gold-500/6" : "border-line hover:border-white/15"}`}>
+                className={`w-full text-left p-3 rounded-xl border transition-all ${selClassic === c.id && !customText ? "border-gold-400/35 bg-gold-500/6" : "border-white/8 hover:border-white/15"}`}>
                 <div className="text-xs text-gold-400 mb-1">{c.label}</div>
                 <div className="text-[11px] text-ink-muted leading-relaxed" style={{display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>
                   {c.translation}
@@ -308,7 +308,9 @@ const IntentionStrip = () => {
               placeholder={useArabic ? "\u0627\u0643\u062a\u0628 \u0646\u064a\u062a\u0643 \u0647\u0646\u0627..." : "Tulis niatmu di sini..."}
               value={customText}
               onChange={e => { setCustomText(e.target.value); if (e.target.value) setSelClassic(null); }}
-              className="w-full bg-night-900/60 border border-line rounded-xl p-3 text-sm text-ink placeholder-ink-soft resize-none focus:outline-none focus:border-violet-500/50 transition-colors"
+              className="w-full bg-night-900/60 border border-white/10 rounded-xl p-3 text-sm text-ink placeholder-ink-soft resize-none outline-none transition-colors"
+              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
               style={useArabic ? {direction:"rtl",fontFamily:"'Scheherazade New',serif",fontSize:"1.1rem",lineHeight:1.8} : {}}/>
           </div>
 
@@ -476,7 +478,7 @@ const ReflectionCard = () => {
               {note.tags.map(t => (
                 <button key={t}
                   onClick={() => navigate("/kurasah?tag=" + encodeURIComponent(t))}
-                  className="text-[11px] px-2.5 py-1 rounded-full bg-white/5 text-ink-muted border border-line hover:border-white/20 transition-colors">
+                  className="text-[11px] px-2.5 py-1 rounded-full bg-white/5 text-ink-muted border border-white/8 hover:border-white/20 transition-colors">
                   #{t}
                 </button>
               ))}

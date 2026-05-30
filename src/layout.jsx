@@ -98,17 +98,17 @@ const GlobalSearch = () => {
   if (!open) return (
     <button
       onClick={() => setOpen(true)}
-      className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/4 border border-line text-ink-soft text-sm hover:bg-white/6 transition-colors"
+      className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-white/4 border border-white/8 text-ink-soft text-sm hover:bg-white/6 transition-colors"
     >
       <Icon name="search" className="w-3.5 h-3.5"/>
       <span>Cari...</span>
-      <kbd className="ml-1 text-[10px] text-ink-soft bg-white/5 border border-line px-1.5 py-0.5 rounded">⌘K</kbd>
+      <kbd className="ml-1 text-[10px] text-ink-soft bg-white/5 border border-white/8 px-1.5 py-0.5 rounded">⌘K</kbd>
     </button>
   );
 
   return (
     <div className="fixed inset-0 z-[80] flex items-start justify-center pt-20 px-4 bg-night-950/70 backdrop-blur-sm" onClick={() => setOpen(false)}>
-      <div className="w-full max-w-xl bg-night-800 border border-line rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+      <div className="w-full max-w-xl bg-night-800 rounded-2xl shadow-2xl overflow-hidden" style={{border:"1px solid rgba(113,50,245,0.25)"}} onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-3 px-4 py-3 border-b border-line">
           <Icon name="search" className="w-4 h-4 text-ink-soft flex-shrink-0"/>
           <input
@@ -119,7 +119,7 @@ const GlobalSearch = () => {
             className="flex-1 bg-transparent text-ink text-sm outline-none placeholder-ink-soft"
           />
           {query && <button onClick={() => setQuery("")} className="text-ink-soft hover:text-ink text-xs">✕</button>}
-          <kbd className="text-[10px] text-ink-soft bg-white/5 border border-line px-1.5 py-0.5 rounded">Esc</kbd>
+          <kbd className="text-[10px] text-ink-soft bg-white/5 border border-white/8 px-1.5 py-0.5 rounded">Esc</kbd>
         </div>
         <div className="max-h-80 overflow-y-auto">
           {query.length >= 2 && results.length === 0 && (
@@ -238,7 +238,8 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
           {session ? (
             <button
               onClick={() => setMobileSheetOpen(true)}
-              className="w-9 h-9 rounded-full bg-violet-500/15 border border-violet-500/25 flex items-center justify-center text-violet-200 text-sm font-semibold"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-violet-100 text-sm font-semibold"
+              style={{background:"rgba(113,50,245,0.18)",border:"1px solid rgba(113,50,245,0.30)"}}
             >
               {(session.name || "T").charAt(0).toUpperCase()}
             </button>
@@ -430,7 +431,7 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
     <Modal open={open} onClose={onClose} size="md">
       <div className="p-7 md:p-8">
         <div className="flex items-center justify-between mb-1">
-          <span className="chip chip-violet">🔐 Member Access</span>
+          <span className="badge-purple">🔐 Member Access</span>
           <button onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5 flex items-center justify-center">
             <Icon name="x" className="w-4 h-4"/>
           </button>
@@ -458,7 +459,10 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
               value={code}
               onChange={(e) => { setCode(e.target.value.toUpperCase()); setStatus(null); }}
               placeholder="MSR-XXXX-XXXX"
-              className="code-input w-full bg-white/5 border border-line rounded-xl px-5 py-4 text-xl text-ink placeholder:text-ink-soft focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-500/30"
+              className="code-input w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-xl text-ink placeholder:text-ink-soft focus:outline-none transition-colors"
+              style={{borderRadius:12}}
+              onFocus={e => { e.target.style.borderColor="rgba(113,50,245,0.55)"; e.target.style.boxShadow="0 0 0 3px rgba(113,50,245,0.15)"; }}
+              onBlur={e => { e.target.style.borderColor="rgba(255,255,255,0.10)"; e.target.style.boxShadow="none"; }}
               maxLength={13}
             />
             {status && !status.ok && (
@@ -517,7 +521,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
     <Modal open={open} onClose={onClose} size="md">
       <div className="p-7 md:p-8">
         <div className="flex items-center justify-between mb-1">
-          <span className="chip chip-gold">✨ Gabung Member</span>
+          <span className="badge-purple">✨ Gabung Member</span>
           <button onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5 flex items-center justify-center">
             <Icon name="x" className="w-4 h-4"/>
           </button>
@@ -525,7 +529,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
 
         {paid ? (
           <div className="mt-6 text-center py-4">
-            <div className="w-16 h-16 rounded-full bg-violet-500/20 text-violet-300 flex items-center justify-center mx-auto mb-5">
+            <div className="w-16 h-16 rounded-full text-violet-200 flex items-center justify-center mx-auto mb-5" style={{background:"rgba(113,50,245,0.18)",border:"1px solid rgba(113,50,245,0.30)"}}>
               <Icon name="check" className="w-8 h-8" strokeWidth={2.4}/>
             </div>
             <div className="arabic-display-classical text-2xl text-gold-300 mb-3">جَزَاكَ اللهُ خَيْرًا</div>
@@ -568,7 +572,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
                     { i: "heart",    t: "Companion harian: niat, ritme, refleksi" },
                   ].map((f, i) => (
                     <div key={i} className="flex items-start gap-3">
-                      <span className="w-7 h-7 rounded-lg bg-violet-500/15 text-violet-300 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <span className="w-7 h-7 rounded-lg text-violet-300 flex items-center justify-center flex-shrink-0 mt-0.5" style={{background:"rgba(113,50,245,0.16)"}}>
                         <Icon name={f.i} className="w-3.5 h-3.5"/>
                       </span>
                       <span className="text-sm text-ink leading-relaxed">{f.t}</span>
@@ -580,7 +584,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
                     <div className="text-[11px] uppercase tracking-wider text-ink-muted">Pembayaran via</div>
                     <div className="font-display text-lg font-semibold text-gold-300 mt-0.5">Lynk.id</div>
                   </div>
-                  <span className="chip chip-violet">Sekali bayar</span>
+                  <span className="badge-purple">Sekali bayar</span>
                 </div>
               </div>
             </div>

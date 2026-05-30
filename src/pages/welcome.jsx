@@ -77,7 +77,7 @@ const WelcomePage = () => {
                 <p className="text-sm text-ink-muted mb-4 leading-relaxed">
                   Sebelum mulai, paste ini ke AI favoritmu. AI langsung tahu siapa kamu dan cara menjelaskan yang paling pas.
                 </p>
-                <div className="p-3 rounded-lg bg-white/3 border border-line mb-4">
+                <div className="p-3 rounded-xl mb-4" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
                   <p className="text-xs text-ink-soft font-mono leading-relaxed line-clamp-3">{starterPack.slice(0, 200)}...</p>
                 </div>
                 <button onClick={handleCopyStarter} className="btn btn-primary px-5 py-2.5 text-sm flex items-center gap-2">

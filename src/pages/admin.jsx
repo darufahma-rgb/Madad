@@ -102,7 +102,9 @@ const AdminLogin = ({ onLogin }) => {
               value={pin}
               onChange={(e) => setPin(e.target.value)}
               placeholder="PIN"
-              className={`code-input w-full bg-white/5 border rounded-xl px-5 py-4 text-2xl text-ink focus:outline-none focus:ring-2 focus:ring-violet-500/30 ${error ? "border-rose-600 ring-2 ring-rose-600/30" : "border-line focus:border-violet-400"}`}
+              className={`code-input w-full bg-white/5 border rounded-xl px-5 py-4 text-2xl text-ink outline-none ${error ? "border-rose-600 ring-2 ring-rose-600/30" : "border-white/10"}`}
+              onFocus={e => { if (!error) e.target.style.borderColor="rgba(113,50,245,0.50)"; }}
+              onBlur={e => e.target.style.borderColor= error ? "" : "rgba(255,255,255,0.10)"}
             />
             {error && <div className="mt-3 text-sm text-rose-600">PIN salah.</div>}
             <button type="submit" className="btn btn-primary w-full mt-5">Masuk</button>
@@ -321,7 +323,9 @@ const AdminMembers = () => {
           <Icon name="search" className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-soft"/>
           <input value={search} onChange={(e)=>setSearch(e.target.value)}
             placeholder="Cari nama atau kode..."
-            className="w-full bg-white/5 border border-line rounded-lg pl-10 pr-3 py-2.5 text-sm text-ink placeholder:text-ink-soft focus:outline-none focus:border-violet-400"/>
+            className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-3 py-2.5 text-sm text-ink placeholder:text-ink-soft outline-none transition-colors"
+            onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+            onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
         </div>
       </div>
 
@@ -423,7 +427,7 @@ const MemberProfileModal = ({ member, onClose }) => {
           )}
         </div>
         {profile ? (
-          <div className="p-4 rounded-xl bg-white/3 border border-line">
+          <div className="p-4 rounded-xl" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
             <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Profil Onboarding</div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
@@ -447,7 +451,7 @@ const MemberProfileModal = ({ member, onClose }) => {
             </div>
           </div>
         ) : (
-          <div className="p-4 rounded-xl bg-white/3 border border-line text-sm text-ink-muted text-center">
+          <div className="p-4 rounded-xl text-sm text-ink-muted text-center" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
             Member belum menyelesaikan onboarding.
           </div>
         )}
@@ -549,18 +553,23 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
           <form onSubmit={submit} className="space-y-4">
             <div>
               <label className="text-xs uppercase tracking-wider text-ink-muted mb-1.5 block">Nama Member</label>
-              <input value={name} onChange={(e)=>setName(e.target.value)} placeholder="Ahmad Fauzi" className="w-full bg-white/5 border border-line rounded-lg px-4 py-2.5 text-ink focus:outline-none focus:border-violet-400"/>
+              <input value={name} onChange={(e)=>setName(e.target.value)} placeholder="Ahmad Fauzi" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink outline-none transition-colors"
+                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
             </div>
             <div>
               <label className="text-xs uppercase tracking-wider text-ink-muted mb-1.5 block">WhatsApp</label>
-              <input value={whatsapp} onChange={(e)=>setWhatsapp(e.target.value)} placeholder="+20xxxxxxxxxx" className="w-full bg-white/5 border border-line rounded-lg px-4 py-2.5 text-ink font-mono focus:outline-none focus:border-violet-400"/>
+              <input value={whatsapp} onChange={(e)=>setWhatsapp(e.target.value)} placeholder="+20xxxxxxxxxx" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink font-mono outline-none transition-colors"
+                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
             </div>
             <div>
               <label className="text-xs uppercase tracking-wider text-ink-muted mb-1.5 block">Durasi</label>
               <div className="flex gap-2">
                 {[30, 60, 90, 180].map(d => (
                   <button key={d} type="button" onClick={() => setDuration(d)}
-                    className={`flex-1 py-2 rounded-lg text-sm font-medium ${duration === d ? "bg-violet-500 text-white" : "bg-white/5 text-ink-muted border border-line hover:bg-white/8"}`}>
+                    className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${duration === d ? "text-white border-transparent" : "bg-white/5 text-ink-muted border-white/8 hover:bg-white/10"}`}
+                    style={duration === d ? {background:"rgba(113,50,245,0.85)"} : {}}>
                     {d} hari
                   </button>
                 ))}
@@ -1008,7 +1017,9 @@ const AdminGuides = () => {
             <textarea
               value={editedGuide.when || ""}
               onChange={e => setEditedGuide({...editedGuide, when: e.target.value})}
-              className="w-full bg-white/5 border border-line rounded-lg px-4 py-3 text-ink text-sm focus:outline-none focus:border-violet-400 min-h-[80px] resize-y"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ink text-sm outline-none transition-colors min-h-[80px] resize-y"
+              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
             />
           </div>
 
@@ -1017,7 +1028,9 @@ const AdminGuides = () => {
             <textarea
               value={editedGuide.starterPrompt || ""}
               onChange={e => setEditedGuide({...editedGuide, starterPrompt: e.target.value})}
-              className="w-full bg-white/5 border border-line rounded-lg px-4 py-3 text-ink font-mono text-xs focus:outline-none focus:border-violet-400 min-h-[200px] resize-y"
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ink font-mono text-xs outline-none transition-colors min-h-[200px] resize-y"
+              onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
             />
           </div>
 
@@ -1066,7 +1079,9 @@ const AdminSettings = () => {
       <input
         value={value}
         onChange={e => onChange(e.target.value)}
-        className={`w-full bg-white/5 border border-line rounded-lg px-4 py-2.5 text-ink text-sm focus:outline-none focus:border-violet-400 ${mono ? "font-mono" : ""}`}
+        className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink text-sm outline-none transition-colors ${mono ? "font-mono" : ""}`}
+        onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+        onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
       />
       {hint && <div className="text-[11px] text-ink-soft mt-1">{hint}</div>}
     </div>

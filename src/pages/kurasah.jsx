@@ -31,7 +31,7 @@ const NoteCard = ({ note, onClick }) => {
   return (
     <div
       onClick={() => onClick(note)}
-      className="card-glass hov-lift cursor-pointer border border-line hover:border-violet-400/30 rounded-xl p-4 md:p-5 flex flex-col gap-2 md:gap-3 transition-all" style={{ minHeight: 44 }}>
+      className="card-glass hov-lift cursor-pointer border border-white/8 rounded-xl p-4 md:p-5 flex flex-col gap-2 md:gap-3 transition-all" style={{ minHeight: 44 }}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-wrap gap-1.5">
           {note.tags.slice(0,3).map(t => (
@@ -200,21 +200,24 @@ const KurasahPage = () => {
               <Icon name="search" className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-soft pointer-events-none"/>
               <input value={search} onChange={e => setSearch(e.target.value)}
                 placeholder="Cari catatan, tag..."
-                className="w-full pl-11 pr-4 py-3 bg-white/4 border border-line rounded-xl text-sm text-ink placeholder-ink-soft outline-none focus:border-violet-400/40 transition-all"/>
+                className="w-full pl-11 pr-4 py-3 bg-white/4 border border-white/10 rounded-xl text-sm text-ink placeholder-ink-soft outline-none transition-all"
+                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
             </div>
           </Reveal>
           <Reveal className="flex items-center gap-2 flex-wrap mb-2">
             {srcFilters.map(f => (
               <button key={f.id} onClick={() => setSourceFilter(f.id)}
-                className={`chip text-xs transition-all ${sourceFilter === f.id ? "chip-violet" : "chip-glass hover:bg-white/6"}`}>
+                className={`text-xs px-3 py-1.5 rounded-xl border font-medium transition-all ${sourceFilter === f.id ? "text-violet-200 border-violet-600/35" : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"}`}
+                style={sourceFilter === f.id ? {background:"rgba(113,50,245,0.20)"} : {}}>
                 {f.label}
               </button>
             ))}
             {allTags.length > 0 && <div className="w-px h-4 bg-line"/>}
             {allTags.slice(0,8).map(t => (
               <button key={t} onClick={() => setTagFilter(tagFilter === t ? "all" : t)}
-                className={`chip text-xs transition-all ${tagFilter === t ? "chip-violet" : "chip-glass hover:bg-white/6"}`}
-                style={tagFilter !== t ? {background: getTagColor(t)} : {}}>
+                className={`text-xs px-3 py-1.5 rounded-xl border font-medium transition-all ${tagFilter === t ? "text-violet-200 border-violet-600/35" : "text-ink-muted border-white/8 hover:bg-white/7"}`}
+                style={tagFilter === t ? {background:"rgba(113,50,245,0.20)"} : {background: getTagColor(t)}}>
                 {t}
               </button>
             ))}

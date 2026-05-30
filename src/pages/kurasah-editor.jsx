@@ -261,7 +261,10 @@ const KurasahEditorPage = () => {
               onChange={e => setTagInput(e.target.value)}
               onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addTag(tagInput); } }}
               placeholder="+ tag"
-              className="bg-transparent text-xs text-ink-muted placeholder-ink-soft outline-none w-20 border-b border-dashed border-line focus:border-violet-400/40"
+              className="bg-transparent text-xs text-ink-muted placeholder-ink-soft outline-none w-20 border-b border-dashed focus:outline-none transition-colors"
+            style={{borderColor:"rgba(113,50,245,0.30)"}}
+            onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.55)"}
+            onBlur={e => e.target.style.borderColor="rgba(113,50,245,0.30)"}
             />
             {tagSuggestions.length > 0 && (
               <div className="absolute top-full left-0 mt-1 z-10 card-glass-strong rounded-lg shadow-lg min-w-max">
@@ -286,7 +289,9 @@ const KurasahEditorPage = () => {
               setSource(s);
               scheduleAutoSave(title, body, tags, s, note);
             }}
-            className="bg-white/4 border border-line rounded-lg px-3 py-1.5 text-xs text-ink-muted outline-none focus:border-violet-400/30 transition-colors appearance-none">
+            className="bg-white/4 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-ink-muted outline-none transition-colors appearance-none"
+            onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.40)"}
+            onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}>
             {sourceOptions.map(o => (
               <option key={o.type || ""} value={o.type || ""}>{o.label}</option>
             ))}
@@ -295,10 +300,11 @@ const KurasahEditorPage = () => {
 
         {/* Mobile tab toggle */}
         {isMobile && (
-          <div className="flex rounded-lg overflow-hidden border border-line mb-4 self-start">
+          <div className="flex rounded-xl overflow-hidden border mb-4 self-start" style={{borderColor:"rgba(113,50,245,0.25)"}}>
             {["edit","preview"].map(t => (
               <button key={t} onClick={() => setTab(t)}
-                className={`px-4 py-1.5 text-xs transition-colors ${tab === t ? "bg-violet-500/20 text-violet-200" : "text-ink-muted hover:text-ink"}`}>
+                className={`px-4 py-1.5 text-xs font-medium transition-colors ${tab === t ? "text-violet-200" : "text-ink-muted hover:text-ink"}`}
+                style={tab === t ? {background:"rgba(113,50,245,0.22)"} : {}}>
                 {t === "edit" ? "Edit" : "Preview"}
               </button>
             ))}
@@ -307,12 +313,12 @@ const KurasahEditorPage = () => {
 
         {/* Editor / Preview */}
         {isMobile ? (
-          <div className="flex-1 card-glass rounded-xl overflow-hidden border border-line">
+          <div className="flex-1 card-glass rounded-xl overflow-hidden" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
             {tab === "edit" ? EditorPane() : <div className="p-5">{PreviewPane()}</div>}
           </div>
         ) : (
           <div className="flex-1 grid grid-cols-2 gap-5">
-            <div className="flex flex-col card-glass rounded-xl overflow-hidden border border-line">
+            <div className="flex flex-col card-glass rounded-xl overflow-hidden" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
               {EditorPane()}
             </div>
             {PreviewPane()}

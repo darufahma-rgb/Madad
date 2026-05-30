@@ -360,7 +360,7 @@ const SampleMaddahSection = () => (
             </div>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-5">
               {[{n:4,l:"Pahami"},{n:3,l:"Hafal"},{n:3,l:"Latihan"},{n:2,l:"Ujian"},{n:2,l:"Talaqqi"},{n:3,l:"Eksplor"}].map((c,i)=>(
-                <div key={i} className="text-center p-3 rounded-lg bg-white/3 border border-line">
+                <div key={i} className="text-center p-3 rounded-xl" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
                   <div className="font-display text-xl text-ink font-semibold">{c.n}</div>
                   <div className="text-[10px] text-ink-soft uppercase tracking-wider mt-1">{c.l}</div>
                 </div>

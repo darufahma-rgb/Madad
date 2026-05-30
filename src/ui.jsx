@@ -200,8 +200,8 @@ const BottomSheet = ({ children, onClose, title, maxHeight = "85vh" }) => (
   <div className="fixed inset-0 z-[70] flex items-end md:items-center md:justify-center" onClick={onClose}>
     <div className="absolute inset-0 bg-night-950/70 backdrop-blur-sm"/>
     <div
-      className="relative w-full md:max-w-lg bg-night-800 border-t md:border border-line rounded-t-3xl md:rounded-2xl sheet-enter overflow-hidden"
-      style={{ maxHeight, paddingBottom: "var(--safe-bottom)" }}
+      className="relative w-full md:max-w-lg bg-night-800 border-t md:border rounded-t-3xl md:rounded-2xl sheet-enter overflow-hidden"
+      style={{ maxHeight, paddingBottom: "var(--safe-bottom)", borderColor:"rgba(113,50,245,0.22)" }}
       onClick={e => e.stopPropagation()}
     >
       <div className="md:hidden flex justify-center pt-3 pb-1">

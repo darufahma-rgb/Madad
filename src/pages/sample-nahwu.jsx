@@ -21,8 +21,8 @@ const SamplePromptCard = ({ prompt }) => {
           <Icon name="copy" className="w-3 h-3"/>Salin
         </button>
       </div>
-      <div className="p-3 rounded-lg bg-white/3 border border-line text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap"
-        style={{ maxHeight:"96px", overflow:"hidden", WebkitLineClamp:4, display:"-webkit-box", WebkitBoxOrient:"vertical" }}>
+      <div className="p-3 rounded-xl text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap"
+        style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",maxHeight:"96px",overflow:"hidden",WebkitLineClamp:4,display:"-webkit-box",WebkitBoxOrient:"vertical"}}>
         {prompt.template}
       </div>
     </div>

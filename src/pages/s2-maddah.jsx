@@ -179,8 +179,10 @@ const FootnoteFields = ({ values, onChange }) => {
             value={values[f.key] || ""}
             onChange={e => onChange(f.key, e.target.value)}
             placeholder={f.placeholder}
-            className="w-full bg-white/4 border border-line rounded-xl px-4 py-2.5 text-sm text-ink outline-none focus:border-gold-400/40 transition-colors"
+            className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-ink outline-none transition-colors"
             style={{fontSize:16}}
+            onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+            onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
           />
         </div>
       ))}
@@ -294,11 +296,12 @@ const S2MaddahPage = () => {
             {maddahList.map(m => (
               <button key={m.id}
                 onClick={() => setSelectedMaddah(m)}
-                className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-sm border transition-colors text-left ${
+                className={`flex-shrink-0 px-4 py-2.5 rounded-xl text-sm border font-medium transition-colors text-left ${
                   selectedMaddah?.id === m.id
-                    ? "bg-violet-500/20 text-violet-200 border-violet-500/30"
-                    : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
-                }`} style={{minHeight:44}}>
+                    ? "text-violet-200 border-violet-600/35"
+                    : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
+                }`}
+                style={selectedMaddah?.id === m.id ? {background:"rgba(113,50,245,0.20)",minHeight:44} : {minHeight:44}}>
                 <div className="font-medium">{m.nama}</div>
                 {m.kitab && (
                   <div className="text-[10px] text-ink-soft mt-0.5 truncate max-w-[140px]">
@@ -312,8 +315,8 @@ const S2MaddahPage = () => {
             ))}
             <button
               onClick={() => navigate("/onboarding")}
-              className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm border border-dashed border-line text-ink-soft hover:border-violet-400/40 hover:text-ink transition-colors"
-              style={{minHeight:44}}>
+              className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm border border-dashed text-ink-soft hover:text-ink transition-colors"
+              style={{minHeight:44,borderColor:"rgba(113,50,245,0.28)"}}>
               + Edit Maddah
             </button>
           </div>
@@ -348,16 +351,17 @@ const S2MaddahPage = () => {
           <div className="flex gap-2 p-1 bg-white/4 rounded-xl w-fit">
             <button
               onClick={() => setActiveTab("prompt")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
                 activeTab === "prompt"
-                  ? "bg-violet-500/25 text-violet-200"
+                  ? "text-violet-200"
                   : "text-ink-muted hover:text-ink"
-              }`}>
+              }`}
+              style={activeTab === "prompt" ? {background:"rgba(113,50,245,0.22)"} : {}}>
               Prompt Maddah
             </button>
             <button
               onClick={() => setActiveTab("risalah")}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1.5 ${
+              className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors flex items-center gap-1.5 ${
                 activeTab === "risalah"
                   ? "bg-gold-500/20 text-gold-200"
                   : "text-ink-muted hover:text-ink"
@@ -378,11 +382,12 @@ const S2MaddahPage = () => {
               {PROMPT_MODES.map(mode => (
                 <button key={mode.id}
                   onClick={() => setActiveMode(mode.id)}
-                  className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm border transition-colors ${
+                  className={`flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm border font-medium transition-colors ${
                     activeMode === mode.id
-                      ? "bg-violet-500/15 text-violet-200 border-violet-500/30"
-                      : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
-                  }`} style={{minHeight:44}}>
+                      ? "text-violet-200 border-violet-600/35"
+                      : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
+                  }`}
+                  style={activeMode === mode.id ? {background:"rgba(113,50,245,0.20)",minHeight:44} : {minHeight:44}}>
                   <Icon name={mode.icon} className="w-4 h-4"/>
                   {mode.label}
                 </button>
@@ -398,8 +403,10 @@ const S2MaddahPage = () => {
                 value={topikInput}
                 onChange={e => setTopikInput(e.target.value)}
                 placeholder="mis. hukum cryptocurrency · metode istinbat nawazil · i'jaz 'ilmi"
-                className="w-full bg-white/4 border border-line rounded-xl px-4 py-3 text-sm text-ink outline-none focus:border-violet-400/40 transition-colors"
+                className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink outline-none transition-colors"
                 style={{fontSize:16}}
+                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
               />
               {topikInput.trim().length > 0 && topikInput.trim().split(" ").length < 2 && (
                 <p className="text-xs text-amber-400 mt-1">
@@ -410,7 +417,7 @@ const S2MaddahPage = () => {
 
             {/* Preview + Actions */}
             <div className="card-glass p-5">
-              <div className="p-3 rounded-lg bg-white/3 border border-line mb-4">
+              <div className="p-3 rounded-xl mb-4" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
                 <div className="text-xs text-ink-soft mb-1">Preview prompt:</div>
                 <p className="text-xs text-ink-muted leading-relaxed font-mono line-clamp-4 whitespace-pre-wrap">
                   {promptPreview}{promptPreview.length >= 300 ? "..." : ""}
@@ -452,8 +459,10 @@ const S2MaddahPage = () => {
                 value={judulRisalah}
                 onChange={e => setJudulRisalah(e.target.value)}
                 placeholder="mis. Fiqh Nawazil dalam Transaksi Digital Kontemporer"
-                className="w-full bg-white/4 border border-line rounded-xl px-4 py-3 text-sm text-ink outline-none focus:border-gold-400/40 transition-colors"
+                className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink outline-none transition-colors"
                 style={{fontSize:16}}
+                onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
               />
             </div>
 
@@ -462,10 +471,10 @@ const S2MaddahPage = () => {
               {RISALAH_MODES.map(mode => (
                 <button key={mode.id}
                   onClick={() => setRisalahMode(mode.id)}
-                  className={`flex items-center gap-2 p-3 rounded-xl text-sm border transition-colors text-left ${
+                  className={`flex items-center gap-2 p-3 rounded-xl text-sm border font-medium transition-colors text-left ${
                     risalahMode === mode.id
                       ? "bg-gold-500/15 text-gold-200 border-gold-500/30"
-                      : "bg-white/3 text-ink-muted border-line hover:bg-white/5"
+                      : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
                   }`}>
                   <Icon name={mode.icon} className="w-4 h-4"/>
                   {mode.label}
@@ -483,8 +492,10 @@ const S2MaddahPage = () => {
                   value={poinRisalah}
                   onChange={e => setPoinRisalah(e.target.value)}
                   placeholder={"1. Temuan pertama\n2. Temuan kedua\n3. Kesimpulan utama"}
-                  className="w-full bg-white/4 border border-line rounded-xl px-4 py-3 text-sm text-ink outline-none focus:border-gold-400/40 transition-colors resize-none"
+                  className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink outline-none transition-colors resize-none"
                   style={{fontSize:16, minHeight:100}}
+                  onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                  onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
                 />
               </div>
             )}
@@ -499,8 +510,10 @@ const S2MaddahPage = () => {
                   value={topikInput}
                   onChange={e => setTopikInput(e.target.value)}
                   placeholder="mis. penerapan fiqh nawazil pada platform fintech syariah"
-                  className="w-full bg-white/4 border border-line rounded-xl px-4 py-3 text-sm text-ink outline-none focus:border-gold-400/40 transition-colors"
+                  className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink outline-none transition-colors"
                   style={{fontSize:16}}
+                  onFocus={e => e.target.style.borderColor="rgba(113,50,245,0.45)"}
+                  onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
                 />
               </div>
             )}
@@ -515,7 +528,7 @@ const S2MaddahPage = () => {
 
             {/* Preview + Actions */}
             <div className="card-glass p-5 border border-gold-500/15">
-              <div className="p-3 rounded-lg bg-white/3 border border-line mb-4">
+              <div className="p-3 rounded-xl mb-4" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
                 <div className="text-xs text-ink-soft mb-1">Preview prompt:</div>
                 <p className="text-xs text-ink-muted leading-relaxed font-mono line-clamp-4 whitespace-pre-wrap">
                   {promptPreview}{promptPreview.length >= 300 ? "..." : ""}

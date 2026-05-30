@@ -79,7 +79,7 @@ const PromptCard = ({ prompt, maddah, profile }) => {
         </div>
       </div>
 
-      <div className="p-3 rounded-lg bg-white/3 border border-line mb-3">
+      <div className="p-3 rounded-xl mb-3" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
         <div className={`text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap ${!showFull ? "line-clamp-4" : ""}`}>
           {resolvedPrompt}
         </div>
@@ -158,7 +158,7 @@ const MaddahDetailPage = () => {
               </div>
               <h1 className="font-display text-3xl md:text-4xl font-semibold text-ink">{maddah.name}</h1>
             </div>
-            {catLabel && <span className="chip-glass text-xs flex-shrink-0 mt-1">{catLabel}</span>}
+            {catLabel && <span className="badge-neutral flex-shrink-0 mt-1">{catLabel}</span>}
           </div>
 
           <p className="text-base md:text-lg text-ink-muted leading-relaxed max-w-2xl mt-4">
@@ -170,7 +170,7 @@ const MaddahDetailPage = () => {
       {/* Coming soon banner if no content */}
       {!hasContent && (
         <section className="container-x mb-8">
-          <div className="card-glass p-5 border border-violet-500/20 bg-violet-500/5 text-center">
+          <div className="card-glass p-5 border border-violet-600/22 bg-violet-600/5 text-center">
             <div className="text-violet-300 font-medium mb-1">Konten lengkap segera hadir</div>
             <div className="text-sm text-ink-muted">
               Maddah ini sedang disiapkan dengan tutorial dan 15+ prompt template.
@@ -217,7 +217,7 @@ const MaddahDetailPage = () => {
                           <div className="font-display text-lg font-semibold text-ink">{tool?.name || ai.tool}</div>
                           <div className="text-xs text-ink-soft">{ai.strength}</div>
                         </div>
-                        {ai.rank === 1 && <span className="chip-glass text-[10px] text-gold-300 flex-shrink-0">TOP PICK</span>}
+                        {ai.rank === 1 && <span className="badge-purple text-[10px] flex-shrink-0">TOP PICK</span>}
                       </div>
                       <p className="text-sm text-ink-muted leading-relaxed">{ai.why}</p>
                     </div>
@@ -288,12 +288,12 @@ const MaddahDetailPage = () => {
                     <button
                       key={kind.id}
                       onClick={() => setActiveKind(kind.id)}
-                      className={`flex-shrink-0 px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm transition-colors flex items-center gap-1.5 md:gap-2 ${
+                      className={`flex-shrink-0 px-3 md:px-4 py-2 text-xs md:text-sm font-medium transition-colors flex items-center gap-1.5 md:gap-2 rounded-xl border ${
                         activeKind === kind.id
-                          ? "bg-violet-500/20 text-violet-200 border border-violet-500/30"
-                          : "bg-white/3 text-ink-muted border border-line hover:bg-white/5"
+                          ? "text-violet-200 border-violet-600/35"
+                          : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7 hover:text-ink"
                       }`}
-                      style={{ minHeight: 36 }}
+                      style={activeKind === kind.id ? {background:"rgba(113,50,245,0.20)",minHeight:36} : {minHeight:36}}
                     >
                       <span>{kind.label}</span>
                       <span className="text-[10px] opacity-70">{count}</span>

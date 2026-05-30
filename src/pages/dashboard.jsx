@@ -154,7 +154,7 @@ const MaddahDashCard = ({ maddah }) => {
         </div>
 
         {hasContent && topAITool && (
-          <div className="flex items-center gap-2.5 mb-3 p-2.5 rounded-lg bg-white/3 border border-line">
+          <div className="flex items-center gap-2.5 mb-3 p-2.5 rounded-xl" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
             <ToolIcon tool={topAITool} size="w-8 h-8"/>
             <div className="flex-1 min-w-0">
               <div className="text-[10px] text-ink-soft uppercase tracking-wider">AI rekomendasi</div>
@@ -294,7 +294,7 @@ Kalau paham, jawab singkat: "Wa'alaikumussalam, siap membantu." Lalu tunggu pert
                 Salin Starter Pack
               </button>
             </div>
-            <div className="mt-4 p-3 rounded-lg bg-white/3 border border-line">
+            <div className="mt-4 p-3 rounded-xl" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
               <p className="text-xs text-ink-soft font-mono leading-relaxed line-clamp-2">
                 {prompt.slice(0, 160)}...
               </p>
@@ -689,10 +689,10 @@ const KurasahRecentCards = () => {
         const snippet = (note.body || "").slice(0, 100).replace(/[#*`>]/g, "").trim();
         return (
           <button key={note.id} onClick={() => navigate("/kurasah?id=" + note.id)}
-            className="card-glass hov-lift text-left p-4 rounded-xl border border-line hover:border-violet-400/30 transition-all">
+            className="card-glass hov-lift text-left p-4 rounded-xl border border-white/8 hover:border-violet-400/30 transition-all">
             <div className="flex flex-wrap gap-1 mb-2">
               {note.tags.slice(0,2).map(t => (
-                <span key={t} className="text-[10px] px-2 py-0.5 rounded-full bg-violet-500/12 text-violet-300 border border-violet-400/15">{t}</span>
+                <span key={t} className="badge-purple text-[10px]">{t}</span>
               ))}
             </div>
             <div className="font-display text-sm font-semibold text-ink mb-1 leading-snug">{note.title || "Tanpa judul"}</div>
@@ -712,7 +712,8 @@ const ContinueCard = ({ className = "", progress }) => {
       <div className={`${className} card-glass-strong p-4 md:p-7 relative overflow-hidden`}>
         <Blob color="rgba(124,77,255,0.18)" size={250} top={-80} right={-80}/>
         <div className="relative flex items-start gap-4">
-          <span className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-400 to-violet-600 text-white flex items-center justify-center shadow-glow flex-shrink-0">
+          <span className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:"var(--kraken-purple)"}}>
+
             <Icon name="sparkles" className="w-5 h-5"/>
           </span>
           <div className="flex-1">
@@ -740,7 +741,7 @@ const ContinueCard = ({ className = "", progress }) => {
       <Blob color="rgba(124,77,255,0.15)" size={200} top={-60} right={-60}/>
       <div className="relative">
         <div className="flex items-center gap-2 mb-3">
-          <span className="chip chip-violet text-[10px]">Continue Learning</span>
+          <span className="badge-purple text-[10px]">Continue Learning</span>
         </div>
         <div className="font-display text-2xl text-ink font-semibold mb-2 leading-tight">{last.label}</div>
         <p className="text-sm text-ink-muted mb-5 leading-relaxed">Lanjut dari terakhir kamu berhenti, progresmu tersimpan.</p>
@@ -790,7 +791,7 @@ const RecommendationCard = ({ rec, index, profile }) => {
               <div className="text-[11px] text-ink-soft mt-0.5">{tool.by}</div>
             </div>
           </div>
-          {index === 0 && <span className="chip chip-gold text-[10px] flex-shrink-0">✨ Top pick</span>}
+          {index === 0 && <span className="badge-purple text-[10px] flex-shrink-0">✨ Top pick</span>}
         </div>
 
         <div className="mb-4">
@@ -805,7 +806,7 @@ const RecommendationCard = ({ rec, index, profile }) => {
           <div className="text-[11px] uppercase tracking-wider text-ink-muted mb-2">Paling unggul di</div>
           <div className="flex flex-wrap gap-1.5">
             {tool.bestAt.map((b, i) => (
-              <span key={i} className="text-[11px] px-2 py-0.5 rounded-md bg-white/5 text-ink-muted border border-line">{b}</span>
+              <span key={i} className="badge-neutral text-[11px]">{b}</span>
             ))}
           </div>
         </div>
@@ -869,7 +870,7 @@ const AdaptiveGuideQuick = ({ profile, topRec }) => {
                 </div>
               </div>
 
-              <p className="text-ink-muted leading-relaxed mb-6 text-base border-l-2 border-violet-500/40 pl-4">
+              <p className="text-ink-muted leading-relaxed mb-6 text-base border-l-2 pl-4" style={{borderColor:"var(--kraken-purple)","--tw-border-opacity":"0.5"}}>
                 {guide.when}
               </p>
 
@@ -879,7 +880,7 @@ const AdaptiveGuideQuick = ({ profile, topRec }) => {
               <ol className="space-y-3">
                 {guide.steps.slice(0, 3).map((step, i) => (
                   <li key={i} className="flex items-start gap-3">
-                    <span className="w-7 h-7 rounded-full bg-violet-500/20 text-violet-200 text-sm flex items-center justify-center font-semibold flex-shrink-0 border border-violet-400/30 mt-0.5">
+                    <span className="w-7 h-7 rounded-full text-violet-200 text-sm flex items-center justify-center font-semibold flex-shrink-0 mt-0.5" style={{background:"rgba(113,50,245,0.18)",border:"1px solid rgba(113,50,245,0.30)"}}>
                       {i + 1}
                     </span>
                     <span className="text-sm text-ink leading-relaxed">{step}</span>
@@ -889,8 +890,8 @@ const AdaptiveGuideQuick = ({ profile, topRec }) => {
             </div>
 
             <div className="md:col-span-5 flex flex-col">
-              <div className="rounded-xl overflow-hidden border border-line flex-1 mb-4">
-                <div className="flex items-center justify-between px-4 py-2.5 border-b border-line" style={{background:"rgba(124,77,255,0.12)"}}>
+              <div className="rounded-xl overflow-hidden flex-1 mb-4" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
+                <div className="flex items-center justify-between px-4 py-2.5 border-b border-line" style={{background:"rgba(113,50,245,0.12)"}}>
                   <div className="text-[11px] uppercase tracking-wider text-gold-400 font-semibold flex items-center gap-1.5">
                     <Icon name="cpu" className="w-3 h-3"/> Starter prompt
                   </div>
@@ -953,8 +954,8 @@ const QuickAction = ({ icon, title, desc, to, onClick, color = "violet" }) => {
   return (
     <a href={to ? "#" + to : "#"} onClick={handle}
       className="card-glass p-3 md:p-5 hov-lift block group"
-      style={{ minHeight: 80 }}>
-      <div className={`w-8 h-8 md:w-10 md:h-10 rounded-lg md:rounded-xl flex items-center justify-center mb-2 md:mb-3.5 transition-colors ${isGold ? "bg-gold-500/12 text-gold-300 group-hover:bg-gold-500/20" : "bg-violet-500/12 text-violet-300 group-hover:bg-violet-500/20"}`}>
+      style={{ minHeight: 80, borderRadius: 16 }}>
+      <div className={`w-8 h-8 md:w-10 md:h-10 rounded-xl flex items-center justify-center mb-2 md:mb-3.5 transition-colors ${isGold ? "bg-gold-500/12 text-gold-300 group-hover:bg-gold-500/20" : "text-violet-300 group-hover:bg-violet-500/20"}`} style={!isGold ? {background:"rgba(113,50,245,0.14)"} : {}}>
         <Icon name={icon} className="w-4 h-4 md:w-5 md:h-5"/>
       </div>
       <div className="font-display text-sm md:text-base font-semibold text-ink mb-0.5 md:mb-1.5">{title}</div>
