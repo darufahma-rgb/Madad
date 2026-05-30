@@ -777,227 +777,7 @@ Rangkuman ujian:
 
   // ══════════════ TSANAWI ILMI ══════════════
 
-  {
-    id: "matematika-tsanawi",
-    name: "Matematika (Tsanawi)",
-    nameArabic: "الرِّيَاضِيَّاتُ",
-    category: "umum",
-    jenjang: ["tsanawi"],
-    jurusan: ["ilmi", "adabi"],
-    description: "Matematika Tsanawi — Bahta dan Tathbiqi dalam bahasa Arab.",
-    topikUtama: [
-      "المتتاليات — Barisan dan Deret",
-      "المثلثات — Trigonometri",
-      "الاحتمالات — Peluang",
-      "المصفوفات — Matriks",
-      "الحساب التفاضلي — Kalkulus Diferensial",
-      "الحساب التكاملي — Kalkulus Integral",
-      "الدوال — Fungsi dan Relasi",
-    ],
-    prompts: {
-      pahami: `Aku pelajar Ma'had Al-Azhar (Tsanawi) yang belajar matematika lanjut dalam bahasa Arab.
-
-Topik: [TOPIK]
-
-Yang aku butuhkan:
-1. Penjelasan konsep dalam bahasa Indonesia yang jelas
-2. Istilah Arab + simbol yang dipakai
-3. Rumus lengkap dengan keterangan tiap variabel
-4. Contoh soal bertahap dengan langkah penyelesaian
-5. Aplikasi nyata konsep ini`,
-
-      hafal: `Aku pelajar Ma'had Al-Azhar Tsanawi, mau hafal matematika: [TOPIK]
-
-Buat kartu hafalan:
-1. Rumus-rumus utama (notasi Arab)
-2. Tabel: Arab ↔ Indonesia ↔ Simbol
-3. Kondisi penggunaan tiap rumus
-4. Soal cepat untuk test diri (3 soal + jawaban)`,
-
-      latihan: `Aku pelajar Ma'had Al-Azhar Tsanawi, latihan matematika: [TOPIK]
-
-Buat 5 soal bertahap:
-- Format seperti soal ujian Ma'had
-- Sertakan soal cerita (konteks nyata)
-- JANGAN kasih jawaban dulu
-- Koreksi + langkah penyelesaian lengkap`,
-
-      ujian: `Aku pelajar Ma'had Al-Azhar Tsanawi, persiapan ujian matematika: [TOPIK]
-
-Rangkuman ujian:
-1. Rumus WAJIB dihafal
-2. Tabel istilah Arab penting
-3. Contoh soal + solusi (3 soal)
-4. Kesalahan umum`,
-    },
-  },
-
-  {
-    id: "fisika-tsanawi",
-    name: "Fisika",
-    nameArabic: "الْفِيزِيَاءُ",
-    category: "umum",
-    jenjang: ["tsanawi"],
-    jurusan: ["ilmi"],
-    description: "Fisika Tsanawi — mekanika, kalor, gelombang, listrik, optik dalam bahasa Arab.",
-    topikUtama: [
-      "الحركة والقوة — Gerak dan Gaya",
-      "الشغل والطاقة — Usaha dan Energi",
-      "الحرارة — Kalor", "الموجات والصوت — Gelombang",
-      "الضوء والبصريات — Cahaya dan Optik",
-      "الكهرباء والمغناطيسية — Listrik dan Magnet",
-    ],
-    prompts: {
-      pahami: `Aku pelajar Ma'had Al-Azhar (Tsanawi Ilmi) yang belajar fisika dalam bahasa Arab.
-
-Topik: [TOPIK]
-
-Jelaskan dengan cara yang konkret:
-1. Apa yang terjadi secara fisik? (analogi sehari-hari)
-2. Istilah Arab + simbol (tabel)
-3. Rumus-rumus + keterangan tiap simbol
-4. Contoh soal dengan langkah penyelesaian
-5. Fenomena alam atau teknologi yang berhubungan`,
-
-      hafal: `Aku pelajar Ma'had Al-Azhar Tsanawi Ilmi, mau hafal fisika: [TOPIK]
-
-Buat kartu hafalan:
-1. Hukum/prinsip utama (nama Arab + terjemah)
-2. Rumus dengan satuan SI
-3. Tabel: Arab ↔ Indonesia ↔ Simbol ↔ Satuan
-4. Aplikasi nyata yang mudah diingat`,
-
-      latihan: `Aku pelajar Ma'had Al-Azhar Tsanawi Ilmi, latihan fisika: [TOPIK]
-
-Buat soal:
-1. 2 soal hitungan mudah
-2. 2 soal hitungan sedang
-3. 1 soal analisis
-4. JANGAN kasih jawaban dulu`,
-
-      ujian: `Aku pelajar Ma'had Al-Azhar Tsanawi Ilmi, persiapan ujian fisika: [TOPIK]
-
-Rangkuman ujian:
-1. Hukum/prinsip (Arab + isi hukum)
-2. Rumus dengan satuan
-3. Istilah Arab penting (tabel)
-4. Soal tipe ujian + solusi (2-3 soal)`,
-    },
-  },
-
-  {
-    id: "kimia-tsanawi",
-    name: "Kimia",
-    nameArabic: "الْكِيمِيَاءُ",
-    category: "umum",
-    jenjang: ["tsanawi"],
-    jurusan: ["ilmi"],
-    description: "Kimia Tsanawi — atom, ikatan, reaksi, larutan, organik dalam bahasa Arab.",
-    topikUtama: [
-      "الذرة والجدول الدوري — Atom dan Tabel Periodik",
-      "الروابط الكيميائية — Ikatan Kimia",
-      "المعادلات الكيميائية — Persamaan Kimia",
-      "الأحماض والقواعد — Asam dan Basa",
-      "المحاليل — Larutan",
-      "الكيمياء العضوية — Kimia Organik Dasar",
-    ],
-    prompts: {
-      pahami: `Aku pelajar Ma'had Al-Azhar (Tsanawi Ilmi) yang belajar kimia dalam bahasa Arab.
-
-Topik: [TOPIK]
-
-Jelaskan:
-1. Apa yang terjadi di tingkat molekul/atom? (analogi sederhana)
-2. Istilah Arab kimia (tabel: Arab ↔ Indonesia)
-3. Rumus/persamaan yang relevan
-4. Contoh dari kehidupan sehari-hari
-5. Langkah menyelesaikan soal tipe ini`,
-
-      hafal: `Aku pelajar Ma'had Al-Azhar Tsanawi Ilmi, mau hafal kimia: [TOPIK]
-
-Buat kartu hafalan:
-1. Konsep kunci + definisi Arab
-2. Simbol/lambang kimia
-3. Rumus/hukum yang berlaku
-4. Tabel: Arab ↔ Indonesia ↔ Simbol
-5. Contoh reaksi representatif`,
-
-      latihan: `Aku pelajar Ma'had Al-Azhar Tsanawi Ilmi, latihan kimia: [TOPIK]
-
-Buat soal:
-1. 2 soal hitungan/setarakan persamaan
-2. 2 soal pemahaman konsep
-3. 1 soal analisis kasus
-4. JANGAN kasih jawaban dulu`,
-
-      ujian: `Aku pelajar Ma'had Al-Azhar Tsanawi Ilmi, persiapan ujian kimia: [TOPIK]
-
-Rangkuman ujian:
-1. Definisi (Arab + Indonesia)
-2. Rumus/hukum
-3. Istilah Arab penting (tabel)
-4. Contoh soal + solusi`,
-    },
-  },
-
-  {
-    id: "biologi-tsanawi",
-    name: "Biologi",
-    nameArabic: "الْأَحْيَاءُ",
-    category: "umum",
-    jenjang: ["tsanawi"],
-    jurusan: ["ilmi"],
-    description: "Biologi Tsanawi — sel, genetika, anatomi, ekologi dalam bahasa Arab.",
-    topikUtama: [
-      "الخلية — Sel dan Organel",
-      "الأنسجة والأعضاء — Jaringan dan Organ",
-      "جهاز الدوران والتنفس والهضم — Sistem Tubuh",
-      "جهاز العصبي — Sistem Saraf",
-      "الوراثة — Genetika",
-      "البيئة — Ekosistem",
-    ],
-    prompts: {
-      pahami: `Aku pelajar Ma'had Al-Azhar (Tsanawi Ilmi) yang belajar biologi dalam bahasa Arab.
-
-Topik: [TOPIK]
-
-Jelaskan:
-1. Gambaran besar — apa fungsi sistem/organ ini?
-2. Komponen utama + istilah Arabnya (tabel/daftar)
-3. Proses yang terjadi — jelaskan step by step
-4. Diagram yang bisa aku gambar (deskripsikan)
-5. Fakta menarik
-
-Biologi itu tentang kehidupan — buat aku kagum!`,
-
-      hafal: `Aku pelajar Ma'had Al-Azhar Tsanawi Ilmi, mau hafal biologi: [TOPIK]
-
-Buat kartu hafalan:
-1. Istilah kunci (tabel: Arab ↔ Indonesia)
-2. Fungsi tiap komponen (tabel: komponen → fungsi)
-3. Proses utama (poin bernomor)
-4. Fakta penting (angka, persentase)`,
-
-      latihan: `Aku pelajar Ma'had Al-Azhar Tsanawi Ilmi, latihan biologi: [TOPIK]
-
-Buat soal:
-1. 3 soal identifikasi (nama/fungsi bagian)
-2. 2 soal proses (urutan/tahapan)
-3. 1 soal aplikasi
-4. JANGAN kasih jawaban dulu`,
-
-      ujian: `Aku pelajar Ma'had Al-Azhar Tsanawi Ilmi, persiapan ujian biologi: [TOPIK]
-
-Rangkuman ujian:
-1. Definisi (Arab + Indonesia)
-2. Komponen dan fungsi (tabel)
-3. Proses penting (poin bernomor)
-4. Istilah Arab kunci
-5. Soal yang biasa keluar`,
-    },
-  },
-
-  // ══════════════ TSANAWI ADABI ══════════════
+  // ══════════════ TSANAWI UMUM ══════════════
 
   {
     id: "sejarah-tsanawi",
@@ -1005,7 +785,6 @@ Rangkuman ujian:
     nameArabic: "التَّارِيخُ",
     category: "umum",
     jenjang: ["tsanawi"],
-    jurusan: ["adabi"],
     description: "Sejarah Islam dan dunia tingkat Tsanawi dalam bahasa Arab.",
     topikUtama: [
       "الحضارة الإسلامية — Peradaban Islam",
@@ -1015,7 +794,7 @@ Rangkuman ujian:
       "الحضارات القديمة", "العصر الحديث",
     ],
     prompts: {
-      pahami: `Aku pelajar Ma'had Al-Azhar (Tsanawi Adabi) yang belajar sejarah dalam bahasa Arab.
+      pahami: `Aku pelajar Ma'had Al-Azhar (Tsanawi) yang belajar sejarah dalam bahasa Arab.
 
 Topik: [TOPIK]
 
@@ -1026,7 +805,7 @@ Ceritakan dengan menarik:
 4. Dampak/pengaruh
 5. Pelajaran yang bisa diambil`,
 
-      hafal: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, mau hafal sejarah: [TOPIK]
+      hafal: `Aku pelajar Ma'had Al-Azhar Tsanawi, mau hafal sejarah: [TOPIK]
 
 Buat timeline hafalan:
 1. Tahun penting + peristiwa
@@ -1034,7 +813,7 @@ Buat timeline hafalan:
 3. Urutan kejadian (5-7 poin)
 4. Angka-angka penting`,
 
-      latihan: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, latihan sejarah: [TOPIK]
+      latihan: `Aku pelajar Ma'had Al-Azhar Tsanawi, latihan sejarah: [TOPIK]
 
 Buat soal:
 1. 3 soal fakta (kapan, siapa, di mana)
@@ -1042,7 +821,7 @@ Buat soal:
 3. 1 soal evaluasi (apa dampaknya?)
 4. JANGAN kasih jawaban dulu`,
 
-      ujian: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, persiapan ujian sejarah: [TOPIK]
+      ujian: `Aku pelajar Ma'had Al-Azhar Tsanawi, persiapan ujian sejarah: [TOPIK]
 
 Rangkuman ujian:
 1. Timeline singkat
@@ -1059,7 +838,6 @@ Rangkuman ujian:
     nameArabic: "الْجُغْرَافِيَا",
     category: "umum",
     jenjang: ["tsanawi"],
-    jurusan: ["adabi"],
     description: "Geografi Tsanawi — alam, manusia, wilayah dalam bahasa Arab.",
     topikUtama: [
       "الخريطة والإحداثيات — Peta dan Koordinat",
@@ -1070,7 +848,7 @@ Rangkuman ujian:
       "العالم الإسلامي — Dunia Islam",
     ],
     prompts: {
-      pahami: `Aku pelajar Ma'had Al-Azhar (Tsanawi Adabi) yang belajar geografi dalam bahasa Arab.
+      pahami: `Aku pelajar Ma'had Al-Azhar (Tsanawi) yang belajar geografi dalam bahasa Arab.
 
 Topik: [TOPIK]
 
@@ -1081,7 +859,7 @@ Jelaskan:
 4. Hubungan dengan kehidupan manusia
 5. Fakta menarik yang mudah diingat`,
 
-      hafal: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, mau hafal geografi: [TOPIK]
+      hafal: `Aku pelajar Ma'had Al-Azhar Tsanawi, mau hafal geografi: [TOPIK]
 
 Buat kartu hafalan:
 1. Konsep kunci + definisi Arab
@@ -1089,7 +867,7 @@ Buat kartu hafalan:
 3. Nama-nama penting + Arab-nya
 4. Cara mengingat dengan asosiasi`,
 
-      latihan: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, latihan geografi: [TOPIK]
+      latihan: `Aku pelajar Ma'had Al-Azhar Tsanawi, latihan geografi: [TOPIK]
 
 Buat soal:
 1. 3 soal identifikasi/lokasi
@@ -1097,7 +875,7 @@ Buat soal:
 3. 1 soal analisis alam-manusia
 4. JANGAN kasih jawaban dulu`,
 
-      ujian: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, persiapan ujian geografi: [TOPIK]
+      ujian: `Aku pelajar Ma'had Al-Azhar Tsanawi, persiapan ujian geografi: [TOPIK]
 
 Rangkuman ujian:
 1. Definisi (Arab + Indonesia)
@@ -1108,167 +886,62 @@ Rangkuman ujian:
   },
 
   {
-    id: "falsafah-mantiq",
-    name: "Filsafat & Mantiq",
-    nameArabic: "الْفَلْسَفَةُ وَالْمَنْطِقُ",
+    id: "mantiq-tsanawi",
+    name: "Mantiq (Logika Islam)",
+    nameArabic: "الْمَنْطِقُ",
     category: "umum",
     jenjang: ["tsanawi"],
-    jurusan: ["adabi"],
-    description: "Dasar-dasar filsafat dan logika (mantiq) Tsanawi.",
+    description: "Ilmu logika Islam — kaidah berpikir benar, definisi, proposisi, dan silogisme.",
     topikUtama: [
-      "تعريف الفلسفة وفروعها",
-      "الفلسفة اليونانية (سقراط، أفلاطون، أرسطو)",
-      "الفلسفة الإسلامية (الكندي، ابن سينا، الفارابي)",
-      "علم المنطق والقياس المنطقي",
-      "نظرية المعرفة",
+      "تعريف المنطق وموضوعه — Pengertian dan objek Mantiq",
+      "التصور والتصديق — Konsep dan penilaian",
+      "الكليات الخمس — Lima universal (jins, nau', fashl, khasshah, 'ardh 'amm)",
+      "الحد والرسم — Definisi (had) dan deskripsi (rasm)",
+      "القضايا المنطقية — Proposisi (qadhiyyah)",
+      "القياس — Silogisme (qiyas)",
+      "أنواع القياس — Jenis-jenis silogisme",
+      "الاستقراء والتمثيل — Induksi dan analogi",
+      "المغالطات — Kesalahan logika (mughalathah)",
     ],
     prompts: {
-      pahami: `Aku pelajar Ma'had Al-Azhar (Tsanawi Adabi) yang belajar filsafat dan mantiq.
+      pahami: `Aku pelajar Ma'had Al-Azhar (Tsanawi) yang belajar Mantiq.
 
 Topik: [TOPIK]
 
-Jelaskan dengan cara yang membuat aku bisa berpikir:
-1. Pertanyaan besar yang coba dijawab topik ini
-2. Penjelasan konsep + istilah Arabnya
-3. Contoh konkret dari kehidupan nyata
-4. Hubungan dengan pemikiran Islam
-5. Mengapa penting dipelajari?
+Jelaskan dengan cara yang bikin aku bisa berpikir logis:
+1. Pengertian sederhana + istilah Arabnya
+2. Contoh konkret dari kehidupan nyata atau contoh dalam bahasa Arab
+3. Cara menggunakannya dalam berpikir sehari-hari
+4. Hubungannya dengan ilmu-ilmu Islam (fiqh, ushul, dll)
+5. Perbedaan dengan konsep Mantiq yang mirip
 
-Filsafat bukan hafalan — bantu aku BERPIKIR!`,
+Mantiq itu ilmu berpikir — bantu aku PAHAM logikanya, bukan sekedar hafal!`,
 
-      hafal: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, mau hafal filsafat/mantiq: [TOPIK]
-
-Buat kartu hafalan:
-1. Definisi (Arab + Indonesia)
-2. Tokoh kunci + pemikiran utama
-3. Istilah teknis penting (tabel)
-4. Perbedaan dengan konsep yang mirip`,
-
-      latihan: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, latihan filsafat/mantiq: [TOPIK]
-
-Buat soal:
-1. 2 soal definisi/pengertian
-2. 2 soal "bandingkan pemikiran X dengan Y"
-3. 1 soal aplikasi mantiq
-4. JANGAN kasih jawaban dulu`,
-
-      ujian: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, persiapan ujian filsafat/mantiq: [TOPIK]
-
-Rangkuman ujian:
-1. Definisi (Arab + Indonesia)
-2. Tokoh + pemikiran utama
-3. Istilah teknis (tabel)
-4. Soal yang biasa keluar`,
-    },
-  },
-
-  {
-    id: "ilmu-nafs",
-    name: "Ilmu Nafs (Psikologi)",
-    nameArabic: "عِلْمُ النَّفْسِ",
-    category: "umum",
-    jenjang: ["tsanawi"],
-    jurusan: ["adabi"],
-    description: "Psikologi dasar Tsanawi — perilaku, emosi, belajar, kepribadian.",
-    topikUtama: [
-      "تعريف علم النفس",
-      "الإحساس والإدراك — Sensasi dan Persepsi",
-      "الذاكرة — Memori",
-      "التعلم — Teori Belajar",
-      "الدوافع والانفعالات — Motivasi dan Emosi",
-      "الشخصية — Kepribadian",
-      "الصحة النفسية — Kesehatan Mental",
-    ],
-    prompts: {
-      pahami: `Aku pelajar Ma'had Al-Azhar (Tsanawi Adabi) yang belajar ilmu nafs.
-
-Topik: [TOPIK]
-
-Jelaskan dengan relate ke kehidupanku:
-1. Apa yang dipelajari? (definisi sederhana)
-2. Istilah Arab psikologi (tabel)
-3. Contoh dari kehidupan nyata
-4. Tokoh/psikolog utama
-5. Hubungan dengan ajaran Islam
-
-Psikologi itu tentang diri kita — buat aku bisa merefleksikan diri!`,
-
-      hafal: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, mau hafal ilmu nafs: [TOPIK]
+      hafal: `Aku pelajar Ma'had Al-Azhar Tsanawi, mau hafal Mantiq: [TOPIK]
 
 Buat kartu hafalan:
-1. Definisi (Arab + Indonesia)
-2. Tokoh + teori utama (tabel)
-3. Istilah teknis (tabel)
-4. Contoh fenomena nyata`,
+1. Definisi (Arab + terjemah, 1-2 kalimat)
+2. Pembagian/macam-macam dalam tabel (Arab + terjemah)
+3. Contoh untuk tiap macam (dalam Arab kalau bisa)
+4. Perbedaan dengan konsep yang mirip
+5. Cara mengingat dengan asosiasi atau skema sederhana`,
 
-      latihan: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, latihan ilmu nafs: [TOPIK]
+      latihan: `Aku pelajar Ma'had Al-Azhar Tsanawi, latihan Mantiq: [TOPIK]
 
-Buat soal:
-1. 2 soal definisi
-2. 2 soal "berikan contoh nyata untuk..."
-3. 1 soal "bandingkan teori X dengan Y"
-4. JANGAN kasih jawaban dulu`,
+Buat soal latihan:
+1. 2 soal definisi (apa yang dimaksud dengan...)
+2. 2 soal identifikasi (ini termasuk jenis apa?)
+3. 1 soal buat contoh sendiri (buatlah qiyas/had/qadhiyyah tentang...)
+4. JANGAN kasih jawaban dulu — tunggu jawabanku`,
 
-      ujian: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, persiapan ujian ilmu nafs: [TOPIK]
-
-Rangkuman ujian:
-1. Definisi (Arab + Indonesia)
-2. Tokoh + teori utama
-3. Istilah teknis penting (tabel)
-4. Soal yang biasa keluar`,
-    },
-  },
-
-  {
-    id: "statistik-adabi",
-    name: "Statistik",
-    nameArabic: "الْإِحْصَاءُ",
-    category: "umum",
-    jenjang: ["tsanawi"],
-    jurusan: ["adabi"],
-    description: "Statistik dasar Tsanawi Adabi dalam bahasa Arab.",
-    topikUtama: [
-      "مفهوم الإحصاء — Pengertian Statistik",
-      "المتوسط والوسيط والمنوال — Mean, Median, Modus",
-      "التشتت — Dispersi",
-      "الاحتمالات الأساسية — Probabilitas",
-    ],
-    prompts: {
-      pahami: `Aku pelajar Ma'had Al-Azhar (Tsanawi Adabi) yang belajar statistik dalam bahasa Arab.
-
-Topik: [TOPIK]
-
-Jelaskan:
-1. Kegunaan konsep ini di dunia nyata
-2. Istilah Arab statistik (tabel)
-3. Rumus/cara hitung + contoh dengan data nyata
-4. Kapan dipakai (mean vs median vs modus)
-
-Statistik itu alat — bantu aku lihat kegunaannya!`,
-
-      hafal: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, mau hafal statistik: [TOPIK]
-
-Buat kartu hafalan:
-1. Definisi (Arab + Indonesia)
-2. Rumus + keterangan simbol
-3. Langkah-langkah perhitungan
-4. Tabel: Arab ↔ Indonesia ↔ Simbol`,
-
-      latihan: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, latihan statistik: [TOPIK]
-
-Buat soal:
-1. Set data → aku hitung ukuran statistiknya
-2. Hasil → aku interpretasikan
-3. 1 soal cerita aplikasi nyata
-4. JANGAN kasih jawaban dulu`,
-
-      ujian: `Aku pelajar Ma'had Al-Azhar Tsanawi Adabi, persiapan ujian statistik: [TOPIK]
+      ujian: `Aku pelajar Ma'had Al-Azhar Tsanawi, persiapan ujian Mantiq: [TOPIK]
 
 Rangkuman ujian:
-1. Definisi (Arab + Indonesia)
-2. Rumus yang wajib dihafal
-3. Istilah Arab penting (tabel)
-4. Contoh soal + solusi`,
+1. Definisi (Arab + terjemah)
+2. Pembagian/macam-macam (tabel rapi)
+3. Contoh dari literatur Arab/Islam
+4. Perbedaan dengan konsep yang sering tertukar
+5. Soal yang biasa keluar di ujian Tsanawi`,
     },
   },
 ];
