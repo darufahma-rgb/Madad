@@ -130,6 +130,7 @@ const OnboardingPage = () => {
     struggle: [], learningStyle: [], s2Maddah: null,
     mahad_year: null, mahad_jurusan: null, mahad_struggle: [],
   });
+  const [mahadJenjang, setMahadJenjang] = useState(null);
   const toast = useToast();
 
   useEffect(() => { if (!session) navigate("/"); }, [session]);
@@ -141,7 +142,38 @@ const OnboardingPage = () => {
       key: "level",
       title: "Kamu di tingkat apa sekarang?",
       hint: "Pilih tingkat atau jenjangmu saat ini",
-      options: LEVELS,
+      optionsFn: (d, mj) => {
+        const MAHAD_GRANULAR = [
+          "idad_1","idad_2","idad_3",
+          "tsanawi_1_adabi","tsanawi_1_ilmi",
+          "tsanawi_2_adabi","tsanawi_2_ilmi",
+          "tsanawi_3_adabi","tsanawi_3_ilmi",
+        ];
+        if (!mj) {
+          return [
+            ...LEVELS.filter(l => !MAHAD_GRANULAR.includes(l.id)),
+            {
+              id: "__mahad_idad__",
+              label: "I'dadi (Ma'had Al-Azhar)",
+              short: "I'dadi",
+              arabic: "الْإِعْدَادِيُّ",
+              desc: "Ma'had Al-Azhar · Setingkat SMP",
+              isMahadGateway: true,
+            },
+            {
+              id: "__mahad_tsanawi__",
+              label: "Tsanawi (Ma'had Al-Azhar)",
+              short: "Tsanawi",
+              arabic: "الثَّانَوِيُّ",
+              desc: "Ma'had Al-Azhar · Setingkat SMA",
+              isMahadGateway: true,
+            },
+          ];
+        }
+        if (mj === "idad")    return LEVELS.filter(l => l.id.startsWith("idad"));
+        if (mj === "tsanawi") return LEVELS.filter(l => l.id.startsWith("tsanawi"));
+        return LEVELS;
+      },
       multi: false,
       iconType: "arabic-small",
     },
@@ -230,7 +262,9 @@ const OnboardingPage = () => {
 
   const currentOptions = cur?.optionsFromState
     ? (FACULTIES.find(f => f.id === data.faculty)?.majors || [])
-    : cur?.options;
+    : cur?.optionsFn
+      ? cur.optionsFn(data, mahadJenjang)
+      : cur?.options;
 
   const value = data[cur?.key];
   const canNext = cur?.kind === "intro"
@@ -241,7 +275,20 @@ const OnboardingPage = () => {
 
   const onPick = (id) => {
     if (!cur) return;
+
+    if (id === "__mahad_idad__") {
+      setMahadJenjang("idad");
+      return;
+    }
+    if (id === "__mahad_tsanawi__") {
+      setMahadJenjang("tsanawi");
+      return;
+    }
+
     if (cur.key === "level") {
+      if (!id.startsWith("idad") && !id.startsWith("tsanawi")) {
+        setMahadJenjang(null);
+      }
       setData(d => ({
         ...d,
         level: id,
@@ -329,6 +376,8 @@ const OnboardingPage = () => {
               options={currentOptions}
               value={value}
               onPick={onPick}
+              mahadJenjang={mahadJenjang}
+              onClearJenjang={() => { setMahadJenjang(null); setData(d => ({...d, level: null})); }}
             />
           )}
         </div>
@@ -392,7 +441,7 @@ const Intro = ({ session, onNext }) => (
   </div>
 );
 
-const QuestionStep = ({ question, options, value, onPick }) => {
+const QuestionStep = ({ question, options, value, onPick, mahadJenjang, onClearJenjang }) => {
   if (!question || !options) return null;
   const isMulti = question.multi;
   const isSelected = (id) => isMulti ? (value || []).includes(id) : value === id;
@@ -407,6 +456,25 @@ const QuestionStep = ({ question, options, value, onPick }) => {
         {question.title}
       </h2>
       <p className="text-ink-muted mb-8">{question.hint}</p>
+
+      {question.key === "level" && mahadJenjang && (
+        <div className="mb-5">
+          <button
+            onClick={onClearJenjang}
+            className="text-sm text-ink-soft inline-flex items-center gap-1.5 hover:text-ink transition-colors">
+            <Icon name="arrowLeft" className="w-4 h-4"/>
+            Kembali ke pilihan jenjang
+          </button>
+          <div className="mt-2 text-xs text-ink-soft">
+            Ma'had Al-Azhar ·{" "}
+            <span className="text-ink font-medium">
+              {mahadJenjang === "idad" ? "I'dadi (SMP)" : "Tsanawi (SMA)"}
+            </span>
+            {" "}— pilih kelasmu:
+          </div>
+        </div>
+      )}
+
       <div className={`grid ${colClass} gap-3`}>
         {options.map((opt) => {
           if (opt.isSeparator) {
@@ -426,26 +494,35 @@ const QuestionStep = ({ question, options, value, onPick }) => {
             <button key={opt.id} onClick={() => onPick(opt.id)}
               className={`text-left p-5 rounded-xl border transition-all relative ${sel
                 ? "border-emerald-500/60"
-                : "bg-white/4 border-white/8 hover:bg-white/6 hover:border-emerald-600/35"}`}
+                : opt.isMahadGateway
+                  ? "bg-white/4 border-emerald-600/25 hover:bg-white/6 hover:border-emerald-500/45"
+                  : "bg-white/4 border-white/8 hover:bg-white/6 hover:border-emerald-600/35"}`}
               style={sel ? {background:"rgba(62,207,142,0.14)", borderColor:"rgba(62,207,142,0.55)", boxShadow:"0 0 0 1px rgba(62,207,142,0.22), 0 4px 20px rgba(62,207,142,0.18)"} : {}}>
               <div className="flex items-start justify-between mb-2">
-                {question.iconType === "emoji" && <span className="text-3xl">{opt.emoji}</span>}
-                {(question.iconType === "arabic" || isArabicSmall) && (
-                  <span className={`arabic-ui text-gold-300 ${isArabicSmall ? "text-base" : "text-xl"}`}>
-                    {opt.arabic}
-                  </span>
-                )}
-                {question.iconType === "lucide" && (
-                  <span className={`w-9 h-9 rounded-lg flex items-center justify-center ${sel ? "text-white" : "bg-white/8 text-emerald-300"}`} style={sel ? {background:"var(--kraken-purple)"} : {}}>
-                    <Icon name={opt.icon} className="w-4 h-4"/>
-                  </span>
-                )}
-                {isMulti && (
-                  <span className={`w-5 h-5 rounded-md border flex items-center justify-center ${sel ? "text-white" : "border-white/15"}`} style={sel ? {background:"var(--kraken-purple)",borderColor:"var(--kraken-purple)"} : {}}>
-                    {sel && <Icon name="check" className="w-3 h-3" strokeWidth={3}/>}
-                  </span>
-                )}
-                {!isMulti && sel && <Icon name="check" className="w-5 h-5 text-emerald-300" strokeWidth={2.4}/>}
+                <div className="flex items-start gap-0">
+                  {question.iconType === "emoji" && <span className="text-3xl">{opt.emoji}</span>}
+                  {(question.iconType === "arabic" || isArabicSmall) && (
+                    <span className={`arabic-ui text-gold-300 ${isArabicSmall ? "text-base" : "text-xl"}`}>
+                      {opt.arabic}
+                    </span>
+                  )}
+                  {question.iconType === "lucide" && (
+                    <span className={`w-9 h-9 rounded-lg flex items-center justify-center ${sel ? "text-white" : "bg-white/8 text-emerald-300"}`} style={sel ? {background:"var(--kraken-purple)"} : {}}>
+                      <Icon name={opt.icon} className="w-4 h-4"/>
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  {opt.isMahadGateway && (
+                    <Icon name="arrowRight" className="w-4 h-4 text-emerald-400"/>
+                  )}
+                  {isMulti && (
+                    <span className={`w-5 h-5 rounded-md border flex items-center justify-center ${sel ? "text-white" : "border-white/15"}`} style={sel ? {background:"var(--kraken-purple)",borderColor:"var(--kraken-purple)"} : {}}>
+                      {sel && <Icon name="check" className="w-3 h-3" strokeWidth={3}/>}
+                    </span>
+                  )}
+                  {!isMulti && sel && <Icon name="check" className="w-5 h-5 text-emerald-300" strokeWidth={2.4}/>}
+                </div>
               </div>
               <div className="font-display text-lg font-semibold text-ink">{opt.label}</div>
               {opt.desc && <div className="text-xs text-ink-muted mt-1 leading-relaxed">{opt.desc}</div>}

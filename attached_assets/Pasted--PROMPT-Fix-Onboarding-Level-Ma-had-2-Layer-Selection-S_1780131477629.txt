@@ -1,0 +1,205 @@
+# PROMPT: Fix Onboarding Level Ma'had — 2 Layer Selection
+
+Sekarang semua 9 opsi Ma'had langsung muncul sekaligus (I'dadi 1, I'dadi 2, dst)
+— overwhelming dan membingungkan.
+
+Fix: Buat 2 layer:
+- Layer 1: Pilih jenjang (I'dadi / Tsanawi)
+- Layer 2: Pilih kelas (sesuai jenjang yang dipilih)
+
+---
+
+## Yang Harus Diubah di `src/pages/onboarding.jsx`
+
+### STEP 1 — Tambah state jenjang
+
+Di dalam komponen `OnboardingPage`, setelah `const [data, setData] = useState(...)`, tambahkan:
+
+```jsx
+const [mahadJenjang, setMahadJenjang] = useState(null); // "idad" | "tsanawi" | null
+```
+
+### STEP 2 — Ganti opsi LEVELS di QUESTIONS
+
+Cari:
+```js
+{
+  key: "level",
+  title: "Sekarang di tingkat berapa?",
+  hint: "Pilih tingkat saat ini",
+  options: LEVELS,
+  multi: false,
+  iconType: "arabic-small",
+},
+```
+
+Ganti dengan:
+```js
+{
+  key: "level",
+  title: "Sekarang di tingkat berapa?",
+  hint: "Pilih tingkat saat ini",
+  optionsFn: (d, mahadJenjang) => {
+    // Kalau belum pilih jenjang Ma'had, tampilkan semua + dua opsi jenjang Ma'had
+    // Kalau sudah pilih jenjang, tampilkan kelas yang sesuai
+    if (!mahadJenjang) {
+      return [
+        // Level non-mahad (S1, S2, dll) tetap
+        ...LEVELS.filter(l =>
+          !["idad_1","idad_2","idad_3",
+            "tsanawi_1_adabi","tsanawi_1_ilmi",
+            "tsanawi_2_adabi","tsanawi_2_ilmi",
+            "tsanawi_3_adabi","tsanawi_3_ilmi"].includes(l.id)
+        ),
+        // Tambah dua opsi jenjang Ma'had sebagai "gateway"
+        {
+          id: "__mahad_idad__",
+          label: "I'dadi (Ma'had Al-Azhar)",
+          short: "I'dadi",
+          arabic: "الْإِعْدَادِيُّ",
+          desc: "Ma'had Al-Azhar · Setingkat SMP",
+          isMahadGateway: true,
+        },
+        {
+          id: "__mahad_tsanawi__",
+          label: "Tsanawi (Ma'had Al-Azhar)",
+          short: "Tsanawi",
+          arabic: "الثَّانَوِيُّ",
+          desc: "Ma'had Al-Azhar · Setingkat SMA",
+          isMahadGateway: true,
+        },
+      ];
+    }
+
+    // Sudah pilih jenjang — tampilkan kelas yang sesuai
+    if (mahadJenjang === "idad") {
+      return LEVELS.filter(l => l.id.startsWith("idad"));
+    }
+    if (mahadJenjang === "tsanawi") {
+      return LEVELS.filter(l => l.id.startsWith("tsanawi"));
+    }
+    return LEVELS;
+  },
+  multi: false,
+  iconType: "arabic-small",
+},
+```
+
+### STEP 3 — Update `currentOptions` resolver
+
+Cari:
+```js
+const currentOptions = cur?.optionsFromState
+  ? (FACULTIES.find(f => f.id === data.faculty)?.majors || [])
+  : cur?.options;
+```
+
+Ganti dengan:
+```js
+const currentOptions = cur?.optionsFromState
+  ? (FACULTIES.find(f => f.id === data.faculty)?.majors || [])
+  : cur?.optionsFn
+    ? cur.optionsFn(data, mahadJenjang)
+    : cur?.options;
+```
+
+### STEP 4 — Handle klik opsi Ma'had gateway di `onPick`
+
+Cari fungsi `onPick`:
+```js
+const onPick = (id) => {
+```
+
+Di dalam `onPick`, tambahkan handler SEBELUM logic yang sudah ada:
+
+```js
+const onPick = (id) => {
+  // Handle Ma'had gateway — set jenjang, jangan advance step
+  if (id === "__mahad_idad__") {
+    setMahadJenjang("idad");
+    return; // jangan set data, jangan advance — tunggu user pilih kelas
+  }
+  if (id === "__mahad_tsanawi__") {
+    setMahadJenjang("tsanawi");
+    return;
+  }
+
+  // Reset jenjang kalau user pilih level non-mahad
+  if (!id.startsWith("idad") && !id.startsWith("tsanawi")) {
+    setMahadJenjang(null);
+  }
+
+  // ... logic onPick yang sudah ada (setData, dll)
+```
+
+### STEP 5 — Tambah tombol "Kembali" saat sub-pilihan Ma'had tampil
+
+Di render step "level", kalau `mahadJenjang` sudah diset, tambahkan tombol back kecil di atas opsi:
+
+Cari bagian render options (biasanya ada loop `currentOptions.map(...)`), tambahkan SEBELUM loop:
+
+```jsx
+{/* Tombol kembali ke pilihan jenjang Ma'had */}
+{cur?.key === "level" && mahadJenjang && (
+  <div className="mb-4">
+    <button
+      onClick={() => { setMahadJenjang(null); setData(d => ({...d, level: null})); }}
+      className="text-sm text-ink-soft inline-flex items-center gap-1.5 hover:text-ink transition-colors">
+      <Icon name="arrowLeft" className="w-4 h-4"/>
+      Kembali ke pilihan jenjang
+    </button>
+    <div className="mt-2 text-xs text-ink-soft">
+      Ma'had Al-Azhar ·{" "}
+      <span className="text-ink font-medium">
+        {mahadJenjang === "idad" ? "I'dadi (SMP)" : "Tsanawi (SMA)"}
+      </span>
+      {" "}— pilih kelasmu:
+    </div>
+  </div>
+)}
+```
+
+### STEP 6 — Styling: Opsi gateway Ma'had tampil berbeda
+
+Di render tiap option card, tambahkan styling khusus untuk `isMahadGateway`:
+
+Cari tempat di mana setiap opsi di-render (biasanya ada `className` berdasarkan `isSelected`).
+Untuk opsi yang punya `isMahadGateway: true`, tambahkan ikon panah kanan untuk menunjukkan "ini akan expand":
+
+```jsx
+{/* Tambahkan di dalam render option card */}
+{opt.isMahadGateway && (
+  <Icon name="arrowRight" className="w-4 h-4 text-ink-soft ml-auto flex-shrink-0"/>
+)}
+{opt.desc && (
+  <div className="text-xs text-ink-soft mt-0.5">{opt.desc}</div>
+)}
+```
+
+---
+
+## Acceptance Criteria
+
+### Flow 2 Layer
+- [ ] Halaman level → ada 7 opsi biasa (DL, Tingkat I-V, Pasca) + 2 opsi Ma'had (I'dadi, Tsanawi)
+- [ ] Opsi I'dadi dan Tsanawi punya ikon `→` dan deskripsi "Setingkat SMP/SMA"
+- [ ] Klik "I'dadi" → langsung tampil 3 opsi kelas (I'dadi 1, 2, 3) — bukan step baru
+- [ ] Klik "Tsanawi" → langsung tampil 6 opsi kelas (Tsanawi 1-3 Adabi/Ilmi)
+- [ ] Ada tombol "← Kembali ke pilihan jenjang" di atas opsi kelas
+- [ ] Klik kembali → kembali ke 9 opsi awal (7 biasa + 2 Ma'had)
+
+### Pilih kelas
+- [ ] Pilih "I'dadi Kelas 1" → `data.level = "idad_1"` tersimpan, bisa lanjut
+- [ ] Pilih "Tsanawi Kelas 2 Ilmi" → `data.level = "tsanawi_2_ilmi"` tersimpan
+- [ ] Tombol "Lanjut" aktif setelah pilih kelas (bukan setelah klik gateway)
+
+### Non-Ma'had tidak terpengaruh
+- [ ] Klik "Tingkat III" → langsung terpilih, flow normal seperti sebelumnya
+- [ ] `mahadJenjang` di-reset ke null kalau pilih level non-Ma'had
+
+### General
+- [ ] Tidak ada console error
+- [ ] Mobile responsive — opsi tidak terpotong
+- [ ] Tidak ada regresi di step lain (fakultas, jurusan, struggle, gaya belajar)
+
+والله ولي التوفيق.
