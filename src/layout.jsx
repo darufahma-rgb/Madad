@@ -773,7 +773,6 @@ const SupportButton = () => {
 };
 
 Object.assign(window, {
-  ROUTES_PUBLIC, ROUTES_MEMBER,
   useRoute, navigate, NavLink, Brand,
   Navbar, Footer, LoginModal, PaymentModal, PageHeader,
   MobileTabBar, SupportButton,
