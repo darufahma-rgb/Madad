@@ -85,7 +85,7 @@ const App = () => {
   const openLogin  = () => { setPaymentOpen(false); setLoginOpen(true); };
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
-  const isPublic = path === "/" || path.startsWith("/sample/") || path === "/ethics";
+  const isPublic = path === "/" || path.startsWith("/sample/") || path === "/ethics" || path === "/maddah-publik";
 
   // Admin gets its own layout (no public nav/footer)
   if (isAdmin) {
@@ -102,6 +102,7 @@ const App = () => {
   let page = <LandingPage onOpenLogin={openLogin} onOpenPayment={openPayment}/>;
   if (path.startsWith("/sample/nahwu"))             { page = <SampleNahwuPage/>; routeLabel = "Sample Nahwu"; }
   else if (path === "/ethics")            { page = <EthicsPage/>; routeLabel = "Etika"; }
+  else if (path === "/maddah-publik")    { page = <MaddahPublikPage onOpenPayment={openPayment} onOpenLogin={openLogin}/>; routeLabel = "Katalog Maddah"; }
   else if (path === "/onboarding")   { page = <OnboardingPage/>; routeLabel = "Onboarding"; }
   else if (path === "/welcome")      { page = <WelcomePage/>; routeLabel = "Selamat Datang"; }
   else if (path === "/dashboard")    { page = <DashboardPage/>; routeLabel = "Dashboard"; }

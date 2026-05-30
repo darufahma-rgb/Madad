@@ -1,0 +1,70 @@
+# PROMPT: Ganti Font Khat Footer ke Kufi Style
+
+## File: `src/layout.jsx`
+
+Cari elemen kaligrafi تلقيح di footer (sekitar baris 367):
+
+```jsx
+// SEBELUM:
+<div
+  className="arabic-classic w-full text-right overflow-hidden select-none pointer-events-none"
+  style={{
+    fontSize: "clamp(80px, 18vw, 240px)",
+    lineHeight: 1,
+    color: "rgba(212,178,125,0.18)",
+    WebkitTextStroke: "1px rgba(212,178,125,0.80)",
+    letterSpacing: "-0.02em",
+    direction: "rtl",
+    paddingRight: "4vw",
+    paddingBottom: "0.1em",
+    marginTop: "-0.15em",
+  }}
+  aria-hidden="true"
+>
+  تلقيح
+</div>
+```
+
+Ganti dengan:
+
+```jsx
+// SESUDAH:
+<div
+  className="w-full text-right overflow-hidden select-none pointer-events-none"
+  style={{
+    fontFamily: '"Reem Kufi", "Noto Kufi Arabic", sans-serif',
+    fontSize: "clamp(80px, 18vw, 240px)",
+    lineHeight: 0.9,
+    color: "rgba(212,178,125,0.12)",
+    WebkitTextStroke: "1.5px rgba(212,178,125,0.75)",
+    letterSpacing: "0.05em",
+    direction: "rtl",
+    paddingRight: "4vw",
+    paddingBottom: "0.05em",
+    marginTop: "-0.1em",
+    fontWeight: 700,
+  }}
+  aria-hidden="true"
+>
+  تلقيح
+</div>
+```
+
+Perubahan kunci:
+- `fontFamily` → Reem Kufi (Kufi geometric modern) dengan fallback Noto Kufi Arabic
+- `letterSpacing` → dari `-0.02em` ke `0.05em` (Kufi lebih bagus dengan sedikit spacing)
+- `lineHeight` → 0.9 (Kufi lebih compact, tidak butuh line-height besar)
+- `fontWeight: 700` → Kufi Bold lebih impactful di ukuran besar
+- `WebkitTextStroke` → sedikit lebih tebal (1.5px vs 1px) supaya outline Kufi lebih tegas
+- `color` → sedikit lebih transparan (0.12 vs 0.18) karena Kufi Bold sudah lebih "berat" secara visual
+
+---
+
+## Acceptance Criteria
+
+- [ ] Footer kaligrafi تلقيح tampil dengan font Reem Kufi (geometric, bukan cursive)
+- [ ] Tampilan lebih "blocky" dan modern dibanding Aref Ruqaa sebelumnya
+- [ ] Ukuran dan posisi tetap proporsional
+- [ ] Tidak ada console error
+
+والله ولي التوفيق.
