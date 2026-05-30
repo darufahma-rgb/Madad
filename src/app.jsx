@@ -120,7 +120,7 @@ const App = () => {
   else if (path === "/kurasah/new")                        { page = <KurasahEditorPage/>; routeLabel = "Catatan Baru"; }
   else if (path.startsWith("/mapel"))                       { const subPath = path.replace(/^\/mapel/, ''); navigate("/maddah" + subPath); page = null; routeLabel = "Maddah"; }
   else if (path === "/maddah" || path === "/maddah/")      { page = <MaddahHubPage/>; routeLabel = "Maddah"; }
-  else if (path.startsWith("/maddah/"))                    { page = <MaddahDetailPage/>; routeLabel = "Maddah"; }
+  else if (path.startsWith("/maddah/"))                    { page = <MaddahDetailErrorBoundary><MaddahDetailPage/></MaddahDetailErrorBoundary>; routeLabel = "Maddah"; }
   else if (path === "/siap-imtihan" || path.startsWith("/siap-imtihan")) { page = <SiapImtihanPage/>; routeLabel = "Siap Imtihan"; }
   else if (path === "/s2-maddah" || path.startsWith("/s2-maddah")) { page = <S2MaddahPage/>; routeLabel = "Maddah S2"; }
   else if (path === "/prompt-library") { page = <PromptLibraryPage/>; routeLabel = "Prompt Library"; }

@@ -1,5 +1,27 @@
 /* Talqih — Maddah Detail: halaman per Maddah dengan adaptive prompt */
 
+/* ---- Error Boundary lokal ---- */
+class MaddahDetailErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { hasError: false }; }
+  static getDerivedStateFromError() { return { hasError: true }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="container-x py-20 text-center">
+          <div className="arabic-display text-gold-300 text-3xl mb-4" style={{direction:"rtl"}}>تَلْقِيح</div>
+          <p className="text-ink-muted mb-4">Terjadi error saat memuat maddah ini.</p>
+          <button
+            onClick={() => { this.setState({hasError:false}); navigate("/maddah"); }}
+            className="btn btn-ghost text-sm px-4 py-2">
+            ← Kembali ke Daftar Maddah
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 /* ---- Starter Pack Button ---- */
 const StarterPackButton = ({ profile, session }) => {
   const toast = useToast();
@@ -20,14 +42,14 @@ const StarterPackButton = ({ profile, session }) => {
 const PromptCard = ({ prompt, maddah, profile }) => {
   const toast = useToast();
 
-  // Guard: kalau template tidak ada, jangan crash
-  if (!prompt || !prompt.template) return null;
+  // Guard: kalau prompt tidak valid, jangan render
+  if (!prompt || !prompt.template || !prompt.title) return null;
 
   const tool  = AI_TOOLS.find(t => t.id === prompt.targetAI);
   const [showFull, setShowFull] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const resolvedPrompt = resolveAdaptivePrompt(prompt.template, profile, maddah.name) || "";
+  const resolvedPrompt = resolveAdaptivePrompt(prompt.template, profile, maddah?.name || "") || "";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(resolvedPrompt);
@@ -130,18 +152,27 @@ const MaddahDetailPage = () => {
 
   if (!session) { navigate("/"); return null; }
 
-  if (!maddah) {
+  // Guard: kalau getMaddahById belum ready atau id tidak valid
+  if (!maddah || typeof maddah !== "object") {
     return (
       <div className="container-x py-20 text-center">
-        <p className="text-ink-muted mb-4">Maddah tidak ditemukan.</p>
-        <button onClick={() => navigate("/maddah")} className="btn btn-ghost">← Kembali ke daftar Maddah</button>
+        <div className="arabic-display text-gold-300 text-3xl mb-4" style={{direction:"rtl"}}>تَلْقِيح</div>
+        <p className="text-ink-muted mb-2">Maddah tidak ditemukan.</p>
+        <p className="text-xs text-ink-soft mb-6">ID: {maddahId}</p>
+        <button
+          onClick={() => navigate("/maddah")}
+          className="btn btn-ghost text-sm px-4 py-2">
+          ← Kembali ke Daftar Maddah
+        </button>
       </div>
     );
   }
 
-  const hasContent   = maddah.prompts && Object.values(maddah.prompts).some(arr =>
-    Array.isArray(arr) && arr.some(p => p && p.template)
-  );
+  const hasContent   = maddah?.prompts
+    && typeof maddah.prompts === "object"
+    && Object.values(maddah.prompts).some(arr =>
+      Array.isArray(arr) && arr.some(p => p && p.template)
+    );
   const totalPrompts = hasContent
     ? Object.values(maddah.prompts).reduce((s, arr) =>
         s + (Array.isArray(arr) ? arr.length : 0), 0)
@@ -298,7 +329,8 @@ const MaddahDetailPage = () => {
               style={{ background: "rgba(10,5,20,0.92)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 px-4 md:px-0">
                 {MADDAH_PROMPT_KINDS.map(kind => {
-                  const count = maddah.prompts[kind.id]?.length || 0;
+                  const count = Array.isArray(maddah.prompts?.[kind.id])
+                    ? maddah.prompts[kind.id].length : 0;
                   if (count === 0) return null;
                   return (
                     <button
@@ -320,12 +352,16 @@ const MaddahDetailPage = () => {
             </div>
 
             <div className="space-y-3">
-              {(maddah.prompts[activeKind] || [])
-                .filter(p => p && p.template && p.targetAI)
+              {(Array.isArray(maddah.prompts?.[activeKind])
+                ? maddah.prompts[activeKind]
+                : []
+              ).filter(p => p && p.template && p.title)
                 .map((p, i) => (
                   <PromptCard key={i} prompt={p} maddah={maddah} profile={profile}/>
                 ))}
-              {(maddah.prompts[activeKind] || []).length === 0 && (
+              {(Array.isArray(maddah.prompts?.[activeKind])
+                ? maddah.prompts[activeKind].length
+                : 0) === 0 && (
                 <p className="text-sm text-ink-soft text-center py-8">
                   Belum ada prompt untuk kategori ini.
                 </p>
@@ -339,3 +375,4 @@ const MaddahDetailPage = () => {
 };
 
 window.MaddahDetailPage = MaddahDetailPage;
+window.MaddahDetailErrorBoundary = MaddahDetailErrorBoundary;
