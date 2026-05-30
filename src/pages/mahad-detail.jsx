@@ -119,6 +119,7 @@ const MahadDetailPage = () => {
     ? getMahadMaddahById(maddahId) : null;
 
   const [activeKind, setActiveKind] = useState("pahami");
+  const [topikInput, setTopikInput] = useState("");
 
   if (!session) { navigate("/"); return null; }
 
@@ -140,8 +141,13 @@ const MahadDetailPage = () => {
       ? (TINGKATAN_LABEL[profile.level] || profile.level) : (profile.level || "");
     return template
       .replace(/\[TINGKATAN\]/g, tingkat)
-      .replace(/\[MADDAH\]/g, maddah.name);
+      .replace(/\[MADDAH\]/g, maddah.name)
+      .replace(/\[TOPIK\]/g, topikInput || "[TOPIK]");
   };
+
+  const hasTopikPlaceholder = Object.values(maddah.prompts || {})
+    .flat()
+    .some(p => p?.template?.includes("[TOPIK]"));
 
   const MAHAD_KINDS = [
     { id: "pahami",  label: "Pahami",     icon: "lightbulb" },
@@ -206,20 +212,54 @@ const MahadDetailPage = () => {
           </h2>
           {/* Mobile: geser horizontal. Desktop: wrap biasa */}
           <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
-            {maddah.topikUtama.map((t, i) => (
-              <span key={i}
-                className="flex-shrink-0 text-[11px] px-3 py-1.5 rounded-lg bg-white/5 border border-line text-ink-muted whitespace-nowrap"
-                style={{minHeight: 32}}>
-                {t}
-              </span>
-            ))}
+            {maddah.topikUtama.map((t, i) => {
+              const label = t.includes(" — ") ? t.split(" — ")[1] : t;
+              const isActive = topikInput === label;
+              return (
+                <button key={i}
+                  onClick={() => setTopikInput(isActive ? "" : label)}
+                  className={`flex-shrink-0 text-[11px] px-3 py-1.5 rounded-lg border transition-colors whitespace-nowrap ${
+                    isActive
+                      ? "bg-violet-500/20 border-violet-500/40 text-violet-200"
+                      : "bg-white/5 border-line text-ink-muted hover:text-ink hover:bg-white/8"
+                  }`}
+                  style={{minHeight: 32}}>
+                  {t}
+                </button>
+              );
+            })}
           </div>
           <p className="text-[11px] text-ink-soft mt-1.5 md:hidden">
             ← Geser untuk lihat semua topik
           </p>
-          <p className="text-[11px] text-ink-soft mt-1 hidden md:block">
-            Ketik salah satu topik ini saat menggunakan prompt di bawah
-          </p>
+
+          {/* Input manual topik */}
+          <div className="mt-3 flex gap-2 items-center">
+            <input
+              type="text"
+              value={topikInput}
+              onChange={e => setTopikInput(e.target.value)}
+              placeholder="Atau ketik topik sendiri, mis. Qira'ah Jahriyyah…"
+              className="flex-1 text-sm px-3 py-2 rounded-xl text-ink placeholder:text-ink-soft outline-none focus:ring-1 focus:ring-violet-500/50"
+              style={{background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.10)", minHeight:40}}
+            />
+            {topikInput && (
+              <button onClick={() => setTopikInput("")}
+                className="text-xs text-ink-soft hover:text-ink px-2 py-1 rounded-lg"
+                style={{minHeight:40}}>
+                ✕
+              </button>
+            )}
+          </div>
+          {topikInput ? (
+            <p className="text-[11px] text-violet-300 mt-1.5">
+              ✓ Topik "<span className="font-medium">{topikInput}</span>" akan otomatis masuk ke semua prompt di bawah
+            </p>
+          ) : (
+            <p className="text-[11px] text-ink-soft mt-1.5">
+              Pilih atau ketik topik di atas — prompt akan otomatis menyesuaikan
+            </p>
+          )}
         </section>
       )}
 
