@@ -1,5 +1,5 @@
 module.exports = (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.status(200).json({
     status:    'ok',
     supabase:  !!process.env.SUPABASE_URL,

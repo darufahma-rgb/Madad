@@ -93,6 +93,35 @@ http.createServer(async (req, res) => {
     return;
   }
 
+  // ── /api/send-wa ─────────────────────────────────────────────────────
+  if (urlPath === '/api/send-wa') {
+    try {
+      const handler = require('./api/send-wa.js');
+      const rawBody = await readBody(req);
+      const wrappedReq = Object.assign(Object.create(req), {
+        method: req.method, headers: req.headers, _rawBody: rawBody,
+        on(event, cb) {
+          if (event === 'data') { cb(rawBody); return this; }
+          if (event === 'end')  { cb();        return this; }
+          return req.on(event, cb);
+        },
+        status() { return this; },
+      });
+      const wrappedRes = {
+        _status: 200, _headers: {},
+        status(code) { this._status = code; return this; },
+        setHeader(k, v) { this._headers[k] = v; return this; },
+        json(body) { json(res, this._status, body); },
+        end(body) { res.writeHead(this._status, this._headers); res.end(body || ''); },
+      };
+      await handler(wrappedReq, wrappedRes);
+    } catch (err) {
+      console.error('[send-wa] Error:', err.message);
+      json(res, 500, { ok: false, error: err.message });
+    }
+    return;
+  }
+
   // ── /api/webhook/trakteer ─────────────────────────────────────────────
   if (urlPath === '/api/webhook/trakteer' && req.method === 'POST') {
     try {

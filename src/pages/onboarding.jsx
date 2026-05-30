@@ -128,7 +128,7 @@ const OnboardingPage = () => {
   const [data, setData] = useState({
     faculty: null, level: null, major: null,
     struggle: [], learningStyle: [], s2Maddah: null,
-    mahad_year: null, mahad_jurusan: null, mahad_struggle: [],
+    mahad_struggle: [],
   });
   const [mahadJenjang, setMahadJenjang] = useState(null);
   const toast = useToast();

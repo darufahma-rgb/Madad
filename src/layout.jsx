@@ -268,7 +268,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
                 l.to.startsWith("/#") ? null : (
                   <a key={l.to} href={"#" + l.to}
                      onClick={(e)=>{ e.preventDefault(); navigate(l.to); setOpen(false); }}
-                     className={`px-3 py-3 text-base rounded-lg ${path === l.to || (l.to !== "/" && path.startsWith(l.to)) ? "bg-white/8 text-ink font-medium" : "text-ink-muted hover:bg-white/4"}`}>
+                     className={`px-3 py-3 text-base rounded-lg ${path === l.to || (l.to !== "/" && (path.startsWith(l.to + "/") || path.startsWith(l.to + "?"))) ? "bg-white/8 text-ink font-medium" : "text-ink-muted hover:bg-white/4"}`}>
                     {l.label}
                   </a>
                 )
@@ -514,7 +514,8 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
   }, [open]);
 
   const handlePayClick = () => {
-    window.open("https://lynk.id/talqee", "_blank", "noopener,noreferrer");
+    const lynkUrl = localStorage.getItem("talqeeh_lynk_url") || "https://lynk.id/talqee";
+    window.open(lynkUrl, "_blank", "noopener,noreferrer");
     setWaitingConfirm(true);
   };
 

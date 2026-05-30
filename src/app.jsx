@@ -118,7 +118,7 @@ const App = () => {
   else if (path === "/kurasah" && !path.includes("?id=")) { page = <KurasahPage/>; routeLabel = "Kurasah"; }
   else if (path.startsWith("/kurasah?id="))               { page = <KurasahEditorPage/>; routeLabel = "Kurasah Editor"; }
   else if (path === "/kurasah/new")                        { page = <KurasahEditorPage/>; routeLabel = "Catatan Baru"; }
-  else if (path.startsWith("/mapel"))                       { navigate("/maddah"); page = null; routeLabel = "Maddah"; }
+  else if (path.startsWith("/mapel"))                       { const subPath = path.replace(/^\/mapel/, ''); navigate("/maddah" + subPath); page = null; routeLabel = "Maddah"; }
   else if (path === "/maddah" || path === "/maddah/")      { page = <MaddahHubPage/>; routeLabel = "Maddah"; }
   else if (path.startsWith("/maddah/"))                    { page = <MaddahDetailPage/>; routeLabel = "Maddah"; }
   else if (path === "/siap-imtihan" || path.startsWith("/siap-imtihan")) { page = <SiapImtihanPage/>; routeLabel = "Siap Imtihan"; }

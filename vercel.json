@@ -8,19 +8,19 @@
       "dest": "/api/config.js"
     },
     {
-      "src": "/api/webhook/trakteer",
-      "dest": "/api/webhook/trakteer.js"
-    },
-    {
       "src": "/api/health",
       "dest": "/api/health.js"
+    },
+    {
+      "src": "/api/send-wa",
+      "dest": "/api/send-wa.js"
     },
     {
       "src": "/src/(.*)\\.jsx",
       "dest": "/src/$1.jsx",
       "headers": {
         "Content-Type": "application/javascript; charset=utf-8",
-        "Cache-Control": "public, max-age=3600"
+        "Cache-Control": "no-cache, no-store, must-revalidate"
       }
     },
     {
@@ -31,10 +31,10 @@
       }
     },
     {
-      "src": "/(.*)\\.(?:png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf)",
-      "dest": "/$1.$2",
+      "src": "/(.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf))",
+      "dest": "/$1",
       "headers": {
-        "Cache-Control": "public, max-age=31536000"
+        "Cache-Control": "public, max-age=31536000, immutable"
       }
     },
     {

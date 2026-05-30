@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Build artifacts
+dist/
+.next/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Talqeeh specific
+attached_assets/
+artifacts/
+uploads/
+zipFile.zip
+*.zip
+.thumbnail
+
+# Replit specific
+.replit
+replit.nix
