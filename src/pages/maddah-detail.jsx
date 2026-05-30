@@ -45,11 +45,20 @@ const PromptCard = ({ prompt, maddah, profile }) => {
   // Guard: kalau prompt tidak valid, jangan render
   if (!prompt || !prompt.template || !prompt.title) return null;
 
-  const tool  = AI_TOOLS.find(t => t.id === prompt.targetAI);
+  // Normalisasi semua field — field opsional diberi fallback aman
+  const safePrompt = {
+    title:    prompt.title    || "",
+    template: prompt.template || "",
+    targetAI: prompt.targetAI || "claude",
+    subcat:   prompt.subcat   || null,
+    kind:     prompt.kind     || null,
+  };
+
+  const tool  = AI_TOOLS.find(t => t.id === safePrompt.targetAI);
   const [showFull, setShowFull] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const resolvedPrompt = resolveAdaptivePrompt(prompt.template, profile, maddah?.name || "") || "";
+  const resolvedPrompt = resolveAdaptivePrompt(safePrompt.template, profile, maddah?.name || "") || "";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(resolvedPrompt);
@@ -67,10 +76,10 @@ const PromptCard = ({ prompt, maddah, profile }) => {
   };
 
   const handleSaveToKurasah = () => {
-    const noteTemplate = `## Prompt yang dipakai\n**Maddah:** ${maddah.name}\n**Tujuan:** ${prompt.title}\n\n---\n\n## Jawaban AI\n\n*Paste jawaban AI di sini...*\n\n---\n\n## Catatanku\n\n*Tulis refleksi atau poin penting dari jawaban AI...*`;
+    const noteTemplate = `## Prompt yang dipakai\n**Maddah:** ${maddah.name}\n**Tujuan:** ${safePrompt.title}\n\n---\n\n## Jawaban AI\n\n*Paste jawaban AI di sini...*\n\n---\n\n## Catatanku\n\n*Tulis refleksi atau poin penting dari jawaban AI...*`;
     const newNote = {
       id: "note_" + Date.now(),
-      title: `${maddah.name} — ${prompt.title}`,
+      title: `${maddah.name} — ${safePrompt.title}`,
       body: noteTemplate,
       tags: [maddah.category, maddah.id],
       source: { type: "maddah", id: maddah.id, label: maddah.name },
@@ -89,8 +98,8 @@ const PromptCard = ({ prompt, maddah, profile }) => {
         <div className="flex items-center gap-3 flex-1 min-w-0">
           {tool && <ToolIcon tool={tool} size="w-9 h-9"/>}
           <div className="min-w-0">
-            <div className="font-display text-base font-semibold text-ink leading-snug">{prompt.title}</div>
-            <div className="text-[11px] text-ink-soft mt-0.5">Untuk: {tool?.name || prompt.targetAI}</div>
+            <div className="font-display text-base font-semibold text-ink leading-snug">{safePrompt.title}</div>
+            <div className="text-[11px] text-ink-soft mt-0.5">Untuk: {tool?.name || safePrompt.targetAI}</div>
           </div>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0 w-full sm:w-auto">
