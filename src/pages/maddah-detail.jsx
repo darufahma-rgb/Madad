@@ -39,7 +39,7 @@ const StarterPackButton = ({ profile, session }) => {
   );
 };
 
-const PromptCard = ({ prompt, maddah, profile }) => {
+const MaddahPromptCard = ({ prompt, maddah, profile }) => {
   const toast = useToast();
 
   // Guard: kalau prompt tidak valid, jangan render
@@ -366,7 +366,7 @@ const MaddahDetailPage = () => {
                 : []
               ).filter(p => p && p.template && p.title)
                 .map((p, i) => (
-                  <PromptCard key={i} prompt={p} maddah={maddah} profile={profile}/>
+                  <MaddahPromptCard key={i} prompt={p} maddah={maddah} profile={profile}/>
                 ))}
               {(Array.isArray(maddah.prompts?.[activeKind])
                 ? maddah.prompts[activeKind].length
