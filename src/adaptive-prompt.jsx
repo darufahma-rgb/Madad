@@ -207,7 +207,8 @@ const generateStarterPack = (profile, session) => {
   const tingkatan  = profile?.level   ? (TINGKATAN_LABEL[profile.level]   || "thalib") : "thalib";
   const fakultas   = profile?.faculty ? (FAKULTAS_LABEL[profile.faculty]  || "Al-Azhar") : "Al-Azhar";
   const jurusan    = profile?.major   ? (JURUSAN_LABEL[profile.major]     || "") : "";
-  const nama       = session?.name    || "";
+  const namaLengkap = session?.name   || "";
+  const nama        = namaLengkap.split(" ")[0] || "";
 
   let gaya = "kombinasi berbagai pendekatan";
   if (profile?.learningStyle?.length > 0) {
@@ -224,8 +225,9 @@ const generateStarterPack = (profile, session) => {
   return `Assalamu'alaikum. Mulai sekarang, kamu akan membantuku belajar materi Al-Azhar. Kenali dulu siapa aku:
 
 PROFILKU
-- Aku ${nama ? nama + ", " : ""}seorang ${tingkatan}
-- Belajar di ${fakultas}${jurusan ? jurusan : ""}
+- Namaku: ${nama || "tidak disebutkan"}${nama ? ` — panggil aku "${nama}"` : ""}
+- Aku seorang ${tingkatan}
+- Belajar di ${fakultas}${jurusan ? ` — ${jurusan}` : ""}
 - Cara belajarku: aku ${gaya}
 
 CARA KAMU MEMBANTUKU

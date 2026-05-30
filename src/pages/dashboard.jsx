@@ -254,7 +254,9 @@ const StarterPackCard = ({ profile, session }) => {
   const levelData = (typeof LEVELS !== "undefined")
     ? LEVELS.find(l => l.id === profile?.level) : null;
   const tingkat   = levelData?.label || profile?.level || "";
-  const nama      = session?.name || "Aku";
+  // Ambil nama depan saja — lebih natural untuk disapa AI
+  const namaLengkap = session?.name || "";
+  const nama = namaLengkap.split(" ")[0] || "Aku";
 
   const gayaLabels = {
     reading:      "lebih nyaman belajar dengan membaca teks bertahap",
@@ -283,7 +285,8 @@ const StarterPackCard = ({ profile, session }) => {
 `Assalamu'alaikum. Mulai sekarang bantu aku belajar materi Al-Azhar. Kenali dulu siapa aku:
 
 PROFIL
-- Nama: ${nama}
+- Namaku: ${nama}${namaLengkap !== nama ? ` (nama lengkap: ${namaLengkap})` : ""}
+- Panggil aku: ${nama}
 - Tingkat: ${tingkat}
 - Fakultas: ${fakultas}${jurusan ? ` — ${jurusan}` : ""}
 - Cara belajar: aku ${gaya}

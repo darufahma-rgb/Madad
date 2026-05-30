@@ -1,0 +1,104 @@
+# PROMPT: Fix Starter Pack — Tambah Nama Panggilan User
+
+Starter Pack sekarang pakai nama lengkap user (mis. "Ahmad Fauzi bin Abdullah")
+yang terasa kaku untuk disapa AI. Fix: pakai nama depan saja + tambah instruksi
+eksplisit "panggil aku dengan nama ini" supaya AI konsisten menyapa user.
+
+Ada DUA tempat yang perlu difix — keduanya harus diupdate.
+
+---
+
+## FIX 1 — `src/pages/dashboard.jsx` (StarterPackCard)
+
+### STEP 1.1 — Update variabel `nama`
+
+Cari (sekitar line 220):
+```js
+const nama = session?.name || "Aku";
+```
+
+Ganti dengan:
+```js
+// Ambil nama depan saja — lebih natural untuk disapa AI
+const namaLengkap = session?.name || "";
+const nama = namaLengkap.split(" ")[0] || "Aku";
+```
+
+### STEP 1.2 — Update template prompt Starter Pack
+
+Cari bagian PROFIL dalam template prompt:
+```js
+`...
+PROFIL
+- Nama: ${nama}
+- Tingkat: ${tingkat}
+- Fakultas: ${fakultas}${jurusan ? ` — ${jurusan}` : ""}
+- Cara belajar: aku ${gaya}
+...`
+```
+
+Ganti dengan:
+```js
+`...
+PROFIL
+- Namaku: ${nama}${namaLengkap !== nama ? ` (nama lengkap: ${namaLengkap})` : ""}
+- Panggil aku: ${nama}
+- Tingkat: ${tingkat}
+- Fakultas: ${fakultas}${jurusan ? ` — ${jurusan}` : ""}
+- Cara belajar: aku ${gaya}
+...`
+```
+
+---
+
+## FIX 2 — `src/adaptive-prompt.jsx` (generateStarterPack)
+
+### STEP 2.1 — Tambah variabel nama depan
+
+Cari (sekitar line 104):
+```js
+const nama = session?.name || "";
+```
+
+Ganti dengan:
+```js
+const namaLengkap = session?.name || "";
+const nama = namaLengkap.split(" ")[0] || "";
+```
+
+### STEP 2.2 — Update template prompt
+
+Cari bagian PROFILKU dalam template:
+```js
+`...
+PROFILKU
+- Aku ${nama ? nama + ", " : ""}seorang ${tingkatan}
+- Belajar di ${fakultas}${jurusan ? jurusan : ""}
+- Cara belajarku: aku ${gaya}
+...`
+```
+
+Ganti dengan:
+```js
+`...
+PROFILKU
+- Namaku: ${nama || "tidak disebutkan"}${nama ? ` — panggil aku "${nama}"` : ""}
+- Aku seorang ${tingkatan}
+- Belajar di ${fakultas}${jurusan ? ` — ${jurusan}` : ""}
+- Cara belajarku: aku ${gaya}
+...`
+```
+
+---
+
+## Acceptance Criteria
+
+- [ ] Buka dashboard → klik "Salin Starter Pack" → cek isi prompt
+- [ ] Nama yang muncul adalah nama **depan saja** (bukan nama lengkap)
+- [ ] Ada baris "Panggil aku: [nama depan]" yang eksplisit
+- [ ] Kalau nama member 1 kata (mis. "Ahmad") → tetap jalan normal
+- [ ] Kalau nama member kosong → fallback "Aku" (tidak error)
+- [ ] Test: paste prompt ke Claude/ChatGPT → AI menyapa dengan nama depan
+- [ ] Tidak ada console error
+
+والله ولي التوفيق.
