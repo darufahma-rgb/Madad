@@ -5,13 +5,41 @@
    - Demo member codes
 */
 
-/* ============ STRUGGLES ============ */
+/* ============ MAHAD HELPER ============ */
+const isMahadLevel = (level) => level === 'idadi' || level === 'tsanawi';
+
+/* ============ STRUGGLES (Masisir) ============ */
 const STRUGGLES = [
   { id: "arab",      label: "Materi Arab",     desc: "Memahami kitab klasik & teks Arab akademik", icon: "book" },
   { id: "makalah",   label: "Makalah",          desc: "Menulis tugas & makalah Azhari yang rapi",  icon: "pen" },
   { id: "referensi", label: "Referensi",        desc: "Mencari rujukan & sumber yang tertelusur",  icon: "search" },
   { id: "hafalan",   label: "Hafalan",          desc: "Murajaah Qur'an & matan yang tahan lama",    icon: "bookOpen" },
   { id: "fokus",     label: "Fokus",            desc: "Produktivitas & disiplin waktu belajar",    icon: "target" },
+];
+
+/* ============ STRUGGLES (Ma'had) ============ */
+const MAHAD_STRUGGLES = [
+  { id: "math_arab",    label: "Matematika bahasa Arab",   desc: "Berhitung & rumus dalam bahasa Arab",         icon: "target" },
+  { id: "sains_arab",   label: "Sains dalam bahasa Arab",  desc: "Fisika, Kimia, Biologi dalam bahasa Arab",    icon: "layers" },
+  { id: "sejarah_geo",  label: "Sejarah & Geografi",       desc: "Pelajaran IPS dalam bahasa Arab",             icon: "search" },
+  { id: "hafalan",      label: "Hafalan Al-Qur'an",        desc: "Murajaah dan penambahan hafalan",             icon: "book" },
+  { id: "insya",        label: "Insya' (mengarang)",       desc: "Menulis karangan dalam bahasa Arab",          icon: "pen" },
+  { id: "fahm_maqru",   label: "Fahm Maqru'",              desc: "Memahami teks soal ujian dalam bahasa Arab",  icon: "bookOpen" },
+  { id: "nahwu_sharaf", label: "Nahwu & Sharaf dasar",     desc: "Tata bahasa Arab tingkat awal",               icon: "list" },
+  { id: "english",      label: "Bahasa Inggris",           desc: "Pelajaran bahasa Inggris di sekolah",         icon: "messageSquare" },
+];
+
+/* ============ MA'HAD YEARS ============ */
+const MAHAD_YEARS = [
+  { id: "1", label: "Tahun 1", arabic: "١" },
+  { id: "2", label: "Tahun 2", arabic: "٢" },
+  { id: "3", label: "Tahun 3", arabic: "٣" },
+];
+
+/* ============ MA'HAD JURUSAN (Tsanawi only) ============ */
+const MAHAD_JURUSAN = [
+  { id: "adabi", label: "Adabi",  desc: "أدبي — Sastra & Sosial",        emoji: "📖" },
+  { id: "ilmi",  label: "Ilmi",   desc: "علمي — Sains & Matematika",     emoji: "⚗️" },
 ];
 
 /* ============ FACULTIES (Al-Azhar) ============ */
@@ -85,6 +113,10 @@ const FACULTIES = [
 
 /* ============ TINGKAT KULIAH ============ */
 const LEVELS = [
+  { id: "_sep_mahad",   isSeparator: true, label: "MA'HAD AL-AZHAR" },
+  { id: "idadi",   label: "I'dadi",   short: "I'dadi",   arabic: "الإعدادي",  desc: "Ma'had Al-Azhar · Setingkat SMP", isMahad: true },
+  { id: "tsanawi", label: "Tsanawi",  short: "Tsanawi",  arabic: "الثانوي",   desc: "Ma'had Al-Azhar · Setingkat SMA", isMahad: true },
+  { id: "_sep_masisir", isSeparator: true, label: "MASISIR — MAHASISWA" },
   { id: "mustawa", label: "Darul Lughoh (DL)",                short: "DL",             arabic: "مستوى" },
   { id: "1",       label: "Tingkat I",                        short: "Awwal",          arabic: "الأولى" },
   { id: "2",       label: "Tingkat II",                       short: "Tsani",          arabic: "الثانية" },

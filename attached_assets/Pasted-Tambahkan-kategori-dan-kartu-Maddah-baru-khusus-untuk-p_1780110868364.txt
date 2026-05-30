@@ -1,0 +1,225 @@
+Tambahkan kategori dan kartu Maddah baru khusus
+untuk pelajar Ma'had Al-Azhar di halaman Maddah.
+
+Semua Maddah baru ini diberi tag "MA'HAD" dan
+dikelompokkan terpisah dari Maddah Masisir.
+
+---
+
+## A. TAMBAH FILTER/TAB BARU
+
+Di filter kategori halaman Maddah, tambahkan
+tab baru paling kiri: "Ma'had"
+
+Sub-filter di bawah tab Ma'had:
+→ Semua
+→ Maddah Agama
+→ Maddah Umum — Ilmi
+→ Maddah Umum — Adabi
+
+---
+
+## B. BUAT 16 KARTU MADDAH BARU
+
+Gunakan template kartu yang sama persis dengan
+Maddah yang sudah ada. Tambahkan badge "MA'HAD"
+di pojok setiap kartu baru ini.
+
+=== KELOMPOK 1: MADDAH AGAMA MA'HAD (6 kartu) ===
+
+KARTU 1:
+Nama Arab    : القرآن الكريم والتجويد
+Nama Indo    : Al-Qur'an & Tajwid
+Tag jenjang  : I'dadi & Tsanawi
+Deskripsi    : Hafalan, tilawah, dan kaidah tajwid
+               — fondasi utama di Ma'had Al-Azhar
+AI Rekomendasi: NotebookLM + Claude
+Prompt count : 15 template
+Kategori prompt: Hafal · Tajwid · Tilawah · Ujian
+
+KARTU 2:
+Nama Arab    : التوحيد والعقيدة
+Nama Indo    : Tauhid & Aqidah
+Tag jenjang  : I'dadi & Tsanawi
+Deskripsi    : Dasar-dasar keyakinan Islam sesuai
+               manhaj Al-Azhar level Ma'had
+AI Rekomendasi: Claude + Gemini
+Prompt count : 12 template
+Kategori prompt: Pahami · Hafal · Latihan · Ujian
+
+KARTU 3:
+Nama Arab    : الفقه والعبادات
+Nama Indo    : Fiqh & Ibadah
+Tag jenjang  : I'dadi & Tsanawi
+Deskripsi    : Fiqh ibadah sehari-hari dan hukum
+               praktis level Ma'had Al-Azhar
+AI Rekomendasi: Claude + ChatGPT
+Prompt count : 14 template
+Kategori prompt: Pahami · Praktik · Latihan · Ujian
+
+KARTU 4:
+Nama Arab    : السيرة النبوية والتاريخ
+Nama Indo    : Sirah Nabawiyyah & Tarikh
+Tag jenjang  : I'dadi & Tsanawi
+Deskripsi    : Sejarah Nabi ﷺ dan peradaban Islam
+               dalam kurikulum Ma'had Al-Azhar
+AI Rekomendasi: ChatGPT + Perplexity
+Prompt count : 12 template
+Kategori prompt: Pahami · Hafal · Kronologi · Ujian
+
+KARTU 5:
+Nama Arab    : النحو والصرف الأساسي
+Nama Indo    : Nahwu & Sharaf Dasar
+Tag jenjang  : I'dadi & Tsanawi
+Deskripsi    : Kaidah bahasa Arab level dasar-menengah
+               — fondasi untuk semua maddah lainnya
+AI Rekomendasi: Claude + NotebookLM
+Prompt count : 16 template
+Kategori prompt: Pahami · Latihan · I'rab · Ujian
+
+KARTU 6:
+Nama Arab    : الإنشاء والتعبير الكتابي
+Nama Indo    : Insya' & Ta'bir
+Tag jenjang  : I'dadi & Tsanawi
+Deskripsi    : Mengarang dan menulis dalam bahasa
+               Arab — dari paragraf dasar hingga
+               esai ujian Tsanawiyyah
+AI Rekomendasi: Claude + ChatGPT
+Prompt count : 13 template
+Kategori prompt: Kerangka · Koreksi · Template · Ujian
+
+=== KELOMPOK 2: MADDAH UMUM — SEMUA JENJANG (2 kartu) ===
+
+KARTU 7:
+Nama Arab    : الرياضيات
+Nama Indo    : Riyadhiyat (Matematika)
+Tag jenjang  : I'dadi & Tsanawi (Ilmi & Adabi)
+Deskripsi    : Matematika kurikulum Ma'had Al-Azhar
+               — dipelajari dalam bahasa Arab.
+               Dari aljabar dasar hingga kalkulus
+               untuk Tsanawi Ilmi.
+AI Rekomendasi: ChatGPT + Gemini
+Prompt count : 15 template
+Kategori prompt: Pahami · Istilah Arab · Latihan · Ujian
+
+KARTU 8:
+Nama Arab    : اللغة الإنجليزية
+Nama Indo    : Lughah Injiliziyyah (Bahasa Inggris)
+Tag jenjang  : I'dadi & Tsanawi
+Deskripsi    : Bahasa Inggris sebagai maddah wajib
+               di Ma'had — dipelajari bersamaan
+               dengan bahasa Arab
+AI Rekomendasi: ChatGPT + Copilot
+Prompt count : 12 template
+Kategori prompt: Grammar · Vocab · Writing · Ujian
+
+=== KELOMPOK 3: MADDAH UMUM — TSANAWI ILMI (3 kartu) ===
+
+KARTU 9:
+Nama Arab    : الفيزياء
+Nama Indo    : Fisika (Tsanawi Ilmi)
+Tag jenjang  : Tsanawi Ilmi
+Deskripsi    : Fisika dasar hingga menengah dalam
+               bahasa Arab — mekanika, listrik,
+               gelombang, dan termodinamika
+AI Rekomendasi: ChatGPT + Gemini
+Prompt count : 13 template
+Kategori prompt: Pahami · Rumus · Latihan · Ujian
+
+KARTU 10:
+Nama Arab    : الكيمياء
+Nama Indo    : Kimia (Tsanawi Ilmi)
+Tag jenjang  : Tsanawi Ilmi
+Deskripsi    : Kimia dasar hingga menengah dalam
+               bahasa Arab — unsur, reaksi, ikatan,
+               dan kimia organik dasar
+AI Rekomendasi: ChatGPT + Gemini
+Prompt count : 13 template
+Kategori prompt: Pahami · Istilah · Latihan · Ujian
+
+KARTU 11:
+Nama Arab    : الأحياء (البيولوجيا)
+Nama Indo    : Biologi (Tsanawi Ilmi)
+Tag jenjang  : Tsanawi Ilmi
+Deskripsi    : Biologi dalam bahasa Arab — sel,
+               genetika, ekosistem, dan anatomi
+               sesuai kurikulum Tsanawi Ilmi
+AI Rekomendasi: ChatGPT + Gemini + Perplexity
+Prompt count : 13 template
+Kategori prompt: Pahami · Istilah · Latihan · Ujian
+
+=== KELOMPOK 4: MADDAH UMUM — TSANAWI ADABI (5 kartu) ===
+
+KARTU 12:
+Nama Arab    : التاريخ
+Nama Indo    : Tarikh (Sejarah)
+Tag jenjang  : Tsanawi Adabi
+Deskripsi    : Sejarah umum dan Islam dalam bahasa
+               Arab — dari sejarah kuno hingga
+               modern, kurikulum Tsanawi Adabi
+AI Rekomendasi: ChatGPT + Perplexity
+Prompt count : 11 template
+Kategori prompt: Pahami · Hafal · Kronologi · Ujian
+
+KARTU 13:
+Nama Arab    : الجغرافيا
+Nama Indo    : Jughrafiya (Geografi)
+Tag jenjang  : Tsanawi Adabi
+Deskripsi    : Geografi fisik dan manusia dalam
+               bahasa Arab — peta, iklim, populasi,
+               dan geografi ekonomi
+AI Rekomendasi: Gemini + Perplexity
+Prompt count : 10 template
+Kategori prompt: Pahami · Istilah · Peta · Ujian
+
+KARTU 14:
+Nama Arab    : الفلسفة والمنطق
+Nama Indo    : Falsafah & Mantiq
+Tag jenjang  : Tsanawi Adabi
+Deskripsi    : Filsafat dasar dan ilmu logika dalam
+               bahasa Arab — kurikulum Tsanawi Adabi
+               Ma'had Al-Azhar
+AI Rekomendasi: Claude + ChatGPT
+Prompt count : 10 template
+Kategori prompt: Pahami · Analisis · Diskusi · Ujian
+
+KARTU 15:
+Nama Arab    : علم النفس
+Nama Indo    : Ilmu Nafs (Psikologi)
+Tag jenjang  : Tsanawi Adabi
+Deskripsi    : Psikologi dasar dalam bahasa Arab —
+               perilaku, emosi, dan perkembangan
+               manusia level Tsanawi
+AI Rekomendasi: Claude + Gemini
+Prompt count : 10 template
+Kategori prompt: Pahami · Istilah · Latihan · Ujian
+
+KARTU 16:
+Nama Arab    : الإحصاء
+Nama Indo    : Ihsha' (Statistik)
+Tag jenjang  : Tsanawi Adabi
+Deskripsi    : Statistik dasar dalam bahasa Arab —
+               data, mean, median, modus, dan
+               probabilitas level Tsanawi Adabi
+AI Rekomendasi: ChatGPT + Gemini
+Prompt count : 10 template
+Kategori prompt: Pahami · Rumus · Latihan · Ujian
+
+---
+
+## C. FILTER OTOMATIS BERDASARKAN PROFIL
+
+Ketika user login dengan profil Ma'had, halaman
+Maddah otomatis menampilkan filter "Ma'had" aktif
+dan hanya tampilkan Maddah yang relevan:
+
+- User I'dadi → tampilkan Maddah berlabel "I'dadi"
+- User Tsanawi Ilmi → tampilkan Maddah Agama +
+  Kartu 7, 8, 9, 10, 11
+- User Tsanawi Adabi → tampilkan Maddah Agama +
+  Kartu 7, 8, 12, 13, 14, 15, 16
+
+User tetap bisa lihat semua Maddah kalau klik
+"Lihat Semua" — filter hanya default, bukan lock.
+
+Jangan ubah apapun yang sudah ada untuk Masisir.

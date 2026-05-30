@@ -205,9 +205,46 @@ const SanctuaryRow = () => {
   );
 };
 
+/* ============ MA'HAD BADGE ============ */
+const MahadBadge = ({ profile }) => {
+  const level = profile?.level;
+  const jurusan = profile?.mahad_jurusan;
+  if (level === 'idadi') {
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+        style={{background:"rgba(16,185,129,0.15)",color:"#10B981",border:"1px solid rgba(16,185,129,0.30)"}}>
+        🌱 I'DADI
+      </span>
+    );
+  }
+  if (level === 'tsanawi') {
+    if (jurusan === 'adabi') return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+        style={{background:"rgba(59,130,246,0.15)",color:"#3B82F6",border:"1px solid rgba(59,130,246,0.30)"}}>
+        📖 TSANAWI · ADABI
+      </span>
+    );
+    if (jurusan === 'ilmi') return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+        style={{background:"rgba(139,92,246,0.15)",color:"#8B5CF6",border:"1px solid rgba(139,92,246,0.30)"}}>
+        ⚗️ TSANAWI · ILMI
+      </span>
+    );
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
+        style={{background:"rgba(59,130,246,0.15)",color:"#3B82F6",border:"1px solid rgba(59,130,246,0.30)"}}>
+        📚 TSANAWI
+      </span>
+    );
+  }
+  return null;
+};
+
 /* ============ STARTER PACK CARD ============ */
 const StarterPackCard = ({ profile, session }) => {
   const toast = useToast();
+
+  const isMahad = isMahadLevel(profile?.level);
 
   const facultyData = (typeof FACULTIES !== "undefined")
     ? FACULTIES.find(f => f.id === profile?.faculty) : null;
@@ -240,7 +277,9 @@ const StarterPackCard = ({ profile, session }) => {
     pasca: "Bahasa akademik tingkat riset. Boleh masuk jadal ulama dan sumber primer.",
   }[profile?.level] || "Pakai bahasa Indonesia akademik.";
 
-  const prompt =
+  const prompt = isMahad
+    ? (typeof generateMahadStarterPack !== "undefined" ? generateMahadStarterPack(profile, session) : "")
+    :
 `Assalamu'alaikum. Mulai sekarang bantu aku belajar materi Al-Azhar. Kenali dulu siapa aku:
 
 PROFIL
@@ -367,20 +406,26 @@ const DashboardPage = () => {
               </h1>
               <div style={{height:"1px",background:"rgba(255,255,255,0.1)",marginBottom:"12px"}}/>
               <div className="flex flex-wrap gap-2">
-                {facultyLabel && (
-                  <span style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
-                    {facultyLabel}
-                  </span>
-                )}
-                {majorLabel && (
-                  <span style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
-                    {majorLabel}
-                  </span>
-                )}
-                {levelLabel && (
-                  <span style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
-                    {levelLabel}
-                  </span>
+                {isMahadLevel(profile.level) ? (
+                  <MahadBadge profile={profile}/>
+                ) : (
+                  <>
+                    {facultyLabel && (
+                      <span style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
+                        {facultyLabel}
+                      </span>
+                    )}
+                    {majorLabel && (
+                      <span style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
+                        {majorLabel}
+                      </span>
+                    )}
+                    {levelLabel && (
+                      <span style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
+                        {levelLabel}
+                      </span>
+                    )}
+                  </>
                 )}
               </div>
               <p style={{fontSize:"14px",color:"rgba(255,255,255,0.5)",fontStyle:"italic",marginTop:"12px"}}>
@@ -397,13 +442,22 @@ const DashboardPage = () => {
                 <span className="gradient-text-anim">{firstName}</span>{" "}
                 <span className="text-gold-300">🌙</span>
               </h1>
-              <p className="mt-5 text-ink-muted text-lg max-w-2xl leading-relaxed">
-                <span className="text-ink font-medium">{facultyLabel}</span>
-                {majorLabel ? <> · <span className="text-ink font-medium">{majorLabel}</span></> : null}
-                {levelLabel ? <> · <span className="text-ink font-medium">{levelLabel}</span></> : null}
-                {". "}
-                Talqeeh siap menemani belajarmu hari ini.
-              </p>
+              {isMahadLevel(profile.level) ? (
+                <div className="mt-5 flex items-center gap-3">
+                  <MahadBadge profile={profile}/>
+                  <span className="text-ink-muted text-lg">
+                    Ma'had Al-Azhar · Talqeeh siap menemani belajarmu hari ini.
+                  </span>
+                </div>
+              ) : (
+                <p className="mt-5 text-ink-muted text-lg max-w-2xl leading-relaxed">
+                  <span className="text-ink font-medium">{facultyLabel}</span>
+                  {majorLabel ? <> · <span className="text-ink font-medium">{majorLabel}</span></> : null}
+                  {levelLabel ? <> · <span className="text-ink font-medium">{levelLabel}</span></> : null}
+                  {". "}
+                  Talqeeh siap menemani belajarmu hari ini.
+                </p>
+              )}
             </div>
           </Reveal>
         </div>

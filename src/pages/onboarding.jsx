@@ -125,7 +125,11 @@ const S2SetupStep = ({ profile, onSave }) => {
 const OnboardingPage = () => {
   const { session, profile, saveProfile } = useAuth();
   const [step, setStep] = useState(0);
-  const [data, setData] = useState({ faculty: null, level: null, major: null, struggle: [], learningStyle: [], s2Maddah: null });
+  const [data, setData] = useState({
+    faculty: null, level: null, major: null,
+    struggle: [], learningStyle: [], s2Maddah: null,
+    mahad_year: null, mahad_jurusan: null, mahad_struggle: [],
+  });
   const toast = useToast();
 
   useEffect(() => { if (!session) navigate("/"); }, [session]);
@@ -134,20 +138,21 @@ const OnboardingPage = () => {
   const QUESTIONS = [
     { key: "intro", kind: "intro" },
     {
+      key: "level",
+      title: "Kamu di tingkat apa sekarang?",
+      hint: "Pilih tingkat atau jenjangmu saat ini",
+      options: LEVELS,
+      multi: false,
+      iconType: "arabic-small",
+    },
+    {
       key: "faculty",
       title: "Di fakultas apa kamu belajar?",
       hint: "Pilih yang paling dekat",
       options: FACULTIES,
       multi: false,
       iconType: "arabic",
-    },
-    {
-      key: "level",
-      title: "Sekarang di tingkat berapa?",
-      hint: "Pilih tingkat saat ini",
-      options: LEVELS,
-      multi: false,
-      iconType: "arabic-small",
+      conditional: (d) => !isMahadLevel(d.level),
     },
     {
       key: "major",
@@ -157,6 +162,7 @@ const OnboardingPage = () => {
       multi: false,
       iconType: "arabic",
       conditional: (d) => {
+        if (isMahadLevel(d.level)) return false;
         if (d.level === "s2_kuliyyat" || d.level === "s2_dirasat") return false;
         const fac = FACULTIES.find(f => f.id === d.faculty);
         if (!fac || !fac.majorsStartLevel || fac.majors.length === 0) return false;
@@ -170,12 +176,40 @@ const OnboardingPage = () => {
       conditional: (d) => d.level === "s2_kuliyyat" || d.level === "s2_dirasat",
     },
     {
+      key: "mahad_year",
+      title: "Kamu sekarang tahun berapa?",
+      hint: "Pilih tahunmu saat ini di Ma'had",
+      options: MAHAD_YEARS,
+      multi: false,
+      iconType: "arabic-small",
+      conditional: (d) => isMahadLevel(d.level),
+    },
+    {
+      key: "mahad_jurusan",
+      title: "Kamu masuk jurusan apa?",
+      hint: "Sesuai pembagian kelas di sekolahmu",
+      options: MAHAD_JURUSAN,
+      multi: false,
+      iconType: "emoji",
+      conditional: (d) => d.level === "tsanawi",
+    },
+    {
+      key: "mahad_struggle",
+      title: "Pelajaran mana yang paling jadi tantangan?",
+      hint: "Boleh pilih lebih dari satu",
+      options: MAHAD_STRUGGLES,
+      multi: true,
+      iconType: "lucide",
+      conditional: (d) => isMahadLevel(d.level),
+    },
+    {
       key: "struggle",
       title: "Sekarang kamu paling sering struggle di bagian mana?",
       hint: "Boleh pilih lebih dari satu",
       options: STRUGGLES,
       multi: true,
       iconType: "lucide",
+      conditional: (d) => !isMahadLevel(d.level),
     },
     {
       key: "learningStyle",
@@ -207,7 +241,17 @@ const OnboardingPage = () => {
 
   const onPick = (id) => {
     if (!cur) return;
-    if (cur.key === "faculty") {
+    if (cur.key === "level") {
+      setData(d => ({
+        ...d,
+        level: id,
+        faculty: isMahadLevel(id) ? null : d.faculty,
+        major: null,
+        mahad_year: null,
+        mahad_jurusan: null,
+        mahad_struggle: [],
+      }));
+    } else if (cur.key === "faculty") {
       setData(d => ({ ...d, faculty: id, major: null }));
     } else if (cur.multi) {
       const next = (value || []).includes(id)
@@ -353,6 +397,8 @@ const QuestionStep = ({ question, options, value, onPick }) => {
   const isMulti = question.multi;
   const isSelected = (id) => isMulti ? (value || []).includes(id) : value === id;
   const isArabicSmall = question.iconType === "arabic-small";
+  const realOptions = options.filter(o => !o.isSeparator);
+  const colClass = realOptions.length <= 4 ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3";
 
   return (
     <div className="max-w-3xl mx-auto w-full pt-4">
@@ -361,8 +407,20 @@ const QuestionStep = ({ question, options, value, onPick }) => {
         {question.title}
       </h2>
       <p className="text-ink-muted mb-8">{question.hint}</p>
-      <div className={`grid ${options.length <= 4 ? "sm:grid-cols-2" : "sm:grid-cols-2 lg:grid-cols-3"} gap-3`}>
+      <div className={`grid ${colClass} gap-3`}>
         {options.map((opt) => {
+          if (opt.isSeparator) {
+            return (
+              <div key={opt.id} className="col-span-full flex items-center gap-3 mt-3 mb-1">
+                <div className="h-px flex-1" style={{background:"rgba(255,255,255,0.08)"}}/>
+                <span className="text-[10px] uppercase tracking-[0.2em] font-semibold"
+                  style={{color:"rgba(201,168,106,0.65)"}}>
+                  {opt.label}
+                </span>
+                <div className="h-px flex-1" style={{background:"rgba(255,255,255,0.08)"}}/>
+              </div>
+            );
+          }
           const sel = isSelected(opt.id);
           return (
             <button key={opt.id} onClick={() => onPick(opt.id)}

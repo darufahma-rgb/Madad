@@ -1,0 +1,1682 @@
+// ============================================================
+// TALQEEH — MA'HAD FEATURE COMPLETE CODE
+// Paste ke file yang relevan di project Replit kamu
+// ============================================================
+
+// ============================================================
+// FILE 1: data/mahad-data.js
+// Data semua Maddah, prompt, dan konfigurasi Ma'had
+// ============================================================
+
+export const MAHAD_LEVELS = {
+  idadi: {
+    id: 'idadi',
+    label: "I'dadi",
+    arabicLabel: 'الإعدادي',
+    subtitle: 'Ma\'had · Setingkat SMP',
+    badge: "I'DADI",
+    badgeColor: '#10B981',
+    icon: '🌱',
+    years: ['Tahun 1', 'Tahun 2', 'Tahun 3'],
+    jurusan: null, // I'dadi tidak ada jurusan
+  },
+  tsanawi_adabi: {
+    id: 'tsanawi_adabi',
+    label: 'Tsanawi Adabi',
+    arabicLabel: 'الثانوي الأدبي',
+    subtitle: 'Ma\'had · Setingkat SMA · Sastra & Sosial',
+    badge: 'TSANAWI · ADABI',
+    badgeColor: '#3B82F6',
+    icon: '📖',
+    years: ['Tahun 1', 'Tahun 2', 'Tahun 3'],
+    jurusan: 'adabi',
+  },
+  tsanawi_ilmi: {
+    id: 'tsanawi_ilmi',
+    label: 'Tsanawi Ilmi',
+    arabicLabel: 'الثانوي العلمي',
+    subtitle: 'Ma\'had · Setingkat SMA · Sains & Matematika',
+    badge: 'TSANAWI · ILMI',
+    badgeColor: '#8B5CF6',
+    icon: '⚗️',
+    years: ['Tahun 1', 'Tahun 2', 'Tahun 3'],
+    jurusan: 'ilmi',
+  },
+};
+
+export const MAHAD_CHALLENGES = [
+  { id: 'math_arabic', label: 'Matematika dalam bahasa Arab', icon: '🔢' },
+  { id: 'science_arabic', label: 'Fisika / Kimia / Biologi dalam bahasa Arab', icon: '🧪' },
+  { id: 'social_arabic', label: 'Sejarah & Geografi dalam bahasa Arab', icon: '🗺️' },
+  { id: 'quran_hafalan', label: 'Hafalan Al-Qur\'an', icon: '📖' },
+  { id: 'insya', label: 'Insya\' (mengarang bahasa Arab)', icon: '✍️' },
+  { id: 'fahm_maqru', label: 'Fahm Maqru\' (memahami teks ujian)', icon: '📝' },
+  { id: 'nahwu_sharaf', label: 'Nahwu & Sharaf dasar', icon: '🔤' },
+  { id: 'english', label: 'Bahasa Inggris', icon: '🌐' },
+];
+
+export const MAHAD_MADDAH = [
+  // === KELOMPOK AGAMA ===
+  {
+    id: 'quran-tajwid',
+    nameArabic: 'القرآن الكريم والتجويد',
+    nameIndo: 'Al-Qur\'an & Tajwid',
+    category: 'agama',
+    jenjang: ['idadi', 'tsanawi_adabi', 'tsanawi_ilmi'],
+    description: 'Hafalan, tilawah, dan kaidah tajwid — fondasi utama di Ma\'had Al-Azhar',
+    aiTools: ['NotebookLM', 'Claude'],
+    promptCount: 15,
+    promptCategories: ['Hafal', 'Tajwid', 'Tilawah', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  {
+    id: 'tauhid-aqidah',
+    nameArabic: 'التوحيد والعقيدة',
+    nameIndo: 'Tauhid & Aqidah',
+    category: 'agama',
+    jenjang: ['idadi', 'tsanawi_adabi', 'tsanawi_ilmi'],
+    description: 'Dasar-dasar keyakinan Islam sesuai manhaj Al-Azhar level Ma\'had',
+    aiTools: ['Claude', 'Gemini'],
+    promptCount: 12,
+    promptCategories: ['Pahami', 'Hafal', 'Latihan', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  {
+    id: 'fiqh-ibadah',
+    nameArabic: 'الفقه والعبادات',
+    nameIndo: 'Fiqh & Ibadah',
+    category: 'agama',
+    jenjang: ['idadi', 'tsanawi_adabi', 'tsanawi_ilmi'],
+    description: 'Fiqh ibadah sehari-hari dan hukum praktis level Ma\'had Al-Azhar',
+    aiTools: ['Claude', 'ChatGPT'],
+    promptCount: 14,
+    promptCategories: ['Pahami', 'Praktik', 'Latihan', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  {
+    id: 'sirah-tarikh',
+    nameArabic: 'السيرة النبوية والتاريخ',
+    nameIndo: 'Sirah Nabawiyyah & Tarikh',
+    category: 'agama',
+    jenjang: ['idadi', 'tsanawi_adabi', 'tsanawi_ilmi'],
+    description: 'Sejarah Nabi ﷺ dan peradaban Islam dalam kurikulum Ma\'had Al-Azhar',
+    aiTools: ['ChatGPT', 'Perplexity'],
+    promptCount: 12,
+    promptCategories: ['Pahami', 'Hafal', 'Kronologi', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  {
+    id: 'nahwu-sharaf-dasar',
+    nameArabic: 'النحو والصرف الأساسي',
+    nameIndo: 'Nahwu & Sharaf Dasar',
+    category: 'agama',
+    jenjang: ['idadi', 'tsanawi_adabi', 'tsanawi_ilmi'],
+    description: 'Kaidah bahasa Arab level dasar-menengah — fondasi untuk semua maddah lainnya',
+    aiTools: ['Claude', 'NotebookLM'],
+    promptCount: 16,
+    promptCategories: ['Pahami', 'Latihan', 'I\'rab', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  {
+    id: 'insya-tabir',
+    nameArabic: 'الإنشاء والتعبير الكتابي',
+    nameIndo: 'Insya\' & Ta\'bir',
+    category: 'agama',
+    jenjang: ['idadi', 'tsanawi_adabi', 'tsanawi_ilmi'],
+    description: 'Mengarang dan menulis dalam bahasa Arab — dari paragraf dasar hingga esai ujian',
+    aiTools: ['Claude', 'ChatGPT'],
+    promptCount: 13,
+    promptCategories: ['Kerangka', 'Koreksi', 'Template', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  // === KELOMPOK UMUM — SEMUA JENJANG ===
+  {
+    id: 'riyadhiyat',
+    nameArabic: 'الرياضيات',
+    nameIndo: 'Riyadhiyat (Matematika)',
+    category: 'umum-semua',
+    jenjang: ['idadi', 'tsanawi_adabi', 'tsanawi_ilmi'],
+    description: 'Matematika kurikulum Ma\'had Al-Azhar — dipelajari dalam bahasa Arab',
+    aiTools: ['ChatGPT', 'Gemini'],
+    promptCount: 15,
+    promptCategories: ['Pahami', 'Istilah Arab', 'Latihan', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  {
+    id: 'bahasa-inggris',
+    nameArabic: 'اللغة الإنجليزية',
+    nameIndo: 'Lughah Injiliziyyah (Bahasa Inggris)',
+    category: 'umum-semua',
+    jenjang: ['idadi', 'tsanawi_adabi', 'tsanawi_ilmi'],
+    description: 'Bahasa Inggris sebagai maddah wajib di Ma\'had — dipelajari bersamaan dengan bahasa Arab',
+    aiTools: ['ChatGPT', 'Copilot'],
+    promptCount: 12,
+    promptCategories: ['Grammar', 'Vocab', 'Writing', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  // === KELOMPOK UMUM — TSANAWI ILMI ===
+  {
+    id: 'fisika',
+    nameArabic: 'الفيزياء',
+    nameIndo: 'Fisika (Tsanawi Ilmi)',
+    category: 'umum-ilmi',
+    jenjang: ['tsanawi_ilmi'],
+    description: 'Fisika dasar hingga menengah dalam bahasa Arab — mekanika, listrik, gelombang',
+    aiTools: ['ChatGPT', 'Gemini'],
+    promptCount: 13,
+    promptCategories: ['Pahami', 'Rumus', 'Latihan', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  {
+    id: 'kimia',
+    nameArabic: 'الكيمياء',
+    nameIndo: 'Kimia (Tsanawi Ilmi)',
+    category: 'umum-ilmi',
+    jenjang: ['tsanawi_ilmi'],
+    description: 'Kimia dasar hingga menengah dalam bahasa Arab — unsur, reaksi, ikatan kimia',
+    aiTools: ['ChatGPT', 'Gemini'],
+    promptCount: 13,
+    promptCategories: ['Pahami', 'Istilah', 'Latihan', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  {
+    id: 'biologi',
+    nameArabic: 'الأحياء (البيولوجيا)',
+    nameIndo: 'Biologi (Tsanawi Ilmi)',
+    category: 'umum-ilmi',
+    jenjang: ['tsanawi_ilmi'],
+    description: 'Biologi dalam bahasa Arab — sel, genetika, ekosistem, dan anatomi',
+    aiTools: ['ChatGPT', 'Gemini', 'Perplexity'],
+    promptCount: 13,
+    promptCategories: ['Pahami', 'Istilah', 'Latihan', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  // === KELOMPOK UMUM — TSANAWI ADABI ===
+  {
+    id: 'tarikh',
+    nameArabic: 'التاريخ',
+    nameIndo: 'Tarikh (Sejarah)',
+    category: 'umum-adabi',
+    jenjang: ['tsanawi_adabi'],
+    description: 'Sejarah umum dan Islam dalam bahasa Arab — dari sejarah kuno hingga modern',
+    aiTools: ['ChatGPT', 'Perplexity'],
+    promptCount: 11,
+    promptCategories: ['Pahami', 'Hafal', 'Kronologi', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  {
+    id: 'jughrafiya',
+    nameArabic: 'الجغرافيا',
+    nameIndo: 'Jughrafiya (Geografi)',
+    category: 'umum-adabi',
+    jenjang: ['tsanawi_adabi'],
+    description: 'Geografi fisik dan manusia dalam bahasa Arab — peta, iklim, populasi',
+    aiTools: ['Gemini', 'Perplexity'],
+    promptCount: 10,
+    promptCategories: ['Pahami', 'Istilah', 'Peta', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  {
+    id: 'falsafah-mantiq',
+    nameArabic: 'الفلسفة والمنطق',
+    nameIndo: 'Falsafah & Mantiq',
+    category: 'umum-adabi',
+    jenjang: ['tsanawi_adabi'],
+    description: 'Filsafat dasar dan ilmu logika dalam bahasa Arab — kurikulum Tsanawi Adabi',
+    aiTools: ['Claude', 'ChatGPT'],
+    promptCount: 10,
+    promptCategories: ['Pahami', 'Analisis', 'Diskusi', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  {
+    id: 'ilmu-nafs',
+    nameArabic: 'علم النفس',
+    nameIndo: 'Ilmu Nafs (Psikologi)',
+    category: 'umum-adabi',
+    jenjang: ['tsanawi_adabi'],
+    description: 'Psikologi dasar dalam bahasa Arab — perilaku, emosi, perkembangan manusia',
+    aiTools: ['Claude', 'Gemini'],
+    promptCount: 10,
+    promptCategories: ['Pahami', 'Istilah', 'Latihan', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+  {
+    id: 'ihsa',
+    nameArabic: 'الإحصاء',
+    nameIndo: "Ihsha' (Statistik)",
+    category: 'umum-adabi',
+    jenjang: ['tsanawi_adabi'],
+    description: 'Statistik dasar dalam bahasa Arab — data, mean, median, modus, probabilitas',
+    aiTools: ['ChatGPT', 'Gemini'],
+    promptCount: 10,
+    promptCategories: ['Pahami', 'Rumus', 'Latihan', 'Ujian'],
+    badge: 'MA\'HAD',
+  },
+];
+
+export const MAHAD_PROMPTS = [
+  // === MADDAH UMUM DALAM ARAB ===
+  {
+    id: 'u-1',
+    category: 'mahad',
+    subCategory: 'Maddah Umum dalam Arab',
+    title: 'Pahami Soal Matematika Berbahasa Arab',
+    situation: 'Dapat soal matematika dalam Arab tapi tidak paham maksudnya',
+    template: `Saya pelajar Ma'had Al-Azhar tingkat [I'dadi/Tsanawi] Tahun [1/2/3].
+Saya dapat soal matematika dalam bahasa Arab tapi tidak paham maksudnya:
+
+[paste soal di sini]
+
+Tolong bantu saya:
+1. Terjemahkan soalnya ke bahasa Indonesia
+2. Jelaskan apa yang diminta soal ini
+3. Tunjukkan cara menyelesaikannya step by step
+4. Sebutkan rumus atau konsep yang dipakai`,
+  },
+  {
+    id: 'u-2',
+    category: 'mahad',
+    subCategory: 'Maddah Umum dalam Arab',
+    title: 'Kamus Istilah Matematika Arab-Indonesia',
+    situation: 'Tidak tahu istilah matematika dalam bahasa Arab',
+    template: `Saya pelajar Ma'had Al-Azhar. Tolong buatkan tabel istilah matematika untuk bab [nama bab] dengan format:
+
+| Istilah Arab | Cara Baca | Arti Indonesia | Contoh |
+
+Bab yang saya minta: [isi nama bab]`,
+  },
+  {
+    id: 'u-3',
+    category: 'mahad',
+    subCategory: 'Maddah Umum dalam Arab',
+    title: 'Latihan Soal Matematika Level Ma\'had',
+    situation: 'Mau latihan soal sebelum ujian',
+    template: `Saya pelajar Ma'had Al-Azhar [I'dadi/Tsanawi Ilmi/Tsanawi Adabi] Tahun [X].
+Tolong buat 10 soal latihan matematika tentang [nama topik] dengan level kesulitan ujian Ma'had.
+
+Format:
+- Tulis soal dalam bahasa Arab (seperti ujian asli)
+- Sertakan terjemahan Indonesia di bawah tiap soal
+- Kunci jawaban di bagian paling bawah`,
+  },
+  {
+    id: 'u-4',
+    category: 'mahad',
+    subCategory: 'Maddah Umum dalam Arab',
+    title: 'Pahami Konsep Sains dalam Bahasa Arab',
+    situation: 'Ada konsep fisika/kimia/biologi yang tidak dimengerti',
+    template: `Saya pelajar Tsanawi Ilmi Ma'had Al-Azhar.
+Saya tidak paham konsep berikut dari pelajaran [Fisika/Kimia/Biologi]:
+
+Istilah Arabnya: [tulis istilah Arab]
+atau Konsepnya : [tulis konsep yang tidak dipahami]
+
+Tolong jelaskan:
+1. Apa artinya dalam bahasa Indonesia?
+2. Jelaskan konsepnya dengan bahasa yang mudah
+3. Berikan contoh dari kehidupan sehari-hari
+4. Apa istilah Arabnya yang lain (kalau ada)?`,
+  },
+  {
+    id: 'u-5',
+    category: 'mahad',
+    subCategory: 'Maddah Umum dalam Arab',
+    title: 'Kamus Istilah Sains Arab-Indonesia',
+    situation: 'Mau hafal istilah sains sebelum ujian',
+    template: `Tolong buatkan tabel istilah [Fisika/Kimia/Biologi] dalam bahasa Arab untuk bab [nama bab].
+
+Format tabel:
+| Istilah Arab | Cara Baca | Arti Indonesia | Keterangan Singkat |
+
+Buat minimal 15 istilah yang paling penting dan sering muncul di soal ujian.`,
+  },
+  {
+    id: 'u-6',
+    category: 'mahad',
+    subCategory: 'Maddah Umum dalam Arab',
+    title: 'Pahami Materi Geografi dalam Arab',
+    situation: 'Ada materi geografi yang sulit dipahami',
+    template: `Saya pelajar Tsanawi Adabi Ma'had Al-Azhar.
+Saya tidak paham materi geografi berikut:
+
+[tulis topik atau paste teks dari buku]
+
+Tolong:
+1. Jelaskan dengan bahasa Indonesia yang mudah
+2. Berikan istilah Arabnya untuk kata-kata kunci
+3. Kalau ada data atau angka penting, ringkaskan dalam tabel`,
+  },
+  // === INSYA' & BAHASA ARAB ===
+  {
+    id: 'b-1',
+    category: 'mahad',
+    subCategory: "Insya' & Bahasa Arab",
+    title: "Koreksi Insya' (Karangan Arab)",
+    situation: 'Sudah nulis tapi tidak yakin benar',
+    template: `Saya pelajar Ma'had Al-Azhar. Ini karangan bahasa Arab yang saya tulis untuk tugas/ujian.
+
+Tolong koreksi:
+1. Kesalahan nahwu dan sharaf
+2. Pilihan kata yang kurang tepat
+3. Alur kalimat yang membingungkan
+4. Berikan versi yang sudah diperbaiki
+
+Tema karangan: [tulis tema]
+Karangan saya:
+[paste teks Arab di sini]`,
+  },
+  {
+    id: 'b-2',
+    category: 'mahad',
+    subCategory: "Insya' & Bahasa Arab",
+    title: "Bantu Kerangka Insya'",
+    situation: "Dapat tugas insya' tapi bingung mulai dari mana",
+    template: `Saya pelajar Ma'had Al-Azhar dapat tugas insya' dengan tema: [tulis tema]
+Panjang yang diminta: [X] kata/baris
+
+Bantu saya:
+1. Kerangka paragraf (muqaddimah, isi, khatimah)
+2. Kalimat pembuka yang bagus dalam bahasa Arab
+3. Minimal 10 kosakata Arab penting untuk tema ini beserta artinya
+4. Kalimat penutup yang berkesan`,
+  },
+  {
+    id: 'b-3',
+    category: 'mahad',
+    subCategory: "Insya' & Bahasa Arab",
+    title: 'Latihan Fahm Maqru\' (Teks Ujian)',
+    situation: 'Mau latihan memahami teks bacaan ujian',
+    template: `Saya pelajar Ma'had Al-Azhar. Berikan saya 1 teks bacaan bahasa Arab level ujian [I'dadi/Tsanawi] dengan panjang sekitar 150-200 kata.
+
+Setelah teks, buat 5 pertanyaan fahm maqru' seperti format ujian asli Ma'had.
+
+Saya akan coba jawab dulu, baru minta koreksi.`,
+  },
+  // === HAFALAN & QUR'AN ===
+  {
+    id: 'h-1',
+    category: 'mahad',
+    subCategory: "Hafalan & Qur'an",
+    title: 'Pahami Makna Sebelum Hafal',
+    situation: 'Mau hafal tapi ingin mengerti maknanya dulu',
+    template: `Sebelum saya menghafal [Surah X / ayat X-Y], bantu saya pahami dulu:
+
+1. Tema utama bagian ini (dalam bahasa Indonesia)
+2. Makna kata-kata yang sulit
+3. Hubungan antar ayat (supaya lebih mudah diingat)
+4. 1-2 pelajaran utama dari bagian ini
+
+Bagian yang mau saya hafal: [tulis nama surah/ayat]`,
+  },
+  {
+    id: 'h-2',
+    category: 'mahad',
+    subCategory: "Hafalan & Qur'an",
+    title: 'Latihan Cek Hafalan (Active Recall)',
+    situation: 'Baru murajaah dan mau tes diri sendiri',
+    template: `Saya baru murajaah [Surah X].
+Buat 7 pertanyaan untuk menguji hafalan saya — dari yang mudah ke yang sulit.
+
+Jenis pertanyaan bisa:
+- Isi/melanjutkan ayat
+- Tema ayat tertentu
+- Urutan kejadian/kisah
+- Makna kata kunci
+
+Jangan tampilkan jawabannya dulu. Tunggu sampai saya menjawab semua.`,
+  },
+  {
+    id: 'h-3',
+    category: 'mahad',
+    subCategory: "Hafalan & Qur'an",
+    title: 'Bantu Cek Tajwid',
+    situation: 'Tidak yakin cara baca yang benar',
+    template: `Tolong bantu saya periksa tajwid dari ayat ini:
+[paste ayat atau tulis ayatnya]
+
+Untuk setiap bagian yang ada hukum tajwidnya:
+1. Sebutkan nama hukum tajwidnya
+2. Jelaskan cara membacanya
+3. Tandai bagian mana yang sering salah dibaca`,
+  },
+  // === PERSIAPAN UJIAN ===
+  {
+    id: 'uj-1',
+    category: 'mahad',
+    subCategory: 'Persiapan Ujian',
+    title: 'Buat Soal Latihan Ujian Ma\'had',
+    situation: 'Ujian tinggal beberapa hari',
+    template: `Saya pelajar [I'dadi/Tsanawi] Ma'had Al-Azhar mau ujian [nama maddah] dalam [X] hari.
+
+Materi yang diujikan: [daftar topik]
+
+Buat soal latihan dengan komposisi:
+- 5 soal mudah (definisi dan hafalan)
+- 5 soal menengah (pemahaman)
+- 5 soal sulit (analisis atau aplikasi)
+
+Tulis soal sesuai format ujian Ma'had (dalam bahasa Arab kalau maddah umum).
+Kunci jawaban di bagian terpisah.`,
+  },
+  {
+    id: 'uj-2',
+    category: 'mahad',
+    subCategory: 'Persiapan Ujian',
+    title: 'Ringkasan Padat Sebelum Ujian',
+    situation: 'Waktu mepet, butuh ringkasan cepat',
+    template: `Ujian [nama maddah] saya [besok / X hari lagi].
+Buatkan ringkasan padat untuk bab: [nama bab]
+
+Format:
+- Poin-poin terpenting saja
+- Definisi istilah kunci (Arab + Indonesia)
+- Rumus atau kaidah yang wajib dihapal
+- Maksimal 1 halaman
+
+Bahasa: Indonesia dengan istilah Arabnya`,
+  },
+  {
+    id: 'uj-3',
+    category: 'mahad',
+    subCategory: 'Persiapan Ujian',
+    title: 'Cek Kelemahan Sebelum Ujian',
+    situation: 'Mau tahu bagian mana yang masih lemah',
+    template: `Saya akan ujian [maddah] dengan materi: [daftar materi/bab]
+
+Buat 10 soal diagnostik yang mencakup semua materi secara merata.
+
+Setelah saya jawab semua, tolong analisis:
+1. Bab mana yang paling lemah
+2. Bab mana yang sudah kuat
+3. Apa yang harus saya fokuskan di sisa waktu sebelum ujian`,
+  },
+];
+
+
+// ============================================================
+// FILE 2: utils/mahad-helpers.js
+// Fungsi-fungsi helper untuk fitur Ma'had
+// ============================================================
+
+/**
+ * Cek apakah user adalah pelajar Ma'had
+ */
+export function isMahadUser(profile) {
+  return ['idadi', 'tsanawi_adabi', 'tsanawi_ilmi'].includes(profile?.level);
+}
+
+/**
+ * Ambil config level Ma'had berdasarkan ID
+ */
+export function getMahadLevel(levelId) {
+  return MAHAD_LEVELS[levelId] || null;
+}
+
+/**
+ * Filter Maddah berdasarkan jenjang user
+ */
+export function getMahadMaddahByLevel(levelId) {
+  return MAHAD_MADDAH.filter((m) => m.jenjang.includes(levelId));
+}
+
+/**
+ * Generate starter pack text untuk user Ma'had
+ */
+export function generateMahadStarterPack(profile) {
+  const level = getMahadLevel(profile.level);
+  if (!level) return '';
+
+  const ageRange = profile.level === 'idadi' ? '12-15' : '15-18';
+  const jurusanText =
+    profile.level === 'tsanawi_ilmi'
+      ? 'Ilmi (علمي) — Sains & Matematika'
+      : profile.level === 'tsanawi_adabi'
+      ? 'Adabi (أدبي) — Sastra & Sosial'
+      : null;
+
+  const maddahUmum =
+    profile.level === 'tsanawi_ilmi'
+      ? 'Matematika, Fisika, Kimia, Biologi, Bahasa Inggris'
+      : profile.level === 'tsanawi_adabi'
+      ? 'Matematika, Sejarah, Geografi, Filsafat & Mantiq, Statistik, Bahasa Inggris'
+      : 'Matematika, Sains (IPA), Bahasa Inggris, Studi Sosial';
+
+  const challengeLabels = (profile.challenges || [])
+    .map((id) => MAHAD_CHALLENGES.find((c) => c.id === id)?.label)
+    .filter(Boolean)
+    .map((l) => `• ${l}`)
+    .join('\n');
+
+  return `Halo! Sebelum kita mulai belajar bareng, aku mau kenalin diri dulu ya.
+
+══════════════════════════════════
+👤 SIAPA AKU
+══════════════════════════════════
+Aku pelajar Indonesia yang sekolah di Ma'had Al-Azhar Mesir.
+Tingkat : ${level.label} Tahun ${profile.year || '[isi tahunmu]'}
+${jurusanText ? `Jurusan : ${jurusanText}` : ''}
+Usia    : sekitar ${ageRange} tahun
+
+══════════════════════════════════
+📚 MATA PELAJARAN YANG AKU PELAJARI
+══════════════════════════════════
+Agama  : Al-Qur'an, Tauhid, Fiqh, Nahwu, Sharaf, Hadits, Sirah
+Umum   : ${maddahUmum}
+
+══════════════════════════════════
+😅 TANTANGAN TERBESARKU SEKARANG
+══════════════════════════════════
+${challengeLabels || '• Masih menyesuaikan diri dengan sistem belajar Ma\'had'}
+
+══════════════════════════════════
+🤝 CARA TERBAIK MEMBANTUKU
+══════════════════════════════════
+→ Jelaskan dengan bahasa Indonesia dulu, baru kasih istilah Arabnya
+→ Gunakan contoh yang mudah dan konkret dari kehidupan sehari-hari
+→ Kalau aku tidak paham, jelaskan ulang dengan cara yang berbeda — sabar ya!
+→ Untuk maddah umum (matematika, sains, dll): bantu aku pahami
+  konsepnya DULU, baru hubungkan dengan istilah Arabnya
+→ Untuk maddah agama: tetap ingatkan aku untuk verifikasi ke guru/ustadz
+
+══════════════════════════════════
+⚠️ CATATAN PENTING
+══════════════════════════════════
+• Aku masih belajar bahasa Arab — jangan terlalu teknis
+• Kalau kamu tidak yakin, bilang saja jangan mengarang
+• Untuk soal agama yang penting, aku akan tetap tanya ke guru
+
+══════════════════════════════════
+🚀 HARI INI AKU MAU BELAJAR
+══════════════════════════════════
+[tulis mata pelajaran atau pertanyaanmu di sini]
+
+Siap jadi teman belajarku? 😊`;
+}
+
+/**
+ * Simpan profil Ma'had ke localStorage
+ */
+export function saveMahadProfile(profileData) {
+  const existing = JSON.parse(localStorage.getItem('userProfile') || '{}');
+  const updated = {
+    ...existing,
+    ...profileData,
+    isMahad: true,
+    updatedAt: new Date().toISOString(),
+  };
+  localStorage.setItem('userProfile', JSON.stringify(updated));
+  return updated;
+}
+
+/**
+ * Ambil profil user dari localStorage
+ */
+export function getUserProfile() {
+  return JSON.parse(localStorage.getItem('userProfile') || '{}');
+}
+
+/**
+ * Ambil rekomendasi Maddah berdasarkan tantangan user
+ */
+export function getRecommendedMaddah(profile) {
+  if (!isMahadUser(profile)) return [];
+
+  const byLevel = getMahadMaddahByLevel(profile.level);
+  const challenges = profile.challenges || [];
+
+  // Map challenge ke Maddah yang relevan
+  const challengeMaddahMap = {
+    math_arabic: ['riyadhiyat'],
+    science_arabic: ['fisika', 'kimia', 'biologi'],
+    social_arabic: ['tarikh', 'jughrafiya'],
+    quran_hafalan: ['quran-tajwid'],
+    insya: ['insya-tabir'],
+    fahm_maqru: ['insya-tabir', 'nahwu-sharaf-dasar'],
+    nahwu_sharaf: ['nahwu-sharaf-dasar'],
+    english: ['bahasa-inggris'],
+  };
+
+  const recommendedIds = new Set();
+  challenges.forEach((challenge) => {
+    const ids = challengeMaddahMap[challenge] || [];
+    ids.forEach((id) => recommendedIds.add(id));
+  });
+
+  // Prioritaskan yang direkomendasi, sisanya setelahnya
+  const recommended = byLevel.filter((m) => recommendedIds.has(m.id));
+  const others = byLevel.filter((m) => !recommendedIds.has(m.id));
+
+  return [...recommended, ...others];
+}
+
+
+// ============================================================
+// FILE 3: components/MahadOnboarding.jsx
+// Komponen onboarding khusus Ma'had
+// ============================================================
+
+import { useState } from 'react';
+import { MAHAD_LEVELS, MAHAD_CHALLENGES, saveMahadProfile, generateMahadStarterPack } from '../utils/mahad-helpers';
+
+export default function MahadOnboarding({ level, onComplete }) {
+  const [step, setStep] = useState(1); // 1: tahun, 2: tantangan, 3: gaya belajar
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedChallenges, setSelectedChallenges] = useState([]);
+  const [learningStyle, setLearningStyle] = useState(null);
+
+  const levelConfig = MAHAD_LEVELS[level];
+
+  const LEARNING_STYLES = [
+    { id: 'visual', label: 'Visual', desc: 'Lebih mudah dengan diagram, tabel, mind map', icon: '👁️' },
+    { id: 'auditory', label: 'Auditori', desc: 'Lebih mudah kalau dengar penjelasan', icon: '👂' },
+    { id: 'discussion', label: 'Diskusi', desc: 'Lebih mudah kalau ada teman belajar', icon: '💬' },
+    { id: 'memorizer', label: 'Penghafal', desc: 'Kuat di hafalan dan pengulangan', icon: '🧠' },
+    { id: 'analytical', label: 'Analitis', desc: 'Suka bongkar konsep sampai ke dasarnya', icon: '🔍' },
+  ];
+
+  function toggleChallenge(id) {
+    setSelectedChallenges((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]
+    );
+  }
+
+  function handleComplete() {
+    const profile = {
+      level,
+      year: selectedYear,
+      challenges: selectedChallenges,
+      learningStyle,
+      isMahad: true,
+    };
+    saveMahadProfile(profile);
+    const starterPack = generateMahadStarterPack(profile);
+    onComplete({ profile, starterPack });
+  }
+
+  return (
+    <div className="mahad-onboarding">
+      {/* Progress bar */}
+      <div className="onboarding-progress">
+        <div
+          className="onboarding-progress-fill"
+          style={{ width: `${(step / 3) * 100}%` }}
+        />
+      </div>
+      <p className="onboarding-step-label">LANGKAH {step} DARI 3</p>
+
+      {/* Level badge */}
+      <div
+        className="mahad-level-badge"
+        style={{ backgroundColor: levelConfig.badgeColor + '20', borderColor: levelConfig.badgeColor }}
+      >
+        <span>{levelConfig.icon}</span>
+        <span style={{ color: levelConfig.badgeColor }}>{levelConfig.label}</span>
+        <span className="badge-arabic">{levelConfig.arabicLabel}</span>
+      </div>
+
+      {/* Step 1: Tahun */}
+      {step === 1 && (
+        <div className="onboarding-step">
+          <h2 className="onboarding-question">Kamu di tahun ke berapa?</h2>
+          <p className="onboarding-sub">Di {levelConfig.label} {levelConfig.subtitle}</p>
+          <div className="year-options">
+            {levelConfig.years.map((year) => (
+              <button
+                key={year}
+                className={`year-option ${selectedYear === year ? 'selected' : ''}`}
+                onClick={() => setSelectedYear(year)}
+              >
+                {year}
+              </button>
+            ))}
+          </div>
+          <button
+            className="btn-next"
+            disabled={!selectedYear}
+            onClick={() => setStep(2)}
+          >
+            Lanjut →
+          </button>
+        </div>
+      )}
+
+      {/* Step 2: Tantangan */}
+      {step === 2 && (
+        <div className="onboarding-step">
+          <h2 className="onboarding-question">Apa tantangan belajarmu?</h2>
+          <p className="onboarding-sub">Pilih semua yang terasa sulit (boleh lebih dari satu)</p>
+          <div className="challenge-options">
+            {MAHAD_CHALLENGES.map((challenge) => (
+              <button
+                key={challenge.id}
+                className={`challenge-option ${selectedChallenges.includes(challenge.id) ? 'selected' : ''}`}
+                onClick={() => toggleChallenge(challenge.id)}
+              >
+                <span className="challenge-icon">{challenge.icon}</span>
+                <span>{challenge.label}</span>
+                {selectedChallenges.includes(challenge.id) && (
+                  <span className="challenge-check">✓</span>
+                )}
+              </button>
+            ))}
+          </div>
+          <div className="step-nav">
+            <button className="btn-back" onClick={() => setStep(1)}>← Kembali</button>
+            <button
+              className="btn-next"
+              disabled={selectedChallenges.length === 0}
+              onClick={() => setStep(3)}
+            >
+              Lanjut →
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3: Gaya belajar */}
+      {step === 3 && (
+        <div className="onboarding-step">
+          <h2 className="onboarding-question">Gimana kamu paling enak belajar?</h2>
+          <p className="onboarding-sub">Pilih satu yang paling cocok</p>
+          <div className="style-options">
+            {LEARNING_STYLES.map((style) => (
+              <button
+                key={style.id}
+                className={`style-option ${learningStyle === style.id ? 'selected' : ''}`}
+                onClick={() => setLearningStyle(style.id)}
+              >
+                <span className="style-icon">{style.icon}</span>
+                <div>
+                  <p className="style-label">{style.label}</p>
+                  <p className="style-desc">{style.desc}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+          <div className="step-nav">
+            <button className="btn-back" onClick={() => setStep(2)}>← Kembali</button>
+            <button
+              className="btn-next btn-complete"
+              disabled={!learningStyle}
+              onClick={handleComplete}
+            >
+              Lihat Starter Pack-ku →
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// ============================================================
+// FILE 4: components/MahadStarterPack.jsx
+// Komponen tampilan starter pack setelah onboarding
+// ============================================================
+
+import { useState } from 'react';
+
+export default function MahadStarterPack({ starterPack, onContinue }) {
+  const [copied, setCopied] = useState(false);
+  const [editedPack, setEditedPack] = useState(starterPack);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(editedPack);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="starter-pack-screen">
+      {/* Header */}
+      <div className="sp-header">
+        <p className="sp-arabic">أَهْلاً وَسَهْلاً</p>
+        <h2 className="sp-title">Starter Pack-mu Siap! 🎉</h2>
+        <p className="sp-subtitle">
+          Paste teks ini ke AI favoritmu sebelum mulai belajar.
+          AI akan langsung paham siapa kamu dan cara terbaik membantumu.
+        </p>
+      </div>
+
+      {/* Starter pack text box */}
+      <div className="sp-textbox-wrapper">
+        <textarea
+          className="sp-textbox"
+          value={editedPack}
+          onChange={(e) => setEditedPack(e.target.value)}
+          rows={20}
+        />
+      </div>
+
+      {/* Actions */}
+      <div className="sp-actions">
+        <button className="sp-btn-copy" onClick={handleCopy}>
+          {copied ? '✓ Tersalin!' : '📋 Salin Starter Pack'}
+        </button>
+        <div className="sp-open-ai">
+          <p className="sp-open-label">Buka langsung di:</p>
+          <div className="sp-ai-buttons">
+            <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer" className="sp-ai-btn">
+              ChatGPT
+            </a>
+            <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" className="sp-ai-btn">
+              Claude
+            </a>
+            <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer" className="sp-ai-btn">
+              Gemini
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Tip box */}
+      <div className="sp-tip">
+        💡 Simpan starter pack ini — paste setiap kali mulai sesi belajar baru
+        untuk hasil yang lebih personal dan tepat sasaran.
+      </div>
+
+      {/* Continue button */}
+      <button className="sp-btn-continue" onClick={onContinue}>
+        Masuk ke Dashboard →
+      </button>
+    </div>
+  );
+}
+
+
+// ============================================================
+// FILE 5: components/MahadMaddahGrid.jsx
+// Grid kartu Maddah khusus Ma'had dengan filter
+// ============================================================
+
+import { useState } from 'react';
+import { MAHAD_MADDAH, getMahadMaddahByLevel } from '../utils/mahad-helpers';
+
+const FILTERS = [
+  { id: 'all', label: 'Semua' },
+  { id: 'agama', label: 'Maddah Agama' },
+  { id: 'umum-semua', label: 'Maddah Umum' },
+  { id: 'umum-ilmi', label: 'Tsanawi Ilmi' },
+  { id: 'umum-adabi', label: 'Tsanawi Adabi' },
+];
+
+export default function MahadMaddahGrid({ userLevel }) {
+  const [activeFilter, setActiveFilter] = useState('all');
+
+  const allMaddah = getMahadMaddahByLevel(userLevel);
+  const filtered =
+    activeFilter === 'all'
+      ? allMaddah
+      : allMaddah.filter((m) => m.category === activeFilter);
+
+  return (
+    <div className="mahad-maddah-section">
+      {/* Filter chips */}
+      <div className="mahad-filter-bar">
+        {FILTERS.map((f) => (
+          <button
+            key={f.id}
+            className={`mahad-filter-chip ${activeFilter === f.id ? 'active' : ''}`}
+            onClick={() => setActiveFilter(f.id)}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Maddah grid */}
+      <div className="mahad-maddah-grid">
+        {filtered.map((maddah) => (
+          <MahadMaddahCard key={maddah.id} maddah={maddah} />
+        ))}
+      </div>
+
+      {filtered.length === 0 && (
+        <div className="mahad-empty">
+          <p>Tidak ada Maddah untuk filter ini.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MahadMaddahCard({ maddah }) {
+  return (
+    <div className="mahad-card">
+      {/* Badge MA'HAD */}
+      <div className="mahad-card-badge">MA'HAD</div>
+
+      {/* Arabic name */}
+      <p className="mahad-card-arabic">{maddah.nameArabic}</p>
+
+      {/* Indo name */}
+      <h3 className="mahad-card-title">{maddah.nameIndo}</h3>
+
+      {/* Description */}
+      <p className="mahad-card-desc">{maddah.description}</p>
+
+      {/* AI Tools */}
+      <div className="mahad-card-tools">
+        {maddah.aiTools.map((tool) => (
+          <span key={tool} className="mahad-tool-chip">{tool}</span>
+        ))}
+      </div>
+
+      {/* Prompt count & categories */}
+      <div className="mahad-card-prompts">
+        <span className="mahad-prompt-count">{maddah.promptCount} template prompt</span>
+        <p className="mahad-prompt-cats">{maddah.promptCategories.join(' · ')}</p>
+      </div>
+
+      {/* CTA */}
+      <button className="mahad-card-cta">Buka Maddah →</button>
+    </div>
+  );
+}
+
+
+// ============================================================
+// FILE 6: components/MahadPromptCard.jsx
+// Kartu prompt khusus Ma'had dengan tombol salin
+// ============================================================
+
+import { useState } from 'react';
+import { MAHAD_PROMPTS } from '../data/mahad-data';
+
+export default function MahadPromptLibrary() {
+  const [activeSubCat, setActiveSubCat] = useState('all');
+
+  const subCategories = ['all', ...new Set(MAHAD_PROMPTS.map((p) => p.subCategory))];
+
+  const filtered =
+    activeSubCat === 'all'
+      ? MAHAD_PROMPTS
+      : MAHAD_PROMPTS.filter((p) => p.subCategory === activeSubCat);
+
+  return (
+    <div className="mahad-prompt-library">
+      {/* Sub-category filter */}
+      <div className="prompt-subcat-filter">
+        {subCategories.map((cat) => (
+          <button
+            key={cat}
+            className={`prompt-subcat-chip ${activeSubCat === cat ? 'active' : ''}`}
+            onClick={() => setActiveSubCat(cat)}
+          >
+            {cat === 'all' ? 'Semua' : cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Prompt grid */}
+      <div className="mahad-prompt-grid">
+        {filtered.map((prompt) => (
+          <MahadPromptCard key={prompt.id} prompt={prompt} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MahadPromptCard({ prompt }) {
+  const [copied, setCopied] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(prompt.template);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="mahad-prompt-card">
+      {/* Badge */}
+      <div className="mahad-prompt-badge">MA'HAD</div>
+
+      {/* Sub-category label */}
+      <p className="mahad-prompt-subcat">{prompt.subCategory}</p>
+
+      {/* Title */}
+      <h3 className="mahad-prompt-title">{prompt.title}</h3>
+
+      {/* Situation */}
+      <p className="mahad-prompt-situation">📌 {prompt.situation}</p>
+
+      {/* Template preview / full */}
+      <div className={`mahad-prompt-template ${expanded ? 'expanded' : 'collapsed'}`}>
+        <pre>{prompt.template}</pre>
+      </div>
+
+      {/* Actions */}
+      <div className="mahad-prompt-actions">
+        <button
+          className="mahad-prompt-expand"
+          onClick={() => setExpanded(!expanded)}
+        >
+          {expanded ? 'Sembunyikan ▲' : 'Lihat Prompt ▼'}
+        </button>
+        <button
+          className={`mahad-prompt-copy ${copied ? 'copied' : ''}`}
+          onClick={handleCopy}
+        >
+          {copied ? '✓ Tersalin!' : '📋 Salin'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+// ============================================================
+// FILE 7: styles/mahad.css
+// CSS khusus untuk semua komponen Ma'had
+// ============================================================
+
+/*
+.mahad-onboarding { ... }
+Paste CSS ini ke file styles/mahad.css di project kamu
+*/
+
+const mahadCSS = `
+/* ============ ONBOARDING ============ */
+.mahad-onboarding {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 24px 20px;
+}
+
+.onboarding-progress {
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 99px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+
+.onboarding-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #10B981, #3B82F6);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+.onboarding-step-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 24px;
+}
+
+.mahad-level-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: 1px solid;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.badge-arabic {
+  font-family: 'Amiri', serif;
+  font-size: 15px;
+  opacity: 0.7;
+}
+
+.onboarding-question {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: white;
+}
+
+.onboarding-sub {
+  font-size: 14px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 24px;
+}
+
+.year-options {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.year-option {
+  flex: 1;
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.year-option:hover {
+  border-color: rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.08);
+}
+
+.year-option.selected {
+  border-color: #10B981;
+  background: rgba(16,185,129,0.15);
+  color: #10B981;
+}
+
+.challenge-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.challenge-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.challenge-option:hover {
+  background: rgba(255,255,255,0.07);
+}
+
+.challenge-option.selected {
+  border-color: #3B82F6;
+  background: rgba(59,130,246,0.12);
+}
+
+.challenge-icon { font-size: 18px; }
+.challenge-check {
+  margin-left: auto;
+  color: #3B82F6;
+  font-weight: 700;
+}
+
+.style-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+
+.style-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.03);
+  color: white;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.style-option.selected {
+  border-color: #8B5CF6;
+  background: rgba(139,92,246,0.12);
+}
+
+.style-icon { font-size: 24px; flex-shrink: 0; }
+.style-label { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
+.style-desc { font-size: 12px; color: rgba(255,255,255,0.5); margin: 0; }
+
+.step-nav {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-back {
+  padding: 14px 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+}
+
+.btn-next {
+  flex: 1;
+  padding: 16px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-next:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-next:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(59,130,246,0.3);
+}
+
+.btn-complete {
+  background: linear-gradient(135deg, #D4A017, #F0C040);
+  color: #1a1a1a;
+}
+
+/* ============ STARTER PACK ============ */
+.starter-pack-screen {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 20px;
+}
+
+.sp-arabic {
+  text-align: center;
+  font-family: 'Amiri', serif;
+  font-size: 20px;
+  color: #D4A017;
+  margin-bottom: 8px;
+}
+
+.sp-title {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 8px;
+}
+
+.sp-subtitle {
+  text-align: center;
+  font-size: 14px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 24px;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.sp-textbox {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  padding: 16px;
+  color: white;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
+  margin-bottom: 16px;
+}
+
+.sp-btn-copy {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #D4A017, #F0C040);
+  color: #1a1a1a;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: all 0.2s;
+}
+
+.sp-open-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.4);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.sp-ai-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.sp-ai-btn {
+  padding: 8px 20px;
+  border-radius: 99px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.05);
+  color: white;
+  font-size: 13px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.sp-ai-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.sp-tip {
+  background: rgba(212,160,23,0.1);
+  border: 1px solid rgba(212,160,23,0.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 20px;
+}
+
+.sp-btn-continue {
+  width: 100%;
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.06);
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+/* ============ MADDAH GRID ============ */
+.mahad-filter-bar {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  margin-bottom: 20px;
+  scrollbar-width: none;
+}
+
+.mahad-filter-chip {
+  padding: 8px 16px;
+  border-radius: 99px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  font-size: 13px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.mahad-filter-chip.active {
+  background: rgba(167,139,250,0.15);
+  border-color: #8B5CF6;
+  color: #A78BFA;
+}
+
+.mahad-maddah-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.mahad-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  padding: 20px;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.mahad-card:hover {
+  border-color: rgba(167,139,250,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.mahad-card-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: rgba(167,139,250,0.15);
+  border: 1px solid rgba(167,139,250,0.3);
+  color: #A78BFA;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.mahad-card-arabic {
+  font-family: 'Amiri', serif;
+  font-size: 20px;
+  color: #D4A017;
+  text-align: right;
+  margin: 28px 0 8px;
+}
+
+.mahad-card-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 8px;
+}
+
+.mahad-card-desc {
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+
+.mahad-card-tools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.mahad-tool-chip {
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+  font-size: 11px;
+}
+
+.mahad-prompt-count {
+  font-size: 15px;
+  font-weight: 700;
+  color: #A78BFA;
+}
+
+.mahad-prompt-cats {
+  font-size: 12px;
+  color: rgba(255,255,255,0.35);
+  margin: 2px 0 14px;
+}
+
+.mahad-card-cta {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(135deg, rgba(139,92,246,0.3), rgba(59,130,246,0.3));
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mahad-card-cta:hover {
+  background: linear-gradient(135deg, rgba(139,92,246,0.5), rgba(59,130,246,0.5));
+}
+
+/* ============ PROMPT LIBRARY ============ */
+.prompt-subcat-filter {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 4px;
+  margin-bottom: 20px;
+}
+
+.prompt-subcat-chip {
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.prompt-subcat-chip.active {
+  background: rgba(16,185,129,0.15);
+  border-color: #10B981;
+  color: #10B981;
+}
+
+.mahad-prompt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.mahad-prompt-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 18px;
+  position: relative;
+}
+
+.mahad-prompt-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: rgba(16,185,129,0.15);
+  border: 1px solid rgba(16,185,129,0.3);
+  color: #10B981;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
+.mahad-prompt-subcat {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mahad-prompt-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 8px;
+}
+
+.mahad-prompt-situation {
+  font-size: 12px;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: 12px;
+}
+
+.mahad-prompt-template {
+  background: rgba(0,0,0,0.3);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.mahad-prompt-template.collapsed {
+  max-height: 60px;
+  -webkit-mask-image: linear-gradient(black 30%, transparent);
+}
+
+.mahad-prompt-template.expanded {
+  max-height: 600px;
+}
+
+.mahad-prompt-template pre {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+  white-space: pre-wrap;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.mahad-prompt-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.mahad-prompt-expand {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.mahad-prompt-copy {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(16,185,129,0.2);
+  color: #10B981;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mahad-prompt-copy.copied {
+  background: rgba(16,185,129,0.35);
+}
+
+/* ============ MOBILE ============ */
+@media (max-width: 768px) {
+  .mahad-maddah-grid {
+    grid-template-columns: 1fr;
+  }
+  .mahad-prompt-grid {
+    grid-template-columns: 1fr;
+  }
+  .year-options {
+    flex-direction: column;
+  }
+  .sp-ai-buttons {
+    flex-wrap: wrap;
+  }
+}
+`;
+
+// Export CSS string kalau dibutuhkan
+export { mahadCSS };

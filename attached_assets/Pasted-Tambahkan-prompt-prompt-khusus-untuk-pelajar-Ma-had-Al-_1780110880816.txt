@@ -1,0 +1,316 @@
+Tambahkan prompt-prompt khusus untuk pelajar
+Ma'had Al-Azhar di Prompt Library Talqeeh.
+
+Buat kategori baru: "Ma'had" dengan sub-kategori
+dan isi prompt berikut. Gunakan desain kartu
+yang sama dengan prompt Masisir yang sudah ada.
+
+---
+
+## SUB-KATEGORI & ISI PROMPT
+
+=== SUB-KATEGORI 1: MADDAH UMUM DALAM ARAB ===
+(ini yang paling unik — tidak ada di Masisir)
+
+PROMPT U-1:
+Judul  : Pahami Soal Matematika Berbahasa Arab
+Situasi: Dapat soal matematika dalam Arab
+         tapi tidak paham maksudnya
+
+Teks prompt:
+---
+Saya pelajar Ma'had Al-Azhar tingkat 
+[I'dadi/Tsanawi] Tahun [1/2/3].
+Saya dapat soal matematika dalam bahasa Arab
+tapi tidak paham maksudnya:
+
+[paste soal di sini]
+
+Tolong bantu saya:
+1. Terjemahkan soalnya ke bahasa Indonesia
+2. Jelaskan apa yang diminta soal ini
+3. Tunjukkan cara menyelesaikannya step by step
+4. Sebutkan rumus atau konsep yang dipakai
+---
+
+PROMPT U-2:
+Judul  : Kamus Istilah Matematika Arab-Indonesia
+Situasi: Tidak tahu istilah matematika dalam Arab
+
+Teks prompt:
+---
+Saya pelajar Ma'had Al-Azhar. Tolong buatkan
+tabel istilah matematika untuk bab [nama bab]
+dengan format:
+
+Istilah Arab | Cara Baca | Arti Indonesia | Contoh
+
+Bab yang saya minta: [isi nama bab]
+---
+
+PROMPT U-3:
+Judul  : Latihan Soal Matematika Level Ma'had
+Situasi: Mau latihan soal sebelum ujian
+
+Teks prompt:
+---
+Saya pelajar Ma'had Al-Azhar 
+[I'dadi/Tsanawi Ilmi/Tsanawi Adabi] Tahun [X].
+Tolong buat 10 soal latihan matematika tentang
+[nama topik] dengan level kesulitan ujian Ma'had.
+
+Format:
+- Tulis soal dalam bahasa Arab (seperti ujian asli)
+- Sertakan terjemahan Indonesia di bawah tiap soal
+- Kunci jawaban di bagian paling bawah
+---
+
+PROMPT U-4:
+Judul  : Pahami Konsep Sains dalam Bahasa Arab
+Situasi: Ada konsep fisika/kimia/biologi yang
+         tidak dimengerti
+
+Teks prompt:
+---
+Saya pelajar Tsanawi Ilmi Ma'had Al-Azhar.
+Saya tidak paham konsep berikut dari pelajaran
+[Fisika/Kimia/Biologi]:
+
+Istilah Arabnya: [tulis istilah Arab]
+atau Konsepnya : [tulis konsep yang tidak dipahami]
+
+Tolong jelaskan:
+1. Apa artinya dalam bahasa Indonesia?
+2. Jelaskan konsepnya dengan bahasa yang mudah
+3. Berikan contoh dari kehidupan sehari-hari
+4. Apa istilah Arabnya yang lain (kalau ada)?
+---
+
+PROMPT U-5:
+Judul  : Kamus Istilah Sains Arab-Indonesia
+Situasi: Mau hafal istilah sains sebelum ujian
+
+Teks prompt:
+---
+Tolong buatkan tabel istilah 
+[Fisika/Kimia/Biologi] dalam bahasa Arab
+untuk bab [nama bab].
+
+Format tabel:
+Istilah Arab | Cara Baca | Arti Indonesia | 
+Keterangan Singkat
+
+Buat minimal 15 istilah yang paling penting
+dan sering muncul di soal ujian.
+---
+
+PROMPT U-6:
+Judul  : Pahami Peta & Konsep Geografi (Arab)
+Situasi: Ada materi geografi yang sulit dipahami
+
+Teks prompt:
+---
+Saya pelajar Tsanawi Adabi Ma'had Al-Azhar.
+Saya tidak paham materi geografi berikut:
+
+[tulis topik atau teks dari buku]
+
+Tolong:
+1. Jelaskan dengan bahasa Indonesia yang mudah
+2. Berikan istilah Arabnya untuk kata-kata kunci
+3. Kalau ada data atau angka penting, ringkaskan
+   dalam tabel
+---
+
+=== SUB-KATEGORI 2: INSYA' & BAHASA ARAB ===
+
+PROMPT B-1:
+Judul  : Koreksi Insya' (Karangan Arab)
+Situasi: Sudah nulis tapi tidak yakin benar
+
+Teks prompt:
+---
+Saya pelajar Ma'had Al-Azhar. Ini karangan
+bahasa Arab yang saya tulis untuk tugas/ujian.
+
+Tolong koreksi:
+1. Kesalahan nahwu dan sharaf
+2. Pilihan kata yang kurang tepat
+3. Alur kalimat yang membingungkan
+4. Berikan versi yang sudah diperbaiki
+
+Tema karangan: [tulis tema]
+Karangan saya:
+[paste teks Arab di sini]
+---
+
+PROMPT B-2:
+Judul  : Bantu Kerangka Insya'
+Situasi: Dapat tugas insya' tapi bingung mulai
+
+Teks prompt:
+---
+Saya pelajar Ma'had Al-Azhar dapat tugas insya'
+dengan tema: [tulis tema]
+Panjang yang diminta: [X] kata/baris
+
+Bantu saya:
+1. Kerangka paragraf (muqaddimah, isi, khatimah)
+2. Kalimat pembuka yang bagus dalam bahasa Arab
+3. Minimal 10 kosakata Arab penting untuk
+   tema ini beserta artinya
+4. Kalimat penutup yang berkesan
+---
+
+PROMPT B-3:
+Judul  : Latihan Fahm Maqru' (Teks Ujian)
+Situasi: Mau latihan memahami teks bacaan ujian
+
+Teks prompt:
+---
+Saya pelajar Ma'had Al-Azhar. Berikan saya
+1 teks bacaan bahasa Arab level ujian 
+[I'dadi/Tsanawi] dengan panjang sekitar 
+150-200 kata.
+
+Setelah teks, buat 5 pertanyaan fahm maqru'
+seperti format ujian asli Ma'had.
+
+Saya akan coba jawab dulu, baru minta koreksi.
+---
+
+=== SUB-KATEGORI 3: HAFALAN & QUR'AN ===
+
+PROMPT H-1:
+Judul  : Pahami Makna Sebelum Hafal
+Situasi: Mau hafal tapi ingin mengerti maknanya
+
+Teks prompt:
+---
+Sebelum saya menghafal [Surah X / ayat X-Y],
+bantu saya pahami dulu:
+
+1. Tema utama bagian ini (dalam bahasa Indonesia)
+2. Makna kata-kata yang sulit
+3. Hubungan antar ayat (supaya lebih mudah diingat)
+4. 1-2 pelajaran utama dari bagian ini
+
+Bagian yang mau saya hafal:
+[tulis nama surah/ayat]
+---
+
+PROMPT H-2:
+Judul  : Latihan Cek Hafalan (Active Recall)
+Situasi: Baru murajaah dan mau tes diri sendiri
+
+Teks prompt:
+---
+Saya baru murajaah [Surah X].
+Buat 7 pertanyaan untuk menguji hafalan saya —
+dari yang mudah ke yang sulit.
+
+Jenis pertanyaan bisa:
+- Isi/melanjutkan ayat
+- Tema ayat tertentu
+- Urutan kejadian/kisah
+- Makna kata kunci
+
+Jangan tampilkan jawabannya dulu.
+Tunggu sampai saya menjawab semua.
+---
+
+PROMPT H-3:
+Judul  : Bantu Tajwid Ayat Ini
+Situasi: Tidak yakin cara baca yang benar
+
+Teks prompt:
+---
+Tolong bantu saya periksa tajwid dari ayat ini:
+[paste ayat atau tulis ayatnya]
+
+Untuk setiap bagian yang ada hukum tajwidnya:
+1. Sebutkan nama hukum tajwidnya
+2. Jelaskan cara membacanya
+3. Tandai bagian mana yang sering salah dibaca
+---
+
+=== SUB-KATEGORI 4: PERSIAPAN UJIAN MA'HAD ===
+
+PROMPT U-UJIAN-1:
+Judul  : Buat Soal Latihan Ujian Ma'had
+Situasi: Ujian tinggal beberapa hari
+
+Teks prompt:
+---
+Saya pelajar [I'dadi/Tsanawi] Ma'had Al-Azhar
+mau ujian [nama maddah] dalam [X] hari.
+
+Materi yang diujikan: [daftar topik]
+
+Buat soal latihan dengan komposisi:
+- 5 soal mudah (definisi dan hafalan)
+- 5 soal menengah (pemahaman)
+- 5 soal sulit (analisis atau aplikasi)
+
+Tulis soal sesuai format ujian Ma'had
+(dalam bahasa Arab kalau maddah umum).
+Kunci jawaban di bagian terpisah.
+---
+
+PROMPT U-UJIAN-2:
+Judul  : Ringkasan Padat Sebelum Ujian
+Situasi: Waktu mepet, butuh ringkasan cepat
+
+Teks prompt:
+---
+Ujian [nama maddah] saya [besok/X hari lagi].
+Buatkan ringkasan padat untuk bab: [nama bab]
+
+Format:
+- Poin-poin terpenting saja
+- Definisi istilah kunci (Arab + Indonesia)
+- Rumus atau kaidah yang wajib dihapal
+- Maksimal 1 halaman
+
+Bahasa: Indonesia dengan istilah Arabnya
+---
+
+PROMPT U-UJIAN-3:
+Judul  : Cek Kelemahan Sebelum Ujian
+Situasi: Mau tahu bagian mana yang masih lemah
+
+Teks prompt:
+---
+Saya akan ujian [maddah] dengan materi:
+[daftar materi/bab]
+
+Buat 10 soal diagnostik yang mencakup 
+semua materi secara merata.
+
+Setelah saya jawab semua, tolong analisis:
+1. Bab mana yang paling lemah
+2. Bab mana yang sudah kuat
+3. Apa yang harus saya fokuskan
+   di sisa waktu sebelum ujian
+---
+
+---
+
+## NOTES UNTUK DEVELOPER
+
+1. Semua prompt Ma'had tampilkan dengan label
+   chip "MA'HAD" berwarna hijau (#10B981)
+   di pojok kanan atas kartu prompt
+
+2. Di halaman Prompt Library, user Ma'had
+   (berdasarkan profil) otomatis melihat
+   tab "Ma'had" aktif sebagai default
+
+3. User Masisir tetap bisa lihat prompt Ma'had
+   kalau mau — tidak dikunci, hanya default-nya
+   berbeda berdasarkan profil
+
+4. Tombol "Salin Prompt" tetap sama persis
+   dengan yang sudah ada
+
+Jangan ubah apapun yang sudah ada untuk Masisir.

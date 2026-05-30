@@ -4,6 +4,8 @@
 */
 
 const TINGKATAN_LABEL = {
+  idadi:       "pelajar I'dadi Ma'had Al-Azhar (setingkat SMP)",
+  tsanawi:     "pelajar Tsanawi Ma'had Al-Azhar (setingkat SMA)",
   mustawa:     "thalib Darul Lughoh / DL (persiapan bahasa)",
   "1":         "thalib Tingkat I",
   "2":         "thalib Tingkat II",
@@ -111,9 +113,74 @@ const resolveGenericPrompt = (template, maddahName) => {
     .replace(/\[LEVEL_BAHASA\]/g, LEVEL_BAHASA_INSTRUCTION["2"]);
 };
 
+/* ============ MA'HAD STARTER PACK ============ */
+
+const MAHAD_STRUGGLE_LABEL = {
+  math_arab:    "Matematika dalam bahasa Arab",
+  sains_arab:   "Fisika/Kimia/Biologi dalam bahasa Arab",
+  sejarah_geo:  "Sejarah & Geografi dalam bahasa Arab",
+  hafalan:      "Hafalan Al-Qur'an",
+  insya:        "Insya' (mengarang bahasa Arab)",
+  fahm_maqru:   "Fahm Maqru' (memahami teks ujian)",
+  nahwu_sharaf: "Nahwu & Sharaf dasar",
+  english:      "Bahasa Inggris",
+};
+
+const generateMahadStarterPack = (profile, session) => {
+  const nama    = session?.name || "";
+  const jenjang = profile?.level === 'idadi' ? "I'dadi" : "Tsanawi";
+  const tahun   = profile?.mahad_year || "?";
+  const jurusan = profile?.mahad_jurusan === 'adabi'
+    ? "Adabi (أدبي) — Sastra & Sosial"
+    : profile?.mahad_jurusan === 'ilmi'
+    ? "Ilmi (علمي) — Sains & Matematika"
+    : null;
+  const usiaRange = profile?.level === 'idadi' ? "12–15" : "15–18";
+  const maddahUmum = profile?.mahad_jurusan === 'ilmi'
+    ? "Matematika, Fisika, Kimia, Biologi, Geografi"
+    : profile?.mahad_jurusan === 'adabi'
+    ? "Sejarah, Geografi, Ekonomi, Sosiologi"
+    : "Matematika, IPA, IPS";
+  const maddahAgama = "Al-Qur'an, Tauhid, Fiqh, Nahwu, Sharaf, Hadits, Sirah";
+  const struggles = (profile?.mahad_struggle || [])
+    .map(s => MAHAD_STRUGGLE_LABEL[s]).filter(Boolean);
+  const tantangan = struggles.length > 0 ? struggles.join(", ") : "menyesuaikan dengan kurikulum";
+
+  return `Halo! Sebelum kita mulai belajar bareng, aku mau kenalin diri dulu ya.
+
+SIAPA AKU:
+Aku pelajar Indonesia yang sekolah di Ma'had Al-Azhar Mesir.
+Tingkat  : ${jenjang} Tahun ${tahun}${jurusan ? `\nJurusan  : ${jurusan}` : ""}
+Usia     : sekitar ${usiaRange} tahun${nama ? `\nNama     : ${nama}` : ""}
+
+MATA PELAJARAN YANG AKU PELAJARI:
+Agama   : ${maddahAgama}
+Umum    : ${maddahUmum}
+
+TANTANGAN TERBESARKU:
+${tantangan}
+
+CARA TERBAIK MEMBANTUKU:
+→ Jelaskan dengan bahasa Indonesia dulu, baru kasih istilah Arabnya
+→ Gunakan contoh yang mudah dan konkret
+→ Kalau aku tidak paham, jelaskan ulang dengan cara yang berbeda — sabar ya!
+→ Untuk maddah umum (matematika, sains): bantu aku pahami konsepnya DULU,
+  baru hubungkan dengan istilah Arabnya
+→ Untuk maddah agama: tetap ingatkan aku untuk verifikasi ke guru
+
+HARI INI AKU MAU BELAJAR:
+[tulis mata pelajaran atau pertanyaanmu]
+
+Siap jadi teman belajarku?`;
+};
+
 /* ============ STARTER PACK GENERATOR ============ */
 
 const generateStarterPack = (profile, session) => {
+  if (profile?.level === 'idadi' || profile?.level === 'tsanawi') {
+    return generateMahadStarterPack(profile, session);
+  }
+
   const tingkatan  = profile?.level   ? (TINGKATAN_LABEL[profile.level]   || "thalib") : "thalib";
   const fakultas   = profile?.faculty ? (FAKULTAS_LABEL[profile.faculty]  || "Al-Azhar") : "Al-Azhar";
   const jurusan    = profile?.major   ? (JURUSAN_LABEL[profile.major]     || "") : "";
@@ -202,9 +269,11 @@ Object.assign(window, {
   resolveAdaptivePrompt,
   resolveGenericPrompt,
   generateStarterPack,
+  generateMahadStarterPack,
   resolveS2MaddahContext,
   generateS2Prompt,
   TINGKATAN_LABEL,
   FAKULTAS_LABEL,
   LEVEL_BAHASA_INSTRUCTION,
+  MAHAD_STRUGGLE_LABEL,
 });

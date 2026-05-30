@@ -1,0 +1,132 @@
+Tambahkan dukungan penuh untuk pelajar Ma'had 
+Al-Azhar di website Talqeeh. Ini berbeda dari 
+Masisir (mahasiswa) — usernya adalah remaja 
+usia 12-18 tahun dengan mata pelajaran umum 
+(matematika, sains, dll) yang diajarkan dalam 
+bahasa Arab.
+
+Jangan ubah apapun yang sudah ada untuk Masisir.
+Semua perubahan ini TAMBAHAN, bukan pengganti.
+
+---
+
+## A. TAMBAH PILIHAN JENJANG DI ONBOARDING
+
+Di step "Kamu di tingkat apa?" tambahkan pilihan
+baru DI ATAS semua pilihan yang sudah ada:
+
+Tambahkan dengan pemisah label "— MA'HAD —":
+
+[ I'dadi (Ma'had - Setingkat SMP) ]
+[ Tsanawi (Ma'had - Setingkat SMA) ]
+
+— lalu pilihan Masisir yang sudah ada —
+[ Mustawa / Bahasa Arab ]
+[ S1 / Marhalah ]
+[ dst... ]
+
+---
+
+## B. PERTANYAAN LANJUTAN KHUSUS MA'HAD
+
+Ketika user pilih I'dadi atau Tsanawi, tampilkan
+pertanyaan tambahan yang BERBEDA dari Masisir:
+
+PERTANYAAN 1 — Tahun ke berapa?
+Pilihan:
+- Tahun 1
+- Tahun 2  
+- Tahun 3
+
+PERTANYAAN 2 — Jurusan? (hanya untuk Tsanawi)
+Pilihan:
+- Adabi (أدبي) — Sastra & Sosial
+- Ilmi (علمي) — Sains & Matematika
+
+PERTANYAAN 3 — Tantangan terbesar kamu? 
+(multi-select, pilihan BERBEDA dari Masisir)
+□ Matematika dalam bahasa Arab
+□ Fisika / Kimia / Biologi dalam bahasa Arab
+□ Sejarah & Geografi dalam bahasa Arab
+□ Hafalan Al-Qur'an
+□ Insya' (mengarang bahasa Arab)
+□ Fahm Maqru' (memahami teks ujian)
+□ Nahwu & Sharaf dasar
+□ Bahasa Inggris
+
+PERTANYAAN 4 — Gimana kamu belajar paling enak?
+(sama seperti Masisir — visual/auditori/dll)
+
+---
+
+## C. STARTER PACK BERBEDA UNTUK MA'HAD
+
+Ketika user Ma'had selesai onboarding, generate
+starter pack dengan template yang BERBEDA:
+
+Template Starter Pack Ma'had:
+
+---
+Halo! Sebelum kita mulai belajar bareng,
+aku mau kenalin diri dulu ya.
+
+SIAPA AKU:
+Aku pelajar Indonesia yang sekolah di 
+Ma'had Al-Azhar Mesir.
+Tingkat  : [I'dadi/Tsanawi] Tahun [1/2/3]
+Jurusan  : [Adabi/Ilmi] (khusus Tsanawi)
+Usia     : sekitar [12-15/15-18] tahun
+
+MATA PELAJARAN YANG AKU PELAJARI:
+Agama   : Al-Qur'an, Tauhid, Fiqh, Nahwu, 
+           Sharaf, Hadits, Sirah
+Umum    : [sesuai jurusan yang dipilih]
+
+TANTANGAN TERBESARKU:
+[dari jawaban pertanyaan 3]
+
+CARA TERBAIK MEMBANTUKU:
+→ Jelaskan dengan bahasa Indonesia dulu,
+  baru kasih istilah Arabnya
+→ Gunakan contoh yang mudah dan konkret
+→ Kalau aku tidak paham, jelaskan ulang
+  dengan cara yang berbeda — sabar ya!
+→ Untuk maddah umum (matematika, sains):
+  bantu aku pahami konsepnya DULU,
+  baru hubungkan dengan istilah Arabnya
+→ Untuk maddah agama: tetap 
+  ingatkan aku untuk verifikasi ke guru
+
+HARI INI AKU MAU BELAJAR:
+[tulis mata pelajaran atau pertanyaanmu]
+
+Siap jadi teman belajarku?
+---
+
+---
+
+## D. BADGE & VISUAL UNTUK JENJANG MA'HAD
+
+Tambahkan badge berbeda untuk identitas Ma'had:
+
+Badge I'dadi:
+- Teks : "I'DADI"
+- Warna: #10B981 (hijau)
+- Icon : 🌱
+
+Badge Tsanawi Adabi:
+- Teks : "TSANAWI · ADABI"  
+- Warna: #3B82F6 (biru)
+- Icon : 📖
+
+Badge Tsanawi Ilmi:
+- Teks : "TSANAWI · ILMI"
+- Warna: #8B5CF6 (ungu)
+- Icon : ⚗️
+
+Tampilkan badge ini di:
+- Kartu profil user di dashboard
+- Greeting "Assalamu'alaikum, [nama]"
+- Filter Maddah
+
+Jangan ubah badge yang sudah ada untuk Masisir.
