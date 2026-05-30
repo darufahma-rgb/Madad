@@ -6,7 +6,19 @@
 */
 
 /* ============ MAHAD HELPER ============ */
-const isMahadLevel = (level) => level === 'idadi' || level === 'tsanawi';
+const MAHAD_LEVEL_IDS = [
+  "idad_1","idad_2","idad_3",
+  "tsanawi_1_adabi","tsanawi_1_ilmi",
+  "tsanawi_2_adabi","tsanawi_2_ilmi",
+  "tsanawi_3_adabi","tsanawi_3_ilmi",
+  "idadi","tsanawi",
+];
+const isMahadLevel   = (level) => MAHAD_LEVEL_IDS.includes(level);
+const isIdadLevel    = (level) => level?.startsWith("idad");
+const isTsanawiLevel = (level) => level?.startsWith("tsanawi");
+const isIlmiLevel    = (level) => level?.includes("ilmi");
+const isAdabiLevel   = (level) => level?.includes("adabi");
+Object.assign(window, { isMahadLevel, isIdadLevel, isTsanawiLevel, isIlmiLevel, isAdabiLevel, MAHAD_LEVEL_IDS });
 
 /* ============ STRUGGLES (Masisir) ============ */
 const STRUGGLES = [
@@ -116,6 +128,16 @@ const LEVELS = [
   { id: "_sep_mahad",   isSeparator: true, label: "MA'HAD AL-AZHAR" },
   { id: "idadi",   label: "I'dadi",   short: "I'dadi",   arabic: "الإعدادي",  desc: "Ma'had Al-Azhar · Setingkat SMP", isMahad: true },
   { id: "tsanawi", label: "Tsanawi",  short: "Tsanawi",  arabic: "الثانوي",   desc: "Ma'had Al-Azhar · Setingkat SMA", isMahad: true },
+  // ── GRANULAR MA'HAD LEVELS ──
+  { id: "idad_1", label: "I'dadi Kelas 1", short: "I'dadi 1", arabic: "إعدادي ١", jenjang: "mahad", isMahad: true },
+  { id: "idad_2", label: "I'dadi Kelas 2", short: "I'dadi 2", arabic: "إعدادي ٢", jenjang: "mahad", isMahad: true },
+  { id: "idad_3", label: "I'dadi Kelas 3", short: "I'dadi 3", arabic: "إعدادي ٣", jenjang: "mahad", isMahad: true },
+  { id: "tsanawi_1_adabi", label: "Tsanawi Kelas 1 — Adabi",  short: "Tsanawi 1 Adabi",  arabic: "ثانوي ١ أدبي",  jenjang: "mahad", jurusan: "adabi", isMahad: true },
+  { id: "tsanawi_1_ilmi",  label: "Tsanawi Kelas 1 — Ilmi",   short: "Tsanawi 1 Ilmi",   arabic: "ثانوي ١ علمي",  jenjang: "mahad", jurusan: "ilmi",  isMahad: true },
+  { id: "tsanawi_2_adabi", label: "Tsanawi Kelas 2 — Adabi",  short: "Tsanawi 2 Adabi",  arabic: "ثانوي ٢ أدبي",  jenjang: "mahad", jurusan: "adabi", isMahad: true },
+  { id: "tsanawi_2_ilmi",  label: "Tsanawi Kelas 2 — Ilmi",   short: "Tsanawi 2 Ilmi",   arabic: "ثانوي ٢ علمي",  jenjang: "mahad", jurusan: "ilmi",  isMahad: true },
+  { id: "tsanawi_3_adabi", label: "Tsanawi Kelas 3 — Adabi",  short: "Tsanawi 3 Adabi",  arabic: "ثانوي ٣ أدبي",  jenjang: "mahad", jurusan: "adabi", isMahad: true },
+  { id: "tsanawi_3_ilmi",  label: "Tsanawi Kelas 3 — Ilmi",   short: "Tsanawi 3 Ilmi",   arabic: "ثانوي ٣ علمي",  jenjang: "mahad", jurusan: "ilmi",  isMahad: true },
   { id: "_sep_masisir", isSeparator: true, label: "MASISIR — MAHASISWA" },
   { id: "mustawa", label: "Darul Lughoh (DL)",                short: "DL",             arabic: "مستوى" },
   { id: "1",       label: "Tingkat I",                        short: "Awwal",          arabic: "الأولى" },

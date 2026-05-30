@@ -3,3 +3,4 @@
 - [Muqaranah + Kurasah Modules](muqaranah-kurasah.md) — new module structure, storage keys, and component patterns
 - [Maddah System](maddah-system.md) — Prompt 3A complete: 36-Maddah data, adaptive prompt engine, Hub + Detail pages
 - [Prompt 6 Features](prompt6-features.md) — ModuleRunner (Materi/Praktik/Tour), StarterPack, ToolIcon brandColor pattern
+- [Mahad Al-Azhar Module](mahad-module.md) — Prompt 21: 9 granular Ma'had levels, MAHAD_MADDAH data, /mahad-maddah page, backward-compat with old idadi/tsanawi IDs

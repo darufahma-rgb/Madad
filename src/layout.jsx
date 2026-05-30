@@ -665,11 +665,11 @@ const MobileTabBar = () => {
     { to: "/kurasah",         label: "Kurasah",  icon: "bookOpen" },
     { to: "/tools",           label: "Prompt",   icon: "sparkles" },
   ] : isMahadUser ? [
-    { to: "/dashboard",       label: "Beranda",  icon: "home" },
-    { to: "/maddah",          label: "Maddah",   icon: "layers" },
-    { to: "/prompt-library",  label: "Prompt",   icon: "sparkles" },
-    { to: "/siap-imtihan",    label: "Imtihan",  icon: "target" },
-    { to: "/kurasah",         label: "Kurasah",  icon: "bookOpen" },
+    { to: "/dashboard",    label: "Beranda",  icon: "home"     },
+    { to: "/mahad-maddah", label: "Maddah",   icon: "layers"   },
+    { to: "/siap-imtihan", label: "Ujian",    icon: "target"   },
+    { to: "/kurasah",      label: "Kurasah",  icon: "bookOpen" },
+    { to: "/tools",        label: "Tools",    icon: "sparkles" },
   ] : [
     { to: "/dashboard",       label: "Beranda",   icon: "home" },
     { to: "/maddah",          label: "Maddah",    icon: "layers" },

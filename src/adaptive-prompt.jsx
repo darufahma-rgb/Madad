@@ -6,6 +6,15 @@
 const TINGKATAN_LABEL = {
   idadi:       "pelajar I'dadi Ma'had Al-Azhar (setingkat SMP)",
   tsanawi:     "pelajar Tsanawi Ma'had Al-Azhar (setingkat SMA)",
+  idad_1:           "siswa I'dadi Kelas 1",
+  idad_2:           "siswa I'dadi Kelas 2",
+  idad_3:           "siswa I'dadi Kelas 3",
+  tsanawi_1_adabi:  "siswa Tsanawi Kelas 1 (Adabi)",
+  tsanawi_1_ilmi:   "siswa Tsanawi Kelas 1 (Ilmi)",
+  tsanawi_2_adabi:  "siswa Tsanawi Kelas 2 (Adabi)",
+  tsanawi_2_ilmi:   "siswa Tsanawi Kelas 2 (Ilmi)",
+  tsanawi_3_adabi:  "siswa Tsanawi Kelas 3 (Adabi)",
+  tsanawi_3_ilmi:   "siswa Tsanawi Kelas 3 (Ilmi)",
   mustawa:     "thalib Darul Lughoh / DL (persiapan bahasa)",
   "1":         "thalib Tingkat I",
   "2":         "thalib Tingkat II",
@@ -47,6 +56,54 @@ const GAYA_BELAJAR_LABEL = {
 };
 
 const LEVEL_BAHASA_INSTRUCTION = {
+  idad_1: `Pakai bahasa Indonesia yang sangat mudah dipahami remaja SMP.
+- Banyak contoh konkret dari kehidupan sehari-hari
+- Teks Arab selalu disertai harakat dan terjemah
+- Istilah Arab selalu dijelaskan artinya
+- Tone encouraging dan positif — jangan bikin takut
+- Jelaskan bertahap, jangan langsung kompleks`,
+
+  idad_2: `Pakai bahasa Indonesia yang mudah dipahami remaja SMP.
+- Contoh konkret dari kehidupan sehari-hari
+- Teks Arab dengan harakat dan terjemah
+- Istilah Arab selalu dijelaskan
+- Tone encouraging dan sabar`,
+
+  idad_3: `Pakai bahasa Indonesia akademik dasar untuk remaja SMP akhir.
+- Teks Arab dengan harakat dan terjemah
+- Istilah Arab dengan penjelasan
+- Tone positif dan mendukung`,
+
+  tsanawi_1_adabi: `Pakai bahasa Indonesia akademik menengah untuk remaja SMA.
+- Teks Arab dengan harakat, terjemah boleh lebih ringkas
+- Istilah teknis Arab disebut + penjelasan singkat
+- Tone profesional tapi tetap ramah dan encouraging`,
+
+  tsanawi_2_adabi: `Pakai bahasa Indonesia akademik untuk SMA.
+- Teks Arab dengan harakat
+- Istilah Arab teknis boleh tanpa terjemah panjang
+- Tone akademik yang mendukung`,
+
+  tsanawi_3_adabi: `Pakai bahasa Indonesia akademik SMA akhir — persiapan ujian Tsanawiyah.
+- Teks Arab dengan harakat
+- Istilah teknis sesuai standar ujian
+- Tone serius tapi tidak menakutkan`,
+
+  tsanawi_1_ilmi: `Pakai bahasa Indonesia akademik menengah untuk SMA Ilmi.
+- Teks Arab dengan harakat dan terjemah
+- Istilah sains dalam Arab selalu disertai padanan Indonesia
+- Tone positif dan mendukung`,
+
+  tsanawi_2_ilmi: `Pakai bahasa Indonesia akademik untuk SMA Ilmi.
+- Teks Arab dengan harakat
+- Istilah sains Arab + Indonesia
+- Tone akademik yang mendukung`,
+
+  tsanawi_3_ilmi: `Pakai bahasa Indonesia akademik SMA Ilmi — persiapan ujian Tsanawiyah.
+- Fokus pada istilah teknis yang benar
+- Teks Arab dengan harakat
+- Tone serius untuk persiapan ujian`,
+
   mustawa: `Pakai bahasa Indonesia yang mudah dipahami. Setiap istilah Arab wajib disertai terjemah Indonesia. Hindari istilah ushul/balaghah yang berat — jelaskan dengan kata sederhana dulu.`,
   "1":     `Pakai bahasa Indonesia akademik dasar. Istilah Arab boleh ditulis dengan transliterasi natural (mubtada, fa'il, dalil). Sertakan terjemah untuk istilah teknis.`,
   "2":     `Pakai bahasa Indonesia akademik. Istilah Arab transliterasi natural untuk konsep umum. Sertakan terjemah untuk istilah baru atau khilaf.`,
