@@ -322,7 +322,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
    2. SAMPLE MADDAH
    ══════════════════════════════════════════════════════════════ */
 const SampleMaddahSection = () => (
-  <section className="section pt-0">
+  <section id="preview" className="section pt-0">
     <div className="container-x">
       <Reveal className="mb-10 text-center">
         <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
@@ -451,7 +451,7 @@ const AllMaddahPreview = () => {
     <section className="section pt-0">
       <div className="container-x">
         <Reveal className="mb-12 text-center">
-          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+          <div id="tools" className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>36 MADDAH LENGKAP
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
