@@ -595,6 +595,19 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
               </div>
             </div>
 
+            {/* Kupon promo */}
+            <div className="flex items-center gap-3 mb-4 p-3 rounded-xl"
+              style={{background:"rgba(201,168,106,0.08)", border:"1px dashed rgba(201,168,106,0.35)"}}>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs text-ink-soft mb-0.5">Gunakan kode kupon di Lynk:</div>
+                <div className="font-mono font-bold text-gold-300 text-lg tracking-widest">TALQEEH26</div>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <div className="text-[11px] text-ink-soft line-through">Rp 75.000</div>
+                <div className="font-display font-semibold text-gold-300">Rp 49.000</div>
+              </div>
+            </div>
+
             {waitingConfirm ? (
               <div className="space-y-3">
                 <div className="card-glass p-4 text-center rounded-xl border border-gold-500/20">

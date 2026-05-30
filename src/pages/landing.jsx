@@ -520,12 +520,24 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => (
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>Member Talqeeh
               </div>
               <div className="mb-1">
-                <span className="text-sm text-ink-soft line-through block mb-1">Rp 79.000</span>
+                <span className="text-sm text-ink-soft line-through block mb-1">Rp 75.000</span>
                 <span className="font-display text-5xl md:text-6xl font-semibold bg-gradient-to-br from-gold-300 to-gold-500 bg-clip-text text-transparent block leading-tight">
                   Rp 49.000
                 </span>
               </div>
-              <div className="text-xs text-ink-soft uppercase tracking-wider mb-6 mt-2">Sekali bayar · Berlaku selamanya</div>
+              <div className="text-xs text-ink-soft uppercase tracking-wider mt-2">Sekali bayar · Berlaku selamanya</div>
+
+              <div className="flex items-center gap-3 my-4 p-3 rounded-xl"
+                style={{background:"rgba(201,168,106,0.08)", border:"1px dashed rgba(201,168,106,0.35)"}}>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-ink-soft mb-0.5">Gunakan kode kupon di Lynk:</div>
+                  <div className="font-mono font-bold text-gold-300 text-lg tracking-widest">TALQEEH26</div>
+                </div>
+                <div className="text-right flex-shrink-0">
+                  <div className="text-xs text-ink-soft">Hemat</div>
+                  <div className="font-display font-semibold text-gold-300">Rp 26.000</div>
+                </div>
+              </div>
               <ul className="space-y-3 mb-8">
                 {[
                   "52 Maddah lengkap (S1 + Ma'had) + 490+ template prompt",
