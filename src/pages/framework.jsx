@@ -28,25 +28,25 @@ const FrameworkPage = () => {
 
       {/* Cards grid */}
       <section className="container-x pb-6">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
           {frameworks.map((fw, i) => (
-            <Reveal key={fw.id} delay={i * 60}>
-              <div
-                className="card-glass p-5 cursor-pointer transition-all duration-200 hov-lift group"
-                onClick={() => navigate("/framework/" + fw.id)}
-              >
-                <div className="text-3xl mb-3">{fw.icon}</div>
-                <div className="text-[10px] uppercase tracking-wider text-emerald-400 mb-1 font-medium">
-                  {fw.nameId}
-                </div>
-                <h3 className="font-display text-lg font-semibold text-ink mb-2">{fw.name}</h3>
-                <p className="text-sm text-ink-muted leading-relaxed">{fw.tagline}</p>
-                <div className="mt-4 flex items-center gap-1.5 text-xs text-emerald-300 group-hover:text-emerald-200 transition-colors">
-                  <span>Pelajari lengkap</span>
-                  <Icon name="chevronRight" className="w-3.5 h-3.5"/>
-                </div>
+            <div
+              key={fw.id}
+              className="card-glass p-5 cursor-pointer hov-lift group flex flex-col reveal-anim"
+              style={{animationDelay: `${i * 60}ms`}}
+              onClick={() => navigate("/framework/" + fw.id)}
+            >
+              <div className="text-3xl mb-3">{fw.icon}</div>
+              <div className="text-[10px] uppercase tracking-wider text-emerald-400 mb-1 font-medium">
+                {fw.nameId}
               </div>
-            </Reveal>
+              <h3 className="font-display text-lg font-semibold text-ink mb-2">{fw.name}</h3>
+              <p className="text-sm text-ink-muted leading-relaxed">{fw.tagline}</p>
+              <div className="mt-auto pt-4 flex items-center gap-1.5 text-xs text-emerald-300 group-hover:text-emerald-200 transition-colors">
+                <span>Pelajari lengkap</span>
+                <Icon name="chevronRight" className="w-3.5 h-3.5"/>
+              </div>
+            </div>
           ))}
         </div>
       </section>
