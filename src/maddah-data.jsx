@@ -3793,234 +3793,264 @@ Untuk mas'alah [SEBUTKAN], bandingkan 4 madzhab secara ringkas:
     prompts: {
       pahami: [
         {
-          title: "Banding Pendapat 4 Madzhab dalam Satu Masalah",
+          title: "Pahami Metode Fiqh Muqaran (Perbandingan)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Masalah fiqh: [SEBUTKAN MASALAH]
+Jelaskan apa itu fiqh muqaran & cara kerjanya:
+1. Definisi fiqh muqaran + bedanya dengan fiqh madzhabi.
+2. Langkah muqaranah: tahrir mahall an-niza' → paparan pendapat + dalil → munaqasyah dalil → tarjih.
+3. Adab & syarat muqaranah yang ilmiah (bukan sekadar cari yang mudah).
+4. Kitab rujukan (mis. Bidayatul Mujtahid Ibn Rusyd, Al-Fiqh 'ala al-Madzahib al-Arba'ah) + karakternya.
 
-Tolong bandingkan pendapat 4 madzhab secara sistematis:
-
-Untuk setiap madzhab (Syafi'i, Hanafi, Maliki, Hanbali):
-1. Pendapat madzhab (qawl)
-2. Dalil utama — sertakan teks Arab berharakat
-3. Wajh istidlal (cara mengambil hukum dari dalil)
-
-Lalu:
-- Apa sebab utama khilaf antar madzhab ini?
-- Apakah ada khilaf tambahan dari madzhab Zhahiriyyah?
-
-[LEVEL_BAHASA]
-
-Nama kitab dalam Arab. Nama ulama transliterasi natural.`,
-        },
-        {
-          title: "Identifikasi Sebab Khilaf Fiqhi",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Ibnu Rusyd dalam Bidayatul Mujtahid mengidentifikasi beberapa sebab utama khilaf fiqhi.
-
-Jelaskan sebab-sebab tersebut:
-1. Perbedaan dalam menerima atau menolak riwayat hadits
-2. Perbedaan dalam memahami lafal Arab (ihtimal/musytarak)
-3. Perbedaan kaidah ushul antar madzhab
-4. Perbedaan dalam menanggapi 'urf dan tradisi
-
-Untuk setiap sebab, beri 1 contoh masalah fiqh konkret dimana sebab tersebut yang berperan.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Baca dan Analisis Bidayatul Mujtahid",
+          title: "Muqaranah Satu Mas'alah (Demonstrasi Lengkap)",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ibnu Rusyd dalam Bidayatul Mujtahid membahas masalah [MASALAH] di bab [BAB].
+Lakukan muqaranah lengkap untuk mas'alah [SEBUTKAN]:
+1. Tahrir mahall an-niza' (di mana titik perbedaannya).
+2. Pendapat tiap madzhab (Hanafi, Maliki, Syafi'i, Hanbali) + dalil masing-masing (teks Arab berharakat untuk dalil; jangan mengarang).
+3. Munaqasyah (diskusi kekuatan tiap dalil).
+4. Tarjih + alasannya, dengan adab (tanpa merendahkan madzhab lain).
 
-Ini kutipan:
-
-[PASTE KUTIPAN ARAB DARI BIDAYAH]
-
-Analisis:
-1. Masalah fiqh yang dibahas
-2. Cara Ibnu Rusyd menyajikan pendapat antar madzhab
-3. Sebab khilaf yang diidentifikasi Ibnu Rusyd
-4. Apakah Ibnu Rusyd men-tarjih di sini? Kalau ya, dengan alasan apa?
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Metode Muqaranah: Dari Khilaf ke Pemahaman",
+          title: "Pahami Sebab Ikhtilaf Fuqaha",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan metodologi fiqh muqaran yang benar menurut Ibnu Rusyd dan ulama muqaranah modern:
+Jelaskan asbab ikhtilaf al-fuqaha (sebab perbedaan ulama):
+1. Sebab terkait dalil (perbedaan riwayat, keabsahan hadits, lafazh musytarak).
+2. Sebab terkait kaidah ushul (mafhum mukhalafah, 'am-khas, qiyas).
+3. Sebab terkait metode istinbath.
+Beri contoh tiap sebab + kenapa memahami ini penting agar tidak fanatik.
 
-1. Langkah-langkah muqaranah (rumus masalah → kumpulkan pendapat → analisis dalil → identifikasi sebab → tarjih kalau perlu)
-2. Adab dalam muqaranah: tidak memihak madzhab tertentu sebelum analisis
-3. Kapan boleh dan perlu melakukan tarjih
-4. Perbedaan muqaranah akademis dan fatwa praktis
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Adab Ikhtilaf & Sikap Bermadzhab",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan adab dalam menyikapi perbedaan madzhab:
+1. Sikap ilmiah terhadap khilaf yang mu'tabar.
+2. Beda ikhtilaf tanawwu' vs ikhtilaf tadhadd.
+3. Bahaya talfiq & tatabbu' rukhash (cari-cari yang mudah).
+4. Sikap pertengahan: menghormati madzhab tanpa fanatik buta.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Hafal Ciri Khas Madzhab dalam Pendapat Fiqh",
+          title: "Tabel Perbandingan 4 Madzhab untuk Dihafal",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Perlu hafal kecenderungan umum 4 madzhab dalam bab [BAB FIQH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan tabel ringkas:
-- Madzhab vs kecenderungan pendapat di bab ini
-- Satu ciri khas metodologis yang membedakan setiap madzhab
+Untuk mas'alah [SEBUTKAN], buatkan tabel hafalan:
+1. Kolom: Madzhab | Hukum | Dalil utama (ringkas).
+2. Tandai titik perbedaan inti.
+3. Sebutkan pendapat rajih bila ada.
+PENTING: sebut dalil dengan benar; jika ragu, katakan.
 
-Lalu buatkan mnemonic untuk hafal karakter masing-masing madzhab.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Pendapat Madzhab per Masalah",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Menghafal pendapat 4 madzhab dalam masalah-masalah bab [BAB].
+          title: "Hafal Sebab-Sebab Ikhtilaf",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sesi drill:
-1. Sebut nama masalah fiqh
-2. Aku sebutkan pendapat keempat madzhab
-3. Koreksi yang salah
-4. Setelah 10 putaran, beri daftar yang perlu diperkuat
+Bantu hafal kategori asbab ikhtilaf:
+1. Daftar sebab (Arab berharakat + arti) dikelompokkan.
+2. Mnemonic untuk mengingatnya.
+3. Satu contoh mas'alah untuk tiap sebab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Fiqh Muqaran",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Mas'alah yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji (sebut pendapat madzhab + dalil + tarjih). Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Latihan Analisis Sebab Khilaf",
+          title: "Latihan Muqaranah Mandiri (Aku Coba, AI Koreksi)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 5 kasus khilaf fiqh. Aku akan analisis:
-1. Pendapat masing-masing madzhab
-2. Sebab utama khilaf (dari 4 sebab yang dipelajari)
-3. Kategori khilaf: apakah substantif atau lafzhi
+Aku akan melakukan muqaranah untuk mas'alah [SEBUTKAN] dengan kemampuanku (kutulis di bawah).
+1. Koreksi: apakah tahrir mahall niza'-ku tepat, pendapat & dalil akurat, tarjih beralasan.
+2. Tunjukkan langkah yang terlewat.
+3. Lengkapi dgn rujukan mu'tabar (jika ragu, katakan).
 
-Format: sebutkan masalah + pendapat singkat madzhab. JANGAN analisis sebabnya dulu.
+[METODE]
+
+[LEVEL_BAHASA]
+
+Muqaranah-ku: [TEMPEL]`,
+        },
+        {
+          title: "Drill Munaqasyah Dalil",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri aku 5 mas'alah khilafiyah beserta dalil tiap pendapat. Tugasku: lakukan munaqasyah (kritik kekuatan tiap dalil).
+1. JANGAN beri jawaban dulu.
+2. Setelah aku jawab, koreksi penalaran munaqasyah-ku.
+PENTING: dalil yang benar; jika ragu, katakan.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Susun Draft Muqaranah",
+          title: "Drill Identifikasi Sebab Ikhtilaf",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], latihan [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku ingin menyusun muqaranah fiqhiyyah untuk masalah: [SEBUTKAN MASALAH]
+Beri 6 mas'alah khilafiyah. Tugasku: tentukan apa sebab ikhtilaf di tiap mas'alah.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab + jelaskan.
 
-Bantu aku menyusun draft dengan format:
-1. Tahrir mahallil khilaf (rumusan masalah yang dipersengketakan)
-2. Pendapat setiap madzhab (qawl + dalil + wajh istidlal)
-3. Naqd wa maqaranah (evaluasi dan perbandingan)
-4. Rajih (kalau diminta tarjih) — dengan alasan ushuli
-
-[LEVEL_BAHASA]
-
-TIP: Setelah draft ini, gunakan fitur Muqaranah di Talqeeh untuk menyimpan dan melengkapi.`,
-        },
-        {
-          title: "Bedah Masalah dari Al-Mughni",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
-
-Ini kutipan Ibnu Qudamah dalam Al-Mughni tentang masalah [MASALAH]:
-
-[PASTE KUTIPAN ARAB]
-
-Analisis:
-1. Bagaimana Ibnu Qudamah menyajikan dan menyusun khilaf
-2. Teknik istidlal yang digunakan Ibnu Qudamah
-3. Apakah dan bagaimana Ibnu Qudamah melakukan tarjih
-4. Keunggulan metodologis Al-Mughni sebagai kitab muqaranah
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Tahriri Fiqh Muqaran",
+          title: "Mock Imtihan Tahriri Fiqh Muqaran (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian Tahriri [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 5 soal Azhari: banding pendapat madzhab dalam masalah tertentu, analisis sebab khilaf, identifikasi madzhab dari pendapat, susun muqaranah mini, tarjih dengan alasan.
+Buatkan soal ujian tulis Fiqh Muqaran gaya Azhar untuk mas'alah [SEBUTKAN]:
+1. Tipe khas: qarin baina al-madzahib fi..., udzkur al-adillah ma'a al-munaqasyah, rajjih ma'a bayan as-sabab, ma sabab al-ikhtilaf.
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mock Syafawi Fiqh Muqaran",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, latihan Syafawi [MADDAH]. [GAYA_BELAJAR].
+          title: "Simulasi Imtihan Syafawi Fiqh Muqaran",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
 
-Bertindaklah sebagai dosen Azhar. 5 pertanyaan: metodologi muqaranah, sebab khilaf, banding 2 madzhab dalam masalah tertentu (kasih aku masalah), identifikasi sebab khilaf, tarjih dengan syarat.
+Berperanlah sebagai mumtahin syafawi:
+1. Minta aku paparkan khilaf, dalil, munaqasyah, & tarjih secara lisan.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
 
-Evaluasi di akhir.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian Fiqh Muqaran",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari mas'alah yang kupelajari ([SEBUTKAN]): mas'alah yang sering jadi soal muqaranah, cara menulis jawaban lengkap (tahrir niza' + dalil + munaqasyah + tarjih), prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Fiqh Muqaran",
+          title: "Rapikan Catatan Talaqqi Fiqh Muqaran",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang masalah muqaranah [MASALAH] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi: mas'alah → pendapat tiap madzhab + dalil → tarjih, lengkapi harakat, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun ulang (tahrir → pendapat → dalil → sebab → rajih), tambahkan teks Arab berharakat, pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
         },
         {
-          title: "Pahami Catatan Talaqqi yang Ambigu",
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Catatan talaqqi [MADDAH] yang ambigu:
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-[PASTE CATATAN]
+Setelah talaqqi mas'alah [SEBUTKAN], aku jelaskan ulang muqaranah-nya (di bawah). Periksa keakuratan pendapat & dalil, koreksi, ajukan 3 pertanyaan penguji.
 
-Interpretasi berdasarkan konteks fiqh muqaran, identifikasi madzhab dan masalah yang dibahas.
+[METODE]
 
-[LEVEL_BAHASA]`,
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Muqaranah dalam Masalah Kontemporer",
+          title: "Fiqh Muqaran untuk Masalah Kontemporer",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi [MADDAH] dalam masalah kontemporer.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Masalah kontemporer: [SEBUTKAN - mis. "Hukum zakat saham dan investasi"]
+Untuk masalah kontemporer [SEBUTKAN, mis. transaksi digital, isu medis]:
+1. Bagaimana pendekatan madzhab/ulama berbeda menyikapinya.
+2. Dalil & qiyas yang dipakai tiap pendapat.
+3. Pendapat lembaga fatwa kontemporer bila kamu tahu (jika ragu, katakan).
+PENTING: jangan mengarang fatwa/dalil.
 
-Jelaskan bagaimana fuqaha kontemporer dari berbagai madzhab memandang masalah ini:
-1. Pendapat yang ada (dan dari madzhab/lembaga mana)
-2. Dalil dan kaidah ushul yang digunakan
-3. Perbedaan pendapat dan sebabnya
-4. Keputusan lembaga fatwa internasional (OKI, Al-Azhar, dll) kalau ada
-
-Jangan men-tarjih.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Ibnu Rusyd dan Revolusi Fiqh Muqaran",
+          title: "Telaah Manhaj Tarjih Ulama",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi kontribusi Ibnu Rusyd dalam [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan kontribusi Ibnu Rusyd Al-Hafid dalam Bidayatul Mujtahid:
-1. Apa yang revolusioner dari pendekatan Ibnu Rusyd dibanding ulama sebelumnya
-2. Bagaimana cara Ibnu Rusyd mengidentifikasi dan menjelaskan sebab khilaf
-3. Kritik ulama terhadap Bidayatul Mujtahid
-4. Pengaruh Bidayatul Mujtahid terhadap perkembangan fiqh muqaran
+Jelaskan cara ulama melakukan tarjih:
+1. Murajjihat (faktor penguat) dari sisi sanad, matan, dilalah.
+2. Bagaimana menimbang saat dalil tampak sama kuat.
+3. Contoh penerapan tarjih pada satu mas'alah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Hubungkan Fiqh Muqaran dengan Ushul & Maqashid",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk mas'alah [SEBUTKAN]:
+1. Tunjukkan bagaimana perbedaan kaidah ushul tiap madzhab menghasilkan hukum berbeda.
+2. Bagaimana pertimbangan maqashid syariah berperan dalam tarjih.
+3. Kenapa penguasaan ushul penting untuk fiqh muqaran yang benar.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
@@ -5226,133 +5256,268 @@ Jelaskan bagaimana argumen-argumen filsafat klasik (kosmologi, ontologi, epistem
     prompts: {
       pahami: [
         {
-          title: "Pahami Konsep Dasar Mantiq",
+          title: "Peta Besar Ilmu Mantiq",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan konsep-konsep dasar mantiq:
-1. Tasawwur vs Tashdiq (teks Arab berharakat + definisi)
-2. Kulliyatul Khams — 5 predikat universal: jins, naw', fashl, khasshah, 'ardh 'amm — masing-masing: teks Arab + definisi + contoh
-3. Kulli vs Juz'i — beda dan contoh
-4. Hadd (definisi) — jenis-jenis hadd yang sempurna (tam) dan tidak sempurna
+Beri kerangka utuh ilmu Mantiq sebelum masuk detail:
+1. Definisi mantiq + tujuannya (menjaga akal dari kesalahan berpikir, seperti nahwu menjaga lisan).
+2. Dua bagian besar: tashawwurat (konsep/al-mufrad) & tashdiqat (proposisi & penalaran/al-murakkab).
+3. Sub-topik: kulliyat khams, ta'rif, qadhiyah, qiyas, hujjah.
+4. Tampilkan sebagai pohon/outline bercabang + urutan belajar ideal.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Qadhiyyah dan Jenisnya",
+          title: "Pahami Al-Kulliyat Al-Khams (5 Universal)",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan qadhiyyah (proposisi) dalam mantiq:
-1. Definisi qadhiyyah (teks Arab berharakat)
-2. Jenis qadhiyyah: hamliyyah vs syarthiyyah — definisi + contoh
-3. Qadhiyyah hamliyyah: muwajibah vs salibah, kulliyyah vs juz'iyyah
-4. Jadwal murabba' (square of opposition) — 4 jenis qadhiyyah dan hubungan kontradiksi/kontrarisnya
-5. Kebenaran dan kepalsuan qadhiyyah — contoh
+Jelaskan al-kulliyat al-khams (lima universal) secara tuntas:
+1. Jins, naw', fashl, 'aradh 'amm, khashshah — definisi tiap satu (teks Arab berharakat + arti).
+2. Contoh tiap kulli (mis. "manusia" sebagai naw', "hewan" sebagai jins, "berpikir" sebagai fashl).
+3. Bagaimana kelima ini dipakai untuk menyusun ta'rif (definisi).
+4. Kesalahan umum thalib membedakannya.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Qiyas Mantiqi (Silogisme)",
+          title: "Pahami Ta'rif (Definisi) & Syaratnya",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan qiyas mantiqi (silogisme kategoris):
-1. Struktur: muqaddimah kubra, muqaddimah sughra, natijah
-2. Syarat validitas qiyas (intaj)
-3. 4 shakl (figur silogisme) — masing-masing: posisi hudud, syarat, contoh
-4. Beda qiyas mantiqi dari qiyas ushuli (keduanya menggunakan kata qiyas tapi berbeda)
-5. Contoh susun 1 qiyas mantiqi yang valid tentang masalah syariat
+Jelaskan bab ta'rif:
+1. Jenis ta'rif: hadd tamm, hadd naqish, rasm tamm, rasm naqish — definisi + contoh.
+2. Syarat ta'rif yang sahih (jami' mani', tidak daur, tidak khafi, dll).
+3. Kesalahan dalam mendefinisikan + contoh ta'rif yang rusak.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Qiyas (Silogisme) secara Tuntas",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan qiyas mantiqi (silogisme):
+1. Definisi qiyas + rukunnya (muqaddimah kubra, sughra, natijah, hadd asghar/akbar/awsath) — teks Arab berharakat.
+2. Asykal al-qiyas (4 bentuk silogisme) + syarat produktivitas tiap bentuk.
+3. Satu contoh qiyas lengkap dengan analisisnya.
+4. Beda qiyas mantiqi dengan qiyas ushuli (fiqh).
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Drill Matan As-Sullam",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Menghafal matan As-Sullam Al-Munawraq.
+          title: "Hafal Definisi Istilah Mantiq Kunci",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sesi drill:
-1. Sebut tema/bab atau nomor bait
-2. Aku recite bait berharakat
-3. Koreksi kalau salah
-4. Setelah 10 putaran, daftar yang perlu diperkuat
+Bantu hafal istilah inti mantiq bab [SEBUTKAN]:
+1. Daftar istilah (Arab berharakat + arti ringkas).
+2. Mnemonic/asosiasi tiap istilah.
+3. Kelompokkan istilah yang berkaitan (mis. jenis dilalah, jenis qadhiyah).
 
-Fokus bab: [NAMA BAB kalau ada]
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Tabel Asykal Qiyas untuk Dihafal",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Buatkan tabel hafalan 4 asykal qiyas:
+1. Kolom: syakl | posisi hadd awsath | syarat produktif | contoh ringkas.
+2. Tandai syakl yang paling sering dipakai & yang sering jadi soal.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Mantiq",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah:
+1. Urutkan dari fondasi (tashawwurat) ke lanjutan (tashdiqat/qiyas).
+2. Jadwal H+1, H+3, H+7, mingguan.
+3. Cara uji tiap sesi (definisikan istilah, susun qiyas, deteksi galat).
+4. Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Latihan Susun Qiyas Mantiqi",
+          title: "Drill Susun Qiyas yang Sahih",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 5 pernyataan yang harus aku ubah menjadi qiyas mantiqi yang valid:
+Beri aku 6 pasang muqaddimah (premis). Tugasku: susun jadi qiyas yang sahih + tentukan natijah & syakl-nya.
+1. Tulis premisnya.
+2. JANGAN beri jawaban dulu.
+3. Setelah aku jawab, koreksi: natijah benar, syakl, dan apakah produktif.
 
-Format tiap soal: pernyataan dalam Indonesia (2-3 kalimat). Aku susun jadi muqaddimah kubra + sughra + natijah dalam bahasa Arab atau Indonesia.
-
-JANGAN kasih jawaban dulu. Koreksi setelah aku menyusun.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Identifikasi Mughalathah (Sesat Pikir)",
+          title: "Drill Deteksi Mughalathah (Sesat Pikir)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 6 contoh argumen yang mengandung mughalathah (sesat pikir). Aku akan identifikasi jenis mughalathah-nya.
+Beri aku 6 argumen yang mengandung mughalathah (kesalahan logika). Tugasku: temukan letak kesalahannya.
+1. Tulis argumennya.
+2. JANGAN beri jawaban dulu.
+3. Setelah aku jawab, tunjukkan jenis mughalathah-nya + kenapa keliru.
 
-Jenis mughalathah yang mungkin: tasydid al-muqaddimah, mughalathah al-mushtarak, al-insidal (lingkaran setan), post hoc ergo propter hoc, dll.
+[METODE]
 
-Format tiap argumen: 1 paragraf singkat. JANGAN kasih jawaban dulu.
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Klasifikasi Kulliyat & Ta'rif",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 8 contoh (kata/definisi). Tugasku: tentukan jenis kulli-nya atau jenis ta'rif-nya.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab + jelaskan.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Soal Mantiq",
+          title: "Mock Imtihan Tahriri Mantiq (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 6 soal: definisi istilah, susun hadd (definisi), identifikasi jenis qadhiyyah, validasi qiyas, identifikasi mughalathah, bait As-Sullam.
+Buatkan soal ujian tulis Mantiq gaya Azhar untuk bab [SEBUTKAN]:
+1. Tipe khas: 'arrif + matsil, rakkib qiyasan, bayyin nau' al-kulli, istakhrij al-khata' al-mantiqi.
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Simulasi Imtihan Syafawi Mantiq",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
+
+Berperanlah sebagai mumtahin syafawi Mantiq:
+1. Minta aku definisikan istilah, susun qiyas lisan, atau bedakan dua konsep.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian Mantiq",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari bab yang kupelajari ([SEBUTKAN]): bab tersering jadi soal (biasanya kulliyat, ta'rif, qiyas), tipe soal yang mungkin keluar, cara jawab dapat nilai penuh, prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Mantiq",
+          title: "Rapikan Catatan Talaqqi Mantiq",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang [BAB MANTIQ] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi poin definisi + contoh, lengkapi harakat istilah, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun sistematis, tambahkan teks Arab berharakat untuk istilah dan definisi, contoh tambahan, pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Setelah talaqqi bab [SEBUTKAN], aku jelaskan ulang + beri contoh buatanku (di bawah). Periksa keakuratan, koreksi contoh yang keliru, ajukan 3 pertanyaan penguji.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Mantiq Aristotelian vs Logika Modern",
+          title: "Mantiq sebagai Alat Berpikir di Maddah Lain",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi relevansi [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bandingkan mantiq klasik (Aristotelian) yang dipelajari di Azhar dengan logika modern:
-1. Apa yang dipelajari di logika modern yang tidak ada di mantiq klasik
-2. Apa kelebihan mantiq klasik sebagai sistem
-3. Bagaimana mantiq klasik masih berguna dalam ilmu kalam dan ushul fiqh
-4. Pandangan ulama tentang mempelajari mantiq
+Tunjukkan bagaimana mantiq dipakai sebagai alat di ilmu lain:
+1. Peran ta'rif & qiyas dalam ushul fiqh & ilmu kalam.
+2. Contoh nyata penalaran mantiqi dalam istinbath hukum atau pembuktian akidah.
+3. Kenapa ulama menyebut mantiq "khadim al-'ulum" (pelayan ilmu).
+
+[METODE]
 
 [LEVEL_BAHASA]`,
+        },
+        {
+          title: "Polemik Hukum Belajar Mantiq",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan secara ilmiah & berimbang:
+1. Pandangan ulama tentang hukum mempelajari mantiq (yang membolehkan, melarang, merinci).
+2. Alasan tiap pandangan.
+3. Sikap Al-Azhar & posisi mu'tadil (pertengahan).
+PENTING: sajikan berimbang, sebut alasan tiap pihak tanpa memihak berlebihan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Bedah Matan Sullam al-Munawraq",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu aku memahami potongan matan mantiq yang kutempel (mis. dari Sullam al-Munawraq / Idhah al-Mubham):
+1. Beri harakat lengkap bila perlu.
+2. Jelaskan maksud tiap bait/kalimat dengan bahasa sederhana.
+3. Istilah mantiq yang muncul + artinya.
+PENTING: kalau ragu teks matannya, minta aku tempel; jangan mengarang bait.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Teks: [TEMPEL]`,
         },
       ],
     },
