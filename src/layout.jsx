@@ -486,11 +486,6 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
               Belum punya kode?<br/>
               Daftar sebagai member Talqeeh untuk mendapatkan akses.
             </div>
-            <div className="mt-4 text-center">
-              <button type="button" onClick={() => setCode("MSR-DEMO-1234")} className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
-                Coba dengan kode demo: MSR-DEMO-1234
-              </button>
-            </div>
           </form>
         )}
       </div>

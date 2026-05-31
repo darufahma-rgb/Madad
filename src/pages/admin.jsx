@@ -1108,6 +1108,20 @@ const AdminGuides = () => {
 };
 
 /* ============== SETTINGS ============== */
+const SettingsField = ({ label, value, onChange, mono = false, hint }) => (
+  <div>
+    <label className="text-xs text-ink-muted block mb-1">{label}</label>
+    <input
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink text-sm outline-none transition-colors ${mono ? "font-mono" : ""}`}
+      onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
+      onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+    />
+    {hint && <div className="text-[11px] text-ink-soft mt-1">{hint}</div>}
+  </div>
+);
+
 const AdminSettings = () => {
   const toast = useToast();
 
@@ -1132,20 +1146,6 @@ const AdminSettings = () => {
     setTimeout(() => setSaved(false), 3000);
   };
 
-  const Field = ({ label, value, onChange, mono = false, hint }) => (
-    <div>
-      <label className="text-xs text-ink-muted block mb-1">{label}</label>
-      <input
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink text-sm outline-none transition-colors ${mono ? "font-mono" : ""}`}
-        onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-        onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
-      />
-      {hint && <div className="text-[11px] text-ink-soft mt-1">{hint}</div>}
-    </div>
-  );
-
   return (
     <div className="max-w-2xl">
       <h1 className="font-display text-4xl font-semibold text-ink mb-1">Settings</h1>
@@ -1154,18 +1154,18 @@ const AdminSettings = () => {
       <div className="space-y-4">
         <div className="card-glass p-6 space-y-3">
           <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Brand</div>
-          <Field label="Nama platform" value={settings.platformName}
+          <SettingsField label="Nama platform" value={settings.platformName}
             onChange={v => setSettings({...settings, platformName: v})}/>
-          <Field label="Tagline" value={settings.tagline}
+          <SettingsField label="Tagline" value={settings.tagline}
             onChange={v => setSettings({...settings, tagline: v})}/>
         </div>
 
         <div className="card-glass p-6 space-y-3">
           <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Operasional</div>
-          <Field label="WhatsApp Admin" value={settings.whatsapp} mono
+          <SettingsField label="WhatsApp Admin" value={settings.whatsapp} mono
             onChange={v => setSettings({...settings, whatsapp: v})}
             hint="Nomor ini untuk distribusi kode member setelah bayar."/>
-          <Field label="URL Lynk.id" value={settings.lynkUrl} mono
+          <SettingsField label="URL Lynk.id" value={settings.lynkUrl} mono
             onChange={v => setSettings({...settings, lynkUrl: v})}
             hint="URL halaman pembayaran di Lynk.id."/>
         </div>
