@@ -520,16 +520,13 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
 
   return (
     <Modal open={open} onClose={onClose} size="md">
-      <div className="p-7 md:p-8">
-        <div className="flex items-center justify-between mb-1">
-          <span className="badge-purple">✨ Gabung Member</span>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5 flex items-center justify-center">
-            <Icon name="x" className="w-4 h-4"/>
-          </button>
-        </div>
+      <div className="p-6 md:p-8">
 
         {paid ? (
-          <div className="mt-6 text-center py-4">
+          <div className="text-center py-4">
+            <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5 flex items-center justify-center">
+              <Icon name="x" className="w-4 h-4"/>
+            </button>
             <div className="w-16 h-16 rounded-full text-emerald-200 flex items-center justify-center mx-auto mb-5" style={{background:"rgba(62,207,142,0.18)",border:"1px solid rgba(62,207,142,0.30)"}}>
               <Icon name="check" className="w-8 h-8" strokeWidth={2.4}/>
             </div>
@@ -554,52 +551,36 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
             </div>
           </div>
         ) : (
-          <div className="mt-4">
-            <h2 className="font-display text-2xl font-semibold text-ink mb-1">Akses Premium Talqeeh</h2>
-            <p className="text-sm text-ink-muted mb-6 leading-relaxed">
-              Onboarding 3 pertanyaan, lalu dashboard personal langsung jalan.
-            </p>
-
-            <div className="card-glass-strong p-5 mb-5 relative overflow-hidden">
-              <Blob color="rgba(62,207,142,0.28)" size={200} top={-60} right={-60}/>
-              <div className="relative">
-                <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-3">Yang kamu dapat</div>
-                <div className="space-y-2.5 mb-5">
-                  {[
-                    { i: "layers",   t: "52 Maddah (S1 + Ma'had) dengan 490+ prompt template AI" },
-                    { i: "sparkles", t: "Adaptive guide untuk 6 AI × 6 gaya belajar" },
-                    { i: "scale",    t: "Muqaranah qoul ulama (Library + buat sendiri)" },
-                    { i: "book",     t: "Kurasah pribadi dengan markdown & teks Arab" },
-                    { i: "heart",    t: "Companion harian: niat, ritme, refleksi" },
-                  ].map((f, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <span className="w-7 h-7 rounded-lg text-emerald-300 flex items-center justify-center flex-shrink-0 mt-0.5" style={{background:"rgba(62,207,142,0.16)"}}>
-                        <Icon name={f.i} className="w-3.5 h-3.5"/>
-                      </span>
-                      <span className="text-sm text-ink leading-relaxed">{f.t}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center justify-between pt-4 border-t border-line">
-                  <div>
-                    <div className="text-[11px] uppercase tracking-wider text-ink-muted">Pembayaran via</div>
-                    <div className="font-display text-lg font-semibold text-gold-300 mt-0.5">Lynk.id</div>
-                  </div>
-                  <span className="badge-purple">Sekali bayar</span>
-                </div>
-              </div>
+          <div className="relative">
+            {/* Header row */}
+            <div className="flex items-center justify-between mb-5">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-gold-300"
+                style={{background:"rgba(201,168,106,0.12)", border:"1px solid rgba(201,168,106,0.25)"}}>
+                <span className="w-1.5 h-1.5 rounded-full bg-gold-300 inline-block"/>
+                Member Talqeeh
+              </span>
+              <button onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5 flex items-center justify-center">
+                <Icon name="x" className="w-4 h-4"/>
+              </button>
             </div>
 
-            {/* Kupon promo */}
-            <div className="flex items-center gap-3 mb-4 p-3 rounded-xl"
-              style={{background:"rgba(201,168,106,0.08)", border:"1px dashed rgba(201,168,106,0.35)"}}>
+            {/* Price block */}
+            <div className="mb-5">
+              <div className="text-sm text-ink-muted line-through mb-0.5">Rp 75.000</div>
+              <div className="font-display font-bold text-ink leading-none mb-1.5" style={{fontSize:"clamp(2rem,8vw,2.75rem)"}}>Rp 49.000</div>
+              <div className="text-[11px] uppercase tracking-widest text-ink-muted">Sekali bayar · Berlaku selamanya</div>
+            </div>
+
+            {/* Coupon box */}
+            <div className="flex items-center gap-3 mb-5 p-3.5 rounded-xl"
+              style={{background:"rgba(201,168,106,0.07)", border:"1px dashed rgba(201,168,106,0.35)"}}>
               <div className="flex-1 min-w-0">
-                <div className="text-xs text-ink-soft mb-0.5">Gunakan kode kupon di Lynk:</div>
-                <div className="font-mono font-bold text-gold-300 text-lg tracking-widest">TALQEEH26</div>
+                <div className="text-xs text-ink-soft mb-1">Gunakan kode kupon di Lynk:</div>
+                <div className="font-mono font-bold text-gold-300 text-xl tracking-widest">TALQEEH26</div>
               </div>
-              <div className="flex flex-col items-end gap-1 flex-shrink-0">
+              <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                 <button onClick={handleCopyCode}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
                   style={copiedCode
                     ? {background:"rgba(62,207,142,0.15)", color:"#3ecf8e", border:"1px solid rgba(62,207,142,0.35)"}
                     : {background:"rgba(201,168,106,0.15)", color:"#c9a86a", border:"1px solid rgba(201,168,106,0.35)"}}>
@@ -607,12 +588,32 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
                   {copiedCode ? "Tersalin!" : "Salin"}
                 </button>
                 <div className="text-right">
-                  <div className="text-[11px] text-ink-soft line-through">Rp 75.000</div>
-                  <div className="font-display font-semibold text-gold-300 text-sm">Rp 49.000</div>
+                  <div className="text-[10px] uppercase tracking-wider text-ink-soft">Hemat</div>
+                  <div className="font-display font-semibold text-gold-300 text-sm">Rp 26.000</div>
                 </div>
               </div>
             </div>
 
+            {/* Feature list */}
+            <div className="space-y-2.5 mb-6">
+              {[
+                "52 Maddah lengkap (S1 + Ma'had) + 490+ template prompt",
+                "AI recommendation per gaya & tingkat belajarmu",
+                "Muqaranah qoul ulama 4 madzhab",
+                "Kurasah pribadi dengan markdown & teks Arab",
+                "Companion harian: niat, ritme, refleksi",
+                "Update fitur seumur hidup",
+              ].map((t, i) => (
+                <div key={i} className="flex items-start gap-3">
+                  <svg className="w-4 h-4 flex-shrink-0 mt-0.5" viewBox="0 0 16 16" fill="none">
+                    <path d="M3 8l3.5 3.5L13 4.5" stroke="#C9A86A" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <span className="text-sm text-ink-muted leading-relaxed">{t}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA */}
             {waitingConfirm ? (
               <div className="space-y-3">
                 <div className="card-glass p-4 text-center rounded-xl border border-gold-500/20">
@@ -629,15 +630,16 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
               </div>
             ) : (
               <>
-                <button onClick={handlePayClick} className="btn btn-gold w-full text-base py-3.5 mb-3">
-                  <Icon name="arrowRight" className="w-4 h-4"/> Bayar via Lynk.id
+                <button onClick={handlePayClick} className="btn btn-gold w-full text-base py-3.5 mb-2 font-semibold">
+                  Join Member Sekarang!
                 </button>
-                <p className="text-center text-xs text-ink-soft">
-                  Klik "Bayar" → selesaikan di Lynk.id → kembali dan konfirmasi.
+                <p className="text-center text-xs text-ink-soft mb-4">
+                  Setelah bayar, kode dikirim admin via WhatsApp.
                 </p>
               </>
             )}
-            <div className="mt-4 pt-4 border-t border-line text-center">
+
+            <div className="pt-4 border-t border-line text-center">
               <button onClick={() => { onClose(); onOpenLogin && onOpenLogin(); }} className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
                 Sudah punya kode akses? Login di sini
               </button>
