@@ -501,6 +501,12 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
 const PaymentModal = ({ open, onClose, onOpenLogin }) => {
   const [paid, setPaid] = useState(false);
   const [waitingConfirm, setWaitingConfirm] = useState(false);
+  const [copiedCode, setCopiedCode] = useState(false);
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText("TALQEEH26");
+    setCopiedCode(true);
+    setTimeout(() => setCopiedCode(false), 2500);
+  };
 
   useEffect(() => {
     if (!open) { setPaid(false); setWaitingConfirm(false); }
@@ -595,9 +601,19 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
                 <div className="text-xs text-ink-soft mb-0.5">Gunakan kode kupon di Lynk:</div>
                 <div className="font-mono font-bold text-gold-300 text-lg tracking-widest">TALQEEH26</div>
               </div>
-              <div className="text-right flex-shrink-0">
-                <div className="text-[11px] text-ink-soft line-through">Rp 75.000</div>
-                <div className="font-display font-semibold text-gold-300">Rp 49.000</div>
+              <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                <button onClick={handleCopyCode}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
+                  style={copiedCode
+                    ? {background:"rgba(62,207,142,0.15)", color:"#3ecf8e", border:"1px solid rgba(62,207,142,0.35)"}
+                    : {background:"rgba(201,168,106,0.15)", color:"#c9a86a", border:"1px solid rgba(201,168,106,0.35)"}}>
+                  <Icon name={copiedCode ? "check" : "copy"} className="w-3 h-3"/>
+                  {copiedCode ? "Tersalin!" : "Salin"}
+                </button>
+                <div className="text-right">
+                  <div className="text-[11px] text-ink-soft line-through">Rp 75.000</div>
+                  <div className="font-display font-semibold text-gold-300 text-sm">Rp 49.000</div>
+                </div>
               </div>
             </div>
 
