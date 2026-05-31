@@ -21,8 +21,10 @@ export default defineConfig({
   publicDir: 'public',
   server: {
     port: 5173,
+    host: '0.0.0.0',
+    allowedHosts: 'all',
     proxy: {
-      '/api': { target: 'http://localhost:3001', changeOrigin: true },
+      '/api': { target: 'http://localhost:5000', changeOrigin: true },
     },
   },
 });
