@@ -132,6 +132,7 @@ const OnboardingPage = () => {
     const base = {
       gender: null,
       faculty: null, level: null, major: null,
+      dlMustawa: null,
       struggle: [], learningStyle: [], s2Maddah: null,
       mahad_struggle: [],
     };
@@ -142,6 +143,7 @@ const OnboardingPage = () => {
         faculty: profile.faculty ?? null,
         level: profile.level ?? null,
         major: profile.major ?? null,
+        dlMustawa: profile.dlMustawa ?? null,
         struggle: profile.struggle ?? [],
         learningStyle: profile.learningStyle ?? [],
         s2Maddah: profile.s2Maddah ?? null,
@@ -208,7 +210,7 @@ const OnboardingPage = () => {
       ],
       multi: false,
       iconType: "arabic",
-      conditional: (d) => !isMahadLevel(d.level),
+      conditional: (d) => !isMahadLevel(d.level) && d.level !== "mustawa",
     },
     {
       key: "faculty",
@@ -222,7 +224,24 @@ const OnboardingPage = () => {
       },
       multi: false,
       iconType: "arabic",
-      conditional: (d) => !isMahadLevel(d.level),
+      conditional: (d) => !isMahadLevel(d.level) && d.level !== "mustawa",
+    },
+    {
+      key: "dlMustawa",
+      title: "Kamu di Mustawa berapa?",
+      hint: "Pilih tingkat Darul Lughah-mu saat ini",
+      options: [
+        { id: "mubtadi_1",     label: "Mubtadi' 1",     arabic: "مُبْتَدِئ ١" },
+        { id: "mubtadi_2",     label: "Mubtadi' 2",     arabic: "مُبْتَدِئ ٢" },
+        { id: "mutawassith_1", label: "Mutawassith 1",  arabic: "مُتَوَسِّط ١" },
+        { id: "mutawassith_2", label: "Mutawassith 2",  arabic: "مُتَوَسِّط ٢" },
+        { id: "mutaqaddim_1",  label: "Mutaqaddim 1",   arabic: "مُتَقَدِّم ١" },
+        { id: "mutaqaddim_2",  label: "Mutaqaddim 2",   arabic: "مُتَقَدِّم ٢" },
+        { id: "mutamayyiz",    label: "Mutamayyiz",     arabic: "مُتَمَيِّز" },
+      ],
+      multi: false,
+      iconType: "arabic",
+      conditional: (d) => d.level === "mustawa",
     },
     {
       key: "major",
@@ -232,11 +251,12 @@ const OnboardingPage = () => {
       multi: false,
       iconType: "arabic",
       conditional: (d) => {
+        if (d.level === "mustawa") return false;
         if (isMahadLevel(d.level)) return false;
         if (d.level === "s2_kuliyyat" || d.level === "s2_dirasat") return false;
         const fac = FACULTIES.find(f => f.id === d.faculty);
         if (!fac || !fac.majorsStartLevel || fac.majors.length === 0) return false;
-        const lvlNum = d.level === "mustawa" ? 0 : parseInt(d.level);
+        const lvlNum = parseInt(d.level);
         return !isNaN(lvlNum) && lvlNum >= fac.majorsStartLevel;
       },
     },
@@ -323,6 +343,7 @@ const OnboardingPage = () => {
         level: id,
         faculty: isMahadLevel(id) ? null : d.faculty,
         major: null,
+        dlMustawa: id === "mustawa" ? d.dlMustawa : null,
         mahad_year: null,
         mahad_jurusan: null,
         mahad_struggle: [],
