@@ -568,7 +568,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
             <div className="mb-5">
               <div className="flex items-baseline gap-3 mb-1">
                 <div className="font-display font-bold text-ink leading-none" style={{fontSize:"clamp(2rem,8vw,2.75rem)"}}>Rp 49.000</div>
-                <div className="font-display font-semibold line-through text-ink-muted" style={{fontSize:"clamp(1rem,4vw,1.35rem)"}}>Rp 75.000</div>
+                <div className="font-display font-semibold line-through" style={{fontSize:"clamp(1.1rem,4.5vw,1.5rem)", color:"#f87171"}}>Rp 75.000</div>
               </div>
               <div className="text-[11px] uppercase tracking-widest text-ink-muted">Sekali bayar · Berlaku selamanya</div>
             </div>
@@ -590,7 +590,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
                   {copiedCode ? "Tersalin!" : "Salin"}
                 </button>
                 <div className="text-right">
-                  <div className="text-[10px] uppercase tracking-wider text-ink-soft">Hemat</div>
+                  <div className="text-[10px] uppercase tracking-wider text-ink-soft">Diskon</div>
                   <div className="font-display font-semibold text-gold-300 text-sm">Rp 26.000</div>
                 </div>
               </div>
