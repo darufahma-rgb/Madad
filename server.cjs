@@ -68,7 +68,9 @@ const json = (res, status, body) => {
 };
 
 const callApiHandler = async (handlerPath, req, res, rawBody) => {
-  const handler = require(handlerPath);
+  const absPath = path.resolve(__dirname, handlerPath);
+  const mod = await import(`file://${absPath}`);
+  const handler = mod.default || mod;
   const wrappedReq = Object.assign(Object.create(req), {
     method: req.method, headers: req.headers, _rawBody: rawBody,
     on(event, cb) {
@@ -118,7 +120,7 @@ http.createServer(async (req, res) => {
   if (urlPath === '/api/admin-auth') {
     try {
       const rawBody = await readBody(req);
-      await callApiHandler('./api/admin-auth.cjs', req, res, rawBody);
+      await callApiHandler('./api/admin-auth.js', req, res, rawBody);
     } catch (err) {
       console.error('[admin-auth] Error:', err.message);
       json(res, 500, { ok: false, error: err.message });
@@ -130,7 +132,7 @@ http.createServer(async (req, res) => {
   if (urlPath === '/api/admin-members') {
     try {
       const rawBody = await readBody(req);
-      await callApiHandler('./api/admin-members.cjs', req, res, rawBody);
+      await callApiHandler('./api/admin-members.js', req, res, rawBody);
     } catch (err) {
       console.error('[admin-members] Error:', err.message);
       json(res, 500, { ok: false, error: err.message });
@@ -142,7 +144,7 @@ http.createServer(async (req, res) => {
   if (urlPath === '/api/send-wa') {
     try {
       const rawBody = await readBody(req);
-      await callApiHandler('./api/send-wa.cjs', req, res, rawBody);
+      await callApiHandler('./api/send-wa.js', req, res, rawBody);
     } catch (err) {
       console.error('[send-wa] Error:', err.message);
       json(res, 500, { ok: false, error: err.message });

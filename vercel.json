@@ -4,11 +4,11 @@
   "outputDirectory": "dist",
   "framework": null,
   "rewrites": [
-    { "source": "/api/config",         "destination": "/api/config.cjs" },
-    { "source": "/api/health",         "destination": "/api/health.cjs" },
-    { "source": "/api/admin-auth",     "destination": "/api/admin-auth.cjs" },
-    { "source": "/api/admin-members",  "destination": "/api/admin-members.cjs" },
-    { "source": "/api/send-wa",        "destination": "/api/send-wa.cjs" },
+    { "source": "/api/config",         "destination": "/api/config.js" },
+    { "source": "/api/health",         "destination": "/api/health.js" },
+    { "source": "/api/admin-auth",     "destination": "/api/admin-auth.js" },
+    { "source": "/api/admin-members",  "destination": "/api/admin-members.js" },
+    { "source": "/api/send-wa",        "destination": "/api/send-wa.js" },
     { "source": "/(.*)",               "destination": "/index.html" }
   ]
 }
