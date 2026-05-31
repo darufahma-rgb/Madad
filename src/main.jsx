@@ -48,6 +48,7 @@ import './pages/prompt-library.jsx';
 import './pages/siap-imtihan.jsx';
 import './pages/s2-maddah.jsx';
 import './pages/framework.jsx';
+import './pages/framework-detail.jsx';
 
 // App shell — terakhir
 import App from './app.jsx';

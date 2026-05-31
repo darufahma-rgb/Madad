@@ -98,6 +98,13 @@ const FrameworkPage = () => {
                           ))}
                         </ul>
                       </div>
+
+                      {/* Tombol ke halaman detail */}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); navigate("/framework/" + fw.id); }}
+                        className="btn btn-primary text-sm mt-4 w-full">
+                        Pelajari lengkap →
+                      </button>
                     </div>
                   )}
                 </div>

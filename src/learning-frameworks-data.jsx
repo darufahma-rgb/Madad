@@ -19,6 +19,36 @@ const LEARNING_FRAMEWORKS = [
       "Pakai aplikasi seperti Anki untuk hafalan mufradat & matan dengan interval otomatis.",
       "Hindari menumpuk semua hafalan di malam sebelum ujian — pecah ke beberapa hari.",
     ],
+    howItWorks: [
+      "Setiap kali kamu mengingat sesuatu, jejak memorinya menguat. Tapi jika diulang terlalu rapat (langsung berturut-turut), otak menganggapnya 'sudah tahu' dan tidak bekerja keras, sehingga ingatan cepat luntur.",
+      "Dengan memberi jeda antar pengulangan, kamu memaksa otak 'menggali ulang' informasi yang mulai memudar. Usaha menggali inilah yang memperkuat ingatan jangka panjang.",
+      "Interval ideal melebar seiring waktu: mula-mula rapat (H+1), lalu makin renggang (H+3, H+7, H+14) saat hafalan makin kokoh.",
+    ],
+    routine: [
+      "Setelah belajar materi baru hari ini, tandai untuk diulang besok (H+1).",
+      "Besoknya, muraja'ah cepat 5-10 menit tanpa membuka kitab dulu, coba ingat dari kepala.",
+      "Naikkan interval secara bertahap: ulang lagi di H+3, lalu H+7, lalu mingguan.",
+      "Materi yang masih sering lupa dikembalikan ke interval pendek; yang sudah kuat direnggangkan.",
+    ],
+    maddahExamples: [
+      { maddah: "Nahwu", example: "Hafal satu bait Alfiyyah hari ini, ulang besok tanpa lihat teks, lalu H+3 dan H+7." },
+      { maddah: "Fiqh", example: "Setelah paham satu mas'alah, jadwalkan ulang ringkasannya 3 hari lagi sebelum lanjut bab baru." },
+      { maddah: "Mufradat", example: "Masukkan kosakata baru ke Anki, biarkan algoritmanya yang atur interval otomatis." },
+    ],
+    schedule: [
+      { when: "Hari ke-0", what: "Belajar materi baru + ringkas poin inti" },
+      { when: "Hari ke-1", what: "Muraja'ah dari ingatan (5-10 menit)" },
+      { when: "Hari ke-3", what: "Uji diri tanpa kitab, perbaiki yang lupa" },
+      { when: "Hari ke-7", what: "Muraja'ah menyeluruh bab tersebut" },
+      { when: "Mingguan", what: "Putaran muraja'ah semua bab menjelang imtihan" },
+    ],
+    checklist: [
+      "Saya sudah membuat jadwal muraja'ah H+1, H+3, H+7",
+      "Saya muraja'ah dari ingatan dulu sebelum buka kitab",
+      "Saya pakai Anki/aplikasi untuk mufradat & matan",
+      "Saya tidak menumpuk hafalan di malam sebelum ujian",
+    ],
+    aiPrompt: "Bantu saya membuat jadwal spaced repetition (muraja'ah berjadwal) untuk materi [SEBUTKAN MADDAH/BAB]. Buatkan jadwal pengulangan dengan interval H+1, H+3, H+7, dan mingguan. Untuk setiap sesi, sebutkan apa yang harus saya uji dari ingatan dan bagian mana yang biasanya paling mudah terlupa. Sajikan dalam bentuk tabel.",
   },
   {
     id: "retrieval-practice",
@@ -36,6 +66,35 @@ const LEARNING_FRAMEWORKS = [
       "Buat soal sendiri dari matan, lalu jawab tanpa melihat — cocok untuk persiapan syafawi.",
       "Gunakan fitur Siap Imtihan (Drill Soal Azhari) sebagai retrieval practice rutin.",
     ],
+    howItWorks: [
+      "Membaca ulang terasa produktif karena materi jadi terasa familiar, tapi familiar bukan berarti paham. Inilah 'illusion of competence' yang ditemukan Roediger & Karpicke.",
+      "Saat kamu menutup kitab dan memaksa diri mengingat, otak melakukan kerja keras menarik informasi. Proses penarikan inilah yang justru menanamkan ingatan lebih dalam.",
+      "Setiap kali berhasil (atau gagal lalu mengoreksi) mengingat, jalur memori ke informasi itu menguat.",
+    ],
+    routine: [
+      "Setelah membaca satu bab, tutup kitab sepenuhnya.",
+      "Tulis ulang poin-poin utama dari ingatan di kertas kosong.",
+      "Buka kitab, bandingkan, tandai yang terlewat atau salah.",
+      "Ulangi penarikan khusus untuk bagian yang terlewat itu.",
+    ],
+    maddahExamples: [
+      { maddah: "Nahwu", example: "Setelah baca bab i'rab, tutup kitab dan i'rab-kan 3 kalimat dari ingatan, baru cek." },
+      { maddah: "Hadits", example: "Tutup matan, coba sebutkan sanad & matan dari hafalan, lalu koreksi." },
+      { maddah: "Ushul Fiqh", example: "Buat 5 soal sendiri dari bab, jawab tanpa lihat, baru periksa." },
+    ],
+    schedule: [
+      { when: "Saat belajar", what: "Baca aktif, tandai poin penting" },
+      { when: "Selesai 1 bab", what: "Tutup kitab lalu tulis ulang dari ingatan" },
+      { when: "Hari ke-1", what: "Buat soal sendiri, jawab tanpa melihat" },
+      { when: "Sebelum syafawi", what: "Drill tanya-jawab lisan dengan teman" },
+    ],
+    checklist: [
+      "Saya menutup kitab dan mengingat dulu sebelum mengecek",
+      "Saya membuat soal sendiri dari materi",
+      "Saya menggunakan fitur Siap Imtihan untuk drill",
+      "Saya melatih jawab lisan untuk persiapan syafawi",
+    ],
+    aiPrompt: "Buatkan saya 10 soal retrieval practice (uji diri) dari materi [SEBUTKAN MADDAH/BAB]. Variasikan jenis soal: definisi, penerapan kaidah, dan analisis. JANGAN sertakan jawaban dulu, saya mau menjawab dari ingatan. Setelah saya jawab, baru beri koreksi dan penjelasan. Sertakan kutipan Arab istilah pentingnya.",
   },
   {
     id: "interleaving",
@@ -54,6 +113,34 @@ const LEARNING_FRAMEWORKS = [
       "Campur jenis i'rab yang berbeda saat latihan, jangan satu pola terus.",
       "Saat muraja'ah, acak urutan bab agar otak melatih diskriminasi konsep.",
     ],
+    howItWorks: [
+      "Belajar satu jenis soal terus-menerus (blocked) membuatmu hafal pola, tapi lemah membedakan kapan suatu kaidah dipakai. Begitu jenis soal dicampur di ujian, kamu bingung.",
+      "Mencampur beberapa jenis (interleaving) melatih otak membedakan 'masalah ini butuh kaidah yang mana', keterampilan yang justru diuji di imtihan.",
+      "Rohrer & Taylor menemukan interleaving terasa lebih sulit saat latihan, tapi menggandakan skor tes di kemudian hari.",
+    ],
+    routine: [
+      "Pilih 2-3 maddah/topik untuk satu sesi belajar.",
+      "Belajar topik A selama 25-30 menit, lalu pindah ke B, lalu C.",
+      "Saat latihan soal, acak urutan jenis soal (jangan berurutan satu jenis).",
+      "Terima bahwa ini terasa lebih berat, itu justru tandanya otak bekerja.",
+    ],
+    maddahExamples: [
+      { maddah: "Nahwu + Sharaf", example: "Selang-seling soal i'rab dengan soal tashrif dalam satu sesi." },
+      { maddah: "Fiqh", example: "Campur soal bab thaharah, shalat, dan zakat, jangan satu bab habis dulu." },
+      { maddah: "Lintas maddah", example: "Sesi 90 menit: 30' Nahwu, 30' Fiqh, 30' kembali variasi keduanya." },
+    ],
+    schedule: [
+      { when: "Sesi belajar", what: "Bagi jadi blok 25-30 menit per topik berbeda" },
+      { when: "Latihan soal", what: "Acak jenis soal, hindari berurutan satu pola" },
+      { when: "Mingguan", what: "Rotasi beberapa maddah, bukan satu maddah per hari" },
+    ],
+    checklist: [
+      "Saya mencampur 2-3 topik dalam satu sesi belajar",
+      "Saya mengacak urutan jenis soal saat latihan",
+      "Saya tidak menghabiskan satu bab penuh baru pindah",
+      "Saya menerima bahwa interleaving terasa lebih sulit (itu normal)",
+    ],
+    aiPrompt: "Buatkan saya satu set latihan soal interleaved (selang-seling) yang mencampur beberapa jenis/bab dari [SEBUTKAN MADDAH]. Susun agar dua soal berurutan TIDAK menggunakan kaidah yang sama, supaya saya berlatih membedakan kapan tiap kaidah dipakai. Beri 12 soal campuran. Setelah saya jawab, jelaskan kenapa tiap soal butuh kaidah tertentu.",
   },
   {
     id: "elaborative-interrogation",
@@ -71,6 +158,34 @@ const LEARNING_FRAMEWORKS = [
       "Hubungkan masalah Fiqh baru dengan qa'idah fiqhiyyah yang sudah dikuasai.",
       "Saat baca syarah, tanyakan kenapa pensyarah memilih penjelasan itu.",
     ],
+    howItWorks: [
+      "Banyak pelajar menghafal 'apa'-nya tanpa tahu 'kenapa'-nya. Hafalan tanpa pemahaman sebab mudah hilang dan sulit diterapkan.",
+      "Dengan terus bertanya 'mengapa kaidah ini begini?' lalu mencari jawabannya, kamu mengaitkan informasi baru dengan pengetahuan lama, membentuk jaringan ingatan yang kuat.",
+      "Pertanyaan 'mengapa' dan 'bagaimana bisa' memaksa pemrosesan mendalam, bukan sekadar pengulangan permukaan.",
+    ],
+    routine: [
+      "Setiap ketemu kaidah/hukum baru, tuliskan pertanyaan 'kenapa begini?'",
+      "Cari jawaban 'illat (sebab/alasan) dari syarah atau guru.",
+      "Hubungkan dengan kaidah lain yang sudah kamu kuasai.",
+      "Jika belum ketemu jawabannya, catat sebagai pertanyaan untuk talaqqi.",
+    ],
+    maddahExamples: [
+      { maddah: "Nahwu", example: "Kenapa fa'il marfu'? Cari 'illat-nya, jangan cuma hafal hukumnya." },
+      { maddah: "Ushul Fiqh", example: "Kenapa mafhum mukhalafah dipakai di sini tapi tidak di situ? Telusuri alasannya." },
+      { maddah: "Fiqh", example: "Kenapa madzhab ini berbeda? Lacak ke dalil & cara istinbath masing-masing." },
+    ],
+    schedule: [
+      { when: "Saat membaca", what: "Tulis pertanyaan 'mengapa' di margin kitab" },
+      { when: "Setelah bab", what: "Jawab pertanyaan itu dari syarah/sumber" },
+      { when: "Saat talaqqi", what: "Tanyakan 'illat yang belum terjawab ke guru" },
+    ],
+    checklist: [
+      "Saya menanyakan 'mengapa' untuk tiap kaidah, bukan hanya menghafal",
+      "Saya mencari 'illat/sebab dari syarah atau guru",
+      "Saya menghubungkan kaidah baru dengan yang lama",
+      "Saya mencatat pertanyaan untuk ditanyakan saat talaqqi",
+    ],
+    aiPrompt: "Saya sedang belajar [SEBUTKAN KAIDAH/HUKUM] dari maddah [SEBUTKAN MADDAH]. Bantu saya memahaminya secara mendalam dengan metode elaborative interrogation: ajukan pertanyaan 'mengapa' dan 'bagaimana' yang menggali sebab/illat dari kaidah ini, lalu jawab tiap pertanyaan dengan menyertakan kutipan Arab dan rujukan kitab bila kamu tahu. Hubungkan dengan kaidah lain yang relevan.",
   },
   {
     id: "feynman-technique",
@@ -88,6 +203,34 @@ const LEARNING_FRAMEWORKS = [
       "Bagian yang kamu 'tersendat' menjelaskannya = bagian yang perlu dipelajari ulang.",
       "Gunakan AI sebagai 'murid': minta ia bertanya balik untuk menguji penjelasanmu.",
     ],
+    howItWorks: [
+      "Saat menjelaskan dengan bahasa sendiri yang sederhana, kamu langsung sadar bagian mana yang sebenarnya belum dipahami, karena di situlah penjelasanmu tersendat.",
+      "Menyederhanakan tanpa kehilangan makna butuh pemahaman utuh. Kalau masih harus pakai istilah rumit yang tidak kamu mengerti, berarti pemahamanmu masih di permukaan.",
+      "Chi dkk. menemukan siswa yang menjelaskan materi pada diri sendiri memahami jauh lebih dalam daripada yang hanya membaca.",
+    ],
+    routine: [
+      "Pilih satu konsep yang baru dipelajari.",
+      "Jelaskan dengan bahasa paling sederhana, seolah ke anak kecil atau orang awam.",
+      "Tandai bagian yang kamu tersendat, itu celah pemahaman.",
+      "Kembali ke kitab untuk bagian itu, lalu ulangi penjelasan sampai lancar.",
+    ],
+    maddahExamples: [
+      { maddah: "Nahwu", example: "Jelaskan konsep 'mubtada-khabar' ke teman pakai analogi sehari-hari." },
+      { maddah: "Tauhid", example: "Terangkan satu masalah aqidah dengan bahasamu sendiri, tanpa baca teks." },
+      { maddah: "Balaghah", example: "Jelaskan beda tasybih dan isti'arah pakai contoh buatanmu sendiri." },
+    ],
+    schedule: [
+      { when: "Setelah belajar", what: "Jelaskan konsep ke teman/diri sendiri" },
+      { when: "Saat tersendat", what: "Catat celah, kembali ke kitab" },
+      { when: "Ulangi", what: "Jelaskan lagi sampai lancar tanpa istilah rumit" },
+    ],
+    checklist: [
+      "Saya menjelaskan konsep dengan bahasa saya sendiri",
+      "Saya mengidentifikasi bagian yang saya tersendat menjelaskannya",
+      "Saya kembali ke kitab untuk menutup celah itu",
+      "Saya menggunakan AI sebagai 'murid' yang bertanya balik",
+    ],
+    aiPrompt: "Saya akan menjelaskan konsep [SEBUTKAN KONSEP] dari maddah [SEBUTKAN MADDAH] dengan bahasa saya sendiri. Berperanlah sebagai murid yang penasaran: dengarkan penjelasan saya, lalu ajukan pertanyaan kritis untuk menguji apakah pemahaman saya benar dan lengkap. Jika ada yang keliru atau kurang, tunjukkan dengan halus dan sertakan kutipan Arab serta rujukan yang benar. Penjelasan saya: [TULIS DI SINI]",
   },
   {
     id: "dual-coding",
@@ -106,6 +249,34 @@ const LEARNING_FRAMEWORKS = [
       "Gambar pohon i'rab atau skema pembagian hukum untuk Fiqh.",
       "Pasangkan tiap kaidah dengan satu simbol/diagram sederhana saat membuat Kurasah.",
     ],
+    howItWorks: [
+      "Otak punya dua jalur memproses informasi: verbal (kata) dan visual (gambar). Mengandalkan satu jalur saja menyisakan kapasitas yang tidak terpakai.",
+      "Memasangkan teks dengan diagram, peta konsep, atau skema memberi dua jalur pengambilan ingatan: kalau lupa lewat kata, bisa ingat lewat gambar.",
+      "Berakar pada Dual Coding Theory (Paivio) dan riset multimedia learning Mayer yang menunjukkan kombinasi kata + visual relevan meningkatkan pemahaman.",
+    ],
+    routine: [
+      "Saat belajar materi bercabang, buat peta konsep (kharitah dzihniyyah).",
+      "Pasangkan tiap kaidah dengan satu simbol atau diagram sederhana.",
+      "Gambar pohon/skema untuk pembagian hukum atau i'rab.",
+      "Saat muraja'ah, coba ingat lewat gambar dulu, baru lewat kata.",
+    ],
+    maddahExamples: [
+      { maddah: "Ushul Fiqh", example: "Buat peta cabang untuk pembagian dalil (Qur'an, Sunnah, Ijma', Qiyas)." },
+      { maddah: "Nahwu", example: "Gambar pohon i'rab: marfu'at, manshubat, majrurat dengan cabangnya." },
+      { maddah: "Faraidh", example: "Buat diagram pembagian waris agar porsi tiap ahli waris terlihat visual." },
+    ],
+    schedule: [
+      { when: "Saat belajar", what: "Buat peta konsep/diagram untuk materi bercabang" },
+      { when: "Di Kurasah", what: "Pasangkan tiap kaidah dengan simbol visual" },
+      { when: "Saat muraja'ah", what: "Recall lewat gambar dulu, baru teks" },
+    ],
+    checklist: [
+      "Saya membuat peta konsep untuk materi yang bercabang",
+      "Saya memasangkan kaidah dengan diagram/simbol",
+      "Saya menggambar skema pembagian hukum/i'rab",
+      "Saya menyimpan visual ini di Kurasah untuk muraja'ah",
+    ],
+    aiPrompt: "Bantu saya menerapkan dual coding untuk materi [SEBUTKAN MADDAH/BAB]. Buatkan kerangka peta konsep (dalam bentuk outline teks berstruktur bercabang) yang bisa saya gambar ulang, lalu sarankan simbol atau diagram sederhana untuk tiap konsep utama. Sertakan istilah Arab aslinya di tiap cabang.",
   },
 ];
 
