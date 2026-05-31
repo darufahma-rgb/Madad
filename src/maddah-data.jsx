@@ -61,277 +61,261 @@ const MADDAHS = [
     prompts: {
       pahami: [
         {
-          title: "Tafsir Ayat Lengkap (Step by Step)",
+          title: "Pahami Metode Tafsir Tahlili",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku sedang muthala'ah [MADDAH], dan ingin memahami ayat berikut secara komprehensif:
+Jelaskan apa itu tafsir tahlili (analitis) & cara kerjanya:
+1. Definisi tafsir tahlili + bedanya dengan tafsir maudhu'i, ijmali, muqaran.
+2. Langkah-langkah menafsir tahlili: makna mufradat → munasabah → asbab nuzul → i'rab → balaghah → istinbath hukum/faedah.
+3. Kitab tafsir tahlili rujukan (mis. Jalalain, Baidhawi, Ibn Katsir) + karakter masing-masing.
+4. Outline langkah agar bisa kuikuti tiap menafsir ayat.
 
-[TULIS AYAT DENGAN HARAKAT - sertakan surah dan nomor ayat]
-
-Tolong bahas bertahap:
-1. Asbabun Nuzul (kalau ada riwayat shahih) — sertakan teks Arab riwayat
-2. Mufradat — penjelasan kata kunci, sertakan akar kata Arab
-3. I'rab kalimat — i'rab kata-kata yang punya peran kunci
-4. Tafsir Tahlili — pendapat 2-3 mufassir (mis. Ibnu Katsir, Az-Zamakhsyari, Az-Zuhaili). Sertakan kutipan ringkas dengan teks Arab.
-5. Munasabah — hubungan ayat ini dengan ayat sebelum/sesudahnya
-6. Pelajaran utama — istinbat dalam 1-2 kalimat
-
-[LEVEL_BAHASA]
-
-Saat menyebut ayat/hadits, sertakan teks Arab dengan harakat. Saat sebut kitab, pakai nama Arab. Saat sebut ulama, pakai nama Arab transliterasi natural.`,
-        },
-        {
-          title: "Bedah Mufradat Ayat",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Sedang mempelajari [MADDAH].
-
-Aku ingin bedah mufradat dari ayat berikut:
-
-[TULIS AYAT DENGAN HARAKAT]
-
-Untuk setiap kata kunci (3-5 kata yang paling penting):
-1. Akar kata Arab (3 huruf)
-2. Bentuk asli (madhi, mudhari', isim, dll)
-3. Makna literal vs makna kontekstual
-4. Kata-kata sinonim/antonim dari akar yang sama atau beda
-5. Bagaimana mufassir tertentu memaknainya berbeda (kalau ada)
-
-[LEVEL_BAHASA]
-
-Sertakan teks Arab dengan harakat untuk semua kata kunci.`,
-        },
-        {
-          title: "Pahami Munasabah Ayat",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Aku ingin memahami munasabah (hubungan logis) antar ayat di:
-
-[SEBUTKAN SURAH, AYAT-AYAT YANG MAU DIBAHAS - mis. QS Al-Baqarah ayat 1-5]
-
-Jelaskan:
-1. Tema utama yang menghubungkan ayat-ayat ini
-2. Munasabah antar ayat — kenapa ayat A diikuti ayat B, bukan urutan lain
-3. Munasabah ayat pertama dengan ayat terakhir surah sebelumnya (kalau ini awal surah)
-4. Hikmah pengurutan ini menurut ulama munasabah seperti Al-Biqa'i (Nazhmu Ad-Durar)
-
-[LEVEL_BAHASA]
-
-Sertakan teks Arab ayat-ayat yang dibahas. Sebut nama ulama dan kitab dalam Arab.`,
-        },
-        {
-          title: "Hubungkan Ayat dengan Hadits",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS], belajar [MADDAH]. [GAYA_BELAJAR].
-
-Untuk ayat berikut:
-
-[TULIS AYAT DENGAN HARAKAT - surah dan no ayat]
-
-Carikan 2-3 hadits shahih yang menjelaskan, mendetailkan, atau menjadi bayan untuk ayat ini.
-
-Untuk setiap hadits:
-1. Teks hadits dalam Arab dengan harakat
-2. Terjemah Indonesia
-3. Periwayat (Bukhari/Muslim/Tirmidzi/dll) dengan no riwayat kalau ingat
-4. Bagaimana hadits ini menjelaskan ayat di atas
-
-[LEVEL_BAHASA]
-
-Pastikan haditsnya shahih — kalau ragu derajat haditsnya, sebutkan secara jujur.`,
-        },
-      ],
-      hafal: [
-        {
-          title: "Drill Hafalan Ayat dengan Konteks",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Sedang menghafal [SURAH/JUZ] dengan target [TARGET HARI/MINGGU].
-
-Bantu aku drill hafalan dengan sesi tasmi':
-1. Sebut potongan ayat secara acak (1-2 ayat), tulis dalam Arab dengan harakat
-2. Aku akan lanjutkan ayat selanjutnya
-3. Kalau aku ragu, beri 3 kata pertama ayat selanjutnya sebagai isyarah
-4. Setelah 10 putaran, beri daftar mawadi' yang perlu murajaah
-5. Tunjukkan tempat-tempat yang biasanya keliru (mutasyabihat lafzhi)
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mnemonic untuk Ayat Sulit",
+          title: "Tafsir Tahlili Satu Ayat (Demonstrasi Lengkap)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS], sedang menghafal [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku kesulitan hafal bagian berikut:
+Tafsirkan ayat [SEBUTKAN SURAT & NOMOR] secara tahlili lengkap:
+1. Tulis ayatnya (teks Arab berharakat) — kalau kamu ragu redaksinya, minta aku tempel; jangan mengarang.
+2. Makna mufradat (kata kunci) + arti.
+3. Munasabah dengan ayat sebelum/sesudah.
+4. Asbab nuzul bila ada (sebut riwayat; jika ragu, katakan).
+5. Penjelasan makna global (ijmali) lalu rinci (tafshili).
+6. Faedah/istinbath (hukum, akhlak, akidah).
 
-[PASTE AYAT/POTONGAN YANG SULIT]
+[METODE]
 
-Bantu aku:
-1. Analisis kenapa bagian ini sulit (mutasyabihat? lafal mirip? urutan kata?)
-2. Buatkan mnemonic Indonesia yang mudah diingat
-3. Buatkan trik visual atau "story" pendek untuk lock-in
-4. Sebutkan kalau ada ayat lain yang mirip yang biasa bikin tertukar — dan cara membedakannya
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Munasabah & Keterkaitan Ayat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan ilmu munasabah:
+1. Definisi munasabah + jenisnya (antar ayat, antar surat, antar bagian ayat).
+2. Faedah munasabah untuk memahami maksud ayat secara utuh.
+3. Contoh munasabah pada ayat [SEBUTKAN].
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Sumber Tafsir (bil Ma'tsur & bir Ra'yi)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan sumber penafsiran:
+1. Tafsir bil ma'tsur (Qur'an dgn Qur'an, dgn Sunnah, dgn qaul sahabat/tabi'in) — keutamaan & contoh.
+2. Tafsir bir ra'yi (ijtihad) — syarat diterima & yang tercela.
+3. Sikap terhadap israiliyyat.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Langkah-Langkah Tafsir Tahlili",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal urutan langkah tafsir tahlili sebagai checklist:
+1. Susun langkah berurutan (mufradat → munasabah → asbab → i'rab → balaghah → istinbath).
+2. Mnemonic untuk mengingat urutannya.
+3. Kata kunci tiap langkah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Hafal Mufradat & Istilah Tafsir",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari ayat/surat [SEBUTKAN], buatkan daftar mufradat (gharib Qur'an) untuk dihafal:
+1. Kata Arab berharakat + makna dalam konteks ayat.
+2. Tandai kata yang maknanya beda dari makna umum.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Tafsir",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Surat/ayat yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji (sebut makna, faedah, istinbath). Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Latihan Tafsir Mufradat Acak",
+          title: "Latihan Tafsir Mandiri (Aku Coba, AI Koreksi)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 10 kata Arab dari Al-Qur'an untuk aku tafsirin maknanya. Format tiap kata:
-- Tulis dengan harakat
-- Sebutkan surah dan ayat asalnya
-- Konteks ayat (1 baris)
+Aku akan mencoba menafsir ayat [SEBUTKAN] secara tahlili dengan kemampuanku (kutulis di bawah).
+1. Koreksi tafsirku: mana yang tepat, mana yang keliru/kurang.
+2. Tunjukkan langkah tahlili yang terlewat.
+3. Lengkapi dengan rujukan mu'tabar (jika ragu, katakan).
 
-Aku akan jawab maknanya. Setelah aku jawab semua, koreksi per nomor dengan:
-- Makna yang tepat
-- Penjelasan kenapa makna lain kurang tepat (kalau ada)
-- 1 referensi tafsir untuk konfirmasi
+[METODE]
+
+[LEVEL_BAHASA]
+
+Tafsirku: [TEMPEL]`,
+        },
+        {
+          title: "Drill Soal Istinbath dari Ayat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri aku 6 ayat (sebut surat & nomor). Tugasku: sebutkan faedah/istinbath tiap ayat.
+1. JANGAN beri jawaban dulu.
+2. Setelah aku jawab, koreksi + tambahkan faedah yang terlewat.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Bedah Paragraf Tafsir Klasik",
+          title: "Latihan Analisis Mufradat & I'rab Ayat",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ini paragraf dari kitab tafsir klasik:
+Untuk ayat [SEBUTKAN], tugasku menganalisis mufradat & i'rab kata kuncinya.
+1. JANGAN beri jawaban dulu.
+2. Setelah aku jawab, koreksi makna & i'rab-ku.
 
-[PASTE TEKS ARAB DARI KITAB - sebutkan kitab apa]
-
-Tolong analisis:
-1. Tarjamah harfiyah
-2. Tarjamah ma'nawiyyah (Indonesia akademik mengalir)
-3. Penjelasan istilah teknis (tulis Arab + transliterasi + definisi)
-4. Maksud inti mufassir dalam 1 kalimat
-5. Bandingkan dengan pendapat mufassir lain kalau relevan
-
-[LEVEL_BAHASA]
-
-Kalau ada bagian ambigu, sebut secara jujur.`,
-        },
-        {
-          title: "Identifikasi Manhaj Tafsir",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
-
-Beri 5 kutipan tafsir dari berbagai mufassir. Aku akan identifikasi manhaj-nya dan mufassirnya.
-
-Format tiap kutipan:
-1. Tulis dalam Arab dengan harakat
-2. Beri 1 baris konteks ayat yang ditafsirkan
-
-Setelah aku jawab semua, koreksi dengan kunci jawaban + reasoning.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Tahriri Tafsir Tahlili",
+          title: "Mock Imtihan Tahriri Tafsir (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, mau drill persiapan ujian Tahriri untuk maddah [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 5 soal gaya khas imtihan Azhari:
-- "Fassir al-ayat al-taliyah tafsiran tahliliyyan"
-- "Bayyin asbab nuzul ayat..."
-- "Adhkur ra'yu mufassirayni fi..."
-- "Wadhdhih al-munasabah bayna..."
-- "A'rib al-kalimat al-multawayyah ma'na"
+Buatkan soal ujian tulis Tafsir Tahlili gaya Azhar untuk surat/bagian [SEBUTKAN]:
+1. Tipe khas: fassir qaulahu ta'ala..., istanbith al-fawa'id, ma ma'na..., udzkur al-munasabah.
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis soal dalam bahasa Arab. Beri 1 baris terjemah Indonesia di bawah tiap soal.
+[METODE]
 
-[LEVEL_BAHASA]
-
-Tunggu jawabanku setelah semua soal ditampilkan, lalu koreksi dengan model answer ideal.`,
+[LEVEL_BAHASA]`,
         },
         {
-          title: "Mock Syafawi Tafsir",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, mau latihan ujian Syafawi (lisan) untuk [MADDAH]. [GAYA_BELAJAR].
+          title: "Simulasi Imtihan Syafawi Tafsir",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
 
-Bertindaklah sebagai dosen Azhar yang menguji aku. Tanyakan 5 pertanyaan bertahap:
-1. Definisi konsep dasar tafsir tahlili
-2. Sebutkan langkah-langkah tafsir tahlili
-3. Beri contoh aplikasi tafsir tahlili pada satu ayat (kasih aku ayat)
-4. Bandingkan tafsir tahlili dengan tafsir maudhu'i
-5. Sebut 3 mufassir tahlili masyhur dan kitabnya
+Berperanlah sebagai mumtahin syafawi:
+1. Minta aku tafsirkan ayat, sebut makna mufradat, faedah secara lisan.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
 
-Tunggu jawabanku setiap pertanyaan. Tantang follow-up kalau kurang lengkap.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian Tafsir",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari surat/bagian yang kupelajari ([SEBUTKAN]): ayat yang sering jadi soal tafsir & istinbath, cara menulis jawaban tafsir yang lengkap (makna + munasabah + faedah), prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Tafsir",
+          title: "Rapikan Catatan Talaqqi Tafsir",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar. Baru saja talaqqi dengan syaikh tentang tafsir [SURAH/AYAT] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Materi yang dibahas syaikh:
+Catatan talaqqi tafsir-ku berantakan (di bawah). Rapikan jadi: ayat → makna → faedah, lengkapi harakat, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN ATAU POIN-POIN KAJIAN]
+[METODE]
 
-Tolong:
-1. Susun ulang catatanku jadi struktur sistematis
-2. Tambahkan kutipan Arab original (dengan harakat) untuk ayat/hadits/kaidah yang disebut syaikh
-3. Beri 2-3 contoh aplikasi tambahan untuk konsep yang dibahas
-4. Sebutkan pertanyaan yang sebaiknya aku tanyakan ke syaikh di sesi berikutnya
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
         },
         {
-          title: "Pahami Catatan Talaqqi yang Ambigu",
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Punya catatan dari talaqqi [MADDAH] yang sebagiannya aku gak ingat konteksnya:
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-[PASTE CATATAN YANG MEMBINGUNGKAN]
+Setelah talaqqi tafsir ayat [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan, koreksi, ajukan 3 pertanyaan penguji.
 
-Tolong:
-1. Bantu interpretasi maksud catatan berdasarkan konteks tafsir
-2. Lengkapi penjelasan yang kurang
-3. Beri kemungkinan tafsir kalau catatan ambigu
-4. Sebut konsep tafsir apa yang sedang dibahas
+[METODE]
 
-[LEVEL_BAHASA]`,
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Khilaf Mufassirin Tentang Ayat",
+          title: "Bandingkan Penafsiran antar Mufassir",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku tertarik eksplorasi khilaf mufassirin tentang ayat berikut:
+Untuk ayat [SEBUTKAN], bandingkan penafsiran beberapa mufassir (mis. Jalalain, Ibn Katsir, Razi, Qurthubi):
+1. Poin penekanan masing-masing.
+2. Perbedaan penafsiran bila ada + sebabnya.
+PENTING: kalau tidak yakin isi tafsir tertentu, katakan; jangan mengarang nukilan.
 
-[TULIS AYAT DENGAN HARAKAT]
-
-Tolong jelaskan:
-1. Pendapat mufassir klasik utama (mis. Thabari, Ibnu Katsir, Az-Zamakhsyari)
-2. Pendapat mufassir kontemporer (mis. Quthb, Az-Zuhaili, Sya'rawi)
-3. Dalil masing-masing — sertakan teks Arab kalau dari ayat/hadits
-4. Apakah khilafnya lafzhi (semu) atau ma'nawi (substansial)
-
-Jangan men-tarjih. Biarkan aku yang merenungkan.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Aplikasi Ayat dalam Kehidupan Masisir",
+          title: "Gali Faedah Tarbawi & Dakwah dari Ayat",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar. [GAYA_BELAJAR]. Sebagai Masisir, aku ingin renungkan ayat:
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-[TULIS AYAT DENGAN HARAKAT]
+Dari ayat [SEBUTKAN], gali sisi yang bisa kupakai untuk tarbiyah/dakwah:
+1. Pelajaran akhlak/tarbawi.
+2. Hikmah praktis untuk kehidupan.
+3. Cara menyampaikannya agar mengena.
 
-Bantu aku refleksi:
-1. Apa makna inti ayat ini (1 paragraf)
-2. 3 aplikasi konkret dalam kehidupan thalib di Mesir
-3. Pertanyaan refleksi untuk muraqabah diri
+[METODE]
 
-Bahasa Indonesia. Empati, bukan ceramah.
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Ayat Ahkam: Istinbath Hukum dari Ayat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk ayat ahkam [SEBUTKAN]:
+1. Hukum yang diistinbath dari ayat.
+2. Cara ulama mengambil hukum (dilalah ayat).
+3. Khilaf penafsiran hukum bila ada + sebabnya.
+PENTING: sebut sumber; jangan mengarang.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
@@ -2285,242 +2269,266 @@ Cari 3 ayat yang perbedaan qira'at antar imam berpengaruh pada makna/tafsir. Unt
     prompts: {
       pahami: [
         {
-          title: "Analisis Sanad Hadits",
+          title: "Pahami Metode Syarah Hadits (Tahlili)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Sedang muthala'ah [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ini sanad hadits:
+Jelaskan cara menganalisis hadits secara tahlili:
+1. Langkah: takhrij ringkas → derajat hadits → makna mufradat → syarah matan → istinbath fiqh/akhlak → munasabah dgn hadits lain.
+2. Kitab syarah hadits rujukan (mis. Fath al-Bari, Syarh Nawawi 'ala Muslim) + karakternya.
+3. Outline langkah agar bisa kuikuti tiap menganalisis hadits.
 
-[PASTE SANAD - mis. "حدثنا فلان عن فلان عن فلان عن النبي ﷺ"]
-
-Tolong analisis:
-1. Identifikasi setiap perawi dalam sanad (nama lengkap, tabaqat)
-2. Status setiap perawi (tsiqah/dha'if/maqbul/dll) berdasarkan ilmu rijal
-3. Jenis sanad: muttashil / mursal / munqathi' / mu'dhal / dll
-4. Apakah ada 'illah (cacat tersembunyi) yang mungkin
-5. Kesimpulan: derajat hadits ini
-
-PENTING: Verifikasi ke kitab rijal (Mizan Al-I'tidal, Tahdzib At-Tahdzib) — AI bisa salah untuk perawi kurang terkenal.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Syarah Hadits dari Dua Syurrah",
+          title: "Analisis Tahlili Satu Hadits (Demonstrasi)",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ini matan hadits:
+Analisis hadits berikut secara tahlili lengkap (kutempel di bawah / sebut sumbernya):
+1. Makna mufradat (kata sulit) + arti.
+2. Syarah/makna global matan.
+3. Faedah & hukum yang diambil (istinbath).
+4. Munasabah dgn hadits/ayat lain bila ada.
+PENTING: kalau tidak yakin derajat/sumber hadits, katakan; jangan mengarang.
 
-[PASTE MATAN HADITS BERHARAKAT]
+[METODE]
 
-Bandingkan syarah dua syurrah:
-1. Syarah Ibnu Hajar dalam Fathul Bari — penekanan apa, poin apa yang disorot
-2. Syarah Imam Nawawi dalam Syarh Muslim — penekanan apa
-3. Istinbat hukum dari masing-masing
-4. Di mana ada perbedaan pendapat antara keduanya
-5. Kata-kata teknis hadits yang perlu dijelaskan (isnad, matan, gharib, dll)
+[LEVEL_BAHASA]
+
+Hadits: [TEMPEL TEKS HADITS]`,
+        },
+        {
+          title: "Pahami Gharib al-Hadits (Kata-kata Sulit)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan ilmu gharib al-hadits:
+1. Apa itu gharib al-hadits & kenapa penting.
+2. Dari hadits [SEBUTKAN/tempel], jelaskan kata-kata gharib + maknanya.
+3. Cara mencari makna kata gharib di kitab rujukan.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Istinbat Hukum dari Hadits",
+          title: "Pahami Mukhtalif & Musykil al-Hadits",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Hadits ini:
+Jelaskan ilmu mukhtalif al-hadits:
+1. Apa itu hadits yang tampak bertentangan (mukhtalif) & musykil.
+2. Cara penyelesaian: al-jam', naskh, tarjih, tawaqquf.
+3. Contoh kasus (sebut hadits & sumbernya; jika ragu, katakan).
 
-[PASTE HADITS BERHARAKAT]
-
-Jelaskan istinbat hukum:
-1. Hukum-hukum apa yang bisa diambil dari hadits ini (fiqh hadits)
-2. Apakah ada khilaf fuqaha dalam memahami hadits ini — pendapat masing-masing
-3. Hubungan hadits ini dengan ayat Al-Qur'an yang terkait
-4. Posisi hadits ini dalam bab fiqh tertentu
-
-[LEVEL_BAHASA]`,
-        },
-        {
-          title: "Pahami Gharibul Hadits",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Ini matan hadits dengan kata-kata yang kurang familiar:
-
-[PASTE MATAN HADITS BERHARAKAT]
-
-Untuk setiap kata yang mungkin gharib (asing):
-1. Akar kata Arab
-2. Makna literal
-3. Makna yang dimaksud dalam konteks hadits
-4. Bagaimana syurrah menjelaskan kata ini (mis. Ibnu Hajar, Nawawi, Ibnu Atsir dalam An-Nihayah)
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Drill Matan Hadits Arba'in",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Sedang menghafal Arba'in Nawawi.
+          title: "Hafal Matan Hadits dengan Pemahaman",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sesi drill:
-1. Sebut nomor hadits acak
-2. Aku recite matan hadits tersebut dari awal
-3. Beri koreksi kalau ada yang salah
-4. Setelah 10 putaran, beri daftar hadits yang perlu diperkuat
+Bantu aku menghafal matan hadits [SEBUTKAN/tempel]:
+1. Pecah matan jadi makna per potong (agar hafalan berbasis paham).
+2. Mnemonic/asosiasi untuk bagian yang panjang.
+3. Tandai lafazh yang sering keliru saat hafalan.
+PENTING: pakai teks hadits yang kutempel; jangan mengarang lafazh.
 
-Tambahan: kalau aku minta, jelaskan pelajaran utama dari hadits tersebut.
+[METODE]
+
+[LEVEL_BAHASA]
+
+Hadits: [TEMPEL]`,
+        },
+        {
+          title: "Tabel Faedah Hadits untuk Dihafal",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari hadits-hadits bab [SEBUTKAN], buatkan tabel hafalan:
+1. Kolom: inti hadits | faedah/hukum utama | kata kunci.
+2. Tandai faedah yang sering jadi soal.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Jadwal Hafalan & Murajaah Hadits",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Target hafal [JUMLAH] hadits dari kitab [NAMA KITAB] dalam [WAKTU].
+          title: "Jadwal Muraja'ah Hadits",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan jadwal hafalan dengan spaced repetition:
-- Hafalan baru per hari: [JUMLAH]
-- Murajaah dengan interval: 1, 3, 7, 14, 21 hari
+Hadits yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji (sebut matan, makna, faedah). Tabel.
 
-Format tabel. Tambahkan tips efektif menghafal matan hadits Arab.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Latihan Analisis Hadits Lengkap",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
-
-Ini hadits dengan sanad dan matan:
-
-[PASTE HADITS LENGKAP DENGAN SANAD]
-
-Latihan analisis tahlili lengkap:
-1. Struktur sanad (riwayah 'an mani riwayah)
-2. Status perawi kunci
-3. Derajat hadits
-4. Syarah matan
-5. Istinbat hukum
-
-Koreksi analisisku setelah aku jawab. Sertakan rujukan ke kitab syarah.
-
-[LEVEL_BAHASA]`,
-        },
-        {
-          title: "Bedah Paragraf Kitab Syarah Hadits",
+          title: "Latihan Syarah Mandiri (Aku Coba, AI Koreksi)",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ini paragraf dari kitab syarah hadits (sebutkan kitabnya):
+Aku akan mensyarah hadits [tempel di bawah] dengan kemampuanku.
+1. Koreksi syarah-ku: tepat/keliru/kurang.
+2. Tunjukkan langkah tahlili yang terlewat (mufradat/faedah/munasabah).
+3. Lengkapi dgn rujukan mu'tabar (jika ragu, katakan).
 
-[PASTE TEKS ARAB]
+[METODE]
 
-Analisis:
-1. Tarjamah harfiyah
-2. Tarjamah ma'nawiyyah
-3. Istilah teknis (sanad/matan/illah/dll) — Arab + transliterasi + definisi
-4. Manhaj syarih dalam paragraf ini
-5. Kesimpulan yang diambil syarih
+[LEVEL_BAHASA]
+
+Hadits + syarahku: [TEMPEL]`,
+        },
+        {
+          title: "Drill Istinbath Faedah dari Hadits",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 5 hadits (tempel/sebut sumber). Tugasku: sebutkan faedah/hukum tiap hadits.
+1. JANGAN beri jawaban dulu.
+2. Koreksi + tambahkan faedah yang terlewat.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mukhtaliful Hadits: Hadits yang Tampak Bertentangan",
+          title: "Drill Makna Mufradat Hadits",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Dua hadits ini tampak bertentangan:
+Dari hadits [tempel], tugasku menjelaskan makna kata-kata sulitnya.
+1. JANGAN beri jawaban dulu.
+2. Koreksi makna-ku.
 
-Hadits 1: [PASTE HADITS 1 BERHARAKAT]
-Hadits 2: [PASTE HADITS 2 BERHARAKAT]
+[METODE]
 
-Jelaskan cara ulama menyelesaikan kontradiksi ini:
-1. Metode jam'u wat taufiq (menggabungkan keduanya)
-2. Metode naskh (kalau ada bukti kronologi)
-3. Tarjih (mana yang lebih kuat — berdasar apa)
-4. Pendapat ulama muhadditsin tentang dua hadits ini
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Hadits: [TEMPEL]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Tahriri Hadits Tahlili",
+          title: "Mock Imtihan Tahriri Hadits (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian Tahriri [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 5 soal Azhari: analisis sanad, syarah matan, identifikasi istilah hadits, istinbat hukum, mukhtaliful hadits.
+Buatkan soal ujian tulis Hadits Tahlili gaya Azhar untuk bab [SEBUTKAN]:
+1. Tipe khas: isyrah al-hadits, istanbith al-ahkam, ma ma'na..., udzkur faedah.
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mock Syafawi Hadits Tahlili",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, latihan Syafawi [MADDAH]. [GAYA_BELAJAR].
+          title: "Simulasi Imtihan Syafawi Hadits",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
 
-Bertindaklah sebagai dosen Azhar. 5 pertanyaan bertahap: komponen hadits, analisis sanad (kasih aku sanad), syarah matan (kasih aku hadits), istinbat hukum, mukhtaliful hadits.
+Berperanlah sebagai mumtahin syafawi:
+1. Minta aku jelaskan makna hadits, faedah, hukum secara lisan.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
 
-Tunggu jawab tiap pertanyaan. Evaluasi di akhir.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian Hadits",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari bab yang kupelajari ([SEBUTKAN]): hadits yang sering jadi soal syarah & istinbath, cara menulis jawaban lengkap (makna + faedah + hukum), prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Hadits Tahlili",
+          title: "Rapikan Catatan Talaqqi Hadits",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar. Baru talaqqi tentang hadits [NOMOR/TEMA] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi hadits-ku berantakan (di bawah). Rapikan jadi: matan → makna → faedah, lengkapi harakat, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun ulang sistematis (sanad → matan → syarah → istinbat), tambahkan teks Arab berharakat, pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
         },
         {
-          title: "Pahami Catatan Talaqqi yang Ambigu",
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Catatan talaqqi [MADDAH] yang ambigu:
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-[PASTE CATATAN]
+Setelah talaqqi hadits [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan, koreksi, ajukan 3 pertanyaan penguji.
 
-Interpretasi berdasarkan konteks ilmu hadits, lengkapi yang kurang, identifikasi istilah teknis.
+[METODE]
 
-[LEVEL_BAHASA]`,
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Kritik Matan Hadits: Standar dan Metodologi",
+          title: "Bandingkan Syarah antar Ulama",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Eksplorasi kritik matan hadits.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan metodologi ulama dalam kritik matan:
-1. Kaidah-kaidah kritik matan menurut muhaddits klasik (Ibnu Al-Jawzi, Ibnu Hibban)
-2. Kriteria hadits yang matannya bermasalah (munkar, mawdhu', dll)
-3. Perbedaan pendekatan muhaddits dengan pendekatan orientalis dalam kritik matan
-4. Contoh: 1 hadits yang diperdebatkan dari sudut matan
+Untuk hadits [SEBUTKAN/tempel], bandingkan pendekatan beberapa pensyarah (mis. Ibn Hajar dlm Fath al-Bari, Nawawi dlm Syarh Muslim):
+1. Penekanan masing-masing.
+2. Perbedaan pemahaman bila ada.
+PENTING: kalau tidak yakin isi syarah, katakan; jangan mengarang nukilan.
 
-Jangan men-tarjih untuk hadits yang masih diperdebatkan.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Perkembangan Metodologi Syarah Hadits",
+          title: "Hadits & Penerapan dalam Kehidupan",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi perkembangan syarah hadits.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bandingkan metodologi syarah hadits dari era ke era:
-1. Syarah era mutaqaddimin (Ibnu Bathal, Al-Khaththabi)
-2. Syarah era mutaakhirin (Ibnu Hajar, Imam Nawawi, Az-Zurqani)
-3. Syarah era kontemporer (Albani, Ibn Baz — dalam syarah berbeda)
-4. Tren dan perkembangan baru dalam ulumul hadits
+Dari hadits [SEBUTKAN], gali penerapan praktisnya:
+1. Pelajaran akhlak/tarbawi.
+2. Penerapan dalam kehidupan sehari-hari.
+3. Cara menyampaikannya dalam dakwah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Hadits Ahkam: Istinbath Fiqh dari Hadits",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk hadits ahkam [SEBUTKAN/tempel]:
+1. Hukum fiqh yang diistinbath.
+2. Cara dilalah hadits menunjukkan hukum.
+3. Khilaf ulama dalam memahaminya bila ada.
+PENTING: sebut sumber; jangan mengarang.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
@@ -4050,180 +4058,259 @@ Jelaskan kontribusi Ibnu Rusyd Al-Hafid dalam Bidayatul Mujtahid:
     prompts: {
       pahami: [
         {
-          title: "Pahami Kaidah Fiqhiyyah Lengkap",
+          title: "Peta Besar Qawa'id Fiqhiyyah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku ingin memahami kaidah: [TULIS KAIDAH DALAM ARAB BERHARAKAT]
+Beri kerangka utuh Qawa'id Fiqhiyyah:
+1. Definisi qaidah fiqhiyyah + bedanya dengan ushul fiqh & dhabit fiqhi.
+2. Lima kaidah induk (al-qawa'id al-kubra al-khams) — sebutkan teks Arab berharakat + arti.
+3. Kitab rujukan (mis. Al-Asybah wan Nazhair As-Suyuthi) + karakternya.
+4. Outline agar utuh.
 
-Tolong jelaskan:
-1. Teks kaidah Arab berharakat + transliterasi
-2. Makna kaidah dalam Indonesia
-3. Kaidah mana ini termasuk (asasiyyah atau furu'iyyah, dan induknya apa)
-4. Aplikasi kaidah — 3-4 furu' fiqh yang dibangun di atas kaidah ini
-5. Pengecualian (mustatsnayat) — kondisi kaidah tidak berlaku
-6. Khilaf ulama tentang kaidah ini (kalau ada)
-
-[LEVEL_BAHASA]
-
-Sertakan teks Arab untuk kaidah turunan yang disebutkan.`,
-        },
-        {
-          title: "Hubungan 5 Kaidah Asasiyyah",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Jelaskan 5 kaidah asasiyyah (al-qawa'id al-kulliyyah al-khams) secara komprehensif:
-
-Untuk setiap kaidah:
-1. Teks Arab berharakat
-2. Makna dan cakupannya
-3. 3 furu' fiqh yang termasuk kaidah ini
-4. 1 pengecualian penting
-5. Kaidah turunan (furu'iyyah) yang lahir dari kaidah ini
-
-Lalu: apakah ada hubungan atau tumpang-tindih antar 5 kaidah ini?
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Beda Qawa'id Fiqhiyyah dan Dhawabith Fiqhiyyah",
+          title: "Pahami 5 Kaidah Induk secara Tuntas",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan perbedaan antara:
-1. Qawa'id Fiqhiyyah (kaidah umum lintas madzhab/bab)
-2. Dhawabith Fiqhiyyah (kaidah khusus satu bab atau madzhab)
+Jelaskan al-qawa'id al-khams al-kubra satu per satu:
+1. الأمور بمقاصدها (al-umur bi maqashidiha)
+2. اليقين لا يزول بالشك (al-yaqin la yazul bisy-syakk)
+3. المشقة تجلب التيسير (al-masyaqqah tajlib at-taisir)
+4. الضرر يزال (adh-dharar yuzal)
+5. العادة محكمة (al-'adah muhakkamah)
+Untuk tiap kaidah: makna (Arab berharakat + arti), dalil, contoh penerapan, kaidah cabang di bawahnya.
 
-Beri definisi Arab berharakat untuk keduanya, ciri pembeda, dan 2 contoh untuk masing-masing.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Kaidah Cabang & Furu'-nya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk kaidah induk [SEBUTKAN], jelaskan kaidah-kaidah cabangnya:
+1. Kaidah cabang (Arab berharakat + arti).
+2. Contoh furu' fiqhiyyah tiap cabang.
+3. Pengecualian (mustatsnayat) bila ada.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Beda Qaidah, Dhabit, Nazhariyyah Fiqhiyyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan perbedaan istilah yang sering tertukar:
+1. Qaidah fiqhiyyah vs dhabit fiqhi (cakupan).
+2. Qaidah fiqhiyyah vs nazhariyyah fiqhiyyah.
+3. Qaidah fiqhiyyah vs qaidah ushuliyyah.
+Sertakan contoh tiap untuk memperjelas.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Drill Kaidah Fiqhiyyah",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Menghafal kaidah-kaidah fiqhiyyah dari kitab [NAMA KITAB].
+          title: "Hafal 5 Kaidah Induk + Dalilnya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sesi drill:
-1. Sebut nomor atau tema kaidah
-2. Aku recite teks kaidah Arab berharakat
-3. Koreksi kalau ada yang salah
-4. Setelah 10 putaran, daftar yang perlu diperkuat
+Bantu hafal 5 kaidah induk:
+1. Teks Arab berharakat + arti tiap kaidah.
+2. Dalil ringkas tiap kaidah.
+3. Mnemonic untuk mengingat kelimanya berurutan.
 
-Fokus: [KAIDAH ASASIYYAH / BAB kalau ada]
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mnemonic 5 Kaidah Asasiyyah",
+          title: "Tabel Kaidah + Contoh Furu' untuk Dihafal",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Perlu hafal 5 kaidah asasiyyah dan kaidah-kaidah turunannya.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan:
-1. Tabel: kaidah asasiyyah → arti singkat → 3 furu' utama → 1 pengecualian utama
-2. Akronim atau mnemonic Indonesia untuk hafal urutan 5 kaidah
-3. Hook (kalimat kunci) untuk setiap kaidah agar mudah diingat
+Buatkan tabel hafalan kaidah bab [SEBUTKAN]:
+1. Kolom: kaidah (Arab berharakat) | arti | 1 contoh furu'.
+2. Tandai kaidah yang sering jadi soal.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Qawa'id",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Kaidah yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji (sebut kaidah + terapkan ke furu'). Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Aplikasi Kaidah ke Kasus Fiqh",
+          title: "Drill Terapkan Kaidah ke Kasus (Tathbiq)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 10 kasus fiqh. Aku akan identifikasi kaidah fiqhiyyah yang berlaku di setiap kasus.
+Beri aku 8 kasus fiqh. Tugasku: tentukan kaidah fiqhiyyah mana yang berlaku + alasannya.
+1. Tulis kasusnya.
+2. JANGAN beri jawaban dulu.
+3. Setelah aku jawab, koreksi: kaidah yang benar + cara penerapannya.
 
-Format kasus: deskripsi singkat situasi (1-2 kalimat). JANGAN kasih jawaban dulu.
-
-Setelah aku jawab semua, koreksi + jelaskan reasoning + kaidah Arab berharakat.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Latihan Identifikasi Pengecualian",
+          title: "Drill Identifikasi Kaidah dari Furu'",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Kaidah: [TULIS KAIDAH BERHARAKAT]
+Beri 8 furu' fiqhiyyah (hukum kasus tertentu). Tugasku: tebak kaidah induk/cabang di baliknya.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab + jelaskan kaitannya.
 
-Beri 5 kasus yang tampak seharusnya masuk kaidah ini, tapi sebenarnya termasuk pengecualian. Aku akan tentukan: masuk kaidah atau pengecualian? Dan alasannya.
+[METODE]
 
-JANGAN kasih jawaban dulu.
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Soal Definisi & Perbedaan Kaidah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal campuran (definisi kaidah, beda dua kaidah, contoh furu') dari bab [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Tahriri Qawa'id Fiqhiyyah",
+          title: "Mock Imtihan Tahriri Qawa'id (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian Tahriri [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 5 soal Azhari: tulis kaidah dan jelaskan, sebutkan furu', identifikasi kaidah dari kasus, pengecualian, beda qawa'id dan dhawabith.
+Buatkan soal ujian tulis Qawa'id Fiqhiyyah gaya Azhar untuk bab [SEBUTKAN]:
+1. Tipe khas: 'arrif al-qaidah + matsil, thabbiq al-qaidah 'ala..., ma al-farq baina qa'idatain, udzkur al-mustatsnayat.
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mock Syafawi Qawa'id Fiqhiyyah",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, latihan Syafawi [MADDAH]. [GAYA_BELAJAR].
+          title: "Simulasi Imtihan Syafawi Qawa'id",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
 
-Bertindaklah sebagai dosen Azhar. 5 pertanyaan: tulis & jelaskan kaidah, sebutkan furu', kasih kasus (aku identifikasi kaidah), pengecualian, beda dua kaidah.
+Berperanlah sebagai mumtahin syafawi:
+1. Minta aku sebut kaidah + dalil, lalu terapkan ke kasus secara lisan.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
 
-Evaluasi di akhir.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian Qawa'id",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari bab yang kupelajari ([SEBUTKAN]): kaidah yang sering jadi soal tathbiq, cara jawab dapat nilai penuh (sebut kaidah + dalil + contoh furu'), prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Qawa'id Fiqhiyyah",
+          title: "Rapikan Catatan Talaqqi Qawa'id",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang kaidah [NAMA KAIDAH] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi: kaidah → makna → contoh furu', lengkapi harakat, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun (kaidah → makna → furu' → mustatsnayat → kaidah turunan), tambah teks Arab berharakat, contoh aplikasi tambahan.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Setelah talaqqi kaidah [SEBUTKAN], aku jelaskan ulang + beri contoh furu' buatanku (di bawah). Periksa keakuratan, koreksi contoh yang keliru, ajukan 3 pertanyaan penguji.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Qawa'id Fiqhiyyah dalam Fatwa Kontemporer",
+          title: "Sejarah & Perkembangan Qawa'id Fiqhiyyah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi aplikasi [MADDAH] dalam fatwa kontemporer.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 3 contoh fatwa kontemporer dari lembaga resmi (Al-Azhar, MUI, OKI) yang menggunakan kaidah fiqhiyyah dalam argumentasinya.
+Jelaskan perkembangan ilmu qawa'id fiqhiyyah:
+1. Asal-usul & tahap perkembangannya.
+2. Ulama & kitab penting tiap tahap (mis. Al-Asybah wan Nazhair).
+3. Posisi qawa'id dalam tradisi madzhab.
 
-Untuk setiap fatwa:
-1. Masalah yang difatwakan
-2. Kaidah fiqhiyyah yang digunakan
-3. Bagaimana kaidah menjadi dasar hukum
-4. Apakah ada kaidah lain yang bisa digunakan?
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Khilaf dalam Lingkup Kaidah",
+          title: "Qawa'id untuk Masalah Kontemporer",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi khilaf tentang kaidah: [TULIS KAIDAH BERHARAKAT]
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan:
-1. Apakah semua madzhab menerima kaidah ini?
-2. Bagaimana masing-masing madzhab merumuskan kaidah ini (ada perbedaan lafal?)
-3. Kasus di mana madzhab berbeda dalam mengaplikasikan kaidah ini
-4. Pandangan ulama ushul fiqh tentang kaidah ini
+Tunjukkan bagaimana kaidah fiqhiyyah dipakai untuk masalah kontemporer:
+1. Ambil kaidah [SEBUTKAN, mis. adh-dharar yuzal].
+2. Terapkan ke kasus modern (mis. muamalah, medis, teknologi).
+3. Hal yang perlu hati-hati saat menerapkannya.
 
-Jangan men-tarjih.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Hubungkan Qawa'id dengan Maqashid Syariah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan kaitan qawa'id fiqhiyyah dengan maqashid syariah:
+1. Bagaimana kaidah mencerminkan maqashid (hifzh ad-din, nafs, 'aql, nasl, mal).
+2. Contoh kaidah yang berakar pada maqashid tertentu.
+3. Kenapa memahami maqashid memperkuat penerapan kaidah.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
