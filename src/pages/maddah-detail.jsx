@@ -231,7 +231,7 @@ const MaddahDetailPage = () => {
 
       {/* Coming soon banner if no content */}
       {!hasContent && (
-        <section className="container-x mb-8">
+        <section className="container-x mb-4">
           <div className="card-glass p-5 border border-emerald-600/22 bg-emerald-600/5 text-center">
             <div className="text-emerald-300 font-medium mb-1">Konten lengkap segera hadir</div>
             <div className="text-sm text-ink-muted">
@@ -246,8 +246,8 @@ const MaddahDetailPage = () => {
         <>
           {/* Kitab Utama */}
           {kitabUtama.length > 0 && (
-            <section className="container-x mb-8">
-              <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+            <section className="container-x mb-4">
+              <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 inline-flex items-center gap-2">
                 <span className="w-6 h-px bg-gold-500/70"/>Kitab Utama
               </h2>
               <div className="flex md:grid md:grid-cols-4 gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 mobile-scroll pb-1 md:pb-0">
@@ -264,8 +264,8 @@ const MaddahDetailPage = () => {
 
           {/* AI Recommendation */}
           {recommendedAI.length > 0 && (
-            <section className="container-x mb-8">
-              <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+            <section className="container-x mb-4">
+              <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 inline-flex items-center gap-2">
                 <span className="w-6 h-px bg-gold-500/70"/>AI yang Direkomendasikan
               </h2>
               <div className="grid md:grid-cols-2 gap-4">
@@ -291,12 +291,12 @@ const MaddahDetailPage = () => {
 
           {/* Tutorial */}
           {tutorial.steps.length > 0 && (
-            <section className="container-x mb-10">
-              <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+            <section className="container-x mb-4">
+              <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 inline-flex items-center gap-2">
                 <span className="w-6 h-px bg-gold-500/70"/>Tutorial Pakai AI
               </h2>
               {tutorial.overview && (
-                <p className="text-sm text-ink-muted mb-4">{tutorial.overview}</p>
+                <p className="text-sm text-ink-muted mb-3">{tutorial.overview}</p>
               )}
               <div className="space-y-3">
                 {tutorial.steps.map((s, i) => (
@@ -313,7 +313,7 @@ const MaddahDetailPage = () => {
           )}
 
           {/* Starter Pack */}
-          <section className="container-x mb-8">
+          <section className="container-x mb-4">
             <div className="card-glass-strong p-6 relative overflow-hidden">
               <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full bg-gold-500/10 blur-3xl pointer-events-none"/>
               <div className="relative flex items-start justify-between gap-4 flex-wrap">
