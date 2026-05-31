@@ -15,7 +15,7 @@ const verifyToken = (headers) => {
   const token = (headers || {})['x-admin-token'];
   if (!token) return false;
   try {
-    const authHandler = require('./admin-auth.js');
+    const authHandler = require('./admin-auth.cjs');
     const expiry = authHandler.validTokens.get(token);
     return !!(expiry && Date.now() < expiry);
   } catch { return false; }
