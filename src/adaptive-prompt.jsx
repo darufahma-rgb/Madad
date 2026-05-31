@@ -37,14 +37,17 @@ const FAKULTAS_LABEL = {
 };
 
 const JURUSAN_LABEL = {
-  tafsir:    ", jurusan Tafsir",
-  hadits:    ", jurusan Hadits",
-  aqidah:    ", jurusan Aqidah & Filsafat",
-  islamiyah: ", jurusan Syariah Islamiyah",
-  wal_qanun: ", jurusan Syariah wal Qanun",
-  adab:      ", jurusan Lughah & Adab",
-  tarikh:    ", jurusan Tarikh wal Hadharah",
-  shahafah:  ", jurusan Shahafah wal I'lam",
+  tafsir:             ", jurusan Tafsir",
+  hadits:             ", jurusan Hadits",
+  aqidah:             ", jurusan Aqidah & Filsafat",
+  islamiyah:          ", jurusan Syariah Islamiyah",
+  wal_qanun:          ", jurusan Syariah wal Qanun",
+  adab:               ", jurusan Lughah & Adab",
+  tarikh:             ", jurusan Tarikh wal Hadharah",
+  shahafah:           ", jurusan Shahafah wal I'lam",
+  dirasat_syariah:    ", Qism Syariah (Dirasat Islamiyah)",
+  dirasat_ushuluddin: ", Qism Ushuluddin (Dirasat Islamiyah)",
+  dirasat_lughah:     ", Qism Lughah Arabiyah (Dirasat Islamiyah)",
 };
 
 const GAYA_BELAJAR_LABEL = {

@@ -130,6 +130,7 @@ const OnboardingPage = () => {
   const [step, setStep] = useState(0);
   const [data, setData] = useState(() => {
     const base = {
+      gender: null,
       faculty: null, level: null, major: null,
       struggle: [], learningStyle: [], s2Maddah: null,
       mahad_struggle: [],
@@ -137,6 +138,7 @@ const OnboardingPage = () => {
     if (profile?.onboarded) {
       return {
         ...base,
+        gender: profile.gender ?? null,
         faculty: profile.faculty ?? null,
         level: profile.level ?? null,
         major: profile.major ?? null,
@@ -197,10 +199,27 @@ const OnboardingPage = () => {
       iconType: "arabic-small",
     },
     {
+      key: "gender",
+      title: "Kamu belajar di kampus Banin atau Banat?",
+      hint: "Struktur fakultas Al-Azhar berbeda untuk masing-masing",
+      options: [
+        { id: "banin", label: "Banin (Putra)", arabic: "بنين" },
+        { id: "banat", label: "Banat (Putri)", arabic: "بنات" },
+      ],
+      multi: false,
+      iconType: "arabic",
+      conditional: (d) => !isMahadLevel(d.level),
+    },
+    {
       key: "faculty",
       title: "Di fakultas apa kamu belajar?",
       hint: "Pilih yang paling dekat",
-      options: FACULTIES,
+      optionsFn: (d) => {
+        if (d.gender === "banat") {
+          return FACULTIES.filter(f => f.forGender === "banat" || f.forGender === "all" || !f.forGender);
+        }
+        return FACULTIES.filter(f => f.forGender === "banin" || f.forGender === "all" || !f.forGender);
+      },
       multi: false,
       iconType: "arabic",
       conditional: (d) => !isMahadLevel(d.level),
@@ -308,6 +327,8 @@ const OnboardingPage = () => {
         mahad_jurusan: null,
         mahad_struggle: [],
       }));
+    } else if (cur.key === "gender") {
+      setData(d => ({ ...d, gender: id, faculty: null, major: null }));
     } else if (cur.key === "faculty") {
       setData(d => ({ ...d, faculty: id, major: null }));
     } else if (cur.multi) {

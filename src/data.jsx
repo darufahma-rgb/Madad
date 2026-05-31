@@ -75,6 +75,7 @@ const FACULTIES = [
     arabic: "أصول الدين",
     desc: "Tafsir, Hadits, Aqidah & Filsafat",
     icon: "bookOpen",
+    forGender: "banin",
     majorsStartLevel: 3,
     majors: [
       { id: "tafsir",  label: "Tafsir & 'Ulum Al-Qur'an", arabic: "التفسير وعلوم القرآن" },
@@ -88,6 +89,7 @@ const FACULTIES = [
     arabic: "الشريعة والقانون",
     desc: "Fiqh, Ushul Fiqh, Hukum Islam",
     icon: "scale",
+    forGender: "banin",
     majorsStartLevel: 1,
     majors: [
       { id: "islamiyah",  label: "Syariah Islamiyah (4 thn)",   arabic: "الشريعة الإسلامية" },
@@ -100,6 +102,7 @@ const FACULTIES = [
     arabic: "اللغة العربية",
     desc: "Nahwu, Sharaf, Balaghah, Adab",
     icon: "pen",
+    forGender: "banin",
     majorsStartLevel: 1,
     majors: [
       { id: "adab",     label: "Lughah & Adab (Umum)",   arabic: "اللغة والأدب" },
@@ -109,12 +112,17 @@ const FACULTIES = [
   },
   {
     id: "dirasat",
-    label: "Dirasat Islamiyah",
+    label: "Dirasat Islamiyah (Banat)",
     arabic: "الدراسات الإسلامية",
-    desc: "Gabungan Ushuluddin, Syariah & Lughah",
+    desc: "Kuliyyah Banat — Syariah, Ushuluddin, Lughah",
     icon: "layers",
-    majorsStartLevel: null,
-    majors: [],
+    forGender: "banat",
+    majorsStartLevel: 1,
+    majors: [
+      { id: "dirasat_syariah",    label: "Qism Syariah",         arabic: "قسم الشريعة" },
+      { id: "dirasat_ushuluddin", label: "Qism Ushuluddin",      arabic: "قسم أصول الدين" },
+      { id: "dirasat_lughah",     label: "Qism Lughah Arabiyah", arabic: "قسم اللغة العربية" },
+    ],
   },
   {
     id: "quran",
@@ -122,6 +130,7 @@ const FACULTIES = [
     arabic: "القرآن الكريم",
     desc: "Tahfidz, Qira'at, Tafsir",
     icon: "book",
+    forGender: "all",
     majorsStartLevel: null,
     majors: [],
   },
@@ -131,6 +140,7 @@ const FACULTIES = [
     arabic: "أخرى",
     desc: "Kedokteran, Teknik, Sains, dll",
     icon: "grid",
+    forGender: "all",
     majorsStartLevel: null,
     majors: [],
   },
