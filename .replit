@@ -30,11 +30,11 @@ task = "shell.exec"
 args = "node server.cjs"
 waitForPort = 5000
 
-[[ports]]
-localPort = 5000
-externalPort = 80
-
 [userenv]
 
 [userenv.shared]
 SUPABASE_URL = "https://rhgecuchhkrcwuxenrfb.supabase.co"
+
+[[ports]]
+localPort = 5000
+externalPort = 80
