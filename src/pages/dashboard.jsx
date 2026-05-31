@@ -457,6 +457,14 @@ const DashboardPage = () => {
   const levelLabel = (typeof LEVELS !== "undefined" && profile.level)
     ? (LEVELS.find(l => l.id === profile.level)?.short || LEVELS.find(l => l.id === profile.level)?.label || null)
     : null;
+  const isDL = profile.level === "mustawa";
+  const DL_MUSTAWA_LABELS = {
+    mubtadi_1: "Mubtadi' 1", mubtadi_2: "Mubtadi' 2",
+    mutawassith_1: "Mutawassith 1", mutawassith_2: "Mutawassith 2",
+    mutaqaddim_1: "Mutaqaddim 1", mutaqaddim_2: "Mutaqaddim 2",
+    mutamayyiz: "Mutamayyiz",
+  };
+  const dlMustawaLabel = isDL && profile.dlMustawa ? DL_MUSTAWA_LABELS[profile.dlMustawa] || profile.dlMustawa : null;
 
   return (
     <div className="page-enter">
@@ -487,6 +495,17 @@ const DashboardPage = () => {
               <div className="flex flex-wrap gap-2">
                 {isMahadLevel(profile.level) ? (
                   <MahadBadge profile={profile}/>
+                ) : isDL ? (
+                  <>
+                    <span style={{background:"rgba(62,207,142,0.12)",border:"1px solid rgba(62,207,142,0.25)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(62,207,142,0.9)"}}>
+                      Darul Lughah
+                    </span>
+                    {dlMustawaLabel && (
+                      <span style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
+                        Mustawa {dlMustawaLabel}
+                      </span>
+                    )}
+                  </>
                 ) : (
                   <>
                     {facultyLabel && (
@@ -528,6 +547,13 @@ const DashboardPage = () => {
                     Ma'had Al-Azhar · Talqeeh siap menemani belajarmu hari ini.
                   </span>
                 </div>
+              ) : isDL ? (
+                <p className="mt-5 text-ink-muted text-lg max-w-2xl leading-relaxed">
+                  <span className="text-ink font-medium">Darul Lughah</span>
+                  {dlMustawaLabel ? <> · <span className="text-ink font-medium">Mustawa {dlMustawaLabel}</span></> : null}
+                  {". "}
+                  Talqeeh siap menemani belajarmu hari ini.
+                </p>
               ) : (
                 <p className="mt-5 text-ink-muted text-lg max-w-2xl leading-relaxed">
                   <span className="text-ink font-medium">{facultyLabel}</span>
