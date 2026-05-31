@@ -566,8 +566,10 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
 
             {/* Price block */}
             <div className="mb-5">
-              <div className="text-sm text-ink-muted line-through mb-0.5">Rp 75.000</div>
-              <div className="font-display font-bold text-ink leading-none mb-1.5" style={{fontSize:"clamp(2rem,8vw,2.75rem)"}}>Rp 49.000</div>
+              <div className="flex items-baseline gap-3 mb-1">
+                <div className="font-display font-bold text-ink leading-none" style={{fontSize:"clamp(2rem,8vw,2.75rem)"}}>Rp 49.000</div>
+                <div className="font-display font-semibold line-through text-ink-muted" style={{fontSize:"clamp(1rem,4vw,1.35rem)"}}>Rp 75.000</div>
+              </div>
               <div className="text-[11px] uppercase tracking-widest text-ink-muted">Sekali bayar · Berlaku selamanya</div>
             </div>
 
