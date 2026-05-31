@@ -706,19 +706,19 @@ const MobileTabBar = () => {
     { to: "/s2-maddah",       label: "Maddah",   icon: "layers" },
     { to: "/siap-imtihan",    label: "Imtihan",  icon: "target" },
     { to: "/kurasah",         label: "Kurasah",  icon: "bookOpen" },
-    { to: "/tools",           label: "Prompt",   icon: "sparkles" },
+    { to: "/framework",       label: "Metode",   icon: "brain" },
   ] : isMahadUser ? [
     { to: "/dashboard",    label: "Beranda",  icon: "home"     },
     { to: "/mahad-maddah", label: "Maddah",   icon: "layers"   },
     { to: "/siap-imtihan", label: "Ujian",    icon: "target"   },
     { to: "/kurasah",      label: "Kurasah",  icon: "bookOpen" },
-    { to: "/tools",        label: "Tools",    icon: "sparkles" },
+    { to: "/framework",    label: "Metode",   icon: "brain"    },
   ] : [
     { to: "/dashboard",       label: "Beranda",   icon: "home" },
     { to: "/maddah",          label: "Maddah",    icon: "layers" },
     { to: "/paths/muqaranah", label: "Muqaranah", icon: "scale" },
     { to: "/kurasah",         label: "Kurasah",   icon: "bookOpen" },
-    { to: "/tools",           label: "Prompt",    icon: "sparkles" },
+    { to: "/framework",       label: "Metode",    icon: "brain" },
   ];
 
   const isActive = (to) => {

@@ -739,6 +739,51 @@ const DashboardPage = () => {
         </div>
       </section>
 
+      {/* 5c. FRAMEWORK BELAJAR */}
+      <section className="pb-8">
+        <div className="container-x">
+          <Reveal className="mb-5 flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-2 flex items-center gap-2">
+                <span className="w-5 h-px bg-gold-500/60"/>
+                Metode belajar berbasis riset
+              </div>
+              <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink flex items-center gap-3">
+                Framework Belajar
+                <span className="arabic-display text-base text-gold-400" style={{direction:"rtl"}}>مَنْهَجِيَّةُ التَّعَلُّم</span>
+              </h2>
+            </div>
+            <button onClick={() => navigate("/framework")}
+              className="text-sm text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1.5 transition-colors">
+              Lihat semua <Icon name="arrowRight" className="w-3.5 h-3.5"/>
+            </button>
+          </Reveal>
+
+          <Reveal>
+            <div
+              onClick={() => navigate("/framework")}
+              className="card-glass-strong p-5 md:p-6 relative overflow-hidden cursor-pointer hov-lift">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-emerald-600/15 border border-emerald-600/30 flex items-center justify-center">
+                  <Icon name="brain" className="w-6 h-6 text-emerald-400"/>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-display text-lg font-semibold text-ink mb-1">
+                    6 metode belajar yang terbukti secara ilmiah
+                  </h3>
+                  <p className="text-sm text-ink-muted leading-relaxed">
+                    Spaced repetition, retrieval practice, interleaving, dan lainnya, lengkap dengan rutinitas, contoh per maddah, dan prompt AI siap pakai.
+                  </p>
+                  <div className="mt-3 inline-flex items-center gap-1.5 text-sm text-emerald-400 font-medium">
+                    Mulai belajar lebih efektif <Icon name="arrowRight" className="w-3.5 h-3.5"/>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
       {/* 6. LEARNING PATHS */}
       <section className="pb-8">
         <div className="container-x">
