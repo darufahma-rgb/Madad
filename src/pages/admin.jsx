@@ -80,7 +80,7 @@ const AdminPage = () => {
         </div>
       </section>
 
-      <div className="container-x py-10">
+      <div className="container-x pt-16 pb-10">
         {tab === "dashboard"  && <AdminDashboard/>}
         {tab === "members"    && <AdminMembers/>}
         {tab === "maddah"     && <AdminMaddahAnalytics/>}
