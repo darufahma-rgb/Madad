@@ -680,6 +680,19 @@ const MobileTabBar = () => {
   const { session, profile } = useAuth();
   const path = useRoute();
 
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const update = () => {
+      document.documentElement.style.setProperty("--tabbar-height", mq.matches ? "60px" : "0px");
+    };
+    update();
+    mq.addEventListener("change", update);
+    return () => {
+      mq.removeEventListener("change", update);
+      document.documentElement.style.setProperty("--tabbar-height", "0px");
+    };
+  }, []);
+
   if (!session || !profile?.onboarded) return null;
   if (path.startsWith("/admin") || path === "/onboarding") return null;
 
@@ -775,7 +788,7 @@ const SupportButton = () => {
       title="Butuh bantuan? Hubungi admin"
       style={{
         position:"fixed",
-        bottom: "calc(var(--tabbar-height, 64px) + var(--safe-bottom, 0px) + 20px)",
+        bottom: "calc(var(--tabbar-height, 0px) + 20px)",
         right:"20px", zIndex:55,
         width:"46px", height:"46px", borderRadius:"50%",
         background:"linear-gradient(160deg,#25D366,#128C7E)",

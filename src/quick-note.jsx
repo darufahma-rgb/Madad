@@ -153,8 +153,14 @@ const QuickNoteButton = () => {
       <button
         onClick={() => setOpen(true)}
         title="Tulis catatan cepat ke Kurasah"
-        className="fixed bottom-6 right-6 z-50 rounded-full card-glass-strong text-emerald-200 hover:text-emerald-100 transition-all shadow-lg flex items-center justify-center hov-lift"
-        style={{width:52,height:52,border:"1px solid rgba(62,207,142,0.40)",boxShadow:"0 4px 20px rgba(62,207,142,0.22)"}}>
+        className="fixed z-[56] rounded-full card-glass-strong text-emerald-200 hover:text-emerald-100 transition-all shadow-lg flex items-center justify-center hov-lift"
+        style={{
+          width:52, height:52,
+          right:"20px",
+          bottom:"calc(var(--tabbar-height, 0px) + 76px)",
+          border:"1px solid rgba(62,207,142,0.40)",
+          boxShadow:"0 4px 20px rgba(62,207,142,0.22)"
+        }}>
         <Icon name="pen" className="w-5 h-5"/>
       </button>
       <QuickNoteModal
