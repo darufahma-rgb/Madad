@@ -178,6 +178,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     { to: "/paths/muqaranah",  label: "Muqaranah" },
     { to: "/kurasah",          label: "Kurasah" },
     { to: "/tools",            label: "Tool Guide" },
+    { to: "/framework",        label: "Framework" },
   ];
   // Link tambahan untuk mobile menu
   const memberLinksExtra = [
