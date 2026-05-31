@@ -1,9 +1,31 @@
 const https = require('https');
 
+const ALLOWED_ORIGINS = [
+  'https://talqeeh.vercel.app',
+  'https://talqeeh.com',
+  process.env.ALLOWED_ORIGIN || '',
+].filter(Boolean);
+
+const getAllowOrigin = (origin) => {
+  if (!origin) return ALLOWED_ORIGINS[0] || '*';
+  return ALLOWED_ORIGINS.some(a => origin.startsWith(a)) ? origin : ALLOWED_ORIGINS[0] || '*';
+};
+
+const verifyToken = (headers) => {
+  const token = (headers || {})['x-admin-token'];
+  if (!token) return false;
+  try {
+    const authHandler = require('./admin-auth.js');
+    const expiry = authHandler.validTokens.get(token);
+    return !!(expiry && Date.now() < expiry);
+  } catch { return false; }
+};
+
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
+  const origin = req.headers.origin || '';
+  res.setHeader('Access-Control-Allow-Origin', getAllowOrigin(origin));
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-token');
 
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   if (req.method !== 'POST') {
@@ -11,10 +33,14 @@ module.exports = async (req, res) => {
     return;
   }
 
+  if (!verifyToken(req.headers)) {
+    res.status(401).json({ ok: false, error: 'Unauthorized — hanya admin yang bisa kirim WA' });
+    return;
+  }
+
   const rawBody = await new Promise(resolve => {
-    let d = '';
-    req.on('data', c => d += c);
-    req.on('end', () => resolve(d));
+    if (req._rawBody !== undefined) { resolve(req._rawBody); return; }
+    let d = ''; req.on('data', c => d += c); req.on('end', () => resolve(d));
   });
 
   try {

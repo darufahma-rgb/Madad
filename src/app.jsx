@@ -20,7 +20,7 @@ class ErrorBoundary extends React.Component {
         <div style={{
           minHeight:"100vh", display:"flex", flexDirection:"column",
           alignItems:"center", justifyContent:"center",
-          background:"#0A0514", padding:"24px", textAlign:"center",
+          background:"#0c0c0c", padding:"24px", textAlign:"center",
         }}>
           <div style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:"2rem",color:"#C9A86A",marginBottom:"12px"}}>
             تَلْقِيح
@@ -34,7 +34,7 @@ class ErrorBoundary extends React.Component {
           <button
             onClick={() => window.location.reload()}
             style={{
-              background:"linear-gradient(160deg,#A970FF,#7C4DFF)", color:"#F5F0FF",
+              background:"linear-gradient(160deg,#3ecf8e,#2aa870)", color:"#0c0c0c",
               border:"none", borderRadius:"12px", padding:"12px 28px",
               fontSize:"15px", cursor:"pointer", fontFamily:"DM Sans,sans-serif",
             }}>

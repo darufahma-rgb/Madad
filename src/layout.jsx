@@ -772,14 +772,18 @@ const SupportButton = () => {
   const getWa = () => {
     try {
       const s = JSON.parse(localStorage.getItem("talqee_admin_settings") || "{}");
-      return s.whatsapp || "+201xxxxxxxxx";
-    } catch { return "+201xxxxxxxxx"; }
+      return s.whatsapp || "";
+    } catch { return ""; }
   };
 
+  const wa = getWa();
+  const isPlaceholder = !wa || wa.includes("xxxxxxxxx") || wa === "+201xxxxxxxxx";
+  if (isPlaceholder) return null;
+
   const handleClick = () => {
-    const wa = getWa().replace(/\D/g, "");
+    const num = wa.replace(/\D/g, "");
     const msg = encodeURIComponent("Assalamu'alaikum, saya butuh bantuan dengan Talqeeh.");
-    window.open(`https://wa.me/${wa}?text=${msg}`, "_blank");
+    window.open(`https://wa.me/${num}?text=${msg}`, "_blank");
   };
 
   return (

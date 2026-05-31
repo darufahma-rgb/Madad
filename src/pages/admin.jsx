@@ -3,7 +3,30 @@ import React, { useState, useEffect, useRef, useCallback, useMemo, createContext
    /admin, PIN gate, then tabbed control center
 */
 
-const ADMIN_PIN = "050900";
+/* ── Admin API Helpers (SEC-1, SEC-2) ── */
+const adminToken = () => sessionStorage.getItem('talqee_admin_token') || '';
+
+const adminMembersAPI = async (action, code, row) => {
+  const r = await fetch('/api/admin-members', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
+    body: JSON.stringify({ action, code, row }),
+  });
+  if (r.status === 401) {
+    sessionStorage.removeItem('talqee_admin_token');
+    setAdminLoggedIn(false);
+    window.location.reload();
+    throw new Error('Sesi expired, silakan login ulang');
+  }
+  const j = await r.json();
+  if (!j.ok) throw new Error(j.error || 'API error');
+  return j.data;
+};
+
+const adminGetAllMembers  = async ()            => { const rows = await adminMembersAPI('list'); return Array.isArray(rows) ? rows.map(sbToMember) : []; };
+const adminAddMember      = async (member)       => { const rows = await adminMembersAPI('add', null, memberToSb(member)); return sbToMember(Array.isArray(rows) ? rows[0] : rows); };
+const adminUpdateMember   = async (code, patch)  => { const rows = await adminMembersAPI('update', code, memberToSb(patch)); return sbToMember(Array.isArray(rows) ? rows[0] : rows); };
+const adminDeleteMember   = async (code)         => adminMembersAPI('delete', code);
 
 const AdminPage = () => {
   const [loggedIn, setLoggedIn] = useState(isAdminLoggedIn());
@@ -78,14 +101,32 @@ const AdminLogin = ({ onLogin }) => {
 
   useEffect(() => { setTimeout(() => inputRef.current?.focus(), 200); }, []);
 
-  const submit = (e) => {
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (e) => {
     e.preventDefault();
-    if (pin === ADMIN_PIN) {
-      setAdminLoggedIn(true);
-      onLogin();
-    } else {
+    if (!pin.trim() || loading) return;
+    setLoading(true);
+    try {
+      const r = await fetch('/api/admin-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pin }),
+      });
+      const j = await r.json();
+      if (j.ok) {
+        sessionStorage.setItem('talqee_admin_token', j.token);
+        setAdminLoggedIn(true);
+        onLogin();
+      } else {
+        setError(true);
+        setTimeout(() => setError(false), 1500);
+      }
+    } catch {
       setError(true);
       setTimeout(() => setError(false), 1500);
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -108,7 +149,9 @@ const AdminLogin = ({ onLogin }) => {
               onBlur={e => e.target.style.borderColor= error ? "" : "rgba(255,255,255,0.10)"}
             />
             {error && <div className="mt-3 text-sm text-rose-600">PIN salah.</div>}
-            <button type="submit" className="btn btn-primary w-full mt-5">Masuk</button>
+            <button type="submit" disabled={loading} className="btn btn-primary w-full mt-5">
+              {loading ? "Memverifikasi..." : "Masuk"}
+            </button>
           </form>
         </div>
       </div>
@@ -121,7 +164,7 @@ const AdminDashboard = () => {
   const [members, setMembers] = useState([]);
 
   useEffect(() => {
-    sbGetAllMembers()
+    adminGetAllMembers()
       .then(setMembers)
       .catch(() => setMembers(sbGetAllMembersFallback()));
   }, []);
@@ -246,10 +289,10 @@ const AdminMembers = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await sbGetAllMembers();
+      const data = await adminGetAllMembers();
       setMembers(data);
     } catch (err) {
-      setError("Tidak bisa terhubung ke Supabase: " + err.message);
+      setError("Tidak bisa memuat data: " + err.message);
       setMembers(sbGetAllMembersFallback());
     } finally {
       setLoading(false);
@@ -260,7 +303,7 @@ const AdminMembers = () => {
 
   const updateMember = async (code, patch) => {
     try {
-      const updated = await sbUpdateMember(code, patch);
+      const updated = await adminUpdateMember(code, patch);
       setMembers(prev => prev.map(m => m.code === code ? updated : m));
     } catch (err) {
       toast.push("Gagal update: " + err.message);
@@ -269,7 +312,7 @@ const AdminMembers = () => {
 
   const deleteMember = async (code, name) => {
     try {
-      await sbDeleteMember(code);
+      await adminDeleteMember(code);
       setMembers(prev => prev.filter(m => m.code !== code));
       toast.push(`Member "${name}" dihapus.`);
     } catch (err) {
@@ -527,7 +570,7 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
         status: "active",
         expiresAt: expires.toISOString().split("T")[0],
       };
-      const added = await sbAddMember(newMember);
+      const added = await adminAddMember(newMember);
       setGeneratedCode(added.code);
       onAdd && onAdd(added);
     } catch (err) {
@@ -538,9 +581,24 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
   };
 
   const copyCode = () => { navigator.clipboard.writeText(generatedCode); toast.push("Kode tersalin"); };
-  const sendWA = () => {
-    const text = `Halo ${name}!%0A%0AKode akses Talqeeh-mu sudah aktif:%0A%0A*${generatedCode}*%0A%0ABuka Talqeeh → Login Member → masukkan kode di atas.%0A%0A--Tim Talqeeh`;
-    window.open(`https://wa.me/${whatsapp.replace(/\D/g,"")}?text=${text}`, "_blank");
+  const sendWA = async () => {
+    const message = `Halo ${name}!\n\nKode akses Talqeeh-mu sudah aktif:\n\n*${generatedCode}*\n\nBuka Talqeeh → Login Member → masukkan kode di atas.\n\n--Tim Talqeeh`;
+    try {
+      const r = await fetch('/api/send-wa', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
+        body: JSON.stringify({ to: whatsapp, message }),
+      });
+      const j = await r.json();
+      if (j.ok) {
+        toast.push('✓ WA berhasil dikirim via Fonnte');
+      } else {
+        toast.push('Fonnte gagal, buka WA manual...');
+        window.open(`https://wa.me/${whatsapp.replace(/\D/g,"")}?text=${encodeURIComponent(message)}`, "_blank");
+      }
+    } catch {
+      window.open(`https://wa.me/${whatsapp.replace(/\D/g,"")}?text=${encodeURIComponent(message)}`, "_blank");
+    }
   };
 
   return (

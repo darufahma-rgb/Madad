@@ -157,6 +157,8 @@ Object.assign(window, {
   _supabase: _getClient(),
   _onSupabaseReady,
   checkSupabase,
+  sbToMember,
+  memberToSb,
   sbGetAllMembers,
   sbGetMemberByCode,
   sbAddMember,

@@ -97,6 +97,13 @@ const tryLogin = async (code, { forceTakeover = false } = {}) => {
     member = all.find(m => m.code === code.trim().toUpperCase()) || null;
   }
 
+  // [BIZ-1] Fallback ke localStorage saat Supabase online tapi kode tidak ada
+  // (misal: kode demo atau kode yang belum diseed ke Supabase)
+  if (!member) {
+    const all = sbGetAllMembersFallback();
+    member = all.find(m => m.code === code.trim().toUpperCase()) || null;
+  }
+
   if (!member) return { ok: false, status: LOGIN_RESULT.NOT_FOUND };
   if (member.status === "disabled") return { ok: false, status: LOGIN_RESULT.DISABLED, member };
   if (member.status === "expired")  return { ok: false, status: LOGIN_RESULT.EXPIRED, member };

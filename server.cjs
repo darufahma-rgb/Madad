@@ -67,6 +67,27 @@ const json = (res, status, body) => {
   res.end(JSON.stringify(body));
 };
 
+const callApiHandler = async (handlerPath, req, res, rawBody) => {
+  const handler = require(handlerPath);
+  const wrappedReq = Object.assign(Object.create(req), {
+    method: req.method, headers: req.headers, _rawBody: rawBody,
+    on(event, cb) {
+      if (event === 'data') { cb(rawBody); return this; }
+      if (event === 'end')  { cb();        return this; }
+      return req.on(event, cb);
+    },
+    status() { return this; },
+  });
+  const wrappedRes = {
+    _status: 200, _headers: {},
+    status(code) { this._status = code; return this; },
+    setHeader(k, v) { this._headers[k] = v; return this; },
+    json(body) { json(res, this._status, body); },
+    end(body) { res.writeHead(this._status, this._headers); res.end(body || ''); },
+  };
+  await handler(wrappedReq, wrappedRes);
+};
+
 http.createServer(async (req, res) => {
   let urlPath = req.url.split('?')[0];
 
@@ -93,28 +114,35 @@ http.createServer(async (req, res) => {
     return;
   }
 
+  // ── /api/admin-auth ───────────────────────────────────────────────────
+  if (urlPath === '/api/admin-auth') {
+    try {
+      const rawBody = await readBody(req);
+      await callApiHandler('./api/admin-auth.js', req, res, rawBody);
+    } catch (err) {
+      console.error('[admin-auth] Error:', err.message);
+      json(res, 500, { ok: false, error: err.message });
+    }
+    return;
+  }
+
+  // ── /api/admin-members ────────────────────────────────────────────────
+  if (urlPath === '/api/admin-members') {
+    try {
+      const rawBody = await readBody(req);
+      await callApiHandler('./api/admin-members.js', req, res, rawBody);
+    } catch (err) {
+      console.error('[admin-members] Error:', err.message);
+      json(res, 500, { ok: false, error: err.message });
+    }
+    return;
+  }
+
   // ── /api/send-wa ─────────────────────────────────────────────────────
   if (urlPath === '/api/send-wa') {
     try {
-      const handler = require('./api/send-wa.js');
       const rawBody = await readBody(req);
-      const wrappedReq = Object.assign(Object.create(req), {
-        method: req.method, headers: req.headers, _rawBody: rawBody,
-        on(event, cb) {
-          if (event === 'data') { cb(rawBody); return this; }
-          if (event === 'end')  { cb();        return this; }
-          return req.on(event, cb);
-        },
-        status() { return this; },
-      });
-      const wrappedRes = {
-        _status: 200, _headers: {},
-        status(code) { this._status = code; return this; },
-        setHeader(k, v) { this._headers[k] = v; return this; },
-        json(body) { json(res, this._status, body); },
-        end(body) { res.writeHead(this._status, this._headers); res.end(body || ''); },
-      };
-      await handler(wrappedReq, wrappedRes);
+      await callApiHandler('./api/send-wa.js', req, res, rawBody);
     } catch (err) {
       console.error('[send-wa] Error:', err.message);
       json(res, 500, { ok: false, error: err.message });
