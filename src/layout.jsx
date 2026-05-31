@@ -509,7 +509,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
   }, [open]);
 
   const handlePayClick = () => {
-    const lynkUrl = localStorage.getItem("talqeeh_lynk_url") || "https://lynk.id/talqee";
+    const lynkUrl = localStorage.getItem("talqeeh_lynk_url") || "https://tinyurl.com/TALQEEH26";
     window.open(lynkUrl, "_blank", "noopener,noreferrer");
     setWaitingConfirm(true);
   };
