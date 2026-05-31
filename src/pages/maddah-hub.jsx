@@ -104,7 +104,7 @@ const MaddahHubPage = () => {
         <div className="container-x relative">
           <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 inline-flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>
-            36 MADDAH
+            {MADDAHS.filter(m => !m.isMahad).length} MADDAH
           </div>
           <div className="arabic-display text-gold-300 text-3xl md:text-4xl mb-3" style={{display:"block",textAlign:"left",direction:"rtl",width:"fit-content"}}>
             المواد الدراسية

@@ -239,6 +239,15 @@ const OnboardingPage = () => {
 
   const getActiveQuestions = (d) => QUESTIONS.filter(q => !q.conditional || q.conditional(d));
 
+  // [TECH-1] Safeguard: saat level berubah, activeQuestions bisa menjadi lebih pendek.
+  // Pastikan step tidak pernah out-of-bounds (mencegah loncat pertanyaan / profil tidak lengkap).
+  useEffect(() => {
+    const active = getActiveQuestions(data);
+    if (step > 0 && step >= active.length) {
+      setStep(active.length - 1);
+    }
+  }, [data.level]);
+
   const activeQuestions = getActiveQuestions(data);
   const cur = activeQuestions[step];
   const totalSteps = activeQuestions.length - 1; // exclude intro
