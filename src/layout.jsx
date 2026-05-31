@@ -338,7 +338,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
 
 /* ---------------- Footer ---------------- */
 const Footer = () => (
-  <footer className="mt-20 border-t border-line">
+  <footer className="mt-20 border-t border-line" style={{ paddingBottom: "calc(var(--tabbar-height, 0px) + var(--safe-bottom))" }}>
     <div className="container-x py-12">
       <div className="flex flex-col md:flex-row items-start justify-between gap-8">
         <div className="max-w-md">

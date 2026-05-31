@@ -60,7 +60,7 @@ const ToastProvider = ({ children }) => {
   return (
     <ToastCtx.Provider value={{ push }}>
       {children}
-      <div className="fixed z-[100] bottom-5 right-5 flex flex-col gap-2 pointer-events-none">
+      <div className="fixed z-[100] right-5 flex flex-col gap-2 pointer-events-none" style={{ bottom: "calc(var(--tabbar-height, 0px) + 20px)" }}>
         {toasts.map((t) => (
           <div key={t.id} className="toast-slide pointer-events-auto card-glass-strong shadow-glow px-4 py-3 flex items-center gap-3 min-w-[240px]">
             <span className={`w-7 h-7 rounded-full flex items-center justify-center ${t.kind === "error" ? "bg-rose-600/20 text-rose-600" : "bg-emerald-500/20 text-emerald-300"}`}>
@@ -201,7 +201,7 @@ const BottomSheet = ({ children, onClose, title, maxHeight = "85vh" }) => (
     <div className="absolute inset-0 bg-night-950/70 backdrop-blur-sm"/>
     <div
       className="relative w-full md:max-w-lg bg-night-800 border-t md:border rounded-t-3xl md:rounded-2xl sheet-enter overflow-hidden"
-      style={{ maxHeight, paddingBottom: "var(--safe-bottom)", borderColor:"rgba(62,207,142,0.22)" }}
+      style={{ maxHeight, paddingBottom: "calc(var(--tabbar-height, 0px) + var(--safe-bottom) + 16px)", borderColor:"rgba(62,207,142,0.22)" }}
       onClick={e => e.stopPropagation()}
     >
       <div className="md:hidden flex justify-center pt-3 pb-1">

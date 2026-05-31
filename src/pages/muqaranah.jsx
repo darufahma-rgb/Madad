@@ -191,8 +191,8 @@ const MuqaranahPage = () => {
       {/* FAB */}
       <button
         onClick={() => navigate("/paths/muqaranah/new")}
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2.5 px-5 py-3 rounded-full btn-primary shadow-lg hov-lift text-sm font-medium"
-        style={{background:"linear-gradient(135deg, #7C4DFF, #A970FF)"}}>
+        className="fixed right-6 z-50 flex items-center gap-2.5 px-5 py-3 rounded-full btn-primary shadow-lg hov-lift text-sm font-medium"
+        style={{ background:"linear-gradient(135deg, #7C4DFF, #A970FF)", bottom: "calc(var(--tabbar-height, 0px) + 24px)" }}>
         <Icon name="pen" className="w-4 h-4"/> Susun Muqaranah Baru
       </button>
     </div>
