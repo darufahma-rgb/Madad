@@ -125,6 +125,16 @@ const FACULTIES = [
     ],
   },
   {
+    id: "dirasat-banin",
+    label: "Dirasat Islamiyah (Banin)",
+    arabic: "الدراسات الإسلامية",
+    desc: "Studi Islam terpadu — maddah inti lintas bidang",
+    icon: "layers",
+    forGender: "banin",
+    majorsStartLevel: null,
+    majors: [],
+  },
+  {
     id: "quran",
     label: "Al-Qur'an Al-Karim",
     arabic: "القرآن الكريم",

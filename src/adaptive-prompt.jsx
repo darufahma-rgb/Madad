@@ -31,8 +31,9 @@ const FAKULTAS_LABEL = {
   ushuluddin: "Fakultas Ushuluddin",
   syariah:    "Fakultas Syariah wal Qanun",
   lughah:     "Fakultas Lughah 'Arabiyah",
-  dirasat:    "Fakultas Dirasat Islamiyah",
-  quran:      "Fakultas Al-Qur'an Al-Karim",
+  dirasat:       "Fakultas Dirasat Islamiyah",
+  "dirasat-banin": "Fakultas Dirasat Islamiyah (Banin)",
+  quran:         "Fakultas Al-Qur'an Al-Karim",
   umum:       "Al-Azhar",
 };
 
