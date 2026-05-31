@@ -125,17 +125,34 @@ const S2SetupStep = ({ profile, onSave }) => {
 
 const OnboardingPage = () => {
   const { session, profile, saveProfile } = useAuth();
+  const path = useRoute();
+  const isEditMode = path.includes("edit=1") || path.includes("edit=true");
   const [step, setStep] = useState(0);
-  const [data, setData] = useState({
-    faculty: null, level: null, major: null,
-    struggle: [], learningStyle: [], s2Maddah: null,
-    mahad_struggle: [],
+  const [data, setData] = useState(() => {
+    const base = {
+      faculty: null, level: null, major: null,
+      struggle: [], learningStyle: [], s2Maddah: null,
+      mahad_struggle: [],
+    };
+    if (profile?.onboarded) {
+      return {
+        ...base,
+        faculty: profile.faculty ?? null,
+        level: profile.level ?? null,
+        major: profile.major ?? null,
+        struggle: profile.struggle ?? [],
+        learningStyle: profile.learningStyle ?? [],
+        s2Maddah: profile.s2Maddah ?? null,
+        mahad_struggle: profile.mahad_struggle ?? [],
+      };
+    }
+    return base;
   });
   const [mahadJenjang, setMahadJenjang] = useState(null);
   const toast = useToast();
 
   useEffect(() => { if (!session) navigate("/"); }, [session]);
-  useEffect(() => { if (profile?.onboarded) navigate("/dashboard"); }, [profile]);
+  useEffect(() => { if (profile?.onboarded && !isEditMode) navigate("/dashboard"); }, [profile, isEditMode]);
 
   const QUESTIONS = [
     { key: "intro", kind: "intro" },
@@ -304,10 +321,15 @@ const OnboardingPage = () => {
   };
 
   const doFinish = (finalData) => {
-    const finalProfile = { ...finalData, onboarded: true, onboardedAt: new Date().toISOString() };
+    const finalProfile = { ...profile, ...finalData, onboarded: true, onboardedAt: profile?.onboardedAt || new Date().toISOString() };
     saveProfile(finalProfile);
-    toast.push("Dashboard personal sudah siap untukmu.");
-    setTimeout(() => navigate("/welcome"), 400);
+    if (isEditMode) {
+      toast.push("Profil berhasil diperbarui. Dashboard sudah disesuaikan.");
+      setTimeout(() => navigate("/dashboard"), 400);
+    } else {
+      toast.push("Dashboard personal sudah siap untukmu.");
+      setTimeout(() => navigate("/welcome"), 400);
+    }
   };
 
   const onNext = () => {
@@ -360,7 +382,7 @@ const OnboardingPage = () => {
 
         <div key={step} className="page-enter flex-1 flex flex-col">
           {cur?.kind === "intro" ? (
-            <Intro session={session} onNext={onNext}/>
+            <Intro session={session} onNext={onNext} isEditMode={isEditMode}/>
           ) : cur?.kind === "s2_setup" ? (
             <S2SetupStep profile={data} onSave={handleS2Save}/>
           ) : (
@@ -383,7 +405,7 @@ const OnboardingPage = () => {
             </button>
             <button onClick={onNext} disabled={!canNext}
               className={`btn btn-primary ${!canNext ? "opacity-40 cursor-not-allowed" : ""}`}>
-              {isLast ? "Selesai & buka dashboard" : "Lanjut"} <Icon name="arrowRight" className="w-4 h-4"/>
+              {isLast ? (isEditMode ? "Simpan Perubahan" : "Selesai & buka dashboard") : "Lanjut"} <Icon name="arrowRight" className="w-4 h-4"/>
             </button>
           </div>
         )}
@@ -399,15 +421,17 @@ const OnboardingPage = () => {
   );
 };
 
-const Intro = ({ session, onNext }) => (
+const Intro = ({ session, onNext, isEditMode }) => (
   <div className="max-w-2xl mx-auto text-center pt-10">
     <div className="arabic-display-classical text-3xl text-gold-300 mb-4">السلام عليكم</div>
     <h1 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-tight mb-5">
-      Selamat datang, {session.name.split(" ")[0]}.
+      {isEditMode ? "Ubah Profil Belajarmu" : `Selamat datang, ${session.name.split(" ")[0]}.`}
     </h1>
     <p className="text-ink-muted text-lg leading-relaxed mb-10">
-      Sebelum mulai, kasih kami 4–5 pertanyaan singkat supaya dashboard-mu
-      benar-benar personal, bukan template umum.
+      {isEditMode
+        ? "Perbarui pilihan jenjang, fakultas, dan preferensi belajarmu. Setelah disimpan, dashboard langsung menyesuaikan."
+        : "Sebelum mulai, kasih kami 4–5 pertanyaan singkat supaya dashboard-mu benar-benar personal, bukan template umum."
+      }
     </p>
     <div className="card-glass p-6 mb-8 text-left max-w-md mx-auto">
       <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Yang akan ditanyakan</div>

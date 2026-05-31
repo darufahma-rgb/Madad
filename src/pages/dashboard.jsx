@@ -539,6 +539,13 @@ const DashboardPage = () => {
               )}
             </div>
           </Reveal>
+          <div className="mt-3">
+            <button
+              onClick={() => navigate("/onboarding?edit=1")}
+              className="btn btn-ghost text-xs inline-flex items-center gap-1.5">
+              <Icon name="pen" className="w-3.5 h-3.5"/> Ubah Profil
+            </button>
+          </div>
         </div>
         {/* Smooth fade ke section berikutnya — mobile only */}
         <div className="md:hidden absolute bottom-0 left-0 right-0 h-20 pointer-events-none"

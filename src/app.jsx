@@ -109,7 +109,7 @@ const App = () => {
   if (path.startsWith("/sample/nahwu"))             { page = <SampleNahwuPage/>; routeLabel = "Sample Nahwu"; }
   else if (path === "/ethics")            { page = <EthicsPage/>; routeLabel = "Etika"; }
   else if (path === "/maddah-publik")    { page = <MaddahPublikPage onOpenPayment={openPayment} onOpenLogin={openLogin}/>; routeLabel = "Katalog Maddah"; }
-  else if (path === "/onboarding")   { page = <OnboardingPage/>; routeLabel = "Onboarding"; }
+  else if (path === "/onboarding" || path.startsWith("/onboarding?"))   { page = <OnboardingPage/>; routeLabel = "Onboarding"; }
   else if (path === "/welcome")      { page = <WelcomePage/>; routeLabel = "Selamat Datang"; }
   else if (path === "/dashboard")    { page = <DashboardPage/>; routeLabel = "Dashboard"; }
   else if (path.startsWith("/tools")) { page = <ToolGuidePage/>; routeLabel = "Tool Guide"; }
