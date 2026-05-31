@@ -17,13 +17,13 @@ const handler = async (req, res) => {
 
   try {
     const { pin } = JSON.parse(rawBody || '{}');
-    const adminPin = process.env.ADMIN_PIN;
+    const adminPin = (process.env.ADMIN_PIN || '').trim();
 
     if (!adminPin) {
       res.status(500).json({ ok: false, error: 'ADMIN_PIN belum diset di server. Hubungi developer.' });
       return;
     }
-    if (!pin || pin !== adminPin) {
+    if (!pin || pin.trim() !== adminPin) {
       res.status(401).json({ ok: false, error: 'PIN salah' });
       return;
     }
