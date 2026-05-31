@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 // Inline SVG icons (lucide-style, hand-picked subset)
 const Icon = ({ name, className = "w-5 h-5", strokeWidth = 1.6, ...rest }) => {
   const paths = {

@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih, Intentions Data — pool 5 niat klasik */
 
 const CLASSIC_INTENTIONS = [

@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih, Mini markdown renderer (no dependencies)
    Supports: H1-H3, bold, italic, bullet list, numbered list,
    blockquote, inline code, paragraph, Arabic auto-detect, :bismillah:

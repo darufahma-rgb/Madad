@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih, Ethics page (public, always accessible) */
 
 const EthicsPage = () => {

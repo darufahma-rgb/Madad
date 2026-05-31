@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih, Muqaranah Landing Page */
 
 const CATEGORY_LABELS = { fiqh: "Fiqh", ushul: "Ushul Fiqh", aqidah: "Aqidah", hadits: "Hadits/Musthola" };

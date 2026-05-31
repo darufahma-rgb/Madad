@@ -1,3 +1,4 @@
+import { createClient } from '@supabase/supabase-js';
 /* Talqeeh — Supabase Client & Member API (Fase 1)
    Member management via Supabase. Data user pribadi tetap localStorage.
 */
@@ -15,7 +16,7 @@ const _onSupabaseReady = (fn) => {
 fetch('/api/config')
   .then(r => r.json())
   .then(({ supabaseUrl, supabaseAnonKey }) => {
-    _supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+    _supabase = createClient(supabaseUrl, supabaseAnonKey);
     _supabaseReady = true;
     _supabaseReadyCallbacks.forEach(fn => fn());
     _supabaseReadyCallbacks = [];

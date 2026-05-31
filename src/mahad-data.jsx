@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqeeh — Ma'had Al-Azhar Maddah Data
    Format prompts: array of { title, targetAI, template }
    8-10 prompt per maddah (pahami 2-3, hafal 2, latihan 2, ujian 2)

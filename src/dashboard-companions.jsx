@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih, Dashboard Companion Modules
    1. IntentionStrip  — Niat Hari Ini
    2. RhythmCard      — Ritme Pekan Ini
@@ -9,7 +10,6 @@
   document.head.appendChild(s);
 })();
 
-const { useState: useStateC, useEffect: useEffectC, useMemo: useMemoC } = React;
 
 /* ─── date helpers ─── */
 const todayISO = () => new Date().toISOString().slice(0, 10);
@@ -132,14 +132,14 @@ const getReflectionOfTheDay = () => {
 ═══════════════════════════════════════════════ */
 const IntentionStrip = () => {
   const toast = useToast();
-  const [data, setData]           = useStateC(loadIntentions);
-  const [showEdit, setShowEdit]   = useStateC(false);
-  const [selClassic, setSelClassic] = useStateC(null);
-  const [customText, setCustomText] = useStateC("");
-  const [useArabic, setUseArabic]   = useStateC(false);
-  const [saveDefault, setSaveDefault] = useStateC(false);
+  const [data, setData]           = useState(loadIntentions);
+  const [showEdit, setShowEdit]   = useState(false);
+  const [selClassic, setSelClassic] = useState(null);
+  const [customText, setCustomText] = useState("");
+  const [useArabic, setUseArabic]   = useState(false);
+  const [saveDefault, setSaveDefault] = useState(false);
 
-  useEffectC(() => {
+  useEffect(() => {
     const h = () => setData(loadIntentions());
     window.addEventListener("madad:refresh", h);
     return () => window.removeEventListener("madad:refresh", h);
@@ -333,10 +333,10 @@ const IntentionStrip = () => {
    MODUL 2 — RITME PEKAN INI
 ═══════════════════════════════════════════════ */
 const RhythmCard = () => {
-  const [rhythm, setRhythm] = useStateC(getWeekRhythm);
-  const [tooltip, setTooltip] = useStateC(null);
+  const [rhythm, setRhythm] = useState(getWeekRhythm);
+  const [tooltip, setTooltip] = useState(null);
 
-  useEffectC(() => {
+  useEffect(() => {
     setRhythm(getWeekRhythm());
     const h = () => setRhythm(getWeekRhythm());
     window.addEventListener("madad:refresh", h);
@@ -411,8 +411,8 @@ const RhythmCard = () => {
    MODUL 3 — REFLEKSI DARI KURASAH
 ═══════════════════════════════════════════════ */
 const ReflectionCard = () => {
-  const note      = useMemoC(() => getReflectionOfTheDay(), []);
-  const allNotes  = useMemoC(() => loadNotes(), []);
+  const note      = useMemo(() => getReflectionOfTheDay(), []);
+  const allNotes  = useMemo(() => loadNotes(), []);
   const hasOld    = allNotes.some(n => daysSince(n.createdAt) >= 7 && (n.body||"").length >= 50);
 
   if (allNotes.length === 0) {

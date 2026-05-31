@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih, Kurasah (Notebook) Landing Page */
 
 const TAG_COLORS = [

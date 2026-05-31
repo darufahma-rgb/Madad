@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqeeh — Halaman Maddah Ma'had Al-Azhar
    I'dadi (SMP) + Tsanawi (SMA Adabi/Ilmi)
 */

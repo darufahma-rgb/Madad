@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih — Sample Maddah Nahwu (publik, accessible tanpa member) */
 
 const SamplePromptCard = ({ prompt }) => {

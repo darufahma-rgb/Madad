@@ -1,6 +1,6 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih, Shared UI primitives (dark/premium) */
 
-const { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } = React;
 
 /* ---------------- Reveal on scroll (with safety fallback) ---------------- */
 const Reveal = ({ as: As = "div", className = "", stagger = false, children, threshold = 0.18, delay = 0, ...rest }) => {

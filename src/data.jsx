@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih, All product data
    - Personalization metadata
    - AI tools with adaptive guide variants

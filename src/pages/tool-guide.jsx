@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* AIGYPT, Adaptive Tool Guide Page
    /tools                   , overview, tool list
    /tools?id=<toolId>       , single tool with adaptive guide (defaults to user's learning style)

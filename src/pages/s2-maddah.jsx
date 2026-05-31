@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqeeh — Halaman Maddah S2
    Menampilkan maddah yang diinput user saat onboarding S2.
    Setiap maddah punya prompt templates yang adaptive.

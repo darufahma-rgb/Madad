@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih — Maddah Detail: halaman per Maddah dengan adaptive prompt */
 
 /* ---- Error Boundary lokal ---- */

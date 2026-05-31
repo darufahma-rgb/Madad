@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih, auth system, profile, progress, single-device policy */
 
 // NOTE: Storage keys tetap pakai prefix 'madad_' untuk backward compatibility
@@ -236,23 +237,22 @@ const setAdminLoggedIn = (v) => {
 };
 
 /* ---------- React hook for session state ---------- */
-const { useState: useStateAuth, useEffect: useEffectAuth, useCallback: useCallbackAuth } = React;
 
 const useAuth = () => {
-  const [session,       setSession]       = useStateAuth(getSession());
-  const [profile,       setProfileState]  = useStateAuth(getProfile());
-  const [progress,      setProgressState] = useStateAuth(getProgress());
-  const [loginLoading,  setLoginLoading]  = useStateAuth(false);
+  const [session,       setSession]       = useState(getSession());
+  const [profile,       setProfileState]  = useState(getProfile());
+  const [progress,      setProgressState] = useState(getProgress());
+  const [loginLoading,  setLoginLoading]  = useState(false);
 
   const fireRefresh = () => window.dispatchEvent(new Event("madad:refresh"));
 
-  const syncFromStorage = useCallbackAuth(() => {
+  const syncFromStorage = useCallback(() => {
     setSession(getSession());
     setProfileState(getProfile());
     setProgressState(getProgress());
   }, []);
 
-  useEffectAuth(() => {
+  useEffect(() => {
     window.addEventListener("storage",       syncFromStorage);
     window.addEventListener("madad:refresh", syncFromStorage);
     return () => {
@@ -262,7 +262,7 @@ const useAuth = () => {
   }, [syncFromStorage]);
 
   // Background Supabase session validation (non-blocking)
-  useEffectAuth(() => {
+  useEffect(() => {
     const s = getSession();
     if (!s) return;
     (async () => {

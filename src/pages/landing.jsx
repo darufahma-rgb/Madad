@@ -1,6 +1,6 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih — Landing page v6: hero premium 2-kolom, geometric bg */
 
-const { useState, useEffect } = React;
 
 const LANDING_STYLES = `
   .kali-display  { font-family: "Reem Kufi","Noto Kufi Arabic",sans-serif; direction:rtl; }

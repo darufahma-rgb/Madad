@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih, Quick Note Floating Button + Modal */
 
 const QUICK_NOTE_TAGS = ["Fiqh","Ushul","Hadith","Tafsir","Nahwu","Aqidah","Balaghah","Makalah","Hafalan","Dars","Penting"];

@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih — Adaptive Prompt Engine
    Resolve placeholder [TINGKATAN], [FAKULTAS], [JURUSAN], [GAYA_BELAJAR],
    [MADDAH], [LEVEL_BAHASA] berdasarkan profile user.

@@ -1,3 +1,5 @@
+import React, { useState, useEffect } from 'react';
+
 /* Talqih, App shell + routing */
 
 /* ── Error Boundary (BN-6) ── */
@@ -149,5 +151,4 @@ const App = () => {
   );
 };
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App/>);
+export default App;

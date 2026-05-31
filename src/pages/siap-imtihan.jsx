@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqeeh — Siap Imtihan Page
    Section di dashboard yang jadi landing, plus halaman penuh /siap-imtihan
 */

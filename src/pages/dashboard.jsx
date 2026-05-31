@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih, Personal Dashboard — Prompt 4: Maddah-First */
 
 const getCairoGreeting = () => {

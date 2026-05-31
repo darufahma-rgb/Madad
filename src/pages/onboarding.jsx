@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih — Onboarding (faculty · level · major conditional · S2 maddah) */
 
 const S2SetupStep = ({ profile, onSave }) => {

@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqeeh — Halaman Detail Maddah Ma'had
    URL: /#/mahad-maddah/[id]
 */

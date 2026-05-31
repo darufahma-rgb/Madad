@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqeeh — Welcome Page (muncul sekali setelah onboarding selesai) */
 
 const WelcomePage = () => {
