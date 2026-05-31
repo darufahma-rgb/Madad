@@ -16,11 +16,11 @@
       "dest": "/api/send-wa.js"
     },
     {
-      "src": "/src/(.*)\\.jsx",
-      "dest": "/src/$1.jsx",
+      "src": "/src/(.*)",
+      "dest": "/src/$1",
       "headers": {
         "Content-Type": "application/javascript; charset=utf-8",
-        "Cache-Control": "no-cache, no-store, must-revalidate"
+        "Cache-Control": "public, max-age=3600"
       }
     },
     {
@@ -31,7 +31,7 @@
       }
     },
     {
-      "src": "/(.*\\.(?:png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf))",
+      "src": "/(.*\\.(png|jpg|jpeg|gif|webp|svg|ico|woff|woff2|ttf|eot))",
       "dest": "/$1",
       "headers": {
         "Cache-Control": "public, max-age=31536000, immutable"
@@ -40,17 +40,6 @@
     {
       "src": "/(.*)",
       "dest": "/index.html"
-    }
-  ],
-  "headers": [
-    {
-      "source": "/src/(.*)\\.jsx",
-      "headers": [
-        {
-          "key": "Content-Type",
-          "value": "application/javascript; charset=utf-8"
-        }
-      ]
     }
   ]
 }
