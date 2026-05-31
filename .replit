@@ -27,7 +27,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "npm run build && node server.cjs"
+args = "npm install && npm run build && node server.cjs"
 waitForPort = 5000
 
 [userenv]
