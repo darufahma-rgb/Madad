@@ -4509,173 +4509,263 @@ Jelaskan kaitan qawa'id fiqhiyyah dengan maqashid syariah:
     prompts: {
       pahami: [
         {
-          title: "Pahami Rukun dan Syarat Nikah",
+          title: "Peta Besar Ahwal Syakhshiyah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan rukun dan syarat nikah menurut madzhab [MADZHAB kalau ada, atau 4 madzhab]:
-1. Rukun nikah (tulis Arab berharakat + penjelasan)
-2. Syarat untuk setiap rukun
-3. Perbedaan rukun-syarat antar madzhab (terutama tentang wali dan saksi)
-4. Nikah yang batil vs fasid — beda dan contohnya
+Beri kerangka utuh fiqh Ahwal Syakhshiyah (hukum keluarga):
+1. Cakupan: nikah (zawaj), talak, 'iddah, nafkah, hadhanah (pengasuhan), waris (mawarits/faraidh).
+2. Posisinya dalam fiqh & kaitannya dengan UU keluarga di negara muslim.
+3. Outline bab bercabang.
+4. Kenapa maddah ini sangat aplikatif dalam kehidupan.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Talaq, 'Iddah, dan Ruju'",
+          title: "Pahami Bab Nikah (Zawaj) Tuntas",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan alur talaq secara sistematis:
-1. Jenis-jenis talaq (raj'i, ba'in sughra, ba'in kubra) — teks Arab + definisi
-2. 'Iddah — kenapa wajib, berapa lama untuk masing-masing kondisi
-3. Ruju' — kapan boleh, caranya, dalil
-4. Khilaf madzhab dalam jumlah talaq tiga sekaligus (talaq tiga dalam satu waktu)
+Jelaskan bab nikah:
+1. Definisi, hukum, & hikmah nikah (teks Arab istilah berharakat).
+2. Rukun & syarat sah nikah.
+3. Mahar, wali, saksi, ijab-kabul.
+4. Mahram (yang haram dinikahi) — permanen & sementara.
+PENTING: sebut dalil dengan benar; jika ragu, katakan.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Sistem Mawarits",
+          title: "Pahami Talak, 'Iddah & Akibatnya",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan sistem mawarits (faraidh) secara komprehensif:
-1. Siapa saja yang termasuk ahli waris (ashhabul furudh, ashabah, dhawil arham)
-2. Syarat-syarat mewarisi (dan yang menghalangi/hajb)
-3. Bagian masing-masing ahli waris (dengan dalil ayat berharakat)
-4. Konsep hijab (hirman dan nuqshan)
-5. Langkah-langkah menghitung warisan
+Jelaskan bab perceraian:
+1. Jenis talak (raj'i, bain, sunni, bid'i) — definisi + hukum.
+2. Khulu', fasakh, li'an, zhihar — bedanya.
+3. 'Iddah: jenis & masa tiap kondisi.
+4. Akibat hukum (nafkah 'iddah, rujuk, status anak).
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Dasar Ilmu Faraidh (Waris)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan dasar ilmu mawarits/faraidh:
+1. Rukun & syarat waris, penghalang (mawani') waris.
+2. Ashabul furudh (yang dapat bagian tetap) + besaran bagiannya (1/2, 1/4, 1/8, 2/3, 1/3, 1/6).
+3. 'Ashabah (yang dapat sisa) & jenisnya.
+4. Konsep hijab (penghalang sebagian/total).
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Drill Tabel Bagian Ahli Waris",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Menghafal tabel bagian ahli waris dalam mawarits.
+          title: "Hafal Ashabul Furudh & Bagiannya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sesi drill:
-1. Sebut nama ahli waris
-2. Aku sebutkan: bagian-bagiannya (kapan dapat setengah, seperempat, dst) dan kondisi masing-masing
-3. Koreksi kalau salah
-4. Setelah 10 putaran, beri daftar yang perlu diperkuat
+Bantu hafal ashabul furudh:
+1. Tabel: ahli waris | bagian | syarat mendapatkannya.
+2. Mnemonic untuk mengingat siapa dapat 1/2, 1/4, 1/6, dst.
+3. Tandai yang sering tertukar.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mnemonic Bagian Ahli Waris",
+          title: "Hafal Rukun & Syarat (Nikah/Talak/Waris)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Perlu hafal bagian-bagian ahli waris dalam faraidh.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan tabel ringkas:
-- Ahli waris → bagiannya → kondisi mendapat bagian itu → kondisi hijab
+Bantu hafal rukun & syarat bab [SEBUTKAN]:
+1. Daftar lengkap (Arab berharakat + arti).
+2. Mnemonic.
+3. Urutan bila penting.
 
-Lalu buatkan mnemonic atau cara mudah mengingat siapa yang mendapat setengah, seperempat, dst.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Ahwal Syakhshiyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji (sebut hukum + selesaikan kasus). Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Latihan Hitung Pembagian Warisan",
+          title: "Latihan Hitung Pembagian Waris",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 6 kasus pembagian warisan bertingkat:
+Beri aku 5 kasus pembagian waris (sebut ahli waris yang ada & jumlah harta). Tugasku: hitung bagian tiap ahli waris.
+1. Tulis kasusnya.
+2. JANGAN beri jawaban dulu.
+3. Setelah aku hitung, koreksi: bagian benar + cara perhitungan ('aul/radd bila ada).
 
-Kasus 1 (mudah): mayit meninggalkan [AHLI WARIS], harta: Rp [JUMLAH]
-Kasus 2-4 (menengah): ada aul atau radd
-Kasus 5-6 (sulit): ada hajb, atau kasus musytarakah/akdariyyah
-
-Format tiap kasus: deskripsi ahli waris yang ada. JANGAN kasih jawaban dulu.
-
-Setelah aku jawab, koreksi per kasus dengan langkah perhitungan.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kasus Ahwal Syakhshiyah Kompleks",
+          title: "Latihan Kasus Nikah/Talak (Tathbiq)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 5 kasus hukum keluarga yang memerlukan analisis berlapis (mis. kasus nikah dengan kondisi tertentu, talaq yang dipermasalahkan, warisan yang ada perselisihan).
+Beri aku 6 kasus seputar nikah/talak/'iddah. Tugasku: tentukan hukum & solusinya.
+1. Tulis kasusnya.
+2. JANGAN beri jawaban dulu.
+3. Koreksi + sebutkan dalil/kaidahnya.
 
-Format kasus: deskripsi detail situasi. JANGAN kasih jawaban dulu.
+[METODE]
 
-Setelah aku jawab, koreksi + penjelasan jalur hukum + khilaf madzhab kalau ada.
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Soal Definisi & Hukum",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal campuran (definisi, rukun, hukum, beda istilah) dari bab [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Tahriri Ahwal Syakhshiyah",
+          title: "Mock Imtihan Tahriri (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian Tahriri [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 5 soal Azhari: hukum kasus munakahat/talaq/'iddah, hitung warisan, identifikasi hajb, khilaf madzhab dalam munakahat.
+Buatkan soal ujian tulis Ahwal Syakhshiyah gaya Azhar untuk bab [SEBUTKAN]:
+1. Tipe khas: 'arrif, udzkur al-hukm wad-dalil, mas'alah hisabiyah (kasus waris), ma hukm ma'a at-ta'lil.
+2. 5-6 soal bobot bervariasi (sering ada soal hitung waris).
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mock Syafawi Ahwal Syakhshiyah",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, latihan Syafawi [MADDAH]. [GAYA_BELAJAR].
+          title: "Simulasi Imtihan Syafawi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
 
-Bertindaklah sebagai dosen Azhar. 5 pertanyaan: rukun/syarat nikah, hukum kasus talaq, hitung warisan sederhana (kasih kasus), hajb dan jenisnya, perbedaan madzhab dalam munakahat.
+Berperanlah sebagai mumtahin syafawi:
+1. Tanya definisi, hukum + dalil, selesaikan kasus keluarga/waris.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
 
-Evaluasi di akhir.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari bab yang kupelajari ([SEBUTKAN]): bab yang sering jadi soal (terutama waris & kasus), cara jawab dapat nilai penuh, prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Ahwal Syakhshiyah",
+          title: "Rapikan Catatan Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang [BAB - mis. nikah / talaq / mawarits] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi poin hukum + dalil + contoh kasus, lengkapi harakat, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun sistematis, tambahkan ayat/dalil Arab berharakat yang relevan, beri contoh kasus tambahan, pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Setelah talaqqi bab [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan hukum, koreksi, ajukan 3 pertanyaan penguji (termasuk kasus).
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Khilaf Madzhab dalam Munakahat",
+          title: "Ahwal Syakhshiyah & Hukum Keluarga Kontemporer",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi khilaf dalam [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Masalah: [SEBUTKAN - mis. "Hukum nikah mut'ah" / "Nikah tanpa wali" / "Talaq tiga dalam satu majlis"]
+Untuk isu [SEBUTKAN, mis. nikah beda agama, hak asuh, waris beda agama]:
+1. Hukum dalam fiqh klasik.
+2. Bagaimana UU keluarga negara muslim (mis. Mesir, Indonesia) mengaturnya.
+3. Pertimbangan kontemporer.
+PENTING: sebut sumber; jika ragu, katakan.
 
-Jelaskan:
-1. Pendapat setiap madzhab dengan dalilnya
-2. Sebab utama perbedaan pendapat
-3. Bagaimana undang-undang keluarga Muslim modern memutuskan masalah ini
-
-Jangan men-tarjih.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "'Aul dan Radd dalam Mawarits: Khilaf Historis",
+          title: "Kasus Waris Kompleks ('Aul, Radd, 'Umariyyatan)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi khilaf historis dalam mawarits.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan:
-1. Masalah 'aul (bagian melebihi harta) — bagaimana masing-masing madzhab menyelesaikannya
-2. Masalah radd (sisa harta) — khilaf siapa yang berhak menerima sisa
-3. Peristiwa historis: 'Umar bin Khattab dan masalah 'aul — bagaimana beliau memutuskan
-4. Sikap madzhab terhadap keputusan 'Umar tentang 'aul
+Jelaskan kasus waris rumit:
+1. Mas'alah 'aul (saham melebihi 1) — cara menyelesaikannya.
+2. Mas'alah radd (saham kurang dari 1).
+3. Al-'Umariyyatan (gharrawain) & mas'alah musytarakah.
+Beri contoh perhitungan tiap kasus.
 
-Jangan men-tarjih antar madzhab.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Hikmah Syariah dalam Hukum Keluarga",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk hukum [SEBUTKAN, mis. 'iddah, pembagian waris]:
+1. Hikmah & maqashid di balik hukum itu.
+2. Bagaimana hukum melindungi maslahat keluarga.
+3. Jawaban atas syubhat seputar hukum keluarga Islam.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
@@ -5008,181 +5098,255 @@ Teks: [TEMPEL]`,
     prompts: {
       pahami: [
         {
-          title: "Pahami Pokok Pemikiran Satu Firqah",
+          title: "Peta Besar Ilmu Firaq (Aliran-Aliran)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku ingin memahami: [NAMA FIRQAH - mis. Mu'tazilah, Khawarij, Syiah Imamiyyah, Murji'ah, dll]
+Beri kerangka utuh ilmu al-firaq wal-madzahib:
+1. Apa itu ilmu firaq & tujuan mempelajarinya (mengenali, bukan mengikuti).
+2. Aliran-aliran besar dalam sejarah: Khawarij, Syiah, Mu'tazilah, Murji'ah, Jabriyah, Qadariyah, Ahlussunnah (Asy'ariyah-Maturidiyah).
+3. Outline bercabang + faktor kemunculan firaq.
+4. Pentingnya sikap ilmiah & adil dalam mengkaji.
 
-Tolong jelaskan:
-1. Nama dan asal-usul nama (Arab berharakat)
-2. Konteks historis kemunculan (kapan, dimana, pemicu apa)
-3. Tokoh pendiri dan tokoh utama
-4. 3-5 pokok pemikiran yang membedakan firqah ini dari Ahlus Sunnah
-5. Bagaimana Ahlus Sunnah merespons doktrin-doktrin ini
-
-Pendekatan akademis-historis. Jangan men-takfir.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Bandingkan Dua Firqah",
+          title: "Pahami Khawarij & Syiah",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bandingkan dua firqah: [FIRQAH 1] vs [FIRQAH 2]
+Jelaskan dua firaq awal secara berimbang & ilmiah:
+1. Khawarij: latar kemunculan, prinsip pokok (mis. takfir pelaku dosa besar), sekte-sektenya.
+2. Syiah: latar, prinsip pokok, cabang utama (Imamiyah, Zaidiyah, Isma'iliyah).
+3. Bantahan Ahlussunnah terhadap penyimpangan masing-masing.
+PENTING: sajikan akurat & adil, sebutkan pandangan mereka apa adanya lalu bantahan ilmiahnya.
 
-Aspek perbandingan:
-1. Konteks historis masing-masing
-2. Pokok pemikiran masing-masing
-3. Kesamaan (kalau ada)
-4. Perbedaan mendasar
-5. Bagaimana keduanya berinteraksi secara historis
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Asy'ariyyah dan Maturidiyyah: Dua Sayap Ahlus Sunnah",
+          title: "Pahami Mu'tazilah & Ushul Khamsah-nya",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan kedua aliran Ahlus Sunnah ini:
-1. Asy'ariyyah: pendiri, pokok, tersebar di mana
-2. Maturidiyyah: pendiri, pokok, tersebar di mana
-3. Persamaan keduanya (yang membuat keduanya masuk Ahlus Sunnah)
-4. Perbedaan keduanya (dalam beberapa masalah kalam)
-5. Posisi Al-Azhar secara resmi
+Jelaskan Mu'tazilah:
+1. Latar kemunculan & tokohnya.
+2. Al-Ushul al-Khamsah (tauhid, 'adl, al-wa'd wal-wa'id, al-manzilah baina al-manzilatain, al-amr bil-ma'ruf) — jelaskan tiap prinsip.
+3. Poin yang menyelisihi Ahlussunnah + bantahannya.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Posisi Ahlussunnah (Asy'ari-Maturidi)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan posisi Ahlussunnah wal Jama'ah:
+1. Bagaimana Asy'ariyah & Maturidiyah jadi mainstream Ahlussunnah.
+2. Sikap pertengahan (wasathiyah) mereka di antara firaq yang bertentangan.
+3. Manhaj mereka dalam memahami sifat Allah, takdir, & iman.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Drill Nama dan Pokok Pemikiran Firaq Utama",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Menghafal firaq-firaq Islam dan pokok pemikirannya.
+          title: "Hafal Firaq & Prinsip Pokoknya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sesi drill:
-1. Sebut nama firqah
-2. Aku sebutkan: pendiri, periode, 2-3 pokok pemikiran utama
-3. Koreksi kalau salah
-4. Setelah 10 putaran, beri daftar yang perlu diperkuat
+Bantu hafal aliran-aliran:
+1. Tabel: firaq | tokoh | prinsip pokok | poin yang diselisihkan.
+2. Mnemonic untuk mengingat daftar firaq.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mnemonic Klasifikasi Firaq",
+          title: "Hafal Istilah & Tokoh Kunci",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Perlu hafal klasifikasi firaq Islam.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan peta pengelompokan:
-- Firaq yang berkaitan dengan iman & kufr: Khawarij, Murji'ah
-- Firaq yang berkaitan dengan kalam & sifat: Mu'tazilah, Jabariyyah, Qadariyyah
-- Firaq yang berkaitan dengan imamah: Syiah berbagai aliran
+Untuk bab [SEBUTKAN], buatkan daftar hafalan istilah & tokoh:
+1. Istilah (Arab berharakat + arti) + tokoh + sumbangan/pandangannya.
+2. Tandai yang sering jadi soal.
 
-Buatkan mnemonic atau cara mudah mengingat pengelompokan ini.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Firaq",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Firaq yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji. Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Identifikasi Firqah dari Pernyataan",
+          title: "Drill Identifikasi Firaq dari Prinsip",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 8 pernyataan doktrin teologis. Aku akan identifikasi firqah mana yang memegang pernyataan ini.
+Beri 8 deskripsi prinsip/pandangan. Tugasku: tebak ini pandangan firaq mana.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab + jelaskan penandanya.
 
-Format tiap pernyataan: 1 kalimat (Indonesia atau Arab). JANGAN kasih jawaban dulu.
-
-Setelah aku jawab, koreksi + jelaskan kenapa pernyataan itu khas firqah tersebut.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Analisis Kritik Ahlus Sunnah terhadap Firqah",
+          title: "Latihan Membantah Syubhat (Tathbiq)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Firqah: [NAMA FIRQAH]
-Pokok pemikiran mereka yang dikritik: [SEBUTKAN POKOK PEMIKIRAN]
+Beri 4 argumen/syubhat dari firaq tertentu. Tugasku: bantah dengan dalil & manhaj Ahlussunnah.
+1. JANGAN beri bantahan dulu.
+2. Koreksi bantahanku + sempurnakan dengan dalil yang benar.
 
-Analisis kritik Ahlus Sunnah:
-1. Dalil naqli yang menjadi sanggahan
-2. Dalil aqli yang digunakan
-3. Bagaimana ulama Asy'ariyyah merespons (mis. Al-Baqillani, Al-Ghazali, Ar-Razi)
-4. Apakah ada sisi yang bisa dipahami dari alasan firqah tersebut berpegang pada pemikiran itu?
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Soal Definisi & Perbandingan",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal campuran (definisi firaq, beda dua aliran, tokoh, prinsip) dari bab [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Tahriri 'Aqidah & Firaq",
+          title: "Mock Imtihan Tahriri (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian Tahriri [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 5 soal Azhari: definisi firqah dan pendiri, pokok pemikiran, banding dua firqah, identifikasi firqah dari doktrin, respons Ahlus Sunnah.
+Buatkan soal ujian tulis Firaq gaya Azhar untuk bab [SEBUTKAN]:
+1. Tipe khas: tahaddats 'an firqah..., qarin baina..., raddu 'ala..., udzkur usus...
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mock Syafawi 'Aqidah & Firaq",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, latihan Syafawi [MADDAH]. [GAYA_BELAJAR].
+          title: "Simulasi Imtihan Syafawi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
 
-Bertindaklah sebagai dosen Azhar. 5 pertanyaan: identifikasi firqah dari deskripsi, pokok pemikiran firqah tertentu, banding Asy'ariyyah-Mu'tazilah, konteks historis, respons Ahlus Sunnah.
+Berperanlah sebagai mumtahin syafawi:
+1. Tanya prinsip firaq, perbedaan, bantahan Ahlussunnah.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
 
-Evaluasi di akhir.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari bab yang kupelajari ([SEBUTKAN]): firaq yang sering jadi soal, cara jawab adil & berdalil, prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi 'Aqidah & Firaq",
+          title: "Rapikan Catatan Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang firqah [NAMA] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi: firaq → prinsip → bantahan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun sistematis (latar → pendiri → pokok → kritik), tambahkan teks Arab berharakat untuk doktrin kunci, pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Setelah talaqqi bab [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan & keadilan paparan, koreksi, ajukan 3 pertanyaan penguji.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Mu'tazilah: Antara Rasionalisme dan Penyimpangan",
+          title: "Firaq Kontemporer & Pemikiran Modern",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi Mu'tazilah secara kritis.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan:
-1. Sisi positif rasionalisme Mu'tazilah yang diakui ulama (mis. kontribusi dalam ilmu kalam)
-2. Pokok pemikiran Mu'tazilah yang ditolak Ahlus Sunnah — dan alasannya
-3. Khilaf: apakah semua Mu'tazilah sama? Apakah ada tokoh Mu'tazilah yang dekat Ahlus Sunnah?
-4. Bagaimana ulama Asy'ariyyah menggunakan metodologi rasional untuk melawan Mu'tazilah
+Jelaskan secara ilmiah & berimbang aliran/pemikiran kontemporer [SEBUTKAN]:
+1. Akar pemikirannya (kaitan dengan firaq klasik bila ada).
+2. Pandangan utamanya.
+3. Sikap & tanggapan ilmiah Ahlussunnah.
+PENTING: sajikan adil & akurat; jangan mengarang atau menggeneralisasi.
 
-Pendekatan akademis-kritis. Jangan men-takfir.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Syiah: Keragaman Internal dan Konteks Historis",
+          title: "Faktor Kemunculan & Penyebaran Firaq",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi firqah Syiah.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan:
-1. Keragaman internal Syiah — Imamiyyah, Zaidiyyah, Isma'iliyyah: apa bedanya
-2. Doktrin Imamah: apa yang diyakini dan mengapa berbeda dari Ahlus Sunnah
-3. Perbedaan Syiah Zaidiyyah — mengapa sebagian ulama Sunni lebih dekat dengan mereka
-4. Pendekatan dialog Al-Azhar dengan dunia Syiah
+Analisis:
+1. Faktor politik, sosial, & intelektual munculnya firaq.
+2. Peran fitnah & peristiwa sejarah tertentu.
+3. Pelajaran agar umat terhindar dari perpecahan.
 
-Pendekatan akademis. Jangan men-takfir.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Manhaj Wasathiyah Ahlussunnah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan posisi pertengahan Ahlussunnah untuk isu [SEBUTKAN, mis. iman & amal, takdir, sifat Allah]:
+1. Posisi dua firaq yang bertentangan di kutub.
+2. Posisi tengah Ahlussunnah & dalilnya.
+3. Kenapa manhaj wasathiyah ini paling lurus.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
@@ -5685,150 +5849,258 @@ Teks: [TEMPEL]`,
     prompts: {
       pahami: [
         {
-          title: "Pahami Maqamat dan Ahwal",
+          title: "Peta Besar Ilmu Tasawwuf",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan konsep maqamat dan ahwal:
-1. Definisi maqam dan hal (teks Arab berharakat)
-2. Beda maqam (usaha manusia) dan hal (anugerah Allah)
-3. Maqamat utama dalam tasawwuf: Taubah, Zuhud, Sabr, Syukr, Khauf, Raja', Tawakkal, Ridha, Mahabbah, Ma'rifah — makna & urutan
-4. Pandangan Al-Ghazali dalam Ihya tentang maqamat
-5. Bagaimana maqamat ini berkaitan dengan tazkiyatun nafs
+Beri kerangka utuh ilmu Tasawwuf (manhaj sunni sesuai Azhar):
+1. Definisi tasawwuf & tujuannya (tazkiyatun nafs, ihsan).
+2. Cakupan: maqamat, ahwal, akhlak batin, penyakit hati & obatnya.
+3. Beda tasawwuf sunni (mu'tabar) dgn praktik menyimpang.
+4. Outline bercabang + posisinya dalam agama (ihsan dalam hadits Jibril).
 
-[LEVEL_BAHASA]
-
-CATATAN: tasawwuf amali butuh bimbingan mursyid — AI bantu sisi ilmu.`,
-        },
-        {
-          title: "Syarah Al-Hikam",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Ini hikam dari kitab Al-Hikam karya Ibnu 'Atha'illah:
-
-[PASTE HIKAM DALAM ARAB BERHARAKAT]
-
-Tolong syarah:
-1. Tarjamah harfiyah
-2. Makna esoterik yang dimaksud
-3. Kaitannya dengan konsep maqamat atau ahwal
-4. Bagaimana para syurrah terkenal menafsirkan hikam ini (mis. Al-Munawi, Ibnu 'Ibad)
-5. Aplikasi praktis dalam kehidupan Masisir
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Tasawwuf dalam Perspektif Syariat",
+          title: "Pahami Maqamat & Ahwal",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bagaimana hubungan tasawwuf dengan syariat?
+Jelaskan maqamat & ahwal:
+1. Beda maqam (hasil usaha, menetap) vs hal (anugerah, sementara) — teks Arab berharakat.
+2. Contoh maqamat: taubah, shabr, zuhd, tawakkul, ridha.
+3. Contoh ahwal: khauf, raja', mahabbah, muraqabah.
+4. Urutan perjalanan ruhani (suluk).
 
-Jelaskan:
-1. Pandangan Al-Ghazali: tasawwuf adalah hakikat dari syariat, bukan di luar syariat
-2. Tasawwuf yang mu'tabar (diterima) vs yang menyimpang (hulul, ittihad)
-3. Bagaimana ulama membedakan tasawwuf yang benar dari yang menyimpang
-4. Posisi Al-Azhar tentang tasawwuf
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Penyakit Hati & Pengobatannya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan amradh al-qulub (penyakit hati):
+1. Penyakit utama: riya', 'ujub, kibr, hasad, hubbud dunya, ghadhab.
+2. Tanda & bahaya tiap penyakit.
+3. Cara pengobatannya (mu'alajah) menurut ulama tasawwuf.
+PENTING: sebut dalil dengan benar; jika ragu, katakan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Tasawwuf Sunni vs Falsafi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan secara berimbang:
+1. Tasawwuf sunni (akhlaqi/'amali) — berpegang pada Qur'an-Sunnah (mis. al-Ghazali, al-Junaid).
+2. Tasawwuf falsafi & konsep yang diperdebatkan (mis. wahdatul wujud).
+3. Sikap ulama Ahlussunnah & Azhar terhadap keduanya.
+Sajikan berimbang & ilmiah.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Hafal Maqamat dan Urutannya",
+          title: "Hafal Maqamat & Ahwal Berurutan",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Perlu hafal maqamat-maqamat tasawwuf menurut tokoh-tokoh berbeda.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan tabel perbandingan urutan maqamat menurut:
-- Al-Ghazali (Ihya 'Ulumiddin)
-- Al-Qusyairi (Ar-Risalah)
-- Sarraj (Al-Luma')
+Bantu hafal maqamat & ahwal:
+1. Daftar (Arab berharakat + arti) dikelompokkan.
+2. Mnemonic untuk urutannya.
+3. Beda singkat tiap istilah agar tidak tertukar.
 
-Lalu buatkan mnemonic untuk hafal 10 maqamat Al-Ghazali.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Tabel Penyakit Hati & Obatnya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Buatkan tabel hafalan:
+1. Kolom: penyakit hati (Arab berharakat) | tanda | obat.
+2. Tandai yang sering jadi soal.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Tasawwuf",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji. Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Analisis Teks Tasawwuf Klasik",
+          title: "Drill Definisi & Beda Istilah Tasawwuf",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ini paragraf dari kitab tasawwuf klasik (sebutkan kitab):
+Beri 10 soal campuran (definisi maqam/hal, beda dua istilah, penyakit hati & obat) dari bab [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
 
-[PASTE TEKS ARAB]
-
-Analisis:
-1. Tarjamah harfiyah dan ma'nawiyyah
-2. Istilah teknis tasawwuf yang muncul (Arab + transliterasi + definisi)
-3. Maqam atau hal apa yang sedang dibahas
-4. Apakah ada sisi yang perlu dikonfirmasi dengan ulama? (mis. kalimat yang bisa disalahpahami)
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Refleksi Tazkiyatun Nafs",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Sedang belajar [MADDAH].
+          title: "Latihan Diagnosa Penyakit Hati (Tathbiq)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku ingin merenungkan kondisi ruhani berdasarkan ajaran Al-Ghazali tentang [MAQAM/TEMA - mis. riya', kibr, hasad, dll].
+Beri 5 deskripsi perilaku/keadaan hati. Tugasku: identifikasi penyakit hatinya & obat yang tepat.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
 
-Tolong bantu aku:
-1. Penjelasan singkat tentang [MAQAM/TEMA] menurut Al-Ghazali
-2. Tanda-tanda (alamat) seseorang terkena [PENYAKIT HATI INI]
-3. Cara Al-Ghazali menyembuhkannya
-4. Refleksi pertanyaan untuk muraqabah diri (bukan ceramah)
+[METODE]
 
-[LEVEL_BAHASA]
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Klasifikasi Maqam vs Hal",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-CATATAN: untuk praktik suluk yang lebih mendalam, konsultasi dengan mursyid.`,
+Beri 8 istilah tasawwuf. Tugasku: klasifikasikan maqam atau hal + alasannya.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Soal Tasawwuf",
+          title: "Mock Imtihan Tahriri (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 6 soal: definisi maqam/hal, beda maqam-hal, urutan maqamat, identifikasi tokoh dari pemikiran, syarah hikam, hubungan tasawwuf-syariat.
+Buatkan soal ujian tulis Tasawwuf gaya Azhar untuk bab [SEBUTKAN]:
+1. Tipe khas: 'arrif, ma al-farq baina al-maqam wal-hal, udzkur 'ilaj..., bayyin manhaj at-tasawwuf as-sunni.
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Simulasi Imtihan Syafawi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
+
+Berperanlah sebagai mumtahin syafawi:
+1. Tanya definisi, beda istilah, penyakit hati & obat.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari bab yang kupelajari ([SEBUTKAN]): bab tersering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Tasawwuf",
+          title: "Rapikan Catatan Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang [TOPIK TASAWWUF] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi poin terstruktur, lengkapi harakat istilah, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun sistematis, tambahkan teks Arab berharakat (istilah dan kutipan), pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-CATATAN: amalan yang disebut syaikh, konsultasikan kembali langsung — tidak via AI.
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-[LEVEL_BAHASA]`,
+Setelah talaqqi bab [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan manhaj sunni, koreksi, ajukan 3 pertanyaan penguji.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Kritik dan Pembelaan Tasawwuf",
+          title: "Tasawwuf & Pembentukan Akhlak Praktis",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi debat seputar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan:
-1. Kritik yang diajukan terhadap tasawwuf (dari ulama fiqh, ulama hadits, dan orientalis)
-2. Pembelaan para sufi dan ulama yang mendukung tasawwuf
-3. Al-Ghazali sebagai jembatan antara fiqh/kalam dan tasawwuf
-4. Posisi Al-Azhar yang menerima tasawwuf mu'tabar
+Untuk maqam/sifat [SEBUTKAN, mis. shabr, ikhlas, tawakkul]:
+1. Cara melatih & membentuknya dalam kehidupan nyata.
+2. Tanda seseorang sudah mencapainya.
+3. Hubungannya dengan ibadah harian.
 
-Jangan memihak. Sajikan dengan adil akademis.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Telaah Tokoh & Karya Tasawwuf",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk tokoh [SEBUTKAN, mis. al-Ghazali, al-Junaid, al-Muhasibi]:
+1. Kontribusinya dalam tasawwuf sunni.
+2. Karya utamanya (mis. Ihya' Ulumuddin).
+3. Pemikiran khasnya.
+PENTING: kalau tidak yakin fakta, katakan; jangan mengarang.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Tasawwuf, Akhlak & Hubungannya dengan Fiqh",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan integrasi:
+1. Bagaimana tasawwuf melengkapi fiqh (fiqh = lahir, tasawwuf = batin).
+2. Ucapan ulama "man tafaqqaha wa lam yatasawwaf..." & maknanya.
+3. Keseimbangan syariat & hakikat.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
@@ -8235,176 +8507,257 @@ Analisis:
     prompts: {
       pahami: [
         {
-          title: "Pahami Satu Periode Daulah",
+          title: "Peta Besar Sejarah Peradaban Islam",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan periode: [DAULAH - mis. "Daulah Umawiyyah", "Daulah Abbasiyyah", "Khulafa Ar-Rasyidun"]
+Beri kerangka utuh tarikh Islam:
+1. Periode besar: Sirah Nabi → Khulafa Rasyidin → Umayyah → Abbasiyah → masa kekhalifahan lain (Andalus, Fathimiyah, Utsmaniyah) → modern.
+2. Ciri & pencapaian tiap periode.
+3. Timeline kronologis bercabang.
+4. Kenapa belajar sejarah penting (i'tibar/pelajaran).
 
-1. Pendiri dan tahun berdiri
-2. Puncak kejayaan dan tokoh terpenting
-3. Kontribusi pada peradaban Islam (keilmuan, pemerintahan, militer)
-4. Sebab-sebab kemunduran dan akhir daulah
-5. Warisan yang ditinggalkan
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Analisis Sebab Kemajuan dan Kemunduran",
+          title: "Pahami Masa Khulafa Rasyidin",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Analisis faktor-faktor kemajuan dan kemunduran dalam [DAULAH/PERIODE]:
+Jelaskan masa Khulafa Rasyidin:
+1. Empat khalifah & ciri kepemimpinan masing-masing.
+2. Pencapaian utama (futuhat, pengumpulan mushaf, sistem administrasi).
+3. Tantangan & fitnah yang muncul.
+4. Pelajaran kepemimpinan dari masa ini.
+PENTING: sebut fakta yang kamu yakin; jika ragu, katakan.
 
-Faktor kemajuan: internal (aqidah, kepemimpinan, ilmu) dan eksternal (geopolitik)
-Faktor kemunduran: internal (konflik saudara, kelalaian, kemerosotan moral) dan eksternal (serangan, kompetisi)
-
-Berikan bukti historis konkret untuk setiap faktor. Apa pelajaran yang bisa diambil?
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Tokoh Penting dalam Sejarah Islam",
+          title: "Pahami Dinasti Umayyah & Abbasiyah",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan tokoh: [NAMA TOKOH - mis. Shalahuddin Al-Ayyubi, Harun Ar-Rasyid, Ibnu Khaldun, Muhammad Al-Fatih]
+Jelaskan dua dinasti besar:
+1. Umayyah: ciri, perluasan wilayah, pencapaian & kritik.
+2. Abbasiyah: masa keemasan ilmu, Baitul Hikmah, penerjemahan.
+3. Faktor kemajuan & kemunduran masing-masing.
 
-1. Biografi singkat: masa, latar, pendidikan
-2. Kontribusi terpenting dalam sejarah Islam
-3. Tantangan yang dihadapi dan bagaimana diatasi
-4. Warisan historis — bagaimana dunia berbeda tanpanya?
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Peradaban & Kontribusi Ilmu Islam",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan kontribusi peradaban Islam:
+1. Bidang ilmu yang berkembang (kedokteran, astronomi, matematika, filsafat, dll).
+2. Tokoh ilmuwan muslim & karyanya (sebut yang kamu yakin; jika ragu, katakan).
+3. Pengaruhnya terhadap peradaban dunia.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Drill Kronologi Daulah Islam",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Menghafal kronologi daulah-daulah Islam.
+          title: "Hafal Kronologi & Tokoh Tiap Periode",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sesi drill:
-1. Sebut nama daulah
-2. Aku sebutkan: pendiri, tahun, ibukota, puncak, akhir
-3. Koreksi kalau salah
-4. Setelah 10 putaran, beri daftar yang perlu diperkuat
+Bantu hafal timeline tarikh Islam:
+1. Urutan periode + rentang waktu + ciri singkat.
+2. Mnemonic untuk urutan dinasti.
+3. Tokoh kunci tiap periode.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mnemonic Urutan Khulafa dan Daulah",
+          title: "Tabel Pencapaian Tiap Periode",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Perlu hafal urutan kronologis sejarah Islam.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan garis waktu visual (timeline) dengan:
-- Nama daulah
-- Rentang tahun hijriyah
-- 1-2 tokoh utama
-- 1 peristiwa terpenting
+Buatkan tabel hafalan:
+1. Kolom: periode | pemimpin penting | pencapaian | tantangan.
+2. Tandai yang sering jadi soal.
 
-Buatkan juga mnemonic untuk hafal urutan utama.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Tarikh Islam",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Periode yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji. Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Analisis Komparatif Dua Daulah",
+          title: "Drill Soal Kronologi & Peristiwa",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bandingkan dua daulah: [DAULAH 1] vs [DAULAH 2]
+Beri 10 soal campuran (urutan peristiwa, tokoh, sebab-akibat) dari periode [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
 
-Aspek perbandingan:
-1. Model pemerintahan dan suksesi
-2. Pendekatan terhadap ilmu dan ulama
-3. Ekspansi wilayah dan hubungan dengan non-Muslim
-4. Sebab kemunduran — apakah ada pola yang sama?
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Analisis Peristiwa Bersejarah",
+          title: "Latihan Analisis Sebab-Akibat",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Peristiwa: [SEBUTKAN - mis. "Jatuhnya Baghdad 656H", "Perang Salib", "Fathul Qustanthiniyyah"]
+Beri aku 5 peristiwa sejarah. Tugasku: jelaskan sebab & akibatnya.
+1. JANGAN beri jawaban dulu.
+2. Koreksi analisisku + tambahkan faktor yang terlewat.
 
-Analisis:
-1. Konteks sebelum peristiwa
-2. Kronologi peristiwa
-3. Dampak jangka pendek dan jangka panjang
-4. Pelajaran yang bisa diambil
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Latihan Esai Sejarah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 1 topik esai (mis. "faktor kemajuan ilmu di masa Abbasiyah"). Aku tulis esainya, lalu:
+1. Koreksi keakuratan fakta & logika argumen.
+2. Tunjukkan poin penting yang terlewat.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Tahriri Tarikh Islam",
+          title: "Mock Imtihan Tahriri (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian Tahriri [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 5 soal Azhari: deskripsi daulah tertentu, analisis sebab kemunduran, tokoh penting, peristiwa bersejarah, perbandingan dua periode.
+Buatkan soal ujian tulis Tarikh Islam gaya Azhar untuk periode [SEBUTKAN]:
+1. Tipe khas: tahaddats 'an..., ma asbab..., 'allil, qarin baina 'ashrain.
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mock Syafawi Tarikh Islam",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, latihan Syafawi [MADDAH]. [GAYA_BELAJAR].
+          title: "Simulasi Imtihan Syafawi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
 
-Bertindaklah sebagai dosen Azhar. 5 pertanyaan: identifikasi daulah dari ciri, tokoh tertentu (kasih nama, aku jelaskan), sebab kemunduran daulah tertentu, pelajaran sejarah, peristiwa besar.
+Berperanlah sebagai mumtahin syafawi:
+1. Tanya peristiwa, tokoh, sebab-akibat, pencapaian.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
 
-Evaluasi di akhir.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari periode yang kupelajari ([SEBUTKAN]): topik yang sering jadi soal, cara menulis jawaban analitis (bukan sekadar hafal tanggal), prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Tarikh Islam",
+          title: "Rapikan Catatan Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang [PERIODE/DAULAH] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi timeline periode → tokoh → peristiwa → pelajaran, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun kronologis, tambahkan nama Arab berharakat untuk tokoh dan peristiwa penting, pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Setelah talaqqi periode [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan fakta sejarah, koreksi, ajukan 3 pertanyaan penguji.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Ibn Khaldun dan Teori Kemajuan-Kemunduran",
+          title: "Pelajaran (I'tibar) dari Sejarah Islam",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi teori Ibnu Khaldun dalam [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan teori ashabiyyah dan siklus sejarah Ibnu Khaldun:
-1. Konsep 'ashabiyyah — definisi dan perannya
-2. Siklus 4 generasi daulah menurut Ibnu Khaldun
-3. Bukti historis dari sejarah Islam yang mendukung teorinya
-4. Kritik terhadap teorinya — apakah semua daulah mengikuti siklus ini?
-5. Relevansi teori Ibnu Khaldun untuk memahami kondisi umat Islam hari ini
+Untuk peristiwa/periode [SEBUTKAN]:
+1. Pelajaran (i'tibar) yang bisa diambil.
+2. Relevansinya dengan kondisi umat masa kini.
+3. Bagaimana sejarah membentuk identitas umat.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mesir dalam Sejarah Islam",
+          title: "Telaah Tokoh Sejarah Mendalam",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi peran Mesir dalam [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sebagai Masisir di Mesir, aku ingin pahami peran Mesir dalam sejarah Islam:
-1. Mesir di era Sahabat — penaklukan dan tokoh (Amr bin Al-'Ash)
-2. Mesir di era Tuluniyyah dan Ikhsyidiyyah
-3. Mesir di era Fatimiyyah — peran Al-Azhar
-4. Mesir di era Mamluk — benteng terakhir Islam dari Mongol
-5. Mesir Ottoman dan era modern
+Untuk tokoh [SEBUTKAN, mis. Umar bin Abdul Aziz, Shalahuddin, Harun ar-Rasyid]:
+1. Peran & kontribusinya.
+2. Kebijakan/pencapaian penting.
+3. Pelajaran kepemimpinan darinya.
+PENTING: kalau tidak yakin fakta, katakan; jangan mengarang.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Sebab Kemajuan & Kemunduran Peradaban",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Analisis untuk periode [SEBUTKAN]:
+1. Faktor yang membuat peradaban Islam maju.
+2. Faktor yang menyebabkan kemundurannya.
+3. Pelajaran untuk kebangkitan umat.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
