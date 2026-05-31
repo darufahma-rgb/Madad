@@ -60,19 +60,32 @@ const App = () => {
 
   // Auto-redirect logic on path change
   useEffect(() => {
-    // Member-only routes
     const memberOnly = [
-    "/dashboard", "/tools", "/paths", "/onboarding",
-    "/kurasah", "/maddah", "/siap-imtihan",
-    "/s2-maddah", "/mahad-maddah", "/prompt-library",
-  ];
+      "/dashboard", "/tools", "/paths", "/onboarding",
+      "/kurasah", "/maddah", "/siap-imtihan",
+      "/s2-maddah", "/mahad-maddah", "/prompt-library",
+    ];
     const isMemberRoute = memberOnly.some(r => path === r || path.startsWith(r + "?") || path.startsWith(r + "/"));
+
+    // 1) Belum login tapi buka route terproteksi → ke landing + buka login
     if (isMemberRoute && !session) {
       navigate("/");
       setTimeout(() => setLoginOpen(true), 100);
       return;
     }
-    // If member without profile and tries dashboard/tools/paths → redirect to onboarding
+
+    // 2) Sudah login & sedang di landing murni → dorong ke "rumah"-nya
+    //    (jangan ganggu /maddah-publik, /framework, /ethics, /sample — itu memang publik)
+    if (session && (path === "/" || path === "")) {
+      if (profile && !profile.onboarded) {
+        navigate("/onboarding");
+      } else if (profile && profile.onboarded) {
+        navigate("/dashboard");
+      }
+      return;
+    }
+
+    // 3) Sudah login tapi belum onboarded & nyasar ke halaman member → ke onboarding
     if (session && profile && !profile.onboarded) {
       if (path === "/dashboard" || path.startsWith("/tools") || path === "/paths") {
         navigate("/onboarding");
@@ -83,8 +96,8 @@ const App = () => {
   const handleLoginSuccess = (result) => {
     setLoginOpen(false);
     const p = getProfile();
-    if (!p?.onboarded) navigate("/onboarding");
-    else navigate("/dashboard");
+    const dest = (!p?.onboarded) ? "/onboarding" : "/dashboard";
+    setTimeout(() => navigate(dest), 50);
   };
 
   const openPayment = () => { setLoginOpen(false); setPaymentOpen(true); };
