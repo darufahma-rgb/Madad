@@ -283,12 +283,14 @@ const MahadChip = () => (
 
 /* ============ PROMPT CARD ============ */
 
-const PromptCard = ({ item }) => {
+const PromptCard = ({ item, formatEnabled }) => {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(item.template);
+    const text = typeof withFormatInstruction !== "undefined"
+      ? withFormatInstruction(item.template, formatEnabled) : item.template;
+    navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -374,6 +376,7 @@ const PromptCard = ({ item }) => {
 
 const MahadTab = ({ profile }) => {
   const [activeSub, setActiveSub] = useState("all");
+  const [formatEnabled, setFormatEnabled] = useState(() => typeof getFormatPref !== "undefined" ? getFormatPref() : true);
 
   const filtered = activeSub === "all"
     ? MAHAD_PROMPTS
@@ -448,10 +451,17 @@ const MahadTab = ({ profile }) => {
         </Reveal>
       )}
 
+      {/* Format toggle */}
+      {typeof FormatToggle !== "undefined" && (
+        <Reveal className="mb-4 flex justify-end">
+          <FormatToggle enabled={formatEnabled} onChange={v => { setFormatEnabled(v); if (typeof setFormatPref !== "undefined") setFormatPref(v); }}/>
+        </Reveal>
+      )}
+
       {/* Grid */}
       <Reveal stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {filtered.map(item => (
-          <PromptCard key={item.id} item={item} />
+          <PromptCard key={item.id} item={item} formatEnabled={formatEnabled}/>
         ))}
       </Reveal>
     </div>

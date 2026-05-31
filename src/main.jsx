@@ -16,6 +16,8 @@ import './mahad-data.jsx';
 import './muqaranah-data.jsx';
 import './intentions-data.jsx';
 import './adaptive-prompt.jsx';
+import './output-format.jsx';
+import './learning-frameworks-data.jsx';
 
 // Shared components
 import './markdown-render.jsx';
@@ -45,6 +47,7 @@ import './pages/kurasah-editor.jsx';
 import './pages/prompt-library.jsx';
 import './pages/siap-imtihan.jsx';
 import './pages/s2-maddah.jsx';
+import './pages/framework.jsx';
 
 // App shell — terakhir
 import App from './app.jsx';

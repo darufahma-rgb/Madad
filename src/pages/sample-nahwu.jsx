@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih — Sample Maddah Nahwu (publik, accessible tanpa member) */
 
-const SamplePromptCard = ({ prompt }) => {
+const SamplePromptCard = ({ prompt, formatEnabled }) => {
   const toast = useToast();
   const tool = AI_TOOLS.find(t => t.id === prompt.targetAI);
+  const getTextToCopy = () => typeof withFormatInstruction !== "undefined"
+    ? withFormatInstruction(prompt.template, formatEnabled) : prompt.template;
   const handleCopy = () => {
-    navigator.clipboard.writeText(prompt.template);
+    navigator.clipboard.writeText(getTextToCopy());
     toast.push("Prompt tersalin. Paste ke " + (tool?.name || "AI") + ".");
   };
   return (
@@ -31,6 +33,7 @@ const SamplePromptCard = ({ prompt }) => {
 };
 
 const SampleNahwuPage = () => {
+  const [formatEnabled, setFormatEnabled] = React.useState(() => typeof getFormatPref !== "undefined" ? getFormatPref() : true);
   const sampleData = {
     name: "Nahwu Dasar",
     nameArabic: "النحو",
@@ -440,9 +443,14 @@ Untuk setiap bait:
           <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-2 inline-flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>Template Prompt
           </h2>
-          <p className="text-sm text-ink-muted mb-8">
-            17 template siap pakai. Salin, ganti placeholder, kirim ke AI.
-          </p>
+          <div className="flex items-center justify-between flex-wrap gap-3 mb-8">
+            <p className="text-sm text-ink-muted">
+              17 template siap pakai. Salin, ganti placeholder, kirim ke AI.
+            </p>
+            {typeof FormatToggle !== "undefined" && (
+              <FormatToggle enabled={formatEnabled} onChange={v => { setFormatEnabled(v); if (typeof setFormatPref !== "undefined") setFormatPref(v); }}/>
+            )}
+          </div>
           {Object.entries(sampleData.prompts).map(([key, prompts]) => {
             const meta = groupMeta[key];
             return (
@@ -453,7 +461,7 @@ Untuk setiap bait:
                   <span className="text-xs text-ink-soft ml-1">({prompts.length} prompt)</span>
                 </div>
                 <div className="space-y-3">
-                  {prompts.map((p, i) => <SamplePromptCard key={i} prompt={p}/>)}
+                  {prompts.map((p, i) => <SamplePromptCard key={i} prompt={p} formatEnabled={formatEnabled}/>)}
                 </div>
               </div>
             );

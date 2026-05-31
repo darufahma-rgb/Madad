@@ -182,11 +182,13 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   // Link tambahan untuk mobile menu
   const memberLinksExtra = [
     { to: "/paths",            label: "Learning Path" },
+    { to: "/framework",        label: "Framework" },
     { to: "/ethics",           label: "Etika" },
   ];
   const publicLinks = [
     { to: "/sample/nahwu", label: "Preview" },
     { to: "/maddah-publik", label: "Maddah" },
+    { to: "/framework",     label: "Framework" },
     { to: "/ethics",        label: "Etika" },
   ];
   const links = session ? memberLinks : publicLinks;

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo, createContext
 */
 
 /* ── PromptCard — komponen terpisah agar useState tidak dipanggil di dalam .map() ── */
-const MahadPromptCard = ({ p, maddah, resolvePrompt }) => {
+const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled }) => {
   const toast = useToast();
   const [copied, setCopied] = useState(false);
   const [showFull, setShowFull] = useState(false);
@@ -14,6 +14,8 @@ const MahadPromptCard = ({ p, maddah, resolvePrompt }) => {
   const tool = typeof AI_TOOLS !== "undefined"
     ? AI_TOOLS.find(t => t.id === p.targetAI) : null;
   const resolved = resolvePrompt(p.template);
+  const getTextToCopy = () => typeof withFormatInstruction !== "undefined"
+    ? withFormatInstruction(resolved, formatEnabled) : resolved;
 
   return (
     <div className="card-glass-strong p-4 md:p-5">
@@ -33,7 +35,7 @@ const MahadPromptCard = ({ p, maddah, resolvePrompt }) => {
         <div className="flex gap-2 flex-shrink-0 flex-wrap">
           <button
             onClick={() => {
-              navigator.clipboard.writeText(resolved);
+              navigator.clipboard.writeText(getTextToCopy());
               toast.push("Prompt tersalin. Paste ke " + (tool?.name || "AI") + ".");
               setCopied(true);
             }}
@@ -45,7 +47,7 @@ const MahadPromptCard = ({ p, maddah, resolvePrompt }) => {
           {tool?.link && (
             <button
               onClick={() => {
-                navigator.clipboard.writeText(resolved);
+                navigator.clipboard.writeText(getTextToCopy());
                 toast.push("Tersalin. Membuka " + tool.name + "...");
                 setCopied(true);
                 setTimeout(() => window.open(tool.link, "_blank"), 400);
@@ -121,6 +123,7 @@ const MahadDetailPage = () => {
 
   const [activeKind, setActiveKind] = useState("pahami");
   const [topikInput, setTopikInput] = useState("");
+  const [formatEnabled, setFormatEnabled] = useState(() => typeof getFormatPref !== "undefined" ? getFormatPref() : true);
 
   if (!session) { navigate("/"); return null; }
 
@@ -339,9 +342,12 @@ const MahadDetailPage = () => {
           <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 inline-flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>Template Prompt ({totalPrompts})
           </h2>
-          <span className="text-[11px] text-ink-soft">
-            ✦ Disesuaikan untuk {levelLabel}
-          </span>
+          <div className="flex items-center gap-3 flex-wrap">
+            <span className="text-[11px] text-ink-soft">✦ Disesuaikan untuk {levelLabel}</span>
+            {typeof FormatToggle !== "undefined" && (
+              <FormatToggle enabled={formatEnabled} onChange={v => { setFormatEnabled(v); if (typeof setFormatPref !== "undefined") setFormatPref(v); }}/>
+            )}
+          </div>
         </div>
 
         {/* Kind tabs */}
@@ -376,7 +382,7 @@ const MahadDetailPage = () => {
         {/* Prompt cards */}
         <div className="space-y-4">
           {activePrompts.map((p, i) => (
-            <MahadPromptCard key={i} p={p} maddah={maddah} resolvePrompt={resolvePrompt}/>
+            <MahadPromptCard key={i} p={p} maddah={maddah} resolvePrompt={resolvePrompt} formatEnabled={formatEnabled}/>
           ))}
 
           {activePrompts.length === 0 && (

@@ -40,7 +40,7 @@ const StarterPackButton = ({ profile, session }) => {
   );
 };
 
-const MaddahPromptCard = ({ prompt, maddah, profile }) => {
+const MaddahPromptCard = ({ prompt, maddah, profile, formatEnabled }) => {
   const toast = useToast();
 
   // Guard: kalau prompt tidak valid, jangan render
@@ -61,15 +61,19 @@ const MaddahPromptCard = ({ prompt, maddah, profile }) => {
 
   const resolvedPrompt = resolveAdaptivePrompt(safePrompt.template, profile, maddah?.name || "") || "";
 
+  const getTextToCopy = () => typeof withFormatInstruction !== "undefined"
+    ? withFormatInstruction(resolvedPrompt, formatEnabled)
+    : resolvedPrompt;
+
   const handleCopy = () => {
-    navigator.clipboard.writeText(resolvedPrompt);
+    navigator.clipboard.writeText(getTextToCopy());
     toast.push("Prompt tersalin. Paste ke " + (tool?.name || "AI") + ".");
     setCopied(true);
     if (typeof trackPromptCopied !== "undefined") trackPromptCopied(maddah.id);
   };
 
   const handleCopyAndOpen = () => {
-    navigator.clipboard.writeText(resolvedPrompt);
+    navigator.clipboard.writeText(getTextToCopy());
     toast.push("Prompt tersalin. Membuka " + tool?.name + "...");
     setCopied(true);
     if (typeof trackPromptCopied !== "undefined") trackPromptCopied(maddah.id);
@@ -153,6 +157,7 @@ const MaddahDetailPage = () => {
   const maddah    = maddahId ? getMaddahById(maddahId) : null;
 
   const [activeKind, setActiveKind] = useState("pahami");
+  const [formatEnabled, setFormatEnabled] = useState(() => typeof getFormatPref !== "undefined" ? getFormatPref() : true);
 
   useEffect(() => {
     if (maddah && session && typeof trackMaddahOpen !== "undefined") {
@@ -330,8 +335,11 @@ const MaddahDetailPage = () => {
               <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 inline-flex items-center gap-2">
                 <span className="w-6 h-px bg-gold-500/70"/>Template Prompt ({totalPrompts})
               </h2>
-              <div className="text-xs text-ink-soft">
-                ✦ Disesuaikan untuk {TINGKATAN_LABEL[profile?.level] || "tingkatmu"}
+              <div className="flex items-center gap-3 flex-wrap">
+                <div className="text-xs text-ink-soft">✦ Disesuaikan untuk {TINGKATAN_LABEL[profile?.level] || "tingkatmu"}</div>
+                {typeof FormatToggle !== "undefined" && (
+                  <FormatToggle enabled={formatEnabled} onChange={v => { setFormatEnabled(v); if (typeof setFormatPref !== "undefined") setFormatPref(v); }}/>
+                )}
               </div>
             </div>
 
@@ -367,7 +375,7 @@ const MaddahDetailPage = () => {
                 : []
               ).filter(p => p && p.template && p.title)
                 .map((p, i) => (
-                  <MaddahPromptCard key={i} prompt={p} maddah={maddah} profile={profile}/>
+                  <MaddahPromptCard key={i} prompt={p} maddah={maddah} profile={profile} formatEnabled={formatEnabled}/>
                 ))}
               {(Array.isArray(maddah.prompts?.[activeKind])
                 ? maddah.prompts[activeKind].length
