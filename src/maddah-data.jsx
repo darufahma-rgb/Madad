@@ -1365,196 +1365,259 @@ Aku ingin memahami hubungan antara tajwid dan i'jaz Al-Qur'an dari sisi sawti (f
     prompts: {
       pahami: [
         {
-          title: "Kumpulkan Ayat Satu Tema",
+          title: "Pahami Metode Tafsir Maudhu'i (Tematik)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Sedang muthala'ah [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku ingin mengerjakan tafsir maudhu'i tentang tema:
+Jelaskan apa itu tafsir maudhu'i & cara kerjanya:
+1. Definisi tafsir maudhu'i + bedanya dengan tafsir tahlili.
+2. Dua jenis: maudhu'i per-tema (lintas surat) & maudhu'i per-surat.
+3. Langkah metode tematik: tentukan tema → kumpulkan ayat terkait → susun sesuai nuzul/munasabah → analisis → simpulkan.
+4. Outline langkah agar bisa kuikuti.
 
-[SEBUTKAN TEMA - mis. "Konsep Taqwa", "Orang-orang yang beruntung", "Alam semesta sebagai tanda Allah", dll]
-
-Langkah 1 — Kumpulkan ayat:
-1. Sebutkan 10-15 ayat utama yang membahas tema ini dari berbagai surah
-2. Tulis setiap ayat berharakat dengan surah dan nomor
-3. Kelompokkan berdasarkan aspek tema (mis. definisi, ciri-ciri, ganjaran, dll)
-4. Identifikasi mana yang makki dan mana yang madani
-
-[LEVEL_BAHASA]
-
-Sebagai panduan awal — verifikasi mandiri ke Mu'jam Al-Mufahras.`,
-        },
-        {
-          title: "Susun Outline Tafsir Tematik",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Aku ingin menyusun outline tafsir maudhu'i tentang: [TEMA]
-
-Berdasarkan ayat-ayat yang sudah dikumpulkan:
-
-[PASTE DAFTAR AYAT YANG SUDAH DIKUMPULKAN]
-
-Bantu susun outline:
-1. Pembagian bab/aspek tema yang logis
-2. Urutan pembahasan yang tepat (dari umum ke khusus, atau kronologis)
-3. Poin-poin yang harus ada di setiap bab
-4. Kesimpulan apa yang bisa ditarik dari kumpulan ayat ini
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Beda Tafsir Maudhu'i vs Tahlili",
+          title: "Kajian Tematik Satu Tema (Demonstrasi)",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan perbedaan substansial antara tafsir maudhu'i dan tafsir tahlili:
+Lakukan kajian tafsir maudhu'i untuk tema [SEBUTKAN TEMA, mis. sabar, syukur, riba]:
+1. Kumpulkan ayat-ayat utama terkait tema (sebut surat & nomor; jangan mengarang ayat).
+2. Kelompokkan ayat berdasarkan aspek tema.
+3. Simpulkan pandangan Al-Qur'an secara utuh tentang tema itu.
+4. Faedah praktis dari kajian ini.
 
-1. Definisi masing-masing dengan teks Arab istilahnya
-2. Langkah-langkah (manhaj) masing-masing
-3. Kelebihan dan kekurangan masing-masing
-4. Kapan sebaiknya pakai tahlili, kapan pakai maudhu'i
-5. Contoh konkret: bagaimana ayat "innama ya'ksyallaha min 'ibadihil 'ulama'" ditafsirkan dengan cara tahlili vs cara maudhu'i
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Cara Mengumpulkan Ayat Setema",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Ajari aku teknik istiqra' (penelusuran) ayat untuk tema tertentu:
+1. Cara mencari ayat lewat kata kunci (mu'jam mufahras) & turunannya.
+2. Cara memastikan ayat benar-benar relevan dengan tema (bukan sekadar ada katanya).
+3. Cara menangani ayat yang tampak bertentangan dalam satu tema.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Manfaat & Tokoh Tafsir Maudhu'i",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan:
+1. Keunggulan metode maudhu'i untuk memahami pandangan Qur'an secara menyeluruh.
+2. Tokoh & karya tafsir maudhu'i modern (bila kamu tahu; jika ragu, katakan).
+3. Kaitan tafsir maudhu'i dengan dakwah & isu kontemporer.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Hafal Langkah-Langkah Tafsir Maudhu'i",
+          title: "Hafal Langkah Metode Tematik",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Perlu hafal metodologi tafsir maudhu'i menurut Al-Farmawi.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Al-Farmawi menetapkan 7 langkah tafsir maudhu'i. Jelaskan setiap langkah dengan:
-1. Teks Arab istilah langkah tersebut
-2. Penjelasan singkat dalam Indonesia
-3. Contoh aplikasi singkat
+Bantu hafal langkah metode tafsir maudhu'i sebagai checklist:
+1. Urutkan langkah berurutan.
+2. Mnemonic untuk mengingatnya.
+3. Kata kunci tiap langkah.
 
-Lalu buatkan mnemonic atau akronim Indonesia untuk membantu hafal urutan 7 langkah ini.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Ayat-Ayat Kunci Per Tema",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Sudah upload kumpulan ayat-ayat tematik.
+          title: "Hafal Ayat Kunci per Tema",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Drill hafalan ayat-ayat kunci untuk tema [TEMA]:
-1. Sebut nama tema atau aspek tertentu
-2. Aku sebutkan ayat yang paling relevan (teks + surah-nomor)
-3. Kalau ada yang terlewat, ingatkan
-4. Setelah 10 putaran tema, beri ringkasan distribusi ayat per aspek
+Untuk tema [SEBUTKAN], buatkan daftar ayat kunci untuk dihafal lokasinya:
+1. Ayat + surat & nomor + inti makna.
+2. Kelompokkan per aspek tema.
+PENTING: sebut rujukan ayat dengan benar; jika ragu, katakan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Tafsir Maudhu'i",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Tema yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji (sebut ayat kunci + kesimpulan tema). Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Analisis Perkembangan Tema dalam Qur'an",
+          title: "Latihan Kajian Tematik Mandiri (Aku Coba, AI Koreksi)",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ini kumpulan ayat tentang tema [TEMA], sudah dibedakan makki-madani:
+Aku akan mengkaji tema [SEBUTKAN] secara maudhu'i dengan kemampuanku (kutulis di bawah).
+1. Koreksi: apakah ayat yang kukumpulkan tepat & lengkap, pengelompokanku logis, kesimpulanku akurat.
+2. Tunjukkan ayat penting yang terlewat.
+3. Lengkapi (jika ragu rujukan, katakan).
 
-Makki: [DAFTAR AYAT]
-Madani: [DAFTAR AYAT]
+[METODE]
 
-Analisis perkembangan tema:
-1. Bagaimana tema diperkenalkan di fase Makkah
-2. Bagaimana tema berkembang di fase Madinah
-3. Apakah ada pergeseran penekanan atau dimensi baru
-4. Apa yang bisa disimpulkan tentang hikmah perkembangan bertahap ini
+[LEVEL_BAHASA]
+
+Kajianku: [TEMPEL]`,
+        },
+        {
+          title: "Drill Hubungkan Ayat dengan Tema",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri aku 6 ayat (sebut surat & nomor). Tugasku: tentukan tema utama tiap ayat & aspek apa yang ditekankan.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Bandingkan Tafsir Tematik Dua Ulama",
+          title: "Drill Simpulkan Pandangan Qur'an",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Tema: [TEMA TAFSIR MAUDHU'I]
+Beri aku kumpulan ayat setema [SEBUTKAN]. Tugasku: susun kesimpulan menyeluruh pandangan Qur'an.
+1. JANGAN beri kesimpulan dulu.
+2. Koreksi kesimpulanku + tunjukkan aspek yang terlewat.
 
-Bandingkan bagaimana dua mufassir yang menggunakan pendekatan maudhu'i membahas tema ini:
-- Ulama 1: [mis. Sayyid Quthb dalam Fi Zhilalil Qur'an]
-- Ulama 2: [mis. Wahbah Az-Zuhaili dalam At-Tafsir Al-Munir]
-
-Sertakan kutipan Arab dari masing-masing (bila memungkinkan). Apa kesamaan dan perbedaan kesimpulan mereka?
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Tahriri Tafsir Maudhu'i",
+          title: "Mock Imtihan Tahriri (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian Tahriri [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 5 soal gaya Azhari:
-- "Bayan manhaj at-tafsir al-maudhu'i wa khuthuatuh" (jelaskan manhaj)
-- "Qarin bayna at-tafsir at-tahlili wal-maudhu'i" (komparasi)
-- "Tatbiq manhaj at-tafsir al-maudhu'i 'ala maudhu'..." (aplikasi tema)
-- "Adhkur aqsam at-tafsir al-maudhu'i" (sebutkan jenis tafsir maudhu'i)
-- "Ma ahamm mu'allafat al-tafsir al-maudhu'i?" (kitab-kitab penting)
+Buatkan soal ujian tulis Tafsir Maudhu'i gaya Azhar untuk tema [SEBUTKAN]:
+1. Tipe khas: ijma' al-ayat fi..., bayyin manhaj al-qur'an fi..., istanbith, qarin baina at-tahlili wal-maudhu'i.
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Setelah aku jawab, koreksi + model answer.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mock Syafawi Tafsir Maudhu'i",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, latihan Syafawi [MADDAH]. [GAYA_BELAJAR].
+          title: "Simulasi Imtihan Syafawi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
 
-Bertindaklah sebagai dosen Azhar. 5 pertanyaan bertahap tentang tafsir maudhu'i: definisi & sejarah, langkah-langkah Al-Farmawi, beda dengan tahlili, contoh aplikasi (aku diminta terapkan ke satu tema), tokoh dan kitab penting.
+Berperanlah sebagai mumtahin syafawi:
+1. Minta aku jelaskan langkah maudhu'i, sebut ayat tema, simpulkan secara lisan.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
 
-Evaluasi di akhir.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari tema yang kupelajari ([SEBUTKAN]): tema yang sering jadi soal, cara jawab lengkap (langkah + ayat + kesimpulan), prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Tafsir Maudhu'i",
+          title: "Rapikan Catatan Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar. Baru talaqqi tentang metodologi [MADDAH] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi: tema → ayat → kesimpulan, lengkapi rujukan ayat, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun ulang sistematis, tambahkan teks Arab definisi/langkah berharakat, beri contoh tema tambahan yang bisa diterapkan metodenya, pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Setelah talaqqi tema [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan rujukan ayat & kesimpulan, koreksi, ajukan 3 pertanyaan penguji.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Jenis-Jenis Tafsir Maudhu'i",
+          title: "Tafsir Maudhu'i untuk Isu Kontemporer",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ulama membagi tafsir maudhu'i menjadi dua jenis:
-1. Tafsir maudhu'i surah (tafsir satu surah secara tematik)
-2. Tafsir maudhu'i lintas-Qur'an (kumpulkan ayat satu tema dari seluruh Qur'an)
+Untuk isu kontemporer [SEBUTKAN, mis. lingkungan, ekonomi, sosial]:
+1. Tema Qur'ani apa yang relevan.
+2. Ayat-ayat yang bisa jadi landasan (sebut rujukan; jangan mengarang).
+3. Bagaimana pandangan Qur'an menjawab isu itu.
 
-Jelaskan:
-- Karakteristik dan langkah masing-masing jenis
-- Tokoh ulama dan kitab contoh masing-masing
-- Kelebihan dan kelemahan masing-masing
-- Perkembangan metode ini di era kontemporer
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kritis: Batasan dan Kritik Tafsir Maudhu'i",
+          title: "Maudhu'i Per-Surat (Kajian Satu Surat Utuh)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Eksplorasi kritis terhadap [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ada beberapa kritik terhadap pendekatan tafsir maudhu'i. Jelaskan:
-1. Apa kritik utama yang diarahkan kepada metode ini (mis. memaksakan tema pada teks)
-2. Bagaimana para pembelanya merespons kritik tersebut
-3. Bagaimana memastikan tafsir maudhu'i tidak keluar dari kaidah tafsir yang benar
+Untuk surat [SEBUTKAN], lakukan kajian maudhu'i per-surat:
+1. Tema sentral (mihwar) surat.
+2. Bagaimana bagian-bagian surat berputar di sekitar tema itu.
+3. Tujuan & pesan utama surat.
 
-Jangan men-tarjih. Sajikan berbagai perspektif.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Bandingkan dengan Tafsir Tahlili",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk tema/ayat [SEBUTKAN], bandingkan pendekatan maudhu'i vs tahlili:
+1. Apa yang dihasilkan tiap metode.
+2. Kelebihan & keterbatasan masing-masing.
+3. Kapan sebaiknya pakai yang mana.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
@@ -2566,191 +2629,259 @@ PENTING: sebut sumber; jangan mengarang.
     prompts: {
       pahami: [
         {
-          title: "Kumpulkan Hadits Satu Tema",
+          title: "Pahami Metode Hadits Maudhu'i (Tematik)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku ingin mengerjakan hadits maudhu'i tentang tema:
+Jelaskan apa itu kajian hadits maudhu'i (tematik):
+1. Definisi + bedanya dengan hadits tahlili.
+2. Langkah: tentukan tema → kumpulkan hadits terkait → periksa derajatnya → susun → simpulkan.
+3. CATATAN PENTING: istilah "maudhu'i" (tematik) di sini BERBEDA dari "hadits maudhu'" (palsu) — jelaskan perbedaan dua istilah ini agar tidak keliru.
+4. Outline langkah.
 
-[SEBUTKAN TEMA - mis. "Keutamaan Ilmu", "Adab Bertetangga", "Tanda-tanda Hari Kiamat", dll]
-
-Langkah 1:
-1. Kumpulkan 8-12 hadits yang membahas tema ini
-2. Tulis tiap hadits: teks Arab berharakat + terjemah + periwayat + derajat
-3. Kelompokkan berdasarkan sub-aspek tema
-4. Tandai mana yang paling sering dikutip ulama
-
-PENTING: Verifikasi mandiri ke kitab hadits — sertakan keterangan kalau ada hadits yang derajatnya perlu dikonfirmasi.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Analisis Mukhtaliful Hadits dalam Satu Tema",
+          title: "Kajian Tematik Satu Tema Hadits (Demonstrasi)",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Tema: [TEMA]
+Lakukan kajian hadits maudhu'i untuk tema [SEBUTKAN, mis. birrul walidain, niat, kebersihan]:
+1. Kumpulkan hadits-hadits terkait (sebut sumber; jika ragu derajat/sumber, katakan — jangan mengarang).
+2. Kelompokkan per aspek tema.
+3. Simpulkan tuntunan hadits secara utuh.
+4. Faedah praktis.
 
-Dua hadits ini dalam tema yang sama tapi tampak bertentangan:
-
-Hadits 1: [PASTE HADITS 1]
-Hadits 2: [PASTE HADITS 2]
-
-Jelaskan metode penyelesaian khilaf hadits:
-1. Jam'u wa taufiq (gabungkan keduanya — mana yang memungkinkan)
-2. Naskh (mana yang lebih awal/akhir — kalau bisa diketahui)
-3. Tarjih (mana yang lebih kuat dari sudut sanad/konteks)
-4. Pendapat ulama hadits dan fiqh yang membahas ini
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Susun Outline Hadits Maudhu'i",
+          title: "Pahami Pentingnya Memeriksa Derajat Hadits Setema",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku sudah kumpulkan hadits-hadits tentang tema [TEMA]:
+Jelaskan kenapa dalam kajian tematik hadits, derajat hadits harus diperiksa:
+1. Bahaya memakai hadits dha'if/palsu sebagai landasan tema.
+2. Cara memilah hadits maqbul dari yang lemah dalam satu tema.
+3. Sikap terhadap hadits dha'if dalam fadha'il a'mal.
 
-[PASTE DAFTAR HADITS]
+[METODE]
 
-Bantu susun outline pembahasan tematik:
-1. Pembagian sub-bab yang logis
-2. Urutan pembahasan (dari pondasi ke detail)
-3. Hadits mana yang paling tepat untuk tiap sub-bab
-4. Kesimpulan apa yang bisa ditarik dari kumpulan hadits ini
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Cara Mengumpulkan Hadits Setema",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Ajari teknik mengumpulkan hadits untuk tema:
+1. Sumber pencarian (kutub sittah, kitab tematik seperti Riyadhus Shalihin, mu'jam).
+2. Cara memastikan relevansi hadits dengan tema.
+3. Menangani hadits yang tampak bertentangan dalam satu tema.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Drill Hadits Pilihan per Tema",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Menghafal hadits-hadits pilihan tema [TEMA] dari kitab [NAMA KITAB].
+          title: "Hafal Langkah Metode Tematik Hadits",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sesi drill:
-1. Sebut sub-tema atau nomor bab
-2. Aku recite hadits representatif untuk tema tersebut
-3. Koreksi kalau ada yang salah
-4. Setelah 10 putaran, beri ringkasan yang perlu diperkuat
+Bantu hafal langkah hadits maudhu'i sebagai checklist:
+1. Urutkan langkah.
+2. Mnemonic.
+3. Kata kunci tiap langkah.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mnemonic untuk Mengelompokkan Hadits Tema",
+          title: "Hafal Hadits Kunci per Tema",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Perlu hafal pengelompokan hadits dalam tema [TEMA].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ada [X] hadits yang perlu aku kelompokkan dalam sub-bab:
+Untuk tema [SEBUTKAN], buatkan daftar hadits kunci untuk dihafal:
+1. Inti hadits + sumber + faedah.
+2. Kelompokkan per aspek.
+PENTING: sebut sumber dengan benar; jika ragu, katakan; jangan mengarang lafazh.
 
-[PASTE DAFTAR HADITS ATAU SUB-BAB]
+[METODE]
 
-Buatkan cara mengingat pengelompokan ini — akronim, peta visual, atau urutan logis yang mudah diingat.
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Hadits Maudhu'i",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Tema yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji. Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Latihan Klasifikasi Hadits ke Sub-Tema",
+          title: "Latihan Kajian Tematik Mandiri (Aku Coba, AI Koreksi)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Tema besar: [TEMA]
+Aku akan mengkaji tema [SEBUTKAN] dari hadits dengan kemampuanku (di bawah).
+1. Koreksi: relevansi hadits, perhatian pada derajat, kesimpulan.
+2. Tunjukkan hadits penting yang terlewat (jika ragu rujukan, katakan).
 
-Beri 8 hadits acak yang berkaitan. Aku akan klasifikasikan ke sub-tema yang tepat.
+[METODE]
 
-Sub-tema yang ada: [DAFTAR SUB-TEMA]
+[LEVEL_BAHASA]
 
-Format tiap hadits: teks Arab berharakat + terjemah. JANGAN kasih jawaban dulu. Koreksi setelah aku jawab.
+Kajianku: [TEMPEL]`,
+        },
+        {
+          title: "Drill Tentukan Tema dari Hadits",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 6 hadits (sebut sumber). Tugasku: tentukan tema & faedah tiap hadits.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Bedah Kitab Hadits Tematik",
+          title: "Drill Simpulkan Tuntunan Tematik",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Paragraf dari kitab hadits tematik (mis. Riyadhus Shalihin):
+Beri kumpulan hadits setema [SEBUTKAN]. Tugasku: simpulkan tuntunan menyeluruhnya.
+1. JANGAN beri kesimpulan dulu.
+2. Koreksi kesimpulanku.
 
-[PASTE TEKS - sebutkan kitab & bab]
-
-Analisis:
-1. Tema dan sub-tema yang dibahas
-2. Hadits-hadits yang dikumpulkan — apakah ada pola?
-3. Bagaimana penulis memilih dan menyusun hadits-hadits ini
-4. Istinbat pelajaran dari kumpulan hadits ini
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Tahriri Hadits Maudhu'i",
+          title: "Mock Imtihan Tahriri (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian Tahriri [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 5 soal Azhari tentang metodologi hadits maudhu'i: langkah-langkah, cara menangani mukhtaliful hadits, contoh penerapan tema, perbedaan dengan hadits tahlili, tokoh dan kitab.
+Buatkan soal ujian tulis Hadits Maudhu'i gaya Azhar untuk tema [SEBUTKAN]:
+1. Tipe khas: ijma' al-ahadits fi..., bayyin tawjih as-sunnah fi..., istanbith al-fawa'id.
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mock Syafawi Hadits Maudhu'i",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, latihan Syafawi [MADDAH]. [GAYA_BELAJAR].
+          title: "Simulasi Imtihan Syafawi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
 
-Bertindaklah sebagai dosen Azhar. 5 pertanyaan: definisi & langkah hadits maudhu'i, cara tangani mukhtaliful hadits, kasih tema (aku sebutkan hadits-haditsnya), perbedaan dengan tahlili, contoh kitab tematik klasik.
+Berperanlah sebagai mumtahin syafawi:
+1. Minta aku sebut hadits tema, jelaskan tuntunan, simpulkan secara lisan.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
 
-Evaluasi di akhir.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari tema yang kupelajari ([SEBUTKAN]): tema yang sering jadi soal, cara jawab lengkap, prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Hadits Maudhu'i",
+          title: "Rapikan Catatan Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang tema [TEMA HADITS] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi: tema → hadits → tuntunan, lengkapi rujukan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun ulang sistematis, tambahkan teks Arab hadits berharakat, beri hadits tambahan yang relevan untuk memperdalam, pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Setelah talaqqi tema [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan, koreksi, ajukan 3 pertanyaan penguji.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Riyadhus Shalihin sebagai Model Hadits Maudhu'i",
+          title: "Hadits Maudhu'i untuk Tema Akhlak/Dakwah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi Riyadhus Shalihin sebagai model kitab hadits tematik.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Analisis:
-1. Manhaj Imam Nawawi dalam menyusun Riyadhus Shalihin — prinsip penyeleksian dan pengelompokan
-2. Kenapa beliau kadang mencantumkan ayat Al-Qur'an sebelum hadits-hadits
-3. Posisi kitab ini dibanding kitab hadits tematik lain (At-Targhib wal Tarhib, Al-Adabul Mufrad)
-4. Bagaimana kitab ini bisa dipakai dalam kajian hadits maudhu'i
+Untuk tema akhlak [SEBUTKAN]:
+1. Kumpulkan tuntunan hadits tentang tema itu (sebut sumber; jika ragu, katakan).
+2. Susun jadi panduan praktis.
+3. Cara menyampaikannya dalam dakwah/ceramah.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Hadits tentang Akhir Zaman: Metodologi Pemahaman",
+          title: "Padukan Tema Qur'an & Hadits",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi hadits maudhu'i tema akhir zaman.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Tema: hadits-hadits tentang [PILIH SATU: "Dajjal" / "Turunnya Nabi Isa" / "Imam Mahdi" / dll]
+Untuk tema [SEBUTKAN], padukan dalil Qur'an & hadits:
+1. Ayat utama + hadits utama tentang tema.
+2. Bagaimana hadits menjelaskan/merinci ayat.
+3. Kesimpulan terpadu.
+PENTING: sebut rujukan; jangan mengarang.
 
-Metodologi yang benar dalam memahami hadits tema ini:
-1. Kumpulkan hadits shahih yang berkaitan — sebutkan sumbernya
-2. Bagaimana cara memahami hadits-hadits ini (tekstual vs kontekstual)
-3. Khilaf ulama dalam menafsirkan hadits ini
-4. Sikap yang benar: antara mengimani dan tidak berlebihan dalam detail
+[METODE]
 
-Jangan men-tarjih penafsiran.
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Bandingkan dengan Hadits Tahlili",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk tema/hadits [SEBUTKAN], bandingkan pendekatan maudhu'i vs tahlili:
+1. Hasil tiap metode.
+2. Kelebihan & keterbatasan.
+3. Kapan pakai yang mana.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
@@ -6768,182 +6899,262 @@ Jelaskan kaitan ma'ani dengan nahwu untuk fenomena [SEBUTKAN, mis. taqdim-ta'khi
     prompts: {
       pahami: [
         {
-          title: "Ciri Khas Sastra Satu Periode",
+          title: "Peta Besar Sejarah Sastra Arab",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan karakteristik sastra Arab periode: [PERIODE - mis. Jahiliyah / Shadr Islam / Umawi / Abbasi]
+Beri kerangka utuh tarikh adab 'arabi:
+1. Periodisasi: Jahili → Shadr Islam → Umawi → 'Abbasi → masa kemunduran → Nahdhah (modern).
+2. Ciri sastra (syi'r & natsr) tiap masa.
+3. Outline kronologis bercabang.
+4. Kenapa memahami konteks zaman penting untuk apresiasi sastra.
 
-1. Latar historis-sosial periode ini (1 paragraf)
-2. Tema-tema dominan dalam syi'r periode ini
-3. Uslub (gaya bahasa) yang khas
-4. Penyair-penyair terpenting (3-4 nama dengan Arab berharakat)
-5. Contoh 2 bait representatif — tulis berharakat + tarjamah + nama penyair
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Analisis Penyair Tertentu",
+          title: "Pahami Sastra Masa Jahili",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan penyair: [NAMA PENYAIR - mis. Imrul Qais, Jarir, Al-Farazdaq, Al-Mutanabbi, Abi Tammam]
+Jelaskan sastra Jahili:
+1. Ciri syi'r jahili (tema, struktur qasidah, bahasa).
+2. Mu'allaqat & penyair masyhur (mis. Imru' al-Qais) — sebut yang kamu yakin; jika ragu, katakan.
+3. Natsr jahili (khutbah, hikmah, amtsal).
+4. Kenapa sastra jahili jadi rujukan kebahasaan.
 
-1. Biografi singkat (masa, madzhab, latar)
-2. Tema-tema dominan dalam diwannya
-3. Uslub khas — figur balaghah yang sering dipakai
-4. Karya/qasidah terpenting — sebutkan nama + tema
-5. 4-6 bait representatif berharakat + terjemah
-6. Posisinya dalam sejarah sastra Arab
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Syarah Bait Syi'r",
+          title: "Pahami Sastra Masa 'Abbasi (Puncak)",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ini bait syi'r Arab:
+Jelaskan sastra masa 'Abbasi:
+1. Faktor kemajuan sastra (percampuran budaya, dukungan khalifah).
+2. Perkembangan tema & gaya baru (badi', tema filosofis).
+3. Penyair & penulis masyhur (mis. al-Mutanabbi, al-Jahizh) — sebut yang kamu yakin.
+4. Perkembangan natsr (risalah, maqamah).
 
-[PASTE BAIT BERHARAKAT - sebutkan penyair dan qasidah]
+[METODE]
 
-Tolong syarah:
-1. Tarjamah harfiyah
-2. Tarjamah ma'nawiyyah (mengalir)
-3. Gharib (kata-kata langka/sulit) — akar + makna
-4. Uslub balaghi yang ada
-5. Bahr (wazn/irama) bait ini
-6. Konteks bait dalam qasidah/kehidupan penyair
-7. Pelajaran atau keindahan sastra yang bisa diambil
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Unsur Analisis Teks Sastra",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Ajari aku menganalisis teks sastra (syi'r/natsr):
+1. Unsur yang dianalisis: tema (gharadh), makna, 'athifah (emosi), khayal (imaji), uslub (gaya), musiqa.
+2. Cara mengaitkan teks dengan konteks zaman & penyairnya.
+3. Langkah analisis sistematis.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Hafal Bait-Bait Terkenal per Periode",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Menghafal bait-bait ikonik sastra Arab periode [PERIODE].
+          title: "Hafal Periodisasi & Ciri Tiap Masa",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sesi drill:
-1. Sebut nama penyair
-2. Aku recite 1 bait ikoniknya berharakat
-3. Koreksi kalau ada yang salah
-4. Setelah 10 putaran, daftar yang perlu diperkuat
+Bantu hafal periodisasi sastra Arab:
+1. Timeline tiap masa + ciri syi'r & natsr-nya.
+2. Mnemonic untuk urutan masa.
+3. Penyair/penulis kunci tiap masa.
 
-Target penyair: [DAFTAR PENYAIR]
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mnemonic Penyair per Periode",
+          title: "Hafal Bait/Kutipan Sastra Penting",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Perlu hafal penyair-penyair utama per periode sastra Arab.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan tabel: Periode → Penyair Utama → 1 tema/ciri khas penyair
+Untuk masa/penyair [SEBUTKAN], bantu hafal kutipan penting:
+1. Bait/kutipan + makna + konteksnya.
+PENTING: hanya kutip bait yang kamu yakin keasliannya; jika ragu, minta aku tempel. Jangan mengarang bait.
 
-Buatkan juga mnemonic untuk hafal minimal 2 penyair per periode.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Adab",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Masa/topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji (sebut ciri masa, penyair, analisis teks). Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Identifikasi Periode dari Teks Sastra",
+          title: "Latihan Analisis Teks Sastra (Aku Coba, AI Koreksi)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 5 kutipan syi'r Arab dari berbagai periode. Aku akan identifikasi:
-- Periode sastra
-- Petunjuk/ciri yang mengarah ke periode tersebut
-- Kemungkinan penyairnya (kalau bisa ditebak)
+Aku akan menganalisis teks sastra yang kutempel dengan kemampuanku.
+1. Koreksi analisisku (tema, makna, gaya, imaji, kaitan konteks).
+2. Tunjukkan aspek yang terlewat.
+3. Perkaya dengan istilah naqd yang tepat.
 
-Format tiap kutipan: bait berharakat + konteks minimal. JANGAN kasih jawaban dulu.
+[METODE]
+
+[LEVEL_BAHASA]
+
+Teks + analisisku: [TEMPEL]`,
+        },
+        {
+          title: "Drill Identifikasi Masa dari Ciri Teks",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri aku 6 potongan teks/deskripsi ciri sastra. Tugasku: tebak dari masa mana & alasannya.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab + jelaskan penanda khas tiap masa.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Bandingkan Dua Penyair",
+          title: "Drill Soal Sejarah & Tokoh Sastra",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bandingkan dua penyair: [PENYAIR 1] vs [PENYAIR 2]
+Beri 10 soal campuran (ciri masa, tokoh, karya, istilah sastra) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
 
-Aspek:
-1. Tema dominan masing-masing
-2. Uslub/gaya bahasa
-3. Penggunaan figur balaghah
-4. Kekuatan masing-masing
-5. Kontroversi yang pernah terjadi antara keduanya (kalau ada)
-6. Mana yang lebih berpengaruh — dan mengapa
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Tahriri Adab",
+          title: "Mock Imtihan Tahriri Adab (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian Tahriri [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 5 soal Azhari: ciri sastra periode tertentu, syarah bait, identifikasi penyair dari uslub, banding dua penyair, tokoh prosa Arab.
+Buatkan soal ujian tulis Adab gaya Azhar untuk masa/topik [SEBUTKAN]:
+1. Tipe khas: tahaddats 'an khasha'is..., hallil an-nashsh al-ati, tarjim li... (biografi tokoh), ma 'awamil...
+2. 5-6 soal bobot bervariasi (sering ada teks untuk dianalisis).
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mock Syafawi Adab",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, latihan Syafawi [MADDAH]. [GAYA_BELAJAR].
+          title: "Simulasi Imtihan Syafawi Adab",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
 
-Bertindaklah sebagai dosen Azhar. 5 pertanyaan: ciri periode sastra, syarah bait (kasih aku bait), identifikasi penyair, banding dua penyair, tema tertentu dalam sastra Abbasi.
+Berperanlah sebagai mumtahin syafawi:
+1. Tanya ciri masa, biografi tokoh, atau minta aku analisis teks pendek secara lisan.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
 
-Evaluasi di akhir.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian Adab",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari masa/topik yang kupelajari ([SEBUTKAN]): topik yang sering jadi soal (biasanya analisis teks & ciri masa), cara menulis jawaban analitis, prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Adab",
+          title: "Rapikan Catatan Talaqqi Adab",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang [PERIODE/PENYAIR] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi: masa → ciri → tokoh → contoh teks, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun (latar historis → penyair/ciri → teks representatif), tambahkan bait Arab berharakat, contoh tambahan dari penyair lain, pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Setelah talaqqi masa/topik [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan fakta sastra, koreksi, ajukan 3 pertanyaan penguji.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Al-Mutanabbi: Penyair Kontroversial",
+          title: "Hubungkan Sastra dengan Balaghah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi Al-Mutanabbi dalam konteks [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan:
-1. Mengapa Al-Mutanabbi dianggap salah satu penyair terbesar Arab
-2. Kontroversi seputar hidupnya (klaim kenabian, hubungan dengan penguasa)
-3. Kritik ulama terhadap puisinya
-4. Penilaian para kritikus sastra Arab terhadap diwannya
-5. 2-3 bait yang mencerminkan keistimewaan (dan kontroversi) Al-Mutanabbi
+Dari teks sastra yang kutempel:
+1. Tunjukkan gaya balaghah yang dipakai (tasybih, isti'arah, kinayah, badi').
+2. Bagaimana gaya itu membangun keindahan & makna.
+3. Kaitkan dengan ciri sastra masanya.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Teks: [TEMPEL]`,
+        },
+        {
+          title: "Telaah Madrasah Sastra Modern (Nahdhah)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan kebangkitan sastra Arab modern:
+1. Faktor nahdhah adabiyyah.
+2. Aliran/madrasah sastra modern (mis. Diwan, Apollo, Mahjar) — sebut yang kamu yakin.
+3. Tokoh & pembaruan yang mereka bawa.
+PENTING: jika tidak yakin fakta, katakan.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Perbandingan Sastra Arab Klasik dan Modern",
+          title: "Apresiasi & Pengaruh Sastra terhadap Bahasa",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi perkembangan [MADDAH] ke era modern.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bandingkan syi'r Arab klasik (pra-abad 19) dengan syi'r Arab modern:
-1. Apa yang berubah dalam tema, uslub, dan bentuk
-2. Tokoh pelopor syir Arab modern (Ahmad Syauqi, Hafizh Ibrahim)
-3. Kontroversi syi'r hurr (puisi bebas) — pendukung dan penolaknya
-4. Bagaimana ulama dan akademisi Al-Azhar memandang perkembangan ini
+Jelaskan:
+1. Bagaimana sastra (terutama syi'r) menjaga & memperkaya bahasa Arab.
+2. Peran sastra sebagai syahid kebahasaan dalam nahwu & lughah.
+3. Kenapa thalib Azhar perlu mengapresiasi sastra, bukan sekadar menghafal sejarahnya.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
@@ -7734,211 +7945,258 @@ Pendekatan akademis-apologetik yang seimbang.
     prompts: {
       pahami: [
         {
-          title: "Pahami Fase Tasyri' Tertentu",
+          title: "Peta Besar Tarikh Tasyri'",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan fase tasyri': [FASE - mis. "Fase Rasulullah" / "Fase Sahabat" / "Fase Tabi'in" / "Fase Kodifikasi Madzhab"]
+Beri kerangka utuh Tarikh Tasyri' (sejarah perundangan Islam):
+1. Fase-fase besar: masa Nabi → Khulafa Rasyidin → sahabat → tabi'in → imam madzhab → taqlid → kodifikasi modern.
+2. Ciri & perkembangan fiqh tiap fase.
+3. Outline kronologis bercabang.
+4. Kenapa penting memahami sejarah ini.
 
-1. Ciri umum fase ini
-2. Metode istinbat yang digunakan
-3. Tokoh-tokoh utama dan perannya
-4. Peristiwa hukum penting di fase ini
-5. Warisan yang ditinggalkan untuk fase berikutnya
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Sejarah Kodifikasi Madzhab Empat",
+          title: "Pahami Tasyri' Masa Nabi",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan bagaimana 4 madzhab fiqh terbentuk dan dikodifikasi:
-1. Imam Abu Hanifah — latar belakang, metode, murid-murid penyebar madzhab
-2. Imam Malik — Al-Muwaththa' sebagai kodifikasi pertama
-3. Imam Syafi'i — peran dalam sistemisasi ushul fiqh, kitab Al-Umm
-4. Imam Ahmad — Al-Musnad, karakteristik madzhab
-5. Mengapa madzhab ini survive sampai hari ini, sementara banyak madzhab lain hilang?
+Jelaskan tasyri' di masa Nabi ﷺ:
+1. Dua periode: Makkah (penekanan akidah) vs Madinah (tasyri' amali).
+2. Sumber hukum saat itu: wahyu (Qur'an) & sunnah.
+3. Ciri tasyri' masa Nabi (tadarruj/bertahap, menjawab kebutuhan).
+4. Contoh perkembangan hukum bertahap (mis. khamr).
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Metode Istinbat Sahabat Besar",
+          title: "Pahami Tasyri' Masa Sahabat & Ijtihad",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bandingkan metode istinbat 3-4 Sahabat besar:
+Jelaskan tasyri' masa Khulafa Rasyidin & sahabat:
+1. Munculnya ijtihad jama'i & fardi.
+2. Sumber yang berkembang: ijma', qiyas, mashlahah.
+3. Contoh ijtihad sahabat yang masyhur (mis. ijtihad Umar).
+4. Bibit perbedaan pendapat mulai muncul.
 
-Pilih dari: 'Umar bin Khattab, 'Ali bin Abi Thalib, Ibnu Mas'ud, Ibnu Abbas, Aisyah, Zaid bin Tsabit
-
-Untuk setiap Sahabat yang dipilih:
-1. Kecenderungan metodologis (lebih literal atau lebih kontekstual?)
-2. Contoh keputusan hukum yang mencerminkan metodologinya
-3. Pengaruhnya pada madzhab fiqh yang muncul setelahnya
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Tasyri' Modern: Lembaga Fatwa dan Undang-Undang",
+          title: "Pahami Masa Imam Madzhab & Kodifikasi",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan fase tasyri' modern:
-1. Transisi dari fiqh madzhabi ke kodifikasi hukum — kapan dan bagaimana
-2. Majallatul Ahkam Al-'Adliyyah (Utsmani) — perannya dalam sejarah kodifikasi
-3. Lembaga fatwa modern: Al-Azhar, OKI, MUI — bagaimana mereka berfungsi
-4. Tantangan tasyri' kontemporer: globalisasi, teknologi, hukum internasional
+Jelaskan masa keemasan fiqh & madzhab:
+1. Munculnya madzhab fiqh (Hanafi, Maliki, Syafi'i, Hanbali) & faktor pendukungnya.
+2. Pembukuan (tadwin) fiqh, hadits, & ushul.
+3. Masa taqlid & kemunduran ijtihad.
+4. Kodifikasi modern (mis. Majallah al-Ahkam al-'Adliyyah).
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Drill Fase Tasyri' dan Cirinya",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Menghafal 5 fase tarikh tasyri' dan ciri-cirinya.
+          title: "Hafal Kronologi Fase Tasyri'",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sesi drill:
-1. Sebut nama fase
-2. Aku sebutkan: periode, ciri utama, tokoh kunci, metode istinbat
-3. Koreksi kalau salah atau kurang
-4. Setelah 5 fase, beri ringkasan yang perlu diperkuat
+Bantu hafal urutan fase tarikh tasyri':
+1. Timeline berurutan tiap fase + ciri singkatnya.
+2. Mnemonic untuk mengingat urutan.
+3. Tokoh kunci tiap fase.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mnemonic Sejarah Madzhab",
+          title: "Tabel Ciri Tiap Fase untuk Dihafal",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Perlu hafal urutan kronologis terbentuknya 4 madzhab.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan tabel: Madzhab → Imam → Masa hidup → Wilayah → 1 ciri khas metodologis
+Buatkan tabel hafalan:
+1. Kolom: fase | rentang waktu | sumber hukum | ciri | tokoh.
+2. Tandai fase yang sering jadi soal.
 
-Buatkan juga mnemonic untuk hafal urutan kronologis 4 imam madzhab.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Tarikh Tasyri'",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Fase yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji (sebut ciri & tokoh tiap fase). Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Analisis Perkembangan Hukum satu Masalah",
+          title: "Drill Soal Kronologi & Ciri Fase",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Masalah fiqh: [SEBUTKAN MASALAH - mis. "hukum riba", "talaq bid'i", "jual beli salam"]
+Beri 10 soal campuran (urutan fase, ciri, tokoh, peristiwa) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
 
-Trace perkembangan hukum masalah ini:
-1. Di fase Rasulullah — wahyu atau hadits yang berkaitan
-2. Ijtihad Sahabat tentang masalah ini
-3. Perkembangan di fase tabi'in dan tabi'ut tabi'in
-4. Pendapat akhir madzhab empat
-5. Perkembangan di era modern
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Identifikasi Fase dari Kutipan Sumber Fiqh",
+          title: "Drill Hubungkan Peristiwa dengan Fase",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 4 kutipan dari sumber fiqh yang berbeda. Aku akan identifikasi:
-- Dari fase tasyri' mana kutipan ini berasal
-- Ciri-ciri yang menunjukkan fase tersebut
+Beri 8 peristiwa/fenomena tasyri'. Tugasku: tentukan terjadi di fase mana & maknanya.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
 
-Format: kutipan Arab berharakat + konteks minimal. JANGAN kasih jawaban dulu.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Peran 'Umar bin Khattab dalam Tasyri'",
+          title: "Latihan Esai Analisis Sejarah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan peran 'Umar bin Khattab dalam tarikh tasyri':
-1. Ijtihad 'Umar yang kontroversial — berikan 3 contoh dengan analisis
-2. Prinsip maslahat dalam keputusan 'Umar
-3. Pengaruh metode 'Umar pada madzhab fiqh (khususnya Maliki dan Hanbali)
-4. Respons ulama hadits dan ushul terhadap ijtihad 'Umar
+Beri aku 1 topik esai (mis. "sebab berkembangnya madzhab fiqh"). Aku tulis esainya, lalu:
+1. Koreksi keakuratan fakta sejarah & logika argumen.
+2. Tunjukkan poin penting yang terlewat.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Tahriri Tarikh Tasyri'",
+          title: "Mock Imtihan Tahriri (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian Tahriri [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 5 soal Azhari: fase tasyri' dan cirinya, tokoh dan kontribusinya, sejarah madzhab, metode istinbat sahabat, fiqh modern.
+Buatkan soal ujian tulis Tarikh Tasyri' gaya Azhar untuk fase [SEBUTKAN]:
+1. Tipe khas: tahaddats 'an..., ma khasha'is at-tasyri' fi..., 'allil, qarin baina marhalatain.
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Mock Syafawi Tarikh Tasyri'",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, latihan Syafawi [MADDAH]. [GAYA_BELAJAR].
+          title: "Simulasi Imtihan Syafawi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
 
-Bertindaklah sebagai dosen Azhar. 5 pertanyaan: sebutkan fase tasyri', ciri fase tertentu, tokoh dan metodenya, sejarah madzhab, tantangan tasyri' kontemporer.
+Berperanlah sebagai mumtahin syafawi:
+1. Tanya ciri fase, tokoh, peristiwa, sebab perkembangan.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
 
-Evaluasi di akhir.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari fase yang kupelajari ([SEBUTKAN]): topik yang sering jadi soal, cara menulis jawaban analitis (bukan sekadar hafalan tanggal), prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Tarikh Tasyri'",
+          title: "Rapikan Catatan Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang [FASE/TOPIK] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi timeline fase → ciri → tokoh, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun kronologis, tambahkan nama Arab berharakat untuk tokoh dan karya, pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
         },
         {
-          title: "Pahami Catatan Talaqqi yang Ambigu",
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Catatan talaqqi [MADDAH] yang ambigu:
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-[PASTE CATATAN]
+Setelah talaqqi fase [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan fakta sejarah, koreksi, ajukan 3 pertanyaan penguji.
 
-Interpretasi berdasarkan konteks tarikh tasyri', identifikasi fase dan tokoh yang dimaksud.
+[METODE]
 
-[LEVEL_BAHASA]`,
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Imam Syafi'i dan Revolusi Ushul Fiqh",
+          title: "Pelajaran dari Sejarah untuk Fiqh Kontemporer",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi kontribusi Imam Syafi'i dalam [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan:
-1. Kondisi ijtihad sebelum Imam Syafi'i — fragmentasi dan ketidakkonsistenan
-2. Kontribusi Imam Syafi'i: Al-Risalah sebagai kitab ushul fiqh pertama yang sistematis
-3. Bagaimana Imam Syafi'i menyatukan ahlul hadits dan ahlur ra'yi
-4. Kritik terhadap Imam Syafi'i dari perspektif historis
-5. Pengaruh metodologinya terhadap perkembangan fiqh sampai hari ini
+Tunjukkan relevansi tarikh tasyri' untuk masa kini:
+1. Pelajaran dari cara ulama dulu merespons perubahan zaman.
+2. Bagaimana sejarah ijtihad menginspirasi ijtihad kontemporer.
+3. Bahaya memahami fiqh tanpa konteks sejarahnya.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Fiqh Aqalliyat: Tasyri' di Era Global",
+          title: "Telaah Tokoh Tasyri' Mendalam",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi perkembangan tasyri' terbaru.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan konsep fiqh aqalliyat (fiqh minoritas Muslim):
-1. Apa yang dimaksud dan mengapa ia muncul sebagai disiplin
-2. Tokoh-tokoh yang mengembangkannya (Yusuf Al-Qaradhawi, Taha Jabir Al-'Alwani)
-3. Argumen pendukung dan kritik terhadap pendekatan ini
-4. Bagaimana Al-Azhar memandang fiqh aqalliyat
+Untuk tokoh [SEBUTKAN, mis. Imam Syafi'i, Umar bin Khattab]:
+1. Kontribusinya dalam perkembangan tasyri'.
+2. Metode/manhaj khasnya.
+3. Karya & warisan pemikirannya.
+PENTING: kalau tidak yakin fakta, katakan; jangan mengarang.
 
-Jangan men-tarjih.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Sebab Kemajuan & Kemunduran Ijtihad",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Analisis:
+1. Faktor yang membuat fiqh berkembang pesat di masa keemasan.
+2. Sebab munculnya masa taqlid & "tertutupnya pintu ijtihad".
+3. Upaya kebangkitan ijtihad di era modern.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
