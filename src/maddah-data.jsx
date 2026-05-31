@@ -830,7 +830,7 @@ Beri 3 contoh aplikasi kaidah ushul di nawazil (masalah kontemporer): identifika
     category: "qurani",
     fakultas: ["ushuluddin", "dirasat", "quran"],
     jurusan: [],
-    tingkat: ["mustawa", "1", "2", "3", "4", "pasca"],
+    tingkat: ["1", "2", "3", "4", "pasca"],
     description: "Hafalan dan tilawah Al-Qur'an dengan tajwid yang benar. Persiapan tasmi', manajemen murajaah, dan penanganan mutasyabihat lafzhi.",
     descriptionArabic: "حفظ القرآن وتلاوته بالتجويد الصحيح",
     kitabUtama: [
@@ -1012,7 +1012,7 @@ Kalau ada hadits yang derajatnya diperselisihkan, sebutkan secara jujur.`,
     category: "qurani",
     fakultas: ["ushuluddin", "dirasat", "quran"],
     jurusan: [],
-    tingkat: ["mustawa", "1", "2", "3"],
+    tingkat: ["1", "2", "3"],
     description: "Ilmu cara membaca Al-Qur'an dengan benar — makhorijul huruf, sifat huruf, hukum nun mati, mad, waqaf. Tajwid praktis wajib dengan guru; AI bantu sisi teori.",
     descriptionArabic: "علم يبحث في كيفية النطق بكلمات القرآن صحيحاً",
     kitabUtama: [
@@ -4175,7 +4175,7 @@ Jangan men-tarjih antar madzhab.
     category: "aqdi",
     fakultas: ["ushuluddin", "syariah", "dirasat", "quran"],
     jurusan: [],
-    tingkat: ["mustawa", "1", "2", "3", "4", "pasca"],
+    tingkat: ["1", "2", "3", "4", "pasca"],
     description: "Ilmu tentang keesaan Allah — 20 sifat wajib, sifat mustahil dan jaiz bagi Allah, kenabian, dan sam'iyyat. Pendekatan Al-Azhar: Asy'ari-Maturidi.",
     descriptionArabic: "علم التوحيد وأصول الإيمان",
     kitabUtama: [
@@ -5400,6 +5400,431 @@ Untuk setiap kata:
   },
 
   {
+    id: "qiraah-dl",
+    name: "Qira'ah (DL)",
+    nameArabic: "القراءة",
+    category: "lughawi",
+    fakultas: [],
+    jurusan: [],
+    tingkat: ["mustawa"],
+    description: "Keterampilan membaca teks Arab fusha dengan pemahaman — dari teks sederhana sampai teks akademik. Fokus: kelancaran baca, pemahaman konteks, dan analisis kosakata baru.",
+    descriptionArabic: "مهارة القراءة والفهم في اللغة العربية الفصحى",
+    kitabUtama: [
+      { nama: "Al-Qira'ah Ar-Rasyidah",  arabic: "القراءة الرشيدة",       penulis: "Abdul Aziz Al-Bisyri" },
+      { nama: "Silsilah Ta'lim Al-Lughah Al-Arabiyyah", arabic: "سلسلة تعليم اللغة العربية", penulis: "Markaz Al-Malik Abdullah" },
+      { nama: "Al-Arabiyyah Bayna Yadayk", arabic: "العربية بين يديك",    penulis: "Abdul Rahman Ibrahim Al-Fauzan" },
+    ],
+    recommendedAI: [
+      { tool: "chatgpt",    rank: 1, strength: "Analisis teks, kosakata, dan latihan pemahaman", why: "ChatGPT sangat baik untuk mendampingi bacaan teks Arab — bisa jelaskan kosakata sulit, bantu analisis struktur kalimat, dan buat soal pemahaman dari teks yang kamu baca." },
+      { tool: "claude",     rank: 2, strength: "Penjelasan mendalam teks sastra dan akademik",   why: "Claude cocok untuk teks Arab yang lebih kompleks dan butuh penjelasan kontekstual yang panjang dan terstruktur." },
+      { tool: "notebooklm", rank: 3, strength: "Drill kosakata dari teks yang diupload",         why: "Upload teks bacaan ke NotebookLM, lalu drill kosakata dan pertanyaan pemahaman langsung dari sumber yang sama." },
+    ],
+    tutorial: {
+      overview: "Qira'ah di DL melatih tiga hal: membaca lancar, memahami isi, dan memperkaya mufradat. Gunakan AI untuk mengolah teks yang sudah kamu baca — bukan menggantikan proses membaca itu sendiri.",
+      steps: [
+        { title: "Baca dulu, baru tanya AI",      body: "Baca paragraf sampai akhir terlebih dahulu. Tandai kata yang belum kamu pahami. Baru kemudian tanya AI untuk penjelasan — bukan langsung minta terjemah." },
+        { title: "Analisis per paragraf",          body: "Gunakan AI untuk menganalisis satu paragraf: tema, kosakata kunci, struktur kalimat utama. Ini lebih efektif dari membaca sekilas satu teks panjang." },
+        { title: "Buat glosarium pribadi",         body: "Setiap sesi baca, kumpulkan 5-10 kosakata baru. Minta AI buat contoh kalimat dari tiap kata. Simpan ke Kurasah sebagai glosarium kamu." },
+        { title: "Latihan baca keras",             body: "Qira'ah bukan hanya membaca dalam hati. Latih membaca keras dengan memperhatikan harakat dan makhraj — rekam dirimu, evaluasi sendiri." },
+      ],
+    },
+    prompts: {
+      tabs: [
+        {
+          kind: "Pahami Konsep",
+          prompts: [
+            {
+              title: "Analisis Teks Qira'ah",
+              targetAI: "chatgpt",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Bantu aku menganalisis teks Arab berikut:
+
+[TEMPEL TEKS ARAB DI SINI]
+
+Tolong:
+1. Terjemahkan ke Bahasa Indonesia (natural, bukan harfiyyah)
+2. Jelaskan 5 kosakata paling penting beserta bentuk dasarnya (fi'il madhi / isim mufrad)
+3. Identifikasi struktur kalimat utama (jumlah ismiyyah / fi'liyyah)
+4. Apa tema dan pesan utama teks ini?
+
+[LEVEL_BAHASA]`,
+            },
+            {
+              title: "Drill Pemahaman Teks",
+              targetAI: "chatgpt",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Bantu aku latihan pemahaman teks.
+
+Ini teks yang sudah aku baca:
+[TEMPEL TEKS ARAB DI SINI]
+
+Buatkan 5 pertanyaan pemahaman (asmilah al-fahm) dalam Bahasa Arab, dari yang mudah ke yang membutuhkan analisis. Setelah aku jawab, koreksi dan berikan umpan balik.
+
+[LEVEL_BAHASA]`,
+            },
+            {
+              title: "Kosakata dari Teks",
+              targetAI: "notebooklm",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Dari teks yang sudah aku upload, bantu aku:
+
+1. Buat daftar 10 kosakata paling penting dan frekuensinya dalam teks
+2. Berikan contoh kalimat baru (bukan dari teks) untuk tiap kosakata
+3. Tandai mana yang termasuk kosakata akademik (al-mufradat al-ilmiyyah)
+
+[LEVEL_BAHASA]`,
+            },
+          ],
+        },
+        {
+          kind: "Hafalan",
+          prompts: [
+            {
+              title: "Hafal Mufradat Tematik",
+              targetAI: "chatgpt",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Aku sedang belajar [MADDAH].
+
+Bantu aku hafal kosakata dengan metode kontekstual. Tema hari ini: [TULIS TEMA, mis: alam, kegiatan kampus, ibadah].
+
+Caranya:
+1. Berikan 8 kosakata tematik (Arab — Indonesia — contoh kalimat pendek)
+2. Setelah aku hafal, uji aku: tampilkan kalimat dengan kata dikosongkan, aku yang isi
+3. Koreksi dan beri skor
+
+[LEVEL_BAHASA]`,
+            },
+            {
+              title: "Rangkuman Isi Teks (Talkhish)",
+              targetAI: "claude",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Bantu aku berlatih merangkum teks (talkhish).
+
+Ini teks aslinya:
+[TEMPEL TEKS ARAB DI SINI]
+
+Setelah aku tulis rangkumanku sendiri dalam Bahasa Arab (3-4 kalimat), tolong:
+1. Koreksi struktur kalimat dan pilihan kata
+2. Tunjukkan bagian mana yang penting tapi terlewat
+3. Beri versi rangkuman idealnya sebagai referensi
+
+[LEVEL_BAHASA]`,
+            },
+          ],
+        },
+        {
+          kind: "Latihan & Drill",
+          prompts: [
+            {
+              title: "Latihan Kelancaran Baca (Tartil)",
+              targetAI: "chatgpt",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Aku sedang berlatih kelancaran membaca teks Arab fusha.
+
+Berikan aku teks Arab pendek (6-8 baris) sesuai level pemula-menengah, tentang tema kehidupan sehari-hari atau akademik. Sertakan:
+1. Teks berharakat lengkap
+2. Daftar kosakata sulit (5 kata) dengan maknanya
+3. 3 pertanyaan pemahaman singkat
+
+Setelah aku jawab, evaluasi kemampuan pemahamanku.
+
+[LEVEL_BAHASA]`,
+            },
+            {
+              title: "Identifikasi Struktur Kalimat",
+              targetAI: "claude",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Latihan analisis struktur kalimat Arab.
+
+Ini kalimat-kalimat dari teks yang aku baca:
+[TEMPEL 3-5 KALIMAT ARAB]
+
+Untuk setiap kalimat:
+1. Tentukan: jumlah ismiyyah atau fi'liyyah?
+2. Identifikasi: mubtada-khabar / fi'il-fa'il-maf'ul
+3. Tandai kata sambung (huruf ataf/jar) dan fungsinya
+
+[LEVEL_BAHASA]`,
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  {
+    id: "insya-dl",
+    name: "Insya' (DL)",
+    nameArabic: "الإنشاء",
+    category: "lughawi",
+    fakultas: [],
+    jurusan: [],
+    tingkat: ["mustawa"],
+    description: "Keterampilan menulis Arab fusha — dari kalimat sederhana sampai paragraf dan esai pendek. Fokus: kohesi kalimat, pilihan kosakata tepat, dan ekspresi ide secara terstruktur.",
+    descriptionArabic: "مهارة الكتابة والتعبير بالعربية الفصحى",
+    kitabUtama: [
+      { nama: "Al-Mu'jam Al-Wasith",        arabic: "المعجم الوسيط",           penulis: "Majma' Al-Lughah Al-Arabiyyah" },
+      { nama: "Jami' Ad-Durus Al-Arabiyyah", arabic: "جامع الدروس العربية",    penulis: "Musthafa Al-Ghalayini" },
+      { nama: "Al-Arabiyyah Bayna Yadayk",   arabic: "العربية بين يديك",       penulis: "Abdul Rahman Ibrahim Al-Fauzan" },
+    ],
+    recommendedAI: [
+      { tool: "claude",     rank: 1, strength: "Koreksi tulisan Arab dan saran peningkatan gaya", why: "Claude sangat teliti dalam koreksi tata bahasa dan gaya penulisan Arab — bisa berikan umpan balik spesifik per kalimat tanpa mengubah maksud tulisanmu." },
+      { tool: "chatgpt",    rank: 2, strength: "Brainstorm ide dan kerangka tulisan",              why: "ChatGPT bagus untuk tahap awal: bantu kamu buat kerangka (takhtith), cari ide, dan menyusun alur paragraf sebelum mulai menulis." },
+      { tool: "perplexity", rank: 3, strength: "Cari referensi ungkapan baku bahasa Arab",        why: "Kalau ragu apakah ungkapan tertentu lazim dipakai dalam bahasa Arab baku, Perplexity bisa cari referensi dari sumber Arab asli." },
+    ],
+    tutorial: {
+      overview: "Insya' yang baik dimulai dari takhtith (kerangka), bukan langsung menulis. Gunakan AI sebagai mitra koreksi dan pemberi umpan balik — bukan mesin penulis otomatis.",
+      steps: [
+        { title: "Tulis dulu, koreksi kemudian",   body: "Jangan langsung minta AI tulis esai untukmu. Tulis draftmu sendiri dulu (walau belepotan), baru minta AI koreksi. Proses inilah yang membuatmu berkembang." },
+        { title: "Mulai dari 1 paragraf",           body: "Latih insya' satu paragraf dahulu: 1 kalimat topik + 3-4 kalimat penjelas + 1 kalimat penutup. Ini struktur dasar yang perlu dikuasai sebelum esai panjang." },
+        { title: "Perhatikan kata penghubung",      body: "Gunakan kata penghubung Arab (اذ، بينما، ومع ذلك، علاوة على ذلك) untuk membuat tulisan mengalir. Minta AI beri daftar kata penghubung sesuai konteks paragrafmu." },
+        { title: "Buat glosarium ungkapan baku",    body: "Kumpulkan ungkapan baku Arab (al-ibarah al-muqarrarah) yang sering muncul dalam tulisan akademik. Simpan ke Kurasah — ini aset berharga untuk ujian." },
+      ],
+    },
+    prompts: {
+      tabs: [
+        {
+          kind: "Pahami Konsep",
+          prompts: [
+            {
+              title: "Koreksi Tulisan Arab",
+              targetAI: "claude",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Tolong koreksi tulisan Arab berikut:
+
+[TEMPEL TULISAN ARABMU DI SINI]
+
+Tolong:
+1. Koreksi kesalahan nahwu dan sharaf (sebutkan rule-nya)
+2. Perbaiki pilihan kosakata yang kurang tepat atau tidak baku
+3. Saran untuk membuat tulisan lebih mengalir (wasl antar kalimat)
+4. Nilai keseluruhan (1-10) dan apa prioritas latihan selanjutnya
+
+Jangan tulis ulang seluruh teks — cukup tunjukkan bagian yang perlu diperbaiki dengan alasannya.
+
+[LEVEL_BAHASA]`,
+            },
+            {
+              title: "Struktur Paragraf Arab",
+              targetAI: "chatgpt",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Ajari aku cara membuat paragraf Arab yang baik.
+
+Tema yang ingin aku tulis: [TULIS TEMA]
+
+Bantu aku:
+1. Buat kerangka paragraf (jumlah ismiyyah pembuka, 3 poin penjelas, penutup)
+2. Saran kosakata dan ungkapan yang cocok untuk tema ini
+3. Contoh kalimat topik (jumlah ra'isiyyah) yang kuat
+
+Aku yang akan menulis isi paragrafnya sendiri.
+
+[LEVEL_BAHASA]`,
+            },
+          ],
+        },
+        {
+          kind: "Hafalan",
+          prompts: [
+            {
+              title: "Hafal Ungkapan Baku (Ibarah Muqarrarah)",
+              targetAI: "chatgpt",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Bantu aku hafal ungkapan baku Arab untuk [MADDAH].
+
+Berikan 10 ungkapan baku yang sering dipakai dalam tulisan Arab akademik/formal, dengan:
+1. Ungkapan Arab (berharakat)
+2. Arti dalam Bahasa Indonesia
+3. Contoh pemakaian dalam kalimat
+4. Situasi/konteks penggunaannya
+
+Setelah aku pelajari, uji aku: tampilkan artinya, aku yang tulis ungkapan Arabnya.
+
+[LEVEL_BAHASA]`,
+            },
+            {
+              title: "Template Insya' Berbagai Tema",
+              targetAI: "claude",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Aku butuh template kerangka insya' untuk tema:
+
+[TULIS TEMA INSYA']
+
+Berikan:
+1. Kerangka (takhtith): muqaddimah, 2-3 poin isi, khatimah
+2. Kosakata kunci yang wajib ada untuk tema ini (8-10 kata)
+3. Kata penghubung yang cocok untuk masing-masing bagian
+4. Kalimat pembuka (muqaddimah) sebagai contoh — sisanya aku tulis sendiri
+
+[LEVEL_BAHASA]`,
+            },
+          ],
+        },
+        {
+          kind: "Latihan & Drill",
+          prompts: [
+            {
+              title: "Latihan Insya' Terbimbing",
+              targetAI: "chatgpt",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Aku mau latihan insya' terbimbing (al-kitabah al-muwajjahah).
+
+Berikan aku:
+1. Satu tema sederhana untuk ditulis (1 paragraf, 5-7 kalimat)
+2. 5 kata kunci yang harus aku pakai
+3. Kata penghubung yang disarankan
+
+Aku akan tulis paragrafnya, lalu kamu koreksi.
+
+[LEVEL_BAHASA]`,
+            },
+            {
+              title: "Transformasi Kalimat",
+              targetAI: "claude",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Latihan transformasi kalimat Arab.
+
+Untuk setiap kalimat berikut, minta aku transformasikan sesuai instruksi:
+[ATAU: berikan aku 5 kalimat sederhana, aku yang transformasikan]
+
+Jenis transformasi: [pilih: aktif→pasif / mufrad→jamak / kalimat positif→negatif / jumlah ismiyyah→fi'liyyah]
+
+Setelah aku jawab, koreksi dan jelaskan rule nahwu/sharaf yang berlaku.
+
+[LEVEL_BAHASA]`,
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  {
+    id: "istima-dl",
+    name: "Istima' (DL)",
+    nameArabic: "الاستماع",
+    category: "lughawi",
+    fakultas: [],
+    jurusan: [],
+    tingkat: ["mustawa"],
+    description: "Keterampilan menyimak Arab fusha — melatih pemahaman audio dari ceramah, dialog, dan konten Arab. Karena AI berbasis teks, pendekatan: simak audio sendiri → olah transkripnya bersama AI.",
+    descriptionArabic: "مهارة الاستماع والفهم من المصادر الصوتية العربية",
+    kitabUtama: [
+      { nama: "Silsilah Ta'lim Al-Lughah Al-Arabiyyah", arabic: "سلسلة تعليم اللغة العربية", penulis: "Markaz Al-Malik Abdullah" },
+      { nama: "Al-Arabiyyah Bayna Yadayk",   arabic: "العربية بين يديك",       penulis: "Abdul Rahman Ibrahim Al-Fauzan" },
+      { nama: "Al-Qira'ah Ar-Rasyidah",     arabic: "القراءة الرشيدة",         penulis: "Abdul Aziz Al-Bisyri" },
+    ],
+    recommendedAI: [
+      { tool: "chatgpt",    rank: 1, strength: "Analisis transkripsi dan latihan pemahaman audio", why: "Setelah kamu transkripsi atau tempel teks dari audio Arab, ChatGPT bisa bantu analisis isi, terjemahkan, dan buat soal pemahaman dari materi yang sudah kamu simak." },
+      { tool: "claude",     rank: 2, strength: "Penjelasan mendalam konten ceramah/khutbah Arab",  why: "Claude bagus untuk mengolah transkripsi ceramah atau teks panjang — bisa jelaskan konteks, kosakata, dan pokok-pokok isi dengan sistematis." },
+      { tool: "perplexity", rank: 3, strength: "Cari sumber audio Arab dan konteks topiknya",      why: "Perplexity bisa bantu kamu temukan ceramah, podcast, atau konten audio Arab berkualitas sesuai level, sekaligus cari konteks topik yang kamu dengarkan." },
+    ],
+    tutorial: {
+      overview: "Istima' butuh sumber audio — AI teks tidak bisa 'mendengarkan' bersamamu. Alurnya: (1) simak audio Arab sendiri, (2) transkripsi atau tempel teksnya, (3) olah bersama AI untuk pemahaman dan analisis.",
+      steps: [
+        { title: "Pilih sumber audio yang tepat",   body: "Mulai dari audio lambat dan jelas: berita Al-Jazeera versi lambat, ceramah pendek ulama, atau dialog dari buku paket bahasa Arab. Hindari percakapan native speed di awal." },
+        { title: "Simak aktif, bukan pasif",         body: "Saat menyimak, coba tangkap: tema utama, kata yang diulang, dan kata yang belum kamu kenal. Tulis catatan singkat sebelum tanya AI." },
+        { title: "Tempel transkripsi ke AI",         body: "Kalau tersedia, tempel transkripsi audio ke ChatGPT atau Claude. Minta analisis kosakata, struktur kalimat, dan pertanyaan pemahaman dari teks tersebut." },
+        { title: "Latihan shadowing",               body: "Putar audio, lalu tirukan pengucapan dengan jeda (shadowing). Fokus pada intonasi dan ritme, bukan hanya lafal. Ini salah satu cara terbaik melatih 'telinga' bahasa Arab." },
+      ],
+    },
+    prompts: {
+      tabs: [
+        {
+          kind: "Pahami Konsep",
+          prompts: [
+            {
+              title: "Analisis Transkripsi Audio Arab",
+              targetAI: "chatgpt",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Aku baru mendengarkan audio Arab dan ingin mengolah isinya.
+
+Ini transkripsi / teks dari audio yang aku dengar:
+[TEMPEL TRANSKRIPSI ATAU TEKS ARAB DI SINI]
+
+Tolong:
+1. Terjemahkan ke Bahasa Indonesia
+2. Jelaskan 5 kosakata penting yang mungkin sulit didengar oleh pelajar
+3. Apa tema dan poin utama dari audio ini?
+4. Buat 3 pertanyaan pemahaman tentang isi audio
+
+[LEVEL_BAHASA]`,
+            },
+            {
+              title: "Kosakata dari Konten Audio",
+              targetAI: "chatgpt",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Aku sedang belajar [MADDAH] dari konten audio Arab.
+
+Tema audio yang aku dengarkan: [TULIS TEMA]
+
+Berikan aku:
+1. 10 kosakata yang kemungkinan sering muncul dalam audio bertema ini
+2. Frasa/ungkapan baku yang biasa dipakai dalam konteks ini
+3. Tips cara membedakan kata yang mirip bunyinya (al-alfaz al-mutasyabiha)
+
+Ini akan aku pakai untuk menyimak lebih efektif.
+
+[LEVEL_BAHASA]`,
+            },
+          ],
+        },
+        {
+          kind: "Hafalan",
+          prompts: [
+            {
+              title: "Hafal Frasa dari Audio",
+              targetAI: "claude",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Dari audio yang aku dengar, aku menemukan frasa/ungkapan berikut yang ingin aku hafal:
+
+[TULIS FRASA/KALIMAT ARAB YANG INGIN DIHAFAL]
+
+Bantu aku:
+1. Pastikan tulisan dan harakat sudah benar
+2. Jelaskan arti dan konteks pemakaian tiap frasa
+3. Buat 2 kalimat baru yang menggunakan frasa yang sama
+4. Buat kartu hafalan digital: Arab | Arti | Contoh Kalimat
+
+[LEVEL_BAHASA]`,
+            },
+            {
+              title: "Latihan Dikte (Imla') dari Teks",
+              targetAI: "chatgpt",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Aku mau latihan imla' (dikte) untuk melatih kemampuan menyimak dan menulis.
+
+Berikan aku teks Arab pendek (4-5 kalimat) sesuai level pemula-menengah.
+Baca teksnya kalimat per kalimat (tuliskan satu per satu dengan jeda).
+Aku akan menuliskan apa yang aku "dengar" (baca dari layar).
+Setelah aku selesai, koreksi tulisanku — apakah kosakata dan harakat sudah tepat?
+
+[LEVEL_BAHASA]`,
+            },
+          ],
+        },
+        {
+          kind: "Latihan & Drill",
+          prompts: [
+            {
+              title: "Drill Pemahaman dari Transkripsi",
+              targetAI: "chatgpt",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Latihan pemahaman istima' dari transkripsi.
+
+Ini teks dari audio yang aku dengarkan:
+[TEMPEL TRANSKRIPSI ARAB]
+
+Buatkan 5 soal pemahaman bergaya pilihan ganda (4 pilihan) tentang isi teks ini.
+Setelah aku jawab semua, koreksi, jelaskan yang salah, dan beri skor.
+
+[LEVEL_BAHASA]`,
+            },
+            {
+              title: "Identifikasi Kosakata Sulit dari Audio",
+              targetAI: "claude",
+              template: `Aku [TINGKATAN] di program bahasa Arab (DL). [GAYA_BELAJAR]. Aku baru menyimak audio Arab dan ada beberapa kata yang belum aku pahami.
+
+Kata/frasa yang aku dengar (mungkin penulisannya belum tepat):
+[TULIS KATA-KATA YANG KAMU DENGAR TAPI BELUM YAKIN ARTINYA]
+
+Untuk setiap kata:
+1. Koreksi penulisan jika perlu (berharakat)
+2. Arti dan bentuk dasar (fi'il madhi / isim mufrad)
+3. Contoh pemakaian dalam kalimat
+4. Apakah ini kata umum atau kosakata khusus (teknis/formal)?
+
+[LEVEL_BAHASA]`,
+            },
+          ],
+        },
+      ],
+    },
+  },
+
+  {
     id: "balaghah",
     name: "Balaghah",
     nameArabic: "البلاغة",
@@ -6379,7 +6804,7 @@ Bagaimana naqd adabi berkembang di era digital?
     category: "tarikhi",
     fakultas: ["ushuluddin", "syariah", "dirasat", "quran"],
     jurusan: [],
-    tingkat: ["mustawa", "1", "2", "3", "4"],
+    tingkat: ["1", "2", "3", "4"],
     description: "Sejarah hidup Rasulullah ﷺ dari sebelum kelahiran sampai wafat, dengan analisis pelajaran dakwah, syariat, dan hikmah setiap peristiwa.",
     descriptionArabic: "سيرة النبي محمد ﷺ",
     kitabUtama: [

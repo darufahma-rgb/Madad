@@ -162,7 +162,7 @@ const LEVELS = [
   { id: "tsanawi_3_adabi", label: "Tsanawi Kelas 3 — Adabi",  short: "Tsanawi 3 Adabi",  arabic: "ثانوي ٣ أدبي",  jenjang: "mahad", jurusan: "adabi", isMahad: true },
   { id: "tsanawi_3_ilmi",  label: "Tsanawi Kelas 3 — Ilmi",   short: "Tsanawi 3 Ilmi",   arabic: "ثانوي ٣ علمي",  jenjang: "mahad", jurusan: "ilmi",  isMahad: true },
   { id: "_sep_masisir", isSeparator: true, label: "MASISIR — MAHASISWA" },
-  { id: "mustawa", label: "Darul Lughoh (DL)",                short: "DL",             arabic: "مستوى" },
+  { id: "mustawa", label: "Darul Lughoh (DL)",                short: "DL",             arabic: "دار اللغة", desc: "Persiapan bahasa Arab sebelum masuk fakultas" },
   { id: "1",       label: "Tingkat I",                        short: "Awwal",          arabic: "الأولى" },
   { id: "2",       label: "Tingkat II",                       short: "Tsani",          arabic: "الثانية" },
   { id: "3",       label: "Tingkat III",                      short: "Tsalits",        arabic: "الثالثة" },
