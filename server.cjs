@@ -157,6 +157,13 @@ http.createServer(async (req, res) => {
 
   const filePath = path.join(ROOT, urlPath);
 
+  // Path traversal guard — pastikan resolved path masih di dalam ROOT/dist
+  if (!filePath.startsWith(ROOT + path.sep) && filePath !== ROOT) {
+    res.writeHead(403, { 'Content-Type': 'text/plain' });
+    res.end('Forbidden');
+    return;
+  }
+
   fs.readFile(filePath, (err, data) => {
     if (err) {
       const ext = path.extname(urlPath);

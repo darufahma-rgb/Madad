@@ -4,6 +4,31 @@ const TOKEN_TTL = 8 * 60 * 60 * 1000;
 
 const getSecret = () => process.env.ADMIN_PIN || 'fallback-secret';
 
+// ── Rate limiter sederhana (in-memory) ──
+// Max 5 percobaan per IP per 15 menit
+const RATE_LIMIT_MAX      = 5;
+const RATE_LIMIT_WINDOW   = 15 * 60 * 1000;
+const _attempts = {};
+
+const checkRateLimit = (ip) => {
+  const now = Date.now();
+  if (!_attempts[ip]) _attempts[ip] = [];
+  // Buang percobaan yang sudah lewat window
+  _attempts[ip] = _attempts[ip].filter(t => now - t < RATE_LIMIT_WINDOW);
+  if (_attempts[ip].length >= RATE_LIMIT_MAX) return false;
+  _attempts[ip].push(now);
+  return true;
+};
+
+// Bersihkan entri lama setiap 30 menit supaya memory tidak membengkak
+setInterval(() => {
+  const now = Date.now();
+  Object.keys(_attempts).forEach(ip => {
+    _attempts[ip] = (_attempts[ip] || []).filter(t => now - t < RATE_LIMIT_WINDOW);
+    if (_attempts[ip].length === 0) delete _attempts[ip];
+  });
+}, 30 * 60 * 1000);
+
 export const signToken = (payload) => {
   const secret = getSecret();
   const data = JSON.stringify(payload);
@@ -37,6 +62,13 @@ export default async function handler(req, res) {
   await new Promise(resolve => { req.on('data', c => body += c); req.on('end', resolve); });
 
   try {
+    // Rate limiting — max 5 percobaan per IP per 15 menit
+    const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
+    if (!checkRateLimit(ip)) {
+      res.status(429).json({ ok: false, error: 'Terlalu banyak percobaan. Coba lagi 15 menit lagi.' });
+      return;
+    }
+
     const { pin } = JSON.parse(body || '{}');
     const adminPin = (process.env.ADMIN_PIN || '').trim();
 
