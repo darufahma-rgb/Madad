@@ -5742,136 +5742,257 @@ Jelaskan posisi pertengahan Ahlussunnah untuk isu [SEBUTKAN, mis. iman & amal, t
     prompts: {
       pahami: [
         {
-          title: "Pahami Pemikiran Filosof Muslim Tertentu",
+          title: "Peta Besar Filsafat Islam",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku ingin memahami pemikiran: [NAMA FILOSOF - mis. Al-Kindi, Al-Farabi, Ibnu Sina, Ibnu Rusyd]
+Beri kerangka utuh Filsafat Islam:
+1. Definisi & ruang lingkup falsafah islamiyyah + bedanya dengan ilmu kalam & tasawwuf.
+2. Cabang: ilahiyat (metafisika), thabi'iyat (fisika), mantiq, akhlaq, siyasah.
+3. Aliran besar: Masysya'iyah (peripatetik), Isyraqiyah, dll.
+4. Outline bercabang + sikap kritis-ilmiah dalam mempelajarinya.
 
-Tolong jelaskan:
-1. Biografi singkat dan karya utama
-2. Kontribusi unik filosof ini dalam filsafat Islam
-3. 2-3 ide filsafat terpenting — jelaskan dengan bahasa yang bisa dipahami
-4. Hubungan pemikirannya dengan filsafat Yunani (Plato/Aristoteles)
-5. Respons ulama kalam terhadap pemikirannya
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Kritik Al-Ghazali dalam Tahafut",
+          title: "Pahami Tokoh Filsafat Islam & Pemikirannya",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Al-Ghazali dalam Tahafutul Falasifah mengkritik 20 masalah para filosof. Jelaskan:
+Jelaskan tokoh-tokoh utama filsafat Islam:
+1. Al-Kindi, Al-Farabi, Ibn Sina, Ibn Rusyd — pemikiran khas masing-masing (sebut yang kamu yakin; jika ragu, katakan).
+2. Tema yang mereka bahas (akal, jiwa, kenabian, alam).
+3. Pengaruh mereka terhadap pemikiran Islam & Barat.
 
-1. Mengapa Al-Ghazali menulis Tahafut — konteks dan tujuannya
-2. 3 masalah yang Al-Ghazali anggap kafir (qidam al-'alam, 'ilmullah bil juz'iyyat, ba'tsul ajsad)
-3. Argumen Al-Ghazali untuk setiap masalah
-4. Bagaimana Ibnu Rusyd merespons dalam Tahafutut Tahafut
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Falsafah vs Kalam: Metode dan Objek",
+          title: "Pahami Polemik Filsafat vs Ilmu Kalam",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan perbedaan antara falsafah dan ilmu kalam:
-1. Objek kajian masing-masing
-2. Metode masing-masing
-3. Hubungan (saling mempengaruhi atau saling bertentangan?)
-4. Pandangan ulama tentang mempelajari filsafat
+Jelaskan perdebatan filsafat & kalam:
+1. Kritik al-Ghazali dalam Tahafut al-Falasifah (poin yang dianggap menyimpang).
+2. Jawaban Ibn Rusyd dalam Tahafut at-Tahafut.
+3. Tiga isu yang al-Ghazali anggap mengkafirkan + duduk perkaranya.
+Sajikan berimbang & ilmiah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Konsep Metafisika Filsafat Islam",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan konsep ilahiyat/metafisika dalam filsafat Islam:
+1. Wajib al-wujud & mumkin al-wujud (Ibn Sina).
+2. Konsep emanasi (faidh/nazhariyyatul fayd) & kritik terhadapnya.
+3. Qidam al-'alam (keazalian alam) vs penciptaan — dan sikap Ahlussunnah.
+PENTING: jelaskan akurat lalu beri catatan kritis sesuai manhaj Azhar.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Hafal Tokoh dan Karya Filsafat Islam",
+          title: "Hafal Tokoh & Pemikiran Kunci",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Perlu hafal tokoh-tokoh filsafat Islam dan karyanya.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan tabel:
-- Nama filosof (Arab berharakat + transliterasi)
-- Masa hidup
-- Karya utama (Arab)
-- Ide terpenting (1 kalimat)
+Bantu hafal tokoh filsafat Islam:
+1. Tabel: tokoh | gelar | pemikiran khas | karya utama.
+2. Mnemonic untuk urutan/kelompok tokoh.
+PENTING: sebut yang kamu yakin; jika ragu, katakan.
 
-Urutan kronologis: Al-Kindi → Al-Farabi → Ibnu Sina → Ibnu Rusyd.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Hafal Istilah Filsafat Kunci",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal istilah (wajib al-wujud, jauhar-'aradh, hayula-shurah, 'aql fa''al, dll) bab [SEBUTKAN]:
+1. Istilah (Arab berharakat + arti).
+2. Mnemonic.
+3. Kelompokkan yang berkaitan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Filsafat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji. Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Analisis Argumen Filosofis",
+          title: "Drill Identifikasi Pemikiran dari Tokoh",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ini argumen filosofis dari [FILOSOF]:
+Beri 8 deskripsi pemikiran/pendapat. Tugasku: tebak tokoh/aliran pemiliknya.
+1. JANGAN beri jawaban dulu.
+2. Koreksi + jelaskan penandanya.
 
-[PASTE TEKS ARGUMEN]
-
-Analisis:
-1. Premis-premis argumen (apa yang diasumsikan benar)
-2. Kesimpulan yang dicapai
-3. Apakah argumen ini valid secara logis?
-4. Keberatan apa yang bisa diajukan dari perspektif kalam?
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Dialog Filsafat: Uji Pemahaman",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], latihan [MADDAH]. [GAYA_BELAJAR].
+          title: "Latihan Analisis Kritis Argumen Filsafat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bertindaklah sebagai Ibnu Sina (atau [FILOSOF LAIN]). Aku akan berdialog tentang pemikiran [TOPIK].
+Beri aku 4 argumen filsafat. Tugasku: analisis & beri tanggapan kritis sesuai manhaj Ahlussunnah.
+1. JANGAN beri tanggapan dulu.
+2. Koreksi analisisku + sempurnakan.
 
-Aku akan mengajukan pertanyaan dan keberatan. Kamu jawab dengan gaya pemikiran filosof tersebut. Koreksi aku kalau ada kesalahpahaman tentang pemikirannya.
+[METODE]
 
-Mulai dengan ringkasan posisi [FILOSOF] tentang [TOPIK].
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Soal Definisi & Tokoh",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal campuran (definisi istilah, tokoh, pemikiran, polemik) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Soal Filsafat Islam",
+          title: "Mock Imtihan Tahriri (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 6 soal: pokok pemikiran filosof tertentu, kritik Al-Ghazali, respons Ibnu Rusyd, beda falsafah-kalam, identifikasi filosof dari pemikiran.
+Buatkan soal ujian tulis Filsafat Islam gaya Azhar untuk topik [SEBUTKAN]:
+1. Tipe khas: 'arrif, udzkur ra'y..., naqisy nazhariyyah..., qarin baina mufakkirain.
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Simulasi Imtihan Syafawi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
+
+Berperanlah sebagai mumtahin syafawi:
+1. Tanya pemikiran tokoh, definisi, analisis kritis polemik.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari topik yang kupelajari ([SEBUTKAN]): topik tersering jadi soal, cara jawab analitis & seimbang, prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Filsafat Islam",
+          title: "Rapikan Catatan Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang [TOPIK FILSAFAT] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi: tokoh/konsep → pemikiran → catatan kritis, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun sistematis (filosof → pemikiran → kritik → respons), tambahkan istilah teknis filsafat (Arab + transliterasi), pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Setelah talaqqi topik [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan & keseimbangan, koreksi, ajukan 3 pertanyaan penguji.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Relevansi Filsafat Islam untuk Aqidah Kontemporer",
+          title: "Pengaruh Filsafat Islam terhadap Peradaban",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi relevansi [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan bagaimana argumen-argumen filsafat klasik (kosmologi, ontologi, epistemologi Ibnu Sina) masih relevan dalam:
-1. Merespons ateisme modern (argumen keberadaan Allah)
-2. Dialog dengan filsafat Barat kontemporer
-3. Pendekatan Al-Azhar dalam dakwah intelektual
+Jelaskan:
+1. Bagaimana filsafat Islam menjembatani warisan Yunani ke dunia Islam & Eropa.
+2. Kontribusi pemikir muslim terhadap logika, etika, & sains.
+3. Warisan yang masih relevan hari ini.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Sikap Ulama terhadap Filsafat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan secara berimbang:
+1. Ulama yang menolak filsafat (& alasannya).
+2. Ulama yang memanfaatkannya secara selektif (& batasannya).
+3. Sikap pertengahan: mengambil yang benar, menolak yang menyelisihi syariat.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Filsafat & Isu Pemikiran Kontemporer",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk isu [SEBUTKAN, mis. relasi akal-wahyu, sekularisme]:
+1. Bagaimana warisan filsafat Islam menanggapinya.
+2. Relevansi pemikiran klasik untuk tantangan modern.
+3. Sikap kritis-konstruktif.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
@@ -7822,137 +7943,258 @@ Jelaskan:
     prompts: {
       pahami: [
         {
-          title: "Pahami Bahr Tertentu",
+          title: "Peta Besar Ilmu 'Arudh",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku ingin memahami bahr: [NAMA BAHR - mis. Thawil, Basith, Wafir, Kamil, Hazaj, dll]
+Beri kerangka utuh ilmu 'arudh wal qawafi:
+1. Definisi 'arudh (ilmu timbangan syair) & qafiyah + tujuannya (menjaga syair dari cacat wazan).
+2. Konsep dasar: taf'ilat, bahr, dha'irah.
+3. Konsep qafiyah & huruf-hurufnya.
+4. Outline + kenapa penting untuk apresiasi & penulisan syair.
 
-Tolong jelaskan:
-1. Pola taf'ilah bahr ini (tulis dalam taf'ilah Arab berharakat)
-2. Cara mengingat pola ini
-3. Zihaf yang sering terjadi di bahr ini
-4. 2 bait contoh dari syi'r terkenal — tulis berharakat + taqthi' (dengan simbol | untuk pemisah)
-5. Penyair dan qasidah yang sering memakai bahr ini
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Cara Melakukan Taqthi' Bait",
+          title: "Pahami Kitabah 'Arudhiyyah & Taqthi'",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ajarkan aku langkah-langkah taqthi' (memotong bait) secara praktis:
+Jelaskan cara menulis 'arudh & memotong bait (taqthi'):
+1. Kaidah kitabah 'arudhiyyah (yang ditulis = yang diucapkan).
+2. Lambang harakat & sukun (/ dan ه atau o).
+3. Langkah taqthi' satu bait jadi taf'ilat.
+4. Contoh taqthi' bertahap satu bait.
 
-1. Langkah 1: Tulis bait dengan harakat
-2. Langkah 2: Tentukan suku kata (harakat = bergerak, sukun = mati)
-3. Langkah 3: Tandai dengan simbol / (bergerak) dan 0 (mati)
-4. Langkah 4: Kelompokkan menjadi taf'ilah
-5. Langkah 5: Identifikasi bahr dari pola taf'ilah
-
-Praktikkan dengan bait contoh: [PASTE BAIT BERHARAKAT]
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Istilah Qafiyah",
+          title: "Pahami Bahr-Bahr Syair Utama",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan istilah-istilah dalam ilmu qafiyah:
-1. Definisi qafiyah
-2. Huruf-huruf qafiyah: rawiy, waishl, khuruj, ridif, ta'sis (Arab berharakat + definisi)
-3. Jenis-jenis qafiyah: mutawatir, mutadarik, mutaraddif, mutawakis
-4. 'Ayb qafiyah: iqwa', iqa', sinna' — definisi dan contoh
-5. Cara mengidentifikasi qafiyah dari akhir bait
+Jelaskan bahr (lautan/wazan) syair yang sering muncul:
+1. Bahr thawil, basith, kamil, wafir, rajaz — taf'ilat-nya + ciri khasnya.
+2. Cara mengenali bahr dari pola taf'ilat.
+3. Mnemonic taf'ilat tiap bahr (mis. "thawilun lahu...").
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Zihaf & 'Illah (Perubahan Taf'ilat)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan perubahan pada taf'ilat:
+1. Zihaf (perubahan ringan, tidak tetap) — jenis & contoh.
+2. 'Illah (perubahan tetap di 'arudh/dharb) — jenis & contoh.
+3. Bagaimana ini memengaruhi penulisan taf'ilat.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Drill Nama dan Pola Bahr",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Menghafal nama-nama bahr dan pola taf'ilahnya.
+          title: "Hafal Taf'ilat Tiap Bahr",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sesi drill:
-1. Sebut nama bahr
-2. Aku sebutkan pola taf'ilahnya (Arab berharakat)
-3. Koreksi kalau salah
-4. Setelah 10 bahr, beri daftar yang perlu diperkuat
+Bantu hafal taf'ilat bahr-bahr utama:
+1. Tabel: bahr | taf'ilat (penuh) | mnemonic.
+2. Cara cepat mengingat urutan taf'ilat.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Hafal Lambang & Istilah 'Arudh",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal:
+1. Istilah (taf'ilah, bahr, 'arudh, dharb, hasywu, qafiyah, rawi) + arti.
+2. Lambang taqthi'.
+3. Mnemonic.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah 'Arudh",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bahr/topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji (taqthi' bait, kenali bahr). Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Latihan Taqthi' Bait",
+          title: "Latihan Taqthi' Bait (Aku Coba, AI Koreksi)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 5 bait syi'r dari berbagai bahr. Aku akan:
-1. Lakukan taqthi' (potong menjadi taf'ilah)
-2. Identifikasi bahr-nya
+Aku akan men-taqthi' bait yang kutempel.
+1. Koreksi taqthi'-ku (pemotongan taf'ilat, lambang).
+2. Tunjukkan bahr-nya & zihaf/'illah bila ada.
+PENTING: pakai bait yang kutempel; jangan mengarang bait.
 
-Format tiap bait: tulis berharakat saja. JANGAN kasih bahr-nya dulu.
+[METODE]
 
-Setelah aku jawab, koreksi taqthi'ku per bait.
+[LEVEL_BAHASA]
+
+Bait: [TEMPEL]`,
+        },
+        {
+          title: "Drill Kenali Bahr dari Pola",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri aku 6 pola taf'ilat. Tugasku: tentukan bahr-nya.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Identifikasi Zihaf dalam Bait",
+          title: "Drill Soal Definisi & Bahr",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 4 bait yang mengandung zihaf atau 'illah. Aku akan:
-1. Tandai di mana zihaf/illah-nya
-2. Identifikasi jenis zihaf/illah (mis. khabn, thayyiy, 'ilal, dll)
+Beri 10 soal campuran (definisi, taf'ilat, bahr, zihaf/'illah, qafiyah) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
 
-Format tiap bait: tulis berharakat + bahr-nya. JANGAN kasih jawaban dulu.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Soal 'Arudh",
+          title: "Mock Imtihan Tahriri (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 6 soal: taqthi' bait, identifikasi bahr, sebutkan zihaf, istilah qafiyah, pola taf'ilah bahr tertentu, 'ayb qafiyah.
+Buatkan soal ujian tulis 'Arudh gaya Azhar untuk topik [SEBUTKAN]:
+1. Tipe khas: qaththi' al-bait wa sammi al-bahr, 'arrif, udzkur taf'ilat bahr..., istakhrij az-zihaf.
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Simulasi Imtihan Syafawi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
+
+Berperanlah sebagai mumtahin syafawi:
+1. Tanya taf'ilat bahr, definisi, atau minta taqthi' lisan.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari topik yang kupelajari ([SEBUTKAN]): yang sering jadi soal (biasanya taqthi' & kenali bahr), cara jawab agar tidak salah potong, prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi 'Arudh",
+          title: "Rapikan Catatan Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang bahr [NAMA BAHR] atau qafiyah dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi: bahr → taf'ilat → contoh taqthi', tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun (bahr → pola → zihaf → contoh bait), tambahkan taf'ilah Arab berharakat, contoh bait tambahan, pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Setelah talaqqi bahr/topik [SEBUTKAN], aku jelaskan ulang + taqthi' contoh (di bawah). Periksa keakuratan, koreksi, ajukan 3 pertanyaan penguji.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Hubungan 'Arudh dengan Musik Arab",
+          title: "'Arudh & Apresiasi Musik Syair",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan hubungan ilmu 'arudh dengan musik Arab:
-1. Bagaimana bahr syi'r berkaitan dengan irama (maqam) musik Arab
-2. Bagaimana syi'r berbeda dari nathr (prosa) secara irama
-3. Bagaimana bahr yang berbeda menciptakan nuansa emosi yang berbeda
-4. Apakah ada ulama yang menolak syi'r didengarkan — dan argumennya
+Jelaskan:
+1. Bagaimana wazan & irama membangun musik (musiqa) syair.
+2. Hubungan pemilihan bahr dengan suasana/tema syair.
+3. Kenapa memahami 'arudh memperdalam apresiasi syair.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Ilmu Qafiyah Mendalam",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan ilmu qafiyah:
+1. Definisi qafiyah & huruf-hurufnya (rawi, washl, ridf, dll).
+2. Harakat qafiyah (majra, hadzw, dll).
+3. Cacat qafiyah ('uyub al-qafiyah) yang harus dihindari.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "'Arudh untuk Menulis Syair Sendiri",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu aku mencoba menulis bait sederhana sesuai wazan:
+1. Pilih satu bahr mudah (mis. rajaz) + taf'ilat-nya.
+2. Bimbing aku menyusun bait yang sesuai wazan.
+3. Koreksi bait buatanku & tunjukkan letak yang perlu diperbaiki.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
@@ -7990,139 +8232,257 @@ Jelaskan hubungan ilmu 'arudh dengan musik Arab:
     prompts: {
       pahami: [
         {
+          title: "Peta Besar Fiqh Al-Lughah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri kerangka utuh fiqh al-lughah:
+1. Definisi fiqh al-lughah + bedanya dengan 'ilm al-lughah (linguistik) & nahwu.
+2. Topik utama: asal bahasa, fashilah bahasa Arab, isytiqaq, ta'rib, taraduf-isytirak-tadhad, dilalah.
+3. Outline bercabang.
+4. Kenapa penting untuk memahami kekayaan bahasa Arab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
           title: "Pahami Isytiqaq (Derivasi Kata)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan isytiqaq (derivasi kata) dalam bahasa Arab:
-1. Definisi isytiqaq (teks Arab berharakat)
-2. Isytiqaq Shaghir — turunan langsung dari akar, contoh: ك-ت-ب → كتب، كاتب، مكتوب، كتابة
-3. Isytiqaq Kabir — kata dari huruf-huruf akar yang sama tapi urutan berbeda (Ibnu Jinni)
-4. Isytiqaq Akbar — hubungan kata berdasarkan persamaan makhraj
-5. Manfaat memahami isytiqaq untuk membaca teks Arab dan Al-Qur'an
+Jelaskan isytiqaq:
+1. Definisi & jenisnya (shaghir, kabir, akbar, kubbar).
+2. Bagaimana kata-kata Arab terhubung lewat akar yang sama.
+3. Contoh tiap jenis isytiqaq (teks Arab berharakat).
+4. Faedah isytiqaq untuk memahami & menebak makna.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Taraduf dan Addhad",
+          title: "Pahami Taraduf, Isytirak & Tadhad",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dua fenomena khas bahasa Arab:
+Jelaskan fenomena makna kata:
+1. Taraduf (sinonim) — definisi, contoh, perdebatan apakah benar-benar ada.
+2. Isytirak lafzhi (homonim) — satu kata banyak makna.
+3. Tadhad (antonim dalam satu kata) — contoh.
+Sertakan teks Arab berharakat + contoh tiap fenomena.
 
-1. Taraduf (sinonim):
-   - Definisi
-   - Apakah taraduf hakiki ada dalam bahasa Arab? Khilaf ulama.
-   - Contoh: beberapa kata untuk "singa", "pedang", "unta"
-   - Dampak taraduf pada tafsir Qur'an
-
-2. Addhad (antonim dari satu kata yang sama):
-   - Definisi dan contoh terkenal: جَوْن (hitam dan putih), قَرْء (suci dan haid)
-   - Penyebab terjadinya addhad
-   - Dampak pada pemahaman teks
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Perkembangan Makna Kata Arab",
+          title: "Pahami Ta'rib & Dakhil (Kata Serapan)",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan fenomena perkembangan makna (tatawwur ad-dalalah) dalam bahasa Arab:
-1. Tawassu' ad-dalalah (perluasan makna) — definisi + contoh
-2. Takhshish ad-dalalah (penyempitan makna) — definisi + contoh
-3. Intiqal ad-dalalah (perpindahan makna) — definisi + contoh
-4. Inkifaf ad-dalalah (pelemahan makna) dan Irtifa' (penguatan)
-5. Dampak perkembangan makna pada pemahaman teks Qur'an dan hadits klasik
+Jelaskan:
+1. Ta'rib (arabisasi kata asing) & kaidahnya.
+2. Beda mu'arrab vs dakhil.
+3. Tanda kata bukan asli Arab ('alamat al-a'jamiyyah).
+4. Sikap ulama bahasa terhadap kata serapan.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Hafal Fenomena-Fenomena Fiqh Lughah",
+          title: "Hafal Istilah Fiqh Lughah Kunci",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Perlu hafal istilah-istilah dan fenomena kunci dalam fiqh lughah.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan tabel: istilah (Arab berharakat) → definisi singkat → contoh
+Bantu hafal istilah (isytiqaq, taraduf, isytirak, tadhad, ta'rib, dilalah, dll):
+1. Daftar (Arab berharakat + arti + contoh singkat).
+2. Mnemonic.
+3. Kelompokkan yang berkaitan.
 
-Istilah: isytiqaq, taraduf, addhad, musytarak lafdhi, ghara'ibul lughah, tahawwulud dalalah.
+[METODE]
 
-Lalu buatkan mnemonic untuk hafal fenomena utama.
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Hafal Jenis Isytiqaq & Cirinya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Buatkan tabel hafalan jenis isytiqaq:
+1. Kolom: jenis | definisi | contoh.
+2. Tandai yang sering tertukar.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Fiqh Lughah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji. Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Analisis Isytiqaq Kata Al-Qur'an",
+          title: "Drill Identifikasi Fenomena Makna",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 6 kata dari Al-Qur'an. Aku akan analisis:
-1. Akar kata (3 huruf)
-2. Semua turunan penting dari akar ini yang muncul dalam Qur'an
-3. Apakah ada perubahan makna antar turunan
+Beri 8 contoh kata/pasangan kata. Tugasku: tentukan fenomenanya (taraduf/isytirak/tadhad) + jelaskan.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
 
-Format tiap kata: tulis berharakat + surah-ayat. JANGAN kasih analisis dulu.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Identifikasi Taraduf dan Beda Nuansanya",
+          title: "Drill Lacak Akar & Isytiqaq",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 4 kelompok kata yang tampak sinonim dalam bahasa Arab. Aku akan:
-1. Identifikasi apakah ini taraduf hakiki atau ada perbedaan nuansa
-2. Jelaskan nuansa perbedaan masing-masing
+Beri 6 kata. Tugasku: lacak akar katanya & sebutkan kata-kata lain seakar (isytiqaq).
+1. JANGAN beri jawaban dulu.
+2. Koreksi + tunjukkan benang merah makna akar.
 
-Contoh: خَوْف vs رَهْبَة vs خَشْيَة vs رُعْب (semua bermakna "takut")
+[METODE]
 
-Format: berikan kelompok kata berharakat saja. JANGAN kasih penjelasan dulu.
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Soal Definisi & Fenomena",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal campuran (definisi, jenis isytiqaq, fenomena makna, ta'rib) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Soal Fiqh Lughah",
+          title: "Mock Imtihan Tahriri (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 6 soal: definisi isytiqaq, contoh taraduf + nuansa, contoh addhad, jenis perkembangan makna, analisis kata dari sudut fiqh lughah, khilaf tentang taraduf.
+Buatkan soal ujian tulis Fiqh Lughah gaya Azhar untuk topik [SEBUTKAN]:
+1. Tipe khas: 'arrif + matsil, ma al-farq baina..., istakhrij..., 'allil.
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Simulasi Imtihan Syafawi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
+
+Berperanlah sebagai mumtahin syafawi:
+1. Tanya definisi, fenomena makna, isytiqaq, ta'rib.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari topik yang kupelajari ([SEBUTKAN]): topik tersering jadi soal, cara jawab lengkap (definisi + contoh), prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Fiqh Lughah",
+          title: "Rapikan Catatan Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang [TOPIK FIQH LUGHAH] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi: konsep → definisi → contoh, lengkapi harakat, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun sistematis, tambahkan definisi Arab berharakat, contoh kata tambahan, pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Setelah talaqqi topik [SEBUTKAN], aku jelaskan ulang + contoh (di bawah). Periksa keakuratan, koreksi, ajukan 3 pertanyaan penguji.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Keunikan Bahasa Arab: Perspektif Al-Qur'an",
+          title: "Keistimewaan & Kekayaan Bahasa Arab",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi keunikan bahasa Arab melalui [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan keistimewaan bahasa Arab yang relevan dengan Al-Qur'an:
-1. Kekayaan derivasi kata (isytiqaq) — bagaimana satu akar bisa melahirkan ratusan kata
-2. Ketersediaan untuk pengucapan istilah agama yang tepat
-3. Al-Jurjani dan konsep i'jaz balaghiy — hubungan dengan fiqh lughah
-4. Ibnu Jinni dalam Al-Khasha'ish tentang keistimewaan bahasa Arab
+Jelaskan keistimewaan (khasha'is) bahasa Arab:
+1. Sistem isytiqaq yang produktif.
+2. Kekayaan kosakata & ketepatan makna.
+3. Kaitan keistimewaan ini dengan i'jaz Al-Qur'an.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Ilmu Dilalah (Semantik) Mendalam",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan ilmu dilalah:
+1. Jenis dilalah (mutabaqah, tadhammun, iltizam).
+2. Perubahan makna kata sepanjang waktu (tathawwur dilali).
+3. Faktor yang memengaruhi pergeseran makna.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Fiqh Lughah & Penjagaan Bahasa Arab",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan:
+1. Tantangan bahasa Arab di era modern (kata asing, 'ammiyah/dialek).
+2. Upaya lembaga bahasa (majma' al-lughah) menjaga & mengembangkan bahasa.
+3. Peran thalib Azhar dalam menjaga kefasihan bahasa Arab.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
@@ -8161,134 +8521,258 @@ Jelaskan keistimewaan bahasa Arab yang relevan dengan Al-Qur'an:
     prompts: {
       pahami: [
         {
-          title: "Pahami Manhaj Naqd Klasik",
+          title: "Peta Besar Naqd Adabi (Kritik Sastra)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan manhaj naqd adabi klasik:
-1. Kriteria naqd menurut Qudamah bin Ja'far dalam Naqdusy Syi'r
-2. Kriteria naqd menurut Ibnu Thabathaba dalam 'Iyarusy Syi'r
-3. Unsur-unsur yang dinilai dalam naqd klasik: lafal, makna, tasybih, ghira', dll
-4. Tokoh-tokoh naqqad Arab klasik (selain Qudamah): Al-Asma'i, Ibnu Sallam, Ibnu Qutaybah
+Beri kerangka utuh ilmu naqd adabi:
+1. Definisi kritik sastra + tujuannya (menilai & mengapresiasi karya).
+2. Jenis: naqd qadim (klasik) vs naqd hadits (modern).
+3. Manahij naqd (pendekatan): tarikhi, nafsi, ijtima'i, fanni/jamali.
+4. Outline bercabang.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kritik bait: Praktik Naqd",
+          title: "Pahami Kriteria Penilaian Karya Sastra",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ini bait syi'r:
+Jelaskan unsur yang dinilai dalam kritik sastra:
+1. Unsur ma'nawi: fikrah (ide), 'athifah (emosi), khayal (imajinasi).
+2. Unsur lafzhi: uslub (gaya), shuwar (citraan), musiqa (irama).
+3. Wahdah 'udhwiyyah (kesatuan organik) karya.
+4. Cara menilai keseimbangan unsur-unsur ini.
 
-[PASTE BAIT BERHARAKAT - nama penyair]
-
-Lakukan naqd adabi menggunakan pendekatan klasik:
-1. Analisis lafal: keindahan, kefasihan, kelancaran
-2. Analisis makna: kejelasan, kedalaman, kebenaran
-3. Analisis tasybih/balaghah: apakah uslubnya tepat
-4. Penilaian keseluruhan
-5. Bandingkan dengan penilaian naqqad klasik tentang penyair ini (kalau ada)
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Beda Manhaj Naqd Klasik dan Modern",
+          title: "Pahami Naqd Klasik & Tokohnya",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bandingkan naqd klasik dengan naqd modern:
-1. Fokus dan kriteria yang berbeda
-2. Manhaj naqd naffsi (psikologis) — ciri dan contoh
-3. Manhaj naqd ijtima'i (sosiologis) — ciri dan contoh
-4. Kelebihan dan kelemahan masing-masing pendekatan
-5. Apakah ada jembatan antara keduanya?
+Jelaskan naqd adabi klasik:
+1. Perkembangan kritik dari masa Jahili sampai 'Abbasi.
+2. Tokoh & karya (mis. al-Jurjani & nazhariyyatun nazhm, Qudamah, al-Amidi) — sebut yang kamu yakin.
+3. Konsep penting (mis. al-lafzh wal-ma'na, 'amud asy-syi'r).
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Manahij Naqd Modern",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan pendekatan kritik modern:
+1. Manhaj tarikhi, nafsi (psikologis), ijtima'i (sosiologis), fanni (estetis/struktural).
+2. Ciri & fokus tiap pendekatan.
+3. Kelebihan & keterbatasan masing-masing.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Hafal Kriteria dan Istilah Naqd",
+          title: "Hafal Manahij Naqd & Cirinya",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Perlu hafal istilah dan kriteria dalam naqd adabi.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan tabel: istilah Arab berharakat → definisi → relevansi dalam naqd
+Bantu hafal pendekatan kritik:
+1. Tabel: manhaj | fokus | tokoh | kelebihan.
+2. Mnemonic.
 
-Istilah: jaudah al-lafz, sihhatul ma'na, husnut tasybih, tanahur, sa'alah, tahrik al-'athifah, dll.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Hafal Istilah Naqd Kunci",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal istilah (wahdah 'udhwiyyah, 'amud asy-syi'r, shidq fanni, nazhm, dll):
+1. Istilah (Arab berharakat + arti).
+2. Mnemonic.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Naqd Adabi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji. Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Latihan Naqd Bait Syi'r",
+          title: "Latihan Kritik Teks Sastra (Aku Coba, AI Koreksi)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], drill [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 3 bait syi'r dari penyair berbeda. Aku akan melakukan naqd singkat untuk setiap bait:
-- Kelebihan dari sisi lafal
-- Kelebihan dari sisi makna
-- Kelemahan (kalau ada)
-- Nilai keseluruhan
+Aku akan mengkritik teks sastra yang kutempel dengan kemampuanku.
+1. Koreksi kritikku (unsur ma'nawi & lafzhi, kesatuan, penilaian).
+2. Tunjukkan aspek yang terlewat.
+3. Perkaya dengan istilah naqd yang tepat.
 
-Format: bait berharakat + nama penyair. JANGAN beri penilaian dulu.
+[METODE]
+
+[LEVEL_BAHASA]
+
+Teks + kritikku: [TEMPEL]`,
+        },
+        {
+          title: "Drill Identifikasi Manhaj Naqd",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 6 contoh kritik/analisis. Tugasku: tebak pendekatan (manhaj) yang dipakai kritikus.
+1. JANGAN beri jawaban dulu.
+2. Koreksi + jelaskan penandanya.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Bandingkan Naqd Dua Naqqad",
+          title: "Drill Soal Definisi & Tokoh Naqd",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Penyair: [NAMA PENYAIR]
+Beri 10 soal campuran (definisi, manhaj, tokoh, konsep) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
 
-Bandingkan penilaian dua naqqad berbeda terhadap penyair ini:
-- Naqqad 1: siapa, apa pendapatnya, argumennya
-- Naqqad 2: siapa, apa pendapatnya, argumennya
-- Siapa yang lebih convincing — dan mengapa
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Soal Naqd Adabi",
+          title: "Mock Imtihan Tahriri (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 6 soal: definisi naqd adabi, kriteria naqd klasik, beda naqd klasik-modern, naqd bait (aku lakukan), identifikasi manhaj naqqad dari kutipan, naqqad tertentu dan karyanya.
+Buatkan soal ujian tulis Naqd Adabi gaya Azhar untuk topik [SEBUTKAN]:
+1. Tipe khas: 'arrif, hallil an-nashsh naqdiyyan, qarin baina manhajain, udzkur ra'y...
+2. 5-6 soal bobot bervariasi (sering ada teks untuk dikritik).
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Simulasi Imtihan Syafawi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
+
+Berperanlah sebagai mumtahin syafawi:
+1. Tanya konsep naqd, atau minta aku kritik teks pendek secara lisan.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari topik yang kupelajari ([SEBUTKAN]): topik tersering jadi soal (analisis teks & manhaj), cara jawab analitis, prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Naqd Adabi",
+          title: "Rapikan Catatan Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang [TOPIK NAQD] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi: konsep/manhaj → ciri → tokoh → contoh, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun sistematis, tambahkan definisi istilah Arab berharakat, contoh aplikasi ke teks, pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Setelah talaqqi topik [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan, koreksi, ajukan 3 pertanyaan penguji.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Naqd Adabi di Era Digital",
+          title: "Hubungkan Naqd dengan Balaghah & Adab",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi perkembangan [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bagaimana naqd adabi berkembang di era digital?
-1. Platform-platform naqd adabi Arab modern
-2. Apakah standar naqd masih relevan untuk konten digital
-3. Bagaimana AI (seperti yang aku gunakan sekarang) bisa dan tidak bisa menggantikan naqqad
-4. Posisi akademisi Al-Azhar dalam debat sastra modern
+Jelaskan keterkaitan:
+1. Bagaimana naqd memakai balaghah sebagai alat menilai keindahan teks.
+2. Bagaimana pengetahuan adab (sejarah sastra) memperkaya kritik.
+3. Integrasi ketiganya dalam mengapresiasi karya.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Telaah Pertikaian Kritik Klasik",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan perdebatan kritik klasik:
+1. Polemik al-lafzh vs al-ma'na (mana lebih utama).
+2. Perdebatan seputar 'amud asy-syi'r & pembaruan.
+3. Posisi tokoh-tokoh dalam perdebatan ini (sebut yang kamu yakin).
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kritik Sastra Modern & Aliran Barat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan secara ilmiah:
+1. Pengaruh teori kritik Barat (strukturalisme, dll) pada naqd Arab modern.
+2. Bagaimana kritikus Arab menyikapinya (mengadopsi/menolak/menyaring).
+3. Sikap kritis terhadap teori asing.
+PENTING: jika tidak yakin fakta, katakan.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
