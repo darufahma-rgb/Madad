@@ -145,6 +145,15 @@ const FACULTIES = [
     majors: [],
   },
   {
+    id: "dakwah",
+    label: "Dakwah Islamiyah",
+    arabic: "الدعوة الإسلامية",
+    desc: "Dakwah, Komunikasi Islam & Ilmu Sosial",
+    icon: "star",
+    majorsStartLevel: null,
+    majors: [],
+  },
+  {
     id: "umum",
     label: "Fakultas Umum / Lainnya",
     arabic: "أخرى",
