@@ -106,7 +106,7 @@ const MaddahHeroSection = ({ profile }) => {
             onClick={() => navigate("/maddah")}
             className="text-sm text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1.5 transition-colors"
           >
-            Semua 35 Maddah S1 <Icon name="arrowRight" className="w-3.5 h-3.5"/>
+            Semua {typeof MADDAHS !== "undefined" ? MADDAHS.length : 51} Maddah S1 <Icon name="arrowRight" className="w-3.5 h-3.5"/>
           </button>
         </Reveal>
 
@@ -893,7 +893,7 @@ const DashboardPage = () => {
             <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">Aksi cepat</h2>
           </Reveal>
           <Reveal stagger className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
-            <QuickAction icon="layers"    title="Semua Maddah"    desc="35 maddah S1 + 490 prompt template"       to="/maddah"             color="violet"/>
+            <QuickAction icon="layers"    title="Semua Maddah"    desc="51 maddah S1 + 800+ prompt template"      to="/maddah"             color="violet"/>
             <QuickAction icon="bookOpen"  title="Adaptive guide"  desc="Guide tiap AI sesuai gaya belajarmu"           to="/tools"              color="gold"/>
             <QuickAction icon="scale"     title="Muqaranah"       desc="Banding qoul ulama 4 madzhab"                  to="/paths/muqaranah"    color="violet"/>
             <QuickAction icon="notebook"  title="Kurasah"         desc="Catatan & ta'liq belajarmu"                    to="/kurasah"            color="gold"/>
