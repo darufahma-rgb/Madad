@@ -443,6 +443,13 @@ const DashboardPage = () => {
   const topRec = recs[0];
   const greeting = getCairoGreeting();
 
+  // Statistik dinamis
+  const totalS1 = (typeof MADDAHS !== "undefined") ? MADDAHS.length : 51;
+  const totalPrompts = (typeof MADDAHS !== "undefined")
+    ? MADDAHS.reduce((a, m) => a + Object.values(m.prompts || {}).reduce((b, arr) => b + arr.length, 0), 0)
+    : 800;
+  const promptDisplay = Math.floor(totalPrompts / 100) * 100 + "+";
+
   // Faculty / Major / Level labels — backward-compat
   const facultyData = (typeof FACULTIES !== "undefined")
     ? FACULTIES.find(f => f.id === profile.faculty)
@@ -893,7 +900,7 @@ const DashboardPage = () => {
             <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">Aksi cepat</h2>
           </Reveal>
           <Reveal stagger className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
-            <QuickAction icon="layers"    title="Semua Maddah"    desc="51 maddah S1 + 800+ prompt template"      to="/maddah"             color="violet"/>
+            <QuickAction icon="layers"    title="Semua Maddah"    desc={`${totalS1} maddah S1 · ${promptDisplay} prompt template`}      to="/maddah"             color="violet"/>
             <QuickAction icon="bookOpen"  title="Adaptive guide"  desc="Guide tiap AI sesuai gaya belajarmu"           to="/tools"              color="gold"/>
             <QuickAction icon="scale"     title="Muqaranah"       desc="Banding qoul ulama 4 madzhab"                  to="/paths/muqaranah"    color="violet"/>
             <QuickAction icon="notebook"  title="Kurasah"         desc="Catatan & ta'liq belajarmu"                    to="/kurasah"            color="gold"/>
