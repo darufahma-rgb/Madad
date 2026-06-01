@@ -504,9 +504,97 @@ const MemberProfileModal = ({ member, onClose }) => {
   );
 };
 
+const EditMemberModal = ({ member, onClose, onSave }) => {
+  const [form, setForm] = useState({
+    code:      member.code      || "",
+    name:      member.name      || "",
+    whatsapp:  member.whatsapp  || "",
+    expiresAt: member.expiresAt || "",
+    notes:     member.notes     || "",
+  });
+  const [saving, setSaving] = useState(false);
+  const toast = useToast();
+
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (!form.code.trim() || !form.name.trim()) return;
+    setSaving(true);
+    try {
+      await onSave(member.code, {
+        code:      form.code.trim().toUpperCase(),
+        name:      form.name.trim(),
+        whatsapp:  form.whatsapp.trim(),
+        expiresAt: form.expiresAt,
+        notes:     form.notes,
+      });
+      toast.push("Member diperbarui");
+      onClose();
+    } catch (err) {
+      toast.push("Gagal simpan: " + err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const field = (label, key, opts = {}) => (
+    <div>
+      <label className="text-xs text-ink-soft mb-1 block">{label}</label>
+      <input
+        type={opts.type || "text"}
+        value={form[key]}
+        onChange={e => set(key, opts.upper ? e.target.value.toUpperCase() : e.target.value)}
+        className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-ink outline-none transition-colors font-mono placeholder:font-sans"
+        onFocus={e => e.target.style.borderColor = "rgba(62,207,142,0.45)"}
+        onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.10)"}
+        placeholder={opts.placeholder || ""}
+      />
+    </div>
+  );
+
+  return (
+    <Modal open onClose={onClose} size="md">
+      <form onSubmit={submit} className="p-7">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-display text-2xl font-semibold text-ink">Edit Member</h2>
+          <button type="button" onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5 flex items-center justify-center">
+            <Icon name="x" className="w-4 h-4"/>
+          </button>
+        </div>
+        <div className="space-y-4 mb-6">
+          {field("Kode Akses", "code", { upper: true, placeholder: "MSR-XXXX-XXXX" })}
+          {field("Nama", "name", { placeholder: "Nama lengkap" })}
+          {field("WhatsApp", "whatsapp", { placeholder: "+62..." })}
+          {field("Expires At", "expiresAt", { type: "date" })}
+          <div>
+            <label className="text-xs text-ink-soft mb-1 block">Catatan</label>
+            <textarea
+              value={form.notes}
+              onChange={e => set("notes", e.target.value)}
+              rows={2}
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-ink outline-none resize-none transition-colors"
+              onFocus={e => e.target.style.borderColor = "rgba(62,207,142,0.45)"}
+              onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.10)"}
+              placeholder="Opsional"
+            />
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <button type="button" onClick={onClose} className="btn btn-ghost flex-1">Batal</button>
+          <button type="submit" disabled={saving} className="btn btn-primary flex-1">
+            {saving ? "Menyimpan..." : "Simpan"}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
 const MemberActions = ({ member, updateMember, onDelete }) => {
   const [open, setOpen] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
   const toast = useToast();
   const close = () => setOpen(false);
   return (
@@ -520,6 +608,9 @@ const MemberActions = ({ member, updateMember, onDelete }) => {
           <div className="absolute right-0 top-full mt-1 z-20 card-glass-strong shadow-glass w-52 py-1.5 text-sm">
             <button onClick={() => { setShowProfile(true); close(); }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5 flex items-center gap-2">
               <Icon name="user" className="w-3.5 h-3.5 text-ink-soft"/> Lihat Profil
+            </button>
+            <button onClick={() => { setShowEdit(true); close(); }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5 flex items-center gap-2">
+              <Icon name="edit" className="w-3.5 h-3.5 text-ink-soft"/> Edit Member
             </button>
             <div className="my-1 h-px bg-line"/>
             {member.status !== "disabled" && (
@@ -540,6 +631,7 @@ const MemberActions = ({ member, updateMember, onDelete }) => {
         </>
       )}
       {showProfile && <MemberProfileModal member={member} onClose={() => setShowProfile(false)}/>}
+      {showEdit && <EditMemberModal member={member} onClose={() => setShowEdit(false)} onSave={updateMember}/>}
     </div>
   );
 };
