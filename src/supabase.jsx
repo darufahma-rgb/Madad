@@ -304,6 +304,72 @@ const sbLoadPresence = async () => {
   return data ? { daysPresent: data.days_present || [] } : null;
 };
 
+/* ── PROFILES ── */
+
+const sbSaveProfile = async (profile) => {
+  const client = _getClient();
+  if (!client) return;
+  const code = getMemberCode();
+  if (!code) return;
+  const { error } = await client.from("user_profiles").upsert({
+    member_code: code,
+    profile,
+    updated_at: new Date().toISOString(),
+  }, { onConflict: "member_code" });
+  if (error) throw error;
+};
+
+const sbLoadProfile = async () => {
+  const client = _getClient();
+  if (!client) return null;
+  const code = getMemberCode();
+  if (!code) return null;
+  const { data } = await client.from("user_profiles")
+    .select("profile").eq("member_code", code).single();
+  return data?.profile || null;
+};
+
+/* ── MADDAH ACTIVITY ── */
+
+const sbSaveMaddahActivity = async (activity) => {
+  const client = _getClient();
+  if (!client) return;
+  const code = getMemberCode();
+  if (!code) return;
+  const rows = Object.entries(activity).map(([maddah_id, act]) => ({
+    member_code:    code,
+    maddah_id,
+    opens:          act.opens || 0,
+    prompts_copied: act.promptsCopied || 0,
+    last_open:      act.lastOpen || null,
+    updated_at:     new Date().toISOString(),
+  }));
+  if (rows.length === 0) return;
+  const { error } = await client.from("user_maddah_activity").upsert(rows, {
+    onConflict: "member_code,maddah_id",
+  });
+  if (error) throw error;
+};
+
+const sbLoadMaddahActivity = async () => {
+  const client = _getClient();
+  if (!client) return null;
+  const code = getMemberCode();
+  if (!code) return null;
+  const { data } = await client.from("user_maddah_activity")
+    .select("*").eq("member_code", code);
+  if (!data) return null;
+  const activity = {};
+  data.forEach(r => {
+    activity[r.maddah_id] = {
+      opens:          r.opens || 0,
+      promptsCopied:  r.prompts_copied || 0,
+      lastOpen:       r.last_open,
+    };
+  });
+  return activity;
+};
+
 /* ── MUQARANAH CUSTOM ── */
 
 const sbSaveMuqaranah = async (entry) => {
@@ -346,6 +412,8 @@ const sbPullAllUserData = async () => {
     sbLoadIntentions().then(d => d && localStorage.setItem("madad_intentions", JSON.stringify(d))),
     sbLoadPresence().then(d => d && localStorage.setItem("madad_presence", JSON.stringify(d))),
     sbLoadMuqaranah().then(d => d && d.length > 0 && localStorage.setItem("madad_muqaranah_custom", JSON.stringify(d))),
+    sbLoadProfile().then(d => d && localStorage.setItem("madad_profile", JSON.stringify(d))),
+    sbLoadMaddahActivity().then(d => d && Object.keys(d).length > 0 && localStorage.setItem("talqee_maddah_activity", JSON.stringify(d))),
   ]);
   const failed = results.filter(r => r.status === "rejected").length;
   return { success: results.length - failed, failed };
@@ -354,18 +422,22 @@ const sbPullAllUserData = async () => {
 // Push data dari localStorage ke Supabase (background, saat login pertama kali)
 const sbPushAllUserData = async () => {
   const get = (key, fb) => { try { return JSON.parse(localStorage.getItem(key)) || fb; } catch { return fb; } };
-  const notes      = get("madad_notes", []);
-  const progress   = get("madad_progress", {});
-  const intentions = get("madad_intentions", {});
-  const presence   = get("madad_presence", { daysPresent: [] });
-  const muqaranah  = get("madad_muqaranah_custom", []);
+  const notes          = get("madad_notes", []);
+  const progress       = get("madad_progress", {});
+  const intentions     = get("madad_intentions", {});
+  const presence       = get("madad_presence", { daysPresent: [] });
+  const muqaranah      = get("madad_muqaranah_custom", []);
+  const profile        = get("madad_profile", null);
+  const maddahActivity = get("talqee_maddah_activity", {});
   await Promise.allSettled([
     ...notes.map(n => sbSaveNote(n)),
     sbSaveProgress(progress),
     sbSaveIntention(intentions),
     sbSavePresence(presence),
     ...muqaranah.map(m => sbSaveMuqaranah(m)),
-  ]);
+    profile && sbSaveProfile(profile),
+    Object.keys(maddahActivity).length > 0 && sbSaveMaddahActivity(maddahActivity),
+  ].filter(Boolean));
 };
 
 Object.assign(window, {
@@ -375,5 +447,7 @@ Object.assign(window, {
   sbLoadIntentions, sbSaveIntention,
   sbLoadPresence, sbSavePresence,
   sbLoadMuqaranah, sbSaveMuqaranah, sbDeleteMuqaranah,
+  sbSaveProfile, sbLoadProfile,
+  sbSaveMaddahActivity, sbLoadMaddahActivity,
   sbPullAllUserData, sbPushAllUserData,
 });

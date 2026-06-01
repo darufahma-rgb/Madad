@@ -189,6 +189,7 @@ const getProfile = () => {
 };
 const saveProfile = (profile) => {
   localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+  if (typeof sbSaveProfile !== "undefined") sbSaveProfile(profile).catch(() => {});
 };
 const clearProfile = () => {
   localStorage.removeItem(STORAGE_KEYS.PROFILE);
@@ -371,6 +372,7 @@ const loadMaddahActivity = () => {
 
 const saveMaddahActivity = (activity) => {
   localStorage.setItem(STORAGE_KEYS.MADDAH_ACTIVITY, JSON.stringify(activity));
+  if (typeof sbSaveMaddahActivity !== "undefined") sbSaveMaddahActivity(activity).catch(() => {});
 };
 
 const trackMaddahOpen = (maddahId) => {

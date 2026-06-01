@@ -162,29 +162,27 @@ const AdminLogin = ({ onLogin }) => {
 /* ============== DASHBOARD ============== */
 const AdminDashboard = () => {
   const [members, setMembers] = useState([]);
+  const [totalPromptsUsed, setTotalPromptsUsed] = useState(0);
+  const [totalMaddahOpens, setTotalMaddahOpens] = useState(0);
 
   useEffect(() => {
     adminGetAllMembers()
       .then(setMembers)
       .catch(() => setMembers(sbGetAllMembersFallback()));
+    adminMembersAPI('aggregate-activity')
+      .then(data => {
+        if (Array.isArray(data)) {
+          setTotalPromptsUsed(data.reduce((s, r) => s + (r.prompts_copied || 0), 0));
+          setTotalMaddahOpens(data.reduce((s, r) => s + (r.opens || 0), 0));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const active   = members.filter(m => m.status === "active").length;
   const expired  = members.filter(m => m.status === "expired").length;
   const disabled = members.filter(m => m.status === "disabled").length;
   const bound    = members.filter(m => m.device).length;
-
-  const maddahActivity = (() => {
-    try { return JSON.parse(localStorage.getItem("talqee_maddah_activity") || "{}"); }
-    catch { return {}; }
-  })();
-  const totalPromptsUsed = Object.values(maddahActivity).reduce((s, a) => s + (a.promptsCopied || 0), 0);
-  const totalMaddahOpens = Object.values(maddahActivity).reduce((s, a) => s + (a.opens || 0), 0);
-
-  const notesCount = (() => {
-    try { return (JSON.parse(localStorage.getItem("madad_notes") || "[]")).length; }
-    catch { return 0; }
-  })();
 
   return (
     <div>
@@ -199,11 +197,10 @@ const AdminDashboard = () => {
         <StatCard label="Expired/Off"   value={expired + disabled}   icon="alert"  color="rose"/>
       </div>
 
-      <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Engagement</div>
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        <StatCard label="Prompt Disalin"   value={totalPromptsUsed} icon="copy"     color="violet"/>
-        <StatCard label="Maddah Dibuka"    value={totalMaddahOpens} icon="layers"   color="gold"/>
-        <StatCard label="Catatan Kurasah"  value={notesCount}       icon="notebook" color="violet"/>
+      <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Engagement (semua member)</div>
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        <StatCard label="Prompt Disalin" value={totalPromptsUsed} icon="copy"   color="violet"/>
+        <StatCard label="Maddah Dibuka"  value={totalMaddahOpens} icon="layers" color="gold"/>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-5">
@@ -231,25 +228,22 @@ const AdminDashboard = () => {
 
         <div className="card-glass p-6">
           <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Maddah Terpopuler</div>
-          {Object.keys(maddahActivity).length === 0 ? (
+          {topMaddah.length === 0 ? (
             <div className="text-sm text-ink-muted py-4 text-center">Belum ada data aktivitas.</div>
           ) : (
             <div className="space-y-2">
-              {Object.entries(maddahActivity)
-                .sort((a,b) => (b[1].opens || 0) - (a[1].opens || 0))
-                .slice(0, 5)
-                .map(([id, act]) => {
-                  const maddah = typeof getMaddahById !== "undefined" ? getMaddahById(id) : null;
-                  return (
-                    <div key={id} className="flex items-center justify-between text-sm p-2.5 rounded-lg bg-white/3">
-                      <div>
-                        <div className="text-ink font-medium">{maddah?.name || id}</div>
-                        <div className="text-xs text-ink-soft">{act.promptsCopied || 0} prompt disalin</div>
-                      </div>
-                      <div className="text-xs text-emerald-300 font-medium">{act.opens} buka</div>
+              {topMaddah.map(([id, act]) => {
+                const maddah = typeof getMaddahById !== "undefined" ? getMaddahById(id) : null;
+                return (
+                  <div key={id} className="flex items-center justify-between text-sm p-2.5 rounded-lg bg-white/3">
+                    <div>
+                      <div className="text-ink font-medium">{maddah?.name || id}</div>
+                      <div className="text-xs text-ink-soft">{act.promptsCopied || 0} prompt disalin</div>
                     </div>
-                  );
-                })}
+                    <div className="text-xs text-emerald-300 font-medium">{act.opens} buka</div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -667,12 +661,17 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
 
 /* ============== ONBOARDING DATA ============== */
 const AdminOnboarding = () => {
-  const members = loadMembers();
+  const [profiles, setProfiles] = useState([]);
+  const [loading,  setLoading]  = useState(true);
 
-  const profiles = members.map(m => {
-    try { return JSON.parse(localStorage.getItem("madad_profile_" + m.code) || "null"); }
-    catch { return null; }
-  }).filter(Boolean);
+  useEffect(() => {
+    adminMembersAPI('aggregate-profiles')
+      .then(data => {
+        if (Array.isArray(data)) setProfiles(data.map(r => r.profile).filter(Boolean));
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   const total = profiles.length;
 
@@ -684,41 +683,36 @@ const AdminOnboarding = () => {
     return count;
   };
 
-  const facultyCount  = toCount(profiles, "faculty");
-  const levelCount    = toCount(profiles, "level");
-  const struggleCount = toCount(profiles, "struggle");
-  const styleCount    = toCount(profiles, "learningStyle");
-
   const toItems = (obj, labelMap) =>
     Object.entries(obj)
       .sort((a,b) => b[1] - a[1])
       .map(([id, n]) => ({ label: labelMap?.[id] || id, n }))
       .filter(it => it.label);
 
-  const facultyLabels = Object.fromEntries(
-    (typeof FACULTIES !== "undefined" ? FACULTIES : []).map(f => [f.id, f.label])
-  );
-  const levelLabels = Object.fromEntries(
-    (typeof LEVELS !== "undefined" ? LEVELS : []).map(l => [l.id, l.label || l.short])
-  );
-  const struggleLabels = Object.fromEntries(
-    (typeof STRUGGLES !== "undefined" ? STRUGGLES : []).map(s => [s.id, s.label])
-  );
-  const styleLabels = Object.fromEntries(
-    (typeof LEARNING_STYLES !== "undefined" ? LEARNING_STYLES : []).map(s => [s.id, s.label])
-  );
+  const facultyLabels  = Object.fromEntries((typeof FACULTIES       !== "undefined" ? FACULTIES       : []).map(f => [f.id, f.label]));
+  const levelLabels    = Object.fromEntries((typeof LEVELS          !== "undefined" ? LEVELS          : []).map(l => [l.id, l.label || l.short]));
+  const struggleLabels = Object.fromEntries((typeof STRUGGLES       !== "undefined" ? STRUGGLES       : []).map(s => [s.id, s.label]));
+  const styleLabels    = Object.fromEntries((typeof LEARNING_STYLES !== "undefined" ? LEARNING_STYLES : []).map(s => [s.id, s.label]));
 
-  const facultyItems  = toItems(facultyCount,  facultyLabels);
-  const levelItems    = toItems(levelCount,     levelLabels);
-  const struggleItems = toItems(struggleCount,  struggleLabels);
-  const styleItems    = toItems(styleCount,     styleLabels);
+  const facultyItems  = toItems(toCount(profiles, "faculty"),      facultyLabels);
+  const levelItems    = toItems(toCount(profiles, "level"),        levelLabels);
+  const struggleItems = toItems(toCount(profiles, "struggle"),     struggleLabels);
+  const styleItems    = toItems(toCount(profiles, "learningStyle"), styleLabels);
+
+  if (loading) return (
+    <div>
+      <h1 className="font-display text-4xl font-semibold text-ink mb-1">Onboarding Data</h1>
+      <div className="card-glass p-8 text-center text-ink-muted text-sm animate-pulse mt-8">Memuat data...</div>
+    </div>
+  );
 
   if (total === 0) return (
     <div>
       <h1 className="font-display text-4xl font-semibold text-ink mb-1">Onboarding Data</h1>
       <p className="text-ink-muted mb-8">Belum ada data onboarding dari member.</p>
       <div className="card-glass p-8 text-center text-ink-muted text-sm">
-        Data akan muncul setelah member menyelesaikan onboarding.
+        Data akan muncul setelah member menyelesaikan onboarding.<br/>
+        <span className="text-xs mt-2 block opacity-60">Pastikan sudah menjalankan SQL migration di Supabase.</span>
       </div>
     </div>
   );
@@ -778,12 +772,27 @@ const AggCard = ({ title, items }) => {
 
 /* ============== MADDAH ANALYTICS ============== */
 const AdminMaddahAnalytics = () => {
-  const maddahActivity = (() => {
-    try { return JSON.parse(localStorage.getItem("talqee_maddah_activity") || "{}"); }
-    catch { return {}; }
-  })();
+  const [rawActivity, setRawActivity] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const entries = Object.entries(maddahActivity)
+  useEffect(() => {
+    adminMembersAPI('aggregate-activity')
+      .then(data => { if (Array.isArray(data)) setRawActivity(data); })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const agg = {};
+  rawActivity.forEach(r => {
+    if (!agg[r.maddah_id]) agg[r.maddah_id] = { opens: 0, promptsCopied: 0, lastOpen: null };
+    agg[r.maddah_id].opens += r.opens || 0;
+    agg[r.maddah_id].promptsCopied += r.prompts_copied || 0;
+    if (r.last_open && (!agg[r.maddah_id].lastOpen || r.last_open > agg[r.maddah_id].lastOpen)) {
+      agg[r.maddah_id].lastOpen = r.last_open;
+    }
+  });
+
+  const entries = Object.entries(agg)
     .map(([id, act]) => {
       const maddah = typeof getMaddahById !== "undefined" ? getMaddahById(id) : null;
       return { id, name: maddah?.name || id, arabic: maddah?.nameArabic, category: maddah?.category, ...act };
@@ -801,12 +810,20 @@ const AdminMaddahAnalytics = () => {
     byCategory[cat].prompts += e.promptsCopied || 0;
   });
 
+  if (loading) return (
+    <div>
+      <h1 className="font-display text-4xl font-semibold text-ink mb-1">Maddah Analytics</h1>
+      <div className="card-glass p-8 text-center text-ink-muted text-sm animate-pulse mt-8">Memuat data...</div>
+    </div>
+  );
+
   if (entries.length === 0) return (
     <div>
       <h1 className="font-display text-4xl font-semibold text-ink mb-1">Maddah Analytics</h1>
       <p className="text-ink-muted mb-8">Belum ada aktivitas Maddah tercatat.</p>
       <div className="card-glass p-8 text-center text-ink-muted text-sm">
-        Data akan muncul setelah user membuka halaman Maddah.
+        Data akan muncul setelah member membuka halaman Maddah.<br/>
+        <span className="text-xs mt-2 block opacity-60">Pastikan sudah menjalankan SQL migration di Supabase.</span>
       </div>
     </div>
   );

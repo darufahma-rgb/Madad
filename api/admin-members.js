@@ -66,6 +66,10 @@ export default async function handler(req, res) {
       result = await sbRequest(supabaseUrl, serviceKey, 'PATCH', `members?code=eq.${encodeURIComponent(code)}`, row);
     } else if (action === 'delete') {
       result = await sbRequest(supabaseUrl, serviceKey, 'DELETE', `members?code=eq.${encodeURIComponent(code)}`, null);
+    } else if (action === 'aggregate-profiles') {
+      result = await sbRequest(supabaseUrl, serviceKey, 'GET', 'user_profiles?select=member_code,profile', null);
+    } else if (action === 'aggregate-activity') {
+      result = await sbRequest(supabaseUrl, serviceKey, 'GET', 'user_maddah_activity?select=*', null);
     } else {
       res.status(400).json({ ok: false, error: `Action tidak dikenal: ${action}` });
       return;
