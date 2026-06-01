@@ -988,152 +988,272 @@ Jelaskan dua metode penulisan ushul:
     prompts: {
       pahami: [
         {
-          title: "Identifikasi Mutasyabihat Lafzhi",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS]. Sedang murajaah [SURAH / JUZ].
-
-Bantu aku identifikasi ayat-ayat mutasyabihat lafzhi (lafal sangat mirip tapi berbeda) di dalam surah/juz ini.
-
-Untuk setiap pasangan mutasyabihat:
-1. Tulis kedua ayat berharakat
-2. Sebutkan surah dan nomor ayat masing-masing
-3. Letak perbedaannya (kata apa, posisi mana)
-4. Tips mengingat perbedaannya
-
-[LEVEL_BAHASA]
-
-Prioritaskan ayat yang paling sering tertukar berdasarkan pola umum hafizh.`,
-        },
-        {
-          title: "Hikmah dan Kandungan Surah",
+          title: "Pahami Strategi Menghafal Al-Qur'an",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS], [GAYA_BELAJAR]. Sedang menghafal [NAMA SURAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Supaya hafalan lebih hidup, aku ingin tahu kandungan surah ini lebih dalam:
-1. Tema utama dan benang merah surah
-2. Keutamaan surah ini (dari hadits shahih — sertakan teks Arab hadits)
-3. 3 ayat yang paling penting beserta pelajarannya
-4. Hubungan nama surah dengan isinya
+Bantu aku memahami strategi tahfidz yang efektif:
+1. Prinsip hifzh jadid (hafalan baru) vs muraja'ah (mengulang).
+2. Metode menghafal (per ayat, per halaman, talqin, tasmi').
+3. Pentingnya konsistensi & kualitas bacaan (tajwid) sebelum hafal.
+4. Kesalahan umum penghafal pemula.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Tafsir Ringkas Ayat Hafalan",
+          title: "Pahami Manajemen Hafalan & Muraja'ah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS]. Sedang menghafal [SURAH/JUZ], [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk ayat-ayat berikut:
+Jelaskan sistem menjaga hafalan:
+1. Beda muraja'ah hafalan dekat (qarib) & jauh (ba'id).
+2. Cara membagi porsi: hafalan baru vs mengulang lama.
+3. Cara mengatasi ayat-ayat mutasyabihat (mirip) yang sering tertukar.
 
-[PASTE AYAT-AYAT YANG SEDANG DIHAFAL]
+[METODE]
 
-Beri tafsir ringkas setiap ayat (2-3 baris) — cukup untuk memahami makna tanpa terlalu panjang. Minta format yang mudah dilihat:
-- Ayat (berharakat)
-- Terjemah singkat
-- Makna inti (1 kalimat)
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Ayat Mutasyabihat (Mirip)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk surat/juz [SEBUTKAN], bantu aku dengan ayat-ayat mutasyabihat:
+1. Identifikasi ayat yang mirip/berulang (sebut surat & nomor; jangan mengarang).
+2. Tunjukkan perbedaan halus antar ayat mirip.
+3. Tips mengingat pembeda agar tidak tertukar saat menghafal.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Adab & Keutamaan Penghafal Qur'an",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan:
+1. Keutamaan menghafal Al-Qur'an (sebut dalil yang kamu yakin; jika ragu, katakan).
+2. Adab penghafal terhadap Al-Qur'an.
+3. Bahaya melupakan hafalan & cara menjaganya.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Sesi Tasmi' Acak",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS]. Murajaah [SURAH/JUZ].
+          title: "Rencana Hafalan Terjadwal",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sesi tasmi':
-1. Sebut potongan ayat acak (1-3 ayat) dari rentang yang aku tentukan, tulis berharakat
-2. Aku lanjutkan sampai akhir ayat
-3. Kalau aku ragu, beri 3 kata pertama sebagai isyarah
-4. Setelah 10 putaran, buat daftar yang perlu diperkuat
+Aku mau menghafal [SEBUTKAN TARGET, mis. juz 30, surat tertentu] dalam [SEBUTKAN WAKTU]. Buatkan rencana:
+1. Pembagian hafalan harian yang realistis.
+2. Jadwal muraja'ah agar tidak lupa.
+3. Cara tasmi' (memperdengarkan) untuk verifikasi.
+4. Sajikan sebagai tabel jadwal.
 
-Target review hari ini: [SEBUTKAN SURAH/HALAMAN MUSHAF]
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Teknik Mengikat Hafalan dengan Makna",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk ayat/surat [SEBUTKAN], bantu aku menghafal dengan memahami makna:
+1. Terjemah & makna ringkas per ayat (agar hafalan berbasis paham).
+2. Alur/tema yang menghubungkan ayat-ayat.
+3. Tips visual/asosiasi untuk bagian yang sulit.
+PENTING: gunakan ayat yang benar; jika ragu, minta aku tempel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Hafalan",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Aku sudah hafal [SEBUTKAN]. Buatkan jadwal muraja'ah berbasis spaced repetition:
+1. Bagi hafalan ke siklus muraja'ah harian & mingguan.
+2. Prioritaskan hafalan baru & yang rentan lupa.
+3. Tabel jadwal.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Jadwal Murajaah Spaced Repetition",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS]. Total hafalan: [JUMLAH JUZ/SURAH]. Target murajaah: khatam tiap [X HARI].
+          title: "Drill Sambung Ayat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan jadwal murajaah harian dalam tabel dengan metode spaced repetition:
-- Hafalan lama (sudah kuat): review 1x setiap 7 hari
-- Hafalan menengah: review 1x setiap 3 hari
-- Hafalan baru (3 bulan terakhir): review harian
+Uji hafalanku surat/juz [SEBUTKAN] dengan latihan sambung ayat:
+1. Beri potongan awal ayat, aku lanjutkan (atau sebaliknya).
+2. JANGAN tampilkan lanjutannya dulu.
+3. Setelah aku jawab, koreksi dari mushaf.
+PENTING: pakai teks Qur'an yang benar; jika ragu, katakan.
 
-Format tabel: Hari | Hafalan yang diulang | Estimasi waktu | Catatan
-
-Tambahkan: tips waktu murajaah terbaik (ba'da Fajr, Tahajjud, dll).
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Mutasyabihat Alfazh",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS]. Ingin drill khusus mutasyabihat lafzhi di [SURAH/JUZ].
+          title: "Drill Tebak Posisi Ayat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Format drill:
-1. Sebut potongan ayat yang punya pasangan mutasyabihat — berhenti sebelum bagian yang berbeda
-2. Aku lengkapi
-3. Langsung koreksi kalau salah, beri penjelasan singkat bedanya
-4. Ulangi sampai konsisten benar 3x berturut-turut
+Beri aku potongan ayat dari [SEBUTKAN]. Tugasku: sebutkan surat & posisinya.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+PENTING: pakai ayat yang benar; jika ragu, katakan.
 
-Fokus pada: [SURAH/KELOMPOK MUTASYABIHAT SPESIFIK kalau ada]
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Latihan Tasmi' Terstruktur",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu aku menyiapkan sesi tasmi' (setor hafalan):
+1. Buat checklist persiapan sebelum tasmi'.
+2. Tips mengurangi gugup & kesalahan saat setor.
+3. Cara menandai & memperbaiki bagian yang sering salah.
+(Untuk verifikasi bacaan suara, sarankan aku pakai Tarteel atau setor ke guru.)
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Simulasi Tasmi' Resmi",
-          targetAI: "notebooklm",
-          template: `Aku [TINGKATAN] di [FAKULTAS]. Persiapan tasmi' resmi untuk [JUMLAH JUZ/SURAH].
+          title: "Simulasi Ujian Tahfidz",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian hafalan.
 
-Simulasikan sesi tasmi' seperti ujian:
-1. Acak surah/juz dari rentang hafalan yang aku sebutkan
-2. Baca potongan awal, aku lanjutkan sampai kamu minta berhenti (1-2 halaman)
-3. Tandai kalau aku salah (tulis koreksi)
-4. Hitung: berapa kali salah per halaman
-5. Beri penilaian akhir: siap tasmi' atau perlu murajaah ulang di bagian mana
+Simulasikan ujian tahfidz untuk [SEBUTKAN]:
+1. Beri pertanyaan model ujian (sambung ayat, sebut posisi, baca dari ayat tertentu).
+2. JANGAN beri jawaban dulu.
+3. Setelah aku jawab, koreksi & nilai kesiapan hafalanku.
+PENTING: pakai teks yang benar; jika ragu, katakan.
 
-Rentang hafalan: [SEBUTKAN JUZ/SURAH]
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Strategi Menghadapi Ujian Hafalan",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu strategi ujian tahfidz:
+1. Cara muraja'ah intensif H-7 sebelum ujian.
+2. Bagian yang biasanya diuji & cara mengantisipasi.
+3. Menjaga ketenangan & fokus saat setor di hadapan penguji.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Prioritas Muraja'ah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari hafalan yang kupunya ([SEBUTKAN]): bagian yang perlu prioritas muraja'ah, ayat mutasyabihat yang rawan, rencana H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Catat Koreksi Talaqqi Hafalan",
+          title: "Catat Koreksi dari Guru Tahfidz",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS]. Baru selesai tasmi' dengan syaikh/guru. Ini koreksi yang diberikan:
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-[PASTE CATATAN KOREKSI - mis. "Surah Al-Baqarah ayat 45 harusnya ... bukan ...", dll]
+Setelah setor ke guru, aku punya catatan koreksi (di bawah). Bantu:
+1. Rapikan jadi daftar bagian yang perlu diperbaiki.
+2. Kelompokkan (kesalahan hafalan vs tajwid).
+3. Buat rencana perbaikan untuk sesi berikutnya.
 
-Tolong:
-1. Susun koreksi dalam format yang mudah dihapalkan
-2. Kelompokkan per surah/juz
-3. Untuk tiap koreksi: tulis versi yang benar dengan harakat
-4. Buat daftar prioritas: mana yang paling rawan terulang
+[METODE]
+
+[LEVEL_BAHASA]
+
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Hafalan Pasca-Setor",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk bagian [SEBUTKAN] yang baru kusetor:
+1. Bantu aku susun daftar ayat yang masih goyah.
+2. Beri latihan fokus untuk ayat-ayat itu.
+3. Jadwalkan muraja'ah khusus untuknya.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Keutamaan dan Fadhilah Surah",
+          title: "Tadabbur Ayat yang Dihafal",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS], [GAYA_BELAJAR]. Ingin tahu fadhilah menghafal Al-Qur'an secara umum dan khusus untuk [SURAH/JUZ].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Tolong jelaskan:
-1. Dalil keutamaan menghafal Al-Qur'an (ayat + hadits shahih, sertakan teks Arab berharakat)
-2. Keutamaan khusus surah [NAMA SURAH] kalau ada hadits shahih
-3. Adab hamalatul Qur'an menurut Imam Nawawi dalam At-Tibyan
-4. Nasihat ulama untuk menjaga hafalan jangka panjang
+Untuk ayat/surat [SEBUTKAN] yang kuhafal, bantu aku tadabbur:
+1. Makna & pelajaran tiap bagian.
+2. Bagaimana tadabbur memperkuat hafalan sekaligus iman.
+3. Pesan praktis untuk kehidupan.
+PENTING: pakai ayat yang benar; jika ragu, minta aku tempel.
 
-[LEVEL_BAHASA]
+[METODE]
 
-Kalau ada hadits yang derajatnya diperselisihkan, sebutkan secara jujur.`,
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Hubungkan Hafalan dengan Tilawah Indah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan:
+1. Bagaimana memadukan hafalan kuat dengan tilawah yang fasih & indah.
+2. Peran tajwid & waqf dalam memperindah bacaan hafalan.
+3. Sarankan praktik (talaqqi, aplikasi seperti Tarteel).
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Menjaga Hafalan Seumur Hidup",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan:
+1. Sistem muraja'ah jangka panjang agar hafalan tidak hilang.
+2. Cara mengintegrasikan muraja'ah ke ibadah harian (shalat, dll).
+3. Mengembalikan hafalan yang sudah mulai pudar.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
       ],
     },
@@ -10056,144 +10176,255 @@ Untuk bidang [SEBUTKAN, mis. ilmu, arsitektur, tata kota]:
     prompts: {
       pahami: [
         {
-          title: "Pahami Ushul dan Rukun Dakwah",
+          title: "Peta Besar Ilmu Dakwah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan ushul (prinsip-prinsip dasar) dakwah:
-1. Definisi dakwah (teks Arab berharakat)
-2. Rukun dakwah: da'i, mad'u, pesan (materi), sarana, tujuan
-3. Syarat-syarat da'i yang efektif
-4. Dalil kewajiban dakwah dari Al-Qur'an (sertakan ayat berharakat)
-5. Bagaimana ushul ini diterapkan dalam dakwah kontemporer
+Beri kerangka utuh ilmu dakwah:
+1. Definisi dakwah + rukunnya (da'i, mad'u, maudhu', uslub).
+2. Landasan dakwah dari Qur'an-Sunnah.
+3. Cakupan modern: dakwah & i'lam (media).
+4. Outline bercabang.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Manhaj Dakwah Para Nabi dalam Al-Qur'an",
+          title: "Pahami Metode & Uslub Dakwah",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Analisis manhaj dakwah dari kisah nabi berikut dalam Al-Qur'an:
+Jelaskan metode dakwah:
+1. Tiga uslub dalam ayat "ud'u ila sabili rabbika bil-hikmah..." (hikmah, mau'izhah hasanah, jidal ahsan).
+2. Kapan tiap uslub dipakai sesuai kondisi mad'u.
+3. Contoh penerapan tiap metode.
+PENTING: sebut dalil dengan benar; jika ragu, katakan.
 
-[PILIH NABI - mis. Nabi Ibrahim / Nabi Musa / Nabi Nuh]
-
-1. Bagaimana beliau memulai dakwah
-2. Sasaran dakwahnya
-3. Metode yang digunakan (hikmah/mau'izhah/mujadalah)
-4. Rintangan yang dihadapi dan cara mengatasinya
-5. Pelajaran manhaj dakwah untuk da'i modern
-
-Sertakan ayat-ayat Al-Qur'an berharakat yang relevan.
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Hikmah, Mau'izhah, Mujadalah: 3 Metode Dakwah",
+          title: "Pahami Karakteristik Da'i & Mad'u",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan 3 metode dakwah berdasarkan An-Nahl:125:
+Jelaskan:
+1. Sifat & bekal yang harus dimiliki da'i (ilmu, akhlak, keteladanan).
+2. Cara memahami & mengklasifikasi mad'u (sesuai latar, tingkat ilmu, kondisi).
+3. Menyesuaikan pesan dengan sasaran dakwah.
 
-"ادعُ إلى سبيل ربك بالحكمة والموعظة الحسنة وجادلهم بالتي هي أحسن"
+[METODE]
 
-1. Al-Hikmah: definisi, kapan digunakan, contoh dari sirah
-2. Al-Mau'izhah Al-Hasanah: definisi, kapan digunakan, contoh
-3. Al-Mujadalah bil-Lati Hiya Ahsan: definisi, kapan digunakan, contoh
-4. Bagaimana memilih metode yang tepat untuk sasaran tertentu
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Dakwah di Era Media (I'lam)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan dakwah & i'lam modern:
+1. Peran media (medsos, video, tulisan) dalam dakwah kontemporer.
+2. Prinsip menjaga pesan tetap autentik di media.
+3. Tantangan & adab dakwah digital.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Hafal Ushul dan Kaidah Dakwah",
+          title: "Hafal Rukun & Metode Dakwah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Perlu hafal ushul dan kaidah-kaidah dakwah dari Abdul Karim Zaidan.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan:
-1. Daftar 10 kaidah dakwah terpenting (Arab berharakat + makna Indonesia)
-2. Mnemonic atau cara mudah mengingat urutan ushul dakwah
+Bantu hafal:
+1. Rukun dakwah + tiga uslub (Arab berharakat + arti).
+2. Mnemonic.
+3. Dalil ringkas tiap metode.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Tabel Sifat Da'i & Klasifikasi Mad'u",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Buatkan tabel hafalan: sifat-sifat da'i + jenis-jenis mad'u + pendekatan yang cocok. Tandai yang sering jadi soal.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Dakwah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji. Tabel.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Susun Materi Dakwah",
-          targetAI: "chatgpt",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], latihan [MADDAH]. [GAYA_BELAJAR].
+          title: "Latihan Rancang Strategi Dakwah (Tathbiq)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku ingin menyusun materi dakwah untuk:
+Beri aku 4 skenario mad'u (mis. remaja, non-muslim, awam). Tugasku: rancang pendekatan dakwah yang tepat.
+1. JANGAN beri jawaban dulu.
+2. Koreksi rancanganku + sarankan perbaikan.
 
-Topik: [TOPIK DAKWAH]
-Sasaran: [TARGET MAD'U - mis. pemuda Muslim, mahasiswa baru, mualaf, dll]
-Sarana: [SARANA - mis. khutbah Jumat, ceramah 15 menit, konten media sosial]
-
-Bantu susun outline materi:
-1. Pembukaan yang relevan dengan sasaran
-2. Poin utama (3-4 poin dengan dalil Al-Qur'an/hadits berharakat)
-3. Cerita/qisshah pendek yang relevan
-4. Penutup dengan ajakan konkret
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Analisis Hambatan Dakwah dan Solusinya",
+          title: "Drill Soal Definisi & Metode",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], belajar [MADDAH]. [GAYA_BELAJAR].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku menghadapi hambatan dalam dakwah: [DESKRIPSIKAN SITUASI - mis. mad'u tidak mau mendengar, suasana tidak kondusif, konten tidak sampai ke target]
+Beri 10 soal campuran (definisi, rukun, metode, dalil) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
 
-Jelaskan dari perspektif fiqhud dakwah:
-1. Apakah hambatan ini termasuk jenis apa (mad'u, da'i, pesan, sarana)
-2. Bagaimana para nabi menghadapi hambatan serupa
-3. Solusi praktis berdasarkan manhaj dakwah
-4. Kapan boleh "meninggalkan" dakwah kepada seseorang (tanpa makna menyerah)
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Latihan Susun Materi Ceramah Singkat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Aku akan menyusun kerangka ceramah tentang [SEBUTKAN TEMA].
+1. Aku tulis kerangkanya.
+2. Koreksi struktur & isinya (pembuka, isi berdalil, penutup).
+3. Sarankan cara penyampaian yang mengena.
+PENTING: pastikan dalil yang kupakai benar; koreksi jika keliru.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Soal Dakwah & I'lam",
+          title: "Mock Imtihan Tahriri (Gaya Azhari)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] di Al-Azhar, persiapan ujian [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
 
-Beri 6 soal: definisi dakwah, rukun dakwah, 3 metode dakwah (hikmah/mau'izhah/mujadalah), manhaj dakwah nabi tertentu, hambatan dakwah, adaptasi ke media modern.
+Buatkan soal ujian tulis Dakwah gaya Azhar untuk topik [SEBUTKAN]:
+1. Tipe khas: 'arrif, udzkur asalib ad-da'wah, bayyin shifat ad-da'iyah, ma hukm...
+2. 5-6 soal bobot bervariasi.
+3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
 
-Tulis Arab. Koreksi setelah aku jawab.
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Simulasi Imtihan Syafawi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
+
+Berperanlah sebagai mumtahin syafawi:
+1. Tanya metode, rukun, sifat da'i, atau minta aku rancang dakwah untuk kasus.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik, naikkan kesulitan.
+4. Penilaian akhir + area lemah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari topik yang kupelajari ([SEBUTKAN]): topik tersering jadi soal, cara jawab lengkap (teori + dalil + contoh), prioritas H-7.
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
       talaqqi: [
         {
-          title: "Review Pasca Talaqqi Dakwah",
+          title: "Rapikan Catatan Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN]. Baru talaqqi tentang [TOPIK DAKWAH] dari kitab [NAMA KITAB].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan:
+Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi: konsep → metode → contoh, tandai yang perlu ditanyakan, ringkas 5 poin inti.
 
-[PASTE CATATAN]
+[METODE]
 
-Tolong: susun sistematis (ushul → manhaj → aplikasi), tambahkan ayat/hadits Arab berharakat, pertanyaan untuk sesi berikutnya.
+[LEVEL_BAHASA]
 
-[LEVEL_BAHASA]`,
+Catatanku: [TEMPEL]`,
+        },
+        {
+          title: "Verifikasi Pemahaman Pasca-Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Setelah talaqqi topik [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan, koreksi, ajukan 3 pertanyaan penguji.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Dakwah Digital: Peluang dan Tantangan",
+          title: "Dakwah Nabi & Para Sahabat sebagai Teladan",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Eksplorasi dakwah di era digital.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Analisis:
-1. Peluang yang dibuka dakwah digital (jangkauan luas, konten multimedia, interaktif)
-2. Tantangan unik dakwah digital (konten instan, misinterpretasi, hoax, konteks hilang)
-3. Bagaimana ushul dakwah klasik bisa diterapkan di media sosial
-4. Contoh best practice dari da'i yang efektif di media digital
-5. Panduan dari ulama Al-Azhar tentang etika dakwah digital
+Untuk fase/peristiwa [SEBUTKAN]:
+1. Metode dakwah Nabi ﷺ yang bisa diteladani.
+2. Hikmah strategi dakwah beliau.
+3. Penerapan dalam dakwah kontemporer.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Tantangan Dakwah Kontemporer",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk tantangan [SEBUTKAN, mis. sekularisme, ekstremisme, syubhat di medsos]:
+1. Bagaimana dakwah yang bijak menanggapinya.
+2. Pendekatan yang sesuai sasaran.
+3. Menjaga wasathiyah (moderasi) dalam dakwah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Dakwah Digital yang Efektif",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu aku memahami dakwah lewat media:
+1. Prinsip konten dakwah yang efektif & autentik.
+2. Adab & etika dakwah digital.
+3. Menghindari kesalahan umum (sensasi, dalil lemah, provokasi).
+
+[METODE]
 
 [LEVEL_BAHASA]`,
         },

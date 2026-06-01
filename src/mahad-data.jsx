@@ -604,111 +604,199 @@ Kasih jawaban model setelah aku selesai.`,
     prompts: {
       pahami: [
         {
-          title: "Pahami Hukum Fiqh",
+          title: "Pahami Dasar Fiqh Ibadah dengan Mudah",
           targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar yang belajar fiqh.
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar (program persiapan), [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik: [TOPIK]
+Jelaskan dasar fiqh ibadah untuk pemula dengan bahasa sederhana:
+1. Bab thaharah (wudhu, mandi, najis) — rukun & cara, dengan bahasa mudah.
+2. Bab shalat — rukun, syarat, hal yang membatalkan.
+3. Contoh praktis sehari-hari.
+PENTING: sebut dalil dengan benar bila perlu; jika ragu, katakan. Hindari istilah terlalu rumit.
 
-Jelaskan:
-1. Pengertian singkat
-2. Dalil (Arab + harakat + terjemah)
-3. Hukumnya apa?
-4. Syarat-syarat atau rukun-rukun (daftar jelas)
-5. Hal yang sering membingungkan + contoh kasus`,
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
         {
-          title: "Studi Kasus Fiqh",
+          title: "Pahami Bab Thaharah Tuntas",
           targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar yang belajar fiqh.
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik: [TOPIK]
+Jelaskan bab thaharah untuk pemula:
+1. Jenis air & najis.
+2. Wudhu: rukun, sunnah, pembatal — langkah demi langkah.
+3. Mandi wajib & tayammum (kapan & cara).
+4. Contoh kasus sehari-hari.
 
-Jelaskan melalui kasus nyata:
-1. Skenario A: kasus normal → hukumnya apa?
-2. Skenario B: kasus yang agak berbeda → bagaimana hukumnya berubah?
-3. Skenario C: kasus yang sering jadi pertanyaan orang
-4. Prinsip umum yang bisa dipakai untuk kasus-kasus serupa
-5. Mazhab mana yang paling banyak dipakai di Mesir/Al-Azhar?`,
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Bab Shalat Tuntas",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan bab shalat untuk pemula:
+1. Syarat sah & rukun shalat.
+2. Hal yang membatalkan & sunnah-sunnahnya.
+3. Sujud sahwi (kapan & cara) secara sederhana.
+4. Contoh praktis.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Bab Puasa & Zakat Dasar",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan dasar puasa & zakat:
+1. Puasa: syarat wajib, rukun, pembatal, yang membolehkan tidak puasa.
+2. Zakat: jenis harta wajib zakat & nisabnya secara sederhana.
+3. Contoh praktis.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Kartu Fiqh",
+          title: "Hafal Rukun & Syarat Ibadah",
           targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar, mau hafal fiqh: [TOPIK]
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buat kartu fiqh:
-1. Definisi (1-2 kalimat)
-2. Hukum + dalil singkat
-3. Syarat/Rukun (DAFTAR BERNOMOR)
-4. Yang membatalkan (kalau ada)
-5. Tips hafalan + 5 soal cepat`,
+Bantu hafal rukun/syarat [SEBUTKAN, mis. rukun shalat, rukun wudhu]:
+1. Daftar lengkap (Arab berharakat + arti) dengan bahasa mudah.
+2. Mnemonic Indonesia.
+3. Urutan bila penting.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
         {
-          title: "Skema Alur Fiqh",
+          title: "Tabel Pembatal Ibadah untuk Dihafal",
           targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar, hafal alur fiqh: [TOPIK]
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buat skema alur yang bisa aku gambar:
-IF [kondisi A] → hukumnya [X]
-IF [kondisi B] → hukumnya [Y]
-IF [kondisi C] → hukumnya [Z]
+Buatkan tabel hafalan pembatal (mubthilat) untuk wudhu/shalat/puasa:
+1. Kolom: ibadah | hal yang membatalkan.
+2. Mnemonic.
 
-Lalu buat tabel:
-| Syarat/Rukun | Keterangan | Kalau tidak terpenuhi |
-|-------------|-----------|----------------------|`,
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Hafal Istilah Fiqh Dasar",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal istilah fiqh dasar (fardhu, sunnah, makruh, najis, hadats, dll):
+1. Daftar (Arab berharakat + arti sederhana + contoh).
+2. Mnemonic.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Fiqh Ma'had",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah sederhana H+1, H+3, H+7, mingguan + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Latihan Kasus Fiqh",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar, latihan fiqh: [TOPIK]
+          title: "Latihan Kasus Ibadah Sehari-hari",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buat soal kasus:
-1. 3 kasus nyata — aku tentukan hukumnya
-2. 2 soal isian — definisi atau syarat/rukun
-3. JANGAN kasih jawaban — tunggu jawabanku`,
+Beri aku 6 kasus ibadah sederhana (mis. "wudhu batal atau tidak jika..."). Tugasku: tentukan hukumnya.
+1. Tulis kasusnya.
+2. JANGAN beri jawaban dulu.
+3. Koreksi + jelaskan dengan bahasa mudah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Syarat & Rukun",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar, drill fiqh: [TOPIK]
+          title: "Drill Soal Rukun & Syarat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buat latihan cepat:
-1. Sebutkan 1 item — aku tebak: syarat, rukun, atau yang membatalkan?
-2. Kasih aku skenario — aku tentukan: sah atau tidak?
-3. Kasih soal "apa bedanya [A] dengan [B]?"
+Beri 10 soal sederhana (rukun, syarat, pembatal, istilah) dari bab [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
 
-15 soal total. JANGAN kasih jawaban dulu.`,
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Bedakan Hukum (Fardhu/Sunnah/dll)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 8 amalan/perbuatan. Tugasku: tentukan hukumnya (fardhu/sunnah/makruh/mubah/haram).
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Rangkuman Siap Tulis Fiqh",
+          title: "Mock Imtihan Fiqh Ma'had",
           targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar, persiapan ujian fiqh: [TOPIK]
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
 
-Rangkuman siap tulis:
-1. Definisi + hukum + dalil singkat
-2. Syarat-syarat (bernomor)
-3. Rukun-rukun (bernomor)
-4. Yang membatalkan (bernomor)
-5. Soal yang sering keluar`,
+Buatkan soal ujian Fiqh tingkat Ma'had untuk bab [SEBUTKAN]:
+1. Tipe soal sesuai level: definisi, rukun/syarat, kasus sederhana.
+2. 5-6 soal dari mudah ke sedang.
+3. JANGAN beri jawaban. Tunggu jawabanku, koreksi & nilai dengan bahasa mendukung.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
         {
-          title: "Simulasi Ujian Fiqh",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar, simulasi ujian fiqh: [TOPIK]
+          title: "Simulasi Tanya-Jawab Lisan Fiqh",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian lisan.
 
-Buat 8 soal bergaya ujian Ma'had:
-- 2 soal definisi dan hukum
-- 2 soal sebutkan syarat/rukun
-- 2 soal kasus (sah/tidak sah + alasan)
-- 2 soal dalil
+Berperanlah sebagai penguji yang ramah:
+1. Tanya rukun/syarat/hukum, atau beri kasus sederhana.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik membangun, naikkan kesulitan perlahan.
 
-Kasih jawaban model setelah aku selesai.`,
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian Ma'had",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari bab yang kupelajari ([SEBUTKAN]): bab tersering jadi soal di Ma'had, cara jawab yang benar, prioritas belajar H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
       ],
     },
@@ -736,124 +824,198 @@ Kasih jawaban model setelah aku selesai.`,
     prompts: {
       pahami: [
         {
-          title: "Pahami Kaidah Nahwu",
+          title: "Pahami Dasar Nahwu dengan Bahasa Sederhana",
           targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar, belajar nahwu.
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar (program persiapan), [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik: [TOPIK]
+Jelaskan dasar nahwu untuk pemula dengan bahasa SANGAT sederhana:
+1. Apa itu kalimat (isim, fi'il, harf) — dengan contoh sehari-hari.
+2. Konsep i'rab (rafa', nashab, jar, jazm) secara mudah.
+3. Beri contoh konkret tiap konsep (teks Arab berharakat + arti).
+Hindari istilah yang terlalu rumit; jelaskan bertahap.
 
-Jelaskan dengan sangat jelas:
-1. Pengertian dalam bahasa sederhana
-2. Contoh kalimat Arab (dengan harakat + terjemah)
-3. Tanda-tanda atau ciri-cirinya
-4. Kaidah penting yang perlu diingat
-5. Lebih banyak contoh dari Al-Qur'an
+[METODE]
 
-Aku masih belajar — jelaskan bertahap!`,
+[LEVEL_BAHASA]`,
         },
         {
-          title: "Analisis I'rab Kalimat",
+          title: "Pahami Mubtada-Khabar & Fi'il-Fa'il",
           targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar, mau belajar i'rab.
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Kalimat yang ingin aku pahami: [TOPIK]
+Jelaskan dua struktur kalimat dasar dengan mudah:
+1. Jumlah ismiyah (mubtada + khabar) — contoh berharakat sederhana.
+2. Jumlah fi'liyah (fi'il + fa'il) — contoh berharakat sederhana.
+3. Cara membedakan keduanya.
+4. Latihan kecil mengenali keduanya.
 
-Tolong bantu:
-1. Tulis kalimat dengan harakat lengkap
-2. Analisis i'rab tiap kata:
-   Kata → Jenis → Kedudukan → Tanda i'rab
-3. Jelaskan kenapa tiap kata mendapat i'rab tersebut
-4. Kaidah nahwu apa yang berlaku?`,
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
         {
-          title: "Bedah Kaidah yang Membingungkan",
+          title: "Pahami Tanda I'rab Dasar",
           targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar.
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Yang membingungkan: [TOPIK]
+Jelaskan tanda i'rab untuk pemula:
+1. Tanda asli: dhammah (rafa'), fathah (nashab), kasrah (jar), sukun (jazm).
+2. Contoh kata dengan tiap tanda (berharakat).
+3. Cara menentukan tanda i'rab sebuah kata.
 
-Tolong jelaskan:
-1. Kaidah asalnya apa?
-2. Kenapa ada pengecualian/variasi ini?
-3. Contoh kasus yang bikin bingung + penjelasannya
-4. Cara mudah membedakan supaya tidak salah lagi`,
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Bab Penting (Kana, Inna, dll) secara Mudah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan bab [SEBUTKAN, mis. kana wa akhawatuha, inna wa akhawatuha] dengan bahasa sederhana:
+1. Apa fungsinya & pengaruhnya pada kalimat.
+2. Contoh sebelum & sesudah masuknya 'amil (berharakat).
+3. Cara mengingatnya dengan mudah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
       ],
       hafal: [
         {
-          title: "Hafal Kaidah Nahwu",
+          title: "Hafal Tanda I'rab dengan Mudah",
           targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar, mau hafal nahwu: [TOPIK]
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buat kartu hafalan:
-1. Kaidah (Arab + terjemah)
-2. Tanda-tanda i'rab (tabel)
-3. 5 contoh kalimat (Arab + harakat + terjemah)
-4. Pengecualian penting
-5. Cara membedakan dengan kaidah yang mirip`,
+Bantu hafal tanda i'rab:
+1. Tabel sederhana: kondisi (rafa'/nashab/jar/jazm) → tanda → contoh.
+2. Mnemonic Indonesia yang mudah diingat pemula.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
         {
-          title: "Tabel I'rab Lengkap",
+          title: "Hafal Huruf-Huruf Penting (Jar, Nashab, dll)",
           targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar.
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buat tabel i'rab untuk: [TOPIK]
+Bantu hafal kelompok huruf:
+1. Huruf jar, huruf nashab, akhawat kana & inna (Arab berharakat + arti).
+2. Mnemonic untuk tiap kelompok.
 
-| Kedudukan | Nama Arab | Tanda Rafa' | Tanda Nashab | Tanda Jar/Jazm |
-|---|---|---|---|---|
+[METODE]
 
-Tambahkan contoh untuk tiap baris.`,
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Hafal Kaidah Dasar + Contoh",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk bab [SEBUTKAN], buatkan ringkasan hafalan:
+1. Kaidah inti (kalimat pendek, berharakat).
+2. Satu contoh mudah per kaidah.
+3. Mnemonic.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Nahwu Ma'had",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah sederhana H+1, H+3, H+7, mingguan + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
       ],
       latihan: [
         {
-          title: "Latihan I'rab",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar, latihan i'rab: [TOPIK]
+          title: "Latihan I'rab Kalimat Sederhana",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buat soal:
-1. Tulis 5 kalimat Arab sederhana (dengan harakat)
-2. Tandai kata yang harus dianalisis
-3. JANGAN kasih jawaban dulu
-4. Koreksi dengan penjelasan kaidah`,
+Beri aku 8 kalimat Arab SEDERHANA berharakat untuk di-i'rab.
+1. Mulai dari yang sangat mudah.
+2. JANGAN beri jawaban dulu.
+3. Setelah aku i'rab, koreksi dengan penjelasan mudah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Tanda I'rab",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar, drill nahwu: [TOPIK]
+          title: "Latihan Lengkapi Harakat Akhir",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Drill cepat:
-1. 8 kata/frasa Arab tanpa harakat
-2. Aku tentukan: harakat apa + alasan (kedudukan)
-3. JANGAN kasih jawaban dulu
-4. Koreksi dengan kaidah yang berlaku`,
+Beri aku 8 kalimat tanpa harakat akhir. Tugasku: tentukan harakat akhir tiap kata sesuai i'rab.
+1. JANGAN beri jawaban dulu.
+2. Koreksi + jelaskan kenapa.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Kenali Jenis Kata & Struktur",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 contoh. Tugasku: tentukan jenis kata (isim/fi'il/harf) atau struktur (ismiyah/fi'liyah).
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Rangkuman Ujian Nahwu",
+          title: "Mock Imtihan Nahwu Ma'had",
           targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar, persiapan ujian nahwu: [TOPIK]
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
 
-Rangkuman ujian:
-1. Definisi (Arab + terjemah)
-2. Kaidah utama (poin-poin)
-3. Tanda-tanda i'rab (tabel)
-4. Contoh dari Al-Qur'an (Arab + harakat)
-5. Hal yang sering salah + soal yang biasa keluar`,
+Buatkan soal ujian Nahwu tingkat Ma'had untuk bab [SEBUTKAN]:
+1. Tipe soal sesuai level pemula: i'rab kalimat sederhana, lengkapi harakat, sebut kaidah.
+2. 5-6 soal dari mudah ke sedang.
+3. JANGAN beri jawaban. Tunggu jawabanku, lalu koreksi & nilai dengan bahasa yang mendukung.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
         {
-          title: "Simulasi Ujian Nahwu",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar, simulasi ujian nahwu: [TOPIK]
+          title: "Simulasi Tanya-Jawab Lisan Nahwu",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian lisan.
 
-Buat 8 soal bergaya ujian Ma'had:
-- 2 soal definisi kaidah
-- 3 soal i'rab (tentukan kedudukan kata)
-- 2 soal lengkapi harakat
-- 1 soal buat kalimat sesuai kaidah
+Berperanlah sebagai penguji yang ramah:
+1. Tanya kaidah dasar atau minta i'rab kata sederhana.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Beri umpan balik yang membangun, naikkan kesulitan perlahan.
 
-Kasih jawaban model setelah aku selesai.`,
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian Ma'had",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari bab yang kupelajari ([SEBUTKAN]): bab tersering jadi soal di tingkat Ma'had, cara jawab yang benar, prioritas belajar H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
       ],
     },
