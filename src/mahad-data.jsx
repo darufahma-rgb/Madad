@@ -2255,115 +2255,184 @@ Untuk ujian mutholaah: tipe teks & pertanyaan yang sering keluar, strategi memba
       { tool: "chatgpt", rank: 2, strength: "Soal latihan bertahap",
         why: "ChatGPT efektif membuat soal matematika bertahap dari mudah ke sulit dengan format yang bisa dicetak" },
     ],
-    prompts: {
-      pahami: [
-        {
-          title: "Pahami Konsep Matematika Arab",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi) yang belajar matematika dalam bahasa Arab.
+  prompts: {
+    pahami: [
+      {
+        title: "Pahami Konsep Matematika Step-by-Step",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar (program persiapan), [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik: [TOPIK]
+Jelaskan konsep [SEBUTKAN TOPIK, mis. pecahan, aljabar dasar, persamaan] dengan SANGAT sederhana:
+1. Apa konsep dasarnya, pakai bahasa sehari-hari.
+2. Langkah pengerjaan, satu per satu.
+3. Satu contoh soal dikerjakan lengkap.
+4. Kesalahan umum & cara menghindarinya.
 
-Yang aku butuhkan:
-1. Jelaskan konsepnya dalam bahasa Indonesia yang mudah
-2. Tunjukkan istilah Arabnya yang dipakai di buku pelajaran
-3. Contoh soal bertahap — mulai dari yang mudah
-4. Cara/langkah penyelesaian yang jelas
+[METODE]
 
-Aku sering bingung karena harus paham konsep SEKALIGUS istilah Arabnya!`,
-        },
-        {
-          title: "Istilah Arab Matematika",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi) yang sering bingung dengan istilah Arab matematika.
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Pahami Rumus & Kapan Memakainya",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik: [TOPIK]
+Untuk topik [SEBUTKAN]:
+1. Tuliskan rumus-rumus pentingnya.
+2. Jelaskan ARTI tiap simbol dalam rumus.
+3. Kapan tiap rumus dipakai (jangan cuma hafal, tapi paham).
+4. Contoh penerapan tiap rumus.
 
-Buat glosarium:
-1. Tabel: Istilah Arab → Istilah Indonesia → Definisi singkat
-2. Simbol-simbol matematika dalam bahasa Arab
-3. Cara soal biasanya ditulis dalam Arab (contoh soal + terjemah)
-4. Kata kerja instruksi yang sering muncul (احسب، أوجد، حل...)
-5. Langkah mengerjakan soal Arab tanpa panik`,
-        },
-      ],
-      hafal: [
-        {
-          title: "Kartu Hafalan Rumus",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi), mau hafal matematika: [TOPIK]
+[METODE]
 
-Buat kartu hafalan:
-1. Rumus utama (Arab + Latin + penjelasan variabel)
-2. Tabel istilah: Arab ↔ Indonesia
-3. Langkah penyelesaian (poin bernomor)
-4. Contoh soal + jawaban lengkap
-5. Kesalahan umum yang harus dihindari`,
-        },
-        {
-          title: "Skema Langkah Penyelesaian",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi), hafal langkah matematika: [TOPIK]
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Pahami dari Soal Cerita ke Persamaan",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buat skema langkah yang bisa aku jadikan checklist:
-Langkah 1: [...]
-Langkah 2: [...]
-Langkah 3: [...]
+Ajari aku mengubah soal cerita jadi persamaan matematika:
+1. Cara membaca soal & menemukan yang ditanya.
+2. Cara mengubah kalimat jadi simbol/persamaan.
+3. Contoh 2 soal cerita dikerjakan dari awal sampai jawaban.
 
-Lalu 2 contoh soal bergaya ujian Ma'had dengan langkah penyelesaian lengkap.`,
-        },
-      ],
-      latihan: [
-        {
-          title: "Latihan Soal Bergaya Ma'had",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi), latihan matematika: [TOPIK]
+[METODE]
 
-Buat 5 soal bertahap:
-- Format campuran seperti buku Ma'had
-- Mulai mudah, naik ke yang lebih sulit
-- JANGAN kasih jawaban dulu
-- Koreksi dengan langkah penyelesaian lengkap`,
-        },
-        {
-          title: "Drill Soal Cepat",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi), drill matematika: [TOPIK]
+[LEVEL_BAHASA]`,
+      },
+    ],
+    hafal: [
+      {
+        title: "Hafal Rumus Penting dengan Pemahaman",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buat 8 soal pilihan ganda bergaya ujian:
-- Tampilkan soal dalam bahasa Arab
-- 4 pilihan jawaban
-- Level: sedang (sesuai ujian akhir I'dadi)
+Untuk topik [SEBUTKAN], bantu aku menghafal rumus:
+1. Daftar rumus penting + arti simbol.
+2. Cara mengingat tiap rumus (logika/jembatan keledai), bukan hafalan buta.
+3. Tandai rumus yang sering dipakai.
 
-JANGAN kasih jawaban dulu. Kasih kunci dan penjelasan setelah aku jawab semua.`,
-        },
-      ],
-      ujian: [
-        {
-          title: "Rangkuman Ujian Matematika",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi), persiapan ujian matematika: [TOPIK]
+[METODE]
 
-Rangkuman ujian:
-1. Rumus WAJIB dihafal (Arab + keterangan)
-2. Istilah Arab penting (tabel)
-3. Contoh soal + langkah penyelesaian (2 contoh)
-4. Tips mengerjakan soal matematika Arab`,
-        },
-        {
-          title: "Simulasi Ujian Matematika",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi), simulasi ujian matematika: [TOPIK]
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Hafal Langkah Pengerjaan Tipe Soal",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buat ujian mini:
-1. 2 soal pilihan ganda
-2. 2 soal isian
-3. 1 soal uraian (tampilkan dalam bahasa Arab)
+Untuk tipe soal [SEBUTKAN], buatkan checklist langkah pengerjaan:
+1. Urutan langkah dari membaca soal sampai jawaban.
+2. Cara cepat mengenali tipe soal ini.
+3. Mnemonic untuk urutan langkah.
 
-Batasi waktu: 15 menit. Kasih kunci + pembahasan setelah aku selesai.`,
-        },
-      ],
-    },
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Jadwal Latihan Rutin Matematika",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal latihan rutin:
+1. Porsi latihan soal harian per topik.
+2. Cara mengukur kemajuan.
+3. Tabel jadwal.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+    ],
+    latihan: [
+      {
+        title: "Latihan Soal Bertingkat (Aku Kerjakan, AI Koreksi)",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri aku 6 soal [SEBUTKAN TOPIK] dari mudah ke sulit.
+1. Tampilkan soalnya saja.
+2. JANGAN beri jawaban dulu.
+3. Setelah aku kerjakan, koreksi langkah demi langkah & tunjukkan di mana salahnya.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Latihan Soal Cerita",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri aku 4 soal cerita tentang [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Setelah aku jawab, koreksi cara mengubah ke persamaan & perhitungannya.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Bedah Soal yang Aku Salah",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Aku salah mengerjakan soal ini (kutempel di bawah dengan jawabanku).
+1. Tunjukkan persis di langkah mana aku salah.
+2. Jelaskan kenapa salah & cara benarnya.
+3. Beri 2 soal serupa untuk latihan.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Soal + jawabanku: [TEMPEL]`,
+      },
+    ],
+    ujian: [
+      {
+        title: "Mock Ujian Matematika Ma'had",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan satu set soal ujian Matematika tingkat Ma'had untuk topik [SEBUTKAN]:
+1. Campur tipe soal (hitung langsung, soal cerita) dari mudah ke sulit.
+2. 6-8 soal.
+3. JANGAN beri jawaban. Tunggu jawabanku, koreksi langkah & beri skor.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Strategi Mengerjakan Ujian Matematika",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu strategi ujian matematika:
+1. Cara membagi waktu antar soal.
+2. Cara cek ulang jawaban agar tidak ada salah hitung.
+3. Tips kalau menemui soal yang sulit.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Kisi-kisi & Topik Prioritas",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari topik yang kupelajari ([SEBUTKAN]): tipe soal yang sering keluar, topik yang perlu latihan ekstra, rencana belajar H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+    ],
+  }
   },
 
   {
@@ -2386,113 +2455,175 @@ Batasi waktu: 15 menit. Kasih kunci + pembahasan setelah aku selesai.`,
       { tool: "chatgpt", rank: 2, strength: "Soal sains bergaya Ma'had",
         why: "ChatGPT efektif membuat soal sains dalam format ujian Ma'had yang realistis" },
     ],
-    prompts: {
-      pahami: [
-        {
-          title: "Pahami Konsep Sains Arab",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi) yang belajar sains dalam bahasa Arab.
+  prompts: {
+    pahami: [
+      {
+        title: "Pahami Konsep Sains dengan Bahasa Sederhana",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar (program persiapan), [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik: [TOPIK]
+Jelaskan konsep [SEBUTKAN TOPIK, mis. fotosintesis, gaya, sistem pencernaan] dengan sangat sederhana:
+1. Apa konsepnya, pakai analogi sehari-hari.
+2. Bagaimana prosesnya bekerja, bertahap.
+3. Kenapa penting/contoh dalam kehidupan.
 
-Jelaskan:
-1. Konsep utama dalam bahasa Indonesia yang mudah
-2. Istilah Arab penting (tabel: Arab ↔ Indonesia)
-3. Contoh dari kehidupan sehari-hari
-4. Penjelasan ilmiahnya yang singkat dan jelas
-5. Fakta menarik tentang topik ini`,
-        },
-        {
-          title: "Kosakata Sains Arab",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi) yang kesulitan dengan istilah sains Arab.
+[METODE]
 
-Topik: [TOPIK]
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Pahami dengan Diagram & Analogi",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buat glosarium lengkap:
-1. Semua istilah teknis Arab untuk topik ini + artinya
-2. Cara membaca istilah Arab dengan harakat
-3. Bagaimana istilah ini biasanya muncul di soal ujian?
-4. Contoh kalimat Arab yang menggunakan istilah-istilah ini
-5. Mnemonic/cara mengingat istilah-istilah ini`,
-        },
-      ],
-      hafal: [
-        {
-          title: "Kartu Hafalan Sains",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi), mau hafal sains: [TOPIK]
+Untuk topik [SEBUTKAN]:
+1. Jelaskan dengan analogi yang mudah dibayangkan.
+2. Gambarkan prosesnya dalam bentuk langkah/alur (deskripsi diagram).
+3. Hubungkan dengan contoh nyata yang sering kutemui.
 
-Buat kartu hafalan:
-1. Konsep kunci dalam 3-5 poin singkat
-2. Tabel istilah: Arab ↔ Indonesia
-3. Fakta penting yang sering keluar di ujian
-4. Cara mengingat dengan asosiasi`,
-        },
-        {
-          title: "Tabel Istilah Sains",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi), hafal istilah sains: [TOPIK]
+[METODE]
 
-Buat tabel komprehensif:
-| Istilah Arab | Harakat | Terjemah | Definisi Singkat | Contoh |
-|-------------|---------|---------|-----------------|--------|
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Pahami Hubungan Sebab-Akibat dalam Sains",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Lalu: 5 pertanyaan cepat tentang istilah-istilah ini.`,
-        },
-      ],
-      latihan: [
-        {
-          title: "Latihan Soal Sains",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi), latihan sains: [TOPIK]
+Untuk fenomena [SEBUTKAN]:
+1. Apa penyebabnya & bagaimana terjadi.
+2. Apa akibat/hasilnya.
+3. Hubungkan konsep ini dengan konsep lain yang sudah kupelajari.
 
-Buat soal:
-1. 3 soal pemahaman konsep
-2. 2 soal penerapan (kasus nyata)
-3. 1 soal analisis
-4. JANGAN kasih jawaban dulu`,
-        },
-        {
-          title: "Drill Istilah Sains",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi), drill istilah sains: [TOPIK]
+[METODE]
 
-Drill 10 soal:
-1. Kasih aku istilah Arab — aku terjemahkan dan jelaskan
-2. Kasih aku definisi — aku sebut istilah Arabnya
-3. Kasih aku soal bergaya ujian dalam Arab — aku jawab
+[LEVEL_BAHASA]`,
+      },
+    ],
+    hafal: [
+      {
+        title: "Hafal Istilah & Definisi Sains",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-JANGAN kasih jawaban. Koreksi setelah aku selesai.`,
-        },
-      ],
-      ujian: [
-        {
-          title: "Rangkuman Ujian Sains",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi), persiapan ujian sains: [TOPIK]
+Untuk topik [SEBUTKAN], bantu hafal istilah penting:
+1. Tabel: istilah | definisi sederhana | contoh.
+2. Mnemonic untuk istilah yang sulit.
 
-Rangkuman ujian:
-1. Definisi (Arab + Indonesia)
-2. Poin-poin penting
-3. Istilah Arab kunci (tabel)
-4. Contoh dan penerapan
-5. Soal yang biasa keluar`,
-        },
-        {
-          title: "Simulasi Ujian Sains",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar (I'dadi), simulasi ujian sains: [TOPIK]
+[METODE]
 
-Buat ujian mini bergaya Ma'had:
-1. 3 soal pilihan ganda (dalam bahasa Arab)
-2. 2 soal isian singkat
-3. 1 soal uraian
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Hafal Klasifikasi & Urutan Proses",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Kasih kunci + pembahasan setelah aku selesai.`,
-        },
-      ],
-    },
+Untuk topik [SEBUTKAN, mis. klasifikasi makhluk hidup, tahapan suatu proses]:
+1. Susun klasifikasi/urutan dengan rapi.
+2. Mnemonic untuk mengingat urutannya.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Jadwal Belajar Sains",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal belajar & muraja'ah + cara uji pemahaman. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+    ],
+    latihan: [
+      {
+        title: "Latihan Soal Konsep (Aku Jawab, AI Koreksi)",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri aku 8 soal tentang [SEBUTKAN] (pilihan ganda & uraian singkat).
+1. JANGAN beri jawaban dulu.
+2. Setelah aku jawab, koreksi + jelaskan yang salah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Latihan Jelaskan dengan Kata Sendiri",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Aku akan menjelaskan konsep [SEBUTKAN] dengan kata-kataku sendiri (di bawah).
+1. Koreksi pemahamanku.
+2. Tunjukkan bagian yang kurang tepat atau terlewat.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
+      },
+      {
+        title: "Drill Soal Sebab-Akibat",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 6 pertanyaan "mengapa/bagaimana" tentang [SEBUTKAN]. Tugasku: jelaskan sebab-akibatnya.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+    ],
+    ujian: [
+      {
+        title: "Mock Ujian Sains Ma'had",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan soal ujian Sains tingkat Ma'had untuk topik [SEBUTKAN]:
+1. Campur: definisi, jelaskan proses, sebab-akibat.
+2. 6-8 soal mudah ke sedang.
+3. JANGAN beri jawaban. Tunggu jawabanku, koreksi & beri skor dengan bahasa mendukung.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Simulasi Tanya-Jawab Lisan Sains",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian lisan.
+
+Berperanlah sebagai penguji ramah:
+1. Tanya konsep atau minta aku jelaskan proses.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik membangun, naikkan kesulitan perlahan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Kisi-kisi & Topik Prioritas Sains",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari topik yang kupelajari ([SEBUTKAN]): topik yang sering keluar, konsep yang perlu pendalaman, rencana H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+    ],
+  }
   },
 
   {
@@ -2513,113 +2644,179 @@ Kasih kunci + pembahasan setelah aku selesai.`,
       { tool: "chatgpt", rank: 2, strength: "Latihan soal & koreksi tulisan",
         why: "ChatGPT efektif membuat soal fill-in-the-blank dan mengoreksi tulisan bahasa Inggris secara detail" },
     ],
-    prompts: {
-      pahami: [
-        {
-          title: "Pahami Grammar Bahasa Inggris",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar yang belajar Bahasa Inggris.
+  prompts: {
+    pahami: [
+      {
+        title: "Pahami Grammar Inggris Sederhana",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar (program persiapan), [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik: [TOPIK]
+Jelaskan topik grammar [SEBUTKAN, mis. tenses, parts of speech] dengan sangat sederhana:
+1. Aturan dasarnya, pakai bahasa Indonesia yang mudah.
+2. Pola/rumus kalimat.
+3. Contoh kalimat + terjemah.
+4. Kesalahan umum & cara menghindarinya.
 
-Jelaskan:
-1. Aturan/konsep dalam bahasa Indonesia
-2. Contoh kalimat sederhana (minimal 5)
-3. Kesalahan umum yang sering dilakukan
-4. Tips mudah mengingat aturan ini
+[METODE]
 
-Aku belajar tiga bahasa sekaligus — bantu aku dengan penjelasan yang jelas!`,
-        },
-        {
-          title: "Perbandingan dengan Bahasa Arab",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar yang belajar Bahasa Inggris.
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Pahami Kosakata lewat Konteks",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik grammar: [TOPIK]
+Untuk tema [SEBUTKAN, mis. daily activities, school]:
+1. Kosakata penting + arti + cara baca sederhana.
+2. Contoh kalimat memakai tiap kata.
+3. Tips mengingat kosakata lewat konteks.
 
-Bandingkan dengan bahasa Arab/Indonesia:
-1. Aturan dalam bahasa Inggris (jelaskan singkat)
-2. Aturan serupa dalam bahasa Arab — ada tidak?
-3. Di mana titik perbedaan yang sering bikin bingung?
-4. Contoh kalimat dalam 3 bahasa (Arab / Indonesia / Inggris)
-5. Tips khusus untuk pelajar yang sudah bisa bahasa Arab`,
-        },
-      ],
-      hafal: [
-        {
-          title: "Kartu Hafalan Bahasa Inggris",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar, mau hafal Bahasa Inggris: [TOPIK]
+[METODE]
 
-Buat kartu hafalan:
-1. Aturan dalam poin singkat
-2. Contoh kalimat tiap aturan
-3. Vocabulary penting terkait topik
-4. Pengecualian yang perlu diingat`,
-        },
-        {
-          title: "Tabel Grammar",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar, hafal grammar Inggris: [TOPIK]
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Pahami Bacaan Inggris (Reading)",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buat tabel yang bisa aku cetak:
-| Aturan | Struktur Kalimat | Contoh Positif | Contoh Negatif | Contoh Pertanyaan |
-|--------|----------------|---------------|---------------|-----------------|
+Aku tempel teks Inggris di bawah. Bantu aku memahaminya:
+1. Arti kata-kata sulit.
+2. Terjemah & makna tiap kalimat.
+3. Ide pokok bacaan.
 
-Sertakan catatan pengecualian di bawah tabel.`,
-        },
-      ],
-      latihan: [
-        {
-          title: "Latihan Fill-in-the-Blank",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar, latihan Bahasa Inggris: [TOPIK]
+[METODE]
 
-Buat latihan:
-1. 5 soal fill-in-the-blank
-2. 3 soal perbaiki kalimat yang salah
-3. 2 soal buat kalimat sendiri
-4. JANGAN kasih jawaban dulu`,
-        },
-        {
-          title: "Drill Vocabulary",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar, drill vocabulary Inggris: [TOPIK]
+[LEVEL_BAHASA]
 
-Buat latihan:
-1. 10 kata — aku tentukan: artinya apa? part of speech apa?
-2. 5 kalimat dengan kata yang dihilangkan — aku isi yang tepat
-3. 3 pasang kata sinonim/antonim — aku bedakan penggunaannya
+Teks: [TEMPEL]`,
+      },
+    ],
+    hafal: [
+      {
+        title: "Hafal Kosakata per Tema",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-JANGAN kasih jawaban dulu.`,
-        },
-      ],
-      ujian: [
-        {
-          title: "Rangkuman Ujian Bahasa Inggris",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar, persiapan ujian Bahasa Inggris: [TOPIK]
+Untuk tema [SEBUTKAN], buatkan daftar kosakata untuk dihafal:
+1. Kata | arti | contoh kalimat.
+2. Kelompokkan & beri tips menghafal.
 
-Rangkuman ujian:
-1. Aturan/rumus utama
-2. Contoh kalimat
-3. Vocabulary penting
-4. Soal yang biasa keluar`,
-        },
-        {
-          title: "Simulasi Ujian Bahasa Inggris",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar, simulasi ujian Bahasa Inggris: [TOPIK]
+[METODE]
 
-Buat ujian mini:
-1. 5 soal pilihan ganda
-2. 3 soal fill-in
-3. 1 soal writing singkat (3-4 kalimat)
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Hafal Pola Tenses",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Kasih kunci + pembahasan setelah aku selesai.`,
-        },
-      ],
-    },
+Bantu hafal pola tenses [SEBUTKAN, mis. present/past/future]:
+1. Tabel: tense | rumus | contoh | kapan dipakai.
+2. Mnemonic.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Jadwal Belajar Bahasa Inggris",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal belajar (grammar, kosakata, reading) + cara latihan. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+    ],
+    latihan: [
+      {
+        title: "Latihan Grammar (Aku Jawab, AI Koreksi)",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri aku 8 soal grammar [SEBUTKAN TOPIK] (isi titik-titik / pilih bentuk benar).
+1. JANGAN beri jawaban dulu.
+2. Setelah aku jawab, koreksi + jelaskan aturannya.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Latihan Membuat Kalimat",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri aku 6 kata/situasi. Tugasku: buat kalimat Inggris yang benar.
+1. JANGAN beri contoh dulu.
+2. Koreksi kalimatku + perbaiki grammar.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Latihan Reading Comprehension",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari teks yang kutempel (atau buatkan teks pendek sesuai level), beri pertanyaan pemahaman.
+1. Beri 5 pertanyaan.
+2. JANGAN beri jawaban dulu.
+3. Koreksi jawabanku.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Teks (opsional): [TEMPEL]`,
+      },
+    ],
+    ujian: [
+      {
+        title: "Mock Ujian Bahasa Inggris Ma'had",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan soal ujian Bahasa Inggris tingkat Ma'had:
+1. Campur: grammar, vocabulary, reading.
+2. 6-8 soal mudah ke sedang.
+3. JANGAN beri jawaban. Tunggu jawabanku, koreksi & beri skor.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Latihan Speaking/Writing Terbimbing",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu aku berlatih menulis/berbicara tentang [SEBUTKAN TEMA]:
+1. Beri kerangka/poin.
+2. Setelah aku tulis, koreksi grammar & beri masukan.
+3. Tunjukkan ungkapan yang lebih natural.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Kisi-kisi & Strategi Ujian Inggris",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari yang kupelajari ([SEBUTKAN]): tipe soal yang sering keluar, topik grammar prioritas, rencana H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+    ],
+  }
   },
 
   // ══════════════ TSANAWI UMUM ══════════════
@@ -2644,115 +2841,171 @@ Kasih kunci + pembahasan setelah aku selesai.`,
       { tool: "chatgpt", rank: 2, strength: "Timeline & fakta ujian",
         why: "ChatGPT efektif membuat soal-soal fakta sejarah dan timeline yang sering keluar di ujian" },
     ],
-    prompts: {
-      pahami: [
-        {
-          title: "Pahami Peristiwa Sejarah",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar (Tsanawi) yang belajar sejarah dalam bahasa Arab.
+  prompts: {
+    pahami: [
+      {
+        title: "Pahami Garis Besar Periode Sejarah",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar (tingkat Tsanawi), [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik: [TOPIK]
+Jelaskan garis besar periode [SEBUTKAN] dengan sederhana:
+1. Rentang waktu & ciri utama periode itu.
+2. Peristiwa & tokoh penting.
+3. Timeline mudah diingat.
+PENTING: sebut fakta yang kamu yakin; jika ragu, katakan.
 
-Ceritakan dengan menarik:
-1. Latar belakang — apa kondisi saat itu?
-2. Kronologi peristiwa — naratif, bukan daftar kering
-3. Tokoh-tokoh penting + peran singkat
-4. Dampak/pengaruh
-5. Pelajaran yang bisa diambil`,
-        },
-        {
-          title: "Analisis Sebab-Akibat Sejarah",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar Tsanawi yang belajar sejarah.
+[METODE]
 
-Peristiwa: [TOPIK]
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Pahami Sebab-Akibat Peristiwa Sejarah",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Analisis mendalam:
-1. SEBAB: Apa faktor-faktor yang menyebabkan peristiwa ini? (faktor internal + eksternal)
-2. PROSES: Bagaimana peristiwa ini berkembang? (kronologi singkat)
-3. AKIBAT: Apa dampak jangka pendek dan jangka panjangnya?
-4. PERBANDINGAN: Adakah peristiwa serupa dalam sejarah lain?
-5. RELEVANSI: Apa yang bisa kita pelajari hari ini?`,
-        },
-      ],
-      hafal: [
-        {
-          title: "Timeline Hafalan Sejarah",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar Tsanawi, mau hafal sejarah: [TOPIK]
+Untuk peristiwa [SEBUTKAN]:
+1. Apa latar belakang/sebabnya.
+2. Bagaimana peristiwa berlangsung (ringkas).
+3. Apa dampak/akibatnya.
 
-Buat timeline hafalan:
-1. Tahun penting + peristiwa
-2. Tokoh kunci + identitas singkat
-3. Urutan kejadian (5-7 poin)
-4. Angka-angka penting`,
-        },
-        {
-          title: "Kartu Tokoh Sejarah",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar Tsanawi, hafal tokoh sejarah: [TOPIK]
+[METODE]
 
-Buat kartu tokoh:
-| Nama | Tahun Hidup | Jabatan/Peran | Kontribusi Utama | Fakta Unik |
-|------|------------|--------------|-----------------|-----------|
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Pahami Peran Tokoh Sejarah",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Setelah tabel, 5 soal cepat: "Siapa yang...?" "Kapan...?" "Di mana...?"`,
-        },
-      ],
-      latihan: [
-        {
-          title: "Latihan Soal Sejarah",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar Tsanawi, latihan sejarah: [TOPIK]
+Untuk tokoh [SEBUTKAN]:
+1. Siapa dia & perannya dalam sejarah.
+2. Apa yang dilakukannya & dampaknya.
+3. Pelajaran yang bisa diambil.
+PENTING: kalau tidak yakin fakta, katakan; jangan mengarang.
 
-Buat soal:
-1. 3 soal fakta (kapan, siapa, di mana)
-2. 2 soal analisis (mengapa, bagaimana)
-3. 1 soal evaluasi (apa dampaknya?)
-4. JANGAN kasih jawaban dulu`,
-        },
-        {
-          title: "Drill Kronologi Sejarah",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar Tsanawi, drill sejarah: [TOPIK]
+[METODE]
 
-Drill:
-1. Kasih aku tahun — aku sebut peristiwanya
-2. Kasih aku peristiwa — aku sebut tahun + tokoh
-3. Urutkan 5 peristiwa yang aku acak
-4. "Siapa yang melakukan...?" — aku jawab dengan nama + latar belakang
+[LEVEL_BAHASA]`,
+      },
+    ],
+    hafal: [
+      {
+        title: "Hafal Kronologi Peristiwa",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-JANGAN kasih jawaban dulu.`,
-        },
-      ],
-      ujian: [
-        {
-          title: "Rangkuman Ujian Sejarah",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar Tsanawi, persiapan ujian sejarah: [TOPIK]
+Untuk periode [SEBUTKAN], bantu hafal kronologi:
+1. Timeline peristiwa + tahun.
+2. Mnemonic untuk urutannya.
 
-Rangkuman ujian:
-1. Timeline singkat
-2. Tokoh penting + kontribusi
-3. Fakta kunci yang sering ditanyakan
-4. Sebab dan dampak
-5. Soal yang biasa keluar`,
-        },
-        {
-          title: "Simulasi Ujian Sejarah",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar Tsanawi, simulasi ujian sejarah: [TOPIK]
+[METODE]
 
-Buat 8 soal bergaya ujian:
-- 2 soal fakta (pilihan ganda)
-- 2 soal analisis sebab
-- 2 soal dampak/akibat
-- 2 soal esai singkat
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Tabel Tokoh & Peristiwa untuk Dihafal",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Kasih kunci + pembahasan setelah aku selesai.`,
-        },
-      ],
-    },
+Buatkan tabel hafalan: peristiwa/tokoh | tahun | peran/dampak. Tandai yang sering jadi soal.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Jadwal Muraja'ah Sejarah",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Periode yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji (sebut sebab-akibat). Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+    ],
+    latihan: [
+      {
+        title: "Drill Kronologi & Tokoh",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (urutan peristiwa, tokoh, tahun, sebab-akibat) dari periode [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Latihan Analisis Sebab-Akibat",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 5 peristiwa. Tugasku: jelaskan sebab & akibatnya.
+1. JANGAN beri jawaban dulu.
+2. Koreksi + tambahkan yang terlewat.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Latihan Esai Sejarah Singkat",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 1 topik esai sejarah. Aku tulis, lalu koreksi keakuratan fakta & logika + tunjukkan poin yang terlewat.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+    ],
+    ujian: [
+      {
+        title: "Mock Ujian Sejarah Ma'had",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan soal ujian Sejarah tingkat Ma'had untuk periode [SEBUTKAN]:
+1. Campur: kronologi, tokoh, sebab-akibat.
+2. 6-8 soal.
+3. JANGAN beri jawaban. Tunggu jawabanku, koreksi & beri skor.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Simulasi Tanya-Jawab Lisan Sejarah",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian lisan.
+
+Berperanlah sebagai penguji ramah:
+1. Tanya peristiwa, tokoh, atau sebab-akibat.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik membangun, naikkan kesulitan perlahan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Kisi-kisi & Topik Prioritas Sejarah",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari periode yang kupelajari ([SEBUTKAN]): topik yang sering jadi soal, cara jawab analitis (bukan hafal tanggal), rencana H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+    ],
+  }
   },
 
   {
@@ -2776,115 +3029,176 @@ Kasih kunci + pembahasan setelah aku selesai.`,
       { tool: "chatgpt", rank: 2, strength: "Soal geografi bergaya ujian",
         why: "ChatGPT efektif membuat soal-soal geografi dengan format ujian Ma'had yang realistis" },
     ],
-    prompts: {
-      pahami: [
-        {
-          title: "Pahami Konsep Geografi Arab",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar (Tsanawi) yang belajar geografi dalam bahasa Arab.
+  prompts: {
+    pahami: [
+      {
+        title: "Pahami Konsep Geografi Sederhana",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar (tingkat Tsanawi), [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik: [TOPIK]
+Jelaskan konsep [SEBUTKAN TOPIK, mis. iklim, bentuk muka bumi, peta] dengan sederhana:
+1. Apa konsepnya, pakai contoh yang mudah dibayangkan.
+2. Bagaimana terjadi/bekerja.
+3. Contoh nyata di dunia/sekitar kita.
 
-Jelaskan:
-1. Gambaran umum topik ini
-2. Istilah Arab geografi penting (tabel)
-3. Contoh dari wilayah yang kita kenal (Mesir, Indonesia)
-4. Hubungan dengan kehidupan manusia
-5. Fakta menarik yang mudah diingat`,
-        },
-        {
-          title: "Geografi Dunia Islam",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar Tsanawi yang belajar geografi.
+[METODE]
 
-Topik: [TOPIK]
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Pahami Peta & Lokasi",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Fokuskan pada dunia Islam/Timur Tengah:
-1. Jelaskan fenomena/konsep geografi ini
-2. Bagaimana ini terjadi di kawasan Mesir dan dunia Arab?
-3. Contoh nyata dari wilayah yang aku kenal sebagai Masisir
-4. Data dan angka penting
-5. Istilah Arab geografinya apa?`,
-        },
-      ],
-      hafal: [
-        {
-          title: "Kartu Hafalan Geografi",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar Tsanawi, mau hafal geografi: [TOPIK]
+Bantu aku memahami peta & lokasi untuk topik [SEBUTKAN]:
+1. Cara membaca peta (arah, skala, simbol).
+2. Letak/posisi penting yang perlu diketahui.
+3. Cara menghubungkan lokasi dengan fenomena geografi.
 
-Buat kartu hafalan:
-1. Konsep kunci + definisi Arab
-2. Data/angka penting
-3. Nama-nama penting + Arab-nya
-4. Cara mengingat dengan asosiasi`,
-        },
-        {
-          title: "Tabel Istilah Geografi",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar Tsanawi, hafal istilah geografi: [TOPIK]
+[METODE]
 
-Buat tabel:
-| Istilah Arab | Harakat | Terjemah | Contoh/Keterangan |
-|-------------|---------|---------|-----------------|
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Pahami Hubungan Manusia & Lingkungan",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Setelah tabel:
-- 3 fakta angka yang wajib diingat
-- 5 soal cepat tentang istilah-istilah ini`,
-        },
-      ],
-      latihan: [
-        {
-          title: "Latihan Soal Geografi",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar Tsanawi, latihan geografi: [TOPIK]
+Untuk topik [SEBUTKAN, mis. sumber daya alam, kependudukan]:
+1. Bagaimana kondisi geografi memengaruhi kehidupan manusia.
+2. Bagaimana manusia memengaruhi lingkungan.
+3. Contoh nyata.
 
-Buat soal:
-1. 3 soal identifikasi/lokasi
-2. 2 soal penjelasan fenomena
-3. 1 soal analisis alam-manusia
-4. JANGAN kasih jawaban dulu`,
-        },
-        {
-          title: "Drill Fakta Geografi",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar Tsanawi, drill geografi: [TOPIK]
+[METODE]
 
-Drill 10 soal:
-1. Kasih aku nama tempat — aku jelaskan: di mana + apa pentingnya
-2. Kasih aku angka/data — aku tebak ini tentang apa
-3. Kasih aku fenomena — aku jelaskan penyebabnya
+[LEVEL_BAHASA]`,
+      },
+    ],
+    hafal: [
+      {
+        title: "Hafal Istilah & Konsep Geografi",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-JANGAN kasih jawaban. Koreksi setelah aku selesai.`,
-        },
-      ],
-      ujian: [
-        {
-          title: "Rangkuman Ujian Geografi",
-          targetAI: "claude",
-          template: `Aku pelajar Ma'had Al-Azhar Tsanawi, persiapan ujian geografi: [TOPIK]
+Untuk topik [SEBUTKAN], bantu hafal istilah:
+1. Tabel: istilah | definisi | contoh.
+2. Mnemonic.
 
-Rangkuman ujian:
-1. Definisi (Arab + Indonesia)
-2. Data dan angka penting
-3. Istilah Arab kunci (tabel)
-4. Soal yang biasa keluar`,
-        },
-        {
-          title: "Simulasi Ujian Geografi",
-          targetAI: "chatgpt",
-          template: `Aku pelajar Ma'had Al-Azhar Tsanawi, simulasi ujian geografi: [TOPIK]
+[METODE]
 
-Buat ujian mini:
-1. 3 soal identifikasi (pilihan ganda)
-2. 2 soal isian data/angka
-3. 1 soal uraian (jelaskan fenomena ini)
-4. 1 soal hubungan sebab-akibat
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Hafal Data Geografi Penting",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Kasih kunci + pembahasan setelah aku selesai.`,
-        },
-      ],
-    },
+Untuk topik [SEBUTKAN, mis. benua, samudra, jenis iklim]:
+1. Daftar data penting yang perlu dihafal.
+2. Cara mengelompokkan agar mudah diingat.
+PENTING: sebut data yang kamu yakin; jika ragu, katakan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Jadwal Belajar Geografi",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal belajar & muraja'ah + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+    ],
+    latihan: [
+      {
+        title: "Drill Soal Konsep Geografi",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (definisi, konsep, lokasi, sebab-akibat) dari topik [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Latihan Jelaskan Fenomena Geografi",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 5 fenomena geografi. Tugasku: jelaskan mengapa & bagaimana terjadi.
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Latihan Jelaskan dengan Kata Sendiri",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Aku akan menjelaskan konsep [SEBUTKAN] dengan kata-kataku (di bawah).
+1. Koreksi pemahamanku.
+2. Tunjukkan yang kurang tepat/terlewat.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
+      },
+    ],
+    ujian: [
+      {
+        title: "Mock Ujian Geografi Ma'had",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan soal ujian Geografi tingkat Ma'had untuk topik [SEBUTKAN]:
+1. Campur: definisi, konsep, fenomena, lokasi.
+2. 6-8 soal.
+3. JANGAN beri jawaban. Tunggu jawabanku, koreksi & beri skor.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Simulasi Tanya-Jawab Lisan Geografi",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian lisan.
+
+Berperanlah sebagai penguji ramah:
+1. Tanya konsep, fenomena, atau lokasi.
+2. Satu pertanyaan dulu, tunggu jawabanku.
+3. Umpan balik membangun, naikkan kesulitan perlahan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+      {
+        title: "Kisi-kisi & Topik Prioritas Geografi",
+        targetAI: "claude",
+        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari topik yang kupelajari ([SEBUTKAN]): topik yang sering jadi soal, konsep yang perlu pendalaman, rencana H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+      },
+    ],
+  }
   },
 
   {
