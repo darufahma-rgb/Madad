@@ -143,10 +143,25 @@ const MahadDetailPage = () => {
     if (!template || !profile) return template || "";
     const tingkat = typeof TINGKATAN_LABEL !== "undefined"
       ? (TINGKATAN_LABEL[profile.level] || profile.level) : (profile.level || "");
+
+    let gayaBelajar = "belajar dengan pendekatan kombinasi";
+    if (profile?.learningStyle?.length > 0 && typeof GAYA_BELAJAR_LABEL !== "undefined") {
+      const labels = profile.learningStyle.map(s => GAYA_BELAJAR_LABEL[s]).filter(Boolean);
+      if (labels.length === 1)      gayaBelajar = labels[0];
+      else if (labels.length === 2) gayaBelajar = labels.join(" dan ");
+      else if (labels.length > 2)   gayaBelajar = labels.slice(0, -1).join(", ") + ", dan " + labels[labels.length - 1];
+    }
+
+    const levelBahasa = (typeof LEVEL_BAHASA_INSTRUCTION !== "undefined" && profile?.level)
+      ? (LEVEL_BAHASA_INSTRUCTION[profile.level] || LEVEL_BAHASA_INSTRUCTION["2"] || "")
+      : "";
+
     return template
-      .replace(/\[TINGKATAN\]/g, tingkat)
-      .replace(/\[MADDAH\]/g, maddah.name)
-      .replace(/\[TOPIK\]/g, topikInput || "[TOPIK]");
+      .replace(/\[TINGKATAN\]/g,    tingkat)
+      .replace(/\[MADDAH\]/g,       maddah.name)
+      .replace(/\[TOPIK\]/g,        topikInput || "[TOPIK]")
+      .replace(/\[GAYA_BELAJAR\]/g, gayaBelajar)
+      .replace(/\[LEVEL_BAHASA\]/g, levelBahasa);
   };
 
   const hasTopikPlaceholder = Object.values(maddah.prompts || {})
