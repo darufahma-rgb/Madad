@@ -164,6 +164,7 @@ const AdminDashboard = () => {
   const [members, setMembers] = useState([]);
   const [totalPromptsUsed, setTotalPromptsUsed] = useState(0);
   const [totalMaddahOpens, setTotalMaddahOpens] = useState(0);
+  const [topMaddah, setTopMaddah] = useState([]);
 
   useEffect(() => {
     adminGetAllMembers()
@@ -174,6 +175,11 @@ const AdminDashboard = () => {
         if (Array.isArray(data)) {
           setTotalPromptsUsed(data.reduce((s, r) => s + (r.prompts_copied || 0), 0));
           setTotalMaddahOpens(data.reduce((s, r) => s + (r.opens || 0), 0));
+          const top = data
+            .map(r => [r.maddah_id, { opens: r.opens || 0, promptsCopied: r.prompts_copied || 0 }])
+            .sort((a, b) => b[1].opens - a[1].opens)
+            .slice(0, 5);
+          setTopMaddah(top);
         }
       })
       .catch(() => {});
