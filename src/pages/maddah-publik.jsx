@@ -21,19 +21,18 @@ const MaddahPublikPage = ({ onOpenPayment, onOpenLogin }) => {
       : [],
   })).filter(g => g.maddahs.length > 0);
 
-  const totalMaddah = typeof MADDAHS !== "undefined" ? MADDAHS.length : 35;
+  const totalMaddah = typeof MADDAHS !== "undefined" ? MADDAHS.length : 51;
+  const totalMahad  = typeof MAHAD_MADDAHS !== "undefined" ? MAHAD_MADDAHS.length : 17;
 
   const totalPrompts = (typeof MADDAHS !== "undefined")
     ? MADDAHS.reduce((acc, m) =>
         acc + Object.values(m.prompts || {}).reduce((a, arr) => a + arr.length, 0), 0)
-    : 0;
-  const promptLabel = totalPrompts > 0
-    ? (Math.floor(totalPrompts / 100) * 100) + "+"
-    : "800+";
+    : 798;
+  const promptLabel = (Math.floor(totalPrompts / 100) * 100) + "+";
 
   const stats = [
     { label: "Maddah S1",       value: String(totalMaddah) },
-    { label: "Maddah Ma'had",   value: "17"   },
+    { label: "Maddah Ma'had",   value: String(totalMahad)  },
     { label: "Template Prompt", value: promptLabel },
     { label: "AI Tools",        value: "7"    },
   ];
