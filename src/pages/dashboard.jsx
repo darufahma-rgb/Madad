@@ -106,7 +106,7 @@ const MaddahHeroSection = ({ profile }) => {
             onClick={() => navigate("/maddah")}
             className="text-sm text-emerald-400 hover:text-emerald-300 inline-flex items-center gap-1.5 transition-colors"
           >
-            Semua {typeof MADDAHS !== "undefined" ? MADDAHS.length : 51} Maddah S1 <Icon name="arrowRight" className="w-3.5 h-3.5"/>
+            Semua {typeof MADDAHS !== "undefined" ? MADDAHS.length : 55} Maddah S1 <Icon name="arrowRight" className="w-3.5 h-3.5"/>
           </button>
         </Reveal>
 
@@ -444,10 +444,13 @@ const DashboardPage = () => {
   const greeting = getCairoGreeting();
 
   // Statistik dinamis
-  const totalS1 = (typeof MADDAHS !== "undefined") ? MADDAHS.length : 51;
+  const totalS1 = (typeof MADDAHS !== "undefined") ? MADDAHS.length : 55;
   const totalPrompts = (typeof MADDAHS !== "undefined")
     ? MADDAHS.reduce((a, m) => a + Object.values(m.prompts || {}).reduce((b, arr) => b + arr.length, 0), 0)
-    : 800;
+    + ((typeof MAHAD_MADDAHS !== "undefined")
+        ? MAHAD_MADDAHS.reduce((a, m) => a + Object.values(m.prompts || {}).reduce((b, arr) => b + arr.length, 0), 0)
+        : 0)
+    : 1055;
   const promptDisplay = Math.floor(totalPrompts / 100) * 100 + "+";
 
   // Faculty / Major / Level labels — backward-compat

@@ -305,7 +305,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         {/* Trust row */}
         <Reveal delay={340}>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-16">
-            {["68 Maddah lengkap (S1 + Ma'had)","700+ template prompt","Bayar sekali, akses selamanya"].map((t, i) => (
+            {["72 Maddah lengkap (S1 + Ma'had)","1200+ template prompt","Bayar sekali, akses selamanya"].map((t, i) => (
               <span key={i} className="flex items-center gap-2 text-xs" style={{ color:"rgba(255,255,255,0.42)" }}>
                 <Icon name="check" className="w-3.5 h-3.5 text-gold-400 flex-shrink-0"/>{t}
               </span>
@@ -389,7 +389,7 @@ const HowItWorks = () => {
       desc:"Bayar via Lynk.id, admin kirim kode member via WhatsApp." },
     { num:"02", title:"Jawab profile", sub:"5 pertanyaan singkat",
       desc:"Fakultas, jurusan, tingkat, gaya belajarmu. Supaya prompt-nya pas." },
-    { num:"03", title:"Mulai belajar", sub:"Workflow + 700+ prompt",
+    { num:"03", title:"Mulai belajar", sub:"Workflow + 1200+ prompt",
       desc:"Dashboard tunjukin AI cocok, prompt per Maddah siap pakai." },
   ];
   return (
@@ -484,7 +484,7 @@ const AllMaddahPreview = () => {
           ))}
         </div>
         <Reveal className="mt-10 text-center">
-          <p className="text-sm text-ink-soft">Total 700+ template prompt · Disesuaikan untuk Ma'had, DL, sampai S2</p>
+          <p className="text-sm text-ink-soft">Total 1200+ template prompt · Disesuaikan untuk Ma'had, DL, sampai S2</p>
         </Reveal>
       </div>
     </section>
@@ -512,7 +512,7 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => {
           Bayar sekali, belajar selamanya.
         </h2>
         <p className="text-ink-muted text-base md:text-lg mt-4 max-w-xl mx-auto leading-relaxed">
-          Dapatkan 700+ Prompt siap pakai untuk bantu kamu belajar + update selamanya
+          Dapatkan 1200+ Prompt siap pakai untuk bantu kamu belajar + update selamanya
         </p>
       </Reveal>
 
@@ -557,7 +557,7 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => {
               </div>
               <ul className="space-y-3 mb-8">
                 {[
-                  "68 Maddah lengkap (S1 + Ma'had) + 700+ template prompt",
+                  "72 Maddah lengkap (S1 + Ma'had) + 1200+ template prompt",
                   "AI recommendation per gaya & tingkat belajarmu",
                   "Muqaranah qoul ulama 4 madzhab",
                   "Kurasah pribadi dengan markdown & teks Arab",

@@ -602,7 +602,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
             {/* Feature list */}
             <div className="space-y-2.5 mb-6">
               {[
-                "68 Maddah lengkap (S1 + Ma'had) + 700+ template prompt",
+                "72 Maddah lengkap (S1 + Ma'had) + 1200+ template prompt",
                 "AI recommendation per gaya & tingkat belajarmu",
                 "Muqaranah qoul ulama 4 madzhab",
                 "Kurasah pribadi dengan markdown & teks Arab",

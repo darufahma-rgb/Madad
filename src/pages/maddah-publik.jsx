@@ -21,13 +21,17 @@ const MaddahPublikPage = ({ onOpenPayment, onOpenLogin }) => {
       : [],
   })).filter(g => g.maddahs.length > 0);
 
-  const totalMaddah = typeof MADDAHS !== "undefined" ? MADDAHS.length : 51;
+  const totalMaddah = typeof MADDAHS !== "undefined" ? MADDAHS.length : 55;
   const totalMahad  = typeof MAHAD_MADDAHS !== "undefined" ? MAHAD_MADDAHS.length : 17;
 
   const totalPrompts = (typeof MADDAHS !== "undefined")
     ? MADDAHS.reduce((acc, m) =>
         acc + Object.values(m.prompts || {}).reduce((a, arr) => a + arr.length, 0), 0)
-    : 798;
+    + ((typeof MAHAD_MADDAHS !== "undefined")
+        ? MAHAD_MADDAHS.reduce((acc, m) =>
+            acc + Object.values(m.prompts || {}).reduce((a, arr) => a + arr.length, 0), 0)
+        : 0)
+    : 1055;
   const promptLabel = (Math.floor(totalPrompts / 100) * 100) + "+";
 
   const stats = [
@@ -67,7 +71,7 @@ const MaddahPublikPage = ({ onOpenPayment, onOpenLogin }) => {
             </span>
           </h1>
           <p className="text-base md:text-lg text-ink-muted max-w-xl leading-relaxed mb-6">
-            {totalMaddah} maddah S1 + 17 maddah Ma'had · {promptLabel} template prompt AI ·
+            {totalMaddah} maddah S1 + {totalMahad} maddah Ma'had · {promptLabel} template prompt AI ·
             Disesuaikan untuk tingkat & gaya belajarmu.
           </p>
 

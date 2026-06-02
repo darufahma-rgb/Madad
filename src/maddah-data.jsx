@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
 /* Talqih — Maddah Data Structure
-   51 mata kuliah S1 Al-Azhar + 17 maddah Ma'had.
+   55 mata kuliah S1 Al-Azhar + 17 maddah Ma'had.
    Prompt 3B: Semua 33 Maddah skeleton diisi lengkap.
 */
 
