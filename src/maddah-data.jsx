@@ -13067,6 +13067,739 @@ PENTING: jangan mengarang fatwa; kalau tidak yakin, katakan.
       ],
     },
   },
+
+  // ── DIRASAT ISLAMIYAH BANIN — maddah baru ──────────────────────────
+  {
+    id: "muajam-lahjat",
+    name: "Mu'ajam wa Lahjat",
+    nameArabic: "المعاجم واللهجات",
+    arabic: "المعاجم واللهجات",
+    description: "Ilmu kamus Arab (mu'jam) dan kajian dialek-dialek bahasa Arab",
+    descriptionArabic: "دراسة المعاجم العربية ومناهجها وأنواع اللهجات العربية",
+    category: "lughawi",
+    kitabUtama: [
+      { nama: "Al-Mu'jam al-Wasith", arabic: "المعجم الوسيط", penulis: "Majma' al-Lughah al-Arabiyyah" },
+      { nama: "Fiqh al-Lughah", arabic: "فقه اللغة", penulis: "Ats-Tsa'alibi" },
+    ],
+    tingkat: ["2"],
+    fakultas: ["dirasat-banin", "lughah"],
+    jurusan: [],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Peta Besar Mu'ajam wa Lahjat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri kerangka utuh:
+1. Definisi mu'jam (kamus) + sejarah perkembangannya dalam tradisi Arab.
+2. Jenis-jenis mu'jam: berdasarkan huruf (alphabetis), makhraj, tema, dll.
+3. Definisi lahjah (dialek) + peta dialek Arab utama.
+4. Kaitan ilmu kamus dengan fiqh lughah & nahwu.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Sejarah & Metode Penyusunan Kamus Arab",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan perkembangan mu'jam Arab:
+1. Tahap awal: Kitab al-'Ain (Al-Khalil) — metode berdasarkan makhraj.
+2. Metode alphabetis: Lisan al-Arab, Al-Qamus al-Muhith.
+3. Mu'jam tematik & modern.
+4. Cara memakai mu'jam klasik untuk mencari kata.
+PENTING: sebut yang kamu yakin; jika ragu, katakan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Lahjat Arab & Perbedaannya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan dialek (lahjat) Arab:
+1. Apa itu lahjah & bedanya dengan fusha.
+2. Lahjat utama: Hijaziyah, Tamimiyah, Yamamiyah, dll — ciri khasnya.
+3. Pengaruh lahjat Quraisy terhadap fusha & Al-Qur'an.
+4. Hubungan lahjat dengan fenomena isytiqaq & tadhad.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Jenis Mu'jam & Tokohnya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal mu'jam Arab utama:
+1. Tabel: nama mu'jam | metode | penulis | ciri khas.
+2. Mnemonic untuk mengingatnya.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Mu'ajam wa Lahjat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7 + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Latihan Cari Kata di Mu'jam (Simulasi)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri aku 6 kata Arab. Tugasku: tentukan di bab mana kata itu dicari di mu'jam Lisan al-Arab (berdasarkan akar kata & metode mu'jam itu).
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Soal Mu'ajam wa Lahjat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (definisi, metode mu'jam, ciri lahjah, tokoh) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Imtihan Mu'ajam wa Lahjat (Gaya Azhari)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+
+Buatkan soal ujian gaya Azhar: 'arrif, udzkur manahij, qarin baina mu'jamain, bayyin khasha'is al-lahjah. 5-6 soal.
+JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik tersering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      talaqqi: [
+        {
+          title: "Rapikan Catatan Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Catatan talaqqi-ku berantakan (di bawah). Rapikan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Catatanku: [TEMPEL]`,
+        },
+      ],
+      eksplorasi: [
+        {
+          title: "Mu'ajam & Pembakuan Bahasa Arab Modern",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan peran mu'jam dalam perkembangan bahasa Arab modern:
+1. Upaya Majma' al-Lughah (lembaga bahasa) dalam membuat kosa kata baru.
+2. Tantangan antara fusha & 'ammiyah di era media.
+3. Cara mu'jam membantu menjaga bahasa Arab tetap relevan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "tarbiyah-ilm-nafs",
+    name: "Tarbiyah wa Ilm Nafs",
+    nameArabic: "التربية وعلم النفس",
+    arabic: "التربية وعلم النفس",
+    description: "Ilmu pendidikan Islam dan psikologi — teori belajar, perkembangan jiwa, dan pembentukan karakter",
+    descriptionArabic: "دراسة أسس التربية الإسلامية وعلم النفس في ضوء المنهج الإسلامي",
+    category: "tarikhi",
+    kitabUtama: [
+      { nama: "At-Tarbiyah al-Islamiyyah", arabic: "التربية الإسلامية", penulis: "Manhaj Al-Azhar" },
+    ],
+    tingkat: ["2"],
+    fakultas: ["dirasat-banin", "lughah"],
+    jurusan: [],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Peta Besar Tarbiyah wa Ilm Nafs",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri kerangka utuh:
+1. Definisi tarbiyah (pendidikan) dalam Islam + bedanya dengan ta'lim & ta'dib.
+2. Definisi ilm nafs (psikologi) + kaitan dengan tarbiyah Islamiyah.
+3. Sumber tarbiyah Islam: Qur'an, Sunnah, sirah.
+4. Topik utama: teori belajar, perkembangan jiwa, metode mengajar, akhlak pendidik.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Teori Belajar dalam Islam",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan teori belajar dari perspektif Islam:
+1. Prinsip tadarruj (bertahap) dalam pengajaran — contoh dari sirah.
+2. Peran motivasi (niyyah, ikhlas) dalam belajar.
+3. Metode Nabi ﷺ dalam mendidik: dialog, praktik, keteladanan.
+4. Kaitan ilm nafs modern dengan prinsip tarbiyah Islam.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Perkembangan Jiwa & Kepribadian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan:
+1. Tahapan perkembangan manusia menurut Islam (thofl, murahiq, baligh, dll).
+2. Konsep fitrah & pengaruh lingkungan (hadits: "kullu mauludin...").
+3. Penyakit jiwa (amradh nafsiyyah) & cara Islam menanganiny.
+4. Peran pendidik dalam membentuk kepribadian.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Prinsip & Istilah Tarbiyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal prinsip & istilah kunci:
+1. Tabel: istilah (Arab berharakat) | arti | contoh penerapan.
+2. Mnemonic untuk prinsip utama tarbiyah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Tarbiyah wa Ilm Nafs",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Drill Soal Tarbiyah wa Ilm Nafs",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (definisi, prinsip, penerapan) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Analisis Kasus Pendidikan (Tathbiq)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 4 situasi pendidikan/psikologi. Tugasku: analisis dari perspektif tarbiyah Islam + solusinya.
+1. JANGAN beri analisis dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Imtihan Tarbiyah (Gaya Azhari)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+
+Buatkan soal ujian gaya Azhar: 'arrif, bayyin asalib, qarin baina, thabbiq. 5-6 soal.
+JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik tersering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      talaqqi: [
+        {
+          title: "Rapikan Catatan Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Catatan talaqqi-ku berantakan (di bawah). Rapikan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Catatanku: [TEMPEL]`,
+        },
+      ],
+      eksplorasi: [
+        {
+          title: "Tarbiyah Islam & Tantangan Pendidikan Modern",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan relevansi tarbiyah Islam di era modern:
+1. Tantangan pendidikan kontemporer (gadget, krisis karakter, dll).
+2. Prinsip tarbiyah Islam yang menjawab tantangan itu.
+3. Bagaimana seorang pendidik Muslim bisa menerapkannya.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "manahij-tadris",
+    name: "Manahij wa Thara'iq at-Tadris",
+    nameArabic: "المناهج وطرائق التدريس",
+    arabic: "المناهج وطرائق التدريس",
+    description: "Kurikulum dan metode pengajaran — cara merancang pembelajaran yang efektif",
+    descriptionArabic: "دراسة مناهج التعليم وأساليب التدريس الفعّالة في ضوء التربية الإسلامية",
+    category: "tarikhi",
+    kitabUtama: [
+      { nama: "Manahij wa Thara'iq at-Tadris", arabic: "المناهج وطرائق التدريس", penulis: "Manhaj Al-Azhar" },
+    ],
+    tingkat: ["4"],
+    fakultas: ["dirasat-banin", "lughah"],
+    jurusan: [],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Peta Besar Manahij wa Thara'iq at-Tadris",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri kerangka utuh:
+1. Definisi manhaj (kurikulum) + komponen-komponennya (tujuan, isi, metode, evaluasi).
+2. Jenis-jenis thara'iq (metode mengajar): hiwar, qishshah, istiqra', dll.
+3. Perbedaan manhaj & thariqah.
+4. Outline bercabang.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Komponen Kurikulum (Manhaj)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan komponen manhaj:
+1. Al-Ahdaf (tujuan): kognitif, afektif, psikomotorik.
+2. Al-Muhtawa (isi/materi): kriteria pemilihan.
+3. At-Thara'iq (metode): kelebihan tiap metode.
+4. At-Taqwim (evaluasi): jenis & cara.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Metode Mengajar yang Efektif",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan metode pengajaran utama:
+1. Thariqat al-Ilqa' (ceramah) — kelebihan, kelemahan, kapan cocok.
+2. Thariqat al-Hiwar (dialog/diskusi).
+3. Thariqat al-Qishshah (metode cerita).
+4. Thariqat al-Istiqra' (induktif) & al-Qiyasi (deduktif).
+Sertakan contoh penerapan tiap metode dalam pengajaran maddah agama.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Metode & Komponen Pengajaran",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal:
+1. Tabel: metode | kelebihan | kelemahan | kapan cocok.
+2. Komponen manhaj + mnemonic.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Manahij Tadris",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Latihan Rancang Rencana Pembelajaran",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Aku akan merancang rencana pembelajaran (khutthat dars) untuk maddah [SEBUTKAN], topik [SEBUTKAN]:
+1. Koreksi: tujuan, metode yang dipilih, urutan kegiatan, evaluasi.
+2. Tunjukkan yang kurang.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Rancanganku: [TEMPEL]`,
+        },
+        {
+          title: "Drill Soal Manahij Tadris",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (definisi, komponen, metode, evaluasi) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Imtihan Manahij Tadris (Gaya Azhari)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+
+Buatkan soal ujian gaya Azhar: 'arrif, udzkur mawasim al-manhaj, qarin baina thariqatain, iktub khutthat dars. 5-6 soal.
+JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik tersering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      talaqqi: [
+        {
+          title: "Rapikan Catatan Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Catatan talaqqi-ku berantakan (di bawah). Rapikan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Catatanku: [TEMPEL]`,
+        },
+      ],
+      eksplorasi: [
+        {
+          title: "Manahij Tadris untuk Pengajaran Ilmu Agama",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bagaimana metode pengajaran terbaik untuk maddah:
+1. Untuk ilmu bahasa Arab (nahwu, balaghah) — metode mana paling efektif & mengapa.
+2. Untuk ilmu syariah (fiqh, tafsir) — metode yang cocok.
+3. Peran AI dalam mendukung (bukan menggantikan) pengajaran tatap muka.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "qaat-bahs",
+    name: "Qaa'at Bahts (Seminar Penelitian)",
+    nameArabic: "قاعة البحث",
+    arabic: "قاعة البحث",
+    description: "Seminar penelitian — praktik penulisan, presentasi, dan diskusi karya ilmiah",
+    descriptionArabic: "ممارسة البحث العلمي وتقديمه ومناقشته في إطار أكاديمي",
+    category: "tarikhi",
+    kitabUtama: [
+      { nama: "Manahij al-Bahts al-Ilmi", arabic: "مناهج البحث العلمي", penulis: "Manhaj Al-Azhar" },
+    ],
+    tingkat: ["4"],
+    fakultas: ["dirasat-banin", "lughah"],
+    jurusan: [],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Pahami Apa Itu Qaa'at Bahts",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan qaa'at bahts (ruang/seminar penelitian):
+1. Tujuan: melatih menulis, mempresentasikan, dan mendiskusikan bahts ilmi.
+2. Komponen: bahts tertulis, presentasi lisan, diskusi/munaqasyah.
+3. Standar akademis yang diharapkan Azhar.
+4. Bedanya dengan maddah Manahij Bahts Ilmi.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Cara Presentasi Ilmiah yang Baik",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan teknik presentasi bahts ilmi:
+1. Struktur presentasi: muqaddimah, 'ardh, khatimah.
+2. Cara menyampaikan argumen dengan jelas & sistematis.
+3. Teknik menjawab pertanyaan dalam munaqasyah.
+4. Adab akademis: menghormati penguji, jujur soal keterbatasan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Cara Menulis Bahts yang Kuat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan kriteria bahts ilmiah yang baik:
+1. Kejelasan masalah (isykaliyah) & relevansinya.
+2. Kekuatan argumen & dukungan dalil/referensi.
+3. Konsistensi metodologi.
+4. Kesesuaian format: tautsiq, bibliografi, catatan kaki.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Checklist Bahts & Presentasi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Buatkan checklist persiapan:
+1. Checklist sebelum mengumpulkan bahts.
+2. Checklist persiapan presentasi.
+3. Tips menghadapi munaqasyah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Persiapan Bahts & Presentasi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Aku punya waktu [SEBUTKAN] sebelum presentasi bahts tentang [TOPIK]. Buatkan jadwal persiapan realistis. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Latihan Review Bahts (Aku Tempel, AI Evaluasi)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Aku tempel bagian bahts-ku. Evaluasi dari sisi:
+1. Kejelasan isykaliyah & argumen.
+2. Kekuatan dalil/referensi.
+3. Format & tautsiq.
+4. Saran konkret perbaikan sebelum dikumpulkan.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Bahts-ku: [TEMPEL]`,
+        },
+        {
+          title: "Latihan Simulasi Munaqasyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Berperanlah sebagai penguji munaqasyah:
+1. Ajukan 3-4 pertanyaan kritis tentang bahts-ku (aku ceritakan topiknya di bawah).
+2. Satu per satu, tunggu jawabanku.
+3. Beri umpan balik akademis.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Topik bahtsku: [SEBUTKAN]`,
+        },
+        {
+          title: "Drill Soal Qaa'at Bahts",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 8 soal (definisi, standar bahts, teknik presentasi, adab munaqasyah).
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Persiapan Ujian Qaa'at Bahts",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian/munaqasyah.
+
+Bantu aku mempersiapkan diri:
+1. Poin paling kritis yang biasa ditanyakan penguji tentang bahts.
+2. Cara menjawab pertanyaan yang tidak aku antisipasi.
+3. Strategi H-7 sebelum munaqasyah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik tersering jadi soal/pertanyaan, cara jawab dapat nilai penuh, prioritas persiapan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      talaqqi: [
+        {
+          title: "Rapikan Catatan Bimbingan Bahts",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Catatan bimbingan/masukan bahts-ku berantakan (di bawah). Rapikan jadi daftar revisi yang perlu dilakukan, prioritaskan yang paling kritis.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Catatan: [TEMPEL]`,
+        },
+      ],
+      eksplorasi: [
+        {
+          title: "Pemanfaatan AI untuk Penelitian Ilmiah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan cara memanfaatkan AI secara etis dalam penelitian:
+1. Apa yang boleh dibantu AI (struktur, koreksi bahasa, brainstorming).
+2. Apa yang harus murni kerjaan sendiri (argumen, analisis, kesimpulan).
+3. Adab akademis: transparansi & kejujuran intelektual.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
 ];
 
 /* ============================================================
@@ -13102,12 +13835,43 @@ const DAKWAH_MADDAH_MAP = {
   ],
 };
 
+// Peta eksplisit: maddah per firqah Dirasat Islamiyah wal Arabiyah (Banin)
+// Sumber: Jadwal Imtihan Fashl Thani — update ketika jadwal Fashl Awwal tersedia
+const DIRASAT_BANIN_MADDAH_MAP = {
+  "1": [
+    "quran-tahfidz", "hadits-tahlili", "tafsir-tahlili", "manahij-mufassirin",
+    "tarikh-tasyri", "tajwid", "nahwu", "tauhid",
+    "ushul-fiqh", "fiqh-lughah", "tarikh-islam",
+  ],
+  "2": [
+    "quran-tahfidz", "tauhid", "naqd-adabi", "tafsir-tahlili",
+    "tafsir-maudhui", "fiqh-madzhabi", "muajam-lahjat",
+    "nahwu", "tarbiyah-ilm-nafs",
+  ],
+  "3": [
+    "quran-tahfidz", "tauhid", "naqd-adabi", "nahwu",
+    "tafsir-tahlili", "ushul-fiqh", "balaghah",
+    "hadits-tahlili", "fiqh-madzhabi",
+  ],
+  "4": [
+    "quran-tahfidz", "tauhid", "tafsir-tahlili", "qaat-bahs",
+    "nahwu", "ushul-fiqh", "fiqh-muqaran",
+    "balaghah", "manahij-tadris", "naqd-adabi",
+  ],
+};
+
 const getMaddahsForProfile = (profile) => {
   if (!profile) return MADDAHS;
 
   if (profile.faculty === "dakwah") {
     const level = profile.level || "1";
     const allowedIds = DAKWAH_MADDAH_MAP[level] || DAKWAH_MADDAH_MAP["1"];
+    return MADDAHS.filter(m => allowedIds.includes(m.id));
+  }
+
+  if (profile.faculty === "dirasat-banin") {
+    const level = profile.level || "1";
+    const allowedIds = DIRASAT_BANIN_MADDAH_MAP[level] || DIRASAT_BANIN_MADDAH_MAP["1"];
     return MADDAHS.filter(m => allowedIds.includes(m.id));
   }
 
