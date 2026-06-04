@@ -13800,6 +13800,1073 @@ Jelaskan cara memanfaatkan AI secara etis dalam penelitian:
       ],
     },
   },
+
+  // ── KULIYYAH USHULUDDIN — maddah baru ──────────────────────────────
+  {
+    id: "qadhaiya-fiqhiyyah",
+    name: "Qadhaya Fiqhiyyah (Isu Fiqh Kontemporer)",
+    nameArabic: "القضايا الفقهية",
+    arabic: "القضايا الفقهية",
+    description: "Isu-isu fiqh kontemporer — analisis masalah modern dalam perspektif hukum Islam",
+    descriptionArabic: "دراسة المسائل الفقهية المعاصرة وتحليلها في ضوء أصول الشريعة الإسلامية",
+    category: "fiqhi",
+    kitabUtama: [
+      { nama: "Al-Qadhaya Al-Fiqhiyyah Al-Mu'ashirah", arabic: "القضايا الفقهية المعاصرة", penulis: "Manhaj Al-Azhar" },
+    ],
+    tingkat: ["3", "4"],
+    fakultas: ["ushuluddin"],
+    jurusan: ["aqidah", "hadits"],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Peta Besar Qadhaya Fiqhiyyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri kerangka utuh Qadhaya Fiqhiyyah:
+1. Definisi qadhaya fiqhiyyah mu'ashirah (isu fiqh kontemporer).
+2. Mengapa isu baru terus muncul & butuh ijtihad baru.
+3. Bidang-bidang: fiqh tibbi (medis), fiqh iqtishadi (ekonomi), fiqh al-usrah, fiqh al-aqalliyyat.
+4. Metode: qiyas, mashlahah, sadd adz-dzari'ah, 'urf.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Isu Fiqh Kontemporer (Tathbiq)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk isu fiqh kontemporer [SEBUTKAN, mis. transplantasi organ, asuransi, media sosial]:
+1. Gambaran isu & kenapa butuh fatwa baru.
+2. Dalil & kaidah yang relevan.
+3. Pendapat ulama & lembaga fatwa kontemporer.
+4. Tarjih dengan alasan yang jelas.
+PENTING: jangan mengarang fatwa; sebut sumber yang kamu yakin.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Metode Ijtihad Kontemporer",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan metode yang dipakai ulama untuk menjawab isu baru:
+1. Ijtihad intiqa'i (memilih pendapat terkuat dari madzhab lama).
+2. Ijtihad insya'i (membangun pendapat baru).
+3. Ijtihad jama'i (kolektif — lembaga fatwa).
+4. Peran maqashid syariah dalam mengarahkan ijtihad kontemporer.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Metode & Bidang Qadhaya Fiqhiyyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal:
+1. Tabel: bidang isu | contoh | metode ijtihad yang dipakai.
+2. Mnemonic untuk jenis-jenis ijtihad kontemporer.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Qadhaya Fiqhiyyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7 + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Latihan Analisis Isu Fiqh Kontemporer",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri aku 4 isu fiqh kontemporer. Tugasku: analisis metode ijtihad + pendapat yang rajih.
+1. JANGAN beri analisis dulu.
+2. Koreksi penalaranku + sempurnakan.
+PENTING: jangan mengarang fatwa.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Soal Qadhaya Fiqhiyyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (definisi, metode, penerapan, tarjih) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Imtihan Qadhaya Fiqhiyyah (Gaya Azhari)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+
+Buatkan soal ujian gaya Azhar: 'arrif, hallil al-qadhiyyah, udzkur al-manhaj, rajjih. 5-6 soal.
+JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Isu yang sering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      talaqqi: [
+        {
+          title: "Rapikan Catatan Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Catatan talaqqi-ku berantakan (di bawah). Rapikan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Catatanku: [TEMPEL]`,
+        },
+      ],
+      eksplorasi: [
+        {
+          title: "Peran Lembaga Fatwa Kontemporer",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan lembaga fatwa kontemporer:
+1. Majma' al-Fiqh al-Islami, Dar al-Ifta' al-Mishriyyah, dll — peran & manhajnya.
+2. Bagaimana mereka memproses isu fiqh baru secara kolektif.
+3. Pentingnya ijtihad jama'i di era modern.
+PENTING: sebut yang kamu yakin; jika ragu, katakan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "falsafah-yunaniyah",
+    name: "Falsafah Yunaniyah (Filsafat Yunani)",
+    nameArabic: "الفلسفة اليونانية",
+    arabic: "الفلسفة اليونانية",
+    description: "Filsafat Yunani kuno — pemikiran Socrates, Plato, Aristoteles dan pengaruhnya terhadap filsafat Islam",
+    descriptionArabic: "دراسة الفلسفة الإغريقية القديمة وأثرها في الفكر الإسلامي",
+    category: "aqdi",
+    kitabUtama: [
+      { nama: "Al-Falsafah Al-Yunaniyyah", arabic: "الفلسفة اليونانية", penulis: "Manhaj Al-Azhar" },
+    ],
+    tingkat: ["3", "4"],
+    fakultas: ["ushuluddin"],
+    jurusan: ["aqidah"],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Peta Besar Falsafah Yunaniyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri kerangka utuh Falsafah Yunaniyah:
+1. Mengapa filsafat Yunani dipelajari di Ushuluddin (untuk memahami akar filsafat Islam).
+2. Periode: pra-Sokratik → Sokratik (Socrates, Plato, Aristoteles) → Hellenistik.
+3. Tema besar: wujud, pengetahuan, etika, politik.
+4. Pengaruhnya terhadap pemikiran Islam & kalam.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Pemikiran Plato & Aristoteles",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan secara berimbang & akademis:
+1. Plato: teori ide/form, jiwa, negara ideal. Pengaruhnya pada neo-Platonisme & filsafat Islam (Farabi, Ibn Sina).
+2. Aristoteles: logika, metafisika, etika. Pengaruhnya pada ilmu kalam & mantiq.
+3. Perbedaan utama keduanya.
+PENTING: sebut yang kamu yakin; jika ragu, katakan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Pengaruh Yunani pada Filsafat Islam",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan:
+1. Proses transfer filsafat Yunani ke dunia Islam (gerakan terjemah).
+2. Bagaimana filsuf Muslim mengadaptasi & mengkritik pemikiran Yunani.
+3. Contoh konkret: konsep Aristoteles yang diambil & yang ditolak ulama.
+4. Sikap kritis ilmiah terhadap filsafat Yunani.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Tokoh & Pemikiran Yunani",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal:
+1. Tabel: tokoh | periode | pemikiran khas | pengaruh pada Islam.
+2. Mnemonic untuk kronologi & kelompok aliran.
+PENTING: sebut yang kamu yakin; jika ragu, katakan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Falsafah Yunaniyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Drill Identifikasi Pemikiran dari Tokoh",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 8 deskripsi pemikiran. Tugasku: tebak tokoh Yunaninya.
+1. JANGAN beri jawaban dulu.
+2. Koreksi + jelaskan penandanya.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Soal Falsafah Yunaniyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (definisi, tokoh, pemikiran, pengaruh) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Imtihan Falsafah Yunaniyah (Gaya Azhari)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+
+Buatkan soal ujian gaya Azhar: 'arrif, qarin baina mufakkirain, bayyin athar, naqid. 5-6 soal.
+JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik tersering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      talaqqi: [
+        {
+          title: "Rapikan Catatan Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Catatan talaqqi-ku berantakan (di bawah). Rapikan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Catatanku: [TEMPEL]`,
+        },
+      ],
+      eksplorasi: [
+        {
+          title: "Kritik Islam terhadap Filsafat Yunani",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan kritik ulama Islam terhadap filsafat Yunani:
+1. Poin-poin yang ditolak (qidam alam, pengetahuan Allah tentang juz'iyyat, kebangkitan).
+2. Manhaj Al-Ghazali dalam Tahafut al-Falasifah.
+3. Apa yang diambil & dimodifikasi oleh ulama Islam.
+Sajikan berimbang & akademis.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "ilm-nafs",
+    name: "Ilm Nafs (Psikologi Islam)",
+    nameArabic: "علم النفس",
+    arabic: "علم النفس",
+    description: "Psikologi dari perspektif Islam — jiwa, kepribadian, dan kesehatan mental dalam pandangan Al-Qur'an dan Sunnah",
+    descriptionArabic: "دراسة النفس الإنسانية من المنظور الإسلامي في ضوء القرآن والسنة",
+    category: "aqdi",
+    kitabUtama: [
+      { nama: "Ilm Al-Nafs Al-Islami", arabic: "علم النفس الإسلامي", penulis: "Manhaj Al-Azhar" },
+    ],
+    tingkat: ["3", "4"],
+    fakultas: ["ushuluddin"],
+    jurusan: ["aqidah"],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Peta Besar Ilm Nafs Islami",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri kerangka utuh Ilm Nafs dari perspektif Islam:
+1. Definisi nafs dalam Al-Qur'an (nafs ammarah, lawwamah, muthma'innah).
+2. Hubungan nafs, ruh, qalb, 'aql dalam tradisi Islam.
+3. Bedanya psikologi Islam dengan psikologi Barat.
+4. Topik utama: fitrah, motivasi, perkembangan jiwa, penyakit jiwa & terapinya.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Konsep Nafs dalam Al-Qur'an",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan konsep nafs dalam Al-Qur'an:
+1. Tiga tingkatan nafs (ammarah, lawwamah, muthma'innah) + ayatnya.
+2. Hubungan nafs dengan akhlak & perilaku.
+3. Konsep tazkiyatun nafs sebagai "terapi" Islam.
+PENTING: sebut ayat dengan benar; jangan mengarang.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Penyakit Jiwa & Terapi Islam",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan:
+1. Penyakit jiwa (amradh nafsiyyah) menurut perspektif Islam: was-was, depresi, amarah berlebihan.
+2. Cara Islam menanganinya: dzikir, shalat, taubat, ukhuwwah.
+3. Hubungan kesehatan jiwa dengan ibadah.
+4. Bagaimana ulama tasawwuf membahas penyakit jiwa.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Konsep & Istilah Ilm Nafs",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal:
+1. Tabel: istilah (Arab berharakat) | arti | referensi Qur'ani.
+2. Tiga tingkatan nafs + ayat kuncinya.
+3. Mnemonic.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Ilm Nafs",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Drill Analisis Kasus Psikologi Islam",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 4 kondisi psikologis. Tugasku: analisis dari perspektif ilm nafs Islami + solusi.
+1. JANGAN beri analisis dulu.
+2. Koreksi + tambahkan perspektif yang terlewat.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Soal Ilm Nafs",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (definisi, konsep, tingkatan nafs, terapi) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Imtihan Ilm Nafs (Gaya Azhari)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+
+Buatkan soal ujian gaya Azhar: 'arrif, bayyin maratib an-nafs, qarin baina manzhurain, hallil. 5-6 soal.
+JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik tersering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      talaqqi: [
+        {
+          title: "Rapikan Catatan Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Catatan talaqqi-ku berantakan (di bawah). Rapikan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Catatanku: [TEMPEL]`,
+        },
+      ],
+      eksplorasi: [
+        {
+          title: "Dialog Psikologi Islam & Barat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bandingkan secara akademis & berimbang:
+1. Titik pertemuan psikologi Islam & Barat (keduanya mengakui pengaruh lingkungan, dll).
+2. Perbedaan mendasar (dimensi ruhani vs materialistik).
+3. Bagaimana ilmuwan Muslim mengintegrasikan keduanya secara kritis.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "wasail-tabligh",
+    name: "Wasail Tabligh ad-Da'wah",
+    nameArabic: "وسائل تبليغ الدعوة",
+    arabic: "وسائل تبليغ الدعوة",
+    description: "Media dan sarana penyampaian dakwah — dari mimbar hingga media digital",
+    descriptionArabic: "دراسة وسائل الإعلام والتواصل المستخدمة في نشر الدعوة الإسلامية",
+    category: "tarikhi",
+    kitabUtama: [
+      { nama: "Wasail At-Tabligh wa Ad-Da'wah", arabic: "وسائل التبليغ والدعوة", penulis: "Manhaj Al-Azhar" },
+    ],
+    tingkat: ["3", "4"],
+    fakultas: ["ushuluddin", "dakwah"],
+    jurusan: ["hadits", "dakwah-ushuluddin"],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Peta Besar Wasail Tabligh ad-Da'wah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri kerangka utuh:
+1. Definisi wasilah tabligh + bedanya dengan uslub dakwah.
+2. Klasifikasi: wasail qadimah (mimbar, khithabah, kitabah) & wasail haditsah (media, internet).
+3. Prinsip memilih wasilah yang tepat.
+4. Perkembangan wasail dari zaman Nabi ﷺ hingga era digital.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Wasail Klasik & Modern",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan:
+1. Wasail klasik: mimbar, khutbah, risalah (surat), kitab — cara Nabi & sahabat memakainya.
+2. Wasail modern: radio, TV, media sosial, podcast, video pendek.
+3. Kelebihan & keterbatasan tiap wasilah.
+4. Prinsip Islami dalam menggunakan media modern.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Dakwah Digital & Etikanya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan:
+1. Peluang & tantangan dakwah di era digital.
+2. Adab & etika da'i di media sosial.
+3. Bagaimana menjaga autentisitas & kualitas pesan dakwah di media.
+4. Bahaya konten viral tanpa verifikasi dalam dakwah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Klasifikasi & Prinsip Wasail",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal:
+1. Tabel: wasail | jenis | kelebihan | keterbatasan.
+2. Prinsip pemilihan wasilah + mnemonic.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Wasail Tabligh",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Latihan Pilih Wasilah yang Tepat (Tathbiq)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 5 skenario dakwah berbeda (sasaran, tujuan, kondisi). Tugasku: pilih wasilah terbaik & alasannya.
+1. JANGAN beri jawaban dulu.
+2. Koreksi + diskusikan pilihan alternatif.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Soal Wasail Tabligh",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (definisi, klasifikasi, prinsip, penerapan) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Imtihan Wasail Tabligh (Gaya Azhari)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+
+Buatkan soal ujian gaya Azhar: 'arrif, qarin baina wasilatain, bayyin dawr, thabbiq. 5-6 soal.
+JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik tersering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      talaqqi: [
+        {
+          title: "Rapikan Catatan Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Catatan talaqqi-ku berantakan (di bawah). Rapikan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Catatanku: [TEMPEL]`,
+        },
+      ],
+      eksplorasi: [
+        {
+          title: "Strategi Dakwah Digital yang Efektif",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu aku memahami dakwah efektif di era digital:
+1. Prinsip konten dakwah yang menarik & autentik.
+2. Cara memilih platform sesuai target mad'u.
+3. Menjaga keseimbangan antara viral & berkualitas.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "syubhat-sunnah",
+    name: "Syubhat Hawla as-Sunnah",
+    nameArabic: "شبهات حول السنة",
+    arabic: "شبهات حول السنة",
+    description: "Kajian dan bantahan atas syubhat (keraguan) seputar otentisitas dan kehujjahan Sunnah Nabi",
+    descriptionArabic: "دراسة الشبهات المثارة حول السنة النبوية والرد عليها بالحجج العلمية",
+    category: "haditsi",
+    kitabUtama: [
+      { nama: "As-Sunnah An-Nabawiyyah bayna Ahl al-Fiqh wa Ahl al-Hadits", arabic: "السنة النبوية بين أهل الفقه وأهل الحديث", penulis: "Muhammad Al-Ghazali" },
+    ],
+    tingkat: ["3", "4"],
+    fakultas: ["ushuluddin"],
+    jurusan: ["hadits"],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Peta Besar Syubhat Hawla as-Sunnah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri kerangka utuh:
+1. Definisi syubhat + mengapa muncul tentang Sunnah.
+2. Kategori syubhat: tentang penulisan/tadwin, tentang perawi, tentang kehujjahan, tentang konten.
+3. Metode menjawab syubhat: ilmiah, akademis, berimbang.
+4. Outline bercabang.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Syubhat Utama & Jawaban Ilmiahnya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk syubhat [SEBUTKAN, mis. "hadits ditulis terlambat", "perawi tidak terpercaya", "hadits bertentangan Qur'an"]:
+1. Apa isi syubhat ini persis.
+2. Jawaban ilmiah dari ulama hadits.
+3. Dalil & argumen yang menguatkan jawaban.
+PENTING: sajikan berimbang; jawaban harus akademis bukan emosional.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Kehujjahan Sunnah & Dalilnya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan kehujjahan (otoritas) Sunnah:
+1. Dalil Qur'ani yang mewajibkan ikut Sunnah.
+2. Argumen rasional untuk kehujjahan hadits ahad.
+3. Jawaban terhadap mereka yang hanya mau berpegang pada Qur'an saja.
+PENTING: sebut dalil yang benar; jangan mengarang.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Kategori Syubhat & Jawaban Ringkas",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal:
+1. Tabel: kategori syubhat | inti tuduhan | jawaban ringkas.
+2. Mnemonic untuk mengingat kategori.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Syubhat Sunnah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Latihan Bantah Syubhat (Aku Coba, AI Koreksi)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 4 syubhat tentang Sunnah. Tugasku: jawab secara ilmiah & berimbang.
+1. JANGAN beri jawaban dulu.
+2. Koreksi + sempurnakan dengan argumen lebih kuat.
+PENTING: jawaban harus akademis, bukan emosional.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Soal Syubhat Sunnah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (kategori syubhat, dalil kehujjahan, jawaban akademis) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Imtihan Syubhat Sunnah (Gaya Azhari)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+
+Buatkan soal ujian gaya Azhar: 'arrif, udzkur anwa' as-syubhat, raddu 'ala, bayyin hujjiyyah. 5-6 soal.
+JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Syubhat yang sering jadi soal, cara jawab akademis dapat nilai penuh, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      talaqqi: [
+        {
+          title: "Rapikan Catatan Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Catatan talaqqi-ku berantakan (di bawah). Rapikan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Catatanku: [TEMPEL]`,
+        },
+      ],
+      eksplorasi: [
+        {
+          title: "Syubhat Digital & Kontra-Narasi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan:
+1. Bagaimana syubhat tentang Sunnah menyebar di era media sosial.
+2. Strategi kontra-narasi yang efektif & bijak.
+3. Peran ilmuwan hadits dalam mendidik publik secara digital.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "tarikh-dakwah",
+    name: "Tarikh ad-Da'wah al-Islamiyyah",
+    nameArabic: "تاريخ الدعوة الإسلامية",
+    arabic: "تاريخ الدعوة الإسلامية",
+    description: "Sejarah perjalanan dakwah Islam dari masa Nabi hingga era kontemporer",
+    descriptionArabic: "دراسة مسيرة الدعوة الإسلامية عبر العصور من عهد النبي ﷺ حتى العصر الحديث",
+    category: "tarikhi",
+    kitabUtama: [
+      { nama: "Tarikh Ad-Da'wah Al-Islamiyyah", arabic: "تاريخ الدعوة الإسلامية", penulis: "Manhaj Al-Azhar" },
+    ],
+    tingkat: ["3", "4"],
+    fakultas: ["ushuluddin", "dakwah"],
+    jurusan: ["dakwah-ushuluddin"],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Peta Besar Tarikh ad-Da'wah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri kerangka utuh Tarikh ad-Da'wah:
+1. Fase-fase besar: dakwah masa Nabi → sahabat → tabi'in → penyebaran ke berbagai kawasan.
+2. Faktor penyebaran Islam (perdagangan, jihad, pernikahan, tasawwuf).
+3. Tantangan dakwah tiap era.
+4. Timeline bercabang.
+PENTING: sebut yang kamu yakin; jika ragu, katakan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Dakwah Nabi ﷺ & Sahabat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan sejarah dakwah masa Nabi & sahabat:
+1. Metode dakwah Nabi (sirriyah → jahriyah, pendekatan personal, dll).
+2. Dakwah sahabat: penyebaran ke Persia, Syam, Mesir, Habasyah.
+3. Faktor keberhasilan dakwah awal.
+4. Pelajaran untuk da'i masa kini.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Penyebaran Islam ke Berbagai Kawasan",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk kawasan [SEBUTKAN, mis. Asia Tenggara, Afrika, Eropa]:
+1. Bagaimana Islam masuk & berkembang di kawasan itu.
+2. Tokoh & metode dakwah yang dipakai.
+3. Karakteristik Islam yang berkembang di kawasan itu.
+PENTING: sebut yang kamu yakin; jika ragu, katakan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Kronologi & Fase Dakwah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal:
+1. Timeline fase dakwah + ciri tiap fase.
+2. Tokoh kunci tiap periode.
+3. Mnemonic.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Tarikh Da'wah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Periode yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Drill Kronologi & Faktor Dakwah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (urutan, tokoh, faktor penyebaran, pelajaran) dari periode [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Analisis Faktor Keberhasilan & Kegagalan Dakwah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk periode/kawasan [SEBUTKAN]:
+1. Faktor yang membuat dakwah berhasil.
+2. Tantangan & hambatan yang dihadapi.
+3. Pelajaran untuk dakwah kontemporer.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Imtihan Tarikh Da'wah (Gaya Azhari)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+
+Buatkan soal ujian gaya Azhar: tahaddats 'an, ma 'awamil, udzkur marhalah, istakhrij al-'ibar. 5-6 soal.
+JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Periode yang sering jadi soal, cara jawab analitis (bukan hafal tanggal), prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      talaqqi: [
+        {
+          title: "Rapikan Catatan Talaqqi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Catatan talaqqi-ku berantakan (di bawah). Rapikan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Catatanku: [TEMPEL]`,
+        },
+      ],
+      eksplorasi: [
+        {
+          title: "Pelajaran Tarikh Da'wah untuk Da'i Modern",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk peristiwa/periode [SEBUTKAN]:
+1. Pelajaran strategis yang bisa diaplikasikan da'i modern.
+2. Bagaimana metode dakwah berhasil di konteks berbeda.
+3. Adaptasi yang relevan untuk tantangan dakwah hari ini.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
 ];
 
 /* ============================================================
@@ -13860,6 +14927,36 @@ const DIRASAT_BANIN_MADDAH_MAP = {
   ],
 };
 
+// Peta maddah per jurusan_firqah Kuliyyah Ushuluddin
+// Sumber: Jadwal Imtihan Fashl Thani, Firqah 3 — firqah lain fallback ke firqah 3
+const USHULUDDIN_MADDAH_MAP = {
+  "tafsir_3": [
+    "quran-tahfidz", "khithabah", "tajwid", "ulum-quran",
+    "tafsir-tahlili", "tasawwuf", "tafsir-maudhui",
+    "hadits-tahlili", "manahij-mufassirin",
+  ],
+  "aqidah_3": [
+    "quran-tahfidz", "qadhaiya-fiqhiyyah", "manahij-muhadditsin", "firaq",
+    "tauhid", "tasawwuf", "filsafat-islam", "tiarat-fikriyyah",
+    "manahij-mufassirin", "falsafah-yunaniyah", "khithabah", "ilm-nafs",
+  ],
+  "hadits_3": [
+    "quran-tahfidz", "qadhaiya-fiqhiyyah", "manahij-muhadditsin",
+    "mustholah-hadits", "hadits-tahlili", "tasawwuf",
+    "tafsir-maudhui", "hadits-maudhui", "wasail-tabligh", "syubhat-sunnah",
+  ],
+  "dakwah_3": [
+    "quran-tahfidz", "khithabah", "manahij-muhadditsin", "adyan",
+    "tarikh-dakwah", "tsaqafah-islamiyah", "tafsir-maudhui",
+    "tiarat-fikriyyah", "wasail-tabligh",
+  ],
+  // Firqah 1, 2, 4 — fallback ke firqah 3 sampai data jadwal tersedia
+  "tafsir_1": null, "tafsir_2": null, "tafsir_4": null,
+  "aqidah_1": null, "aqidah_2": null, "aqidah_4": null,
+  "hadits_1": null, "hadits_2": null, "hadits_4": null,
+  "dakwah_1": null, "dakwah_2": null, "dakwah_4": null,
+};
+
 const getMaddahsForProfile = (profile) => {
   if (!profile) return MADDAHS;
 
@@ -13872,6 +14969,17 @@ const getMaddahsForProfile = (profile) => {
   if (profile.faculty === "dirasat-banin") {
     const level = profile.level || "1";
     const allowedIds = DIRASAT_BANIN_MADDAH_MAP[level] || DIRASAT_BANIN_MADDAH_MAP["1"];
+    return MADDAHS.filter(m => allowedIds.includes(m.id));
+  }
+
+  if (profile.faculty === "ushuluddin") {
+    const major = profile.major || "tafsir";  // "tafsir" | "aqidah" | "hadits" | "dakwah"
+    const level = profile.level || "3";
+    const key   = `${major}_${level}`;
+    // Fallback: kalau key null/tidak ada, pakai jurusan yang sama firqah 3
+    const allowedIds = USHULUDDIN_MADDAH_MAP[key]
+      || USHULUDDIN_MADDAH_MAP[`${major}_3`]
+      || USHULUDDIN_MADDAH_MAP["tafsir_3"];
     return MADDAHS.filter(m => allowedIds.includes(m.id));
   }
 
