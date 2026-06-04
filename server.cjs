@@ -112,7 +112,19 @@ http.createServer(async (req, res) => {
 
   // ── /api/health ───────────────────────────────────────────────────────
   if (urlPath === '/api/health' && req.method === 'GET') {
-    json(res, 200, { ok: true });
+    json(res, 200, { ok: true, supabase: true });
+    return;
+  }
+
+  // ── /api/login ────────────────────────────────────────────────────────
+  if (urlPath === '/api/login') {
+    try {
+      const rawBody = await readBody(req);
+      await callApiHandler('./api/login.js', req, res, rawBody);
+    } catch (err) {
+      console.error('[login] Error:', err.message);
+      json(res, 500, { ok: false, error: err.message });
+    }
     return;
   }
 

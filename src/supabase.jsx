@@ -30,10 +30,9 @@ const _getClient = () => _supabase;
 /* ── Status check ── */
 const checkSupabase = async () => {
   try {
-    const client = _getClient();
-    if (!client) return false;
-    const { error } = await client.from("members").select("id").limit(1);
-    return !error;
+    const res = await fetch('/api/health');
+    const data = await res.json();
+    return data.supabase === true;
   } catch { return false; }
 };
 
@@ -84,18 +83,18 @@ const sbGetAllMembers = async () => {
 };
 
 const sbGetMemberByCode = async (code) => {
-  const client = _getClient();
-  if (!client) throw new Error("Supabase not ready");
-  const { data, error } = await client
-    .from("members")
-    .select("*")
-    .eq("code", code.trim().toUpperCase())
-    .single();
-  if (error) {
-    if (error.code === "PGRST116") return null;
-    throw error;
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    });
+    const data = await res.json();
+    if (!data.ok) return null;
+    return data.member;
+  } catch {
+    return null;
   }
-  return sbToMember(data);
 };
 
 const sbAddMember = async (member) => {
