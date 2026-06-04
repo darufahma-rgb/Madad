@@ -3391,6 +3391,1418 @@ Dari bab yang kupelajari ([SEBUTKAN]): yang sering jadi soal, cara jawab benar, 
     ],
   }
   },
+
+  // ══════════════ MA'AHID AL-BU'UTS AL-ISLAMIYYAH — 10 MADDAH BARU ══════════════
+
+  /* ─── I'DADI ──────────────────────────────────────────────────── */
+
+  {
+    id: "tsaqafah-islamiyah-mahad",
+    name: "Tsaqafah Islamiyah",
+    nameArabic: "الثقافة الإسلامية",
+    arabic: "الثقافة الإسلامية",
+    description: "Wawasan Islam menyeluruh — aqidah, syariah, akhlak, dan peradaban",
+    descriptionArabic: "تنمية الوعي الإسلامي الشامل لدى الطالب في مجالات العقيدة والشريعة والأخلاق",
+    category: "aqdi",
+    jenjang: ["idad"],
+    jurusan: null,
+    kitabUtama: [{ nama: "Tsaqafah Islamiyah", arabic: "الثقافة الإسلامية", penulis: "Manhaj Al-Azhar" }],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Pahami Unsur Tsaqafah Islamiyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts Al-Islamiyyah (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan dengan bahasa SANGAT sederhana:
+1. Apa itu tsaqafah (wawasan/kebudayaan) Islam & kenapa penting.
+2. Tiga unsur utama: aqidah (keyakinan), syariah (aturan), akhlak (perilaku).
+3. Bagaimana tsaqafah Islamiyah membentuk kepribadian muslim.
+4. Beri contoh nyata tiap unsur.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Islam sebagai Sistem Hidup",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan dengan mudah:
+1. Mengapa Islam disebut sistem hidup yang lengkap (diin kamil).
+2. Bagaimana Islam mengatur: ibadah, muamalah, akhlak, sosial.
+3. Contoh sederhana penerapan dalam kehidupan sehari-hari.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Tantangan Tsaqafah Islam di Era Modern",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan dengan bahasa mudah:
+1. Tantangan yang dihadapi generasi muda muslim sekarang.
+2. Bagaimana tsaqafah Islam yang kuat menjadi tameng.
+3. Cara praktis membangun wawasan Islam sejak dini.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Komponen Tsaqafah Islamiyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal komponen tsaqafah:
+1. Tabel: komponen | arti sederhana | contoh.
+2. Mnemonic Indonesia yang mudah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Tsaqafah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah sederhana + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Drill Soal Tsaqafah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal sederhana (definisi, komponen, penerapan) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Latihan Jelaskan Konsep (Aku Coba)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Aku akan menjelaskan konsep [SEBUTKAN] dengan kata-kataku sendiri.
+Koreksi + tambahkan yang terlewat.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Imtihan Tsaqafah (I'dadi)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan soal ujian tingkat I'dadi: definisi, komponen, penerapan. 5-6 soal mudah ke sedang.
+JANGAN beri jawaban. Tunggu jawabanku, koreksi & beri nilai dengan bahasa mendukung.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Yang sering jadi soal, cara jawab benar, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "dirasat-ijtima",
+    name: "Dirasat Ijtima'iyyah (IPS)",
+    nameArabic: "الدراسات الاجتماعية",
+    arabic: "الدراسات الاجتماعية",
+    description: "Ilmu Pengetahuan Sosial — geografi, sejarah, dan ilmu sosial dasar",
+    descriptionArabic: "دراسة الجغرافيا والتاريخ والمجتمع على المستوى الإعدادي",
+    category: "tarikhi",
+    jenjang: ["idad"],
+    jurusan: null,
+    kitabUtama: [{ nama: "Dirasat Ijtima'iyyah", arabic: "الدراسات الاجتماعية", penulis: "Manhaj Al-Azhar" }],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Pahami Konsep IPS dengan Mudah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan konsep [SEBUTKAN, mis. geografi, sejarah, kewarganegaraan] dengan SANGAT sederhana:
+1. Apa konsepnya & kenapa penting dipelajari.
+2. Contoh nyata dalam kehidupan.
+3. Hubungan dengan nilai-nilai Islam.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Geografi Dasar",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan topik geografi [SEBUTKAN] dengan bahasa mudah:
+1. Konsep dasarnya.
+2. Contoh nyata.
+3. Tips mengingat.
+PENTING: sebut fakta yang kamu yakin; jika ragu, katakan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Sejarah & Peristiwa Penting",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk peristiwa/periode [SEBUTKAN]:
+1. Apa yang terjadi & kapan.
+2. Siapa tokohnya & apa perannya.
+3. Pelajaran yang bisa diambil.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Data & Fakta IPS",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk topik [SEBUTKAN], bantu hafal fakta-fakta penting:
+1. Tabel: data/fakta | keterangan | cara mengingat.
+2. Mnemonic.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah IPS",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Drill Soal IPS Sederhana",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (definisi, fakta, sebab-akibat) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Latihan Jelaskan dengan Kata Sendiri",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Aku jelaskan topik [SEBUTKAN] dengan kata-kataku. Koreksi + tambahkan yang terlewat.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Imtihan Dirasat Ijtima'iyyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan soal ujian IPS tingkat I'dadi: 5-6 soal campuran (fakta, konsep, sebab-akibat).
+JANGAN beri jawaban. Koreksi & beri nilai dengan bahasa mendukung.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Yang sering jadi soal, cara jawab benar, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "komputer-idad",
+    name: "Komputer & TI (Teknologi Informasi)",
+    nameArabic: "الكمبيوتر وتكنولوجيا المعلومات",
+    arabic: "الكمبيوتر وتكنولوجيا المعلومات",
+    description: "Dasar-dasar komputer dan teknologi informasi untuk tingkat I'dadi",
+    descriptionArabic: "أساسيات الحاسوب وتقنية المعلومات للمرحلة الإعدادية",
+    category: "tarikhi",
+    jenjang: ["idad"],
+    jurusan: null,
+    kitabUtama: [{ nama: "Al-Kambyutar wa Tiknulujiya Al-Ma'lumat", arabic: "الكمبيوتر وتكنولوجيا المعلومات", penulis: "Manhaj Al-Azhar" }],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Pahami Konsep Komputer dengan Mudah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan konsep [SEBUTKAN, mis. hardware/software, internet, sistem operasi] dengan SANGAT sederhana:
+1. Apa itu & fungsinya.
+2. Contoh nyata yang sering kupakai.
+3. Cara kerjanya secara mudah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Keamanan & Etika Digital",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan dengan mudah:
+1. Keamanan digital: menjaga data pribadi, password kuat.
+2. Etika menggunakan internet & media sosial.
+3. Kaitan dengan akhlak Islam dalam dunia digital.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Topik TI [SEBUTKAN]",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan topik [SEBUTKAN] dengan bahasa yang sangat mudah:
+1. Definisi & fungsi.
+2. Cara kerja sederhana.
+3. Contoh penggunaan sehari-hari.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Istilah Komputer & TI",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal istilah TI penting:
+1. Tabel: istilah | arti sederhana | contoh.
+2. Mnemonic.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Belajar TI",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Drill Soal Komputer & TI",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (definisi, fungsi, penggunaan) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Latihan Jelaskan Konsep TI",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Aku jelaskan konsep [SEBUTKAN] dengan kata-kataku. Koreksi + tambahkan yang terlewat.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Imtihan Komputer & TI",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan soal ujian TI tingkat I'dadi: 5-6 soal (definisi, fungsi, penggunaan).
+JANGAN beri jawaban. Koreksi & beri nilai dengan bahasa mendukung.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Yang sering jadi soal, cara jawab benar, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  /* ─── TSANAWI ADABI ──────────────────────────────────────────── */
+
+  {
+    id: "arudh-tsanawi",
+    name: "'Arudh wal Qawafi (Tsanawi)",
+    nameArabic: "العروض والقوافي",
+    arabic: "العروض والقوافي",
+    description: "Ilmu timbangan syair dan qafiyah — tingkat Tsanawi Adabi",
+    descriptionArabic: "دراسة البحور الشعرية والأوزان والقوافي على المستوى الثانوي الأدبي",
+    category: "lughawi",
+    jenjang: ["tsanawi"],
+    jurusan: ["adabi"],
+    kitabUtama: [{ nama: "'Arudh wal Qawafi", arabic: "العروض والقوافي", penulis: "Manhaj Al-Azhar" }],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Pahami Dasar 'Arudh untuk Tsanawi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Adabi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan dasar 'arudh dengan bahasa yang mudah dipahami:
+1. Apa itu 'arudh & kegunaannya (mengukur wazan syair).
+2. Konsep taf'ilah + contoh bahr yang paling umum.
+3. Cara menulis lambang taqthi' (harakat & sukun).
+4. Langkah memotong (taqthi') satu bait secara bertahap.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Bahr-Bahr Utama Tsanawi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Adabi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan bahr-bahr yang sering muncul di tingkat Tsanawi:
+1. Bahr thawil, basith, kamil, wafir, rajaz — taf'ilat + ciri.
+2. Cara mengenali bahr dari pola.
+3. Mnemonic untuk tiap bahr.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Qafiyah & Hukum-hukumnya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Adabi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan qafiyah:
+1. Definisi qafiyah + huruf-hurufnya (rawi, washl, ridf, dll).
+2. Jenis-jenis qafiyah.
+3. Cacat qafiyah yang harus dihindari.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Taf'ilat Bahr Utama",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Adabi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal taf'ilat bahr-bahr yang dipelajari:
+1. Tabel: bahr | taf'ilat | mnemonic.
+2. Cara cepat mengenali bahr dari pola.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah 'Arudh",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Adabi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bahr yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji (taqthi' bait). Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Latihan Taqthi' Bait (Aku Coba, AI Koreksi)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Adabi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Aku tempel bait syair di bawah — aku coba taqthi'-nya.
+Koreksi + tunjukkan bahr & zihaf/'illah bila ada.
+PENTING: pakai bait yang kutempel; jangan mengarang bait.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Bait: [TEMPEL]`,
+        },
+        {
+          title: "Drill Soal 'Arudh",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Adabi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (definisi, taf'ilat, bahr, qafiyah) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Imtihan 'Arudh (Tsanawi Adabi)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Adabi), [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan soal ujian 'Arudh tingkat Tsanawi: qaththi' al-bait, sammi al-bahr, 'arrif, 5-6 soal.
+JANGAN beri jawaban. Koreksi & beri nilai dengan bahasa mendukung.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Adabi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Yang sering jadi soal (biasanya taqthi' & kenali bahr), cara jawab agar tidak salah potong, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "adab-nushus",
+    name: "Adab wan Nushus (Sastra & Teks)",
+    nameArabic: "الأدب والنصوص",
+    arabic: "الأدب والنصوص",
+    description: "Sastra Arab dan analisis teks — sejarah sastra, apresiasi, dan analisis naskah",
+    descriptionArabic: "دراسة الأدب العربي وتحليل النصوص الأدبية شعراً ونثراً",
+    category: "lughawi",
+    jenjang: ["tsanawi"],
+    jurusan: ["adabi", "ilmi"],
+    kitabUtama: [{ nama: "Al-Adab wan Nushus", arabic: "الأدب والنصوص", penulis: "Manhaj Al-Azhar" }],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Pahami Sejarah Sastra Arab (Tsanawi)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan dengan bahasa yang mudah:
+1. Periode sastra Arab: Jahili → Islam → Umayyah → Abbasiyyah → Modern.
+2. Ciri sastra tiap periode (tema, gaya).
+3. Contoh penyair/penulis masyhur tiap periode.
+PENTING: sebut yang kamu yakin; jika ragu, katakan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Cara Menganalisis Teks Sastra",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Ajari cara menganalisis teks sastra (nushus):
+1. Langkah: makna mufradat → makna umum → uslub → keindahan → ibrah.
+2. Unsur yang dinilai: tema, emosi, imajinasi, gaya bahasa.
+3. Contoh analisis singkat pada teks pendek.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Teks yang Dipelajari",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu aku memahami teks sastra yang kupelajari (aku tempel di bawah):
+1. Arti kata-kata sulit.
+2. Makna keseluruhan teks.
+3. Keindahan & gaya bahasa yang menonjol.
+PENTING: pakai teks yang kutempel; jangan mengarang bait/kutipan.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Teks: [TEMPEL]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Periodisasi & Tokoh Sastra",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal:
+1. Tabel: periode | ciri | tokoh utama.
+2. Mnemonic untuk urutan periode.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Muraja'ah Adab wan Nushus",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Periode/teks yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Latihan Analisis Teks (Aku Coba, AI Koreksi)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Aku tempel teks + analisisku. Koreksi dari sisi: makna, gaya bahasa, keindahan.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Teks + analisisku: [TEMPEL]`,
+        },
+        {
+          title: "Drill Soal Adab wan Nushus",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 10 soal (sejarah sastra, analisis teks, tokoh) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Imtihan Adab wan Nushus",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi), [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan soal ujian Adab: 5-6 soal (sejarah sastra, analisis teks, tokoh & periode).
+JANGAN beri jawaban. Koreksi & beri nilai dengan bahasa mendukung.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Yang sering jadi soal, cara analisis teks agar dapat nilai penuh, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  /* ─── TSANAWI ILMI ───────────────────────────────────────────── */
+
+  {
+    id: "fisika-tsanawi",
+    name: "Fisika (Tsanawi Ilmi)",
+    nameArabic: "الفيزياء",
+    arabic: "الفيزياء",
+    description: "Fisika — mekanika, listrik, cahaya, dan gelombang untuk tingkat Tsanawi Ilmi",
+    descriptionArabic: "دراسة الفيزياء من ميكانيكا وكهرباء وضوء وموجات للمرحلة الثانوية العلمية",
+    category: "tarikhi",
+    jenjang: ["tsanawi"],
+    jurusan: ["ilmi"],
+    kitabUtama: [{ nama: "Al-Fiziya'", arabic: "الفيزياء", penulis: "Manhaj Al-Azhar" }],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Pahami Konsep Fisika dengan Analogi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan konsep [SEBUTKAN, mis. gaya, energi, listrik, gelombang] dengan bahasa mudah:
+1. Intuisi dasar — kenapa konsep ini ada di dunia nyata.
+2. Definisi + rumus utama dengan arti tiap simbol.
+3. Contoh soal dikerjakan langkah demi langkah.
+4. Kesalahan umum & cara menghindarinya.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Rumus & Kapan Menggunakannya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk bab [SEBUTKAN]:
+1. Daftar rumus penting + satuan + kondisi pemakaian.
+2. Decision tree: kapan pakai rumus A vs B.
+3. Dua contoh penerapan berbeda.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Fisika & Tanda Kebesaran Allah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk fenomena fisika [SEBUTKAN]:
+1. Penjelasan ilmiahnya.
+2. Kaitan dengan ayat Al-Qur'an / hadis (sebut yang kamu yakin; jangan mengarang).
+3. Bagaimana mempelajari fisika bisa memperkuat iman.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Rumus & Satuan Fisika",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk bab [SEBUTKAN], bantu hafal:
+1. Tabel: rumus | satuan | cara mengingat (logika/mnemonic).
+2. Tandai yang paling sering dipakai.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Belajar Fisika",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal belajar + latihan soal. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Latihan Soal Fisika Bertingkat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 6 soal [SEBUTKAN TOPIK] dari mudah ke sulit.
+1. JANGAN beri jawaban dulu.
+2. Koreksi langkah demi langkah setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Bedah Soal yang Aku Salah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Soal + jawabanku (kutempel). Tunjukkan di mana aku salah & kenapa. Beri 2 soal serupa.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Soal + jawabanku: [TEMPEL]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Ujian Fisika (Tsanawi Ilmi)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan soal ujian Fisika: 6-8 soal campuran (hitung, konsep, analisis).
+JANGAN beri jawaban. Koreksi langkah & beri skor.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian Fisika",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sering keluar, cara bagi waktu saat ujian, rumus wajib hafal, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "kimia-tsanawi",
+    name: "Kimia / Kimiya' (Tsanawi Ilmi)",
+    nameArabic: "الكيمياء",
+    arabic: "الكيمياء",
+    description: "Kimia — atom, ikatan, reaksi, dan stoikiometri untuk tingkat Tsanawi Ilmi",
+    descriptionArabic: "دراسة الكيمياء من ذرة وروابط وتفاعلات وقياس للمرحلة الثانوية العلمية",
+    category: "tarikhi",
+    jenjang: ["tsanawi"],
+    jurusan: ["ilmi"],
+    kitabUtama: [{ nama: "Al-Kimiya'", arabic: "الكيمياء", penulis: "Manhaj Al-Azhar" }],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Pahami Konsep Kimia dengan Analogi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan konsep [SEBUTKAN, mis. atom, ikatan kimia, reaksi, larutan] dengan bahasa mudah:
+1. Analogi sederhana yang mudah dibayangkan.
+2. Definisi + rumus / persamaan reaksi.
+3. Contoh nyata dalam kehidupan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Cara Menyetarakan Reaksi Kimia",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Ajari cara menyetarakan persamaan reaksi:
+1. Langkah-langkah sistematis.
+2. Contoh reaksi dikerjakan lengkap.
+3. Tips cepat mengecek keseimbangan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Stoikiometri & Perhitungan Mol",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan stoikiometri dengan bahasa mudah:
+1. Apa itu mol & cara menghitungnya.
+2. Hubungan mol, massa, dan jumlah partikel.
+3. Contoh soal perhitungan langkah demi langkah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Tabel Periodik & Unsur Penting",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bantu hafal unsur-unsur penting:
+1. Tabel: simbol | nama | nomor atom | sifat utama.
+2. Mnemonic untuk golongan/periode.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Belajar Kimia",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal belajar + latihan soal hitung. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Latihan Soal Kimia Bertingkat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 6 soal [SEBUTKAN TOPIK] dari mudah ke sulit.
+1. JANGAN beri jawaban dulu.
+2. Koreksi langkah demi langkah setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Bedah Soal yang Aku Salah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Soal + jawabanku (kutempel). Tunjukkan di mana aku salah. Beri 2 soal serupa.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Soal + jawabanku: [TEMPEL]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Ujian Kimia (Tsanawi Ilmi)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan soal ujian Kimia: 6-8 soal (konsep, hitung, reaksi, setarakan).
+JANGAN beri jawaban. Koreksi & beri skor.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian Kimia",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sering keluar, cara cek keseimbangan reaksi, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "biologi-tsanawi",
+    name: "Biologi / Ahya' (Tsanawi Ilmi)",
+    nameArabic: "الأحياء",
+    arabic: "الأحياء",
+    description: "Biologi — sel, sistem tubuh, genetika, dan ekologi untuk tingkat Tsanawi Ilmi",
+    descriptionArabic: "دراسة الأحياء الدقيقة والجهاز البشري والوراثة والنظام البيئي على المستوى الثانوي العلمي",
+    category: "tarikhi",
+    jenjang: ["tsanawi"],
+    jurusan: ["ilmi"],
+    kitabUtama: [{ nama: "Al-Ahya'", arabic: "الأحياء", penulis: "Manhaj Al-Azhar" }],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Pahami Konsep Biologi dengan Analogi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan konsep [SEBUTKAN, mis. sel, fotosintesis, sistem pencernaan, genetika] dengan bahasa mudah:
+1. Definisi + analogi yang mudah dibayangkan.
+2. Cara kerja bertahap.
+3. Contoh nyata / kaitan dengan tubuh manusia.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Sistem Tubuh Manusia",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk sistem [SEBUTKAN, mis. pencernaan, peredaran darah, saraf]:
+1. Organ-organ yang terlibat + fungsinya.
+2. Proses kerjanya secara bertahap.
+3. Gangguan/penyakit yang terkait + pencegahannya.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Hubungan Biologi & Penciptaan Allah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk topik biologi [SEBUTKAN]:
+1. Keajaiban ilmiah yang menunjukkan kebesaran Allah.
+2. Ayat Qur'an yang berkaitan (sebut yang kamu yakin; jangan mengarang).
+3. Bagaimana ilmu biologi memperkuat iman.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Istilah & Klasifikasi Biologi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk bab [SEBUTKAN], bantu hafal:
+1. Tabel: istilah | definisi | contoh.
+2. Klasifikasi/urutan dengan mnemonic.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Belajar Biologi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal belajar + muraja'ah. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Drill Soal Biologi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 8 soal (konsep, proses, klasifikasi, fungsi organ) dari [SEBUTKAN].
+1. JANGAN beri jawaban dulu.
+2. Koreksi setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Latihan Jelaskan Proses (Aku Coba)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Aku jelaskan proses [SEBUTKAN] dengan kata-kataku. Koreksi + tambahkan yang terlewat.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Penjelasanku: [TEMPEL]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Ujian Biologi (Tsanawi Ilmi)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan soal ujian Biologi: 6-8 soal (definisi, proses, sebab-akibat, sistem tubuh).
+JANGAN beri jawaban. Koreksi & beri skor.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian Biologi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sering keluar, cara jawab uraian dapat nilai penuh, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "riyadhiyat-bahts",
+    name: "Riyadhiyat Bahtsah (Matematika Murni)",
+    nameArabic: "الرياضيات البحتة",
+    arabic: "الرياضيات البحتة",
+    description: "Matematika murni — aljabar, kalkulus, trigonometri, dan geometri untuk Tsanawi Ilmi",
+    descriptionArabic: "دراسة الرياضيات البحتة من جبر وتفاضل وتثليث وهندسة للمرحلة الثانوية العلمية",
+    category: "tarikhi",
+    jenjang: ["tsanawi"],
+    jurusan: ["ilmi"],
+    kitabUtama: [{ nama: "Ar-Riyadhiyyat Al-Bahtsah", arabic: "الرياضيات البحتة", penulis: "Manhaj Al-Azhar" }],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Pahami Konsep Matematika Murni Step-by-Step",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan konsep [SEBUTKAN, mis. fungsi, limit, trigonometri, matriks] dengan bahasa mudah:
+1. Intuisi di balik konsep ini (kenapa ada & kegunaannya).
+2. Definisi formal + rumus.
+3. Contoh soal dikerjakan lengkap langkah demi langkah.
+4. Kesalahan umum & cara menghindarinya.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Rumus & Kapan Memakainya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk bab [SEBUTKAN]:
+1. Daftar rumus penting + arti simbol + kondisi pemakaian.
+2. Kapan pakai rumus A vs B (decision tree sederhana).
+3. Dua contoh penerapan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami dari Soal ke Solusi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Ajari aku strategi membaca soal matematika murni:
+1. Cara mengidentifikasi tipe soal dari kalimat pertanyaan.
+2. Langkah sistematis dari membaca → rencana → eksekusi → cek.
+3. Contoh 2 soal berbeda tipe.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Rumus Matematika Murni",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk bab [SEBUTKAN], bantu hafal rumus:
+1. Tabel: rumus | kapan dipakai | cara mengingat (logika/mnemonic).
+2. Tandai rumus yang paling sering dipakai.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Latihan Matematika Murni",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal latihan soal harian + muraja'ah rumus. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Latihan Soal Bertingkat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 6 soal [SEBUTKAN TOPIK] dari mudah ke sulit.
+1. JANGAN beri jawaban dulu.
+2. Koreksi langkah demi langkah setelah aku jawab.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Bedah Soal yang Aku Salah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Soal + jawabanku (kutempel). Tunjukkan persis di mana aku salah. Beri 2 soal serupa.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Soal + jawabanku: [TEMPEL]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Ujian Riyadhiyat Bahtsah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan soal ujian Matematika Murni: 6-8 soal campur (hitung, pembuktian, aplikasi).
+JANGAN beri jawaban. Koreksi langkah & beri skor.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sering keluar, cara bagi waktu saat ujian, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
+  {
+    id: "riyadhiyat-tatbiq",
+    name: "Riyadhiyat Tatbiqiyyah (Matematika Terapan)",
+    nameArabic: "الرياضيات التطبيقية",
+    arabic: "الرياضيات التطبيقية",
+    description: "Matematika terapan — statistika, mekanika, dan aplikasi matematika untuk Tsanawi Ilmi",
+    descriptionArabic: "دراسة الرياضيات التطبيقية من إحصاء وميكانيكا وتطبيقات عملية للمرحلة الثانوية العلمية",
+    category: "tarikhi",
+    jenjang: ["tsanawi"],
+    jurusan: ["ilmi"],
+    kitabUtama: [{ nama: "Ar-Riyadhiyyat At-Tatbiqiyyah", arabic: "الرياضيات التطبيقية", penulis: "Manhaj Al-Azhar" }],
+    recommendedAI: [],
+    prompts: {
+      pahami: [
+        {
+          title: "Pahami Matematika Terapan (Statistika/Mekanika)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan konsep [SEBUTKAN, mis. statistika, probabilitas, mekanika, vektor] dengan mudah:
+1. Apa itu & aplikasinya dalam kehidupan nyata.
+2. Rumus utama + cara pakai.
+3. Contoh soal dikerjakan lengkap.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Statistika Dasar",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk topik statistika [SEBUTKAN]:
+1. Mean, median, modus — definisi + cara hitung.
+2. Penyebaran data: variansi, simpangan baku.
+3. Cara membaca/membuat grafik data.
+4. Contoh soal dari data nyata.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Mekanika / Vektor",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk topik [SEBUTKAN, mis. vektor, gaya, keseimbangan]:
+1. Konsep dasar + intuisi fisik.
+2. Cara menghitung + rumus.
+3. Contoh soal aplikasi.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Rumus & Metode Matematika Terapan",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk bab [SEBUTKAN], bantu hafal rumus & metode:
+1. Tabel: rumus/metode | kegunaan | contoh.
+2. Cara mengingat (logika/mnemonic).
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Jadwal Latihan Matematika Terapan",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal latihan + muraja'ah. Tabel.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      latihan: [
+        {
+          title: "Latihan Soal Bertingkat",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri 6 soal [SEBUTKAN TOPIK] dari mudah ke sulit.
+1. JANGAN beri jawaban dulu.
+2. Koreksi langkah demi langkah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Bedah Soal yang Aku Salah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Soal + jawabanku (kutempel). Tunjukkan di mana aku salah. Beri 2 soal serupa.
+
+[METODE]
+
+[LEVEL_BAHASA]
+
+Soal + jawabanku: [TEMPEL]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Mock Ujian Riyadhiyat Tatbiqiyyah",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan soal ujian Matematika Terapan: 6-8 soal (statistika, mekanika/vektor, aplikasi).
+JANGAN beri jawaban. Koreksi & beri skor.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Strategi Ujian",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang sering keluar, strategi mengerjakan soal aplikasi, prioritas H-7.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
+  },
+
 ];
 
 /* ── Helper functions ── */
