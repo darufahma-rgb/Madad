@@ -178,7 +178,6 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     { to: "/maddah",           label: "Maddah" },
     { to: "/paths/muqaranah",  label: "Muqaranah" },
     { to: "/kurasah",          label: "Kurasah" },
-    { to: "/tools",            label: "Tool Guide" },
     { to: "/framework",        label: "Framework" },
   ];
   // Link tambahan untuk mobile menu
@@ -367,7 +366,6 @@ const Footer = () => (
           <a href="#/maddah-publik" onClick={(e)=>{e.preventDefault(); navigate("/maddah-publik");}} className="text-ink-muted hover:text-ink">Maddah</a>
           <a href="#/paths/muqaranah" onClick={(e)=>{e.preventDefault(); navigate("/paths/muqaranah");}} className="text-ink-muted hover:text-ink">Muqaranah</a>
           <a href="#/kurasah" onClick={(e)=>{e.preventDefault(); navigate("/kurasah");}} className="text-ink-muted hover:text-ink">Kurasah</a>
-          <a href="#/tools" onClick={(e)=>{e.preventDefault(); navigate("/tools");}} className="text-ink-muted hover:text-ink">Tool Guide</a>
           <a href="#/ethics" onClick={(e)=>{e.preventDefault(); navigate("/ethics");}} className="text-ink-muted hover:text-ink">Etika</a>
           <a href="#/paths" onClick={(e)=>{e.preventDefault(); navigate("/paths");}} className="text-ink-muted hover:text-ink">Learning Path</a>
         </div>
