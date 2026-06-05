@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
+import { openTutorial } from './components/tutorial-modal.jsx';
 /* Talqeeh — Navbar, Footer, Login Modal, Payment Modal, Router utils */
 
 
@@ -179,7 +180,6 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     { to: "/kurasah",          label: "Kurasah" },
     { to: "/tools",            label: "Tool Guide" },
     { to: "/framework",        label: "Framework" },
-    { to: "/tutorial",         label: "Tutorial" },
   ];
   // Link tambahan untuk mobile menu
   const memberLinksExtra = [
@@ -205,6 +205,15 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
           {links.map(l => l.to.startsWith("/#")
             ? <a key={l.to} href={l.to.slice(1)} onClick={(e) => { e.preventDefault(); const id = l.to.split("#")[1]; const el = document.getElementById(id); if (el) el.scrollIntoView({behavior:"smooth"}); }} className="nav-link px-3.5 py-2 text-[14.5px] text-ink-muted hover:text-ink rounded-lg">{l.label}</a>
             : <NavLink key={l.to} to={l.to}>{l.label}</NavLink>
+          )}
+          {session && (
+            <button
+              onClick={openTutorial}
+              className="nav-link px-3.5 py-2 text-[14.5px] text-ink-muted hover:text-ink rounded-lg"
+              style={{ background: "none", border: "none", cursor: "pointer" }}
+            >
+              Tutorial
+            </button>
           )}
         </nav>
         {session && <GlobalSearch/>}
@@ -324,6 +333,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
             <SheetLink icon="target" label="Siap Imtihan" onClick={() => { navigate("/siap-imtihan"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="bookOpen" label="Learning Path" onClick={() => { navigate("/paths"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="shield" label="Etika" onClick={() => { navigate("/ethics"); setMobileSheetOpen(false); }}/>
+            <SheetLink icon="bookOpen" label="Tutorial" onClick={() => { openTutorial(); setMobileSheetOpen(false); }}/>
             <div className="border-t border-line mt-2 pt-2">
               <button
                 onClick={() => { logout(); setMobileSheetOpen(false); }}

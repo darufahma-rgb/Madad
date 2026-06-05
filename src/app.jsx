@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import TutorialModal, { openTutorial } from './components/tutorial-modal.jsx';
 
 /* Talqih, App shell + routing */
 
@@ -163,6 +164,7 @@ const App = () => {
       {showQuickNote && <QuickNoteButton/>}
       {isMember && <SupportButton/>}
       {isMember && <MobileTabBar/>}
+      <TutorialModal/>
     </ToastProvider>
   );
 };
