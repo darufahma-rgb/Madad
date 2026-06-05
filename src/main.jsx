@@ -49,6 +49,7 @@ import './pages/siap-imtihan.jsx';
 import './pages/s2-maddah.jsx';
 import './pages/framework.jsx';
 import './pages/framework-detail.jsx';
+import './pages/tutorial.jsx';
 
 // App shell — terakhir
 import App from './app.jsx';
