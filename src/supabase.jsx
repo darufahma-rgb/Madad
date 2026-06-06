@@ -114,14 +114,12 @@ const sbUpdateMember = async (code, updates) => {
   const client = _getClient();
   if (!client) throw new Error("Supabase not ready");
   const row = memberToSb(updates);
-  const { data, error } = await client
+  const { error } = await client
     .from("members")
     .update(row)
-    .eq("code", code)
-    .select()
-    .single();
+    .eq("code", code);
   if (error) throw error;
-  return sbToMember(data);
+  return { code, ...updates };
 };
 
 const sbDeleteMember = async (code) => {
