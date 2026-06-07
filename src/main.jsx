@@ -50,6 +50,7 @@ import './pages/s2-maddah.jsx';
 import './pages/framework.jsx';
 import './pages/framework-detail.jsx';
 import './pages/tutorial.jsx';
+import './pages/submit-soal.jsx';
 
 // App shell — terakhir
 import App from './app.jsx';

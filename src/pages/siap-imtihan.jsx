@@ -675,6 +675,170 @@ const ImtihanPromptCard = ({ mode, maddah, profile }) => {
 
 /* ============ HALAMAN PENUH /siap-imtihan ============ */
 
+/* ============ BANK SOAL SECTION ============ */
+const BankSoalSection = () => {
+  const { session } = typeof useAuth !== 'undefined' ? useAuth() : { session: null };
+  const isLoggedIn = !!session;
+
+  const [fakultas, setFakultas] = React.useState('');
+  const [maddahId, setMaddahId] = React.useState('');
+  const [tahun, setTahun]       = React.useState('');
+  const [results, setResults]   = React.useState([]);
+  const [loading, setLoading]   = React.useState(false);
+  const [searched, setSearched] = React.useState(false);
+  const [expandedId, setExpandedId] = React.useState(null);
+
+  const faculties      = typeof FACULTIES !== 'undefined' ? FACULTIES.filter(f => !f.isMahad) : [];
+  const allMaddahs     = typeof MADDAHS   !== 'undefined' ? MADDAHS : [];
+  const filteredMaddahs = fakultas ? allMaddahs.filter(m => (m.fakultas || []).includes(fakultas)) : [];
+  const TAHUN_OPTIONS  = ['2023/2024', '2024/2025', '2025/2026'];
+  const FASHL_OPTIONS  = [
+    { value: 'awwal', label: 'Fashl Awwal' },
+    { value: 'tsani', label: 'Fashl Tsani' },
+  ];
+
+  const handleCari = async () => {
+    if (!maddahId || !tahun) { alert('Pilih maddah dan tahun terlebih dahulu'); return; }
+    setLoading(true);
+    setSearched(true);
+    setResults([]);
+    setExpandedId(null);
+    try {
+      const supabaseUrl = window.__SUPABASE_URL__ || '';
+      const anonKey     = window.__SUPABASE_ANON_KEY__ || '';
+      const r = await fetch(
+        `${supabaseUrl}/rest/v1/bank_soal?maddah_id=eq.${encodeURIComponent(maddahId)}&tahun=eq.${encodeURIComponent(tahun)}&status=eq.approved&select=id,maddah_nama,tahun,fashl,soal`,
+        { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` } }
+      );
+      const data = await r.json();
+      setResults(Array.isArray(data) ? data : []);
+    } catch { setResults([]); }
+    finally { setLoading(false); }
+  };
+
+  const EM         = '#3ecf8e';
+  const maddahNama = allMaddahs.find(m => m.id === maddahId)?.name || '';
+
+  return (
+    <section style={{ background: 'rgba(62,207,142,0.025)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '24px 0 28px' }}>
+      <div className="container-x">
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
+          <div>
+            <div style={{ fontSize: 10, color: EM, fontWeight: 700, letterSpacing: 1.5, marginBottom: 5 }}>DARI MASISIR UNTUK MASISIR</div>
+            <h2 className="font-display" style={{ fontSize: 20, fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>📚 Bank Soal Imtihan</h2>
+            <p style={{ fontSize: 13, color: '#999', margin: 0 }}>Soal ujian tahun-tahun sebelumnya, dikumpulkan dari kontributor Masisir.</p>
+          </div>
+          <button onClick={() => navigate('/submit-soal')}
+            style={{ flexShrink: 0, padding: '9px 16px', borderRadius: 10, background: 'rgba(62,207,142,0.12)', border: '1px solid rgba(62,207,142,0.3)', color: EM, fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
+            📤 Submit Soal → Dapat Reward
+          </button>
+        </div>
+
+        {/* Filter */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 16 }}>
+          <select value={fakultas} onChange={e => { setFakultas(e.target.value); setMaddahId(''); setResults([]); setSearched(false); }}
+            style={{ padding: '8px 12px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 13, minWidth: 120 }}>
+            <option value="">Fakultas</option>
+            {faculties.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
+          </select>
+
+          <select value={maddahId} onChange={e => { setMaddahId(e.target.value); setResults([]); setSearched(false); }}
+            disabled={!fakultas}
+            style={{ padding: '8px 12px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 13, minWidth: 150 }}>
+            <option value="">Maddah</option>
+            {filteredMaddahs.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+          </select>
+
+          <select value={tahun} onChange={e => { setTahun(e.target.value); setResults([]); setSearched(false); }}
+            style={{ padding: '8px 12px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 13 }}>
+            <option value="">Tahun</option>
+            {TAHUN_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+          </select>
+
+          <button onClick={handleCari} disabled={!maddahId || !tahun || loading}
+            style={{ padding: '8px 18px', borderRadius: 9, background: EM, color: '#000', fontWeight: 800, fontSize: 13, border: 'none', cursor: (!maddahId || !tahun) ? 'not-allowed' : 'pointer', opacity: (!maddahId || !tahun) ? 0.5 : 1 }}>
+            {loading ? 'Mencari...' : 'Cari →'}
+          </button>
+        </div>
+
+        {/* Grid hasil */}
+        {searched && !loading && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(270px,1fr))', gap: 12 }}>
+            {FASHL_OPTIONS.map(fashl => {
+              const soal = results.find(r => r.fashl === fashl.value);
+              return (
+                <div key={fashl.value} className="card-glass" style={{ padding: 16 }}>
+                  <div style={{ fontSize: 11, color: '#888', marginBottom: 8 }}>
+                    {maddahNama} · {fashl.label} {tahun}
+                  </div>
+                  {soal ? (
+                    <>
+                      <div style={{ fontSize: 13, color: EM, fontWeight: 700, marginBottom: 10 }}>✅ Tersedia</div>
+                      {isLoggedIn ? (
+                        <>
+                          <button onClick={() => setExpandedId(expandedId === soal.id ? null : soal.id)}
+                            style={{ padding: '8px 14px', borderRadius: 8, background: EM, color: '#000', fontWeight: 700, fontSize: 12, border: 'none', cursor: 'pointer', width: '100%', marginBottom: expandedId === soal.id ? 10 : 0 }}>
+                            {expandedId === soal.id ? 'Tutup ↑' : 'Baca Soal →'}
+                          </button>
+                          {expandedId === soal.id && (
+                            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, padding: 12, marginTop: 4 }}>
+                              {soal.soal ? (
+                                <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word', fontSize: 14, color: '#ddd', lineHeight: 1.9, direction: /[\u0600-\u06FF]/.test(soal.soal) ? 'rtl' : 'ltr', textAlign: /[\u0600-\u06FF]/.test(soal.soal) ? 'right' : 'left', fontFamily: 'inherit', margin: 0 }}>
+                                  {soal.soal}
+                                </pre>
+                              ) : (
+                                <div style={{ color: '#888', fontSize: 13, textAlign: 'center', padding: '8px 0' }}>Teks soal belum tersedia</div>
+                              )}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden' }}>
+                          <div style={{ filter: 'blur(5px)', userSelect: 'none', fontSize: 13, color: '#bbb', lineHeight: 1.7, maxHeight: 56, overflow: 'hidden', padding: 4 }}>
+                            {soal.soal?.slice(0, 120) || 'Soal tersedia untuk member...'}
+                          </div>
+                          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.55)', gap: 6 }}>
+                            <span style={{ fontSize: 13, color: '#fff', fontWeight: 700 }}>🔒 Login untuk baca soal</span>
+                            <button onClick={() => navigate('/')} style={{ fontSize: 11, color: EM, fontWeight: 700, background: 'none', border: 'none', cursor: 'pointer' }}>
+                              Gabung Member →
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ fontSize: 13, color: '#555', marginBottom: 10 }}>⬜ Belum tersedia</div>
+                      <button onClick={() => navigate('/submit-soal')}
+                        style={{ display: 'block', padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(62,207,142,0.25)', color: EM, fontSize: 12, fontWeight: 700, textAlign: 'center', background: 'none', cursor: 'pointer', width: '100%' }}>
+                        Submit Soal → Dapat Reward
+                      </button>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {loading && (
+          <div style={{ textAlign: 'center', padding: '20px 0', color: '#666', fontSize: 13 }}>Mencari soal...</div>
+        )}
+
+        {searched && !loading && results.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '16px 0', color: '#666', fontSize: 13 }}>
+            Belum ada soal untuk maddah ini.{' '}
+            <button onClick={() => navigate('/submit-soal')} style={{ color: EM, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
+              Jadilah yang pertama submit! →
+            </button>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+};
+
 const SiapImtihanPage = () => {
   const { session, profile } = useAuth();
   const [activeMaddah, setActiveMaddah] = React.useState("");
@@ -716,6 +880,9 @@ const SiapImtihanPage = () => {
           </p>
         </div>
       </section>
+
+      {/* Bank Soal Section */}
+      <BankSoalSection/>
 
       {/* Maddah selector */}
       <section className="pb-6">
@@ -864,6 +1031,7 @@ const SiapImtihanPage = () => {
 };
 
 window.SiapImtihanPage = SiapImtihanPage;
+window.BankSoalSection = BankSoalSection;
 window.IMTIHAN_MODES = IMTIHAN_MODES;
 window.TALKHISAN_MODES = TALKHISAN_MODES;
 window.generateImtihanPrompt = generateImtihanPrompt;

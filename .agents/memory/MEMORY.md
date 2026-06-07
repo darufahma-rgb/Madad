@@ -6,3 +6,4 @@
 - [Prompt 6 Features](prompt6-features.md) — ModuleRunner (Materi/Praktik/Tour), StarterPack, ToolIcon brandColor pattern
 - [Mahad Al-Azhar Module](mahad-module.md) — Prompt 21: 9 granular Ma'had levels, MAHAD_MADDAH data, /mahad-maddah page, backward-compat with old idadi/tsanawi IDs
 - [Mahad Crash Fix](mahad-crash-fix.md) — old maddah-mahad-data.jsx pushed 16 wrong-format entries into MADDAHS; fix was removing its script tag from index.html
+- [Bank Soal Feature](bank-soal-feature.md) — 4 API endpoints, submit-soal page, AdminBankSoal tab, BankSoalSection; Fonnte env = FONNTE_TOKEN; OPENROUTER needed for parse-soal

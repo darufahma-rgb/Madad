@@ -65,6 +65,7 @@ const AdminPage = () => {
               { id: "muqaranah",  label: "Muqaranah",         icon: "scale" },
               { id: "onboarding", label: "Onboarding Data",   icon: "list" },
               { id: "guides",     label: "Guide Manager",     icon: "sparkles" },
+              { id: "bank-soal",  label: "Bank Soal",         icon: "fileText" },
               { id: "settings",   label: "Settings",          icon: "shield" },
             ].map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
@@ -87,6 +88,7 @@ const AdminPage = () => {
         {tab === "muqaranah"  && <AdminMuqaranahPanel/>}
         {tab === "onboarding" && <AdminOnboarding/>}
         {tab === "guides"     && <AdminGuides/>}
+        {tab === "bank-soal"  && <AdminBankSoal/>}
         {tab === "settings"   && <AdminSettings/>}
       </div>
     </div>
@@ -1313,6 +1315,336 @@ const AdminSettings = () => {
           </button>
         </div>
       </div>
+    </div>
+  );
+};
+
+/* ============== ADMIN BANK SOAL ============== */
+const AdminBankSoal = () => {
+  const [soals, setSoals]       = useState([]);
+  const [stats, setStats]       = useState({ pending: 0, approved: 0, rejected: 0 });
+  const [filter, setFilter]     = useState('all');
+  const [loading, setLoading]   = useState(true);
+  const [selected, setSelected] = useState(null);
+  const [soalTeks, setSoalTeks] = useState('');
+  const [parsing, setParsing]   = useState(false);
+  const [acting, setActing]     = useState(false);
+  const [rejectReason, setRejectReason] = useState('');
+  const [showReject, setShowReject]     = useState(false);
+  const [reward, setReward]     = useState('');
+
+  const fetchData = useCallback(async (statusFilter) => {
+    setLoading(true);
+    try {
+      const [listRes, statsRes] = await Promise.all([
+        fetch('/api/admin-bank-soal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
+          body: JSON.stringify({ action: 'list', status_filter: statusFilter })
+        }),
+        fetch('/api/admin-bank-soal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
+          body: JSON.stringify({ action: 'stats' })
+        })
+      ]);
+      const listData  = await listRes.json();
+      const statsData = await statsRes.json();
+      if (listData.ok)  setSoals(listData.data);
+      if (statsData.ok) setStats(statsData.stats);
+    } catch (e) {
+      console.error('[AdminBankSoal] fetchData error:', e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchData('all'); }, [fetchData]);
+
+  const handleFilterChange = (f) => { setFilter(f); fetchData(f); };
+
+  const openModal = (soal) => {
+    setSelected(soal);
+    setSoalTeks(soal.soal || '');
+    setRejectReason('');
+    setShowReject(false);
+    setReward('');
+  };
+
+  const handleParse = async () => {
+    if (!selected?.foto_url || selected?.foto_deleted) return;
+    setParsing(true);
+    try {
+      const res = await fetch('/api/parse-soal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ soal_id: selected.id, foto_url: selected.foto_url })
+      });
+      const data = await res.json();
+      if (data.ok) setSoalTeks(data.teks);
+      else alert('Parse gagal: ' + data.error);
+    } catch (e) { alert('Error: ' + e.message); }
+    finally { setParsing(false); }
+  };
+
+  const handleApprove = async () => {
+    setActing(true);
+    try {
+      const res = await fetch('/api/approve-soal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
+        body: JSON.stringify({ soal_id: selected.id, action: 'approve', reward_type: reward || null, soal_teks: soalTeks })
+      });
+      const data = await res.json();
+      if (data.ok) { setSelected(null); fetchData(filter); }
+      else alert('Approve gagal: ' + data.error);
+    } catch (e) { alert('Error: ' + e.message); }
+    finally { setActing(false); }
+  };
+
+  const handleReject = async () => {
+    if (!rejectReason.trim()) { alert('Isi alasan penolakan terlebih dahulu'); return; }
+    setActing(true);
+    try {
+      const res = await fetch('/api/approve-soal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
+        body: JSON.stringify({ soal_id: selected.id, action: 'reject', reject_reason: rejectReason })
+      });
+      const data = await res.json();
+      if (data.ok) { setSelected(null); fetchData(filter); }
+      else alert('Reject gagal: ' + data.error);
+    } catch (e) { alert('Error: ' + e.message); }
+    finally { setActing(false); }
+  };
+
+  const STATUS_BADGE = {
+    pending:  'bg-yellow-500/15 text-yellow-300 border-yellow-500/30',
+    approved: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+    rejected: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+  };
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h2 className="font-display text-xl font-semibold text-ink mb-1">Bank Soal Imtihan</h2>
+        <p className="text-sm text-ink-muted">Review, parse dengan AI, approve/reject soal dari kontributor.</p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        {[
+          { label: 'Pending', val: stats.pending, cls: 'text-yellow-300' },
+          { label: 'Approved', val: stats.approved, cls: 'text-emerald-300' },
+          { label: 'Rejected', val: stats.rejected, cls: 'text-rose-300' },
+        ].map(s => (
+          <div key={s.label} className="card-glass p-4 text-center">
+            <div className={`text-3xl font-bold ${s.cls}`}>{s.val}</div>
+            <div className="text-xs text-ink-muted mt-1">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filter */}
+      <div className="flex gap-2 mb-4 flex-wrap">
+        {[
+          { key: 'all', label: 'Semua' },
+          { key: 'pending', label: 'Pending' },
+          { key: 'approved', label: 'Approved' },
+          { key: 'rejected', label: 'Rejected' },
+        ].map(f => (
+          <button key={f.key} onClick={() => handleFilterChange(f.key)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${filter === f.key ? 'bg-emerald-500/15 text-emerald-200 border-emerald-500/30' : 'text-ink-muted border-white/10 hover:bg-white/5'}`}>
+            {f.label}
+          </button>
+        ))}
+        <button onClick={() => fetchData(filter)} className="px-3 py-1.5 rounded-lg text-xs border border-white/10 text-ink-muted hover:bg-white/5 ml-auto">
+          ↻ Refresh
+        </button>
+      </div>
+
+      {/* Tabel */}
+      {loading ? (
+        <div className="text-center py-16 text-ink-muted text-sm">Memuat data...</div>
+      ) : soals.length === 0 ? (
+        <div className="text-center py-16 text-ink-muted text-sm">Tidak ada data{filter !== 'all' ? ` dengan status ${filter}` : ''}</div>
+      ) : (
+        <div className="card-glass overflow-x-auto">
+          <table className="w-full text-sm min-w-[640px]">
+            <thead>
+              <tr className="border-b border-white/8">
+                {['Nama / WA', 'Maddah', 'Tahun', 'Fashl', 'Status', 'Tanggal', ''].map(h => (
+                  <th key={h} className="px-4 py-3 text-left text-xs text-ink-muted font-medium">{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {soals.map(s => (
+                <tr key={s.id} className="border-b border-white/5 hover:bg-white/3 cursor-pointer" onClick={() => openModal(s)}>
+                  <td className="px-4 py-3">
+                    <div className="text-ink font-medium text-xs">{s.submitter_name}</div>
+                    <div className="text-ink-muted text-xs">{s.submitter_wa}</div>
+                  </td>
+                  <td className="px-4 py-3 text-ink-muted text-xs max-w-[140px] truncate">{s.maddah_nama}</td>
+                  <td className="px-4 py-3 text-ink-muted text-xs">{s.tahun}</td>
+                  <td className="px-4 py-3 text-ink-muted text-xs">{s.fashl}</td>
+                  <td className="px-4 py-3">
+                    <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_BADGE[s.status] || ''}`}>
+                      {s.status}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-ink-muted text-xs">{s.created_at?.slice(0,10)}</td>
+                  <td className="px-4 py-3">
+                    <span className="text-xs text-emerald-400 hover:text-emerald-200">Detail →</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* Modal detail */}
+      {selected && (
+        <div className="fixed inset-0 bg-black/75 z-50 flex items-start justify-center p-4 overflow-y-auto"
+          onClick={e => e.target === e.currentTarget && setSelected(null)}>
+          <div className="w-full max-w-2xl mt-8 mb-8 rounded-2xl border border-white/10 bg-[#111] overflow-hidden shadow-2xl">
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-white/8">
+              <div>
+                <h3 className="font-display text-base font-semibold text-ink">Detail Submission</h3>
+                <p className="text-xs text-ink-muted">{selected.maddah_nama} · {selected.tahun} · {selected.fashl}</p>
+              </div>
+              <button onClick={() => setSelected(null)} className="text-ink-muted hover:text-ink text-2xl leading-none">×</button>
+            </div>
+
+            <div className="p-5 space-y-5">
+              {/* Info grid */}
+              <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                {[
+                  ['Nama', selected.submitter_name],
+                  ['WhatsApp', selected.submitter_wa],
+                  ['Fakultas', selected.fakultas],
+                  ['Tingkat', selected.tingkat || '-'],
+                  ['Tahun', selected.tahun],
+                  ['Fashl', selected.fashl],
+                  ['Status', selected.status],
+                  ['AI Parsed', selected.ai_parsed ? 'Ya' : 'Belum'],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex justify-between text-sm border-b border-white/5 pb-2">
+                    <span className="text-ink-muted">{k}</span>
+                    <span className="text-ink font-medium">{v}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Foto */}
+              {selected.foto_url && !selected.foto_deleted && (
+                <div>
+                  <div className="text-xs text-ink-muted mb-2 font-medium uppercase tracking-wide">Foto Soal</div>
+                  <img src={selected.foto_url} alt="soal" className="w-full rounded-xl max-h-72 object-contain bg-white/5 border border-white/8"/>
+                </div>
+              )}
+              {selected.foto_deleted && (
+                <div className="text-xs text-ink-muted italic bg-white/5 rounded-lg px-3 py-2">
+                  📷 Foto sudah dihapus setelah diapprove
+                </div>
+              )}
+
+              {/* Parse AI button */}
+              {selected.foto_url && !selected.foto_deleted && selected.status === 'pending' && (
+                <button onClick={handleParse} disabled={parsing}
+                  className="w-full py-2.5 rounded-xl text-sm border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50 transition font-medium">
+                  {parsing ? '⏳ AI sedang membaca foto...' : '🤖 Parse Teks dengan AI'}
+                </button>
+              )}
+
+              {/* Teks soal editable */}
+              <div>
+                <div className="text-xs text-ink-muted mb-2 font-medium uppercase tracking-wide">
+                  Teks Soal {selected.status === 'pending' ? '(bisa diedit sebelum approve)' : ''}
+                </div>
+                <textarea
+                  value={soalTeks}
+                  onChange={e => setSoalTeks(e.target.value)}
+                  readOnly={selected.status !== 'pending'}
+                  rows={8}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-ink resize-y focus:outline-none focus:border-emerald-500/40"
+                  style={{
+                    direction: soalTeks && /[\u0600-\u06FF]/.test(soalTeks) ? 'rtl' : 'ltr',
+                    fontFamily: 'inherit',
+                    lineHeight: 1.8,
+                  }}
+                  placeholder="Teks soal akan muncul di sini setelah di-parse, atau isi manual..."
+                />
+              </div>
+
+              {/* Reject reason */}
+              {selected.status === 'rejected' && selected.reject_reason && (
+                <div className="bg-rose-500/8 border border-rose-500/20 rounded-xl px-4 py-3">
+                  <div className="text-xs text-rose-300 font-medium mb-1">Alasan Penolakan:</div>
+                  <div className="text-sm text-ink">{selected.reject_reason}</div>
+                </div>
+              )}
+
+              {/* Action panel — only for pending */}
+              {selected.status === 'pending' && (
+                <div className="space-y-3 border-t border-white/8 pt-4">
+                  {/* Reward selector */}
+                  <div>
+                    <div className="text-xs text-ink-muted mb-2 font-medium">Reward untuk submitter (opsional):</div>
+                    <div className="flex gap-2 flex-wrap">
+                      {[
+                        { value: '',         label: 'Tanpa Reward' },
+                        { value: 'lifetime', label: '🎓 Lifetime' },
+                        { value: 'diskon',   label: '💸 Diskon' },
+                        { value: 'poin',     label: '⭐ Poin' },
+                      ].map(r => (
+                        <button key={r.value} onClick={() => setReward(r.value)}
+                          className={`px-3 py-1.5 rounded-lg text-xs border transition ${reward === r.value ? 'bg-emerald-500/15 text-emerald-200 border-emerald-500/30' : 'text-ink-muted border-white/10 hover:bg-white/5'}`}>
+                          {r.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Reject reason input */}
+                  {showReject && (
+                    <div>
+                      <div className="text-xs text-ink-muted mb-2">Alasan penolakan:</div>
+                      <input
+                        value={rejectReason}
+                        onChange={e => setRejectReason(e.target.value)}
+                        placeholder="mis. Foto blur, bukan soal Azhar, duplikat, dll"
+                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink focus:outline-none focus:border-rose-500/40"
+                      />
+                    </div>
+                  )}
+
+                  {/* Buttons */}
+                  <div className="flex gap-3">
+                    <button onClick={handleApprove} disabled={acting}
+                      className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-emerald-500 text-black disabled:opacity-50 hover:bg-emerald-400 transition">
+                      {acting ? '⏳ Memproses...' : '✅ Approve'}
+                    </button>
+                    {!showReject ? (
+                      <button onClick={() => setShowReject(true)}
+                        className="flex-1 py-2.5 rounded-xl text-sm font-bold border border-rose-500/30 text-rose-300 hover:bg-rose-500/10 transition">
+                        ❌ Reject
+                      </button>
+                    ) : (
+                      <button onClick={handleReject} disabled={acting}
+                        className="flex-1 py-2.5 rounded-xl text-sm font-bold border border-rose-500/40 text-rose-300 hover:bg-rose-500/10 disabled:opacity-40 transition">
+                        {acting ? '⏳...' : 'Konfirmasi Reject →'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

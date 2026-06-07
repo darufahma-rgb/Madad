@@ -164,6 +164,54 @@ http.createServer(async (req, res) => {
     return;
   }
 
+  // ── /api/submit-soal ──────────────────────────────────────────────────
+  if (urlPath === '/api/submit-soal') {
+    try {
+      const rawBody = await readBody(req);
+      await callApiHandler('./api/submit-soal.js', req, res, rawBody);
+    } catch (err) {
+      console.error('[submit-soal] Error:', err.message);
+      json(res, 500, { ok: false, error: err.message });
+    }
+    return;
+  }
+
+  // ── /api/parse-soal ───────────────────────────────────────────────────
+  if (urlPath === '/api/parse-soal') {
+    try {
+      const rawBody = await readBody(req);
+      await callApiHandler('./api/parse-soal.js', req, res, rawBody);
+    } catch (err) {
+      console.error('[parse-soal] Error:', err.message);
+      json(res, 500, { ok: false, error: err.message });
+    }
+    return;
+  }
+
+  // ── /api/approve-soal ─────────────────────────────────────────────────
+  if (urlPath === '/api/approve-soal') {
+    try {
+      const rawBody = await readBody(req);
+      await callApiHandler('./api/approve-soal.js', req, res, rawBody);
+    } catch (err) {
+      console.error('[approve-soal] Error:', err.message);
+      json(res, 500, { ok: false, error: err.message });
+    }
+    return;
+  }
+
+  // ── /api/admin-bank-soal ──────────────────────────────────────────────
+  if (urlPath === '/api/admin-bank-soal') {
+    try {
+      const rawBody = await readBody(req);
+      await callApiHandler('./api/admin-bank-soal.js', req, res, rawBody);
+    } catch (err) {
+      console.error('[admin-bank-soal] Error:', err.message);
+      json(res, 500, { ok: false, error: err.message });
+    }
+    return;
+  }
+
   // ── Static files ──────────────────────────────────────────────────────
   if (urlPath === '/') urlPath = '/index.html';
 
