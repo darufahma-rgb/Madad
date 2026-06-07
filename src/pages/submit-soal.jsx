@@ -41,6 +41,24 @@ function SubmitSoalPage() {
   const [compressedFile, setCompressedFile] = useState(null);
   const [panduanOpen, setPanduanOpen] = useState(false);
 
+  const generateCaptcha = () => {
+    const a = Math.floor(Math.random() * 9) + 1;
+    const b = Math.floor(Math.random() * 9) + 1;
+    const ops = ['+', '-', 'x'];
+    const op = ops[Math.floor(Math.random() * ops.length)];
+    let answer;
+    if (op === '+') answer = a + b;
+    else if (op === '-') answer = Math.max(a, b) - Math.min(a, b);
+    else answer = a * b;
+    const num1 = op === '-' ? Math.max(a, b) : a;
+    const num2 = op === '-' ? Math.min(a, b) : b;
+    return { soal: `${num1} ${op} ${num2}`, answer };
+  };
+
+  const [captcha, setCaptcha] = useState(() => generateCaptcha());
+  const [captchaInput, setCaptchaInput] = useState('');
+  const captchaValid = parseInt(captchaInput) === captcha.answer;
+
   const [form, setForm] = useState({
     nama: '', wa: '',
     fakultas: '', maddah_id: '', maddah_nama: '',
@@ -86,6 +104,10 @@ function SubmitSoalPage() {
   };
 
   const handleSubmit = async () => {
+    if (!captchaValid) {
+      alert('Selesaikan verifikasi matematika terlebih dahulu.');
+      return;
+    }
     if (!form.nama || !form.wa || !form.fakultas || !form.maddah_id || !form.tingkat || !form.tahun || !form.fashl || !compressedFile) {
       alert('Lengkapi semua field dan upload foto soal.');
       return;
@@ -130,7 +152,7 @@ function SubmitSoalPage() {
       });
 
       const data = await res.json();
-      if (data.ok) setStep('success');
+      if (data.ok) { setStep('success'); setCaptcha(generateCaptcha()); setCaptchaInput(''); }
       else if (data.error === 'duplicate') { setDupMsg(data.message); setStep('form'); }
       else throw new Error(data.error);
     } catch (err) {
@@ -460,10 +482,90 @@ function SubmitSoalPage() {
               <input ref={fileRef} type="file" accept="image/*" onChange={handleFoto} style={{ display: 'none' }}/>
             </div>
 
+            {/* CAPTCHA */}
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ fontSize: 12, color: '#3ecf8e', fontWeight: 700, display: 'block', marginBottom: 8 }}>
+                VERIFIKASI *
+              </label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid rgba(255,255,255,0.12)',
+                  borderRadius: 9,
+                  padding: '10px 18px',
+                  fontSize: 18,
+                  fontWeight: 800,
+                  color: '#fff',
+                  letterSpacing: 2,
+                  minWidth: 100,
+                  textAlign: 'center',
+                  fontFamily: 'monospace',
+                }}>
+                  {captcha.soal} = ?
+                </div>
+                <input
+                  value={captchaInput}
+                  onChange={e => setCaptchaInput(e.target.value)}
+                  placeholder="Jawaban"
+                  type="number"
+                  style={{
+                    width: 90,
+                    padding: '10px 14px',
+                    borderRadius: 9,
+                    border: captchaInput
+                      ? captchaValid
+                        ? '1px solid rgba(62,207,142,0.6)'
+                        : '1px solid rgba(255,80,80,0.4)'
+                      : '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.05)',
+                    color: '#fff',
+                    fontSize: 16,
+                    fontWeight: 700,
+                    textAlign: 'center',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => { setCaptcha(generateCaptcha()); setCaptchaInput(''); }}
+                  style={{
+                    background: 'transparent',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: 8,
+                    padding: '8px 10px',
+                    color: '#888',
+                    cursor: 'pointer',
+                    fontSize: 14,
+                  }}
+                  title="Ganti soal"
+                >
+                  🔄
+                </button>
+              </div>
+              {captchaInput && !captchaValid && (
+                <div style={{ fontSize: 12, color: '#ff8080', marginTop: 6 }}>
+                  Jawaban salah, coba lagi
+                </div>
+              )}
+              {captchaValid && (
+                <div style={{ fontSize: 12, color: '#3ecf8e', marginTop: 6 }}>
+                  ✓ Verifikasi berhasil
+                </div>
+              )}
+            </div>
+
             {/* Submit button */}
-            <button onClick={handleSubmit} disabled={!!dupMsg || compressing}
-              style={{ width: '100%', padding: '13px', borderRadius: 11, border: 'none', background: dupMsg ? '#444' : EM, color: dupMsg ? '#888' : '#000', fontWeight: 800, fontSize: 15, cursor: dupMsg ? 'not-allowed' : 'pointer' }}>
-              {dupMsg ? 'Soal Sudah Tersedia' : 'Lanjut → Konfirmasi'}
+            <button
+              onClick={handleSubmit}
+              disabled={!!dupMsg || compressing || !captchaValid}
+              style={{
+                width: '100%', padding: '13px', borderRadius: 11, border: 'none',
+                background: (dupMsg || !captchaValid) ? '#333' : EM,
+                color: (dupMsg || !captchaValid) ? '#666' : '#000',
+                fontWeight: 800, fontSize: 15,
+                cursor: (dupMsg || !captchaValid) ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {dupMsg ? 'Soal Sudah Tersedia' : !captchaValid ? 'Selesaikan Verifikasi Dulu' : 'Lanjut → Konfirmasi'}
             </button>
           </div>
         </div>
