@@ -1,3 +1,12 @@
+const parseBody = (req) => new Promise((resolve) => {
+  let body = '';
+  req.on('data', chunk => body += chunk);
+  req.on('end', () => {
+    try { resolve(JSON.parse(body || '{}')); }
+    catch { resolve({}); }
+  });
+});
+
 export default async function handler(req, res) {
   const { action } = req.query;
   if (action === 'soal')      return handleParseSoal(req, res);
@@ -9,7 +18,7 @@ export default async function handler(req, res) {
 async function handleParseSoal(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { soal_id, foto_url } = req.body;
+  const { soal_id, foto_url } = await parseBody(req);
   if (!soal_id || !foto_url) return res.status(400).json({ ok: false });
 
   const openrouterKey = process.env.OPENROUTER_API_KEY;
@@ -148,7 +157,7 @@ Catatan penting:
 async function handleParseTalkhisan(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { foto_base64, mime_type, pdf_pages } = req.body;
+  const { foto_base64, mime_type, pdf_pages } = await parseBody(req);
   const openrouterKey = process.env.OPENROUTER_API_KEY;
 
   if (!openrouterKey) return res.status(500).json({ ok: false, error: 'OpenRouter key tidak tersedia' });
