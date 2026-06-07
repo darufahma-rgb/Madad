@@ -3,6 +3,39 @@ import React, { useState, useEffect, useRef, useCallback, useMemo, createContext
    /admin, PIN gate, then tabbed control center
 */
 
+const sbToMember = (row) => {
+  if (!row) return null;
+  return {
+    code:      row.code,
+    name:      row.name,
+    whatsapp:  row.whatsapp  || "",
+    duration:  row.duration  || 30,
+    status:    row.status    || "active",
+    createdAt: row.created_at ? row.created_at.slice(0, 10) : "",
+    expiresAt: row.expires_at || "",
+    device:    row.device    || null,
+    deviceId:  row.device_id || null,
+    lastLogin: row.last_login || null,
+    notes:     row.notes     || "",
+    _id:       row.id,
+  };
+};
+
+const memberToSb = (member) => {
+  const row = {};
+  if (member.code      !== undefined) row.code       = member.code;
+  if (member.name      !== undefined) row.name       = member.name;
+  if (member.whatsapp  !== undefined) row.whatsapp   = member.whatsapp;
+  if (member.duration  !== undefined) row.duration   = member.duration;
+  if (member.status    !== undefined) row.status     = member.status;
+  if (member.expiresAt !== undefined) row.expires_at = member.expiresAt;
+  if (member.device    !== undefined) row.device     = member.device;
+  if (member.deviceId  !== undefined) row.device_id  = member.deviceId;
+  if (member.lastLogin !== undefined) row.last_login = member.lastLogin;
+  if (member.notes     !== undefined) row.notes      = member.notes;
+  return row;
+};
+
 /* ── Admin API Helpers (SEC-1, SEC-2) ── */
 const adminToken = () => sessionStorage.getItem('talqee_admin_token') || '';
 
