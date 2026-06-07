@@ -1,29 +1,20 @@
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') { res.status(204).end(); return; }
-
-  const action = req.query?.action;
-
+  const { action } = req.query;
   if (action === 'soal')      return handleParseSoal(req, res);
   if (action === 'talkhisan') return handleParseTalkhisan(req, res);
-
   return res.status(400).json({ ok: false, error: 'Action tidak valid' });
 }
 
-/* ── PARSE SOAL (OCR foto ujian) ── */
+/* ── PARSE SOAL ── */
 async function handleParseSoal(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
   const { soal_id, foto_url } = req.body;
-  if (!soal_id || !foto_url) return res.status(400).json({ ok: false, error: 'soal_id dan foto_url wajib diisi' });
+  if (!soal_id || !foto_url) return res.status(400).json({ ok: false });
 
   const openrouterKey = process.env.OPENROUTER_API_KEY;
   const supabaseUrl   = process.env.SUPABASE_URL;
   const serviceKey    = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!openrouterKey) return res.status(500).json({ ok: false, error: 'OPENROUTER_API_KEY belum diset' });
 
   try {
     const filePath = foto_url.split('/storage/v1/object/soal-foto/')[1];
@@ -62,45 +53,48 @@ async function handleParseSoal(req, res) {
       },
       body: JSON.stringify({
         model: 'anthropic/claude-3.5-sonnet',
-        max_tokens: 3000,
+        max_tokens: 4000,
         temperature: 0,
         messages: [{
           role: 'user',
           content: [
-            { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}` } },
+            {
+              type: 'image_url',
+              image_url: { url: `data:${mimeType};base64,${base64}` }
+            },
             {
               type: 'text',
-              text: `Kamu adalah mesin transkripsi soal ujian yang sangat presisi.
+              text: `Baca foto kertas soal ujian ini dengan teliti.
 
-TUGAS: Baca foto kertas ujian ini dan ekstrak HANYA soal-soal ujiannya.
+Tugas: Ekstrak soal-soal ujian yang ada di foto ini.
 
-ABAIKAN bagian yang bukan soal:
-- Baris pembuka (بسم الله الرحمن الرحيم)
-- Informasi ujian (tahun akademik, waktu, kode matakuliah, jumlah soal, bobot nilai)
-- Instruksi teknis ujian
-- Baris penutup (انتهت الأسئلة، وبالله التوفيق)
-- Teks kecil di bagian bawah kertas
+Langkah 1 - Cari tahun akademik di kertas (biasanya di header atas).
 
-TRANSKRIPSI HANYA:
-Semua pertanyaan yang bernomor (السؤال الأول، السؤال الثاني، ١، ٢، dst) atau yang dimulai dengan kata kerja perintah Arab.
+Langkah 2 - Temukan semua soal ujian. Soal biasanya ditandai dengan:
+- السؤال الأول / الثاني / الثالث / الرابع
+- Nomor: ١. ٢. ٣. atau 1. 2. 3.
+- Kata perintah: اشرح، عرّف، بيّن، اذكر، قارن، وضّح، ما هو، ما هي
 
-ATURAN:
-- Salin teks Arab PERSIS seperti di foto — jangan ubah satu huruf pun
-- Jangan tambah atau kurangi harakat
-- Sub-pertanyaan (أ، ب، ج) tetap dalam satu blok soal
-- Bagian tidak terbaca: tulis [...]
-
-FORMAT OUTPUT — mulai langsung dengan [TAHUN_AKADEMIK]:
+Langkah 3 - Tulis output dengan format ini persis:
 
 [TAHUN_AKADEMIK]
-(tahun akademik dari kertas, contoh: 2025/2026 — jika tidak ada: TIDAK_TERTERA)
+2025/2026
 
 [SOAL_ARAB]
-(teks soal Arab persis seperti di foto)
+(salin teks soal Arab persis seperti tertulis di foto)
 [ARTI]
-(terjemahan natural ke bahasa Indonesia)
+(terjemahkan soal ke bahasa Indonesia)
 
-Jika tidak ada soal terbaca: tulis "FOTO_TIDAK_TERBACA"`
+[SOAL_ARAB]
+(soal berikutnya)
+[ARTI]
+(terjemahannya)
+
+Catatan penting:
+- Salin teks Arab PERSIS seperti di foto, jangan ubah apapun
+- Satu nomor soal = satu blok [SOAL_ARAB], termasuk sub-pertanyaan (أ ب ج)
+- Jika bagian tidak terbaca dengan jelas: tulis [...]
+- Jika foto tidak mengandung soal ujian: tulis FOTO_TIDAK_TERBACA`
             }
           ]
         }]
@@ -108,18 +102,22 @@ Jika tidak ada soal terbaca: tulis "FOTO_TIDAK_TERBACA"`
     });
 
     const aiData = await aiRes.json();
-    const hasil  = aiData.choices?.[0]?.message?.content || '';
+
+    if (aiData.error) throw new Error(aiData.error.message || 'OpenRouter error');
+
+    const hasil = aiData.choices?.[0]?.message?.content || '';
     if (!hasil) throw new Error('AI tidak mengembalikan hasil');
 
-    // Ekstrak tahun
     let tahunDariSoal = null;
-    const tahunMatch  = hasil.match(/\[TAHUN_AKADEMIK\]\s*\n([^\n]+)/);
+    const tahunMatch  = hasil.match(/\[TAHUN_AKADEMIK\]\s*\n([^\n\[]+)/);
     if (tahunMatch) {
       const raw = tahunMatch[1].trim();
-      if (raw !== 'TIDAK_TERTERA') tahunDariSoal = raw;
+      if (raw && raw !== 'TIDAK_TERTERA') tahunDariSoal = raw;
     }
 
-    const teksBersih = hasil.replace(/\[TAHUN_AKADEMIK\]\s*\n[^\n]+\n?/, '').trim();
+    const teksBersih = hasil
+      .replace(/\[TAHUN_AKADEMIK\][^\[]*/, '')
+      .trim();
 
     await fetch(`${supabaseUrl}/rest/v1/bank_soal?id=eq.${soal_id}`, {
       method: 'PATCH',
@@ -131,17 +129,22 @@ Jika tidak ada soal terbaca: tulis "FOTO_TIDAK_TERBACA"`
       body: JSON.stringify({
         soal: teksBersih,
         ai_parsed: true,
-        ...(tahunDariSoal ? { notes: `Tahun di kertas soal: ${tahunDariSoal}` } : {})
+        ...(tahunDariSoal ? { notes: `Tahun di kertas: ${tahunDariSoal}` } : {})
       })
     });
 
-    return res.status(200).json({ ok: true, teks: teksBersih, tahun_dari_soal: tahunDariSoal });
+    return res.status(200).json({
+      ok: true,
+      teks: teksBersih,
+      tahun_dari_soal: tahunDariSoal,
+    });
+
   } catch (err) {
     return res.status(500).json({ ok: false, error: err.message });
   }
 }
 
-/* ── PARSE TALKHISAN (PDF/Foto) ── */
+/* ── PARSE TALKHISAN ── */
 async function handleParseTalkhisan(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
@@ -158,6 +161,7 @@ async function handleParseTalkhisan(req, res) {
           Authorization: `Bearer ${openrouterKey}`,
           'Content-Type': 'application/json',
           'HTTP-Referer': 'https://talqeeh.vercel.app',
+          'X-Title': 'Talqeeh Talkhisan',
         },
         body: JSON.stringify({
           model: 'anthropic/claude-3-haiku',
@@ -166,27 +170,35 @@ async function handleParseTalkhisan(req, res) {
           messages: [{
             role: 'user',
             content: [
-              { type: 'image_url', image_url: { url: `data:${mime_type};base64,${foto_base64}` } },
-              { type: 'text', text: `Kamu adalah asisten akademik Al-Azhar yang ahli bahasa Arab.\n\nEkstrak semua teks Arab dari foto talkhisan ini secara lengkap dan akurat.\n- Tulis teks Arab persis seperti yang tertulis, termasuk harakat jika ada\n- Susun per poin/bab sesuai struktur di foto\n- Bagian tidak terbaca: tandai dengan [...]\n- Jangan tambahkan terjemahan\n- Jika tidak terbaca: "FOTO_TIDAK_TERBACA"\n\nEkstrak sekarang:` }
+              {
+                type: 'image_url',
+                image_url: { url: `data:${mime_type};base64,${foto_base64}` }
+              },
+              {
+                type: 'text',
+                text: `Baca foto talkhisan (ringkasan materi ujian) ini dan ekstrak semua teks Arabnya.
+- Salin teks Arab persis seperti tertulis, termasuk harakat jika ada
+- Susun per poin sesuai struktur di foto
+- Bagian tidak terbaca: tulis [...]
+- Jika tidak ada teks Arab: tulis FOTO_TIDAK_TERBACA`
+              }
             ]
           }]
         })
       });
       const data = await aiRes.json();
-      return res.status(200).json({ ok: true, teks: data.choices?.[0]?.message?.content || '' });
+      if (data.error) throw new Error(data.error.message || 'OpenRouter error');
+      const hasil = data.choices?.[0]?.message?.content || '';
+      return res.status(200).json({ ok: true, teks: hasil });
     }
 
     if (pdf_pages && Array.isArray(pdf_pages) && pdf_pages.length > 0) {
       const BATCH_SIZE = 3;
-      const batches = [];
-      for (let i = 0; i < pdf_pages.length; i += BATCH_SIZE) {
-        batches.push(pdf_pages.slice(i, i + BATCH_SIZE));
-      }
-
       const results = [];
-      for (let bIdx = 0; bIdx < batches.length; bIdx++) {
-        const batch     = batches[bIdx];
-        const batchText = batch.map((t, i) => `=== HALAMAN ${bIdx * BATCH_SIZE + i + 1} ===\n${t}`).join('\n\n');
+
+      for (let i = 0; i < pdf_pages.length; i += BATCH_SIZE) {
+        const batch     = pdf_pages.slice(i, i + BATCH_SIZE);
+        const batchText = batch.map((t, j) => `=== HALAMAN ${i + j + 1} ===\n${t}`).join('\n\n');
 
         const aiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
           method: 'POST',
@@ -201,16 +213,18 @@ async function handleParseTalkhisan(req, res) {
             temperature: 0,
             messages: [{
               role: 'user',
-              content: `Rapikan teks Arab dari ${batch.length} halaman talkhisan ini. Pertahankan SEMUA teks Arab persis, hapus header/footer tidak relevan, gabungkan baris terpotong.\n\n${batchText}`
+              content: `Rapikan teks Arab dari halaman talkhisan berikut. Pertahankan SEMUA teks Arab persis seperti aslinya. Hapus header/footer yang tidak relevan.\n\n${batchText}`
             }]
           })
         });
 
         const data  = await aiRes.json();
         const hasil = data.choices?.[0]?.message?.content || '';
-        if (hasil && hasil !== '[HALAMAN KOSONG]') results.push(hasil);
+        if (hasil && hasil.trim() !== '[HALAMAN KOSONG]') results.push(hasil);
 
-        if (bIdx < batches.length - 1) await new Promise(r => setTimeout(r, 500));
+        if (i + BATCH_SIZE < pdf_pages.length) {
+          await new Promise(r => setTimeout(r, 500));
+        }
       }
 
       const finalTeks = results.join('\n\n');
@@ -221,6 +235,7 @@ async function handleParseTalkhisan(req, res) {
     }
 
     return res.status(400).json({ ok: false, error: 'Tidak ada input yang valid' });
+
   } catch (err) {
     return res.status(500).json({ ok: false, error: err.message });
   }
