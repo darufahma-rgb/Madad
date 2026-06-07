@@ -373,42 +373,69 @@ const TalkhisanSection = ({ profile }) => {
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
-          const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
-          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-          const pdf = await pdfjsLib.getDocument({ data: e.target.result }).promise;
-          let fullText = '';
-          for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
+          // Load PDF.js dari CDN via script tag
+          const script = document.createElement('script');
+          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+          document.head.appendChild(script);
+          await new Promise(resolve => { script.onload = resolve; });
+
+          window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+          const pdf = await window.pdfjsLib.getDocument({ data: e.target.result }).promise;
+          const maxPages = Math.min(pdf.numPages, 15);
+
+          // Ekstrak teks per halaman
+          const pages = [];
+          for (let i = 1; i <= maxPages; i++) {
             const page = await pdf.getPage(i);
             const textContent = await page.getTextContent();
-            const pageText = textContent.items.map(item => item.str).join(' ');
-            fullText += pageText + '\n';
+            const items = textContent.items;
+            let pageText = '';
+            let lastY = null;
+
+            for (const item of items) {
+              if (lastY !== null && Math.abs(item.transform[5] - lastY) > 5) {
+                pageText += '\n';
+              }
+              pageText += item.str;
+              lastY = item.transform[5];
+            }
+
+            if (pageText.trim()) {
+              pages.push(pageText.trim());
+            }
           }
-          if (!fullText.trim()) {
-            setUploadError('PDF ini berupa scan/gambar. Silakan screenshot halaman dan upload sebagai foto.');
+
+          if (pages.length === 0) {
+            setUploadError('PDF ini berupa scan/gambar — tidak ada teks yang bisa diekstrak. Screenshot halaman dan upload sebagai foto.');
             setUploading(false);
             return;
           }
+
+          // Kirim per batch ke API
           const res = await fetch('/api/parse-talkhisan', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pdf_text: fullText })
+            body: JSON.stringify({ pdf_pages: pages })
           });
+
           const data = await res.json();
           if (data.ok) {
             setTeksInput(data.teks);
             setInputType('teks');
-            toast.push('Talkhisan berhasil dibaca dari PDF — pilih mode di bawah');
+            toast.push(`${pages.length} halaman berhasil dibaca — pilih mode di bawah`);
           } else {
             setUploadError(data.error || 'Gagal proses PDF');
           }
-        } catch (e) {
-          setUploadError('Gagal proses PDF: ' + e.message);
+        } catch (err) {
+          setUploadError('Gagal proses PDF: ' + err.message);
         }
         setUploading(false);
       };
       reader.readAsArrayBuffer(file);
     } catch (err) {
-      setUploadError('Gagal proses PDF: ' + err.message);
+      setUploadError('Gagal upload: ' + err.message);
       setUploading(false);
     }
   };
