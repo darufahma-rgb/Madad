@@ -1418,7 +1418,7 @@ const AdminBankSoal = () => {
     if (!selected?.foto_url || selected?.foto_deleted) return;
     setSignedUrl(null);
     setLoadingFoto(true);
-    fetch('/api/foto-soal', {
+    fetch('/api/bank-soal?action=foto', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ foto_url: selected.foto_url })
@@ -1433,7 +1433,7 @@ const AdminBankSoal = () => {
     if (!selected?.foto_url || selected?.foto_deleted) return;
     setParsing(true);
     try {
-      const res = await fetch('/api/parse-soal', {
+      const res = await fetch('/api/parse?action=soal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ soal_id: selected.id, foto_url: selected.foto_url })
@@ -1450,7 +1450,7 @@ const AdminBankSoal = () => {
   const handleApprove = async () => {
     setActing(true);
     try {
-      const res = await fetch('/api/approve-soal', {
+      const res = await fetch('/api/bank-soal?action=approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
         body: JSON.stringify({ soal_id: selected.id, action: 'approve', reward_type: reward || null, soal_teks: soalTeks })
@@ -1466,7 +1466,7 @@ const AdminBankSoal = () => {
     if (!rejectReason.trim()) { alert('Isi alasan penolakan terlebih dahulu'); return; }
     setActing(true);
     try {
-      const res = await fetch('/api/approve-soal', {
+      const res = await fetch('/api/bank-soal?action=approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
         body: JSON.stringify({ soal_id: selected.id, action: 'reject', reject_reason: rejectReason })
@@ -1501,7 +1501,7 @@ const AdminBankSoal = () => {
   const handleSaveJawaban = async () => {
     setSavingJawaban(true);
     try {
-      const res = await fetch('/api/update-jawaban', {
+      const res = await fetch('/api/bank-soal?action=update-jawaban', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ soal_id: selected.id, jawaban_array: soalItems }),

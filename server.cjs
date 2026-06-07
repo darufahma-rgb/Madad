@@ -67,12 +67,22 @@ const json = (res, status, body) => {
   res.end(JSON.stringify(body));
 };
 
+const parseQuery = (url) => {
+  const idx = url.indexOf('?');
+  if (idx === -1) return {};
+  return Object.fromEntries(new URLSearchParams(url.slice(idx + 1)));
+};
+
 const callApiHandler = async (handlerPath, req, res, rawBody) => {
   const absPath = path.resolve(__dirname, handlerPath);
   const mod = await import(`file://${absPath}`);
   const handler = mod.default || mod;
+  let parsedBody = {};
+  try { parsedBody = JSON.parse(rawBody || '{}'); } catch {}
   const wrappedReq = Object.assign(Object.create(req), {
     method: req.method, headers: req.headers, _rawBody: rawBody,
+    body: parsedBody,
+    query: parseQuery(req.url),
     on(event, cb) {
       if (event === 'data') { cb(rawBody); return this; }
       if (event === 'end')  { cb();        return this; }
@@ -164,61 +174,25 @@ http.createServer(async (req, res) => {
     return;
   }
 
-  // ── /api/submit-soal ──────────────────────────────────────────────────
-  if (urlPath === '/api/submit-soal') {
+  // ── /api/bank-soal (submit, approve, update-jawaban, foto) ───────────
+  if (urlPath === '/api/bank-soal') {
     try {
       const rawBody = await readBody(req);
-      await callApiHandler('./api/submit-soal.js', req, res, rawBody);
+      await callApiHandler('./api/bank-soal.js', req, res, rawBody);
     } catch (err) {
-      console.error('[submit-soal] Error:', err.message);
+      console.error('[bank-soal] Error:', err.message);
       json(res, 500, { ok: false, error: err.message });
     }
     return;
   }
 
-  // ── /api/parse-soal ───────────────────────────────────────────────────
-  if (urlPath === '/api/parse-soal') {
+  // ── /api/parse (soal OCR, talkhisan) ──────────────────────────────────
+  if (urlPath === '/api/parse') {
     try {
       const rawBody = await readBody(req);
-      await callApiHandler('./api/parse-soal.js', req, res, rawBody);
+      await callApiHandler('./api/parse.js', req, res, rawBody);
     } catch (err) {
-      console.error('[parse-soal] Error:', err.message);
-      json(res, 500, { ok: false, error: err.message });
-    }
-    return;
-  }
-
-  // ── /api/approve-soal ─────────────────────────────────────────────────
-  if (urlPath === '/api/approve-soal') {
-    try {
-      const rawBody = await readBody(req);
-      await callApiHandler('./api/approve-soal.js', req, res, rawBody);
-    } catch (err) {
-      console.error('[approve-soal] Error:', err.message);
-      json(res, 500, { ok: false, error: err.message });
-    }
-    return;
-  }
-
-  // ── /api/foto-soal ────────────────────────────────────────────────────
-  if (urlPath === '/api/foto-soal') {
-    try {
-      const rawBody = await readBody(req);
-      await callApiHandler('./api/foto-soal.js', req, res, rawBody);
-    } catch (err) {
-      console.error('[foto-soal] Error:', err.message);
-      json(res, 500, { ok: false, error: err.message });
-    }
-    return;
-  }
-
-  // ── /api/update-jawaban ──────────────────────────────────────────────────
-  if (urlPath === '/api/update-jawaban') {
-    try {
-      const rawBody = await readBody(req);
-      await callApiHandler('./api/update-jawaban.js', req, res, rawBody);
-    } catch (err) {
-      console.error('[update-jawaban] Error:', err.message);
+      console.error('[parse] Error:', err.message);
       json(res, 500, { ok: false, error: err.message });
     }
     return;

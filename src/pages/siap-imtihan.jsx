@@ -341,7 +341,7 @@ const TalkhisanSection = ({ profile }) => {
       reader.onload = async (e) => {
         const base64 = e.target.result.split(',')[1];
         const mimeType = compressed.type || 'image/jpeg';
-        const res = await fetch('/api/parse-talkhisan', {
+        const res = await fetch('/api/parse?action=talkhisan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ foto_base64: base64, mime_type: mimeType })
@@ -414,7 +414,7 @@ const TalkhisanSection = ({ profile }) => {
           }
 
           // Kirim per batch ke API
-          const res = await fetch('/api/parse-talkhisan', {
+          const res = await fetch('/api/parse?action=talkhisan', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ pdf_pages: pages })

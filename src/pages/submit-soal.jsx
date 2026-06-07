@@ -90,7 +90,7 @@ function SubmitSoalPage() {
     if (!maddah_id || !tahun || !fashl) return;
     setDupMsg('');
     try {
-      const res = await fetch('/api/submit-soal', {
+      const res = await fetch('/api/bank-soal?action=submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ _checkOnly: true, maddah_id, tahun, fashl })
@@ -151,7 +151,7 @@ function SubmitSoalPage() {
 
       const foto_url = `${supabaseUrl}/storage/v1/object/soal-foto/${fileName}`;
 
-      const res = await fetch('/api/submit-soal', {
+      const res = await fetch('/api/bank-soal?action=submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
