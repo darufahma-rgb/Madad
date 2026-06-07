@@ -684,71 +684,99 @@ const DashboardPage = () => {
             </div>
             <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">Aksi cepat</h2>
           </Reveal>
-          <Reveal stagger className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
-            {/* Baris 1 — Belajar */}
-            <QuickAction icon="layers"    title="Semua Maddah"  desc={`${totalS1} maddah S1 · ${promptDisplay} prompt template`} to="/maddah"          color="violet"/>
-            <QuickAction icon="target"    title="Siap Imtihan"  desc="6 mode persiapan ujian gaya Azhari"                        to="/siap-imtihan"    color="gold"/>
-            <QuickAction icon="scale"     title="Muqaranah"     desc="Banding qoul ulama 4 madzhab"                              to="/paths/muqaranah" color="violet"/>
+          <Reveal stagger className="flex flex-col gap-3">
 
-            {/* Baris 2 — Kelola */}
-            <QuickAction icon="notebook"  title="Kurasah"       desc="Catatan & ta'liq belajarmu"                               to="/kurasah"         color="gold"/>
-            <QuickAction icon="bookOpen"  title="Bank Soal"     desc="Soal imtihan tahun-tahun sebelumnya"                      to="/siap-imtihan"    color="violet"/>
-
-            {/* Card Submit Soal — special glowing */}
-            <a href="#/submit-soal"
+            {/* ── Card Submit Soal — FULL WIDTH, posisi paling atas ── */}
+            <a
+              href="#/submit-soal"
               onClick={(e) => { e.preventDefault(); navigate('/submit-soal'); }}
-              className="card-glass hov-lift block group"
               style={{
-                minHeight: 80,
-                borderRadius: 16,
-                padding: '12px 14px',
-                border: '1.5px solid rgba(62,207,142,0.6)',
-                boxShadow: '0 0 16px rgba(62,207,142,0.2), 0 0 32px rgba(62,207,142,0.08)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 20,
+                padding: '20px 24px',
+                borderRadius: 18,
+                border: '1.5px solid rgba(62,207,142,0.7)',
+                background: 'rgba(62,207,142,0.06)',
+                boxShadow: '0 0 24px rgba(62,207,142,0.18), 0 0 48px rgba(62,207,142,0.06)',
+                textDecoration: 'none',
                 position: 'relative',
                 overflow: 'hidden',
+                cursor: 'pointer',
               }}
             >
               {/* Glow background */}
               <div style={{
                 position: 'absolute', inset: 0,
-                background: 'radial-gradient(circle at top left, rgba(62,207,142,0.1) 0%, transparent 70%)',
+                background: 'radial-gradient(circle at left center, rgba(62,207,142,0.12) 0%, transparent 65%)',
                 pointerEvents: 'none',
               }}/>
-              {/* Badge baru */}
+
+              {/* Badge EVENT + REWARD */}
               <div style={{
-                position: 'absolute', top: 8, right: 8,
-                fontSize: 9, fontWeight: 800,
-                background: 'rgba(62,207,142,0.2)',
-                color: '#3ecf8e',
-                padding: '2px 6px',
-                borderRadius: 99,
-                letterSpacing: 0.5,
-              }}>BARU</div>
+                position: 'absolute', top: 14, right: 16,
+                display: 'flex', gap: 6,
+              }}>
+                <span style={{
+                  fontSize: 10, fontWeight: 800,
+                  background: 'rgba(62,207,142,0.9)',
+                  color: '#000',
+                  padding: '3px 10px',
+                  borderRadius: 99,
+                  letterSpacing: 1,
+                }}>EVENT</span>
+                <span style={{
+                  fontSize: 10, fontWeight: 800,
+                  background: 'rgba(255,200,50,0.2)',
+                  color: '#ffc832',
+                  padding: '3px 10px',
+                  borderRadius: 99,
+                  border: '1px solid rgba(255,200,50,0.3)',
+                  letterSpacing: 1,
+                }}>REWARD</span>
+              </div>
+
               {/* Icon */}
               <div style={{
-                width: 32, height: 32,
-                borderRadius: 10,
-                background: 'rgba(62,207,142,0.18)',
+                width: 52, height: 52, borderRadius: 16, flexShrink: 0,
+                background: 'rgba(62,207,142,0.15)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                marginBottom: 8,
+                position: 'relative',
               }}>
-                <Icon name="upload" className="w-4 h-4" style={{ color: '#3ecf8e' }}/>
+                <Icon name="upload" className="w-6 h-6" style={{ color: '#3ecf8e' }}/>
               </div>
+
               {/* Text */}
-              <div className="font-display text-sm md:text-base font-semibold text-ink mb-0.5 md:mb-1.5"
-                style={{ position: 'relative' }}>
-                Submit Soal
+              <div style={{ flex: 1, position: 'relative' }}>
+                <div className="font-display" style={{
+                  fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 4,
+                }}>
+                  Submit Soal Imtihan → Dapat Reward!
+                </div>
+                <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.5 }}>
+                  Punya soal ujian Al-Azhar tahun lalu? Submit & dapat akses Talqeeh <strong style={{ color: '#3ecf8e' }}>lifetime gratis</strong> atau diskon spesial.
+                </div>
               </div>
-              <p className="text-[11px] md:text-xs text-ink-muted leading-relaxed"
-                style={{ position: 'relative' }}>
-                Kontribusi soal & dapat reward
-              </p>
+
+              {/* Arrow */}
+              <div style={{
+                fontSize: 20, color: '#3ecf8e', flexShrink: 0,
+                position: 'relative',
+              }}>→</div>
             </a>
 
-            {/* Baris 3 — Lainnya */}
-            <QuickAction icon="pen"       title="Learning Path" desc="Modul bertahap dari pemula ke AI-ready"                   to="/paths"           color="violet"/>
-            <QuickAction icon="bookOpen"  title="Tutorial"      desc="Panduan lengkap 13 langkah"                               to="/tutorial"        color="gold"/>
-            <StarterPackDashCard/>
+            {/* ── Grid 3 kolom — fitur lainnya ── */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
+              <QuickAction icon="layers"   title="Semua Maddah"  desc={`${totalS1} maddah S1 · ${promptDisplay} prompt template`} to="/maddah"          color="violet"/>
+              <QuickAction icon="target"   title="Siap Imtihan"  desc="6 mode persiapan ujian gaya Azhari"                        to="/siap-imtihan"    color="gold"/>
+              <QuickAction icon="scale"    title="Muqaranah"     desc="Banding qoul ulama 4 madzhab"                              to="/paths/muqaranah" color="violet"/>
+              <QuickAction icon="notebook" title="Kurasah"       desc="Catatan & ta'liq belajarmu"                               to="/kurasah"         color="gold"/>
+              <QuickAction icon="bookOpen" title="Bank Soal"     desc="Soal imtihan tahun-tahun sebelumnya"                      to="/siap-imtihan"    color="violet"/>
+              <QuickAction icon="pen"      title="Learning Path" desc="Modul bertahap dari pemula ke AI-ready"                   to="/paths"           color="violet"/>
+              <QuickAction icon="bookOpen" title="Tutorial"      desc="Panduan lengkap 13 langkah"                               to="/tutorial"        color="gold"/>
+              <StarterPackDashCard/>
+            </div>
+
           </Reveal>
         </div>
       </section>
