@@ -1361,6 +1361,7 @@ const AdminBankSoal = () => {
   const [soalItems, setSoalItems]         = useState([]);
   const [savingJawaban, setSavingJawaban] = useState(false);
   const [savedJawaban, setSavedJawaban]   = useState(false);
+  const [tahunDariSoal, setTahunDariSoal] = useState(null);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [parsing, setParsing]   = useState(false);
   const [acting, setActing]     = useState(false);
@@ -1406,6 +1407,7 @@ const AdminBankSoal = () => {
     setSoalTeks(soal.soal || '');
     setSoalItems([]);
     setSavedJawaban(false);
+    setTahunDariSoal(null);
     setRejectReason('');
     setShowReject(false);
     setReward('');
@@ -1437,8 +1439,10 @@ const AdminBankSoal = () => {
         body: JSON.stringify({ soal_id: selected.id, foto_url: selected.foto_url })
       });
       const data = await res.json();
-      if (data.ok) setSoalTeks(data.teks);
-      else alert('Parse gagal: ' + data.error);
+      if (data.ok) {
+        setSoalTeks(data.teks);
+        if (data.tahun_dari_soal) setTahunDariSoal(data.tahun_dari_soal);
+      } else alert('Parse gagal: ' + data.error);
     } catch (e) { alert('Error: ' + e.message); }
     finally { setParsing(false); }
   };
@@ -1666,6 +1670,30 @@ const AdminBankSoal = () => {
                   className="w-full py-2.5 rounded-xl text-sm border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10 disabled:opacity-50 transition font-medium">
                   {parsing ? '⏳ AI sedang membaca foto...' : '🤖 Parse Teks dengan AI'}
                 </button>
+              )}
+
+              {/* Info tahun dari kertas soal */}
+              {tahunDariSoal && (
+                <div style={{
+                  marginBottom: 10, padding: '8px 12px',
+                  background: tahunDariSoal === selected.tahun
+                    ? 'rgba(62,207,142,0.08)'
+                    : 'rgba(255,200,50,0.08)',
+                  border: `1px solid ${tahunDariSoal === selected.tahun
+                    ? 'rgba(62,207,142,0.25)'
+                    : 'rgba(255,200,50,0.3)'}`,
+                  borderRadius: 8, fontSize: 12,
+                }}>
+                  {tahunDariSoal === selected.tahun ? (
+                    <span style={{ color: '#3ecf8e' }}>
+                      ✅ Tahun di kertas soal: <strong>{tahunDariSoal}</strong> — sesuai dengan submission
+                    </span>
+                  ) : (
+                    <span style={{ color: '#ffc832' }}>
+                      ⚠️ Tahun di kertas soal: <strong>{tahunDariSoal}</strong> — berbeda dengan yang disubmit ({selected.tahun || 'tidak ada'})
+                    </span>
+                  )}
+                </div>
               )}
 
               {/* Preview hasil parse — tampilkan Arab + arti per soal */}

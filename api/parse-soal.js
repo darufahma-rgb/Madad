@@ -100,15 +100,26 @@ ATURAN TRANSKRIPSI — TIDAK BOLEH DILANGGAR:
 4. DILARANG menambah kata yang tidak ada di foto
 5. Jika ada bagian tidak terbaca: tulis [...] di posisi itu
 
-FORMAT OUTPUT — gunakan PERSIS format ini untuk setiap soal:
+FORMAT OUTPUT — gunakan PERSIS format ini:
+
+[TAHUN_AKADEMIK]
+(tulis tahun akademik yang tertera di kertas, contoh: 2024/2025 atau 1445/1446)
+(jika tidak ada tahun di kertas: tulis "TIDAK_TERTERA")
 
 [SOAL_ARAB]
 (teks soal Arab persis seperti di foto)
 [ARTI]
 (terjemahan natural ke bahasa Indonesia)
 
-PENTING: Jangan tambahkan kalimat pembuka, penutup, atau komentar apapun.
-Langsung mulai dengan [SOAL_ARAB] untuk soal pertama.
+[SOAL_ARAB]
+(soal berikutnya dst...)
+[ARTI]
+(terjemahan soal berikutnya)
+
+PENTING:
+- Mulai SELALU dengan [TAHUN_AKADEMIK]
+- Setelah itu langsung soal-soal dengan format [SOAL_ARAB]/[ARTI]
+- Jangan tambahkan kalimat pembuka, penutup, atau komentar apapun
 
 Jika tidak ada soal yang bisa dibaca: tulis hanya "FOTO_TIDAK_TERBACA"
 Jika foto jelas tapi bukan soal ujian Al-Azhar: tulis hanya "BUKAN_SOAL_AZHAR"`
@@ -123,7 +134,28 @@ Jika foto jelas tapi bukan soal ujian Al-Azhar: tulis hanya "BUKAN_SOAL_AZHAR"`
 
     if (!hasil) throw new Error('AI tidak mengembalikan hasil');
 
-    // Update kolom soal di database
+    // Ekstrak tahun akademik dari hasil
+    let tahunDariSoal = null;
+    const tahunMatch = hasil.match(/\[TAHUN_AKADEMIK\]\s*\n([^\n]+)/);
+    if (tahunMatch) {
+      const tahunRaw = tahunMatch[1].trim();
+      if (tahunRaw !== 'TIDAK_TERTERA') {
+        tahunDariSoal = tahunRaw;
+      }
+    }
+
+    // Hapus baris [TAHUN_AKADEMIK] dari teks soal yang disimpan
+    const teksSoalBersih = hasil
+      .replace(/\[TAHUN_AKADEMIK\]\s*\n[^\n]+\n?/, '')
+      .trim();
+
+    // Siapkan body update
+    const updateBody = { soal: teksSoalBersih, ai_parsed: true };
+    if (tahunDariSoal) {
+      updateBody.notes = `Tahun di kertas soal: ${tahunDariSoal}`;
+    }
+
+    // Update database
     await fetch(`${supabaseUrl}/rest/v1/bank_soal?id=eq.${soal_id}`, {
       method: 'PATCH',
       headers: {
@@ -131,10 +163,10 @@ Jika foto jelas tapi bukan soal ujian Al-Azhar: tulis hanya "BUKAN_SOAL_AZHAR"`
         Authorization: `Bearer ${serviceKey}`,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ soal: hasil, ai_parsed: true })
+      body: JSON.stringify(updateBody)
     });
 
-    return res.status(200).json({ ok: true, teks: hasil });
+    return res.status(200).json({ ok: true, teks: teksSoalBersih, tahun_dari_soal: tahunDariSoal });
   } catch (err) {
     return res.status(500).json({ ok: false, error: err.message });
   }
