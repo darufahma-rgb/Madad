@@ -70,58 +70,37 @@ async function handleParseSoal(req, res) {
             { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}` } },
             {
               type: 'text',
-              text: `Kamu adalah mesin transkripsi soal ujian Al-Azhar yang sangat presisi.
+              text: `Kamu adalah mesin transkripsi soal ujian yang sangat presisi.
 
-LANGKAH 1 — IDENTIFIKASI BAGIAN SOAL
-Kertas ujian Al-Azhar biasanya punya struktur:
-[HEADER] → [INSTRUKSI UMUM] → [SOAL-SOAL] → [FOOTER]
+TUGAS: Baca foto kertas ujian ini dan ekstrak HANYA soal-soal ujiannya.
 
-Kamu HANYA perlu bagian SOAL-SOAL saja.
-
-ABAIKAN TOTAL (jangan transkripsi):
-- Baris "بسم الله الرحمن الرحيم"
-- Nama universitas, fakultas, jurusan, shu'bah
-- Nama matakuliah/المادة
-- Tahun akademik/العام الدراسي (tapi CATAT untuk [TAHUN_AKADEMIK])
-- Waktu ujian/الزمن
-- Nama dosen/الأستاذ
-- Stempel, tanda tangan, kop surat
-- Instruksi teknis: "أجب عن كل الأسئلة", "الزمن ساعتان", "ممنوع الغش"
-- Bobot nilai: "[٢٠ درجة]", "(١٠ نقاط)", "درجات"
-- Footer: "انتهت الأسئلة", "مع تمنياتنا بالتوفيق"
-- Nama mahasiswa, nomor kursi
+ABAIKAN bagian yang bukan soal:
+- Baris pembuka (بسم الله الرحمن الرحيم)
+- Informasi ujian (tahun akademik, waktu, kode matakuliah, jumlah soal, bobot nilai)
+- Instruksi teknis ujian
+- Baris penutup (انتهت الأسئلة، وبالله التوفيق)
+- Teks kecil di bagian bawah kertas
 
 TRANSKRIPSI HANYA:
-Pertanyaan/soal yang dimulai dengan:
-- Nomor: ١- atau ١. atau (١) atau السؤال الأول
-- Kata kerja perintah: اشرح / عرّف / بيّن / اذكر / قارن / وضّح / حدّد / استدل / تكلم / اكتب / ما هو / ما هي / كيف
+Semua pertanyaan yang bernomor (السؤال الأول، السؤال الثاني، ١، ٢، dst) atau yang dimulai dengan kata kerja perintah Arab.
 
-LANGKAH 2 — FORMAT OUTPUT
-
-Pertama tulis tahun:
-[TAHUN_AKADEMIK]
-2024/2025
-
-Kemudian untuk SETIAP soal, tulis PERSIS format ini (satu soal = satu blok):
-
-[SOAL_ARAB]
-١. اشرح مفهوم الإجماع وبيّن حجيته عند الأصوليين.
-[ARTI]
-1. Jelaskan konsep ijma' dan sebutkan kehujjahannya menurut para ahli ushul fiqh.
-
-[SOAL_ARAB]
-٢. عرّف القياس لغةً واصطلاحاً، وما هي أركانه؟
-[ARTI]
-2. Definisikan qiyas secara bahasa dan istilah, dan apa saja rukun-rukunnya?
-
-ATURAN TRANSKRIPSI:
-- Salin teks Arab PERSIS seperti di foto — jangan ubah harakat, ejaan, atau kata
-- Satu [SOAL_ARAB] = satu nomor soal (jangan gabungkan dua soal)
-- Kalau satu soal punya sub-pertanyaan (أ، ب، ج) — tetap satu blok [SOAL_ARAB]
+ATURAN:
+- Salin teks Arab PERSIS seperti di foto — jangan ubah satu huruf pun
+- Jangan tambah atau kurangi harakat
+- Sub-pertanyaan (أ، ب، ج) tetap dalam satu blok soal
 - Bagian tidak terbaca: tulis [...]
-- Jika tidak ada soal yang bisa dibaca: "FOTO_TIDAK_TERBACA"
 
-MULAI SEKARANG — langsung dengan [TAHUN_AKADEMIK], tanpa komentar apapun:`
+FORMAT OUTPUT — mulai langsung dengan [TAHUN_AKADEMIK]:
+
+[TAHUN_AKADEMIK]
+(tahun akademik dari kertas, contoh: 2025/2026 — jika tidak ada: TIDAK_TERTERA)
+
+[SOAL_ARAB]
+(teks soal Arab persis seperti di foto)
+[ARTI]
+(terjemahan natural ke bahasa Indonesia)
+
+Jika tidak ada soal terbaca: tulis "FOTO_TIDAK_TERBACA"`
             }
           ]
         }]
