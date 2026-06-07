@@ -200,6 +200,18 @@ http.createServer(async (req, res) => {
     return;
   }
 
+  // ── /api/foto-soal ────────────────────────────────────────────────────
+  if (urlPath === '/api/foto-soal') {
+    try {
+      const rawBody = await readBody(req);
+      await callApiHandler('./api/foto-soal.js', req, res, rawBody);
+    } catch (err) {
+      console.error('[foto-soal] Error:', err.message);
+      json(res, 500, { ok: false, error: err.message });
+    }
+    return;
+  }
+
   // ── /api/admin-bank-soal ──────────────────────────────────────────────
   if (urlPath === '/api/admin-bank-soal') {
     try {

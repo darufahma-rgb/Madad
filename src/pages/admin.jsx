@@ -1363,13 +1363,31 @@ const AdminBankSoal = () => {
 
   const handleFilterChange = (f) => { setFilter(f); fetchData(f); };
 
+  const [signedUrl, setSignedUrl] = React.useState(null);
+  const [loadingFoto, setLoadingFoto] = React.useState(false);
+
   const openModal = (soal) => {
     setSelected(soal);
     setSoalTeks(soal.soal || '');
     setRejectReason('');
     setShowReject(false);
     setReward('');
+    setSignedUrl(null);
   };
+
+  React.useEffect(() => {
+    if (selected?.foto_url && !selected?.foto_deleted) {
+      setLoadingFoto(true);
+      fetch('/api/foto-soal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ foto_url: selected.foto_url })
+      })
+        .then(r => r.json())
+        .then(data => { if (data.ok) setSignedUrl(data.signedUrl); })
+        .finally(() => setLoadingFoto(false));
+    }
+  }, [selected?.foto_url]);
 
   const handleParse = async () => {
     if (!selected?.foto_url || selected?.foto_deleted) return;
@@ -1539,17 +1557,28 @@ const AdminBankSoal = () => {
               </div>
 
               {/* Foto */}
-              {selected.foto_url && !selected.foto_deleted && (
-                <div>
-                  <div className="text-xs text-ink-muted mb-2 font-medium uppercase tracking-wide">Foto Soal</div>
-                  <img src={selected.foto_url} alt="soal" className="w-full rounded-xl max-h-72 object-contain bg-white/5 border border-white/8"/>
-                </div>
-              )}
-              {selected.foto_deleted && (
-                <div className="text-xs text-ink-muted italic bg-white/5 rounded-lg px-3 py-2">
-                  📷 Foto sudah dihapus setelah diapprove
-                </div>
-              )}
+              <div>
+                <div className="text-xs text-ink-muted mb-2 font-medium uppercase tracking-wide">Foto Soal</div>
+                {selected.foto_deleted ? (
+                  <div style={{ padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, color: '#888', fontSize: 13, textAlign: 'center' }}>
+                    🗑️ Foto sudah dihapus setelah di-parse
+                  </div>
+                ) : loadingFoto ? (
+                  <div style={{ padding: '12px', color: '#888', fontSize: 13, textAlign: 'center' }}>
+                    Memuat foto...
+                  </div>
+                ) : signedUrl ? (
+                  <img
+                    src={signedUrl}
+                    alt="Foto soal"
+                    style={{ width: '100%', borderRadius: 8, maxHeight: 400, objectFit: 'contain', background: '#1a1a1a' }}
+                  />
+                ) : (
+                  <div style={{ padding: '12px', color: '#888', fontSize: 13, textAlign: 'center' }}>
+                    Foto tidak tersedia
+                  </div>
+                )}
+              </div>
 
               {/* Parse AI button */}
               {selected.foto_url && !selected.foto_deleted && selected.status === 'pending' && (
