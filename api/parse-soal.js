@@ -62,7 +62,8 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'anthropic/claude-3-haiku',
-        max_tokens: 2000,
+        max_tokens: 3000,
+        temperature: 0,
         messages: [{
           role: 'user',
           content: [
@@ -72,40 +73,46 @@ export default async function handler(req, res) {
             },
             {
               type: 'text',
-              text: `Kamu adalah asisten akademik Al-Azhar yang ahli bahasa Arab dan bahasa Indonesia.
+              text: `Kamu adalah mesin transkripsi teks Arab yang sangat presisi.
 
-Ini adalah foto kertas soal ujian tahriri dari Universitas Al-Azhar Kairo.
+TUGAS UTAMA: Salin PERSIS semua teks yang tercetak di foto ini — karakter demi karakter, tanpa mengubah apapun.
 
-TUGAS KAMU:
-1. Ekstrak semua soal dari foto
-2. Untuk setiap soal, berikan format PERSIS seperti ini:
+ATURAN WAJIB — TIDAK BOLEH DILANGGAR:
+1. DILARANG menambah harakat yang tidak ada di foto
+2. DILARANG menghapus harakat yang ada di foto
+3. DILARANG mengubah ejaan — walau terlihat salah ketik
+4. DILARANG menambah/menghapus huruf
+5. DILARANG mengubah urutan kata atau kalimat
+6. DILARANG memperbaiki grammar Arab
+7. DILARANG menambahkan tanda baca yang tidak ada
+8. DILARANG menggabungkan atau memisahkan kata yang berbeda dari aslinya
 
-[SOAL_ARAB]
-(teks soal dalam bahasa Arab persis seperti di kertas)
-[ARTI]
-(terjemahan soal ke bahasa Indonesia yang natural, pertahankan istilah teknis dalam bahasa Arab)
-
-Contoh format output yang benar:
-[SOAL_ARAB]
-١. عرّف النحو لغةً واصطلاحاً مع بيان موضوعه وفائدته.
-[ARTI]
-1. Definisikan Nahwu secara bahasa dan istilah, beserta penjelasan objek kajian dan manfaatnya.
+FORMAT OUTPUT:
+Untuk setiap soal/pertanyaan yang ditemukan, gunakan format PERSIS ini:
 
 [SOAL_ARAB]
-٢. ما هي أقسام الكلام عند النحويين؟ مع التمثيل لكل قسم.
+(teks soal Arab persis seperti di foto — tidak boleh diubah sedikitpun)
 [ARTI]
-2. Apa saja pembagian kalam menurut para ahli nahwu? Beserta contoh untuk setiap pembagian.
+(terjemahan natural ke bahasa Indonesia — HANYA bagian ini boleh kamu tulis sendiri)
 
-ATURAN KETAT:
-- Tulis teks Arab PERSIS seperti di foto — jangan ubah harakat atau kata apapun
-- Terjemahan harus natural dalam bahasa Indonesia — bukan terjemahan kaku kata per kata
-- Pertahankan istilah teknis (nahwu, fiqh, ushul, dll) dalam bahasa Arab di terjemahan
-- Nomor soal ikuti yang ada di foto
-- Kalau foto blur atau tidak terbaca: tulis hanya "FOTO_TIDAK_TERBACA"
-- Kalau bukan soal ujian Al-Azhar berbahasa Arab: tulis hanya "BUKAN_SOAL_AZHAR"
-- Jangan tambahkan komentar, penjelasan, atau apapun di luar format di atas
+CONTOH yang BENAR:
+Jika di foto tertulis: "١. عرف النحو لغةً" (tanpa harakat di "عرف")
+Maka output HARUS: "١. عرف النحو لغةً" (bukan "١. عَرِّفِ النَّحْوَ لُغَةً")
 
-Ekstrak sekarang:`
+CONTOH yang SALAH:
+❌ Menambah harakat: "عَرِّفِ" padahal di foto "عرف"
+❌ Mengubah kata: "اشرح" padahal di foto "بيّن"
+❌ Menambah nomor soal yang tidak ada
+❌ Menggabungkan 2 soal menjadi 1
+
+KONDISI KHUSUS:
+- Jika ada bagian yang benar-benar tidak terbaca: tulis [...] di posisi itu
+- Jika foto sepenuhnya tidak terbaca: tulis hanya "FOTO_TIDAK_TERBACA"
+- Jika bukan soal ujian berbahasa Arab: tulis hanya "BUKAN_SOAL_AZHAR"
+- Header/footer (nama kampus, nama matakuliah, tanggal, nama dosen): BOLEH diabaikan
+- Instruksi ujian ("أجب عن الأسئلة التالية" dll): WAJIB disertakan persis
+
+Mulai transkripsi sekarang — salin apa yang kamu lihat, bukan apa yang menurutmu seharusnya tertulis:`
             }
           ]
         }]
