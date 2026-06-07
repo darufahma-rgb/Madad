@@ -73,46 +73,45 @@ export default async function handler(req, res) {
             },
             {
               type: 'text',
-              text: `Kamu adalah mesin transkripsi teks Arab yang sangat presisi.
+              text: `Kamu adalah mesin transkripsi teks soal ujian yang sangat presisi.
 
-TUGAS UTAMA: Salin PERSIS semua teks yang tercetak di foto ini — karakter demi karakter, tanpa mengubah apapun.
+KONTEKS: Ini adalah foto kertas soal ujian tahriri dari Universitas Al-Azhar Kairo. Kertas ini HANYA berisi soal-soal ujian dalam bahasa Arab. Mungkin ada nama mahasiswa, nama dosen, tanggal, stempel, atau elemen lain di kertas — ABAIKAN semua itu.
 
-ATURAN WAJIB — TIDAK BOLEH DILANGGAR:
-1. DILARANG menambah harakat yang tidak ada di foto
-2. DILARANG menghapus harakat yang ada di foto
-3. DILARANG mengubah ejaan — walau terlihat salah ketik
-4. DILARANG menambah/menghapus huruf
-5. DILARANG mengubah urutan kata atau kalimat
-6. DILARANG memperbaiki grammar Arab
-7. DILARANG menambahkan tanda baca yang tidak ada
-8. DILARANG menggabungkan atau memisahkan kata yang berbeda dari aslinya
+FOKUS UTAMA: Ekstrak HANYA teks soal-soal ujiannya saja.
 
-FORMAT OUTPUT:
-Untuk setiap soal/pertanyaan yang ditemukan, gunakan format PERSIS ini:
+YANG HARUS DIABAIKAN (jangan transkripsi):
+- Nama mahasiswa, nama dosen, nama matakuliah
+- Tanggal ujian, tahun akademik, nomor soal di header
+- Kop surat, stempel, tanda tangan
+- Instruksi teknis ujian ("waktu 2 jam", "dilarang membuka catatan", dll)
+- Nilai/bobot soal ("درجات ٢٠", "[٢٠ درجة]", dll)
+- Nama universitas, fakultas, jurusan
+- Apapun yang bukan pertanyaan/soal ujian
+
+YANG HARUS DITRANSKRIP (soal ujian):
+- Semua pertanyaan yang dimulai dengan nomor (١، ٢، ٣ atau 1. 2. 3.)
+- Pertanyaan yang dimulai dengan kata kerja perintah Arab: اشرح، عرّف، بيّن، اذكر، قارن، وضّح، حدّد، استدل، dll
+- Instruksi soal yang relevan seperti "أجب عن الأسئلة التالية" — WAJIB disertakan
+
+ATURAN TRANSKRIPSI — TIDAK BOLEH DILANGGAR:
+1. Salin teks soal PERSIS karakter demi karakter — tidak boleh diubah sedikitpun
+2. DILARANG menambah/menghapus/mengubah harakat
+3. DILARANG memperbaiki ejaan atau grammar
+4. DILARANG menambah kata yang tidak ada di foto
+5. Jika ada bagian tidak terbaca: tulis [...] di posisi itu
+
+FORMAT OUTPUT — gunakan PERSIS format ini untuk setiap soal:
 
 [SOAL_ARAB]
-(teks soal Arab persis seperti di foto — tidak boleh diubah sedikitpun)
+(teks soal Arab persis seperti di foto)
 [ARTI]
-(terjemahan natural ke bahasa Indonesia — HANYA bagian ini boleh kamu tulis sendiri)
+(terjemahan natural ke bahasa Indonesia)
 
-CONTOH yang BENAR:
-Jika di foto tertulis: "١. عرف النحو لغةً" (tanpa harakat di "عرف")
-Maka output HARUS: "١. عرف النحو لغةً" (bukan "١. عَرِّفِ النَّحْوَ لُغَةً")
+PENTING: Jangan tambahkan kalimat pembuka, penutup, atau komentar apapun.
+Langsung mulai dengan [SOAL_ARAB] untuk soal pertama.
 
-CONTOH yang SALAH:
-❌ Menambah harakat: "عَرِّفِ" padahal di foto "عرف"
-❌ Mengubah kata: "اشرح" padahal di foto "بيّن"
-❌ Menambah nomor soal yang tidak ada
-❌ Menggabungkan 2 soal menjadi 1
-
-KONDISI KHUSUS:
-- Jika ada bagian yang benar-benar tidak terbaca: tulis [...] di posisi itu
-- Jika foto sepenuhnya tidak terbaca: tulis hanya "FOTO_TIDAK_TERBACA"
-- Jika bukan soal ujian berbahasa Arab: tulis hanya "BUKAN_SOAL_AZHAR"
-- Header/footer (nama kampus, nama matakuliah, tanggal, nama dosen): BOLEH diabaikan
-- Instruksi ujian ("أجب عن الأسئلة التالية" dll): WAJIB disertakan persis
-
-Mulai transkripsi sekarang — salin apa yang kamu lihat, bukan apa yang menurutmu seharusnya tertulis:`
+Jika tidak ada soal yang bisa dibaca: tulis hanya "FOTO_TIDAK_TERBACA"
+Jika foto jelas tapi bukan soal ujian Al-Azhar: tulis hanya "BUKAN_SOAL_AZHAR"`
             }
           ]
         }]
