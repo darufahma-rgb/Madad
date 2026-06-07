@@ -32,6 +32,13 @@ const compressImage = (file, maxSizeMB = 0.8) => {
 };
 
 function SubmitSoalPage() {
+  const isMember = (() => {
+    try {
+      const s = JSON.parse(localStorage.getItem('madad_session') || '{}');
+      return !!s.code;
+    } catch { return false; }
+  })();
+
   const [step, setStep]         = useState('form');
   const [loading, setLoading]   = useState(false);
   const [dupMsg, setDupMsg]     = useState('');
@@ -262,15 +269,209 @@ function SubmitSoalPage() {
           </p>
         </div>
 
-        {/* Reward info */}
-        <div style={{ background: 'rgba(62,207,142,0.06)', border: '1px solid rgba(62,207,142,0.2)', borderRadius: 12, padding: '14px 16px', marginBottom: 16, fontSize: 13 }}>
-          <div style={{ fontWeight: 700, color: EM, marginBottom: 8 }}>🎁 Sistem Reward</div>
-          <div style={{ color: '#ccc', lineHeight: 1.9 }}>
-            • Submit <strong style={{ color: '#fff' }}>1 termin penuh</strong> → Akses Talqeeh <strong style={{ color: EM }}>lifetime GRATIS</strong><br/>
-            • Submit <strong style={{ color: '#fff' }}>2 termin penuh</strong> → Lifetime + merchandise Talqeeh<br/>
-            • Submit <strong style={{ color: '#fff' }}>sebagian</strong> → Diskon spesial untuk bergabung
+        {/* Reward info — beda tampilan untuk publik vs member */}
+        {isMember ? (
+
+          /* ── MEMBER: Poin & Milestone ── */
+          <div style={{
+            background: 'rgba(62,207,142,0.06)',
+            border: '1px solid rgba(62,207,142,0.25)',
+            borderRadius: 16,
+            padding: '18px 20px',
+            marginBottom: 20,
+          }}>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 10,
+                background: 'rgba(62,207,142,0.15)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 18,
+              }}>🏆</div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>
+                  Kontribusi untuk Masisir
+                </div>
+                <div style={{ fontSize: 12, color: '#888' }}>
+                  Kumpulkan poin & tukar hadiah eksklusif
+                </div>
+              </div>
+            </div>
+
+            {/* Tier poin */}
+            {[
+              {
+                poin: '100 poin',
+                syarat: '1 termin penuh',
+                reward: 'Badge Kontributor di profil + nama di Hall of Fame',
+                icon: '🏅',
+                color: 'rgba(62,207,142,0.15)',
+                borderColor: 'rgba(62,207,142,0.3)',
+                textColor: '#3ecf8e',
+              },
+              {
+                poin: '250 poin',
+                syarat: '2 termin penuh',
+                reward: 'Voucher makan gratis di warung Indonesia Cairo 🍽️',
+                icon: '🎁',
+                color: 'rgba(255,200,50,0.08)',
+                borderColor: 'rgba(255,200,50,0.3)',
+                textColor: '#ffc832',
+                highlight: true,
+              },
+              {
+                poin: '500 poin',
+                syarat: '4-5 termin',
+                reward: 'Voucher makan untuk 2 orang di Cairo',
+                icon: '⭐',
+                color: 'rgba(255,140,50,0.08)',
+                borderColor: 'rgba(255,140,50,0.25)',
+                textColor: '#ff8c32',
+              },
+            ].map((tier) => (
+              <div key={tier.poin} style={{
+                display: 'flex', gap: 12, alignItems: 'flex-start',
+                padding: '10px 12px', borderRadius: 10, marginBottom: 8,
+                background: tier.color,
+                border: `1px solid ${tier.borderColor}`,
+                position: 'relative',
+              }}>
+                {tier.highlight && (
+                  <div style={{
+                    position: 'absolute', top: -8, right: 10,
+                    fontSize: 10, fontWeight: 800,
+                    background: '#ffc832', color: '#000',
+                    padding: '2px 8px', borderRadius: 99,
+                  }}>POPULER</div>
+                )}
+                <div style={{ fontSize: 20, flexShrink: 0, marginTop: 1 }}>{tier.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: tier.textColor }}>
+                      {tier.poin}
+                    </span>
+                    <span style={{ fontSize: 11, color: '#777' }}>·</span>
+                    <span style={{ fontSize: 11, color: '#888' }}>{tier.syarat}</span>
+                  </div>
+                  <div style={{ fontSize: 12, color: '#ccc', lineHeight: 1.5 }}>
+                    {tier.reward}
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Catatan */}
+            <div style={{
+              marginTop: 12, fontSize: 11, color: '#666',
+              borderTop: '1px solid rgba(255,255,255,0.06)',
+              paddingTop: 10, lineHeight: 1.6,
+            }}>
+              💡 Poin dihitung setelah soal diverifikasi admin. Voucher makan dikirim via WhatsApp setelah threshold tercapai.
+            </div>
           </div>
-        </div>
+
+        ) : (
+
+          /* ── PUBLIK: Tiket/Voucher Emas ── */
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(255,200,50,0.08) 0%, rgba(255,150,30,0.06) 100%)',
+            border: '1.5px solid rgba(255,200,50,0.35)',
+            borderRadius: 16,
+            padding: '20px',
+            marginBottom: 20,
+            position: 'relative',
+            overflow: 'hidden',
+          }}>
+            {/* Background glow */}
+            <div style={{
+              position: 'absolute', top: -20, right: -20,
+              width: 120, height: 120, borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(255,200,50,0.15) 0%, transparent 70%)',
+              pointerEvents: 'none',
+            }}/>
+
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, position: 'relative' }}>
+              <div style={{ fontSize: 28 }}>🎟️</div>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#ffc832' }}>
+                  Dapatkan Talqeeh GRATIS
+                </div>
+                <div style={{ fontSize: 12, color: '#a08030' }}>
+                  Submit soal ujian Al-Azhar → dapat reward
+                </div>
+              </div>
+            </div>
+
+            {/* Reward tiers */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, position: 'relative' }}>
+              {[
+                {
+                  icon: '⭐⭐',
+                  label: '1 termin penuh',
+                  reward: 'Akses Talqeeh LIFETIME GRATIS',
+                  highlight: true,
+                },
+                {
+                  icon: '⭐⭐⭐',
+                  label: '2 termin penuh',
+                  reward: 'Lifetime + voucher makan Cairo 🍽️',
+                  highlight: false,
+                },
+                {
+                  icon: '✦',
+                  label: 'Submit sebagian',
+                  reward: 'Diskon spesial untuk bergabung',
+                  highlight: false,
+                },
+              ].map((item) => (
+                <div key={item.label} style={{
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '10px 14px', borderRadius: 10,
+                  background: item.highlight
+                    ? 'rgba(255,200,50,0.12)'
+                    : 'rgba(255,255,255,0.03)',
+                  border: item.highlight
+                    ? '1px solid rgba(255,200,50,0.4)'
+                    : '1px solid rgba(255,255,255,0.06)',
+                }}>
+                  <span style={{ fontSize: 14, flexShrink: 0 }}>{item.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <span style={{ fontSize: 12, color: '#888' }}>{item.label} → </span>
+                    <span style={{
+                      fontSize: 13, fontWeight: 800,
+                      color: item.highlight ? '#ffc832' : '#ccc',
+                    }}>
+                      {item.reward}
+                    </span>
+                  </div>
+                  {item.highlight && (
+                    <span style={{
+                      fontSize: 10, fontWeight: 800,
+                      background: '#ffc832', color: '#000',
+                      padding: '2px 8px', borderRadius: 99,
+                      flexShrink: 0,
+                    }}>GRATIS</span>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <div style={{
+              marginTop: 14, padding: '10px 14px',
+              background: 'rgba(255,200,50,0.08)',
+              border: '1px dashed rgba(255,200,50,0.3)',
+              borderRadius: 10,
+              fontSize: 12, color: '#a08030', lineHeight: 1.6,
+              position: 'relative',
+            }}>
+              🎓 Sudah 90+ Masisir pakai Talqeeh untuk persiapan imtihan.
+              Submit soal & bergabung sekarang — gratis!
+            </div>
+          </div>
+
+        )}
 
         {/* Panduan Accordion */}
         <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, marginBottom: 20, overflow: 'hidden' }}>
