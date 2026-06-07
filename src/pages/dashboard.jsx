@@ -903,11 +903,19 @@ const DashboardPage = () => {
             <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">Aksi cepat</h2>
           </Reveal>
           <Reveal stagger className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
-            <QuickAction icon="layers"    title="Semua Maddah"    desc={`${totalS1} maddah S1 · ${promptDisplay} prompt template`}      to="/maddah"             color="violet"/>
-            <QuickAction icon="bookOpen"  title="Adaptive guide"  desc="Guide tiap AI sesuai gaya belajarmu"           to="/tools"              color="gold"/>
-            <QuickAction icon="scale"     title="Muqaranah"       desc="Banding qoul ulama 4 madzhab"                  to="/paths/muqaranah"    color="violet"/>
-            <QuickAction icon="notebook"  title="Kurasah"         desc="Catatan & ta'liq belajarmu"                    to="/kurasah"            color="gold"/>
-            <QuickAction icon="pen"       title="Learning Path"   desc="Modul bertahap dari pemula ke AI-ready"        to="/paths"              color="violet"/>
+            {/* Baris 1 — Belajar */}
+            <QuickAction icon="layers"    title="Semua Maddah"  desc={`${totalS1} maddah S1 · ${promptDisplay} prompt template`} to="/maddah"          color="violet"/>
+            <QuickAction icon="target"    title="Siap Imtihan"  desc="6 mode persiapan ujian gaya Azhari"                        to="/siap-imtihan"    color="gold"/>
+            <QuickAction icon="scale"     title="Muqaranah"     desc="Banding qoul ulama 4 madzhab"                              to="/paths/muqaranah" color="violet"/>
+
+            {/* Baris 2 — Kelola */}
+            <QuickAction icon="notebook"  title="Kurasah"       desc="Catatan & ta'liq belajarmu"                               to="/kurasah"         color="gold"/>
+            <QuickAction icon="bookOpen"  title="Bank Soal"     desc="Soal imtihan tahun-tahun sebelumnya"                      to="/siap-imtihan"    color="violet"/>
+            <QuickAction icon="upload"    title="Submit Soal"   desc="Kontribusi soal & dapat reward"                           to="/submit-soal"     color="gold"/>
+
+            {/* Baris 3 — Lainnya */}
+            <QuickAction icon="pen"       title="Learning Path" desc="Modul bertahap dari pemula ke AI-ready"                   to="/paths"           color="violet"/>
+            <QuickAction icon="bookOpen"  title="Tutorial"      desc="Panduan lengkap 13 langkah"                               to="/tutorial"        color="gold"/>
             <StarterPackDashCard/>
           </Reveal>
         </div>
