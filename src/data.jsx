@@ -1192,6 +1192,5 @@ Object.assign(window, {
   AI_TOOLS, recommend,
   LEARNING_PATHS, allModules,
   ETHICS_POINTS,
-  DEFAULT_MEMBERS,
   getMahadStruggles,
 });

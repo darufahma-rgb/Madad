@@ -394,13 +394,12 @@ const trackPromptCopied = (maddahId) => {
 Object.assign(window, {
   STORAGE_KEYS, LOGIN_RESULT,
   getDeviceId, getDeviceLabel,
-  loadMembers, saveMembers, findMember, generateCode,
-  tryLogin, logout, getSession,
+  isAdminLoggedIn, setAdminLoggedIn,
+  generateCode,
+  tryLogin, useAuth, getSession,
   getProfile, saveProfile, clearProfile,
   getProgress, saveProgress, markModuleComplete, setLastActivity,
   computePathProgress, computeStage,
-  isAdminLoggedIn, setAdminLoggedIn,
   loadNotes, saveNotes,
   loadMaddahActivity, trackMaddahOpen, trackPromptCopied,
-  useAuth,
 });

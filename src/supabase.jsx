@@ -151,18 +151,8 @@ const sbGetAllMembersFallback = () => {
 };
 
 Object.assign(window, {
-  _supabase: _getClient(),
   _onSupabaseReady,
   checkSupabase,
-  sbToMember,
-  memberToSb,
-  sbGetAllMembers,
-  sbGetMemberByCode,
-  sbAddMember,
-  sbUpdateMember,
-  sbDeleteMember,
-  sbBindDevice,
-  sbResetDevice,
   sbGetAllMembersFallback,
 });
 
@@ -437,14 +427,3 @@ const sbPushAllUserData = async () => {
   ].filter(Boolean));
 };
 
-Object.assign(window, {
-  getMemberCode,
-  sbLoadNotes, sbSaveNote, sbDeleteNote,
-  sbLoadProgress, sbSaveProgress,
-  sbLoadIntentions, sbSaveIntention,
-  sbLoadPresence, sbSavePresence,
-  sbLoadMuqaranah, sbSaveMuqaranah, sbDeleteMuqaranah,
-  sbSaveProfile, sbLoadProfile,
-  sbSaveMaddahActivity, sbLoadMaddahActivity,
-  sbPullAllUserData, sbPushAllUserData,
-});
