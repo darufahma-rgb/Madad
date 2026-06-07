@@ -1330,6 +1330,7 @@ const AdminBankSoal = () => {
   const [artiSoal, setArtiSoal]     = useState('');
   const [jawaban, setJawaban]       = useState('');
   const [penjelasan, setPenjelasan] = useState('');
+  const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [parsing, setParsing]   = useState(false);
   const [acting, setActing]     = useState(false);
   const [rejectReason, setRejectReason] = useState('');
@@ -1613,6 +1614,93 @@ const AdminBankSoal = () => {
                   }}
                   placeholder="Teks soal akan muncul di sini setelah di-parse, atau isi manual..."
                 />
+              </div>
+
+              {/* Tombol Salin Prompt */}
+              <div style={{ marginBottom: 20 }}>
+                <div style={{
+                  background: 'rgba(62,207,142,0.06)',
+                  border: '1px solid rgba(62,207,142,0.2)',
+                  borderRadius: 12,
+                  padding: '14px 16px',
+                }}>
+                  <div style={{ fontSize: 12, color: '#3ecf8e', fontWeight: 700, marginBottom: 6 }}>
+                    💡 Generate Jawaban dengan AI
+                  </div>
+                  <div style={{ fontSize: 12, color: '#aaa', lineHeight: 1.6, marginBottom: 12 }}>
+                    Salin prompt ini → paste ke Claude → dapat arti, jawaban Arab, dan penjelasan → isi ke field di bawah.
+                  </div>
+                  <button
+                    onClick={() => {
+                      const prompt = `Kamu adalah asisten akademik yang membantu menjawab soal ujian tahriri dari Universitas Al-Azhar Kairo.
+
+SOAL YANG PERLU DIJAWAB:
+${soalTeks || '[Soal belum di-parse — parse dulu dengan AI]'}
+
+INFORMASI KONTEKS:
+- Maddah: ${selected.maddah_nama || '-'}
+- Fakultas: ${selected.fakultas || '-'}
+- Tingkat: ${selected.tingkat || '-'}
+- Tahun: ${selected.tahun || '-'} ${selected.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
+
+TUGAS KAMU — berikan 3 hal berikut secara terpisah dan terstruktur:
+
+═══════════════════════════════
+1. ARTI SOAL (Bahasa Indonesia)
+═══════════════════════════════
+Terjemahkan soal di atas ke dalam bahasa Indonesia yang jelas dan natural. Pertahankan istilah teknis fiqih/ushul/nahwu dalam bahasa Arab (dengan terjemahan dalam kurung). Jangan tambahkan penjelasan — hanya terjemahan.
+
+═══════════════════════════════
+2. JAWABAN (Bahasa Arab)
+═══════════════════════════════
+Jawab soal dalam bahasa Arab sesuai manhaj Al-Azhar. Ikuti aturan ini KETAT:
+
+- Gunakan gaya jawaban tahriri Azhari: mulai dengan definisi (ta'rif), lalu dalil/syahid, lalu tafshil jika diperlukan.
+- Kutip ayat Al-Quran HANYA kalau kamu yakin 100% teks dan nomornya benar — kalau tidak yakin, tulis "كما ورد في القرآن الكريم" tanpa menyebut ayat spesifik.
+- Kutip hadits HANYA kalau kamu yakin 100% matan dan perawinya — kalau tidak yakin, tulis "كما ثبت في السنة النبوية" tanpa menyebut matan spesifik.
+- Sebut pendapat ulama HANYA yang kamu yakin benar — kalau tidak yakin, jangan sebut nama ulama atau kitab spesifik.
+- Kalau soal meminta perbandingan (muqaranah), sebutkan pendapat minimal 2 mazhab dengan perbedaannya yang jelas.
+- Kalau ada bagian yang tidak yakin, tandai dengan: [PERLU DIVERIFIKASI: ...]
+- JANGAN mengarang dalil, nama ulama, atau referensi kitab yang tidak diyakini.
+- Panjang jawaban proporsional dengan bobot soal.
+
+═══════════════════════════════
+3. PENJELASAN (Bahasa Indonesia)
+═══════════════════════════════
+Jelaskan jawaban di atas dalam bahasa Indonesia yang mudah dipahami mahasiswa Indonesia. Sertakan:
+- Inti/poin utama jawaban dalam 2-3 kalimat pembuka
+- Penjelasan istilah teknis yang dipakai
+- Kenapa jawaban ini relevan dengan konteks maddah
+- Kalau ada [PERLU DIVERIFIKASI], jelaskan bahwa bagian itu perlu dicek ulang
+
+Format output: gunakan persis 3 section dengan header yang sama seperti di atas.`;
+
+                      navigator.clipboard.writeText(prompt)
+                        .then(() => {
+                          setCopiedPrompt(true);
+                          setTimeout(() => setCopiedPrompt(false), 3000);
+                        })
+                        .catch(() => alert('Gagal salin — coba manual'));
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '10px 16px',
+                      borderRadius: 9,
+                      border: '1px solid rgba(62,207,142,0.4)',
+                      background: 'rgba(62,207,142,0.1)',
+                      color: '#3ecf8e',
+                      fontWeight: 700,
+                      fontSize: 13,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {copiedPrompt ? '✅ Prompt Tersalin! Paste ke Claude sekarang' : '📋 Salin Prompt untuk Claude'}
+                  </button>
+                  <div style={{ marginTop: 10, fontSize: 11, color: '#666', lineHeight: 1.6 }}>
+                    ⚠️ Setelah dapat jawaban dari Claude: cek bagian <strong style={{ color: '#888' }}>[PERLU DIVERIFIKASI]</strong> sebelum approve. Ayat & hadits wajib dicek ulang ke sumber aslinya.
+                  </div>
+                </div>
               </div>
 
               {/* Arti Soal */}
