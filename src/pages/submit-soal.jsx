@@ -118,21 +118,30 @@ function SubmitSoalPage() {
   const handleConfirm = async () => {
     setLoading(true);
     try {
-      const supabaseUrl = window.__SUPABASE_URL__ || '';
-      const anonKey     = window.__SUPABASE_ANON_KEY__ || '';
-      const fileName    = `${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
+      const configRes = await fetch('/api/config');
+      const { supabaseUrl, supabaseAnonKey } = await configRes.json();
+
+      if (!supabaseUrl || !supabaseAnonKey) {
+        throw new Error('Konfigurasi tidak tersedia');
+      }
+
+      const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
 
       const uploadRes = await fetch(`${supabaseUrl}/storage/v1/object/soal-foto/${fileName}`, {
         method: 'POST',
         headers: {
-          apikey: anonKey,
-          Authorization: `Bearer ${anonKey}`,
+          apikey: supabaseAnonKey,
+          Authorization: `Bearer ${supabaseAnonKey}`,
           'Content-Type': 'image/jpeg',
         },
         body: compressedFile
       });
 
-      if (!uploadRes.ok) throw new Error('Upload foto gagal. Pastikan storage bucket soal-foto sudah dibuat di Supabase.');
+      if (!uploadRes.ok) {
+        const errText = await uploadRes.text();
+        throw new Error(`Upload foto gagal: ${errText}`);
+      }
+
       const foto_url = `${supabaseUrl}/storage/v1/object/soal-foto/${fileName}`;
 
       const res = await fetch('/api/submit-soal', {
@@ -152,9 +161,16 @@ function SubmitSoalPage() {
       });
 
       const data = await res.json();
-      if (data.ok) { setStep('success'); setCaptcha(generateCaptcha()); setCaptchaInput(''); }
-      else if (data.error === 'duplicate') { setDupMsg(data.message); setStep('form'); }
-      else throw new Error(data.error);
+      if (data.ok) {
+        setStep('success');
+        setCaptcha(generateCaptcha());
+        setCaptchaInput('');
+      } else if (data.error === 'duplicate') {
+        setDupMsg(data.message);
+        setStep('form');
+      } else {
+        throw new Error(data.error || 'Submit gagal');
+      }
     } catch (err) {
       alert('Gagal submit: ' + err.message);
       setStep('form');
