@@ -1596,23 +1596,60 @@ const AdminBankSoal = () => {
                 </button>
               )}
 
-              {/* Teks soal editable */}
-              <div>
-                <div className="text-xs text-ink-muted mb-2 font-medium uppercase tracking-wide">
-                  Teks Soal {selected.status === 'pending' ? '(bisa diedit sebelum approve)' : ''}
+              {/* Preview hasil parse — tampilkan Arab + arti per soal */}
+              {soalTeks && soalTeks.includes('[SOAL_ARAB]') && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, color: '#888', fontWeight: 600, marginBottom: 8 }}>
+                    PREVIEW HASIL PARSE
+                  </div>
+                  <div style={{
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: 10, padding: '12px 14px',
+                    maxHeight: 300, overflowY: 'auto',
+                  }}>
+                    {soalTeks.split('[SOAL_ARAB]').filter(Boolean).map((block, i) => {
+                      const parts = block.split('[ARTI]');
+                      const arab  = parts[0]?.trim();
+                      const arti  = parts[1]?.trim();
+                      const total = soalTeks.split('[SOAL_ARAB]').filter(Boolean).length;
+                      return (
+                        <div key={i} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: i < total - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
+                          {arab && (
+                            <div style={{ direction: 'rtl', textAlign: 'right', fontSize: 15, color: '#eee', lineHeight: 2, fontFamily: 'serif', marginBottom: 8 }}>
+                              {arab}
+                            </div>
+                          )}
+                          {arti && (
+                            <div style={{ fontSize: 13, color: '#3ecf8e', lineHeight: 1.6, paddingLeft: 12, borderLeft: '2px solid rgba(62,207,142,0.3)' }}>
+                              {arti}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Textarea raw untuk edit manual */}
+              <div style={{ marginBottom: 16 }}>
+                <div style={{ fontSize: 11, color: '#888', fontWeight: 600, marginBottom: 6 }}>
+                  TEKS SOAL RAW (BISA DIEDIT)
                 </div>
                 <textarea
                   value={soalTeks}
                   onChange={e => setSoalTeks(e.target.value)}
                   readOnly={selected.status !== 'pending'}
-                  rows={8}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-sm text-ink resize-y focus:outline-none focus:border-emerald-500/40"
-                  style={{
-                    direction: soalTeks && /[\u0600-\u06FF]/.test(soalTeks) ? 'rtl' : 'ltr',
-                    fontFamily: 'inherit',
-                    lineHeight: 1.8,
-                  }}
+                  rows={6}
                   placeholder="Teks soal akan muncul di sini setelah di-parse, atau isi manual..."
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: 9,
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.04)', color: '#fff',
+                    fontSize: 13, resize: 'vertical', boxSizing: 'border-box',
+                    fontFamily: 'monospace',
+                  }}
                 />
               </div>
 

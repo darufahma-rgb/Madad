@@ -733,18 +733,39 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
 
         {/* Scrollable body */}
         <div style={{ overflowY: 'auto', flex: 1, padding: '20px' }}>
-          {/* Soal Arab */}
+          {/* Soal Arab + Arti per soal */}
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 11, color: '#888', fontWeight: 600, marginBottom: 8, letterSpacing: 1 }}>SOAL (BAHASA ARAB)</div>
+            <div style={{ fontSize: 11, color: '#888', fontWeight: 600, marginBottom: 8, letterSpacing: 1 }}>SOAL UJIAN</div>
             <div style={{
               background: 'rgba(255,255,255,0.03)',
               border: '1px solid rgba(255,255,255,0.08)',
               borderRadius: 12, padding: '16px',
-              fontSize: 16, lineHeight: 2,
-              direction: 'rtl', textAlign: 'right',
-              color: '#eee', fontFamily: 'serif',
             }}>
-              {soal.soal || 'Teks soal belum tersedia'}
+              {soal.soal && soal.soal.includes('[SOAL_ARAB]') ? (
+                soal.soal.split('[SOAL_ARAB]').filter(Boolean).map((block, i) => {
+                  const parts = block.split('[ARTI]');
+                  const arab  = parts[0]?.trim();
+                  const arti  = parts[1]?.trim();
+                  return (
+                    <div key={i} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                      {arab && (
+                        <div style={{ direction: 'rtl', textAlign: 'right', fontSize: 16, lineHeight: 2, color: '#eee', fontFamily: 'serif', marginBottom: 10 }}>
+                          {arab}
+                        </div>
+                      )}
+                      {arti && (
+                        <div style={{ fontSize: 13, color: '#3ecf8e', lineHeight: 1.7, paddingLeft: 12, borderLeft: '2px solid rgba(62,207,142,0.3)' }}>
+                          {arti}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              ) : (
+                <div style={{ direction: 'rtl', textAlign: 'right', fontSize: 16, lineHeight: 2, color: '#eee', fontFamily: 'serif' }}>
+                  {soal.soal || 'Teks soal belum tersedia'}
+                </div>
+              )}
             </div>
           </div>
 

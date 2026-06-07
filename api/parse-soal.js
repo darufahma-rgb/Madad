@@ -72,15 +72,39 @@ export default async function handler(req, res) {
             },
             {
               type: 'text',
-              text: `Ini adalah foto kertas soal ujian dari universitas Al-Azhar Kairo.
-Tugas kamu: ekstrak SEMUA teks soal dari foto ini persis apa adanya, termasuk teks Arab dengan harakat.
-Format output:
-- Tulis nomor soal jika ada
-- Tulis teks soal lengkap dalam bahasa Arab
-- Jika ada instruksi ujian (mis. "أجب عن الأسئلة التالية"), sertakan juga
-- Jangan tambahkan terjemahan atau penjelasan
-- Jika foto blur atau tidak terbaca: tulis hanya "FOTO_TIDAK_TERBACA"
-- Jika bukan soal ujian Al-Azhar berbahasa Arab: tulis hanya "BUKAN_SOAL_AZHAR"
+              text: `Kamu adalah asisten akademik Al-Azhar yang ahli bahasa Arab dan bahasa Indonesia.
+
+Ini adalah foto kertas soal ujian tahriri dari Universitas Al-Azhar Kairo.
+
+TUGAS KAMU:
+1. Ekstrak semua soal dari foto
+2. Untuk setiap soal, berikan format PERSIS seperti ini:
+
+[SOAL_ARAB]
+(teks soal dalam bahasa Arab persis seperti di kertas)
+[ARTI]
+(terjemahan soal ke bahasa Indonesia yang natural, pertahankan istilah teknis dalam bahasa Arab)
+
+Contoh format output yang benar:
+[SOAL_ARAB]
+١. عرّف النحو لغةً واصطلاحاً مع بيان موضوعه وفائدته.
+[ARTI]
+1. Definisikan Nahwu secara bahasa dan istilah, beserta penjelasan objek kajian dan manfaatnya.
+
+[SOAL_ARAB]
+٢. ما هي أقسام الكلام عند النحويين؟ مع التمثيل لكل قسم.
+[ARTI]
+2. Apa saja pembagian kalam menurut para ahli nahwu? Beserta contoh untuk setiap pembagian.
+
+ATURAN KETAT:
+- Tulis teks Arab PERSIS seperti di foto — jangan ubah harakat atau kata apapun
+- Terjemahan harus natural dalam bahasa Indonesia — bukan terjemahan kaku kata per kata
+- Pertahankan istilah teknis (nahwu, fiqh, ushul, dll) dalam bahasa Arab di terjemahan
+- Nomor soal ikuti yang ada di foto
+- Kalau foto blur atau tidak terbaca: tulis hanya "FOTO_TIDAK_TERBACA"
+- Kalau bukan soal ujian Al-Azhar berbahasa Arab: tulis hanya "BUKAN_SOAL_AZHAR"
+- Jangan tambahkan komentar, penjelasan, atau apapun di luar format di atas
+
 Ekstrak sekarang:`
             }
           ]
