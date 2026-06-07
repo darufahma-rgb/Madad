@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   try { body = JSON.parse(rawBody || '{}'); }
   catch { return res.status(400).json({ ok: false, error: 'Invalid JSON' }); }
 
-  const { soal_id, action, reject_reason, reward_type, soal_teks } = body;
+  const { soal_id, action, reject_reason, reward_type, soal_teks, arti_soal, jawaban, penjelasan } = body;
   if (!soal_id || !action) return res.status(400).json({ ok: false, error: 'soal_id dan action wajib diisi' });
 
   const supabaseUrl = process.env.SUPABASE_URL;
@@ -70,6 +70,9 @@ export default async function handler(req, res) {
     await sbPatch(soal_id, {
       status: 'approved',
       soal: soal_teks || soal.soal,
+      arti_soal: arti_soal || null,
+      jawaban: jawaban || null,
+      penjelasan: penjelasan || null,
       reward_type: reward_type || null,
       approved_at: new Date().toISOString()
     });

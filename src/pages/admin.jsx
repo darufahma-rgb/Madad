@@ -1327,6 +1327,9 @@ const AdminBankSoal = () => {
   const [loading, setLoading]   = useState(true);
   const [selected, setSelected] = useState(null);
   const [soalTeks, setSoalTeks] = useState('');
+  const [artiSoal, setArtiSoal]     = useState('');
+  const [jawaban, setJawaban]       = useState('');
+  const [penjelasan, setPenjelasan] = useState('');
   const [parsing, setParsing]   = useState(false);
   const [acting, setActing]     = useState(false);
   const [rejectReason, setRejectReason] = useState('');
@@ -1369,6 +1372,9 @@ const AdminBankSoal = () => {
   const openModal = (soal) => {
     setSelected(soal);
     setSoalTeks(soal.soal || '');
+    setArtiSoal(soal.arti_soal || '');
+    setJawaban(soal.jawaban || '');
+    setPenjelasan(soal.penjelasan || '');
     setRejectReason('');
     setShowReject(false);
     setReward('');
@@ -1412,7 +1418,7 @@ const AdminBankSoal = () => {
       const res = await fetch('/api/approve-soal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
-        body: JSON.stringify({ soal_id: selected.id, action: 'approve', reward_type: reward || null, soal_teks: soalTeks })
+        body: JSON.stringify({ soal_id: selected.id, action: 'approve', reward_type: reward || null, soal_teks: soalTeks, arti_soal: artiSoal, jawaban: jawaban, penjelasan: penjelasan })
       });
       const data = await res.json();
       if (data.ok) { setSelected(null); fetchData(filter); }
@@ -1606,6 +1612,66 @@ const AdminBankSoal = () => {
                     lineHeight: 1.8,
                   }}
                   placeholder="Teks soal akan muncul di sini setelah di-parse, atau isi manual..."
+                />
+              </div>
+
+              {/* Arti Soal */}
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 11, color: '#3ecf8e', fontWeight: 700, display: 'block', marginBottom: 6 }}>
+                  ARTI SOAL (Bahasa Indonesia)
+                </label>
+                <textarea
+                  value={artiSoal}
+                  onChange={e => setArtiSoal(e.target.value)}
+                  placeholder="Terjemahan/arti soal dalam bahasa Indonesia..."
+                  rows={3}
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: 9,
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.04)', color: '#fff',
+                    fontSize: 14, resize: 'vertical', boxSizing: 'border-box',
+                    fontFamily: 'inherit',
+                  }}
+                />
+              </div>
+
+              {/* Jawaban */}
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 11, color: '#3ecf8e', fontWeight: 700, display: 'block', marginBottom: 6 }}>
+                  JAWABAN (Bahasa Arab)
+                </label>
+                <textarea
+                  value={jawaban}
+                  onChange={e => setJawaban(e.target.value)}
+                  placeholder="Jawaban dalam bahasa Arab..."
+                  rows={4}
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: 9,
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.04)', color: '#fff',
+                    fontSize: 14, resize: 'vertical', boxSizing: 'border-box',
+                    fontFamily: 'inherit', direction: 'rtl', textAlign: 'right',
+                  }}
+                />
+              </div>
+
+              {/* Penjelasan */}
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ fontSize: 11, color: '#3ecf8e', fontWeight: 700, display: 'block', marginBottom: 6 }}>
+                  PENJELASAN (Bahasa Indonesia)
+                </label>
+                <textarea
+                  value={penjelasan}
+                  onChange={e => setPenjelasan(e.target.value)}
+                  placeholder="Penjelasan jawaban dalam bahasa Indonesia..."
+                  rows={4}
+                  style={{
+                    width: '100%', padding: '10px 14px', borderRadius: 9,
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    background: 'rgba(255,255,255,0.04)', color: '#fff',
+                    fontSize: 14, resize: 'vertical', boxSizing: 'border-box',
+                    fontFamily: 'inherit',
+                  }}
                 />
               </div>
 
