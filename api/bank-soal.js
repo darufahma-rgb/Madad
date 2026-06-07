@@ -1,3 +1,12 @@
+const parseBody = (req) => new Promise((resolve) => {
+  let body = '';
+  req.on('data', chunk => body += chunk);
+  req.on('end', () => {
+    try { resolve(JSON.parse(body || '{}')); }
+    catch { resolve({}); }
+  });
+});
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -25,7 +34,7 @@ async function handleSubmit(req, res) {
     _checkOnly, fakultas, maddah_id, maddah_nama, tingkat,
     tahun, fashl, submitted_by, submitter_name,
     submitter_wa, submitter_info, foto_url
-  } = req.body;
+  } = await parseBody(req);
 
   if (_checkOnly) {
     if (!maddah_id || !tahun || !fashl) {
@@ -84,7 +93,7 @@ async function handleApprove(req, res) {
   const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const fonnteKey   = process.env.FONNTE_API_KEY;
 
-  const { soal_id, action, reject_reason, reward_type, soal_teks } = req.body;
+  const { soal_id, action, reject_reason, reward_type, soal_teks } = await parseBody(req);
   if (!soal_id || !action) return res.status(400).json({ ok: false });
 
   const soalRes = await fetch(
@@ -171,7 +180,7 @@ async function handleUpdateJawaban(req, res) {
 
   const supabaseUrl = process.env.SUPABASE_URL;
   const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const { soal_id, jawaban_array } = req.body;
+  const { soal_id, jawaban_array } = await parseBody(req);
 
   if (!soal_id || !Array.isArray(jawaban_array)) {
     return res.status(400).json({ ok: false, error: 'Data tidak valid' });
@@ -202,7 +211,7 @@ async function handleUpdateJawaban(req, res) {
 async function handleFoto(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { foto_url } = req.body;
+  const { foto_url } = await parseBody(req);
   if (!foto_url) return res.status(400).json({ ok: false });
 
   const supabaseUrl = process.env.SUPABASE_URL;
