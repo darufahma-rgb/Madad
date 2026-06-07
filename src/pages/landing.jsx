@@ -613,6 +613,63 @@ const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
   <div className="page-enter">
     <StyleInject/>
     <LandingHero onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment}/>
+
+    {/* Banner Campaign Submit Soal */}
+    <section style={{
+      margin: '0 auto',
+      maxWidth: 640,
+      padding: '0 20px 32px',
+    }}>
+      <a
+        href="#/submit-soal"
+        style={{
+          display: 'block',
+          background: 'rgba(62,207,142,0.06)',
+          border: '1.5px solid rgba(62,207,142,0.3)',
+          borderRadius: 16,
+          padding: '16px 20px',
+          textDecoration: 'none',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        {/* Glow */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'radial-gradient(circle at top left, rgba(62,207,142,0.08) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }}/>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, position: 'relative' }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 12, flexShrink: 0,
+            background: 'rgba(62,207,142,0.15)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 22,
+          }}>
+            📸
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>
+                Punya soal imtihan lama?
+              </span>
+              <span style={{
+                fontSize: 10, fontWeight: 700, color: '#3ecf8e',
+                background: 'rgba(62,207,142,0.15)',
+                padding: '2px 8px', borderRadius: 99,
+              }}>
+                DAPAT REWARD
+              </span>
+            </div>
+            <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.5 }}>
+              Submit soal Al-Azhar tahun lalu → dapat akses Talqeeh <strong style={{ color: '#3ecf8e' }}>lifetime gratis</strong>
+            </div>
+          </div>
+          <div style={{ color: '#3ecf8e', fontSize: 18, flexShrink: 0 }}>→</div>
+        </div>
+      </a>
+    </section>
+
     <SampleMaddahSection/>
     <HowItWorks/>
     <AllMaddahPreview/>

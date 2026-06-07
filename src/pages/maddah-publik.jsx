@@ -226,6 +226,31 @@ const MaddahPublikPage = ({ onOpenPayment, onOpenLogin }) => {
             </div>
           </div>
 
+          {/* Banner Submit Soal */}
+          <div style={{
+            margin: '24px auto',
+            maxWidth: 640,
+            padding: '0 20px',
+          }}>
+            <a href="#/submit-soal" style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              background: 'rgba(62,207,142,0.06)',
+              border: '1px solid rgba(62,207,142,0.25)',
+              borderRadius: 14, padding: '14px 18px',
+              textDecoration: 'none',
+            }}>
+              <span style={{ fontSize: 24 }}>📸</span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', marginBottom: 2 }}>
+                  Punya soal imtihan tahun lalu?
+                </div>
+                <div style={{ fontSize: 12, color: '#aaa' }}>
+                  Submit &amp; dapat akses Talqeeh lifetime gratis →
+                </div>
+              </div>
+            </a>
+          </div>
+
           {/* ── Bottom CTA ── */}
           <div className="mt-10 text-center">
             <div className="arabic-display text-gold-300 text-2xl mb-3" style={{direction:"rtl"}}>

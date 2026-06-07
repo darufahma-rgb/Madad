@@ -193,6 +193,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     { to: "/framework",     label: "Framework" },
     { to: "/tutorial",      label: "Cara Pakai" },
     { to: "/ethics",        label: "Etika" },
+    { to: "/submit-soal",   label: "Submit Soal 🎁" },
   ];
   const links = session ? memberLinks : publicLinks;
 
