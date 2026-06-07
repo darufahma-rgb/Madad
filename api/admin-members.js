@@ -1,33 +1,19 @@
-import https from 'https';
 import { verifyToken } from './admin-auth.js';
 
 const sbRequest = (supabaseUrl, serviceKey, method, path, body) => {
   const url = new URL(`${supabaseUrl}/rest/v1/${path}`);
-  return new Promise((resolve, reject) => {
-    const data = body ? JSON.stringify(body) : null;
-    const hreq = https.request({
-      hostname: url.hostname,
-      path: url.pathname + url.search,
-      method,
-      headers: {
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=representation',
-        ...(data ? { 'Content-Length': Buffer.byteLength(data) } : {}),
-      },
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => {
-        try { resolve({ status: res.statusCode, data: JSON.parse(d || 'null') }); }
-        catch { resolve({ status: res.statusCode, data: d }); }
-      });
-    });
-    hreq.on('error', reject);
-    if (data) hreq.write(data);
-    hreq.end();
-  });
+  return fetch(url.toString(), {
+    method,
+    headers: {
+      'apikey': serviceKey,
+      'Authorization': `Bearer ${serviceKey}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+      'Range': '0-999',
+      'Prefer': 'count=exact',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  }).then(r => r.json());
 };
 
 export default async function handler(req, res) {
@@ -59,7 +45,7 @@ export default async function handler(req, res) {
     let result;
 
     if (action === 'list') {
-      result = await sbRequest(supabaseUrl, serviceKey, 'GET', 'members?order=created_at.desc', null);
+      result = await sbRequest(supabaseUrl, serviceKey, 'GET', 'members?order=created_at.desc&limit=1000', null);
     } else if (action === 'add') {
       result = await sbRequest(supabaseUrl, serviceKey, 'POST', 'members', row);
     } else if (action === 'update') {
