@@ -649,7 +649,15 @@ const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
             📸
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+              <span style={{
+                fontSize: 10, fontWeight: 700, color: '#f59e0b',
+                background: 'rgba(245,158,11,0.15)',
+                border: '1px solid rgba(245,158,11,0.35)',
+                padding: '2px 8px', borderRadius: 99, letterSpacing: '0.06em',
+              }}>
+                🔥 EVENT
+              </span>
               <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>
                 Punya soal imtihan lama?
               </span>

@@ -241,8 +241,18 @@ const MaddahPublikPage = ({ onOpenPayment, onOpenLogin }) => {
             }}>
               <span style={{ fontSize: 24 }}>📸</span>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', marginBottom: 2 }}>
-                  Punya soal imtihan tahun lalu?
+                <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4, flexWrap: 'wrap' }}>
+                  <span style={{
+                    fontSize: 10, fontWeight: 700, color: '#f59e0b',
+                    background: 'rgba(245,158,11,0.15)',
+                    border: '1px solid rgba(245,158,11,0.35)',
+                    padding: '2px 7px', borderRadius: 99, letterSpacing: '0.06em',
+                  }}>
+                    🔥 EVENT
+                  </span>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
+                    Punya soal imtihan tahun lalu?
+                  </div>
                 </div>
                 <div style={{ fontSize: 12, color: '#aaa' }}>
                   Submit &amp; dapat akses Talqeeh lifetime gratis →
