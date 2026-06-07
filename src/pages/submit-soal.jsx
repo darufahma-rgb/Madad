@@ -39,6 +39,7 @@ function SubmitSoalPage() {
   const [compressing, setCompressing] = useState(false);
   const fileRef = useRef();
   const [compressedFile, setCompressedFile] = useState(null);
+  const [panduanOpen, setPanduanOpen] = useState(false);
 
   const [form, setForm] = useState({
     nama: '', wa: '',
@@ -220,6 +221,118 @@ function SubmitSoalPage() {
           • Submit <strong style={{ color: '#fff' }}>2 termin penuh</strong> → Lifetime + merchandise Talqeeh<br/>
           • Submit <strong style={{ color: '#fff' }}>sebagian</strong> → Diskon spesial untuk bergabung
         </div>
+      </div>
+
+      {/* Panduan Accordion */}
+      <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, marginBottom: 20, overflow: 'hidden' }}>
+        <button
+          onClick={() => setPanduanOpen(p => !p)}
+          style={{ width: '100%', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: 'none', cursor: 'pointer', color: '#fff' }}
+        >
+          <span style={{ fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+            📋 Baca Panduan Submit Dulu
+            <span style={{ fontSize: 11, color: '#3ecf8e', fontWeight: 600, background: 'rgba(62,207,142,0.12)', padding: '2px 8px', borderRadius: 99 }}>
+              Wajib dibaca
+            </span>
+          </span>
+          <span style={{ color: '#888', fontSize: 18, transition: 'transform 0.2s', transform: panduanOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+            ▾
+          </span>
+        </button>
+
+        {panduanOpen && (
+          <div style={{ padding: '16px 18px 20px', borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: 14, color: '#ccc', lineHeight: 1.7 }}>
+
+            {/* Soal yang diterima */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontWeight: 700, color: '#3ecf8e', marginBottom: 10, fontSize: 13, letterSpacing: 0.5 }}>✅ SOAL YANG DITERIMA</div>
+              {[
+                ['Berbahasa Arab', 'Soal Al-Azhar memang ditulis dalam bahasa Arab. Soal bahasa Indonesia tidak diterima.'],
+                ['Soal tahriri (ujian tulis)', 'Harus dari kertas soal asli yang dibagikan saat ujian — bukan soal syafawi yang diingat-ingat.'],
+                ['Foto jelas dan terbaca', 'Semua tulisan Arab harus bisa dibaca dengan jelas. Blur atau terpotong = ditolak.'],
+                ['Dari Al-Azhar Cairo', 'Soal dari kampus atau instansi lain tidak diterima.'],
+              ].map(([judul, isi]) => (
+                <div key={judul} style={{ marginBottom: 10, paddingLeft: 12, borderLeft: '2px solid rgba(62,207,142,0.3)' }}>
+                  <div style={{ fontWeight: 700, color: '#eee', fontSize: 13 }}>{judul}</div>
+                  <div style={{ color: '#aaa', fontSize: 13 }}>{isi}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Cara foto yang benar */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontWeight: 700, color: '#3ecf8e', marginBottom: 10, fontSize: 13, letterSpacing: 0.5 }}>📸 CARA FOTO YANG BENAR</div>
+              <div style={{ background: 'rgba(62,207,142,0.06)', borderRadius: 10, padding: '12px 14px', marginBottom: 10 }}>
+                <div style={{ fontWeight: 700, color: '#fff', marginBottom: 6, fontSize: 13 }}>Lakukan ini ✅</div>
+                {[
+                  'Taruh kertas di tempat datar (meja atau lantai)',
+                  'Pastikan pencahayaan cukup — dekat jendela di siang hari paling bagus',
+                  'Foto dari atas tegak lurus — HP sejajar dengan kertas',
+                  'Zoom setelah foto dan pastikan tulisan Arab terbaca jelas',
+                  'Kalau soal 2 halaman, submit dua foto terpisah',
+                ].map(t => (
+                  <div key={t} style={{ color: '#bbb', fontSize: 13, marginBottom: 4 }}>✓ {t}</div>
+                ))}
+              </div>
+              <div style={{ background: 'rgba(255,80,80,0.06)', borderRadius: 10, padding: '12px 14px' }}>
+                <div style={{ fontWeight: 700, color: '#ff8080', marginBottom: 6, fontSize: 13 }}>Jangan lakukan ini ❌</div>
+                {[
+                  'Foto sambil dipegang — hasilnya goyang dan blur',
+                  'Foto dari sudut miring — tulisan tidak terbaca',
+                  'Pakai flash berlebihan — menyebabkan silau',
+                  'Foto di tempat gelap',
+                ].map(t => (
+                  <div key={t} style={{ color: '#bbb', fontSize: 13, marginBottom: 4 }}>✗ {t}</div>
+                ))}
+              </div>
+            </div>
+
+            {/* Reward */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontWeight: 700, color: '#3ecf8e', marginBottom: 10, fontSize: 13, letterSpacing: 0.5 }}>🎁 SISTEM REWARD</div>
+              {[
+                ['1 termin penuh', 'Semua maddah di satu fashl dalam satu tahun', 'Akses Talqeeh lifetime GRATIS'],
+                ['2 termin penuh', 'Dua fashl berbeda atau dua tahun berbeda', 'Lifetime + merchandise Talqeeh'],
+                ['Sebagian', 'Belum lengkap 1 termin penuh', 'Diskon spesial untuk join Talqeeh'],
+              ].map(([label, ket, reward]) => (
+                <div key={label} style={{ display: 'flex', gap: 10, marginBottom: 10, padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 9 }}>
+                  <div style={{ flexShrink: 0, fontWeight: 700, color: '#fff', fontSize: 13, minWidth: 100 }}>{label}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ color: '#aaa', fontSize: 12 }}>{ket}</div>
+                    <div style={{ color: '#3ecf8e', fontWeight: 700, fontSize: 13 }}>{reward}</div>
+                  </div>
+                </div>
+              ))}
+              <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
+                💡 <strong style={{ color: '#ccc' }}>1 termin penuh</strong> = semua maddah yang kamu ambil di satu fashl dalam satu tahun ajaran. Contoh: Syariah Tingkat 2 Fashl Awwal 2024/2025 punya 6 maddah → harus submit keenam-enamnya.
+              </div>
+            </div>
+
+            {/* FAQ */}
+            <div>
+              <div style={{ fontWeight: 700, color: '#3ecf8e', marginBottom: 10, fontSize: 13, letterSpacing: 0.5 }}>❓ PERTANYAAN YANG SERING DITANYA</div>
+              {[
+                ['Soalku dari tahun 2022, bisa?', 'Untuk saat ini hanya menerima soal 2023/2024 sampai 2025/2026.'],
+                ['Aku sudah member, rewardnya apa?', 'Member dapat poin yang bisa ditukar merchandise Talqeeh — info lebih lanjut segera diumumkan.'],
+                ['Soalnya dua halaman, gimana?', 'Submit dua kali — satu foto per submission. Isi info maddah dan tahun yang sama.'],
+                ['Boleh submit soal teman?', 'Boleh, selama soalnya asli dari Al-Azhar dan kamu tahu info maddah + tahunnya dengan benar.'],
+                ['Berapa lama prosesnya?', 'Biasanya 1-2 hari. Kalau 3 hari belum ada kabar, hubungi admin.'],
+              ].map(([q, a]) => (
+                <div key={q} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                  <div style={{ fontWeight: 700, color: '#eee', fontSize: 13, marginBottom: 3 }}>Q: {q}</div>
+                  <div style={{ color: '#aaa', fontSize: 13 }}>A: {a}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div style={{ textAlign: 'center', marginTop: 16, padding: '12px', background: 'rgba(62,207,142,0.06)', borderRadius: 10, fontSize: 13, color: '#aaa' }}>
+              Jazakallahu khair atas kontribusinya untuk sesama Masisir! 🙏<br/>
+              <span style={{ fontSize: 12, color: '#777' }}>Ada pertanyaan? Hubungi admin via WhatsApp.</span>
+            </div>
+
+          </div>
+        )}
       </div>
 
       {/* Form */}
