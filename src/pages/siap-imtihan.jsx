@@ -300,9 +300,152 @@ const TalkhisanSection = ({ profile }) => {
   const [teksInput, setTeksInput] = useState("");
   const [inputType, setInputType] = useState("teks");
   const [copied, setCopied] = useState(false);
+  const [uploading, setUploading]   = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [savedToKurasah, setSavedToKurasah] = useState(false);
+  const fileRef = useRef(null);
 
   const mode = TALKHISAN_MODES.find(m => m.id === activeMode);
   const resolvedPrompt = generateTalkhisanPrompt(activeMode, teksInput, profile);
+
+  const compressImage = (file, maxSizeMB = 1.5) => {
+    return new Promise((resolve) => {
+      if (file.size <= maxSizeMB * 1024 * 1024) { resolve(file); return; }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ratio = Math.sqrt((maxSizeMB * 1024 * 1024) / file.size);
+          canvas.width  = Math.floor(img.width  * ratio);
+          canvas.height = Math.floor(img.height * ratio);
+          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob(
+            blob => resolve(new File([blob], file.name, { type: 'image/jpeg' })),
+            'image/jpeg', 0.85
+          );
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFotoUpload = async (file) => {
+    if (!file) return;
+    setUploading(true);
+    setUploadError('');
+    try {
+      const compressed = await compressImage(file);
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = e.target.result.split(',')[1];
+        const mimeType = compressed.type || 'image/jpeg';
+        const res = await fetch('/api/parse-talkhisan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ foto_base64: base64, mime_type: mimeType })
+        });
+        const data = await res.json();
+        if (data.ok && data.teks !== 'FOTO_TIDAK_TERBACA') {
+          setTeksInput(data.teks);
+          setInputType('teks');
+          toast.push('Talkhisan berhasil dibaca — silakan pilih mode di bawah');
+        } else if (data.teks === 'FOTO_TIDAK_TERBACA') {
+          setUploadError('Foto tidak terbaca. Pastikan foto jelas dan cukup cahaya.');
+        } else {
+          setUploadError(data.error || 'Gagal membaca foto');
+        }
+        setUploading(false);
+      };
+      reader.readAsDataURL(compressed);
+    } catch (err) {
+      setUploadError('Gagal upload: ' + err.message);
+      setUploading(false);
+    }
+  };
+
+  const handlePdfUpload = async (file) => {
+    if (!file) return;
+    setUploading(true);
+    setUploadError('');
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const pdfjsLib = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+          const pdf = await pdfjsLib.getDocument({ data: e.target.result }).promise;
+          let fullText = '';
+          for (let i = 1; i <= Math.min(pdf.numPages, 10); i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join(' ');
+            fullText += pageText + '\n';
+          }
+          if (!fullText.trim()) {
+            setUploadError('PDF ini berupa scan/gambar. Silakan screenshot halaman dan upload sebagai foto.');
+            setUploading(false);
+            return;
+          }
+          const res = await fetch('/api/parse-talkhisan', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pdf_text: fullText })
+          });
+          const data = await res.json();
+          if (data.ok) {
+            setTeksInput(data.teks);
+            setInputType('teks');
+            toast.push('Talkhisan berhasil dibaca dari PDF — pilih mode di bawah');
+          } else {
+            setUploadError(data.error || 'Gagal proses PDF');
+          }
+        } catch (e) {
+          setUploadError('Gagal proses PDF: ' + e.message);
+        }
+        setUploading(false);
+      };
+      reader.readAsArrayBuffer(file);
+    } catch (err) {
+      setUploadError('Gagal proses PDF: ' + err.message);
+      setUploading(false);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.type === 'application/pdf') {
+      handlePdfUpload(file);
+    } else if (file.type.startsWith('image/')) {
+      handleFotoUpload(file);
+    } else {
+      setUploadError('Format tidak didukung. Gunakan JPG, PNG, atau PDF.');
+    }
+  };
+
+  const handleSaveToKurasah = async () => {
+    if (!teksInput.trim()) return;
+    try {
+      const note = {
+        id: `talkhisan_${Date.now()}`,
+        title: `Talkhisan — ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`,
+        body: teksInput,
+        tags: ['talkhisan', 'siap-imtihan'],
+        source: { type: 'talkhisan' },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      const existing = JSON.parse(localStorage.getItem('madad_notes') || '[]');
+      localStorage.setItem('madad_notes', JSON.stringify([note, ...existing]));
+      setSavedToKurasah(true);
+      toast.push('Talkhisan tersimpan ke Kurasah');
+      setTimeout(() => setSavedToKurasah(false), 3000);
+    } catch (err) {
+      toast.push('Gagal simpan ke Kurasah');
+    }
+  };
 
   const handleCopy = () => {
     navigator.clipboard.writeText(resolvedPrompt);
@@ -337,7 +480,7 @@ const TalkhisanSection = ({ profile }) => {
           </p>
         </div>
 
-        {/* Input type toggle */}
+        {/* Input type toggle — 3 opsi */}
         <div className="flex gap-2 mb-4">
           <button
             onClick={() => setInputType("teks")}
@@ -347,7 +490,17 @@ const TalkhisanSection = ({ profile }) => {
                 : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
             }`}
             style={inputType === "teks" ? {background:"rgba(62,207,142,0.20)"} : {}}>
-            📋 Teks (copy dari PDF)
+            📋 Paste Teks
+          </button>
+          <button
+            onClick={() => setInputType("upload")}
+            className={`flex-1 py-2 rounded-xl text-sm border font-medium transition-colors ${
+              inputType === "upload"
+                ? "text-emerald-200 border-emerald-600/35"
+                : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
+            }`}
+            style={inputType === "upload" ? {background:"rgba(62,207,142,0.20)"} : {}}>
+            📤 Upload PDF/Foto
           </button>
           <button
             onClick={() => setInputType("foto")}
@@ -356,7 +509,7 @@ const TalkhisanSection = ({ profile }) => {
                 ? "bg-gold-500/15 text-gold-200 border-gold-500/30"
                 : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7"
             }`}>
-            📷 Foto / Tulisan Tangan
+            📷 Panduan Foto
           </button>
         </div>
 
@@ -384,6 +537,95 @@ const TalkhisanSection = ({ profile }) => {
                 </button>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Input area — upload PDF/Foto */}
+        {inputType === "upload" && (
+          <div className="mb-4">
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*,.pdf"
+              onChange={handleFileChange}
+              style={{ display: 'none' }}
+            />
+            {uploading ? (
+              <div style={{
+                padding: '32px 20px', textAlign: 'center',
+                background: 'rgba(62,207,142,0.04)',
+                border: '1px solid rgba(62,207,142,0.2)',
+                borderRadius: 14,
+              }}>
+                <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
+                <div style={{ fontSize: 14, color: '#3ecf8e', fontWeight: 700 }}>
+                  AI sedang membaca talkhisanmu...
+                </div>
+                <div style={{ fontSize: 12, color: '#888', marginTop: 6 }}>
+                  Biasanya 10–20 detik
+                </div>
+              </div>
+            ) : teksInput ? (
+              <div style={{
+                padding: '16px', background: 'rgba(62,207,142,0.06)',
+                border: '1px solid rgba(62,207,142,0.3)', borderRadius: 14,
+              }}>
+                <div style={{ fontSize: 13, color: '#3ecf8e', fontWeight: 700, marginBottom: 8 }}>
+                  ✅ Talkhisan berhasil dibaca!
+                </div>
+                <div style={{ fontSize: 12, color: '#aaa', marginBottom: 12 }}>
+                  {teksInput.length} karakter · Pindah ke tab "Paste Teks" untuk edit, atau langsung pilih mode di bawah.
+                </div>
+                <button
+                  onClick={() => { setTeksInput(''); setUploadError(''); }}
+                  style={{ fontSize: 12, color: '#ff8080', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  🗑️ Hapus & upload ulang
+                </button>
+              </div>
+            ) : (
+              <div
+                onClick={() => fileRef.current?.click()}
+                style={{
+                  padding: '40px 20px', textAlign: 'center', cursor: 'pointer',
+                  background: 'rgba(255,255,255,0.02)',
+                  border: '2px dashed rgba(62,207,142,0.3)',
+                  borderRadius: 14, transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(62,207,142,0.6)'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(62,207,142,0.3)'}
+              >
+                <div style={{ fontSize: 36, marginBottom: 12 }}>📄</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 6 }}>
+                  Upload Talkhisan
+                </div>
+                <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.6 }}>
+                  PDF atau foto (JPG/PNG)<br/>
+                  AI akan baca teks Arab secara otomatis
+                </div>
+                <div style={{
+                  marginTop: 14, display: 'inline-block',
+                  padding: '8px 20px', borderRadius: 10,
+                  background: 'rgba(62,207,142,0.15)',
+                  border: '1px solid rgba(62,207,142,0.3)',
+                  fontSize: 13, color: '#3ecf8e', fontWeight: 700,
+                }}>
+                  Pilih File →
+                </div>
+                <div style={{ fontSize: 11, color: '#666', marginTop: 10 }}>
+                  Maks. foto: dikompresi otomatis · PDF: maks. 10 halaman
+                </div>
+              </div>
+            )}
+            {uploadError && (
+              <div style={{
+                marginTop: 10, padding: '10px 14px',
+                background: 'rgba(255,80,80,0.08)',
+                border: '1px solid rgba(255,80,80,0.2)',
+                borderRadius: 10, fontSize: 13, color: '#ff8080',
+              }}>
+                ⚠️ {uploadError}
+              </div>
+            )}
           </div>
         )}
 
@@ -489,6 +731,28 @@ const TalkhisanSection = ({ profile }) => {
             </button>
           )}
         </div>
+
+        {/* Tombol simpan ke Kurasah */}
+        {teksInput.trim() && (
+          <button
+            onClick={handleSaveToKurasah}
+            style={{
+              width: '100%',
+              marginTop: 8,
+              padding: '10px',
+              borderRadius: 10,
+              border: '1px solid rgba(255,255,255,0.1)',
+              background: savedToKurasah ? 'rgba(62,207,142,0.15)' : 'rgba(255,255,255,0.04)',
+              color: savedToKurasah ? '#3ecf8e' : '#aaa',
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+            }}
+          >
+            {savedToKurasah ? '✅ Tersimpan di Kurasah' : '📒 Simpan Talkhisan ke Kurasah'}
+          </button>
+        )}
 
         {/* Loop closer — simpan ke Kurasah setelah dapat hasil */}
         {copied && (
