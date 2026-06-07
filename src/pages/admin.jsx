@@ -1376,18 +1376,19 @@ const AdminBankSoal = () => {
   };
 
   React.useEffect(() => {
-    if (selected?.foto_url && !selected?.foto_deleted) {
-      setLoadingFoto(true);
-      fetch('/api/foto-soal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ foto_url: selected.foto_url })
-      })
-        .then(r => r.json())
-        .then(data => { if (data.ok) setSignedUrl(data.signedUrl); })
-        .finally(() => setLoadingFoto(false));
-    }
-  }, [selected?.foto_url]);
+    if (!selected?.foto_url || selected?.foto_deleted) return;
+    setSignedUrl(null);
+    setLoadingFoto(true);
+    fetch('/api/foto-soal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ foto_url: selected.foto_url })
+    })
+      .then(r => r.json())
+      .then(data => { if (data.ok) setSignedUrl(data.signedUrl); })
+      .catch(() => {})
+      .finally(() => setLoadingFoto(false));
+  }, [selected?.id]);
 
   const handleParse = async () => {
     if (!selected?.foto_url || selected?.foto_deleted) return;

@@ -24,8 +24,28 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Fetch foto sebagai base64
-    const fotoRes = await fetch(foto_url);
+    // Ekstrak path file dan buat signed URL dulu
+    const filePath = foto_url.split('/storage/v1/object/soal-foto/')[1];
+    if (!filePath) throw new Error('Path foto tidak valid');
+
+    const signRes = await fetch(
+      `${supabaseUrl}/storage/v1/object/sign/soal-foto/${filePath}`,
+      {
+        method: 'POST',
+        headers: {
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ expiresIn: 60 })
+      }
+    );
+    const signData = await signRes.json();
+    if (!signData.signedURL) throw new Error('Gagal buat signed URL');
+    const accessUrl = `${supabaseUrl}/storage/v1${signData.signedURL}`;
+
+    // Fetch foto via signed URL
+    const fotoRes = await fetch(accessUrl);
     if (!fotoRes.ok) throw new Error('Gagal mengambil foto');
     const buffer  = await fotoRes.arrayBuffer();
     const base64  = Buffer.from(buffer).toString('base64');
