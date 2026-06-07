@@ -70,32 +70,58 @@ async function handleParseSoal(req, res) {
             { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64}` } },
             {
               type: 'text',
-              text: `Kamu adalah mesin transkripsi teks soal ujian yang sangat presisi.
+              text: `Kamu adalah mesin transkripsi soal ujian Al-Azhar yang sangat presisi.
 
-KONTEKS: Ini adalah foto kertas soal ujian tahriri dari Universitas Al-Azhar Kairo.
+LANGKAH 1 — IDENTIFIKASI BAGIAN SOAL
+Kertas ujian Al-Azhar biasanya punya struktur:
+[HEADER] → [INSTRUKSI UMUM] → [SOAL-SOAL] → [FOOTER]
 
-YANG HARUS DIABAIKAN: nama mahasiswa, nama dosen, kop surat, stempel, tanda tangan, bobot nilai, nama universitas/fakultas, instruksi teknis ujian.
+Kamu HANYA perlu bagian SOAL-SOAL saja.
 
-YANG HARUS DITRANSKRIP: semua soal/pertanyaan ujian + instruksi soal ("أجب عن الأسئلة التالية" dll).
+ABAIKAN TOTAL (jangan transkripsi):
+- Baris "بسم الله الرحمن الرحيم"
+- Nama universitas, fakultas, jurusan, shu'bah
+- Nama matakuliah/المادة
+- Tahun akademik/العام الدراسي (tapi CATAT untuk [TAHUN_AKADEMIK])
+- Waktu ujian/الزمن
+- Nama dosen/الأستاذ
+- Stempel, tanda tangan, kop surat
+- Instruksi teknis: "أجب عن كل الأسئلة", "الزمن ساعتان", "ممنوع الغش"
+- Bobot nilai: "[٢٠ درجة]", "(١٠ نقاط)", "درجات"
+- Footer: "انتهت الأسئلة", "مع تمنياتنا بالتوفيق"
+- Nama mahasiswa, nomor kursi
 
-ATURAN TRANSKRIPSI — TIDAK BOLEH DILANGGAR:
-1. Salin teks soal PERSIS karakter demi karakter
-2. DILARANG menambah/menghapus/mengubah harakat
-3. DILARANG memperbaiki ejaan atau grammar
-4. Bagian tidak terbaca: tulis [...]
+TRANSKRIPSI HANYA:
+Pertanyaan/soal yang dimulai dengan:
+- Nomor: ١- atau ١. atau (١) atau السؤال الأول
+- Kata kerja perintah: اشرح / عرّف / بيّن / اذكر / قارن / وضّح / حدّد / استدل / تكلم / اكتب / ما هو / ما هي / كيف
 
-FORMAT OUTPUT:
+LANGKAH 2 — FORMAT OUTPUT
 
+Pertama tulis tahun:
 [TAHUN_AKADEMIK]
-(tahun akademik di kertas, contoh: 2024/2025 atau 1445/1446 — jika tidak ada: TIDAK_TERTERA)
+2024/2025
+
+Kemudian untuk SETIAP soal, tulis PERSIS format ini (satu soal = satu blok):
 
 [SOAL_ARAB]
-(teks soal Arab persis seperti di foto)
+١. اشرح مفهوم الإجماع وبيّن حجيته عند الأصوليين.
 [ARTI]
-(terjemahan natural ke bahasa Indonesia)
+1. Jelaskan konsep ijma' dan sebutkan kehujjahannya menurut para ahli ushul fiqh.
 
-PENTING: Mulai SELALU dengan [TAHUN_AKADEMIK]. Jangan tambahkan kalimat pembuka/penutup.
-Jika tidak terbaca: "FOTO_TIDAK_TERBACA"`
+[SOAL_ARAB]
+٢. عرّف القياس لغةً واصطلاحاً، وما هي أركانه؟
+[ARTI]
+2. Definisikan qiyas secara bahasa dan istilah, dan apa saja rukun-rukunnya?
+
+ATURAN TRANSKRIPSI:
+- Salin teks Arab PERSIS seperti di foto — jangan ubah harakat, ejaan, atau kata
+- Satu [SOAL_ARAB] = satu nomor soal (jangan gabungkan dua soal)
+- Kalau satu soal punya sub-pertanyaan (أ، ب، ج) — tetap satu blok [SOAL_ARAB]
+- Bagian tidak terbaca: tulis [...]
+- Jika tidak ada soal yang bisa dibaca: "FOTO_TIDAK_TERBACA"
+
+MULAI SEKARANG — langsung dengan [TAHUN_AKADEMIK], tanpa komentar apapun:`
             }
           ]
         }]
