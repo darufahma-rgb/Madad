@@ -212,6 +212,18 @@ http.createServer(async (req, res) => {
     return;
   }
 
+  // ── /api/update-jawaban ──────────────────────────────────────────────────
+  if (urlPath === '/api/update-jawaban') {
+    try {
+      const rawBody = await readBody(req);
+      await callApiHandler('./api/update-jawaban.js', req, res, rawBody);
+    } catch (err) {
+      console.error('[update-jawaban] Error:', err.message);
+      json(res, 500, { ok: false, error: err.message });
+    }
+    return;
+  }
+
   // ── /api/admin-bank-soal ──────────────────────────────────────────────
   if (urlPath === '/api/admin-bank-soal') {
     try {

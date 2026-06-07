@@ -1060,85 +1060,111 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
             </div>
           </div>
 
-          {/* Arti Soal — selalu tampil */}
-          {soal.arti_soal && (
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, color: '#888', fontWeight: 600, marginBottom: 8, letterSpacing: 1 }}>ARTI SOAL</div>
-              <div style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 12, padding: '14px 16px',
-                fontSize: 14, lineHeight: 1.7, color: '#ccc',
+          {/* Render per soal dari JSON array */}
+          {Array.isArray(soal.jawaban) && soal.jawaban.length > 0 ? (
+            soal.jawaban.map((jaw, i) => (
+              <div key={i} style={{
+                marginBottom: 24,
+                paddingBottom: 24,
+                borderBottom: i < soal.jawaban.length - 1
+                  ? '1px solid rgba(255,255,255,0.06)' : 'none',
               }}>
-                {soal.arti_soal}
-              </div>
-            </div>
-          )}
-
-          {/* Jawaban */}
-          {soal.jawaban && (
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, color: '#888', fontWeight: 600, marginBottom: 8, letterSpacing: 1 }}>JAWABAN (BAHASA ARAB)</div>
-              <div style={{ position: 'relative' }}>
+                {/* Nomor soal */}
                 <div style={{
-                  background: 'rgba(62,207,142,0.04)',
-                  border: '1px solid rgba(62,207,142,0.15)',
-                  borderRadius: 12, padding: '14px 16px',
-                  fontSize: 15, lineHeight: 2,
-                  direction: 'rtl', textAlign: 'right',
-                  color: '#ddd', fontFamily: 'serif',
-                  filter: isMember ? 'none' : 'blur(5px)',
-                  userSelect: isMember ? 'auto' : 'none',
-                  WebkitUserSelect: isMember ? 'auto' : 'none',
+                  fontSize: 11, color: EM, fontWeight: 700,
+                  marginBottom: 10, letterSpacing: 0.5,
                 }}>
-                  {isMember ? soal.jawaban : `${getPreviewJawaban(soal.jawaban)}...`}
+                  SOAL {i + 1}
                 </div>
-                {!isMember && (
+
+                {/* Soal Arab dari teks utama */}
+                {(() => {
+                  const blocks = (soal.soal || '').split('[SOAL_ARAB]').filter(Boolean);
+                  const block  = blocks[i];
+                  const arab   = block?.split('[ARTI]')[0]?.trim();
+                  return arab ? (
+                    <div style={{
+                      direction: 'rtl', textAlign: 'right',
+                      fontSize: 16, lineHeight: 2,
+                      color: '#eee', fontFamily: 'serif',
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: 10, padding: '12px 14px',
+                      marginBottom: 10,
+                    }}>{arab}</div>
+                  ) : null;
+                })()}
+
+                {/* Arti */}
+                {Array.isArray(soal.arti_soal) && soal.arti_soal[i] && (
                   <div style={{
-                    position: 'absolute', inset: 0,
-                    display: 'flex', flexDirection: 'column',
-                    alignItems: 'center', justifyContent: 'center', gap: 10,
+                    fontSize: 13, color: '#aaa', lineHeight: 1.7,
+                    marginBottom: 10, paddingLeft: 12,
+                    borderLeft: '2px solid rgba(62,207,142,0.3)',
                   }}>
-                    <div style={{ fontSize: 22 }}>🔒</div>
-                    <div style={{ fontSize: 13, color: '#fff', fontWeight: 700 }}>Jawaban lengkap untuk member</div>
-                    <a href="#/maddah-publik" style={{ padding: '8px 20px', borderRadius: 10, background: EM, color: '#000', fontWeight: 800, fontSize: 13, textDecoration: 'none' }}>
-                      Gabung Member →
-                    </a>
+                    {soal.arti_soal[i]}
+                  </div>
+                )}
+
+                {/* Jawaban */}
+                {jaw && (
+                  <div style={{ marginBottom: 10 }}>
+                    <div style={{ fontSize: 10, color: '#888', fontWeight: 600, marginBottom: 6 }}>JAWABAN</div>
+                    <div style={{ position: 'relative' }}>
+                      <div style={{
+                        background: 'rgba(62,207,142,0.04)',
+                        border: '1px solid rgba(62,207,142,0.15)',
+                        borderRadius: 10, padding: '12px 14px',
+                        fontSize: 15, lineHeight: 2,
+                        direction: 'rtl', textAlign: 'right',
+                        color: '#ddd', fontFamily: 'serif',
+                        filter: isMember ? 'none' : 'blur(5px)',
+                        userSelect: isMember ? 'auto' : 'none',
+                        WebkitUserSelect: isMember ? 'auto' : 'none',
+                      }}>
+                        {isMember ? jaw : jaw.split(' ').slice(0, Math.max(3, Math.floor(jaw.split(' ').length * 0.3))).join(' ') + '...'}
+                      </div>
+                      {!isMember && (
+                        <div style={{
+                          position: 'absolute', inset: 0,
+                          display: 'flex', flexDirection: 'column',
+                          alignItems: 'center', justifyContent: 'center', gap: 8,
+                        }}>
+                          <div style={{ fontSize: 20 }}>🔒</div>
+                          <div style={{ fontSize: 13, color: '#fff', fontWeight: 700 }}>
+                            Jawaban lengkap untuk member
+                          </div>
+                          <a href="#/maddah-publik" onClick={onClose}
+                            style={{
+                              padding: '7px 18px', borderRadius: 9,
+                              background: EM, color: '#000',
+                              fontWeight: 800, fontSize: 12, textDecoration: 'none',
+                            }}>
+                            Gabung Member →
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Penjelasan */}
+                {Array.isArray(soal.penjelasan) && soal.penjelasan[i] && isMember && (
+                  <div style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.08)',
+                    borderRadius: 10, padding: '12px 14px',
+                    fontSize: 13, lineHeight: 1.7, color: '#ccc',
+                  }}>
+                    <div style={{ fontSize: 10, color: '#888', fontWeight: 600, marginBottom: 6 }}>PENJELASAN</div>
+                    {soal.penjelasan[i]}
                   </div>
                 )}
               </div>
-            </div>
-          )}
-
-          {/* Penjelasan */}
-          {soal.penjelasan && (
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ fontSize: 11, color: '#888', fontWeight: 600, marginBottom: 8, letterSpacing: 1 }}>PENJELASAN</div>
-              <div style={{ position: 'relative' }}>
-                <div style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: 12, padding: '14px 16px',
-                  fontSize: 14, lineHeight: 1.8, color: '#ccc',
-                  filter: isMember ? 'none' : 'blur(5px)',
-                  userSelect: isMember ? 'auto' : 'none',
-                  WebkitUserSelect: isMember ? 'auto' : 'none',
-                }}>
-                  {isMember ? soal.penjelasan : soal.penjelasan.slice(0, Math.floor(soal.penjelasan.length * 0.3)) + '...'}
-                </div>
-                {!isMember && (
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <div style={{ fontSize: 13, color: '#888', fontWeight: 600 }}>🔒 Hanya untuk member</div>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Kalau jawaban belum ada */}
-          {!soal.jawaban && !soal.penjelasan && (
+            ))
+          ) : (
             <div style={{
-              textAlign: 'center', padding: '20px',
+              textAlign: 'center', padding: 20,
               background: 'rgba(255,255,255,0.02)',
               borderRadius: 12, color: '#666', fontSize: 13,
             }}>

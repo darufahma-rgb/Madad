@@ -1320,6 +1320,37 @@ const AdminSettings = () => {
 };
 
 /* ============== ADMIN BANK SOAL ============== */
+// Parse teks soal format [SOAL_ARAB]...[ARTI]... menjadi array objek per soal
+const parseSoalTeks = (teks) => {
+  if (!teks) return [];
+  if (teks.includes('[SOAL_ARAB]')) {
+    const blocks = teks.split('[SOAL_ARAB]').filter(Boolean);
+    return blocks.map((block, i) => {
+      const parts = block.split('[ARTI]');
+      return {
+        nomor: i + 1,
+        soal_arab:  parts[0]?.trim() || '',
+        arti:       parts[1]?.trim() || '',
+        jawaban:    '',
+        penjelasan: '',
+      };
+    });
+  }
+  return [{ nomor: 1, soal_arab: teks.trim(), arti: '', jawaban: '', penjelasan: '' }];
+};
+
+const mergeSoalDenganJawaban = (parsedSoal, dbJawaban, dbArti, dbPenjelasan) => {
+  const jawabanArr    = Array.isArray(dbJawaban)    ? dbJawaban    : [];
+  const artiArr       = Array.isArray(dbArti)        ? dbArti       : [];
+  const penjelasanArr = Array.isArray(dbPenjelasan)  ? dbPenjelasan : [];
+  return parsedSoal.map((s, i) => ({
+    ...s,
+    arti:       artiArr[i]       || s.arti       || '',
+    jawaban:    jawabanArr[i]    || s.jawaban    || '',
+    penjelasan: penjelasanArr[i] || s.penjelasan || '',
+  }));
+};
+
 const AdminBankSoal = () => {
   const [soals, setSoals]       = useState([]);
   const [stats, setStats]       = useState({ pending: 0, approved: 0, rejected: 0 });
@@ -1327,9 +1358,9 @@ const AdminBankSoal = () => {
   const [loading, setLoading]   = useState(true);
   const [selected, setSelected] = useState(null);
   const [soalTeks, setSoalTeks] = useState('');
-  const [artiSoal, setArtiSoal]     = useState('');
-  const [jawaban, setJawaban]       = useState('');
-  const [penjelasan, setPenjelasan] = useState('');
+  const [soalItems, setSoalItems]         = useState([]);
+  const [savingJawaban, setSavingJawaban] = useState(false);
+  const [savedJawaban, setSavedJawaban]   = useState(false);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [parsing, setParsing]   = useState(false);
   const [acting, setActing]     = useState(false);
@@ -1373,9 +1404,8 @@ const AdminBankSoal = () => {
   const openModal = (soal) => {
     setSelected(soal);
     setSoalTeks(soal.soal || '');
-    setArtiSoal(soal.arti_soal || '');
-    setJawaban(soal.jawaban || '');
-    setPenjelasan(soal.penjelasan || '');
+    setSoalItems([]);
+    setSavedJawaban(false);
     setRejectReason('');
     setShowReject(false);
     setReward('');
@@ -1419,7 +1449,7 @@ const AdminBankSoal = () => {
       const res = await fetch('/api/approve-soal', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
-        body: JSON.stringify({ soal_id: selected.id, action: 'approve', reward_type: reward || null, soal_teks: soalTeks, arti_soal: artiSoal, jawaban: jawaban, penjelasan: penjelasan })
+        body: JSON.stringify({ soal_id: selected.id, action: 'approve', reward_type: reward || null, soal_teks: soalTeks })
       });
       const data = await res.json();
       if (data.ok) { setSelected(null); fetchData(filter); }
@@ -1442,6 +1472,48 @@ const AdminBankSoal = () => {
       else alert('Reject gagal: ' + data.error);
     } catch (e) { alert('Error: ' + e.message); }
     finally { setActing(false); }
+  };
+
+  // Inisialisasi soalItems saat soal berubah
+  useEffect(() => {
+    if (!selected) return;
+    const parsed = parseSoalTeks(selected.soal || soalTeks || '');
+    const merged = mergeSoalDenganJawaban(
+      parsed,
+      selected.jawaban,
+      selected.arti_soal,
+      selected.penjelasan
+    );
+    setSoalItems(merged);
+  }, [selected?.id, soalTeks]);
+
+  const updateSoalItem = (index, field, value) => {
+    setSoalItems(prev => prev.map((item, i) =>
+      i === index ? { ...item, [field]: value } : item
+    ));
+    setSavedJawaban(false);
+  };
+
+  const handleSaveJawaban = async () => {
+    setSavingJawaban(true);
+    try {
+      const res = await fetch('/api/update-jawaban', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ soal_id: selected.id, jawaban_array: soalItems }),
+      });
+      const data = await res.json();
+      if (data.ok) {
+        setSavedJawaban(true);
+        setTimeout(() => setSavedJawaban(false), 3000);
+      } else {
+        alert('Gagal simpan: ' + data.error);
+      }
+    } catch (err) {
+      alert('Gagal simpan: ' + err.message);
+    } finally {
+      setSavingJawaban(false);
+    }
   };
 
   const STATUS_BADGE = {
@@ -1740,65 +1812,149 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                 </div>
               </div>
 
-              {/* Arti Soal */}
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: 11, color: '#3ecf8e', fontWeight: 700, display: 'block', marginBottom: 6 }}>
-                  ARTI SOAL (Bahasa Indonesia)
-                </label>
-                <textarea
-                  value={artiSoal}
-                  onChange={e => setArtiSoal(e.target.value)}
-                  placeholder="Terjemahan/arti soal dalam bahasa Indonesia..."
-                  rows={3}
-                  style={{
-                    width: '100%', padding: '10px 14px', borderRadius: 9,
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    background: 'rgba(255,255,255,0.04)', color: '#fff',
-                    fontSize: 14, resize: 'vertical', boxSizing: 'border-box',
-                    fontFamily: 'inherit',
-                  }}
-                />
-              </div>
+              {/* ── Section Jawaban Per Soal — hanya untuk yang sudah approved ── */}
+              {selected.status === 'approved' && soalItems.length > 0 && (
+                <div style={{ marginBottom: 20 }}>
+                  <div style={{
+                    display: 'flex', justifyContent: 'space-between',
+                    alignItems: 'center', marginBottom: 12,
+                  }}>
+                    <div style={{ fontSize: 12, color: '#3ecf8e', fontWeight: 700, letterSpacing: 0.5 }}>
+                      JAWABAN PER SOAL ({soalItems.length} soal)
+                    </div>
+                    <button
+                      onClick={handleSaveJawaban}
+                      disabled={savingJawaban}
+                      style={{
+                        padding: '6px 16px', borderRadius: 8,
+                        border: 'none', fontSize: 12, fontWeight: 700,
+                        background: savedJawaban ? 'rgba(62,207,142,0.2)' : '#3ecf8e',
+                        color: savedJawaban ? '#3ecf8e' : '#000',
+                        cursor: savingJawaban ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      {savingJawaban ? 'Menyimpan...' : savedJawaban ? '✅ Tersimpan' : '💾 Simpan Semua'}
+                    </button>
+                  </div>
 
-              {/* Jawaban */}
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: 11, color: '#3ecf8e', fontWeight: 700, display: 'block', marginBottom: 6 }}>
-                  JAWABAN (Bahasa Arab)
-                </label>
-                <textarea
-                  value={jawaban}
-                  onChange={e => setJawaban(e.target.value)}
-                  placeholder="Jawaban dalam bahasa Arab..."
-                  rows={4}
-                  style={{
-                    width: '100%', padding: '10px 14px', borderRadius: 9,
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    background: 'rgba(255,255,255,0.04)', color: '#fff',
-                    fontSize: 14, resize: 'vertical', boxSizing: 'border-box',
-                    fontFamily: 'inherit', direction: 'rtl', textAlign: 'right',
-                  }}
-                />
-              </div>
+                  {soalItems.map((item, idx) => (
+                    <div key={idx} style={{
+                      marginBottom: 16,
+                      border: '1px solid rgba(255,255,255,0.08)',
+                      borderRadius: 12, overflow: 'hidden',
+                    }}>
+                      {/* Header soal */}
+                      <div style={{
+                        padding: '10px 14px',
+                        background: 'rgba(255,255,255,0.03)',
+                        borderBottom: '1px solid rgba(255,255,255,0.06)',
+                        display: 'flex', alignItems: 'center', gap: 8,
+                      }}>
+                        <span style={{
+                          width: 22, height: 22, borderRadius: 6,
+                          background: 'rgba(62,207,142,0.15)',
+                          color: '#3ecf8e', fontSize: 11, fontWeight: 800,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          flexShrink: 0,
+                        }}>{item.nomor}</span>
+                        <div style={{
+                          fontSize: 14, color: '#eee', direction: 'rtl',
+                          textAlign: 'right', flex: 1, lineHeight: 1.7,
+                          fontFamily: 'serif',
+                        }}>
+                          {item.soal_arab || '—'}
+                        </div>
+                      </div>
 
-              {/* Penjelasan */}
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: 11, color: '#3ecf8e', fontWeight: 700, display: 'block', marginBottom: 6 }}>
-                  PENJELASAN (Bahasa Indonesia)
-                </label>
-                <textarea
-                  value={penjelasan}
-                  onChange={e => setPenjelasan(e.target.value)}
-                  placeholder="Penjelasan jawaban dalam bahasa Indonesia..."
-                  rows={4}
-                  style={{
-                    width: '100%', padding: '10px 14px', borderRadius: 9,
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    background: 'rgba(255,255,255,0.04)', color: '#fff',
-                    fontSize: 14, resize: 'vertical', boxSizing: 'border-box',
-                    fontFamily: 'inherit',
-                  }}
-                />
-              </div>
+                      {/* Input fields */}
+                      <div style={{ padding: '12px 14px' }}>
+                        <div style={{ marginBottom: 10 }}>
+                          <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                            ARTI (Indonesia)
+                          </label>
+                          <textarea
+                            value={item.arti}
+                            onChange={e => updateSoalItem(idx, 'arti', e.target.value)}
+                            placeholder="Terjemahan soal dalam bahasa Indonesia..."
+                            rows={2}
+                            style={{
+                              width: '100%', padding: '8px 12px', borderRadius: 8,
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              background: 'rgba(255,255,255,0.03)', color: '#fff',
+                              fontSize: 13, resize: 'vertical', boxSizing: 'border-box',
+                              fontFamily: 'inherit',
+                            }}
+                          />
+                        </div>
+
+                        <div style={{ marginBottom: 10 }}>
+                          <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                            JAWABAN (Arab)
+                          </label>
+                          <textarea
+                            value={item.jawaban}
+                            onChange={e => updateSoalItem(idx, 'jawaban', e.target.value)}
+                            placeholder="الجواب بالعربية..."
+                            rows={3}
+                            style={{
+                              width: '100%', padding: '8px 12px', borderRadius: 8,
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              background: 'rgba(255,255,255,0.03)', color: '#fff',
+                              fontSize: 14, resize: 'vertical', boxSizing: 'border-box',
+                              fontFamily: 'serif', direction: 'rtl', textAlign: 'right',
+                              lineHeight: 1.8,
+                            }}
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                            PENJELASAN (Indonesia)
+                          </label>
+                          <textarea
+                            value={item.penjelasan}
+                            onChange={e => updateSoalItem(idx, 'penjelasan', e.target.value)}
+                            placeholder="Penjelasan jawaban dalam bahasa Indonesia..."
+                            rows={3}
+                            style={{
+                              width: '100%', padding: '8px 12px', borderRadius: 8,
+                              border: '1px solid rgba(255,255,255,0.08)',
+                              background: 'rgba(255,255,255,0.03)', color: '#fff',
+                              fontSize: 13, resize: 'vertical', boxSizing: 'border-box',
+                              fontFamily: 'inherit',
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  <button
+                    onClick={handleSaveJawaban}
+                    disabled={savingJawaban}
+                    style={{
+                      width: '100%', padding: '11px', borderRadius: 10,
+                      border: 'none', fontSize: 13, fontWeight: 700,
+                      background: savedJawaban ? 'rgba(62,207,142,0.15)' : '#3ecf8e',
+                      color: savedJawaban ? '#3ecf8e' : '#000',
+                      cursor: savingJawaban ? 'not-allowed' : 'pointer',
+                    }}
+                  >
+                    {savingJawaban ? 'Menyimpan...' : savedJawaban ? '✅ Semua Jawaban Tersimpan' : '💾 Simpan Semua Jawaban'}
+                  </button>
+                </div>
+              )}
+
+              {selected.status === 'pending' && (
+                <div style={{
+                  marginBottom: 20, padding: '12px 14px',
+                  background: 'rgba(255,200,50,0.06)',
+                  border: '1px solid rgba(255,200,50,0.2)',
+                  borderRadius: 10, fontSize: 13, color: '#a08030',
+                }}>
+                  💡 Input jawaban per soal tersedia setelah submission di-approve.
+                </div>
+              )}
 
               {/* Reject reason */}
               {selected.status === 'rejected' && selected.reject_reason && (
