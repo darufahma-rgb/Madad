@@ -9,8 +9,6 @@ const sbRequest = (supabaseUrl, serviceKey, method, path, body) => {
       'Authorization': `Bearer ${serviceKey}`,
       'Content-Type': 'application/json',
       'Accept': 'application/json',
-      'Range': '0-999',
-      'Prefer': 'count=exact',
     },
     body: body ? JSON.stringify(body) : undefined,
   }).then(r => r.json());
@@ -45,7 +43,7 @@ export default async function handler(req, res) {
     let result;
 
     if (action === 'list') {
-      result = await sbRequest(supabaseUrl, serviceKey, 'GET', 'members?order=created_at.desc&limit=1000', null);
+      result = await sbRequest(supabaseUrl, serviceKey, 'GET', 'members?order=created_at.desc&limit=500', null);
     } else if (action === 'add') {
       result = await sbRequest(supabaseUrl, serviceKey, 'POST', 'members', row);
     } else if (action === 'update') {
