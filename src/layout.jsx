@@ -193,7 +193,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     { to: "/framework",     label: "Framework" },
     { to: "/tutorial",      label: "Cara Pakai" },
     { to: "/ethics",        label: "Etika" },
-    { to: "/submit-soal",   label: "Submit Soal 🎁" },
+    { to: "/submit-soal",   label: "Submit Soal", highlight: true },
   ];
   const links = session ? memberLinks : publicLinks;
 
@@ -204,7 +204,9 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
         <nav className="hidden md:flex items-center gap-1">
           {links.map(l => l.to.startsWith("/#")
             ? <a key={l.to} href={l.to.slice(1)} onClick={(e) => { e.preventDefault(); const id = l.to.split("#")[1]; const el = document.getElementById(id); if (el) el.scrollIntoView({behavior:"smooth"}); }} className="nav-link px-3.5 py-2 text-[14.5px] text-ink-muted hover:text-ink rounded-lg">{l.label}</a>
-            : <NavLink key={l.to} to={l.to}>{l.label}</NavLink>
+            : l.highlight
+              ? <NavLink key={l.to} to={l.to} className="!text-emerald-400 hover:!text-emerald-300 font-semibold">{l.label}</NavLink>
+              : <NavLink key={l.to} to={l.to}>{l.label}</NavLink>
           )}
           {session && (
             <button
