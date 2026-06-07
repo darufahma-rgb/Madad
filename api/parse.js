@@ -61,7 +61,7 @@ async function handleParseSoal(req, res) {
         'X-Title': 'Talqeeh Bank Soal',
       },
       body: JSON.stringify({
-        model: 'anthropic/claude-3-haiku',
+        model: 'anthropic/claude-3.5-sonnet',
         max_tokens: 3000,
         temperature: 0,
         messages: [{
