@@ -1112,8 +1112,9 @@ const SalinPromptButton = ({ prompt, nomor }) => {
   );
 };
 
-const SoalDetailModal = ({ soal, onClose, isMember }) => {
+const SoalDetailModal = ({ soal, soalList, onClose, isMember }) => {
   if (!soal) return null;
+  const soalToRender = soalList && soalList.length > 0 ? soalList : [soal];
   const EM = '#3ecf8e';
 
   return (
@@ -1281,8 +1282,6 @@ Jelaskan inti jawaban dalam bahasa Indonesia yang mudah dipahami mahasiswa Indon
 
 /* ============ BANK SOAL SECTION ============ */
 const BankSoalSection = () => {
-  const { session } = typeof useAuth !== 'undefined' ? useAuth() : { session: null };
-  const isLoggedIn = !!session;
   const isMember = (() => {
     try {
       const s = JSON.parse(localStorage.getItem('madad_session') || '{}');
@@ -1290,143 +1289,221 @@ const BankSoalSection = () => {
     } catch { return false; }
   })();
 
-  const [fakultas, setFakultas] = React.useState('');
-  const [maddahId, setMaddahId] = React.useState('');
-  const [tahun, setTahun]       = React.useState('');
-  const [results, setResults]   = React.useState([]);
-  const [loading, setLoading]   = React.useState(false);
-  const [searched, setSearched] = React.useState(false);
-  const [expandedId, setExpandedId] = React.useState(null);
+  const [soalList, setSoalList]         = React.useState([]);
+  const [loading, setLoading]           = React.useState(true);
+  const [filter, setFilter]             = React.useState({ fakultas: '', maddah: '', tahun: '' });
   const [selectedSoal, setSelectedSoal] = React.useState(null);
 
-  const faculties      = typeof FACULTIES !== 'undefined' ? FACULTIES.filter(f => !f.isMahad) : [];
-  const allMaddahs     = typeof MADDAHS   !== 'undefined' ? MADDAHS : [];
-  const filteredMaddahs = fakultas ? allMaddahs.filter(m => (m.fakultas || []).includes(fakultas)) : [];
-  const TAHUN_OPTIONS  = ['2023/2024', '2024/2025', '2025/2026'];
-  const FASHL_OPTIONS  = [
-    { value: 'awwal', label: 'Fashl Awwal' },
-    { value: 'tsani', label: 'Fashl Tsani' },
-  ];
+  React.useEffect(() => {
+    const supabaseUrl = window.__SUPABASE_URL__ || '';
+    const anonKey     = window.__SUPABASE_ANON_KEY__ || '';
+    if (!supabaseUrl || !anonKey) { setLoading(false); return; }
+    fetch(
+      `${supabaseUrl}/rest/v1/bank_soal?status=eq.approved&select=id,maddah_id,maddah_nama,fakultas,tingkat,tahun,fashl,soal,arti_soal,jawaban,penjelasan&order=approved_at.desc&limit=200`,
+      { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` } }
+    )
+      .then(r => r.json())
+      .then(data => { setSoalList(Array.isArray(data) ? data : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, []);
 
-  const handleCari = async () => {
-    if (!maddahId || !tahun) { alert('Pilih maddah dan tahun terlebih dahulu'); return; }
-    setLoading(true);
-    setSearched(true);
-    setResults([]);
-    setExpandedId(null);
-    try {
-      const supabaseUrl = window.__SUPABASE_URL__ || '';
-      const anonKey     = window.__SUPABASE_ANON_KEY__ || '';
-      const r = await fetch(
-        `${supabaseUrl}/rest/v1/bank_soal?maddah_id=eq.${encodeURIComponent(maddahId)}&tahun=eq.${encodeURIComponent(tahun)}&status=eq.approved&select=id,maddah_nama,tahun,fashl,soal,arti_soal,jawaban,penjelasan`,
-        { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` } }
-      );
-      const data = await r.json();
-      setResults(Array.isArray(data) ? data : []);
-    } catch { setResults([]); }
-    finally { setLoading(false); }
-  };
+  const fakultasList = [...new Set(soalList.map(s => s.fakultas).filter(Boolean))].sort();
+  const maddahList   = [...new Set(
+    soalList
+      .filter(s => !filter.fakultas || s.fakultas === filter.fakultas)
+      .map(s => s.maddah_nama)
+      .filter(Boolean)
+  )].sort();
+  const tahunList    = [...new Set(soalList.map(s => s.tahun).filter(Boolean))].sort().reverse();
 
-  const EM         = '#3ecf8e';
-  const maddahNama = allMaddahs.find(m => m.id === maddahId)?.name || '';
+  const filtered = soalList.filter(s =>
+    (!filter.fakultas || s.fakultas === filter.fakultas) &&
+    (!filter.maddah   || s.maddah_nama === filter.maddah) &&
+    (!filter.tahun    || s.tahun === filter.tahun)
+  );
+
+  const grouped = filtered.reduce((acc, soal) => {
+    const key = `${soal.maddah_nama}|${soal.tahun}|${soal.fashl}`;
+    if (!acc[key]) acc[key] = { ...soal, count: 0, soalList: [] };
+    acc[key].count++;
+    acc[key].soalList.push(soal);
+    return acc;
+  }, {});
+
+  const EM = '#3ecf8e';
+  const hasFilter = filter.fakultas || filter.maddah || filter.tahun;
 
   return (
     <section style={{ background: 'rgba(62,207,142,0.025)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '24px 0 28px' }}>
       <div className="container-x">
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 16, marginBottom: 20, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
           <div>
-            <div style={{ fontSize: 10, color: EM, fontWeight: 700, letterSpacing: 1.5, marginBottom: 5 }}>DARI MASISIR UNTUK MASISIR</div>
-            <h2 className="font-display" style={{ fontSize: 20, fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>📚 Bank Soal Imtihan</h2>
-            <p style={{ fontSize: 13, color: '#999', margin: 0 }}>Soal ujian tahun-tahun sebelumnya, dikumpulkan dari kontributor Masisir.</p>
+            <div style={{ fontSize: 10, color: EM, fontWeight: 700, letterSpacing: 1.5, marginBottom: 4 }}>
+              DARI MASISIR UNTUK MASISIR
+            </div>
+            <h2 className="font-display" style={{ fontSize: 20, fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>
+              🗂️ Bank Soal Imtihan
+            </h2>
+            <p style={{ fontSize: 13, color: '#999', margin: 0 }}>
+              Soal ujian tahun-tahun sebelumnya, dikumpulkan dari kontributor Masisir.
+            </p>
           </div>
-          <button onClick={() => navigate('/submit-soal')}
-            style={{ flexShrink: 0, padding: '9px 16px', borderRadius: 10, background: 'rgba(62,207,142,0.12)', border: '1px solid rgba(62,207,142,0.3)', color: EM, fontSize: 12, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>
-            📤 Submit Soal → Dapat Reward
-          </button>
+          <a href="#/submit-soal" style={{
+            padding: '9px 16px', borderRadius: 10,
+            background: 'rgba(62,207,142,0.12)',
+            border: '1px solid rgba(62,207,142,0.3)',
+            color: EM, fontSize: 12, fontWeight: 700,
+            textDecoration: 'none', whiteSpace: 'nowrap',
+          }}>
+            📸 Submit Soal → Dapat Reward
+          </a>
         </div>
 
-        {/* Filter */}
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end', marginBottom: 16 }}>
-          <select value={fakultas} onChange={e => { setFakultas(e.target.value); setMaddahId(''); setResults([]); setSearched(false); }}
-            style={{ padding: '8px 12px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 13, minWidth: 120 }}>
-            <option value="">Fakultas</option>
-            {faculties.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
+        {/* Filter horizontal */}
+        <div style={{ display: 'flex', gap: 8, marginBottom: 12, flexWrap: 'wrap' }}>
+          <select
+            value={filter.fakultas}
+            onChange={e => setFilter(f => ({ ...f, fakultas: e.target.value, maddah: '' }))}
+            style={{
+              flex: 1, minWidth: 120, padding: '8px 10px', borderRadius: 8,
+              border: '1px solid rgba(255,255,255,0.1)',
+              background: '#1a1a1a', color: filter.fakultas ? '#fff' : '#666', fontSize: 12,
+            }}
+          >
+            <option value="">Semua Fakultas</option>
+            {fakultasList.map(f => <option key={f} value={f}>{f}</option>)}
           </select>
 
-          <select value={maddahId} onChange={e => { setMaddahId(e.target.value); setResults([]); setSearched(false); }}
-            disabled={!fakultas}
-            style={{ padding: '8px 12px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 13, minWidth: 150 }}>
-            <option value="">Maddah</option>
-            {filteredMaddahs.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+          <select
+            value={filter.maddah}
+            onChange={e => setFilter(f => ({ ...f, maddah: e.target.value }))}
+            style={{
+              flex: 2, minWidth: 160, padding: '8px 10px', borderRadius: 8,
+              border: '1px solid rgba(255,255,255,0.1)',
+              background: '#1a1a1a', color: filter.maddah ? '#fff' : '#666', fontSize: 12,
+            }}
+          >
+            <option value="">Semua Maddah</option>
+            {maddahList.map(m => <option key={m} value={m}>{m}</option>)}
           </select>
 
-          <select value={tahun} onChange={e => { setTahun(e.target.value); setResults([]); setSearched(false); }}
-            style={{ padding: '8px 12px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 13 }}>
-            <option value="">Tahun</option>
-            {TAHUN_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+          <select
+            value={filter.tahun}
+            onChange={e => setFilter(f => ({ ...f, tahun: e.target.value }))}
+            style={{
+              flex: 1, minWidth: 110, padding: '8px 10px', borderRadius: 8,
+              border: '1px solid rgba(255,255,255,0.1)',
+              background: '#1a1a1a', color: filter.tahun ? '#fff' : '#666', fontSize: 12,
+            }}
+          >
+            <option value="">Semua Tahun</option>
+            {tahunList.map(t => <option key={t} value={t}>{t}</option>)}
           </select>
 
-          <button onClick={handleCari} disabled={!maddahId || !tahun || loading}
-            style={{ padding: '8px 18px', borderRadius: 9, background: EM, color: '#000', fontWeight: 800, fontSize: 13, border: 'none', cursor: (!maddahId || !tahun) ? 'not-allowed' : 'pointer', opacity: (!maddahId || !tahun) ? 0.5 : 1 }}>
-            {loading ? 'Mencari...' : 'Cari →'}
-          </button>
+          {hasFilter && (
+            <button
+              onClick={() => setFilter({ fakultas: '', maddah: '', tahun: '' })}
+              style={{
+                padding: '8px 12px', borderRadius: 8,
+                border: '1px solid rgba(255,255,255,0.1)',
+                background: 'transparent', color: '#888',
+                fontSize: 12, cursor: 'pointer',
+              }}
+            >
+              ✕ Reset
+            </button>
+          )}
         </div>
+
+        {/* Summary */}
+        {!loading && (
+          <div style={{ fontSize: 12, color: '#666', marginBottom: 12 }}>
+            {filtered.length > 0
+              ? `${Object.keys(grouped).length} slot tersedia · ${filtered.length} soal`
+              : 'Belum ada soal untuk filter ini'}
+          </div>
+        )}
+
+        {/* Grid soal */}
+        {loading ? (
+          <div style={{ textAlign: 'center', color: '#888', padding: '32px 0', fontSize: 13 }}>
+            Memuat bank soal...
+          </div>
+        ) : Object.keys(grouped).length === 0 ? (
+          <div style={{
+            textAlign: 'center', padding: '32px 20px',
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px dashed rgba(255,255,255,0.08)',
+            borderRadius: 14,
+          }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
+            <div style={{ fontSize: 14, color: '#888', marginBottom: 12 }}>
+              {soalList.length === 0
+                ? 'Belum ada soal yang tersedia.'
+                : 'Belum ada soal untuk filter ini.'}
+            </div>
+            <a href="#/submit-soal" style={{
+              display: 'inline-block', padding: '9px 20px', borderRadius: 9,
+              background: EM, color: '#000',
+              fontWeight: 800, fontSize: 13, textDecoration: 'none',
+            }}>
+              Jadilah yang pertama submit! →
+            </a>
+          </div>
+        ) : (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+            gap: 10,
+          }}>
+            {Object.entries(grouped).map(([key, group]) => (
+              <div
+                key={key}
+                onClick={() => isMember ? setSelectedSoal(group) : null}
+                style={{
+                  padding: '14px 16px', borderRadius: 12,
+                  border: '1px solid rgba(62,207,142,0.2)',
+                  background: 'rgba(62,207,142,0.04)',
+                  cursor: isMember ? 'pointer' : 'default',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={e => {
+                  if (isMember) e.currentTarget.style.borderColor = 'rgba(62,207,142,0.5)';
+                }}
+                onMouseLeave={e => {
+                  e.currentTarget.style.borderColor = 'rgba(62,207,142,0.2)';
+                }}
+              >
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 4 }}>
+                  {group.maddah_nama}
+                </div>
+                <div style={{ fontSize: 11, color: '#888', marginBottom: 10 }}>
+                  {group.tahun} · {group.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ fontSize: 12, color: EM, fontWeight: 700 }}>
+                    ✅ {group.count} soal tersedia
+                  </span>
+                  {isMember ? (
+                    <span style={{ fontSize: 11, color: EM }}>Buka →</span>
+                  ) : (
+                    <span style={{ fontSize: 11, color: '#666' }}>🔒</span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Modal detail soal */}
         {selectedSoal && (
           <SoalDetailModal
-            soal={selectedSoal}
+            soal={selectedSoal.soalList[0]}
+            soalList={selectedSoal.soalList}
             onClose={() => setSelectedSoal(null)}
             isMember={isMember}
           />
-        )}
-
-        {/* Grid hasil */}
-        {searched && !loading && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(270px,1fr))', gap: 12 }}>
-            {FASHL_OPTIONS.map(fashl => {
-              const soal = results.find(r => r.fashl === fashl.value);
-              return (
-                <div key={fashl.value} className="card-glass" style={{ padding: 16 }}>
-                  <div style={{ fontSize: 11, color: '#888', marginBottom: 8 }}>
-                    {maddahNama} · {fashl.label} {tahun}
-                  </div>
-                  {soal ? (
-                    <>
-                      <div style={{ fontSize: 13, color: EM, fontWeight: 700, marginBottom: 10 }}>✅ Tersedia</div>
-                      <button
-                        onClick={() => setSelectedSoal(soal)}
-                        style={{ padding: '8px 14px', borderRadius: 8, background: EM, color: '#000', fontWeight: 700, fontSize: 12, border: 'none', cursor: 'pointer', width: '100%' }}>
-                        Baca Soal →
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div style={{ fontSize: 13, color: '#555', marginBottom: 10 }}>⬜ Belum tersedia</div>
-                      <button onClick={() => navigate('/submit-soal')}
-                        style={{ display: 'block', padding: '8px 14px', borderRadius: 8, border: '1px solid rgba(62,207,142,0.25)', color: EM, fontSize: 12, fontWeight: 700, textAlign: 'center', background: 'none', cursor: 'pointer', width: '100%' }}>
-                        Submit Soal → Dapat Reward
-                      </button>
-                    </>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-
-        {loading && (
-          <div style={{ textAlign: 'center', padding: '20px 0', color: '#666', fontSize: 13 }}>Mencari soal...</div>
-        )}
-
-        {searched && !loading && results.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '16px 0', color: '#666', fontSize: 13 }}>
-            Belum ada soal untuk maddah ini.{' '}
-            <button onClick={() => navigate('/submit-soal')} style={{ color: EM, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700, fontSize: 13 }}>
-              Jadilah yang pertama submit! →
-            </button>
-          </div>
         )}
       </div>
     </section>
