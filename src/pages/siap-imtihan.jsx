@@ -1295,16 +1295,43 @@ const BankSoalSection = () => {
   const [selectedSoal, setSelectedSoal] = React.useState(null);
 
   React.useEffect(() => {
-    const supabaseUrl = window.__SUPABASE_URL__ || '';
-    const anonKey     = window.__SUPABASE_ANON_KEY__ || '';
-    if (!supabaseUrl || !anonKey) { setLoading(false); return; }
-    fetch(
-      `${supabaseUrl}/rest/v1/bank_soal?status=eq.approved&select=id,maddah_id,maddah_nama,fakultas,tingkat,tahun,fashl,soal,arti_soal,jawaban,penjelasan&order=approved_at.desc&limit=200`,
-      { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` } }
-    )
-      .then(r => r.json())
-      .then(data => { setSoalList(Array.isArray(data) ? data : []); setLoading(false); })
-      .catch(() => setLoading(false));
+    const supabaseUrl  = import.meta.env.VITE_SUPABASE_URL  || '';
+    const supabaseAnon = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+    if (!supabaseUrl || !supabaseAnon) {
+      console.error('[BankSoal] Config tidak tersedia', { supabaseUrl, supabaseAnon });
+      setLoading(false);
+      return;
+    }
+
+    const url = `${supabaseUrl}/rest/v1/bank_soal?status=eq.approved&select=id,maddah_id,maddah_nama,fakultas,tingkat,tahun,fashl,soal&order=approved_at.desc&limit=200`;
+    console.log('[BankSoal] Fetching:', url);
+
+    fetch(url, {
+      headers: {
+        'apikey': supabaseAnon,
+        'Authorization': `Bearer ${supabaseAnon}`,
+        'Accept': 'application/json',
+      }
+    })
+      .then(r => {
+        console.log('[BankSoal] Response status:', r.status);
+        return r.json();
+      })
+      .then(data => {
+        console.log('[BankSoal] Data received:', data);
+        if (Array.isArray(data) && data.length > 0) {
+          setSoalList(data);
+          console.log('[BankSoal] soalList set:', data.length, 'items');
+        } else {
+          console.warn('[BankSoal] Data kosong atau bukan array:', data);
+        }
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('[BankSoal] Fetch error:', err);
+        setLoading(false);
+      });
   }, []);
 
   const fakultasList = [...new Set(soalList.map(s => s.fakultas).filter(Boolean))].sort();
