@@ -22,14 +22,29 @@ function BankSoalPublikPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  const getPreviewSoal = (teks) => {
+  // Strip markdown formatting dari teks Arab
+  const cleanArabicText = (teks) => {
     if (!teks) return '';
+    return teks
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/\[([^\]]+)\]/g, '$1')
+      .replace(/#{1,6}\s/g, '')
+      .replace(/---+/g, '')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  };
+
+  const getCleanPreview = (teks) => {
+    if (!teks) return '';
+    let soal = '';
     if (teks.includes('[SOAL_ARAB]')) {
       const block = teks.split('[SOAL_ARAB]').filter(Boolean)[0];
-      const raw = block?.split('[ARTI]')[0]?.trim() || '';
-      return raw.slice(0, 120) + (raw.length > 120 ? '...' : '');
+      soal = block?.split('[ARTI]')[0]?.trim() || '';
+    } else {
+      soal = teks.split('\n').find(l => l.trim()) || '';
     }
-    return teks.slice(0, 120) + (teks.length > 120 ? '...' : '');
+    return cleanArabicText(soal);
   };
 
   const tahunList  = [...new Set(soalList.map(s => s.tahun))].sort().reverse();
@@ -129,7 +144,7 @@ function BankSoalPublikPage() {
                   color: '#ddd', fontFamily: 'serif',
                   maxHeight: 72, overflow: 'hidden',
                 }}>
-                  {getPreviewSoal(soal.soal) || 'Soal tersedia untuk member'}
+                  {getCleanPreview(soal.soal) || 'Soal tersedia untuk member'}
                 </div>
                 <div style={{
                   position: 'absolute', bottom: 0, left: 0, right: 0, height: '55%',

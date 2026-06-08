@@ -1170,6 +1170,12 @@ const SoalDetailModal = ({ soal, soalList, onClose, isMember }) => {
               const arab  = parts[0]?.trim();
               const arti  = parts[1]?.trim();
               const nomor = i + 1;
+              const arabBersih = arab
+                ?.replace(/\*\*(.*?)\*\*/g, '$1')
+                ?.replace(/\*(.*?)\*/g, '$1')
+                ?.replace(/\[([^\]]+)\]/g, '$1')
+                ?.replace(/#{1,6}\s/g, '')
+                ?.trim();
 
               const prompt = `Kamu adalah asisten akademik Al-Azhar yang ahli bahasa Arab dan ilmu-ilmu syariah.
 
@@ -1205,7 +1211,7 @@ Jelaskan inti jawaban dalam bahasa Indonesia yang mudah dipahami mahasiswa Indon
                     SOAL {nomor}
                   </div>
 
-                  {arab && (
+                  {arabBersih && (
                     <div style={{
                       direction: 'rtl', textAlign: 'right',
                       fontSize: 16, lineHeight: 2,
@@ -1215,7 +1221,7 @@ Jelaskan inti jawaban dalam bahasa Indonesia yang mudah dipahami mahasiswa Indon
                       borderRadius: 10, padding: '12px 14px',
                       marginBottom: 10,
                     }}>
-                      {arab}
+                      {arabBersih}
                     </div>
                   )}
 

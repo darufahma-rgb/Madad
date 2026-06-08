@@ -630,13 +630,21 @@ const BankSoalPreview = ({ onOpenLogin }) => {
       .catch(() => setLoading(false));
   }, []);
 
-  const getFirstSoal = (teks) => {
+  const getCleanFirstSoal = (teks) => {
     if (!teks) return '';
+    let soal = '';
     if (teks.includes('[SOAL_ARAB]')) {
       const block = teks.split('[SOAL_ARAB]').filter(Boolean)[0];
-      return block?.split('[ARTI]')[0]?.trim() || '';
+      soal = block?.split('[ARTI]')[0]?.trim() || '';
+    } else {
+      soal = teks.split('\n').find(l => l.trim()) || '';
     }
-    return teks.split('\n').find(l => l.trim()) || '';
+    return soal
+      .replace(/\*\*(.*?)\*\*/g, '$1')
+      .replace(/\*(.*?)\*/g, '$1')
+      .replace(/\[([^\]]+)\]/g, '$1')
+      .replace(/#{1,6}\s/g, '')
+      .trim();
   };
 
   const dummySoal = [
@@ -738,7 +746,7 @@ const BankSoalPreview = ({ onOpenLogin }) => {
                   }}>
                     {loading
                       ? 'جاري التحميل...'
-                      : getFirstSoal(firstSoal?.soal) || '**السؤال الأول:** اختلف أهل السنة والفلاسفة في معنى النبوة والرسالة، والمطلوب: بيان مذهب كل من الفريقين بالتفصيل.'}
+                      : getCleanFirstSoal(firstSoal?.soal) || 'السؤال الأول: اختلف أهل السنة والفلاسفة في معنى النبوة والرسالة، والمطلوب: بيان مذهب كل من الفريقين بالتفصيل.'}
                   </div>
 
                   {/* Gradient cut-off */}
