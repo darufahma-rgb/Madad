@@ -1980,7 +1980,7 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                                 direction: 'rtl', textAlign: 'right',
                                 fontFamily: 'serif',
                               }}
-                              dangerouslySetInnerHTML={{ __html: marked(item.jawaban || '') }}
+                              dangerouslySetInnerHTML={{ __html: marked.parse(item.jawaban || '') }}
                             />
                           ) : (
                             <textarea
@@ -2026,7 +2026,7 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                                 background: 'rgba(255,255,255,0.03)',
                                 fontSize: 13, lineHeight: 1.8, color: '#eee',
                               }}
-                              dangerouslySetInnerHTML={{ __html: marked(item.penjelasan || '') }}
+                              dangerouslySetInnerHTML={{ __html: marked.parse(item.penjelasan || '') }}
                             />
                           ) : (
                             <textarea
