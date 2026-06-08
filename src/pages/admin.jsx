@@ -1369,6 +1369,10 @@ const AdminBankSoal = () => {
   const [rejectReason, setRejectReason] = useState('');
   const [showReject, setShowReject]     = useState(false);
   const [reward, setReward]     = useState('');
+  const [showEdit, setShowEdit]   = useState(false);
+  const [editForm, setEditForm]   = useState({});
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [savedEdit, setSavedEdit]   = useState(false);
 
   const fetchData = useCallback(async (statusFilter) => {
     setLoading(true);
@@ -1411,6 +1415,8 @@ const AdminBankSoal = () => {
     setShowReject(false);
     setReward('');
     setSignedUrl(null);
+    setShowEdit(false);
+    setEditForm({ maddah_nama: soal.maddah_nama || '', tahun: soal.tahun || '', fashl: soal.fashl || 'tsani', fakultas: soal.fakultas || '' });
   };
 
   React.useEffect(() => {
@@ -1477,6 +1483,43 @@ const AdminBankSoal = () => {
     finally { setActing(false); }
   };
 
+  const handleSaveEdit = async () => {
+    setSavingEdit(true);
+    try {
+      const supabaseUrl = window.__SUPABASE_URL__ || '';
+      const anonKey     = window.__SUPABASE_ANON_KEY__ || '';
+      const r = await fetch(
+        `${supabaseUrl}/rest/v1/bank_soal?id=eq.${selected.id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${anonKey}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=representation',
+          },
+          body: JSON.stringify({
+            maddah_nama: editForm.maddah_nama,
+            tahun:       editForm.tahun,
+            fashl:       editForm.fashl,
+            fakultas:    editForm.fakultas,
+          }),
+        }
+      );
+      if (r.ok) {
+        setSavedEdit(true);
+        setTimeout(() => setSavedEdit(false), 2500);
+        fetchData(filter);
+      } else {
+        alert('Gagal edit: ' + r.status);
+      }
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const STATUS_BADGE = {
     pending:  'bg-yellow-500/15 text-yellow-300 border-yellow-500/30',
     approved: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
@@ -1532,7 +1575,7 @@ const AdminBankSoal = () => {
           <table className="w-full text-sm min-w-[640px]">
             <thead>
               <tr className="border-b border-white/8">
-                {['Nama / WA', 'Maddah', 'Tahun', 'Fashl', 'Status', 'Tanggal', ''].map(h => (
+                {['Nama / WA', 'Fakultas', 'Maddah', 'Tahun', 'Fashl', 'Status', 'Tanggal', ''].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-xs text-ink-muted font-medium">{h}</th>
                 ))}
               </tr>
@@ -1543,6 +1586,13 @@ const AdminBankSoal = () => {
                   <td className="px-4 py-3">
                     <div className="text-ink font-medium text-xs">{s.submitter_name}</div>
                     <div className="text-ink-muted text-xs">{s.submitter_wa}</div>
+                  </td>
+                  <td className="px-4 py-3 text-ink-muted text-xs">
+                    {(() => {
+                      const faculties = typeof FACULTIES !== 'undefined' ? FACULTIES : [];
+                      const found = faculties.find(f => f.id === s.fakultas);
+                      return found ? found.label : (s.fakultas || '-');
+                    })()}
                   </td>
                   <td className="px-4 py-3 text-ink-muted text-xs max-w-[140px] truncate">{s.maddah_nama}</td>
                   <td className="px-4 py-3 text-ink-muted text-xs">{s.tahun}</td>
@@ -1597,10 +1647,112 @@ const AdminBankSoal = () => {
                 <h3 className="font-display text-base font-semibold text-ink">Detail Submission</h3>
                 <p className="text-xs text-ink-muted">{selected.maddah_nama} · {selected.tahun} · {selected.fashl}</p>
               </div>
-              <button onClick={() => setSelected(null)} className="text-ink-muted hover:text-ink text-2xl leading-none">×</button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <button
+                  onClick={() => setShowEdit(e => !e)}
+                  style={{
+                    padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700,
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    background: showEdit ? 'rgba(62,207,142,0.15)' : 'rgba(255,255,255,0.05)',
+                    color: showEdit ? '#3ecf8e' : '#aaa', cursor: 'pointer',
+                  }}>
+                  ✏️ Edit Info
+                </button>
+                <button onClick={() => setSelected(null)} className="text-ink-muted hover:text-ink text-2xl leading-none">×</button>
+              </div>
             </div>
 
             <div className="p-5 space-y-5">
+              {/* Panel Edit Info */}
+              {showEdit && (
+                <div style={{
+                  padding: '14px 16px', borderRadius: 12,
+                  background: 'rgba(62,207,142,0.05)',
+                  border: '1px solid rgba(62,207,142,0.2)',
+                  marginBottom: 4,
+                }}>
+                  <div style={{ fontSize: 11, color: '#3ecf8e', fontWeight: 700, marginBottom: 12, letterSpacing: 0.5 }}>
+                    EDIT INFO SOAL
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+                    <div>
+                      <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>MADDAH</label>
+                      <input
+                        value={editForm.maddah_nama || ''}
+                        onChange={e => setEditForm(f => ({ ...f, maddah_nama: e.target.value }))}
+                        style={{
+                          width: '100%', padding: '7px 10px', borderRadius: 7,
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          background: 'rgba(255,255,255,0.05)', color: '#fff',
+                          fontSize: 13, boxSizing: 'border-box',
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>TAHUN</label>
+                      <input
+                        value={editForm.tahun || ''}
+                        onChange={e => setEditForm(f => ({ ...f, tahun: e.target.value }))}
+                        placeholder="2025/2026"
+                        style={{
+                          width: '100%', padding: '7px 10px', borderRadius: 7,
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          background: 'rgba(255,255,255,0.05)', color: '#fff',
+                          fontSize: 13, boxSizing: 'border-box',
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>FASHL</label>
+                      <select
+                        value={editForm.fashl || 'tsani'}
+                        onChange={e => setEditForm(f => ({ ...f, fashl: e.target.value }))}
+                        style={{
+                          width: '100%', padding: '7px 10px', borderRadius: 7,
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          background: '#1a1a1a', color: '#fff',
+                          fontSize: 13, boxSizing: 'border-box',
+                        }}
+                      >
+                        <option value="awwal">Fashl Awwal</option>
+                        <option value="tsani">Fashl Tsani</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>FAKULTAS</label>
+                      <select
+                        value={editForm.fakultas || ''}
+                        onChange={e => setEditForm(f => ({ ...f, fakultas: e.target.value }))}
+                        style={{
+                          width: '100%', padding: '7px 10px', borderRadius: 7,
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          background: '#1a1a1a', color: '#fff',
+                          fontSize: 13, boxSizing: 'border-box',
+                        }}
+                      >
+                        <option value="">-- Pilih Fakultas --</option>
+                        {(typeof FACULTIES !== 'undefined' ? FACULTIES.filter(f => !f.isMahad) : []).map(f => (
+                          <option key={f.id} value={f.id}>{f.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleSaveEdit}
+                    disabled={savingEdit}
+                    style={{
+                      width: '100%', padding: '9px', borderRadius: 8,
+                      border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                      background: savedEdit ? 'rgba(62,207,142,0.2)' : '#3ecf8e',
+                      color: savedEdit ? '#3ecf8e' : '#000',
+                      opacity: savingEdit ? 0.6 : 1,
+                    }}
+                  >
+                    {savingEdit ? 'Menyimpan...' : savedEdit ? '✅ Tersimpan' : '💾 Simpan Perubahan'}
+                  </button>
+                </div>
+              )}
+
               {/* Info grid */}
               <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                 {[
