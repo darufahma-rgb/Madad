@@ -17,7 +17,6 @@ export default async function handler(req, res) {
 
   if (action === 'submit')          return handleSubmit(req, res);
   if (action === 'approve')         return handleApprove(req, res);
-  if (action === 'update-jawaban')  return handleUpdateJawaban(req, res);
   if (action === 'foto')            return handleFoto(req, res);
   if (action === 'delete')          return handleDelete(req, res);
 
@@ -177,39 +176,6 @@ async function handleApprove(req, res) {
   }
 
   return res.status(400).json({ ok: false, error: 'Action tidak valid' });
-}
-
-/* ── UPDATE JAWABAN PER SOAL ── */
-async function handleUpdateJawaban(req, res) {
-  if (req.method !== 'POST') return res.status(405).end();
-
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const { soal_id, jawaban_array } = await parseBody(req);
-
-  if (!soal_id || !Array.isArray(jawaban_array)) {
-    return res.status(400).json({ ok: false, error: 'Data tidak valid' });
-  }
-
-  try {
-    const arti_soal  = jawaban_array.map(s => s.arti       || '');
-    const jawaban    = jawaban_array.map(s => s.jawaban    || '');
-    const penjelasan = jawaban_array.map(s => s.penjelasan || '');
-
-    await fetch(`${supabaseUrl}/rest/v1/bank_soal?id=eq.${soal_id}`, {
-      method: 'PATCH',
-      headers: {
-        apikey: serviceKey,
-        Authorization: `Bearer ${serviceKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ arti_soal, jawaban, penjelasan })
-    });
-
-    return res.status(200).json({ ok: true });
-  } catch (err) {
-    return res.status(500).json({ ok: false, error: err.message });
-  }
 }
 
 /* ── HAPUS PERMANENT ── */

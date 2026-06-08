@@ -1067,16 +1067,54 @@ const ImtihanPromptCard = ({ mode, maddah, profile }) => {
 /* ============ HALAMAN PENUH /siap-imtihan ============ */
 
 /* ============ MODAL DETAIL SOAL ============ */
+const SalinPromptButton = ({ prompt, nomor }) => {
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(prompt)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 3000);
+      })
+      .catch(() => alert('Gagal salin — coba manual'));
+  };
+
+  return (
+    <button
+      onClick={handleCopy}
+      style={{
+        width: '100%',
+        padding: '11px 16px',
+        borderRadius: 10,
+        border: copied
+          ? '1px solid rgba(62,207,142,0.5)'
+          : '1px solid rgba(62,207,142,0.25)',
+        background: copied
+          ? 'rgba(62,207,142,0.15)'
+          : 'rgba(62,207,142,0.06)',
+        color: copied ? '#3ecf8e' : '#aaa',
+        fontWeight: 700,
+        fontSize: 13,
+        cursor: 'pointer',
+        transition: 'all 0.2s',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+      }}
+    >
+      {copied ? (
+        <>✅ Prompt Tersalin! Paste ke Claude atau ChatGPT</>
+      ) : (
+        <>📋 Salin Prompt Jawaban Soal {nomor}</>
+      )}
+    </button>
+  );
+};
+
 const SoalDetailModal = ({ soal, onClose, isMember }) => {
   if (!soal) return null;
   const EM = '#3ecf8e';
-
-  const getPreviewJawaban = (teks) => {
-    if (!teks) return '';
-    const words = teks.split(' ');
-    const previewCount = Math.max(3, Math.floor(words.length * 0.3));
-    return words.slice(0, previewCount).join(' ');
-  };
 
   return (
     <div
@@ -1124,65 +1162,49 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
 
         {/* Scrollable body */}
         <div style={{ overflowY: 'auto', flex: 1, padding: '20px' }}>
-          {/* Soal Arab + Arti per soal */}
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 11, color: '#888', fontWeight: 600, marginBottom: 8, letterSpacing: 1 }}>SOAL UJIAN</div>
-            <div style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 12, padding: '16px',
-            }}>
-              {soal.soal && soal.soal.includes('[SOAL_ARAB]') ? (
-                soal.soal.split('[SOAL_ARAB]').filter(Boolean).map((block, i) => {
-                  const parts = block.split('[ARTI]');
-                  const arab  = parts[0]?.trim();
-                  const arti  = parts[1]?.trim();
-                  return (
-                    <div key={i} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                      {arab && (
-                        <div style={{ direction: 'rtl', textAlign: 'right', fontSize: 16, lineHeight: 2, color: '#eee', fontFamily: 'serif', marginBottom: 10 }}>
-                          {arab}
-                        </div>
-                      )}
-                      {arti && (
-                        <div style={{ fontSize: 13, color: '#3ecf8e', lineHeight: 1.7, paddingLeft: 12, borderLeft: '2px solid rgba(62,207,142,0.3)' }}>
-                          {arti}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
-              ) : (
-                <div style={{ direction: 'rtl', textAlign: 'right', fontSize: 16, lineHeight: 2, color: '#eee', fontFamily: 'serif' }}>
-                  {soal.soal || 'Teks soal belum tersedia'}
-                </div>
-              )}
-            </div>
-          </div>
 
-          {/* Render per soal dari JSON array */}
-          {Array.isArray(soal.jawaban) && soal.jawaban.length > 0 ? (
-            soal.jawaban.map((jaw, i) => (
-              <div key={i} style={{
-                marginBottom: 24,
-                paddingBottom: 24,
-                borderBottom: i < soal.jawaban.length - 1
-                  ? '1px solid rgba(255,255,255,0.06)' : 'none',
-              }}>
-                {/* Nomor soal */}
-                <div style={{
-                  fontSize: 11, color: EM, fontWeight: 700,
-                  marginBottom: 10, letterSpacing: 0.5,
+          {soal.soal && soal.soal.includes('[SOAL_ARAB]') ? (
+            soal.soal.split('[SOAL_ARAB]').filter(Boolean).map((block, i) => {
+              const parts = block.split('[ARTI]');
+              const arab  = parts[0]?.trim();
+              const arti  = parts[1]?.trim();
+              const nomor = i + 1;
+
+              const prompt = `Kamu adalah asisten akademik Al-Azhar yang ahli bahasa Arab dan ilmu-ilmu syariah.
+
+Soal ujian tahriri dari Universitas Al-Azhar Kairo:
+Maddah: ${soal.maddah_nama}
+Tahun: ${soal.tahun} · ${soal.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
+
+Soal No. ${nomor}:
+${arab}
+
+${arti ? `Arti soal: ${arti}` : ''}
+
+TUGAS: Jawab soal ini sesuai manhaj Al-Azhar dengan format:
+
+1. JAWABAN (Bahasa Arab):
+Tulis jawaban dalam bahasa Arab sesuai gaya tahriri Azhari — mulai dengan ta'rif, lalu dalil/syahid, lalu tafshil. Kutip ayat/hadits HANYA kalau yakin 100% benar. Kalau tidak yakin, tulis "كما ورد في القرآن الكريم" tanpa menyebut ayat spesifik.
+
+2. PENJELASAN (Bahasa Indonesia):
+Jelaskan inti jawaban dalam bahasa Indonesia yang mudah dipahami mahasiswa Indonesia. Sertakan penjelasan istilah teknis.`;
+
+              return (
+                <div key={i} style={{
+                  marginBottom: 20,
+                  paddingBottom: 20,
+                  borderBottom: i < soal.soal.split('[SOAL_ARAB]').filter(Boolean).length - 1
+                    ? '1px solid rgba(255,255,255,0.06)'
+                    : 'none',
                 }}>
-                  SOAL {i + 1}
-                </div>
+                  <div style={{
+                    fontSize: 11, color: '#3ecf8e', fontWeight: 700,
+                    marginBottom: 10, letterSpacing: 0.5,
+                  }}>
+                    SOAL {nomor}
+                  </div>
 
-                {/* Soal Arab dari teks utama */}
-                {(() => {
-                  const blocks = (soal.soal || '').split('[SOAL_ARAB]').filter(Boolean);
-                  const block  = blocks[i];
-                  const arab   = block?.split('[ARTI]')[0]?.trim();
-                  return arab ? (
+                  {arab && (
                     <div style={{
                       direction: 'rtl', textAlign: 'right',
                       fontSize: 16, lineHeight: 2,
@@ -1191,86 +1213,66 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
                       border: '1px solid rgba(255,255,255,0.08)',
                       borderRadius: 10, padding: '12px 14px',
                       marginBottom: 10,
-                    }}>{arab}</div>
-                  ) : null;
-                })()}
-
-                {/* Arti */}
-                {Array.isArray(soal.arti_soal) && soal.arti_soal[i] && (
-                  <div style={{
-                    fontSize: 13, color: '#aaa', lineHeight: 1.7,
-                    marginBottom: 10, paddingLeft: 12,
-                    borderLeft: '2px solid rgba(62,207,142,0.3)',
-                  }}>
-                    {soal.arti_soal[i]}
-                  </div>
-                )}
-
-                {/* Jawaban */}
-                {jaw && (
-                  <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontSize: 10, color: '#888', fontWeight: 600, marginBottom: 6 }}>JAWABAN</div>
-                    <div style={{ position: 'relative' }}>
-                      <div style={{
-                        background: 'rgba(62,207,142,0.04)',
-                        border: '1px solid rgba(62,207,142,0.15)',
-                        borderRadius: 10, padding: '12px 14px',
-                        fontSize: 15, lineHeight: 2,
-                        direction: 'rtl', textAlign: 'right',
-                        color: '#ddd', fontFamily: 'serif',
-                        filter: isMember ? 'none' : 'blur(5px)',
-                        userSelect: isMember ? 'auto' : 'none',
-                        WebkitUserSelect: isMember ? 'auto' : 'none',
-                      }}>
-                        {isMember ? jaw : jaw.split(' ').slice(0, Math.max(3, Math.floor(jaw.split(' ').length * 0.3))).join(' ') + '...'}
-                      </div>
-                      {!isMember && (
-                        <div style={{
-                          position: 'absolute', inset: 0,
-                          display: 'flex', flexDirection: 'column',
-                          alignItems: 'center', justifyContent: 'center', gap: 8,
-                        }}>
-                          <div style={{ fontSize: 20 }}>🔒</div>
-                          <div style={{ fontSize: 13, color: '#fff', fontWeight: 700 }}>
-                            Jawaban lengkap untuk member
-                          </div>
-                          <a href="#/maddah-publik" onClick={onClose}
-                            style={{
-                              padding: '7px 18px', borderRadius: 9,
-                              background: EM, color: '#000',
-                              fontWeight: 800, fontSize: 12, textDecoration: 'none',
-                            }}>
-                            Gabung Member →
-                          </a>
-                        </div>
-                      )}
+                    }}>
+                      {arab}
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Penjelasan */}
-                {Array.isArray(soal.penjelasan) && soal.penjelasan[i] && isMember && (
-                  <div style={{
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.08)',
-                    borderRadius: 10, padding: '12px 14px',
-                    fontSize: 13, lineHeight: 1.7, color: '#ccc',
-                  }}>
-                    <div style={{ fontSize: 10, color: '#888', fontWeight: 600, marginBottom: 6 }}>PENJELASAN</div>
-                    {soal.penjelasan[i]}
-                  </div>
-                )}
-              </div>
-            ))
+                  {arti && (
+                    <div style={{
+                      fontSize: 13, color: '#aaa', lineHeight: 1.7,
+                      marginBottom: 12,
+                      paddingLeft: 12,
+                      borderLeft: '2px solid rgba(62,207,142,0.3)',
+                    }}>
+                      {arti}
+                    </div>
+                  )}
+
+                  {isMember ? (
+                    <SalinPromptButton prompt={prompt} nomor={nomor} />
+                  ) : (
+                    <div style={{
+                      padding: '16px',
+                      background: 'rgba(62,207,142,0.04)',
+                      border: '1px solid rgba(62,207,142,0.15)',
+                      borderRadius: 12,
+                      textAlign: 'center',
+                    }}>
+                      <div style={{ fontSize: 20, marginBottom: 8 }}>🔒</div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 6 }}>
+                        Prompt jawaban untuk member Talqeeh
+                      </div>
+                      <div style={{ fontSize: 13, color: '#aaa', marginBottom: 14, lineHeight: 1.6 }}>
+                        Login sebagai member untuk akses prompt jawaban yang siap dipakai di Claude atau ChatGPT.
+                      </div>
+                      <a href="#/" style={{
+                        display: 'inline-block',
+                        padding: '9px 22px', borderRadius: 10,
+                        background: '#3ecf8e', color: '#000',
+                        fontWeight: 800, fontSize: 13,
+                        textDecoration: 'none',
+                      }}>
+                        Gabung Member →
+                      </a>
+                    </div>
+                  )}
+                </div>
+              );
+            })
           ) : (
             <div style={{
-              textAlign: 'center', padding: 20,
-              background: 'rgba(255,255,255,0.02)',
-              borderRadius: 12, color: '#666', fontSize: 13,
+              direction: 'rtl', textAlign: 'right',
+              fontSize: 15, lineHeight: 2,
+              color: '#eee', fontFamily: 'serif',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 10, padding: '14px 16px',
             }}>
-              Jawaban &amp; penjelasan sedang disiapkan oleh tim Talqeeh 🕐
+              {soal.soal || 'Teks soal belum tersedia'}
             </div>
           )}
+
         </div>
       </div>
     </div>

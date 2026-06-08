@@ -1354,36 +1354,6 @@ const AdminSettings = () => {
 };
 
 /* ============== ADMIN BANK SOAL ============== */
-// Parse teks soal format [SOAL_ARAB]...[ARTI]... menjadi array objek per soal
-const parseSoalTeks = (teks) => {
-  if (!teks) return [];
-  if (teks.includes('[SOAL_ARAB]')) {
-    const blocks = teks.split('[SOAL_ARAB]').filter(Boolean);
-    return blocks.map((block, i) => {
-      const parts = block.split('[ARTI]');
-      return {
-        nomor: i + 1,
-        soal_arab:  parts[0]?.trim() || '',
-        arti:       parts[1]?.trim() || '',
-        jawaban:    '',
-        penjelasan: '',
-      };
-    });
-  }
-  return [{ nomor: 1, soal_arab: teks.trim(), arti: '', jawaban: '', penjelasan: '' }];
-};
-
-const mergeSoalDenganJawaban = (parsedSoal, dbJawaban, dbArti, dbPenjelasan) => {
-  const jawabanArr    = Array.isArray(dbJawaban)    ? dbJawaban    : [];
-  const artiArr       = Array.isArray(dbArti)        ? dbArti       : [];
-  const penjelasanArr = Array.isArray(dbPenjelasan)  ? dbPenjelasan : [];
-  return parsedSoal.map((s, i) => ({
-    ...s,
-    arti:       artiArr[i]       || s.arti       || '',
-    jawaban:    jawabanArr[i]    || s.jawaban    || '',
-    penjelasan: penjelasanArr[i] || s.penjelasan || '',
-  }));
-};
 
 const AdminBankSoal = () => {
   const [soals, setSoals]       = useState([]);
@@ -1392,12 +1362,6 @@ const AdminBankSoal = () => {
   const [loading, setLoading]   = useState(true);
   const [selected, setSelected] = useState(null);
   const [soalTeks, setSoalTeks] = useState('');
-  const [soalItems, setSoalItems]         = useState([]);
-  const [previewStates, setPreviewStates] = useState({});
-  const togglePreview = (idx, field) =>
-    setPreviewStates(p => ({ ...p, [`${idx}_${field}`]: !p[`${idx}_${field}`] }));
-  const [savingJawaban, setSavingJawaban] = useState(false);
-  const [savedJawaban, setSavedJawaban]   = useState(false);
   const [tahunDariSoal, setTahunDariSoal] = useState(null);
   const [copiedPrompt, setCopiedPrompt] = useState(false);
   const [parsing, setParsing]   = useState(false);
@@ -1442,8 +1406,6 @@ const AdminBankSoal = () => {
   const openModal = (soal) => {
     setSelected(soal);
     setSoalTeks(soal.soal || '');
-    setSoalItems([]);
-    setSavedJawaban(false);
     setTahunDariSoal(null);
     setRejectReason('');
     setShowReject(false);
@@ -1513,48 +1475,6 @@ const AdminBankSoal = () => {
       else alert('Reject gagal: ' + data.error);
     } catch (e) { alert('Error: ' + e.message); }
     finally { setActing(false); }
-  };
-
-  // Inisialisasi soalItems saat soal berubah
-  useEffect(() => {
-    if (!selected) return;
-    const parsed = parseSoalTeks(selected.soal || soalTeks || '');
-    const merged = mergeSoalDenganJawaban(
-      parsed,
-      selected.jawaban,
-      selected.arti_soal,
-      selected.penjelasan
-    );
-    setSoalItems(merged);
-  }, [selected?.id, soalTeks]);
-
-  const updateSoalItem = (index, field, value) => {
-    setSoalItems(prev => prev.map((item, i) =>
-      i === index ? { ...item, [field]: value } : item
-    ));
-    setSavedJawaban(false);
-  };
-
-  const handleSaveJawaban = async () => {
-    setSavingJawaban(true);
-    try {
-      const res = await fetch('/api/bank-soal?action=update-jawaban', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ soal_id: selected.id, jawaban_array: soalItems }),
-      });
-      const data = await res.json();
-      if (data.ok) {
-        setSavedJawaban(true);
-        setTimeout(() => setSavedJawaban(false), 3000);
-      } else {
-        alert('Gagal simpan: ' + data.error);
-      }
-    } catch (err) {
-      alert('Gagal simpan: ' + err.message);
-    } finally {
-      setSavingJawaban(false);
-    }
   };
 
   const STATUS_BADGE = {
@@ -1899,193 +1819,6 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                   </div>
                 </div>
               </div>
-
-              {/* ── Section Jawaban Per Soal — hanya untuk yang sudah approved ── */}
-              {selected.status === 'approved' && soalItems.length > 0 && (
-                <div style={{ marginBottom: 20 }}>
-                  <div style={{
-                    display: 'flex', justifyContent: 'space-between',
-                    alignItems: 'center', marginBottom: 12,
-                  }}>
-                    <div style={{ fontSize: 12, color: '#3ecf8e', fontWeight: 700, letterSpacing: 0.5 }}>
-                      JAWABAN PER SOAL ({soalItems.length} soal)
-                    </div>
-                    <button
-                      onClick={handleSaveJawaban}
-                      disabled={savingJawaban}
-                      style={{
-                        padding: '6px 16px', borderRadius: 8,
-                        border: 'none', fontSize: 12, fontWeight: 700,
-                        background: savedJawaban ? 'rgba(62,207,142,0.2)' : '#3ecf8e',
-                        color: savedJawaban ? '#3ecf8e' : '#000',
-                        cursor: savingJawaban ? 'not-allowed' : 'pointer',
-                      }}
-                    >
-                      {savingJawaban ? 'Menyimpan...' : savedJawaban ? '✅ Tersimpan' : '💾 Simpan Semua'}
-                    </button>
-                  </div>
-
-                  {soalItems.map((item, idx) => (
-                    <div key={idx} style={{
-                      marginBottom: 16,
-                      border: '1px solid rgba(255,255,255,0.08)',
-                      borderRadius: 12, overflow: 'hidden',
-                    }}>
-                      {/* Header soal */}
-                      <div style={{
-                        padding: '10px 14px',
-                        background: 'rgba(255,255,255,0.03)',
-                        borderBottom: '1px solid rgba(255,255,255,0.06)',
-                        display: 'flex', alignItems: 'center', gap: 8,
-                      }}>
-                        <span style={{
-                          width: 22, height: 22, borderRadius: 6,
-                          background: 'rgba(62,207,142,0.15)',
-                          color: '#3ecf8e', fontSize: 11, fontWeight: 800,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          flexShrink: 0,
-                        }}>{item.nomor}</span>
-                        <div style={{
-                          fontSize: 14, color: '#eee', direction: 'rtl',
-                          textAlign: 'right', flex: 1, lineHeight: 1.7,
-                          fontFamily: 'serif',
-                        }}>
-                          {item.soal_arab || '—'}
-                        </div>
-                      </div>
-
-                      {/* Input fields */}
-                      <div style={{ padding: '12px 14px' }}>
-                        <div style={{ marginBottom: 10 }}>
-                          <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>
-                            ARTI (Indonesia)
-                          </label>
-                          <textarea
-                            value={item.arti}
-                            onChange={e => updateSoalItem(idx, 'arti', e.target.value)}
-                            placeholder="Terjemahan soal dalam bahasa Indonesia..."
-                            rows={2}
-                            style={{
-                              width: '100%', padding: '8px 12px', borderRadius: 8,
-                              border: '1px solid rgba(255,255,255,0.08)',
-                              background: 'rgba(255,255,255,0.03)', color: '#fff',
-                              fontSize: 13, resize: 'vertical', boxSizing: 'border-box',
-                              fontFamily: 'inherit',
-                            }}
-                          />
-                        </div>
-
-                        <div style={{ marginBottom: 10 }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                            <label style={{ fontSize: 10, color: '#888', fontWeight: 600 }}>
-                              JAWABAN (Arab)
-                            </label>
-                            <button
-                              onClick={() => togglePreview(idx, 'jawaban')}
-                              style={{
-                                fontSize: 10, padding: '2px 10px', borderRadius: 6,
-                                border: '1px solid rgba(255,255,255,0.15)',
-                                background: previewStates[`${idx}_jawaban`] ? 'rgba(62,207,142,0.15)' : 'rgba(255,255,255,0.05)',
-                                color: previewStates[`${idx}_jawaban`] ? '#3ecf8e' : '#aaa',
-                                cursor: 'pointer', fontWeight: 600,
-                              }}
-                            >
-                              {previewStates[`${idx}_jawaban`] ? '✏️ Edit' : '👁 Preview'}
-                            </button>
-                          </div>
-                          {previewStates[`${idx}_jawaban`] ? (
-                            <div
-                              style={{
-                                padding: '10px 14px', borderRadius: 8, minHeight: 72,
-                                border: '1px solid rgba(255,255,255,0.08)',
-                                background: 'rgba(255,255,255,0.03)',
-                                fontSize: 14, lineHeight: 1.8, color: '#eee',
-                                direction: 'rtl', textAlign: 'right',
-                                fontFamily: 'serif',
-                              }}
-                              dangerouslySetInnerHTML={{ __html: marked.parse(item.jawaban || '') }}
-                            />
-                          ) : (
-                            <textarea
-                              value={item.jawaban}
-                              onChange={e => updateSoalItem(idx, 'jawaban', e.target.value)}
-                              placeholder="الجواب بالعربية..."
-                              rows={3}
-                              style={{
-                                width: '100%', padding: '8px 12px', borderRadius: 8,
-                                border: '1px solid rgba(255,255,255,0.08)',
-                                background: 'rgba(255,255,255,0.03)', color: '#fff',
-                                fontSize: 14, resize: 'vertical', boxSizing: 'border-box',
-                                fontFamily: 'serif', direction: 'rtl', textAlign: 'right',
-                                lineHeight: 1.8,
-                              }}
-                            />
-                          )}
-                        </div>
-
-                        <div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                            <label style={{ fontSize: 10, color: '#888', fontWeight: 600 }}>
-                              PENJELASAN (Indonesia)
-                            </label>
-                            <button
-                              onClick={() => togglePreview(idx, 'penjelasan')}
-                              style={{
-                                fontSize: 10, padding: '2px 10px', borderRadius: 6,
-                                border: '1px solid rgba(255,255,255,0.15)',
-                                background: previewStates[`${idx}_penjelasan`] ? 'rgba(62,207,142,0.15)' : 'rgba(255,255,255,0.05)',
-                                color: previewStates[`${idx}_penjelasan`] ? '#3ecf8e' : '#aaa',
-                                cursor: 'pointer', fontWeight: 600,
-                              }}
-                            >
-                              {previewStates[`${idx}_penjelasan`] ? '✏️ Edit' : '👁 Preview'}
-                            </button>
-                          </div>
-                          {previewStates[`${idx}_penjelasan`] ? (
-                            <div
-                              style={{
-                                padding: '10px 14px', borderRadius: 8, minHeight: 72,
-                                border: '1px solid rgba(255,255,255,0.08)',
-                                background: 'rgba(255,255,255,0.03)',
-                                fontSize: 13, lineHeight: 1.8, color: '#eee',
-                              }}
-                              dangerouslySetInnerHTML={{ __html: marked.parse(item.penjelasan || '') }}
-                            />
-                          ) : (
-                            <textarea
-                              value={item.penjelasan}
-                              onChange={e => updateSoalItem(idx, 'penjelasan', e.target.value)}
-                              placeholder="Penjelasan jawaban dalam bahasa Indonesia..."
-                              rows={3}
-                              style={{
-                                width: '100%', padding: '8px 12px', borderRadius: 8,
-                                border: '1px solid rgba(255,255,255,0.08)',
-                                background: 'rgba(255,255,255,0.03)', color: '#fff',
-                                fontSize: 13, resize: 'vertical', boxSizing: 'border-box',
-                                fontFamily: 'inherit',
-                              }}
-                            />
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  <button
-                    onClick={handleSaveJawaban}
-                    disabled={savingJawaban}
-                    style={{
-                      width: '100%', padding: '11px', borderRadius: 10,
-                      border: 'none', fontSize: 13, fontWeight: 700,
-                      background: savedJawaban ? 'rgba(62,207,142,0.15)' : '#3ecf8e',
-                      color: savedJawaban ? '#3ecf8e' : '#000',
-                      cursor: savingJawaban ? 'not-allowed' : 'pointer',
-                    }}
-                  >
-                    {savingJawaban ? 'Menyimpan...' : savedJawaban ? '✅ Semua Jawaban Tersimpan' : '💾 Simpan Semua Jawaban'}
-                  </button>
-                </div>
-              )}
 
               {selected.status === 'pending' && (
                 <div style={{
