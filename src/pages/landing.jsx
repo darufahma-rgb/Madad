@@ -609,45 +609,51 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => {
 };
 
 /* ══════════════════════════════════════════════════════════════
-   2.5 BANK SOAL PREVIEW
+   2.5 BANK SOAL PREVIEW — FOMO Stack Design
    ══════════════════════════════════════════════════════════════ */
 const BankSoalPreview = ({ onOpenLogin }) => {
-  const [soal, setSoal] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
+  const [soalList, setSoalList] = React.useState([]);
+  const [loading, setLoading]   = React.useState(true);
+
+  const EM = '#3ecf8e';
 
   React.useEffect(() => {
     fetch('/api/config')
       .then(r => r.json())
       .then(({ supabaseUrl, supabaseAnonKey }) => {
-        return fetch(`${supabaseUrl}/rest/v1/bank_soal?status=eq.approved&soal=neq.&select=id,maddah_nama,tahun,fashl,soal,arti_soal&limit=1&order=approved_at.desc`, {
-          headers: {
-            apikey: supabaseAnonKey,
-            Authorization: `Bearer ${supabaseAnonKey}`,
-          }
-        });
+        return fetch(
+          `${supabaseUrl}/rest/v1/bank_soal?status=eq.approved&select=id,maddah_nama,tahun,fashl,soal&order=approved_at.desc&limit=6`,
+          { headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${supabaseAnonKey}` } }
+        );
       })
       .then(r => r.json())
-      .then(data => {
-        if (Array.isArray(data) && data.length > 0) setSoal(data[0]);
-        setLoading(false);
-      })
+      .then(data => { setSoalList(Array.isArray(data) ? data : []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
-  const getPreviewSoal = (teks) => {
+  const getFirstSoal = (teks) => {
     if (!teks) return '';
     if (teks.includes('[SOAL_ARAB]')) {
       const block = teks.split('[SOAL_ARAB]').filter(Boolean)[0];
       return block?.split('[ARTI]')[0]?.trim() || '';
     }
-    return teks.split('\n')[0] || '';
+    return teks.split('\n').find(l => l.trim()) || '';
   };
 
-  const EM = '#3ecf8e';
+  const dummySoal = [
+    { id: 'd1', maddah_nama: 'Tauhid', tahun: '2025/2026', fashl: 'tsani', soal: '[SOAL_ARAB]\n**السؤال الأول:** اختلف أهل السنة والفلاسفة في معنى النبوة والرسالة، والمطلوب: بيان مذهب كل من الفريقين بالتفصيل.' },
+    { id: 'd2', maddah_nama: 'Nahwu', tahun: '2024/2025', fashl: 'awwal', soal: '[SOAL_ARAB]\n١. عرّف النحو لغةً واصطلاحاً مع بيان موضوعه وفائدته وواضعه.' },
+    { id: 'd3', maddah_nama: 'Ushul Fiqh', tahun: '2025/2026', fashl: 'awwal', soal: '[SOAL_ARAB]\nاشرح مفهوم الإجماع وبيّن حجيته عند الأصوليين مع ذكر شروطه.' },
+  ];
+
+  const displaySoal = soalList.length > 0 ? soalList.slice(0, 3) : dummySoal;
+  const firstSoal   = displaySoal[0];
 
   return (
     <section className="section pt-0">
       <div className="container-x">
+
+        {/* Header */}
         <Reveal className="mb-10 text-center">
           <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>BANK SOAL IMTIHAN<span className="w-6 h-px bg-gold-500/70"/>
@@ -656,144 +662,243 @@ const BankSoalPreview = ({ onOpenLogin }) => {
             Soal ujian Al-Azhar<br/>dari Masisir untuk Masisir
           </h2>
           <p className="text-ink-muted text-base max-w-xl mx-auto">
-            Koleksi soal tahriri tahun-tahun sebelumnya — lengkap dengan arti dan pembahasan. Terus bertambah setiap musim ujian.
+            Koleksi soal tahriri lengkap dengan prompt jawaban siap pakai —
+            khusus untuk member Talqeeh.
           </p>
         </Reveal>
 
         <Reveal>
-          <div className="max-w-2xl mx-auto">
-            <div className="card-glass-strong relative overflow-hidden" style={{ border: `1px solid rgba(62,207,142,0.25)` }}>
+          <div style={{ maxWidth: 720, margin: '0 auto' }}>
+
+            {/* FOMO Stack — 3 card bertumpuk */}
+            <div style={{ position: 'relative', marginBottom: 24 }}>
+
+              {/* Card 3 — paling belakang */}
               <div style={{
-                position: 'absolute', top: -30, right: -30,
-                width: 160, height: 160, borderRadius: '50%',
-                background: 'radial-gradient(circle, rgba(62,207,142,0.1) 0%, transparent 70%)',
-                pointerEvents: 'none',
+                position: 'absolute', top: 16, left: 16, right: 16,
+                height: 80, borderRadius: 14,
+                background: 'rgba(255,255,255,0.02)',
+                border: '1px solid rgba(255,255,255,0.05)',
+                zIndex: 1,
               }}/>
 
+              {/* Card 2 — tengah */}
               <div style={{
-                padding: '20px 24px 16px',
-                borderBottom: '1px solid rgba(255,255,255,0.06)',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                position: 'absolute', top: 8, left: 8, right: 8,
+                height: 80, borderRadius: 14,
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.07)',
+                zIndex: 2,
+              }}/>
+
+              {/* Card 1 — depan (utama) */}
+              <div style={{
+                position: 'relative', zIndex: 3,
+                background: '#111',
+                border: `1.5px solid rgba(62,207,142,0.3)`,
+                borderRadius: 16,
+                overflow: 'hidden',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(62,207,142,0.1)',
               }}>
-                <div>
-                  <div style={{ fontSize: 11, color: EM, fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>CONTOH SOAL</div>
-                  <div style={{ fontSize: 17, fontWeight: 700, color: '#fff' }}>
-                    {loading ? 'Memuat...' : soal ? soal.maddah_nama : 'Tauhid'}
+
+                {/* Header card */}
+                <div style={{
+                  padding: '16px 20px',
+                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  background: 'rgba(62,207,142,0.04)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                      width: 8, height: 8, borderRadius: '50%',
+                      background: EM, boxShadow: `0 0 8px ${EM}`,
+                    }}/>
+                    <div>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>
+                        {loading ? 'Memuat...' : firstSoal?.maddah_nama || 'Tauhid'}
+                      </span>
+                      <span style={{ fontSize: 12, color: '#888', marginLeft: 8 }}>
+                        {firstSoal?.tahun} · {firstSoal?.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
+                      </span>
+                    </div>
                   </div>
-                  <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>
-                    {soal ? `${soal.tahun} · ${soal.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}` : '2025/2026 · Fashl Tsani'}
+                  <div style={{
+                    fontSize: 10, fontWeight: 800, color: '#000',
+                    background: EM, padding: '3px 10px', borderRadius: 99,
+                  }}>
+                    TAHRIRI
                   </div>
                 </div>
-                <div style={{
-                  padding: '4px 12px', borderRadius: 99,
-                  background: 'rgba(62,207,142,0.12)',
-                  border: '1px solid rgba(62,207,142,0.25)',
-                  fontSize: 11, color: EM, fontWeight: 700,
-                }}>TAHRIRI</div>
-              </div>
 
-              <div style={{ padding: '20px 24px' }}>
-                <div style={{
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: 12, padding: '16px', marginBottom: 16,
-                  position: 'relative', overflow: 'hidden',
-                }}>
-                  <div style={{ direction: 'rtl', textAlign: 'right', fontSize: 16, lineHeight: 2, color: '#eee', fontFamily: 'serif' }}>
+                {/* Soal Arab — terpotong dengan gradient */}
+                <div style={{ padding: '20px 20px 0', position: 'relative', minHeight: 100 }}>
+                  <div style={{
+                    direction: 'rtl', textAlign: 'right',
+                    fontSize: 16, lineHeight: 2,
+                    color: '#eee', fontFamily: 'serif',
+                  }}>
                     {loading
                       ? 'جاري التحميل...'
-                      : soal
-                      ? getPreviewSoal(soal.soal)
-                      : 'اشرح مفهوم التوحيد عند أهل السنة والجماعة، وبيّن أقسامه مع التمثيل لكل قسم.'}
+                      : getFirstSoal(firstSoal?.soal) || '**السؤال الأول:** اختلف أهل السنة والفلاسفة في معنى النبوة والرسالة، والمطلوب: بيان مذهب كل من الفريقين بالتفصيل.'}
                   </div>
+
+                  {/* Gradient cut-off */}
                   <div style={{
-                    position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%',
-                    background: 'linear-gradient(to bottom, transparent, rgba(18,18,18,0.95))',
-                    display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 12,
-                  }}>
-                    <div style={{
-                      fontSize: 12, color: '#888',
-                      background: 'rgba(255,255,255,0.06)',
-                      padding: '4px 12px', borderRadius: 99,
-                      border: '1px solid rgba(255,255,255,0.1)',
-                    }}>🔒 Login untuk baca soal lengkap</div>
-                  </div>
+                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                    height: 80,
+                    background: 'linear-gradient(to bottom, transparent, #111)',
+                  }}/>
                 </div>
 
-                <div style={{ position: 'relative', marginBottom: 20 }}>
+                {/* Divider dengan lock */}
+                <div style={{
+                  padding: '12px 20px',
+                  display: 'flex', alignItems: 'center', gap: 12,
+                }}>
+                  <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }}/>
                   <div style={{
-                    background: 'rgba(62,207,142,0.04)',
-                    border: '1px solid rgba(62,207,142,0.12)',
+                    fontSize: 11, color: '#666',
+                    display: 'flex', alignItems: 'center', gap: 6,
+                  }}>
+                    <span>🔒</span>
+                    <span>Soal lengkap + prompt jawaban</span>
+                  </div>
+                  <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }}/>
+                </div>
+
+                {/* Prompt jawaban — blur dengan overlay lock */}
+                <div style={{ padding: '0 20px 20px', position: 'relative' }}>
+                  <div style={{
+                    background: 'rgba(62,207,142,0.06)',
+                    border: '1px solid rgba(62,207,142,0.15)',
                     borderRadius: 12, padding: '14px 16px',
-                    filter: 'blur(6px)', userSelect: 'none',
-                    fontSize: 14, lineHeight: 2,
-                    direction: 'rtl', textAlign: 'right',
-                    color: '#ccc', fontFamily: 'serif',
-                    maxHeight: 80, overflow: 'hidden',
+                    filter: 'blur(4px)',
+                    userSelect: 'none',
                   }}>
-                    التوحيد هو إفراد الله تعالى بما يختص به من الربوبية والألوهية والأسماء والصفات...
-                  </div>
-                  <div style={{
-                    position: 'absolute', inset: 0,
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
-                  }}>
-                    <div style={{ fontSize: 18 }}>🔒</div>
-                    <div style={{ fontSize: 12, color: '#aaa', fontWeight: 600 }}>Jawaban & penjelasan untuk member</div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-                  {[
-                    { label: 'Soal tersedia', value: '8+' },
-                    { label: 'Maddah', value: '10+' },
-                    { label: 'Tahun', value: '3' },
-                  ].map(s => (
-                    <div key={s.label} style={{
-                      flex: 1, minWidth: 80,
-                      padding: '10px 12px', borderRadius: 10, textAlign: 'center',
-                      background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                    }}>
-                      <div style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>{s.value}</div>
-                      <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{s.label}</div>
+                    <div style={{ fontSize: 11, color: EM, fontWeight: 700, marginBottom: 8 }}>
+                      📋 PROMPT JAWABAN SOAL 1
                     </div>
-                  ))}
+                    <div style={{ fontSize: 13, color: '#ccc', lineHeight: 1.6 }}>
+                      Kamu adalah asisten akademik Al-Azhar yang ahli bahasa Arab...
+                      Jawab soal ini sesuai manhaj Al-Azhar dengan format jawaban Arab + penjelasan Indonesia...
+                    </div>
+                  </div>
+
+                  {/* Overlay lock */}
+                  <div style={{
+                    position: 'absolute', inset: '0 20px 20px',
+                    display: 'flex', flexDirection: 'column',
+                    alignItems: 'center', justifyContent: 'center',
+                    gap: 8,
+                    background: 'rgba(10,10,10,0.6)',
+                    borderRadius: 12,
+                    backdropFilter: 'blur(2px)',
+                  }}>
+                    <div style={{ fontSize: 24 }}>🔒</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
+                      Prompt jawaban untuk member
+                    </div>
+                    <div style={{ fontSize: 12, color: '#888', textAlign: 'center' }}>
+                      Salin prompt → paste ke Claude/ChatGPT → dapat jawaban lengkap
+                    </div>
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button
-                    onClick={onOpenLogin}
-                    style={{
-                      flex: 2, padding: '12px', borderRadius: 11, border: 'none',
-                      background: EM, color: '#000', fontWeight: 800, fontSize: 14, cursor: 'pointer',
-                    }}
-                  >Login untuk Akses Penuh →</button>
-                  <button
-                    onClick={() => navigate('/bank-soal')}
-                    style={{
-                      flex: 1, padding: '12px', borderRadius: 11,
-                      border: '1px solid rgba(255,255,255,0.12)',
-                      background: 'rgba(255,255,255,0.04)',
-                      color: '#ccc', fontWeight: 600, fontSize: 13, cursor: 'pointer',
-                    }}
-                  >Lihat Semua →</button>
+                {/* Footer — stats + CTA */}
+                <div style={{
+                  padding: '16px 20px',
+                  borderTop: '1px solid rgba(255,255,255,0.06)',
+                  background: 'rgba(0,0,0,0.3)',
+                }}>
+                  {/* Stats row */}
+                  <div style={{
+                    display: 'flex', gap: 16, marginBottom: 14,
+                    justifyContent: 'center',
+                  }}>
+                    {[
+                      { value: soalList.length > 0 ? `${soalList.length}+` : '8+', label: 'Soal tersedia' },
+                      { value: '10+', label: 'Maddah' },
+                      { value: '3', label: 'Tahun ajaran' },
+                      { value: '∞', label: 'Terus bertambah' },
+                    ].map(s => (
+                      <div key={s.label} style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: EM }}>{s.value}</div>
+                        <div style={{ fontSize: 10, color: '#666' }}>{s.label}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* CTA buttons */}
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button
+                      onClick={onOpenLogin}
+                      style={{
+                        flex: 2, padding: '12px',
+                        borderRadius: 11, border: 'none',
+                        background: EM, color: '#000',
+                        fontWeight: 800, fontSize: 14,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Gabung Member → Akses Semua
+                    </button>
+                    <button
+                      onClick={() => navigate('/bank-soal')}
+                      style={{
+                        flex: 1, padding: '12px',
+                        borderRadius: 11,
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        background: 'rgba(255,255,255,0.04)',
+                        color: '#ccc', fontWeight: 600, fontSize: 13,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Preview →
+                    </button>
+                  </div>
                 </div>
+              </div>
+
+              {/* Label "dan X soal lainnya" */}
+              <div style={{
+                textAlign: 'center', marginTop: 20,
+                fontSize: 13, color: '#666',
+              }}>
+                + {soalList.length > 1 ? `${soalList.length - 1} soal lainnya` : 'soal dari maddah lainnya'} —
+                <span
+                  style={{ color: EM, fontWeight: 600, cursor: 'pointer', marginLeft: 4 }}
+                  onClick={onOpenLogin}
+                >
+                  login untuk akses semua
+                </span>
               </div>
             </div>
 
+            {/* Submit soal teaser */}
             <div style={{
-              marginTop: 16, padding: '12px 16px',
-              background: 'rgba(255,200,50,0.06)',
-              border: '1px solid rgba(255,200,50,0.2)',
-              borderRadius: 12, textAlign: 'center',
-              fontSize: 13, color: '#a08030',
+              padding: '14px 20px',
+              background: 'rgba(255,200,50,0.05)',
+              border: '1px solid rgba(255,200,50,0.15)',
+              borderRadius: 12,
+              display: 'flex', alignItems: 'center',
+              justifyContent: 'space-between', gap: 12,
+              flexWrap: 'wrap',
             }}>
-              📸 Punya soal imtihan tahun lalu?{' '}
+              <div style={{ fontSize: 13, color: '#a08030' }}>
+                📸 Punya soal imtihan tahun lalu?
+              </div>
               <span
                 onClick={() => navigate('/submit-soal')}
-                style={{ color: '#ffc832', fontWeight: 700, cursor: 'pointer' }}
-              >Submit & dapat reward →</span>
+                style={{
+                  fontSize: 13, color: '#ffc832',
+                  fontWeight: 700, cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Submit & dapat reward →
+              </span>
             </div>
+
           </div>
         </Reveal>
       </div>
