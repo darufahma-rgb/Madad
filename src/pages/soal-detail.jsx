@@ -157,6 +157,61 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
 
   const fashlStr = soal.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani';
 
+  const renderMarkdown = (text) => {
+    if (!text) return null;
+    const lines = text.split('\n');
+    return lines.map((line, i) => {
+      const parseBold = (str) => {
+        const parts = str.split(/\*\*(.*?)\*\*/g);
+        return parts.map((part, j) =>
+          j % 2 === 1
+            ? <strong key={j} style={{ color: '#fff', fontWeight: 700 }}>{part}</strong>
+            : part
+        );
+      };
+
+      if (line.startsWith('### ')) return (
+        <div key={i} style={{ fontSize: 13, fontWeight: 700, color: EM, marginTop: 14, marginBottom: 4, letterSpacing: 0.3 }}>
+          {parseBold(line.slice(4))}
+        </div>
+      );
+      if (line.startsWith('## ')) return (
+        <div key={i} style={{ fontSize: 14, fontWeight: 700, color: '#ddd', marginTop: 16, marginBottom: 6 }}>
+          {parseBold(line.slice(3))}
+        </div>
+      );
+
+      if (/^[-*] /.test(line)) return (
+        <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 4, paddingLeft: 4 }}>
+          <span style={{ color: EM, flexShrink: 0, marginTop: 2 }}>•</span>
+          <span style={{ fontSize: 13, color: '#ccc', lineHeight: 1.7 }}>{parseBold(line.slice(2))}</span>
+        </div>
+      );
+
+      if (/^\d+\. /.test(line)) {
+        const num = line.match(/^(\d+)\. /)[1];
+        return (
+          <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 4, paddingLeft: 4 }}>
+            <span style={{ color: EM, flexShrink: 0, fontWeight: 700, minWidth: 16 }}>{num}.</span>
+            <span style={{ fontSize: 13, color: '#ccc', lineHeight: 1.7 }}>{parseBold(line.slice(num.length + 2))}</span>
+          </div>
+        );
+      }
+
+      if (line.trim() === '---') return (
+        <hr key={i} style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.07)', margin: '12px 0' }}/>
+      );
+
+      if (line.trim() === '') return <div key={i} style={{ height: 6 }}/>;
+
+      return (
+        <div key={i} style={{ fontSize: 13, color: '#ccc', lineHeight: 1.75, marginBottom: 2 }}>
+          {parseBold(line)}
+        </div>
+      );
+    });
+  };
+
   return (
     <div className="page-enter">
 
@@ -312,9 +367,9 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
                     fontSize: 13, color: '#bbb', lineHeight: 1.8,
                     paddingLeft: 14,
                     borderLeft: '2px solid rgba(62,207,142,0.35)',
-                    marginBottom: 16, fontStyle: 'italic',
+                    marginBottom: 16,
                   }}>
-                    {arti}
+                    {renderMarkdown(arti)}
                   </div>
                 ) : null}
 
@@ -367,12 +422,24 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
                   </div>
                 ) : (
                   <div style={{
-                    padding: '20px', borderRadius: 10, textAlign: 'center',
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px dashed rgba(255,255,255,0.08)',
-                    fontSize: 13, color: '#555',
+                    padding: '16px', borderRadius: 10,
+                    background: 'rgba(62,207,142,0.04)',
+                    border: '1px solid rgba(62,207,142,0.18)',
+                    display: 'flex', flexDirection: 'column', gap: 10,
                   }}>
-                    Jawaban sedang disiapkan tim Talqeeh 🕐
+                    <div style={{ fontSize: 13, color: '#888', lineHeight: 1.6 }}>
+                      Jawaban belum tersedia — gunakan prompt di bawah untuk dapat jawaban dari AI sekarang.
+                    </div>
+                    <CopyPromptButton
+                      label={`Salin Prompt Jawaban Soal ${i + 1}`}
+                      onCopy={() => {
+                        const prompt = buildPromptJawaban(i + 1, block.arab, arti);
+                        navigator.clipboard.writeText(prompt);
+                        toast?.push?.(`Prompt Soal ${i + 1} tersalin — paste ke AI`);
+                      }}
+                      EM={EM}
+                      variant="solid"
+                    />
                   </div>
                 )}
 
