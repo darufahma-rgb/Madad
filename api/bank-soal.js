@@ -144,10 +144,14 @@ async function handleApprove(req, res) {
 
     if (reward_type && soal.submitter_wa) {
       const pesan = {
-        lifetime: `Assalamualaikum ${soal.submitter_name}! 🎉\n\nSoal ujian untuk maddah *${soal.maddah_nama}* sudah diverifikasi.\n\nKamu mendapatkan *akses Talqeeh lifetime GRATIS!* 🎓\nKode aksesmu akan segera dikirim. Barakallahu fiik! 🙏`,
-        diskon:   `Assalamualaikum ${soal.submitter_name}! 🎉\n\nSoal untuk maddah *${soal.maddah_nama}* sudah diterima.\n\nKamu mendapatkan *diskon spesial* untuk bergabung sebagai member Talqeeh. Info segera dikirim! 🙏`,
-        poin:     `Assalamualaikum ${soal.submitter_name}! 🎉\n\nSoal untuk maddah *${soal.maddah_nama}* sudah diterima.\n\n*Poin kamu sudah ditambahkan!* Kumpulkan untuk tukar merchandise Talqeeh. Terima kasih! 🙏`,
-      }[reward_type] || `Assalamualaikum ${soal.submitter_name}! Soal kamu untuk maddah *${soal.maddah_nama}* sudah diterima. Terima kasih! 🙏`;
+        lifetime: `Assalamualaikum ${soal.submitter_name}! 🎉\n\nSoal ujian untuk maddah *${soal.maddah_nama}* sudah diverifikasi dan diterima. Jazakallahu khair atas kontribusinya!\n\n🎓 Kamu mendapatkan *akses Talqeeh lifetime GRATIS!*\n\nKode aksesmu akan segera dikirim. Barakallahu fiik! 🙏`,
+
+        diskon: `Assalamualaikum ${soal.submitter_name}! 🎉\n\nSoal ujian untuk maddah *${soal.maddah_nama}* sudah diverifikasi dan diterima. Jazakallahu khair!\n\n🏷️ Kamu mendapatkan *diskon spesial* untuk bergabung sebagai member Talqeeh.\n\nInfo lebih lanjut segera dikirim. Barakallahu fiik! 🙏`,
+
+        voucher: `Assalamualaikum ${soal.submitter_name}! 🎉\n\nMasya Allah — kamu sudah submit *2 termin penuh* ke Bank Soal Talqeeh!\n\n🍽️ Kamu mendapatkan *voucher makan siang Rp 50.000* sebagai apresiasi atas kontribusimu.\n\nCara klaim: balas pesan ini atau japri admin untuk proses voucher. Barakallahu fiik! 🙏`,
+
+        poin: `Assalamualaikum ${soal.submitter_name}! 🎉\n\nSoal ujian untuk maddah *${soal.maddah_nama}* sudah diterima.\n\n🏅 Kamu mendapatkan *Badge Kontributor Talqeeh* dan namamu akan tercantum di Hall of Fame!\n\nTerima kasih atas kontribusinya untuk sesama Masisir. Barakallahu fiik! 🙏`,
+      }[reward_type] || `Assalamualaikum ${soal.submitter_name}! Soal kamu untuk maddah *${soal.maddah_nama}* sudah diterima. Jazakallahu khair! 🙏`;
 
       await sendWA(soal.submitter_wa, pesan);
       await patch({ reward_sent: true });

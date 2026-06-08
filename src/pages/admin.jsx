@@ -2091,17 +2091,57 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                     <div className="text-xs text-ink-muted mb-2 font-medium">Reward untuk submitter (opsional):</div>
                     <div className="flex gap-2 flex-wrap">
                       {[
-                        { value: '',         label: 'Tanpa Reward' },
-                        { value: 'lifetime', label: '🎓 Lifetime' },
-                        { value: 'diskon',   label: '💸 Diskon' },
-                        { value: 'poin',     label: '⭐ Poin' },
-                      ].map(r => (
-                        <button key={r.value} onClick={() => setReward(r.value)}
-                          className={`px-3 py-1.5 rounded-lg text-xs border transition ${reward === r.value ? 'bg-emerald-500/15 text-emerald-200 border-emerald-500/30' : 'text-ink-muted border-white/10 hover:bg-white/5'}`}>
-                          {r.label}
+                        { value: null,       label: 'Tanpa Reward',          icon: '—'  },
+                        { value: 'lifetime', label: 'Akses Lifetime',         icon: '🎓' },
+                        { value: 'diskon',   label: 'Diskon',                 icon: '🏷️' },
+                        { value: 'voucher',  label: 'Voucher Makan Rp 50rb',  icon: '🍽️' },
+                        { value: 'poin',     label: 'Badge + Hall of Fame',   icon: '🏅' },
+                      ].map(opt => (
+                        <button
+                          key={String(opt.value)}
+                          onClick={() => setReward(opt.value)}
+                          style={{
+                            padding: '7px 14px',
+                            borderRadius: 8,
+                            border: reward === opt.value
+                              ? '1px solid #3ecf8e'
+                              : '1px solid rgba(255,255,255,0.1)',
+                            background: reward === opt.value
+                              ? 'rgba(62,207,142,0.15)'
+                              : 'rgba(255,255,255,0.03)',
+                            color: reward === opt.value ? '#3ecf8e' : '#aaa',
+                            fontSize: 12,
+                            fontWeight: reward === opt.value ? 700 : 400,
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {opt.icon} {opt.label}
                         </button>
                       ))}
                     </div>
+
+                    {reward === 'voucher' && (
+                      <div style={{
+                        marginTop: 10, padding: '10px 12px',
+                        background: 'rgba(255,200,50,0.06)',
+                        border: '1px solid rgba(255,200,50,0.2)',
+                        borderRadius: 8, fontSize: 12, color: '#a08030',
+                      }}>
+                        ⚠️ Pastikan submitter sudah submit 2 termin penuh sebelum pilih reward ini.
+                        Voucher diklaim manual via japri — kamu yang proses transfernya.
+                      </div>
+                    )}
+                    {reward === 'lifetime' && (
+                      <div style={{
+                        marginTop: 10, padding: '10px 12px',
+                        background: 'rgba(62,207,142,0.06)',
+                        border: '1px solid rgba(62,207,142,0.15)',
+                        borderRadius: 8, fontSize: 12, color: '#3ecf8e',
+                      }}>
+                        ✅ Pastikan kamu sudah siapkan kode akses baru untuk dikirim ke submitter.
+                      </div>
+                    )}
                   </div>
 
                   {/* Reject reason input */}
