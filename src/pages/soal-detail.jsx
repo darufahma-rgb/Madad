@@ -249,22 +249,20 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
               <div className="text-base text-ink-muted mt-2">
                 {soal.tahun} · {fashlStr}
               </div>
-              {soal.fakultas && (
-                <div style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 6,
-                  marginTop: 8,
-                  fontSize: 12, color: '#3ecf8e', fontWeight: 600,
-                  padding: '4px 12px', borderRadius: 20,
-                  background: 'rgba(62,207,142,0.1)',
-                  border: '1px solid rgba(62,207,142,0.25)',
-                }}>
-                  {(() => {
-                    const faculties = typeof FACULTIES !== 'undefined' ? FACULTIES : [];
-                    const found = faculties.find(f => f.id === soal.fakultas);
-                    return found ? found.label : soal.fakultas;
-                  })()}
-                </div>
-              )}
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 6,
+                marginTop: 8,
+                fontSize: 12, color: '#3ecf8e', fontWeight: 600,
+                padding: '4px 12px', borderRadius: 20,
+                background: 'rgba(62,207,142,0.1)',
+                border: '1px solid rgba(62,207,142,0.25)',
+              }}>
+                {(() => {
+                  const faculties = typeof FACULTIES !== 'undefined' ? FACULTIES : [];
+                  const found = faculties.find(f => f.id === soal.fakultas);
+                  return found ? found.label : (soal.fakultas || '—');
+                })()}
+              </div>
             </div>
             {isMember && (
               <div style={{
