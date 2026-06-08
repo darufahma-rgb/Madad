@@ -126,6 +126,8 @@ const tryLogin = async (code, { forceTakeover = false } = {}) => {
     name: member.name,
     deviceId,
     loggedInAt: new Date().toISOString(),
+    supabaseValidated: true,
+    needsValidation: false,
   };
   localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
   sbPullAllUserData().catch(e => console.warn("Pull failed:", e.message));
