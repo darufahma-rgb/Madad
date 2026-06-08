@@ -615,17 +615,16 @@ const BankSoalPreview = ({ onOpenLogin }) => {
   const [soalList, setSoalList] = React.useState([]);
   const [loading, setLoading]   = React.useState(true);
 
+  const SUPABASE_URL  = import.meta.env.VITE_SUPABASE_URL;
+  const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY;
   const EM = '#3ecf8e';
 
   React.useEffect(() => {
-    fetch('/api/config')
-      .then(r => r.json())
-      .then(({ supabaseUrl, supabaseAnonKey }) => {
-        return fetch(
-          `${supabaseUrl}/rest/v1/bank_soal?status=eq.approved&select=id,maddah_nama,tahun,fashl,soal&order=approved_at.desc&limit=6`,
-          { headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${supabaseAnonKey}` } }
-        );
-      })
+    if (!SUPABASE_URL || !SUPABASE_ANON) { setLoading(false); return; }
+    fetch(
+      `${SUPABASE_URL}/rest/v1/bank_soal?status=eq.approved&select=id,maddah_nama,tahun,fashl,soal&order=approved_at.desc&limit=6`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+    )
       .then(r => r.json())
       .then(data => { setSoalList(Array.isArray(data) ? data : []); setLoading(false); })
       .catch(() => setLoading(false));
