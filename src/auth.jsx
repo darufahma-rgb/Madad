@@ -267,10 +267,14 @@ const useAuth = () => {
     };
   }, [syncFromStorage]);
 
-  // Background Supabase session validation (non-blocking)
+  // Background session validation — pakai /api/login bukan sbGetMemberByCode
   useEffect(() => {
     const s = getSession();
-    if (!s) return;
+    if (!s || !s.code) return;
+
+    // Skip kalau sudah divalidasi sebelumnya
+    if (s.supabaseValidated) return;
+
     (async () => {
       try {
         const res = await fetch('/api/login', {
@@ -279,30 +283,44 @@ const useAuth = () => {
           body: JSON.stringify({ code: s.code }),
         });
         const data = await res.json();
-        const member = data.ok ? data.member : null;
-        if (!member || member.status === "disabled") {
+
+        if (!data.ok) {
+          // Kode tidak valid atau disabled — logout
           logout();
           setSession(null);
           setProfileState(null);
           setProgressState(null);
           fireRefresh();
-        } else if (member.deviceId && member.deviceId !== s.deviceId) {
-          logout();
-          setSession(null);
-          setProfileState(null);
-          setProgressState(null);
-          fireRefresh();
-        } else if (s.needsValidation) {
-          const updatedSession = { ...s, supabaseValidated: true, needsValidation: false };
-          localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updatedSession));
-          setSession(updatedSession);
+          return;
         }
+
+        const member = data.member;
+
+        // Cek device — kalau deviceId berbeda, berarti device lain sudah login
+        if (member.deviceId && s.deviceId && member.deviceId !== s.deviceId) {
+          logout();
+          setSession(null);
+          setProfileState(null);
+          setProgressState(null);
+          fireRefresh();
+          return;
+        }
+
+        // Session valid — tandai supabaseValidated
+        const updatedSession = {
+          ...s,
+          supabaseValidated: true,
+          needsValidation: false,
+          name: member.name,
+          status: member.status,
+          expiresAt: member.expiresAt,
+        };
+        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updatedSession));
+        setSession(updatedSession);
+
       } catch (e) {
-        if (s.needsValidation) {
-          const updatedSession = { ...s, supabaseValidated: true, needsValidation: false };
-          localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updatedSession));
-          setSession(updatedSession);
-        }
+        // Kalau network error — jangan logout, biarkan session tetap ada
+        console.warn('[auth] Background validation failed:', e.message);
       }
     })();
   }, []);
