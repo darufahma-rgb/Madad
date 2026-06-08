@@ -65,6 +65,7 @@ const App = () => {
       "/dashboard", "/tools", "/paths", "/onboarding",
       "/kurasah", "/maddah", "/siap-imtihan",
       "/s2-maddah", "/mahad-maddah", "/prompt-library",
+      "/soal-detail",
     ];
     const isMemberRoute = memberOnly.some(r => path === r || path.startsWith(r + "?") || path.startsWith(r + "/"));
 
@@ -138,6 +139,7 @@ const App = () => {
   else if (path === "/maddah" || path === "/maddah/")      { page = <MaddahHubPage/>; routeLabel = "Maddah"; }
   else if (path.startsWith("/maddah/"))                    { page = <MaddahDetailErrorBoundary><MaddahDetailPage/></MaddahDetailErrorBoundary>; routeLabel = "Maddah"; }
   else if (path === "/siap-imtihan" || path.startsWith("/siap-imtihan")) { page = <SiapImtihanPage/>; routeLabel = "Siap Imtihan"; }
+  else if (path.startsWith("/soal-detail/")) { page = <SoalDetailPage/>; routeLabel = "Detail Soal"; }
   else if (path === "/s2-maddah" || path.startsWith("/s2-maddah")) { page = <S2MaddahPage/>; routeLabel = "Maddah S2"; }
   else if (path === "/prompt-library") { page = <PromptLibraryPage/>; routeLabel = "Prompt Library"; }
   else if (path.startsWith("/mahad-maddah/")) { page = <MahadDetailPage/>; routeLabel = "Maddah Ma'had"; }

@@ -46,6 +46,7 @@ import './pages/kurasah.jsx';
 import './pages/kurasah-editor.jsx';
 import './pages/prompt-library.jsx';
 import './pages/siap-imtihan.jsx';
+import './pages/soal-detail.jsx';
 import './pages/s2-maddah.jsx';
 import './pages/framework.jsx';
 import './pages/framework-detail.jsx';

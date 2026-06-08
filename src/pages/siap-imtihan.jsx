@@ -1478,7 +1478,6 @@ const BankSoalSection = () => {
   const [soalList, setSoalList]         = React.useState([]);
   const [loading, setLoading]           = React.useState(true);
   const [filter, setFilter]             = React.useState({ fakultas: '', maddah: '', tahun: '' });
-  const [selectedSoal, setSelectedSoal] = React.useState(null);
 
   React.useEffect(() => {
     fetch('/api/config')
@@ -1671,7 +1670,7 @@ const BankSoalSection = () => {
             {Object.entries(grouped).map(([key, group]) => (
               <div
                 key={key}
-                onClick={() => isMember ? setSelectedSoal(group) : null}
+                onClick={() => isMember ? navigate('/soal-detail/' + group.soalList[0].id) : null}
                 style={{
                   padding: '14px 16px', borderRadius: 12,
                   border: '1px solid rgba(62,207,142,0.2)',
@@ -1707,15 +1706,6 @@ const BankSoalSection = () => {
           </div>
         )}
 
-        {/* Modal detail soal */}
-        {selectedSoal && (
-          <SoalDetailModal
-            soal={selectedSoal.soalList[0]}
-            soalList={selectedSoal.soalList}
-            onClose={() => setSelectedSoal(null)}
-            isMember={isMember}
-          />
-        )}
       </div>
     </section>
   );
