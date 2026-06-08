@@ -51,6 +51,7 @@ import './pages/framework.jsx';
 import './pages/framework-detail.jsx';
 import './pages/tutorial.jsx';
 import './pages/submit-soal.jsx';
+import './pages/bank-soal-publik.jsx';
 
 // App shell — terakhir
 import App from './app.jsx';

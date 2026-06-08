@@ -105,7 +105,7 @@ const App = () => {
   const openLogin  = () => { setPaymentOpen(false); setLoginOpen(true); };
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
-  const isPublic = path === "/" || path.startsWith("/sample/") || path === "/ethics" || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal";
+  const isPublic = path === "/" || path.startsWith("/sample/") || path === "/ethics" || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal";
 
   // Admin gets its own layout (no public nav/footer)
   if (isAdmin) {
@@ -146,6 +146,7 @@ const App = () => {
   else if (path === "/framework") { page = <FrameworkPage/>; routeLabel = "Framework Belajar"; }
   else if (path === "/tutorial") { page = <TutorialPage/>; routeLabel = "Tutorial"; }
   else if (path === "/submit-soal") { page = <SubmitSoalPage/>; routeLabel = "Submit Soal"; }
+  else if (path === "/bank-soal") { page = <BankSoalPublikPage/>; routeLabel = "Bank Soal"; }
 
   // QuickNote muncul di semua halaman member yang sudah onboarded, kecuali admin & public
   const showQuickNote = session && profile?.onboarded && !isAdmin && !isPublic;

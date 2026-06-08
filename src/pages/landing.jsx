@@ -608,6 +608,199 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => {
   );
 };
 
+/* ══════════════════════════════════════════════════════════════
+   2.5 BANK SOAL PREVIEW
+   ══════════════════════════════════════════════════════════════ */
+const BankSoalPreview = ({ onOpenLogin }) => {
+  const [soal, setSoal] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    fetch('/api/config')
+      .then(r => r.json())
+      .then(({ supabaseUrl, supabaseAnonKey }) => {
+        return fetch(`${supabaseUrl}/rest/v1/bank_soal?status=eq.approved&soal=neq.&select=id,maddah_nama,tahun,fashl,soal,arti_soal&limit=1&order=approved_at.desc`, {
+          headers: {
+            apikey: supabaseAnonKey,
+            Authorization: `Bearer ${supabaseAnonKey}`,
+          }
+        });
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) setSoal(data[0]);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
+  }, []);
+
+  const getPreviewSoal = (teks) => {
+    if (!teks) return '';
+    if (teks.includes('[SOAL_ARAB]')) {
+      const block = teks.split('[SOAL_ARAB]').filter(Boolean)[0];
+      return block?.split('[ARTI]')[0]?.trim() || '';
+    }
+    return teks.split('\n')[0] || '';
+  };
+
+  const EM = '#3ecf8e';
+
+  return (
+    <section className="section pt-0">
+      <div className="container-x">
+        <Reveal className="mb-10 text-center">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/70"/>BANK SOAL IMTIHAN<span className="w-6 h-px bg-gold-500/70"/>
+          </div>
+          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
+            Soal ujian Al-Azhar<br/>dari Masisir untuk Masisir
+          </h2>
+          <p className="text-ink-muted text-base max-w-xl mx-auto">
+            Koleksi soal tahriri tahun-tahun sebelumnya — lengkap dengan arti dan pembahasan. Terus bertambah setiap musim ujian.
+          </p>
+        </Reveal>
+
+        <Reveal>
+          <div className="max-w-2xl mx-auto">
+            <div className="card-glass-strong relative overflow-hidden" style={{ border: `1px solid rgba(62,207,142,0.25)` }}>
+              <div style={{
+                position: 'absolute', top: -30, right: -30,
+                width: 160, height: 160, borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(62,207,142,0.1) 0%, transparent 70%)',
+                pointerEvents: 'none',
+              }}/>
+
+              <div style={{
+                padding: '20px 24px 16px',
+                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              }}>
+                <div>
+                  <div style={{ fontSize: 11, color: EM, fontWeight: 700, letterSpacing: 1, marginBottom: 4 }}>CONTOH SOAL</div>
+                  <div style={{ fontSize: 17, fontWeight: 700, color: '#fff' }}>
+                    {loading ? 'Memuat...' : soal ? soal.maddah_nama : 'Tauhid'}
+                  </div>
+                  <div style={{ fontSize: 12, color: '#888', marginTop: 2 }}>
+                    {soal ? `${soal.tahun} · ${soal.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}` : '2025/2026 · Fashl Tsani'}
+                  </div>
+                </div>
+                <div style={{
+                  padding: '4px 12px', borderRadius: 99,
+                  background: 'rgba(62,207,142,0.12)',
+                  border: '1px solid rgba(62,207,142,0.25)',
+                  fontSize: 11, color: EM, fontWeight: 700,
+                }}>TAHRIRI</div>
+              </div>
+
+              <div style={{ padding: '20px 24px' }}>
+                <div style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: 12, padding: '16px', marginBottom: 16,
+                  position: 'relative', overflow: 'hidden',
+                }}>
+                  <div style={{ direction: 'rtl', textAlign: 'right', fontSize: 16, lineHeight: 2, color: '#eee', fontFamily: 'serif' }}>
+                    {loading
+                      ? 'جاري التحميل...'
+                      : soal
+                      ? getPreviewSoal(soal.soal)
+                      : 'اشرح مفهوم التوحيد عند أهل السنة والجماعة، وبيّن أقسامه مع التمثيل لكل قسم.'}
+                  </div>
+                  <div style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%',
+                    background: 'linear-gradient(to bottom, transparent, rgba(18,18,18,0.95))',
+                    display: 'flex', alignItems: 'flex-end', justifyContent: 'center', paddingBottom: 12,
+                  }}>
+                    <div style={{
+                      fontSize: 12, color: '#888',
+                      background: 'rgba(255,255,255,0.06)',
+                      padding: '4px 12px', borderRadius: 99,
+                      border: '1px solid rgba(255,255,255,0.1)',
+                    }}>🔒 Login untuk baca soal lengkap</div>
+                  </div>
+                </div>
+
+                <div style={{ position: 'relative', marginBottom: 20 }}>
+                  <div style={{
+                    background: 'rgba(62,207,142,0.04)',
+                    border: '1px solid rgba(62,207,142,0.12)',
+                    borderRadius: 12, padding: '14px 16px',
+                    filter: 'blur(6px)', userSelect: 'none',
+                    fontSize: 14, lineHeight: 2,
+                    direction: 'rtl', textAlign: 'right',
+                    color: '#ccc', fontFamily: 'serif',
+                    maxHeight: 80, overflow: 'hidden',
+                  }}>
+                    التوحيد هو إفراد الله تعالى بما يختص به من الربوبية والألوهية والأسماء والصفات...
+                  </div>
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  }}>
+                    <div style={{ fontSize: 18 }}>🔒</div>
+                    <div style={{ fontSize: 12, color: '#aaa', fontWeight: 600 }}>Jawaban & penjelasan untuk member</div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+                  {[
+                    { label: 'Soal tersedia', value: '8+' },
+                    { label: 'Maddah', value: '10+' },
+                    { label: 'Tahun', value: '3' },
+                  ].map(s => (
+                    <div key={s.label} style={{
+                      flex: 1, minWidth: 80,
+                      padding: '10px 12px', borderRadius: 10, textAlign: 'center',
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid rgba(255,255,255,0.06)',
+                    }}>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: '#fff' }}>{s.value}</div>
+                      <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button
+                    onClick={onOpenLogin}
+                    style={{
+                      flex: 2, padding: '12px', borderRadius: 11, border: 'none',
+                      background: EM, color: '#000', fontWeight: 800, fontSize: 14, cursor: 'pointer',
+                    }}
+                  >Login untuk Akses Penuh →</button>
+                  <button
+                    onClick={() => navigate('/bank-soal')}
+                    style={{
+                      flex: 1, padding: '12px', borderRadius: 11,
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      background: 'rgba(255,255,255,0.04)',
+                      color: '#ccc', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                    }}
+                  >Lihat Semua →</button>
+                </div>
+              </div>
+            </div>
+
+            <div style={{
+              marginTop: 16, padding: '12px 16px',
+              background: 'rgba(255,200,50,0.06)',
+              border: '1px solid rgba(255,200,50,0.2)',
+              borderRadius: 12, textAlign: 'center',
+              fontSize: 13, color: '#a08030',
+            }}>
+              📸 Punya soal imtihan tahun lalu?{' '}
+              <span
+                onClick={() => navigate('/submit-soal')}
+                style={{ color: '#ffc832', fontWeight: 700, cursor: 'pointer' }}
+              >Submit & dapat reward →</span>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+};
+
 /* ── Root ─────────────────────────────────────────────────────── */
 const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
   <div className="page-enter">
@@ -679,6 +872,7 @@ const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
     </section>
 
     <SampleMaddahSection/>
+    <BankSoalPreview onOpenLogin={onOpenLogin}/>
     <HowItWorks/>
     <AllMaddahPreview/>
     <PricingAndCTA onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment}/>
