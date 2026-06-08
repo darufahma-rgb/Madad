@@ -272,7 +272,7 @@ function SubmitSoalPage() {
         {/* Reward info — beda tampilan untuk publik vs member */}
         {isMember ? (
 
-          /* ── MEMBER: Poin & Milestone ── */
+          /* ── MEMBER: Voucher Makan ── */
           <div style={{
             background: 'rgba(62,207,142,0.06)',
             border: '1px solid rgba(62,207,142,0.25)',
@@ -287,58 +287,62 @@ function SubmitSoalPage() {
                 background: 'rgba(62,207,142,0.15)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 18,
-              }}>🏆</div>
+              }}>🍽️</div>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>
-                  Kontribusi untuk Masisir
+                  Reward Kontributor
                 </div>
                 <div style={{ fontSize: 12, color: '#888' }}>
-                  Kumpulkan poin & tukar hadiah eksklusif
+                  Submit soal → dapat voucher makan siang
                 </div>
               </div>
             </div>
 
-            {/* Tier poin */}
+            {/* Tier */}
             {[
               {
-                poin: '1 termin penuh',
-                reward: 'Badge Kontributor + nama di Hall of Fame Talqeeh',
-                icon: '🏅',
+                icon: '🍽️',
+                label: '1 termin penuh',
+                sublabel: 'Semua maddah di 1 fashl',
+                reward: 'Voucher makan siang Rp 50.000',
                 color: 'rgba(62,207,142,0.15)',
                 borderColor: 'rgba(62,207,142,0.3)',
                 textColor: '#3ecf8e',
+                badge: null,
               },
               {
-                poin: '2 termin penuh',
-                reward: 'Voucher makan siang Rp 50.000 🍽️',
-                icon: '🎁',
+                icon: '🍽️🍽️',
+                label: '2 termin penuh',
+                sublabel: 'Dua fashl berbeda',
+                reward: 'Voucher makan siang Rp 100.000',
                 color: 'rgba(255,200,50,0.08)',
                 borderColor: 'rgba(255,200,50,0.3)',
                 textColor: '#ffc832',
-                highlight: true,
+                badge: 'POPULER',
               },
             ].map((tier) => (
-              <div key={tier.poin} style={{
+              <div key={tier.label} style={{
                 display: 'flex', gap: 12, alignItems: 'flex-start',
                 padding: '10px 12px', borderRadius: 10, marginBottom: 8,
                 background: tier.color,
                 border: `1px solid ${tier.borderColor}`,
                 position: 'relative',
               }}>
-                {tier.highlight && (
+                {tier.badge && (
                   <div style={{
                     position: 'absolute', top: -8, right: 10,
                     fontSize: 10, fontWeight: 800,
                     background: '#ffc832', color: '#000',
                     padding: '2px 8px', borderRadius: 99,
-                  }}>POPULER</div>
+                  }}>{tier.badge}</div>
                 )}
                 <div style={{ fontSize: 20, flexShrink: 0 }}>{tier.icon}</div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 2 }}>
-                    {tier.poin}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{tier.label}</span>
+                    <span style={{ fontSize: 11, color: '#777' }}>· {tier.sublabel}</span>
                   </div>
-                  <div style={{ fontSize: 12, color: tier.textColor, fontWeight: 600 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: tier.textColor }}>
                     {tier.reward}
                   </div>
                 </div>
@@ -351,7 +355,7 @@ function SubmitSoalPage() {
               borderTop: '1px solid rgba(255,255,255,0.06)',
               paddingTop: 10, lineHeight: 1.6,
             }}>
-              💡 Voucher diklaim dengan japri admin Talqeeh via WhatsApp setelah diverifikasi.
+              💡 Voucher diklaim dengan japri admin Talqeeh via WhatsApp setelah soal diverifikasi.
             </div>
           </div>
 
