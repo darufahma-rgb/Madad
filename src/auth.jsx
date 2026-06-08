@@ -90,18 +90,21 @@ const tryLogin = async (code, { forceTakeover = false } = {}) => {
 
   let member = null;
   try {
-    member = await sbGetMemberByCode(code);
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: code.trim().toUpperCase() }),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      member = data.member;
+    } else {
+      const status = data.status || LOGIN_RESULT.NOT_FOUND;
+      return { ok: false, status };
+    }
   } catch (err) {
-    console.warn("Supabase unreachable, fallback ke localStorage:", err.message);
-    const all = sbGetAllMembersFallback();
-    member = all.find(m => m.code === code.trim().toUpperCase()) || null;
-  }
-
-  // [BIZ-1] Fallback ke localStorage saat Supabase online tapi kode tidak ada
-  // (misal: kode demo atau kode yang belum diseed ke Supabase)
-  if (!member) {
-    const all = sbGetAllMembersFallback();
-    member = all.find(m => m.code === code.trim().toUpperCase()) || null;
+    console.error('[tryLogin] Network error:', err.message);
+    return { ok: false, status: 'error', message: err.message };
   }
 
   if (!member) return { ok: false, status: LOGIN_RESULT.NOT_FOUND };
@@ -116,12 +119,6 @@ const tryLogin = async (code, { forceTakeover = false } = {}) => {
     await sbBindDevice(member.code, deviceId, deviceLabel);
   } catch (err) {
     console.warn("Tidak bisa update device ke Supabase:", err.message);
-    const all = sbGetAllMembersFallback();
-    const idx = all.findIndex(m => m.code === member.code);
-    if (idx !== -1) {
-      all[idx] = { ...all[idx], device: deviceLabel, deviceId, lastLogin: new Date().toISOString() };
-      localStorage.setItem("madad_members", JSON.stringify(all));
-    }
   }
 
   const session = {
@@ -131,7 +128,6 @@ const tryLogin = async (code, { forceTakeover = false } = {}) => {
     loggedInAt: new Date().toISOString(),
   };
   localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
-  // Tarik data user dari Supabase ke localStorage (background, non-blocking)
   sbPullAllUserData().catch(e => console.warn("Pull failed:", e.message));
   return { ok: true, status: LOGIN_RESULT.OK, member, session };
 };
@@ -275,7 +271,13 @@ const useAuth = () => {
     if (!s) return;
     (async () => {
       try {
-        const member = await sbGetMemberByCode(s.code);
+        const res = await fetch('/api/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: s.code }),
+        });
+        const data = await res.json();
+        const member = data.ok ? data.member : null;
         if (!member || member.status === "disabled") {
           logout();
           setSession(null);
@@ -289,22 +291,11 @@ const useAuth = () => {
           setProgressState(null);
           fireRefresh();
         } else if (s.needsValidation) {
-          // Session valid di Supabase — tandai & simpan member ke localStorage
           const updatedSession = { ...s, supabaseValidated: true, needsValidation: false };
           localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updatedSession));
           setSession(updatedSession);
-          const currentMembers = loadMembers();
-          if (!currentMembers.find(m => m.code === member.code)) {
-            saveMembers([...currentMembers, {
-              code: member.code,
-              status: member.status,
-              deviceId: member.deviceId,
-              name: s.name || member.code,
-            }]);
-          }
         }
       } catch (e) {
-        // Supabase offline — kalau butuh validasi, beri benefit of doubt
         if (s.needsValidation) {
           const updatedSession = { ...s, supabaseValidated: true, needsValidation: false };
           localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updatedSession));
