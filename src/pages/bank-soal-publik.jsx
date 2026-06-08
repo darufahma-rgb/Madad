@@ -22,9 +22,14 @@ function BankSoalPublikPage() {
       .catch(() => setLoading(false));
   }, []);
 
-  const cleanArab = (text) => {
+  const cleanText = (text) => {
     if (!text) return '';
-    return text.replace(/\*\*/g, '').replace(/\*/g, '').replace(/#{1,6}\s/g, '').trim();
+    return text
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/#{1,6}\s/g, '')
+      .replace(/---+/g, '')
+      .trim();
   };
 
   const getFirstSoal = (teks) => {
@@ -32,9 +37,9 @@ function BankSoalPublikPage() {
     if (teks.includes('[SOAL_ARAB]')) {
       const block = teks.split('[SOAL_ARAB]').filter(Boolean)[0] || '';
       const parts = block.split('[ARTI]');
-      return { arab: cleanArab(parts[0]?.trim() || ''), arti: parts[1]?.trim() || '' };
+      return { arab: cleanText(parts[0]?.trim() || ''), arti: parts[1]?.trim() || '' };
     }
-    return { arab: cleanArab(teks.split('\n').find(l => l.trim()) || ''), arti: '' };
+    return { arab: cleanText(teks.split('\n').find(l => l.trim()) || ''), arti: '' };
   };
 
   const countSoal = (teks) => {
@@ -240,7 +245,7 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
                       borderLeft: '2px solid rgba(62,207,142,0.3)',
                       marginBottom: 14, fontStyle: 'italic',
                     }}>
-                      {artiDisplay}
+                      {cleanText(artiDisplay)}
                     </div>
                   ) : null}
 
