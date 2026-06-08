@@ -61,6 +61,35 @@ export default async function handler(req, res) {
 
     const m = data[0];
 
+    // ── Update last_login di Supabase ──
+    const deviceLabel = req.headers['user-agent']
+      ? (() => {
+          const ua = req.headers['user-agent'];
+          if (/iPhone|iPad/i.test(ua))  return 'iOS';
+          if (/Android/i.test(ua))      return 'Android';
+          if (/Mac/i.test(ua))          return 'Mac';
+          if (/Windows/i.test(ua))      return 'Windows';
+          if (/Linux/i.test(ua))        return 'Linux';
+          return 'Unknown';
+        })()
+      : 'Unknown';
+
+    fetch(
+      `${supabaseUrl}/rest/v1/members?code=eq.${encodeURIComponent(m.code)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          last_login: new Date().toISOString(),
+          device: deviceLabel,
+        })
+      }
+    ).catch(err => console.warn('[login] Failed to update last_login:', err.message));
+
     res.status(200).json({
       ok: true,
       member: {
