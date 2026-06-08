@@ -1633,8 +1633,31 @@ const AdminBankSoal = () => {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-ink-muted text-xs">{s.created_at?.slice(0,10)}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3" style={{ whiteSpace: 'nowrap' }}>
                     <span className="text-xs text-emerald-400 hover:text-emerald-200">Detail →</span>
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (!confirm(`Hapus submission dari ${s.submitter_name}?`)) return;
+                        const res = await fetch('/api/bank-soal?action=delete', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ soal_id: s.id })
+                        });
+                        const data = await res.json();
+                        if (data.ok) fetchData(filter);
+                        else alert('Gagal: ' + data.error);
+                      }}
+                      style={{
+                        padding: '4px 10px', borderRadius: 6,
+                        border: '1px solid rgba(255,80,80,0.2)',
+                        background: 'rgba(255,80,80,0.06)',
+                        color: '#ff8080', fontSize: 11,
+                        cursor: 'pointer', marginLeft: 8,
+                      }}
+                    >
+                      🗑️
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -2158,7 +2181,7 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                   )}
 
                   {/* Buttons */}
-                  <div className="flex gap-3">
+                  <div className="flex gap-3 flex-wrap">
                     <button onClick={handleApprove} disabled={acting}
                       className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-emerald-500 text-black disabled:opacity-50 hover:bg-emerald-400 transition">
                       {acting ? '⏳ Memproses...' : '✅ Approve'}
@@ -2174,6 +2197,37 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                         {acting ? '⏳...' : 'Konfirmasi Reject →'}
                       </button>
                     )}
+                    <button
+                      onClick={async () => {
+                        if (!confirm(`Hapus submission ini permanent?\n\nNama: ${selected.submitter_name}\nMaddah: ${selected.maddah_nama}\n\nTindakan ini tidak bisa dibatalkan.`)) return;
+                        try {
+                          const res = await fetch('/api/bank-soal?action=delete', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ soal_id: selected.id })
+                          });
+                          const data = await res.json();
+                          if (data.ok) {
+                            alert('✅ Submission berhasil dihapus.');
+                            setSelected(null);
+                            fetchData(filter);
+                          } else {
+                            alert('Gagal hapus: ' + data.error);
+                          }
+                        } catch (err) {
+                          alert('Error: ' + err.message);
+                        }
+                      }}
+                      style={{
+                        padding: '9px 16px', borderRadius: 9,
+                        border: '1px solid rgba(255,80,80,0.3)',
+                        background: 'rgba(255,80,80,0.08)',
+                        color: '#ff8080', fontSize: 12, fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      🗑️ Hapus Permanent
+                    </button>
                   </div>
                 </div>
               )}

@@ -19,6 +19,7 @@ export default async function handler(req, res) {
   if (action === 'approve')         return handleApprove(req, res);
   if (action === 'update-jawaban')  return handleUpdateJawaban(req, res);
   if (action === 'foto')            return handleFoto(req, res);
+  if (action === 'delete')          return handleDelete(req, res);
 
   return res.status(400).json({ ok: false, error: 'Action tidak valid' });
 }
@@ -203,6 +204,44 @@ async function handleUpdateJawaban(req, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ arti_soal, jawaban, penjelasan })
+    });
+
+    return res.status(200).json({ ok: true });
+  } catch (err) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+}
+
+/* ── HAPUS PERMANENT ── */
+async function handleDelete(req, res) {
+  if (req.method !== 'POST') return res.status(405).end();
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const { soal_id } = req.body;
+
+  if (!soal_id) return res.status(400).json({ ok: false, error: 'soal_id required' });
+
+  try {
+    const soalRes = await fetch(
+      `${supabaseUrl}/rest/v1/bank_soal?id=eq.${soal_id}&select=foto_url,foto_deleted`,
+      { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } }
+    );
+    const [soal] = await soalRes.json();
+
+    if (soal?.foto_url && !soal?.foto_deleted) {
+      const filePath = soal.foto_url.split('/storage/v1/object/soal-foto/')[1];
+      if (filePath) {
+        await fetch(`${supabaseUrl}/storage/v1/object/soal-foto/${filePath}`, {
+          method: 'DELETE',
+          headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` }
+        });
+      }
+    }
+
+    await fetch(`${supabaseUrl}/rest/v1/bank_soal?id=eq.${soal_id}`, {
+      method: 'DELETE',
+      headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` }
     });
 
     return res.status(200).json({ ok: true });
