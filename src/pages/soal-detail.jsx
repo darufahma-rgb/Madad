@@ -157,6 +157,14 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
 
   const fashlStr = soal.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani';
 
+  const cleanArab = (text) => {
+    if (!text) return '';
+    return text
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .trim();
+  };
+
   const renderMarkdown = (text) => {
     if (!text) return null;
     const lines = text.split('\n');
@@ -358,7 +366,7 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
                     border: '1px solid rgba(255,255,255,0.08)',
                     borderRadius: 12, padding: '16px 20px', marginBottom: 12,
                   }}>
-                    {block.arab}
+                    {cleanArab(block.arab)}
                   </div>
                 ) : null}
 
