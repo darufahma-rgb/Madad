@@ -1301,41 +1301,39 @@ const BankSoalSection = () => {
   const [selectedSoal, setSelectedSoal] = React.useState(null);
 
   React.useEffect(() => {
-    const supabaseUrl  = import.meta.env.VITE_SUPABASE_URL  || '';
-    const supabaseAnon = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+    fetch('/api/config')
+      .then(r => r.json())
+      .then(({ supabaseUrl, supabaseAnonKey }) => {
+        if (!supabaseUrl || !supabaseAnonKey) {
+          console.error('[BankSoal] Config tidak tersedia');
+          setLoading(false);
+          return null;
+        }
 
-    if (!supabaseUrl || !supabaseAnon) {
-      console.error('[BankSoal] Config tidak tersedia', { supabaseUrl, supabaseAnon });
-      setLoading(false);
-      return;
-    }
-
-    const url = `${supabaseUrl}/rest/v1/bank_soal?status=eq.approved&select=id,maddah_id,maddah_nama,fakultas,tingkat,tahun,fashl,soal&order=approved_at.desc&limit=200`;
-    console.log('[BankSoal] Fetching:', url);
-
-    fetch(url, {
-      headers: {
-        'apikey': supabaseAnon,
-        'Authorization': `Bearer ${supabaseAnon}`,
-        'Accept': 'application/json',
-      }
-    })
+        return fetch(
+          `${supabaseUrl}/rest/v1/bank_soal?status=eq.approved&select=id,maddah_id,maddah_nama,fakultas,tingkat,tahun,fashl,soal,arti_soal,jawaban,penjelasan&order=approved_at.desc&limit=200`,
+          {
+            headers: {
+              'apikey': supabaseAnonKey,
+              'Authorization': `Bearer ${supabaseAnonKey}`,
+              'Accept': 'application/json',
+            }
+          }
+        );
+      })
       .then(r => {
-        console.log('[BankSoal] Response status:', r.status);
+        if (!r) return null;
         return r.json();
       })
       .then(data => {
-        console.log('[BankSoal] Data received:', data);
+        console.log('[BankSoal] data:', data);
         if (Array.isArray(data) && data.length > 0) {
           setSoalList(data);
-          console.log('[BankSoal] soalList set:', data.length, 'items');
-        } else {
-          console.warn('[BankSoal] Data kosong atau bukan array:', data);
         }
         setLoading(false);
       })
       .catch(err => {
-        console.error('[BankSoal] Fetch error:', err);
+        console.error('[BankSoal] error:', err);
         setLoading(false);
       });
   }, []);
