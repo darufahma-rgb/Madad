@@ -353,3 +353,39 @@ main.has-tabbar { padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px) +
 
 @keyframes talqih-spin { to { transform: rotate(360deg); } }
 @keyframes madadPulse { 0%,100%{opacity:0.35} 50%{opacity:0.88} }
+
+/* ── MarkdownArab — tabel & elemen markdown ── */
+.markdown-arab table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 14px;
+  direction: inherit;
+}
+.markdown-arab th,
+.markdown-arab td {
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 8px 12px;
+  text-align: inherit;
+  vertical-align: top;
+}
+.markdown-arab th {
+  background: rgba(62,207,142,0.12);
+  color: #3ecf8e;
+  font-weight: 700;
+}
+.markdown-arab tr:nth-child(even) td {
+  background: rgba(255,255,255,0.03);
+}
+.markdown-arab p { margin: 0.4em 0; }
+.markdown-arab ul,
+.markdown-arab ol { padding-inline-start: 1.4em; margin: 0.4em 0; }
+.markdown-arab li { margin: 0.2em 0; }
+.markdown-arab strong { color: #fff; }
+.markdown-arab code {
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  padding: 1px 5px;
+  font-size: 0.9em;
+  font-family: monospace;
+}
