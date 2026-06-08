@@ -154,6 +154,7 @@ Object.assign(window, {
   _onSupabaseReady,
   checkSupabase,
   sbGetAllMembersFallback,
+  sbBindDevice,
 });
 
 /* ============================================================
@@ -426,4 +427,17 @@ const sbPushAllUserData = async () => {
     Object.keys(maddahActivity).length > 0 && sbSaveMaddahActivity(maddahActivity),
   ].filter(Boolean));
 };
+
+Object.assign(window, {
+  getMemberCode,
+  sbLoadNotes, sbSaveNote, sbDeleteNote,
+  sbLoadProgress, sbSaveProgress,
+  sbLoadIntentions, sbSaveIntention,
+  sbLoadPresence, sbSavePresence,
+  sbLoadMuqaranah, sbSaveMuqaranah, sbDeleteMuqaranah,
+  sbSaveProfile, sbLoadProfile,
+  sbSaveMaddahActivity, sbLoadMaddahActivity,
+  sbPullAllUserData,
+  sbPushAllUserData,
+});
 
