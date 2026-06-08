@@ -157,10 +157,79 @@ Catatan penting:
 async function handleParseTalkhisan(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { foto_base64, mime_type, pdf_pages } = await parseBody(req);
+  const { foto_base64, mime_type, pdf_pages, member_code } = await parseBody(req);
   const openrouterKey = process.env.OPENROUTER_API_KEY;
+  const supabaseUrl   = process.env.SUPABASE_URL;
+  const serviceKey    = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!openrouterKey) return res.status(500).json({ ok: false, error: 'OpenRouter key tidak tersedia' });
+  // ── GUARDRAIL 1: Wajib member ──
+  if (!member_code) {
+    return res.status(401).json({ ok: false, error: 'Fitur ini hanya untuk member Talqeeh.' });
+  }
+
+  // ── GUARDRAIL 2: Rate limit 3x per hari per member ──
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const usageRes = await fetch(
+      `${supabaseUrl}/rest/v1/parse_usage?member_code=eq.${encodeURIComponent(member_code)}&date=eq.${today}&select=count`,
+      { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } }
+    );
+    const usageData = await usageRes.json();
+    const currentCount = usageData?.[0]?.count || 0;
+
+    if (currentCount >= 3) {
+      return res.status(429).json({
+        ok: false,
+        error: 'rate_limit',
+        message: 'Batas 3x parse per hari tercapai. Coba lagi besok.'
+      });
+    }
+
+    if (Array.isArray(usageData) && usageData.length > 0) {
+      await fetch(
+        `${supabaseUrl}/rest/v1/parse_usage?member_code=eq.${encodeURIComponent(member_code)}&date=eq.${today}`,
+        {
+          method: 'PATCH',
+          headers: {
+            apikey: serviceKey,
+            Authorization: `Bearer ${serviceKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ count: currentCount + 1 })
+        }
+      );
+    } else {
+      await fetch(`${supabaseUrl}/rest/v1/parse_usage`, {
+        method: 'POST',
+        headers: {
+          apikey: serviceKey,
+          Authorization: `Bearer ${serviceKey}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify({ member_code, date: today, count: 1 })
+      });
+    }
+  } catch (err) {
+    console.warn('[parse-talkhisan] rate limit check failed:', err.message);
+  }
+
+  // ── GUARDRAIL 3: Validasi PDF max 30 halaman (double check server side) ──
+  if (pdf_pages && pdf_pages.length > 30) {
+    return res.status(400).json({
+      ok: false,
+      error: `PDF melebihi batas 30 halaman (${pdf_pages.length} halaman diterima).`
+    });
+  }
+
+  // ── GUARDRAIL 4: Tidak boleh ada input kosong ──
+  if (!foto_base64 && (!pdf_pages || pdf_pages.length === 0)) {
+    return res.status(400).json({ ok: false, error: 'Tidak ada input yang valid.' });
+  }
+
+  if (!openrouterKey) {
+    return res.status(500).json({ ok: false, error: 'Konfigurasi server tidak lengkap.' });
+  }
 
   try {
     if (foto_base64) {

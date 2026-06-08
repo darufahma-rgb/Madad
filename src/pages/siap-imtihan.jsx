@@ -305,8 +305,54 @@ const TalkhisanSection = ({ profile }) => {
   const [savedToKurasah, setSavedToKurasah] = useState(false);
   const fileRef = useRef(null);
 
+  const session = (() => {
+    try { return JSON.parse(localStorage.getItem('madad_session') || '{}'); }
+    catch { return {}; }
+  })();
+  const isMember = !!session.code;
+
+  const [usageCount, setUsageCount] = useState(() => {
+    try {
+      const today = new Date().toDateString();
+      const stored = JSON.parse(localStorage.getItem('talkhisan_usage') || '{}');
+      return stored.date === today ? (stored.count || 0) : 0;
+    } catch { return 0; }
+  });
+
+  const incrementUsage = () => {
+    const today = new Date().toDateString();
+    const newCount = usageCount + 1;
+    setUsageCount(newCount);
+    localStorage.setItem('talkhisan_usage', JSON.stringify({ date: today, count: newCount }));
+  };
+
   const mode = TALKHISAN_MODES.find(m => m.id === activeMode);
   const resolvedPrompt = generateTalkhisanPrompt(activeMode, teksInput, profile);
+
+  if (!isMember) return (
+    <div style={{
+      padding: '32px 20px', textAlign: 'center',
+      background: 'rgba(255,255,255,0.02)',
+      border: '1px solid rgba(255,255,255,0.08)',
+      borderRadius: 16,
+    }}>
+      <div style={{ fontSize: 32, marginBottom: 12 }}>🔒</div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 8 }}>
+        Fitur Khusus Member
+      </div>
+      <div style={{ fontSize: 13, color: '#aaa', marginBottom: 16, lineHeight: 1.6 }}>
+        Upload dan parse talkhisan dengan AI hanya tersedia untuk member Talqeeh.
+      </div>
+      <a href="#/maddah-publik" style={{
+        display: 'inline-block',
+        padding: '10px 24px', borderRadius: 10,
+        background: '#3ecf8e', color: '#000',
+        fontWeight: 800, fontSize: 13, textDecoration: 'none',
+      }}>
+        Gabung Member →
+      </a>
+    </div>
+  );
 
   const compressImage = (file, maxSizeMB = 1.5) => {
     return new Promise((resolve) => {
@@ -333,6 +379,12 @@ const TalkhisanSection = ({ profile }) => {
 
   const handleFotoUpload = async (file) => {
     if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      setUploadError('Foto terlalu besar. Maksimal 10MB.');
+      return;
+    }
+
     setUploading(true);
     setUploadError('');
     try {
@@ -344,12 +396,20 @@ const TalkhisanSection = ({ profile }) => {
         const res = await fetch('/api/parse?action=talkhisan', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ foto_base64: base64, mime_type: mimeType })
+          body: JSON.stringify({ foto_base64: base64, mime_type: mimeType, member_code: session.code })
         });
         const data = await res.json();
+
+        if (data.error === 'rate_limit') {
+          setUploadError('Kamu sudah menggunakan fitur ini 3x hari ini. Coba lagi besok.');
+          setUploading(false);
+          return;
+        }
+
         if (data.ok && data.teks !== 'FOTO_TIDAK_TERBACA') {
           setTeksInput(data.teks);
           setInputType('teks');
+          incrementUsage();
           toast.push('Talkhisan berhasil dibaca — silakan pilih mode di bawah');
         } else if (data.teks === 'FOTO_TIDAK_TERBACA') {
           setUploadError('Foto tidak terbaca. Pastikan foto jelas dan cukup cahaya.');
@@ -367,44 +427,48 @@ const TalkhisanSection = ({ profile }) => {
 
   const handlePdfUpload = async (file) => {
     if (!file) return;
+
+    if (file.size > 15 * 1024 * 1024) {
+      setUploadError('File PDF terlalu besar. Maksimal 15MB.');
+      return;
+    }
+
     setUploading(true);
     setUploadError('');
     try {
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
-          // Load PDF.js dari CDN via script tag
           const script = document.createElement('script');
           script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
           document.head.appendChild(script);
-          await new Promise(resolve => { script.onload = resolve; });
+          await new Promise(resolve => script.onload = resolve);
 
           window.pdfjsLib.GlobalWorkerOptions.workerSrc =
             'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
           const pdf = await window.pdfjsLib.getDocument({ data: e.target.result }).promise;
-          const maxPages = Math.min(pdf.numPages, 15);
 
-          // Ekstrak teks per halaman
+          if (pdf.numPages > 30) {
+            setUploadError(`PDF ini punya ${pdf.numPages} halaman — melebihi batas 30 halaman. Talkhisan biasanya tidak sepanjang itu. Coba potong PDF atau upload per bagian.`);
+            setUploading(false);
+            return;
+          }
+
+          const maxPages = pdf.numPages;
           const pages = [];
+
           for (let i = 1; i <= maxPages; i++) {
             const page = await pdf.getPage(i);
             const textContent = await page.getTextContent();
-            const items = textContent.items;
             let pageText = '';
             let lastY = null;
-
-            for (const item of items) {
-              if (lastY !== null && Math.abs(item.transform[5] - lastY) > 5) {
-                pageText += '\n';
-              }
+            for (const item of textContent.items) {
+              if (lastY !== null && Math.abs(item.transform[5] - lastY) > 5) pageText += '\n';
               pageText += item.str;
               lastY = item.transform[5];
             }
-
-            if (pageText.trim()) {
-              pages.push(pageText.trim());
-            }
+            if (pageText.trim()) pages.push(pageText.trim());
           }
 
           if (pages.length === 0) {
@@ -413,17 +477,24 @@ const TalkhisanSection = ({ profile }) => {
             return;
           }
 
-          // Kirim per batch ke API
           const res = await fetch('/api/parse?action=talkhisan', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pdf_pages: pages })
+            body: JSON.stringify({ pdf_pages: pages, member_code: session.code })
           });
 
           const data = await res.json();
+
+          if (data.error === 'rate_limit') {
+            setUploadError('Kamu sudah menggunakan fitur ini 3x hari ini. Coba lagi besok.');
+            setUploading(false);
+            return;
+          }
+
           if (data.ok) {
             setTeksInput(data.teks);
             setInputType('teks');
+            incrementUsage();
             toast.push(`${pages.length} halaman berhasil dibaca — pilih mode di bawah`);
           } else {
             setUploadError(data.error || 'Gagal proses PDF');
@@ -570,6 +641,20 @@ const TalkhisanSection = ({ profile }) => {
         {/* Input area — upload PDF/Foto */}
         {inputType === "upload" && (
           <div className="mb-4">
+            {/* Usage counter */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
+              <span style={{
+                fontSize: 11, color: usageCount >= 3 ? '#ff8080' : '#888',
+                background: 'rgba(255,255,255,0.04)',
+                padding: '3px 10px', borderRadius: 99,
+                border: `1px solid ${usageCount >= 3 ? 'rgba(255,80,80,0.3)' : 'rgba(255,255,255,0.08)'}`,
+              }}>
+                {usageCount >= 3
+                  ? '⛔ Batas harian tercapai'
+                  : `📊 Sisa hari ini: ${3 - usageCount}x parse`}
+              </span>
+            </div>
+
             <input
               ref={fileRef}
               type="file"
@@ -577,7 +662,22 @@ const TalkhisanSection = ({ profile }) => {
               onChange={handleFileChange}
               style={{ display: 'none' }}
             />
-            {uploading ? (
+            {usageCount >= 3 ? (
+              <div style={{
+                padding: '24px 20px', textAlign: 'center',
+                background: 'rgba(255,80,80,0.04)',
+                border: '1px solid rgba(255,80,80,0.2)',
+                borderRadius: 14,
+              }}>
+                <div style={{ fontSize: 24, marginBottom: 8 }}>⛔</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#ff8080', marginBottom: 6 }}>
+                  Batas harian tercapai
+                </div>
+                <div style={{ fontSize: 12, color: '#888' }}>
+                  Kamu sudah parse 3x hari ini. Fitur ini reset setiap hari. Coba lagi besok!
+                </div>
+              </div>
+            ) : uploading ? (
               <div style={{
                 padding: '32px 20px', textAlign: 'center',
                 background: 'rgba(62,207,142,0.04)',
