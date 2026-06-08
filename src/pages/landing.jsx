@@ -305,7 +305,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         {/* Trust row */}
         <Reveal delay={340}>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-16">
-            {["72 Maddah lengkap (S1 + Ma'had)","1200+ template prompt","Bayar sekali, akses selamanya"].map((t, i) => (
+            {["88 Maddah lengkap (S1 + Ma'had)","1211 template prompt","Bayar sekali, akses selamanya"].map((t, i) => (
               <span key={i} className="flex items-center gap-2 text-xs" style={{ color:"rgba(255,255,255,0.42)" }}>
                 <Icon name="check" className="w-3.5 h-3.5 text-gold-400 flex-shrink-0"/>{t}
               </span>
@@ -527,9 +527,9 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => {
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>Member Talqeeh
               </div>
               <div className="mb-1">
-                <span className="text-sm text-ink-soft line-through block mb-1">Rp 75.000</span>
+                <span className="text-sm text-ink-soft line-through block mb-1">Rp 89.000</span>
                 <span className="font-display text-5xl md:text-6xl font-semibold bg-gradient-to-br from-gold-300 to-gold-500 bg-clip-text text-transparent block leading-tight">
-                  Rp 49.000
+                  Rp 63.000
                 </span>
               </div>
               <div className="text-xs text-ink-soft uppercase tracking-wider mt-2">Sekali bayar · Berlaku selamanya</div>
@@ -557,7 +557,7 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => {
               </div>
               <ul className="space-y-3 mb-8">
                 {[
-                  "72 Maddah lengkap (S1 + Ma'had) + 1200+ template prompt",
+                  "88 Maddah lengkap (S1 + Ma'had) + 1211 template prompt",
                   "AI recommendation per gaya & tingkat belajarmu",
                   "Muqaranah qoul ulama 4 madzhab",
                   "Kurasah pribadi dengan markdown & teks Arab",
