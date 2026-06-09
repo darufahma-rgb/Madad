@@ -40,9 +40,13 @@ export default async function handler(req, res) {
   let rawBody = '';
   await new Promise(resolve => { req.on('data', c => rawBody += c); req.on('end', resolve); });
 
-  let code;
+  let code, bindDevice, clientDeviceId, clientDeviceLabel;
   try {
-    ({ code } = JSON.parse(rawBody || '{}'));
+    const parsed = JSON.parse(rawBody || '{}');
+    code               = parsed.code;
+    bindDevice         = parsed.bindDevice;
+    clientDeviceId     = parsed.deviceId;
+    clientDeviceLabel  = parsed.deviceLabel;
   } catch {
     res.status(400).json({ error: 'Invalid JSON' });
     return;
@@ -105,21 +109,41 @@ export default async function handler(req, res) {
       return 'Browser';
     })();
 
-    fetch(
-      `${supabaseUrl}/rest/v1/members?code=eq.${encodeURIComponent(m.code)}`,
-      {
-        method: 'PATCH',
-        headers: {
-          apikey: serviceKey,
-          Authorization: `Bearer ${serviceKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          last_login: new Date().toISOString(),
-          device: deviceLabel,
-        })
-      }
-    ).catch(e => console.warn('[login] last_login update failed:', e.message));
+    // Handle bind device request — simpan device_id ke Supabase
+    if (bindDevice && clientDeviceId) {
+      fetch(
+        `${supabaseUrl}/rest/v1/members?code=eq.${encodeURIComponent(m.code)}`,
+        {
+          method: 'PATCH',
+          headers: {
+            apikey: serviceKey,
+            Authorization: `Bearer ${serviceKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            device_id:  clientDeviceId,
+            device:     clientDeviceLabel || 'Browser',
+            last_login: new Date().toISOString(),
+          })
+        }
+      ).catch(e => console.warn('[login] bind device failed:', e.message));
+    } else {
+      fetch(
+        `${supabaseUrl}/rest/v1/members?code=eq.${encodeURIComponent(m.code)}`,
+        {
+          method: 'PATCH',
+          headers: {
+            apikey: serviceKey,
+            Authorization: `Bearer ${serviceKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            last_login: new Date().toISOString(),
+            device: deviceLabel,
+          })
+        }
+      ).catch(e => console.warn('[login] last_login update failed:', e.message));
+    }
 
     res.status(200).json({
       ok: true,

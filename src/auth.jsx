@@ -115,19 +115,31 @@ const tryLogin = async (code, { forceTakeover = false } = {}) => {
     return { ok: false, status: LOGIN_RESULT.DEVICE_CONFLICT, member };
   }
 
+  // Bind device via API — lebih reliable dari sbBindDevice langsung
   try {
-    await sbBindDevice(member.code, deviceId, deviceLabel);
+    await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        code: code.trim().toUpperCase(),
+        bindDevice: true,
+        deviceId,
+        deviceLabel,
+      }),
+    });
   } catch (err) {
-    console.warn("Tidak bisa update device ke Supabase:", err.message);
+    console.warn('[tryLogin] Bind device failed:', err.message);
   }
 
+  // Set session dengan supabaseValidated: true langsung
+  // Ini mencegah background validation trigger logout
   const session = {
-    code: member.code,
-    name: member.name,
+    code:              member.code,
+    name:              member.name,
     deviceId,
-    loggedInAt: new Date().toISOString(),
+    loggedInAt:        new Date().toISOString(),
     supabaseValidated: true,
-    needsValidation: false,
+    needsValidation:   false,
   };
   localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
   sbPullAllUserData().catch(e => console.warn("Pull failed:", e.message));
@@ -272,8 +284,13 @@ const useAuth = () => {
     const s = getSession();
     if (!s || !s.code) return;
 
-    // Skip kalau sudah divalidasi sebelumnya
-    if (s.supabaseValidated) return;
+    // Skip kalau sudah validated — PENTING untuk cegah auto logout
+    if (s.supabaseValidated) {
+      console.log('[auth] Already validated, skip');
+      return;
+    }
+
+    let isMounted = true;
 
     (async () => {
       try {
@@ -282,47 +299,64 @@ const useAuth = () => {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code: s.code }),
         });
+
+        if (!res.ok) {
+          // HTTP error — jangan logout
+          console.warn('[auth] HTTP error, keeping session');
+          if (isMounted) {
+            const updated = { ...s, supabaseValidated: true, needsValidation: false };
+            localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updated));
+            setSession(updated);
+          }
+          return;
+        }
+
         const data = await res.json();
 
+        if (!isMounted) return;
+
         if (!data.ok) {
-          // Kode tidak valid atau disabled — logout
-          logout();
-          setSession(null);
-          setProfileState(null);
-          setProgressState(null);
-          fireRefresh();
+          // Hanya logout kalau PASTI disabled atau expired
+          // not_found bisa karena rate limit — jangan logout
+          if (data.status === 'disabled' || data.status === 'expired') {
+            logout();
+            setSession(null);
+            setProfileState(null);
+            setProgressState(null);
+            fireRefresh();
+          } else {
+            // Tidak pasti — simpan session, jangan logout
+            console.warn('[auth] Uncertain status:', data.status, '— keeping session');
+            const updated = { ...s, supabaseValidated: true, needsValidation: false };
+            localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updated));
+            setSession(updated);
+          }
           return;
         }
 
-        const member = data.member;
-
-        // Cek device — kalau deviceId berbeda, berarti device lain sudah login
-        if (member.deviceId && s.deviceId && member.deviceId !== s.deviceId) {
-          logout();
-          setSession(null);
-          setProfileState(null);
-          setProgressState(null);
-          fireRefresh();
-          return;
-        }
-
-        // Session valid — tandai supabaseValidated
-        const updatedSession = {
+        // Valid — update session
+        const updated = {
           ...s,
           supabaseValidated: true,
           needsValidation: false,
-          name: member.name,
-          status: member.status,
-          expiresAt: member.expiresAt,
+          name: data.member?.name || s.name,
+          status: data.member?.status,
         };
-        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updatedSession));
-        setSession(updatedSession);
+        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updated));
+        setSession(updated);
+        console.log('[auth] Session validated ✅');
 
       } catch (e) {
-        // Kalau network error — jangan logout, biarkan session tetap ada
-        console.warn('[auth] Background validation failed:', e.message);
+        console.warn('[auth] Validation error, keeping session:', e.message);
+        if (isMounted) {
+          const updated = { ...s, supabaseValidated: true, needsValidation: false };
+          localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updated));
+          setSession(updated);
+        }
       }
     })();
+
+    return () => { isMounted = false; };
   }, []);
 
   const login = async (code, opts) => {
