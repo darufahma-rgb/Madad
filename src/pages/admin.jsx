@@ -1373,28 +1373,7 @@ const AdminBankSoal = () => {
   const [editForm, setEditForm]   = useState({});
   const [savingEdit, setSavingEdit] = useState(false);
   const [savedEdit, setSavedEdit]   = useState(false);
-  const [bankSoalStats, setBankSoalStats] = useState(null);
-  const [loadingStats, setLoadingStats]   = useState(false);
   const [statusSoal, setStatusSoal] = useState(null);
-
-  const fetchBankSoalStats = async () => {
-    setLoadingStats(true);
-    try {
-      const configRes = await fetch('/api/config');
-      const { supabaseUrl, supabaseAnonKey } = await configRes.json();
-      const res = await fetch(
-        `${supabaseUrl}/rest/v1/bank_soal?status=eq.approved&select=maddah_nama,fakultas,tahun,fashl&limit=500`,
-        { headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${supabaseAnonKey}` } }
-      );
-      const data = await res.json();
-      if (Array.isArray(data)) setBankSoalStats(data);
-    } catch (e) {
-      console.error('fetchBankSoalStats error:', e);
-    }
-    setLoadingStats(false);
-  };
-
-  useEffect(() => { fetchBankSoalStats(); }, []);
 
   const fetchData = useCallback(async (statusFilter) => {
     setLoading(true);
@@ -1605,144 +1584,6 @@ const AdminBankSoal = () => {
         </button>
       </div>
 
-      {/* ── Ringkasan Status Bank Soal ── */}
-      {loadingStats && !bankSoalStats && (
-        <div style={{ fontSize: 12, color: '#666', marginBottom: 16 }}>Memuat status bank soal...</div>
-      )}
-      {bankSoalStats && (() => {
-        const ALL_MADDAH = [
-          { name: "Tafsir Tahlili",              fakultas: ["ushuluddin","dirasat","dirasat-banin","quran"] },
-          { name: "Tafsir Maudhu'i",             fakultas: ["ushuluddin","dirasat"] },
-          { name: "'Ulum Al-Qur'an",             fakultas: ["ushuluddin","dirasat","dirasat-banin","quran"] },
-          { name: "Manahij Al-Mufassirin",       fakultas: ["ushuluddin","dirasat"] },
-          { name: "Qira'at",                     fakultas: ["ushuluddin","dirasat","quran"] },
-          { name: "Al-Qur'an (Tahfidz & Tilawah)", fakultas: ["ushuluddin","dirasat","dirasat-banin","quran"] },
-          { name: "Tajwid",                      fakultas: ["ushuluddin","dirasat","dirasat-banin","quran"] },
-          { name: "Hadits Tahlili",              fakultas: ["ushuluddin","dirasat","dirasat-banin"] },
-          { name: "Hadits Maudhu'i",             fakultas: ["ushuluddin","dirasat"] },
-          { name: "Mustholah Hadits",            fakultas: ["ushuluddin","dirasat","dirasat-banin","syariah"] },
-          { name: "Manahij Al-Muhadditsin",      fakultas: ["ushuluddin","dirasat"] },
-          { name: "Takhrij Hadits",              fakultas: ["ushuluddin","dirasat"] },
-          { name: "Fiqh (Madzhabi)",             fakultas: ["syariah","dirasat","dirasat-banin","ushuluddin"] },
-          { name: "Fiqh Muqaran",                fakultas: ["syariah","dirasat"] },
-          { name: "Ushul Fiqh",                  fakultas: ["ushuluddin","syariah","dirasat","dirasat-banin"] },
-          { name: "Qawa'id Fiqhiyyah",           fakultas: ["syariah","dirasat"] },
-          { name: "Ahwal Syakhshiyah",           fakultas: ["syariah","dirasat"] },
-          { name: "Tauhid",                      fakultas: ["ushuluddin","syariah","dirasat","dirasat-banin","quran"] },
-          { name: "'Aqidah & Firaq",             fakultas: ["ushuluddin","dirasat"] },
-          { name: "Filsafat Islam",              fakultas: ["ushuluddin","dirasat"] },
-          { name: "Mantiq",                      fakultas: ["ushuluddin","dirasat"] },
-          { name: "Tasawwuf",                    fakultas: ["ushuluddin","dirasat"] },
-          { name: "Nahwu",                       fakultas: ["ushuluddin","syariah","lughah","dirasat","dirasat-banin","quran"] },
-          { name: "Sharaf",                      fakultas: ["ushuluddin","syariah","lughah","dirasat","dirasat-banin","quran"] },
-          { name: "Balaghah",                    fakultas: ["ushuluddin","lughah","dirasat","dirasat-banin"] },
-          { name: "Adab (Sastra Arab)",          fakultas: ["lughah","dirasat"] },
-          { name: "'Arudh wal Qawafi",           fakultas: ["lughah","dirasat"] },
-          { name: "Fiqh Al-Lughah",             fakultas: ["lughah","dirasat"] },
-          { name: "Naqd Adabi",                  fakultas: ["lughah","dirasat"] },
-          { name: "Sirah Nabawiyah",             fakultas: ["ushuluddin","syariah","dirasat","dirasat-banin","quran"] },
-          { name: "Tarikh Tasyri'",              fakultas: ["syariah","dirasat","dirasat-banin","ushuluddin"] },
-          { name: "Tarikh Islam",                fakultas: ["lughah","dirasat","dirasat-banin","ushuluddin"] },
-          { name: "Hadharah Islamiyyah",         fakultas: ["lughah","dirasat"] },
-          { name: "Dakwah & I'lam",              fakultas: ["dirasat","ushuluddin"] },
-          { name: "Adyan (Perbandingan Agama)",  fakultas: ["ushuluddin","dirasat"] },
-        ];
-        const TAHUN_AKTIF = '2025/2026';
-        const FASHL_LIST  = ['awwal', 'tsani'];
-        const isAda = (nama, tahun, fashl) =>
-          bankSoalStats.some(s => s.maddah_nama === nama && s.tahun === tahun && s.fashl === fashl);
-        const FAKULTAS_LIST = [
-          { id: 'ushuluddin', label: 'Ushuluddin' },
-          { id: 'syariah',    label: 'Syariah' },
-          { id: 'dirasat',    label: 'Banat' },
-          { id: 'lughah',     label: 'Lughah' },
-        ];
-        const statsPerFak = FAKULTAS_LIST.map(f => {
-          const maddahs = ALL_MADDAH.filter(m => m.fakultas.includes(f.id));
-          const total   = maddahs.length * 2;
-          const filled  = maddahs.reduce((acc, m) =>
-            acc + FASHL_LIST.filter(fashl => isAda(m.name, TAHUN_AKTIF, fashl)).length, 0);
-          return { ...f, total, filled, pct: Math.round(filled / total * 100) };
-        });
-        const kosong   = ALL_MADDAH.filter(m => FASHL_LIST.every(f => !isAda(m.name, TAHUN_AKTIF, f)));
-        const sebagian = ALL_MADDAH.filter(m =>
-          FASHL_LIST.some(f => isAda(m.name, TAHUN_AKTIF, f)) &&
-          FASHL_LIST.some(f => !isAda(m.name, TAHUN_AKTIF, f)));
-        const lengkap  = ALL_MADDAH.filter(m => FASHL_LIST.every(f => isAda(m.name, TAHUN_AKTIF, f)));
-        return (
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>Status Bank Soal — {TAHUN_AKTIF}</div>
-              <button onClick={fetchBankSoalStats} style={{ fontSize: 11, color: '#888', cursor: 'pointer', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', padding: '4px 10px', borderRadius: 6 }}>
-                ↻ Refresh
-              </button>
-            </div>
-            {/* Summary cards */}
-            <div style={{ display: 'flex', gap: 10, marginBottom: 14, flexWrap: 'wrap' }}>
-              {[
-                { label: 'Lengkap',  count: lengkap.length,  color: '#3ecf8e', bg: 'rgba(62,207,142,0.08)',  border: 'rgba(62,207,142,0.25)' },
-                { label: 'Sebagian', count: sebagian.length, color: '#fbbf24', bg: 'rgba(251,191,36,0.08)',  border: 'rgba(251,191,36,0.25)' },
-                { label: 'Kosong',   count: kosong.length,   color: '#f87171', bg: 'rgba(248,113,113,0.08)', border: 'rgba(248,113,113,0.2)' },
-              ].map(s => (
-                <div key={s.label} style={{ flex: 1, minWidth: 100, padding: '12px 14px', borderRadius: 10, background: s.bg, border: `1px solid ${s.border}`, textAlign: 'center' }}>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: s.color }}>{s.count}</div>
-                  <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>{s.label} maddah</div>
-                </div>
-              ))}
-            </div>
-            {/* Progress per fakultas */}
-            <div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12, padding: '14px 16px', marginBottom: 14 }}>
-              <div style={{ fontSize: 11, color: '#666', fontWeight: 700, marginBottom: 10, letterSpacing: 0.5 }}>PROGRESS PER FAKULTAS</div>
-              {statsPerFak.map(f => (
-                <div key={f.id} style={{ marginBottom: 10 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, fontSize: 12 }}>
-                    <span style={{ color: '#ccc' }}>{f.label}</span>
-                    <span style={{ color: '#888' }}>{f.filled}/{f.total} slot · {f.pct}%</span>
-                  </div>
-                  <div style={{ height: 5, borderRadius: 99, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', borderRadius: 99, width: `${f.pct}%`, background: f.pct === 100 ? '#3ecf8e' : f.pct > 50 ? 'linear-gradient(90deg, #3ecf8e, #fbbf24)' : 'linear-gradient(90deg, #fbbf24, #f87171)', transition: 'width 0.6s ease' }}/>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {/* Maddah kosong */}
-            {kosong.length > 0 && (
-              <div style={{ background: 'rgba(248,113,113,0.04)', border: '1px solid rgba(248,113,113,0.15)', borderRadius: 12, padding: '14px 16px', marginBottom: 14 }}>
-                <div style={{ fontSize: 11, color: '#f87171', fontWeight: 700, marginBottom: 10, letterSpacing: 0.5 }}>MADDAH KOSONG — BELUM ADA SAMA SEKALI ({kosong.length})</div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                  {kosong.map(m => (
-                    <span key={m.name} style={{ fontSize: 11, padding: '3px 10px', borderRadius: 99, background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)', color: '#f87171' }}>{m.name}</span>
-                  ))}
-                </div>
-              </div>
-            )}
-            {/* Maddah sebagian */}
-            {sebagian.length > 0 && (
-              <div style={{ background: 'rgba(251,191,36,0.04)', border: '1px solid rgba(251,191,36,0.15)', borderRadius: 12, padding: '14px 16px' }}>
-                <div style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700, marginBottom: 10, letterSpacing: 0.5 }}>MADDAH SEBAGIAN — MASIH ADA YANG KOSONG ({sebagian.length})</div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {sebagian.map(m => {
-                    const awwalAda = isAda(m.name, TAHUN_AKTIF, 'awwal');
-                    const tsaniAda = isAda(m.name, TAHUN_AKTIF, 'tsani');
-                    return (
-                      <div key={m.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, padding: '6px 10px', borderRadius: 8, background: 'rgba(251,191,36,0.04)' }}>
-                        <span style={{ fontSize: 12, color: '#ccc' }}>{m.name}</span>
-                        <div style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
-                          {[['awwal', awwalAda], ['tsani', tsaniAda]].map(([label, ada]) => (
-                            <span key={label} style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: ada ? 'rgba(62,207,142,0.15)' : 'rgba(248,113,113,0.1)', color: ada ? '#3ecf8e' : '#f87171', border: `1px solid ${ada ? 'rgba(62,207,142,0.3)' : 'rgba(248,113,113,0.2)'}` }}>
-                              {ada ? '✓' : '✕'} {label.charAt(0).toUpperCase() + label.slice(1)}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-        );
-      })()}
 
       {/* Tabel */}
       {loading ? (
@@ -1773,21 +1614,7 @@ const AdminBankSoal = () => {
                       return found ? found.label : (s.fakultas || '-');
                     })()}
                   </td>
-                  <td className="px-4 py-3 text-xs max-w-[160px]">
-                    <div className="text-ink-muted truncate">{s.maddah_nama}</div>
-                    {bankSoalStats && (() => {
-                      const sudahAda = bankSoalStats.some(r =>
-                        r.maddah_nama === s.maddah_nama &&
-                        r.tahun === s.tahun &&
-                        r.fashl === s.fashl
-                      );
-                      return sudahAda ? (
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: 'rgba(251,191,36,0.1)', border: '1px solid rgba(251,191,36,0.3)', color: '#fbbf24' }}>duplikat</span>
-                      ) : (
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 99, background: 'rgba(62,207,142,0.1)', border: '1px solid rgba(62,207,142,0.25)', color: '#3ecf8e' }}>baru</span>
-                      );
-                    })()}
-                  </td>
+                  <td className="px-4 py-3 text-ink-muted text-xs max-w-[140px] truncate">{s.maddah_nama}</td>
                   <td className="px-4 py-3 text-ink-muted text-xs">{s.tahun}</td>
                   <td className="px-4 py-3 text-ink-muted text-xs">{s.fashl}</td>
                   <td className="px-4 py-3">
