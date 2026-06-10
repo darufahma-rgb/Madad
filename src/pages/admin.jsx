@@ -1375,6 +1375,7 @@ const AdminBankSoal = () => {
   const [savedEdit, setSavedEdit]   = useState(false);
   const [bankSoalStats, setBankSoalStats] = useState(null);
   const [loadingStats, setLoadingStats]   = useState(false);
+  const [statusSoal, setStatusSoal] = useState(null);
 
   const fetchBankSoalStats = async () => {
     setLoadingStats(true);
@@ -1439,6 +1440,24 @@ const AdminBankSoal = () => {
     setShowEdit(false);
     setEditForm({ maddah_nama: soal.maddah_nama || '', tahun: soal.tahun || '', fashl: soal.fashl || 'tsani', fakultas: soal.fakultas || '' });
   };
+
+  React.useEffect(() => {
+    if (!selected) return;
+    setStatusSoal(null);
+    fetch('/api/config')
+      .then(r => r.json())
+      .then(({ supabaseUrl, supabaseAnonKey }) =>
+        fetch(
+          `${supabaseUrl}/rest/v1/bank_soal?status=eq.approved&maddah_nama=eq.${encodeURIComponent(selected.maddah_nama)}&tahun=eq.${encodeURIComponent(selected.tahun)}&fashl=eq.${encodeURIComponent(selected.fashl)}&id=neq.${selected.id}&select=id&limit=1`,
+          { headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${supabaseAnonKey}` } }
+        )
+      )
+      .then(r => r.json())
+      .then(data => {
+        setStatusSoal(Array.isArray(data) && data.length > 0 ? 'ada' : 'belum');
+      })
+      .catch(() => setStatusSoal(null));
+  }, [selected?.id]);
 
   React.useEffect(() => {
     if (!selected?.foto_url || selected?.foto_deleted) return;
@@ -1928,23 +1947,74 @@ const AdminBankSoal = () => {
               )}
 
               {/* Info grid */}
-              <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                {[
-                  ['Nama', selected.submitter_name],
-                  ['WhatsApp', selected.submitter_wa],
-                  ['Fakultas', selected.fakultas],
-                  ['Tingkat', selected.tingkat || '-'],
-                  ['Tahun', selected.tahun],
-                  ['Fashl', selected.fashl],
-                  ['Status', selected.status],
-                  ['AI Parsed', selected.ai_parsed ? 'Ya' : 'Belum'],
-                ].map(([k, v]) => (
-                  <div key={k} className="flex justify-between text-sm border-b border-white/5 pb-2">
-                    <span className="text-ink-muted">{k}</span>
-                    <span className="text-ink font-medium">{v}</span>
-                  </div>
-                ))}
-              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <tbody>
+                  {[
+                    ['Nama', selected.submitter_name],
+                    ['WhatsApp', selected.submitter_wa],
+                    ['Fakultas', selected.fakultas],
+                    ['Tingkat', selected.tingkat || '-'],
+                    ['Tahun', selected.tahun],
+                    ['Fashl', selected.fashl],
+                  ].map(([k, v]) => (
+                    <tr key={k} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <td style={{ color: '#888', fontSize: 13, padding: '8px 0', width: 120 }}>{k}</td>
+                      <td style={{ fontSize: 13, fontWeight: 600, color: '#fff', paddingBottom: 8, paddingTop: 8 }}>{v}</td>
+                    </tr>
+                  ))}
+                  {/* Baris Status + AI Parsed */}
+                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <td style={{ color: '#888', fontSize: 13, padding: '8px 0', width: 120 }}>Status</td>
+                    <td style={{ fontSize: 13, fontWeight: 600, color: '#fff', paddingBottom: 8, paddingTop: 8 }}>
+                      <span style={{
+                        padding: '3px 10px', borderRadius: 99, fontSize: 12,
+                        background: selected.status === 'approved'
+                          ? 'rgba(62,207,142,0.15)' : selected.status === 'rejected'
+                          ? 'rgba(248,113,113,0.12)' : 'rgba(255,255,255,0.08)',
+                        color: selected.status === 'approved' ? '#3ecf8e'
+                          : selected.status === 'rejected' ? '#f87171' : '#aaa',
+                      }}>
+                        {selected.status}
+                      </span>
+                    </td>
+                    <td style={{ color: '#888', fontSize: 13, padding: '8px 0', width: 120 }}>AI Parsed</td>
+                    <td style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>
+                      {selected.ai_parsed ? 'Sudah' : 'Belum'}
+                    </td>
+                  </tr>
+                  {/* Baris Bank Soal */}
+                  <tr>
+                    <td style={{ color: '#888', fontSize: 13, padding: '8px 0' }}>Bank Soal</td>
+                    <td colSpan={3} style={{ paddingTop: 8, paddingBottom: 8 }}>
+                      {statusSoal === null ? (
+                        <span style={{ fontSize: 12, color: '#555' }}>Mengecek...</span>
+                      ) : statusSoal === 'ada' ? (
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 6,
+                          fontSize: 12, fontWeight: 700,
+                          padding: '4px 12px', borderRadius: 99,
+                          background: 'rgba(251,191,36,0.1)',
+                          border: '1px solid rgba(251,191,36,0.3)',
+                          color: '#fbbf24',
+                        }}>
+                          ⚠️ Sudah ada soal ini — kemungkinan duplikat
+                        </span>
+                      ) : (
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: 6,
+                          fontSize: 12, fontWeight: 700,
+                          padding: '4px 12px', borderRadius: 99,
+                          background: 'rgba(62,207,142,0.1)',
+                          border: '1px solid rgba(62,207,142,0.25)',
+                          color: '#3ecf8e',
+                        }}>
+                          ✦ Belum ada — soal baru!
+                        </span>
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
 
               {/* Foto */}
               <div>
