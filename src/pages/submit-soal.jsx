@@ -256,6 +256,29 @@ function SubmitSoalPage() {
 
       {/* KOLOM KIRI — Header + Reward + Panduan + Syarat */}
       <div>
+        {/* Banner checklist soal */}
+        <div
+          onClick={() => { window.location.hash = '#/checklist-soal'; }}
+          style={{
+            marginBottom: 20, padding: "12px 16px",
+            background: "rgba(255,200,50,0.06)",
+            border: "1px solid rgba(255,200,50,0.2)",
+            borderRadius: 12, cursor: "pointer",
+            display: "flex", justifyContent: "space-between",
+            alignItems: "center", gap: 12,
+          }}
+        >
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#ffc832", marginBottom: 2 }}>
+              🗂️ Lihat maddah yang belum ada soalnya
+            </div>
+            <div style={{ fontSize: 12, color: "#888" }}>
+              35 maddah · cek yang masih kosong — soal itu lebih dibutuhkan!
+            </div>
+          </div>
+          <span style={{ fontSize: 12, color: "#ffc832", flexShrink: 0 }}>Lihat →</span>
+        </div>
+
         {/* Header */}
         <div style={{ marginBottom: 24 }}>
           <div style={{ fontSize: 11, color: EM, fontWeight: 700, letterSpacing: 1.5, marginBottom: 6 }}>
