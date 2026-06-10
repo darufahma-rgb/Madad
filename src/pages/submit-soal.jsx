@@ -47,6 +47,8 @@ function SubmitSoalPage() {
   const fileRef = useRef();
   const [compressedFile, setCompressedFile] = useState(null);
   const [panduanOpen, setPanduanOpen] = useState(false);
+  const [soalStatus, setSoalStatus]         = useState(null);
+  const [checkingStatus, setCheckingStatus] = useState(false);
 
   const generateCaptcha = () => {
     const a = Math.floor(Math.random() * 9) + 1;
@@ -85,6 +87,27 @@ function SubmitSoalPage() {
     : [];
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const checkSoalStatus = async (maddahNama, tahun, fashl) => {
+    if (!maddahNama || !tahun || !fashl || fashl === '-') {
+      setSoalStatus(null);
+      return;
+    }
+    setCheckingStatus(true);
+    try {
+      const configRes = await fetch('/api/config');
+      const { supabaseUrl, supabaseAnonKey } = await configRes.json();
+      const res = await fetch(
+        `${supabaseUrl}/rest/v1/bank_soal?status=eq.approved&maddah_nama=eq.${encodeURIComponent(maddahNama)}&tahun=eq.${encodeURIComponent(tahun)}&fashl=eq.${encodeURIComponent(fashl)}&select=id&limit=1`,
+        { headers: { apikey: supabaseAnonKey, Authorization: `Bearer ${supabaseAnonKey}` } }
+      );
+      const data = await res.json();
+      setSoalStatus(Array.isArray(data) && data.length > 0 ? 'ada' : 'belum');
+    } catch {
+      setSoalStatus(null);
+    }
+    setCheckingStatus(false);
+  };
 
   const checkDuplikat = async (maddah_id, tahun, fashl) => {
     if (!maddah_id || !tahun || !fashl) return;
@@ -654,6 +677,7 @@ function SubmitSoalPage() {
                   set('maddah_id', e.target.value);
                   set('maddah_nama', m?.name || '');
                   if (e.target.value && form.tahun && form.fashl) checkDuplikat(e.target.value, form.tahun, form.fashl);
+                  checkSoalStatus(m?.name || '', form.tahun, form.fashl);
                 }}
                 disabled={!form.fakultas}
                 style={{ width: '100%', padding: '10px 14px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 14, boxSizing: 'border-box' }}>
@@ -675,7 +699,7 @@ function SubmitSoalPage() {
               <div>
                 <label style={{ fontSize: 11, color: EM, fontWeight: 700, display: 'block', marginBottom: 6 }}>TAHUN *</label>
                 <select value={form.tahun}
-                  onChange={e => { set('tahun', e.target.value); if (form.maddah_id && e.target.value && form.fashl) checkDuplikat(form.maddah_id, e.target.value, form.fashl); }}
+                  onChange={e => { set('tahun', e.target.value); if (form.maddah_id && e.target.value && form.fashl) checkDuplikat(form.maddah_id, e.target.value, form.fashl); checkSoalStatus(form.maddah_nama, e.target.value, form.fashl); }}
                   style={{ width: '100%', padding: '10px 8px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 13, boxSizing: 'border-box' }}>
                   <option value="">-</option>
                   {TAHUN_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
@@ -684,13 +708,105 @@ function SubmitSoalPage() {
               <div>
                 <label style={{ fontSize: 11, color: EM, fontWeight: 700, display: 'block', marginBottom: 6 }}>FASHL *</label>
                 <select value={form.fashl}
-                  onChange={e => { set('fashl', e.target.value); if (form.maddah_id && form.tahun && e.target.value) checkDuplikat(form.maddah_id, form.tahun, e.target.value); }}
+                  onChange={e => { set('fashl', e.target.value); if (form.maddah_id && form.tahun && e.target.value) checkDuplikat(form.maddah_id, form.tahun, e.target.value); checkSoalStatus(form.maddah_nama, form.tahun, e.target.value); }}
                   style={{ width: '100%', padding: '10px 8px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 13, boxSizing: 'border-box' }}>
                   <option value="">-</option>
                   {FASHL_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                 </select>
               </div>
             </div>
+
+            {/* Status soal — muncul setelah maddah+tahun+fashl dipilih */}
+            {(checkingStatus || soalStatus) && (
+              <div style={{
+                marginTop: 12, marginBottom: 8,
+                padding: '12px 16px',
+                borderRadius: 12,
+                display: 'flex', alignItems: 'flex-start', gap: 12,
+                transition: 'all 0.3s',
+                ...(checkingStatus ? {
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                } : soalStatus === 'ada' ? {
+                  background: 'rgba(251,191,36,0.08)',
+                  border: '1px solid rgba(251,191,36,0.3)',
+                } : {
+                  background: 'rgba(62,207,142,0.08)',
+                  border: '1px solid rgba(62,207,142,0.3)',
+                }),
+              }}>
+                {checkingStatus ? (
+                  <>
+                    <div style={{
+                      width: 18, height: 18, borderRadius: '50%',
+                      border: '2px solid rgba(255,255,255,0.2)',
+                      borderTopColor: '#3ecf8e',
+                      flexShrink: 0, marginTop: 2,
+                      animation: 'spin 0.8s linear infinite',
+                    }}/>
+                    <span style={{ fontSize: 13, color: '#888' }}>
+                      Mengecek status di bank soal...
+                    </span>
+                  </>
+                ) : soalStatus === 'ada' ? (
+                  <>
+                    <div style={{
+                      width: 22, height: 22, borderRadius: 6,
+                      background: 'rgba(251,191,36,0.2)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 13, flexShrink: 0,
+                    }}>⚠️</div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24', marginBottom: 4 }}>
+                        Soal ini sudah ada di bank soal
+                      </div>
+                      <div style={{ fontSize: 12, color: '#a08030', lineHeight: 1.6 }}>
+                        Sudah ada kontributor yang submit soal ini sebelumnya.
+                        Kamu tetap boleh submit jika punya <strong style={{color:'#fbbf24'}}>versi soal yang berbeda</strong> atau tahun ajaran yang lebih lengkap.
+                      </div>
+                      <a
+                        href="#/bank-soal"
+                        style={{
+                          display: 'inline-block', marginTop: 8,
+                          fontSize: 11, color: '#fbbf24',
+                          textDecoration: 'underline', textUnderlineOffset: 3,
+                        }}
+                      >
+                        Lihat soal yang sudah ada →
+                      </a>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{
+                      width: 22, height: 22, borderRadius: 6,
+                      background: 'rgba(62,207,142,0.2)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 13, flexShrink: 0,
+                    }}>✅</div>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#3ecf8e', marginBottom: 4 }}>
+                        Soal ini belum ada — kamu yang pertama!
+                      </div>
+                      <div style={{ fontSize: 12, color: '#4a9a6a', lineHeight: 1.6 }}>
+                        Belum ada yang submit soal <strong style={{color:'#3ecf8e'}}>
+                        {form.maddah_nama} {form.tahun} {form.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
+                        </strong> ini.
+                        Kontribusimu lebih dibutuhkan dan reward lebih mudah didapat!
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* CSS untuk spinner */}
+            <style>{`
+              @keyframes spin {
+                from { transform: rotate(0deg); }
+                to   { transform: rotate(360deg); }
+              }
+            `}</style>
 
             {/* Duplikat warning */}
             {dupMsg && (
