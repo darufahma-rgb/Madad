@@ -156,25 +156,38 @@ const getSession = () => {
     if (!raw) return null;
     const s = JSON.parse(raw);
 
-    // Fast path: cek di localStorage dulu
+    // Fast path: kalau sudah validated di Supabase, langsung return
+    // Ini yang paling penting — jangan re-check kalau sudah validated
+    if (s.supabaseValidated && s.code) {
+      return s;
+    }
+
+    // Cek di localStorage dulu
     const member = findMember(s.code);
 
-    // Member tidak ada di localStorage — kemungkinan device baru / localStorage bersih
-    // Izinkan session, validasi async di useAuth() akan konfirmasi ke Supabase
+    // Member tidak ada di localStorage — device baru atau localStorage bersih
     if (!member) {
-      if (s.supabaseValidated) return s;
       return { ...s, needsValidation: true };
     }
 
-    if (member.status !== "active") {
+    if (member.status !== 'active') {
       localStorage.removeItem(STORAGE_KEYS.SESSION);
       return null;
     }
-    // If device was reset by admin or another device took over
-    if (member.deviceId && member.deviceId !== s.deviceId) {
+
+    // Device conflict — HANYA check kalau KEDUA deviceId ada dan tidak sama
+    // Kalau salah satu null/undefined, skip check (mobile sering reset deviceId)
+    if (
+      member.deviceId &&
+      s.deviceId &&
+      member.deviceId !== s.deviceId &&
+      member.deviceId !== 'unknown' &&
+      s.deviceId !== 'unknown'
+    ) {
       localStorage.removeItem(STORAGE_KEYS.SESSION);
       return null;
     }
+
     return s;
   } catch (e) { return null; }
 };
