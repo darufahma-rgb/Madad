@@ -273,6 +273,22 @@ export default function TutorialModal() {
   const [open, setOpen] = useState(false);
   const [current, setCurrent] = useState(0);
 
+  const touchStartX = React.useRef(null);
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && !isLast) setCurrent(c => c + 1);
+      if (diff < 0 && current > 0) setCurrent(c => c - 1);
+    }
+    touchStartX.current = null;
+  };
+
   let isLoggedIn = false;
   try {
     const s = JSON.parse(localStorage.getItem("madad_session") || "{}");
@@ -321,6 +337,8 @@ export default function TutorialModal() {
     >
       <div
         onClick={e => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         style={{
           width: "100%", maxWidth: 480, maxHeight: "90vh",
           background: "#111", borderRadius: 20,
@@ -332,54 +350,67 @@ export default function TutorialModal() {
       >
         {/* Header */}
         <div style={{
-          padding: "16px 20px 12px",
+          padding: "14px 16px 10px",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
           display: "flex", alignItems: "center", justifyContent: "space-between",
           flexShrink: 0,
         }}>
-          <div>
-            <div style={{ fontSize: 11, color: EM, fontWeight: 700, letterSpacing: 1 }}>
-              PANDUAN TALQEEH
-            </div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginTop: 2 }}>
-              {step.emoji} {step.title}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 20 }}>{step.emoji}</span>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>
+              {step.title}
             </div>
           </div>
-          <button
-            onClick={handleClose}
-            style={{
-              width: 32, height: 32, borderRadius: 10,
-              border: "1px solid rgba(255,255,255,0.12)",
-              background: "rgba(255,255,255,0.05)",
-              color: "#aaa", cursor: "pointer", fontSize: 16,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              flexShrink: 0,
-            }}
-          >✕</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              onClick={handleClose}
+              style={{
+                padding: "6px 14px", borderRadius: 8,
+                border: "1px solid rgba(255,255,255,0.15)",
+                background: "rgba(255,255,255,0.06)",
+                color: "#ccc", cursor: "pointer", fontSize: 13, fontWeight: 600,
+              }}
+            >
+              Lewati
+            </button>
+            <button
+              onClick={handleClose}
+              style={{
+                width: 30, height: 30, borderRadius: 8,
+                border: "1px solid rgba(255,255,255,0.12)",
+                background: "rgba(255,255,255,0.05)",
+                color: "#aaa", cursor: "pointer", fontSize: 16,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                flexShrink: 0,
+              }}
+            >✕</button>
+          </div>
         </div>
 
         {/* Step dots + progress */}
-        <div style={{ padding: "12px 20px 8px", flexShrink: 0 }}>
-          <div style={{ display: "flex", gap: 6, marginBottom: 10, overflowX: "auto" }}>
+        <div style={{ padding: "10px 16px 8px", flexShrink: 0 }}>
+          {/* Dots */}
+          <div style={{ display: "flex", justifyContent: 'center', gap: 6, marginBottom: 8 }}>
             {steps.map((s, i) => (
               <button key={s.id}
                 onClick={() => !s.locked && setCurrent(i)}
                 style={{
-                  width: 28, height: 28, borderRadius: 8, flexShrink: 0,
+                  width: i === current ? 20 : 8, height: 8,
+                  borderRadius: 99, flexShrink: 0,
                   border: "none", cursor: s.locked ? "not-allowed" : "pointer",
-                  background: i === current ? EM : s.locked ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.1)",
-                  color: i === current ? "#000" : s.locked ? "#555" : "#ccc",
-                  fontWeight: 800, fontSize: 11, transition: "all 0.2s",
-                }}>
-                {s.locked ? "🔒" : s.id}
-              </button>
+                  background: i === current ? EM : s.locked ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.2)",
+                  transition: "all 0.25s ease",
+                  padding: 0,
+                }}
+              />
             ))}
-            <div style={{ marginLeft: "auto", fontSize: 11, color: "#777", flexShrink: 0, lineHeight: "28px" }}>
-              {current + 1}/{steps.length}
-            </div>
+          </div>
+          {/* Counter */}
+          <div style={{ textAlign: 'center', fontSize: 11, color: '#666', marginBottom: 6 }}>
+            {current + 1} dari {steps.length}
           </div>
           {/* Progress bar */}
-          <div style={{ height: 4, background: "rgba(255,255,255,0.06)", borderRadius: 99, overflow: "hidden" }}>
+          <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 99, overflow: "hidden" }}>
             <div style={{
               height: "100%", width: `${pct}%`,
               background: `linear-gradient(90deg, ${EM_DEEP}, ${EM})`,
@@ -461,39 +492,28 @@ export default function TutorialModal() {
 
         {/* Footer nav */}
         <div style={{
-          padding: "12px 20px",
+          padding: "12px 16px",
           borderTop: "1px solid rgba(255,255,255,0.06)",
-          display: "flex", gap: 10, flexShrink: 0,
+          display: "flex", gap: 8, flexShrink: 0,
         }}>
-          {/* Skip */}
-          <button onClick={handleClose}
-            style={{
-              padding: "10px 14px", borderRadius: 10, fontSize: 13,
-              border: "1px solid rgba(255,255,255,0.1)",
-              background: "transparent", color: "#888", cursor: "pointer",
-            }}>
-            Skip
-          </button>
-
-          <div style={{ flex: 1 }}/>
-
-          {/* Balik */}
-          {current > 0 && (
+          {current > 0 ? (
             <button onClick={() => setCurrent(c => c - 1)}
               style={{
-                padding: "10px 16px", borderRadius: 10, fontSize: 13,
+                padding: "12px 16px", borderRadius: 12, fontSize: 14,
                 border: "1px solid rgba(255,255,255,0.12)",
                 background: "transparent", color: "#ccc", cursor: "pointer",
+                flexShrink: 0,
               }}>
-              ← Balik
+              ←
             </button>
+          ) : (
+            <div style={{ width: 48, flexShrink: 0 }}/>
           )}
 
-          {/* Lanjut / Selesai */}
           {isLast ? (
             <button onClick={handleClose}
               style={{
-                padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 800,
+                flex: 1, padding: "13px", borderRadius: 12, fontSize: 15, fontWeight: 800,
                 border: "none", background: EM, color: "#000", cursor: "pointer",
               }}>
               Mulai Belajar 🚀
@@ -501,7 +521,7 @@ export default function TutorialModal() {
           ) : (
             <button onClick={() => setCurrent(c => c + 1)}
               style={{
-                padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 800,
+                flex: 1, padding: "13px", borderRadius: 12, fontSize: 15, fontWeight: 800,
                 border: "none", background: EM, color: "#000", cursor: "pointer",
               }}>
               Lanjut →
