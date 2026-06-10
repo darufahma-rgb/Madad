@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { marked } from 'marked';
+marked.use({ gfm: true, breaks: true });
 
 /* ── Helper: strip markdown dari teks Arab ── */
 const cleanArab = (teks) => {
@@ -132,39 +134,52 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
           {allSoal.map((soal, si) => {
             const blocks = soal.soal?.includes('[SOAL_ARAB]')
               ? soal.soal.split('[SOAL_ARAB]').filter(Boolean).map(b => {
-                  const p = b.split('[ARTI]');
-                  return { arab: cleanArab(p[0]?.trim()), arti: p[1]?.trim() || '' };
+                  const parts = b.split('[ARTI]');
+                  return {
+                    arab: cleanArab(parts[0]?.trim()),
+                    arti: parts[1]?.replace(/^---\s*/m, '').trim() || '',
+                  };
                 })
               : [{ arab: cleanArab(soal.soal?.trim()), arti: '' }];
 
             return blocks.map((block, bi) => {
-              const nomor = si === 0 ? bi + 1 : `${si + 1}.${bi + 1}`;
+              const nomor = blocks.length === 1 && allSoal.length === 1
+                ? 1
+                : si * blocks.length + bi + 1;
+
               const [copied, setCopied] = React.useState(false);
+
+              const artiHtml = block.arti
+                ? marked.parse(
+                    block.arti
+                      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                      .replace(/\n(\d+)\.\s/g, '\n\n$1. ')
+                  )
+                : '';
 
               return (
                 <div key={`${si}-${bi}`} style={{
-                  marginBottom: 24,
-                  paddingBottom: 24,
+                  marginBottom: 28,
+                  paddingBottom: 28,
                   borderBottom: (si < allSoal.length - 1 || bi < blocks.length - 1)
                     ? '1px solid rgba(255,255,255,0.06)' : 'none',
                 }}>
                   {/* Nomor soal */}
                   <div style={{
                     display: 'flex', justifyContent: 'space-between',
-                    alignItems: 'center', marginBottom: 12, gap: 12,
+                    alignItems: 'center', marginBottom: 14, gap: 12,
                     flexWrap: 'wrap',
                   }}>
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 8,
-                    }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{
-                        width: 26, height: 26, borderRadius: 7,
+                        width: 28, height: 28, borderRadius: 8,
                         background: 'rgba(62,207,142,0.15)',
                         border: '1px solid rgba(62,207,142,0.3)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 12, fontWeight: 800, color: EM,
+                        fontSize: 13, fontWeight: 800, color: '#3ecf8e',
+                        flexShrink: 0,
                       }}>{nomor}</div>
-                      <span style={{ fontSize: 11, color: '#666', fontWeight: 600, letterSpacing: 0.5 }}>
+                      <span style={{ fontSize: 11, color: '#555', fontWeight: 600, letterSpacing: 0.5 }}>
                         SOAL {nomor}
                       </span>
                     </div>
@@ -181,20 +196,16 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
                         padding: '6px 14px', borderRadius: 8,
                         fontSize: 12, fontWeight: 700, cursor: 'pointer',
                         transition: 'all 0.2s',
-                        border: copied
-                          ? '1px solid rgba(62,207,142,0.5)'
-                          : '1px solid rgba(62,207,142,0.25)',
-                        background: copied
-                          ? 'rgba(62,207,142,0.15)'
-                          : 'rgba(62,207,142,0.06)',
-                        color: copied ? EM : '#aaa',
+                        border: copied ? '1px solid rgba(62,207,142,0.5)' : '1px solid rgba(62,207,142,0.25)',
+                        background: copied ? 'rgba(62,207,142,0.15)' : 'rgba(62,207,142,0.06)',
+                        color: copied ? '#3ecf8e' : '#aaa',
                       }}
                     >
                       {copied ? '✅ Tersalin' : '📋 Salin Prompt Jawaban'}
                     </button>
                   </div>
 
-                  {/* Teks Arab */}
+                  {/* Soal Arab */}
                   {block.arab && (
                     <div style={{
                       direction: 'rtl', textAlign: 'right',
@@ -204,23 +215,30 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
                       background: 'rgba(255,255,255,0.03)',
                       border: '1px solid rgba(255,255,255,0.08)',
                       borderRadius: 12, padding: '16px 20px',
-                      marginBottom: block.arti ? 10 : 0,
+                      marginBottom: 14,
                     }}>
                       {block.arab}
                     </div>
                   )}
 
-                  {/* Arti */}
+                  {/* Arti / Terjemahan — dirender sebagai markdown */}
                   {block.arti && (
                     <div style={{
-                      fontSize: 13, color: '#bbb', lineHeight: 1.8,
-                      padding: '10px 16px',
-                      borderLeft: `2px solid rgba(62,207,142,0.35)`,
-                      background: 'rgba(62,207,142,0.03)',
-                      borderRadius: '0 8px 8px 0',
-                      fontStyle: 'italic',
+                      borderLeft: '3px solid rgba(62,207,142,0.35)',
+                      paddingLeft: 16,
+                      paddingTop: 4,
+                      paddingBottom: 4,
                     }}>
-                      {block.arti}
+                      <div style={{
+                        fontSize: 10, fontWeight: 700, color: '#3ecf8e',
+                        letterSpacing: 1, marginBottom: 10,
+                      }}>
+                        TERJEMAHAN
+                      </div>
+                      <div
+                        className="arti-soal"
+                        dangerouslySetInnerHTML={{ __html: artiHtml }}
+                      />
                     </div>
                   )}
                 </div>

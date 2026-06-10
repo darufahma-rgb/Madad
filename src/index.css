@@ -389,3 +389,42 @@ main.has-tabbar { padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px) +
   font-size: 0.9em;
   font-family: monospace;
 }
+
+/* ── Arti Soal — Terjemahan Markdown ── */
+.arti-soal {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #bbb;
+  font-family: inherit;
+}
+.arti-soal strong {
+  color: #fff;
+  font-weight: 700;
+}
+.arti-soal p {
+  margin: 0 0 10px;
+}
+.arti-soal p:last-child {
+  margin-bottom: 0;
+}
+.arti-soal ol,
+.arti-soal ul {
+  padding-left: 20px;
+  margin: 8px 0;
+}
+.arti-soal li {
+  margin-bottom: 6px;
+  line-height: 1.7;
+  color: #bbb;
+}
+.arti-soal li strong {
+  color: #fff;
+}
+.arti-soal p strong:first-child {
+  display: block;
+  color: #e0e0e0;
+  font-size: 14px;
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
