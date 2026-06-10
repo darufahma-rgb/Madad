@@ -492,7 +492,163 @@ const AllMaddahPreview = () => {
 };
 
 /* ══════════════════════════════════════════════════════════════
-   5. PRICING + FINAL CTA
+   5. TESTIMONI
+   ══════════════════════════════════════════════════════════════ */
+const TestimoniSection = () => {
+  const testimonials = [
+    {
+      text: "Dari yang awalnya ngerasa gak yakin buat ujian jadi akhirnya yakin dan semangat belajar bisa naik berkat adanya Talqeeh.",
+      name: "Member Talqeeh",
+      info: "Batch 1",
+      initial: "M",
+      color: "#3ecf8e",
+    },
+    {
+      text: "Sangat terbantu dengan urutan maddah, contoh prompt dan rekomendasi AI yang digunakan. Untuk latihan melalui Claude sangat bermanfaat dan nyaman.",
+      name: "Member Talqeeh",
+      info: "Batch 1",
+      initial: "M",
+      color: "#a78bfa",
+    },
+    {
+      text: "Inovasi tanpa henti, klass! Big applause untuk seluruh tim Talqeeh.",
+      name: "Muhammad Afiif Ramadhan",
+      info: "Member Talqeeh",
+      initial: "A",
+      color: "#fbbf24",
+    },
+    {
+      text: "Sangat membantu, apalagi di musim imtihan termin ini. Walaupun masih awam sama AI tapi udah mulai belajar dikit-dikit berkat Talqeeh.",
+      name: "Member Talqeeh",
+      info: "Batch 1",
+      initial: "M",
+      color: "#3ecf8e",
+    },
+    {
+      text: "Setiap prompt yang disediakan Talqeeh langsung menjelaskan materi yang kita perlukan, dengan penjelasan yang mudah.",
+      name: "Zacky Maulana",
+      info: "Member Talqeeh",
+      initial: "Z",
+      color: "#f97316",
+    },
+    {
+      text: "Alhamdulillah Talqeeh bisa membantu dalam proses belajar. Prompt-nya lengkap dan sesuai dengan kebutuhan mahasiswa Azhar.",
+      name: "Member Talqeeh",
+      info: "Batch 1",
+      initial: "M",
+      color: "#a78bfa",
+    },
+  ];
+
+  return (
+    <section className="section pt-0">
+      <div className="container-x">
+        <Reveal className="mb-10 text-center">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/70"/>APA KATA MASISIR<span className="w-6 h-px bg-gold-500/70"/>
+          </div>
+          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
+            113+ member sudah merasakan manfaatnya
+          </h2>
+          <p className="text-ink-muted text-base max-w-xl mx-auto">
+            Dari Masisir untuk Masisir — ini pengalaman nyata mereka.
+          </p>
+        </Reveal>
+
+        <Reveal>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 16,
+          }}
+          className="testimonial-grid"
+          >
+            {testimonials.map((t, i) => (
+              <div key={i} style={{
+                background: '#111',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: 16,
+                padding: '20px 20px 16px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 16,
+                position: 'relative',
+                overflow: 'hidden',
+              }}>
+                <div style={{
+                  position: 'absolute', top: 12, right: 16,
+                  fontSize: 48, lineHeight: 1,
+                  color: t.color + '18',
+                  fontFamily: 'Georgia, serif',
+                  fontWeight: 900,
+                  userSelect: 'none',
+                }}>
+                  "
+                </div>
+
+                <div style={{ display: 'flex', gap: 3 }}>
+                  {[1,2,3,4,5].map(s => (
+                    <span key={s} style={{ color: '#fbbf24', fontSize: 12 }}>★</span>
+                  ))}
+                </div>
+
+                <p style={{
+                  fontSize: 14,
+                  lineHeight: 1.75,
+                  color: '#ccc',
+                  flex: 1,
+                  fontStyle: 'italic',
+                }}>
+                  "{t.text}"
+                </p>
+
+                <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }}/>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div style={{
+                    width: 36, height: 36, borderRadius: '50%',
+                    background: t.color + '22',
+                    border: `1px solid ${t.color}44`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: 14, fontWeight: 800,
+                    color: t.color,
+                    flexShrink: 0,
+                  }}>
+                    {t.initial}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
+                      {t.name}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#666' }}>
+                      {t.info}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Reveal>
+      </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .testimonial-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        @media (min-width: 769px) and (max-width: 1024px) {
+          .testimonial-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+        }
+      `}</style>
+    </section>
+  );
+};
+
+/* ══════════════════════════════════════════════════════════════
+   6. PRICING + FINAL CTA
    ══════════════════════════════════════════════════════════════ */
 const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => {
   const [copiedCode, setCopiedCode] = React.useState(false);
@@ -987,6 +1143,7 @@ const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
     <BankSoalPreview onOpenLogin={onOpenLogin}/>
     <HowItWorks/>
     <AllMaddahPreview/>
+    <TestimoniSection/>
     <PricingAndCTA onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment}/>
   </div>
 );
