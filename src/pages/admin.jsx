@@ -7,33 +7,35 @@ import { marked } from 'marked';
 const sbToMember = (row) => {
   if (!row) return null;
   return {
-    code:      row.code,
-    name:      row.name,
-    whatsapp:  row.whatsapp  || "",
-    duration:  row.duration  || 30,
-    status:    row.status    || "active",
-    createdAt: row.created_at ? row.created_at.slice(0, 10) : "",
-    expiresAt: row.expires_at || "",
-    device:    row.device    || null,
-    deviceId:  row.device_id || null,
-    lastLogin: row.last_login || null,
-    notes:     row.notes     || "",
-    _id:       row.id,
+    code:        row.code,
+    name:        row.name,
+    whatsapp:    row.whatsapp    || "",
+    duration:    row.duration    || 30,
+    status:      row.status      || "active",
+    createdAt:   row.created_at  ? row.created_at.slice(0, 10) : "",
+    expiresAt:   row.expires_at  || "",
+    device:      row.device      || null,
+    deviceId:    row.device_id   || null,
+    lastLogin:   row.last_login  || null,
+    notes:       row.notes       || "",
+    member_type: row.member_type || "berbayar",
+    _id:         row.id,
   };
 };
 
 const memberToSb = (member) => {
   const row = {};
-  if (member.code      !== undefined) row.code       = member.code;
-  if (member.name      !== undefined) row.name       = member.name;
-  if (member.whatsapp  !== undefined) row.whatsapp   = member.whatsapp;
-  if (member.duration  !== undefined) row.duration   = member.duration;
-  if (member.status    !== undefined) row.status     = member.status;
-  if (member.expiresAt !== undefined) row.expires_at = member.expiresAt;
-  if (member.device    !== undefined) row.device     = member.device;
-  if (member.deviceId  !== undefined) row.device_id  = member.deviceId;
-  if (member.lastLogin !== undefined) row.last_login = member.lastLogin;
-  if (member.notes     !== undefined) row.notes      = member.notes;
+  if (member.code        !== undefined) row.code        = member.code;
+  if (member.name        !== undefined) row.name        = member.name;
+  if (member.whatsapp    !== undefined) row.whatsapp    = member.whatsapp;
+  if (member.duration    !== undefined) row.duration    = member.duration;
+  if (member.status      !== undefined) row.status      = member.status;
+  if (member.expiresAt   !== undefined) row.expires_at  = member.expiresAt;
+  if (member.device      !== undefined) row.device      = member.device;
+  if (member.deviceId    !== undefined) row.device_id   = member.deviceId;
+  if (member.lastLogin   !== undefined) row.last_login  = member.lastLogin;
+  if (member.notes       !== undefined) row.notes       = member.notes;
+  if (member.member_type !== undefined) row.member_type = member.member_type;
   return row;
 };
 
@@ -313,12 +315,20 @@ const StatCard = ({ label, value, icon, color }) => {
 };
 
 /* ============== MEMBERS ============== */
+const MEMBER_TYPE_CONFIG = {
+  berbayar: { label: 'Berbayar', color: '#3ecf8e', bg: 'rgba(62,207,142,0.1)',  icon: '💳' },
+  gratis:   { label: 'Gratis',   color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', icon: '🎁' },
+  trial:    { label: 'Trial',    color: '#fbbf24', bg: 'rgba(251,191,36,0.1)',  icon: '⏳' },
+  reward:   { label: 'Reward',   color: '#f97316', bg: 'rgba(249,115,22,0.1)',  icon: '🏆' },
+};
+
 const AdminMembers = () => {
-  const [members, setMembers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState(null);
-  const [genOpen, setGenOpen] = useState(false);
-  const [search,  setSearch]  = useState("");
+  const [members,    setMembers]    = useState([]);
+  const [loading,    setLoading]    = useState(true);
+  const [error,      setError]      = useState(null);
+  const [genOpen,    setGenOpen]    = useState(false);
+  const [search,     setSearch]     = useState("");
+  const [filterType, setFilterType] = useState("semua");
   const toast = useToast();
 
   const loadFromSupabase = async () => {
@@ -360,11 +370,13 @@ const AdminMembers = () => {
     setMembers(prev => [newMember, ...prev]);
   };
 
-  const filtered = members.filter(m =>
-    !search ||
-    m.name.toLowerCase().includes(search.toLowerCase()) ||
-    m.code.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = members.filter(m => {
+    const matchSearch = !search ||
+      m.name.toLowerCase().includes(search.toLowerCase()) ||
+      m.code.toLowerCase().includes(search.toLowerCase());
+    const matchType = filterType === 'semua' || m.member_type === filterType;
+    return matchSearch && matchType;
+  });
 
   const copyCode = (code) => {
     navigator.clipboard.writeText(code);
@@ -398,14 +410,66 @@ const AdminMembers = () => {
         </div>
       )}
 
+      {/* Summary stats member type */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
+        {Object.entries(MEMBER_TYPE_CONFIG).map(([value, t]) => (
+          <div key={value} style={{
+            padding: '10px 16px', borderRadius: 10,
+            background: 'rgba(255,255,255,0.03)',
+            border: `1px solid ${t.color}33`,
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            <span style={{ fontSize: 14 }}>{t.icon}</span>
+            <div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: t.color, lineHeight: 1 }}>
+                {members.filter(m => m.member_type === value).length}
+              </div>
+              <div style={{ fontSize: 10, color: '#666', marginTop: 1 }}>{t.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="card-glass p-4 mb-4">
-        <div className="relative">
+        <div className="relative mb-3">
           <Icon name="search" className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-soft"/>
           <input value={search} onChange={(e)=>setSearch(e.target.value)}
             placeholder="Cari nama atau kode..."
             className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-3 py-2.5 text-sm text-ink placeholder:text-ink-soft outline-none transition-colors"
             onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
             onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+        </div>
+        {/* Filter member type */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {[
+            { value: 'semua',    label: 'Semua',            color: '#888' },
+            { value: 'berbayar', label: 'Berbayar',          color: '#3ecf8e' },
+            { value: 'gratis',   label: 'Gratis',            color: '#a78bfa' },
+            { value: 'trial',    label: 'Trial',             color: '#fbbf24' },
+            { value: 'reward',   label: 'Reward Bank Soal',  color: '#f97316' },
+          ].map(t => (
+            <button
+              key={t.value}
+              onClick={() => setFilterType(t.value)}
+              style={{
+                padding: '5px 12px', borderRadius: 99, fontSize: 12,
+                fontWeight: filterType === t.value ? 700 : 400,
+                cursor: 'pointer', transition: 'all 0.15s',
+                border: filterType === t.value
+                  ? `1px solid ${t.color}`
+                  : '1px solid rgba(255,255,255,0.08)',
+                background: filterType === t.value ? `${t.color}18` : 'transparent',
+                color: filterType === t.value ? t.color : '#666',
+              }}
+            >
+              {t.label}
+              {t.value !== 'semua' && (
+                <span style={{ marginLeft: 5, opacity: 0.7 }}>
+                  ({members.filter(m => m.member_type === t.value).length})
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -426,7 +490,23 @@ const AdminMembers = () => {
               {filtered.map(m => (
                 <tr key={m.code} className="border-t border-line">
                   <td className="px-4 py-3.5">
-                    <div className="text-ink font-medium">{m.name}</div>
+                    <div className="flex items-center flex-wrap gap-1">
+                      <span className="text-ink font-medium">{m.name}</span>
+                      {(() => {
+                        const cfg = MEMBER_TYPE_CONFIG[m.member_type] || MEMBER_TYPE_CONFIG.berbayar;
+                        return (
+                          <span style={{
+                            fontSize: 10, fontWeight: 700,
+                            padding: '2px 8px', borderRadius: 99,
+                            background: cfg.bg, color: cfg.color,
+                            border: `1px solid ${cfg.color}44`,
+                            verticalAlign: 'middle',
+                          }}>
+                            {cfg.icon} {cfg.label}
+                          </span>
+                        );
+                      })()}
+                    </div>
                     <div className="text-[11px] text-ink-soft">{m.whatsapp}</div>
                   </td>
                   <td className="px-4 py-3.5">
@@ -542,11 +622,12 @@ const MemberProfileModal = ({ member, onClose }) => {
 
 const EditMemberModal = ({ member, onClose, onSave }) => {
   const [form, setForm] = useState({
-    code:      member.code      || "",
-    name:      member.name      || "",
-    whatsapp:  member.whatsapp  || "",
-    expiresAt: member.expiresAt || "",
-    notes:     member.notes     || "",
+    code:        member.code        || "",
+    name:        member.name        || "",
+    whatsapp:    member.whatsapp    || "",
+    expiresAt:   member.expiresAt   || "",
+    notes:       member.notes       || "",
+    member_type: member.member_type || "berbayar",
   });
   const [saving, setSaving] = useState(false);
   const toast = useToast();
@@ -559,11 +640,12 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
     setSaving(true);
     try {
       await onSave(member.code, {
-        code:      form.code.trim().toUpperCase(),
-        name:      form.name.trim(),
-        whatsapp:  form.whatsapp.trim(),
-        expiresAt: form.expiresAt,
-        notes:     form.notes,
+        code:        form.code.trim().toUpperCase(),
+        name:        form.name.trim(),
+        whatsapp:    form.whatsapp.trim(),
+        expiresAt:   form.expiresAt,
+        notes:       form.notes,
+        member_type: form.member_type,
       });
       toast.push("Member diperbarui");
       onClose();
@@ -603,6 +685,30 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
           {field("Nama", "name", { placeholder: "Nama lengkap" })}
           {field("WhatsApp", "whatsapp", { placeholder: "+62..." })}
           {field("Expires At", "expiresAt", { type: "date" })}
+          {/* Dropdown member type */}
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: 0.5, display: 'block', marginBottom: 6 }}>
+              TIPE MEMBER
+            </label>
+            <select
+              value={form.member_type}
+              onChange={e => set("member_type", e.target.value)}
+              style={{
+                width: '100%', padding: '9px 12px', borderRadius: 9,
+                border: '1px solid rgba(255,255,255,0.1)',
+                background: '#1a1a1a', color: '#fff', fontSize: 13,
+                cursor: 'pointer',
+              }}
+            >
+              <option value="berbayar">💳 Berbayar — member resmi</option>
+              <option value="gratis">🎁 Gratis — akses cuma-cuma</option>
+              <option value="trial">⏳ Trial — akses sementara</option>
+              <option value="reward">🏆 Reward — dari bank soal</option>
+            </select>
+            <div style={{ fontSize: 11, color: '#555', marginTop: 5 }}>
+              Tipe ini menentukan kategori member untuk laporan dan filter.
+            </div>
+          </div>
           <div>
             <label className="text-xs text-ink-soft mb-1 block">Catatan</label>
             <textarea
