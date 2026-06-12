@@ -46,6 +46,9 @@ function SubmitSoalPage() {
   const [compressing, setCompressing] = useState(false);
   const fileRef = useRef();
   const [compressedFile, setCompressedFile] = useState(null);
+  const [fotoUrl,   setFotoUrl]   = useState(null);
+  const [fotoError, setFotoError] = useState('');
+  const [uploading, setUploading] = useState(false);
   const [panduanOpen, setPanduanOpen] = useState(false);
   const [soalStatus, setSoalStatus]         = useState(null);
   const [checkingStatus, setCheckingStatus] = useState(false);
@@ -126,11 +129,50 @@ function SubmitSoalPage() {
   const handleFoto = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setCompressing(true);
-    const compressed = await compressImage(file);
-    setCompressedFile(compressed);
-    setPreviewUrl(URL.createObjectURL(compressed));
-    setCompressing(false);
+
+    if (!file.type.startsWith('image/')) {
+      setFotoError('Hanya file gambar yang diizinkan.');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setFotoError('Foto terlalu besar. Maksimal 10MB.');
+      return;
+    }
+
+    setUploading(true);
+    setFotoError('');
+    setFotoUrl(null);
+
+    try {
+      let fileToUpload = file;
+      if (file.size > 1 * 1024 * 1024) {
+        setCompressing(true);
+        fileToUpload = await compressImage(file);
+        setCompressing(false);
+      }
+      setCompressedFile(fileToUpload);
+      setPreviewUrl(URL.createObjectURL(fileToUpload));
+
+      const res = await fetch('/api/bank-soal?action=upload-foto', {
+        method: 'POST',
+        headers: { 'Content-Type': fileToUpload.type || 'image/jpeg' },
+        body: fileToUpload,
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        setFotoUrl(data.foto_url);
+        console.log('[upload-foto] Berhasil:', data.filename);
+      } else {
+        setFotoError(data.error || 'Upload gagal. Coba lagi.');
+        setPreviewUrl(null);
+      }
+    } catch (err) {
+      setFotoError('Upload gagal: ' + err.message);
+      setPreviewUrl(null);
+    }
+
+    setUploading(false);
   };
 
   const handleSubmit = async () => {
@@ -138,8 +180,8 @@ function SubmitSoalPage() {
       alert('Selesaikan verifikasi matematika terlebih dahulu.');
       return;
     }
-    if (!form.nama || !form.wa || !form.fakultas || !form.maddah_id || !form.tingkat || !form.tahun || !form.fashl || !compressedFile) {
-      alert('Lengkapi semua field dan upload foto soal.');
+    if (!form.nama || !form.wa || !form.fakultas || !form.maddah_id || !form.tingkat || !form.tahun || !form.fashl || !fotoUrl) {
+      alert('Lengkapi semua field dan tunggu foto selesai diupload.');
       return;
     }
     setStep('confirm');
@@ -148,31 +190,9 @@ function SubmitSoalPage() {
   const handleConfirm = async () => {
     setLoading(true);
     try {
-      const configRes = await fetch('/api/config');
-      const { supabaseUrl, supabaseAnonKey } = await configRes.json();
+      if (!fotoUrl) throw new Error('Foto belum diupload');
 
-      if (!supabaseUrl || !supabaseAnonKey) {
-        throw new Error('Konfigurasi tidak tersedia');
-      }
-
-      const fileName = `${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
-
-      const uploadRes = await fetch(`${supabaseUrl}/storage/v1/object/soal-foto/${fileName}`, {
-        method: 'POST',
-        headers: {
-          apikey: supabaseAnonKey,
-          Authorization: `Bearer ${supabaseAnonKey}`,
-          'Content-Type': 'image/jpeg',
-        },
-        body: compressedFile
-      });
-
-      if (!uploadRes.ok) {
-        const errText = await uploadRes.text();
-        throw new Error(`Upload foto gagal: ${errText}`);
-      }
-
-      const foto_url = `${supabaseUrl}/storage/v1/object/soal-foto/${fileName}`;
+      const foto_url = fotoUrl;
 
       const res = await fetch('/api/bank-soal?action=submit', {
         method: 'POST',
@@ -222,7 +242,7 @@ function SubmitSoalPage() {
         Reward akan dikirim ke WhatsApp <strong style={{ color: EM }}>{form.wa}</strong> setelah diverifikasi.
       </p>
       <p style={{ color: '#888', fontSize: 13, marginTop: 16 }}>Barakallahu fiik 🙏</p>
-      <button onClick={() => { setStep('form'); setForm({ nama:'', wa:'', fakultas:'', maddah_id:'', maddah_nama:'', tingkat:'', tahun:'', fashl:'' }); setPreviewUrl(null); setCompressedFile(null); setDupMsg(''); }}
+      <button onClick={() => { setStep('form'); setForm({ nama:'', wa:'', fakultas:'', maddah_id:'', maddah_nama:'', tingkat:'', tahun:'', fashl:'' }); setPreviewUrl(null); setCompressedFile(null); setFotoUrl(null); setFotoError(''); setDupMsg(''); }}
         style={{ marginTop: 28, padding: '11px 24px', borderRadius: 10, background: EM, color: '#000', border: 'none', fontWeight: 800, cursor: 'pointer', fontSize: 14 }}>
         Submit Soal Lain
       </button>
@@ -821,12 +841,17 @@ function SubmitSoalPage() {
                 FOTO SOAL * <span style={{ color: '#888', fontWeight: 400 }}>(foto jelas kertas soal asli)</span>
               </label>
               <div
-                onClick={() => fileRef.current?.click()}
-                style={{ border: '2px dashed rgba(62,207,142,0.3)', borderRadius: 12, padding: '20px', textAlign: 'center', cursor: 'pointer', background: 'rgba(62,207,142,0.03)' }}>
+                onClick={() => !uploading && fileRef.current?.click()}
+                style={{ border: `2px dashed ${fotoError ? 'rgba(239,68,68,0.4)' : fotoUrl ? 'rgba(62,207,142,0.5)' : 'rgba(62,207,142,0.3)'}`, borderRadius: 12, padding: '20px', textAlign: 'center', cursor: uploading ? 'wait' : 'pointer', background: 'rgba(62,207,142,0.03)' }}>
                 {compressing ? (
                   <div style={{ color: '#888', fontSize: 13 }}>Mengompres foto...</div>
+                ) : uploading ? (
+                  <div style={{ color: '#3ecf8e', fontSize: 13 }}>⏳ Mengupload foto...</div>
                 ) : previewUrl ? (
-                  <img src={previewUrl} alt="preview" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, objectFit: 'contain' }}/>
+                  <>
+                    <img src={previewUrl} alt="preview" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, objectFit: 'contain' }}/>
+                    {fotoUrl && <div style={{ color: '#3ecf8e', fontSize: 11, marginTop: 6 }}>✅ Foto berhasil diupload</div>}
+                  </>
                 ) : (
                   <>
                     <div style={{ fontSize: 28, marginBottom: 8 }}>📸</div>
@@ -835,6 +860,7 @@ function SubmitSoalPage() {
                   </>
                 )}
               </div>
+              {fotoError && <div style={{ color: '#f87171', fontSize: 12, marginTop: 6 }}>⚠️ {fotoError}</div>}
               <input ref={fileRef} type="file" accept="image/*" onChange={handleFoto} style={{ display: 'none' }}/>
             </div>
 

@@ -19,6 +19,7 @@ export default async function handler(req, res) {
   if (action === 'approve')         return handleApprove(req, res);
   if (action === 'foto')            return handleFoto(req, res);
   if (action === 'delete')          return handleDelete(req, res);
+  if (action === 'upload-foto')     return handleUploadFoto(req, res);
 
   return res.status(400).json({ ok: false, error: 'Action tidak valid' });
 }
@@ -212,6 +213,77 @@ async function handleDelete(req, res) {
 
     return res.status(200).json({ ok: true });
   } catch (err) {
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+}
+
+/* ── UPLOAD FOTO SERVER-SIDE (tutup celah storage exploit) ── */
+async function handleUploadFoto(req, res) {
+  if (req.method !== 'POST') return res.status(405).end();
+
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceKey) {
+    return res.status(500).json({ ok: false, error: 'Server tidak terkonfigurasi' });
+  }
+
+  try {
+    const clientIP =
+      (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
+      req.headers['x-real-ip'] || 'unknown';
+
+    const chunks = [];
+    await new Promise((resolve, reject) => {
+      req.on('data', chunk => chunks.push(chunk));
+      req.on('end', resolve);
+      req.on('error', reject);
+    });
+    const buffer = Buffer.concat(chunks);
+
+    if (buffer.length > 5 * 1024 * 1024) {
+      return res.status(400).json({ ok: false, error: 'Foto terlalu besar. Maksimal 5MB.' });
+    }
+
+    const contentType = req.headers['content-type'] || 'image/jpeg';
+    if (!contentType.startsWith('image/')) {
+      return res.status(400).json({ ok: false, error: 'Hanya file gambar yang diizinkan.' });
+    }
+
+    if (buffer.length < 1024) {
+      return res.status(400).json({ ok: false, error: 'File tidak valid.' });
+    }
+
+    const ext = contentType.includes('png') ? 'png' :
+                contentType.includes('webp') ? 'webp' : 'jpg';
+    const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+
+    const uploadRes = await fetch(
+      `${supabaseUrl}/storage/v1/object/soal-foto/${filename}`,
+      {
+        method: 'POST',
+        headers: {
+          'apikey':        serviceKey,
+          'Authorization': `Bearer ${serviceKey}`,
+          'Content-Type':  contentType,
+          'Cache-Control': '3600',
+        },
+        body: buffer,
+      }
+    );
+
+    if (!uploadRes.ok) {
+      const err = await uploadRes.text();
+      console.error('[upload-foto] Supabase error:', err);
+      return res.status(500).json({ ok: false, error: 'Upload gagal.' });
+    }
+
+    const fotoUrl = `${supabaseUrl}/storage/v1/object/soal-foto/${filename}`;
+    console.log(`[upload-foto] OK: ${filename} | ${buffer.length} bytes | IP: ${clientIP}`);
+    return res.status(200).json({ ok: true, foto_url: fotoUrl, filename });
+
+  } catch (err) {
+    console.error('[upload-foto] error:', err.message);
     return res.status(500).json({ ok: false, error: err.message });
   }
 }
