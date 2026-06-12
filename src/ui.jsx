@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
+import { createPortal } from 'react-dom';
 /* Talqih, Shared UI primitives (dark/premium) */
 
 
@@ -115,12 +116,13 @@ const Modal = ({ open, onClose, children, size = "lg", closable = true }) => {
   }, [open, onClose, closable]);
   if (!open) return null;
   const w = size === "xl" ? "max-w-3xl" : size === "lg" ? "max-w-2xl" : size === "md" ? "max-w-md" : "max-w-lg";
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[90] modal-back bg-night-950/70 flex items-center justify-center p-4 sm:p-6" onClick={closable ? onClose : undefined}>
       <div className={`modal-pop card-glass-strong shadow-glass w-full ${w} overflow-y-auto max-h-[90vh] flex flex-col`} onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
