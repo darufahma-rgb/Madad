@@ -1,3 +1,21 @@
+// Rate limit upload foto — in-memory per instance
+const uploadAttempts = new Map();
+
+const checkUploadRateLimit = (ip) => {
+  const now        = Date.now();
+  const windowMs   = 60 * 60 * 1000; // 1 jam
+  const maxUploads = 10;              // maks 10 upload per jam per IP
+
+  const attempts = uploadAttempts.get(ip) || [];
+  const recent   = attempts.filter(t => now - t < windowMs);
+
+  if (recent.length >= maxUploads) return false; // BLOCKED
+
+  recent.push(now);
+  uploadAttempts.set(ip, recent);
+  return true; // ALLOWED
+};
+
 const parseBody = (req) => new Promise((resolve) => {
   let body = '';
   req.on('data', chunk => body += chunk);
@@ -232,6 +250,28 @@ async function handleUploadFoto(req, res) {
     const clientIP =
       (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
       req.headers['x-real-ip'] || 'unknown';
+
+    // Cek rate limit
+    if (clientIP !== 'unknown' && !checkUploadRateLimit(clientIP)) {
+      console.warn(`[upload-foto] Rate limited: ${clientIP}`);
+      return res.status(429).json({
+        ok: false,
+        error: 'Terlalu banyak upload. Coba lagi dalam 1 jam.'
+      });
+    }
+
+    // Cek blacklist IP
+    if (clientIP !== 'unknown') {
+      const blRes = await fetch(
+        `${supabaseUrl}/rest/v1/submission_blacklist?type=eq.ip&value=eq.${encodeURIComponent(clientIP)}&select=id`,
+        { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } }
+      );
+      const bl = await blRes.json();
+      if (Array.isArray(bl) && bl.length > 0) {
+        console.warn(`[upload-foto] Blacklisted IP: ${clientIP}`);
+        return res.status(403).json({ ok: false, error: 'Upload tidak diizinkan.' });
+      }
+    }
 
     const chunks = [];
     await new Promise((resolve, reject) => {
