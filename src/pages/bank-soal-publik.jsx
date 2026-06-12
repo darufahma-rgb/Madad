@@ -429,7 +429,7 @@ export default function BankSoalPublikPage() {
               display: 'inline-block', width: 6, height: 6,
               borderRadius: '50%', background: EM,
             }}/>
-            {groups.length} slot tersedia · {filtered.length} soal total
+            {groups.length} soal tersedia · 3 gratis · {Math.max(0, groups.length - 3)} untuk member
           </div>
         )}
 
@@ -457,94 +457,153 @@ export default function BankSoalPublikPage() {
             Belum ada soal untuk filter ini.
           </div>
         ) : (
-          <div
-            className="bank-soal-grid"
-            style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}
-          >
-            {groups.map(group => (
-              <div
-                key={group.key}
-                onClick={() => setSelected(group)}
-                style={{
-                  borderRadius: 14, padding: '18px 18px 16px',
-                  background: '#111',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  cursor: 'pointer',
-                  transition: 'all 0.18s ease',
-                  display: 'flex', flexDirection: 'column', gap: 0,
-                  position: 'relative', overflow: 'hidden',
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.border = '1px solid rgba(62,207,142,0.4)';
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = '0 8px 32px rgba(0,0,0,0.4)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)';
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                {/* Top accent line */}
-                <div style={{
-                  position: 'absolute', top: 0, left: 0, right: 0,
-                  height: 2,
-                  background: 'linear-gradient(90deg, transparent, rgba(62,207,142,0.6), transparent)',
-                  opacity: 0,
-                  transition: 'opacity 0.2s',
-                }}/>
+          <>
+            {(() => {
+              const MAX_FREE = 3;
+              const visibleGroups = groups.slice(0, MAX_FREE);
+              const lockedGroups  = groups.slice(MAX_FREE);
+              return (
+                <>
+                  <div className="bank-soal-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
+                    {/* 3 soal pertama — bisa diklik normal */}
+                    {visibleGroups.map(group => (
+                      <div
+                        key={group.key}
+                        onClick={() => setSelected(group)}
+                        style={{
+                          borderRadius: 14, padding: '18px 18px 16px',
+                          background: '#111',
+                          border: '1px solid rgba(255,255,255,0.08)',
+                          cursor: 'pointer',
+                          transition: 'all 0.18s ease',
+                          display: 'flex', flexDirection: 'column',
+                          position: 'relative', overflow: 'hidden',
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.border = '1px solid rgba(62,207,142,0.4)';
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                        }}
+                      >
+                        <div style={{ fontSize: 10, fontWeight: 700, color: '#555', marginBottom: 10, textTransform: 'uppercase' }}>
+                          {fakultasLabel(group.fakultas)}
+                        </div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', lineHeight: 1.35, marginBottom: 6, flex: 1 }}>
+                          {group.maddah_nama}
+                        </div>
+                        <div style={{ fontSize: 12, color: '#666', marginBottom: 14 }}>
+                          {group.tahun} · {group.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: '#3ecf8e', display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3ecf8e', display: 'inline-block' }}/>
+                            {group.count} soal
+                          </span>
+                          <span style={{ fontSize: 11, color: '#444' }}>Lihat →</span>
+                        </div>
+                      </div>
+                    ))}
 
-                {/* Fakultas badge */}
-                <div style={{
-                  fontSize: 10, fontWeight: 700, letterSpacing: 0.8,
-                  color: '#555', marginBottom: 10,
-                  textTransform: 'uppercase',
-                }}>
-                  {fakultasLabel(group.fakultas)}
-                </div>
+                    {/* Soal yang di-lock */}
+                    {lockedGroups.map(group => (
+                      <div
+                        key={group.key}
+                        onClick={() => {
+                          document.getElementById('cta-login')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        style={{
+                          borderRadius: 14, padding: '18px 18px 16px',
+                          background: 'rgba(255,255,255,0.02)',
+                          border: '1px solid rgba(255,255,255,0.05)',
+                          cursor: 'pointer',
+                          display: 'flex', flexDirection: 'column',
+                          position: 'relative', overflow: 'hidden',
+                          filter: 'saturate(0)',
+                          opacity: 0.5,
+                          transition: 'all 0.18s ease',
+                        }}
+                        onMouseEnter={e => {
+                          e.currentTarget.style.opacity = '0.7';
+                          e.currentTarget.style.border = '1px solid rgba(62,207,142,0.2)';
+                        }}
+                        onMouseLeave={e => {
+                          e.currentTarget.style.opacity = '0.5';
+                          e.currentTarget.style.border = '1px solid rgba(255,255,255,0.05)';
+                        }}
+                      >
+                        {/* Lock overlay */}
+                        <div style={{
+                          position: 'absolute', top: 10, right: 10,
+                          width: 24, height: 24, borderRadius: 6,
+                          background: 'rgba(255,255,255,0.06)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontSize: 12,
+                        }}>🔒</div>
 
-                {/* Nama maddah */}
-                <div style={{
-                  fontSize: 15, fontWeight: 700, color: '#fff',
-                  lineHeight: 1.35, marginBottom: 6,
-                  flex: 1,
-                }}>
-                  {group.maddah_nama}
-                </div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: '#444', marginBottom: 10, textTransform: 'uppercase' }}>
+                          {fakultasLabel(group.fakultas)}
+                        </div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: '#888', lineHeight: 1.35, marginBottom: 6, flex: 1 }}>
+                          {group.maddah_nama}
+                        </div>
+                        <div style={{ fontSize: 12, color: '#444', marginBottom: 14 }}>
+                          {group.tahun} · {group.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                          <span style={{ fontSize: 12, color: '#555' }}>
+                            {group.count} soal
+                          </span>
+                          <span style={{ fontSize: 11, color: '#3ecf8e', fontWeight: 600 }}>
+                            Login →
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
 
-                {/* Tahun + fashl */}
-                <div style={{
-                  fontSize: 12, color: '#666', marginBottom: 14,
-                }}>
-                  {group.tahun} · {group.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
-                </div>
-
-                {/* Footer */}
-                <div style={{
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                  paddingTop: 12,
-                  borderTop: '1px solid rgba(255,255,255,0.06)',
-                }}>
-                  <span style={{
-                    fontSize: 12, fontWeight: 700, color: EM,
-                    display: 'flex', alignItems: 'center', gap: 5,
-                  }}>
-                    <span style={{
-                      width: 6, height: 6, borderRadius: '50%',
-                      background: EM, display: 'inline-block',
-                    }}/>
-                    {group.count} soal
-                  </span>
-                  <span style={{
-                    fontSize: 11, color: '#444',
-                    display: 'flex', alignItems: 'center', gap: 4,
-                  }}>
-                    Lihat →
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+                  {/* Banner lock — muncul setelah 3 soal */}
+                  {lockedGroups.length > 0 && (
+                    <div id="cta-login" style={{
+                      marginTop: 24, padding: '24px 28px',
+                      background: 'rgba(62,207,142,0.05)',
+                      border: '1px solid rgba(62,207,142,0.2)',
+                      borderRadius: 16, textAlign: 'center',
+                    }}>
+                      <div style={{ fontSize: 20, marginBottom: 8 }}>🔒</div>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 6 }}>
+                        {lockedGroups.length} soal lainnya hanya untuk member
+                      </div>
+                      <div style={{ fontSize: 13, color: '#888', marginBottom: 20, lineHeight: 1.6 }}>
+                        Kamu sudah lihat 3 soal gratis. Login sebagai member untuk akses semua soal
+                        lengkap dengan prompt jawaban.
+                      </div>
+                      <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+                        <a href="#/" style={{
+                          padding: '11px 24px', borderRadius: 11,
+                          background: '#3ecf8e', color: '#000',
+                          fontWeight: 800, fontSize: 14, textDecoration: 'none',
+                        }}>
+                          Login Member →
+                        </a>
+                        <a href="https://lynk.id/talqeeh" target="_blank" style={{
+                          padding: '11px 24px', borderRadius: 11,
+                          border: '1px solid rgba(255,255,255,0.12)',
+                          background: 'rgba(255,255,255,0.04)',
+                          color: '#ccc', fontWeight: 600, fontSize: 14,
+                          textDecoration: 'none',
+                        }}>
+                          Gabung Member
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+          </>
         )}
 
         {/* CTA submit soal */}
