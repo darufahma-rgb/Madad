@@ -99,6 +99,17 @@ export default async function handler(req, res) {
 
     loginAttempts.delete(clientIP);
 
+    // Cek device lock — kalau device_id sudah terikat, harus sama
+    if (m.device_id && clientDeviceId && m.device_id !== clientDeviceId) {
+      console.warn(`[login] Device mismatch: ${m.code} — expected ${m.device_id}, got ${clientDeviceId}`);
+      res.status(200).json({
+        ok: false,
+        status: 'device_mismatch',
+        message: 'Kode ini sudah terikat ke perangkat lain. Hubungi admin untuk reset device.'
+      });
+      return;
+    }
+
     const deviceLabel = (() => {
       const ua = req.headers['user-agent'] || '';
       if (/iPhone|iPad/i.test(ua))  return 'iOS';

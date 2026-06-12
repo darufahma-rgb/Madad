@@ -489,6 +489,7 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
                   {status.status === "not_found" && "Kode tidak ditemukan. Cek lagi atau hubungi admin."}
                   {status.status === "expired" && "Kode sudah expired. Hubungi admin untuk renewal."}
                   {status.status === "disabled" && "Kode dinonaktifkan. Hubungi admin."}
+                  {status.status === "device_mismatch" && "Kode ini sudah terikat ke perangkat lain. Untuk reset device, hubungi admin Talqeeh di wa.me/6281311506025"}
                 </span>
               </div>
             )}
