@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
+import { DeenmeCard } from '../components/DeenmeCard.jsx';
 /* Talqih, Personal Dashboard — Prompt 4: Maddah-First */
 
 const getCairoGreeting = () => {
@@ -638,7 +639,12 @@ const DashboardPage = () => {
       {/* 2b. RECENT MADDAH */}
       <RecentMaddahRow/>
 
-      {/* 2c. HADIAH MEMBER */}
+      {/* 2c. HADIAH DEENME — muncul hanya jika member ada di DB Deenme */}
+      <div className="container-x" style={{ marginBottom: 0 }}>
+        <DeenmeCard />
+      </div>
+
+      {/* 2d. HADIAH MEMBER */}
       <HadiahMemberCard/>
 
       {/* 2d. S2 MADDAH CARD — hanya muncul untuk user S2 */}
