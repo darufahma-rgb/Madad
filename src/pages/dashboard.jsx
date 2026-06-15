@@ -594,13 +594,13 @@ const DashboardPage = () => {
       {/* 2. STARTER PACK */}
       <StarterPackCard profile={profile} session={session}/>
 
-      {/* 2b. RECENT MADDAH */}
-      <RecentMaddahRow/>
-
       {/* 2c. HADIAH DEENME — muncul hanya jika member ada di DB Deenme */}
       <div className="container-x" style={{ marginBottom: 0 }}>
         <DeenmeCard />
       </div>
+
+      {/* 2b. RECENT MADDAH */}
+      <RecentMaddahRow/>
 
       {/* 2d. S2 MADDAH CARD — hanya muncul untuk user S2 */}
       {(profile?.level === "s2_kuliyyat" || profile?.level === "s2_dirasat") && (
