@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 
 const DEENME_EDGE_URL =
-  "https://rhgecuchhkrcwuxenrfb.supabase.co/functions/v1/get-deenme-pin";
+  "https://uhpsopminpewirkmloiv.supabase.co/functions/v1/smart-action";
 const DEENME_URL = "https://deenme.vercel.app";
 
 export function DeenmeCard() {
