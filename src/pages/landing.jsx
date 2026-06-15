@@ -648,6 +648,53 @@ const TestimoniSection = () => {
 };
 
 /* ══════════════════════════════════════════════════════════════
+   5b. HADIAH PREVIEW BANNER
+   ══════════════════════════════════════════════════════════════ */
+const HadiahPreviewBanner = () => (
+  <section style={{ padding: '8px 0 24px' }}>
+    <div style={{ maxWidth: 960, margin: '0 auto', padding: '0 20px' }}>
+      <Reveal>
+        <div style={{
+          padding: '24px 28px',
+          borderRadius: 18,
+          border: '1px solid rgba(201,168,106,0.25)',
+          background: 'linear-gradient(135deg, rgba(201,168,106,0.08) 0%, rgba(10,5,20,0.6) 100%)',
+          textAlign: 'center',
+          position: 'relative',
+          overflow: 'hidden',
+        }}>
+          {/* subtle glow */}
+          <div style={{
+            position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
+            width: 300, height: 120,
+            background: 'radial-gradient(ellipse, rgba(201,168,106,0.12) 0%, transparent 70%)',
+            pointerEvents: 'none',
+          }}/>
+          <div style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: '0.2em',
+            color: '#c9a86c', marginBottom: 8, textTransform: 'uppercase',
+          }}>
+            Eksklusif untuk Member Talqeeh
+          </div>
+          <div style={{
+            fontFamily: '"DM Sans",sans-serif',
+            fontSize: 20, fontWeight: 700, color: '#fff', marginBottom: 10,
+          }}>
+            🎁 Hadiah Spesial Menanti Kamu
+          </div>
+          <div style={{
+            fontSize: 13, color: '#aaa', maxWidth: 420, margin: '0 auto', lineHeight: 1.65,
+          }}>
+            Setiap member Talqeeh mendapatkan akses eksklusif ke platform partner kami.{' '}
+            Login untuk klaim hadiahmu.
+          </div>
+        </div>
+      </Reveal>
+    </div>
+  </section>
+);
+
+/* ══════════════════════════════════════════════════════════════
    6. PRICING + FINAL CTA
    ══════════════════════════════════════════════════════════════ */
 const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => {
@@ -1144,6 +1191,7 @@ const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
     <HowItWorks/>
     <AllMaddahPreview/>
     <TestimoniSection/>
+    <HadiahPreviewBanner/>
     <PricingAndCTA onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment}/>
   </div>
 );

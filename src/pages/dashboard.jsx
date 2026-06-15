@@ -11,6 +11,49 @@ const getCairoGreeting = () => {
   return                         { text: "Selamat malam",               arabic: "لَيْلَةٌ مُبَارَكَةٌ",      sub: "Istirahat yang cukup adalah bagian dari belajar." };
 };
 
+/* ============ HADIAH MEMBER CARD ============ */
+const HadiahMemberCard = () => {
+  const { session } = useAuth();
+  const kode = session?.code || "";
+  const handleKlaim = () => {
+    window.open(`https://deenmee.vercel.app?ref=${kode}`, "_blank");
+  };
+
+  return (
+    <section className="pb-6">
+      <div className="container-x">
+        <Reveal>
+          <div className="card-glass-strong p-5 rounded-2xl border border-gold-500/20 bg-gradient-to-br from-gold-900/20 to-night-900/40">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1">
+                <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-2 flex items-center gap-2">
+                  <span className="w-5 h-px bg-gold-500/60"/>
+                  Hadiah Eksklusif Member
+                </div>
+                <div className="font-display text-lg font-semibold text-ink mb-1">
+                  Kamu dapat akses gratis! 🎁
+                </div>
+                <div className="text-sm text-ink-muted mb-3">
+                  Sebagai member Talqeeh, kamu dapat akses eksklusif ke platform Deenmee. Gunakan kode di bawah untuk klaim.
+                </div>
+                <div className="font-mono text-gold-300 text-lg tracking-widest bg-white/5 px-4 py-2 rounded-lg inline-block mb-4">
+                  {kode}
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={handleKlaim}
+              className="btn btn-primary w-full"
+            >
+              Klaim Hadiah Sekarang →
+            </button>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+};
+
 /* ============ RECENT MADDAH ROW ============ */
 const RecentMaddahRow = () => {
   const activity = (typeof loadMaddahActivity !== "undefined") ? loadMaddahActivity() : {};
@@ -595,7 +638,10 @@ const DashboardPage = () => {
       {/* 2b. RECENT MADDAH */}
       <RecentMaddahRow/>
 
-      {/* 2c. S2 MADDAH CARD — hanya muncul untuk user S2 */}
+      {/* 2c. HADIAH MEMBER */}
+      <HadiahMemberCard/>
+
+      {/* 2d. S2 MADDAH CARD — hanya muncul untuk user S2 */}
       {(profile?.level === "s2_kuliyyat" || profile?.level === "s2_dirasat") && (
         <section className="pb-6">
           <div className="container-x">
