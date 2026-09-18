@@ -390,6 +390,35 @@ const sbLoadMuqaranah = async () => {
   return data ? data.map(r => r.data) : null;
 };
 
+/* ── BANK SOAL PROGRESS (self-check "Paham" / "Belum") ── */
+
+const sbSaveSoalProgress = async (soalKey, status) => {
+  const client = _getClient();
+  if (!client) return;
+  const code = getMemberCode();
+  if (!code) return;
+  const { error } = await client.from("user_soal_progress").upsert({
+    member_code: code,
+    soal_key:    soalKey,
+    status,
+    updated_at:  new Date().toISOString(),
+  }, { onConflict: "member_code,soal_key" });
+  if (error) throw error;
+};
+
+const sbLoadSoalProgress = async () => {
+  const client = _getClient();
+  if (!client) return null;
+  const code = getMemberCode();
+  if (!code) return null;
+  const { data, error } = await client.from("user_soal_progress")
+    .select("soal_key,status").eq("member_code", code);
+  if (error) return null;
+  const map = {};
+  (data || []).forEach(r => { map[r.soal_key] = r.status; });
+  return map;
+};
+
 /* ── SYNC ENGINE ── */
 
 // Pull semua data dari Supabase ke localStorage (saat login / app load)
@@ -437,6 +466,7 @@ Object.assign(window, {
   sbLoadMuqaranah, sbSaveMuqaranah, sbDeleteMuqaranah,
   sbSaveProfile, sbLoadProfile,
   sbSaveMaddahActivity, sbLoadMaddahActivity,
+  sbSaveSoalProgress, sbLoadSoalProgress,
   sbPullAllUserData,
   sbPushAllUserData,
 });

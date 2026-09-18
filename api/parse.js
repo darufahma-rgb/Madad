@@ -1,3 +1,5 @@
+import { verifyToken } from './admin-auth.js';
+
 const parseBody = (req) => new Promise((resolve) => {
   let body = '';
   req.on('data', chunk => body += chunk);
@@ -17,6 +19,9 @@ export default async function handler(req, res) {
 /* ── PARSE SOAL ── */
 async function handleParseSoal(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
+  if (!verifyToken((req.headers || {})['x-admin-token'])) {
+    return res.status(401).json({ ok: false, error: 'Unauthorized' });
+  }
 
   const { soal_id, foto_url } = await parseBody(req);
   if (!soal_id || !foto_url) return res.status(400).json({ ok: false });

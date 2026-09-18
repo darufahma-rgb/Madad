@@ -1,3 +1,5 @@
+import { verifyToken } from './admin-auth.js';
+
 // Rate limit upload foto — in-memory per instance
 const uploadAttempts = new Map();
 
@@ -107,10 +109,13 @@ async function handleSubmit(req, res) {
 /* ── APPROVE / REJECT SOAL ── */
 async function handleApprove(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
+  if (!verifyToken((req.headers || {})['x-admin-token'])) {
+    return res.status(401).json({ ok: false, error: 'Unauthorized — login ulang ke admin panel' });
+  }
 
   const supabaseUrl = process.env.SUPABASE_URL;
   const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const fonnteKey   = process.env.FONNTE_API_KEY;
+  const fonnteKey   = process.env.FONNTE_TOKEN;
 
   const { soal_id, action, reject_reason, reward_type, soal_teks } = await parseBody(req);
   if (!soal_id || !action) return res.status(400).json({ ok: false });
@@ -184,6 +189,17 @@ async function handleApprove(req, res) {
       reject_reason: reject_reason || 'Tidak memenuhi standar'
     });
 
+    if (soal.foto_url && !soal.foto_deleted) {
+      const filePath = soal.foto_url.split('/soal-foto/')[1];
+      if (filePath) {
+        await fetch(`${supabaseUrl}/storage/v1/object/soal-foto/${filePath}`, {
+          method: 'DELETE',
+          headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` }
+        });
+        await patch({ foto_deleted: true });
+      }
+    }
+
     if (soal.submitter_wa) {
       await sendWA(
         soal.submitter_wa,
@@ -200,6 +216,9 @@ async function handleApprove(req, res) {
 /* ── HAPUS PERMANENT ── */
 async function handleDelete(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
+  if (!verifyToken((req.headers || {})['x-admin-token'])) {
+    return res.status(401).json({ ok: false, error: 'Unauthorized — login ulang ke admin panel' });
+  }
 
   const supabaseUrl = process.env.SUPABASE_URL;
   const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -331,6 +350,9 @@ async function handleUploadFoto(req, res) {
 /* ── SIGNED URL FOTO ── */
 async function handleFoto(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
+  if (!verifyToken((req.headers || {})['x-admin-token'])) {
+    return res.status(401).json({ ok: false, error: 'Unauthorized — login ulang ke admin panel' });
+  }
 
   const { foto_url } = await parseBody(req);
   if (!foto_url) return res.status(400).json({ ok: false });

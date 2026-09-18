@@ -2,7 +2,11 @@ import crypto from 'crypto';
 
 const TOKEN_TTL = 8 * 60 * 60 * 1000;
 
-const getSecret = () => process.env.ADMIN_PIN || 'fallback-secret';
+const getSecret = () => {
+  const secret = (process.env.ADMIN_PIN || '').trim();
+  if (!secret) throw new Error('ADMIN_PIN not configured');
+  return secret;
+};
 
 // ── Rate limiter sederhana (in-memory) ──
 // Max 5 percobaan per IP per 15 menit

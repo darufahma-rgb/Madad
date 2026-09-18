@@ -1,4 +1,5 @@
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 import { useMemo } from 'react';
 
 const renderer = new marked.Renderer();
@@ -14,7 +15,7 @@ export default function MarkdownArab({ content, style = {}, ltr = false }) {
   const html = useMemo(() => {
     if (!content) return '';
     try {
-      return marked.parse(content);
+      return DOMPurify.sanitize(marked.parse(content));
     } catch {
       return content;
     }

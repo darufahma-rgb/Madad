@@ -1550,7 +1550,7 @@ const AdminBankSoal = () => {
     setLoadingFoto(true);
     fetch('/api/bank-soal?action=foto', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
       body: JSON.stringify({ foto_url: selected.foto_url })
     })
       .then(r => r.json())
@@ -1565,7 +1565,7 @@ const AdminBankSoal = () => {
     try {
       const res = await fetch('/api/parse?action=soal', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
         body: JSON.stringify({ soal_id: selected.id, foto_url: selected.foto_url })
       });
       const data = await res.json();
@@ -1737,7 +1737,7 @@ const AdminBankSoal = () => {
                         if (!confirm(`Hapus submission dari ${s.submitter_name}?`)) return;
                         const res = await fetch('/api/bank-soal?action=delete', {
                           method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
+                          headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
                           body: JSON.stringify({ soal_id: s.id })
                         });
                         const data = await res.json();
@@ -2265,7 +2265,7 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                         try {
                           const res = await fetch('/api/bank-soal?action=delete', {
                             method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
+                            headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
                             body: JSON.stringify({ soal_id: selected.id })
                           });
                           const data = await res.json();

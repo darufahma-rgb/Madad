@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { marked } from 'marked';
+import DOMPurify from 'dompurify';
 marked.use({ gfm: true, breaks: true });
 
 /* ── Helper: strip markdown dari teks Arab ── */
@@ -24,10 +25,37 @@ const getFirstSoal = (raw) => {
 
 /* ── Modal detail soal ── */
 const SoalModal = ({ group, onClose }) => {
+  const [progress, setProgress] = React.useState({});
+  const isMember = !!(typeof window !== 'undefined' && window.getMemberCode?.());
+
+  React.useEffect(() => {
+    if (!group || !isMember) return;
+    window.sbLoadSoalProgress?.().then(map => { if (map) setProgress(map); });
+  }, [group?.key]);
+
+  const markSoal = (soalKey, status) => {
+    setProgress(p => ({ ...p, [soalKey]: status }));
+    window.sbSaveSoalProgress?.(soalKey, status).catch(() => {});
+  };
+
   if (!group) return null;
   const EM = '#3ecf8e';
 
   const allSoal = group.soalList || [];
+  const allBlocks = allSoal.flatMap((soal, si) => {
+    const blocks = soal.soal?.includes('[SOAL_ARAB]')
+      ? soal.soal.split('[SOAL_ARAB]').filter(Boolean).map(b => {
+          const parts = b.split('[ARTI]');
+          return {
+            arab: cleanArab(parts[0]?.trim()),
+            arti: parts[1]?.replace(/^---\s*/m, '').trim() || '',
+          };
+        })
+      : [{ arab: cleanArab(soal.soal?.trim()), arti: '' }];
+    return blocks.map((block, bi) => ({ si, bi, soal, block, blocksLength: blocks.length }));
+  });
+  const groupSoalKeys = allBlocks.map(({ soal, bi }) => `${soal.id}-${bi}`);
+  const pahamCount = groupSoalKeys.filter(k => progress[k] === 'paham').length;
 
   const buildPrompt = (arab, arti, nomor) =>
 `Aku mahasiswa Al-Azhar mempersiapkan jawaban ujian.
@@ -114,6 +142,17 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
               }}>
                 {group.count} soal
               </span>
+              {isMember && pahamCount > 0 && (
+                <span style={{
+                  fontSize: 11, color: '#ffb84d',
+                  background: 'rgba(255,184,77,0.1)',
+                  padding: '3px 10px', borderRadius: 99,
+                  border: '1px solid rgba(255,184,77,0.2)',
+                  fontWeight: 700,
+                }}>
+                  {pahamCount}/{groupSoalKeys.length} paham
+                </span>
+              )}
             </div>
           </div>
           <button
@@ -131,37 +170,29 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
 
         {/* Modal Body */}
         <div style={{ overflowY: 'auto', flex: 1, padding: '24px' }}>
-          {allSoal.map((soal, si) => {
-            const blocks = soal.soal?.includes('[SOAL_ARAB]')
-              ? soal.soal.split('[SOAL_ARAB]').filter(Boolean).map(b => {
-                  const parts = b.split('[ARTI]');
-                  return {
-                    arab: cleanArab(parts[0]?.trim()),
-                    arti: parts[1]?.replace(/^---\s*/m, '').trim() || '',
-                  };
-                })
-              : [{ arab: cleanArab(soal.soal?.trim()), arti: '' }];
-
-            return blocks.map((block, bi) => {
-              const nomor = blocks.length === 1 && allSoal.length === 1
+          {allBlocks.map(({ si, bi, soal, block, blocksLength }) => {
+              const nomor = blocksLength === 1 && allSoal.length === 1
                 ? 1
-                : si * blocks.length + bi + 1;
+                : si * blocksLength + bi + 1;
+
+              const soalKey = `${soal.id}-${bi}`;
+              const soalStatus = progress[soalKey];
 
               const [copied, setCopied] = React.useState(false);
 
               const artiHtml = block.arti
-                ? marked.parse(
+                ? DOMPurify.sanitize(marked.parse(
                     block.arti
                       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                       .replace(/\n(\d+)\.\s/g, '\n\n$1. ')
-                  )
+                  ))
                 : '';
 
               return (
-                <div key={`${si}-${bi}`} style={{
+                <div key={soalKey} style={{
                   marginBottom: 28,
                   paddingBottom: 28,
-                  borderBottom: (si < allSoal.length - 1 || bi < blocks.length - 1)
+                  borderBottom: (si < allSoal.length - 1 || bi < blocksLength - 1)
                     ? '1px solid rgba(255,255,255,0.06)' : 'none',
                 }}>
                   {/* Nomor soal */}
@@ -182,6 +213,12 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
                       <span style={{ fontSize: 11, color: '#555', fontWeight: 600, letterSpacing: 0.5 }}>
                         SOAL {nomor}
                       </span>
+                      {soalStatus === 'paham' && (
+                        <span style={{ fontSize: 11, color: '#3ecf8e' }}>✅ Paham</span>
+                      )}
+                      {soalStatus === 'belum' && (
+                        <span style={{ fontSize: 11, color: '#ffb84d' }}>🤔 Masih bingung</span>
+                      )}
                     </div>
 
                     {/* Tombol salin prompt */}
@@ -241,9 +278,34 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
                       />
                     </div>
                   )}
+
+                  {/* Self-check — cuma buat member (butuh member_code buat sync) */}
+                  {isMember && (
+                    <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>
+                      <button
+                        onClick={() => markSoal(soalKey, 'paham')}
+                        style={{
+                          padding: '6px 14px', borderRadius: 8,
+                          fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                          border: soalStatus === 'paham' ? '1px solid rgba(62,207,142,0.6)' : '1px solid rgba(255,255,255,0.1)',
+                          background: soalStatus === 'paham' ? 'rgba(62,207,142,0.15)' : 'rgba(255,255,255,0.04)',
+                          color: soalStatus === 'paham' ? '#3ecf8e' : '#888',
+                        }}
+                      >✅ Paham</button>
+                      <button
+                        onClick={() => markSoal(soalKey, 'belum')}
+                        style={{
+                          padding: '6px 14px', borderRadius: 8,
+                          fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                          border: soalStatus === 'belum' ? '1px solid rgba(255,184,77,0.6)' : '1px solid rgba(255,255,255,0.1)',
+                          background: soalStatus === 'belum' ? 'rgba(255,184,77,0.15)' : 'rgba(255,255,255,0.04)',
+                          color: soalStatus === 'belum' ? '#ffb84d' : '#888',
+                        }}
+                      >🤔 Masih Bingung</button>
+                    </div>
+                  )}
                 </div>
               );
-            });
           })}
 
           {/* CTA login */}
