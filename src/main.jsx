@@ -21,6 +21,7 @@ import './learning-frameworks-data.jsx';
 
 // Shared components
 import './markdown-render.jsx';
+import './file-extract.jsx';
 import './quick-note.jsx';
 import './dashboard-companions.jsx';
 
@@ -54,6 +55,7 @@ import './pages/tutorial.jsx';
 import './pages/submit-soal.jsx';
 import './pages/bank-soal-publik.jsx';
 import './pages/checklist-soal.jsx';
+import './pages/ai-partner.jsx';
 
 // App shell — terakhir
 import App from './app.jsx';

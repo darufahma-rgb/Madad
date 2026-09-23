@@ -182,6 +182,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   ];
   // Link tambahan untuk mobile menu
   const memberLinksExtra = [
+    { to: "/ai-partner",       label: "AI Partner" },
     { to: "/paths",            label: "Learning Path" },
     { to: "/framework",        label: "Framework" },
     { to: "/tutorial",         label: "Tutorial" },
@@ -672,6 +673,96 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
   );
 };
 
+/* ---------------- AI Subscription Modal (add-on bulanan) ---------------- */
+const AiSubscriptionModal = ({ open, onClose, onOpenLogin }) => {
+  const [checking, setChecking] = useState(false);
+  const [active, setActive] = useState(false);
+  const memberCode = typeof window !== 'undefined' ? window.getMemberCode?.() : null;
+
+  const settings = (() => {
+    try { return JSON.parse(localStorage.getItem("talqee_admin_settings") || "{}"); }
+    catch { return {}; }
+  })();
+  const mayarUrl     = settings.mayarUrl || "";
+  const aiPriceLabel = settings.aiPriceLabel || "Segera diumumkan";
+
+  useEffect(() => {
+    if (!open || !memberCode) return;
+    setChecking(true);
+    window.checkAiSubscription?.().then(r => setActive(!!r.active)).finally(() => setChecking(false));
+  }, [open, memberCode]);
+
+  const handlePayClick = () => {
+    if (!mayarUrl) return;
+    window.open(mayarUrl, "_blank", "noopener,noreferrer");
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} size="md">
+      <div className="p-6 md:p-8">
+        <div className="flex items-center justify-between mb-5">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-emerald-200"
+            style={{background:"rgba(62,207,142,0.12)", border:"1px solid rgba(62,207,142,0.25)"}}>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 inline-block"/>
+            AI Partner Belajar Muqarrar
+          </span>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5 flex items-center justify-center">
+            <Icon name="x" className="w-4 h-4"/>
+          </button>
+        </div>
+
+        {!memberCode ? (
+          <div className="text-center py-4">
+            <p className="text-ink-muted text-sm leading-relaxed mb-6">
+              AI Partner Belajar adalah add-on khusus member Talqeeh. Login dulu pakai kode member kamu sebelum berlangganan.
+            </p>
+            <button onClick={() => { onClose(); onOpenLogin && onOpenLogin(); }} className="btn btn-primary w-full text-sm">
+              Login Member
+            </button>
+          </div>
+        ) : active ? (
+          <div className="text-center py-4">
+            <div className="w-16 h-16 rounded-full text-emerald-200 flex items-center justify-center mx-auto mb-5" style={{background:"rgba(62,207,142,0.18)",border:"1px solid rgba(62,207,142,0.30)"}}>
+              <Icon name="check" className="w-8 h-8" strokeWidth={2.4}/>
+            </div>
+            <h2 className="font-display text-2xl font-semibold text-ink mb-3">Langganan aktif</h2>
+            <p className="text-ink-muted text-sm leading-relaxed mb-6">
+              AI Partner Belajar kamu sedang aktif. Terima kasih sudah berlangganan!
+            </p>
+            <button onClick={onClose} className="btn btn-ghost w-full text-sm">Tutup</button>
+          </div>
+        ) : (
+          <>
+            <div className="mb-5">
+              <div className="font-display font-bold text-ink leading-none mb-1" style={{fontSize:"clamp(1.6rem,6vw,2.2rem)"}}>
+                {aiPriceLabel}
+              </div>
+              <div className="text-[11px] uppercase tracking-widest text-ink-muted">Langganan bulanan · Add-on terpisah dari member lifetime</div>
+            </div>
+
+            <div className="card-glass p-4 mb-6 text-left">
+              <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-2">Cara berlangganan</div>
+              <ol className="text-sm text-ink-muted space-y-2">
+                <li className="flex items-start gap-2"><span className="text-emerald-300 font-semibold">1.</span> Klik "Berlangganan Sekarang" di bawah</li>
+                <li className="flex items-start gap-2"><span className="text-emerald-300 font-semibold">2.</span> Isi kode member Talqeeh kamu: <span className="font-mono text-ink">{memberCode}</span> di form checkout</li>
+                <li className="flex items-start gap-2"><span className="text-emerald-300 font-semibold">3.</span> Setelah bayar, akses aktif otomatis dalam beberapa menit — cek lagi halaman ini</li>
+              </ol>
+            </div>
+
+            <button onClick={handlePayClick} disabled={!mayarUrl || checking}
+              className={`btn btn-gold w-full text-base py-3.5 mb-2 font-semibold ${!mayarUrl ? "opacity-50 cursor-not-allowed" : ""}`}>
+              {mayarUrl ? "Berlangganan Sekarang" : "Belum tersedia"}
+            </button>
+            <p className="text-center text-xs text-ink-soft">
+              Wajib isi kode member Talqeeh yang sama saat checkout, supaya akses otomatis ke-link ke akunmu.
+            </p>
+          </>
+        )}
+      </div>
+    </Modal>
+  );
+};
+
 /* ---------------- Page Header (used by member pages) ---------------- */
 const PageHeader = ({ kicker, title, subtitle, arabic, children, right }) => (
   <section className="relative pt-6 md:pt-12 pb-8 md:pb-12 overflow-hidden">
@@ -833,6 +924,6 @@ const SupportButton = () => {
 
 Object.assign(window, {
   useRoute, navigate, NavLink, Brand,
-  Navbar, Footer, LoginModal, PaymentModal, PageHeader,
+  Navbar, Footer, LoginModal, PaymentModal, AiSubscriptionModal, PageHeader,
   MobileTabBar, SupportButton,
 });

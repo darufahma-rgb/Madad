@@ -697,7 +697,7 @@ const HadiahPreviewBanner = () => (
 /* ══════════════════════════════════════════════════════════════
    6. PRICING + FINAL CTA
    ══════════════════════════════════════════════════════════════ */
-const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => {
+const PricingAndCTA = ({ onOpenPayment, onOpenLogin, onOpenAiPayment }) => {
   const [copiedCode, setCopiedCode] = React.useState(false);
   const handleCopyCode = () => {
     navigator.clipboard.writeText("TALQEEH26");
@@ -782,6 +782,27 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin }) => {
                 Setelah bayar, kode dikirim admin via WhatsApp.
               </p>
             </div>
+          </div>
+        </div>
+      </Reveal>
+
+      {/* AI Partner Belajar — add-on subscription bulanan */}
+      <Reveal>
+        <div className="max-w-lg mx-auto mt-6">
+          <div className="card-glass p-6 flex items-center justify-between gap-4 flex-wrap"
+            style={{ border:"1px solid rgba(62,207,142,0.18)" }}>
+            <div>
+              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-300 mb-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>Add-on · Langganan bulanan
+              </div>
+              <div className="font-display text-lg font-semibold text-ink mb-1">AI Partner Belajar Muqarrar</div>
+              <div className="text-sm text-ink-muted">Terpisah dari member lifetime — khusus untuk member yang mau bantuan AI ekstra.</div>
+            </div>
+            <button onClick={onOpenAiPayment}
+              className="btn btn-ghost px-5 py-2.5 text-sm font-medium flex-shrink-0"
+              style={{ border:"1px solid rgba(62,207,142,0.3)", color:"#3ecf8e" }}>
+              Lihat detail →
+            </button>
           </div>
         </div>
       </Reveal>
@@ -1117,7 +1138,7 @@ const BankSoalPreview = ({ onOpenLogin }) => {
 };
 
 /* ── Root ─────────────────────────────────────────────────────── */
-const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
+const LandingPage = ({ onOpenLogin, onOpenPayment, onOpenAiPayment }) => (
   <div className="page-enter">
     <StyleInject/>
     <LandingHero onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment}/>
@@ -1192,7 +1213,7 @@ const LandingPage = ({ onOpenLogin, onOpenPayment }) => (
     <AllMaddahPreview/>
     <TestimoniSection/>
     <HadiahPreviewBanner/>
-    <PricingAndCTA onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment}/>
+    <PricingAndCTA onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment} onOpenAiPayment={onOpenAiPayment}/>
   </div>
 );
 

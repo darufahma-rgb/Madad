@@ -209,6 +209,30 @@ http.createServer(async (req, res) => {
     return;
   }
 
+  // ── /api/mayar-webhook (AI add-on subscription events) ────────────────
+  if (urlPath === '/api/mayar-webhook') {
+    try {
+      const rawBody = await readBody(req);
+      await callApiHandler('./api/mayar-webhook.js', req, res, rawBody);
+    } catch (err) {
+      console.error('[mayar-webhook] Error:', err.message);
+      json(res, 500, { ok: false, error: err.message });
+    }
+    return;
+  }
+
+  // ── /api/ai-partner (AI study partner + subscription status/admin) ─────
+  if (urlPath === '/api/ai-partner') {
+    try {
+      const rawBody = await readBody(req);
+      await callApiHandler('./api/ai-partner.js', req, res, rawBody);
+    } catch (err) {
+      console.error('[ai-partner] Error:', err.message);
+      json(res, 500, { ok: false, error: err.message });
+    }
+    return;
+  }
+
   // ── Static files ──────────────────────────────────────────────────────
   if (urlPath === '/') urlPath = '/index.html';
 

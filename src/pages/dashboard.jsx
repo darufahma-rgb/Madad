@@ -890,6 +890,20 @@ const DashboardPage = () => {
                 </div>
                 <div className="mt-2 text-[10px] font-medium text-gold-400">Teks · Foto</div>
               </button>
+              <button
+                onClick={() => navigate("/ai-partner")}
+                className="flex-shrink-0 w-[70vw] sm:w-auto md:w-auto card-glass p-4 text-left
+                           hov-lift active:scale-[0.97] transition-transform cursor-pointer
+                           border-emerald-500/15">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3 bg-emerald-500/15">
+                  <Icon name="sparkles" className="w-4 h-4 text-emerald-300"/>
+                </div>
+                <div className="font-display text-sm font-semibold text-ink mb-1">AI Partner Belajar</div>
+                <div className="text-[11px] text-ink-muted leading-relaxed line-clamp-2">
+                  Upload materi → ringkasan, flashcard, kuis & tutor AI dari muqarrar-mu
+                </div>
+                <div className="mt-2 text-[10px] font-medium text-emerald-400">Beta · Add-on</div>
+              </button>
             </div>
           </Reveal>
         </div>

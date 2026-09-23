@@ -169,6 +169,24 @@ const getMemberCode = () => {
   } catch { return null; }
 };
 
+/* ── AI ADD-ON SUBSCRIPTION (Mayar) ── */
+
+const checkAiSubscription = async () => {
+  const code = getMemberCode();
+  if (!code) return { active: false };
+  try {
+    const res = await fetch('/api/ai-partner?action=status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ member_code: code }),
+    });
+    const data = await res.json();
+    return { active: !!data.active };
+  } catch {
+    return { active: false };
+  }
+};
+
 /* ── NOTES (Kurasah) ── */
 
 const sbSaveNote = async (note) => {
@@ -459,6 +477,7 @@ const sbPushAllUserData = async () => {
 
 Object.assign(window, {
   getMemberCode,
+  checkAiSubscription,
   sbLoadNotes, sbSaveNote, sbDeleteNote,
   sbLoadProgress, sbSaveProgress,
   sbLoadIntentions, sbSaveIntention,

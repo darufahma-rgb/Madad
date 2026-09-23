@@ -354,29 +354,6 @@ const TalkhisanSection = ({ profile }) => {
     </div>
   );
 
-  const compressImage = (file, maxSizeMB = 1.5) => {
-    return new Promise((resolve) => {
-      if (file.size <= maxSizeMB * 1024 * 1024) { resolve(file); return; }
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ratio = Math.sqrt((maxSizeMB * 1024 * 1024) / file.size);
-          canvas.width  = Math.floor(img.width  * ratio);
-          canvas.height = Math.floor(img.height * ratio);
-          canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-          canvas.toBlob(
-            blob => resolve(new File([blob], file.name, { type: 'image/jpeg' })),
-            'image/jpeg', 0.85
-          );
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
-  };
-
   const handleFotoUpload = async (file) => {
     if (!file) return;
 
@@ -436,77 +413,42 @@ const TalkhisanSection = ({ profile }) => {
     setUploading(true);
     setUploadError('');
     try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          const script = document.createElement('script');
-          script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-          document.head.appendChild(script);
-          await new Promise(resolve => script.onload = resolve);
+      const { numPages, pages } = await extractPdfPages(file, 30);
 
-          window.pdfjsLib.GlobalWorkerOptions.workerSrc =
-            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      if (!pages) {
+        setUploadError(`PDF ini punya ${numPages} halaman — melebihi batas 30 halaman. Talkhisan biasanya tidak sepanjang itu. Coba potong PDF atau upload per bagian.`);
+        return;
+      }
 
-          const pdf = await window.pdfjsLib.getDocument({ data: e.target.result }).promise;
+      if (pages.length === 0) {
+        setUploadError('PDF ini berupa scan/gambar — tidak ada teks yang bisa diekstrak. Screenshot halaman dan upload sebagai foto.');
+        return;
+      }
 
-          if (pdf.numPages > 30) {
-            setUploadError(`PDF ini punya ${pdf.numPages} halaman — melebihi batas 30 halaman. Talkhisan biasanya tidak sepanjang itu. Coba potong PDF atau upload per bagian.`);
-            setUploading(false);
-            return;
-          }
+      const res = await fetch('/api/parse?action=talkhisan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pdf_pages: pages, member_code: session.code })
+      });
 
-          const maxPages = pdf.numPages;
-          const pages = [];
+      const data = await res.json();
 
-          for (let i = 1; i <= maxPages; i++) {
-            const page = await pdf.getPage(i);
-            const textContent = await page.getTextContent();
-            let pageText = '';
-            let lastY = null;
-            for (const item of textContent.items) {
-              if (lastY !== null && Math.abs(item.transform[5] - lastY) > 5) pageText += '\n';
-              pageText += item.str;
-              lastY = item.transform[5];
-            }
-            if (pageText.trim()) pages.push(pageText.trim());
-          }
+      if (data.error === 'rate_limit') {
+        setUploadError('Kamu sudah menggunakan fitur ini 3x hari ini. Coba lagi besok.');
+        return;
+      }
 
-          if (pages.length === 0) {
-            setUploadError('PDF ini berupa scan/gambar — tidak ada teks yang bisa diekstrak. Screenshot halaman dan upload sebagai foto.');
-            setUploading(false);
-            return;
-          }
-
-          const res = await fetch('/api/parse?action=talkhisan', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pdf_pages: pages, member_code: session.code })
-          });
-
-          const data = await res.json();
-
-          if (data.error === 'rate_limit') {
-            setUploadError('Kamu sudah menggunakan fitur ini 3x hari ini. Coba lagi besok.');
-            setUploading(false);
-            return;
-          }
-
-          if (data.ok) {
-            setTeksInput(data.teks);
-            setInputType('teks');
-            incrementUsage();
-            toast.push(`${pages.length} halaman berhasil dibaca — pilih mode di bawah`);
-          } else {
-            setUploadError(data.error || 'Gagal proses PDF');
-          }
-        } catch (err) {
-          setUploadError('Gagal proses PDF: ' + err.message);
-        }
-        setUploading(false);
-      };
-      reader.readAsArrayBuffer(file);
+      if (data.ok) {
+        setTeksInput(data.teks);
+        setInputType('teks');
+        incrementUsage();
+        toast.push(`${pages.length} halaman berhasil dibaca — pilih mode di bawah`);
+      } else {
+        setUploadError(data.error || 'Gagal proses PDF');
+      }
     } catch (err) {
-      setUploadError('Gagal upload: ' + err.message);
+      setUploadError('Gagal proses PDF: ' + err.message);
+    } finally {
       setUploading(false);
     }
   };

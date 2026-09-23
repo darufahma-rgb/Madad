@@ -53,6 +53,7 @@ const App = () => {
   const { session, profile } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
+  const [aiPaymentOpen, setAiPaymentOpen] = useState(false);
 
   useEffect(() => {
     const s = document.getElementById("splash");
@@ -65,7 +66,7 @@ const App = () => {
       "/dashboard", "/tools", "/paths", "/onboarding",
       "/kurasah", "/maddah", "/siap-imtihan",
       "/s2-maddah", "/mahad-maddah", "/prompt-library",
-      "/soal-detail",
+      "/soal-detail", "/ai-partner",
     ];
     const isMemberRoute = memberOnly.some(r => path === r || path.startsWith(r + "?") || path.startsWith(r + "/"));
 
@@ -103,7 +104,8 @@ const App = () => {
   };
 
   const openPayment = () => { setLoginOpen(false); setPaymentOpen(true); };
-  const openLogin  = () => { setPaymentOpen(false); setLoginOpen(true); };
+  const openAiPayment = () => { setLoginOpen(false); setAiPaymentOpen(true); };
+  const openLogin  = () => { setPaymentOpen(false); setAiPaymentOpen(false); setLoginOpen(true); };
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
   const isPublic = path === "/" || path.startsWith("/sample/") || path === "/ethics" || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal";
@@ -120,7 +122,7 @@ const App = () => {
   }
 
   let routeLabel = "Beranda";
-  let page = <LandingPage onOpenLogin={openLogin} onOpenPayment={openPayment}/>;
+  let page = <LandingPage onOpenLogin={openLogin} onOpenPayment={openPayment} onOpenAiPayment={openAiPayment}/>;
   if (path.startsWith("/sample/nahwu"))             { page = <SampleNahwuPage/>; routeLabel = "Sample Nahwu"; }
   else if (path === "/ethics")            { page = <EthicsPage/>; routeLabel = "Etika"; }
   else if (path === "/maddah-publik")    { page = <MaddahPublikPage onOpenPayment={openPayment} onOpenLogin={openLogin}/>; routeLabel = "Katalog Maddah"; }
@@ -150,6 +152,8 @@ const App = () => {
   else if (path === "/submit-soal") { page = <SubmitSoalPage/>; routeLabel = "Submit Soal"; }
   else if (path === "/bank-soal") { page = <BankSoalPublikPage/>; routeLabel = "Bank Soal"; }
   else if (path === "/checklist-soal") { page = <ChecklistSoalPage/>; routeLabel = "Checklist Soal"; }
+  else if (path === "/ai-partner" || path === "/ai-partner/") { page = <AiPartnerPage/>; routeLabel = "AI Partner"; }
+  else if (path.startsWith("/ai-partner/")) { page = <AiPartnerDetailPage key={path} setId={path.split("/")[2].split("?")[0]}/>; routeLabel = "AI Partner"; }
 
   // QuickNote muncul di semua halaman member yang sudah onboarded, kecuali admin & public
   const showQuickNote = session && profile?.onboarded && !isAdmin && !isPublic;
@@ -166,6 +170,7 @@ const App = () => {
       </div>
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} onSuccess={handleLoginSuccess}/>
       <PaymentModal open={paymentOpen} onClose={() => setPaymentOpen(false)} onOpenLogin={openLogin}/>
+      <AiSubscriptionModal open={aiPaymentOpen} onClose={() => setAiPaymentOpen(false)} onOpenLogin={openLogin}/>
       {showQuickNote && <QuickNoteButton/>}
       {isMember && <SupportButton/>}
       {isMember && <MobileTabBar/>}

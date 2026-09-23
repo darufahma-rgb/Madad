@@ -102,6 +102,7 @@ const AdminPage = () => {
               { id: "onboarding", label: "Onboarding Data",   icon: "list" },
               { id: "guides",     label: "Guide Manager",     icon: "sparkles" },
               { id: "bank-soal",  label: "Bank Soal",         icon: "fileText" },
+              { id: "ai-subs",    label: "AI Subscriptions",  icon: "sparkles" },
               { id: "settings",   label: "Settings",          icon: "shield" },
             ].map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
@@ -125,6 +126,7 @@ const AdminPage = () => {
         {tab === "onboarding" && <AdminOnboarding/>}
         {tab === "guides"     && <AdminGuides/>}
         {tab === "bank-soal"  && <AdminBankSoal/>}
+        {tab === "ai-subs"    && <AdminSubscriptions/>}
         {tab === "settings"   && <AdminSettings/>}
       </div>
     </div>
@@ -1392,6 +1394,8 @@ const AdminSettings = () => {
     tagline:      "Panduan Belajar Al-Azhar dengan AI",
     whatsapp:     "+201xxxxxxxxx",
     lynkUrl:      "https://lynk.id/talqee",
+    mayarUrl:     "",
+    aiPriceLabel: "Rp 0 / bulan",
     ...loadSettings(),
   }));
   const [saved, setSaved] = useState(false);
@@ -1427,6 +1431,16 @@ const AdminSettings = () => {
             hint="URL halaman pembayaran di Lynk.id."/>
         </div>
 
+        <div className="card-glass p-6 space-y-3">
+          <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">AI Partner Belajar (Add-on)</div>
+          <SettingsField label="URL Mayar" value={settings.mayarUrl} mono
+            onChange={v => setSettings({...settings, mayarUrl: v})}
+            hint="URL produk Membership AI Partner di Mayar. Pastikan produknya punya custom field 'Kode Member Talqeeh'."/>
+          <SettingsField label="Label harga" value={settings.aiPriceLabel}
+            onChange={v => setSettings({...settings, aiPriceLabel: v})}
+            hint="Teks harga yang ditampilkan di CTA, misal 'Rp 25.000 / bulan'."/>
+        </div>
+
         <div className="flex justify-between items-center">
           <div className="text-xs text-ink-soft">
             {saved ? "✓ Tersimpan ke localStorage" : "Perubahan belum disimpan"}
@@ -1455,6 +1469,125 @@ const AdminSettings = () => {
           </button>
         </div>
       </div>
+    </div>
+  );
+};
+
+/* ============== ADMIN AI SUBSCRIPTIONS ============== */
+
+const aiPartnerAdmin = async (action, payload = {}) => {
+  const res = await fetch(`/api/ai-partner?action=${action}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
+    body: JSON.stringify(payload),
+  });
+  return res.json();
+};
+
+const AdminSubscriptions = () => {
+  const toast = useToast();
+  const [rows, setRows]       = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError]     = useState(null);
+  const [grantCode, setGrantCode] = useState('');
+  const [busy, setBusy]       = useState(false);
+
+  const fetchData = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await aiPartnerAdmin('admin-list');
+      if (data.ok) setRows(data.data);
+      else setError(data.error || 'Gagal memuat data');
+    } catch (e) { setError(e.message); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const handleGrant = async () => {
+    if (!grantCode.trim()) return;
+    setBusy(true);
+    try {
+      const data = await aiPartnerAdmin('admin-grant', { member_code: grantCode });
+      if (data.ok) { toast.push('Akses AI Partner diberikan.'); setGrantCode(''); fetchData(); }
+      else toast.push(data.error || 'Gagal memberi akses');
+    } finally { setBusy(false); }
+  };
+
+  const handleRevoke = async (row) => {
+    if (!confirm(`Cabut akses AI Partner untuk ${row.member_code}?`)) return;
+    const data = await aiPartnerAdmin('admin-revoke', { id: row.id });
+    if (data.ok) { toast.push('Akses dicabut.'); fetchData(); }
+    else toast.push(data.error || 'Gagal mencabut akses');
+  };
+
+  const statusColor = (s) => s === 'active' ? '#3ecf8e' : s === 'expired' ? '#ffb84d' : '#888';
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="font-display text-4xl font-semibold text-ink mb-1">AI Subscriptions</h1>
+          <p className="text-ink-muted">Akses AI Partner Belajar — dari webhook Mayar atau diberikan manual oleh admin.</p>
+        </div>
+        <button onClick={fetchData} className="btn btn-ghost text-sm px-4 py-2">
+          <Icon name="refresh" className="w-4 h-4"/> Refresh
+        </button>
+      </div>
+
+      <div className="card-glass p-5 mb-6 flex gap-3 flex-wrap items-end">
+        <div className="flex-1 min-w-[220px]">
+          <label className="text-xs uppercase tracking-wider text-gold-400 mb-2 block">Beri akses manual (beta)</label>
+          <input value={grantCode} onChange={e => setGrantCode(e.target.value)} placeholder="MSR-XXXX-XXXX"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink text-sm outline-none font-mono"/>
+        </div>
+        <button onClick={handleGrant} disabled={busy || !grantCode.trim()} className="btn btn-primary text-sm px-5 py-2.5">
+          {busy ? 'Memproses...' : 'Beri Akses'}
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="text-ink-muted text-sm">Memuat...</div>
+      ) : error ? (
+        <div className="text-rose-400 text-sm">{error}</div>
+      ) : rows.length === 0 ? (
+        <div className="text-ink-muted text-sm">Belum ada subscriber.</div>
+      ) : (
+        <div className="card-glass overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-ink-soft text-xs uppercase tracking-wider border-b border-line">
+                <th className="px-4 py-3">Member Code</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Email/WA (Mayar)</th>
+                <th className="px-4 py-3">Event Terakhir</th>
+                <th className="px-4 py-3">Update Terakhir</th>
+                <th className="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.id} className="border-b border-line/50">
+                  <td className="px-4 py-3 font-mono">{r.member_code}</td>
+                  <td className="px-4 py-3">
+                    <span style={{ color: statusColor(r.status) }} className="font-semibold">{r.status}</span>
+                    {r.product_id === 'manual' && <span className="text-[10px] text-ink-soft ml-2">manual</span>}
+                  </td>
+                  <td className="px-4 py-3 text-ink-muted">{r.mayar_email || r.mayar_mobile || '-'}</td>
+                  <td className="px-4 py-3 text-ink-muted">{r.last_event || '-'}</td>
+                  <td className="px-4 py-3 text-ink-muted">{r.updated_at ? new Date(r.updated_at).toLocaleString('id-ID') : '-'}</td>
+                  <td className="px-4 py-3 text-right">
+                    {r.status === 'active' && (
+                      <button onClick={() => handleRevoke(r)} className="text-xs text-rose-400 hover:text-rose-300">Cabut</button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
