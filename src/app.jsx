@@ -50,7 +50,7 @@ class ErrorBoundary extends React.Component {
 
 const App = () => {
   const path = useRoute();
-  const { session, profile } = useAuth();
+  const { session, profile, authStatus } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [aiPaymentOpen, setAiPaymentOpen] = useState(false);
@@ -59,6 +59,11 @@ const App = () => {
     const s = document.getElementById("splash");
     if (s) { s.style.opacity = "0"; setTimeout(() => s.remove(), 580); }
   }, []);
+
+  // Balik dari login Google tapi akun belum terhubung ke member → tampilkan layar aktivasi.
+  useEffect(() => {
+    if (authStatus === "needs_activation" || authStatus === "inactive") setLoginOpen(true);
+  }, [authStatus]);
 
   // Auto-redirect logic on path change
   useEffect(() => {
@@ -80,11 +85,7 @@ const App = () => {
     // 2) Sudah login & sedang di landing murni → dorong ke "rumah"-nya
     //    (jangan ganggu /maddah-publik, /framework, /ethics, /sample — itu memang publik)
     if (session && (path === "/" || path === "")) {
-      if (profile && !profile.onboarded) {
-        navigate("/onboarding");
-      } else if (profile && profile.onboarded) {
-        navigate("/dashboard");
-      }
+      navigate(profile?.onboarded ? "/dashboard" : "/onboarding");
       return;
     }
 
@@ -108,7 +109,7 @@ const App = () => {
   const openLogin  = () => { setPaymentOpen(false); setAiPaymentOpen(false); setLoginOpen(true); };
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
-  const isPublic = path === "/" || path.startsWith("/sample/") || path === "/ethics" || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal";
+  const isPublic = path === "/" || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal";
 
   // Admin gets its own layout (no public nav/footer)
   if (isAdmin) {
@@ -125,6 +126,7 @@ const App = () => {
   let page = <LandingPage onOpenLogin={openLogin} onOpenPayment={openPayment} onOpenAiPayment={openAiPayment}/>;
   if (path.startsWith("/sample/nahwu"))             { page = <SampleNahwuPage/>; routeLabel = "Sample Nahwu"; }
   else if (path === "/ethics")            { page = <EthicsPage/>; routeLabel = "Etika"; }
+  else if (path === "/privacy")           { page = <PrivacyPage/>; routeLabel = "Kebijakan Privasi"; }
   else if (path === "/maddah-publik")    { page = <MaddahPublikPage onOpenPayment={openPayment} onOpenLogin={openLogin}/>; routeLabel = "Katalog Maddah"; }
   else if (path === "/onboarding" || path.startsWith("/onboarding?"))   { page = <OnboardingPage/>; routeLabel = "Onboarding"; }
   else if (path === "/welcome")      { page = <WelcomePage/>; routeLabel = "Selamat Datang"; }

@@ -1,4 +1,5 @@
 import { verifyToken } from './admin-auth.js';
+import { requireMember } from './_lib/member.js';
 
 const parseBody = (req) => new Promise((resolve) => {
   let body = '';
@@ -162,15 +163,19 @@ Catatan penting:
 async function handleParseTalkhisan(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
-  const { foto_base64, mime_type, pdf_pages, member_code } = await parseBody(req);
+  const { foto_base64, mime_type, pdf_pages } = await parseBody(req);
   const openrouterKey = process.env.OPENROUTER_API_KEY;
   const supabaseUrl   = process.env.SUPABASE_URL;
   const serviceKey    = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  // ── GUARDRAIL 1: Wajib member ──
-  if (!member_code) {
+  // ── GUARDRAIL 1: Wajib member (identitas dari token login Google) ──
+  let access;
+  try { access = await requireMember(req); }
+  catch { access = { ok: false }; }
+  if (!access.ok) {
     return res.status(401).json({ ok: false, error: 'Fitur ini hanya untuk member Talqeeh.' });
   }
+  const member_code = access.code;
 
   // ── GUARDRAIL 2: Rate limit 3x per hari per member ──
   try {

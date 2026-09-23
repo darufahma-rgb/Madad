@@ -224,7 +224,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
         <div className="hidden md:flex items-center gap-2">
           {session ? (
             <>
-              <div className="px-3 py-1.5 rounded-lg chip-glass text-xs">
+              <div className="px-3 py-1.5 rounded-lg chip-glass text-xs" title={`${session.email || ""} · ${session.code}`}>
                 <span className="text-ink-muted">Member:</span> <span className="text-ink font-medium">{session.name}</span>
               </div>
               {confirmLogout ? (
@@ -333,6 +333,8 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
             <div className="px-3 py-3 mb-1">
               <div className="text-xs text-ink-soft mb-0.5">Member</div>
               <div className="text-ink font-medium">{session.name}</div>
+              {session.email && <div className="text-xs text-ink-muted mt-0.5">{session.email}</div>}
+              <div className="text-[11px] text-ink-soft font-mono mt-1">Kode member: {session.code}</div>
             </div>
             <SheetLink icon="target" label="Siap Imtihan" onClick={() => { navigate("/siap-imtihan"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="bookOpen" label="Learning Path" onClick={() => { navigate("/paths"); setMobileSheetOpen(false); }}/>
@@ -372,6 +374,7 @@ const Footer = () => (
           <a href="#/paths/muqaranah" onClick={(e)=>{e.preventDefault(); navigate("/paths/muqaranah");}} className="text-ink-muted hover:text-ink">Muqaranah</a>
           <a href="#/kurasah" onClick={(e)=>{e.preventDefault(); navigate("/kurasah");}} className="text-ink-muted hover:text-ink">Kurasah</a>
           <a href="#/ethics" onClick={(e)=>{e.preventDefault(); navigate("/ethics");}} className="text-ink-muted hover:text-ink">Etika</a>
+          <a href="#/privacy" onClick={(e)=>{e.preventDefault(); navigate("/privacy");}} className="text-ink-muted hover:text-ink">Kebijakan Privasi</a>
           <a href="#/paths" onClick={(e)=>{e.preventDefault(); navigate("/paths");}} className="text-ink-muted hover:text-ink">Learning Path</a>
         </div>
       </div>
@@ -404,46 +407,81 @@ const Footer = () => (
 );
 
 /* ---------------- Login Modal ---------------- */
+const ADMIN_WA_LINK = "wa.me/6281311506025";
+
+const ACTIVATION_ERRORS = {
+  not_found:      "Kode tidak ditemukan. Cek lagi atau hubungi admin.",
+  already_linked: `Kode ini sudah terhubung ke akun Google lain. Login pakai akun itu, atau hubungi admin di ${ADMIN_WA_LINK}.`,
+  expired:        "Keanggotaan untuk kode ini sudah berakhir. Hubungi admin untuk perpanjangan.",
+  disabled:       "Kode ini dinonaktifkan. Hubungi admin.",
+  rate_limited:   "Terlalu banyak percobaan. Coba lagi 15 menit lagi.",
+  invalid:        "Masukkan kode member dengan format MSR-XXXX-XXXX.",
+  error:          "Gagal memproses. Cek koneksi lalu coba lagi.",
+};
+
+const GoogleMark = () => (
+  <svg className="w-5 h-5" viewBox="0 0 48 48" aria-hidden="true">
+    <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.6 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/>
+    <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+    <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+    <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/>
+  </svg>
+);
+
 const LoginModal = ({ open, onClose, onSuccess }) => {
-  const [code, setCode] = useState("");
-  const [status, setStatus] = useState(null);
-  const [conflict, setConflict] = useState(null);
-  const { login, loginLoading } = useAuth();
+  const { authStatus, authInfo, signInWithGoogle, redeemCode, logout } = useAuth();
+  const [code, setCode]       = useState("");
+  const [error, setError]     = useState(null);
+  const [loading, setLoading] = useState(false);
   const inputRef = useRef(null);
   const toast = useToast();
 
   useEffect(() => {
-    if (open) {
-      setCode("");
-      setStatus(null);
-      setConflict(null);
-      setTimeout(() => inputRef.current?.focus(), 100);
-    }
-  }, [open]);
+    if (!open) return;
+    setCode(authInfo?.prefillCode || "");
+    setError(authInfo?.lastError ? ACTIVATION_ERRORS[authInfo.lastError] || ACTIVATION_ERRORS.error : null);
+    setLoading(false);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  }, [open, authStatus]);
 
-  const submit = async (e) => {
+  useEffect(() => {
+    if (open && authStatus === "member") onSuccess && onSuccess();
+  }, [open, authStatus]);
+
+  const handleGoogle = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      await signInWithGoogle();
+    } catch (e) {
+      setError("Gagal membuka login Google: " + e.message);
+      setLoading(false);
+    }
+  };
+
+  const handleActivate = async (e) => {
     e?.preventDefault();
     const c = code.trim().toUpperCase();
-    if (!c || loginLoading) return;
-    const result = await login(c);
-    if (result.ok) {
-      toast.push("Selamat datang, " + result.member.name);
-      onSuccess && onSuccess(result);
-    } else if (result.status === "device_conflict") {
-      setConflict(result.member);
-    } else {
-      setStatus(result);
-    }
+    if (c.length < 8 || loading) return;
+    setLoading(true);
+    setError(null);
+    const r = await redeemCode(c);
+    setLoading(false);
+    if (r.ok) toast.push("Akun berhasil diaktifkan. Selamat datang!");
+    else setError(ACTIVATION_ERRORS[r.status] || ACTIVATION_ERRORS.error);
   };
 
-  const takeover = async () => {
-    const result = await login(code.trim().toUpperCase(), { forceTakeover: true });
-    if (result.ok) {
-      toast.push("Berhasil login di device ini");
-      setConflict(null);
-      onSuccess && onSuccess(result);
-    }
+  const switchAccount = async () => {
+    await logout();
+    handleGoogle();
   };
+
+  const errorBox = error && (
+    <div className="mt-3 px-4 py-2.5 rounded-lg bg-rose-600/10 border border-rose-600/30 text-rose-600 text-sm flex items-start gap-2">
+      <Icon name="alert" className="w-4 h-4 mt-0.5 flex-shrink-0"/>
+      <span>{error}</span>
+    </div>
+  );
 
   return (
     <Modal open={open} onClose={onClose} size="md">
@@ -455,58 +493,58 @@ const LoginModal = ({ open, onClose, onSuccess }) => {
           </button>
         </div>
 
-        {conflict ? (
-          <div className="mt-3">
-            <h2 className="font-display text-2xl font-semibold text-ink mb-2">Member sedang aktif di device lain</h2>
-            <p className="text-sm text-ink-muted leading-relaxed mb-5">
-              Kode <span className="font-mono text-gold-300">{conflict.code}</span> sedang aktif di:
-              <span className="text-ink ml-1">{conflict.device}</span>.
-              Lanjutkan akan otomatis logout device sebelumnya.
+        {authStatus === "needs_activation" ? (
+          <form onSubmit={handleActivate} className="mt-3">
+            <h2 className="font-display text-2xl font-semibold text-ink mb-2">Aktifkan akun member</h2>
+            <p className="text-sm text-ink-muted mb-6 leading-relaxed">
+              Akun Google <span className="text-ink">{authInfo?.email}</span> belum terhubung ke member Talqeeh.
+              Masukkan kode member dari admin — cukup sekali, setelah itu kamu tinggal login pakai Google.
             </p>
-            <div className="flex gap-2">
-              <button onClick={() => setConflict(null)} className="btn btn-ghost flex-1">Batal</button>
-              <button onClick={takeover} className="btn btn-primary flex-1">Lanjut di device ini</button>
-            </div>
-          </div>
-        ) : (
-          <form onSubmit={submit} className="mt-3">
-            <h2 className="font-display text-2xl font-semibold text-ink mb-2">Masukkan kode akses member</h2>
-            <p className="text-sm text-ink-muted mb-6">Format: <span className="font-mono text-gold-300">MSR-XXXX-XXXX</span></p>
             <input
               ref={inputRef}
               value={code}
-              onChange={(e) => { setCode(e.target.value.toUpperCase()); setStatus(null); }}
+              onChange={(e) => { setCode(e.target.value.toUpperCase()); setError(null); }}
               placeholder="MSR-XXXX-XXXX"
               className="code-input w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-xl text-ink placeholder:text-ink-soft focus:outline-none transition-colors"
               style={{borderRadius:12}}
-              onFocus={e => { e.target.style.borderColor="rgba(62,207,142,0.55)"; e.target.style.boxShadow="0 0 0 3px rgba(62,207,142,0.15)"; }}
-              onBlur={e => { e.target.style.borderColor="rgba(255,255,255,0.10)"; e.target.style.boxShadow="none"; }}
               maxLength={13}
             />
-            {status && !status.ok && (
-              <div className="mt-3 px-4 py-2.5 rounded-lg bg-rose-600/10 border border-rose-600/30 text-rose-600 text-sm flex items-start gap-2">
-                <Icon name="alert" className="w-4 h-4 mt-0.5 flex-shrink-0"/>
-                <span>
-                  {status.status === "not_found" && "Kode tidak ditemukan. Cek lagi atau hubungi admin."}
-                  {status.status === "expired" && "Kode sudah expired. Hubungi admin untuk renewal."}
-                  {status.status === "disabled" && "Kode dinonaktifkan. Hubungi admin."}
-                  {status.status === "device_mismatch" && "Kode ini sudah terikat ke perangkat lain. Untuk reset device, hubungi admin Talqeeh di wa.me/6281311506025"}
-                </span>
-              </div>
-            )}
-            <button type="submit" disabled={code.length < 8 || loginLoading} className={`btn btn-primary w-full mt-5 ${code.length < 8 || loginLoading ? "opacity-50 cursor-not-allowed" : ""}`}>
-              {loginLoading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"/>
-                  Memverifikasi...
-                </span>
-              ) : <>Masuk <Icon name="arrowRight" className="w-4 h-4"/></>}
+            {errorBox}
+            <button type="submit" disabled={code.length < 8 || loading} className={`btn btn-primary w-full mt-5 ${code.length < 8 || loading ? "opacity-50 cursor-not-allowed" : ""}`}>
+              {loading ? "Memverifikasi..." : <>Aktifkan <Icon name="arrowRight" className="w-4 h-4"/></>}
             </button>
             <div className="mt-5 pt-5 border-t border-line text-xs text-ink-soft text-center leading-relaxed">
-              Belum punya kode?<br/>
-              Daftar sebagai member Talqeeh untuk mendapatkan akses.
+              Belum punya kode? Daftar sebagai member Talqeeh untuk mendapatkan akses.<br/>
+              <button type="button" onClick={switchAccount} className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2 mt-2">
+                Pakai akun Google lain
+              </button>
             </div>
           </form>
+        ) : authStatus === "inactive" ? (
+          <div className="mt-3">
+            <h2 className="font-display text-2xl font-semibold text-ink mb-2">Keanggotaan tidak aktif</h2>
+            <p className="text-sm text-ink-muted mb-6 leading-relaxed">
+              {authInfo?.reason === "expired" ? ACTIVATION_ERRORS.expired : ACTIVATION_ERRORS.disabled}
+            </p>
+            <button onClick={switchAccount} className="btn btn-ghost w-full">Pakai akun Google lain</button>
+          </div>
+        ) : (
+          <div className="mt-3">
+            <h2 className="font-display text-2xl font-semibold text-ink mb-2">Masuk ke Talqeeh</h2>
+            <p className="text-sm text-ink-muted mb-6 leading-relaxed">
+              Login pakai akun Google. Member lama: setelah login, masukkan kode member kamu sekali untuk menghubungkan akun.
+            </p>
+            <button onClick={handleGoogle} disabled={loading || authStatus === "loading"}
+              className={`w-full flex items-center justify-center gap-3 rounded-xl px-5 py-3.5 bg-white text-gray-800 font-medium text-sm hover:bg-gray-100 transition ${loading ? "opacity-60 cursor-wait" : ""}`}>
+              <GoogleMark/>
+              {loading ? "Mengarahkan ke Google..." : "Masuk dengan Google"}
+            </button>
+            {errorBox}
+            <div className="mt-5 pt-5 border-t border-line text-xs text-ink-soft text-center leading-relaxed">
+              Belum jadi member?<br/>
+              Daftar sebagai member Talqeeh untuk mendapatkan akses.
+            </div>
+          </div>
         )}
       </div>
     </Modal>

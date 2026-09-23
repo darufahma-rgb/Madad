@@ -6,26 +6,57 @@ import { createClient } from '@supabase/supabase-js';
 let _supabase = null;
 let _supabaseReady = false;
 let _supabaseReadyCallbacks = [];
+let _resolveReady, _rejectReady;
+const _readyPromise = new Promise((resolve, reject) => { _resolveReady = resolve; _rejectReady = reject; });
+_readyPromise.catch(() => {});
 
 const _onSupabaseReady = (fn) => {
   if (_supabaseReady) { fn(); return; }
   _supabaseReadyCallbacks.push(fn);
 };
 
+const whenSupabaseReady = () => _readyPromise;
+
 // Load config from server (keeps credentials out of source code)
 fetch('/api/config')
   .then(r => r.json())
   .then(({ supabaseUrl, supabaseAnonKey }) => {
-    _supabase = createClient(supabaseUrl, supabaseAnonKey);
+    // PKCE: Google redirects back to /?code=… (query string), which doesn't clash with the hash router.
+    _supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { flowType: 'pkce', detectSessionInUrl: true, persistSession: true, autoRefreshToken: true },
+    });
     _supabaseReady = true;
+    _resolveReady(_supabase);
     _supabaseReadyCallbacks.forEach(fn => fn());
     _supabaseReadyCallbacks = [];
   })
   .catch(err => {
     console.error('Failed to load app config:', err);
+    _rejectReady(err);
   });
 
 const _getClient = () => _supabase;
+
+const getAccessToken = async () => {
+  try {
+    const client = await whenSupabaseReady();
+    const { data } = await client.auth.getSession();
+    return data?.session?.access_token || null;
+  } catch { return null; }
+};
+
+// fetch() to our own /api/* with the logged-in user's Supabase token attached.
+const authFetch = async (url, opts = {}, token) => {
+  const accessToken = token || await getAccessToken();
+  return fetch(url, {
+    ...opts,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(opts.headers || {}),
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
+  });
+};
 
 /* ── Status check ── */
 const checkSupabase = async () => {
@@ -34,111 +65,6 @@ const checkSupabase = async () => {
     const data = await res.json();
     return data.supabase === true;
   } catch { return false; }
-};
-
-/* ── Format converters ── */
-const sbToMember = (row) => {
-  if (!row) return null;
-  return {
-    code:      row.code,
-    name:      row.name,
-    whatsapp:  row.whatsapp  || "",
-    duration:  row.duration  || 30,
-    status:    row.status    || "active",
-    createdAt: row.created_at ? row.created_at.slice(0, 10) : "",
-    expiresAt: row.expires_at || "",
-    device:    row.device    || null,
-    deviceId:  row.device_id || null,
-    lastLogin: row.last_login || null,
-    notes:     row.notes     || "",
-    _id:       row.id,
-  };
-};
-
-const memberToSb = (member) => {
-  const row = {};
-  if (member.code      !== undefined) row.code       = member.code;
-  if (member.name      !== undefined) row.name       = member.name;
-  if (member.whatsapp  !== undefined) row.whatsapp   = member.whatsapp;
-  if (member.duration  !== undefined) row.duration   = member.duration;
-  if (member.status    !== undefined) row.status     = member.status;
-  if (member.expiresAt !== undefined) row.expires_at = member.expiresAt;
-  if (member.device    !== undefined) row.device     = member.device;
-  if (member.deviceId  !== undefined) row.device_id  = member.deviceId;
-  if (member.lastLogin !== undefined) row.last_login = member.lastLogin;
-  if (member.notes     !== undefined) row.notes      = member.notes;
-  return row;
-};
-
-/* ── CRUD ── */
-const sbGetAllMembers = async () => {
-  const client = _getClient();
-  if (!client) throw new Error("Supabase not ready");
-  const { data, error } = await client
-    .from("members")
-    .select("*")
-    .order("created_at", { ascending: false });
-  if (error) throw error;
-  return data.map(sbToMember);
-};
-
-const sbGetMemberByCode = async (code) => {
-  try {
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code }),
-    });
-    const data = await res.json();
-    if (!data.ok) return null;
-    return data.member;
-  } catch {
-    return null;
-  }
-};
-
-const sbAddMember = async (member) => {
-  const client = _getClient();
-  if (!client) throw new Error("Supabase not ready");
-  const row = memberToSb(member);
-  const { data, error } = await client
-    .from("members")
-    .insert([row])
-    .select()
-    .single();
-  if (error) throw error;
-  return sbToMember(data);
-};
-
-const sbUpdateMember = async (code, updates) => {
-  const client = _getClient();
-  if (!client) throw new Error("Supabase not ready");
-  const row = memberToSb(updates);
-  const { error } = await client
-    .from("members")
-    .update(row)
-    .eq("code", code);
-  if (error) throw error;
-  return { code, ...updates };
-};
-
-const sbDeleteMember = async (code) => {
-  const client = _getClient();
-  if (!client) throw new Error("Supabase not ready");
-  const { error } = await client.from("members").delete().eq("code", code);
-  if (error) throw error;
-};
-
-const sbBindDevice = async (code, deviceId, deviceLabel) => {
-  return sbUpdateMember(code, {
-    deviceId,
-    device:    deviceLabel,
-    lastLogin: new Date().toISOString(),
-  });
-};
-
-const sbResetDevice = async (code) => {
-  return sbUpdateMember(code, { deviceId: null, device: null });
 };
 
 /* ── Offline fallback ── */
@@ -152,9 +78,10 @@ const sbGetAllMembersFallback = () => {
 
 Object.assign(window, {
   _onSupabaseReady,
+  whenSupabaseReady,
+  authFetch,
   checkSupabase,
   sbGetAllMembersFallback,
-  sbBindDevice,
 });
 
 /* ============================================================
@@ -175,11 +102,7 @@ const checkAiSubscription = async () => {
   const code = getMemberCode();
   if (!code) return { active: false };
   try {
-    const res = await fetch('/api/ai-partner?action=status', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ member_code: code }),
-    });
+    const res = await authFetch('/api/ai-partner?action=status', { method: 'POST', body: '{}' });
     const data = await res.json();
     return { active: !!data.active };
   } catch {

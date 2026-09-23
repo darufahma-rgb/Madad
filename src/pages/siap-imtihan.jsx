@@ -370,10 +370,9 @@ const TalkhisanSection = ({ profile }) => {
       reader.onload = async (e) => {
         const base64 = e.target.result.split(',')[1];
         const mimeType = compressed.type || 'image/jpeg';
-        const res = await fetch('/api/parse?action=talkhisan', {
+        const res = await authFetch('/api/parse?action=talkhisan', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ foto_base64: base64, mime_type: mimeType, member_code: session.code })
+          body: JSON.stringify({ foto_base64: base64, mime_type: mimeType })
         });
         const data = await res.json();
 
@@ -425,10 +424,9 @@ const TalkhisanSection = ({ profile }) => {
         return;
       }
 
-      const res = await fetch('/api/parse?action=talkhisan', {
+      const res = await authFetch('/api/parse?action=talkhisan', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pdf_pages: pages, member_code: session.code })
+        body: JSON.stringify({ pdf_pages: pages })
       });
 
       const data = await res.json();

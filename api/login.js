@@ -1,178 +1,118 @@
-const loginAttempts = new Map();
+import { sbConfig, sbHeaders, normalizeCode, getAuthUser, resolveMember } from './_lib/member.js';
 
-const checkRateLimit = (ip) => {
-  const now      = Date.now();
-  const windowMs = 15 * 60 * 1000;
-  const maxAttempts = 10;
+// Identity comes from the Supabase (Google) access token; a member code is only
+// an activation key that gets bound once to a Google account via action=redeem.
 
-  const attempts = loginAttempts.get(ip) || [];
-  const recent   = attempts.filter(t => now - t < windowMs);
+const MEMBER_FIELDS = 'code,name,email,status,expires_at,auth_user_id';
 
-  if (recent.length >= maxAttempts) return false;
-
+const redeemAttempts = new Map();
+const checkRedeemLimit = (key) => {
+  const now = Date.now();
+  const recent = (redeemAttempts.get(key) || []).filter(t => now - t < 15 * 60 * 1000);
+  if (recent.length >= 10) return false;
   recent.push(now);
-  loginAttempts.set(ip, recent);
+  redeemAttempts.set(key, recent);
   return true;
 };
+
+const parseBody = (req) => new Promise((resolve) => {
+  let body = '';
+  req.on('data', chunk => body += chunk);
+  req.on('end', () => {
+    try { resolve(JSON.parse(body || '{}')); }
+    catch { resolve({}); }
+  });
+});
+
+const toPublicMember = (m, user) => ({
+  code:      m.code,
+  name:      m.name || user.name || user.email.split('@')[0],
+  email:     m.email || user.email,
+  status:    m.status,
+  expiresAt: m.expires_at,
+});
+
+const touchLastLogin = (code) => {
+  const { url, key } = sbConfig();
+  fetch(`${url}/rest/v1/members?code=eq.${encodeURIComponent(code)}`, {
+    method: 'PATCH',
+    headers: sbHeaders(key, { Prefer: 'return=minimal' }),
+    body: JSON.stringify({ last_login: new Date().toISOString() }),
+  }).catch(e => console.warn('[login] last_login update failed:', e.message));
+};
+
+async function handleSession(user, res) {
+  const member = await resolveMember(user);
+  if (!member) return res.status(200).json({ ok: false, status: 'not_member', email: user.email });
+  if (member.status !== 'active') return res.status(200).json({ ok: false, status: member.status });
+  touchLastLogin(member.code);
+  return res.status(200).json({ ok: true, member: toPublicMember(member, user) });
+}
+
+async function handleRedeem(req, user, res) {
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.headers['x-real-ip'] || 'unknown';
+  if (!checkRedeemLimit(`user:${user.id}`) || (ip !== 'unknown' && !checkRedeemLimit(`ip:${ip}`))) {
+    return res.status(429).json({ ok: false, status: 'rate_limited' });
+  }
+
+  const code = normalizeCode((await parseBody(req)).code);
+  if (!code) return res.status(400).json({ ok: false, status: 'invalid' });
+
+  const current = await resolveMember(user);
+  if (current?.status === 'active') {
+    return res.status(200).json({ ok: true, member: toPublicMember(current, user) });
+  }
+
+  const { url, key } = sbConfig();
+  const rows = await fetch(
+    `${url}/rest/v1/members?code=eq.${encodeURIComponent(code)}&select=${MEMBER_FIELDS}&limit=1`,
+    { headers: sbHeaders(key) }
+  ).then(r => r.json());
+  const row = Array.isArray(rows) ? rows[0] : null;
+
+  if (!row) return res.status(200).json({ ok: false, status: 'not_found' });
+  if (row.status !== 'active') return res.status(200).json({ ok: false, status: row.status });
+  if (row.auth_user_id && row.auth_user_id !== user.id) {
+    return res.status(200).json({ ok: false, status: 'already_linked' });
+  }
+
+  // Conditional on auth_user_id still being null, so two accounts racing for one code can't both win.
+  const link = (patch) => fetch(
+    `${url}/rest/v1/members?code=eq.${encodeURIComponent(code)}&auth_user_id=is.null&select=${MEMBER_FIELDS}`,
+    {
+      method: 'PATCH',
+      headers: sbHeaders(key, { Prefer: 'return=representation' }),
+      body: JSON.stringify({ auth_user_id: user.id, last_login: new Date().toISOString(), ...patch }),
+    }
+  );
+
+  let r = await link(row.email ? {} : { email: user.email });
+  if (!r.ok) r = await link({}); // email already used by another member row
+  const linked = await r.json().catch(() => []);
+  if (!Array.isArray(linked) || !linked[0]) return res.status(200).json({ ok: false, status: 'already_linked' });
+
+  return res.status(200).json({ ok: true, member: toPublicMember(linked[0], user) });
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
-  }
+  if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
 
-  const clientIP =
-    (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
-    req.headers['x-real-ip'] ||
-    'unknown';
-
-  if (clientIP !== 'unknown' && !checkRateLimit(clientIP)) {
-    console.warn(`[login] Rate limited: ${clientIP}`);
-    res.status(200).json({ ok: false, status: 'not_found' });
-    return;
-  }
-
-  let rawBody = '';
-  await new Promise(resolve => { req.on('data', c => rawBody += c); req.on('end', resolve); });
-
-  let code, bindDevice, clientDeviceId, clientDeviceLabel;
-  try {
-    const parsed = JSON.parse(rawBody || '{}');
-    code               = parsed.code;
-    bindDevice         = parsed.bindDevice;
-    clientDeviceId     = parsed.deviceId;
-    clientDeviceLabel  = parsed.deviceLabel;
-  } catch {
-    res.status(400).json({ error: 'Invalid JSON' });
-    return;
-  }
-
-  if (!code || typeof code !== 'string') {
-    res.status(400).json({ error: 'Code required' });
-    return;
-  }
-
-  const supabaseUrl = process.env.SUPABASE_URL          || '';
-  const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
-
-  if (!supabaseUrl || !serviceKey) {
-    res.status(500).json({ error: 'Server tidak terkonfigurasi' });
-    return;
-  }
+  const action = req.query?.action || 'session';
 
   try {
-    if (clientIP !== 'unknown') {
-      const blRes = await fetch(
-        `${supabaseUrl}/rest/v1/submission_blacklist?type=eq.ip&value=eq.${encodeURIComponent(clientIP)}&select=id`,
-        { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } }
-      );
-      const bl = await blRes.json();
-      if (Array.isArray(bl) && bl.length > 0) {
-        console.warn(`[login] Blacklisted IP: ${clientIP}`);
-        res.status(200).json({ ok: false, status: 'not_found' });
-        return;
-      }
-    }
+    const user = await getAuthUser(req);
+    if (!user) return res.status(401).json({ ok: false, status: 'unauthenticated' });
 
-    const memberRes = await fetch(
-      `${supabaseUrl}/rest/v1/members?code=eq.${encodeURIComponent(code.trim().toUpperCase())}&select=*&limit=1`,
-      { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, Accept: 'application/json' } }
-    );
-    const members = await memberRes.json();
-
-    if (!Array.isArray(members) || members.length === 0) {
-      res.status(200).json({ ok: false, status: 'not_found' });
-      return;
-    }
-
-    const m = members[0];
-
-    if (m.status !== 'active') {
-      res.status(200).json({ ok: false, status: m.status });
-      return;
-    }
-
-    loginAttempts.delete(clientIP);
-
-    // Cek device lock — kalau device_id sudah terikat, harus sama
-    if (m.device_id && clientDeviceId && m.device_id !== clientDeviceId) {
-      console.warn(`[login] Device mismatch: ${m.code} — expected ${m.device_id}, got ${clientDeviceId}`);
-      res.status(200).json({
-        ok: false,
-        status: 'device_mismatch',
-        message: 'Kode ini sudah terikat ke perangkat lain. Hubungi admin untuk reset device.'
-      });
-      return;
-    }
-
-    const deviceLabel = (() => {
-      const ua = req.headers['user-agent'] || '';
-      if (/iPhone|iPad/i.test(ua))  return 'iOS';
-      if (/Android/i.test(ua))      return 'Android';
-      if (/Mac/i.test(ua))          return 'Mac';
-      if (/Windows/i.test(ua))      return 'Windows';
-      if (/Linux/i.test(ua))        return 'Linux';
-      return 'Browser';
-    })();
-
-    // Handle bind device request — simpan device_id ke Supabase
-    if (bindDevice && clientDeviceId) {
-      fetch(
-        `${supabaseUrl}/rest/v1/members?code=eq.${encodeURIComponent(m.code)}`,
-        {
-          method: 'PATCH',
-          headers: {
-            apikey: serviceKey,
-            Authorization: `Bearer ${serviceKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            device_id:  clientDeviceId,
-            device:     clientDeviceLabel || 'Browser',
-            last_login: new Date().toISOString(),
-          })
-        }
-      ).catch(e => console.warn('[login] bind device failed:', e.message));
-    } else {
-      fetch(
-        `${supabaseUrl}/rest/v1/members?code=eq.${encodeURIComponent(m.code)}`,
-        {
-          method: 'PATCH',
-          headers: {
-            apikey: serviceKey,
-            Authorization: `Bearer ${serviceKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            last_login: new Date().toISOString(),
-            device: deviceLabel,
-          })
-        }
-      ).catch(e => console.warn('[login] last_login update failed:', e.message));
-    }
-
-    res.status(200).json({
-      ok: true,
-      member: {
-        code:      m.code,
-        name:      m.name,
-        status:    m.status,
-        expiresAt: m.expires_at,
-        duration:  m.duration,
-        device:    deviceLabel,
-        deviceId:  m.device_id,
-        lastLogin: m.last_login,
-        notes:     m.notes || '',
-      }
-    });
-
+    if (action === 'session') return await handleSession(user, res);
+    if (action === 'redeem')  return await handleRedeem(req, user, res);
+    return res.status(400).json({ ok: false, error: 'Action tidak valid' });
   } catch (err) {
-    console.error('[login] error:', err.message);
-    res.status(200).json({ ok: false, status: 'not_found' });
+    console.error(`[login:${action}]`, err.message);
+    return res.status(500).json({ ok: false, status: 'error' });
   }
 }

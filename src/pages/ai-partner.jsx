@@ -9,10 +9,9 @@ const GENERATING_HINT = 'AI sedang menyusun… biasanya 10–30 detik.';
 const aiCall = async (action, payload = {}) => {
   let data;
   try {
-    const res = await fetch(`/api/ai-partner?action=${action}`, {
+    const res = await window.authFetch(`/api/ai-partner?action=${action}`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ ...payload, member_code: window.getMemberCode?.() }),
+      body: JSON.stringify(payload),
     });
     data = await res.json();
   } catch {

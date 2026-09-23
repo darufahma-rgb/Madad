@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
-/* Talqih, auth system, profile, progress, single-device policy */
+/* Talqih, auth system (Google via Supabase Auth), profile, progress */
 
 // NOTE: Storage keys tetap pakai prefix 'madad_' untuk backward compatibility
 // dengan user yang sudah punya data dari versi sebelumnya.
 // Tidak perlu di-rename ke 'talqih_'.
 const STORAGE_KEYS = {
   SESSION:          "madad_session",
+  LEGACY_CODE:      "madad_legacy_code",
   PROFILE:          "madad_profile",
   PROGRESS:         "madad_progress",
-  DEVICE:           "madad_device",
   MEMBERS:          "madad_members",
   ADMIN:            "madad_admin",
   NOTES:            "madad_notes",
@@ -18,49 +18,14 @@ const STORAGE_KEYS = {
   MADDAH_ACTIVITY:  "talqee_maddah_activity",
 };
 
-/* ---------- Device ID ---------- */
-const getDeviceId = () => {
-  let id = localStorage.getItem(STORAGE_KEYS.DEVICE);
-  if (!id) {
-    id = "dev_" + Math.random().toString(36).slice(2, 10);
-    localStorage.setItem(STORAGE_KEYS.DEVICE, id);
-  }
-  return id;
-};
-const getDeviceLabel = () => {
-  const ua = navigator.userAgent;
-  let kind = "Browser";
-  if (/iPhone|iPad/.test(ua)) kind = "iOS";
-  else if (/Android/.test(ua)) kind = "Android";
-  else if (/Mac/.test(ua)) kind = "Mac";
-  else if (/Windows/.test(ua)) kind = "Windows";
-  else if (/Linux/.test(ua)) kind = "Linux";
-  return kind;
-};
+// Data belajar per-user di localStorage; dibersihkan kalau member lain login di browser yang sama.
+const USER_DATA_KEYS = [
+  STORAGE_KEYS.PROFILE, STORAGE_KEYS.PROGRESS, STORAGE_KEYS.NOTES,
+  STORAGE_KEYS.MUQARANAH_CUSTOM, STORAGE_KEYS.INTENTIONS, STORAGE_KEYS.PRESENCE,
+  STORAGE_KEYS.MADDAH_ACTIVITY,
+];
 
-/* ---------- Members pool (admin-managed) ---------- */
-const loadMembers = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.MEMBERS);
-    if (!raw) {
-      localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(DEFAULT_MEMBERS));
-      return [...DEFAULT_MEMBERS];
-    }
-    return JSON.parse(raw);
-  } catch (e) {
-    return [...DEFAULT_MEMBERS];
-  }
-};
-const saveMembers = (members) => {
-  localStorage.setItem(STORAGE_KEYS.MEMBERS, JSON.stringify(members));
-};
-
-const findMember = (code) => {
-  const members = loadMembers();
-  return members.find(m => m.code.toUpperCase().trim() === code.toUpperCase().trim());
-};
-
-/* ---------- Code generation ---------- */
+/* ---------- Code generation (kode aktivasi member) ---------- */
 const generateCode = (existingCodes = []) => {
   const seg = (n) => {
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -75,121 +40,154 @@ const generateCode = (existingCodes = []) => {
   return `MSR-${seg(4)}-${seg(4)}`;
 };
 
-/* ---------- Login flow ---------- */
-const LOGIN_RESULT = {
-  OK: "ok",
-  NOT_FOUND: "not_found",
-  EXPIRED: "expired",
-  DISABLED: "disabled",
-  DEVICE_CONFLICT: "device_conflict",
+/* ---------- Login Google (Supabase Auth) ----------
+   Identitas = akun Google. Server (/api/login) menerjemahkan token Google jadi member.
+   `madad_session` tetap berbentuk {code, name, ...} supaya semua halaman lama tetap jalan.
+   authState.status: loading | signed_out | member | needs_activation | inactive */
+
+let authState = { status: "loading", email: null };
+const getAuthState = () => authState;
+const setAuthState = (next) => {
+  authState = next;
+  window.dispatchEvent(new Event("madad:refresh"));
 };
 
-const tryLogin = async (code, { forceTakeover = false } = {}) => {
-  const deviceId    = getDeviceId();
-  const deviceLabel = getDeviceLabel();
+const readSessionRaw = () => {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEYS.SESSION) || "null"); }
+  catch { return null; }
+};
 
-  let member = null;
-  try {
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: code.trim().toUpperCase() }),
-    });
-    const data = await res.json();
-    if (data.ok) {
-      member = data.member;
-    } else {
-      const status = data.status || LOGIN_RESULT.NOT_FOUND;
-      return { ok: false, status };
-    }
-  } catch (err) {
-    console.error('[tryLogin] Network error:', err.message);
-    return { ok: false, status: 'error', message: err.message };
+const applyMember = async (member) => {
+  const prev = readSessionRaw();
+  const previousCode = prev?.code || localStorage.getItem(STORAGE_KEYS.LEGACY_CODE);
+  if (previousCode && previousCode !== member.code) {
+    USER_DATA_KEYS.forEach(k => localStorage.removeItem(k));
   }
+  const firstSignIn = !prev || prev.code !== member.code;
 
-  if (!member) return { ok: false, status: LOGIN_RESULT.NOT_FOUND };
-  if (member.status === "disabled") return { ok: false, status: LOGIN_RESULT.DISABLED, member };
-  if (member.status === "expired")  return { ok: false, status: LOGIN_RESULT.EXPIRED, member };
-
-  if (member.deviceId && member.deviceId !== deviceId && !forceTakeover) {
-    return { ok: false, status: LOGIN_RESULT.DEVICE_CONFLICT, member };
-  }
-
-  // Bind device via API — lebih reliable dari sbBindDevice langsung
-  try {
-    await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        code: code.trim().toUpperCase(),
-        bindDevice: true,
-        deviceId,
-        deviceLabel,
-      }),
-    });
-  } catch (err) {
-    console.warn('[tryLogin] Bind device failed:', err.message);
-  }
-
-  // Set session dengan supabaseValidated: true langsung
-  // Ini mencegah background validation trigger logout
-  const session = {
+  localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify({
     code:              member.code,
     name:              member.name,
-    deviceId,
-    loggedInAt:        new Date().toISOString(),
+    email:             member.email,
+    loggedInAt:        firstSignIn ? new Date().toISOString() : prev.loggedInAt,
+    authVersion:       2,
     supabaseValidated: true,
-    needsValidation:   false,
-  };
-  localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(session));
-  sbPullAllUserData().catch(e => console.warn("Pull failed:", e.message));
-  return { ok: true, status: LOGIN_RESULT.OK, member, session };
+  }));
+  localStorage.removeItem(STORAGE_KEYS.LEGACY_CODE);
+
+  if (firstSignIn) await sbPullAllUserData().catch(e => console.warn("Pull failed:", e.message));
+  setAuthState({ status: "member", email: member.email });
 };
 
-const logout = () => {
+const redeemMemberCode = async (code, token) => {
+  try {
+    const res = await authFetch("/api/login?action=redeem", {
+      method: "POST",
+      body: JSON.stringify({ code: (code || "").trim().toUpperCase() }),
+    }, token);
+    const data = await res.json();
+    if (data.ok) { await applyMember(data.member); return { ok: true }; }
+    return { ok: false, status: data.status || "error" };
+  } catch {
+    return { ok: false, status: "error" };
+  }
+};
+
+const syncMemberSession = async (supaSession) => {
+  if (!supaSession) {
+    localStorage.removeItem(STORAGE_KEYS.SESSION);
+    setAuthState({ status: "signed_out", email: null });
+    return;
+  }
+  const email = supaSession.user?.email || null;
+  const token = supaSession.access_token;
+
+  try {
+    const res  = await authFetch("/api/login?action=session", { method: "POST", body: "{}" }, token);
+    const data = await res.json();
+
+    if (data.ok) return await applyMember(data.member);
+
+    if (data.status === "not_member") {
+      // Member lama dari login-kode: coba tautkan kode lamanya otomatis.
+      const legacy = localStorage.getItem(STORAGE_KEYS.LEGACY_CODE);
+      let legacyError = null;
+      if (legacy) {
+        const r = await redeemMemberCode(legacy, token);
+        if (r.ok) return;
+        legacyError = r.status;
+        localStorage.removeItem(STORAGE_KEYS.LEGACY_CODE);
+      }
+      localStorage.removeItem(STORAGE_KEYS.SESSION);
+      setAuthState({ status: "needs_activation", email, prefillCode: legacy, lastError: legacyError });
+      return;
+    }
+
+    if (data.status === "disabled" || data.status === "expired") {
+      localStorage.removeItem(STORAGE_KEYS.SESSION);
+      setAuthState({ status: "inactive", email, reason: data.status });
+      return;
+    }
+
+    // Server/jaringan bermasalah: jangan logout member yang sesinya masih ada.
+    setAuthState({ status: readSessionRaw() ? "member" : "signed_out", email });
+  } catch {
+    setAuthState({ status: readSessionRaw() ? "member" : "signed_out", email });
+  }
+};
+
+let syncQueue = Promise.resolve();
+const queueSync = (supaSession) => {
+  syncQueue = syncQueue.then(() => syncMemberSession(supaSession));
+  return syncQueue;
+};
+
+// Buang ?code=… sisa callback OAuth dari URL (hash route tetap dipertahankan).
+const cleanOAuthParams = () => {
+  const url = new URL(window.location.href);
+  const keys = ["code", "state", "error", "error_code", "error_description"];
+  if (!keys.some(k => url.searchParams.has(k))) return;
+  keys.forEach(k => url.searchParams.delete(k));
+  window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+};
+
+whenSupabaseReady()
+  .then(client => {
+    client.auth.onAuthStateChange((event, supaSession) => {
+      if (event === "TOKEN_REFRESHED") return;
+      cleanOAuthParams();
+      // Ditunda: supabase-js melarang memanggil API auth lain di dalam callback ini.
+      setTimeout(() => queueSync(supaSession), 0);
+    });
+  })
+  .catch(() => setAuthState({ status: readSessionRaw() ? "member" : "signed_out", email: null }));
+
+const signInWithGoogle = async () => {
+  const client = await whenSupabaseReady();
+  const { error } = await client.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: window.location.origin + "/", queryParams: { prompt: "select_account" } },
+  });
+  if (error) throw error;
+};
+
+const logout = async () => {
   localStorage.removeItem(STORAGE_KEYS.SESSION);
+  setAuthState({ status: "signed_out", email: null });
+  try {
+    const client = await whenSupabaseReady();
+    await client.auth.signOut();
+  } catch {}
 };
 
 const getSession = () => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEYS.SESSION);
-    if (!raw) return null;
-    const s = JSON.parse(raw);
-
-    // Fast path: kalau sudah validated di Supabase, langsung return
-    // Ini yang paling penting — jangan re-check kalau sudah validated
-    if (s.supabaseValidated && s.code) {
-      return s;
-    }
-
-    // Cek di localStorage dulu
-    const member = findMember(s.code);
-
-    // Member tidak ada di localStorage — device baru atau localStorage bersih
-    if (!member) {
-      return { ...s, needsValidation: true };
-    }
-
-    if (member.status !== 'active') {
-      localStorage.removeItem(STORAGE_KEYS.SESSION);
-      return null;
-    }
-
-    // Device conflict — HANYA check kalau KEDUA deviceId ada dan tidak sama
-    // Kalau salah satu null/undefined, skip check (mobile sering reset deviceId)
-    if (
-      member.deviceId &&
-      s.deviceId &&
-      member.deviceId !== s.deviceId &&
-      member.deviceId !== 'unknown' &&
-      s.deviceId !== 'unknown'
-    ) {
-      localStorage.removeItem(STORAGE_KEYS.SESSION);
-      return null;
-    }
-
-    return s;
-  } catch (e) { return null; }
+  const s = readSessionRaw();
+  if (!s) return null;
+  if (s.authVersion === 2 && s.code) return s;
+  // Sesi lama (login pakai kode): simpan kodenya untuk aktivasi otomatis setelah login Google.
+  if (s.code) localStorage.setItem(STORAGE_KEYS.LEGACY_CODE, s.code);
+  localStorage.removeItem(STORAGE_KEYS.SESSION);
+  return null;
 };
 
 /* ---------- Profile ---------- */
@@ -273,7 +271,7 @@ const useAuth = () => {
   const [session,       setSession]       = useState(getSession());
   const [profile,       setProfileState]  = useState(getProfile());
   const [progress,      setProgressState] = useState(getProgress());
-  const [loginLoading,  setLoginLoading]  = useState(false);
+  const [auth,          setAuth]          = useState(getAuthState());
 
   const fireRefresh = () => window.dispatchEvent(new Event("madad:refresh"));
 
@@ -281,6 +279,7 @@ const useAuth = () => {
     setSession(getSession());
     setProfileState(getProfile());
     setProgressState(getProgress());
+    setAuth(getAuthState());
   }, []);
 
   useEffect(() => {
@@ -292,105 +291,12 @@ const useAuth = () => {
     };
   }, [syncFromStorage]);
 
-  // Background session validation — pakai /api/login bukan sbGetMemberByCode
-  useEffect(() => {
-    const s = getSession();
-    if (!s || !s.code) return;
-
-    // Skip kalau sudah validated — PENTING untuk cegah auto logout
-    if (s.supabaseValidated) {
-      console.log('[auth] Already validated, skip');
-      return;
-    }
-
-    let isMounted = true;
-
-    (async () => {
-      try {
-        const res = await fetch('/api/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code: s.code }),
-        });
-
-        if (!res.ok) {
-          // HTTP error — jangan logout
-          console.warn('[auth] HTTP error, keeping session');
-          if (isMounted) {
-            const updated = { ...s, supabaseValidated: true, needsValidation: false };
-            localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updated));
-            setSession(updated);
-          }
-          return;
-        }
-
-        const data = await res.json();
-
-        if (!isMounted) return;
-
-        if (!data.ok) {
-          // Hanya logout kalau PASTI disabled atau expired
-          // not_found bisa karena rate limit — jangan logout
-          if (data.status === 'disabled' || data.status === 'expired') {
-            logout();
-            setSession(null);
-            setProfileState(null);
-            setProgressState(null);
-            fireRefresh();
-          } else {
-            // Tidak pasti — simpan session, jangan logout
-            console.warn('[auth] Uncertain status:', data.status, '— keeping session');
-            const updated = { ...s, supabaseValidated: true, needsValidation: false };
-            localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updated));
-            setSession(updated);
-          }
-          return;
-        }
-
-        // Valid — update session
-        const updated = {
-          ...s,
-          supabaseValidated: true,
-          needsValidation: false,
-          name: data.member?.name || s.name,
-          status: data.member?.status,
-        };
-        localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updated));
-        setSession(updated);
-        console.log('[auth] Session validated ✅');
-
-      } catch (e) {
-        console.warn('[auth] Validation error, keeping session:', e.message);
-        if (isMounted) {
-          const updated = { ...s, supabaseValidated: true, needsValidation: false };
-          localStorage.setItem(STORAGE_KEYS.SESSION, JSON.stringify(updated));
-          setSession(updated);
-        }
-      }
-    })();
-
-    return () => { isMounted = false; };
-  }, []);
-
-  const login = async (code, opts) => {
-    setLoginLoading(true);
-    try {
-      const r = await tryLogin(code, opts);
-      if (r.ok) {
-        setSession(getSession());
-        setProfileState(getProfile());
-        setProgressState(getProgress());
-        fireRefresh();
-      }
-      return r;
-    } finally {
-      setLoginLoading(false);
-    }
-  };
-
   return {
-    session, profile, progress, loginLoading,
-    login,
+    session, profile, progress,
+    authStatus: auth.status,
+    authInfo:   auth,
+    signInWithGoogle,
+    redeemCode: redeemMemberCode,
     logout: () => { logout(); setSession(null); setProfileState(null); setProgressState(null); fireRefresh(); },
     saveProfile: (p) => { saveProfile(p); fireRefresh(); },
     clearProfile: () => { clearProfile(); fireRefresh(); },
@@ -450,11 +356,11 @@ const trackPromptCopied = (maddahId) => {
 
 /* ============ EXPORTS ============ */
 Object.assign(window, {
-  STORAGE_KEYS, LOGIN_RESULT,
-  getDeviceId, getDeviceLabel,
+  STORAGE_KEYS,
   isAdminLoggedIn, setAdminLoggedIn,
   generateCode,
-  tryLogin, useAuth, getSession,
+  signInWithGoogle, redeemMemberCode, getAuthState,
+  useAuth, getSession,
   getProfile, saveProfile, clearProfile,
   getProgress, saveProgress, markModuleComplete, setLastActivity,
   computePathProgress, computeStage,

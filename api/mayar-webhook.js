@@ -59,13 +59,6 @@ export default async function handler(req, res) {
       return;
     }
 
-    const memberCode = extractMemberCode(data.custom_field);
-    if (!memberCode) {
-      console.warn('[mayar-webhook] no member code in custom_field, event:', event);
-      res.status(200).json({ ok: true, ignored: 'no_member_code' });
-      return;
-    }
-
     const supabaseUrl = process.env.SUPABASE_URL;
     const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (!supabaseUrl || !serviceKey) {
@@ -73,14 +66,29 @@ export default async function handler(req, res) {
       return;
     }
 
-    const productId  = data.productId || null;
-    const eventAt    = data.updatedAt || data.createdAt || new Date().toISOString();
     const headers = {
       apikey: serviceKey,
       Authorization: `Bearer ${serviceKey}`,
       'Content-Type': 'application/json',
       Accept: 'application/json',
     };
+
+    let memberCode = extractMemberCode(data.custom_field);
+    if (!memberCode && data.customerEmail) {
+      const byEmail = await fetch(
+        `${supabaseUrl}/rest/v1/members?email=eq.${encodeURIComponent(data.customerEmail.trim().toLowerCase())}&select=code&limit=1`,
+        { headers }
+      ).then(r => r.json()).catch(() => []);
+      memberCode = Array.isArray(byEmail) && byEmail[0] ? byEmail[0].code : null;
+    }
+    if (!memberCode) {
+      console.warn('[mayar-webhook] no member code or matching email, event:', event);
+      res.status(200).json({ ok: true, ignored: 'no_member_code' });
+      return;
+    }
+
+    const productId  = data.productId || null;
+    const eventAt    = data.updatedAt || data.createdAt || new Date().toISOString();
 
     // Guard against out-of-order webhook retries overwriting a newer state
     const existingRes = await fetch(

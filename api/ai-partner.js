@@ -324,7 +324,7 @@ async function handleAdmin(action, req, res, body) {
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-token');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-admin-token');
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   if (req.method !== 'POST') { res.status(405).json({ ok: false, error: 'Method not allowed' }); return; }
 
@@ -340,11 +340,11 @@ export default async function handler(req, res) {
       if (ip !== 'unknown' && !checkStatusRateLimit(ip)) {
         return res.status(429).json({ ok: false, error: 'Terlalu banyak percobaan.' });
       }
-      const access = await requireAccess(body.member_code);
+      const access = await requireAccess(req);
       return res.status(200).json({ ok: true, active: access.ok });
     }
 
-    const access = await requireAccess(body.member_code);
+    const access = await requireAccess(req);
     if (!access.ok) return res.status(access.status).json({ ok: false, error: access.reason });
     const code = access.code;
 
