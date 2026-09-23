@@ -1,7 +1,8 @@
 import https from 'https';
 import { verifyToken } from './admin-auth.js';
+import { ADMIN_SETTING_KEYS, readSettings } from './_lib/settings.js';
 
-const sbRequest = (supabaseUrl, serviceKey, method, path, body) => {
+const sbRequest = (supabaseUrl, serviceKey, method, path, body, prefer = 'return=representation') => {
   const url = new URL(`${supabaseUrl}/rest/v1/${path}`);
   return new Promise((resolve, reject) => {
     const data = body ? JSON.stringify(body) : null;
@@ -14,7 +15,7 @@ const sbRequest = (supabaseUrl, serviceKey, method, path, body) => {
         Authorization: `Bearer ${serviceKey}`,
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        Prefer: 'return=representation',
+        Prefer: prefer,
         ...(data ? { 'Content-Length': Buffer.byteLength(data) } : {}),
       },
     }, res => {
@@ -71,6 +72,16 @@ export default async function handler(req, res) {
       result = await sbRequest(supabaseUrl, serviceKey, 'GET', 'user_profiles?select=member_code,profile&limit=1000', null);
     } else if (action === 'aggregate-activity') {
       result = await sbRequest(supabaseUrl, serviceKey, 'GET', 'user_maddah_activity?select=*&limit=1000', null);
+    } else if (action === 'get-settings') {
+      result = { status: 200, data: await readSettings(ADMIN_SETTING_KEYS) };
+    } else if (action === 'save-settings') {
+      const now = new Date().toISOString();
+      const rows = ADMIN_SETTING_KEYS
+        .filter(k => typeof row?.[k] === 'string')
+        .map(k => ({ key: k, value: row[k].trim().slice(0, 500), updated_at: now }));
+      result = rows.length
+        ? await sbRequest(supabaseUrl, serviceKey, 'POST', 'app_settings?on_conflict=key', rows, 'resolution=merge-duplicates,return=minimal')
+        : { status: 200, data: null };
     } else {
       res.status(400).json({ ok: false, error: `Action tidak dikenal: ${action}` });
       return;

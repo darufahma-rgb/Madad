@@ -112,10 +112,12 @@ http.createServer(async (req, res) => {
 
   // ── /api/config ──────────────────────────────────────────────────────
   if (urlPath === '/api/config' && req.method === 'GET') {
-    json(res, 200, {
-      supabaseUrl:     process.env.SUPABASE_URL      || '',
-      supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
-    });
+    try {
+      await callApiHandler('./api/config.js', req, res, '');
+    } catch (err) {
+      console.error('[config] Error:', err.message);
+      json(res, 500, { ok: false, error: err.message });
+    }
     return;
   }
 

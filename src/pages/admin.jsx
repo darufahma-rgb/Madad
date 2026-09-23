@@ -1407,7 +1407,8 @@ const SettingsField = ({ label, value, onChange, mono = false, hint }) => (
 const AdminSettings = () => {
   const toast = useToast();
 
-  const loadSettings = () => {
+  // Nilai lama yang dulu cuma tersimpan di browser admin; dipakai sebagai awal sampai data server termuat.
+  const loadLocalSettings = () => {
     try { return JSON.parse(localStorage.getItem("talqee_admin_settings") || "{}"); }
     catch { return {}; }
   };
@@ -1415,19 +1416,34 @@ const AdminSettings = () => {
   const [settings, setSettings] = useState(() => ({
     platformName: "Talqeeh",
     tagline:      "Panduan Belajar Al-Azhar dengan AI",
-    whatsapp:     "+201xxxxxxxxx",
-    lynkUrl:      "https://lynk.id/talqee",
+    whatsapp:     "",
+    lynkUrl:      "",
     mayarUrl:     "",
-    aiPriceLabel: "Rp 0 / bulan",
-    ...loadSettings(),
+    aiPriceLabel: "",
+    ...loadLocalSettings(),
   }));
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
-    localStorage.setItem("talqee_admin_settings", JSON.stringify(settings));
-    setSaved(true);
-    toast.push("Settings tersimpan.");
-    setTimeout(() => setSaved(false), 3000);
+  useEffect(() => {
+    adminMembersAPI('get-settings')
+      .then(server => { if (server && typeof server === 'object') setSettings(s => ({ ...s, ...server })); })
+      .catch(err => toast.push("Gagal memuat settings: " + err.message));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await adminMembersAPI('save-settings', null, settings);
+      localStorage.removeItem("talqee_admin_settings");
+      setSaved(true);
+      toast.push("Settings tersimpan & langsung berlaku untuk semua pengunjung.");
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      toast.push("Gagal menyimpan: " + err.message);
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -1466,10 +1482,10 @@ const AdminSettings = () => {
 
         <div className="flex justify-between items-center">
           <div className="text-xs text-ink-soft">
-            {saved ? "✓ Tersimpan ke localStorage" : "Perubahan belum disimpan"}
+            {saved ? "✓ Tersimpan di server" : "Perubahan belum disimpan"}
           </div>
-          <button onClick={handleSave} className="btn btn-primary px-6 py-2.5 text-sm">
-            Simpan Settings
+          <button onClick={handleSave} disabled={saving} className="btn btn-primary px-6 py-2.5 text-sm">
+            {saving ? "Menyimpan..." : "Simpan Settings"}
           </button>
         </div>
 

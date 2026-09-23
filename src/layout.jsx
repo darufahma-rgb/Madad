@@ -567,7 +567,7 @@ const PaymentModal = ({ open, onClose, onOpenLogin }) => {
   }, [open]);
 
   const handlePayClick = () => {
-    const lynkUrl = localStorage.getItem("talqeeh_lynk_url") || "https://tinyurl.com/TALQEEH26";
+    const lynkUrl = safeHttpsUrl(getAppSettings().lynkUrl) || "https://tinyurl.com/TALQEEH26";
     window.open(lynkUrl, "_blank", "noopener,noreferrer");
     setWaitingConfirm(true);
   };
@@ -717,11 +717,8 @@ const AiSubscriptionModal = ({ open, onClose, onOpenLogin }) => {
   const [active, setActive] = useState(false);
   const memberCode = typeof window !== 'undefined' ? window.getMemberCode?.() : null;
 
-  const settings = (() => {
-    try { return JSON.parse(localStorage.getItem("talqee_admin_settings") || "{}"); }
-    catch { return {}; }
-  })();
-  const mayarUrl     = settings.mayarUrl || "";
+  const settings = useAppSettings();
+  const mayarUrl     = safeHttpsUrl(settings.mayarUrl) || "";
   const aiPriceLabel = settings.aiPriceLabel || "Segera diumumkan";
 
   useEffect(() => {
@@ -916,14 +913,7 @@ const MobileTabBar = () => {
 
 /* ── Floating Support Button (BN-11) ── */
 const SupportButton = () => {
-  const getWa = () => {
-    try {
-      const s = JSON.parse(localStorage.getItem("talqee_admin_settings") || "{}");
-      return s.whatsapp || "";
-    } catch { return ""; }
-  };
-
-  const wa = getWa();
+  const wa = useAppSettings().whatsapp || "";
   const isPlaceholder = !wa || wa.includes("xxxxxxxxx") || wa === "+201xxxxxxxxx";
   if (isPlaceholder) return null;
 

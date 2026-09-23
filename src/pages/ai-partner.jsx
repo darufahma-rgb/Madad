@@ -28,10 +28,6 @@ const maddahName = (id) => {
   return m?.name || null;
 };
 
-const adminSettings = () => {
-  try { return JSON.parse(localStorage.getItem('talqee_admin_settings') || '{}'); }
-  catch { return {}; }
-};
 
 const tabBtnClass = (active) =>
   `text-sm px-4 py-2 rounded-xl border font-medium transition-all flex items-center gap-2 ${active
@@ -44,7 +40,7 @@ const inputClass =
 /* ── Access gate ── */
 
 const BetaCard = () => {
-  const s = adminSettings();
+  const s = window.useAppSettings();
   const wa = (s.whatsapp || '').replace(/[^0-9]/g, '');
   const hasWa = wa && !(s.whatsapp || '').includes('x');
   return (

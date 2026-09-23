@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 /* Talqeeh — Supabase Client & Member API (Fase 1)
    Member management via Supabase. Data user pribadi tetap localStorage.
@@ -17,10 +18,28 @@ const _onSupabaseReady = (fn) => {
 
 const whenSupabaseReady = () => _readyPromise;
 
+/* ── Pengaturan publik dari admin (URL Lynk/Mayar, harga AI, WA admin) ── */
+let _appSettings = {};
+const getAppSettings = () => _appSettings;
+const useAppSettings = () => {
+  const [settings, setSettings] = useState(_appSettings);
+  useEffect(() => {
+    const onLoad = () => setSettings(_appSettings);
+    window.addEventListener('talqeeh:settings', onLoad);
+    onLoad();
+    return () => window.removeEventListener('talqeeh:settings', onLoad);
+  }, []);
+  return settings;
+};
+// Hanya buka link https (nilai berasal dari pengaturan admin).
+const safeHttpsUrl = (url) => (typeof url === 'string' && /^https:\/\//i.test(url.trim()) ? url.trim() : null);
+
 // Load config from server (keeps credentials out of source code)
 fetch('/api/config')
   .then(r => r.json())
-  .then(({ supabaseUrl, supabaseAnonKey }) => {
+  .then(({ supabaseUrl, supabaseAnonKey, settings }) => {
+    _appSettings = settings || {};
+    window.dispatchEvent(new Event('talqeeh:settings'));
     // PKCE: Google redirects back to /?code=… (query string), which doesn't clash with the hash router.
     _supabase = createClient(supabaseUrl, supabaseAnonKey, {
       auth: { flowType: 'pkce', detectSessionInUrl: true, persistSession: true, autoRefreshToken: true },
@@ -80,6 +99,7 @@ Object.assign(window, {
   _onSupabaseReady,
   whenSupabaseReady,
   authFetch,
+  getAppSettings, useAppSettings, safeHttpsUrl,
   checkSupabase,
   sbGetAllMembersFallback,
 });
