@@ -20,7 +20,8 @@
 }
 
 :root { color-scheme: dark; }
-html, body { background: #0c0c0c; color: #ededed; overflow-x: hidden; }
+/* `clip`, bukan `hidden`: hidden menjadikan body scroll container sehingga semua elemen sticky tidak menempel. */
+html, body { background: #0c0c0c; color: #ededed; overflow-x: hidden; overflow-x: clip; }
 body {
   font-family: 'DM Sans', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -172,7 +173,7 @@ main.has-tabbar { padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px) +
 
 /* Mobile general polish */
 @media (max-width: 768px) {
-  body, #root { overflow-x: hidden; }
+  body, #root { overflow-x: hidden; overflow-x: clip; }
   .container-x { padding-left: 20px !important; padding-right: 20px !important; }
   section.pb-8 { margin-bottom: 0; }
   section.pb-20 { padding-bottom: 32px; }
@@ -235,6 +236,14 @@ main.has-tabbar { padding-bottom: calc(54px + env(safe-area-inset-bottom, 0px) +
 @keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
 .sheet-enter { animation: sheet-up 0.28s cubic-bezier(0.32, 0.72, 0, 1); }
 @media (min-width: 768px) { .sheet-enter { animation: none; } }
+@keyframes drawer-in { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+.drawer-enter { animation: drawer-in 0.26s cubic-bezier(0.32, 0.72, 0, 1); }
+
+/* Tinggi header untuk elemen sticky di halaman: navbar publik vs top bar aplikasi member */
+:root { --app-header-h: 48px; }
+@media (min-width: 768px) { :root { --app-header-h: 72px; } }
+html.app-shell { --app-header-h: calc(57px + var(--safe-top)); }
+@media (min-width: 768px) { html.app-shell { --app-header-h: calc(65px + var(--safe-top)); } }
 .scroll-touch { -webkit-overflow-scrolling: touch; }
 
 /* Truncate */

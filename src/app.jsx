@@ -222,21 +222,31 @@ const App = () => {
   // QuickNote muncul di semua halaman member yang sudah onboarded, kecuali admin & public
   const showQuickNote = session && profile?.onboarded && !isAdmin && !isPublic;
   const isMember = session && profile?.onboarded;
+  // Member memakai kerangka aplikasi (sidebar); onboarding & landing tetap layout publik.
+  const useShell = isMember && path !== "/" && path !== "" && path !== "/welcome" && !path.startsWith("/onboarding");
 
   return (
     <ToastProvider>
-      <div data-screen-label={routeLabel} className="min-h-screen flex flex-col">
-        <Navbar onOpenLogin={openLogin} onOpenPayment={() => openJoin("library")}/>
-        <main className={"flex-1" + (isMember ? " has-tabbar" : "")}>
-          <ErrorBoundary>{page}</ErrorBoundary>
-        </main>
-        <Footer/>
-      </div>
+      {useShell ? (
+        <div data-screen-label={routeLabel}>
+          <AppShell title={routeLabel === "Beranda Member" ? "Beranda" : routeLabel}>
+            <ErrorBoundary>{page}</ErrorBoundary>
+          </AppShell>
+        </div>
+      ) : (
+        <div data-screen-label={routeLabel} className="min-h-screen flex flex-col">
+          <Navbar onOpenLogin={openLogin} onOpenPayment={() => openJoin("library")}/>
+          <main className={"flex-1" + (isMember ? " has-tabbar" : "")}>
+            <ErrorBoundary>{page}</ErrorBoundary>
+          </main>
+          <Footer/>
+        </div>
+      )}
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} onSuccess={handleLoginSuccess} joinPlan={joinPlan}/>
       <AiSubscriptionModal open={aiPaymentOpen} onClose={() => setAiPaymentOpen(false)} onNeedMembership={() => openJoin("library_ai")}/>
       {showQuickNote && <QuickNoteButton/>}
       {isMember && <SupportButton/>}
-      {isMember && <MobileTabBar/>}
+      {isMember && !useShell && <MobileTabBar/>}
       <TutorialModal/>
     </ToastProvider>
   );

@@ -347,7 +347,7 @@ const MaddahDetailPage = () => {
               </div>
             </div>
 
-            <div className="sticky top-12 md:top-[72px] z-20 -mx-4 md:mx-0 mb-5 border-b border-line"
+            <div className="sticky top-[var(--app-header-h)] z-20 -mx-4 md:mx-0 mb-5 border-b border-line"
               style={{ background: "rgba(10,5,20,0.92)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 px-4 md:px-0">
                 {MADDAH_PROMPT_KINDS.map(kind => {

@@ -56,7 +56,10 @@ const Icon = ({ name, className = "w-5 h-5", strokeWidth = 1.6, ...rest }) => {
     heart: <path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.5A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/>,
     spark: <><path d="M12 3v6M12 15v6M3 12h6M15 12h6M5.5 5.5l4 4M14.5 14.5l4 4M5.5 18.5l4-4M14.5 9.5l4-4"/></>,
     home: <><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></>,
-    mosque: <><path d="M3 21V11c0-3 4-4 9-4s9 1 9 4v10"/><path d="M9 21v-6a3 3 0 0 1 6 0v6"/><path d="M12 7V3l-2 2M12 3l2 2"/></>,
+    chart: <><path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-7"/><path d="M22 20H2"/></>,
+    logout: <><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/></>,
+    sidebar: <><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></>,
+    mosque:<><path d="M3 21V11c0-3 4-4 9-4s9 1 9 4v10"/><path d="M9 21v-6a3 3 0 0 1 6 0v6"/><path d="M12 7V3l-2 2M12 3l2 2"/></>,
   };
   const d = paths[name];
   if (!d) return null;

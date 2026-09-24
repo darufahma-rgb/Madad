@@ -360,7 +360,7 @@ Untuk setiap bait:
       </section>
 
       {/* Sticky banner */}
-      <div className="sticky top-16 md:top-[72px] z-30 border-y border-line bg-night-950/70 backdrop-blur-md">
+      <div className="sticky top-[var(--app-header-h)] z-30 border-y border-line bg-night-950/70 backdrop-blur-md">
         <div className="container-x py-3 flex items-center justify-between gap-4 flex-wrap">
           <div className="text-sm text-ink-muted">
             <span className="text-gold-300 font-medium">✦ Ini sample gratis.</span>

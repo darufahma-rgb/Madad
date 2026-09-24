@@ -145,7 +145,7 @@ const MaddahHubPage = () => {
       )}
 
       {/* Filter Bar — sticky */}
-      <div className="sticky top-12 md:top-[72px] z-30 border-y border-line bg-night-950/70 backdrop-blur-md">
+      <div className="sticky top-[var(--app-header-h)] z-30 border-y border-line bg-night-950/70 backdrop-blur-md">
         <div className="container-x py-3">
           {/* Search */}
           <div className="relative mb-3">

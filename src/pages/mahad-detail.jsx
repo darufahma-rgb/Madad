@@ -370,7 +370,7 @@ const MahadDetailPage = () => {
         </div>
 
         {/* Kind tabs */}
-        <div className="sticky top-12 md:top-[72px] z-20 -mx-4 md:mx-0 mb-5"
+        <div className="sticky top-[var(--app-header-h)] z-20 -mx-4 md:mx-0 mb-5"
           style={{background:"rgba(10,5,20,0.92)", backdropFilter:"blur(16px)", borderBottom:"1px solid rgba(255,255,255,0.07)"}}>
           <div className="flex gap-2 px-4 md:px-0 py-3 overflow-x-auto no-scrollbar">
             {MAHAD_KINDS.map(kind => {

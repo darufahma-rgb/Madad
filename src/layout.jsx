@@ -936,7 +936,7 @@ const SupportButton = () => {
 };
 
 Object.assign(window, {
-  useRoute, navigate, NavLink, Brand,
+  useRoute, navigate, NavLink, Brand, GlobalSearch,
   Navbar, Footer, LoginModal, AiSubscriptionModal, PageHeader, FreeUpgradeWall,
   FreeMaddahGate, isMaddahLocked, canOpenMaddahFree, FREE_SAMPLE_MADDAH,
   GoogleButton, ErrorBox, useGoogleSignIn, formatPinInput, ACTIVATION_ERRORS, StepList,
