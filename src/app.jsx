@@ -146,8 +146,13 @@ const App = () => {
   // Halaman tanpa props (bank soal publik, sample) memicu alur gabung lewat event.
   useEffect(() => {
     const onOpenJoin = (e) => openJoin(e.detail?.plan || "library");
+    const onOpenLogin = () => openLogin();
     window.addEventListener("talqeeh:open-join", onOpenJoin);
-    return () => window.removeEventListener("talqeeh:open-join", onOpenJoin);
+    window.addEventListener("talqeeh:open-login", onOpenLogin);
+    return () => {
+      window.removeEventListener("talqeeh:open-join", onOpenJoin);
+      window.removeEventListener("talqeeh:open-login", onOpenLogin);
+    };
   }, [session, authStatus, profile]);
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
@@ -169,7 +174,7 @@ const App = () => {
   if (path.startsWith("/sample/nahwu"))             { page = <SampleNahwuPage/>; routeLabel = "Sample Nahwu"; }
   else if (path === "/ethics")            { page = <EthicsPage/>; routeLabel = "Etika"; }
   else if (path === "/privacy")           { page = <PrivacyPage/>; routeLabel = "Kebijakan Privasi"; }
-  else if (path === "/maddah-publik")    { page = <MaddahPublikPage onOpenPayment={() => openJoin("library")} onOpenLogin={openLogin}/>; routeLabel = "Katalog Maddah"; }
+  else if (path === "/maddah-publik")    { page = <MaddahPublikPage onOpenPayment={() => openJoin("library")} onOpenJoin={openJoin} onOpenLogin={openLogin}/>; routeLabel = "Katalog Maddah"; }
   else if (path === "/onboarding" || path.startsWith("/onboarding?"))   { page = <OnboardingPage/>; routeLabel = "Onboarding"; }
   else if (path === "/welcome")      { page = <WelcomePage/>; routeLabel = "Selamat Datang"; }
   else if (path === "/dashboard")    { page = <DashboardPage/>; routeLabel = "Dashboard"; }

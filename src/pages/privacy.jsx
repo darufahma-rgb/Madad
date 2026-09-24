@@ -15,7 +15,8 @@ const PRIVACY_SECTIONS = [
   {
     title: "Data keanggotaan",
     body: [
-      "Kode member, nama, nomor WhatsApp yang kamu berikan saat mendaftar, status dan masa berlaku keanggotaan, serta waktu login terakhir. Data ini dipakai untuk mengelola akses dan menghubungimu soal keanggotaan.",
+      "ID member internal, email akun Google yang terhubung, nama, nomor WhatsApp (dari checkout atau yang kamu berikan ke admin), paket yang kamu ambil, status dan masa berlaku keanggotaan serta langganan AI Partner, dan waktu login terakhir. Data ini dipakai untuk mengelola akses dan menghubungimu soal keanggotaan.",
+      "Untuk member lama, admin bisa membuat PIN aktivasi sekali pakai yang berlaku 14 hari. PIN dihapus begitu dipakai untuk menghubungkan keanggotaan ke akun Google.",
     ],
   },
   {

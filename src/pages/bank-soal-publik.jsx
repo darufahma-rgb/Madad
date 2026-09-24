@@ -316,19 +316,28 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
             borderRadius: 14, textAlign: 'center',
           }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 6 }}>
-              🔒 Jawaban lengkap tersedia untuk member
+              🔒 Jawaban lengkap ada di paket Library
             </div>
             <div style={{ fontSize: 13, color: '#888', marginBottom: 16, lineHeight: 1.6 }}>
-              Login sebagai member untuk akses prompt jawaban lengkap,<br/>
-              arti soal, dan semua soal dari maddah lainnya.
+              Prompt jawaban lengkap, arti soal, dan semua soal dari maddah lainnya<br/>
+              terbuka untuk member — sekali bayar {LIBRARY_PRICE}, berlaku selamanya.
             </div>
-            <a href="#/" style={{
-              display: 'inline-block', padding: '11px 28px', borderRadius: 11,
-              background: '#3ecf8e', color: '#000',
-              fontWeight: 800, fontSize: 14, textDecoration: 'none',
-            }}>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library' } }))}
+              style={{
+                display: 'inline-block', padding: '11px 28px', borderRadius: 11,
+                background: '#3ecf8e', color: '#000', border: 'none', cursor: 'pointer',
+                fontWeight: 800, fontSize: 14,
+              }}>
               Gabung Member →
-            </a>
+            </button>
+            <div style={{ fontSize: 12, color: '#777', marginTop: 12 }}>
+              Sudah member?{' '}
+              <button onClick={() => window.dispatchEvent(new CustomEvent('talqeeh:open-login'))}
+                style={{ color: '#3ecf8e', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontSize: 12 }}>
+                Masuk dengan Google
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -429,7 +438,7 @@ export default function BankSoalPublikPage() {
           maxWidth: 480, lineHeight: 1.7,
         }}>
           Koleksi soal tahriri dari Masisir untuk Masisir.<br/>
-          Preview soal pertama gratis — login member untuk akses penuh.
+          3 soal pertama bisa dilihat gratis — sisanya untuk member Talqeeh.
         </p>
 
         {/* Filter */}
@@ -619,7 +628,7 @@ export default function BankSoalPublikPage() {
                             {group.count} soal
                           </span>
                           <span style={{ fontSize: 11, color: '#3ecf8e', fontWeight: 600 }}>
-                            Login →
+                            Untuk member →
                           </span>
                         </div>
                       </div>
@@ -639,25 +648,25 @@ export default function BankSoalPublikPage() {
                         {lockedGroups.length} soal lainnya hanya untuk member
                       </div>
                       <div style={{ fontSize: 13, color: '#888', marginBottom: 20, lineHeight: 1.6 }}>
-                        Kamu sudah lihat 3 soal gratis. Login sebagai member untuk akses semua soal
-                        lengkap dengan prompt jawaban.
+                        Kamu sudah lihat 3 soal gratis. Semua soal lengkap dengan prompt jawabannya
+                        ada di paket Library — sekali bayar, berlaku selamanya.
                       </div>
                       <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                        <a href="#/" style={{
-                          padding: '11px 24px', borderRadius: 11,
-                          background: '#3ecf8e', color: '#000',
-                          fontWeight: 800, fontSize: 14, textDecoration: 'none',
-                        }}>
-                          Login Member →
-                        </a>
                         <button onClick={() => window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library' } }))} style={{
+                          padding: '11px 24px', borderRadius: 11, border: 'none',
+                          background: '#3ecf8e', color: '#000',
+                          fontWeight: 800, fontSize: 14, cursor: 'pointer',
+                        }}>
+                          Gabung Member →
+                        </button>
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('talqeeh:open-login'))} style={{
                           padding: '11px 24px', borderRadius: 11,
                           border: '1px solid rgba(255,255,255,0.12)',
                           background: 'rgba(255,255,255,0.04)',
                           color: '#ccc', fontWeight: 600, fontSize: 14,
                           cursor: 'pointer',
                         }}>
-                          Gabung Member
+                          Sudah member? Masuk
                         </button>
                       </div>
                     </div>
@@ -682,7 +691,7 @@ export default function BankSoalPublikPage() {
               Punya soal imtihan tahun lalu?
             </div>
             <div style={{ fontSize: 13, color: '#888' }}>
-              Submit & dapat akses Talqeeh lifetime gratis atau voucher makan siang Rp 50.000
+              Submit & dapat paket Library gratis (belum member) atau voucher makan siang (member)
             </div>
           </div>
           <a href="#/submit-soal" style={{

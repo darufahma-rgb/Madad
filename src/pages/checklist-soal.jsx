@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-/* ── Semua 35 maddah S1 Talqeeh dengan fakultasnya ── */
+/* ── Maddah S1 yang soal tahririnya dikumpulkan, dengan fakultasnya ── */
 const ALL_MADDAH = [
   // Qurani
   { name: "Tafsir Tahlili",        arabic: "التفسير التحليلي",      category: "qurani",   fakultas: ["ushuluddin","dirasat","dirasat-banin","quran"] },
@@ -136,7 +136,7 @@ export default function ChecklistSoalPage() {
           Maddah Mana yang Belum Ada Soalnya?
         </h1>
         <p style={{ fontSize: 14, color: "#888", margin: "0 auto 0", maxWidth: 500, lineHeight: 1.6 }}>
-          35 maddah S1 Al-Azhar · Cek yang belum ada &amp; submit untuk dapat reward!
+          Checklist {ALL_MADDAH.length} maddah S1 Al-Azhar · Cek yang belum ada &amp; submit untuk dapat reward!
         </p>
       </div>
 
@@ -425,7 +425,7 @@ export default function ChecklistSoalPage() {
               Punya soal imtihan tahun lalu?
             </div>
             <div style={{ fontSize: 13, color: "#888" }}>
-              Submit soal yang belum ada di checklist ini — dapat akses Talqeeh lifetime atau voucher makan Rp 50.000
+              Submit soal yang belum ada di checklist ini — belum member dapat paket Library gratis, member dapat voucher makan siang
             </div>
           </div>
           <a href="#/submit-soal" style={{

@@ -89,7 +89,7 @@ const formatPinExpiry = (iso) => iso ? new Date(iso).toLocaleDateString("id-ID",
 
 const pinSteps = (pin, expiresAt) =>
   "Cara masuk (cukup sekali):\n" +
-  "1️⃣ Buka https://talqeeh.vercel.app → *Login Member* → *Masuk dengan Google*\n" +
+  "1️⃣ Buka https://talqeeh.vercel.app → tombol *Masuk* (pojok kanan atas) → *Masuk dengan Google*\n" +
   "2️⃣ Pilih *Punya PIN aktivasi dari admin?*\n" +
   "3️⃣ Masukkan PIN aktivasi kamu:\n\n```" + pin + "```\n\n" +
   "PIN berlaku sampai " + formatPinExpiry(expiresAt) + " dan hanya bisa dipakai sekali. Jangan bagikan PIN ini ke siapa pun.";
@@ -479,14 +479,14 @@ const AdminMembers = () => {
       <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
         <div>
           <h1 className="font-display text-4xl font-semibold text-ink mb-1">Member Access</h1>
-          <p className="text-ink-muted">Kelola kode akses, device, dan status member.</p>
+          <p className="text-ink-muted">Kelola member, akun Google yang terhubung, PIN aktivasi, dan status.</p>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={loadFromSupabase} className="btn btn-ghost text-xs px-3 py-2 flex items-center gap-1.5">
             <Icon name="refresh" className="w-3.5 h-3.5"/> Refresh
           </button>
           <button onClick={() => setGenOpen(true)} className="btn btn-primary">
-            <Icon name="sparkles" className="w-4 h-4"/> Generate Kode Baru
+            <Icon name="sparkles" className="w-4 h-4"/> Tambah Member
           </button>
         </div>
       </div>
@@ -779,7 +779,7 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
           </button>
         </div>
         <div className="space-y-4 mb-6">
-          {field("Kode Akses", "code", { upper: true, placeholder: "MSR-XXXX-XXXX" })}
+          {field("ID Member", "code", { upper: true, placeholder: "MSR-XXXX-XXXX" })}
           {field("Nama", "name", { placeholder: "Nama lengkap" })}
           {field("WhatsApp", "whatsapp", { placeholder: "+62..." })}
           {field("Email Google", "email", { type: "email", placeholder: "nama@gmail.com (member login Google tanpa kode)" })}
@@ -930,7 +930,7 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
   const buildMessage = () => {
     const loginSteps = created.pin
       ? pinSteps(created.pin, created.pinExpiresAt)
-      : "Cara masuk:\n1️⃣ Buka https://talqeeh.vercel.app → *Login Member* → *Masuk dengan Google*\n2️⃣ Pilih akun Google *" + email.trim().toLowerCase() + "* — akses langsung aktif, tanpa PIN.";
+      : "Cara masuk:\n1️⃣ Buka https://talqeeh.vercel.app → tombol *Masuk* (pojok kanan atas) → *Masuk dengan Google*\n2️⃣ Pilih akun Google *" + email.trim().toLowerCase() + "* — akses langsung aktif, tanpa PIN.";
     return "Assalamu'alaikum, " + name + "! 👋\n\nSelamat datang di Talqeeh — Panduan belajar efektif Materi Al-Azhar dengan AI.\n\nKeanggotaan kamu sudah aktif.\n\n" +
       loginSteps +
       "\n\n📖 Panduan Lengkap\nhttps://app.notion.com/p/Talqeeh-Guide-36fb668bda20804294c9d29c6c4ca050" +
@@ -1580,7 +1580,7 @@ const AdminSettings = () => {
           <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">AI Partner Belajar (Add-on)</div>
           <SettingsField label="URL Mayar — AI Partner" value={settings.mayarUrl} mono
             onChange={v => setSettings({...settings, mayarUrl: v})}
-            hint="Link produk Membership AI Partner di Mayar. Kosongkan selama beta (akses diberikan manual)."/>
+            hint="Link produk Membership AI Partner di Mayar. Kosongkan kalau belum siap — akses diberikan manual dari tab Langganan & Bayar."/>
           <SettingsField label="Label harga" value={settings.aiPriceLabel}
             onChange={v => setSettings({...settings, aiPriceLabel: v})}
             hint="Teks harga yang ditampilkan di CTA, misal 'Rp 25.000 / bulan'."/>
@@ -1685,7 +1685,7 @@ const AdminSubscriptions = () => {
 
       <div className="card-glass p-5 mb-6 flex gap-3 flex-wrap items-end">
         <div className="flex-1 min-w-[220px]">
-          <label className="text-xs uppercase tracking-wider text-gold-400 mb-2 block">Beri akses manual (beta)</label>
+          <label className="text-xs uppercase tracking-wider text-gold-400 mb-2 block">Beri akses AI Partner manual</label>
           <input value={grantCode} onChange={e => setGrantCode(e.target.value)} placeholder="MSR-XXXX-XXXX"
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink text-sm outline-none font-mono"/>
         </div>
@@ -2500,9 +2500,9 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                     <div className="flex gap-2 flex-wrap">
                       {[
                         { value: null,       label: 'Tanpa Reward',          icon: '—'  },
-                        { value: 'lifetime', label: 'Akses Lifetime',         icon: '🎓' },
+                        { value: 'lifetime', label: 'Library Gratis',         icon: '🎓' },
                         { value: 'diskon',   label: 'Diskon',                 icon: '🏷️' },
-                        { value: 'voucher',  label: 'Voucher Makan Rp 50rb',  icon: '🍽️' },
+                        { value: 'voucher',  label: 'Voucher Makan',          icon: '🍽️' },
                         { value: 'poin',     label: 'Badge + Hall of Fame',   icon: '🏅' },
                       ].map(opt => (
                         <button
@@ -2536,7 +2536,7 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                         border: '1px solid rgba(255,200,50,0.2)',
                         borderRadius: 8, fontSize: 12, color: '#a08030',
                       }}>
-                        ⚠️ Pastikan submitter sudah submit 2 termin penuh sebelum pilih reward ini.
+                        ⚠️ Rp 25rb untuk 1 termin penuh, Rp 50rb untuk 2 termin penuh (member); non-member 2 termin dapat Library + Rp 25rb.
                         Voucher diklaim manual via japri — kamu yang proses transfernya.
                       </div>
                     )}
@@ -2547,7 +2547,8 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                         border: '1px solid rgba(62,207,142,0.15)',
                         borderRadius: 8, fontSize: 12, color: '#3ecf8e',
                       }}>
-                        ✅ Pastikan kamu sudah siapkan kode akses baru untuk dikirim ke submitter.
+                        ✅ Buat member baru di tab Member (tanpa email) — kamu akan dapat PIN aktivasi untuk dikirim ke submitter.
+                        Library gratis tidak termasuk AI Partner.
                       </div>
                     )}
                   </div>

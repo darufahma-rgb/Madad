@@ -156,6 +156,22 @@ const GlobalSearch = () => {
   );
 };
 
+// Scroll ke section di landing; kalau sedang di halaman lain, pindah ke landing dulu.
+const scrollToLandingSection = (id) => {
+  const el = document.getElementById(id);
+  if (el) { el.scrollIntoView({ behavior: "smooth" }); return; }
+  navigate("/");
+  // Tunggu landing selesai render (router juga scroll ke atas saat hash berubah), lalu lompat.
+  let tries = 0;
+  const jump = () => {
+    const target = document.getElementById(id);
+    if (target) target.scrollIntoView({ behavior: "auto" });
+    else if (++tries < 20) setTimeout(jump, 100);
+  };
+  setTimeout(jump, 150);
+};
+const scrollToPaket = () => scrollToLandingSection("paket");
+
 /* ---------------- Navbar ---------------- */
 const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   const [open, setOpen] = useState(false);
@@ -191,9 +207,9 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   const publicLinks = [
     { to: "/sample/nahwu", label: "Preview" },
     { to: "/maddah-publik", label: "Maddah" },
+    { to: "/#paket",        label: "Paket" },
     { to: "/framework",     label: "Framework" },
     { to: "/tutorial",      label: "Cara Pakai" },
-    { to: "/ethics",        label: "Etika" },
     { to: "/checklist-soal", label: "Status Soal" },
     { to: "/submit-soal",   label: "Submit Soal", highlight: true },
   ];
@@ -205,7 +221,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
         <Brand/>
         <nav className="hidden md:flex items-center gap-1">
           {links.map(l => l.to.startsWith("/#")
-            ? <a key={l.to} href={l.to.slice(1)} onClick={(e) => { e.preventDefault(); const id = l.to.split("#")[1]; const el = document.getElementById(id); if (el) el.scrollIntoView({behavior:"smooth"}); }} className="nav-link px-3.5 py-2 text-[14.5px] text-ink-muted hover:text-ink rounded-lg">{l.label}</a>
+            ? <a key={l.to} href={l.to.slice(1)} onClick={(e) => { e.preventDefault(); scrollToLandingSection(l.to.split("#")[1]); }} className="nav-link px-3.5 py-2 text-[14.5px] text-ink-muted hover:text-ink rounded-lg">{l.label}</a>
             : l.highlight
               ? <NavLink key={l.to} to={l.to} className="!text-emerald-400 hover:!text-emerald-300 font-semibold">{l.label}</NavLink>
               : <NavLink key={l.to} to={l.to}>{l.label}</NavLink>
@@ -239,7 +255,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
           ) : (
             <>
               <button onClick={onOpenLogin} className="btn btn-ghost text-sm py-2 px-4">
-                <Icon name="user" className="w-4 h-4"/> Login Member
+                <Icon name="user" className="w-4 h-4"/> Masuk
               </button>
               <button onClick={onOpenPayment} className="btn btn-primary text-sm py-2.5 px-4">
                 <Icon name="sparkles" className="w-4 h-4"/> Gabung Member
@@ -285,7 +301,13 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
             <nav className="flex flex-col gap-1">
               {/* Primary links */}
               {links.map(l => (
-                l.to.startsWith("/#") ? null : (
+                l.to.startsWith("/#") ? (
+                  <a key={l.to} href={l.to.slice(1)}
+                     onClick={(e)=>{ e.preventDefault(); setOpen(false); scrollToLandingSection(l.to.split("#")[1]); }}
+                     className="px-3 py-3 text-base rounded-lg text-ink-muted hover:bg-white/4">
+                    {l.label}
+                  </a>
+                ) : (
                   <a key={l.to} href={"#" + l.to}
                      onClick={(e)=>{ e.preventDefault(); navigate(l.to); setOpen(false); }}
                      className={`px-3 py-3 text-base rounded-lg ${path === l.to || (l.to !== "/" && (path.startsWith(l.to + "/") || path.startsWith(l.to + "?"))) ? "bg-white/8 text-ink font-medium" : "text-ink-muted hover:bg-white/4"}`}>
@@ -318,7 +340,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
                     <Icon name="sparkles" className="w-4 h-4"/> Gabung Member
                   </button>
                   <button onClick={() => { setOpen(false); onOpenLogin(); }} className="btn btn-ghost w-full">
-                    <Icon name="user" className="w-4 h-4"/> Login Member
+                    <Icon name="user" className="w-4 h-4"/> Masuk dengan Google
                   </button>
                 </>
               )}
@@ -334,7 +356,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
               <div className="text-xs text-ink-soft mb-0.5">Member</div>
               <div className="text-ink font-medium">{session.name}</div>
               {session.email && <div className="text-xs text-ink-muted mt-0.5">{session.email}</div>}
-              <div className="text-[11px] text-ink-soft font-mono mt-1">Kode member: {session.code}</div>
+              <div className="text-[11px] text-ink-soft font-mono mt-1">ID member: {session.code}</div>
             </div>
             <SheetLink icon="target" label="Siap Imtihan" onClick={() => { navigate("/siap-imtihan"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="bookOpen" label="Learning Path" onClick={() => { navigate("/paths"); setMobileSheetOpen(false); }}/>
@@ -357,25 +379,35 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
 };
 
 /* ---------------- Footer ---------------- */
-const Footer = () => (
+const Footer = () => {
+  const { session } = useAuth();
+  return (
   <footer className="mt-20 border-t border-line" style={{ paddingBottom: "calc(var(--tabbar-height, 0px) + var(--safe-bottom))" }}>
     <div className="container-x py-12">
       <div className="flex flex-col md:flex-row items-start justify-between gap-8">
         <div className="max-w-md">
           <Brand size={40}/>
           <p className="mt-5 text-sm text-ink-muted leading-relaxed">
-            AI learning companion premium untuk Masisir, memahami materi lebih cepat,
-            mengerjakan tugas lebih cerdas, dengan AI yang sesuai cara belajarmu.
+            Teman belajar muqarrar Al-Azhar untuk Masisir. Library berisi {CATALOG.maddah} maddah dan
+            {" "}{CATALOG.prompts} template prompt, plus AI Partner yang bikin ringkasan, flashcard,
+            dan kuis dari diktatmu sendiri.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
-          <a href="#/" onClick={(e)=>{e.preventDefault(); navigate("/");}} className="text-ink-muted hover:text-ink">Beranda</a>
-          <a href="#/maddah-publik" onClick={(e)=>{e.preventDefault(); navigate("/maddah-publik");}} className="text-ink-muted hover:text-ink">Maddah</a>
-          <a href="#/paths/muqaranah" onClick={(e)=>{e.preventDefault(); navigate("/paths/muqaranah");}} className="text-ink-muted hover:text-ink">Muqaranah</a>
-          <a href="#/kurasah" onClick={(e)=>{e.preventDefault(); navigate("/kurasah");}} className="text-ink-muted hover:text-ink">Kurasah</a>
-          <a href="#/ethics" onClick={(e)=>{e.preventDefault(); navigate("/ethics");}} className="text-ink-muted hover:text-ink">Etika</a>
-          <a href="#/privacy" onClick={(e)=>{e.preventDefault(); navigate("/privacy");}} className="text-ink-muted hover:text-ink">Kebijakan Privasi</a>
-          <a href="#/paths" onClick={(e)=>{e.preventDefault(); navigate("/paths");}} className="text-ink-muted hover:text-ink">Learning Path</a>
+          {[
+            ["/", "Beranda"],
+            ["/maddah-publik", "Daftar Maddah"],
+            ["/bank-soal", "Bank Soal"],
+            ["/submit-soal", "Submit Soal"],
+            ["/tutorial", "Cara Pakai"],
+            ["/ethics", "Etika Pakai AI"],
+            ["/privacy", "Kebijakan Privasi"],
+          ].map(([to, label]) => (
+            <a key={to} href={"#" + to} onClick={(e)=>{e.preventDefault(); navigate(to);}} className="text-ink-muted hover:text-ink">{label}</a>
+          ))}
+          {session
+            ? <a href="#/ai-partner" onClick={(e)=>{e.preventDefault(); navigate("/ai-partner");}} className="text-ink-muted hover:text-ink">AI Partner</a>
+            : <a href="#/" onClick={(e)=>{e.preventDefault(); scrollToPaket();}} className="text-ink-muted hover:text-ink">Paket & Harga</a>}
         </div>
       </div>
       <div className="divider-arabesque mt-10 opacity-50"/>
@@ -404,7 +436,8 @@ const Footer = () => (
       </div>
     </div>
   </footer>
-);
+  );
+};
 
 /* ---------------- Login Modal ---------------- */
 const ADMIN_WA_LINK = "wa.me/6281311506025";
@@ -516,20 +549,24 @@ const LoginModal = ({ open, onClose, onSuccess, joinPlan }) => {
 /* ---------------- Paket & Join Modal ---------------- */
 const LIBRARY_PRICE          = "Rp 63.000";
 const LIBRARY_PRICE_ORIGINAL = "Rp 89.000";
+// Angka katalog yang dipakai di semua copy. Sesuaikan kalau data maddah/prompt bertambah
+// (61 maddah S1 di maddah-data + 27 maddah Ma'had di mahad-data; 1.201 prompt per September 2026).
+const CATALOG = { maddah: 88, maddahS1: 61, maddahMahad: 27, prompts: "1.200+" };
 const LIBRARY_FEATURES = [
-  "88 Maddah lengkap (S1 + Ma'had) + 1211 template prompt",
-  "AI recommendation per gaya & tingkat belajarmu",
+  `${CATALOG.maddah} maddah (S1 + Ma'had) dengan ${CATALOG.prompts} template prompt`,
+  "Rekomendasi AI yang cocok per maddah, tingkat, dan gaya belajarmu",
+  "Bank soal imtihan tahriri + prompt jawabannya",
+  "Siap Imtihan: prompt persiapan ujian tahriri & syafawi",
   "Muqaranah qoul ulama 4 madzhab",
-  "Kurasah pribadi dengan markdown & teks Arab",
-  "Companion harian: niat, ritme, refleksi",
-  "Update fitur seumur hidup",
+  "Kurasah (catatan pribadi) dan Companion harian",
+  "Sekali bayar, semua update ke depan ikut terbuka",
 ];
 const AI_PARTNER_FEATURES = [
-  "Upload materi kuliah: PDF, foto, atau teks",
+  "Upload diktat atau materi kuliah: PDF, foto, atau teks",
   "Ringkasan otomatis + ta'rif istilah berharakat",
   "Flashcard hafalan dengan pengulangan terjadwal",
   "Kuis pilihan ganda + pembahasan",
-  "Tutor AI yang menjawab dari materimu",
+  "Tutor AI yang menjawab dari materimu sendiri",
 ];
 const PLAN_LABELS = { library: "Library", library_ai: "Library + AI Partner" };
 const DEFAULT_ADMIN_WA = "6281311506025";
@@ -700,7 +737,7 @@ const JoinModal = ({ open, onClose, initialPlan, onMemberActive }) => {
             <div className="space-y-3 mb-6">
               <PlanOption selected={plan === "library"} onSelect={() => setPlan("library")} accent="gold"
                 title="Library" price={LIBRARY_PRICE} sub="Sekali bayar · berlaku selamanya"
-                bullets={["88 Maddah + 1211 template prompt", "Muqaranah, Kurasah, Companion harian", "Update fitur seumur hidup"]}/>
+                bullets={[`${CATALOG.maddah} maddah + ${CATALOG.prompts} template prompt`, "Bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah", "Update fitur seumur hidup"]}/>
               <PlanOption selected={plan === "library_ai"} onSelect={() => setPlan("library_ai")} accent="emerald" badge="Paling lengkap"
                 title="Library + AI Partner" price={`${LIBRARY_PRICE} + ${aiPriceLabel}`} sub="Library sekali bayar · AI Partner langganan bulanan"
                 bullets={["Semua isi paket Library", "Upload materi → ringkasan, flashcard, kuis", "Tutor AI yang menjawab dari materimu"]}/>
@@ -843,7 +880,7 @@ const AiSubscriptionModal = ({ open, onClose, onNeedMembership }) => {
               <div className="font-display font-bold text-ink leading-none mb-1" style={{fontSize:"clamp(1.6rem,6vw,2.2rem)"}}>
                 {aiPriceLabel}
               </div>
-              <div className="text-[11px] uppercase tracking-widest text-ink-muted">Langganan bulanan · Add-on terpisah dari member lifetime</div>
+              <div className="text-[11px] uppercase tracking-widest text-ink-muted">Langganan bulanan · Tambahan untuk paket Library</div>
             </div>
 
             <div className="card-glass p-4 mb-6 text-left">
@@ -860,8 +897,8 @@ const AiSubscriptionModal = ({ open, onClose, onNeedMembership }) => {
               {mayarUrl ? "Berlangganan Sekarang" : "Segera dibuka"}
             </button>
             <p className="text-center text-xs text-ink-soft">
-              Kalau form checkout meminta kode member, isi <span className="font-mono text-ink-muted">{memberCode}</span>.
-              {!mayarUrl && " Selama beta, akses AI Partner diberikan admin."}
+              Kalau form checkout meminta ID member, isi <span className="font-mono text-ink-muted">{memberCode}</span>.
+              {!mayarUrl && " Selama pembayaran langganan belum dibuka, akses AI Partner diaktifkan admin — hubungi admin lewat tombol WhatsApp."}
             </p>
           </>
         )}
@@ -1025,6 +1062,7 @@ const SupportButton = () => {
 Object.assign(window, {
   useRoute, navigate, NavLink, Brand,
   Navbar, Footer, LoginModal, JoinModal, AiSubscriptionModal, PageHeader,
-  LIBRARY_PRICE, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES,
+  LIBRARY_PRICE, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
+  scrollToLandingSection, scrollToPaket,
   MobileTabBar, SupportButton,
 });

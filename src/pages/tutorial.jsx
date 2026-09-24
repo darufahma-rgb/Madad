@@ -22,11 +22,35 @@ const IllusLogin = () => (
     <rect width="320" height="200" rx="14" fill="url(#loginbg)" stroke="rgba(62,207,142,0.2)"/>
     <circle cx="160" cy="48" r="20" fill="none" stroke={EM} strokeWidth="2"/>
     <text x="160" y="54" fontSize="18" fill={EM} textAnchor="middle" fontWeight="bold">ت</text>
-    <text x="160" y="86" fontSize="11" fill="#999" textAnchor="middle">Masukkan kode member</text>
-    <rect x="60" y="100" width="200" height="32" rx="8" fill="rgba(255,255,255,0.05)" stroke="rgba(62,207,142,0.4)"/>
-    <text x="74" y="120" fontSize="12" fill="#777" fontFamily="monospace">MSR-XXXX-XXXX</text>
-    <rect x="60" y="144" width="200" height="34" rx="9" fill={EM}/>
-    <text x="160" y="166" fontSize="13" fill="#000" textAnchor="middle" fontWeight="bold">Masuk</text>
+    <text x="160" y="86" fontSize="11" fill="#999" textAnchor="middle">Masuk ke Talqeeh</text>
+    <rect x="60" y="100" width="200" height="36" rx="9" fill="#fff"/>
+    <circle cx="86" cy="118" r="8" fill="none" stroke="#4285F4" strokeWidth="3"/>
+    <text x="172" y="123" fontSize="12" fill="#222" textAnchor="middle" fontWeight="bold">Masuk dengan Google</text>
+    <text x="160" y="164" fontSize="10" fill="#777" textAnchor="middle">Belum member? Pilih paket setelah login</text>
+  </svg>
+);
+
+const IllusAiPartner = () => (
+  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
+    <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
+    <rect x="24" y="28" width="96" height="120" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeDasharray="4 3"/>
+    <text x="72" y="84" fontSize="22" fill={EM} textAnchor="middle">⬆</text>
+    <text x="72" y="108" fontSize="10" fill="#aaa" textAnchor="middle">Diktat.pdf</text>
+    <path d="M132 88 L152 88" stroke={EM} strokeWidth="2" markerEnd="url(#aiarrow)"/>
+    <defs>
+      <marker id="aiarrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+        <path d="M0,0 L8,4 L0,8 z" fill={EM}/>
+      </marker>
+    </defs>
+    {["Ringkasan", "Flashcard", "Kuis", "Tanya Tutor"].map((t, i) => (
+      <g key={t}>
+        <rect x="166" y={28 + i * 32} width="130" height="24" rx="7"
+          fill={i === 0 ? "rgba(62,207,142,0.15)" : "rgba(255,255,255,0.04)"}
+          stroke={i === 0 ? EM : "rgba(255,255,255,0.1)"}/>
+        <text x="231" y={44 + i * 32} fontSize="11" fill={i === 0 ? EM : "#bbb"} textAnchor="middle">{t}</text>
+      </g>
+    ))}
+    <text x="160" y="182" fontSize="10" fill="#777" textAnchor="middle">Semua dibuat dari materi yang kamu upload</text>
   </svg>
 );
 
@@ -290,14 +314,15 @@ const STEPS = [
   {
     id: 1, emoji: "📲", title: "Login Pertama Kali", memberOnly: false,
     illus: <IllusLogin/>,
-    intro: "Langkah paling awal — masuk ke Talqeeh pakai kode member yang kamu terima.",
+    intro: "Langkah paling awal — masuk ke Talqeeh pakai akun Google. Tanpa password, tanpa kode.",
     steps: [
       "Buka talqeeh.vercel.app di browser HP atau laptop.",
-      "Klik tombol \"Masuk di sini\" di bagian bawah halaman utama.",
-      "Ketik kode member kamu dengan format MSR-XXXX-XXXX (huruf besar).",
-      "Tekan tombol \"Masuk\". Kalau kode benar, kamu langsung masuk ke dalam.",
+      "Klik \"Masuk\" di pojok kanan atas, lalu \"Masuk dengan Google\".",
+      "Pilih akun Google yang mau kamu pakai untuk Talqeeh.",
+      "Belum member? Kamu langsung diarahkan ke pilihan paket: Library, atau Library + AI Partner.",
+      "Bayar di Mayar pakai email Google yang sama — akses aktif otomatis dalam hitungan detik.",
     ],
-    tip: "Kode member dikirim ke WhatsApp kamu saat pertama daftar. Simpan baik-baik — kode ini kunci akses kamu. Kalau lupa, hubungi admin.",
+    tip: "Member lama yang dulu login pakai kode: masuk dengan Google, lalu masukkan PIN aktivasi yang dikirim admin via WhatsApp. Cukup sekali — setelah itu tinggal login pakai Google.",
   },
   {
     id: 2, emoji: "👤", title: "Setup Profil Belajar", memberOnly: false,
@@ -322,7 +347,7 @@ const STEPS = [
       "Klik maddah yang sedang kamu pelajari atau yang mau disiapkan untuk ujian.",
       "Scroll ke bawah untuk melihat semua maddah — termasuk maddah Ma'had jika kamu di jenjang itu.",
     ],
-    tip: "Talqeeh punya 72 maddah total — mencakup semua fakultas S1 dan Ma'had (I'dadi, Tsanawi Adabi & Ilmi). Yang muncul di dashboard-mu hanya yang sesuai kurikulummu.",
+    tip: `Talqeeh punya ${CATALOG.maddah} maddah total — ${CATALOG.maddahS1} maddah S1 dari semua fakultas dan ${CATALOG.maddahMahad} maddah Ma'had (I'dadi, Tsanawi Adabi & Ilmi). Yang muncul di dashboard-mu hanya yang sesuai kurikulummu.`,
   },
   {
     id: 4, emoji: "🤖", title: "Mengenal 6 Kategori Prompt", memberOnly: true,
@@ -434,19 +459,34 @@ const STEPS = [
   {
     id: 12, emoji: "📋", title: "Siap Imtihan — Mode Ujian", memberOnly: true,
     illus: <IllusSiapImtihan/>,
-    intro: "Mode khusus persiapan ujian dengan 6 jenis latihan yang dirancang sesuai gaya imtihan Al-Azhar.",
+    intro: "Mode khusus persiapan ujian: bank soal tahun lalu, 4 mode prompt gaya imtihan Al-Azhar, dan Bedah Talkhisan.",
     steps: [
       "Buka menu Siap Imtihan dari dashboard atau navigasi.",
-      "Pilih maddah yang mau disiapkan, lalu pilih salah satu dari 6 mode:",
+      "Cek Bank Soal di bagian atas — soal tahriri tahun-tahun sebelumnya lengkap dengan prompt jawabannya.",
+      "Pilih maddah yang mau disiapkan, lalu pilih salah satu dari 4 mode:",
       "📦 Kompres Materi — rangkuman padat satu bab, siap ditulis di kertas ujian.",
-      "🎯 Drill Soal Azhari — latihan soal persis gaya Azhar: 'arrif, bayyin, wadhdhih, qaarun.",
+      "🎯 Drill Soal Azhari — latihan soal persis gaya Azhar: 'arrif, bayyin, wadhdhih, qaarin.",
       "🎤 Mock Syafawi — simulasi ujian lisan, AI berperan sebagai dosen yang menguji.",
       "💡 Analogi & Paham — konsep sulit dijelaskan lewat analogi yang mudah dipahami.",
+      "Punya talkhisan? Tempel atau upload di Bedah Talkhisan untuk dapat prompt faham, hafal, dan drill dari isinya.",
     ],
     tip: "Gunakan Siap Imtihan minimal H-7 sebelum ujian. Urutan ideal: Kompres Materi → Drill Soal → Mock Syafawi. Tiga hari terakhir fokus ke Mock Syafawi untuk melatih kepercayaan diri.",
   },
   {
-    id: 13, emoji: "🗺️", title: "Learning Path — Belajar Bertahap", memberOnly: true,
+    id: 13, emoji: "✨", title: "AI Partner — Belajar dari Diktatmu", memberOnly: true,
+    illus: <IllusAiPartner/>,
+    intro: "Tambahan berlangganan untuk member Library. Bedanya dengan prompt: kamu nggak perlu salin ke AI lain — Talqeeh langsung mengolah materimu.",
+    steps: [
+      "Buka menu AI Partner dari navigasi.",
+      "Upload diktat, catatan, atau foto kitab (PDF, foto, atau tempel teks).",
+      "Pilih yang mau dibuat: Ringkasan (lengkap dengan ta'rif istilah berharakat), Flashcard, atau Kuis.",
+      "Flashcard memakai pengulangan terjadwal — kartu yang belum hafal muncul lebih sering.",
+      "Masih bingung? Tanya Tutor AI. Jawabannya merujuk ke materi yang kamu upload.",
+    ],
+    tip: "Hasil AI tetap perlu dicek ulang dengan diktat dan penjelasan duktur. Pakai AI Partner untuk muraja'ah, bukan pengganti talaqqi.",
+  },
+  {
+    id: 14, emoji: "🗺️", title: "Learning Path — Belajar Bertahap", memberOnly: true,
     illus: <IllusPaths/>,
     intro: "Jalur belajar terstruktur dari pemula ke mahir — 3 level, masing-masing 5 modul yang bisa dikerjakan sesuai pace kamu.",
     steps: [
@@ -462,11 +502,8 @@ const STEPS = [
 
 function TutorialPage() {
   const [current, setCurrent] = useState(0);
-  let isLoggedIn = false;
-  try {
-    const s = JSON.parse(localStorage.getItem("madad_session") || "{}");
-    isLoggedIn = !!s.code;
-  } catch { isLoggedIn = false; }
+  const { session } = useAuth();
+  const isLoggedIn = !!session;
 
   const steps = isLoggedIn
     ? STEPS
@@ -524,14 +561,14 @@ function TutorialPage() {
           </h2>
           <p style={{ color: "#aaa", marginBottom: 26, lineHeight: 1.6, fontSize: 15 }}>
             Langkah {step.id} dan seterusnya hanya untuk member Talqeeh.
-            Daftar sekarang untuk akses penuh — 72 maddah & 1200+ prompt AI.
+            Gabung untuk akses penuh — {CATALOG.maddah} maddah & {CATALOG.prompts} prompt AI.
           </p>
-          <a href="#/maddah-publik" style={{
-            display: "inline-block", background: EM, color: "#000", fontWeight: 800,
-            padding: "13px 30px", borderRadius: 12, textDecoration: "none", fontSize: 15,
+          <button onClick={() => scrollToPaket()} style={{
+            display: "inline-block", background: EM, color: "#000", fontWeight: 800, border: "none", cursor: "pointer",
+            padding: "13px 30px", borderRadius: 12, fontSize: 15,
           }}>
             Lihat Paket Member →
-          </a>
+          </button>
         </div>
       ) : (
         <div className="card-glass" style={{ overflow: "hidden" }}>

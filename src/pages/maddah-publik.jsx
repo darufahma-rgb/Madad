@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo, createContext
    Bisa diakses siapapun tanpa login.
 */
 
-const MaddahPublikPage = ({ onOpenPayment, onOpenLogin }) => {
+const MaddahPublikPage = ({ onOpenPayment, onOpenJoin, onOpenLogin }) => {
 
   const KATEGORI_INFO = [
     { id: "qurani",  label: "Quran & Tafsir",     arabic: "الْقُرْآنُ وَالتَّفْسِيرُ", color: "gold"   },
@@ -21,18 +21,17 @@ const MaddahPublikPage = ({ onOpenPayment, onOpenLogin }) => {
       : [],
   })).filter(g => g.maddahs.length > 0);
 
-  const totalMaddah = typeof MADDAHS !== "undefined" ? MADDAHS.length : 55;
-  const totalMahad  = typeof MAHAD_MADDAHS !== "undefined" ? MAHAD_MADDAHS.length : 17;
+  const s1List    = typeof MADDAHS !== "undefined" ? MADDAHS : [];
+  const mahadList = typeof MAHAD_MADDAH !== "undefined" ? MAHAD_MADDAH : [];
+  const totalMaddah = s1List.length || CATALOG.maddahS1;
+  const totalMahad  = mahadList.length || CATALOG.maddahMahad;
 
-  const totalPrompts = (typeof MADDAHS !== "undefined")
-    ? MADDAHS.reduce((acc, m) =>
-        acc + Object.values(m.prompts || {}).reduce((a, arr) => a + arr.length, 0), 0)
-    + ((typeof MAHAD_MADDAHS !== "undefined")
-        ? MAHAD_MADDAHS.reduce((acc, m) =>
-            acc + Object.values(m.prompts || {}).reduce((a, arr) => a + arr.length, 0), 0)
-        : 0)
-    : 1055;
-  const promptLabel = (Math.floor(totalPrompts / 100) * 100) + "+";
+  const countPrompts = (list) => list.reduce((acc, m) =>
+    acc + Object.values(m.prompts || {}).reduce((a, arr) => a + (arr?.length || 0), 0), 0);
+  const totalPrompts = countPrompts(s1List) + countPrompts(mahadList);
+  const promptLabel = totalPrompts
+    ? (Math.floor(totalPrompts / 100) * 100).toLocaleString("id-ID") + "+"
+    : CATALOG.prompts;
 
   const stats = [
     { label: "Maddah S1",       value: String(totalMaddah) },
@@ -94,7 +93,7 @@ const MaddahPublikPage = ({ onOpenPayment, onOpenLogin }) => {
               Gabung Member
             </button>
             <button onClick={onOpenLogin} className="btn btn-ghost px-6 py-3 text-sm">
-              Sudah member? Login
+              Sudah member? Masuk dengan Google
             </button>
           </div>
         </div>
@@ -197,11 +196,11 @@ const MaddahPublikPage = ({ onOpenPayment, onOpenLogin }) => {
               </div>
               <div className="w-px h-5 bg-line"/>
               <h2 className="font-display text-lg font-semibold text-ink">Ma'had Al-Azhar</h2>
-              <span className="text-xs text-ink-soft ml-auto">17 maddah</span>
+              <span className="text-xs text-ink-soft ml-auto">{totalMahad} maddah</span>
             </div>
             <p className="text-sm text-ink-muted mb-4">
               Maddah khusus pelajar Ma'had Buuts Al-Azhar (I'dadi & Tsanawi) —
-              mencakup maddah agama + umum dalam bahasa Arab.
+              mencakup maddah agama + umum dalam bahasa Arab. Beberapa contohnya:
             </p>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {mahadCards.map((m, i) => (
@@ -255,7 +254,7 @@ const MaddahPublikPage = ({ onOpenPayment, onOpenLogin }) => {
                   </div>
                 </div>
                 <div style={{ fontSize: 12, color: '#aaa' }}>
-                  Submit &amp; dapat akses Talqeeh lifetime gratis →
+                  Submit &amp; dapat paket Library gratis selamanya →
                 </div>
               </div>
             </a>
@@ -267,17 +266,24 @@ const MaddahPublikPage = ({ onOpenPayment, onOpenLogin }) => {
               وَقُلْ رَبِّ زِدْنِي عِلْمًا
             </div>
             <p className="text-ink-muted text-sm mb-6 max-w-md mx-auto">
-              Semua maddah di atas tersedia untuk member Talqeeh —
+              Semua maddah di atas ada di paket Library —
               dengan prompt yang disesuaikan untuk tingkat dan gaya belajarmu.
             </p>
             <button
               onClick={onOpenPayment}
               className="btn btn-primary px-8 py-3.5 text-base font-medium mx-auto flex items-center gap-2">
               <Icon name="sparkles" className="w-4 h-4"/>
-              Gabung Member Selamanya
+              Ambil Library · {LIBRARY_PRICE}
             </button>
             <p className="text-xs text-ink-soft mt-3">
-              Bayar sekali · Akses selamanya · Update terus
+              Sekali bayar · Berlaku selamanya · Update ikut terbuka
+            </p>
+            <p className="text-xs text-ink-soft mt-4 max-w-md mx-auto leading-relaxed">
+              Mau AI langsung bikin ringkasan, flashcard, dan kuis dari diktatmu?{" "}
+              <button onClick={() => onOpenJoin ? onOpenJoin("library_ai") : onOpenPayment()}
+                className="text-emerald-300 underline underline-offset-2">
+                Pilih Library + AI Partner
+              </button>
             </p>
           </div>
         </div>

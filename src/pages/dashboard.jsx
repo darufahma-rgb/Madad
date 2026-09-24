@@ -761,7 +761,7 @@ const DashboardPage = () => {
                   Submit Soal Imtihan → Dapat Reward!
                 </div>
                 <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.5 }}>
-                  Punya soal ujian Al-Azhar tahun lalu? Submit & dapat akses Talqeeh <strong style={{ color: '#3ecf8e' }}>lifetime gratis</strong> atau diskon spesial.
+                  Punya soal ujian Al-Azhar tahun lalu? Submit & dapat <strong style={{ color: '#3ecf8e' }}>voucher makan siang</strong> sampai Rp 50.000.
                 </div>
               </div>
 
@@ -902,7 +902,7 @@ const DashboardPage = () => {
                 <div className="text-[11px] text-ink-muted leading-relaxed line-clamp-2">
                   Upload materi → ringkasan, flashcard, kuis & tutor AI dari muqarrar-mu
                 </div>
-                <div className="mt-2 text-[10px] font-medium text-emerald-400">Beta · Add-on</div>
+                <div className="mt-2 text-[10px] font-medium text-emerald-400">Tambahan · Langganan bulanan</div>
               </button>
             </div>
           </Reveal>

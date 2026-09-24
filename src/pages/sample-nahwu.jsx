@@ -364,10 +364,10 @@ Untuk setiap bait:
         <div className="container-x py-3 flex items-center justify-between gap-4 flex-wrap">
           <div className="text-sm text-ink-muted">
             <span className="text-gold-300 font-medium">✦ Ini sample gratis.</span>
-            {" "}Untuk 35 Maddah lain + prompt yang disesuaikan tingkatmu, gabung member.
+            {" "}{CATALOG.maddah - 1} maddah lain + prompt yang disesuaikan tingkatmu ada di paket Library.
           </div>
           <button onClick={() => window.dispatchEvent(new CustomEvent("talqeeh:open-join", { detail: { plan: "library" } }))} className="btn btn-gold text-sm px-4 py-2 flex-shrink-0">
-            Gabung Member · <span style={{textDecoration:"line-through",opacity:.6}}>{LIBRARY_PRICE_ORIGINAL}</span> {LIBRARY_PRICE} →
+            Ambil Library · <span style={{textDecoration:"line-through",opacity:.6}}>{LIBRARY_PRICE_ORIGINAL}</span> {LIBRARY_PRICE} →
           </button>
         </div>
       </div>
@@ -483,15 +483,21 @@ Untuk setiap bait:
               </p>
               <p className="text-xs text-ink-soft mb-8">— QS. Thaha: 114</p>
               <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink mb-3">
-                Suka? Akses 35 Maddah lain.
+                Suka? Masih ada {CATALOG.maddah - 1} maddah lain.
               </h2>
               <p className="text-sm text-ink-muted mb-6 max-w-md mx-auto">
-                Tafsir, Hadits, Fiqh, Ushul, Mustholah, Balaghah, dan 30+ lainnya. Prompt disesuaikan dengan tingkatmu.
+                Tafsir, Hadits, Fiqh, Ushul, Mustholah, Balaghah, sampai maddah Ma'had — {CATALOG.prompts} prompt yang disesuaikan dengan tingkatmu.
+                Sekali bayar, berlaku selamanya.
               </p>
               <button onClick={() => window.dispatchEvent(new CustomEvent("talqeeh:open-join", { detail: { plan: "library" } }))} className="btn btn-gold px-7 py-3.5 text-base font-medium"
                 style={{ boxShadow:"0 0 40px rgba(201,168,106,.35), 0 1px 0 rgba(255,255,255,.3) inset" }}>
-                Gabung Member · <span style={{textDecoration:"line-through",opacity:.6}}>{LIBRARY_PRICE_ORIGINAL}</span> {LIBRARY_PRICE} →
+                Ambil Library · <span style={{textDecoration:"line-through",opacity:.6}}>{LIBRARY_PRICE_ORIGINAL}</span> {LIBRARY_PRICE} →
               </button>
+              <p className="text-xs text-ink-soft mt-4 max-w-md mx-auto">
+                Mau AI langsung bikin ringkasan, flashcard, dan kuis dari diktatmu?{" "}
+                <button onClick={() => window.dispatchEvent(new CustomEvent("talqeeh:open-join", { detail: { plan: "library_ai" } }))}
+                  className="text-emerald-300 underline underline-offset-2">Pilih Library + AI Partner</button>.
+              </p>
             </div>
           </div>
         </div>

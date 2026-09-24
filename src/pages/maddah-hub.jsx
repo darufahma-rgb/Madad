@@ -113,7 +113,7 @@ const MaddahHubPage = () => {
             Semua mata pelajaran.
           </h1>
           <p className="text-base md:text-lg text-ink-muted max-w-2xl leading-relaxed">
-            Pilih Maddah → dapat AI rekomendasi, tutorial, dan 15+ prompt template per Maddah.{" "}
+            Pilih Maddah → dapat AI rekomendasi, tutorial, dan belasan prompt template per Maddah.{" "}
             <span className="text-gold-400">{withContent} Maddah sudah lengkap.</span>
           </p>
         </div>

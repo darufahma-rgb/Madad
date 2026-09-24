@@ -160,6 +160,25 @@ const WelcomePage = () => {
           </Reveal>
         )}
 
+        {/* AI Partner */}
+        <Reveal className="mb-10">
+          <div onClick={() => navigate("/ai-partner")}
+            className="card-glass p-5 cursor-pointer hov-lift flex items-start gap-4"
+            style={{ border: "1px solid rgba(62,207,142,0.25)" }}>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-emerald-500/15">
+              <Icon name="sparkles" className="w-5 h-5 text-emerald-300"/>
+            </div>
+            <div className="flex-1">
+              <div className="font-display text-base font-semibold text-ink mb-1">Punya diktat atau catatan kuliah?</div>
+              <p className="text-sm text-ink-muted leading-relaxed">
+                AI Partner bisa mengubahnya jadi ringkasan, flashcard, dan kuis — plus tutor AI yang menjawab dari materimu.
+                Tersedia sebagai langganan bulanan tambahan.
+              </p>
+            </div>
+            <Icon name="arrowRight" className="w-4 h-4 text-emerald-300 flex-shrink-0 mt-1"/>
+          </div>
+        </Reveal>
+
         {/* CTA ke Dashboard */}
         <Reveal className="text-center">
           <button

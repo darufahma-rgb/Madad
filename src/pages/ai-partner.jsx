@@ -50,13 +50,21 @@ const BetaCard = () => {
           style={{ background: 'rgba(62,207,142,0.15)', border: '1px solid rgba(62,207,142,0.3)' }}>
           <Icon name="sparkles" className="w-7 h-7"/>
         </div>
-        <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-2">Beta · Add-on</div>
+        <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-2">Tambahan · Langganan bulanan</div>
         <h2 className="font-display text-2xl font-semibold text-ink mb-3">AI Partner Belajar belum aktif di akunmu</h2>
-        <p className="text-ink-muted text-sm leading-relaxed mb-6">
-          Upload materi kuliah, lalu dapatkan ringkasan, flashcard hafalan, kuis, dan tutor AI yang menjawab
-          berdasarkan materimu. AI Partner adalah langganan bulanan tambahan untuk member Library.
+        <p className="text-ink-muted text-sm leading-relaxed mb-5">
+          Library memberimu prompt untuk disalin ke AI. AI Partner melangkah lebih jauh: upload diktatmu,
+          dan Talqeeh langsung menyiapkan bahan belajarnya.
           {s.aiPriceLabel && <><br/><span className="text-ink">Harga: {s.aiPriceLabel}</span></>}
         </p>
+        <ul className="text-left text-sm text-ink space-y-2 mb-6 max-w-sm mx-auto">
+          {(window.AI_PARTNER_FEATURES || []).map(f => (
+            <li key={f} className="flex items-start gap-2.5">
+              <Icon name="check" className="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-400"/>{f}
+            </li>
+          ))}
+        </ul>
+        <p className="text-xs text-ink-soft mb-6">Library-mu tetap aktif selamanya. Langganan AI bisa berhenti kapan saja.</p>
         <div className="flex flex-col items-center gap-3">
           <button onClick={() => window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library_ai' } }))}
             className="btn btn-primary px-6 py-3">

@@ -235,7 +235,7 @@ const MaddahDetailPage = () => {
           <div className="card-glass p-5 border border-emerald-600/22 bg-emerald-600/5 text-center">
             <div className="text-emerald-300 font-medium mb-1">Konten lengkap segera hadir</div>
             <div className="text-sm text-ink-muted">
-              Maddah ini sedang disiapkan dengan tutorial dan 15+ prompt template.
+              Maddah ini sedang disiapkan lengkap dengan tutorial dan prompt template.
               Stay tuned — akan tersedia di update berikutnya.
             </div>
           </div>

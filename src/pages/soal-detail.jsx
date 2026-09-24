@@ -430,14 +430,14 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
                           <div style={{ fontSize: 14, color: '#fff', fontWeight: 700 }}>
                             Jawaban lengkap untuk member
                           </div>
-                          <a href="#/maddah-publik"
+                          <button onClick={() => window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library' } }))}
                             style={{
-                              padding: '8px 22px', borderRadius: 9,
+                              padding: '8px 22px', borderRadius: 9, border: 'none', cursor: 'pointer',
                               background: EM, color: '#000',
-                              fontWeight: 800, fontSize: 13, textDecoration: 'none',
+                              fontWeight: 800, fontSize: 13,
                             }}>
                             Gabung Member →
-                          </a>
+                          </button>
                         </div>
                       )}
                     </div>

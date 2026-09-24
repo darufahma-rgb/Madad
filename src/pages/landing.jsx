@@ -268,8 +268,9 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
         {/* Sub-headline */}
         <Reveal delay={180}>
           <p className="text-lg md:text-xl mb-10 max-w-xl" style={{ color:"rgba(255,255,255,0.62)", lineHeight:1.65 }}>
-            Panduan lengkap + template prompt untuk pahami mata kuliah di Al-Azhar.
-            Teruntuk Masisir semua tingkat, dari Ma'had, Darul Lughoh (DL) sampai S2.
+            Template prompt siap pakai untuk {CATALOG.maddah} maddah Al-Azhar, plus AI Partner yang
+            bikin ringkasan, flashcard, dan kuis dari diktatmu sendiri.
+            Untuk Masisir dari Ma'had, Darul Lughoh (DL), sampai S2.
           </p>
         </Reveal>
 
@@ -305,7 +306,7 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
         {/* Trust row */}
         <Reveal delay={340}>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-16">
-            {["88 Maddah lengkap (S1 + Ma'had)","1211 template prompt","Library sekali bayar, akses selamanya","Tambahan AI Partner Belajar"].map((t, i) => (
+            {[`${CATALOG.maddah} maddah (S1 + Ma'had)`, `${CATALOG.prompts} template prompt`, "Library sekali bayar, selamanya", "AI Partner bulanan, opsional"].map((t, i) => (
               <span key={i} className="flex items-center gap-2 text-xs" style={{ color:"rgba(255,255,255,0.42)" }}>
                 <Icon name="check" className="w-3.5 h-3.5 text-gold-400 flex-shrink-0"/>{t}
               </span>
@@ -372,13 +373,83 @@ const SampleMaddahSection = () => (
             </div>
           </div>
           <p className="text-center text-xs text-ink-soft mt-4">
-            Sample ini gratis selamanya · Untuk 35 Maddah lain, gabung member.
+            Sample ini gratis selamanya · {CATALOG.maddah - 1} maddah lainnya ada di paket Library.
           </p>
         </div>
       </Reveal>
     </div>
   </section>
 );
+
+/* ══════════════════════════════════════════════════════════════
+   2.7 DUA CARA BELAJAR — Library vs AI Partner
+   ══════════════════════════════════════════════════════════════ */
+const TwoWaysSection = () => {
+  const ways = [
+    {
+      badge: "Library", tone: "gold", when: "Sekali bayar · selamanya",
+      title: "Prompt yang sudah diracik untuk tiap maddah",
+      desc: "Pilih maddah, pilih tujuan (pahami, hafal, latihan, ujian), salin prompt, lalu tempel ke AI favoritmu. Prompt otomatis menyesuaikan fakultas, tingkat, dan gaya belajarmu.",
+      steps: ["Pilih maddah", "Salin prompt", "Tempel ke Claude / ChatGPT / NotebookLM"],
+      extras: "Termasuk bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian.",
+    },
+    {
+      badge: "AI Partner", tone: "emerald", when: "Tambahan · langganan bulanan",
+      title: "Belajar langsung dari diktatmu sendiri",
+      desc: "Upload diktat, catatan, atau foto kitab. AI Partner membaca isinya lalu menyiapkan bahan belajar di Talqeeh, tanpa perlu pindah aplikasi atau menyusun prompt.",
+      steps: ["Upload PDF / foto / teks", "Dapat ringkasan, flashcard, kuis", "Tanya tutor AI soal materinya"],
+      extras: "Jawaban tutor merujuk ke materi yang kamu upload, bukan jawaban umum dari internet.",
+    },
+  ];
+  const toneClass = {
+    gold:    { chip: "bg-gold-500/10 border-gold-500/20 text-gold-300", dot: "bg-gold-400", num: "text-gold-300", border: "rgba(201,168,106,.22)" },
+    emerald: { chip: "bg-emerald-500/10 border-emerald-500/20 text-emerald-300", dot: "bg-emerald-400", num: "text-emerald-300", border: "rgba(62,207,142,.30)" },
+  };
+  return (
+    <section className="section pt-0">
+      <div className="container-x">
+        <Reveal className="mb-10 text-center">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/70"/>DUA CARA BELAJAR<span className="w-6 h-px bg-gold-500/70"/>
+          </div>
+          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
+            Library untuk semua maddah.<br className="hidden md:block"/> AI Partner untuk materimu sendiri.
+          </h2>
+          <p className="text-ink-muted text-base max-w-xl mx-auto">
+            Library adalah inti Talqeeh. AI Partner tambahan opsional, buat kamu yang mau AI langsung mengolah diktat kuliahmu.
+          </p>
+        </Reveal>
+        <div className="grid md:grid-cols-2 gap-5 max-w-5xl mx-auto">
+          {ways.map(w => {
+            const t = toneClass[w.tone];
+            return (
+              <Reveal key={w.badge}>
+                <div className="card-glass p-7 h-full flex flex-col" style={{ border: `1px solid ${t.border}` }}>
+                  <div className="flex items-center justify-between gap-3 mb-5 flex-wrap">
+                    <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full border text-xs ${t.chip}`}>
+                      <span className={`w-1.5 h-1.5 rounded-full ${t.dot}`}/>{w.badge}
+                    </span>
+                    <span className="text-[11px] uppercase tracking-wider text-ink-soft">{w.when}</span>
+                  </div>
+                  <h3 className="font-display text-xl md:text-2xl font-semibold text-ink mb-3">{w.title}</h3>
+                  <p className="text-sm text-ink-muted leading-relaxed mb-5">{w.desc}</p>
+                  <ol className="space-y-2 mb-5">
+                    {w.steps.map((s, i) => (
+                      <li key={s} className="flex items-center gap-3 text-sm text-ink">
+                        <span className={`font-display font-semibold ${t.num}`}>{i + 1}</span>{s}
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="text-xs text-ink-soft leading-relaxed mt-auto">{w.extras}</p>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+};
 
 /* ══════════════════════════════════════════════════════════════
    3. HOW IT WORKS
@@ -388,7 +459,7 @@ const HowItWorks = () => {
     { num:"01", title:"Login pakai Google", sub:"Tanpa bikin password",
       desc:"Akun Google jadi identitas keanggotaanmu. Bisa dipakai di HP dan laptop sekaligus." },
     { num:"02", title:"Pilih paket", sub:"Library atau Library + AI",
-      desc:"Library: 1211 prompt, sekali bayar selamanya. Tambah AI Partner kalau mau belajar langsung dari materimu." },
+      desc:`Library: ${CATALOG.prompts} prompt, sekali bayar selamanya. Tambah AI Partner kalau mau belajar langsung dari materimu.` },
     { num:"03", title:"Bayar di Mayar", sub:"Aktif otomatis",
       desc:"QRIS, virtual account, atau e-wallet. Pakai email Google yang sama — akses langsung terbuka tanpa nunggu admin." },
     { num:"04", title:"Mulai belajar", sub:"Isi profil 5 pertanyaan",
@@ -429,40 +500,48 @@ const HowItWorks = () => {
    4. ALL MADDAH PREVIEW
    ══════════════════════════════════════════════════════════════ */
 const AllMaddahPreview = () => {
+  // Jumlah per kelompok dihitung langsung dari data maddah supaya selalu sesuai isi Library.
+  const countS1 = (cat) => (window.MADDAHS || []).filter(m => m.category === cat).length;
   const groups = [
-    { label:"Ushuluddin & Quran", arabic:"أصول الدين", count:7,
+    { label:"Quran & Tafsir", arabic:"القرآن والتفسير", count:countS1("qurani"),
       color:"from-emerald-500/10 to-emerald-700/3",
-      sample:["Tafsir Tahlili","Tafsir Maudhu'i","'Ulum Al-Qur'an","Hadits"] },
-    { label:"Hadits & Mustholah", arabic:"الحديث", count:5,
+      sample:["Tafsir Tahlili","Tafsir Maudhu'i","'Ulum Al-Qur'an","Qira'at"] },
+    { label:"Hadits & Mustholah", arabic:"الحديث والمصطلح", count:countS1("haditsi"),
       color:"from-emerald-400/8 to-emerald-600/2",
-      sample:["Hadits Tahlili","Mustholah","Manahij Muhadditsin","Takhrij"] },
-    { label:"Syariah & Fiqh", arabic:"الشريعة", count:5,
+      sample:["Hadits Tahlili","Mustholah Hadits","Manahij Muhadditsin","Takhrij"] },
+    { label:"Fiqh & Ushul", arabic:"الفقه والأصول", count:countS1("fiqhi"),
       color:"from-gold-500/10 to-gold-700/3",
-      sample:["Fiqh Madzhabi","Fiqh Muqaran","Ushul Fiqh","Qawa'id"] },
-    { label:"Aqidah & Pemikiran", arabic:"العقيدة", count:5,
+      sample:["Fiqh Madzhabi","Fiqh Muqaran","Ushul Fiqh","Qawa'id Fiqhiyyah"] },
+    { label:"Aqidah & Pemikiran", arabic:"العقيدة والفكر", count:countS1("aqdi"),
       color:"from-emerald-500/8 to-transparent",
-      sample:["Tauhid","Firaq","Filsafat Islam","Mantiq","Tasawwuf"] },
-    { label:"Lughah Arabiyah", arabic:"اللغة العربية", count:7,
+      sample:["Tauhid","'Aqidah & Firaq","Mantiq","Tasawwuf"] },
+    { label:"Lughah Arabiyah", arabic:"اللغة العربية", count:countS1("lughawi"),
       color:"from-gold-400/10 to-emerald-600/4",
-      sample:["Nahwu","Sharaf","Balaghah","Adab","Naqd Adabi"] },
-    { label:"Tarikh, Dakwah & Tarbiyah", arabic:"التاريخ والدعوة", count:7,
+      sample:["Nahwu","Sharaf","Balaghah","Qira'ah (DL)"] },
+    { label:"Tarikh, Dakwah & Tarbiyah", arabic:"التاريخ والدعوة", count:countS1("tarikhi"),
       color:"from-emerald-600/8 to-gold-600/4",
-      sample:["Sirah","Tarikh Tasyri'","Hadharah","Dakwah","Adyan"] },
+      sample:["Sirah Nabawiyah","Tarikh Tasyri'","Dakwah & I'lam","Adyan"] },
+    { label:"Ma'had Al-Azhar (I'dadi & Tsanawi)", arabic:"المعهد الأزهري", count:(window.MAHAD_MADDAH || []).length,
+      color:"from-gold-500/8 to-emerald-600/4", wide:true,
+      sample:["Al-Qur'an & Tajwid","Fiqh","Nahwu","Matematika (I'dadi)"] },
   ];
   return (
     <section className="section pt-0">
       <div className="container-x">
         <Reveal className="mb-12 text-center">
           <div id="tools" className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
-            <span className="w-6 h-px bg-gold-500/70"/>36 MADDAH LENGKAP
+            <span className="w-6 h-px bg-gold-500/70"/>{CATALOG.maddah} MADDAH · S1 & MA'HAD
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
-            Jurusan apapun. Semester berapapun. Talqeeh ada untuk kamu.
+            Jurusan apapun. Tingkat berapapun. Talqeeh ada untuk kamu.
           </h2>
+          <p className="text-ink-muted text-base max-w-xl mx-auto">
+            Dashboard cuma menampilkan maddah yang sesuai fakultas, jurusan, dan tingkatmu.
+          </p>
         </Reveal>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
           {groups.map((f, i) => (
-            <Reveal key={i}>
+            <Reveal key={i} className={f.wide ? "md:col-span-2 lg:col-span-3" : ""}>
               <div className={`card-glass p-6 hov-lift bg-gradient-to-br ${f.color} h-full`}>
                 <div className="flex items-start justify-between mb-4">
                   <div>
@@ -486,7 +565,7 @@ const AllMaddahPreview = () => {
           ))}
         </div>
         <Reveal className="mt-10 text-center">
-          <p className="text-sm text-ink-soft">Total 1211 template prompt · Disesuaikan untuk Ma'had, DL, sampai S2</p>
+          <p className="text-sm text-ink-soft">Total {CATALOG.prompts} template prompt · Plus template khusus mahasiswa S2</p>
         </Reveal>
       </div>
     </section>
@@ -714,7 +793,9 @@ const LANDING_FAQ = [
   { q: "Kenapa harus login pakai Google dulu?",
     a: "Akun Google jadi identitas keanggotaanmu. Pembayaran otomatis tercatat ke akun itu, jadi nggak ada kode yang perlu ditunggu atau diketik, dan kamu bisa belajar di HP maupun laptop dengan akun yang sama." },
   { q: "Apa beda paket Library dan Library + AI Partner?",
-    a: "Library berisi 88 maddah, 1211 template prompt, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Library + AI Partner menambahkan tempat upload materi kuliahmu sendiri: AI langsung bikin ringkasan, flashcard, kuis, dan bisa ditanya seperti tutor. AI Partner dibayar bulanan." },
+    a: `Library berisi ${CATALOG.maddah} maddah, ${CATALOG.prompts} template prompt, bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Prompt-nya kamu salin ke AI pilihanmu (Claude, ChatGPT, NotebookLM, dll). Library + AI Partner menambahkan tempat upload materi kuliahmu sendiri: AI langsung bikin ringkasan, flashcard, kuis, dan bisa ditanya seperti tutor — tanpa pindah aplikasi. AI Partner dibayar bulanan.` },
+  { q: "Library-nya berlaku sampai kapan?",
+    a: "Selamanya. Sekali bayar, dan maddah, prompt, atau fitur Library yang ditambahkan nanti ikut terbuka tanpa biaya tambahan." },
   { q: "Bayarnya pakai apa?",
     a: "Lewat Mayar: QRIS, virtual account bank, atau e-wallet. Saat checkout, isi email yang sama dengan akun Google-mu supaya akses langsung aktif." },
   { q: "Kalau berhenti langganan AI Partner, Library-nya hilang?",
@@ -1232,7 +1313,7 @@ const LandingPage = ({ onOpenLogin, onOpenJoin }) => (
               </span>
             </div>
             <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.5 }}>
-              Submit soal Al-Azhar tahun lalu → dapat akses Talqeeh <strong style={{ color: '#3ecf8e' }}>lifetime gratis</strong>
+              Submit soal Al-Azhar tahun lalu → dapat <strong style={{ color: '#3ecf8e' }}>paket Library gratis</strong> selamanya
             </div>
           </div>
           <div style={{ color: '#3ecf8e', fontSize: 18, flexShrink: 0 }}>→</div>
@@ -1241,6 +1322,7 @@ const LandingPage = ({ onOpenLogin, onOpenJoin }) => (
     </section>
 
     <SampleMaddahSection/>
+    <TwoWaysSection/>
     <BankSoalPreview onOpenLogin={onOpenLogin}/>
     <HowItWorks/>
     <AllMaddahPreview/>

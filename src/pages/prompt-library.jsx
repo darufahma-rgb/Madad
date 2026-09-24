@@ -484,7 +484,7 @@ const MasisirTab = ({ profile }) => {
       icon: "layers",
       color: "#C9A86A",
       title: "Prompt per Maddah",
-      desc: "66+ prompt template diorganisir per maddah — Fiqh, Nahwu, Tafsir, Hadits, dan lainnya.",
+      desc: `${CATALOG.prompts} prompt template diorganisir per maddah — Fiqh, Nahwu, Tafsir, Hadits, dan lainnya.`,
       to: "/maddah",
       label: "Buka Maddah Hub",
     },

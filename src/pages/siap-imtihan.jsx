@@ -1786,6 +1786,10 @@ const SiapImtihanPage = () => {
             <p className="text-sm text-ink-muted mt-1 max-w-xl">
               Upload foto atau paste teks talkhisanmu — Talqeeh bantu kamu faham, hafal, drill soal, atau simulasi syafawi dari isi talkhisan itu.
             </p>
+            <p className="text-xs text-ink-soft mt-2 max-w-xl">
+              Hasilnya berupa prompt untuk kamu salin ke AI. Mau ringkasan, flashcard, dan kuis langsung jadi di Talqeeh?{" "}
+              <button onClick={() => navigate("/ai-partner")} className="text-emerald-300 underline underline-offset-2">Coba AI Partner</button>.
+            </p>
           </Reveal>
           <Reveal>
             <TalkhisanSection profile={profile}/>

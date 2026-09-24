@@ -316,7 +316,7 @@ function SubmitSoalPage() {
               🗂️ Lihat maddah yang belum ada soalnya
             </div>
             <div style={{ fontSize: 12, color: "#888" }}>
-              35 maddah · cek yang masih kosong — soal itu lebih dibutuhkan!
+              Cek maddah yang soalnya masih kosong — soal itu lebih dibutuhkan!
             </div>
           </div>
           <span style={{ fontSize: 12, color: "#ffc832", flexShrink: 0 }}>Lihat →</span>
@@ -331,7 +331,7 @@ function SubmitSoalPage() {
             Submit Soal Imtihan
           </h1>
           <p style={{ fontSize: 14, color: '#aaa', lineHeight: 1.6, margin: 0 }}>
-            Bantu Masisir lain belajar dari soal-soal tahun sebelumnya. Kamu dapat reward berupa akses Talqeeh atau diskon!
+            Bantu Masisir lain belajar dari soal-soal tahun sebelumnya. Belum member? Dapat paket Library gratis. Sudah member? Dapat voucher makan siang.
           </p>
         </div>
 
@@ -450,7 +450,7 @@ function SubmitSoalPage() {
               <div style={{ fontSize: 28 }}>🎟️</div>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 800, color: '#ffc832' }}>
-                  Dapatkan Talqeeh GRATIS
+                  Dapatkan Library Talqeeh GRATIS
                 </div>
                 <div style={{ fontSize: 12, color: '#a08030' }}>
                   Submit soal ujian Al-Azhar → dapat reward
@@ -465,7 +465,7 @@ function SubmitSoalPage() {
                   icon: '⭐⭐',
                   label: '1 termin penuh',
                   sublabel: 'Semua maddah di 1 fashl',
-                  reward: 'Akses Talqeeh LIFETIME GRATIS',
+                  reward: 'Paket Library GRATIS selamanya',
                   highlight: true,
                   badge: 'GRATIS',
                   badgeColor: '#3ecf8e',
@@ -474,7 +474,7 @@ function SubmitSoalPage() {
                   icon: '⭐⭐⭐',
                   label: '2 termin penuh',
                   sublabel: 'Dua fashl berbeda',
-                  reward: 'Lifetime + voucher makan siang Rp 25.000 🍽️',
+                  reward: 'Library gratis + voucher makan siang Rp 25.000 🍽️',
                   highlight: false,
                   badge: 'BONUS',
                   badgeColor: '#ffc832',
@@ -483,7 +483,7 @@ function SubmitSoalPage() {
                   icon: '✦',
                   label: 'Submit sebagian',
                   sublabel: 'Belum 1 termin penuh',
-                  reward: 'Diskon spesial untuk bergabung',
+                  reward: 'Diskon spesial untuk paket Library',
                   highlight: false,
                   badge: null,
                 },
@@ -532,7 +532,8 @@ function SubmitSoalPage() {
               border: '1px dashed rgba(255,255,255,0.08)',
               borderRadius: 8, fontSize: 11, color: '#666', lineHeight: 1.6,
             }}>
-              💡 Reward dikirim via WhatsApp setelah soal diverifikasi admin.
+              💡 Setelah soal diverifikasi, admin mengirim PIN aktivasi via WhatsApp —
+              login pakai Google lalu masukkan PIN itu untuk membuka Library.
               Voucher makan siang diklaim dengan japri admin Talqeeh.
             </div>
           </div>
@@ -607,9 +608,9 @@ function SubmitSoalPage() {
               <div style={{ marginBottom: 20 }}>
                 <div style={{ fontWeight: 700, color: '#3ecf8e', marginBottom: 10, fontSize: 13, letterSpacing: 0.5 }}>🎁 SISTEM REWARD</div>
                 {[
-                  ['1 termin penuh', 'Semua maddah di satu fashl dalam satu tahun', 'Akses Talqeeh lifetime GRATIS'],
-                  ['2 termin penuh', 'Dua fashl berbeda atau dua tahun berbeda', 'Lifetime + merchandise Talqeeh'],
-                  ['Sebagian', 'Belum lengkap 1 termin penuh', 'Diskon spesial untuk join Talqeeh'],
+                  ['1 termin penuh', 'Semua maddah di satu fashl dalam satu tahun', 'Belum member: Library gratis · Member: voucher Rp 25.000'],
+                  ['2 termin penuh', 'Dua fashl berbeda atau dua tahun berbeda', 'Belum member: Library + voucher Rp 25.000 · Member: voucher Rp 50.000'],
+                  ['Sebagian', 'Belum lengkap 1 termin penuh', 'Diskon spesial untuk paket Library'],
                 ].map(([label, ket, reward]) => (
                   <div key={label} style={{ display: 'flex', gap: 10, marginBottom: 10, padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 9 }}>
                     <div style={{ flexShrink: 0, fontWeight: 700, color: '#fff', fontSize: 13, minWidth: 100 }}>{label}</div>
@@ -629,7 +630,8 @@ function SubmitSoalPage() {
                 <div style={{ fontWeight: 700, color: '#3ecf8e', marginBottom: 10, fontSize: 13, letterSpacing: 0.5 }}>❓ PERTANYAAN YANG SERING DITANYA</div>
                 {[
                   ['Soalku dari tahun 2022, bisa?', 'Untuk saat ini hanya menerima soal 2023/2024 sampai 2025/2026.'],
-                  ['Aku sudah member, rewardnya apa?', 'Member dapat poin yang bisa ditukar merchandise Talqeeh — info lebih lanjut segera diumumkan.'],
+                  ['Aku sudah member, rewardnya apa?', 'Voucher makan siang: Rp 25.000 untuk 1 termin penuh, Rp 50.000 untuk 2 termin penuh.'],
+                  ['Library gratisnya termasuk AI Partner?', 'Belum. Reward-nya paket Library (selamanya). AI Partner tetap langganan bulanan terpisah.'],
                   ['Soalnya dua halaman, gimana?', 'Submit dua kali — satu foto per submission. Isi info maddah dan tahun yang sama.'],
                   ['Boleh submit soal teman?', 'Boleh, selama soalnya asli dari Al-Azhar dan kamu tahu info maddah + tahunnya dengan benar.'],
                   ['Berapa lama prosesnya?', 'Biasanya 1-2 hari. Kalau 3 hari belum ada kabar, hubungi admin.'],
