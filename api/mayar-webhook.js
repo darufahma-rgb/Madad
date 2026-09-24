@@ -1,14 +1,48 @@
 import crypto from 'crypto';
 import { readSettings } from './_lib/settings.js';
 
-const parseBody = (req) => new Promise((resolve) => {
+const readRawBody = (req) => new Promise((resolve) => {
   let body = '';
   req.on('data', chunk => body += chunk);
-  req.on('end', () => {
-    try { resolve(JSON.parse(body || '{}')); }
-    catch { resolve(null); }
-  });
+  req.on('end', () => resolve(body));
 });
+
+const parseJson = (raw) => {
+  try { return JSON.parse(raw || '{}'); }
+  catch { return null; }
+};
+
+// Satu akun Mayar cuma punya satu URL webhook. Akun ini juga dipakai website lain (Nemsyi),
+// jadi setiap event yang lolos cek token diteruskan apa adanya ke MAYAR_FORWARD_URL.
+const FORWARD_TIMEOUT_MS = 10000;
+const SKIP_FORWARD_HEADERS = new Set(['host', 'connection', 'content-length', 'transfer-encoding', 'accept-encoding', 'x-real-ip']);
+
+async function forwardWebhook(req, raw) {
+  const target = (process.env.MAYAR_FORWARD_URL || '').trim();
+  if (!target) return { ok: true, skipped: true };
+
+  const headers = {};
+  for (const [name, value] of Object.entries(req.headers || {})) {
+    const lower = name.toLowerCase();
+    if (SKIP_FORWARD_HEADERS.has(lower) || lower.startsWith('x-vercel') || lower.startsWith('x-forwarded')) continue;
+    headers[lower] = Array.isArray(value) ? value.join(', ') : value;
+  }
+  if (!headers['content-type']) headers['content-type'] = 'application/json';
+  headers['x-talqeeh-forwarded'] = '1';
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FORWARD_TIMEOUT_MS);
+  try {
+    const r = await fetch(target, { method: 'POST', headers, body: raw, signal: controller.signal });
+    if (!r.ok) console.warn('[mayar-webhook] forward failed:', r.status);
+    return { ok: r.ok, status: r.status };
+  } catch (err) {
+    console.warn('[mayar-webhook] forward error:', err.message);
+    return { ok: false, status: 0 };
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 const verifyWebhookToken = (req) => {
   const expected = (process.env.MAYAR_WEBHOOK_TOKEN || '').trim();
@@ -153,11 +187,23 @@ export default async function handler(req, res) {
     return;
   }
 
-  const body = await parseBody(req);
-  if (!body) { res.status(200).json({ ok: true, ignored: 'invalid_json' }); return; }
+  const raw = await readRawBody(req);
+  const [result, forward] = await Promise.all([processEvent(parseJson(raw)), forwardWebhook(req, raw)]);
+
+  // Kalau penerusan gagal, minta Mayar mengirim ulang (seperti dulu saat Mayar langsung ke Nemsyi).
+  // Kiriman ulang aman untuk Talqeeh karena event yang sama tidak diproses dua kali.
+  if (!forward.ok) {
+    res.status(502).json({ ...result.body, forward: 'failed', forward_status: forward.status });
+    return;
+  }
+  res.status(result.status).json(result.body);
+}
+
+async function processEvent(body) {
+  if (!body) return { status: 200, body: { ok: true, ignored: 'invalid_json' } };
 
   const sb = makeSb();
-  if (!sb) { res.status(500).json({ ok: false, error: 'Server tidak terkonfigurasi' }); return; }
+  if (!sb) return { status: 500, body: { ok: false, error: 'Server tidak terkonfigurasi' } };
 
   const event = body.event || body?.data?.event || null;
   const data  = body.data || {};
@@ -182,8 +228,7 @@ export default async function handler(req, res) {
     const logged = logRes.ok ? await logRes.json().catch(() => null) : null;
     if (!logRes.ok) console.warn('[mayar-webhook] payment_events log failed:', logRes.status);
     if (Array.isArray(logged) && logged.length === 0) {
-      res.status(200).json({ ok: true, ignored: 'duplicate' });
-      return;
+      return { status: 200, body: { ok: true, ignored: 'duplicate' } };
     }
 
     let handledAs = 'ignored';
@@ -209,9 +254,9 @@ export default async function handler(req, res) {
       });
     }
 
-    res.status(200).json({ ok: true, handled_as: handledAs });
+    return { status: 200, body: { ok: true, handled_as: handledAs } };
   } catch (err) {
     console.error('[mayar-webhook] error:', err.message);
-    res.status(200).json({ ok: true, error: 'internal_error_logged' });
+    return { status: 200, body: { ok: true, error: 'internal_error_logged' } };
   }
 }
