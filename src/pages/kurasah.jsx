@@ -107,7 +107,8 @@ const KurasahPage = () => {
     const md = notes.map(n =>
       `---\ntitle: ${n.title}\ntags: [${n.tags.join(", ")}]\nsource: ${n.source ? JSON.stringify(n.source) : "null"}\ncreatedAt: ${n.createdAt}\n---\n\n${n.body}\n`
     ).join("\n---\n\n");
-    const blob = new Blob([md], {type:"text/markdown"});
+    // File, bukan Blob: window.Blob tertimpa komponen dekorasi <Blob/> dari ui.jsx.
+    const blob = new File([md], "kurasah.md", {type:"text/markdown"});
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

@@ -483,7 +483,10 @@ const DashboardHomePage = () => {
   useEffect(() => {
     if (!session) return;
     let alive = true;
-    window.checkAiSubscription?.().then(r => { if (alive) setAiAccess(r.active ? "active" : "inactive"); });
+    window.checkAiSubscription?.().then(r => {
+      if (!alive) return;
+      setAiAccess(r.active ? "active" : r.tier === "trial" ? (r.trial?.used ? "trial_used" : "trial") : "inactive");
+    });
     return () => { alive = false; };
   }, [session]);
 
@@ -535,14 +538,18 @@ const DashboardHomePage = () => {
                 title="AI Partner Belajar"
                 badge={aiAccess === "checking" ? <HomeBadge>Memeriksa…</HomeBadge>
                   : aiActive ? <HomeBadge tone="emerald">Aktif</HomeBadge>
+                  : aiAccess === "trial" ? <HomeBadge tone="gold">Coba gratis</HomeBadge>
+                  : aiAccess === "trial_used" ? <HomeBadge>Uji coba terpakai</HomeBadge>
                   : <HomeBadge>Belum berlangganan</HomeBadge>}
-                desc="Upload diktat atau catatanmu — Talqeeh langsung mengolahnya jadi bahan belajar."
+                desc="Unggah diktat, slide, foto kitab, atau rekaman kuliah — Talqeeh mengolahnya jadi bahan belajar."
                 points={[
-                  "Ringkasan + ta'rif istilah berharakat",
-                  "Flashcard hafalan & kuis dengan pembahasan",
-                  "Tutor AI yang menjawab dari materimu",
+                  "Ringkasan gaya kitab & peta konsep",
+                  "Terjemah & i'rab, mufradat, flashcard",
+                  "Kuis, latihan tahriri, simulasi syafawi",
                 ]}
-                cta={aiActive || aiAccess === "checking" ? "Buka AI Partner" : "Lihat & berlangganan"}
+                cta={aiActive || aiAccess === "checking" ? "Buka AI Partner"
+                  : aiAccess === "trial" ? "Coba gratis 1 materi"
+                  : "Lihat & berlangganan"}
                 onClick={() => navigate("/ai-partner")}
               />
             </Reveal>

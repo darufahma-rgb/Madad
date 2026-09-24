@@ -1,6 +1,10 @@
 const DEFAULT_MODEL = 'anthropic/claude-sonnet-4-6';
+// Transkripsi audio butuh model yang menerima input audio; Gemini Flash murah dan kuat untuk Arab.
+const DEFAULT_TRANSCRIBE_MODEL = 'google/gemini-2.5-flash';
 
-export const callAI = async ({ system, messages, maxTokens = 2000, temperature = 0.3 }) => {
+export const transcribeModel = () => process.env.AI_TRANSCRIBE_MODEL || DEFAULT_TRANSCRIBE_MODEL;
+
+export const callAI = async ({ system, messages, maxTokens = 2000, temperature = 0.3, model }) => {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY belum diset');
 
@@ -13,7 +17,7 @@ export const callAI = async ({ system, messages, maxTokens = 2000, temperature =
       'X-Title': 'Talqeeh AI Partner',
     },
     body: JSON.stringify({
-      model: process.env.AI_PARTNER_MODEL || DEFAULT_MODEL,
+      model: model || process.env.AI_PARTNER_MODEL || DEFAULT_MODEL,
       max_tokens: maxTokens,
       temperature,
       messages: system ? [{ role: 'system', content: system }, ...messages] : messages,

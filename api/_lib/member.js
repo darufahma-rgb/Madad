@@ -88,11 +88,12 @@ export const requireMember = async (req) => {
   return { ok: true, code: member.code, member, user };
 };
 
-export const requireAccess = async (req) => {
+// AI Partner: pelanggan = 'pro'; member Library tanpa langganan = 'trial' (jatah coba gratis).
+export const requireAiTier = async (req) => {
   const result = await requireMember(req);
   if (!result.ok) return result;
-  if (!(await hasAiAccess(result.code))) return { ok: false, status: 403, reason: 'no_access' };
-  return result;
+  const pro = await hasAiAccess(result.code);
+  return { ...result, tier: pro ? 'pro' : 'trial' };
 };
 
 // Fails closed: any error means the request is denied.

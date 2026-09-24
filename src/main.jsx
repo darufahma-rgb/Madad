@@ -56,6 +56,9 @@ import './pages/tutorial.jsx';
 import './pages/submit-soal.jsx';
 import './pages/bank-soal-publik.jsx';
 import './pages/checklist-soal.jsx';
+import './pages/ai-partner-shared.jsx';
+import './pages/ai-partner-create.jsx';
+import './pages/ai-partner-study.jsx';
 import './pages/ai-partner.jsx';
 
 // App shell — terakhir

@@ -1,669 +1,310 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import MarkdownArab from '../components/MarkdownArab.jsx';
-/* Talqeeh — AI Partner Belajar Muqarrar (upload materi → ringkasan, flashcard, kuis, tutor) */
+import React, { useState, useEffect } from 'react';
+/* Talqeeh — AI Partner Belajar Muqarrar: daftar materi & halaman belajar per materi.
+   Helper di ai-partner-shared.jsx, wizard di ai-partner-create.jsx, tab di ai-partner-study.jsx. */
 
-const MAX_CONTENT = 40000;
-const BOX_INTERVAL_DAYS = { 1: 0, 2: 1, 3: 3, 4: 7, 5: 14 };
-const GENERATING_HINT = 'AI sedang menyusun… biasanya 10–30 detik.';
+const FEATURE_TOUR = [
+  { icon: 'bookOpen',      title: 'Ringkasan gaya kitab', desc: "Ta'rif, taqsim, syarat, khilaf & tarjih, dalil — Indonesia, Arab, atau dwibahasa." },
+  { icon: 'network',       title: 'Peta konsep',          desc: 'Seluruh materi sebagai pohon taqsimat yang bisa dibuka-tutup.' },
+  { icon: 'type',          title: "Terjemah & i'rab",     desc: "Blok kalimat Arab → terjemah harfiyah, bebas, dan i'rab per kata." },
+  { icon: 'layers',        title: 'Flashcard & mufradat', desc: 'Kosakata berharakat + wazan, dengan pengulangan berjarak dan suara.' },
+  { icon: 'target',        title: 'Kuis & tahriri',       desc: 'Pilihan ganda + latihan esai gaya ujian tulis, dinilai AI.' },
+  { icon: 'messageSquare', title: 'Tutor & syafawi',      desc: 'Tanya materimu, atau simulasi ujian lisan dengan duktur AI.' },
+];
 
-const aiCall = async (action, payload = {}) => {
-  let data;
-  try {
-    const res = await window.authFetch(`/api/ai-partner?action=${action}`, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
-    data = await res.json();
-  } catch {
-    data = { ok: false, error: 'Tidak bisa terhubung ke server. Cek koneksi lalu coba lagi.' };
-  }
-  if (!data.ok && data.error === 'quota') data.error = data.message;
-  if (!data.ok && data.error === 'no_access') data.error = 'Akses AI Partner kamu belum aktif.';
-  return data;
-};
-
-const maddahName = (id) => {
-  if (!id) return null;
-  const m = window.getMaddahById?.(id) || window.getMahadMaddahById?.(id);
-  return m?.name || null;
-};
-
-
-const tabBtnClass = (active) =>
-  `text-sm px-4 py-2 rounded-xl border font-medium transition-all flex items-center gap-2 ${active
-    ? 'text-emerald-200 border-emerald-600/35 bg-emerald-500/15'
-    : 'bg-white/4 text-ink-muted border-white/8 hover:bg-white/7'}`;
-
-const inputClass =
-  'w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink text-sm outline-none focus:border-emerald-500/50';
-
-/* ── Access gate ── */
-
-const BetaCard = () => {
-  const s = window.useAppSettings();
-  const wa = (s.whatsapp || '').replace(/[^0-9]/g, '');
-  const hasWa = wa && !(s.whatsapp || '').includes('x');
-  return (
-    <div className="container-x pb-24">
-      <div className="card-glass-strong p-8 max-w-xl mx-auto text-center">
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-5 text-emerald-200"
-          style={{ background: 'rgba(62,207,142,0.15)', border: '1px solid rgba(62,207,142,0.3)' }}>
-          <Icon name="sparkles" className="w-7 h-7"/>
-        </div>
-        <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-2">Tambahan · Langganan bulanan</div>
-        <h2 className="font-display text-2xl font-semibold text-ink mb-3">AI Partner Belajar belum aktif di akunmu</h2>
-        <p className="text-ink-muted text-sm leading-relaxed mb-5">
-          Library memberimu prompt untuk disalin ke AI. AI Partner melangkah lebih jauh: upload diktatmu,
-          dan Talqeeh langsung menyiapkan bahan belajarnya.
-          {s.aiPriceLabel && <><br/><span className="text-ink">Harga: {s.aiPriceLabel}</span></>}
-        </p>
-        <ul className="text-left text-sm text-ink space-y-2 mb-6 max-w-sm mx-auto">
-          {(window.AI_PARTNER_FEATURES || []).map(f => (
-            <li key={f} className="flex items-start gap-2.5">
-              <Icon name="check" className="w-4 h-4 mt-0.5 flex-shrink-0 text-emerald-400"/>{f}
-            </li>
-          ))}
-        </ul>
-        <p className="text-xs text-ink-soft mb-6">Library-mu tetap aktif selamanya. Langganan AI bisa berhenti kapan saja.</p>
-        <div className="flex flex-col items-center gap-3">
-          <button onClick={() => window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library_ai' } }))}
-            className="btn btn-primary px-6 py-3">
-            Berlangganan AI Partner
-          </button>
-          {hasWa && (
-            <a href={`https://wa.me/${wa}?text=${encodeURIComponent('Assalamualaikum, saya mau tanya soal AI Partner Belajar Talqeeh.')}`}
-              target="_blank" rel="noopener noreferrer" className="text-xs text-ink-soft hover:text-ink-muted underline underline-offset-2">
-              Tanya admin dulu
-            </a>
-          )}
-        </div>
+const TrialBanner = ({ trial }) => (
+  <div className="card-glass p-4 md:p-5 mb-6 flex items-center gap-4 flex-wrap" style={{ border: '1px solid rgba(201,168,106,0.28)' }}>
+    <span className="w-10 h-10 rounded-xl bg-gold-500/12 border border-gold-500/25 flex items-center justify-center flex-shrink-0">
+      <Icon name="crown" className="w-5 h-5 text-gold-300"/>
+    </span>
+    <div className="flex-1 min-w-[220px]">
+      <div className="text-sm text-ink font-medium">
+        {trial?.used ? 'Jatah coba gratismu sudah dipakai' : 'Kamu sedang mencoba AI Partner gratis'}
+      </div>
+      <div className="text-xs text-ink-muted leading-relaxed">
+        {trial?.used
+          ? 'Materi coba gratismu tetap bisa dibuka. Berlangganan untuk menambah materi dan membuka semua fitur.'
+          : '1 materi (teks, dokumen, atau foto) dengan ringkasan, flashcard, kuis, dan mufradat. Audio/video, peta konsep, i\'rab, tahriri, dan tutor khusus pelanggan.'}
       </div>
     </div>
-  );
-};
-
-const useAiAccess = () => {
-  const [state, setState] = useState('checking');
-  useEffect(() => {
-    window.checkAiSubscription?.().then(r => setState(r.active ? 'active' : 'inactive'));
-  }, []);
-  return state;
-};
-
-const GateLoading = () => (
-  <div className="container-x pb-24 text-center text-ink-muted text-sm">Mengecek akses…</div>
+    <button onClick={openAiUpgrade} className="btn btn-gold text-xs px-4 py-2">Berlangganan</button>
+  </div>
 );
 
-/* ── Create form ── */
-
-const CreateForm = ({ onCancel }) => {
-  const toast = useToast();
-  const { profile } = useAuth();
-  const [source, setSource]   = useState('teks');
-  const [title, setTitle]     = useState('');
-  const [maddahId, setMaddahId] = useState('');
-  const [content, setContent] = useState('');
-  const [busy, setBusy]       = useState('');
-  const [error, setError]     = useState('');
-  const fileRef = useRef(null);
-
-  const maddahOptions = useMemo(() => {
-    if (!profile) return [];
-    try {
-      if (window.isMahadLevel?.(profile.level)) return window.getMahadMaddahByJenjang?.(profile.level) || [];
-      return window.getMaddahsForProfile?.(profile) || [];
-    } catch { return []; }
-  }, [profile]);
-
-  const handleFile = async (e) => {
-    const file = e.target.files?.[0];
-    e.target.value = '';
-    if (!file) return;
-    setError('');
-
-    if (source === 'pdf') {
-      if (file.type !== 'application/pdf') { setError('Pilih file PDF.'); return; }
-      if (file.size > 15 * 1024 * 1024) { setError('PDF terlalu besar. Maksimal 15MB.'); return; }
-      setBusy('Membaca PDF…');
-      try {
-        const { numPages, pages } = await window.extractPdfPages(file, 60);
-        if (!pages) { setError(`PDF punya ${numPages} halaman — maksimal 60. Potong PDF-nya dulu.`); return; }
-        if (pages.length === 0) { setError('PDF ini hasil scan (tidak ada teks). Pakai mode Foto untuk tiap halaman.'); return; }
-        setContent(pages.join('\n\n'));
-        if (!title) setTitle(file.name.replace(/\.pdf$/i, ''));
-      } catch (err) {
-        setError('Gagal membaca PDF: ' + err.message);
-      } finally { setBusy(''); }
-      return;
-    }
-
-    if (!file.type.startsWith('image/')) { setError('Pilih file gambar (JPG/PNG).'); return; }
-    if (file.size > 10 * 1024 * 1024) { setError('Foto terlalu besar. Maksimal 10MB.'); return; }
-    setBusy('AI sedang membaca foto…');
-    try {
-      const compressed = await window.compressImage(file);
-      const base64 = await window.fileToBase64(compressed);
-      const data = await aiCall('ocr', { foto_base64: base64, mime_type: compressed.type || 'image/jpeg' });
-      if (!data.ok) { setError(data.error || 'Gagal membaca foto'); return; }
-      setContent(prev => (prev ? prev + '\n\n' : '') + data.teks);
-      toast.push('Foto berhasil dibaca. Bisa tambah foto lain untuk halaman berikutnya.');
-    } finally { setBusy(''); }
-  };
-
-  const handleSave = async () => {
-    if (content.trim().length < 50) { setError('Materi terlalu pendek (minimal 50 karakter).'); return; }
-    setBusy('Menyimpan…');
-    setError('');
-    try {
-      const data = await aiCall('create', { title, maddah_id: maddahId || null, source_type: source, content });
-      if (!data.ok) { setError(data.error || 'Gagal menyimpan'); return; }
-      if (data.truncated) toast.push(`Materi dipotong ke ${MAX_CONTENT.toLocaleString('id-ID')} karakter pertama.`);
-      navigate(`/ai-partner/${data.id}`);
-    } finally { setBusy(''); }
-  };
-
-  const sources = [
-    { id: 'teks', label: 'Tempel teks', icon: 'pen' },
-    { id: 'pdf',  label: 'PDF',         icon: 'fileText' },
-    { id: 'foto', label: 'Foto',        icon: 'upload' },
-  ];
-
-  return (
-    <div className="card-glass p-6 mb-8">
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="font-display text-xl font-semibold text-ink">Tambah materi</h2>
-        <button onClick={onCancel} className="text-ink-muted hover:text-ink"><Icon name="x" className="w-5 h-5"/></button>
-      </div>
-
-      <div className="flex gap-2 flex-wrap mb-5">
-        {sources.map(s => (
-          <button key={s.id} onClick={() => { setSource(s.id); setError(''); }} className={tabBtnClass(source === s.id)}>
-            <Icon name={s.icon} className="w-4 h-4"/>{s.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-3 mb-4">
-        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Judul materi (misal: Bab Thaharah)"
-          className={inputClass} maxLength={120}/>
-        <select value={maddahId} onChange={e => setMaddahId(e.target.value)} className={inputClass}>
-          <option value="">Maddah (opsional)</option>
-          {maddahOptions.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-        </select>
-      </div>
-
-      {source !== 'teks' && (
-        <div className="mb-4">
-          <input ref={fileRef} type="file" className="hidden" onChange={handleFile}
-            accept={source === 'pdf' ? 'application/pdf' : 'image/*'}/>
-          <button onClick={() => fileRef.current?.click()} disabled={!!busy}
-            className="w-full border border-dashed border-white/15 rounded-xl py-6 text-sm text-ink-muted hover:border-emerald-500/40 hover:text-ink transition">
-            <Icon name="upload" className="w-5 h-5 mx-auto mb-2"/>
-            {source === 'pdf' ? 'Pilih file PDF (maks 60 halaman)' : 'Pilih foto halaman materi (bisa berkali-kali)'}
-          </button>
-        </div>
-      )}
-
-      <textarea value={content} onChange={e => setContent(e.target.value)} rows={source === 'teks' ? 12 : 8}
-        placeholder={source === 'teks' ? 'Tempel isi materi, diktat, atau talkhisan di sini…' : 'Hasil bacaan akan muncul di sini dan bisa kamu rapikan sebelum disimpan.'}
-        className={`${inputClass} leading-relaxed`} dir="auto"/>
-      <div className={`text-[11px] mt-1 ${content.length > MAX_CONTENT ? 'text-amber-400' : 'text-ink-soft'}`}>
-        {content.length.toLocaleString('id-ID')} / {MAX_CONTENT.toLocaleString('id-ID')} karakter
-        {content.length > MAX_CONTENT && ' — kelebihannya akan dipotong'}
-      </div>
-
-      {error && <div className="text-sm text-rose-400 mt-3">{error}</div>}
-
-      <div className="flex justify-end gap-2 mt-5">
-        <button onClick={onCancel} className="btn btn-ghost text-sm px-4 py-2">Batal</button>
-        <button onClick={handleSave} disabled={!!busy || !content.trim()} className="btn btn-primary text-sm px-5 py-2">
-          {busy || 'Simpan materi'}
-        </button>
-      </div>
+const StatTile = ({ value, label, icon }) => (
+  <div className="card-glass p-4 flex items-center gap-3">
+    <span className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">
+      <Icon name={icon} className="w-4 h-4 text-emerald-300"/>
+    </span>
+    <div>
+      <div className="font-display text-xl font-semibold text-ink leading-none">{value}</div>
+      <div className="text-[11px] text-ink-soft mt-1">{label}</div>
     </div>
+  </div>
+);
+
+const SetCard = ({ s, isTrialSet }) => {
+  const meta = SOURCE_META[s.source_type] || SOURCE_META.teks;
+  return (
+    <button onClick={() => navigate(`/ai-partner/${s.id}`)} className="card-glass-strong p-5 hov-lift text-left flex flex-col">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <span className="w-10 h-10 rounded-xl bg-emerald-500/12 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+          <Icon name={meta.icon} className="w-4 h-4 text-emerald-300"/>
+        </span>
+        <ProgressRing percent={studyPercent(s)}/>
+      </div>
+      <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1">{maddahName(s.maddah_id) || 'Materi umum'}</div>
+      <div className="font-display text-lg font-semibold text-ink leading-snug mb-3 line-clamp-2">{s.title}</div>
+      <div className="mt-auto flex items-center gap-1.5 flex-wrap">
+        <Pill>{meta.label}</Pill>
+        {s.cards_due > 0 && <Pill tone="emerald">{s.cards_due} kartu perlu diulang</Pill>}
+        {isTrialSet && <Pill tone="gold">Coba gratis</Pill>}
+        <span className="text-[11px] text-ink-soft ml-auto">{new Date(s.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+      </div>
+    </button>
   );
 };
 
-/* ── List page ── */
+const HowItWorksStrip = () => (
+  <div className="grid sm:grid-cols-3 gap-3 mb-8">
+    {[
+      ['1', 'Unggah materi', 'PDF, Word, slide, foto diktat, atau rekaman kuliah.'],
+      ['2', 'AI menyiapkan', 'Ringkasan, peta konsep, mufradat, flashcard, dan soal.'],
+      ['3', 'Belajar & uji diri', 'Pahami → hafalkan → uji → tanya duktur AI.'],
+    ].map(([n, t, d]) => (
+      <div key={n} className="flex gap-3 items-start">
+        <span className="w-8 h-8 rounded-full bg-emerald-500 text-black text-sm font-semibold flex items-center justify-center flex-shrink-0">{n}</span>
+        <div>
+          <div className="text-sm text-ink font-medium">{t}</div>
+          <div className="text-xs text-ink-muted leading-relaxed">{d}</div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
-const AiPartnerList = () => {
-  const [sets, setSets]       = useState(null);
-  const [error, setError]     = useState('');
+const AiPartnerList = ({ status }) => {
+  const [sets, setSets]   = useState(null);
+  const [error, setError] = useState('');
   const [creating, setCreating] = useState(false);
+  const isTrial = status.tier !== 'pro';
+  const trialUsed = isTrial && status.trial?.used;
 
   useEffect(() => {
     aiCall('list').then(d => d.ok ? setSets(d.data) : setError(d.error || 'Gagal memuat materi'));
   }, []);
 
+  const empty = sets?.length === 0;
+  const totalDue = (sets || []).reduce((n, s) => n + (s.cards_due || 0), 0);
+  const quizzed = (sets || []).filter(s => s.quiz_best_score != null).length;
+
   return (
     <div className="container-x pb-24">
-      {!creating && (
-        <div className="flex justify-end mb-6">
-          <button onClick={() => setCreating(true)} className="btn btn-primary text-sm px-5 py-2.5">
+      {isTrial && <TrialBanner trial={status.trial}/>}
+
+      {sets?.length > 0 && (
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          <StatTile icon="book" value={sets.length} label="Materi"/>
+          <StatTile icon="layers" value={totalDue} label="Kartu perlu diulang"/>
+          <StatTile icon="target" value={quizzed} label="Kuis dikerjakan"/>
+        </div>
+      )}
+
+      {(creating || empty) && (
+        trialUsed
+          ? <div className="mb-8"><UpgradeCard title="Tambah materi baru" message="Jatah coba gratis (1 materi) sudah terpakai. Berlangganan AI Partner untuk menambah materi tanpa batas, termasuk rekaman audio & video."/></div>
+          : <>
+              {empty && <HowItWorksStrip/>}
+              <CreateWizard tier={status.tier} onCancel={() => setCreating(false)}/>
+            </>
+      )}
+
+      {sets?.length > 0 && !creating && (
+        <div className="flex items-center justify-between mb-4 gap-3">
+          <h2 className="font-display text-xl font-semibold text-ink">Materimu</h2>
+          <button onClick={() => trialUsed ? openAiUpgrade() : setCreating(true)} className="btn btn-primary text-sm px-5 py-2.5">
             <Icon name="upload" className="w-4 h-4"/> Tambah materi
           </button>
         </div>
       )}
-      {creating && <CreateForm onCancel={() => setCreating(false)}/>}
 
       {error && <div className="text-sm text-rose-400">{error}</div>}
-      {sets === null && !error && <div className="text-sm text-ink-muted">Memuat…</div>}
-      {sets?.length === 0 && !creating && (
-        <div className="card-glass p-10 text-center text-ink-muted text-sm">
-          Belum ada materi. Upload diktat, talkhisan, atau catatan kuliahmu untuk mulai belajar bareng AI.
+      {sets === null && !error && (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[0, 1, 2].map(i => <div key={i} className="card-glass p-5"><Skeleton lines={4}/></div>)}
         </div>
       )}
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sets?.map(s => (
-          <button key={s.id} onClick={() => navigate(`/ai-partner/${s.id}`)}
-            className="card-glass-strong p-5 hov-lift text-left">
-            <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-2">
-              {maddahName(s.maddah_id) || 'Materi umum'} · {s.source_type}
-            </div>
-            <div className="font-display text-lg font-semibold text-ink leading-snug mb-3">{s.title}</div>
-            <div className="text-xs text-ink-soft flex items-center justify-between">
-              <span>{new Date(s.created_at).toLocaleDateString('id-ID')}</span>
-              {s.quiz_best_score != null && <span className="text-emerald-300">Kuis terbaik: {s.quiz_best_score}</span>}
-            </div>
-          </button>
-        ))}
+        {sets?.map(s => <SetCard key={s.id} s={s} isTrialSet={isTrial && status.trial?.set_id === s.id}/>)}
       </div>
+
+      {empty && (
+        <div className="mt-12">
+          <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-4 text-center">Yang bisa kamu lakukan</div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {FEATURE_TOUR.map(f => (
+              <div key={f.title} className="card-glass p-4 flex gap-3">
+                <Icon name={f.icon} className="w-5 h-5 text-emerald-300 flex-shrink-0 mt-0.5"/>
+                <div>
+                  <div className="text-sm text-ink font-medium">{f.title}</div>
+                  <div className="text-xs text-ink-muted leading-relaxed">{f.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-const AiPartnerPage = () => {
-  const access = useAiAccess();
-  return (
-    <div className="page-enter">
-      <div className="container-x pt-4 md:pt-8 -mb-4 md:-mb-8">
-        <button onClick={() => navigate('/dashboard')}
-          className="text-sm text-ink-soft inline-flex items-center gap-1.5" style={{ minHeight: 40 }}>
-          <Icon name="arrowLeft" className="w-4 h-4"/> Beranda
-        </button>
-      </div>
-      <PageHeader
-        kicker="AI Partner Belajar"
-        arabic="رَفِيقُ الدِّرَاسَةِ"
-        title="Upload materimu, belajar bareng AI."
-        subtitle="Ringkasan, flashcard hafalan, kuis, dan tutor yang menjawab berdasarkan muqarrar-mu sendiri."
-      />
-      {access === 'checking' && <GateLoading/>}
-      {access === 'inactive' && <BetaCard/>}
-      {access === 'active' && <AiPartnerList/>}
-    </div>
-  );
-};
+const GateLoading = () => (
+  <div className="container-x pb-24"><div className="card-glass p-6 max-w-xl"><Skeleton lines={3}/></div></div>
+);
 
-/* ── Detail: tabs ── */
-
-const GenerateEmpty = ({ label, onGenerate, busy }) => (
-  <div className="card-glass p-8 text-center">
-    <p className="text-ink-muted text-sm mb-5">{busy ? GENERATING_HINT : `Belum ada ${label} untuk materi ini.`}</p>
-    <button onClick={onGenerate} disabled={busy} className="btn btn-primary text-sm px-5 py-2.5">
-      <Icon name="sparkles" className="w-4 h-4"/> {busy ? 'Menyusun…' : `Buat ${label}`}
+const BackToHome = ({ to = '/dashboard', label = 'Beranda' }) => (
+  <div className="container-x pt-4 md:pt-8">
+    <button onClick={() => navigate(to)} className="text-sm text-ink-soft hover:text-ink inline-flex items-center gap-1.5" style={{ minHeight: 40 }}>
+      <Icon name="chevronLeft" className="w-4 h-4"/> {label}
     </button>
   </div>
 );
 
-const useGenerate = (set, setSet, kind, field) => {
-  const toast = useToast();
-  const [busy, setBusy] = useState(false);
-  const generate = async () => {
-    setBusy(true);
-    const data = await aiCall('generate', { set_id: set.id, kind });
-    setBusy(false);
-    if (!data.ok) { toast.push(data.error || 'Gagal membuat'); return; }
-    setSet(s => ({ ...s, [field]: data.data, ...(kind === 'quiz' ? { quiz_best_score: null } : {}) }));
-  };
-  return [busy, generate];
-};
-
-const SummaryTab = ({ set, setSet }) => {
-  const [busy, generate] = useGenerate(set, setSet, 'summary', 'summary');
-  if (!set.summary) return <GenerateEmpty label="ringkasan" onGenerate={generate} busy={busy}/>;
+const AiPartnerPage = () => {
+  const status = useAiStatus();
   return (
-    <div className="card-glass p-6 md:p-8">
-      <MarkdownArab content={set.summary} ltr style={{ color: 'inherit', fontSize: 15, lineHeight: 1.8 }}/>
-      <div className="flex justify-end mt-6">
-        <button onClick={generate} disabled={busy} className="btn btn-ghost text-xs px-3 py-1.5">
-          <Icon name="refresh" className="w-3.5 h-3.5"/> {busy ? 'Menyusun ulang…' : 'Buat ulang'}
-        </button>
-      </div>
-    </div>
-  );
-};
-
-const isDue = (card) => !card.due || Date.parse(card.due) <= Date.now();
-const nextDue = (box) => new Date(Date.now() + BOX_INTERVAL_DAYS[box] * 86400000).toISOString();
-
-const FlashcardTab = ({ set, setSet }) => {
-  const [busy, generate] = useGenerate(set, setSet, 'flashcards', 'flashcards');
-  const cards = set.flashcards || [];
-  const dueQueue = () => cards.map((c, i) => i).filter(i => isDue(cards[i]));
-  const [queue, setQueue]   = useState(dueQueue);
-  const [flipped, setFlipped] = useState(false);
-  const saveTimer = useRef(null);
-  const pendingStates = useRef(null);
-
-  const flush = () => {
-    if (!pendingStates.current) return;
-    aiCall('save-progress', { set_id: set.id, card_states: pendingStates.current });
-    pendingStates.current = null;
-  };
-
-  useEffect(() => () => { clearTimeout(saveTimer.current); flush(); }, []);
-
-  // Reset hanya saat set berganti atau kartu dibuat ulang (bukan saat box/due berubah)
-  useEffect(() => {
-    setQueue(dueQueue());
-    setFlipped(false);
-  }, [set.id, cards.length, cards[0]?.q]);
-
-  if (cards.length === 0) return <GenerateEmpty label="flashcard" onGenerate={generate} busy={busy}/>;
-
-  const answer = (knew) => {
-    const idx = queue[0];
-    const card = cards[idx];
-    const box = knew ? Math.min(5, (card.box || 1) + 1) : 1;
-    const updated = cards.map((c, i) => i === idx ? { ...c, box, due: nextDue(box) } : c);
-    setSet(s => ({ ...s, flashcards: updated }));
-    setQueue(q => knew ? q.slice(1) : [...q.slice(1), idx]);
-    setFlipped(false);
-
-    pendingStates.current = updated.map(c => ({ box: c.box, due: c.due }));
-    clearTimeout(saveTimer.current);
-    saveTimer.current = setTimeout(flush, 1500);
-  };
-
-  const boxCounts = [1, 2, 3, 4, 5].map(b => cards.filter(c => (c.box || 1) === b).length);
-  const current = queue?.length ? cards[queue[0]] : null;
-
-  return (
-    <div>
-      <div className="flex gap-2 mb-5 flex-wrap text-[11px] text-ink-soft">
-        {boxCounts.map((n, i) => (
-          <span key={i} className="px-2.5 py-1 rounded-lg bg-white/4 border border-white/8">Kotak {i + 1}: {n}</span>
-        ))}
-      </div>
-
-      {current ? (
-        <>
-          <button onClick={() => setFlipped(f => !f)}
-            className="card-glass-strong w-full min-h-[220px] p-8 flex flex-col items-center justify-center text-center">
-            <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-4">
-              {flipped ? 'Jawaban' : 'Pertanyaan'} · sisa {queue.length} kartu
-            </div>
-            <div className={`text-ink leading-relaxed ${flipped ? 'text-base' : 'text-xl font-display'}`} dir="auto">
-              {flipped ? current.a : current.q}
-            </div>
-            {!flipped && <div className="text-xs text-ink-soft mt-6">Ketuk untuk lihat jawaban</div>}
-          </button>
-          {flipped && (
-            <div className="grid grid-cols-2 gap-3 mt-4">
-              <button onClick={() => answer(false)} className="btn btn-ghost py-3 text-sm" style={{ borderColor: 'rgba(255,184,77,0.4)', color: '#ffb84d' }}>
-                Belum hafal
-              </button>
-              <button onClick={() => answer(true)} className="btn btn-primary py-3 text-sm">Hafal</button>
-            </div>
-          )}
-        </>
-      ) : (
-        <div className="card-glass p-8 text-center">
-          <p className="text-ink text-sm mb-2">Semua kartu yang jatuh tempo sudah kamu latih. </p>
-          <p className="text-ink-muted text-xs mb-5">Kartu yang sudah hafal akan muncul lagi sesuai jadwal (1, 3, 7, 14 hari).</p>
-          <div className="flex gap-2 justify-center flex-wrap">
-            <button onClick={() => setQueue(cards.map((c, i) => i))} className="btn btn-ghost text-sm px-4 py-2">Latih semua lagi</button>
-            <button onClick={generate} disabled={busy} className="btn btn-ghost text-sm px-4 py-2">
-              {busy ? 'Menyusun…' : 'Buat kartu baru'}
-            </button>
-          </div>
+    <div className="page-enter">
+      <BackToHome/>
+      <section className="container-x pt-2 pb-8 md:pb-10">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-xs uppercase tracking-[0.22em] text-gold-400">AI Partner Belajar</span>
+          {!status.loading && status.tier === 'pro' && <Pill tone="emerald">Aktif</Pill>}
         </div>
-      )}
+        <div className="arabic-display-classical text-xl md:text-2xl text-emerald-200/60 mb-2">رَفِيقُ الدِّرَاسَةِ</div>
+        <h1 className="font-display text-3xl md:text-5xl font-semibold text-ink leading-[1.05] max-w-3xl">
+          Belajar muqarrar langsung dari materimu sendiri.
+        </h1>
+        <p className="mt-3 text-base md:text-lg text-ink-muted max-w-2xl leading-relaxed">
+          Unggah diktat, slide, foto kitab, atau rekaman kuliah — Talqeeh menyiapkan ringkasan, peta konsep, mufradat, flashcard, soal, dan duktur AI untuk latihan.
+        </p>
+      </section>
+      {status.loading ? <GateLoading/>
+        : status.tier === 'none'
+          ? <div className="container-x pb-24"><UpgradeCard title="Khusus member Talqeeh" message="AI Partner tersedia untuk member Library. Gabung dulu, lalu coba gratis 1 materi."/></div>
+          : <AiPartnerList status={status}/>}
     </div>
   );
 };
 
-const QuizTab = ({ set, setSet }) => {
-  const [busy, generate] = useGenerate(set, setSet, 'quiz', 'quiz');
-  const quiz = set.quiz || [];
-  const [idx, setIdx]       = useState(0);
-  const [picked, setPicked] = useState(null);
-  const [score, setScore]   = useState(0);
+/* ── Halaman materi ── */
 
-  useEffect(() => { setIdx(0); setPicked(null); setScore(0); }, [set.id, quiz]);
-
-  if (quiz.length === 0) return <GenerateEmpty label="kuis" onGenerate={generate} busy={busy}/>;
-
-  const finished = idx >= quiz.length;
-
-  const pick = (i) => {
-    if (picked !== null) return;
-    setPicked(i);
-    if (i === quiz[idx].answer) setScore(s => s + 1);
-  };
-
-  const next = () => {
-    const nextIdx = idx + 1;
-    setIdx(nextIdx);
-    setPicked(null);
-    if (nextIdx >= quiz.length) {
-      aiCall('save-progress', { set_id: set.id, quiz_best_score: score });
-      setSet(s => ({ ...s, quiz_best_score: Math.max(s.quiz_best_score ?? 0, score) }));
-    }
-  };
-
-  if (finished) {
-    return (
-      <div className="card-glass p-8 text-center">
-        <div className="font-display text-5xl font-semibold text-ink mb-2">{score}/{quiz.length}</div>
-        <p className="text-ink-muted text-sm mb-1">Skor kamu</p>
-        {set.quiz_best_score != null && <p className="text-emerald-300 text-xs mb-6">Skor terbaik: {set.quiz_best_score}</p>}
-        <div className="flex gap-2 justify-center flex-wrap">
-          <button onClick={() => { setIdx(0); setPicked(null); setScore(0); }} className="btn btn-primary text-sm px-5 py-2">Ulangi</button>
-          <button onClick={generate} disabled={busy} className="btn btn-ghost text-sm px-5 py-2">
-            {busy ? 'Menyusun…' : 'Buat soal baru'}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const q = quiz[idx];
-  return (
-    <div className="card-glass p-6 md:p-8">
-      <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-3">Soal {idx + 1} dari {quiz.length}</div>
-      <div className="text-ink text-lg leading-relaxed mb-5" dir="auto">{q.question}</div>
-      <div className="space-y-2.5">
-        {q.options.map((opt, i) => {
-          const isAnswer = i === q.answer;
-          const state = picked === null ? 'idle' : isAnswer ? 'correct' : picked === i ? 'wrong' : 'dim';
-          const style = {
-            idle:    'border-white/10 hover:border-emerald-500/40 bg-white/3',
-            correct: 'border-emerald-500/60 bg-emerald-500/15 text-emerald-100',
-            wrong:   'border-rose-500/60 bg-rose-500/10 text-rose-200',
-            dim:     'border-white/5 opacity-60',
-          }[state];
-          return (
-            <button key={i} onClick={() => pick(i)} disabled={picked !== null}
-              className={`w-full text-left px-4 py-3 rounded-xl border text-sm text-ink transition ${style}`} dir="auto">
-              <span className="font-semibold mr-2">{'ABCD'[i]}.</span>{opt}
-            </button>
-          );
-        })}
-      </div>
-      {picked !== null && (
-        <>
-          {q.explanation && (
-            <div className="mt-5 p-4 rounded-xl bg-white/4 border border-white/8 text-sm text-ink-muted leading-relaxed" dir="auto">
-              <span className="text-gold-400 font-semibold">Pembahasan: </span>{q.explanation}
-            </div>
-          )}
-          <div className="flex justify-end mt-5">
-            <button onClick={next} className="btn btn-primary text-sm px-5 py-2">
-              {idx + 1 >= quiz.length ? 'Lihat skor' : 'Lanjut'} <Icon name="arrowRight" className="w-4 h-4"/>
-            </button>
-          </div>
-        </>
-      )}
-    </div>
-  );
+const SUB_TABS = {
+  pahami:   [{ id: 'summary', label: 'Ringkasan', icon: 'bookOpen', C: 'SummaryTab' },
+             { id: 'mindmap', label: 'Peta Konsep', icon: 'network', C: 'MindmapTab', pro: true },
+             { id: 'material', label: 'Materi & I\'rab', icon: 'type', C: 'MaterialTab' }],
+  hafalkan: [{ id: 'cards', label: 'Flashcard', icon: 'layers', C: 'FlashcardTab' },
+             { id: 'glossary', label: 'Mufradat', icon: 'type', C: 'GlossaryTab' }],
+  uji:      [{ id: 'quiz', label: 'Kuis', icon: 'target', C: 'QuizTab' },
+             { id: 'essay', label: 'Latihan Tahriri', icon: 'pen', C: 'EssayTab', pro: true }],
+  tanya:    [{ id: 'tutor', label: 'Tutor & Syafawi', icon: 'messageSquare', C: 'TutorTab', pro: true }],
 };
 
-const TUTOR_SUGGESTIONS = [
-  'Jelaskan poin-poin utama materi ini dengan bahasa sederhana',
-  'Istilah apa saja yang wajib kuhafal dari materi ini?',
-  'Buatkan 3 contoh soal syafawi beserta jawabannya',
-];
-
-const TutorTab = ({ set, setSet }) => {
-  const [input, setInput]   = useState('');
-  const [sending, setSending] = useState(false);
-  const [error, setError]   = useState('');
-  const bottomRef = useRef(null);
-  const chat = set.chat || [];
-
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, [chat.length, sending]);
-
-  const send = async (text) => {
-    const message = (text ?? input).trim();
-    if (!message || sending) return;
-    setInput('');
-    setError('');
-    setSending(true);
-    setSet(s => ({ ...s, chat: [...(s.chat || []), { role: 'user', content: message }] }));
-    const data = await aiCall('chat', { set_id: set.id, message });
-    setSending(false);
-    if (!data.ok) {
-      setError(data.error || 'Gagal mengirim pesan');
-      setSet(s => ({ ...s, chat: (s.chat || []).slice(0, -1) }));
-      setInput(message);
-      return;
-    }
-    setSet(s => ({ ...s, chat: [...(s.chat || []), { role: 'assistant', content: data.reply }] }));
-  };
-
-  return (
-    <div className="card-glass p-4 md:p-6 flex flex-col" style={{ minHeight: 420 }}>
-      <div className="flex-1 space-y-4 overflow-y-auto mb-4" style={{ maxHeight: 520 }}>
-        {chat.length === 0 && (
-          <div className="text-center py-6">
-            <p className="text-ink-muted text-sm mb-4">Tanya apa saja tentang materi ini. Tutor menjawab berdasarkan isi materimu.</p>
-            <div className="flex flex-col gap-2 max-w-md mx-auto">
-              {TUTOR_SUGGESTIONS.map(s => (
-                <button key={s} onClick={() => send(s)} className="text-xs text-left px-4 py-2.5 rounded-xl bg-white/4 border border-white/8 text-ink-muted hover:text-ink hover:border-emerald-500/30">
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-        {chat.map((m, i) => (
-          <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            <div className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm ${m.role === 'user'
-              ? 'bg-emerald-500/15 border border-emerald-500/25 text-ink'
-              : 'bg-white/4 border border-white/8'}`} dir="auto">
-              {m.role === 'user'
-                ? <span className="whitespace-pre-wrap">{m.content}</span>
-                : <MarkdownArab content={m.content} ltr style={{ color: 'inherit', fontSize: 14, lineHeight: 1.7 }}/>}
-            </div>
-          </div>
-        ))}
-        {sending && <div className="text-xs text-ink-soft">Tutor sedang mengetik…</div>}
-        <div ref={bottomRef}/>
-      </div>
-      {error && <div className="text-sm text-rose-400 mb-2">{error}</div>}
-      <div className="flex gap-2">
-        <textarea value={input} onChange={e => setInput(e.target.value)} rows={2} maxLength={2000}
-          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-          placeholder="Tulis pertanyaanmu…" className={`${inputClass} resize-none`} dir="auto"/>
-        <button onClick={() => send()} disabled={sending || !input.trim()} className="btn btn-primary px-4 self-end py-2.5">
-          <Icon name="arrowRight" className="w-4 h-4"/>
-        </button>
-      </div>
-    </div>
-  );
-};
-
-/* ── Detail page ── */
-
-const DETAIL_TABS = [
-  { id: 'summary', label: 'Ringkasan',   icon: 'bookOpen' },
-  { id: 'cards',   label: 'Flashcard',   icon: 'layers' },
-  { id: 'quiz',    label: 'Kuis',        icon: 'target' },
-  { id: 'tutor',   label: 'Tanya Tutor', icon: 'messageSquare' },
-];
-
-const AiPartnerDetail = ({ setId }) => {
+const AiPartnerDetail = ({ setId, status }) => {
   const toast = useToast();
   const [set, setSet]     = useState(null);
   const [error, setError] = useState('');
-  const [tab, setTab]     = useState('summary');
-  const [showSource, setShowSource] = useState(false);
+  const [step, setStep]   = useState('pahami');
+  const [sub, setSub]     = useState({ pahami: 'summary', hafalkan: 'cards', uji: 'quiz', tanya: 'tutor' });
 
   useEffect(() => {
     aiCall('get', { set_id: setId }).then(d => d.ok ? setSet(d.data) : setError(d.error || 'Materi tidak ditemukan'));
   }, [setId]);
 
   const handleDelete = async () => {
-    if (!confirm(`Hapus materi "${set.title}" beserta ringkasan, flashcard, kuis, dan chat-nya?`)) return;
+    if (!confirm(`Hapus materi "${set.title}" beserta semua ringkasan, kartu, soal, dan chat-nya?`)) return;
     const d = await aiCall('delete', { set_id: set.id });
     if (d.ok) { toast.push('Materi dihapus.'); navigate('/ai-partner'); }
     else toast.push(d.error || 'Gagal menghapus');
   };
 
   if (error) return <div className="container-x pb-24 text-sm text-rose-400">{error}</div>;
-  if (!set) return <div className="container-x pb-24 text-sm text-ink-muted">Memuat materi…</div>;
+  if (!set) return <GateLoading/>;
 
-  const TabBody = { summary: SummaryTab, cards: FlashcardTab, quiz: QuizTab, tutor: TutorTab }[tab];
+  const isPro = status.tier === 'pro';
+  const access = { tier: status.tier, isTrialSet: !isPro && status.trial?.set_id === set.id };
+  const extra = { quiz_done: set.quiz_best_score != null, chatted: (set.chat || []).length > 0 };
+  const meta = SOURCE_META[set.source_type] || SOURCE_META.teks;
+  const current = SUB_TABS[step].find(t => t.id === sub[step]) || SUB_TABS[step][0];
+  const TabBody = window[current.C];
 
   return (
-    <div className="container-x pb-24 max-w-4xl">
-      <div className="flex items-start justify-between gap-4 mb-6 flex-wrap">
-        <div>
-          <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1">{maddahName(set.maddah_id) || 'Materi umum'}</div>
-          <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">{set.title}</h2>
+    <div className="container-x pb-24 max-w-5xl">
+      {/* Header materi */}
+      <div className="flex items-start justify-between gap-4 mb-6">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5 flex-wrap mb-2">
+            <Pill tone="gold">{maddahName(set.maddah_id) || 'Materi umum'}</Pill>
+            <Pill><Icon name={meta.icon} className="w-3 h-3"/>{meta.label}</Pill>
+            {access.isTrialSet && <Pill tone="gold"><Icon name="crown" className="w-3 h-3"/>Coba gratis</Pill>}
+          </div>
+          <h1 className="font-display text-2xl md:text-4xl font-semibold text-ink leading-tight">{set.title}</h1>
+          <button onClick={handleDelete} className="text-xs text-ink-soft hover:text-rose-400 mt-2">Hapus materi</button>
         </div>
-        <button onClick={handleDelete} className="text-xs text-rose-400 hover:text-rose-300 mt-2">Hapus materi</button>
+        <ProgressRing percent={studyPercent(set)} size={56}/>
       </div>
 
-      <div className="flex gap-2 flex-wrap mb-6">
-        {DETAIL_TABS.map(t => (
-          <button key={t.id} onClick={() => setTab(t.id)} className={tabBtnClass(tab === t.id)}>
-            <Icon name={t.icon} className="w-4 h-4"/>{t.label}
-          </button>
-        ))}
+      {/* Stepper alur belajar */}
+      <div className="grid grid-cols-4 gap-2 mb-5">
+        {STUDY_STEPS.map((s, i) => {
+          const active = step === s.id;
+          const done = stepDone(s, set.progress || {}, extra);
+          return (
+            <button key={s.id} onClick={() => setStep(s.id)}
+              className={`rounded-2xl border px-2 py-3 md:px-4 md:py-4 text-center md:text-left transition ${active ? 'border-emerald-500/50 bg-emerald-500/12' : 'border-white/8 bg-white/3 hover:border-white/15'}`}>
+              <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
+                <span className={`w-6 h-6 rounded-full text-[11px] font-semibold flex items-center justify-center ${done ? 'bg-emerald-500 text-black' : active ? 'bg-white/15 text-ink' : 'bg-white/8 text-ink-soft'}`}>
+                  {done ? <Icon name="check" className="w-3.5 h-3.5" strokeWidth={2.4}/> : i + 1}
+                </span>
+                <span className={`hidden md:inline text-sm font-medium ${active ? 'text-ink' : 'text-ink-muted'}`}>{s.label}</span>
+              </div>
+              <div className={`md:hidden text-[11px] font-medium ${active ? 'text-ink' : 'text-ink-muted'}`}>{s.label}</div>
+              <div dir="rtl" className="hidden md:block text-gold-300/70 text-right" style={{ fontFamily: '"Noto Naskh Arabic", serif', fontSize: 15 }}>{s.ar}</div>
+            </button>
+          );
+        })}
       </div>
 
-      <TabBody set={set} setSet={setSet}/>
+      {/* Sub-tab */}
+      {SUB_TABS[step].length > 1 && (
+        <div className="flex gap-2 mb-5 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+          {SUB_TABS[step].map(t => (
+            <button key={t.id} onClick={() => setSub(p => ({ ...p, [step]: t.id }))}
+              className={`flex-shrink-0 text-sm px-4 py-2 rounded-xl border font-medium flex items-center gap-2 transition ${sub[step] === t.id
+                ? 'text-emerald-200 border-emerald-600/35 bg-emerald-500/15'
+                : 'bg-white/4 text-ink-muted border-white/8 hover:bg-white/7'}`}>
+              <Icon name={t.icon} className="w-4 h-4"/>{t.label}
+              {t.pro && !isPro && <Icon name="crown" className="w-3.5 h-3.5 text-gold-300"/>}
+            </button>
+          ))}
+        </div>
+      )}
 
-      <div className="mt-8">
-        <button onClick={() => setShowSource(v => !v)} className="text-xs text-ink-muted hover:text-ink flex items-center gap-1">
-          {showSource ? 'Sembunyikan' : 'Lihat'} materi asli ({set.content.length.toLocaleString('id-ID')} karakter)
-        </button>
-        {showSource && (
-          <pre className="mt-3 p-4 rounded-xl bg-white/3 border border-white/8 text-xs text-ink-muted whitespace-pre-wrap max-h-96 overflow-y-auto font-sans" dir="auto">
-            {set.content}
-          </pre>
-        )}
-      </div>
+      <TabBody key={`${set.id}-${current.id}`} set={set} setSet={setSet} access={access}/>
     </div>
   );
 };
 
 const AiPartnerDetailPage = ({ setId }) => {
-  const access = useAiAccess();
+  const status = useAiStatus();
   return (
     <div className="page-enter">
-      <div className="container-x pt-6 md:pt-10 pb-4">
-        <button onClick={() => navigate('/ai-partner')} className="text-sm text-ink-muted hover:text-ink flex items-center gap-1">
-          ← Semua materi
-        </button>
+      <BackToHome to="/ai-partner" label="Semua materi"/>
+      <div className="pt-4">
+        {status.loading ? <GateLoading/>
+          : status.tier === 'none'
+            ? <div className="container-x pb-24"><UpgradeCard title="Khusus member Talqeeh"/></div>
+            : <AiPartnerDetail setId={setId} status={status}/>}
       </div>
-      {access === 'checking' && <GateLoading/>}
-      {access === 'inactive' && <BetaCard/>}
-      {access === 'active' && <AiPartnerDetail setId={setId}/>}
     </div>
   );
 };

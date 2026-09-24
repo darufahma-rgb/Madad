@@ -564,11 +564,11 @@ const LIBRARY_FEATURES = [
   "Sekali bayar, semua update ke depan ikut terbuka",
 ];
 const AI_PARTNER_FEATURES = [
-  "Upload diktat atau materi kuliah: PDF, foto, atau teks",
-  "Ringkasan otomatis + ta'rif istilah berharakat",
-  "Flashcard hafalan dengan pengulangan terjadwal",
-  "Kuis pilihan ganda + pembahasan",
-  "Tutor AI yang menjawab dari materimu sendiri",
+  "Unggah PDF (termasuk scan), Word, slide, foto diktat, atau rekaman kuliah",
+  "Ringkasan gaya kitab (Indonesia/Arab/dwibahasa) + peta konsep taqsimat",
+  "Terjemah & i'rab kalimat Arab, harakat otomatis, mufradat berwazan",
+  "Flashcard pengulangan berjarak, kuis, dan latihan tahriri dinilai AI",
+  "Tutor dari materimu + simulasi ujian syafawi",
 ];
 const PLAN_LABELS = { library: "Library", library_ai: "Library + AI Partner" };
 const DEFAULT_ADMIN_WA = "6281311506025";

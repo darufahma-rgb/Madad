@@ -124,9 +124,9 @@ const checkAiSubscription = async () => {
   try {
     const res = await authFetch('/api/ai-partner?action=status', { method: 'POST', body: '{}' });
     const data = await res.json();
-    return { active: !!data.active };
+    return { active: !!data.active, tier: data.tier || (data.active ? 'pro' : 'none'), trial: data.trial || null };
   } catch {
-    return { active: false };
+    return { active: false, tier: 'none', trial: null };
   }
 };
 

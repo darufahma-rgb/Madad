@@ -269,7 +269,7 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
         <Reveal delay={180}>
           <p className="text-lg md:text-xl mb-10 max-w-xl" style={{ color:"rgba(255,255,255,0.62)", lineHeight:1.65 }}>
             Template prompt siap pakai untuk {CATALOG.maddah} maddah Al-Azhar, plus AI Partner yang
-            bikin ringkasan, flashcard, dan kuis dari diktatmu sendiri.
+            mengubah diktat, slide, dan rekaman kuliahmu jadi ringkasan, flashcard, kuis, dan i'rab.
             Untuk Masisir dari Ma'had, Darul Lughoh (DL), sampai S2.
           </p>
         </Reveal>
@@ -396,9 +396,9 @@ const TwoWaysSection = () => {
     {
       badge: "AI Partner", tone: "emerald", when: "Tambahan · langganan bulanan",
       title: "Belajar langsung dari diktatmu sendiri",
-      desc: "Upload diktat, catatan, atau foto kitab. AI Partner membaca isinya lalu menyiapkan bahan belajar di Talqeeh, tanpa perlu pindah aplikasi atau menyusun prompt.",
-      steps: ["Upload PDF / foto / teks", "Dapat ringkasan, flashcard, kuis", "Tanya tutor AI soal materinya"],
-      extras: "Jawaban tutor merujuk ke materi yang kamu upload, bukan jawaban umum dari internet.",
+      desc: "Unggah diktat, slide, foto kitab, atau rekaman kuliah. AI Partner membaca isinya — termasuk teks Arab — lalu menyiapkan bahan belajar di Talqeeh, tanpa perlu menyusun prompt.",
+      steps: ["Unggah PDF, Word, slide, foto, atau rekaman", "Dapat ringkasan, peta konsep, mufradat, flashcard, soal", "Blok kalimat Arab → terjemah & i'rab; latihan syafawi"],
+      extras: "Member Library bisa coba gratis 1 materi dulu sebelum berlangganan.",
     },
   ];
   const toneClass = {
@@ -793,7 +793,9 @@ const LANDING_FAQ = [
   { q: "Kenapa harus login pakai Google dulu?",
     a: "Akun Google jadi identitas keanggotaanmu. Pembayaran otomatis tercatat ke akun itu, jadi nggak ada kode yang perlu ditunggu atau diketik, dan kamu bisa belajar di HP maupun laptop dengan akun yang sama." },
   { q: "Apa beda paket Library dan Library + AI Partner?",
-    a: `Library berisi ${CATALOG.maddah} maddah, ${CATALOG.prompts} template prompt, bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Prompt-nya kamu salin ke AI pilihanmu (Claude, ChatGPT, NotebookLM, dll). Library + AI Partner menambahkan tempat upload materi kuliahmu sendiri: AI langsung bikin ringkasan, flashcard, kuis, dan bisa ditanya seperti tutor — tanpa pindah aplikasi. AI Partner dibayar bulanan.` },
+    a: `Library berisi ${CATALOG.maddah} maddah, ${CATALOG.prompts} template prompt, bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Prompt-nya kamu salin ke AI pilihanmu (Claude, ChatGPT, NotebookLM, dll). Library + AI Partner menambahkan tempat unggah materi kuliahmu sendiri (PDF, Word, slide, foto diktat, rekaman kuliah): AI langsung bikin ringkasan gaya kitab, peta konsep, mufradat, flashcard, kuis, dan soal tahriri, menerjemahkan & meng-i'rab kalimat Arab, serta bisa diajak simulasi syafawi — tanpa pindah aplikasi. AI Partner dibayar bulanan.` },
+  { q: "Bisa coba AI Partner dulu sebelum berlangganan?",
+    a: "Bisa. Setiap member Library dapat jatah coba gratis 1 materi (teks, dokumen, atau foto) lengkap dengan ringkasan, flashcard, kuis, dan mufradat. Fitur lain seperti audio/video, peta konsep, i'rab, tahriri, dan tutor terbuka setelah berlangganan." },
   { q: "Library-nya berlaku sampai kapan?",
     a: "Selamanya. Sekali bayar, dan maddah, prompt, atau fitur Library yang ditambahkan nanti ikut terbuka tanpa biaya tambahan." },
   { q: "Bayarnya pakai apa?",
@@ -866,7 +868,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
                 <div className="text-sm text-ink font-medium mb-3">Semua isi paket Library, ditambah:</div>
                 <FeatureList items={AI_PARTNER_FEATURES} color="text-emerald-400"/>
                 <p className="text-xs text-ink-soft mt-4 leading-relaxed">
-                  Library tetap milikmu selamanya. Langganan AI bisa berhenti kapan saja.
+                  Belum yakin? Member Library bisa coba gratis 1 materi dulu. Library tetap milikmu selamanya; langganan AI bisa berhenti kapan saja.
                 </p>
               </div>
               <button onClick={() => onOpenJoin("library_ai")}

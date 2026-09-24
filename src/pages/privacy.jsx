@@ -28,8 +28,9 @@ const PRIVACY_SECTIONS = [
   {
     title: "AI Partner Belajar",
     body: [
-      "Kalau kamu memakai AI Partner, teks materi yang kamu unggah (hasil ekstraksi dari PDF, foto, atau teks yang kamu tempel) disimpan bersama ringkasan, flashcard, kuis, dan riwayat chat tutor. File asli PDF/foto tidak disimpan.",
-      "Untuk menghasilkan jawaban, teks tersebut dikirim ke penyedia model AI pihak ketiga (OpenRouter, yang meneruskan ke model Claude dari Anthropic). Jangan mengunggah data pribadi atau rahasia ke dalam materi.",
+      "Kalau kamu memakai AI Partner, teks materi yang kamu unggah disimpan bersama hasil belajarnya (ringkasan, peta konsep, mufradat, flashcard, kuis, soal tahriri beserta jawaban dan nilaimu, hasil terjemah/i'rab, dan riwayat chat tutor). File asli tidak pernah disimpan.",
+      "Dokumen Word, PowerPoint, Excel, TXT, dan PDF berteks dibaca langsung di perangkatmu. Foto, halaman PDF hasil scan, dan potongan rekaman audio/video (per 1 menit) dikirim ke penyedia AI untuk dibaca atau ditranskrip, lalu hanya teksnya yang disimpan.",
+      "Pemrosesan AI dilakukan oleh penyedia pihak ketiga melalui OpenRouter: model Claude (Anthropic) untuk materi dan model Gemini (Google) untuk transkrip rekaman. Jangan mengunggah data pribadi atau rahasia ke dalam materi.",
     ],
   },
   {
