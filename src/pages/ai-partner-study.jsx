@@ -37,7 +37,7 @@ const useGenerate = (set, setSet, kind, field) => {
     setSet(s => ({
       ...s,
       [field]: data.data,
-      progress: { ...(s.progress || {}), [kind]: true },
+      progress: { ...(s.progress || {}), [kind]: true, ...(kind === 'summary' ? { summary_partial: !!data.partial } : {}) },
       ...(kind === 'quiz' ? { quiz_best_score: null } : {}),
       ...(kind === 'essays' ? { essay_attempts: [] } : {}),
       ...(kind === 'summary' ? { summary_lang: data.lang } : {}),
@@ -207,10 +207,52 @@ const SummaryView = ({ markdown, rtl }) => {
   );
 };
 
+// Ringkasan panjang dibuat per bagian (server membatasi tiap request); bagian berikutnya diminta otomatis.
+const useSummaryContinuation = (set, setSet) => {
+  const [continuing, setContinuing] = useState(false);
+  const [error, setError] = useState('');
+  const partial = !!(set.summary && set.progress?.summary_partial);
+
+  const continueOnce = async () => {
+    setContinuing(true);
+    setError('');
+    const d = await aiCall('generate', { set_id: set.id, kind: 'summary', continue: true });
+    setContinuing(false);
+    if (!d.ok) { setError(d.error || 'Gagal melanjutkan ringkasan'); return; }
+    setSet(s => ({ ...s, summary: d.data, progress: { ...(s.progress || {}), summary_partial: !!d.partial } }));
+  };
+
+  useEffect(() => {
+    if (partial && !continuing && !error) continueOnce();
+  }, [partial, set.summary, continuing, error]);
+
+  return { partial, continuing, error, retry: continueOnce };
+};
+
+const SummaryContinuationNote = ({ state }) => {
+  if (!state.partial) return null;
+  return (
+    <div className="mt-3 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] px-4 py-3 flex items-center gap-3 flex-wrap">
+      {state.error ? (
+        <>
+          <span className="text-sm text-ink-muted flex-1 min-w-[200px]">Ringkasan belum selesai. {state.error}</span>
+          <button onClick={state.retry} className="btn btn-primary text-xs px-4 py-2">Lanjutkan ringkasan</button>
+        </>
+      ) : (
+        <>
+          <span className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin flex-shrink-0"/>
+          <span className="text-sm text-ink-muted">Materimu panjang — AI sedang menulis bagian berikutnya…</span>
+        </>
+      )}
+    </div>
+  );
+};
+
 const SummaryTab = ({ set, setSet, access }) => {
   const { busy, generate, upgrade } = useGenerate(set, setSet, 'summary', 'summary');
   const [lang, setLang] = useState(set.summary_lang || 'id');
   const saveKurasah = useKurasahSave();
+  const continuation = useSummaryContinuation(set, setSet);
 
   useEffect(() => { if (set.summary) markProgress(set, setSet, 'summary_read'); }, [!!set.summary]);
 
@@ -231,7 +273,7 @@ const SummaryTab = ({ set, setSet, access }) => {
     <div>
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         {access.tier === 'pro'
-          ? <LangPicker value={set.summary_lang || 'id'} onChange={(l) => { setLang(l); generate({ lang: l }); }}/>
+          ? <LangPicker value={set.summary_lang || 'id'} disabled={continuation.continuing} onChange={(l) => { setLang(l); generate({ lang: l }); }}/>
           : <Pill>{SUMMARY_LANG_OPTIONS.find(o => o.id === (set.summary_lang || 'id'))?.label}</Pill>}
         <div className="flex gap-2">
           <ToolbarButton icon="copy" onClick={() => navigator.clipboard?.writeText(set.summary)}>Salin</ToolbarButton>
@@ -239,6 +281,10 @@ const SummaryTab = ({ set, setSet, access }) => {
         </div>
       </div>
       <SummaryView markdown={set.summary} rtl={isArabic}/>
+      <SummaryContinuationNote state={continuation}/>
+      {!continuation.partial && (
+        <FeedbackBar setId={set.id} kind="summary" content={set.summary} className="mt-4" label="Ringkasan ini akurat & membantu?"/>
+      )}
     </div>
   );
 };
@@ -304,13 +350,14 @@ const MindmapTab = ({ set, setSet, access }) => {
       <div className="card-glass p-4 md:p-6 overflow-x-auto">
         <MindNode node={set.mindmap} depth={0} bulk={bulk}/>
       </div>
+      <FeedbackBar setId={set.id} kind="mindmap" content={mindmapToMarkdown(set.mindmap)} className="mt-4" label="Peta konsep ini sesuai materi?"/>
     </div>
   );
 };
 
 /* ── 1c. Materi asli + terjemah, i'rab, harakat ── */
 
-const IrabResult = ({ result, onSaveKurasah, onAddCard }) => (
+const IrabResult = ({ result, onSaveKurasah, onAddCard, setId }) => (
   <div className="space-y-5">
     <div className="flex items-start gap-2">
       <ArabicText size={26} className="flex-1">{result.teks}</ArabicText>
@@ -361,6 +408,10 @@ const IrabResult = ({ result, onSaveKurasah, onAddCard }) => (
       <ToolbarButton icon="layers" onClick={onAddCard}>Jadikan flashcard</ToolbarButton>
       <ToolbarButton icon="bookmark" onClick={onSaveKurasah}>Simpan ke Kurasah</ToolbarButton>
     </div>
+    {setId && (
+      <FeedbackBar setId={setId} kind="irab" label="Terjemah & i'rab ini tepat?"
+        content={`${result.teks}\n${result.terjemah_bebas}\n${result.irab.map(w => `${w.kata}: ${w.irab}`).join('\n')}`}/>
+    )}
   </div>
 );
 
@@ -412,7 +463,7 @@ const IrabModal = ({ set, setSet, text, onClose }) => {
             <Skeleton lines={7}/>
           </div>
         ) : (
-          <IrabResult result={result} onAddCard={addCard}
+          <IrabResult result={result} onAddCard={addCard} setId={set.id}
             onSaveKurasah={() => saveKurasah(`I'rab — ${result.teks.slice(0, 40)}`, irabToMarkdown(result), ['irab'])}/>
         )}
       </div>
@@ -492,6 +543,7 @@ const MaterialTab = ({ set, setSet, access }) => {
               {arabic && (
                 <div className="flex gap-1.5 mt-1 justify-end opacity-80">
                   <SpeakButton text={vowelled || p}/>
+                  {vowelled && <FeedbackBar compact setId={set.id} kind="tasykil" content={vowelled} className="flex flex-col items-end"/>}
                   {!harakatOf(p) && p.length <= 6000 && (
                     <button onClick={() => tasykil(p, i)} disabled={busyPara !== null}
                       className="text-[11px] px-2.5 py-1 rounded-lg border border-white/10 text-ink-muted hover:text-emerald-300 hover:border-emerald-500/30 inline-flex items-center gap-1">
@@ -636,6 +688,10 @@ const FlashcardTab = ({ set, setSet, access }) => {
               <button onClick={() => answer(true)} className="btn btn-primary py-3.5 text-sm">Hafal ✓</button>
             </div>
           )}
+          {flipped && (
+            <FeedbackBar setId={set.id} kind="flashcards" content={`${current.q}\n${current.a}`} label="Isi kartu ini benar?"
+              className="mt-3 flex flex-col items-center"/>
+          )}
         </>
       ) : (
         <div className="card-glass p-8 text-center">
@@ -720,11 +776,11 @@ const GlossaryTab = ({ set, setSet, access }) => {
           </div>
         ))}
       </div>
-      {access.tier === 'pro' && (
-        <div className="flex justify-end mt-4">
-          <ToolbarButton icon="refresh" onClick={() => generate()} disabled={busy}>Susun ulang</ToolbarButton>
-        </div>
-      )}
+      <div className="flex items-start justify-between gap-3 mt-4 flex-wrap">
+        <FeedbackBar setId={set.id} kind="glossary" label="Mufradat ini tepat?"
+          content={items.map(g => `${g.ar} (${g.wazan || '-'}): ${g.makna}`).join('\n')}/>
+        {access.tier === 'pro' && <ToolbarButton icon="refresh" onClick={() => generate()} disabled={busy}>Susun ulang</ToolbarButton>}
+      </div>
     </div>
   );
 };
@@ -812,7 +868,9 @@ const QuizTab = ({ set, setSet, access }) => {
               <span className="text-gold-400 font-semibold">Pembahasan: </span><AiInline text={q.explanation}/>
             </div>
           )}
-          <div className="flex justify-end mt-5">
+          <div className="flex items-center justify-between gap-3 mt-5 flex-wrap">
+            <FeedbackBar setId={set.id} kind="quiz" label="Soal & kunci ini benar?"
+              content={`${q.question}\n${(q.options || []).map((o, i) => `${i === q.answer ? '✓' : '-'} ${o}`).join('\n')}\n${q.explanation || ''}`}/>
             <button onClick={next} className="btn btn-primary text-sm px-5 py-2">
               {idx + 1 >= quiz.length ? 'Lihat skor' : 'Lanjut'} <Icon name="arrowRight" className="w-4 h-4"/>
             </button>
@@ -832,7 +890,7 @@ const ScoreBadge = ({ skor }) => {
   </div>;
 };
 
-const GradeResult = ({ attempt, essay }) => {
+const GradeResult = ({ attempt, essay, setId }) => {
   const [showModel, setShowModel] = useState(false);
   return (
     <div className="space-y-4 mt-5">
@@ -875,8 +933,12 @@ const GradeResult = ({ attempt, essay }) => {
           <ul className="space-y-1 text-sm text-ink">{essay.poin.map((p, i) => <li key={i}>{i + 1}. <AiInline text={p}/></li>)}</ul>
           <div className="text-[11px] uppercase tracking-wider text-emerald-300 pt-1">Jawaban model</div>
           <AiRichText content={essay.jawaban_model} size="md"/>
+          {setId && <FeedbackBar setId={setId} kind="essays" label="Soal & jawaban model ini benar?"
+            content={`${essay.soal_ar}\n${essay.poin.join('\n')}\n${essay.jawaban_model}`}/>}
         </div>
       )}
+      {setId && <FeedbackBar setId={setId} kind="grade" label="Penilaian ini adil & tepat?" refId={`${attempt.index}:${attempt.at}`}
+        content={`Skor ${attempt.skor}/10\n${attempt.answer}\n\nKurang: ${attempt.kurang.join('; ')}\nTips: ${attempt.tips}`}/>}
     </div>
   );
 };
@@ -943,7 +1005,7 @@ const EssayTab = ({ set, setSet, access }) => {
               style={{ fontSize: hasArabic(result.answer) ? 18 : 14, fontFamily: hasArabic(result.answer) ? '"Noto Naskh Arabic", serif' : 'inherit' }}>
               {result.answer}
             </div>
-            <GradeResult attempt={result} essay={essay}/>
+            <GradeResult attempt={result} essay={essay} setId={set.id}/>
             <div className="flex gap-2 justify-end mt-5 flex-wrap">
               <button onClick={() => setResult(null)} className="btn btn-ghost text-sm px-4 py-2">Perbaiki jawaban</button>
               {active + 1 < essays.length && (
@@ -1080,7 +1142,11 @@ const TutorTab = ({ set, setSet, access }) => {
                 : 'max-w-[94%] sm:max-w-[88%] px-4 py-3.5 bg-white/[0.035] border border-white/10 rounded-tl-md'}`}>
                 {m.role === 'user'
                   ? <span className="whitespace-pre-wrap" dir="auto">{m.content}</span>
-                  : <AiRichText content={m.content} size="sm"/>}
+                  : <>
+                      <AiRichText content={m.content} size="sm"/>
+                      <FeedbackBar compact setId={set.id} kind={mode} content={m.content}
+                        className="mt-2.5 pt-2 border-t border-white/[0.06] flex flex-col items-start"/>
+                    </>}
               </div>
             </div>
           ))}

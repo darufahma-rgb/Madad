@@ -447,6 +447,100 @@ const Panel = ({ title, children, className = '' }) => (
   </div>
 );
 
+const FEEDBACK_KIND_LABELS = {
+  summary: 'Ringkasan', mindmap: 'Peta konsep', flashcards: 'Flashcard', quiz: 'Kuis', glossary: 'Mufradat',
+  essays: 'Soal tahriri', grade: 'Penilaian tahriri', irab: "Terjemah & i'rab", tasykil: 'Harakat',
+  tutor: 'Tutor', syafawi: 'Simulasi syafawi',
+};
+const FEEDBACK_CATEGORY_LABELS = {
+  salah_fakta: 'Isi/fakta keliru', salah_arab: "Bahasa Arab / i'rab keliru", salah_harakat: 'Harakat keliru',
+  tidak_sesuai_materi: 'Tidak sesuai materi', kurang_jelas: 'Kurang jelas', terpotong: 'Terpotong', lainnya: 'Lainnya',
+};
+
+// Masukan 👍/👎 member atas hasil AI Partner — dasar untuk menilai & memperbaiki prompt/model.
+const AiQualitySection = ({ quality }) => {
+  const [openReport, setOpenReport] = useState(null);
+  if (!quality) return null;
+  const pct = (v) => (v == null ? '—' : `${Math.round(v * 100)}%`);
+  return (
+    <Section title="Kualitas AI (masukan member)">
+      {!quality.migrated && (
+        <div className="card-glass p-4 mb-4 text-sm text-amber-300">
+          Tabel masukan belum ada — jalankan <span className="font-mono">migrations/ai_feedback.sql</span> di Supabase SQL Editor.
+        </div>
+      )}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+        <KpiCard label="Masukan" value={quality.total}/>
+        <KpiCard label="Dinilai membantu" value={pct(quality.positiveRate)}
+          delta={quality.positiveRate != null && quality.positiveRatePrev != null
+            ? <Delta now={quality.positiveRate * 100} prev={quality.positiveRatePrev * 100}/> : null}/>
+        <KpiCard label="👍 Membantu" value={quality.up}/>
+        <KpiCard label="👎 Ada yang salah" value={quality.down}/>
+      </div>
+      <div className="grid lg:grid-cols-3 gap-4">
+        <Panel title="Per fitur">
+          {quality.byKind.length === 0
+            ? <div className="text-sm text-ink-muted">Belum ada masukan di periode ini.</div>
+            : (
+              <div className="space-y-3">
+                {quality.byKind.map(k => {
+                  const total = k.up + k.down;
+                  return (
+                    <div key={k.kind}>
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-ink-muted">{FEEDBACK_KIND_LABELS[k.kind] || k.kind}</span>
+                        <span className="text-ink">{Math.round((k.up / total) * 100)}% <span className="text-[11px] text-ink-soft">({k.up}👍 {k.down}👎)</span></span>
+                      </div>
+                      <div className="h-2 rounded-full bg-rose-500/40 overflow-hidden">
+                        <div className="h-full bg-emerald-500" style={{ width: `${(k.up / total) * 100}%` }}/>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          {Object.keys(quality.categories).length > 0 && (
+            <div className="mt-5 pt-4 border-t border-white/8">
+              <div className="text-[11px] uppercase tracking-wider text-ink-soft mb-2">Jenis kesalahan</div>
+              <HBarList color="#f43f5e" items={Object.entries(quality.categories).sort((a, b) => b[1] - a[1])
+                .map(([id, n]) => ({ label: FEEDBACK_CATEGORY_LABELS[id] || id, value: n }))}/>
+            </div>
+          )}
+        </Panel>
+        <Panel title="Laporan kesalahan terbaru" className="lg:col-span-2">
+          {quality.reports.length === 0
+            ? <div className="text-sm text-ink-muted">Belum ada laporan. Bagus — atau belum banyak yang memberi masukan.</div>
+            : (
+              <div className="space-y-2 max-h-[480px] overflow-y-auto pr-1">
+                {quality.reports.map((r, i) => (
+                  <div key={i} className="rounded-lg bg-white/3 border border-white/6 p-3">
+                    <div className="flex items-center justify-between gap-2 flex-wrap">
+                      <div className="flex items-center gap-2 flex-wrap text-xs">
+                        <span className="px-2 py-0.5 rounded-full bg-white/6 text-ink">{FEEDBACK_KIND_LABELS[r.kind] || r.kind}</span>
+                        {r.category && <span className="px-2 py-0.5 rounded-full bg-rose-500/12 text-rose-300">{FEEDBACK_CATEGORY_LABELS[r.category] || r.category}</span>}
+                        <span className="text-ink-soft">{r.name} · {new Date(r.at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+                      </div>
+                      {r.snippet && (
+                        <button onClick={() => setOpenReport(openReport === i ? null : i)} className="text-[11px] text-emerald-300 hover:text-emerald-200">
+                          {openReport === i ? 'Tutup' : 'Lihat hasil AI'}
+                        </button>
+                      )}
+                    </div>
+                    {r.note && <p className="text-sm text-ink mt-2 leading-relaxed" dir="auto">"{r.note}"</p>}
+                    {openReport === i && (
+                      <pre className="mt-2 text-xs text-ink-muted whitespace-pre-wrap bg-black/30 rounded-lg p-3 max-h-60 overflow-y-auto" dir="auto">{r.snippet}</pre>
+                    )}
+                    {r.model && <div className="text-[10px] text-ink-soft font-mono mt-1.5">{r.model}</div>}
+                  </div>
+                ))}
+              </div>
+            )}
+        </Panel>
+      </div>
+    </Section>
+  );
+};
+
 const AdminAnalytics = () => {
   const [days, setDays] = useState(30);
   const [data, setData] = useState(null);
@@ -642,6 +736,9 @@ const AdminAnalytics = () => {
           </Panel>
         )}
       </Section>
+
+      {/* Kualitas AI */}
+      <AiQualitySection quality={data.quality}/>
 
       {/* Library */}
       <Section title="Engagement Library (sepanjang waktu)">

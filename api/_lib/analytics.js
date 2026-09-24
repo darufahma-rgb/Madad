@@ -9,7 +9,7 @@ const dayKey = (d) => new Date(d).toISOString().slice(0, 10);
 // Sesuaikan kalau model atau harga berubah.
 export const AI_COST_USD = {
   generate: 0.06,   // ringkasan/flashcard/kuis/mufradat/peta konsep/tahriri — Claude Sonnet, materi panjang
-  chat: 0.035,      // tutor & syafawi — konteks materi ±30rb karakter
+  chat: 0.035,      // tutor & syafawi — materi penuh (≤60rb karakter), system prompt di-cache per sesi
   ocr: 0.02,        // baca satu foto/halaman
   analyze: 0.012,   // terjemah & i'rab / harakat
   grade: 0.02,      // nilai satu jawaban tahriri
@@ -63,7 +63,7 @@ export async function buildAdminAnalytics(days) {
 
   const [
     members, payments, subs, usage, sets, presence, activity, profiles, settings,
-    notesCount, muqaranahCount, soalPaham, soalBelum,
+    notesCount, muqaranahCount, soalPaham, soalBelum, feedback,
   ] = await Promise.all([
     fetchMembers(),
     fetchAll(`payment_events?select=created_at,event,product_id,product_name,amount,handled_as&created_at=gte.${since}&order=created_at.asc`),
@@ -78,6 +78,7 @@ export async function buildAdminAnalytics(days) {
     countRows('user_muqaranah?select=member_code'),
     countRows('user_soal_progress?select=member_code&status=eq.paham'),
     countRows('user_soal_progress?select=member_code&status=eq.belum'),
+    fetchAll(`ai_feedback?select=member_code,kind,rating,category,note,snippet,model,updated_at&updated_at=gte.${since}&order=updated_at.desc`),
   ]);
 
   /* ── Pemasukan ── */
@@ -168,7 +169,8 @@ export async function buildAdminAnalytics(days) {
   const perMember = {};
   let costPrev = 0;
   for (const u of usage.rows) {
-    const cost = (AI_COST_USD[u.kind] || 0) * u.count;
+    if (!(u.kind in AI_COST_USD)) continue; // hanya pemakaian model AI
+    const cost = AI_COST_USD[u.kind] * u.count;
     if (u.day >= prevFrom && u.day <= prevTo) { costPrev += cost; continue; }
     if (!(u.day in usageByDay)) continue;
     if (u.kind in usageByKind) usageByKind[u.kind] += u.count;
@@ -218,5 +220,31 @@ export async function buildAdminAnalytics(days) {
     soal: { paham: soalPaham, belum: soalBelum },
   };
 
-  return { range: { days: span, from, to }, revenue, members: membersOut, ai: aiOut, library: libraryOut, costTable: AI_COST_USD };
+  /* ── Kualitas AI (masukan 👍/👎 dari member) ── */
+  const fbNow = feedback.rows.filter(f => inRange(f.updated_at, from, to));
+  const fbPrev = feedback.rows.filter(f => inRange(f.updated_at, prevFrom, prevTo));
+  const positiveRate = (rows) => (rows.length ? rows.filter(f => f.rating > 0).length / rows.length : null);
+  const byKind = {};
+  for (const f of fbNow) {
+    const k = byKind[f.kind] ||= { kind: f.kind, up: 0, down: 0 };
+    if (f.rating > 0) k.up++; else k.down++;
+  }
+  const categories = {};
+  for (const f of fbNow) if (f.rating < 0 && f.category) categories[f.category] = (categories[f.category] || 0) + 1;
+  const qualityOut = {
+    migrated: !feedback.missing,
+    total: fbNow.length,
+    up: fbNow.filter(f => f.rating > 0).length,
+    down: fbNow.filter(f => f.rating < 0).length,
+    positiveRate: positiveRate(fbNow),
+    positiveRatePrev: positiveRate(fbPrev),
+    byKind: Object.values(byKind).sort((a, b) => (b.up + b.down) - (a.up + a.down)),
+    categories,
+    reports: fbNow.filter(f => f.rating < 0).slice(0, 25).map(f => ({
+      kind: f.kind, category: f.category, note: f.note, snippet: f.snippet, model: f.model,
+      at: f.updated_at, name: nameOf[f.member_code] || f.member_code,
+    })),
+  };
+
+  return { range: { days: span, from, to }, revenue, members: membersOut, ai: aiOut, library: libraryOut, quality: qualityOut, costTable: AI_COST_USD };
 }

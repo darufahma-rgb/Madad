@@ -251,8 +251,105 @@ const SpeakButton = ({ text, className = '' }) => {
 const aiInputClass =
   'w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink text-sm outline-none focus:border-emerald-500/50';
 
+/* ── Masukan kualitas: 👍/👎 + laporan kesalahan untuk setiap hasil AI ──
+   ref default = hash isi, jadi hasil yang dibuat ulang dinilai terpisah dari versi lamanya. */
+const FEEDBACK_CATEGORY_OPTIONS = [
+  ['salah_fakta', 'Isi/fakta keliru'],
+  ['salah_arab', "Bahasa Arab / i'rab keliru"],
+  ['salah_harakat', 'Harakat keliru'],
+  ['tidak_sesuai_materi', 'Tidak sesuai materiku'],
+  ['kurang_jelas', 'Kurang jelas'],
+  ['terpotong', 'Terpotong / tidak lengkap'],
+  ['lainnya', 'Lainnya'],
+];
+const hashRef = (s) => {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return (h >>> 0).toString(36);
+};
+const readFeedback = (key) => { try { return Number(localStorage.getItem(key)) || 0; } catch { return 0; } };
+
+const FeedbackBar = ({ setId, kind, refId, content, label = 'Hasil ini membantu?', compact = false, className = '' }) => {
+  const toast = useToast();
+  const text = typeof content === 'string' ? content : JSON.stringify(content || '');
+  const ref = refId != null ? String(refId) : hashRef(`${kind}:${text}`);
+  const storeKey = `talqeeh_fb:${setId}:${kind}:${ref}`;
+  const [rating, setRating] = useState(() => readFeedback(storeKey));
+  const [open, setOpen] = useState(false);
+  const [category, setCategory] = useState('');
+  const [note, setNote] = useState('');
+  const [sending, setSending] = useState(false);
+  useEffect(() => { setRating(readFeedback(storeKey)); setOpen(false); }, [storeKey]);
+
+  const send = async (value, extra = {}) => {
+    setSending(true);
+    const d = await aiCall('feedback', { set_id: setId, kind, ref, rating: value, snippet: text.slice(0, 1500), ...extra });
+    setSending(false);
+    if (!d.ok) { toast.push(d.error || 'Gagal mengirim masukan'); return false; }
+    setRating(value);
+    try { localStorage.setItem(storeKey, String(value)); } catch {}
+    return true;
+  };
+  const thumbsUp = async () => {
+    if (rating === 1 || sending) return;
+    setOpen(false);
+    if (await send(1)) toast.push('Terima kasih atas masukannya!');
+  };
+  const submitReport = async () => {
+    if (await send(-1, { category: category || 'lainnya', note })) {
+      setOpen(false);
+      toast.push('Laporan terkirim. Terima kasih sudah membantu Talqeeh makin akurat.');
+    }
+  };
+
+  const btn = (active, tone) => `w-8 h-8 rounded-lg flex items-center justify-center border transition ${active
+    ? tone === 'up' ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300' : 'bg-rose-500/15 border-rose-500/40 text-rose-300'
+    : 'border-white/10 text-ink-soft hover:text-ink hover:border-white/20'}`;
+
+  return (
+    <div className={className}>
+      <div className="flex items-center gap-2 flex-wrap">
+        {!compact && <span className="text-xs text-ink-soft">{rating ? 'Terima kasih atas masukanmu' : label}</span>}
+        <button onClick={thumbsUp} disabled={sending} title="Membantu" aria-label="Membantu" className={btn(rating === 1, 'up')}>
+          <Icon name="thumbUp" className="w-4 h-4" style={{ stroke: 'currentColor' }}/>
+        </button>
+        <button onClick={() => setOpen(o => !o)} disabled={sending} title="Ada yang salah" aria-label="Ada yang salah" className={btn(rating === -1, 'down')}>
+          <Icon name="thumbDown" className="w-4 h-4" style={{ stroke: 'currentColor' }}/>
+        </button>
+        {!compact && rating !== -1 && (
+          <button onClick={() => setOpen(true)} className="text-xs text-ink-soft hover:text-rose-300 inline-flex items-center gap-1 ms-1">
+            <Icon name="flag" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Laporkan kesalahan
+          </button>
+        )}
+      </div>
+      {open && (
+        <div className="mt-2.5 rounded-xl border border-rose-500/25 bg-rose-500/[0.06] p-3.5 max-w-lg">
+          <div className="text-xs font-medium text-ink mb-2">Apa yang salah?</div>
+          <div className="flex flex-wrap gap-1.5 mb-2.5">
+            {FEEDBACK_CATEGORY_OPTIONS.map(([id, text]) => (
+              <button key={id} onClick={() => setCategory(id)}
+                className={`text-[11px] px-2.5 py-1 rounded-full border transition ${category === id ? 'bg-rose-500/20 border-rose-400/50 text-rose-100' : 'border-white/10 text-ink-muted hover:text-ink'}`}>
+                {text}
+              </button>
+            ))}
+          </div>
+          <textarea value={note} onChange={e => setNote(e.target.value)} rows={2} maxLength={1000} dir="auto"
+            placeholder="Opsional: tulis yang benar atau bagian mana yang salah"
+            className={`${aiInputClass} text-sm resize-none`}/>
+          <div className="flex justify-end gap-2 mt-2.5">
+            <button onClick={() => setOpen(false)} className="text-xs text-ink-soft hover:text-ink px-3 py-1.5">Batal</button>
+            <button onClick={submitReport} disabled={sending} className="btn text-xs px-4 py-2 text-white" style={{ background: '#e11d48' }}>
+              {sending ? 'Mengirim…' : 'Kirim laporan'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 Object.assign(window, {
-  aiCall, useAiStatus, openAiUpgrade, learnerPayload, learnerSummary, maddahName, hasArabic, isMostlyArabic, speakArabic, saveToKurasah,
+  aiCall, useAiStatus, FeedbackBar, openAiUpgrade, learnerPayload, learnerSummary, maddahName, hasArabic, isMostlyArabic, speakArabic, saveToKurasah,
   SOURCE_META, STUDY_STEPS, stepDone, studyPercent,
   ProgressRing, Skeleton, GeneratePanel, UpgradeCard, Pill, ArabicText, SpeakButton, aiInputClass,
 });

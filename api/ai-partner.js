@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { verifyToken } from './admin-auth.js';
 import { sbConfig, sbHeaders, normalizeCode, requireAiTier, consumeQuota, isActiveMember } from './_lib/member.js';
-import { callAI, callAIJson, transcribeModel } from './_lib/ai.js';
+import { callAI, callAIJson, requestAI, transcribeModel, activeModel } from './_lib/ai.js';
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
   OCR_PROMPT, TRANSCRIBE_PROMPT, tutorSystem, syafawiSystem, learnerContext,
@@ -19,8 +19,10 @@ const PRO_ONLY_ACTIONS = ['transcribe', 'analyze', 'grade', 'chat'];
 
 const MAX_CONTENT     = 60000;
 const MIN_CONTENT     = 50;
-const CHAT_CONTEXT    = 30000;
 const CHAT_HISTORY    = 12;
+// Ringkasan dibuat bertahap supaya tiap request selesai di bawah batas 60 detik Vercel.
+const SUMMARY_PART_TOKENS = 3000;
+const MAX_SUMMARY_PARTS   = 4;
 const CHAT_MAX_STORED = 60;
 const MAX_ANALYSES    = 40;
 const MAX_ATTEMPTS    = 30;
@@ -264,12 +266,63 @@ const GENERATE_FIELD = {
   glossary: 'glossary', mindmap: 'mindmap', essays: 'essays',
 };
 
+/* ── Ringkasan bertahap ──
+   Satu request dibatasi SUMMARY_PART_TOKENS supaya selesai < 60 detik. Kalau AI terpotong, bagian yang sudah
+   lengkap disimpan (progress.summary_partial) dan browser otomatis meminta lanjutan (generate + continue). */
+const SUMMARY_CONTINUE_ASK =
+  'Ringkasanmu di atas terpotong. Lanjutkan tepat setelah baris terakhir: jangan ulangi judul atau poin yang sudah ditulis, ' +
+  'langsung tulis baris berikutnya dengan format yang sama. Kalau semua bagian sudah lengkap, balas hanya: [SELESAI]';
+
+// Buang baris terakhir yang terpotong di tengah supaya lanjutan mulai dari baris utuh.
+const keepCompleteLines = (text) => {
+  const t = text.trimEnd();
+  const cut = t.lastIndexOf('\n');
+  return cut > t.length * 0.5 ? t.slice(0, cut).trimEnd() : t;
+};
+
+// Sambungan: baris lanjutan tabel/daftar/kutipan harus menempel, sisanya dipisah paragraf.
+const joinSummary = (done, next) => {
+  const cont = next.replace(/^\s*\n/, '');
+  return done + (/^\s*(\||[-*] |\d+\. |↳|>)/.test(cont) ? '\n' : '\n\n') + cont.trimStart();
+};
+
+const saveSummaryPart = async (ctx, set, lang, text, truncated, parts) => {
+  const partial = truncated && parts < MAX_SUMMARY_PARTS;
+  const summary = partial ? keepCompleteLines(text) : text.trimEnd();
+  const progress = mergeProgress(set, { summary: true, summary_partial: partial, summary_parts: parts });
+  await updateSet(ctx.code, set.id, { summary, summary_lang: lang, progress });
+  return { summary, partial };
+};
+
+async function continueSummary(ctx, set, body, res) {
+  const progress = set.progress || {};
+  if (!progress.summary_partial || !set.summary) return res.status(400).json({ ok: false, error: 'Ringkasan ini sudah lengkap.' });
+  if (ctx.tier === 'trial') {
+    const trial = await getTrialSetId(ctx.code);
+    if (trial.setId !== set.id) return upgradeRequired(res, 'trial_set');
+  }
+  // Lanjutan bagian dari satu kali "Buat ringkasan": tidak memotong kuota lagi, dibatasi MAX_SUMMARY_PARTS.
+  const parts = (Number(progress.summary_parts) || 1) + 1;
+  const lang = SUMMARY_LANGS.includes(set.summary_lang) ? set.summary_lang : 'id';
+  const done = set.summary.trimEnd();
+  const out = await requestAI({
+    system: summaryPrompt(lang) + learnerContext(body.learner),
+    messages: [...materialMessage(set), { role: 'assistant', content: done }, { role: 'user', content: SUMMARY_CONTINUE_ASK }],
+    maxTokens: SUMMARY_PART_TOKENS,
+  });
+  const finished = /^\s*\[SELESAI\]\s*$/.test(out.text);
+  const text = finished ? done : joinSummary(done, out.text.replace(/\[SELESAI\]\s*$/, ''));
+  const saved = await saveSummaryPart(ctx, set, lang, text, !finished && out.truncated, parts);
+  return res.status(200).json({ ok: true, data: saved.summary, lang, partial: saved.partial });
+}
+
 async function handleGenerate(ctx, body, res) {
   const kind = body.kind;
   if (!GENERATE_KINDS.includes(kind)) return res.status(400).json({ ok: false, error: 'Jenis tidak valid' });
   const field = GENERATE_FIELD[kind];
-  const set = await getOwnedSet(ctx.code, body.set_id, `id,title,content,progress,${field}`);
+  const set = await getOwnedSet(ctx.code, body.set_id, `id,title,content,progress,${field}${kind === 'summary' ? ',summary_lang' : ''}`);
   if (!set) return res.status(404).json({ ok: false, error: 'Materi tidak ditemukan' });
+  if (kind === 'summary' && body.continue === true) return continueSummary(ctx, set, body, res);
 
   if (ctx.tier === 'trial') {
     if (!TRIAL_KINDS.includes(kind)) return upgradeRequired(res, kind);
@@ -294,9 +347,9 @@ async function handleGenerate(ctx, body, res) {
 
   if (kind === 'summary') {
     const lang = SUMMARY_LANGS.includes(body.lang) ? body.lang : 'id';
-    const summary = await callAI({ system: summaryPrompt(lang) + learner, messages, maxTokens: 3000 });
-    await updateSet(ctx.code, set.id, { summary, summary_lang: lang, progress });
-    return res.status(200).json({ ok: true, data: summary, lang });
+    const out = await requestAI({ system: summaryPrompt(lang) + learner, messages, maxTokens: SUMMARY_PART_TOKENS });
+    const saved = await saveSummaryPart(ctx, set, lang, out.text, out.truncated, 1);
+    return res.status(200).json({ ok: true, data: saved.summary, lang, partial: saved.partial });
   }
 
   if (kind === 'mindmap') {
@@ -425,12 +478,17 @@ async function handleChat(ctx, body, res) {
   const all = Array.isArray(set.chat) ? set.chat : [];
   // Riwayat per mode supaya simulasi syafawi tidak tercampur tanya-jawab biasa.
   const history = all.filter(m => (m.mode || 'tutor') === mode).slice(-CHAT_HISTORY);
-  const material = set.content.slice(0, CHAT_CONTEXT);
-  const reply = await callAI({
+  // Seluruh materi (maks MAX_CONTENT) masuk konteks; system prompt di-cache supaya pesan berikutnya murah.
+  const material = set.content;
+  const out = await requestAI({
     system: (mode === 'syafawi' ? syafawiSystem(set.title, material) : tutorSystem(set.title, material)) + learnerContext(body.learner),
     messages: [...history.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: message }],
     maxTokens: 1500,
+    cacheSystem: true,
   });
+  const reply = out.truncated
+    ? `${out.text.trimEnd()}\n\n_(Jawaban terpotong karena terlalu panjang — ketik **lanjutkan** untuk meneruskan.)_`
+    : out.text;
 
   const now = new Date().toISOString();
   const chat = [
@@ -440,6 +498,54 @@ async function handleChat(ctx, body, res) {
   ].slice(-CHAT_MAX_STORED);
   await updateSet(ctx.code, set.id, { chat });
   return res.status(200).json({ ok: true, reply });
+}
+
+/* ── Masukan kualitas (👍/👎 + laporan kesalahan) ── */
+const FEEDBACK_KINDS = ['summary', 'mindmap', 'flashcards', 'quiz', 'glossary', 'essays', 'grade', 'irab', 'tasykil', 'tutor', 'syafawi'];
+const FEEDBACK_CATEGORIES = ['salah_fakta', 'salah_arab', 'salah_harakat', 'tidak_sesuai_materi', 'kurang_jelas', 'terpotong', 'lainnya'];
+const feedbackAttempts = new Map();
+const checkFeedbackRate = (code) => {
+  const now = Date.now();
+  const recent = (feedbackAttempts.get(code) || []).filter(t => now - t < 15 * 60 * 1000);
+  if (recent.length >= 120) return false;
+  recent.push(now);
+  feedbackAttempts.set(code, recent);
+  return true;
+};
+const clipText = (v, n) => (typeof v === 'string' ? v.trim().slice(0, n) : '');
+
+async function handleFeedback(ctx, body, res) {
+  const kind = body.kind;
+  const rating = Number(body.rating);
+  if (!FEEDBACK_KINDS.includes(kind) || ![1, -1].includes(rating)) return res.status(400).json({ ok: false, error: 'Masukan tidak valid' });
+  if (!checkFeedbackRate(ctx.code)) return res.status(429).json({ ok: false, error: 'Terlalu banyak masukan. Coba lagi nanti.' });
+  const set = await getOwnedSet(ctx.code, body.set_id, 'id');
+  if (!set) return res.status(404).json({ ok: false, error: 'Materi tidak ditemukan' });
+
+  const row = {
+    member_code: ctx.code,
+    set_id: set.id,
+    kind,
+    ref: clipText(body.ref, 40).replace(/[^\w:.-]/g, ''),
+    rating,
+    category: rating < 0 && FEEDBACK_CATEGORIES.includes(body.category) ? body.category : null,
+    note: rating < 0 ? clipText(body.note, 1000) || null : null,
+    snippet: clipText(body.snippet, 1500) || null,
+    model: activeModel(),
+    updated_at: new Date().toISOString(),
+  };
+  const { url, key } = sbConfig();
+  const r = await fetch(`${url}/rest/v1/ai_feedback?on_conflict=member_code,set_id,kind,ref`, {
+    method: 'POST',
+    headers: sbHeaders(key, { Prefer: 'resolution=merge-duplicates,return=minimal' }),
+    body: JSON.stringify(row),
+  });
+  if (!r.ok) {
+    // Tabel belum dibuat (migrasi ai_feedback.sql) → jangan ganggu pengguna, cukup catat.
+    console.warn('[ai-partner:feedback]', r.status, (await r.text().catch(() => '')).slice(0, 200));
+    return res.status(503).json({ ok: false, error: 'Masukan belum bisa disimpan. Coba lagi nanti.' });
+  }
+  return res.status(200).json({ ok: true });
 }
 
 // Statistik belajar AI Partner milik member sendiri (halaman "Statistik Belajarku").
@@ -614,6 +720,7 @@ export default async function handler(req, res) {
       case 'chat':          return await handleChat(ctx, body, res);
       case 'clear-chat':    return await handleClearChat(ctx, body, res);
       case 'stats':         return await handleStats(ctx, res);
+      case 'feedback':      return await handleFeedback(ctx, body, res);
       default:              return res.status(400).json({ ok: false, error: 'Action tidak valid' });
     }
   } catch (err) {

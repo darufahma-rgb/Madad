@@ -3,10 +3,20 @@ const DEFAULT_MODEL = 'anthropic/claude-sonnet-4-6';
 const DEFAULT_TRANSCRIBE_MODEL = 'google/gemini-2.5-flash';
 
 export const transcribeModel = () => process.env.AI_TRANSCRIBE_MODEL || DEFAULT_TRANSCRIBE_MODEL;
+export const activeModel = () => process.env.AI_PARTNER_MODEL || DEFAULT_MODEL;
 
-export const callAI = async ({ system, messages, maxTokens = 2000, temperature = 0.3, model }) => {
+/* Panggil model lewat OpenRouter. Mengembalikan teks + apakah jawabannya terpotong batas token.
+   cacheSystem: system prompt (mis. materi panjang untuk tutor) di-cache Anthropic ±5 menit, jadi pesan
+   berikutnya dalam satu sesi chat jauh lebih murah dan cepat. Model non-Anthropic menerima teks biasa. */
+export const requestAI = async ({ system, messages, maxTokens = 2000, temperature = 0.3, model, cacheSystem = false }) => {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY belum diset');
+
+  const modelId = model || activeModel();
+  const systemMessage = !system ? null
+    : cacheSystem && modelId.startsWith('anthropic/')
+      ? { role: 'system', content: [{ type: 'text', text: system, cache_control: { type: 'ephemeral' } }] }
+      : { role: 'system', content: system };
 
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -17,19 +27,23 @@ export const callAI = async ({ system, messages, maxTokens = 2000, temperature =
       'X-Title': 'Talqeeh AI Partner',
     },
     body: JSON.stringify({
-      model: model || process.env.AI_PARTNER_MODEL || DEFAULT_MODEL,
+      model: modelId,
       max_tokens: maxTokens,
       temperature,
-      messages: system ? [{ role: 'system', content: system }, ...messages] : messages,
+      messages: systemMessage ? [systemMessage, ...messages] : messages,
     }),
   });
 
   const data = await res.json();
   if (data.error) throw new Error(data.error.message || 'OpenRouter error');
-  const text = data.choices?.[0]?.message?.content || '';
+  const choice = data.choices?.[0] || {};
+  const text = choice.message?.content || '';
   if (!text) throw new Error('AI tidak mengembalikan hasil');
-  return text;
+  const truncated = choice.finish_reason === 'length' || choice.native_finish_reason === 'max_tokens';
+  return { text, truncated, model: modelId };
 };
+
+export const callAI = async (opts) => (await requestAI(opts)).text;
 
 const parseJsonReply = (text) => {
   const cleaned = text.replace(/^\s*```(?:json)?\s*/i, '').replace(/\s*```\s*$/, '').trim();
@@ -38,17 +52,17 @@ const parseJsonReply = (text) => {
 };
 
 export const callAIJson = async (opts) => {
-  const first = await callAI(opts);
+  const first = await requestAI(opts);
   try {
-    return parseJsonReply(first);
+    return parseJsonReply(first.text);
   } catch {
+    // JSON yang terpotong batas token tidak akan valid kalau dikirim ulang sama panjangnya — minta versi lebih ringkas.
+    const retryAsk = first.truncated
+      ? 'Balasan tadi terpotong karena terlalu panjang. Kirim ulang versi yang LEBIH RINGKAS (kurangi jumlah item dan panjang teks tiap item) sebagai JSON valid saja, tanpa teks lain.'
+      : 'Balasan tadi bukan JSON valid. Kirim ulang HANYA JSON valid, tanpa teks lain.';
     const retry = await callAI({
       ...opts,
-      messages: [
-        ...opts.messages,
-        { role: 'assistant', content: first },
-        { role: 'user', content: 'Balasan tadi bukan JSON valid. Kirim ulang HANYA JSON valid, tanpa teks lain.' },
-      ],
+      messages: [...opts.messages, { role: 'assistant', content: first.text }, { role: 'user', content: retryAsk }],
     });
     return parseJsonReply(retry);
   }
