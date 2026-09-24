@@ -1,7 +1,7 @@
 // Pengaturan yang boleh disimpan admin di tabel app_settings.
 export const ADMIN_SETTING_KEYS = [
   'platformName', 'tagline', 'whatsapp',
-  'mayarLibraryUrl', 'mayarLibraryProductId', 'mayarUrl', 'aiPriceLabel',
+  'mayarLibraryUrl', 'mayarLibraryProductId', 'mayarUrl', 'mayarAiProductId', 'aiPriceLabel',
 ];
 
 // Subset yang dikirim ke semua pengunjung lewat /api/config (product ID sengaja tidak publik).

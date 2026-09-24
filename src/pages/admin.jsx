@@ -47,11 +47,11 @@ const memberToSb = (member) => {
 /* ── Admin API Helpers (SEC-1, SEC-2) ── */
 const adminToken = () => sessionStorage.getItem('talqee_admin_token') || '';
 
-const adminMembersAPI = async (action, code, row) => {
+const adminMembersAPI = async (action, code, row, extra = {}) => {
   const r = await fetch('/api/admin-members', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
-    body: JSON.stringify({ action, code, row }),
+    body: JSON.stringify({ action, code, row, ...extra }),
   });
   if (r.status === 401) {
     sessionStorage.removeItem('talqee_admin_token');
@@ -185,6 +185,7 @@ const AdminPage = () => {
           <div className="flex gap-1 flex-wrap overflow-x-auto">
             {[
               { id: "dashboard",  label: "Overview",          icon: "grid" },
+              { id: "analytics",  label: "Analitik",          icon: "target" },
               { id: "members",    label: "Members",           icon: "users" },
               { id: "maddah",     label: "Maddah Analytics",  icon: "layers" },
               { id: "muqaranah",  label: "Muqaranah",         icon: "scale" },
@@ -209,6 +210,7 @@ const AdminPage = () => {
 
       <div className="container-x pt-16 pb-10">
         {tab === "dashboard"  && <AdminDashboard/>}
+        {tab === "analytics"  && <AdminAnalytics/>}
         {tab === "members"    && <AdminMembers/>}
         {tab === "maddah"     && <AdminMaddahAnalytics/>}
         {tab === "muqaranah"  && <AdminMuqaranahPanel/>}
@@ -401,6 +403,262 @@ const StatCard = ({ label, value, icon, color }) => {
       </div>
       <div className="font-display text-3xl font-semibold text-ink num">{value}</div>
       <div className="text-xs uppercase tracking-wider text-ink-muted mt-0.5">{label}</div>
+    </div>
+  );
+};
+
+/* ============== ANALITIK ============== */
+const rupiah = (n) => 'Rp ' + Math.round(n || 0).toLocaleString('id-ID');
+const usd = (n) => '$' + (n || 0).toFixed(2);
+const AI_KIND_LABELS = {
+  generate:   { label: 'Pembuatan AI',     sub: 'ringkasan, kartu, kuis, mufradat, peta, tahriri', color: '#3ecf8e' },
+  chat:       { label: 'Tutor & syafawi',  sub: 'pesan', color: '#60a5fa' },
+  analyze:    { label: "I'rab & harakat",  sub: 'analisis', color: '#c9a86a' },
+  grade:      { label: 'Nilai tahriri',    sub: 'jawaban', color: '#f97316' },
+  ocr:        { label: 'Baca foto/scan',   sub: 'halaman', color: '#a78bfa' },
+  transcribe: { label: 'Transkrip',        sub: 'menit', color: '#f472b6' },
+};
+const SOURCE_LABELS = { pdf: 'PDF', foto: 'Foto', teks: 'Teks', docx: 'Word', pptx: 'PowerPoint', xlsx: 'Excel', txt: 'TXT', audio: 'Audio', video: 'Video', campuran: 'Campuran' };
+
+const KpiCard = ({ label, value, sub, delta }) => (
+  <div className="card-glass p-5">
+    <div className="text-[11px] uppercase tracking-wider text-ink-muted mb-2">{label}</div>
+    <div className="font-display text-2xl md:text-3xl font-semibold text-ink num leading-none">{value}</div>
+    <div className="mt-2 min-h-[16px]">{delta}{sub && <div className="text-[11px] text-ink-soft">{sub}</div>}</div>
+  </div>
+);
+
+const Section = ({ title, children, right }) => (
+  <div className="mb-10">
+    <div className="flex items-center justify-between gap-3 mb-3">
+      <div className="text-xs uppercase tracking-[0.2em] text-gold-400">{title}</div>
+      {right}
+    </div>
+    {children}
+  </div>
+);
+
+const Panel = ({ title, children, className = '' }) => (
+  <div className={`card-glass p-5 md:p-6 ${className}`}>
+    {title && <div className="text-sm text-ink font-medium mb-4">{title}</div>}
+    {children}
+  </div>
+);
+
+const AdminAnalytics = () => {
+  const [days, setDays] = useState(30);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+    setError('');
+    adminMembersAPI('analytics', null, null, { days })
+      .then(setData)
+      .catch(e => setError(e.message || 'Gagal memuat analitik'))
+      .finally(() => setLoading(false));
+  }, [days]);
+
+  const header = (
+    <div className="flex items-end justify-between flex-wrap gap-4 mb-8">
+      <div>
+        <h1 className="font-display text-4xl font-semibold text-ink mb-1">Analitik</h1>
+        <p className="text-ink-muted">Pemasukan, pertumbuhan member, AI Partner, dan pemakaian Library.</p>
+      </div>
+      <div className="inline-flex rounded-xl border border-white/10 bg-white/4 p-1 gap-1">
+        {[7, 30, 90].map(d => (
+          <button key={d} onClick={() => setDays(d)}
+            className={`text-xs px-3 py-1.5 rounded-lg ${days === d ? 'bg-emerald-500/20 text-emerald-200' : 'text-ink-muted hover:text-ink'}`}>
+            {d} hari
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
+  if (error) return <div>{header}<div className="card-glass p-6 text-sm text-rose-400">{String(error)}</div></div>;
+  if (loading || !data) return <div>{header}<div className="card-glass p-8 text-center text-ink-muted text-sm animate-pulse">Menghitung analitik…</div></div>;
+
+  const { revenue, members, ai, library } = data;
+  const facultyLabel = (id) => (typeof FACULTIES !== 'undefined' && FACULTIES.find(f => f.id === id)?.label) || { s2: 'S2', lainnya: 'Lainnya', mahad: "Ma'had" }[id] || id;
+  const levelLabel = (id) => (typeof LEVELS !== 'undefined' && (LEVELS.find(l => l.id === id)?.short || LEVELS.find(l => l.id === id)?.label)) || id;
+  const avgActive = members.presentByDay.length ? Math.round(members.presentByDay.reduce((s, d) => s + d.count, 0) / members.presentByDay.length) : 0;
+
+  return (
+    <div>
+      {header}
+
+      {/* Ringkasan */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-10">
+        <KpiCard label="Pemasukan" value={rupiah(revenue.total)} delta={<Delta now={revenue.total} prev={revenue.prevTotal}/>}/>
+        <KpiCard label="Member baru" value={members.newInRange} delta={<Delta now={members.newInRange} prev={members.newPrev}/>}/>
+        <KpiCard label="Aktif belajar" value={members.activeInRange} sub={`rata-rata ${avgActive}/hari`}/>
+        <KpiCard label="Pelanggan AI aktif" value={ai.activeSubscribers}/>
+        <KpiCard label="Biaya AI (perkiraan)" value={usd(ai.estCostUsd)} delta={<Delta now={ai.estCostUsd} prev={ai.estCostPrevUsd} invert/>}/>
+        <KpiCard label="Konversi coba gratis" value={ai.conversionRate == null ? '—' : `${Math.round(ai.conversionRate * 100)}%`} sub={`${ai.trialConverted} dari ${ai.trialsStarted} pencoba`}/>
+      </div>
+
+      {/* Pemasukan */}
+      <Section title="Pemasukan & penjualan">
+        <div className="grid lg:grid-cols-3 gap-4">
+          <Panel title="Pemasukan per hari" className="lg:col-span-2">
+            <BarChart data={revenue.byDay} format={rupiah}
+              series={[{ key: 'library', label: 'Library', color: '#c9a86a' }, { key: 'ai', label: 'AI Partner', color: '#3ecf8e' }]}/>
+          </Panel>
+          <Panel title="Rincian">
+            <div className="space-y-3 text-sm">
+              <div className="flex justify-between"><span className="text-ink-muted">Library</span><span className="text-ink">{rupiah(revenue.library)}</span></div>
+              <div className="flex justify-between"><span className="text-ink-muted">AI Partner</span><span className="text-ink">{rupiah(revenue.ai)}</span></div>
+              <div className="flex justify-between border-t border-white/8 pt-3"><span className="text-ink-muted">Transaksi Talqeeh</span><span className="text-ink">{revenue.transactions}</span></div>
+              <div className="flex justify-between"><span className="text-ink-muted">Rata-rata transaksi</span><span className="text-ink">{rupiah(revenue.transactions ? revenue.total / revenue.transactions : 0)}</span></div>
+              {revenue.otherCount > 0 && (
+                <div className="text-[11px] text-ink-soft border-t border-white/8 pt-3 leading-relaxed">
+                  {revenue.otherCount} transaksi produk lain di akun Mayar ({rupiah(revenue.otherAmount)}) tidak dihitung — misalnya penjualan Nemsyi.
+                </div>
+              )}
+              {!revenue.aiProductConfigured && (
+                <div className="text-[11px] text-amber-300 leading-relaxed">
+                  Isi "Product ID Mayar AI Partner" di Settings supaya pemasukan langganan AI ikut terhitung.
+                </div>
+              )}
+            </div>
+          </Panel>
+        </div>
+      </Section>
+
+      {/* Member */}
+      <Section title="Pertumbuhan member">
+        <div className="grid lg:grid-cols-2 gap-4 mb-4">
+          <Panel title={`Member baru per hari · total ${members.total}`}>
+            <BarChart data={members.newByDay} series={[{ key: 'count', label: 'Member baru', color: '#c9a86a' }]} height={140}/>
+          </Panel>
+          <Panel title="Member yang belajar per hari">
+            <LineChart data={members.presentByDay.map(d => ({ day: d.day, value: d.count }))} format={v => `${v} member`}/>
+            <div className="grid grid-cols-2 gap-3 mt-4 text-sm">
+              <div className="rounded-xl bg-white/3 p-3"><div className="text-ink font-semibold">{members.login7}</div><div className="text-[11px] text-ink-soft">login 7 hari terakhir</div></div>
+              <div className="rounded-xl bg-white/3 p-3"><div className="text-ink font-semibold">{members.login30}</div><div className="text-[11px] text-ink-soft">login 30 hari terakhir</div></div>
+            </div>
+          </Panel>
+        </div>
+        <div className="grid lg:grid-cols-2 gap-4">
+          <Panel title="Status akun">
+            <ProportionBar parts={[
+              { label: 'Login Google', value: members.googleLinked, color: '#3ecf8e' },
+              { label: 'Belum tautkan (butuh PIN)', value: members.pinPending, color: '#f59e0b' },
+              { label: 'Nonaktif/expired', value: Math.max(0, members.total - members.active), color: '#f43f5e' },
+            ]}/>
+          </Panel>
+          <Panel title="Sebaran fakultas">
+            <HBarList color="#c9a86a" items={Object.entries(members.faculty).sort((a, b) => b[1] - a[1]).slice(0, 8)
+              .map(([id, n]) => ({ label: facultyLabel(id), value: n }))}/>
+          </Panel>
+        </div>
+      </Section>
+
+      {/* AI Partner */}
+      <Section title="AI Partner & biaya">
+        {!ai.migrated && <div className="card-glass p-4 mb-4 text-sm text-amber-300">Sebagian data AI Partner belum tersedia — pastikan migrasi AI Partner sudah dijalankan.</div>}
+        <div className="grid lg:grid-cols-3 gap-4 mb-4">
+          <Panel title="Pemakaian AI per hari" className="lg:col-span-2">
+            <BarChart data={ai.usageByDay} height={160}
+              series={Object.entries(AI_KIND_LABELS).map(([key, v]) => ({ key, label: v.label, color: v.color }))}/>
+          </Panel>
+          <Panel title="Coba gratis → berlangganan">
+            <div className="space-y-3">
+              {[
+                ['Member Library', members.active, '#6b7280'],
+                ['Mencoba AI Partner', ai.trialsStarted, '#c9a86a'],
+                ['Berlangganan', ai.trialConverted, '#3ecf8e'],
+              ].map(([label, value, color], i, arr) => (
+                <div key={label}>
+                  <div className="flex justify-between text-sm mb-1"><span className="text-ink-muted">{label}</span><span className="text-ink">{value}</span></div>
+                  <div className="h-3 rounded-full bg-white/6 overflow-hidden">
+                    <div className="h-full rounded-full" style={{ width: `${arr[0][1] ? (value / arr[0][1]) * 100 : 0}%`, background: color }}/>
+                  </div>
+                </div>
+              ))}
+              <div className="text-[11px] text-ink-soft pt-1">Pelanggan aktif sekarang: {ai.activeSubscribers}</div>
+            </div>
+          </Panel>
+        </div>
+        <div className="grid lg:grid-cols-3 gap-4">
+          <Panel title="Pemakaian & perkiraan biaya per fitur" className="lg:col-span-2">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead><tr className="text-[11px] uppercase tracking-wider text-ink-soft text-left">
+                  <th className="pb-2 font-medium">Fitur</th><th className="pb-2 font-medium text-right">Jumlah</th><th className="pb-2 font-medium text-right">Biaya</th>
+                </tr></thead>
+                <tbody>
+                  {Object.entries(AI_KIND_LABELS).map(([k, v]) => (
+                    <tr key={k} className="border-t border-white/6">
+                      <td className="py-2"><span className="inline-block w-2 h-2 rounded-sm mr-2" style={{ background: v.color }}/>{v.label} <span className="text-[11px] text-ink-soft">({v.sub})</span></td>
+                      <td className="py-2 text-right text-ink">{(ai.usageByKind[k] || 0).toLocaleString('id-ID')}</td>
+                      <td className="py-2 text-right text-ink-muted">{usd(ai.costByKind[k])}</td>
+                    </tr>
+                  ))}
+                  <tr className="border-t border-white/12">
+                    <td className="py-2 text-ink font-medium">Total</td>
+                    <td className="py-2 text-right text-ink-soft">{ai.setsCreated} materi baru</td>
+                    <td className="py-2 text-right text-ink font-medium">{usd(ai.estCostUsd)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-[11px] text-ink-soft mt-3 leading-relaxed">
+              Biaya adalah perkiraan kasar dari rata-rata ukuran permintaan × harga model. Cek angka pastinya di dashboard OpenRouter.
+            </p>
+          </Panel>
+          <Panel title="Format materi">
+            <HBarList items={Object.entries(ai.bySource).sort((a, b) => b[1] - a[1]).map(([k, n]) => ({ label: SOURCE_LABELS[k] || k, value: n }))}
+              empty="Belum ada materi di periode ini."/>
+            <div className="text-[11px] text-ink-soft mt-3">Total materi sepanjang waktu: {ai.setsTotal}</div>
+          </Panel>
+        </div>
+        {ai.topUsers.length > 0 && (
+          <Panel title="Pengguna AI terbanyak (periode ini)" className="mt-4">
+            <div className="space-y-2">
+              {ai.topUsers.map(u => (
+                <div key={u.code} className="flex items-center justify-between gap-3 text-sm p-2.5 rounded-lg bg-white/3">
+                  <div className="min-w-0">
+                    <div className="text-ink truncate">{u.name}</div>
+                    <div className="text-[11px] text-ink-soft font-mono">{u.code} · {u.subscribed ? 'pelanggan' : 'coba gratis/nonaktif'}</div>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <div className="text-ink">{u.count.toLocaleString('id-ID')}x</div>
+                    <div className="text-[11px] text-ink-soft">{usd(u.cost)}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Panel>
+        )}
+      </Section>
+
+      {/* Library */}
+      <Section title="Engagement Library (sepanjang waktu)">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+          <KpiCard label="Maddah dibuka" value={library.totalOpens.toLocaleString('id-ID')}/>
+          <KpiCard label="Prompt disalin" value={library.totalPrompts.toLocaleString('id-ID')}/>
+          <KpiCard label="Catatan Kurasah" value={library.notes.toLocaleString('id-ID')}/>
+          <KpiCard label="Muqaranah dibuat" value={library.muqaranah.toLocaleString('id-ID')}/>
+        </div>
+        <div className="grid lg:grid-cols-3 gap-4">
+          <Panel title="Maddah terpopuler" className="lg:col-span-2">
+            <HBarList items={library.topMaddah.map(x => {
+              const md = (typeof getMaddahById !== 'undefined' && getMaddahById(x.id)) || (typeof getMahadMaddahById !== 'undefined' && getMahadMaddahById(x.id));
+              return { label: md?.name || x.id, sub: `${x.prompts} prompt disalin`, value: x.opens };
+            })} format={v => `${v} buka`}/>
+          </Panel>
+          <Panel title="Bank soal (cek diri)">
+            <ProportionBar parts={[
+              { label: 'Paham', value: library.soal.paham, color: '#3ecf8e' },
+              { label: 'Belum', value: library.soal.belum, color: '#f59e0b' },
+            ]}/>
+            <p className="text-[11px] text-ink-soft mt-3">Jumlah tanda "Paham/Belum" yang diberi member di Bank Soal.</p>
+          </Panel>
+        </div>
+      </Section>
     </div>
   );
 };
@@ -1518,6 +1776,7 @@ const AdminSettings = () => {
     mayarLibraryUrl:       "",
     mayarLibraryProductId: "",
     mayarUrl:     "",
+    mayarAiProductId: "",
     aiPriceLabel: "",
     ...loadLocalSettings(),
   }));
@@ -1581,6 +1840,9 @@ const AdminSettings = () => {
           <SettingsField label="URL Mayar — AI Partner" value={settings.mayarUrl} mono
             onChange={v => setSettings({...settings, mayarUrl: v})}
             hint="Link produk Membership AI Partner di Mayar. Kosongkan kalau belum siap — akses diberikan manual dari tab Langganan & Bayar."/>
+          <SettingsField label="Product ID Mayar AI Partner" value={settings.mayarAiProductId} mono
+            onChange={v => setSettings({...settings, mayarAiProductId: v})}
+            hint="Opsional, dipakai tab Analitik untuk menghitung pemasukan langganan AI. Salin product_id dari riwayat pembayaran setelah transaksi langganan pertama."/>
           <SettingsField label="Label harga" value={settings.aiPriceLabel}
             onChange={v => setSettings({...settings, aiPriceLabel: v})}
             hint="Teks harga yang ditampilkan di CTA, misal 'Rp 25.000 / bulan'."/>

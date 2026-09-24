@@ -2,6 +2,7 @@ import https from 'https';
 import { verifyToken } from './admin-auth.js';
 import { ADMIN_SETTING_KEYS, readSettings } from './_lib/settings.js';
 import { newActivationPin, PIN_TTL_DAYS } from './_lib/pin.js';
+import { buildAdminAnalytics } from './_lib/analytics.js';
 
 const sbRequest = (supabaseUrl, serviceKey, method, path, body, prefer = 'return=representation') => {
   const url = new URL(`${supabaseUrl}/rest/v1/${path}`);
@@ -58,7 +59,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { action, code, row } = JSON.parse(body || '{}');
+    const { action, code, row, days } = JSON.parse(body || '{}');
     let result;
 
     if (action === 'list') {
@@ -86,6 +87,8 @@ export default async function handler(req, res) {
           result = { status: 200, data: { pin, expiresAt } };
         }
       }
+    } else if (action === 'analytics') {
+      result = { status: 200, data: await buildAdminAnalytics(Number(days)) };
     } else if (action === 'get-settings') {
       result = { status: 200, data: await readSettings(ADMIN_SETTING_KEYS) };
     } else if (action === 'save-settings') {

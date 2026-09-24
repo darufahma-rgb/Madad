@@ -1,0 +1,210 @@
+// Agregasi analitik admin: dihitung di server supaya browser admin tidak menerima baris mentah.
+import { sbConfig, sbHeaders } from './member.js';
+import { readSettings } from './settings.js';
+
+const DAY_MS = 86400000;
+const dayKey = (d) => new Date(d).toISOString().slice(0, 10);
+
+// Perkiraan kasar biaya AI per pemakaian (USD), dari ukuran prompt rata-rata × harga model di OpenRouter.
+// Sesuaikan kalau model atau harga berubah.
+export const AI_COST_USD = {
+  generate: 0.06,   // ringkasan/flashcard/kuis/mufradat/peta konsep/tahriri — Claude Sonnet, materi panjang
+  chat: 0.035,      // tutor & syafawi — konteks materi ±30rb karakter
+  ocr: 0.02,        // baca satu foto/halaman
+  analyze: 0.012,   // terjemah & i'rab / harakat
+  grade: 0.02,      // nilai satu jawaban tahriri
+  transcribe: 0.004, // satu menit audio — Gemini Flash
+  create: 0,
+};
+
+const fetchAll = async (path) => {
+  const { url, key } = sbConfig();
+  const rows = [];
+  for (let offset = 0; offset < 20000; offset += 1000) {
+    const sep = path.includes('?') ? '&' : '?';
+    const r = await fetch(`${url}/rest/v1/${path}${sep}limit=1000&offset=${offset}`, { headers: sbHeaders(key) });
+    if (!r.ok) return { rows, missing: true }; // tabel/kolom belum ada → dianggap kosong
+    const page = await r.json();
+    rows.push(...page);
+    if (page.length < 1000) break;
+  }
+  return { rows, missing: false };
+};
+
+// Jumlah baris tanpa mengunduhnya (Content-Range: 0-0/123).
+const countRows = async (path) => {
+  const { url, key } = sbConfig();
+  const r = await fetch(`${url}/rest/v1/${path}&limit=1`, { headers: sbHeaders(key, { Prefer: 'count=exact' }) });
+  const total = (r.headers.get('content-range') || '').split('/')[1];
+  return r.ok && total && total !== '*' ? parseInt(total, 10) : 0;
+};
+
+// Kolom ai_trial_set_id baru ada setelah migrasi ai_partner_v2; tanpa itu tetap ambil data member.
+const fetchMembers = async () => {
+  const base = 'members?select=code,name,email,status,created_at,last_login,auth_user_id';
+  const withTrial = await fetchAll(`${base},ai_trial_set_id`);
+  return withTrial.missing ? fetchAll(base) : withTrial;
+};
+
+const inRange = (iso, from, to) => { const d = dayKey(iso); return d >= from && d <= to; };
+
+export async function buildAdminAnalytics(days) {
+  const span = [7, 30, 90].includes(days) ? days : 30;
+  const today = new Date();
+  const to = dayKey(today);
+  const from = dayKey(today.getTime() - (span - 1) * DAY_MS);
+  const prevTo = dayKey(today.getTime() - span * DAY_MS);
+  const prevFrom = dayKey(today.getTime() - (2 * span - 1) * DAY_MS);
+  const dayList = Array.from({ length: span }, (_, i) => dayKey(today.getTime() - (span - 1 - i) * DAY_MS));
+  const since = `${prevFrom}T00:00:00Z`;
+
+  const [
+    members, payments, subs, usage, sets, presence, activity, profiles, settings,
+    notesCount, muqaranahCount, soalPaham, soalBelum,
+  ] = await Promise.all([
+    fetchMembers(),
+    fetchAll(`payment_events?select=created_at,event,product_id,product_name,amount,handled_as&created_at=gte.${since}&order=created_at.asc`),
+    fetchAll('ai_subscriptions?select=member_code,status,product_id,created_at'),
+    fetchAll(`ai_usage?select=member_code,day,kind,count&day=gte.${prevFrom}`),
+    fetchAll('study_sets?select=member_code,source_type,created_at'),
+    fetchAll('user_presence?select=member_code,days_present'),
+    fetchAll('user_maddah_activity?select=maddah_id,opens,prompts_copied'),
+    fetchAll('user_profiles?select=profile'),
+    readSettings(['mayarLibraryProductId', 'mayarAiProductId']),
+    countRows('user_notes?select=member_code'),
+    countRows('user_muqaranah?select=member_code'),
+    countRows('user_soal_progress?select=member_code&status=eq.paham'),
+    countRows('user_soal_progress?select=member_code&status=eq.belum'),
+  ]);
+
+  /* ── Pemasukan ── */
+  const libraryId = (settings.mayarLibraryProductId || '').trim();
+  const aiId = (settings.mayarAiProductId || '').trim();
+  const classify = (p) => {
+    if (p.event !== 'payment.received' || !Number.isFinite(p.amount)) return null;
+    if (p.handled_as === 'library' || (libraryId && p.product_id === libraryId)) return 'library';
+    if (aiId && p.product_id === aiId) return 'ai';
+    return 'other';
+  };
+  const revenueByDay = Object.fromEntries(dayList.map(d => [d, { day: d, library: 0, ai: 0 }]));
+  const revenue = { library: 0, ai: 0, transactions: 0, prevTotal: 0, otherCount: 0, otherAmount: 0 };
+  for (const p of payments.rows) {
+    const kind = classify(p);
+    if (!kind) continue;
+    if (inRange(p.created_at, prevFrom, prevTo)) { if (kind !== 'other') revenue.prevTotal += p.amount; continue; }
+    if (!inRange(p.created_at, from, to)) continue;
+    if (kind === 'other') { revenue.otherCount++; revenue.otherAmount += p.amount; continue; }
+    revenue[kind] += p.amount;
+    revenue.transactions++;
+    revenueByDay[dayKey(p.created_at)][kind] += p.amount;
+  }
+  revenue.total = revenue.library + revenue.ai;
+  revenue.byDay = Object.values(revenueByDay);
+  revenue.aiProductConfigured = !!aiId;
+
+  /* ── Member ── */
+  const m = members.rows;
+  const nameOf = Object.fromEntries(m.map(x => [x.code, x.name || x.email || x.code]));
+  const newByDay = Object.fromEntries(dayList.map(d => [d, 0]));
+  let newPrev = 0;
+  for (const x of m) {
+    if (!x.created_at) continue;
+    const d = dayKey(x.created_at);
+    if (d in newByDay) newByDay[d]++;
+    else if (d >= prevFrom && d <= prevTo) newPrev++;
+  }
+  const loginWithin = (n) => m.filter(x => x.last_login && Date.now() - Date.parse(x.last_login) <= n * DAY_MS).length;
+  const presentByDay = Object.fromEntries(dayList.map(d => [d, 0]));
+  const activeInWindow = new Set();
+  for (const p of presence.rows) {
+    for (const d of (Array.isArray(p.days_present) ? p.days_present : [])) {
+      if (d in presentByDay) { presentByDay[d]++; activeInWindow.add(p.member_code); }
+    }
+  }
+  const faculty = {};
+  const level = {};
+  for (const { profile } of profiles.rows) {
+    if (!profile?.onboarded) continue;
+    const f = profile.faculty || (profile.level?.startsWith?.('s2') ? 's2' : 'lainnya');
+    faculty[f] = (faculty[f] || 0) + 1;
+    if (profile.level) level[profile.level] = (level[profile.level] || 0) + 1;
+  }
+  const membersOut = {
+    total: m.length,
+    active: m.filter(x => x.status === 'active').length,
+    googleLinked: m.filter(x => x.auth_user_id).length,
+    pinPending: m.filter(x => x.status === 'active' && !x.auth_user_id).length,
+    newInRange: Object.values(newByDay).reduce((a, b) => a + b, 0),
+    newPrev,
+    newByDay: dayList.map(d => ({ day: d, count: newByDay[d] })),
+    login7: loginWithin(7),
+    login30: loginWithin(30),
+    presentByDay: dayList.map(d => ({ day: d, count: presentByDay[d] })),
+    activeInRange: activeInWindow.size,
+    faculty, level,
+  };
+
+  /* ── AI Partner ── */
+  const activeSubs = new Set(subs.rows.filter(s => s.status === 'active').map(s => s.member_code));
+  const everPaid = new Set(subs.rows.filter(s => s.product_id !== 'manual').map(s => s.member_code));
+  const trialMembers = m.filter(x => x.ai_trial_set_id);
+  const trialConverted = trialMembers.filter(x => everPaid.has(x.code)).length;
+
+  const kinds = Object.keys(AI_COST_USD).filter(k => k !== 'create');
+  const usageByDay = Object.fromEntries(dayList.map(d => [d, Object.fromEntries(kinds.map(k => [k, 0]))]));
+  const usageByKind = Object.fromEntries([...kinds, 'create'].map(k => [k, 0]));
+  const perMember = {};
+  let costPrev = 0;
+  for (const u of usage.rows) {
+    const cost = (AI_COST_USD[u.kind] || 0) * u.count;
+    if (u.day >= prevFrom && u.day <= prevTo) { costPrev += cost; continue; }
+    if (!(u.day in usageByDay)) continue;
+    if (u.kind in usageByKind) usageByKind[u.kind] += u.count;
+    if (u.kind in usageByDay[u.day]) usageByDay[u.day][u.kind] += u.count;
+    const pm = perMember[u.member_code] ||= { code: u.member_code, count: 0, cost: 0 };
+    pm.count += u.count;
+    pm.cost += cost;
+  }
+  const costByKind = Object.fromEntries(kinds.map(k => [k, +(usageByKind[k] * AI_COST_USD[k]).toFixed(2)]));
+  const setsInRange = sets.rows.filter(s => inRange(s.created_at, from, to));
+  const bySource = {};
+  for (const s of setsInRange) bySource[s.source_type] = (bySource[s.source_type] || 0) + 1;
+
+  const aiOut = {
+    activeSubscribers: activeSubs.size,
+    trialsStarted: trialMembers.length,
+    trialConverted,
+    conversionRate: trialMembers.length ? trialConverted / trialMembers.length : null,
+    usageByKind,
+    usageByDay: dayList.map(d => ({ day: d, ...usageByDay[d] })),
+    costByKind,
+    estCostUsd: +Object.values(costByKind).reduce((a, b) => a + b, 0).toFixed(2),
+    estCostPrevUsd: +costPrev.toFixed(2),
+    transcribeMinutes: usageByKind.transcribe,
+    setsCreated: setsInRange.length,
+    setsTotal: sets.rows.length,
+    bySource,
+    topUsers: Object.values(perMember).sort((a, b) => b.cost - a.cost).slice(0, 8)
+      .map(u => ({ ...u, name: nameOf[u.code] || u.code, cost: +u.cost.toFixed(2), subscribed: activeSubs.has(u.code) })),
+    migrated: !members.missing && !sets.missing,
+  };
+
+  /* ── Library ── */
+  const maddah = {};
+  for (const a of activity.rows) {
+    const x = maddah[a.maddah_id] ||= { id: a.maddah_id, opens: 0, prompts: 0 };
+    x.opens += a.opens || 0;
+    x.prompts += a.prompts_copied || 0;
+  }
+  const maddahList = Object.values(maddah);
+  const libraryOut = {
+    totalOpens: maddahList.reduce((a, x) => a + x.opens, 0),
+    totalPrompts: maddahList.reduce((a, x) => a + x.prompts, 0),
+    topMaddah: maddahList.sort((a, b) => b.opens - a.opens).slice(0, 10),
+    notes: notesCount,
+    muqaranah: muqaranahCount,
+    soal: { paham: soalPaham, belum: soalBelum },
+  };
+
+  return { range: { days: span, from, to }, revenue, members: membersOut, ai: aiOut, library: libraryOut, costTable: AI_COST_USD };
+}

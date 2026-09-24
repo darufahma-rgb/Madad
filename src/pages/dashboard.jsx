@@ -555,7 +555,10 @@ const DashboardHomePage = () => {
             </Reveal>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap gap-2">
+            <button onClick={() => navigate("/statistik")} className="btn btn-ghost text-xs inline-flex items-center gap-1.5">
+              <Icon name="target" className="w-3.5 h-3.5"/> Statistik Belajarku
+            </button>
             <button onClick={() => navigate("/onboarding?edit=1")} className="btn btn-ghost text-xs inline-flex items-center gap-1.5">
               <Icon name="pen" className="w-3.5 h-3.5"/> Ubah Profil
             </button>

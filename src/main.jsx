@@ -22,6 +22,7 @@ import './learning-frameworks-data.jsx';
 // Shared components
 import './markdown-render.jsx';
 import './file-extract.jsx';
+import './charts.jsx';
 import './quick-note.jsx';
 import './dashboard-companions.jsx';
 
@@ -60,6 +61,7 @@ import './pages/ai-partner-shared.jsx';
 import './pages/ai-partner-create.jsx';
 import './pages/ai-partner-study.jsx';
 import './pages/ai-partner.jsx';
+import './pages/statistik.jsx';
 
 // App shell — terakhir
 import App from './app.jsx';

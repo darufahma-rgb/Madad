@@ -360,6 +360,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
               {session.email && <div className="text-xs text-ink-muted mt-0.5">{session.email}</div>}
               <div className="text-[11px] text-ink-soft font-mono mt-1">ID member: {session.code}</div>
             </div>
+            <SheetLink icon="star" label="Statistik Belajarku" onClick={() => { navigate("/statistik"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="target" label="Siap Imtihan" onClick={() => { navigate("/siap-imtihan"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="bookOpen" label="Learning Path" onClick={() => { navigate("/paths"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="shield" label="Etika" onClick={() => { navigate("/ethics"); setMobileSheetOpen(false); }}/>

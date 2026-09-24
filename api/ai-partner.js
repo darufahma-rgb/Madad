@@ -437,6 +437,59 @@ async function handleChat(ctx, body, res) {
   return res.status(200).json({ ok: true, reply });
 }
 
+// Statistik belajar AI Partner milik member sendiri (halaman "Statistik Belajarku").
+async function handleStats(ctx, res) {
+  const { url, key } = sbConfig();
+  const today = new Date().toISOString().slice(0, 10);
+  const since = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
+  const [setsRes, usageRes] = await Promise.all([
+    fetch(`${url}/rest/v1/study_sets?member_code=eq.${encodeURIComponent(ctx.code)}&select=id,title,source_type,flashcards,quiz,quiz_best_score,essay_attempts,created_at&order=created_at.desc&limit=200`, { headers: sbHeaders(key) }),
+    fetch(`${url}/rest/v1/ai_usage?member_code=eq.${encodeURIComponent(ctx.code)}&day=gte.${since}&select=day,kind,count`, { headers: sbHeaders(key) }),
+  ]);
+  const sets = setsRes.ok ? await setsRes.json() : [];
+  const usage = usageRes.ok ? await usageRes.json() : [];
+  const now = Date.now();
+
+  let cards = 0, mastered = 0, due = 0;
+  const quizzes = [];
+  const essays = [];
+  for (const s of sets) {
+    for (const c of Array.isArray(s.flashcards) ? s.flashcards : []) {
+      cards++;
+      if ((c.box || 1) >= 4) mastered++;
+      if (!c.due || Date.parse(c.due) <= now) due++;
+    }
+    const qLen = Array.isArray(s.quiz) ? s.quiz.length : 0;
+    if (qLen && s.quiz_best_score != null) quizzes.push({ title: s.title, pct: Math.round((s.quiz_best_score / qLen) * 100) });
+    for (const a of Array.isArray(s.essay_attempts) ? s.essay_attempts : []) essays.push({ title: s.title, skor: a.skor, at: a.at });
+  }
+  essays.sort((a, b) => (a.at || '').localeCompare(b.at || ''));
+
+  const usageToday = {};
+  const usage30 = {};
+  for (const u of usage) {
+    usage30[u.kind] = (usage30[u.kind] || 0) + u.count;
+    if (u.day === today) usageToday[u.kind] = u.count;
+  }
+
+  return res.status(200).json({
+    ok: true,
+    data: {
+      tier: ctx.tier,
+      sets: sets.length,
+      bySource: sets.reduce((m, s) => ({ ...m, [s.source_type]: (m[s.source_type] || 0) + 1 }), {}),
+      cards, mastered, due,
+      quizzes: quizzes.slice(0, 20),
+      quizAvg: quizzes.length ? Math.round(quizzes.reduce((a, q) => a + q.pct, 0) / quizzes.length) : null,
+      essays: essays.slice(-30),
+      essayAvg: essays.length ? Math.round((essays.reduce((a, e) => a + e.skor, 0) / essays.length) * 10) / 10 : null,
+      usage30,
+      usageToday,
+      limits: ctx.tier === 'pro' ? LIMITS : null,
+    },
+  });
+}
+
 async function handleClearChat(ctx, body, res) {
   const mode = body.mode === 'syafawi' ? 'syafawi' : 'tutor';
   const set = await getOwnedSet(ctx.code, body.set_id, 'id,chat');
@@ -555,6 +608,7 @@ export default async function handler(req, res) {
       case 'grade':         return await handleGrade(ctx, body, res);
       case 'chat':          return await handleChat(ctx, body, res);
       case 'clear-chat':    return await handleClearChat(ctx, body, res);
+      case 'stats':         return await handleStats(ctx, res);
       default:              return res.status(400).json({ ok: false, error: 'Action tidak valid' });
     }
   } catch (err) {
