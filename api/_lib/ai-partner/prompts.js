@@ -48,6 +48,51 @@ Gunakan judul:
 
 export const SUMMARY_LANGS = Object.keys(SUMMARY_SECTIONS);
 
+/* ── Personalisasi dari profil belajar (onboarding) ──
+   Browser mengirim ID pilihan + label jenjang; hanya ID yang dikenal yang dipakai. */
+const STYLE_RULES = {
+  reading:      'Runtut & membaca: jelaskan bertahap dari dasar ke lanjut, dengan urutan yang jelas.',
+  summary:      'Ringkasan cepat: utamakan intisari padat dan poin kunci; hindari paragraf panjang.',
+  discussion:   'Diskusi: sajikan sebagian isi sebagai tanya-jawab ("Mengapa…? → karena…"); tutor boleh bertanya balik untuk mengecek pemahaman.',
+  practice:     'Praktik: sertakan contoh penerapan, kasus, atau latihan singkat di setiap bagian penting.',
+  memorization: 'Hafalan: sertakan jembatan keledai (mnemonic), pengelompokan daftar, dan kata kunci yang mudah diulang.',
+  visual:       'Visual: gunakan tabel, daftar bertingkat, dan skema panah (A → B) supaya struktur terlihat sekilas.',
+};
+const ARABIC_RULES_BY_LEVEL = {
+  pemula:   'Kemampuan bahasa Arab: PEMULA — beri harakat lengkap pada semua teks Arab, selalu sertakan terjemah, dan jelaskan istilah dengan bahasa sangat sederhana.',
+  menengah: 'Kemampuan bahasa Arab: MENENGAH — harakat pada istilah, dalil, dan kata sulit; terjemahkan kalimat Arab yang panjang.',
+  lancar:   'Kemampuan bahasa Arab: LANCAR — boleh lebih banyak bahasa Arab; terjemah hanya untuk kalimat yang sulit; fokus pada analisis dan ketelitian.',
+};
+const GOAL_RULES = {
+  imtihan: 'Target: LULUS IMTIHAN — prioritaskan poin yang paling mungkin ditanyakan dan cara menuliskannya di lembar jawaban.',
+  paham:   'Target: PAHAM MENDALAM — prioritaskan alasan (ta\'lil), dalil, dan hubungan antar konsep, bukan sekadar daftar.',
+  hafalan: 'Target: KUAT HAFALAN — prioritaskan ta\'rif, matan, dan daftar yang harus dihafal, dalam bentuk yang mudah diulang.',
+};
+const EXAM_RULES = {
+  '2w': 'Imtihan kurang dari 2 pekan lagi: mode kebut — ringkas, langsung ke poin paling penting.',
+  '1m': 'Imtihan 2–4 pekan lagi: seimbangkan pemahaman dan latihan soal.',
+  '3m': 'Imtihan masih 1–3 bulan: bangun pemahaman yang kuat dulu.',
+};
+
+const clip = (v, n = 80) => (typeof v === 'string' ? v.replace(/[\r\n<>]/g, ' ').trim().slice(0, n) : '');
+
+export const learnerContext = (learner) => {
+  if (!learner || typeof learner !== 'object') return '';
+  const lines = [];
+  const jenjang = [clip(learner.level), clip(learner.faculty), clip(learner.major)].filter(Boolean).join(', ');
+  if (jenjang) lines.push(`Jenjang: ${jenjang}. Sesuaikan kedalaman dan istilah dengan jenjang ini.`);
+  const styles = (Array.isArray(learner.styles) ? learner.styles : []).filter(s => STYLE_RULES[s]).slice(0, 6);
+  if (styles.length) lines.push('Gaya belajar:\n' + styles.map(s => `  - ${STYLE_RULES[s]}`).join('\n'));
+  if (ARABIC_RULES_BY_LEVEL[learner.arabicLevel]) lines.push(ARABIC_RULES_BY_LEVEL[learner.arabicLevel]);
+  if (GOAL_RULES[learner.goal]) lines.push(GOAL_RULES[learner.goal]);
+  if (EXAM_RULES[learner.examWindow]) lines.push(EXAM_RULES[learner.examWindow]);
+  if (Array.isArray(learner.struggles) && learner.struggles.includes('arab') && learner.arabicLevel !== 'lancar') {
+    lines.push('Pelajar ini sering kesulitan dengan materi berbahasa Arab — perbanyak terjemah dan penjelasan kata kunci.');
+  }
+  if (!lines.length) return '';
+  return `\n\nPROFIL PELAJAR (sesuaikan gaya penyajian dengan profil ini, tapi tetap HANYA berdasarkan materi dan tetap ikuti format keluaran yang diminta persis):\n${lines.join('\n')}`;
+};
+
 export const summaryPrompt = (lang) => `${BASE_PERSONA}
 Rangkum materi kuliah (muqarrar) ini dengan gaya kitab: rapi, padat, siap untuk muraja'ah imtihan.
 ${ONLY_MATERIAL}

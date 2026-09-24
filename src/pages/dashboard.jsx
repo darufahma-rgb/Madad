@@ -489,6 +489,59 @@ const FreeTierBanner = ({ compact }) => (
   </div>
 );
 
+// Member yang onboarding sebelum ada pertanyaan personalisasi: tanya 3 hal singkat sekali di Beranda.
+const PERSONALIZE_DISMISS_KEY = 'talqeeh_personalize_later';
+const PersonalizeCard = () => {
+  const { profile, saveProfile } = useAuth();
+  const [answers, setAnswers] = useState({});
+  const [hidden, setHidden] = useState(() => {
+    try { return Date.now() - Number(localStorage.getItem(PERSONALIZE_DISMISS_KEY) || 0) < 3 * 86400000; } catch { return false; }
+  });
+  if (!profile?.onboarded || hidden || (profile.arabicLevel && profile.studyGoal)) return null;
+
+  const questions = [
+    { key: 'arabicLevel', title: 'Seberapa lancar kamu membaca teks Arab?', options: ARABIC_LEVELS },
+    { key: 'studyGoal',   title: 'Target utamamu semester ini?',             options: STUDY_GOALS },
+    { key: 'examWindow',  title: 'Kapan imtihan terdekatmu?',                options: EXAM_WINDOWS },
+  ];
+  const step = questions.findIndex(q => !answers[q.key]);
+  const q = questions[step];
+
+  const pick = (id) => {
+    const next = { ...answers, [q.key]: id };
+    setAnswers(next);
+    if (step === questions.length - 1) {
+      saveProfile({ ...profile, ...next, examWindowAt: new Date().toISOString() });
+    }
+  };
+  const later = () => {
+    try { localStorage.setItem(PERSONALIZE_DISMISS_KEY, String(Date.now())); } catch {}
+    setHidden(true);
+  };
+
+  return (
+    <div className="card-glass p-5 md:p-6 max-w-5xl mb-5" style={{ border: '1px solid rgba(62,207,142,0.3)' }}>
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div>
+          <div className="text-xs uppercase tracking-[0.18em] text-emerald-300 mb-1">Personalisasi · {step + 1}/{questions.length}</div>
+          <div className="font-display text-lg font-semibold text-ink">{q.title}</div>
+          <div className="text-xs text-ink-muted mt-0.5">Supaya ringkasan, soal, dan tutor AI menyesuaikan caramu belajar.</div>
+        </div>
+        <button onClick={later} className="text-xs text-ink-soft hover:text-ink flex-shrink-0">Nanti saja</button>
+      </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
+        {q.options.map(o => (
+          <button key={o.id} onClick={() => pick(o.id)}
+            className="text-left p-3 rounded-xl border border-white/10 bg-white/3 hover:border-emerald-500/40 hover:bg-emerald-500/8 transition">
+            <div className="text-sm text-ink font-medium"><span className="mr-1.5">{o.emoji}</span>{o.label}</div>
+            {o.desc && <div className="text-[11px] text-ink-muted mt-0.5 leading-snug">{o.desc}</div>}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const DashboardHomePage = () => {
   const { session, profile, isFree } = useAuth();
   const [aiAccess, setAiAccess] = useState("checking");
@@ -534,6 +587,7 @@ const DashboardHomePage = () => {
           </Reveal>
 
           {isFree && <div className="max-w-5xl mb-5"><FreeTierBanner/></div>}
+          <PersonalizeCard/>
 
           <div className="grid md:grid-cols-2 gap-4 md:gap-5 max-w-5xl">
             <Reveal>

@@ -158,6 +158,24 @@ const AiPartnerList = ({ status }) => {
   );
 };
 
+// Menunjukkan bahwa hasil AI mengikuti profil belajar, plus jalan pintas untuk mengubahnya.
+const PersonalizationChip = () => {
+  const { profile } = useAuth();
+  const summary = learnerSummary(profile);
+  const incomplete = !profile?.arabicLevel || !profile?.studyGoal;
+  return (
+    <div className="mt-4 inline-flex items-center gap-2 flex-wrap px-3 py-2 rounded-xl bg-emerald-500/8 border border-emerald-500/20 text-xs">
+      <Icon name="sparkles" className="w-3.5 h-3.5 text-emerald-300"/>
+      {summary
+        ? <span className="text-ink-muted">Disesuaikan untukmu: <span className="text-ink">{summary}</span></span>
+        : <span className="text-ink-muted">Hasil AI bisa disesuaikan dengan gaya belajarmu.</span>}
+      <button onClick={() => navigate('/onboarding?edit=1')} className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
+        {incomplete ? 'Lengkapi profil' : 'Ubah'}
+      </button>
+    </div>
+  );
+};
+
 const GateLoading = () => (
   <div className="container-x pb-24"><div className="card-glass p-6 max-w-xl"><Skeleton lines={3}/></div></div>
 );
@@ -187,6 +205,7 @@ const AiPartnerPage = () => {
         <p className="mt-3 text-base md:text-lg text-ink-muted max-w-2xl leading-relaxed">
           Unggah diktat, slide, foto kitab, atau rekaman kuliah — Talqeeh menyiapkan ringkasan, peta konsep, mufradat, flashcard, soal, dan duktur AI untuk latihan.
         </p>
+        <PersonalizationChip/>
       </section>
       {status.loading ? <GateLoading/>
         : status.tier === 'none'

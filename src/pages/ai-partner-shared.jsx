@@ -1,12 +1,48 @@
 import React, { useState, useEffect } from 'react';
 /* Talqeeh — AI Partner: helper & komponen kecil yang dipakai halaman daftar, wizard, dan tab belajar */
 
+// Profil belajar (onboarding) → ringkas untuk server, supaya AI menyesuaikan gaya penyajian.
+const learnerPayload = (profile = window.getProfile?.()) => {
+  if (!profile) return null;
+  const level = window.LEVELS?.find(l => l.id === profile.level);
+  const faculty = window.FACULTIES?.find(f => f.id === profile.faculty);
+  const major = faculty?.majors?.find(m => m.id === profile.major);
+  return {
+    level: profile.level === 'mustawa'
+      ? `Darul Lughah${profile.dlMustawa ? ` (${profile.dlMustawa.replace('_', ' ')})` : ''}`
+      : (level?.label || profile.level || ''),
+    faculty: faculty?.label || '',
+    major: major?.label || '',
+    styles: profile.learningStyle || [],
+    arabicLevel: profile.arabicLevel || null,
+    goal: profile.studyGoal || null,
+    examWindow: window.currentExamWindow?.(profile) || null,
+    struggles: profile.struggle || [],
+  };
+};
+
+// Ringkasan profil untuk ditampilkan ("Disesuaikan untukmu: …").
+const learnerSummary = (profile = window.getProfile?.()) => {
+  if (!profile) return '';
+  const styles = (profile.learningStyle || []).map(id => window.LEARNING_STYLES?.find(s => s.id === id)?.label).filter(Boolean);
+  const arabic = window.ARABIC_LEVELS?.find(a => a.id === profile.arabicLevel)?.label;
+  const goal = window.STUDY_GOALS?.find(g => g.id === profile.studyGoal)?.label;
+  return [
+    styles.length ? styles.join(' & ') : null,
+    arabic ? `bahasa Arab: ${arabic.toLowerCase()}` : null,
+    goal ? `target: ${goal.toLowerCase()}` : null,
+  ].filter(Boolean).join(' · ');
+};
+
+const PERSONALIZED_ACTIONS = ['generate', 'chat', 'grade'];
+
 const aiCall = async (action, payload = {}) => {
   let data;
   try {
+    const body = PERSONALIZED_ACTIONS.includes(action) ? { ...payload, learner: learnerPayload() } : payload;
     const res = await window.authFetch(`/api/ai-partner?action=${action}`, {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(body),
     });
     data = await res.json();
   } catch {
@@ -214,7 +250,7 @@ const aiInputClass =
   'w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink text-sm outline-none focus:border-emerald-500/50';
 
 Object.assign(window, {
-  aiCall, useAiStatus, openAiUpgrade, maddahName, hasArabic, isMostlyArabic, speakArabic, saveToKurasah,
+  aiCall, useAiStatus, openAiUpgrade, learnerPayload, learnerSummary, maddahName, hasArabic, isMostlyArabic, speakArabic, saveToKurasah,
   SOURCE_META, STUDY_STEPS, stepDone, studyPercent,
   ProgressRing, Skeleton, GeneratePanel, UpgradeCard, Pill, ArabicText, SpeakButton, aiInputClass,
 });

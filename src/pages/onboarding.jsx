@@ -135,6 +135,7 @@ const OnboardingPage = () => {
       dlMustawa: null,
       struggle: [], learningStyle: [], s2Maddah: null,
       mahad_struggle: [],
+      arabicLevel: null, studyGoal: null, examWindow: null,
     };
     if (profile?.onboarded) {
       return {
@@ -148,6 +149,9 @@ const OnboardingPage = () => {
         learningStyle: profile.learningStyle ?? [],
         s2Maddah: profile.s2Maddah ?? null,
         mahad_struggle: profile.mahad_struggle ?? [],
+        arabicLevel: profile.arabicLevel ?? null,
+        studyGoal: profile.studyGoal ?? null,
+        examWindow: currentExamWindow(profile),
       };
     }
     return base;
@@ -291,6 +295,30 @@ const OnboardingPage = () => {
       multi: true,
       iconType: "emoji",
     },
+    {
+      key: "arabicLevel",
+      title: "Seberapa lancar kamu membaca teks Arab?",
+      hint: "Menentukan seberapa banyak harakat, terjemah, dan i'rab yang disertakan AI",
+      options: ARABIC_LEVELS,
+      multi: false,
+      iconType: "emoji",
+    },
+    {
+      key: "studyGoal",
+      title: "Apa target utamamu semester ini?",
+      hint: "Ringkasan dan soal dari AI akan difokuskan ke sini",
+      options: STUDY_GOALS,
+      multi: false,
+      iconType: "emoji",
+    },
+    {
+      key: "examWindow",
+      title: "Kapan imtihan terdekatmu?",
+      hint: "Perkiraan saja — bisa diubah kapan pun lewat Ubah Profil",
+      options: EXAM_WINDOWS,
+      multi: false,
+      iconType: "emoji",
+    },
   ];
 
   const getActiveQuestions = (d) => QUESTIONS.filter(q => !q.conditional || q.conditional(d));
@@ -363,7 +391,13 @@ const OnboardingPage = () => {
   };
 
   const doFinish = (finalData) => {
-    const finalProfile = { ...profile, ...finalData, onboarded: true, onboardedAt: profile?.onboardedAt || new Date().toISOString() };
+    const examChanged = finalData.examWindow !== currentExamWindow(profile);
+    const finalProfile = {
+      ...profile, ...finalData,
+      // Waktu jawaban "kapan imtihan" dicatat supaya bisa kedaluwarsa sendiri.
+      examWindowAt: examChanged ? new Date().toISOString() : profile?.examWindowAt,
+      onboarded: true, onboardedAt: profile?.onboardedAt || new Date().toISOString(),
+    };
     saveProfile(finalProfile);
     if (isEditMode) {
       toast.push("Profil berhasil diperbarui. Dashboard sudah disesuaikan.");
@@ -472,18 +506,18 @@ const Intro = ({ session, onNext, isEditMode }) => (
     <p className="text-ink-muted text-lg leading-relaxed mb-10">
       {isEditMode
         ? "Perbarui pilihan jenjang, fakultas, dan preferensi belajarmu. Setelah disimpan, dashboard langsung menyesuaikan."
-        : "Sebelum mulai, kasih kami 4–5 pertanyaan singkat supaya dashboard-mu benar-benar personal, bukan template umum."
+        : "Sebelum mulai, jawab beberapa pertanyaan singkat supaya maddah, prompt, dan AI Partner menyesuaikan cara belajarmu — bukan template umum."
       }
     </p>
     <div className="card-glass p-6 mb-8 text-left max-w-md mx-auto">
       <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Yang akan ditanyakan</div>
       <ol className="space-y-2.5 text-sm text-ink">
         {[
-          "Fakultas di Al-Azhar",
-          "Tingkat kuliah saat ini",
-          "Jurusan (kalau sudah dijurus)",
+          "Tingkat, fakultas, dan jurusan",
           "Area belajar yang jadi tantangan",
           "Cara belajar yang paling nyaman",
+          "Kelancaran membaca teks Arab",
+          "Target utama & kapan imtihan terdekat",
         ].map((t, i) => (
           <li key={i} className="flex items-start gap-3">
             <span className="w-6 h-6 rounded-full text-emerald-200 text-xs flex items-center justify-center font-semibold flex-shrink-0" style={{background:"rgba(62,207,142,0.20)",border:"1px solid rgba(62,207,142,0.30)"}}>

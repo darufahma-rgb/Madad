@@ -217,6 +217,35 @@ const LEARNING_STYLES = [
   { id: "visual",       label: "Visual",             desc: "Lebih cepat paham lewat peta & diagram",        icon: "layers",   emoji: "🎥" },
 ];
 
+/* ============ Personalisasi belajar (onboarding) ============ */
+const ARABIC_LEVELS = [
+  { id: "pemula",   label: "Masih pemula", desc: "Butuh harakat & terjemah untuk hampir semua teks Arab", emoji: "🌱" },
+  { id: "menengah", label: "Menengah",     desc: "Bisa baca kitab berharakat, kadang perlu terjemah",     emoji: "📘" },
+  { id: "lancar",   label: "Lancar",       desc: "Nyaman membaca kitab tanpa harakat (gundul)",          emoji: "🏅" },
+];
+
+const STUDY_GOALS = [
+  { id: "imtihan", label: "Lulus imtihan",   desc: "Fokus ke poin yang sering keluar & cara menjawabnya",    emoji: "🎯" },
+  { id: "paham",   label: "Paham mendalam",  desc: "Mengerti alasan, dalil, dan hubungan antar bab",         emoji: "💡" },
+  { id: "hafalan", label: "Kuat hafalan",    desc: "Ta'rif, matan, dan daftar poin yang harus dihafal",      emoji: "🔁" },
+];
+
+// Kapan imtihan terdekat. days = perkiraan jarak saat dipilih; dipakai untuk tahu kapan jawabannya kedaluwarsa.
+const EXAM_WINDOWS = [
+  { id: "2w",    label: "Kurang dari 2 pekan", desc: "Mode kebut: fokus poin paling mungkin keluar", emoji: "⏰", days: 14 },
+  { id: "1m",    label: "2–4 pekan lagi",      desc: "Waktunya muraja'ah terstruktur",                emoji: "📅", days: 30 },
+  { id: "3m",    label: "1–3 bulan lagi",      desc: "Bangun pemahaman dulu, latihan belakangan",     emoji: "🗓️", days: 90 },
+  { id: "later", label: "Masih lama / belum tahu", desc: "Belajar santai tapi rutin",                emoji: "🌙", days: null },
+];
+
+// Jawaban "kapan imtihan" yang sudah lewat dianggap tidak berlaku lagi.
+const currentExamWindow = (profile) => {
+  const w = EXAM_WINDOWS.find(x => x.id === profile?.examWindow);
+  if (!w || !w.days || !profile?.examWindowAt) return w?.id === "later" ? "later" : null;
+  const elapsed = (Date.now() - Date.parse(profile.examWindowAt)) / 86400000;
+  return elapsed <= w.days ? w.id : null;
+};
+
 /* ============ AI TOOLS, with adaptive guides ============ */
 /* Each tool has:
    - id, name, monogram, color, tier, link, description
@@ -1189,6 +1218,7 @@ const DEFAULT_MEMBERS = [
 /* ============ EXPORTS ============ */
 Object.assign(window, {
   STRUGGLES, FIELDS, FACULTIES, LEVELS, LEARNING_STYLES,
+  ARABIC_LEVELS, STUDY_GOALS, EXAM_WINDOWS, currentExamWindow,
   AI_TOOLS, recommend,
   LEARNING_PATHS, allModules,
   ETHICS_POINTS,

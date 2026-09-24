@@ -4,7 +4,7 @@ import { sbConfig, sbHeaders, normalizeCode, requireAiTier, consumeQuota, isActi
 import { callAI, callAIJson, transcribeModel } from './_lib/ai.js';
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
-  OCR_PROMPT, TRANSCRIBE_PROMPT, tutorSystem, syafawiSystem,
+  OCR_PROMPT, TRANSCRIBE_PROMPT, tutorSystem, syafawiSystem, learnerContext,
 } from './_lib/ai-partner/prompts.js';
 import {
   isStr, cleanFlashcards, cleanQuiz, cleanGlossary, cleanMindmap, cleanEssays,
@@ -286,23 +286,24 @@ async function handleGenerate(ctx, body, res) {
 
   const messages = materialMessage(set);
   const progress = mergeProgress(set, { [kind]: true });
+  const learner = learnerContext(body.learner);
 
   if (kind === 'summary') {
     const lang = SUMMARY_LANGS.includes(body.lang) ? body.lang : 'id';
-    const summary = await callAI({ system: summaryPrompt(lang), messages, maxTokens: 3000 });
+    const summary = await callAI({ system: summaryPrompt(lang) + learner, messages, maxTokens: 3000 });
     await updateSet(ctx.code, set.id, { summary, summary_lang: lang, progress });
     return res.status(200).json({ ok: true, data: summary, lang });
   }
 
   if (kind === 'mindmap') {
-    const data = cleanMindmap(await callAIJson({ system: PROMPTS.mindmap, messages, maxTokens: 3000 }));
+    const data = cleanMindmap(await callAIJson({ system: PROMPTS.mindmap + learner, messages, maxTokens: 3000 }));
     if (!data) throw new Error('AI gagal membuat peta konsep yang valid');
     await updateSet(ctx.code, set.id, { mindmap: data, progress });
     return res.status(200).json({ ok: true, data });
   }
 
   const clean = { flashcards: cleanFlashcards, quiz: cleanQuiz, glossary: cleanGlossary, essays: cleanEssays }[kind];
-  let data = clean(await callAIJson({ system: PROMPTS[kind], messages, maxTokens: 4000 }));
+  let data = clean(await callAIJson({ system: PROMPTS[kind] + learner, messages, maxTokens: 4000 }));
   if (data.length === 0) throw new Error('AI gagal membuat hasil yang valid');
   if (kind === 'flashcards') {
     // Kartu lama (termasuk progres hafalannya) dipertahankan; kartu AI yang sama tidak diduplikasi.
@@ -400,7 +401,7 @@ async function handleGrade(ctx, body, res) {
   if (!(await consumeQuota(ctx.code, 'grade', LIMITS.grade))) return quotaExceeded(res, 'grade');
 
   const prompt = `SOAL: ${essay.soal_ar}\n(${essay.soal_id})\n\nPOIN KUNCI:\n${essay.poin.map((p, i) => `${i + 1}. ${p}`).join('\n')}\n\nJAWABAN MODEL:\n${essay.jawaban_model}\n\nJAWABAN MAHASISWA:\n<<<\n${answer}\n>>>`;
-  const result = cleanGrade(await callAIJson({ system: GRADE_PROMPT, messages: [{ role: 'user', content: prompt }], maxTokens: 2000, temperature: 0.2 }));
+  const result = cleanGrade(await callAIJson({ system: GRADE_PROMPT + learnerContext(body.learner), messages: [{ role: 'user', content: prompt }], maxTokens: 2000, temperature: 0.2 }));
   if (!result) throw new Error('AI gagal menilai jawaban');
 
   const attempt = { index, answer, ...result, at: new Date().toISOString() };
@@ -422,7 +423,7 @@ async function handleChat(ctx, body, res) {
   const history = all.filter(m => (m.mode || 'tutor') === mode).slice(-CHAT_HISTORY);
   const material = set.content.slice(0, CHAT_CONTEXT);
   const reply = await callAI({
-    system: mode === 'syafawi' ? syafawiSystem(set.title, material) : tutorSystem(set.title, material),
+    system: (mode === 'syafawi' ? syafawiSystem(set.title, material) : tutorSystem(set.title, material)) + learnerContext(body.learner),
     messages: [...history.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: message }],
     maxTokens: 1500,
   });
