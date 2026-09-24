@@ -475,19 +475,19 @@ const GabungPage = () => {
             ChatGPT bisa menjawab apa saja — Talqeeh menyiapkan jalannya: maddah yang tepat, prompt yang teruji, dan latihan yang mengarah ke imtihan.
           </p>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-6xl mx-auto">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-4 max-w-6xl mx-auto">
           {ADVANTAGES.map(a => (
-            <div key={a.title} className="card-glass p-5 md:p-6 relative overflow-hidden">
+            <div key={a.title} className="card-glass p-3.5 md:p-6 relative overflow-hidden min-w-0">
               <div className="absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl pointer-events-none" style={{ background: `${a.color}18` }}/>
               <div className="relative">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: `${a.color}1a`, border: `1px solid ${a.color}40` }}>
+                <div className="flex flex-col-reverse md:flex-row items-start md:items-center md:justify-between gap-2 mb-3 md:mb-4">
+                  <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl flex items-center justify-center" style={{ background: `${a.color}1a`, border: `1px solid ${a.color}40` }}>
                     <Icon name={a.icon} className="w-5 h-5" style={{ stroke: a.color }}/>
                   </div>
                   <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ color: a.color, background: `${a.color}17` }}>{a.tag}</span>
                 </div>
-                <div className="font-display text-lg font-semibold text-ink mb-1.5">{a.title}</div>
-                <p className="text-sm text-ink-muted leading-relaxed">{a.text}</p>
+                <div className="font-display text-sm md:text-lg font-semibold text-ink mb-1.5 leading-snug">{a.title}</div>
+                <p className="text-xs md:text-sm text-ink-muted leading-relaxed">{a.text}</p>
               </div>
             </div>
           ))}
@@ -538,13 +538,13 @@ const GabungPage = () => {
           <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">113+ member sudah merasakan manfaatnya</h2>
           <p className="text-sm text-ink-muted mt-2">Dari Masisir, untuk Masisir.</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-4 max-w-6xl mx-auto">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-4 max-w-6xl mx-auto">
           {TESTIMONIALS.map(t => (
-            <div key={t.text} className="card-glass p-5 flex flex-col gap-4">
+            <div key={t.text} className="card-glass p-3.5 md:p-5 flex flex-col gap-3 md:gap-4 min-w-0">
               <div className="flex gap-0.5">
                 {[0, 1, 2, 3, 4].map(i => <Icon key={i} name="star" className="w-3.5 h-3.5" style={{ stroke: '#fbbf24', fill: '#fbbf24' }}/>)}
               </div>
-              <p className="text-sm text-ink leading-relaxed flex-1">“{t.text}”</p>
+              <p className="text-xs md:text-sm text-ink leading-relaxed flex-1">“{t.text}”</p>
               <div className="flex items-center gap-2.5">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-black" style={{ background: t.color }}>M</div>
                 <div>

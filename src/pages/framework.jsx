@@ -28,22 +28,22 @@ const FrameworkPage = () => {
 
       {/* Cards grid */}
       <section className="container-x pb-6">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 items-stretch">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-4 items-stretch">
           {frameworks.map((fw, i) => (
             <div
               key={fw.id}
-              className="card-glass p-5 cursor-pointer hov-lift group flex flex-col reveal-anim"
+              className="card-glass p-3.5 md:p-5 cursor-pointer hov-lift group flex flex-col reveal-anim min-w-0"
               style={{animationDelay: `${i * 60}ms`}}
               onClick={() => navigate("/framework/" + fw.id)}
             >
-              <div className="text-3xl mb-3">{fw.icon}</div>
+              <div className="text-2xl md:text-3xl mb-2 md:mb-3">{fw.icon}</div>
               <div className="text-[10px] uppercase tracking-wider text-emerald-400 mb-1 font-medium">
                 {fw.nameId}
               </div>
-              <h3 className="font-display text-lg font-semibold text-ink mb-2">{fw.name}</h3>
-              <p className="text-sm text-ink-muted leading-relaxed">{fw.tagline}</p>
+              <h3 className="font-display text-sm md:text-lg font-semibold text-ink mb-1.5 md:mb-2 leading-snug break-words">{fw.name}</h3>
+              <p className="text-xs md:text-sm text-ink-muted leading-relaxed">{fw.tagline}</p>
               <div className="mt-auto pt-4 flex items-center gap-1.5 text-xs text-emerald-300 group-hover:text-emerald-200 transition-colors">
-                <span>Pelajari lengkap</span>
+                <span>Pelajari<span className="hidden md:inline"> lengkap</span></span>
                 <Icon name="chevronRight" className="w-3.5 h-3.5"/>
               </div>
             </div>

@@ -93,27 +93,27 @@ const MahadMaddahPage = () => {
               Belum ada maddah untuk kategori ini di levelmu.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-3">
               {filtered.map(m => (
                 <button key={m.id}
                   onClick={() => navigate("/mahad-maddah/" + m.id)}
-                  className="card-glass p-4 md:p-5 text-left hov-lift active:scale-[0.97] transition-all group relative overflow-hidden">
+                  className="card-glass p-3.5 md:p-5 text-left hov-lift active:scale-[0.97] transition-all group relative overflow-hidden min-w-0">
                   {isMaddahLocked(m.id, session, profile) && (
-                    <span className="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] text-gold-300"><Icon name="crown" className="w-3 h-3"/>Library</span>
+                    <span className="absolute top-2.5 left-3.5 md:left-auto md:top-3 md:right-3 inline-flex items-center gap-1 text-[10px] text-gold-300"><Icon name="crown" className="w-3 h-3"/>Library</span>
                   )}
-                  <div className="arabic-display text-gold-300 text-xl mb-1 group-hover:text-gold-200 transition-colors"
+                  <div className="arabic-display text-gold-300 text-lg md:text-xl mb-1 group-hover:text-gold-200 transition-colors truncate"
                     style={{direction:"rtl"}}>
                     {m.nameArabic}
                   </div>
-                  <h3 className="font-display text-lg font-semibold text-ink leading-snug mb-1">
+                  <h3 className="font-display text-sm md:text-lg font-semibold text-ink leading-snug mb-1 break-words">
                     {m.name}
                   </h3>
                   {m.description && (
-                    <p className="text-sm text-ink-muted leading-relaxed line-clamp-2 mb-3">
+                    <p className="text-xs md:text-sm text-ink-muted leading-relaxed line-clamp-2 mb-2.5 md:mb-3">
                       {m.description}
                     </p>
                   )}
-                  <div className="flex items-center justify-between gap-2 text-xs mt-2">
+                  <div className="flex items-center justify-between gap-2 text-[11px] md:text-xs mt-2 flex-wrap">
                     <span className={`px-2 py-0.5 rounded border ${
                       m.category === "agama"
                         ? "bg-gold-500/10 text-gold-300 border-gold-500/20"

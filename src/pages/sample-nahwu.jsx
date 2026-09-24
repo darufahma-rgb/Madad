@@ -378,10 +378,10 @@ Untuk setiap bait:
           <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>Kitab Utama
           </h2>
-          <div className="grid md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-3">
             {sampleData.kitabUtama.map((k, i) => (
-              <div key={i} className="card-glass p-5">
-                <div className="arabic-display text-gold-300 text-xl mb-1" style={{direction:"rtl"}}>{k.arabic}</div>
+              <div key={i} className="card-glass p-3.5 md:p-5 min-w-0">
+                <div className="arabic-display text-gold-300 text-lg md:text-xl mb-1" style={{direction:"rtl"}}>{k.arabic}</div>
                 <div className="font-display text-base font-semibold text-ink">{k.nama}</div>
                 <div className="text-xs text-ink-soft mt-1">{k.penulis}</div>
               </div>
@@ -396,20 +396,20 @@ Untuk setiap bait:
           <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>AI yang Direkomendasikan
           </h2>
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2.5 md:gap-4">
             {sampleData.recommendedAI.map((ai, i) => {
               const tool = AI_TOOLS.find(t => t.id === ai.tool);
               return (
-                <div key={i} className="card-glass-strong p-6">
-                  <div className="flex items-center gap-3 mb-3">
-                    {tool && <ToolIcon tool={tool} size="w-11 h-11"/>}
+                <div key={i} className="card-glass-strong p-3.5 md:p-6 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2.5 md:mb-3">
+                    {tool && <ToolIcon tool={tool} size="w-9 h-9 md:w-11 md:h-11"/>}
                     <div>
-                      <div className="font-display text-lg font-semibold text-ink">{ai.name}</div>
+                      <div className="font-display text-sm md:text-lg font-semibold text-ink leading-tight">{ai.name}</div>
                       <div className="text-xs text-ink-soft">{ai.strength}</div>
                     </div>
                     {i === 0 && <span className="ml-auto chip-glass text-[10px] text-gold-300 flex-shrink-0">TOP PICK</span>}
                   </div>
-                  <p className="text-sm text-ink-muted leading-relaxed">{ai.why}</p>
+                  <p className="text-xs md:text-sm text-ink-muted leading-relaxed">{ai.why}</p>
                 </div>
               );
             })}

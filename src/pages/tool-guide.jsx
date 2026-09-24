@@ -51,7 +51,7 @@ const ToolListPage = ({ profile }) => {
             <h2 className="font-display text-2xl font-semibold text-ink">Rekomendasi untukmu</h2>
             <span className="chip chip-gold text-[10px]">Personal</span>
           </Reveal>
-          <Reveal stagger className="grid md:grid-cols-3 gap-4">
+          <Reveal stagger className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-4">
             {recs.map((rec) => <ToolCardListItem key={rec.toolId} tool={rec.tool} highlighted={true} reason={rec.reason}/>)}
           </Reveal>
         </div>
@@ -62,7 +62,7 @@ const ToolListPage = ({ profile }) => {
           <Reveal className="mb-6">
             <h2 className="font-display text-2xl font-semibold text-ink">Tools lainnya</h2>
           </Reveal>
-          <Reveal stagger className="grid md:grid-cols-3 gap-4">
+          <Reveal stagger className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-4">
             {otherTools.map((tool) => <ToolCardListItem key={tool.id} tool={tool}/>)}
           </Reveal>
         </div>
@@ -73,18 +73,18 @@ const ToolListPage = ({ profile }) => {
 
 const ToolCardListItem = ({ tool, highlighted, reason }) => (
   <a href={`#/tools?id=${tool.id}`} onClick={(e)=>{e.preventDefault(); navigate(`/tools?id=${tool.id}`);}}
-    className={`card-glass p-6 hov-lift block relative overflow-hidden ${highlighted ? "ring-1 ring-gold-500/30" : ""}`}>
+    className={`card-glass p-3.5 md:p-6 hov-lift block relative overflow-hidden min-w-0 ${highlighted ? "ring-1 ring-gold-500/30" : ""}`}>
     <div className="absolute top-0 right-0 w-24 h-24 opacity-25 pointer-events-none" style={{background: `radial-gradient(circle at top right, ${tool.color}, transparent 70%)`}}/>
     <div className="relative">
-      <div className="flex items-center justify-between mb-4">
-        <ToolIcon tool={tool} size="w-12 h-12"/>
+      <div className="flex items-center justify-between gap-2 mb-3 md:mb-4">
+        <ToolIcon tool={tool} size="w-10 h-10 md:w-12 md:h-12"/>
         <span className="badge-neutral text-[10px]">{tool.tier}</span>
       </div>
-      <div className="font-display text-xl font-semibold text-ink">{tool.name}</div>
+      <div className="font-display text-base md:text-xl font-semibold text-ink leading-tight">{tool.name}</div>
       <div className="text-xs text-ink-soft mb-3">{tool.by}</div>
-      <p className="text-sm text-ink-muted leading-relaxed clamp-3 mb-4">{reason ? `Untukmu: ${reason}.` : tool.description}</p>
+      <p className="text-xs md:text-sm text-ink-muted leading-relaxed clamp-3 mb-3 md:mb-4">{reason ? `Untukmu: ${reason}.` : tool.description}</p>
       <div className="flex items-center justify-between text-xs text-emerald-300">
-        <span>Lihat adaptive guide</span>
+        <span>Lihat<span className="hidden md:inline"> adaptive</span> guide</span>
         <Icon name="arrowRight" className="w-3.5 h-3.5"/>
       </div>
     </div>

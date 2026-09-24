@@ -517,21 +517,21 @@ const MasisirTab = ({ profile }) => {
         </div>
       </Reveal>
 
-      <Reveal stagger className="grid sm:grid-cols-2 gap-4">
+      <Reveal stagger className="grid grid-cols-2 gap-2.5 md:gap-4">
         {shortcuts.map(s => (
           <button
             key={s.to}
             onClick={() => navigate(s.to)}
-            className="card-glass p-5 text-left hov-lift relative overflow-hidden group"
+            className="card-glass p-3.5 md:p-5 text-left hov-lift relative overflow-hidden group min-w-0"
           >
             <div className="absolute top-0 right-0 w-20 h-20 pointer-events-none opacity-20" style={{ background: `radial-gradient(circle at top right, ${s.color}, transparent 70%)` }}/>
             <div className="relative">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: `${s.color}20`, border: `1px solid ${s.color}30` }}>
+              <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center mb-3 md:mb-4" style={{ background: `${s.color}20`, border: `1px solid ${s.color}30` }}>
                 <Icon name={s.icon} className="w-5 h-5" style={{ color: s.color }}/>
               </div>
-              <div className="font-display text-lg font-semibold text-ink mb-1">{s.title}</div>
-              <p className="text-sm text-ink-muted leading-relaxed mb-4">{s.desc}</p>
-              <div className="flex items-center gap-1.5 text-sm font-medium" style={{ color: s.color }}>
+              <div className="font-display text-sm md:text-lg font-semibold text-ink mb-1 leading-snug">{s.title}</div>
+              <p className="text-xs md:text-sm text-ink-muted leading-relaxed mb-3 md:mb-4">{s.desc}</p>
+              <div className="flex items-center gap-1.5 text-xs md:text-sm font-medium" style={{ color: s.color }}>
                 {s.label} <Icon name="arrowRight" className="w-3.5 h-3.5"/>
               </div>
             </div>

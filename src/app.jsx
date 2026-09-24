@@ -248,6 +248,7 @@ const App = () => {
       {isMember && <SupportButton/>}
       {isMember && !useShell && <MobileTabBar/>}
       <TutorialModal/>
+      <PwaHost/>
     </ToastProvider>
   );
 };

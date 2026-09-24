@@ -290,10 +290,10 @@ const ProfilBelajarPage = () => {
       {advice && (
         <div className="card-glass p-5 mb-8">
           <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Saran ritme belajarmu</div>
-          <div className="grid sm:grid-cols-3 gap-3 mb-3">
-            <div className="rounded-xl bg-white/4 p-3"><div className="font-display text-xl text-ink">{advice.minutes} menit</div><div className="text-[11px] text-ink-soft">per sesi · {advice.count} sesi/hari</div></div>
-            <div className="rounded-xl bg-white/4 p-3"><div className="font-display text-xl text-ink">{advice.rest} menit</div><div className="text-[11px] text-ink-soft">istirahat antar sesi</div></div>
-            <div className="rounded-xl bg-white/4 p-3"><div className="font-display text-xl text-ink">{advice.cards} kartu</div><div className="text-[11px] text-ink-soft">flashcard per hari</div></div>
+          <div className="grid grid-cols-3 gap-2 md:gap-3 mb-3">
+            <div className="rounded-xl bg-white/4 p-3"><div className="font-display text-base md:text-xl text-ink">{advice.minutes} menit</div><div className="text-[11px] text-ink-soft">per sesi · {advice.count} sesi/hari</div></div>
+            <div className="rounded-xl bg-white/4 p-3"><div className="font-display text-base md:text-xl text-ink">{advice.rest} menit</div><div className="text-[11px] text-ink-soft">istirahat antar sesi</div></div>
+            <div className="rounded-xl bg-white/4 p-3"><div className="font-display text-base md:text-xl text-ink">{advice.cards} kartu</div><div className="text-[11px] text-ink-soft">flashcard per hari</div></div>
           </div>
           <ul className="space-y-1.5 text-sm text-ink-muted">{advice.tips.map(t => <li key={t}>• {t}</li>)}</ul>
         </div>

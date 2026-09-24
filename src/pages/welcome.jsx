@@ -78,12 +78,12 @@ const WelcomePage = () => {
               <span className="w-5 h-px bg-gold-500/60"/>
               Maddah untuk fakultas & tingkatmu
             </div>
-            <div className="grid md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-3">
               {myMaddahs.map(m => (
                 <div key={m.id} onClick={() => navigate("/maddah/" + m.id)}
-                  className="card-glass p-4 cursor-pointer hov-lift">
-                  <div className="arabic-display text-gold-300 text-xl mb-1" style={{direction:"rtl"}}>{m.nameArabic}</div>
-                  <div className="font-display text-base font-semibold text-ink mb-1">{m.name}</div>
+                  className="card-glass p-3.5 md:p-4 cursor-pointer hov-lift min-w-0">
+                  <div className="arabic-display text-gold-300 text-lg md:text-xl mb-1" style={{direction:"rtl"}}>{m.nameArabic}</div>
+                  <div className="font-display text-sm md:text-base font-semibold text-ink mb-1 leading-snug">{m.name}</div>
                   <div className="text-xs text-ink-soft">
                     {Object.values(m.prompts).reduce((s, a) => s + a.length, 0)} prompt
                   </div>

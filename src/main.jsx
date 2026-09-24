@@ -10,6 +10,7 @@ import './supabase.jsx';
 import './auth.jsx';
 import './layout.jsx';
 import './app-shell.jsx';
+import './pwa.jsx';
 
 // Data layers
 import './maddah-data.jsx';

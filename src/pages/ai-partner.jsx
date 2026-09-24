@@ -88,43 +88,43 @@ const SetCard = ({ s, isTrialSet, onDelete }) => {
   const open = () => navigate(`/ai-partner/${s.id}`);
   return (
     <div role="button" tabIndex={0} onClick={open} onKeyDown={e => { if (e.key === 'Enter') open(); }}
-      className="group card-glass-strong p-5 hov-lift text-left flex flex-col cursor-pointer relative">
-      <div className="flex items-start justify-between gap-3 mb-3">
-        <span className="w-10 h-10 rounded-xl bg-emerald-500/12 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
+      className="group card-glass-strong p-3.5 md:p-5 hov-lift text-left flex flex-col cursor-pointer relative min-w-0">
+      <div className="flex items-start justify-between gap-2 md:gap-3 mb-2.5 md:mb-3">
+        <span className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-emerald-500/12 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
           <Icon name={meta.icon} className="w-4 h-4 text-emerald-300"/>
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
           <button onClick={e => { e.stopPropagation(); onDelete(s); }} title="Hapus materi" aria-label={`Hapus materi ${s.title}`}
             className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-soft hover:text-rose-400 hover:bg-rose-500/10 transition md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100">
             <Icon name="trash" className="w-4 h-4" style={{ stroke: 'currentColor' }}/>
           </button>
-          <ProgressRing percent={studyPercent(s)}/>
+          <ProgressRing percent={studyPercent(s)} size={40}/>
         </div>
       </div>
-      <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1">{maddahName(s.maddah_id) || 'Materi umum'}</div>
-      <div className="font-display text-lg font-semibold text-ink leading-snug mb-3 line-clamp-2">{s.title}</div>
+      <div className="text-[10px] md:text-[11px] uppercase tracking-wider text-gold-400 mb-1 truncate">{maddahName(s.maddah_id) || 'Materi umum'}</div>
+      <div className="font-display text-sm md:text-lg font-semibold text-ink leading-snug mb-3 line-clamp-2 break-words">{s.title}</div>
       <div className="mt-auto flex items-center gap-1.5 flex-wrap">
         <Pill>{meta.label}</Pill>
-        {s.cards_due > 0 && <Pill tone="emerald">{s.cards_due} kartu perlu diulang</Pill>}
+        {s.cards_due > 0 && <Pill tone="emerald">{s.cards_due} kartu<span className="hidden md:inline">&nbsp;perlu diulang</span></Pill>}
         {isTrialSet && <Pill tone="gold">Coba gratis</Pill>}
-        <span className="text-[11px] text-ink-soft ml-auto">{new Date(s.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
+        <span className="hidden md:inline text-[11px] text-ink-soft ml-auto">{new Date(s.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
       </div>
     </div>
   );
 };
 
 const HowItWorksStrip = () => (
-  <div className="grid sm:grid-cols-3 gap-3 mb-8">
+  <div className="grid grid-cols-3 gap-2.5 md:gap-3 mb-8">
     {[
       ['1', 'Unggah materi', 'PDF, Word, slide, foto diktat, atau rekaman kuliah.'],
       ['2', 'AI menyiapkan', 'Ringkasan, peta konsep, mufradat, flashcard, dan soal.'],
       ['3', 'Belajar & uji diri', 'Pahami → hafalkan → uji → tanya duktur AI.'],
     ].map(([n, t, d]) => (
-      <div key={n} className="flex gap-3 items-start">
-        <span className="w-8 h-8 rounded-full bg-emerald-500 text-black text-sm font-semibold flex items-center justify-center flex-shrink-0">{n}</span>
+      <div key={n} className="flex flex-col md:flex-row gap-2 md:gap-3 items-start">
+        <span className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-emerald-500 text-black text-sm font-semibold flex items-center justify-center flex-shrink-0">{n}</span>
         <div>
-          <div className="text-sm text-ink font-medium">{t}</div>
-          <div className="text-xs text-ink-muted leading-relaxed">{d}</div>
+          <div className="text-[13px] md:text-sm text-ink font-medium leading-tight">{t}</div>
+          <div className="text-[11px] md:text-xs text-ink-muted leading-relaxed mt-0.5">{d}</div>
         </div>
       </div>
     ))}
@@ -187,12 +187,12 @@ const AiPartnerList = ({ status }) => {
 
       {error && <div className="text-sm text-rose-400">{error}</div>}
       {sets === null && !error && (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[0, 1, 2].map(i => <div key={i} className="card-glass p-5"><Skeleton lines={4}/></div>)}
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          {[0, 1, 2].map(i => <div key={i} className="card-glass p-4 md:p-5"><Skeleton lines={4}/></div>)}
         </div>
       )}
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
         {sets?.map(s => <SetCard key={s.id} s={s} isTrialSet={isTrialSet(s)} onDelete={setToDelete}/>)}
       </div>
       {toDelete && (
@@ -202,13 +202,13 @@ const AiPartnerList = ({ status }) => {
       {empty && (
         <div className="mt-12">
           <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-4 text-center">Yang bisa kamu lakukan</div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-3">
             {FEATURE_TOUR.map(f => (
-              <div key={f.title} className="card-glass p-4 flex gap-3">
+              <div key={f.title} className="card-glass p-3.5 md:p-4 flex flex-col md:flex-row gap-2 md:gap-3">
                 <Icon name={f.icon} className="w-5 h-5 text-emerald-300 flex-shrink-0 mt-0.5"/>
                 <div>
-                  <div className="text-sm text-ink font-medium">{f.title}</div>
-                  <div className="text-xs text-ink-muted leading-relaxed">{f.desc}</div>
+                  <div className="text-[13px] md:text-sm text-ink font-medium leading-tight">{f.title}</div>
+                  <div className="text-[11px] md:text-xs text-ink-muted leading-relaxed mt-0.5">{f.desc}</div>
                 </div>
               </div>
             ))}

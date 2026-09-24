@@ -15,21 +15,21 @@ const MaddahCard = ({ maddah }) => {
   return (
     <div
       onClick={() => navigate("/maddah/" + maddah.id)}
-      className={`card-glass p-4 md:p-5 hov-lift cursor-pointer group relative overflow-hidden ${isVisited ? "border-l-2 border-l-violet-600/50" : ""}`}
+      className={`card-glass p-3.5 md:p-5 hov-lift cursor-pointer group relative overflow-hidden min-w-0 ${isVisited ? "border-l-2 border-l-violet-600/50" : ""}`}
     >
       {isVisited && (
-        <div className="absolute top-3 right-3 flex items-center gap-1 text-[10px] text-emerald-300">
+        <div className="absolute top-2.5 left-3 md:left-auto md:top-3 md:right-3 flex items-center gap-1 text-[10px] text-emerald-300">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"/>
-          {promptCount > 0 ? `${promptCount} prompt dipakai` : "Pernah dibuka"}
+          <span className="hidden md:inline">{promptCount > 0 ? `${promptCount} prompt dipakai` : "Pernah dibuka"}</span>
         </div>
       )}
 
-      <div className="flex items-start justify-between gap-3 mb-3">
+      <div className="flex items-start justify-between gap-2 md:gap-3 mb-2 md:mb-3">
         <div className="flex-1 min-w-0">
-          <div className="arabic-display text-gold-300 text-xl mb-1 group-hover:text-gold-200 transition-colors" style={{direction:"rtl"}}>
+          <div className="arabic-display text-gold-300 text-lg md:text-xl mb-1 group-hover:text-gold-200 transition-colors truncate" style={{direction:"rtl"}}>
             {maddah.nameArabic}
           </div>
-          <h3 className="font-display text-lg font-semibold text-ink leading-snug">{maddah.name}</h3>
+          <h3 className="font-display text-sm md:text-lg font-semibold text-ink leading-snug break-words">{maddah.name}</h3>
         </div>
         <div className="flex flex-col items-end gap-1.5 flex-shrink-0 mt-1">
           {!hasContent && !isVisited && (
@@ -40,10 +40,10 @@ const MaddahCard = ({ maddah }) => {
         </div>
       </div>
 
-      <p className="text-sm text-ink-muted leading-relaxed line-clamp-2 mb-3">{maddah.description}</p>
+      <p className="text-xs md:text-sm text-ink-muted leading-relaxed line-clamp-2 mb-2.5 md:mb-3">{maddah.description}</p>
 
       <div className="flex items-center justify-between gap-2 text-xs">
-        <div className="flex items-center gap-1.5 text-ink-soft">
+        <div className="hidden md:flex items-center gap-1.5 text-ink-soft">
           <Icon name="layers" className="w-3 h-3"/>
           {maddah.tingkat?.length >= 6
             ? "Semua tingkat"
@@ -225,7 +225,7 @@ const MaddahHubPage = () => {
                   <h2 className="font-display text-xl md:text-2xl text-ink font-semibold">{category.label}</h2>
                   <span className="text-xs text-ink-soft">{maddahs.length} Maddah</span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-3">
                   {maddahs.map(m => <MaddahCard key={m.id} maddah={m}/>)}
                 </div>
               </div>

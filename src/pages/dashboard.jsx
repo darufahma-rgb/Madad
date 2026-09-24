@@ -41,13 +41,13 @@ const RecentMaddahRow = () => {
           </div>
         </Reveal>
         <Reveal>
-          <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0 md:grid md:grid-cols-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {recentMaddahs.map(m => {
               const act = activity[m.id];
               return (
                 <div key={m.id}
                   onClick={() => navigate("/maddah/" + m.id)}
-                  className="flex-shrink-0 w-[75vw] md:w-auto card-glass p-4 cursor-pointer hov-lift">
+                  className="card-glass p-3.5 md:p-4 cursor-pointer hov-lift min-w-0">
                   <div className="arabic-display text-gold-300 text-lg mb-1" style={{direction:"rtl"}}>{m.nameArabic}</div>
                   <div className="font-display text-sm font-semibold text-ink mb-1">{m.name}</div>
                   {act?.promptsCopied > 0 && (
@@ -112,7 +112,7 @@ const MaddahHeroSection = ({ profile }) => {
           </button>
         </Reveal>
 
-        <Reveal stagger className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {myMaddahs.map((m) => (
             <MaddahDashCard key={m.id} maddah={m}/>
           ))}
@@ -134,20 +134,20 @@ const MaddahDashCard = ({ maddah }) => {
   return (
     <div
       onClick={() => navigate("/maddah/" + maddah.id)}
-      className="card-glass p-5 hov-lift cursor-pointer transition-all group relative overflow-hidden"
+      className="card-glass p-3.5 md:p-5 hov-lift cursor-pointer transition-all group relative overflow-hidden min-w-0"
     >
       <div className="absolute -top-12 -right-12 w-32 h-32 rounded-full bg-emerald-500/8 blur-2xl pointer-events-none"/>
 
       <div className="relative">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex-1">
+        <div className="flex items-start justify-between gap-2 md:gap-3 mb-2.5 md:mb-3">
+          <div className="flex-1 min-w-0">
             <div
-              className="arabic-display-classical text-gold-300 text-xl mb-1 group-hover:text-gold-200 transition-colors"
+              className="arabic-display-classical text-gold-300 text-lg md:text-xl mb-1 group-hover:text-gold-200 transition-colors truncate"
               style={{direction:"rtl"}}
             >
               {maddah.nameArabic}
             </div>
-            <h3 className="font-display text-lg font-semibold text-ink">{maddah.name}</h3>
+            <h3 className="font-display text-sm md:text-lg font-semibold text-ink leading-snug">{maddah.name}</h3>
           </div>
           {!hasContent && (
             <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 flex-shrink-0 mt-1">
@@ -157,10 +157,10 @@ const MaddahDashCard = ({ maddah }) => {
         </div>
 
         {hasContent && topAITool && (
-          <div className="flex items-center gap-2.5 mb-3 p-2.5 rounded-xl" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
-            <ToolIcon tool={topAITool} size="w-8 h-8"/>
+          <div className="flex items-center gap-2 md:gap-2.5 mb-2.5 md:mb-3 p-2 md:p-2.5 rounded-xl" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
+            <ToolIcon tool={topAITool} size="w-7 h-7 md:w-8 md:h-8"/>
             <div className="flex-1 min-w-0">
-              <div className="text-[10px] text-ink-soft uppercase tracking-wider">AI rekomendasi</div>
+              <div className="hidden md:block text-[10px] text-ink-soft uppercase tracking-wider">AI rekomendasi</div>
               <div className="text-sm text-ink font-medium truncate">{topAITool.name}</div>
             </div>
           </div>
@@ -169,9 +169,9 @@ const MaddahDashCard = ({ maddah }) => {
         <div className="flex items-center justify-between text-xs">
           {hasContent ? (
             <>
-              <span className="text-gold-400">{totalPrompts} prompt template</span>
+              <span className="text-gold-400 text-[11px] md:text-xs">{totalPrompts} prompt<span className="hidden md:inline"> template</span></span>
               <span className="inline-flex items-center gap-1 text-emerald-400 group-hover:gap-2 transition-all">
-                Buka <Icon name="arrowRight" className="w-3 h-3"/>
+                <span className="hidden md:inline">Buka</span> <Icon name="arrowRight" className="w-3 h-3"/>
               </span>
             </>
           ) : (
@@ -436,25 +436,25 @@ const HomeChoiceCard = ({ tone, arabic, title, badge, desc, points, cta, onClick
     : { border: "rgba(62,207,142,0.32)",  glow: "rgba(62,207,142,0.16)",  arabic: "text-emerald-300", check: "text-emerald-400", btn: "btn btn-primary" };
   return (
     <button onClick={onClick}
-      className="card-glass-strong p-6 md:p-8 text-left relative overflow-hidden hov-lift flex flex-col h-full w-full"
+      className="card-glass-strong p-4 md:p-8 text-left relative overflow-hidden hov-lift flex flex-col h-full w-full min-w-0"
       style={{ border: `1px solid ${t.border}` }}>
       <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full blur-3xl pointer-events-none" style={{ background: t.glow }}/>
       <div className="relative flex flex-col flex-1">
-        <div className="flex items-start justify-between gap-3 mb-5">
-          <div className={`arabic-display text-2xl md:text-3xl ${t.arabic}`} style={{ direction: "rtl" }}>{arabic}</div>
+        <div className="flex flex-col-reverse md:flex-row items-start md:justify-between gap-2 md:gap-3 mb-3 md:mb-5">
+          <div className={`arabic-display text-xl md:text-3xl ${t.arabic}`} style={{ direction: "rtl" }}>{arabic}</div>
           {badge}
         </div>
-        <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink mb-2">{title}</h2>
-        <p className="text-sm text-ink-muted leading-relaxed mb-5">{desc}</p>
-        <ul className="space-y-2 mb-7 flex-1">
+        <h2 className="font-display text-lg md:text-3xl font-semibold text-ink mb-1.5 md:mb-2 leading-tight">{title}</h2>
+        <p className="text-xs md:text-sm text-ink-muted leading-relaxed mb-4 md:mb-5 flex-1 md:flex-none">{desc}</p>
+        <ul className="hidden md:block space-y-2 mb-7 flex-1">
           {points.map(p => (
             <li key={p} className="flex items-start gap-2.5 text-sm text-ink">
               <Icon name="check" className={`w-4 h-4 mt-0.5 flex-shrink-0 ${t.check}`}/>{p}
             </li>
           ))}
         </ul>
-        <span className={`${t.btn} w-full py-3.5 text-sm font-medium justify-center pointer-events-none`}>
-          {cta} <Icon name="arrowRight" className="w-4 h-4"/>
+        <span className={`${t.btn} w-full py-2.5 md:py-3.5 text-xs md:text-sm font-medium justify-center pointer-events-none`}>
+          {cta} <Icon name="arrowRight" className="w-4 h-4 hidden md:block"/>
         </span>
       </div>
     </button>
@@ -462,7 +462,7 @@ const HomeChoiceCard = ({ tone, arabic, title, badge, desc, points, cta, onClick
 };
 
 const HomeBadge = ({ children, tone }) => (
-  <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full border flex-shrink-0 ${
+  <span className={`text-[10px] md:text-[11px] font-medium px-2 md:px-2.5 py-0.5 md:py-1 rounded-full border flex-shrink-0 whitespace-nowrap ${
     tone === "emerald" ? "bg-emerald-500/12 text-emerald-300 border-emerald-500/25"
     : tone === "gold"  ? "bg-gold-500/10 text-gold-300 border-gold-500/25"
     : "bg-white/5 text-ink-muted border-white/10"}`}>
@@ -529,7 +529,7 @@ const PersonalizeCard = () => {
         </div>
         <button onClick={later} className="text-xs text-ink-soft hover:text-ink flex-shrink-0">Nanti saja</button>
       </div>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
         {q.options.map(o => (
           <button key={o.id} onClick={() => pick(o.id)}
             className="text-left p-3 rounded-xl border border-white/10 bg-white/3 hover:border-emerald-500/40 hover:bg-emerald-500/8 transition">
@@ -636,7 +636,7 @@ const DashboardHomePage = () => {
           <PersonalizeCard/>
           <DailyAdviceCard/>
 
-          <div className="grid md:grid-cols-2 gap-4 md:gap-5 max-w-5xl">
+          <div className="grid grid-cols-2 gap-3 md:gap-5 max-w-5xl">
             <Reveal>
               <HomeChoiceCard
                 tone="gold"
@@ -1127,12 +1127,11 @@ const LibraryPage = () => {
           </Reveal>
 
           <Reveal>
-            <div className="flex md:grid md:grid-cols-4 gap-3 overflow-x-auto md:overflow-visible
-                            no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {IMTIHAN_MODES.map(mode => (
                 <button key={mode.id}
                   onClick={() => navigate("/siap-imtihan")}
-                  className={`flex-shrink-0 w-[70vw] sm:w-auto md:w-auto card-glass p-4 text-left
+                  className={`card-glass p-3.5 md:p-4 text-left min-w-0
                               hov-lift active:scale-[0.97] transition-transform cursor-pointer
                               ${mode.color === "gold" ? "border-gold-500/15" : "border-emerald-500/15"}`}>
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${
@@ -1152,7 +1151,7 @@ const LibraryPage = () => {
               {/* Card teaser Talkhisan — di akhir row Siap Imtihan */}
               <button
                 onClick={() => navigate("/siap-imtihan")}
-                className="flex-shrink-0 w-[70vw] sm:w-auto md:w-auto card-glass p-4 text-left
+                className="card-glass p-3.5 md:p-4 text-left min-w-0
                            hov-lift active:scale-[0.97] transition-transform cursor-pointer
                            border-gold-500/15">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3 bg-gold-500/15">
@@ -1166,7 +1165,7 @@ const LibraryPage = () => {
               </button>
               <button
                 onClick={() => navigate("/ai-partner")}
-                className="flex-shrink-0 w-[70vw] sm:w-auto md:w-auto card-glass p-4 text-left
+                className="card-glass p-3.5 md:p-4 text-left min-w-0
                            hov-lift active:scale-[0.97] transition-transform cursor-pointer
                            border-emerald-500/15">
                 <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3 bg-emerald-500/15">
@@ -1237,12 +1236,12 @@ const LibraryPage = () => {
             </div>
             <h2 className="font-display text-3xl md:text-4xl font-semibold text-ink">Learning path</h2>
           </Reveal>
-          <Reveal stagger className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <Reveal stagger className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             {LEARNING_PATHS.map((path) => {
               const pct = computePathProgress(path.id);
               return (
                 <a key={path.id} href={"#/paths"} onClick={(e)=>{e.preventDefault(); navigate("/paths");}}
-                  className="card-glass p-6 hov-lift block relative overflow-hidden">
+                  className="card-glass p-4 md:p-6 hov-lift block relative overflow-hidden min-w-0">
                   <div className="absolute top-0 right-0 w-28 h-28 opacity-20 pointer-events-none"
                     style={{background: `radial-gradient(circle at top right, ${path.color}, transparent 70%)`}}/>
                   <div className="relative">
@@ -1250,11 +1249,11 @@ const LibraryPage = () => {
                       <div>
                         <div className="text-2xl mb-2">{path.icon}</div>
                         <div className="text-[11px] uppercase tracking-wider text-gold-400 font-semibold">{path.level}</div>
-                        <div className="font-display text-xl font-semibold text-ink mt-0.5">{path.label}</div>
+                        <div className="font-display text-base md:text-xl font-semibold text-ink mt-0.5 leading-tight">{path.label}</div>
                       </div>
                       <span className="text-sm text-ink-muted num font-medium">{pct}%</span>
                     </div>
-                    <p className="text-sm text-ink-muted leading-relaxed clamp-2 mb-4">{path.desc}</p>
+                    <p className="text-xs md:text-sm text-ink-muted leading-relaxed clamp-2 mb-4">{path.desc}</p>
                     <div className="h-1.5 bg-white/5 rounded-full overflow-hidden mb-3">
                       <div className="h-full transition-all duration-700 rounded-full"
                         style={{width: `${pct}%`, background: `linear-gradient(90deg, ${path.color}, #C9A86A)`}}/>
@@ -1325,7 +1324,7 @@ const KurasahRecentCards = () => {
     );
   }
   return (
-    <Reveal stagger className="grid sm:grid-cols-3 gap-3">
+    <Reveal stagger className="grid grid-cols-2 sm:grid-cols-3 gap-3">
       {notes.map(note => {
         const snippet = (note.body || "").slice(0, 100).replace(/[#*`>]/g, "").trim();
         return (

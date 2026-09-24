@@ -91,11 +91,16 @@ const SidebarItem = ({ item, active, collapsed, locked, onNavigate }) => {
 
 const SidebarContent = ({ collapsed, onToggle, onNavigate, onClose, mobile }) => {
   const { session, profile, logout, isFree } = useAuth();
+  const pwa = usePwaInstall();
   const path = useRoute();
   const [confirmLogout, setConfirmLogout] = useState(false);
   useEffect(() => setConfirmLogout(false), [path]);
 
   const tierLabel = isFree ? 'Akun gratis' : 'Member Library';
+  const groups = navGroups(profile);
+  if (!pwa.installed) {
+    groups[groups.length - 1].items.push({ action: pwa.install, label: 'Pasang aplikasi', icon: 'download' });
+  }
 
   return (
     <div className="h-full flex flex-col">
@@ -131,7 +136,7 @@ const SidebarContent = ({ collapsed, onToggle, onNavigate, onClose, mobile }) =>
             <Icon name="sidebar" className="w-4 h-4" style={{ stroke: 'currentColor' }}/>
           </button>
         )}
-        {navGroups(profile).map((group, gi) => (
+        {groups.map((group, gi) => (
           <div key={group.label} className={gi ? 'mt-5' : 'mt-1'}>
             {collapsed
               ? (gi > 0 && <div className="h-px bg-white/[0.06] mx-3 mb-3"/>)

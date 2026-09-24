@@ -216,7 +216,7 @@ const StatistikPage = () => {
               </div>
               {ai.limits && (
                 <Box title="Jatah AI hari ini">
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-3">
                     {Object.entries(QUOTA_LABELS).filter(([k]) => ai.limits[k]).map(([k, label]) => {
                       const used = ai.usageToday[k] || 0;
                       const limit = ai.limits[k];

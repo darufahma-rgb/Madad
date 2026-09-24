@@ -476,17 +476,17 @@ const HowItWorks = () => {
             Login, pilih paket, langsung belajar.
           </h2>
         </Reveal>
-        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 relative">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-8 md:gap-8 relative">
           <div className="hidden md:block absolute top-10 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent"/>
           {steps.map((s, i) => (
             <Reveal key={i}>
-              <div className="text-center px-4">
-                <div className="font-display text-5xl md:text-6xl font-semibold bg-gradient-to-br from-emerald-300 to-gold-400 bg-clip-text text-transparent mb-5">
+              <div className="text-center px-1 md:px-4">
+                <div className="font-display text-4xl md:text-6xl font-semibold bg-gradient-to-br from-emerald-300 to-gold-400 bg-clip-text text-transparent mb-3 md:mb-5">
                   {s.num}
                 </div>
-                <h3 className="font-display text-xl md:text-2xl font-semibold text-ink mb-1">{s.title}</h3>
-                <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">{s.sub}</div>
-                <p className="text-sm text-ink-muted leading-relaxed">{s.desc}</p>
+                <h3 className="font-display text-base md:text-2xl font-semibold text-ink mb-1">{s.title}</h3>
+                <div className="text-[10px] md:text-xs uppercase tracking-wider text-gold-400 mb-2 md:mb-3">{s.sub}</div>
+                <p className="text-xs md:text-sm text-ink-muted leading-relaxed">{s.desc}</p>
               </div>
             </Reveal>
           ))}
@@ -539,26 +539,26 @@ const AllMaddahPreview = () => {
             Dashboard cuma menampilkan maddah yang sesuai fakultas, jurusan, dan tingkatmu.
           </p>
         </Reveal>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-4">
           {groups.map((f, i) => (
-            <Reveal key={i} className={f.wide ? "md:col-span-2 lg:col-span-3" : ""}>
-              <div className={`card-glass p-6 hov-lift bg-gradient-to-br ${f.color} h-full`}>
-                <div className="flex items-start justify-between mb-4">
-                  <div>
-                    <div className="arabic-display text-gold-300 text-2xl mb-1" style={{direction:"rtl"}}>{f.arabic}</div>
-                    <h3 className="font-display text-lg font-semibold text-ink">{f.label}</h3>
+            <Reveal key={i} className={f.wide ? "col-span-2 lg:col-span-3" : ""}>
+              <div className={`card-glass p-3.5 md:p-6 hov-lift bg-gradient-to-br ${f.color} h-full min-w-0`}>
+                <div className="flex flex-col-reverse md:flex-row items-start md:justify-between gap-2 mb-3 md:mb-4">
+                  <div className="min-w-0">
+                    <div className="arabic-display text-gold-300 text-xl md:text-2xl mb-1" style={{direction:"rtl"}}>{f.arabic}</div>
+                    <h3 className="font-display text-sm md:text-lg font-semibold text-ink leading-snug">{f.label}</h3>
                   </div>
-                  <span className="text-xs px-2 py-1 rounded font-medium flex-shrink-0 ml-2" style={{background:"rgba(62,207,142,0.10)",color:"#3ecf8e",border:"1px solid rgba(62,207,142,0.20)"}}>
+                  <span className="text-[10px] md:text-xs px-2 py-0.5 md:py-1 rounded font-medium flex-shrink-0 md:ml-2" style={{background:"rgba(62,207,142,0.10)",color:"#3ecf8e",border:"1px solid rgba(62,207,142,0.20)"}}>
                     {f.count} Maddah
                   </span>
                 </div>
                 <ul className="space-y-1.5">
                   {f.sample.slice(0,4).map((s, j) => (
-                    <li key={j} className="flex items-center gap-2 text-sm text-ink-muted">
+                    <li key={j} className={`flex items-center gap-2 text-xs md:text-sm text-ink-muted ${j >= 3 ? "hidden md:flex" : ""}`}>
                       <span className="w-1 h-1 rounded-full bg-gold-400 flex-shrink-0"/>{s}
                     </li>
                   ))}
-                  {f.count > 4 && <li className="text-xs text-ink-soft italic mt-1">+ {f.count - 4} maddah lainnya</li>}
+                  {f.count > 4 && <li className="text-[11px] md:text-xs text-ink-soft italic mt-1">+ {f.count - 4} lainnya</li>}
                 </ul>
               </div>
             </Reveal>
@@ -645,7 +645,7 @@ const TestimoniSection = () => {
           className="testimonial-grid"
           >
             {testimonials.map((t, i) => (
-              <div key={i} style={{
+              <div key={i} className="testimonial-card" style={{
                 background: '#111',
                 border: '1px solid rgba(255,255,255,0.07)',
                 borderRadius: 16,
@@ -715,8 +715,11 @@ const TestimoniSection = () => {
       <style>{`
         @media (max-width: 768px) {
           .testimonial-grid {
-            grid-template-columns: 1fr !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
           }
+          .testimonial-card { padding: 14px 12px 12px !important; gap: 10px !important; }
+          .testimonial-card p { font-size: 12px !important; line-height: 1.6 !important; }
         }
         @media (min-width: 769px) and (max-width: 1024px) {
           .testimonial-grid {
@@ -896,14 +899,14 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
       {/* Cara bayar */}
       <Reveal>
         <div className="max-w-5xl mx-auto mt-6 card-glass p-5 md:p-6">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 text-sm">
             {[
               ["Login Google", "Tombol paket langsung minta login dulu."],
               ["Pilih paket", "Library, atau Library + AI Partner."],
               ["Bayar di Mayar", "QRIS, VA, e-wallet. Pakai email Google yang sama."],
               ["Aktif otomatis", "Tanpa kode, tanpa nunggu admin. Paket AI lanjut ke langganan bulanan."],
             ].map(([title, desc], i) => (
-              <div key={title} className="flex gap-3">
+              <div key={title} className="flex flex-col md:flex-row gap-2 md:gap-3">
                 <span className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-semibold text-emerald-200"
                   style={{ background:"rgba(62,207,142,0.15)", border:"1px solid rgba(62,207,142,0.3)" }}>{i + 1}</span>
                 <div>

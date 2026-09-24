@@ -1,0 +1,25 @@
+{
+  "id": "/",
+  "name": "Talqeeh — Panduan AI Masisir",
+  "short_name": "Talqeeh",
+  "description": "Belajar muqarrar Al-Azhar dengan AI: 88 maddah, 1.200+ prompt, bank soal imtihan, dan AI Partner dari diktatmu sendiri.",
+  "lang": "id",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0c0c0c",
+  "theme_color": "#0c0c0c",
+  "categories": ["education", "productivity"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "AI Partner", "short_name": "AI Partner", "url": "/#/ai-partner", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Maddah", "short_name": "Maddah", "url": "/#/maddah", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Kurasah", "short_name": "Kurasah", "url": "/#/kurasah", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

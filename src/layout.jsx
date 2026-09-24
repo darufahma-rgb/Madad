@@ -179,6 +179,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   const [confirmLogout, setConfirmLogout] = useState(false);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
   const { session, logout } = useAuth();
+  const pwa = usePwaInstall();
   const path = useRoute();
 
   useEffect(() => {
@@ -343,6 +344,11 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
                 )
               ) : (
                 <>
+                  {!pwa.installed && (
+                    <button onClick={() => { setOpen(false); pwa.install(); }} className="btn btn-ghost w-full">
+                      <Icon name="download" className="w-4 h-4"/> Pasang aplikasi
+                    </button>
+                  )}
                   <button onClick={() => { setOpen(false); onOpenPayment && onOpenPayment(); }} className="btn btn-primary w-full">
                     <Icon name="sparkles" className="w-4 h-4"/> Gabung Member
                   </button>

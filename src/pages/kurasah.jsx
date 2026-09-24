@@ -32,7 +32,7 @@ const NoteCard = ({ note, onClick }) => {
   return (
     <div
       onClick={() => onClick(note)}
-      className="card-glass hov-lift cursor-pointer border border-white/8 rounded-xl p-4 md:p-5 flex flex-col gap-2 md:gap-3 transition-all" style={{ minHeight: 44 }}>
+      className="card-glass hov-lift cursor-pointer border border-white/8 rounded-xl p-3.5 md:p-5 flex flex-col gap-2 md:gap-3 transition-all min-w-0" style={{ minHeight: 44 }}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex flex-wrap gap-1.5">
           {note.tags.slice(0,3).map(t => (
@@ -44,14 +44,14 @@ const NoteCard = ({ note, onClick }) => {
           {note.tags.length > 3 && <span className="text-[10px] text-ink-soft">+{note.tags.length-3}</span>}
         </div>
         {srcLabel && note.source && (
-          <span className="text-[10px] text-ink-soft flex items-center gap-1 flex-shrink-0">
+          <span className="hidden md:flex text-[10px] text-ink-soft items-center gap-1 flex-shrink-0">
             <Icon name="bookmark" className="w-2.5 h-2.5"/>
             {srcLabel}
           </span>
         )}
       </div>
       <div>
-        <h3 className="font-display text-base font-semibold text-ink leading-snug mb-1">{note.title}</h3>
+        <h3 className="font-display text-sm md:text-base font-semibold text-ink leading-snug mb-1 break-words line-clamp-2">{note.title}</h3>
         {snippet && (
           <p className="text-xs text-ink-soft leading-relaxed" style={{display:"-webkit-box",WebkitLineClamp:3,WebkitBoxOrient:"vertical",overflow:"hidden"}}>
             {snippet}
@@ -60,7 +60,7 @@ const NoteCard = ({ note, onClick }) => {
       </div>
       <div className="text-[11px] text-ink-soft flex items-center gap-2 mt-auto pt-1 border-t border-white/4">
         <span>{timeAgo(note.updatedAt)}</span>
-        {note.tags.length > 0 && <><span className="opacity-40">·</span><span>{note.tags.length} tag</span></>}
+        {note.tags.length > 0 && <span className="hidden md:contents"><span className="opacity-40">·</span><span>{note.tags.length} tag</span></span>}
       </div>
     </div>
   );
@@ -243,7 +243,7 @@ const KurasahPage = () => {
           ) : filtered.length === 0 ? (
             <div className="py-16 text-center text-ink-muted text-sm">Tidak ada catatan yang cocok.</div>
           ) : (
-            <Reveal stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+            <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-4">
               {filtered.map(n => (
                 <NoteCard key={n.id} note={n} onClick={n => navigate("/kurasah?id=" + n.id)}/>
               ))}

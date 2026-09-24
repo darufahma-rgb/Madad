@@ -10,16 +10,16 @@ const MuqaranahCard = ({ entry, onOpen, isCustom, onDelete }) => {
   return (
     <div
       onClick={() => onOpen(entry)}
-      className="relative card-glass hov-lift cursor-pointer group border border-white/8 hover:border-emerald-400/35 transition-all rounded-xl overflow-hidden"
+      className="relative card-glass hov-lift cursor-pointer group border border-white/8 hover:border-emerald-400/35 transition-all rounded-xl overflow-hidden min-w-0"
       style={{borderTopWidth:2, borderTopColor:"rgba(62,207,142,0.18)"}}>
       <div className="divider-arabesque opacity-20 mt-0 mb-0"/>
-      <div className="p-5">
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <span className="badge-neutral text-[11px] uppercase tracking-wider">{cat}</span>
+      <div className="p-3.5 md:p-5">
+        <div className="flex items-start justify-between gap-2 md:gap-3 mb-2.5 md:mb-3">
+          <span className="badge-neutral text-[10px] md:text-[11px] uppercase tracking-wider truncate">{cat}</span>
           {isCustom && <span className="badge-purple text-[10px]">Buatanmu</span>}
         </div>
-        <h3 className="font-display text-lg font-semibold text-ink mb-1.5 leading-snug line-clamp-2 group-hover:text-emerald-100 transition-colors">{entry.title}</h3>
-        <p className="text-xs text-ink-muted leading-relaxed mb-4" style={{display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>
+        <h3 className="font-display text-sm md:text-lg font-semibold text-ink mb-1.5 leading-snug line-clamp-2 break-words group-hover:text-emerald-100 transition-colors">{entry.title}</h3>
+        <p className="text-[11px] md:text-xs text-ink-muted leading-relaxed mb-3 md:mb-4" style={{display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical",overflow:"hidden"}}>
           {entry.question}
         </p>
         <div className="flex items-center justify-between">
@@ -152,7 +152,7 @@ const MuqaranahPage = () => {
           {/* Grid */}
           {tab === "library" && (
             libraryFiltered.length > 0 ? (
-              <Reveal stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-4">
                 {libraryFiltered.map(e => (
                   <MuqaranahCard key={e.id} entry={e} onOpen={openDetail}/>
                 ))}
@@ -164,7 +164,7 @@ const MuqaranahPage = () => {
 
           {tab === "custom" && (
             customFiltered.length > 0 ? (
-              <Reveal stagger className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-4">
                 {customFiltered.map(e => (
                   <MuqaranahCard key={e.id} entry={e} onOpen={openDetail} isCustom onDelete={deleteCustom}/>
                 ))}

@@ -579,10 +579,10 @@ const GlossaryTab = ({ set, setSet, access }) => {
           {picked.size ? `Jadikan flashcard (${picked.size})` : 'Semua jadi flashcard'}
         </ToolbarButton>
       </div>
-      <div className="grid sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2.5 md:gap-3">
         {shown.map(g => (
           <div key={g.i} onClick={() => toggle(g.i)}
-            className={`card-glass p-4 cursor-pointer transition ${picked.has(g.i) ? 'ring-1 ring-emerald-400/60' : ''}`}>
+            className={`card-glass p-3 md:p-4 cursor-pointer transition min-w-0 ${picked.has(g.i) ? 'ring-1 ring-emerald-400/60' : ''}`}>
             <div className="flex items-start gap-2">
               <span className={`w-5 h-5 mt-1 rounded border flex items-center justify-center flex-shrink-0 ${picked.has(g.i) ? 'bg-emerald-500 border-emerald-500' : 'border-white/20'}`}>
                 {picked.has(g.i) && <Icon name="check" className="w-3.5 h-3.5 text-black"/>}
@@ -590,7 +590,7 @@ const GlossaryTab = ({ set, setSet, access }) => {
               <ArabicText size={24} className="flex-1 text-gold-300">{g.ar}</ArabicText>
               <SpeakButton text={g.ar}/>
             </div>
-            <div className="text-sm text-ink mt-1">{g.makna}</div>
+            <div className="text-xs md:text-sm text-ink mt-1 break-words">{g.makna}</div>
             <div className="flex flex-wrap gap-1.5 mt-2">
               {g.jenis && <Pill>{g.jenis}</Pill>}
               {g.wazan && g.wazan !== '-' && <Pill tone="gold"><span dir="rtl" style={{ fontFamily: '"Noto Naskh Arabic", serif' }}>{g.wazan}</span></Pill>}

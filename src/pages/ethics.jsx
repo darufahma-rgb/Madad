@@ -51,12 +51,12 @@ const EthicsPage = () => {
             </div>
             <h2 className="font-display text-3xl md:text-4xl font-semibold text-ink mb-8">Pegangan saat pakai AI sebagai thalibul ilmi.</h2>
           </Reveal>
-          <Reveal stagger className="grid md:grid-cols-2 lg:grid-cols-3 gap-4 mb-14">
+          <Reveal stagger className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-4 mb-14">
             {ETHICS_POINTS.map((p, i) => (
-              <div key={i} className="card-glass p-6 hov-lift">
-                <div className="font-display text-5xl font-bold gradient-text leading-none num mb-4">{String(i+1).padStart(2,"0")}</div>
-                <h3 className="font-display text-xl font-semibold text-ink mb-2">{p.t}</h3>
-                <p className="text-sm text-ink-muted leading-relaxed">{p.d}</p>
+              <div key={i} className="card-glass p-3.5 md:p-6 hov-lift min-w-0">
+                <div className="font-display text-3xl md:text-5xl font-bold gradient-text leading-none num mb-3 md:mb-4">{String(i+1).padStart(2,"0")}</div>
+                <h3 className="font-display text-sm md:text-xl font-semibold text-ink mb-1.5 md:mb-2 leading-snug">{p.t}</h3>
+                <p className="text-xs md:text-sm text-ink-muted leading-relaxed">{p.d}</p>
               </div>
             ))}
           </Reveal>
@@ -81,7 +81,7 @@ const EthicsPage = () => {
                     Selalu verifikasi nama kitab, halaman, dan matan sebelum dimasukkan ke makalah.
                   </strong>
                 </p>
-                <div className="grid sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 md:gap-3">
                   <div className="card-glass p-4">
                     <div className="font-display text-base font-semibold text-ink mb-1">1. Cek nama</div>
                     <div className="text-xs text-ink-muted">Cari kitab + pengarang di Maktabah Syamilah atau katalog perpus Azhar.</div>
