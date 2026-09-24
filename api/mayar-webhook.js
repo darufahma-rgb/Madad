@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import { readSettings } from './_lib/settings.js';
+import { newMemberCode } from './_lib/member.js';
 
 const readRawBody = (req) => new Promise((resolve) => {
   let body = '';
@@ -69,11 +70,6 @@ const extractMemberCode = (data) =>
 const extractEmail = (data) =>
   (customFieldValue(data.custom_field, l => l.includes('email')) || data.customerEmail || '').trim().toLowerCase() || null;
 
-// Sama dengan generateCode di src/auth.jsx (tanpa huruf/angka yang mirip: I, O, 0, 1).
-const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-const codeSegment = (n) => Array.from(crypto.randomBytes(n), b => CODE_CHARS[b % CODE_CHARS.length]).join('');
-const newMemberCode = () => `MSR-${codeSegment(4)}-${codeSegment(4)}`;
-
 const LIFETIME_EXPIRY = '2099-12-31';
 
 const AI_STATUS_BY_EVENT = {
@@ -96,18 +92,23 @@ async function activateLibraryMember(sb, data) {
   const email = extractEmail(data);
   if (!email) return null;
 
-  const existing = await fetch(
-    `${sb.url}/rest/v1/members?email=eq.${encodeURIComponent(email)}&select=code,status&limit=1`,
+  // Kolom tier ada setelah migrasi free_tier.sql; tanpa itu anggap semua member 'library'.
+  const lookup = (fields) => fetch(
+    `${sb.url}/rest/v1/members?email=eq.${encodeURIComponent(email)}&select=${fields}&limit=1`,
     { headers: sb.headers }
-  ).then(r => r.json()).catch(() => []);
+  );
+  let found = await lookup('code,status,tier');
+  if (found.status === 400) found = await lookup('code,status');
+  const existing = await found.json().catch(() => []);
 
   if (Array.isArray(existing) && existing[0]) {
-    const { code, status } = existing[0];
-    if (status !== 'active') {
+    const { code, status, tier } = existing[0];
+    // Member nonaktif diaktifkan lagi; akun gratis naik ke Library.
+    if (status !== 'active' || tier === 'free') {
       await fetch(`${sb.url}/rest/v1/members?code=eq.${encodeURIComponent(code)}`, {
         method: 'PATCH',
         headers: { ...sb.headers, Prefer: 'return=minimal' },
-        body: JSON.stringify({ status: 'active', expires_at: LIFETIME_EXPIRY }),
+        body: JSON.stringify({ status: 'active', expires_at: LIFETIME_EXPIRY, ...(tier === 'free' ? { tier: 'library', notes: `Upgrade dari akun gratis · Mayar ${data.id || ''}`.trim() } : {}) }),
       });
     }
     return code;

@@ -398,7 +398,7 @@ const TwoWaysSection = () => {
       title: "Belajar langsung dari diktatmu sendiri",
       desc: "Unggah diktat, slide, foto kitab, atau rekaman kuliah. AI Partner membaca isinya — termasuk teks Arab — lalu menyiapkan bahan belajar di Talqeeh, tanpa perlu menyusun prompt.",
       steps: ["Unggah PDF, Word, slide, foto, atau rekaman", "Dapat ringkasan, peta konsep, mufradat, flashcard, soal", "Blok kalimat Arab → terjemah & i'rab; latihan syafawi"],
-      extras: "Member Library bisa coba gratis 1 materi dulu sebelum berlangganan.",
+      extras: "Bisa dicoba gratis 1 materi — cukup masuk dengan Google dan buat akun gratis.",
     },
   ];
   const toneClass = {
@@ -794,8 +794,8 @@ const LANDING_FAQ = [
     a: "Akun Google jadi identitas keanggotaanmu. Pembayaran otomatis tercatat ke akun itu, jadi nggak ada kode yang perlu ditunggu atau diketik, dan kamu bisa belajar di HP maupun laptop dengan akun yang sama." },
   { q: "Apa beda paket Library dan Library + AI Partner?",
     a: `Library berisi ${CATALOG.maddah} maddah, ${CATALOG.prompts} template prompt, bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Prompt-nya kamu salin ke AI pilihanmu (Claude, ChatGPT, NotebookLM, dll). Library + AI Partner menambahkan tempat unggah materi kuliahmu sendiri (PDF, Word, slide, foto diktat, rekaman kuliah): AI langsung bikin ringkasan gaya kitab, peta konsep, mufradat, flashcard, kuis, dan soal tahriri, menerjemahkan & meng-i'rab kalimat Arab, serta bisa diajak simulasi syafawi — tanpa pindah aplikasi. AI Partner dibayar bulanan.` },
-  { q: "Bisa coba AI Partner dulu sebelum berlangganan?",
-    a: "Bisa. Setiap member Library dapat jatah coba gratis 1 materi (teks, dokumen, atau foto) lengkap dengan ringkasan, flashcard, kuis, dan mufradat. Fitur lain seperti audio/video, peta konsep, i'rab, tahriri, dan tutor terbuka setelah berlangganan." },
+  { q: "Bisa coba dulu sebelum bayar?",
+    a: "Bisa. Masuk dengan Google lalu pilih \"Mulai gratis\": kamu dapat akun gratis dengan maddah Nahwu + 1 maddah pilihanmu, 3 soal bank soal, dan jatah coba AI Partner 1 materi (ringkasan, flashcard, kuis, mufradat). Upgrade ke Library kapan saja — akunnya sama, progresmu tetap aman." },
   { q: "Library-nya berlaku sampai kapan?",
     a: "Selamanya. Sekali bayar, dan maddah, prompt, atau fitur Library yang ditambahkan nanti ikut terbuka tanpa biaya tambahan." },
   { q: "Bayarnya pakai apa?",
@@ -868,7 +868,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
                 <div className="text-sm text-ink font-medium mb-3">Semua isi paket Library, ditambah:</div>
                 <FeatureList items={AI_PARTNER_FEATURES} color="text-emerald-400"/>
                 <p className="text-xs text-ink-soft mt-4 leading-relaxed">
-                  Belum yakin? Member Library bisa coba gratis 1 materi dulu. Library tetap milikmu selamanya; langganan AI bisa berhenti kapan saja.
+                  Library tetap milikmu selamanya; langganan AI bisa berhenti kapan saja.
                 </p>
               </div>
               <button onClick={() => onOpenJoin("library_ai")}
@@ -877,6 +877,19 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
               </button>
             </div>
           </div>
+        </div>
+      </Reveal>
+
+      {/* Coba gratis */}
+      <Reveal>
+        <div className="max-w-5xl mx-auto mt-5 card-glass p-5 flex items-center gap-4 flex-wrap" style={{ border: "1px solid rgba(96,165,250,0.3)" }}>
+          <div className="flex-1 min-w-[240px]">
+            <div className="text-ink font-medium">Belum yakin? Coba gratis dulu.</div>
+            <div className="text-sm text-ink-muted leading-relaxed">
+              Masuk dengan Google → dapat akses Nahwu + 1 maddah pilihan, 3 soal bank soal, dan coba AI Partner 1 materi. Tanpa bayar.
+            </div>
+          </div>
+          <button onClick={() => onOpenJoin("free")} className="btn btn-ghost text-sm px-5 py-2.5">Mulai gratis</button>
         </div>
       </Reveal>
 

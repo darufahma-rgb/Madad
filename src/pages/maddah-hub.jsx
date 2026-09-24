@@ -9,6 +9,8 @@ const MaddahCard = ({ maddah }) => {
   const act      = activity[maddah.id];
   const isVisited  = act && act.opens > 0;
   const promptCount = act?.promptsCopied || 0;
+  const locked = isMaddahLocked(maddah.id, getSession(), getProfile());
+  const freeOpen = getSession()?.tier === "free" && !locked;
 
   return (
     <div
@@ -33,6 +35,8 @@ const MaddahCard = ({ maddah }) => {
           {!hasContent && !isVisited && (
             <span className="badge-neutral">Segera</span>
           )}
+          {locked && <span className="inline-flex items-center gap-1 text-[10px] text-gold-300"><Icon name="crown" className="w-3 h-3"/>Library</span>}
+          {freeOpen && <span className="text-[10px] text-sky-300">Gratis</span>}
         </div>
       </div>
 

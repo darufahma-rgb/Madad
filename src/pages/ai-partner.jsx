@@ -190,7 +190,7 @@ const AiPartnerPage = () => {
       </section>
       {status.loading ? <GateLoading/>
         : status.tier === 'none'
-          ? <div className="container-x pb-24"><UpgradeCard title="Khusus member Talqeeh" message="AI Partner tersedia untuk member Library. Gabung dulu, lalu coba gratis 1 materi."/></div>
+          ? <div className="container-x pb-24"><UpgradeCard title="Khusus member Talqeeh" message="Masuk dengan Google dan buat akun gratis untuk mencoba AI Partner 1 materi."/></div>
           : <AiPartnerList status={status}/>}
     </div>
   );

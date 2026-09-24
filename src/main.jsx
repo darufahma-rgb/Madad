@@ -62,6 +62,7 @@ import './pages/ai-partner-create.jsx';
 import './pages/ai-partner-study.jsx';
 import './pages/ai-partner.jsx';
 import './pages/statistik.jsx';
+import './pages/gabung.jsx';
 
 // App shell — terakhir
 import App from './app.jsx';

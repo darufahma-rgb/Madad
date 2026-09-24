@@ -470,8 +470,27 @@ const HomeBadge = ({ children, tone }) => (
   </span>
 );
 
+// Banner ajakan upgrade untuk akun gratis (Beranda & Library).
+const FreeTierBanner = ({ compact }) => (
+  <div className={`card-glass ${compact ? 'p-4' : 'p-5'} flex items-center gap-4 flex-wrap`} style={{ border: '1px solid rgba(201,168,106,0.3)' }}>
+    <span className="w-10 h-10 rounded-xl bg-gold-500/12 border border-gold-500/25 flex items-center justify-center flex-shrink-0">
+      <Icon name="crown" className="w-5 h-5 text-gold-300"/>
+    </span>
+    <div className="flex-1 min-w-[220px]">
+      <div className="text-sm text-ink font-medium">Kamu memakai akun gratis</div>
+      <div className="text-xs text-ink-muted leading-relaxed">
+        Terbuka: Nahwu + 1 maddah pilihan, 3 soal bank soal, dan coba AI Partner 1 materi.
+        Upgrade ke Library untuk membuka {CATALOG.maddah} maddah, bank soal lengkap, Siap Imtihan, dan Muqaranah.
+      </div>
+    </div>
+    <button onClick={() => navigate('/gabung?plan=library')} className="btn btn-gold text-xs px-4 py-2">
+      Upgrade · {LIBRARY_PRICE}
+    </button>
+  </div>
+);
+
 const DashboardHomePage = () => {
-  const { session, profile } = useAuth();
+  const { session, profile, isFree } = useAuth();
   const [aiAccess, setAiAccess] = useState("checking");
 
   useEffect(() => {
@@ -514,13 +533,15 @@ const DashboardHomePage = () => {
             <p className="text-base md:text-lg text-ink-muted">Mau belajar pakai apa hari ini?</p>
           </Reveal>
 
+          {isFree && <div className="max-w-5xl mb-5"><FreeTierBanner/></div>}
+
           <div className="grid md:grid-cols-2 gap-4 md:gap-5 max-w-5xl">
             <Reveal>
               <HomeChoiceCard
                 tone="gold"
                 arabic="المكتبة"
                 title="Library"
-                badge={<HomeBadge tone="gold">Aktif · selamanya</HomeBadge>}
+                badge={isFree ? <HomeBadge>Gratis · terbatas</HomeBadge> : <HomeBadge tone="gold">Aktif · selamanya</HomeBadge>}
                 desc="Prompt siap pakai untuk tiap maddah — salin, lalu tempel ke AI favoritmu."
                 points={[
                   myMaddahCount ? `${myMaddahCount} maddah sesuai fakultas & tingkatmu` : `${CATALOG.maddah} maddah Al-Azhar`,
@@ -573,7 +594,7 @@ const DashboardHomePage = () => {
    LIBRARY — isi dashboard belajar berbasis prompt
    ══════════════════════════════════════════════════════════════ */
 const LibraryPage = () => {
-  const { session, profile, progress, clearProfile } = useAuth();
+  const { session, profile, progress, clearProfile, isFree } = useAuth();
 
   const recs = useMemo(() => profile ? recommend(profile) : [], [profile]);
   const stage = useMemo(() => computeStage(), [progress]);
@@ -740,6 +761,8 @@ const LibraryPage = () => {
           style={{background: "linear-gradient(to bottom, transparent, #0A0514)"}}
         />
       </section>
+
+      {isFree && <div className="container-x mb-6"><FreeTierBanner compact/></div>}
 
       {/* 2. STARTER PACK */}
       <StarterPackCard profile={profile} session={session}/>

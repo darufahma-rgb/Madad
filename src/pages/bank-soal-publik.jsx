@@ -26,7 +26,7 @@ const getFirstSoal = (raw) => {
 /* ── Modal detail soal ── */
 const SoalModal = ({ group, onClose }) => {
   const [progress, setProgress] = React.useState({});
-  const isMember = !!(typeof window !== 'undefined' && window.getMemberCode?.());
+  const isMember = !!(typeof window !== 'undefined' && window.isPaidMember?.());
 
   React.useEffect(() => {
     if (!group || !isMember) return;

@@ -183,6 +183,10 @@ const MaddahDetailPage = () => {
     );
   }
 
+  if (isMaddahLocked(maddah.id, session, profile)) {
+    return <FreeMaddahGate maddah={maddah} backPath="/maddah" backLabel="Daftar Maddah"/>;
+  }
+
   const hasContent   = maddah?.prompts
     && typeof maddah.prompts === "object"
     && Object.values(maddah.prompts).some(arr =>

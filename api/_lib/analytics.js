@@ -39,11 +39,14 @@ const countRows = async (path) => {
   return r.ok && total && total !== '*' ? parseInt(total, 10) : 0;
 };
 
-// Kolom ai_trial_set_id baru ada setelah migrasi ai_partner_v2; tanpa itu tetap ambil data member.
+// Kolom tambahan datang dari migrasi terpisah (ai_partner_v2, free_tier); pakai yang tersedia saja.
 const fetchMembers = async () => {
   const base = 'members?select=code,name,email,status,created_at,last_login,auth_user_id';
-  const withTrial = await fetchAll(`${base},ai_trial_set_id`);
-  return withTrial.missing ? fetchAll(base) : withTrial;
+  for (const extra of [',ai_trial_set_id,tier,free_started_at', ',ai_trial_set_id', '']) {
+    const result = await fetchAll(base + extra);
+    if (!result.missing) return result;
+  }
+  return { rows: [], missing: true };
 };
 
 const inRange = (iso, from, to) => { const d = dayKey(iso); return d >= from && d <= to; };
@@ -129,9 +132,18 @@ export async function buildAdminAnalytics(days) {
     faculty[f] = (faculty[f] || 0) + 1;
     if (profile.level) level[profile.level] = (level[profile.level] || 0) + 1;
   }
+  const isFree = (x) => x.tier === 'free';
+  const freeStarted = m.filter(x => x.free_started_at);
+  const freeConverted = freeStarted.filter(x => !isFree(x) && x.status === 'active').length;
   const membersOut = {
     total: m.length,
     active: m.filter(x => x.status === 'active').length,
+    paid: m.filter(x => x.status === 'active' && !isFree(x)).length,
+    free: m.filter(x => x.status === 'active' && isFree(x)).length,
+    freeStarted: freeStarted.length,
+    freeConverted,
+    freeConversionRate: freeStarted.length ? freeConverted / freeStarted.length : null,
+    freeNewInRange: freeStarted.filter(x => inRange(x.free_started_at, from, to)).length,
     googleLinked: m.filter(x => x.auth_user_id).length,
     pinPending: m.filter(x => x.status === 'active' && !x.auth_user_id).length,
     newInRange: Object.values(newByDay).reduce((a, b) => a + b, 0),

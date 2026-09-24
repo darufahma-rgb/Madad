@@ -139,6 +139,10 @@ const MahadDetailPage = () => {
     );
   }
 
+  if (isMaddahLocked(maddah.id, session, profile)) {
+    return <FreeMaddahGate maddah={maddah} backPath="/mahad-maddah" backLabel="Maddah Ma'had"/>;
+  }
+
   const resolvePrompt = (template) => {
     if (!template || !profile) return template || "";
     const tingkat = typeof TINGKATAN_LABEL !== "undefined"

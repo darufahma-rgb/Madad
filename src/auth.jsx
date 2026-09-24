@@ -69,6 +69,7 @@ const applyMember = async (member) => {
     code:              member.code,
     name:              member.name,
     email:             member.email,
+    tier:              member.tier || "library",
     loggedInAt:        firstSignIn ? new Date().toISOString() : prev.loggedInAt,
     authVersion:       2,
     supabaseValidated: true,
@@ -93,6 +94,21 @@ const redeemActivationPin = async (pin, token) => {
     return { ok: false, status: "error" };
   }
 };
+
+// Login Google tanpa bayar → buat akun gratis terbatas.
+const startFreeAccount = async () => {
+  try {
+    const res = await authFetch("/api/login?action=start-free", { method: "POST", body: "{}" });
+    const data = await res.json();
+    if (data.ok) { await applyMember(data.member); return { ok: true }; }
+    return { ok: false, status: data.status || "error" };
+  } catch {
+    return { ok: false, status: "error" };
+  }
+};
+
+// Akun gratis: login Google tanpa bayar, akses terbatas.
+const isFreeTier = () => getSession()?.tier === "free";
 
 const syncMemberSession = async (supaSession) => {
   if (!supaSession) {
@@ -290,6 +306,8 @@ const useAuth = () => {
   useEffect(() => {
     window.addEventListener("storage",       syncFromStorage);
     window.addEventListener("madad:refresh", syncFromStorage);
+    // Status login bisa berubah antara render pertama dan listener terpasang — samakan sekali.
+    syncFromStorage();
     return () => {
       window.removeEventListener("storage",       syncFromStorage);
       window.removeEventListener("madad:refresh", syncFromStorage);
@@ -300,8 +318,11 @@ const useAuth = () => {
     session, profile, progress,
     authStatus: auth.status,
     authInfo:   auth,
+    tier:       session?.tier || "library",
+    isFree:     session?.tier === "free",
     signInWithGoogle,
     redeemPin: redeemActivationPin,
+    startFreeAccount,
     refreshMemberSession,
     logout: () => { logout(); setSession(null); setProfileState(null); setProgressState(null); fireRefresh(); },
     saveProfile: (p) => { saveProfile(p); fireRefresh(); },
@@ -366,6 +387,7 @@ Object.assign(window, {
   isAdminLoggedIn, setAdminLoggedIn,
   generateCode,
   signInWithGoogle, redeemActivationPin, getAuthState, refreshMemberSession,
+  startFreeAccount, isFreeTier,
   useAuth, getSession,
   getProfile, saveProfile, clearProfile,
   getProgress, saveProgress, markModuleComplete, setLastActivity,

@@ -116,6 +116,14 @@ const getMemberCode = () => {
   } catch { return null; }
 };
 
+// Member yang sudah bayar Library (bukan akun gratis). Dipakai untuk membuka bank soal penuh & reward member.
+const isPaidMember = () => {
+  try {
+    const s = JSON.parse(localStorage.getItem("madad_session") || "{}");
+    return !!s.code && s.tier !== "free";
+  } catch { return false; }
+};
+
 /* ── AI ADD-ON SUBSCRIPTION (Mayar) ── */
 
 const checkAiSubscription = async () => {
@@ -419,7 +427,7 @@ const sbPushAllUserData = async () => {
 };
 
 Object.assign(window, {
-  getMemberCode,
+  getMemberCode, isPaidMember,
   checkAiSubscription,
   sbLoadNotes, sbSaveNote, sbDeleteNote,
   sbLoadProgress, sbSaveProgress,

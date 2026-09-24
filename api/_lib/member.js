@@ -1,3 +1,5 @@
+import crypto from 'crypto';
+
 export const sbConfig = () => {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -16,7 +18,24 @@ export const sbHeaders = (key, extra = {}) => ({
 export const normalizeCode = (code) =>
   typeof code === 'string' ? code.trim().toUpperCase() : '';
 
-const MEMBER_FIELDS = 'code,name,email,status,expires_at,auth_user_id';
+const BASE_MEMBER_FIELDS = 'code,name,email,status,expires_at,auth_user_id';
+const MEMBER_FIELDS = `${BASE_MEMBER_FIELDS},tier`;
+
+// Kode member internal: tanpa huruf/angka yang mirip (I, O, 0, 1). Sama dengan generateCode di src/auth.jsx.
+const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const codeSegment = (n) => Array.from(crypto.randomBytes(n), b => CODE_CHARS[b % CODE_CHARS.length]).join('');
+export const newMemberCode = () => `MSR-${codeSegment(4)}-${codeSegment(4)}`;
+
+// Kolom `tier` baru ada setelah migrasi free_tier.sql. Sebelum itu, ulangi tanpa kolom itu dan
+// anggap semua member 'library' — supaya login tidak rusak kalau migrasi terlambat dijalankan.
+const fetchMembers = async (query, init) => {
+  const { url, key } = sbConfig();
+  const run = (fields) => fetch(`${url}/rest/v1/members?${query}&select=${fields}`, init(key));
+  let r = await run(MEMBER_FIELDS);
+  if (r.status === 400) r = await run(BASE_MEMBER_FIELDS);
+  const rows = await r.json();
+  return (Array.isArray(rows) ? rows : []).map(m => ({ ...m, tier: m.tier || 'library' }));
+};
 
 // Verifies the Supabase access token sent as "Authorization: Bearer <token>".
 export const getAuthUser = async (req) => {
@@ -40,24 +59,20 @@ export const getAuthUser = async (req) => {
 // Member linked to this Google account; links a member pre-registered by email on first login.
 export const resolveMember = async (user) => {
   if (!user) return null;
-  const { url, key } = sbConfig();
 
-  const byId = await fetch(
-    `${url}/rest/v1/members?auth_user_id=eq.${encodeURIComponent(user.id)}&select=${MEMBER_FIELDS}&limit=1`,
-    { headers: sbHeaders(key) }
-  ).then(r => r.json());
-  if (Array.isArray(byId) && byId[0]) return byId[0];
+  const byId = await fetchMembers(`auth_user_id=eq.${encodeURIComponent(user.id)}&limit=1`, key => ({ headers: sbHeaders(key) }));
+  if (byId[0]) return byId[0];
 
   if (!user.email) return null;
-  const linked = await fetch(
-    `${url}/rest/v1/members?email=eq.${encodeURIComponent(user.email)}&auth_user_id=is.null&select=${MEMBER_FIELDS}`,
-    {
+  const linked = await fetchMembers(
+    `email=eq.${encodeURIComponent(user.email)}&auth_user_id=is.null`,
+    key => ({
       method: 'PATCH',
       headers: sbHeaders(key, { Prefer: 'return=representation' }),
       body: JSON.stringify({ auth_user_id: user.id }),
-    }
-  ).then(r => r.json());
-  return Array.isArray(linked) && linked[0] ? linked[0] : null;
+    })
+  );
+  return linked[0] || null;
 };
 
 export const isActiveMember = async (code) => {

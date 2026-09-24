@@ -1,4 +1,4 @@
-import { sbConfig, sbHeaders, getAuthUser, resolveMember } from './_lib/member.js';
+import { sbConfig, sbHeaders, getAuthUser, resolveMember, newMemberCode } from './_lib/member.js';
 import { normalizePin } from './_lib/pin.js';
 
 // Identity comes from the Supabase (Google) access token. Existing members link their
@@ -32,6 +32,7 @@ const toPublicMember = (m, user) => ({
   email:     m.email || user.email,
   status:    m.status,
   expiresAt: m.expires_at,
+  tier:      m.tier || 'library',
 });
 
 const touchLastLogin = (code) => {
@@ -61,9 +62,11 @@ async function handleRedeem(req, user, res) {
   if (!pin) return res.status(400).json({ ok: false, status: 'invalid' });
 
   const current = await resolveMember(user);
-  if (current?.status === 'active') {
+  if (current?.status === 'active' && current.tier !== 'free') {
     return res.status(200).json({ ok: true, member: toPublicMember(current, user) });
   }
+  // Pemilik akun gratis yang ternyata member lama: akun gratisnya dilepas lalu diganti member lama.
+  const freeAccount = current?.status === 'active' && current.tier === 'free' ? current : null;
 
   const { url, key } = sbConfig();
   const rows = await fetch(
@@ -98,12 +101,69 @@ async function handleRedeem(req, user, res) {
     }
   );
 
+  const patchFree = (body) => fetch(`${url}/rest/v1/members?code=eq.${encodeURIComponent(freeAccount.code)}`, {
+    method: 'PATCH',
+    headers: sbHeaders(key, { Prefer: 'return=minimal' }),
+    body: JSON.stringify(body),
+  });
+  if (freeAccount) {
+    const detached = await patchFree({ auth_user_id: null, email: null, status: 'disabled', notes: `Diganti member lama ${row.code}` });
+    if (!detached.ok) return res.status(200).json({ ok: false, status: 'error' });
+  }
+
   let r = await link(row.email ? {} : { email: user.email });
   if (!r.ok) r = await link({}); // email already used by another member row
   const linked = await r.json().catch(() => []);
-  if (!Array.isArray(linked) || !linked[0]) return res.status(200).json({ ok: false, status: 'already_linked' });
+  if (!Array.isArray(linked) || !linked[0]) {
+    if (freeAccount) await patchFree({ auth_user_id: user.id, email: freeAccount.email, status: 'active', notes: 'Akun gratis' });
+    return res.status(200).json({ ok: false, status: 'already_linked' });
+  }
 
   return res.status(200).json({ ok: true, member: toPublicMember(linked[0], user) });
+}
+
+// Login Google tanpa bayar → akun gratis terbatas (tier 'free').
+async function handleStartFree(user, res) {
+  const current = await resolveMember(user);
+  if (current) {
+    if (current.status !== 'active') return res.status(200).json({ ok: false, status: current.status });
+    return res.status(200).json({ ok: true, member: toPublicMember(current, user) });
+  }
+
+  const { url, key } = sbConfig();
+  const now = new Date().toISOString();
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const r = await fetch(`${url}/rest/v1/members?select=code,name,email,status,expires_at,tier`, {
+      method: 'POST',
+      headers: sbHeaders(key, { Prefer: 'return=representation' }),
+      body: JSON.stringify({
+        code:            newMemberCode(),
+        name:            (user.name || user.email.split('@')[0]).slice(0, 120),
+        email:           user.email,
+        auth_user_id:    user.id,
+        whatsapp:        '',
+        duration:        36500,
+        status:          'active',
+        tier:            'free',
+        free_started_at: now,
+        expires_at:      '2099-12-31',
+        last_login:      now,
+        notes:           'Akun gratis',
+      }),
+    });
+    if (r.ok) {
+      const rows = await r.json();
+      return res.status(200).json({ ok: true, member: toPublicMember(rows[0], user) });
+    }
+    if (r.status !== 409) {
+      console.error('[login:start-free]', r.status, await r.text());
+      return res.status(200).json({ ok: false, status: 'error' });
+    }
+    // 409: kode bentrok (coba kode lain) atau akun sudah dibuat oleh permintaan paralel.
+    const existing = await resolveMember(user);
+    if (existing) return res.status(200).json({ ok: true, member: toPublicMember(existing, user) });
+  }
+  return res.status(200).json({ ok: false, status: 'error' });
 }
 
 export default async function handler(req, res) {
@@ -122,6 +182,7 @@ export default async function handler(req, res) {
 
     if (action === 'session') return await handleSession(user, res);
     if (action === 'redeem')  return await handleRedeem(req, user, res);
+    if (action === 'start-free') return await handleStartFree(user, res);
     return res.status(400).json({ ok: false, error: 'Action tidak valid' });
   } catch (err) {
     console.error(`[login:${action}]`, err.message);

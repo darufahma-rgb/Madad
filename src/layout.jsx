@@ -242,6 +242,11 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
         <div className="hidden md:flex items-center gap-2">
           {session ? (
             <>
+              {session.tier === "free" && (
+                <button onClick={onOpenPayment} className="btn btn-gold text-xs py-2 px-3.5">
+                  <Icon name="crown" className="w-3.5 h-3.5"/> Upgrade
+                </button>
+              )}
               <div className="hidden lg:block px-3 py-1.5 rounded-lg chip-glass text-xs" title={`${session.email || ""} · ${session.code}`}>
                 <span className="text-ink-muted">Member:</span> <span className="text-ink font-medium">{session.name}</span>
               </div>
@@ -359,6 +364,11 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
               <div className="text-ink font-medium">{session.name}</div>
               {session.email && <div className="text-xs text-ink-muted mt-0.5">{session.email}</div>}
               <div className="text-[11px] text-ink-soft font-mono mt-1">ID member: {session.code}</div>
+              {session.tier === "free" && (
+                <button onClick={() => { setMobileSheetOpen(false); onOpenPayment(); }} className="btn btn-gold w-full text-sm py-2.5 mt-3">
+                  <Icon name="crown" className="w-4 h-4"/> Akun gratis · Upgrade ke Library
+                </button>
+              )}
             </div>
             <SheetLink icon="star" label="Statistik Belajarku" onClick={() => { navigate("/statistik"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="target" label="Siap Imtihan" onClick={() => { navigate("/siap-imtihan"); setMobileSheetOpen(false); }}/>
@@ -500,7 +510,7 @@ const useGoogleSignIn = () => {
   return { loading, error, start, switchAccount };
 };
 
-// Login saja. Pengguna yang sudah login tapi belum member diarahkan ke JoinModal oleh App.
+// Login saja. Pengguna yang sudah login tapi belum punya akun diarahkan ke halaman /gabung oleh App.
 const LoginModal = ({ open, onClose, onSuccess, joinPlan }) => {
   const { authStatus, authInfo } = useAuth();
   const google = useGoogleSignIn();
@@ -534,8 +544,8 @@ const LoginModal = ({ open, onClose, onSuccess, joinPlan }) => {
             </h2>
             <p className="text-sm text-ink-muted mb-6 leading-relaxed">
               {joinPlan
-                ? "Akun Google jadi identitas keanggotaanmu. Setelah login, kamu langsung diarahkan ke pilihan paket dan pembayaran."
-                : "Login pakai akun Google. Belum jadi member? Setelah login kamu bisa langsung pilih paket."}
+                ? "Akun Google jadi identitas keanggotaanmu. Setelah login, kamu diarahkan ke halaman pilihan paket — bayar sekarang atau coba gratis dulu."
+                : "Login pakai akun Google. Belum jadi member? Setelah login kamu bisa pilih paket — atau coba gratis dulu."}
             </p>
             <GoogleButton onClick={google.start} loading={google.loading} disabled={authStatus === "loading"}/>
             <ErrorBox message={google.error}/>
@@ -587,236 +597,97 @@ const StepList = ({ items }) => (
   </ol>
 );
 
-const PlanOption = ({ selected, onSelect, accent, title, price, sub, bullets, badge }) => (
-  <button type="button" onClick={onSelect}
-    className="w-full text-left rounded-2xl p-4 transition-all relative"
-    style={{
-      background: selected ? (accent === "gold" ? "rgba(201,168,106,0.10)" : "rgba(62,207,142,0.10)") : "rgba(255,255,255,0.03)",
-      border: `1px solid ${selected ? (accent === "gold" ? "rgba(201,168,106,0.55)" : "rgba(62,207,142,0.55)") : "rgba(255,255,255,0.08)"}`,
-    }}>
-    {badge && <span className="absolute -top-2.5 right-4 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500 text-black">{badge}</span>}
-    <div className="flex items-start justify-between gap-3 mb-2">
-      <div className="font-display font-semibold text-ink">{title}</div>
-      <span className="w-4 h-4 rounded-full mt-1 flex-shrink-0 border-2"
-        style={{ borderColor: selected ? (accent === "gold" ? "#C9A86A" : "#3ecf8e") : "rgba(255,255,255,0.25)", background: selected ? (accent === "gold" ? "#C9A86A" : "#3ecf8e") : "transparent" }}/>
+/* ---------------- Dinding upgrade untuk akun gratis ---------------- */
+const FREE_WALL_COPY = {
+  "/siap-imtihan":   { title: "Siap Imtihan", desc: "Bank soal lengkap dengan prompt jawaban, 4 mode latihan gaya ujian Azhar, dan Bedah Talkhisan." },
+  "/paths":          { title: "Learning Path & Muqaranah", desc: "Jalur belajar bertahap dan perbandingan qoul ulama 4 madzhab." },
+  "/prompt-library": { title: "Prompt Library", desc: `${CATALOG.prompts} template prompt yang disesuaikan dengan tingkat dan gaya belajarmu.` },
+  "/tools":          { title: "Tool Guide", desc: "Panduan memilih dan memakai AI yang tepat untuk tiap kebutuhan belajar." },
+  "/s2-maddah":      { title: "Maddah S2", desc: "Template prompt khusus mahasiswa pascasarjana: risalah, literatur, presentasi." },
+};
+
+const FreeUpgradeWall = ({ path }) => {
+  const key = Object.keys(FREE_WALL_COPY).find(p => path === p || path.startsWith(p + "/") || path.startsWith(p + "?"));
+  const copy = FREE_WALL_COPY[key] || { title: "Fitur Library", desc: "Fitur ini termasuk dalam paket Library." };
+  return (
+    <div className="page-enter container-x py-10 md:py-16 max-w-2xl">
+      <div className="card-glass-strong p-7 md:p-10 text-center" style={{ border: "1px solid rgba(201,168,106,0.3)" }}>
+        <div className="w-14 h-14 rounded-2xl mx-auto mb-5 flex items-center justify-center bg-gold-500/12 border border-gold-500/25">
+          <Icon name="crown" className="w-6 h-6 text-gold-300"/>
+        </div>
+        <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-2">Khusus paket Library</div>
+        <h1 className="font-display text-2xl md:text-3xl font-semibold text-ink mb-3">{copy.title}</h1>
+        <p className="text-ink-muted leading-relaxed mb-6">{copy.desc}</p>
+        <ul className="text-left text-sm text-ink space-y-2 max-w-sm mx-auto mb-7">
+          {LIBRARY_FEATURES.slice(0, 5).map(f => (
+            <li key={f} className="flex items-start gap-2.5"><Icon name="check" className="w-4 h-4 mt-0.5 text-gold-400 flex-shrink-0"/>{f}</li>
+          ))}
+        </ul>
+        <button onClick={() => navigate("/gabung?plan=library")} className="btn btn-gold px-7 py-3.5 text-base font-semibold">
+          Upgrade ke Library · {LIBRARY_PRICE}
+        </button>
+        <div className="mt-4">
+          <button onClick={() => navigate("/dashboard")} className="text-sm text-ink-soft hover:text-ink">Kembali ke Beranda</button>
+        </div>
+      </div>
     </div>
-    <div className="font-display text-lg font-semibold text-ink">{price}</div>
-    <div className="text-[11px] text-ink-soft mb-2">{sub}</div>
-    <ul className="space-y-1">
-      {bullets.map(b => <li key={b} className="text-xs text-ink-muted">• {b}</li>)}
-    </ul>
-  </button>
-);
-
-const JoinModal = ({ open, onClose, initialPlan, onMemberActive }) => {
-  const { authStatus, authInfo, redeemPin, refreshMemberSession } = useAuth();
-  const google   = useGoogleSignIn();
-  const settings = useAppSettings();
-  const toast    = useToast();
-
-  const [plan, setPlan]         = useState("library");
-  const [step, setStep]         = useState("choose"); // choose | pay | waiting | redeem
-  const [pollRun, setPollRun]   = useState(0);
-  const [timedOut, setTimedOut] = useState(false);
-  const [pin, setPin]           = useState("");
-  const [pinError, setPinError] = useState(null);
-  const [redeeming, setRedeeming] = useState(false);
-
-  const email        = authInfo?.email || "";
-  const payUrl       = safeHttpsUrl(settings.mayarLibraryUrl);
-  const aiPriceLabel = settings.aiPriceLabel || "harga menyusul";
-  const adminWa      = (settings.whatsapp || "").replace(/\D/g, "") || DEFAULT_ADMIN_WA;
-
-  useEffect(() => {
-    if (!open) return;
-    setPlan(initialPlan === "library_ai" ? "library_ai" : "library");
-    setStep(authInfo?.likelyLegacyMember ? "redeem" : "choose");
-    setTimedOut(false);
-    setPin("");
-    setPinError(null);
-  }, [open]);
-
-  useEffect(() => {
-    if (open && authStatus === "member") onMemberActive && onMemberActive(plan);
-  }, [open, authStatus]);
-
-  // Menunggu webhook Mayar: cek status member tiap 5 detik, maksimal 10 menit.
-  useEffect(() => {
-    if (!open || step !== "waiting") return;
-    setTimedOut(false);
-    const started = Date.now();
-    const timer = setInterval(() => {
-      if (Date.now() - started > PAYMENT_WAIT_LIMIT_MS) { setTimedOut(true); clearInterval(timer); return; }
-      refreshMemberSession();
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [open, step, pollRun]);
-
-  const copyEmail = () => {
-    navigator.clipboard.writeText(email);
-    toast.push("Email tersalin");
-  };
-
-  const openPayment = () => {
-    if (!payUrl) return;
-    window.open(payUrl, "_blank", "noopener,noreferrer");
-    setStep("waiting");
-  };
-
-  const pinComplete = pin.replace(/-/g, "").length === 8;
-
-  const handleRedeem = async (e) => {
-    e?.preventDefault();
-    if (!pinComplete || redeeming) return;
-    setRedeeming(true);
-    setPinError(null);
-    const r = await redeemPin(pin);
-    setRedeeming(false);
-    if (r.ok) toast.push("Akun berhasil terhubung. Selamat datang kembali!");
-    else setPinError(ACTIVATION_ERRORS[r.status] || ACTIVATION_ERRORS.error);
-  };
-
-  const askPinMessage = encodeURIComponent(
-    `Assalamu'alaikum admin Talqeeh, saya member lama dan mau pindah ke login Google (${email}). Mohon dikirimkan PIN aktivasi 🙏`
   );
+};
 
-  const waMessage = encodeURIComponent(
-    `Assalamu'alaikum admin Talqeeh, saya sudah bayar paket ${PLAN_LABELS[plan]} dengan email ${email} ` +
-    `(${new Date().toLocaleString("id-ID")}), tapi aksesnya belum aktif. Mohon dicek 🙏`
-  );
+/* ---------------- Maddah untuk akun gratis: Nahwu + 1 maddah pilihan ---------------- */
+const FREE_SAMPLE_MADDAH = "nahwu";
+const canOpenMaddahFree = (id, profile) => id === FREE_SAMPLE_MADDAH || (!!profile?.freeMaddahId && id === profile.freeMaddahId);
+// true kalau maddah ini terkunci untuk sesi sekarang.
+const isMaddahLocked = (id, session, profile) => session?.tier === "free" && !canOpenMaddahFree(id, profile);
 
-  const signedIn = authStatus === "needs_activation";
+const FreeMaddahGate = ({ maddah, backPath, backLabel }) => {
+  const { profile, saveProfile } = useAuth();
+  const chosenId = profile?.freeMaddahId;
+  const chosen = chosenId && (window.getMaddahById?.(chosenId) || window.getMahadMaddahById?.(chosenId));
+  const promptCount = Object.values(maddah.prompts || {}).reduce((s, arr) => s + (Array.isArray(arr) ? arr.length : 0), 0);
+
+  const pick = () => {
+    if (!confirm(`Jadikan "${maddah.name}" maddah gratismu? Pilihan ini tidak bisa diganti.`)) return;
+    saveProfile({ ...profile, freeMaddahId: maddah.id });
+  };
 
   return (
-    <Modal open={open} onClose={onClose} size="md">
-      <div className="p-6 md:p-8">
-        <div className="flex items-center justify-between mb-5">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium text-gold-300"
-            style={{ background: "rgba(201,168,106,0.12)", border: "1px solid rgba(201,168,106,0.25)" }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-gold-300 inline-block"/>
-            Gabung Talqeeh
-          </span>
-          <button onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5 flex items-center justify-center">
-            <Icon name="x" className="w-4 h-4"/>
-          </button>
-        </div>
+    <div className="page-enter container-x py-6 md:py-10 max-w-3xl">
+      <button onClick={() => navigate(backPath)} className="text-sm text-ink-soft hover:text-ink inline-flex items-center gap-2 mb-5">← {backLabel}</button>
+      <div className="arabic-display text-gold-300 text-4xl md:text-5xl mb-2" style={{ direction: "rtl" }}>{maddah.nameArabic}</div>
+      <h1 className="font-display text-3xl md:text-4xl font-semibold text-ink mb-3">{maddah.name}</h1>
+      <p className="text-ink-muted leading-relaxed mb-6">{maddah.description}</p>
 
-        {!signedIn ? (
-          <div>
-            <h2 className="font-display text-2xl font-semibold text-ink mb-2">Login dulu, lalu pilih paket</h2>
-            <p className="text-sm text-ink-muted mb-6 leading-relaxed">Akun Google jadi identitas keanggotaanmu.</p>
-            <GoogleButton onClick={google.start} loading={google.loading} disabled={authStatus === "loading"}/>
-            <ErrorBox message={google.error}/>
-          </div>
-        ) : step === "redeem" ? (
-          <form onSubmit={handleRedeem}>
-            <h2 className="font-display text-2xl font-semibold text-ink mb-2">Masukkan PIN aktivasi</h2>
-            <p className="text-sm text-ink-muted mb-5 leading-relaxed">
-              Untuk member lama atau member yang didaftarkan admin. PIN dikirim admin lewat WhatsApp — masukkan sekali untuk
-              menghubungkan keanggotaan, catatan, dan progressmu ke akun Google <span className="text-ink">{email}</span>.
+      <div className="card-glass-strong p-6 md:p-8 text-center" style={{ border: "1px solid rgba(201,168,106,0.3)" }}>
+        <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-gold-500/12 border border-gold-500/25">
+          <Icon name="crown" className="w-5 h-5 text-gold-300"/>
+        </div>
+        <div className="text-sm text-ink mb-1">{promptCount} template prompt siap pakai di maddah ini</div>
+        {!chosenId ? (
+          <>
+            <p className="text-sm text-ink-muted leading-relaxed mb-5 max-w-md mx-auto">
+              Akun gratis bisa membuka Nahwu dan <span className="text-ink">1 maddah pilihan</span>. Mau pilih maddah ini?
             </p>
-            <input value={pin} onChange={e => { setPin(formatPinInput(e.target.value)); setPinError(null); }}
-              placeholder="XXXX-XXXX" maxLength={9} autoFocus autoComplete="one-time-code"
-              className="code-input w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-xl text-ink text-center tracking-[0.3em] placeholder:text-ink-soft focus:outline-none"/>
-            <ErrorBox message={pinError}/>
-            <button type="submit" disabled={!pinComplete || redeeming}
-              className={`btn btn-primary w-full mt-5 ${!pinComplete || redeeming ? "opacity-50 cursor-not-allowed" : ""}`}>
-              {redeeming ? "Memverifikasi..." : "Hubungkan akun"}
-            </button>
-            <div className="mt-4 flex flex-col items-center gap-2 text-xs">
-              <a href={`https://wa.me/${adminWa}?text=${askPinMessage}`} target="_blank" rel="noopener noreferrer"
-                className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
-                Belum dapat PIN? Minta ke admin
-              </a>
-              <button type="button" onClick={() => setStep("choose")} className="text-ink-soft hover:text-ink-muted">
-                Nggak punya PIN? Pilih paket
-              </button>
+            <div className="flex gap-2 justify-center flex-wrap">
+              <button onClick={pick} className="btn btn-primary text-sm px-5 py-2.5">Jadikan maddah gratisku</button>
+              <button onClick={() => navigate("/gabung?plan=library")} className="btn btn-gold text-sm px-5 py-2.5">Buka semua · {LIBRARY_PRICE}</button>
             </div>
-          </form>
-        ) : step === "choose" ? (
-          <div>
-            <h2 className="font-display text-2xl font-semibold text-ink mb-1">Pilih paketmu</h2>
-            <p className="text-xs text-ink-soft mb-5">Login sebagai <span className="text-ink-muted">{email}</span></p>
-            <div className="space-y-3 mb-6">
-              <PlanOption selected={plan === "library"} onSelect={() => setPlan("library")} accent="gold"
-                title="Library" price={LIBRARY_PRICE} sub="Sekali bayar · berlaku selamanya"
-                bullets={[`${CATALOG.maddah} maddah + ${CATALOG.prompts} template prompt`, "Bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah", "Update fitur seumur hidup"]}/>
-              <PlanOption selected={plan === "library_ai"} onSelect={() => setPlan("library_ai")} accent="emerald" badge="Paling lengkap"
-                title="Library + AI Partner" price={`${LIBRARY_PRICE} + ${aiPriceLabel}`} sub="Library sekali bayar · AI Partner langganan bulanan"
-                bullets={["Semua isi paket Library", "Upload materi → ringkasan, flashcard, kuis", "Tutor AI yang menjawab dari materimu"]}/>
-            </div>
-            <button onClick={() => setStep("pay")} className="btn btn-gold w-full text-base py-3.5 font-semibold">
-              Lanjut ke pembayaran <Icon name="arrowRight" className="w-4 h-4"/>
-            </button>
-            <div className="mt-5 pt-4 border-t border-line flex flex-col items-center gap-2 text-xs">
-              <button onClick={() => setStep("redeem")} className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
-                Punya PIN aktivasi dari admin? Masukkan di sini
-              </button>
-              <button onClick={google.switchAccount} className="text-ink-soft hover:text-ink-muted">Pakai akun Google lain</button>
-            </div>
-          </div>
-        ) : step === "pay" ? (
-          <div>
-            <h2 className="font-display text-2xl font-semibold text-ink mb-1">Bayar paket {PLAN_LABELS[plan]}</h2>
-            <p className="text-sm text-ink-muted mb-5">
-              {LIBRARY_PRICE} · sekali bayar{plan === "library_ai" && <> — langganan AI Partner ({aiPriceLabel}) di langkah berikutnya</>}
-            </p>
-            <div className="card-glass p-4 mb-5">
-              <StepList items={[
-                <>Klik <span className="text-ink">Bayar di Mayar</span>, halaman pembayaran terbuka di tab baru.</>,
-                <span>
-                  Isi email checkout dengan <span className="text-ink font-medium">{email}</span>{" "}
-                  <button onClick={copyEmail} className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2">salin</button>
-                  <span className="block text-[11px] text-amber-300/90 mt-0.5">Wajib sama dengan akun Google-mu, supaya akses aktif otomatis.</span>
-                </span>,
-                "Selesaikan pembayaran (QRIS, virtual account, atau e-wallet).",
-                "Kembali ke tab ini — akses aktif otomatis dalam hitungan detik.",
-              ]}/>
-            </div>
-            {payUrl ? (
-              <button onClick={openPayment} className="btn btn-gold w-full text-base py-3.5 font-semibold">
-                Bayar {LIBRARY_PRICE} di Mayar
-              </button>
-            ) : (
-              <div className="card-glass p-4 text-sm text-ink-muted text-center">
-                Pembayaran online sedang disiapkan.{" "}
-                <a href={`https://wa.me/${adminWa}`} target="_blank" rel="noopener noreferrer" className="text-emerald-300 underline underline-offset-2">Hubungi admin</a>{" "}
-                untuk bergabung.
-              </div>
-            )}
-            <button onClick={() => setStep("choose")} className="w-full text-center text-xs text-ink-soft hover:text-ink-muted mt-4">Kembali</button>
-          </div>
+          </>
         ) : (
-          <div className="text-center py-2">
-            {!timedOut ? (
-              <>
-                <div className="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin mx-auto mb-5"/>
-                <h2 className="font-display text-2xl font-semibold text-ink mb-2">Menunggu pembayaran…</h2>
-                <p className="text-sm text-ink-muted leading-relaxed mb-5">
-                  Selesaikan pembayaran di tab Mayar. Halaman ini otomatis lanjut begitu pembayaranmu terkonfirmasi — biasanya kurang dari 1 menit.
-                </p>
-                <button onClick={openPayment} className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
-                  Buka lagi halaman pembayaran
-                </button>
-              </>
-            ) : (
-              <>
-                <h2 className="font-display text-2xl font-semibold text-ink mb-2">Pembayaran belum terdeteksi</h2>
-                <p className="text-sm text-ink-muted leading-relaxed mb-5">
-                  Kalau sudah bayar tapi belum aktif (misalnya email checkout berbeda dengan {email}), kabari admin — kami aktifkan manual.
-                </p>
-                <div className="flex gap-2">
-                  <button onClick={() => setPollRun(n => n + 1)} className="btn btn-ghost flex-1 text-sm">Cek lagi</button>
-                  <a href={`https://wa.me/${adminWa}?text=${waMessage}`} target="_blank" rel="noopener noreferrer" className="btn btn-gold flex-1 text-sm">
-                    Hubungi admin
-                  </a>
-                </div>
-              </>
-            )}
-          </div>
+          <>
+            <p className="text-sm text-ink-muted leading-relaxed mb-5 max-w-md mx-auto">
+              Maddah gratismu: <span className="text-ink">{chosen?.name || chosenId}</span>. Upgrade ke Library untuk membuka semua {CATALOG.maddah} maddah.
+            </p>
+            <div className="flex gap-2 justify-center flex-wrap">
+              <button onClick={() => navigate("/gabung?plan=library")} className="btn btn-gold text-sm px-5 py-2.5">Upgrade ke Library · {LIBRARY_PRICE}</button>
+              <button onClick={() => navigate((window.getMaddahById?.(chosenId) ? "/maddah/" : "/mahad-maddah/") + chosenId)} className="btn btn-ghost text-sm px-5 py-2.5">
+                Buka {chosen?.name || "maddah gratisku"}
+              </button>
+            </div>
+          </>
         )}
       </div>
-    </Modal>
+    </div>
   );
 };
 
@@ -826,6 +697,8 @@ const AiSubscriptionModal = ({ open, onClose, onNeedMembership }) => {
   const [checking, setChecking] = useState(false);
   const [active, setActive] = useState(false);
   const memberCode = session?.code || null;
+  // Langganan AI adalah tambahan untuk member Library; akun gratis harus ambil Library dulu.
+  const needsLibrary = !memberCode || session?.tier === "free";
 
   const settings = useAppSettings();
   const mayarUrl     = safeHttpsUrl(settings.mayarUrl) || "";
@@ -856,7 +729,7 @@ const AiSubscriptionModal = ({ open, onClose, onNeedMembership }) => {
           </button>
         </div>
 
-        {!memberCode ? (
+        {needsLibrary ? (
           <div className="text-center py-4">
             <p className="text-ink-muted text-sm leading-relaxed mb-6">
               AI Partner Belajar adalah tambahan untuk member Library. Mulai dari paket <span className="text-ink">Library + AI Partner</span>:
@@ -1064,7 +937,10 @@ const SupportButton = () => {
 
 Object.assign(window, {
   useRoute, navigate, NavLink, Brand,
-  Navbar, Footer, LoginModal, JoinModal, AiSubscriptionModal, PageHeader,
+  Navbar, Footer, LoginModal, AiSubscriptionModal, PageHeader, FreeUpgradeWall,
+  FreeMaddahGate, isMaddahLocked, canOpenMaddahFree, FREE_SAMPLE_MADDAH,
+  GoogleButton, ErrorBox, useGoogleSignIn, formatPinInput, ACTIVATION_ERRORS, StepList,
+  PLAN_LABELS, DEFAULT_ADMIN_WA, PAYMENT_WAIT_LIMIT_MS,
   LIBRARY_PRICE, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
   scrollToLandingSection, scrollToPaket,
   MobileTabBar, SupportButton,

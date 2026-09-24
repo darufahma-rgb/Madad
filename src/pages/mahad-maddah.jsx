@@ -98,6 +98,9 @@ const MahadMaddahPage = () => {
                 <button key={m.id}
                   onClick={() => navigate("/mahad-maddah/" + m.id)}
                   className="card-glass p-4 md:p-5 text-left hov-lift active:scale-[0.97] transition-all group relative overflow-hidden">
+                  {isMaddahLocked(m.id, session, profile) && (
+                    <span className="absolute top-3 right-3 inline-flex items-center gap-1 text-[10px] text-gold-300"><Icon name="crown" className="w-3 h-3"/>Library</span>
+                  )}
                   <div className="arabic-display text-gold-300 text-xl mb-1 group-hover:text-gold-200 transition-colors"
                     style={{direction:"rtl"}}>
                     {m.nameArabic}

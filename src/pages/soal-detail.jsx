@@ -42,12 +42,8 @@ const SoalDetailPage = () => {
   const { session } = useAuth();
   const toast = useToast();
 
-  const isMember = (() => {
-    try {
-      const s = JSON.parse(localStorage.getItem('madad_session') || '{}');
-      return !!s.code;
-    } catch { return false; }
-  })();
+  // Akun gratis diperlakukan seperti pengunjung: jawaban lengkap khusus member Library.
+  const isMember = !!window.isPaidMember?.();
 
   const path    = window.location.hash.slice(1);
   const idMatch = path.match(/^\/soal-detail\/([^?]+)/);

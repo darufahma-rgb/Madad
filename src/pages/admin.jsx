@@ -19,6 +19,7 @@ const sbToMember = (row) => {
     lastLogin:   row.last_login  || null,
     notes:       row.notes       || "",
     member_type: row.member_type || "berbayar",
+    tier:        row.tier        || "library",
     email:       row.email       || "",
     googleLinked: !!row.auth_user_id,
     pinExpiresAt: row.activation_pin_expires_at || null,
@@ -39,6 +40,7 @@ const memberToSb = (member) => {
   if (member.lastLogin   !== undefined) row.last_login  = member.lastLogin;
   if (member.notes       !== undefined) row.notes       = member.notes;
   if (member.member_type !== undefined) row.member_type = member.member_type;
+  if (member.tier        !== undefined) row.tier        = member.tier;
   if (member.email       !== undefined) row.email       = member.email ? member.email.trim().toLowerCase() : null;
   if (member.unlinkGoogle)               row.auth_user_id = null;
   return row;
@@ -492,11 +494,14 @@ const AdminAnalytics = () => {
       {/* Ringkasan */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-10">
         <KpiCard label="Pemasukan" value={rupiah(revenue.total)} delta={<Delta now={revenue.total} prev={revenue.prevTotal}/>}/>
-        <KpiCard label="Member baru" value={members.newInRange} delta={<Delta now={members.newInRange} prev={members.newPrev}/>}/>
+        <KpiCard label="Akun baru" value={members.newInRange} delta={<Delta now={members.newInRange} prev={members.newPrev}/>}
+          sub={members.freeNewInRange ? `${members.freeNewInRange} di antaranya akun gratis` : null}/>
         <KpiCard label="Aktif belajar" value={members.activeInRange} sub={`rata-rata ${avgActive}/hari`}/>
-        <KpiCard label="Pelanggan AI aktif" value={ai.activeSubscribers}/>
+        <KpiCard label="Gratis → Library" value={members.freeConversionRate == null ? '—' : `${Math.round(members.freeConversionRate * 100)}%`}
+          sub={`${members.freeConverted} dari ${members.freeStarted} akun gratis`}/>
+        <KpiCard label="Pelanggan AI aktif" value={ai.activeSubscribers}
+          sub={ai.conversionRate == null ? null : `${Math.round(ai.conversionRate * 100)}% pencoba AI berlangganan`}/>
         <KpiCard label="Biaya AI (perkiraan)" value={usd(ai.estCostUsd)} delta={<Delta now={ai.estCostUsd} prev={ai.estCostPrevUsd} invert/>}/>
-        <KpiCard label="Konversi coba gratis" value={ai.conversionRate == null ? '—' : `${Math.round(ai.conversionRate * 100)}%`} sub={`${ai.trialConverted} dari ${ai.trialsStarted} pencoba`}/>
       </div>
 
       {/* Pemasukan */}
@@ -544,10 +549,13 @@ const AdminAnalytics = () => {
         <div className="grid lg:grid-cols-2 gap-4">
           <Panel title="Status akun">
             <ProportionBar parts={[
-              { label: 'Login Google', value: members.googleLinked, color: '#3ecf8e' },
-              { label: 'Belum tautkan (butuh PIN)', value: members.pinPending, color: '#f59e0b' },
+              { label: 'Member Library', value: members.paid ?? members.active, color: '#c9a86a' },
+              { label: 'Akun gratis', value: members.free || 0, color: '#60a5fa' },
               { label: 'Nonaktif/expired', value: Math.max(0, members.total - members.active), color: '#f43f5e' },
             ]}/>
+            <div className="text-[11px] text-ink-soft mt-3">
+              {members.googleLinked} akun sudah login Google · {members.pinPending} member lama belum menautkan (butuh PIN)
+            </div>
           </Panel>
           <Panel title="Sebaran fakultas">
             <HBarList color="#c9a86a" items={Object.entries(members.faculty).sort((a, b) => b[1] - a[1]).slice(0, 8)
@@ -567,7 +575,7 @@ const AdminAnalytics = () => {
           <Panel title="Coba gratis → berlangganan">
             <div className="space-y-3">
               {[
-                ['Member Library', members.active, '#6b7280'],
+                ['Semua akun aktif', members.active, '#6b7280'],
                 ['Mencoba AI Partner', ai.trialsStarted, '#c9a86a'],
                 ['Berlangganan', ai.trialConverted, '#3ecf8e'],
               ].map(([label, value, color], i, arr) => (
@@ -666,7 +674,7 @@ const AdminAnalytics = () => {
 /* ============== MEMBERS ============== */
 const MEMBER_TYPE_CONFIG = {
   berbayar: { label: 'Berbayar', color: '#3ecf8e', bg: 'rgba(62,207,142,0.1)',  icon: '💳' },
-  gratis:   { label: 'Gratis',   color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', icon: '🎁' },
+  gratis:   { label: 'Gratis (akses penuh)', color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', icon: '🎁' },
   trial:    { label: 'Trial',    color: '#fbbf24', bg: 'rgba(251,191,36,0.1)',  icon: '⏳' },
   reward:   { label: 'Reward',   color: '#f97316', bg: 'rgba(249,115,22,0.1)',  icon: '🏆' },
 };
@@ -723,7 +731,8 @@ const AdminMembers = () => {
     const matchSearch = !search ||
       m.name.toLowerCase().includes(search.toLowerCase()) ||
       m.code.toLowerCase().includes(search.toLowerCase());
-    const matchType = filterType === 'semua' || m.member_type === filterType;
+    const matchType = filterType === 'semua'
+      || (filterType === 'akun_gratis' ? m.tier === 'free' : m.tier !== 'free' && m.member_type === filterType);
     return matchSearch && matchType;
   });
 
@@ -791,11 +800,12 @@ const AdminMembers = () => {
         {/* Filter member type */}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {[
-            { value: 'semua',    label: 'Semua',            color: '#888' },
-            { value: 'berbayar', label: 'Berbayar',          color: '#3ecf8e' },
-            { value: 'gratis',   label: 'Gratis',            color: '#a78bfa' },
-            { value: 'trial',    label: 'Trial',             color: '#fbbf24' },
-            { value: 'reward',   label: 'Reward Bank Soal',  color: '#f97316' },
+            { value: 'semua',       label: 'Semua',                 color: '#888' },
+            { value: 'berbayar',    label: 'Berbayar',              color: '#3ecf8e' },
+            { value: 'gratis',      label: 'Gratis (akses penuh)',  color: '#a78bfa' },
+            { value: 'trial',       label: 'Trial',                 color: '#fbbf24' },
+            { value: 'reward',      label: 'Reward Bank Soal',      color: '#f97316' },
+            { value: 'akun_gratis', label: 'Akun gratis (belum bayar)', color: '#60a5fa' },
           ].map(t => (
             <button
               key={t.value}
@@ -814,7 +824,7 @@ const AdminMembers = () => {
               {t.label}
               {t.value !== 'semua' && (
                 <span style={{ marginLeft: 5, opacity: 0.7 }}>
-                  ({members.filter(m => m.member_type === t.value).length})
+                  ({members.filter(m => t.value === 'akun_gratis' ? m.tier === 'free' : m.tier !== 'free' && m.member_type === t.value).length})
                 </span>
               )}
             </button>
@@ -841,7 +851,11 @@ const AdminMembers = () => {
                   <td className="px-4 py-3.5">
                     <div className="flex items-center flex-wrap gap-1">
                       <span className="text-ink font-medium">{m.name}</span>
-                      {(() => {
+                      {m.tier === 'free' ? (
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(96,165,250,0.12)', color: '#60a5fa', border: '1px solid #60a5fa44' }}>
+                          🆓 Akun gratis
+                        </span>
+                      ) : (() => {
                         const cfg = MEMBER_TYPE_CONFIG[m.member_type] || MEMBER_TYPE_CONFIG.berbayar;
                         return (
                           <span style={{
@@ -983,6 +997,7 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
     expiresAt:   member.expiresAt   || "",
     notes:       member.notes       || "",
     member_type: member.member_type || "berbayar",
+    tier:        member.tier        || "library",
   });
   const [saving, setSaving] = useState(false);
   const toast = useToast();
@@ -1002,6 +1017,8 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
         expiresAt:   form.expiresAt,
         notes:       form.notes,
         member_type: form.member_type,
+        // Kirim tier hanya kalau diubah (kolomnya baru ada setelah migrasi free_tier.sql).
+        ...(form.tier !== (member.tier || "library") ? { tier: form.tier } : {}),
       });
       toast.push("Member diperbarui");
       onClose();
@@ -1064,6 +1081,19 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
             </select>
             <div style={{ fontSize: 11, color: '#555', marginTop: 5 }}>
               Tipe ini menentukan kategori member untuk laporan dan filter.
+            </div>
+          </div>
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: 0.5, display: 'block', marginBottom: 6 }}>
+              PAKET AKSES
+            </label>
+            <select value={form.tier} onChange={e => set("tier", e.target.value)}
+              style={{ width: '100%', padding: '9px 12px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 13, cursor: 'pointer' }}>
+              <option value="library">📚 Library — akses penuh</option>
+              <option value="free">🆓 Akun gratis — akses terbatas (belum bayar)</option>
+            </select>
+            <div style={{ fontSize: 11, color: '#555', marginTop: 5 }}>
+              Ubah ke Library untuk meng-upgrade akun gratis yang bayar manual (misal lewat WhatsApp).
             </div>
           </div>
           <div>

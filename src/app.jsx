@@ -55,11 +55,16 @@ const saveJoinPlan = (plan) => {
   try { plan ? localStorage.setItem(JOIN_PLAN_KEY, plan) : localStorage.removeItem(JOIN_PLAN_KEY); } catch {}
 };
 
+// Halaman premium yang terkunci untuk akun gratis (cocok awalan path).
+const FREE_LOCKED_PATHS = ["/siap-imtihan", "/paths", "/prompt-library", "/tools", "/s2-maddah"];
+const isFreeLocked = (path) => FREE_LOCKED_PATHS.some(p => path === p || path.startsWith(p + "/") || path.startsWith(p + "?"));
+
+const gabungPath = (plan) => `/gabung${plan ? `?plan=${plan}` : ""}`;
+
 const App = () => {
   const path = useRoute();
-  const { session, profile, authStatus } = useAuth();
+  const { session, profile, authStatus, isFree } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
-  const [joinOpen, setJoinOpen] = useState(false);
   const [joinPlan, setJoinPlan] = useState(null);
   const [aiPaymentOpen, setAiPaymentOpen] = useState(false);
 
@@ -68,12 +73,11 @@ const App = () => {
     if (s) { s.style.opacity = "0"; setTimeout(() => s.remove(), 580); }
   }, []);
 
-  // Sudah login Google tapi belum member → pilih paket (juga jalur balik dari redirect OAuth).
+  // Sudah login Google tapi belum punya akun → halaman Gabung (juga jalur balik dari redirect OAuth).
   useEffect(() => {
     if (authStatus === "needs_activation") {
-      setJoinPlan(readJoinPlan() || "library");
       setLoginOpen(false);
-      setJoinOpen(true);
+      if (!path.startsWith("/gabung")) navigate(gabungPath(readJoinPlan()));
     } else if (authStatus === "inactive") {
       setLoginOpen(true);
     }
@@ -89,8 +93,9 @@ const App = () => {
     ];
     const isMemberRoute = memberOnly.some(r => path === r || path.startsWith(r + "?") || path.startsWith(r + "/"));
 
-    // 1) Belum login tapi buka route terproteksi → ke landing + buka login
+    // 1) Belum punya akun tapi buka route terproteksi → login dulu, atau ke halaman Gabung kalau sudah login Google
     if (isMemberRoute && !session) {
+      if (authStatus === "needs_activation") { navigate(gabungPath()); return; }
       navigate("/");
       setTimeout(() => setLoginOpen(true), 100);
       return;
@@ -109,36 +114,41 @@ const App = () => {
         navigate("/onboarding");
       }
     }
-  }, [path, session, profile]);
+  }, [path, session, profile, authStatus]);
 
   const handleLoginSuccess = (plan) => {
     setLoginOpen(false);
-    setJoinOpen(false);
-    const wantsAi = plan === "library_ai" || readJoinPlan() === "library_ai";
+    const saved = plan || readJoinPlan();
     saveJoinPlan(null);
+    // Akun gratis yang tadinya memilih paket berbayar → lanjut ke halaman Gabung untuk upgrade.
+    if (isFreeTier() && (saved === "library" || saved === "library_ai")) {
+      setTimeout(() => navigate(gabungPath(saved)), 50);
+      return;
+    }
     const p = getProfile();
     setTimeout(() => navigate(!p?.onboarded ? "/onboarding" : "/dashboard"), 50);
-    if (wantsAi) setTimeout(() => setAiPaymentOpen(true), 400);
+    if (saved === "library_ai") setTimeout(() => setAiPaymentOpen(true), 400);
   };
 
-  // Semua tombol "Gabung": login dulu → pilih paket → bayar. Member yang pilih paket AI langsung ke langganan AI.
+  // Semua tombol "Gabung": login dulu → halaman Gabung (pilih gratis/berbayar). Member Library yang pilih AI → langganan AI.
   const openJoin = (plan = "library") => {
     setAiPaymentOpen(false);
     if (session) {
       setLoginOpen(false);
-      if (plan === "library_ai") setAiPaymentOpen(true);
+      if (isFree) navigate(gabungPath(plan));
+      else if (plan === "library_ai") setAiPaymentOpen(true);
       else navigate(profile?.onboarded ? "/dashboard" : "/onboarding");
       return;
     }
     saveJoinPlan(plan);
     setJoinPlan(plan);
-    if (authStatus === "needs_activation") { setLoginOpen(false); setJoinOpen(true); }
+    if (authStatus === "needs_activation") { setLoginOpen(false); navigate(gabungPath(plan)); }
     else setLoginOpen(true);
   };
-  const openLogin = () => {
-    saveJoinPlan(null);
-    setJoinPlan(null);
-    setJoinOpen(false);
+  // keepPlan: dipanggil dari halaman Gabung setelah pengunjung memilih paket (plan sudah disimpan).
+  const openLogin = (keepPlan = false) => {
+    if (keepPlan !== true) saveJoinPlan(null);
+    setJoinPlan(keepPlan === true ? readJoinPlan() : null);
     setAiPaymentOpen(false);
     setLoginOpen(true);
   };
@@ -146,17 +156,17 @@ const App = () => {
   // Halaman tanpa props (bank soal publik, sample) memicu alur gabung lewat event.
   useEffect(() => {
     const onOpenJoin = (e) => openJoin(e.detail?.plan || "library");
-    const onOpenLogin = () => openLogin();
+    const onOpenLogin = (e) => openLogin(!!e.detail?.keepPlan);
     window.addEventListener("talqeeh:open-join", onOpenJoin);
     window.addEventListener("talqeeh:open-login", onOpenLogin);
     return () => {
       window.removeEventListener("talqeeh:open-join", onOpenJoin);
       window.removeEventListener("talqeeh:open-login", onOpenLogin);
     };
-  }, [session, authStatus, profile]);
+  }, [session, authStatus, profile, isFree]);
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
-  const isPublic = path === "/" || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal";
+  const isPublic = path === "/" || path.startsWith("/gabung") || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal";
 
   // Admin gets its own layout (no public nav/footer)
   if (isAdmin) {
@@ -171,7 +181,9 @@ const App = () => {
 
   let routeLabel = "Beranda";
   let page = <LandingPage onOpenLogin={openLogin} onOpenJoin={openJoin}/>;
-  if (path.startsWith("/sample/nahwu"))             { page = <SampleNahwuPage/>; routeLabel = "Sample Nahwu"; }
+  if (session && isFree && isFreeLocked(path))      { page = <FreeUpgradeWall path={path}/>; routeLabel = "Khusus Library"; }
+  else if (path === "/gabung" || path.startsWith("/gabung?")) { page = <GabungPage key={path}/>; routeLabel = "Gabung"; }
+  else if (path.startsWith("/sample/nahwu"))        { page = <SampleNahwuPage/>; routeLabel = "Sample Nahwu"; }
   else if (path === "/ethics")            { page = <EthicsPage/>; routeLabel = "Etika"; }
   else if (path === "/privacy")           { page = <PrivacyPage/>; routeLabel = "Kebijakan Privasi"; }
   else if (path === "/maddah-publik")    { page = <MaddahPublikPage onOpenPayment={() => openJoin("library")} onOpenJoin={openJoin} onOpenLogin={openLogin}/>; routeLabel = "Katalog Maddah"; }
@@ -220,7 +232,6 @@ const App = () => {
         <Footer/>
       </div>
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} onSuccess={handleLoginSuccess} joinPlan={joinPlan}/>
-      <JoinModal open={joinOpen} onClose={() => setJoinOpen(false)} initialPlan={joinPlan} onMemberActive={handleLoginSuccess}/>
       <AiSubscriptionModal open={aiPaymentOpen} onClose={() => setAiPaymentOpen(false)} onNeedMembership={() => openJoin("library_ai")}/>
       {showQuickNote && <QuickNoteButton/>}
       {isMember && <SupportButton/>}

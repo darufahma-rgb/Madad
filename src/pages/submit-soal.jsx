@@ -32,12 +32,8 @@ const compressImage = (file, maxSizeMB = 0.8) => {
 };
 
 function SubmitSoalPage() {
-  const isMember = (() => {
-    try {
-      const s = JSON.parse(localStorage.getItem('madad_session') || '{}');
-      return !!s.code;
-    } catch { return false; }
-  })();
+  // Akun gratis dapat reward seperti pengunjung (Library gratis), bukan voucher member.
+  const isMember = !!window.isPaidMember?.();
 
   const [step, setStep]         = useState('form');
   const [loading, setLoading]   = useState(false);
