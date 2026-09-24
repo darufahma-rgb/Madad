@@ -248,10 +248,14 @@ async function handleGet(ctx, body, res) {
 async function handleDelete(ctx, body, res) {
   if (!isStr(body.set_id)) return res.status(400).json({ ok: false, error: 'set_id wajib' });
   const { url, key } = sbConfig();
-  await fetch(
-    `${url}/rest/v1/study_sets?id=eq.${encodeURIComponent(body.set_id)}&member_code=eq.${encodeURIComponent(ctx.code)}`,
-    { method: 'DELETE', headers: sbHeaders(key) }
+  // Jatah coba gratis tidak dikembalikan: ai_trial_set_id tetap menunjuk materi yang dihapus.
+  const r = await fetch(
+    `${url}/rest/v1/study_sets?id=eq.${encodeURIComponent(body.set_id)}&member_code=eq.${encodeURIComponent(ctx.code)}&select=id`,
+    { method: 'DELETE', headers: sbHeaders(key, { Prefer: 'return=representation' }) }
   );
+  if (!r.ok) return res.status(500).json({ ok: false, error: 'Gagal menghapus materi. Coba lagi sebentar.' });
+  const rows = await r.json().catch(() => []);
+  if (!Array.isArray(rows) || rows.length === 0) return res.status(404).json({ ok: false, error: 'Materi tidak ditemukan atau sudah dihapus.' });
   return res.status(200).json({ ok: true });
 }
 

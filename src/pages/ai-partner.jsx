@@ -42,15 +42,64 @@ const StatTile = ({ value, label, icon }) => (
   </div>
 );
 
-const SetCard = ({ s, isTrialSet }) => {
-  const meta = SOURCE_META[s.source_type] || SOURCE_META.teks;
+// Konfirmasi hapus materi (dipakai di daftar dan halaman materi).
+const DeleteSetDialog = ({ set, isTrialSet, onClose, onDeleted }) => {
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState('');
+  const handleDelete = async () => {
+    setDeleting(true);
+    setError('');
+    const d = await aiCall('delete', { set_id: set.id });
+    setDeleting(false);
+    if (d.ok) onDeleted(set);
+    else setError(d.error || 'Gagal menghapus materi. Coba lagi sebentar.');
+  };
   return (
-    <button onClick={() => navigate(`/ai-partner/${s.id}`)} className="card-glass-strong p-5 hov-lift text-left flex flex-col">
+    <Modal open onClose={deleting ? () => {} : onClose} size="md" closable={!deleting}>
+      <div className="p-6">
+        <span className="w-11 h-11 rounded-xl bg-rose-500/12 border border-rose-500/25 flex items-center justify-center mb-4">
+          <Icon name="trash" className="w-5 h-5" style={{ stroke: '#fb7185' }}/>
+        </span>
+        <h3 className="font-display text-xl font-semibold text-ink mb-1">Hapus materi ini?</h3>
+        <p className="text-sm text-ink-muted leading-relaxed mb-1">
+          <span className="text-ink">"{set.title}"</span> akan dihapus permanen beserta ringkasan, peta konsep, flashcard, kuis, latihan tahriri, dan percakapan tutornya.
+        </p>
+        {isTrialSet && (
+          <p className="text-xs text-amber-300/90 leading-relaxed mt-2">
+            Ini materi coba gratismu. Jatah coba gratis tidak kembali setelah materi dihapus.
+          </p>
+        )}
+        {error && <div className="text-sm text-rose-400 mt-3">{error}</div>}
+        <div className="flex gap-2 mt-6">
+          <button onClick={onClose} disabled={deleting} className="btn btn-ghost flex-1 text-sm justify-center">Batal</button>
+          <button onClick={handleDelete} disabled={deleting}
+            className="btn flex-1 text-sm justify-center font-semibold text-white"
+            style={{ background: deleting ? 'rgba(244,63,94,0.5)' : '#e11d48' }}>
+            {deleting ? 'Menghapus…' : 'Ya, hapus'}
+          </button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+const SetCard = ({ s, isTrialSet, onDelete }) => {
+  const meta = SOURCE_META[s.source_type] || SOURCE_META.teks;
+  const open = () => navigate(`/ai-partner/${s.id}`);
+  return (
+    <div role="button" tabIndex={0} onClick={open} onKeyDown={e => { if (e.key === 'Enter') open(); }}
+      className="group card-glass-strong p-5 hov-lift text-left flex flex-col cursor-pointer relative">
       <div className="flex items-start justify-between gap-3 mb-3">
         <span className="w-10 h-10 rounded-xl bg-emerald-500/12 border border-emerald-500/20 flex items-center justify-center flex-shrink-0">
           <Icon name={meta.icon} className="w-4 h-4 text-emerald-300"/>
         </span>
-        <ProgressRing percent={studyPercent(s)}/>
+        <div className="flex items-center gap-2">
+          <button onClick={e => { e.stopPropagation(); onDelete(s); }} title="Hapus materi" aria-label={`Hapus materi ${s.title}`}
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-soft hover:text-rose-400 hover:bg-rose-500/10 transition md:opacity-0 md:group-hover:opacity-100 md:focus:opacity-100">
+            <Icon name="trash" className="w-4 h-4" style={{ stroke: 'currentColor' }}/>
+          </button>
+          <ProgressRing percent={studyPercent(s)}/>
+        </div>
       </div>
       <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1">{maddahName(s.maddah_id) || 'Materi umum'}</div>
       <div className="font-display text-lg font-semibold text-ink leading-snug mb-3 line-clamp-2">{s.title}</div>
@@ -60,7 +109,7 @@ const SetCard = ({ s, isTrialSet }) => {
         {isTrialSet && <Pill tone="gold">Coba gratis</Pill>}
         <span className="text-[11px] text-ink-soft ml-auto">{new Date(s.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</span>
       </div>
-    </button>
+    </div>
   );
 };
 
@@ -86,8 +135,17 @@ const AiPartnerList = ({ status }) => {
   const [sets, setSets]   = useState(null);
   const [error, setError] = useState('');
   const [creating, setCreating] = useState(false);
+  const [toDelete, setToDelete] = useState(null);
+  const toast = useToast();
   const isTrial = status.tier !== 'pro';
   const trialUsed = isTrial && status.trial?.used;
+  const isTrialSet = (s) => isTrial && status.trial?.set_id === s.id;
+
+  const handleDeleted = (set) => {
+    setToDelete(null);
+    setSets(prev => (prev || []).filter(s => s.id !== set.id));
+    toast.push('Materi dihapus.');
+  };
 
   useEffect(() => {
     aiCall('list').then(d => d.ok ? setSets(d.data) : setError(d.error || 'Gagal memuat materi'));
@@ -135,8 +193,11 @@ const AiPartnerList = ({ status }) => {
       )}
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sets?.map(s => <SetCard key={s.id} s={s} isTrialSet={isTrial && status.trial?.set_id === s.id}/>)}
+        {sets?.map(s => <SetCard key={s.id} s={s} isTrialSet={isTrialSet(s)} onDelete={setToDelete}/>)}
       </div>
+      {toDelete && (
+        <DeleteSetDialog set={toDelete} isTrialSet={isTrialSet(toDelete)} onClose={() => setToDelete(null)} onDeleted={handleDeleted}/>
+      )}
 
       {empty && (
         <div className="mt-12">
@@ -234,17 +295,13 @@ const AiPartnerDetail = ({ setId, status }) => {
   const [error, setError] = useState('');
   const [step, setStep]   = useState('pahami');
   const [sub, setSub]     = useState({ pahami: 'summary', hafalkan: 'cards', uji: 'quiz', tanya: 'tutor' });
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     aiCall('get', { set_id: setId }).then(d => d.ok ? setSet(d.data) : setError(d.error || 'Materi tidak ditemukan'));
   }, [setId]);
 
-  const handleDelete = async () => {
-    if (!confirm(`Hapus materi "${set.title}" beserta semua ringkasan, kartu, soal, dan chat-nya?`)) return;
-    const d = await aiCall('delete', { set_id: set.id });
-    if (d.ok) { toast.push('Materi dihapus.'); navigate('/ai-partner'); }
-    else toast.push(d.error || 'Gagal menghapus');
-  };
+  const handleDeleted = () => { toast.push('Materi dihapus.'); navigate('/ai-partner'); };
 
   if (error) return <div className="container-x pb-24 text-sm text-rose-400">{error}</div>;
   if (!set) return <GateLoading/>;
@@ -267,10 +324,16 @@ const AiPartnerDetail = ({ setId, status }) => {
             {access.isTrialSet && <Pill tone="gold"><Icon name="crown" className="w-3 h-3"/>Coba gratis</Pill>}
           </div>
           <h1 className="font-display text-2xl md:text-4xl font-semibold text-ink leading-tight">{set.title}</h1>
-          <button onClick={handleDelete} className="text-xs text-ink-soft hover:text-rose-400 mt-2">Hapus materi</button>
+          <button onClick={() => setConfirmDelete(true)}
+            className="mt-3 inline-flex items-center gap-1.5 text-xs text-ink-soft hover:text-rose-400 px-2.5 py-1.5 -ml-2.5 rounded-lg hover:bg-rose-500/10 transition">
+            <Icon name="trash" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Hapus materi
+          </button>
         </div>
         <ProgressRing percent={studyPercent(set)} size={56}/>
       </div>
+      {confirmDelete && (
+        <DeleteSetDialog set={set} isTrialSet={access.isTrialSet} onClose={() => setConfirmDelete(false)} onDeleted={handleDeleted}/>
+      )}
 
       {/* Stepper alur belajar */}
       <div className="grid grid-cols-4 gap-2 mb-5">
