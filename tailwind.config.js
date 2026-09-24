@@ -27,6 +27,8 @@ export default {
         gold:  '0 0 0 1px rgba(212,165,116,0.3), 0 12px 32px -10px rgba(212,165,116,0.4)',
       },
       letterSpacing: { tightest: '-0.04em' },
+      // Skala bawaan Tailwind melompat per 5; kode memakai nilai halus (bg-white/4, border-white/8, dll).
+      opacity: { 2: '0.02', 3: '0.03', 4: '0.04', 6: '0.06', 7: '0.07', 8: '0.08', 12: '0.12', 18: '0.18', 22: '0.22' },
     },
   },
   plugins: [],

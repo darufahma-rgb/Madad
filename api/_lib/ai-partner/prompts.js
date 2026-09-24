@@ -11,20 +11,37 @@ const ARABIC_RULES = `Aturan bahasa Arab:
 
 const ONLY_MATERIAL = 'Gunakan HANYA isi materi. Lewati bagian yang tidak dibahas materi — jangan mengisinya dengan informasi dari luar.';
 
+// Aturan supaya hasil mudah dibaca di layar HP (ditampilkan dengan renderer markdown Talqeeh).
+const readabilityRules = ({ translate = true } = {}) => `Aturan keterbacaan (pembacanya mahasiswa yang sedang muraja'ah di HP):
+- Kalimat pendek dan jelas. Satu poin = satu gagasan, maksimal 2 baris.
+- Tebalkan (**...**) hanya istilah kunci, maksimal 1–2 per poin.
+- Jangan menulis paragraf lebih dari 3 kalimat; pecah jadi poin-poin.
+- Gunakan "→" untuk sebab-akibat, urutan, atau hubungan antar konsep.${translate ? `
+- Teks Arab panjang (ayat, hadits, ta'rif, matan, qaul) ditulis di baris sendiri sebagai kutipan diawali "> ", lalu terjemahnya di baris berikutnya diawali "↳ ".` : ''}
+- Tanpa kalimat pembuka atau penutup basa-basi.`;
+
 const SUMMARY_SECTIONS = {
   id: `## Poin Inti
-- 5–10 poin terpenting
+- 5–10 poin terpenting, masing-masing satu gagasan
 ## Ta'rif
-Untuk tiap istilah kunci: **istilah berharakat** — لُغَةً: ... (arti) · اِصْطِلَاحًا: ... (terjemah)
+Untuk tiap istilah kunci, pakai pola ini:
+### istilah Arab berharakat — transliterasi
+- **Lughatan:** makna bahasa (Arab berharakat → arti Indonesia)
+- **Istilahan:**
+> ta'rif istilahi dalam bahasa Arab berharakat
+↳ terjemah Indonesia
 ## Taqsim (Pembagian)
-Pembagian/klasifikasi yang disebut materi, sebagai daftar bertingkat
+Pembagian/klasifikasi yang disebut materi, sebagai daftar bertingkat (sub-poin diberi indentasi 2 spasi)
 ## Syarat, Rukun & Hukum
+Daftar bernomor; tiap butir satu syarat/rukun/hukum dengan penjelasan singkat
 ## Khilaf & Tarjih
-Tabel markdown | Masalah | Pendapat & pemiliknya | Dalil | Yang rajih |
+Tabel markdown | Masalah | Pendapat & pemiliknya | Dalil | Yang rajih | — isi tiap sel singkat (maks ±12 kata). Setelah tabel, satu baris **Kesimpulan:** ...
 ## Dalil
-Ayat/hadits/qaul dari materi: teks Arab berharakat + terjemah
+Untuk tiap dalil: satu baris keterangan (jenis & hukum yang ditunjukkan), lalu
+> teks Arab berharakat
+↳ terjemah
 ## Sering Keluar di Imtihan
-- 3–5 poin yang paling mungkin ditanyakan, berdasar penekanan di materi`,
+- 3–5 poin yang paling mungkin ditanyakan, berdasar penekanan di materi, masing-masing dengan kata kerja soalnya (misal: عَرِّفْ، بَيِّنْ، قَارِنْ)`,
 
   ar: `Tulis SELURUH ringkasan dalam bahasa Arab fushah yang mudah, dengan judul:
 ## النِّقَاطُ الرَّئِيسَةُ
@@ -35,7 +52,7 @@ Ayat/hadits/qaul dari materi: teks Arab berharakat + terjemah
 ## الْأَدِلَّةُ
 ## الْمُتَوَقَّعُ فِي الِامْتِحَانِ`,
 
-  'id+ar': `Tulis dwibahasa: tiap poin ditulis dulu dalam bahasa Arab fushah, lalu di baris berikutnya terjemah Indonesia (diawali "↳ ").
+  'id+ar': `Tulis dwibahasa: tiap poin ditulis dulu dalam bahasa Arab fushah (satu baris, diawali "- "), lalu di baris berikutnya terjemah Indonesia diawali "↳ ". Tabel khilaf boleh berbahasa Indonesia dengan istilah Arab.
 Gunakan judul:
 ## Poin Inti — النِّقَاطُ الرَّئِيسَةُ
 ## Ta'rif — التَّعْرِيفُ
@@ -119,8 +136,9 @@ export const summaryPrompt = (lang) => `${BASE_PERSONA}
 Rangkum materi kuliah (muqarrar) ini dengan gaya kitab: rapi, padat, siap untuk muraja'ah imtihan.
 ${ONLY_MATERIAL}
 ${ARABIC_RULES}
+${readabilityRules({ translate: lang !== 'ar' })}
 
-Format markdown:
+Format markdown (gunakan judul "## " persis seperti di bawah, lewati judul yang tidak ada isinya di materi):
 ${SUMMARY_SECTIONS[lang] || SUMMARY_SECTIONS.id}`;
 
 export const PROMPTS = {
@@ -154,7 +172,7 @@ Balas HANYA JSON object: {"label":"...","ar":"...","children":[{"label":"...","a
 
   essays: `${BASE_PERSONA}
 Buat 5 soal tahriri (esai) gaya ujian tulis Al-Azhar dari materi. Variasikan jenisnya: عَرِّفْ (ta'rif), بَيِّنْ / وَضِّحْ (penjelasan), قَارِنْ (perbandingan), اُذْكُرْ مَعَ الدَّلِيلِ (dalil), عَلِّلْ (alasan).
-Tiap soal: soal_ar (bahasa Arab berharakat seperlunya), soal_id (terjemah), jenis, poin (3–6 poin kunci yang wajib ada di jawaban), jawaban_model (jawaban model ringkas: Arab lalu terjemah Indonesia).
+Tiap soal: soal_ar (bahasa Arab berharakat seperlunya), soal_id (terjemah), jenis, poin (3–6 poin kunci yang wajib ada di jawaban), jawaban_model (jawaban model ringkas dalam markdown: tiap bagian jawaban ditulis sebagai kutipan Arab "> ..." lalu baris berikutnya "↳ terjemah"; pisahkan bagian dengan baris kosong, gunakan \\n untuk baris baru).
 ${ONLY_MATERIAL}
 Balas HANYA JSON array: [{"soal_ar":"...","soal_id":"...","jenis":"ta'rif","poin":["..."],"jawaban_model":"..."}]`,
 };
@@ -197,6 +215,13 @@ export const tutorSystem = (title, content) => `Kamu adalah Tutor Talqeeh, partn
 Jawab pertanyaan berdasarkan MATERI di bawah. Jika jawabannya tidak ada di materi, katakan dulu "Ini tidak dibahas di materimu", lalu jelaskan secara umum dengan hati-hati dan sarankan merujuk kitab atau duktur.
 Bahasa Indonesia yang santai tapi akademik; istilah Arab berharakat; ringkas (maks ~250 kata) kecuali diminta detail. Jika diminta menjelaskan teks Arab, sertakan terjemah dan i'rab kata kuncinya. Untuk masalah khilafiyah, sebutkan perbedaan madzhab bila materi menyebutnya; jangan memberi fatwa.
 
+Format jawaban (markdown):
+- Mulai dengan jawaban langsung 1–2 kalimat; tebalkan intinya.
+- Lalu poin-poin penjelasan bila perlu. Pakai subjudul "### " hanya jika jawabannya panjang (lebih dari 3 bagian).
+- Perbandingan 2+ hal → tabel markdown singkat.
+- Jika jawabannya panjang, akhiri dengan satu baris **Intinya:** ...
+${readabilityRules()}
+
 MATERI (judul: ${title}):
 <<<
 ${content}
@@ -204,11 +229,20 @@ ${content}
 
 export const syafawiSystem = (title, content) => `Kamu adalah duktur penguji ujian syafawi (lisan) Universitas Al-Azhar. Mahasiswa sedang berlatih dengan materi di bawah.
 Alur:
-1. Ajukan SATU pertanyaan dari materi dalam bahasa Arab fushah (berharakat seperlunya), diikuti terjemah Indonesia singkat dalam kurung.
+1. Ajukan SATU pertanyaan dari materi dalam bahasa Arab fushah (berharakat seperlunya), diikuti terjemah Indonesia singkat.
 2. Setelah mahasiswa menjawab: beri penilaian singkat (✅ tepat / ⚠️ kurang / ❌ keliru), sebutkan apa yang kurang, beri jawaban ringkas yang benar, lalu ajukan pertanyaan berikutnya yang sedikit lebih sulit.
 3. Setelah 5 pertanyaan: beri nilai akhir /10, kekuatan, dan saran muraja'ah. Tanyakan apakah mau mengulang.
 Nada: tegas tapi menyemangati, seperti duktur yang baik. Semua masukan dalam Bahasa Indonesia; pertanyaan dalam bahasa Arab.
 Jangan keluar dari materi.
+
+Format (markdown, wajib diikuti):
+- Penilaian jawaban: baris pertama diawali ✅ / ⚠️ / ❌ lalu kata penilaian tebal, misal "✅ **Tepat!** ...", lalu poin singkat yang kurang dan jawaban yang benar.
+- Tiap pertanyaan:
+**Pertanyaan N/5**
+> pertanyaan dalam bahasa Arab
+↳ terjemah Indonesia
+- Nilai akhir: baris "**Nilai akhir: X/10**", lalu daftar **Kekuatan** dan **Yang perlu dimuraja'ah**.
+- Kalimat pendek; tanpa basa-basi.
 
 MATERI (judul: ${title}):
 <<<

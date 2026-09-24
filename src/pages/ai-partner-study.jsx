@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import MarkdownArab from '../components/MarkdownArab.jsx';
+import AiRichText, { AiInline } from '../components/AiRichText.jsx';
 /* Talqeeh — AI Partner: tab-tab belajar di halaman materi */
 
 const BOX_INTERVAL_DAYS = { 1: 0, 2: 1, 3: 3, 4: 7, 5: 14 };
@@ -84,6 +84,129 @@ const LangPicker = ({ value, onChange, disabled }) => (
   </div>
 );
 
+// Jenis bagian ringkasan → ikon & warna. Dicocokkan dari judul (Indonesia atau Arab tanpa harakat).
+const SECTION_KINDS = [
+  { id: 'key',    icon: 'sparkles', color: '#3ecf8e', match: /poin inti|intisari|النقاط|الرئيسة/i },
+  { id: 'def',    icon: 'bookOpen', color: '#c9a86a', match: /ta'?rif|definisi|التعريف/i },
+  { id: 'split',  icon: 'network',  color: '#60a5fa', match: /taqsim|pembagian|klasifikasi|التقسيم/i },
+  { id: 'rules',  icon: 'list',     color: '#a78bfa', match: /syarat|rukun|hukum|الشروط|الأركان|الحكم/i },
+  { id: 'debate', icon: 'scale',    color: '#f59e0b', match: /khilaf|tarjih|perbedaan|الخلاف|الترجيح/i },
+  { id: 'proof',  icon: 'quote',    color: '#c9a86a', match: /dalil|الأدلة|الدليل/i },
+  { id: 'exam',   icon: 'target',   color: '#f472b6', match: /imtihan|ujian|الامتحان|المتوقع/i },
+];
+const stripHarakat = (s) => s.replace(/[ً-ٰٟـ]/g, '');
+
+// Pecah markdown ringkasan per "## judul" jadi kartu-kartu.
+const splitSections = (md) => {
+  const sections = [];
+  let current = { title: '', body: [] };
+  (md || '').replace(/\r\n/g, '\n').split('\n').forEach(line => {
+    const h = line.match(/^##\s+(.+?)\s*#*\s*$/);
+    if (h) {
+      if (current.title || current.body.join('').trim()) sections.push(current);
+      current = { title: h[1].replace(/\*\*/g, ''), body: [] };
+    } else {
+      current.body.push(line);
+    }
+  });
+  if (current.title || current.body.join('').trim()) sections.push(current);
+  return sections.map((s, i) => {
+    const [main, sub] = s.title.split(/\s+[—–-]\s+/);
+    const plain = stripHarakat(s.title);
+    const kind = SECTION_KINDS.find(k => k.match.test(plain)) || { id: 'other', icon: 'bookmark', color: '#9ca3af' };
+    return { id: `sec-${i}`, title: main || s.title, sub: sub || '', kind, body: s.body.join('\n').trim() };
+  }).filter(s => s.title || s.body);
+};
+
+const READ_SIZE_KEY = 'talqeeh_ai_read_size';
+const READ_SIZES = ['sm', 'md', 'lg'];
+const useReadSize = () => {
+  const [size, setSize] = useState(() => { try { return READ_SIZES.includes(localStorage.getItem(READ_SIZE_KEY)) ? localStorage.getItem(READ_SIZE_KEY) : 'md'; } catch { return 'md'; } });
+  const change = (s) => { setSize(s); try { localStorage.setItem(READ_SIZE_KEY, s); } catch {} };
+  return [size, change];
+};
+
+const ReadSizePicker = ({ value, onChange }) => (
+  <div className="inline-flex items-center rounded-lg border border-white/10 bg-white/4 p-0.5" title="Ukuran huruf">
+    {READ_SIZES.map((s, i) => (
+      <button key={s} onClick={() => onChange(s)} aria-label={`Ukuran huruf ${s}`}
+        className={`w-8 h-7 rounded-md flex items-center justify-center font-display transition ${value === s ? 'bg-emerald-500/20 text-emerald-200' : 'text-ink-muted hover:text-ink'}`}
+        style={{ fontSize: 11 + i * 2.5 }}>A</button>
+    ))}
+  </div>
+);
+
+const SummarySection = ({ section, rtl, size, open, onToggle }) => {
+  const { kind } = section;
+  const exam = kind.id === 'exam';
+  return (
+    <section id={section.id} className="scroll-mt-32 rounded-2xl overflow-hidden"
+      style={{ border: `1px solid ${exam ? kind.color + '55' : 'rgba(255,255,255,0.08)'}`, background: exam ? `linear-gradient(160deg, ${kind.color}14, rgba(255,255,255,0.02))` : 'rgba(255,255,255,0.025)' }}>
+      {section.title && (
+        <button onClick={onToggle} className="w-full flex items-center gap-3 px-4 md:px-6 py-3.5 md:py-4 text-start" dir={rtl ? 'rtl' : 'ltr'}>
+          <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${kind.color}1c`, border: `1px solid ${kind.color}40` }}>
+            <Icon name={kind.icon} className="w-[18px] h-[18px]" style={{ stroke: kind.color }}/>
+          </span>
+          <span className="flex-1 min-w-0">
+            <span className={`block font-display font-semibold text-ink leading-tight ${rtl ? 'ai-heading-ar text-lg md:text-xl' : 'text-base md:text-lg'}`}>{section.title}</span>
+            {section.sub && <span dir="rtl" className="block text-gold-300/90 mt-0.5" style={{ fontFamily: '"Noto Naskh Arabic", serif', fontSize: 15 }}>{section.sub}</span>}
+          </span>
+          <Icon name={open ? 'chevronUp' : 'chevronDown'} className="w-4 h-4 opacity-50 flex-shrink-0"/>
+        </button>
+      )}
+      {open && section.body && (
+        <div className={`px-4 md:px-6 pb-5 ${section.title ? 'pt-0' : 'pt-5'}`}>
+          {section.title && <div className="h-px bg-white/[0.06] mb-4"/>}
+          <AiRichText content={section.body} rtl={rtl} size={size}/>
+        </div>
+      )}
+    </section>
+  );
+};
+
+const SummaryView = ({ markdown, rtl }) => {
+  const sections = useMemo(() => splitSections(markdown), [markdown]);
+  const [size, setSize] = useReadSize();
+  const [closed, setClosed] = useState({});
+  const titled = sections.filter(s => s.title);
+  const allOpen = titled.every(s => !closed[s.id]);
+  const jump = (id) => {
+    setClosed(c => ({ ...c, [id]: false }));
+    setTimeout(() => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30);
+  };
+
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-3">
+        {titled.length > 1 && (
+          <div className="flex-1 min-w-0 flex gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1" dir={rtl ? 'rtl' : 'ltr'}>
+            {titled.map(s => (
+              <button key={s.id} onClick={() => jump(s.id)}
+                className="flex-shrink-0 inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/4 text-ink-muted hover:text-ink hover:border-white/20">
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.kind.color }}/>
+                <span className={rtl ? 'ai-heading-ar' : ''}>{s.title}</span>
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="flex items-center gap-1.5 flex-shrink-0 ms-auto">
+          {titled.length > 1 && (
+            <button onClick={() => setClosed(allOpen ? Object.fromEntries(titled.map(s => [s.id, true])) : {})}
+              className="text-[11px] text-ink-soft hover:text-ink px-2 py-1.5 whitespace-nowrap">{allOpen ? 'Tutup semua' : 'Buka semua'}</button>
+          )}
+          <ReadSizePicker value={size} onChange={setSize}/>
+        </div>
+      </div>
+      <div className="space-y-3">
+        {sections.map(s => (
+          <SummarySection key={s.id} section={s} rtl={rtl} size={size} open={!closed[s.id]}
+            onToggle={() => setClosed(c => ({ ...c, [s.id]: !c[s.id] }))}/>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const SummaryTab = ({ set, setSet, access }) => {
   const { busy, generate, upgrade } = useGenerate(set, setSet, 'summary', 'summary');
   const [lang, setLang] = useState(set.summary_lang || 'id');
@@ -115,10 +238,7 @@ const SummaryTab = ({ set, setSet, access }) => {
           <ToolbarButton icon="bookmark" onClick={() => saveKurasah(`Ringkasan — ${set.title}`, set.summary, ['ringkasan'])}>Simpan ke Kurasah</ToolbarButton>
         </div>
       </div>
-      <div className="card-glass p-5 md:p-8">
-        <MarkdownArab content={set.summary} ltr={!isArabic}
-          style={{ color: 'inherit', fontSize: isArabic ? 19 : 15, lineHeight: isArabic ? 2.1 : 1.85, fontFamily: isArabic ? '"Noto Naskh Arabic", serif' : 'inherit' }}/>
-      </div>
+      <SummaryView markdown={set.summary} rtl={isArabic}/>
     </div>
   );
 };
@@ -234,7 +354,7 @@ const IrabResult = ({ result, onSaveKurasah, onAddCard }) => (
     )}
     {result.catatan && (
       <div className="rounded-xl bg-emerald-500/8 border border-emerald-500/20 p-4 text-sm text-ink-muted leading-relaxed">
-        <span className="text-emerald-300 font-medium">Faedah: </span>{result.catatan}
+        <span className="text-emerald-300 font-medium">Faedah: </span><AiInline text={result.catatan}/>
       </div>
     )}
     <div className="flex gap-2 flex-wrap">
@@ -689,7 +809,7 @@ const QuizTab = ({ set, setSet, access }) => {
         <>
           {q.explanation && (
             <div className="mt-5 p-4 rounded-xl bg-white/4 border border-white/8 text-sm text-ink-muted leading-relaxed" dir="auto">
-              <span className="text-gold-400 font-semibold">Pembahasan: </span>{q.explanation}
+              <span className="text-gold-400 font-semibold">Pembahasan: </span><AiInline text={q.explanation}/>
             </div>
           )}
           <div className="flex justify-end mt-5">
@@ -718,18 +838,18 @@ const GradeResult = ({ attempt, essay }) => {
     <div className="space-y-4 mt-5">
       <div className="flex gap-4 items-center">
         <ScoreBadge skor={attempt.skor}/>
-        <p className="text-sm text-ink-muted leading-relaxed">{attempt.tips}</p>
+        <p className="text-sm text-ink-muted leading-relaxed"><AiInline text={attempt.tips}/></p>
       </div>
       {attempt.sudah_benar.length > 0 && (
         <div className="rounded-xl bg-emerald-500/8 border border-emerald-500/20 p-4">
           <div className="text-xs font-semibold text-emerald-300 mb-2">Sudah tepat</div>
-          <ul className="space-y-1 text-sm text-ink">{attempt.sudah_benar.map((s, i) => <li key={i} dir="auto">✓ {s}</li>)}</ul>
+          <ul className="space-y-1 text-sm text-ink">{attempt.sudah_benar.map((s, i) => <li key={i}>✓ <AiInline text={s}/></li>)}</ul>
         </div>
       )}
       {attempt.kurang.length > 0 && (
         <div className="rounded-xl bg-amber-500/8 border border-amber-500/20 p-4">
           <div className="text-xs font-semibold text-amber-300 mb-2">Masih kurang</div>
-          <ul className="space-y-1 text-sm text-ink">{attempt.kurang.map((s, i) => <li key={i} dir="auto">• {s}</li>)}</ul>
+          <ul className="space-y-1 text-sm text-ink">{attempt.kurang.map((s, i) => <li key={i}>• <AiInline text={s}/></li>)}</ul>
         </div>
       )}
       {attempt.koreksi_bahasa.length > 0 && (
@@ -741,7 +861,7 @@ const GradeResult = ({ attempt, essay }) => {
                 <span dir="rtl" className="line-through text-rose-300" style={{ fontFamily: '"Noto Naskh Arabic", serif', fontSize: 17 }}>{k.salah}</span>
                 <span className="text-ink-soft mx-2">→</span>
                 <span dir="rtl" className="text-emerald-300" style={{ fontFamily: '"Noto Naskh Arabic", serif', fontSize: 17 }}>{k.benar}</span>
-                {k.alasan && <div className="text-xs text-ink-muted">{k.alasan}</div>}
+                {k.alasan && <div className="text-xs text-ink-muted"><AiInline text={k.alasan}/></div>}
               </div>
             ))}
           </div>
@@ -752,8 +872,9 @@ const GradeResult = ({ attempt, essay }) => {
       </button>
       {showModel && (
         <div className="rounded-xl bg-white/3 border border-white/8 p-4 space-y-3">
-          <ul className="space-y-1 text-sm text-ink">{essay.poin.map((p, i) => <li key={i} dir="auto">{i + 1}. {p}</li>)}</ul>
-          <MarkdownArab content={essay.jawaban_model} ltr style={{ color: 'inherit', fontSize: 15, lineHeight: 1.9 }}/>
+          <ul className="space-y-1 text-sm text-ink">{essay.poin.map((p, i) => <li key={i}>{i + 1}. <AiInline text={p}/></li>)}</ul>
+          <div className="text-[11px] uppercase tracking-wider text-emerald-300 pt-1">Jawaban model</div>
+          <AiRichText content={essay.jawaban_model} size="md"/>
         </div>
       )}
     </div>
@@ -947,13 +1068,19 @@ const TutorTab = ({ set, setSet, access }) => {
             </div>
           )}
           {chat.map((m, i) => (
-            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[88%] rounded-2xl px-4 py-3 text-sm ${m.role === 'user'
-                ? 'bg-emerald-500/15 border border-emerald-500/25 text-ink'
-                : 'bg-white/4 border border-white/8'}`} dir="auto">
+            <div key={i} className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              {m.role !== 'user' && (
+                <span className="hidden sm:flex w-8 h-8 rounded-full flex-shrink-0 items-center justify-center mt-0.5"
+                  style={{ background: 'rgba(62,207,142,0.14)', border: '1px solid rgba(62,207,142,0.3)' }}>
+                  <Icon name={mode === 'syafawi' ? 'mosque' : 'sparkles'} className="w-4 h-4" style={{ stroke: '#3ecf8e' }}/>
+                </span>
+              )}
+              <div className={`rounded-2xl ${m.role === 'user'
+                ? 'max-w-[85%] px-4 py-2.5 text-sm bg-emerald-500/15 border border-emerald-500/25 text-ink rounded-br-md'
+                : 'max-w-[94%] sm:max-w-[88%] px-4 py-3.5 bg-white/[0.035] border border-white/10 rounded-tl-md'}`}>
                 {m.role === 'user'
-                  ? <span className="whitespace-pre-wrap">{m.content}</span>
-                  : <MarkdownArab content={m.content} ltr style={{ color: 'inherit', fontSize: 14.5, lineHeight: 1.8 }}/>}
+                  ? <span className="whitespace-pre-wrap" dir="auto">{m.content}</span>
+                  : <AiRichText content={m.content} size="sm"/>}
               </div>
             </div>
           ))}

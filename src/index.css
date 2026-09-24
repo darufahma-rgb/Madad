@@ -437,3 +437,84 @@ html.app-shell { --app-header-h: calc(57px + var(--safe-top)); }
   padding-bottom: 6px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
+
+/* ── Hasil AI (AI Partner): tipografi yang enak dibaca ── */
+.ai-rich { color: #d4d4d4; line-height: 1.8; overflow-wrap: anywhere; }
+.ai-rich-sm { font-size: 14.5px; }
+.ai-rich-md { font-size: 15.5px; }
+.ai-rich-lg { font-size: 17.5px; line-height: 1.85; }
+@media (max-width: 640px) {
+  .ai-rich-sm { font-size: 14px; }
+  .ai-rich-md { font-size: 15px; }
+  .ai-rich-lg { font-size: 16.5px; }
+}
+.ai-rich > :first-child { margin-top: 0 !important; }
+.ai-rich > :last-child { margin-bottom: 0 !important; }
+.ai-rich p { margin: 0.65em 0; }
+.ai-rich strong { color: #fff; font-weight: 600; background: linear-gradient(transparent 62%, rgba(62,207,142,0.2) 62%); padding: 0 1px; }
+.ai-rich em { color: #bdbdbd; }
+.ai-rich a { color: #6ee7b7; text-decoration: underline; text-underline-offset: 2px; }
+.ai-rich h1, .ai-rich h2, .ai-rich h3, .ai-rich h4 { font-family: var(--font-display, inherit); color: #f5f5f5; font-weight: 600; line-height: 1.35; }
+.ai-rich h1 { font-size: 1.3em; margin: 1.2em 0 0.5em; }
+.ai-rich h2 { font-size: 1.18em; margin: 1.15em 0 0.45em; }
+.ai-rich h3 { font-size: 1.06em; margin: 1.1em 0 0.4em; color: #e8d5a8; }
+.ai-rich h4 { font-size: 1em; margin: 1em 0 0.35em; color: #cfcfcf; }
+
+/* Daftar: titik berwarna, sub-daftar dengan garis panduan */
+.ai-rich ul, .ai-rich ol { margin: 0.55em 0; padding: 0; }
+.ai-rich ul { list-style: none; }
+.ai-rich ul > li { position: relative; padding-inline-start: 1.15em; margin: 0.38em 0; }
+.ai-rich ul > li::before { content: ""; position: absolute; inset-inline-start: 0.2em; top: 0.72em; width: 0.38em; height: 0.38em; border-radius: 50%; background: #3ecf8e; }
+.ai-rich ul ul > li::before { background: transparent; border: 1.5px solid #c9a86a; }
+.ai-rich ol { padding-inline-start: 1.5em; }
+.ai-rich ol > li { margin: 0.4em 0; padding-inline-start: 0.2em; }
+.ai-rich ol > li::marker { color: #3ecf8e; font-weight: 700; }
+.ai-rich li > ul, .ai-rich li > ol { margin: 0.3em 0 0.4em; padding-inline-start: 0.85em; border-inline-start: 1px solid rgba(255,255,255,0.1); }
+.ai-rich li > p { margin: 0.2em 0; }
+
+/* Kutipan (dalil, matan) */
+.ai-rich blockquote { margin: 0.9em 0; padding: 0.75em 1em; border-inline-start: 3px solid #c9a86a; background: rgba(201,168,106,0.07); border-radius: 0 12px 12px 0; color: #e7e2d6; }
+.ai-rich blockquote p { margin: 0.25em 0; }
+.ai-rich-rtl blockquote { border-radius: 12px 0 0 12px; }
+
+/* Teks Arab */
+.ai-rich .ai-ar { font-family: "Noto Naskh Arabic", Amiri, serif; font-size: 1.3em; line-height: 2.05; color: #ecdcb4; text-align: right; }
+.ai-rich li.ai-ar::before { inset-inline-start: 0.2em; }
+.ai-rich .ai-ar strong { background: none; color: #f6e7c1; }
+.ai-rich .ai-ar-inline, .ai-ar-inline { font-family: "Noto Naskh Arabic", Amiri, serif; font-size: 1.16em; color: #e8d5a8; unicode-bidi: isolate; line-height: 1.6; }
+.ai-rich .ai-ar .ai-ar-inline { font-size: inherit; color: inherit; }
+.ai-rich-rtl { font-family: "Noto Naskh Arabic", Amiri, serif; }
+.ai-rich-rtl .ai-ar { font-size: 1.22em; }
+
+/* Terjemah di bawah teks Arab */
+.ai-rich .ai-tr { display: block; direction: ltr; text-align: left; font-family: "DM Sans", system-ui, sans-serif; font-size: 0.93em; line-height: 1.65; color: #b4b4b4; margin: 0.15em 0 0.4em; padding-left: 0.75em; border-left: 2px solid rgba(62,207,142,0.4); }
+.ai-rich .ai-ar .ai-tr { font-size: 0.7em; margin-top: 0.45em; line-height: 1.6; }
+.ai-rich blockquote .ai-tr { color: #c7c2b6; border-left-color: rgba(201,168,106,0.45); }
+.ai-rich p > .ai-tr:first-child { margin-top: -0.3em; }
+
+/* Label penilaian syafawi */
+.ai-rich .ai-verdict { padding: 0.55em 0.8em; border-radius: 10px; border: 1px solid; }
+.ai-rich .ai-verdict-ok   { background: rgba(62,207,142,0.09); border-color: rgba(62,207,142,0.3); }
+.ai-rich .ai-verdict-warn { background: rgba(245,158,11,0.09); border-color: rgba(245,158,11,0.3); }
+.ai-rich .ai-verdict-bad  { background: rgba(244,63,94,0.09); border-color: rgba(244,63,94,0.3); }
+.ai-rich li.ai-verdict::before { display: none; }
+
+/* Tabel: bisa digeser di layar sedang, jadi kartu di HP */
+.ai-rich .ai-table-wrap { margin: 0.9em 0; overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); }
+.ai-rich table { width: 100%; border-collapse: collapse; font-size: 0.92em; }
+.ai-rich th { background: rgba(62,207,142,0.1); color: #86efc0; font-weight: 600; text-align: start; padding: 0.65em 0.85em; border-bottom: 1px solid rgba(255,255,255,0.1); white-space: nowrap; }
+.ai-rich td { padding: 0.65em 0.85em; vertical-align: top; border-top: 1px solid rgba(255,255,255,0.06); }
+.ai-rich tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+@media (max-width: 640px) {
+  .ai-rich .ai-table-wrap { border: none; overflow: visible; }
+  .ai-rich table, .ai-rich tbody, .ai-rich tr, .ai-rich td { display: block; width: 100%; }
+  .ai-rich thead { display: none; }
+  .ai-rich tr { margin: 0 0 0.7em; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; overflow: hidden; background: rgba(255,255,255,0.02); }
+  .ai-rich tr:nth-child(even) td { background: none; }
+  .ai-rich td { border-top: 1px solid rgba(255,255,255,0.06); padding: 0.55em 0.85em; }
+  .ai-rich td:first-child { border-top: none; background: rgba(62,207,142,0.07) !important; font-weight: 600; color: #f0f0f0; }
+  .ai-rich td[data-label]::before { content: attr(data-label); display: block; font-family: var(--font-body, "DM Sans", sans-serif); font-size: 10.5px; letter-spacing: 0.08em; text-transform: uppercase; color: #86efc0; margin-bottom: 0.15em; font-weight: 600; }
+}
+.ai-rich hr { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 1.2em 0; }
+.ai-rich code { font-family: "JetBrains Mono", monospace; font-size: 0.85em; background: rgba(255,255,255,0.08); border-radius: 5px; padding: 0.1em 0.4em; color: #a7f3d0; }
+.ai-heading-ar { font-family: "Noto Naskh Arabic", Amiri, serif; }
