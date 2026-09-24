@@ -214,7 +214,7 @@ const HeroShowcaseCard = () => (
 /* ══════════════════════════════════════════════════════════════
    1. HERO
    ══════════════════════════════════════════════════════════════ */
-const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
+const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
   <section className="relative overflow-hidden pt-8 md:pt-28 pb-12 md:pb-20">
     {/* Background */}
     <HeroGeoBg/>
@@ -283,8 +283,8 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
             >
               Cobain Sample Gratis →
             </button>
-            <button onClick={onOpenPayment} className="btn-hero-dark w-full sm:w-auto" style={{justifyContent:"center"}}>
-              Gabung Member
+            <button onClick={() => { document.getElementById("paket")?.scrollIntoView({ behavior: "smooth" }); }} className="btn-hero-dark w-full sm:w-auto" style={{justifyContent:"center"}}>
+              Lihat Paket
             </button>
           </div>
         </Reveal>
@@ -292,12 +292,12 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         {/* Login link */}
         <Reveal delay={300}>
           <div className="mb-10 text-sm" style={{ color:"rgba(255,255,255,0.42)" }}>
-            Sudah punya kode?{" "}
+            Sudah member?{" "}
             <button
               onClick={onOpenLogin}
               style={{ color:"#3ecf8e", textDecoration:"underline", textUnderlineOffset:"3px", background:"none", border:"none", cursor:"pointer", fontSize:"14px" }}
             >
-              Masuk di sini
+              Masuk dengan Google
             </button>
           </div>
         </Reveal>
@@ -305,7 +305,7 @@ const LandingHero = ({ onOpenLogin, onOpenPayment }) => (
         {/* Trust row */}
         <Reveal delay={340}>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-16">
-            {["88 Maddah lengkap (S1 + Ma'had)","1211 template prompt","Bayar sekali, akses selamanya"].map((t, i) => (
+            {["88 Maddah lengkap (S1 + Ma'had)","1211 template prompt","Library sekali bayar, akses selamanya","Tambahan AI Partner Belajar"].map((t, i) => (
               <span key={i} className="flex items-center gap-2 text-xs" style={{ color:"rgba(255,255,255,0.42)" }}>
                 <Icon name="check" className="w-3.5 h-3.5 text-gold-400 flex-shrink-0"/>{t}
               </span>
@@ -385,26 +385,28 @@ const SampleMaddahSection = () => (
    ══════════════════════════════════════════════════════════════ */
 const HowItWorks = () => {
   const steps = [
-    { num:"01", title:"Gabung Member", sub:"Sekali bayar, akses selamanya",
-      desc:"Bayar via Lynk.id, admin kirim kode member via WhatsApp." },
-    { num:"02", title:"Jawab profile", sub:"5 pertanyaan singkat",
-      desc:"Fakultas, jurusan, tingkat, gaya belajarmu. Supaya prompt-nya pas." },
-    { num:"03", title:"Mulai belajar", sub:"Workflow + 1211 prompt",
-      desc:"Dashboard tunjukin AI cocok, prompt per Maddah siap pakai." },
+    { num:"01", title:"Login pakai Google", sub:"Tanpa bikin password",
+      desc:"Akun Google jadi identitas keanggotaanmu. Bisa dipakai di HP dan laptop sekaligus." },
+    { num:"02", title:"Pilih paket", sub:"Library atau Library + AI",
+      desc:"Library: 1211 prompt, sekali bayar selamanya. Tambah AI Partner kalau mau belajar langsung dari materimu." },
+    { num:"03", title:"Bayar di Mayar", sub:"Aktif otomatis",
+      desc:"QRIS, virtual account, atau e-wallet. Pakai email Google yang sama — akses langsung terbuka tanpa nunggu admin." },
+    { num:"04", title:"Mulai belajar", sub:"Isi profil 5 pertanyaan",
+      desc:"Fakultas, tingkat, gaya belajar. Dashboard langsung menyiapkan prompt dan AI yang cocok." },
   ];
   return (
     <section className="section pt-0">
       <div className="container-x">
         <Reveal className="mb-12 text-center">
           <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
-            <span className="w-6 h-px bg-gold-500/70"/>BAGAIMANA TALQEE BEKERJA
+            <span className="w-6 h-px bg-gold-500/70"/>CARA GABUNG TALQEEH
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
-            Buka website. Paham kitab. Lima menit.
+            Login, pilih paket, langsung belajar.
           </h2>
         </Reveal>
-        <div className="grid md:grid-cols-3 gap-8 relative">
-          <div className="hidden md:block absolute top-10 left-[16%] right-[16%] h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent"/>
+        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 relative">
+          <div className="hidden md:block absolute top-10 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent"/>
           {steps.map((s, i) => (
             <Reveal key={i}>
               <div className="text-center px-4">
@@ -697,113 +699,144 @@ const HadiahPreviewBanner = () => (
 /* ══════════════════════════════════════════════════════════════
    6. PRICING + FINAL CTA
    ══════════════════════════════════════════════════════════════ */
-const PricingAndCTA = ({ onOpenPayment, onOpenLogin, onOpenAiPayment }) => {
-  const [copiedCode, setCopiedCode] = React.useState(false);
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText("TALQEEH26");
-    setCopiedCode(true);
-    setTimeout(() => setCopiedCode(false), 2500);
-  };
+const FeatureList = ({ items, color }) => (
+  <ul className="space-y-3">
+    {items.map(feat => (
+      <li key={feat} className="flex items-start gap-3 text-sm text-ink">
+        <Icon name="check" className={`w-4 h-4 flex-shrink-0 mt-0.5 ${color}`}/>
+        <span>{feat}</span>
+      </li>
+    ))}
+  </ul>
+);
+
+const LANDING_FAQ = [
+  { q: "Kenapa harus login pakai Google dulu?",
+    a: "Akun Google jadi identitas keanggotaanmu. Pembayaran otomatis tercatat ke akun itu, jadi nggak ada kode yang perlu ditunggu atau diketik, dan kamu bisa belajar di HP maupun laptop dengan akun yang sama." },
+  { q: "Apa beda paket Library dan Library + AI Partner?",
+    a: "Library berisi 88 maddah, 1211 template prompt, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Library + AI Partner menambahkan tempat upload materi kuliahmu sendiri: AI langsung bikin ringkasan, flashcard, kuis, dan bisa ditanya seperti tutor. AI Partner dibayar bulanan." },
+  { q: "Bayarnya pakai apa?",
+    a: "Lewat Mayar: QRIS, virtual account bank, atau e-wallet. Saat checkout, isi email yang sama dengan akun Google-mu supaya akses langsung aktif." },
+  { q: "Kalau berhenti langganan AI Partner, Library-nya hilang?",
+    a: "Nggak. Library tetap milikmu selamanya. Yang berhenti cuma fitur AI Partner, dan bisa diaktifkan lagi kapan saja." },
+  { q: "Aku member lama yang dulu login pakai kode. Gimana?",
+    a: "Admin akan mengirim PIN aktivasi khusus lewat WhatsApp. Login pakai Google, pilih \"Punya PIN aktivasi dari admin?\", lalu masukkan PIN itu sekali. Keanggotaan, catatan, dan progressmu pindah ke akun Google — setelah itu cukup login pakai Google. Belum dapat PIN? Ada tombol untuk minta ke admin di layar yang sama." },
+  { q: "Sudah bayar tapi akses belum aktif?",
+    a: "Biasanya aktif dalam hitungan detik. Kalau belum, kemungkinan email checkout beda dengan email Google-mu — tekan tombol \"Hubungi admin\" di layar pembayaran, kami aktifkan manual." },
+];
+
+const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
+  const settings = useAppSettings();
+  const aiPriceLabel = settings.aiPriceLabel || "harga segera diumumkan";
   return (
-  <section className="section pt-0 pb-32">
+  <section id="paket" className="section pt-0 pb-32">
     <div className="container-x">
       <Reveal className="text-center mb-10">
         <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
-          <span className="w-6 h-px bg-gold-500/70"/>INVESTASI ILMU
+          <span className="w-6 h-px bg-gold-500/70"/>PILIH PAKET
         </div>
         <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
-          Bayar sekali, belajar selamanya.
+          Bayar sekali untuk Library.<br className="hidden md:block"/> Tambah AI kalau butuh.
         </h2>
-        <p className="text-ink-muted text-base md:text-lg mt-4 max-w-xl mx-auto leading-relaxed">
-          Dapatkan 1211 Prompt siap pakai untuk bantu kamu belajar + update selamanya
+        <p className="text-ink-muted text-base md:text-lg mt-4 max-w-2xl mx-auto leading-relaxed">
+          Login pakai Google, pilih paket, bayar di Mayar — akses langsung aktif otomatis.
         </p>
       </Reveal>
 
       <Reveal>
-        <div className="max-w-lg mx-auto">
-          <div className="card-glass-strong p-8 md:p-10 relative overflow-hidden"
+        <div className="grid md:grid-cols-2 gap-5 max-w-5xl mx-auto items-stretch">
+          {/* Paket Library */}
+          <div className="card-glass-strong p-8 relative overflow-hidden flex flex-col"
             style={{ border:"1px solid rgba(201,168,106,.22)" }}>
             <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-gold-500/12 blur-3xl pointer-events-none"/>
-            <div className="absolute -bottom-20 -left-20 w-60 h-60 rounded-full blur-3xl pointer-events-none" style={{background:"rgba(62,207,142,0.08)"}}/>
-            <div className="relative">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/20 text-xs text-gold-300 mb-5">
-                <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>Member Talqeeh
+            <div className="relative flex flex-col flex-1">
+              <div className="inline-flex self-start items-center gap-2 px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/20 text-xs text-gold-300 mb-5">
+                <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>Library
               </div>
-              <div className="mb-1">
-                <span className="text-sm text-ink-soft line-through block mb-1">Rp 89.000</span>
-                <span className="font-display text-5xl md:text-6xl font-semibold bg-gradient-to-br from-gold-300 to-gold-500 bg-clip-text text-transparent block leading-tight">
-                  Rp 63.000
-                </span>
-              </div>
-              <div className="text-xs text-ink-soft uppercase tracking-wider mt-2">Sekali bayar · Berlaku selamanya</div>
-
-              <div className="flex items-center gap-3 my-4 p-3 rounded-xl"
-                style={{background:"rgba(201,168,106,0.08)", border:"1px dashed rgba(201,168,106,0.35)"}}>
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs text-ink-soft mb-0.5">Gunakan kode kupon di Lynk:</div>
-                  <div className="font-mono font-bold text-gold-300 text-lg tracking-widest">TALQEEH26</div>
-                </div>
-                <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                  <button onClick={handleCopyCode}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
-                    style={copiedCode
-                      ? {background:"rgba(62,207,142,0.15)", color:"#3ecf8e", border:"1px solid rgba(62,207,142,0.35)"}
-                      : {background:"rgba(201,168,106,0.15)", color:"#c9a86a", border:"1px solid rgba(201,168,106,0.35)"}}>
-                    <Icon name={copiedCode ? "check" : "copy"} className="w-3 h-3"/>
-                    {copiedCode ? "Tersalin!" : "Salin"}
-                  </button>
-                  <div className="text-right">
-                    <div className="text-xs text-ink-soft">Hemat</div>
-                    <div className="font-display font-semibold text-gold-300 text-sm">Rp 26.000</div>
-                  </div>
-                </div>
-              </div>
-              <ul className="space-y-3 mb-8">
-                {[
-                  "88 Maddah lengkap (S1 + Ma'had) + 1211 template prompt",
-                  "AI recommendation per gaya & tingkat belajarmu",
-                  "Muqaranah qoul ulama 4 madzhab",
-                  "Kurasah pribadi dengan markdown & teks Arab",
-                  "Companion harian: niat, ritme, refleksi",
-                  "Update fitur seumur hidup",
-                ].map((feat, i) => (
-                  <li key={i} className="flex items-start gap-3 text-sm text-ink">
-                    <Icon name="check" className="w-4 h-4 text-gold-400 flex-shrink-0 mt-0.5"/>
-                    <span>{feat}</span>
-                  </li>
-                ))}
-              </ul>
-              <button onClick={onOpenPayment}
+              <span className="text-sm text-ink-soft line-through block mb-1">{LIBRARY_PRICE_ORIGINAL}</span>
+              <span className="font-display text-5xl font-semibold bg-gradient-to-br from-gold-300 to-gold-500 bg-clip-text text-transparent block leading-tight">
+                {LIBRARY_PRICE}
+              </span>
+              <div className="text-xs text-ink-soft uppercase tracking-wider mt-2 mb-6">Sekali bayar · Berlaku selamanya</div>
+              <div className="flex-1 mb-8"><FeatureList items={LIBRARY_FEATURES} color="text-gold-400"/></div>
+              <button onClick={() => onOpenJoin("library")}
                 className="btn btn-gold w-full py-4 text-base font-medium"
-                style={{ boxShadow:"0 0 50px rgba(201,168,106,.4), 0 1px 0 rgba(255,255,255,.3) inset" }}>
-                Join Member Sekarang!
+                style={{ boxShadow:"0 0 50px rgba(201,168,106,.35), 0 1px 0 rgba(255,255,255,.3) inset" }}>
+                Pilih Library
               </button>
-              <p className="text-xs text-ink-soft text-center mt-4">
-                Setelah bayar, kode dikirim admin via WhatsApp.
-              </p>
+            </div>
+          </div>
+
+          {/* Paket Library + AI Partner */}
+          <div className="card-glass-strong p-8 relative overflow-hidden flex flex-col"
+            style={{ border:"1px solid rgba(62,207,142,.35)" }}>
+            <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full blur-3xl pointer-events-none" style={{background:"rgba(62,207,142,0.14)"}}/>
+            <span className="absolute top-5 right-5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500 text-black">Paling lengkap</span>
+            <div className="relative flex flex-col flex-1">
+              <div className="inline-flex self-start items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 mb-5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>Library + AI Partner
+              </div>
+              <span className="text-sm text-ink-soft block mb-1">{LIBRARY_PRICE} sekali</span>
+              <span className="font-display text-4xl md:text-5xl font-semibold bg-gradient-to-br from-emerald-300 to-gold-400 bg-clip-text text-transparent block leading-tight">
+                + {aiPriceLabel}
+              </span>
+              <div className="text-xs text-ink-soft uppercase tracking-wider mt-2 mb-6">AI Partner · langganan bulanan</div>
+              <div className="flex-1 mb-8">
+                <div className="text-sm text-ink font-medium mb-3">Semua isi paket Library, ditambah:</div>
+                <FeatureList items={AI_PARTNER_FEATURES} color="text-emerald-400"/>
+                <p className="text-xs text-ink-soft mt-4 leading-relaxed">
+                  Library tetap milikmu selamanya. Langganan AI bisa berhenti kapan saja.
+                </p>
+              </div>
+              <button onClick={() => onOpenJoin("library_ai")}
+                className="btn btn-primary w-full py-4 text-base font-medium">
+                Pilih Library + AI
+              </button>
             </div>
           </div>
         </div>
       </Reveal>
 
-      {/* AI Partner Belajar — add-on subscription bulanan */}
+      {/* Cara bayar */}
       <Reveal>
-        <div className="max-w-lg mx-auto mt-6">
-          <div className="card-glass p-6 flex items-center justify-between gap-4 flex-wrap"
-            style={{ border:"1px solid rgba(62,207,142,0.18)" }}>
-            <div>
-              <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-300 mb-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>Add-on · Langganan bulanan
+        <div className="max-w-5xl mx-auto mt-6 card-glass p-5 md:p-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+            {[
+              ["Login Google", "Tombol paket langsung minta login dulu."],
+              ["Pilih paket", "Library, atau Library + AI Partner."],
+              ["Bayar di Mayar", "QRIS, VA, e-wallet. Pakai email Google yang sama."],
+              ["Aktif otomatis", "Tanpa kode, tanpa nunggu admin. Paket AI lanjut ke langganan bulanan."],
+            ].map(([title, desc], i) => (
+              <div key={title} className="flex gap-3">
+                <span className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-semibold text-emerald-200"
+                  style={{ background:"rgba(62,207,142,0.15)", border:"1px solid rgba(62,207,142,0.3)" }}>{i + 1}</span>
+                <div>
+                  <div className="text-ink font-medium">{title}</div>
+                  <div className="text-xs text-ink-muted leading-relaxed">{desc}</div>
+                </div>
               </div>
-              <div className="font-display text-lg font-semibold text-ink mb-1">AI Partner Belajar Muqarrar</div>
-              <div className="text-sm text-ink-muted">Terpisah dari member lifetime — khusus untuk member yang mau bantuan AI ekstra.</div>
-            </div>
-            <button onClick={onOpenAiPayment}
-              className="btn btn-ghost px-5 py-2.5 text-sm font-medium flex-shrink-0"
-              style={{ border:"1px solid rgba(62,207,142,0.3)", color:"#3ecf8e" }}>
-              Lihat detail →
-            </button>
+            ))}
           </div>
+        </div>
+      </Reveal>
+
+      {/* FAQ */}
+      <Reveal className="max-w-3xl mx-auto mt-16">
+        <div className="text-center mb-6">
+          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 inline-flex items-center gap-2">
+            <span className="w-6 h-px bg-gold-500/70"/>PERTANYAAN UMUM
+          </div>
+        </div>
+        <div className="space-y-2">
+          {LANDING_FAQ.map(item => (
+            <details key={item.q} className="card-glass px-5 py-4 group">
+              <summary className="cursor-pointer list-none flex items-center justify-between gap-4 text-ink font-medium text-sm md:text-base">
+                {item.q}
+                <span className="text-gold-400 text-lg transition-transform group-open:rotate-45 flex-shrink-0">+</span>
+              </summary>
+              <p className="text-sm text-ink-muted leading-relaxed mt-3">{item.a}</p>
+            </details>
+          ))}
         </div>
       </Reveal>
 
@@ -820,10 +853,10 @@ const PricingAndCTA = ({ onOpenPayment, onOpenLogin, onOpenAiPayment }) => {
         <p className="text-base text-ink-muted italic mb-1">"Ikatlah ilmu dengan tulisan."</p>
         <p className="text-xs text-ink-soft">(Atsar)</p>
         <div className="mt-10 text-sm text-ink-soft">
-          Sudah punya kode?{" "}
+          Sudah member?{" "}
           <button onClick={onOpenLogin}
             className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2 font-medium">
-            Masuk di sini
+            Masuk dengan Google
           </button>
         </div>
       </Reveal>
@@ -1062,7 +1095,7 @@ const BankSoalPreview = ({ onOpenLogin }) => {
                   {/* CTA buttons */}
                   <div style={{ display: 'flex', gap: 10 }}>
                     <button
-                      onClick={onOpenLogin}
+                      onClick={() => window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library' } }))}
                       style={{
                         flex: 2, padding: '12px',
                         borderRadius: 11, border: 'none',
@@ -1138,10 +1171,10 @@ const BankSoalPreview = ({ onOpenLogin }) => {
 };
 
 /* ── Root ─────────────────────────────────────────────────────── */
-const LandingPage = ({ onOpenLogin, onOpenPayment, onOpenAiPayment }) => (
+const LandingPage = ({ onOpenLogin, onOpenJoin }) => (
   <div className="page-enter">
     <StyleInject/>
-    <LandingHero onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment}/>
+    <LandingHero onOpenLogin={onOpenLogin} onOpenJoin={onOpenJoin}/>
 
     {/* Banner Campaign Submit Soal */}
     <section style={{
@@ -1213,7 +1246,7 @@ const LandingPage = ({ onOpenLogin, onOpenPayment, onOpenAiPayment }) => (
     <AllMaddahPreview/>
     <TestimoniSection/>
     <HadiahPreviewBanner/>
-    <PricingAndCTA onOpenLogin={onOpenLogin} onOpenPayment={onOpenPayment} onOpenAiPayment={onOpenAiPayment}/>
+    <PricingAndCTA onOpenLogin={onOpenLogin} onOpenJoin={onOpenJoin}/>
   </div>
 );
 

@@ -1,6 +1,7 @@
 import https from 'https';
 import { verifyToken } from './admin-auth.js';
 import { ADMIN_SETTING_KEYS, readSettings } from './_lib/settings.js';
+import { newActivationPin, PIN_TTL_DAYS } from './_lib/pin.js';
 
 const sbRequest = (supabaseUrl, serviceKey, method, path, body, prefer = 'return=representation') => {
   const url = new URL(`${supabaseUrl}/rest/v1/${path}`);
@@ -72,6 +73,19 @@ export default async function handler(req, res) {
       result = await sbRequest(supabaseUrl, serviceKey, 'GET', 'user_profiles?select=member_code,profile&limit=1000', null);
     } else if (action === 'aggregate-activity') {
       result = await sbRequest(supabaseUrl, serviceKey, 'GET', 'user_maddah_activity?select=*&limit=1000', null);
+    } else if (action === 'generate-pin') {
+      if (!code) { res.status(400).json({ ok: false, error: 'Kode member wajib' }); return; }
+      const expiresAt = new Date(Date.now() + PIN_TTL_DAYS * 86400000).toISOString();
+      result = { status: 409 };
+      for (let attempt = 0; attempt < 5 && result.status === 409; attempt++) {
+        const pin = newActivationPin();
+        result = await sbRequest(supabaseUrl, serviceKey, 'PATCH', `members?code=eq.${encodeURIComponent(code)}`,
+          { activation_pin: pin, activation_pin_expires_at: expiresAt });
+        if (result.status < 400) {
+          if (!Array.isArray(result.data) || !result.data[0]) { res.status(404).json({ ok: false, error: 'Member tidak ditemukan' }); return; }
+          result = { status: 200, data: { pin, expiresAt } };
+        }
+      }
     } else if (action === 'get-settings') {
       result = { status: 200, data: await readSettings(ADMIN_SETTING_KEYS) };
     } else if (action === 'save-settings') {

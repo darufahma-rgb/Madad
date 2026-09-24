@@ -18,7 +18,7 @@ const _onSupabaseReady = (fn) => {
 
 const whenSupabaseReady = () => _readyPromise;
 
-/* ── Pengaturan publik dari admin (URL Lynk/Mayar, harga AI, WA admin) ── */
+/* ── Pengaturan publik dari admin (URL Mayar, harga AI, WA admin) ── */
 let _appSettings = {};
 const getAppSettings = () => _appSettings;
 const useAppSettings = () => {

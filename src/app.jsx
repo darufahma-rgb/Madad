@@ -48,11 +48,19 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+// Paket yang dipilih sebelum login; bertahan melewati redirect OAuth Google.
+const JOIN_PLAN_KEY = "talqeeh_join_plan";
+const readJoinPlan = () => { try { return localStorage.getItem(JOIN_PLAN_KEY); } catch { return null; } };
+const saveJoinPlan = (plan) => {
+  try { plan ? localStorage.setItem(JOIN_PLAN_KEY, plan) : localStorage.removeItem(JOIN_PLAN_KEY); } catch {}
+};
+
 const App = () => {
   const path = useRoute();
   const { session, profile, authStatus } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
-  const [paymentOpen, setPaymentOpen] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
+  const [joinPlan, setJoinPlan] = useState(null);
   const [aiPaymentOpen, setAiPaymentOpen] = useState(false);
 
   useEffect(() => {
@@ -60,9 +68,15 @@ const App = () => {
     if (s) { s.style.opacity = "0"; setTimeout(() => s.remove(), 580); }
   }, []);
 
-  // Balik dari login Google tapi akun belum terhubung ke member → tampilkan layar aktivasi.
+  // Sudah login Google tapi belum member → pilih paket (juga jalur balik dari redirect OAuth).
   useEffect(() => {
-    if (authStatus === "needs_activation" || authStatus === "inactive") setLoginOpen(true);
+    if (authStatus === "needs_activation") {
+      setJoinPlan(readJoinPlan() || "library");
+      setLoginOpen(false);
+      setJoinOpen(true);
+    } else if (authStatus === "inactive") {
+      setLoginOpen(true);
+    }
   }, [authStatus]);
 
   // Auto-redirect logic on path change
@@ -97,16 +111,44 @@ const App = () => {
     }
   }, [path, session, profile]);
 
-  const handleLoginSuccess = (result) => {
+  const handleLoginSuccess = (plan) => {
     setLoginOpen(false);
+    setJoinOpen(false);
+    const wantsAi = plan === "library_ai" || readJoinPlan() === "library_ai";
+    saveJoinPlan(null);
     const p = getProfile();
-    const dest = (!p?.onboarded) ? "/onboarding" : "/dashboard";
-    setTimeout(() => navigate(dest), 50);
+    setTimeout(() => navigate(!p?.onboarded ? "/onboarding" : "/dashboard"), 50);
+    if (wantsAi) setTimeout(() => setAiPaymentOpen(true), 400);
   };
 
-  const openPayment = () => { setLoginOpen(false); setPaymentOpen(true); };
-  const openAiPayment = () => { setLoginOpen(false); setAiPaymentOpen(true); };
-  const openLogin  = () => { setPaymentOpen(false); setAiPaymentOpen(false); setLoginOpen(true); };
+  // Semua tombol "Gabung": login dulu → pilih paket → bayar. Member yang pilih paket AI langsung ke langganan AI.
+  const openJoin = (plan = "library") => {
+    setAiPaymentOpen(false);
+    if (session) {
+      setLoginOpen(false);
+      if (plan === "library_ai") setAiPaymentOpen(true);
+      else navigate(profile?.onboarded ? "/dashboard" : "/onboarding");
+      return;
+    }
+    saveJoinPlan(plan);
+    setJoinPlan(plan);
+    if (authStatus === "needs_activation") { setLoginOpen(false); setJoinOpen(true); }
+    else setLoginOpen(true);
+  };
+  const openLogin = () => {
+    saveJoinPlan(null);
+    setJoinPlan(null);
+    setJoinOpen(false);
+    setAiPaymentOpen(false);
+    setLoginOpen(true);
+  };
+
+  // Halaman tanpa props (bank soal publik, sample) memicu alur gabung lewat event.
+  useEffect(() => {
+    const onOpenJoin = (e) => openJoin(e.detail?.plan || "library");
+    window.addEventListener("talqeeh:open-join", onOpenJoin);
+    return () => window.removeEventListener("talqeeh:open-join", onOpenJoin);
+  }, [session, authStatus, profile]);
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
   const isPublic = path === "/" || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal";
@@ -123,11 +165,11 @@ const App = () => {
   }
 
   let routeLabel = "Beranda";
-  let page = <LandingPage onOpenLogin={openLogin} onOpenPayment={openPayment} onOpenAiPayment={openAiPayment}/>;
+  let page = <LandingPage onOpenLogin={openLogin} onOpenJoin={openJoin}/>;
   if (path.startsWith("/sample/nahwu"))             { page = <SampleNahwuPage/>; routeLabel = "Sample Nahwu"; }
   else if (path === "/ethics")            { page = <EthicsPage/>; routeLabel = "Etika"; }
   else if (path === "/privacy")           { page = <PrivacyPage/>; routeLabel = "Kebijakan Privasi"; }
-  else if (path === "/maddah-publik")    { page = <MaddahPublikPage onOpenPayment={openPayment} onOpenLogin={openLogin}/>; routeLabel = "Katalog Maddah"; }
+  else if (path === "/maddah-publik")    { page = <MaddahPublikPage onOpenPayment={() => openJoin("library")} onOpenLogin={openLogin}/>; routeLabel = "Katalog Maddah"; }
   else if (path === "/onboarding" || path.startsWith("/onboarding?"))   { page = <OnboardingPage/>; routeLabel = "Onboarding"; }
   else if (path === "/welcome")      { page = <WelcomePage/>; routeLabel = "Selamat Datang"; }
   else if (path === "/dashboard")    { page = <DashboardPage/>; routeLabel = "Dashboard"; }
@@ -164,15 +206,15 @@ const App = () => {
   return (
     <ToastProvider>
       <div data-screen-label={routeLabel} className="min-h-screen flex flex-col">
-        <Navbar onOpenLogin={openLogin} onOpenPayment={openPayment}/>
+        <Navbar onOpenLogin={openLogin} onOpenPayment={() => openJoin("library")}/>
         <main className={"flex-1" + (isMember ? " has-tabbar" : "")}>
           <ErrorBoundary>{page}</ErrorBoundary>
         </main>
         <Footer/>
       </div>
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} onSuccess={handleLoginSuccess}/>
-      <PaymentModal open={paymentOpen} onClose={() => setPaymentOpen(false)} onOpenLogin={openLogin}/>
-      <AiSubscriptionModal open={aiPaymentOpen} onClose={() => setAiPaymentOpen(false)} onOpenLogin={openLogin}/>
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} onSuccess={handleLoginSuccess} joinPlan={joinPlan}/>
+      <JoinModal open={joinOpen} onClose={() => setJoinOpen(false)} initialPlan={joinPlan} onMemberActive={handleLoginSuccess}/>
+      <AiSubscriptionModal open={aiPaymentOpen} onClose={() => setAiPaymentOpen(false)} onNeedMembership={() => openJoin("library_ai")}/>
       {showQuickNote && <QuickNoteButton/>}
       {isMember && <SupportButton/>}
       {isMember && <MobileTabBar/>}

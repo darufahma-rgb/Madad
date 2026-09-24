@@ -650,15 +650,15 @@ export default function BankSoalPublikPage() {
                         }}>
                           Login Member →
                         </a>
-                        <a href="https://lynk.id/talqeeh" target="_blank" style={{
+                        <button onClick={() => window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library' } }))} style={{
                           padding: '11px 24px', borderRadius: 11,
                           border: '1px solid rgba(255,255,255,0.12)',
                           background: 'rgba(255,255,255,0.04)',
                           color: '#ccc', fontWeight: 600, fontSize: 14,
-                          textDecoration: 'none',
+                          cursor: 'pointer',
                         }}>
                           Gabung Member
-                        </a>
+                        </button>
                       </div>
                     </div>
                   )}

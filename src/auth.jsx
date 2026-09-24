@@ -79,11 +79,12 @@ const applyMember = async (member) => {
   setAuthState({ status: "member", email: member.email });
 };
 
-const redeemMemberCode = async (code, token) => {
+// Hubungkan akun Google ke member lama/manual pakai PIN aktivasi sekali pakai dari admin.
+const redeemActivationPin = async (pin, token) => {
   try {
     const res = await authFetch("/api/login?action=redeem", {
       method: "POST",
-      body: JSON.stringify({ code: (code || "").trim().toUpperCase() }),
+      body: JSON.stringify({ pin: (pin || "").trim() }),
     }, token);
     const data = await res.json();
     if (data.ok) { await applyMember(data.member); return { ok: true }; }
@@ -109,17 +110,10 @@ const syncMemberSession = async (supaSession) => {
     if (data.ok) return await applyMember(data.member);
 
     if (data.status === "not_member") {
-      // Member lama dari login-kode: coba tautkan kode lamanya otomatis.
-      const legacy = localStorage.getItem(STORAGE_KEYS.LEGACY_CODE);
-      let legacyError = null;
-      if (legacy) {
-        const r = await redeemMemberCode(legacy, token);
-        if (r.ok) return;
-        legacyError = r.status;
-        localStorage.removeItem(STORAGE_KEYS.LEGACY_CODE);
-      }
+      // Pernah login pakai kode di browser ini → kemungkinan member lama: tampilkan input PIN duluan.
+      // Kode lama sendiri tidak dipakai untuk aktivasi (dulu sering dibagikan).
       localStorage.removeItem(STORAGE_KEYS.SESSION);
-      setAuthState({ status: "needs_activation", email, prefillCode: legacy, lastError: legacyError });
+      setAuthState({ status: "needs_activation", email, likelyLegacyMember: !!localStorage.getItem(STORAGE_KEYS.LEGACY_CODE) });
       return;
     }
 
@@ -140,6 +134,16 @@ let syncQueue = Promise.resolve();
 const queueSync = (supaSession) => {
   syncQueue = syncQueue.then(() => syncMemberSession(supaSession));
   return syncQueue;
+};
+
+// Cek ulang status member (dipakai saat menunggu webhook pembayaran). Mengembalikan authState terbaru.
+const refreshMemberSession = async () => {
+  try {
+    const client = await whenSupabaseReady();
+    const { data } = await client.auth.getSession();
+    await queueSync(data?.session || null);
+  } catch {}
+  return getAuthState();
 };
 
 // Buang ?code=… sisa callback OAuth dari URL (hash route tetap dipertahankan).
@@ -184,7 +188,8 @@ const getSession = () => {
   const s = readSessionRaw();
   if (!s) return null;
   if (s.authVersion === 2 && s.code) return s;
-  // Sesi lama (login pakai kode): simpan kodenya untuk aktivasi otomatis setelah login Google.
+  // Sesi lama (login pakai kode): tandai browser ini milik member lama supaya layar PIN tampil duluan,
+  // dan supaya data lokalnya tidak dihapus saat akun yang sama terhubung lagi.
   if (s.code) localStorage.setItem(STORAGE_KEYS.LEGACY_CODE, s.code);
   localStorage.removeItem(STORAGE_KEYS.SESSION);
   return null;
@@ -296,7 +301,8 @@ const useAuth = () => {
     authStatus: auth.status,
     authInfo:   auth,
     signInWithGoogle,
-    redeemCode: redeemMemberCode,
+    redeemPin: redeemActivationPin,
+    refreshMemberSession,
     logout: () => { logout(); setSession(null); setProfileState(null); setProgressState(null); fireRefresh(); },
     saveProfile: (p) => { saveProfile(p); fireRefresh(); },
     clearProfile: () => { clearProfile(); fireRefresh(); },
@@ -359,7 +365,7 @@ Object.assign(window, {
   STORAGE_KEYS,
   isAdminLoggedIn, setAdminLoggedIn,
   generateCode,
-  signInWithGoogle, redeemMemberCode, getAuthState,
+  signInWithGoogle, redeemActivationPin, getAuthState, refreshMemberSession,
   useAuth, getSession,
   getProfile, saveProfile, clearProfile,
   getProgress, saveProgress, markModuleComplete, setLastActivity,

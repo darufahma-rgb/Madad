@@ -54,15 +54,21 @@ const BetaCard = () => {
         <h2 className="font-display text-2xl font-semibold text-ink mb-3">AI Partner Belajar belum aktif di akunmu</h2>
         <p className="text-ink-muted text-sm leading-relaxed mb-6">
           Upload materi kuliah, lalu dapatkan ringkasan, flashcard hafalan, kuis, dan tutor AI yang menjawab
-          berdasarkan materimu. Saat ini akses dibuka bertahap oleh admin.
+          berdasarkan materimu. AI Partner adalah langganan bulanan tambahan untuk member Library.
           {s.aiPriceLabel && <><br/><span className="text-ink">Harga: {s.aiPriceLabel}</span></>}
         </p>
-        {hasWa && (
-          <a href={`https://wa.me/${wa}?text=${encodeURIComponent('Assalamualaikum, saya mau ikut beta AI Partner Belajar Talqeeh.')}`}
-            target="_blank" rel="noopener noreferrer" className="btn btn-gold px-6 py-3">
-            Minta akses ke admin
-          </a>
-        )}
+        <div className="flex flex-col items-center gap-3">
+          <button onClick={() => window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library_ai' } }))}
+            className="btn btn-primary px-6 py-3">
+            Berlangganan AI Partner
+          </button>
+          {hasWa && (
+            <a href={`https://wa.me/${wa}?text=${encodeURIComponent('Assalamualaikum, saya mau tanya soal AI Partner Belajar Talqeeh.')}`}
+              target="_blank" rel="noopener noreferrer" className="text-xs text-ink-soft hover:text-ink-muted underline underline-offset-2">
+              Tanya admin dulu
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );

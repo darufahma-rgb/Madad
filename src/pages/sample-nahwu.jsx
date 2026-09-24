@@ -366,8 +366,8 @@ Untuk setiap bait:
             <span className="text-gold-300 font-medium">✦ Ini sample gratis.</span>
             {" "}Untuk 35 Maddah lain + prompt yang disesuaikan tingkatmu, gabung member.
           </div>
-          <button onClick={() => navigate("/")} className="btn btn-gold text-sm px-4 py-2 flex-shrink-0">
-            Gabung Member · <span style={{textDecoration:"line-through",opacity:.6}}>75k</span> 49k →
+          <button onClick={() => window.dispatchEvent(new CustomEvent("talqeeh:open-join", { detail: { plan: "library" } }))} className="btn btn-gold text-sm px-4 py-2 flex-shrink-0">
+            Gabung Member · <span style={{textDecoration:"line-through",opacity:.6}}>{LIBRARY_PRICE_ORIGINAL}</span> {LIBRARY_PRICE} →
           </button>
         </div>
       </div>
@@ -488,9 +488,9 @@ Untuk setiap bait:
               <p className="text-sm text-ink-muted mb-6 max-w-md mx-auto">
                 Tafsir, Hadits, Fiqh, Ushul, Mustholah, Balaghah, dan 30+ lainnya. Prompt disesuaikan dengan tingkatmu.
               </p>
-              <button onClick={() => navigate("/")} className="btn btn-gold px-7 py-3.5 text-base font-medium"
+              <button onClick={() => window.dispatchEvent(new CustomEvent("talqeeh:open-join", { detail: { plan: "library" } }))} className="btn btn-gold px-7 py-3.5 text-base font-medium"
                 style={{ boxShadow:"0 0 40px rgba(201,168,106,.35), 0 1px 0 rgba(255,255,255,.3) inset" }}>
-                Gabung Member · <span style={{textDecoration:"line-through",opacity:.6}}>Rp 89.000</span> Rp 63.000 →
+                Gabung Member · <span style={{textDecoration:"line-through",opacity:.6}}>{LIBRARY_PRICE_ORIGINAL}</span> {LIBRARY_PRICE} →
               </button>
             </div>
           </div>

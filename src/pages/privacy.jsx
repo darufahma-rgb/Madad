@@ -40,7 +40,7 @@ const PRIVACY_SECTIONS = [
   {
     title: "Pembayaran",
     body: [
-      "Pembayaran diproses oleh Lynk.id atau Mayar. Talqeeh tidak menyimpan data kartu, rekening, atau dompet digitalmu — kami hanya menerima konfirmasi status pembayaran.",
+      "Pembayaran diproses oleh Mayar. Talqeeh hanya menerima konfirmasi pembayaran (produk, nominal, nama, email, dan nomor HP yang kamu isi saat checkout) untuk mengaktifkan keanggotaan. Data kartu, rekening, atau dompet digitalmu tidak pernah kami terima atau simpan.",
     ],
   },
   {

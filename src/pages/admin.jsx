@@ -21,6 +21,7 @@ const sbToMember = (row) => {
     member_type: row.member_type || "berbayar",
     email:       row.email       || "",
     googleLinked: !!row.auth_user_id,
+    pinExpiresAt: row.activation_pin_expires_at || null,
     _id:         row.id,
   };
 };
@@ -67,6 +68,90 @@ const adminGetAllMembers  = async ()            => { const rows = await adminMem
 const adminAddMember      = async (member)       => { const rows = await adminMembersAPI('add', null, memberToSb(member)); return sbToMember(Array.isArray(rows) ? rows[0] : rows); };
 const adminUpdateMember   = async (code, patch)  => { const rows = await adminMembersAPI('update', code, memberToSb(patch)); return sbToMember(Array.isArray(rows) ? rows[0] : rows); };
 const adminDeleteMember   = async (code)         => adminMembersAPI('delete', code);
+const adminGeneratePin    = async (code)         => adminMembersAPI('generate-pin', code);
+
+// Kirim via Fonnte; kalau gagal, buka WhatsApp manual dengan pesan yang sama.
+const sendAdminWa = async (to, message, toast) => {
+  const openManual = () => window.open(`https://wa.me/${String(to || "").replace(/\D/g, "")}?text=${encodeURIComponent(message)}`, "_blank");
+  try {
+    const r = await fetch('/api/send-wa', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
+      body: JSON.stringify({ to, message }),
+    });
+    const j = await r.json();
+    if (j.ok) toast.push('✓ WA berhasil dikirim via Fonnte');
+    else { toast.push('Fonnte gagal, buka WA manual...'); openManual(); }
+  } catch { openManual(); }
+};
+
+const formatPinExpiry = (iso) => iso ? new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "";
+
+const pinSteps = (pin, expiresAt) =>
+  "Cara masuk (cukup sekali):\n" +
+  "1️⃣ Buka https://talqeeh.vercel.app → *Login Member* → *Masuk dengan Google*\n" +
+  "2️⃣ Pilih *Punya PIN aktivasi dari admin?*\n" +
+  "3️⃣ Masukkan PIN aktivasi kamu:\n\n```" + pin + "```\n\n" +
+  "PIN berlaku sampai " + formatPinExpiry(expiresAt) + " dan hanya bisa dipakai sekali. Jangan bagikan PIN ini ke siapa pun.";
+
+const WA_FOOTER = "\n\n📞 Ada kendala? WhatsApp: wa.me/6281311506025\nInstagram: @ai.gypt\n\n— Tim Talqeeh 🌿";
+
+// Pesan untuk member lama yang pindah dari login kode ke login Google.
+const legacyPinMessage = (name, pin, expiresAt) =>
+  "Assalamu'alaikum, " + name + "! 👋\n\n" +
+  "Talqeeh sekarang pakai *login Google* — lebih aman, dan bisa dipakai di HP & laptop sekaligus. " +
+  "Kode member lama tidak dipakai lagi untuk login.\n\n" +
+  pinSteps(pin, expiresAt) +
+  "\n\nKeanggotaan, catatan, dan progress belajarmu tetap aman." + WA_FOOTER;
+
+const PinModal = ({ member, onClose, onGenerated }) => {
+  const toast = useToast();
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    adminGeneratePin(member.code)
+      .then(r => { setResult(r); onGenerated && onGenerated(r); })
+      .catch(err => setError(err.message));
+  }, []);
+
+  const message = result ? legacyPinMessage(member.name, result.pin, result.expiresAt) : "";
+
+  return (
+    <Modal open onClose={onClose} size="md">
+      <div className="p-7">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-display text-2xl font-semibold text-ink">PIN aktivasi</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5"><Icon name="x" className="w-4 h-4 mx-auto"/></button>
+        </div>
+        {error ? (
+          <div className="text-sm text-rose-400">Gagal membuat PIN: {error}</div>
+        ) : !result ? (
+          <div className="text-sm text-ink-muted">Membuat PIN…</div>
+        ) : (
+          <div className="text-center">
+            <div className="text-xs uppercase tracking-wider text-gold-400 mb-2">PIN untuk {member.name} · {member.code}</div>
+            <div className="card-glass-strong p-6 mb-2">
+              <div className="font-mono text-3xl text-gold-300 tracking-widest">{result.pin}</div>
+            </div>
+            <div className="text-[11px] text-ink-soft mb-5">
+              Berlaku sampai {formatPinExpiry(result.expiresAt)} · sekali pakai · PIN lama (kalau ada) otomatis tidak berlaku
+            </div>
+            <div className="grid grid-cols-2 gap-2 mb-3">
+              <button onClick={() => { navigator.clipboard.writeText(message); toast.push("Pesan tersalin"); }} className="btn btn-ghost text-sm py-2.5">
+                <Icon name="copy" className="w-4 h-4"/> Salin pesan
+              </button>
+              <button onClick={() => sendAdminWa(member.whatsapp, message, toast)} disabled={!member.whatsapp} className="btn btn-gold text-sm py-2.5">
+                <Icon name="messageSquare" className="w-4 h-4"/> Kirim WhatsApp
+              </button>
+            </div>
+            {!member.whatsapp && <div className="text-[11px] text-amber-300">Nomor WA member kosong — salin pesan lalu kirim manual.</div>}
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+};
 
 const AdminPage = () => {
   const [loggedIn, setLoggedIn] = useState(isAdminLoggedIn());
@@ -106,7 +191,7 @@ const AdminPage = () => {
               { id: "onboarding", label: "Onboarding Data",   icon: "list" },
               { id: "guides",     label: "Guide Manager",     icon: "sparkles" },
               { id: "bank-soal",  label: "Bank Soal",         icon: "fileText" },
-              { id: "ai-subs",    label: "AI Subscriptions",  icon: "sparkles" },
+              { id: "ai-subs",    label: "Langganan & Bayar", icon: "sparkles" },
               { id: "settings",   label: "Settings",          icon: "shield" },
             ].map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
@@ -525,7 +610,11 @@ const AdminMembers = () => {
                     {m.email && <div className="text-xs text-ink">{m.email}</div>}
                     {m.googleLinked
                       ? <span className="text-[11px] text-emerald-300">✓ terhubung</span>
-                      : <span className="text-[11px] text-ink-soft italic">belum aktivasi</span>}
+                      : m.pinExpiresAt
+                        ? <span className={`text-[11px] ${new Date(m.pinExpiresAt) < new Date() ? "text-rose-400" : "text-gold-300"}`}>
+                            PIN {new Date(m.pinExpiresAt) < new Date() ? "kedaluwarsa" : `aktif s/d ${formatPinExpiry(m.pinExpiresAt)}`}
+                          </span>
+                        : <span className="text-[11px] text-ink-soft italic">belum aktivasi</span>}
                   </td>
                   <td className="px-4 py-3.5">
                     <StatusPill status={m.status}/>
@@ -747,6 +836,7 @@ const MemberActions = ({ member, updateMember, onDelete }) => {
   const [open, setOpen] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const [showPin, setShowPin] = useState(false);
   const toast = useToast();
   const close = () => setOpen(false);
   return (
@@ -774,9 +864,14 @@ const MemberActions = ({ member, updateMember, onDelete }) => {
             {member.status === "expired" && (
               <button onClick={() => { const d = new Date(); d.setDate(d.getDate() + 30); updateMember(member.code, { status: "active", expiresAt: d.toISOString().split("T")[0] }); toast.push("Renewed 30 days"); close(); }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5">Renew 30 hari</button>
             )}
+            {!member.googleLinked && (
+              <button onClick={() => { setShowPin(true); close(); }} className="w-full text-left px-4 py-2 text-emerald-300 hover:bg-white/5">
+                {member.pinExpiresAt ? "Buat PIN baru" : "Buat PIN aktivasi"}
+              </button>
+            )}
             {member.googleLinked && (
               <button onClick={() => {
-                if (!confirm(`Lepas akun Google dari ${member.code}? Member harus aktivasi ulang dengan kodenya.`)) return;
+                if (!confirm(`Lepas akun Google dari ${member.code}? Member harus aktivasi ulang pakai PIN baru.`)) return;
                 updateMember(member.code, { unlinkGoogle: true }); toast.push("Akun Google dilepas"); close();
               }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5">Lepas akun Google</button>
             )}
@@ -787,6 +882,7 @@ const MemberActions = ({ member, updateMember, onDelete }) => {
       )}
       {showProfile && <MemberProfileModal member={member} onClose={() => setShowProfile(false)}/>}
       {showEdit && <EditMemberModal member={member} onClose={() => setShowEdit(false)} onSave={updateMember}/>}
+      {showPin && <PinModal member={member} onClose={() => setShowPin(false)}/>}
     </div>
   );
 };
@@ -796,12 +892,12 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
   const [whatsapp, setWhatsapp] = useState("+20");
   const [email, setEmail] = useState("");
   const [duration, setDuration] = useState(30);
-  const [generatedCode, setGeneratedCode] = useState(null);
+  const [created, setCreated] = useState(null); // { code, pin?, pinExpiresAt? }
   const [submitting, setSubmitting] = useState(false);
   const toast = useToast();
 
   useEffect(() => {
-    if (open) { setName(""); setWhatsapp("+20"); setEmail(""); setDuration(30); setGeneratedCode(null); setSubmitting(false); }
+    if (open) { setName(""); setWhatsapp("+20"); setEmail(""); setDuration(30); setCreated(null); setSubmitting(false); }
   }, [open]);
 
   const submit = async (e) => {
@@ -820,7 +916,9 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
         email: email.trim(),
       };
       const added = await adminAddMember(newMember);
-      setGeneratedCode(added.code);
+      // Tanpa email Google, member perlu PIN aktivasi untuk menghubungkan akunnya.
+      const pinResult = email.trim() ? null : await adminGeneratePin(added.code);
+      setCreated({ code: added.code, pin: pinResult?.pin, pinExpiresAt: pinResult?.expiresAt });
       onAdd && onAdd(added);
     } catch (err) {
       toast.push("Gagal tambah member: " + err.message);
@@ -829,38 +927,28 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
     }
   };
 
-  const copyCode = () => { navigator.clipboard.writeText(generatedCode); toast.push("Kode tersalin"); };
-  const sendWA = async () => {
-    const loginSteps = email.trim()
-      ? "Cara login:\n1️⃣ Buka Talqeeh → https://talqeeh.vercel.app\n2️⃣ Pilih *Login Member* → *Masuk dengan Google*\n3️⃣ Pilih akun Google *" + email.trim().toLowerCase() + "* — akses langsung aktif\n\nKode member kamu (simpan untuk cadangan):\n```" + generatedCode + "```"
-      : "Kode member kamu. Ketuk-tahan untuk menyalin:\n\n```" + generatedCode + "```\n\nCara login:\n1️⃣ Buka Talqeeh → https://talqeeh.vercel.app\n2️⃣ Pilih *Login Member* → *Masuk dengan Google*\n3️⃣ Saat diminta, tempel kode di atas (cukup sekali — setelah itu tinggal login pakai Google)";
-    const message = "Assalamu'alaikum, " + name + "! 👋\n\nSelamat datang di Talqeeh — Panduan belajar efektif Materi Al-Azhar dengan AI.\n\nKeanggotaan kamu sudah aktif.\n\n" + loginSteps + "\n\n📖 Panduan Lengkap\nhttps://app.notion.com/p/Talqeeh-Guide-36fb668bda20804294c9d29c6c4ca050\n\n📋 Ketentuan Penggunaan\n- Kode hanya bisa dihubungkan ke 1 akun Google\n- Dilarang membagikan kode kepada siapapun\n- Kode bersifat pribadi dan menjadi tanggung jawab pemegang\n- Jika kode disalahgunakan, akses dapat dicabut tanpa pemberitahuan\n- Untuk kendala teknis, hubungi Tim Talqeeh\n\n📞 Kontak Kami\nWhatsApp: wa.me/6281311506025\nInstagram: @ai.gypt\n\nSemoga bermanfaat dan dimudahkan dalam belajar! 🌿\n— Tim Talqeeh";
-    try {
-      const r = await fetch('/api/send-wa', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
-        body: JSON.stringify({ to: whatsapp, message }),
-      });
-      const j = await r.json();
-      if (j.ok) {
-        toast.push('✓ WA berhasil dikirim via Fonnte');
-      } else {
-        toast.push('Fonnte gagal, buka WA manual...');
-        window.open(`https://wa.me/${whatsapp.replace(/\D/g,"")}?text=${encodeURIComponent(message)}`, "_blank");
-      }
-    } catch {
-      window.open(`https://wa.me/${whatsapp.replace(/\D/g,"")}?text=${encodeURIComponent(message)}`, "_blank");
-    }
+  const buildMessage = () => {
+    const loginSteps = created.pin
+      ? pinSteps(created.pin, created.pinExpiresAt)
+      : "Cara masuk:\n1️⃣ Buka https://talqeeh.vercel.app → *Login Member* → *Masuk dengan Google*\n2️⃣ Pilih akun Google *" + email.trim().toLowerCase() + "* — akses langsung aktif, tanpa PIN.";
+    return "Assalamu'alaikum, " + name + "! 👋\n\nSelamat datang di Talqeeh — Panduan belajar efektif Materi Al-Azhar dengan AI.\n\nKeanggotaan kamu sudah aktif.\n\n" +
+      loginSteps +
+      "\n\n📖 Panduan Lengkap\nhttps://app.notion.com/p/Talqeeh-Guide-36fb668bda20804294c9d29c6c4ca050" +
+      "\n\n📋 Ketentuan: keanggotaan terikat ke 1 akun Google dan bersifat pribadi. Jika disalahgunakan, akses dapat dicabut." +
+      WA_FOOTER;
   };
+
+  const copyMessage = () => { navigator.clipboard.writeText(buildMessage()); toast.push("Pesan tersalin"); };
+  const sendWA = () => sendAdminWa(whatsapp, buildMessage(), toast);
 
   return (
     <Modal open={open} onClose={onClose} size="md">
       <div className="p-7">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="font-display text-2xl font-semibold text-ink">{generatedCode ? "Kode berhasil dibuat" : "Generate kode baru"}</h2>
+          <h2 className="font-display text-2xl font-semibold text-ink">{created ? "Member berhasil dibuat" : "Tambah member"}</h2>
           <button onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5"><Icon name="x" className="w-4 h-4 mx-auto"/></button>
         </div>
-        {!generatedCode ? (
+        {!created ? (
           <form onSubmit={submit} className="space-y-4">
             <div>
               <label className="text-xs uppercase tracking-wider text-ink-muted mb-1.5 block">Nama Member</label>
@@ -879,7 +967,7 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
               <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="nama@gmail.com" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink outline-none transition-colors"
                 onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
                 onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
-              <div className="text-[11px] text-ink-soft mt-1">Kalau diisi, member cukup login Google dengan email ini — tanpa perlu memasukkan kode.</div>
+              <div className="text-[11px] text-ink-soft mt-1">Kalau diisi, member cukup login Google dengan email ini. Kalau kosong, sistem membuat PIN aktivasi untuk dikirim via WA.</div>
             </div>
             <div>
               <label className="text-xs uppercase tracking-wider text-ink-muted mb-1.5 block">Durasi</label>
@@ -904,13 +992,23 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
           </form>
         ) : (
           <div className="text-center">
-            <div className="text-xs uppercase tracking-wider text-gold-400 mb-2">Kode untuk {name}</div>
-            <div className="card-glass-strong p-6 mb-5">
-              <div className="font-mono text-3xl text-gold-300 tracking-widest">{generatedCode}</div>
-            </div>
+            {created.pin ? (
+              <>
+                <div className="text-xs uppercase tracking-wider text-gold-400 mb-2">PIN aktivasi untuk {name}</div>
+                <div className="card-glass-strong p-6 mb-2">
+                  <div className="font-mono text-3xl text-gold-300 tracking-widest">{created.pin}</div>
+                </div>
+                <div className="text-[11px] text-ink-soft mb-5">Berlaku sampai {formatPinExpiry(created.pinExpiresAt)} · sekali pakai · kode internal {created.code}</div>
+              </>
+            ) : (
+              <div className="card-glass-strong p-5 mb-5 text-sm text-ink-muted">
+                Member bisa langsung login Google dengan <span className="text-ink">{email.trim().toLowerCase()}</span> — tanpa PIN.
+                <div className="text-[11px] text-ink-soft mt-1">Kode internal {created.code}</div>
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-2 mb-3">
-              <button onClick={copyCode} className="btn btn-ghost text-sm py-2.5">
-                <Icon name="copy" className="w-4 h-4"/> Salin
+              <button onClick={copyMessage} className="btn btn-ghost text-sm py-2.5">
+                <Icon name="copy" className="w-4 h-4"/> Salin pesan
               </button>
               <button onClick={sendWA} className="btn btn-gold text-sm py-2.5">
                 <Icon name="messageSquare" className="w-4 h-4"/> Kirim WhatsApp
@@ -1417,7 +1515,8 @@ const AdminSettings = () => {
     platformName: "Talqeeh",
     tagline:      "Panduan Belajar Al-Azhar dengan AI",
     whatsapp:     "",
-    lynkUrl:      "",
+    mayarLibraryUrl:       "",
+    mayarLibraryProductId: "",
     mayarUrl:     "",
     aiPriceLabel: "",
     ...loadLocalSettings(),
@@ -1464,17 +1563,24 @@ const AdminSettings = () => {
           <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Operasional</div>
           <SettingsField label="WhatsApp Admin" value={settings.whatsapp} mono
             onChange={v => setSettings({...settings, whatsapp: v})}
-            hint="Nomor ini untuk distribusi kode member setelah bayar."/>
-          <SettingsField label="URL Lynk.id" value={settings.lynkUrl} mono
-            onChange={v => setSettings({...settings, lynkUrl: v})}
-            hint="URL halaman pembayaran di Lynk.id."/>
+            hint="Tombol bantuan & 'Hubungi admin' kalau pembayaran belum aktif. Format: 62812xxxx."/>
+        </div>
+
+        <div className="card-glass p-6 space-y-3">
+          <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Paket Library (Mayar)</div>
+          <SettingsField label="URL Mayar — Paket Library" value={settings.mayarLibraryUrl} mono
+            onChange={v => setSettings({...settings, mayarLibraryUrl: v})}
+            hint="Link produk digital 'Talqeeh Library' di Mayar. Harus diawali https://"/>
+          <SettingsField label="Product ID Mayar Library" value={settings.mayarLibraryProductId} mono
+            onChange={v => setSettings({...settings, mayarLibraryProductId: v})}
+            hint="Webhook hanya mengaktifkan member untuk produk ini. Salin product_id dari tab 'Langganan & Pembayaran' setelah transaksi tes pertama. Tidak ditampilkan ke publik."/>
         </div>
 
         <div className="card-glass p-6 space-y-3">
           <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">AI Partner Belajar (Add-on)</div>
-          <SettingsField label="URL Mayar" value={settings.mayarUrl} mono
+          <SettingsField label="URL Mayar — AI Partner" value={settings.mayarUrl} mono
             onChange={v => setSettings({...settings, mayarUrl: v})}
-            hint="URL produk Membership AI Partner di Mayar. Pastikan produknya punya custom field 'Kode Member Talqeeh'."/>
+            hint="Link produk Membership AI Partner di Mayar. Kosongkan selama beta (akses diberikan manual)."/>
           <SettingsField label="Label harga" value={settings.aiPriceLabel}
             onChange={v => setSettings({...settings, aiPriceLabel: v})}
             hint="Teks harga yang ditampilkan di CTA, misal 'Rp 25.000 / bulan'."/>
@@ -1530,14 +1636,16 @@ const AdminSubscriptions = () => {
   const [error, setError]     = useState(null);
   const [grantCode, setGrantCode] = useState('');
   const [busy, setBusy]       = useState(false);
+  const [payments, setPayments] = useState([]);
 
   const fetchData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await aiPartnerAdmin('admin-list');
+      const [data, pay] = await Promise.all([aiPartnerAdmin('admin-list'), aiPartnerAdmin('admin-payments')]);
       if (data.ok) setRows(data.data);
       else setError(data.error || 'Gagal memuat data');
+      if (pay.ok) setPayments(pay.data);
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   };
@@ -1567,8 +1675,8 @@ const AdminSubscriptions = () => {
     <div>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="font-display text-4xl font-semibold text-ink mb-1">AI Subscriptions</h1>
-          <p className="text-ink-muted">Akses AI Partner Belajar — dari webhook Mayar atau diberikan manual oleh admin.</p>
+          <h1 className="font-display text-4xl font-semibold text-ink mb-1">Langganan & Pembayaran</h1>
+          <p className="text-ink-muted">Akses AI Partner Belajar (dari webhook Mayar atau manual) dan riwayat pembayaran Mayar.</p>
         </div>
         <button onClick={fetchData} className="btn btn-ghost text-sm px-4 py-2">
           <Icon name="refresh" className="w-4 h-4"/> Refresh
@@ -1621,6 +1729,49 @@ const AdminSubscriptions = () => {
                       <button onClick={() => handleRevoke(r)} className="text-xs text-rose-400 hover:text-rose-300">Cabut</button>
                     )}
                   </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="mt-10 mb-3">
+        <h2 className="font-display text-2xl font-semibold text-ink mb-1">Riwayat pembayaran Mayar</h2>
+        <p className="text-ink-muted text-sm">100 webhook terakhir. Kolom "Diproses" = library (member dibuat/diaktifkan), ai (langganan AI), atau ignored (produk tidak dikenali).</p>
+      </div>
+      {payments.length === 0 ? (
+        <div className="text-ink-muted text-sm">Belum ada webhook masuk.</div>
+      ) : (
+        <div className="card-glass overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-ink-soft text-xs uppercase tracking-wider border-b border-line">
+                <th className="px-4 py-3">Waktu</th>
+                <th className="px-4 py-3">Event</th>
+                <th className="px-4 py-3">Produk</th>
+                <th className="px-4 py-3">Email</th>
+                <th className="px-4 py-3">Nominal</th>
+                <th className="px-4 py-3">Diproses</th>
+                <th className="px-4 py-3">Kode</th>
+              </tr>
+            </thead>
+            <tbody>
+              {payments.map((p, i) => (
+                <tr key={i} className="border-b border-line/50">
+                  <td className="px-4 py-3 text-ink-muted whitespace-nowrap">{new Date(p.created_at).toLocaleString('id-ID')}</td>
+                  <td className="px-4 py-3 text-ink-muted">{p.event}</td>
+                  <td className="px-4 py-3">
+                    <div className="text-ink">{p.product_name || '-'}</div>
+                    {p.product_id && (
+                      <button onClick={() => { navigator.clipboard.writeText(p.product_id); toast.push('Product ID tersalin'); }}
+                        className="text-[10px] font-mono text-ink-soft hover:text-ink" title="Salin product ID">{p.product_id}</button>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-ink-muted">{p.customer_email || '-'}</td>
+                  <td className="px-4 py-3 text-ink-muted">{p.amount != null ? `Rp ${Number(p.amount).toLocaleString('id-ID')}` : '-'}</td>
+                  <td className="px-4 py-3" style={{ color: p.handled_as === 'library' || p.handled_as === 'ai' ? '#3ecf8e' : '#888' }}>{p.handled_as || '-'}</td>
+                  <td className="px-4 py-3 font-mono text-xs">{p.member_code || '-'}</td>
                 </tr>
               ))}
             </tbody>

@@ -289,6 +289,15 @@ async function handleAdmin(action, req, res, body) {
     return res.status(200).json({ ok: true, data: Array.isArray(data) ? data : [] });
   }
 
+  if (action === 'admin-payments') {
+    const r = await fetch(
+      `${url}/rest/v1/payment_events?select=created_at,event,product_id,product_name,customer_email,customer_name,amount,handled_as,member_code&order=created_at.desc&limit=100`,
+      { headers: sbHeaders(key) }
+    );
+    const data = await r.json();
+    return res.status(200).json({ ok: true, data: Array.isArray(data) ? data : [] });
+  }
+
   if (action === 'admin-grant') {
     const code = normalizeCode(body.member_code);
     if (!code || !(await isActiveMember(code))) {
