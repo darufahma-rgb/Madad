@@ -82,7 +82,7 @@ const App = () => {
   // Auto-redirect logic on path change
   useEffect(() => {
     const memberOnly = [
-      "/dashboard", "/tools", "/paths", "/onboarding",
+      "/dashboard", "/library", "/tools", "/paths", "/onboarding",
       "/kurasah", "/maddah", "/siap-imtihan",
       "/s2-maddah", "/mahad-maddah", "/prompt-library",
       "/soal-detail", "/ai-partner",
@@ -105,7 +105,7 @@ const App = () => {
 
     // 3) Sudah login tapi belum onboarded & nyasar ke halaman member → ke onboarding
     if (session && profile && !profile.onboarded) {
-      if (path === "/dashboard" || path.startsWith("/tools") || path === "/paths") {
+      if (path === "/dashboard" || path === "/library" || path.startsWith("/tools") || path === "/paths") {
         navigate("/onboarding");
       }
     }
@@ -177,7 +177,8 @@ const App = () => {
   else if (path === "/maddah-publik")    { page = <MaddahPublikPage onOpenPayment={() => openJoin("library")} onOpenJoin={openJoin} onOpenLogin={openLogin}/>; routeLabel = "Katalog Maddah"; }
   else if (path === "/onboarding" || path.startsWith("/onboarding?"))   { page = <OnboardingPage/>; routeLabel = "Onboarding"; }
   else if (path === "/welcome")      { page = <WelcomePage/>; routeLabel = "Selamat Datang"; }
-  else if (path === "/dashboard")    { page = <DashboardPage/>; routeLabel = "Dashboard"; }
+  else if (path === "/dashboard")    { page = <DashboardPage/>; routeLabel = "Beranda Member"; }
+  else if (path === "/library")      { page = <LibraryPage/>; routeLabel = "Library"; }
   else if (path.startsWith("/tools")) { page = <ToolGuidePage/>; routeLabel = "Tool Guide"; }
   else if (path === "/paths")                              { page = <PathsPage/>; routeLabel = "Learning Path"; }
   else if (path === "/paths/muqaranah" && !path.includes("?id=")) { page = <MuqaranahPage/>; routeLabel = "Muqaranah"; }

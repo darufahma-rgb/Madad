@@ -190,11 +190,13 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
 
   // 5 nav utama member — Maddah-first
   const memberLinks = [
-    { to: "/dashboard",        label: "Dashboard" },
+    { to: "/dashboard",        label: "Beranda" },
+    { to: "/library",          label: "Library" },
+    { to: "/ai-partner",       label: "AI Partner" },
     { to: "/maddah",           label: "Maddah" },
-    { to: "/paths/muqaranah",  label: "Muqaranah" },
-    { to: "/kurasah",          label: "Kurasah" },
-    { to: "/framework",        label: "Framework" },
+    // Dua link terakhir hanya di layar lebar supaya navbar tidak terpotong; di HP ada di tab bawah.
+    { to: "/paths/muqaranah",  label: "Muqaranah", wideOnly: true },
+    { to: "/kurasah",          label: "Kurasah",   wideOnly: true },
   ];
   // Link tambahan untuk mobile menu
   const memberLinksExtra = [
@@ -224,7 +226,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
             ? <a key={l.to} href={l.to.slice(1)} onClick={(e) => { e.preventDefault(); scrollToLandingSection(l.to.split("#")[1]); }} className="nav-link px-3.5 py-2 text-[14.5px] text-ink-muted hover:text-ink rounded-lg">{l.label}</a>
             : l.highlight
               ? <NavLink key={l.to} to={l.to} className="!text-emerald-400 hover:!text-emerald-300 font-semibold">{l.label}</NavLink>
-              : <NavLink key={l.to} to={l.to}>{l.label}</NavLink>
+              : <NavLink key={l.to} to={l.to} className={l.wideOnly ? "hidden xl:inline-block" : ""}>{l.label}</NavLink>
           )}
           {session && (
             <button
@@ -240,7 +242,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
         <div className="hidden md:flex items-center gap-2">
           {session ? (
             <>
-              <div className="px-3 py-1.5 rounded-lg chip-glass text-xs" title={`${session.email || ""} · ${session.code}`}>
+              <div className="hidden lg:block px-3 py-1.5 rounded-lg chip-glass text-xs" title={`${session.email || ""} · ${session.code}`}>
                 <span className="text-ink-muted">Member:</span> <span className="text-ink font-medium">{session.name}</span>
               </div>
               {confirmLogout ? (
@@ -974,7 +976,7 @@ const MobileTabBar = () => {
   ];
 
   const isActive = (to) => {
-    if (to === "/dashboard") return path === "/dashboard" || path === "/";
+    if (to === "/dashboard") return path === "/dashboard" || path === "/library" || path === "/";
     return path.startsWith(to);
   };
 

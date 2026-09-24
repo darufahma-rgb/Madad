@@ -209,7 +209,7 @@ const S2MaddahPage = () => {
   if (!session || !profile?.onboarded) { navigate("/"); return null; }
 
   const isS2 = profile?.level === "s2_kuliyyat" || profile?.level === "s2_dirasat";
-  if (!isS2) { navigate("/dashboard"); return null; }
+  if (!isS2) { navigate("/library"); return null; }
 
   const maddahList = profile?.s2Maddah || [];
   const jalur = profile.level === "s2_kuliyyat" ? "Kuliyyat Ulum" : "Dirasat Ulya";
@@ -270,10 +270,10 @@ const S2MaddahPage = () => {
         <Blob color="rgba(62,207,142,0.2)" size={500} top={-150} right={-80}/>
         <Blob color="rgba(201,168,106,0.1)" size={300} top={200} left={-100}/>
         <div className="container-x relative">
-          <button onClick={() => navigate("/dashboard")}
+          <button onClick={() => navigate("/library")}
             className="text-sm text-ink-soft inline-flex items-center gap-1.5 mb-4"
             style={{minHeight:40}}>
-            <Icon name="arrowLeft" className="w-4 h-4"/> Dashboard
+            <Icon name="arrowLeft" className="w-4 h-4"/> Library
           </button>
           <div className="arabic-classic text-gold-300 text-2xl mb-2" style={{direction:"rtl"}}>
             مَوَادُّ الدِّرَاسَاتِ الْعُلْيَا

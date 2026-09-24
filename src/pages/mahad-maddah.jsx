@@ -9,7 +9,7 @@ const MahadMaddahPage = () => {
   const [activeCategory, setActiveCategory] = useState("all");
 
   if (!session || !profile?.onboarded) { navigate("/"); return null; }
-  if (!isMahadLevel(profile?.level))   { navigate("/dashboard"); return null; }
+  if (!isMahadLevel(profile?.level))   { navigate("/library"); return null; }
 
   const level    = profile.level;
   const isIdad   = isIdadLevel(level);
@@ -39,10 +39,10 @@ const MahadMaddahPage = () => {
       <section className="relative pt-6 md:pt-12 pb-6 overflow-hidden">
         <Blob color="rgba(62,207,142,0.15)" size={500} top={-150} right={-80}/>
         <div className="container-x relative">
-          <button onClick={() => navigate("/dashboard")}
+          <button onClick={() => navigate("/library")}
             className="text-sm text-ink-soft inline-flex items-center gap-1.5 mb-4"
             style={{minHeight:40}}>
-            <Icon name="arrowLeft" className="w-4 h-4"/> Dashboard
+            <Icon name="arrowLeft" className="w-4 h-4"/> Library
           </button>
           <div className="arabic-classic text-gold-300 text-2xl mb-2" style={{direction:"rtl"}}>
             الْمَعْهَدُ الْأَزْهَرِيُّ

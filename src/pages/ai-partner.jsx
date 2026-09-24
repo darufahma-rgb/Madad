@@ -277,6 +277,12 @@ const AiPartnerPage = () => {
   const access = useAiAccess();
   return (
     <div className="page-enter">
+      <div className="container-x pt-4 md:pt-8 -mb-4 md:-mb-8">
+        <button onClick={() => navigate('/dashboard')}
+          className="text-sm text-ink-soft inline-flex items-center gap-1.5" style={{ minHeight: 40 }}>
+          <Icon name="arrowLeft" className="w-4 h-4"/> Beranda
+        </button>
+      </div>
       <PageHeader
         kicker="AI Partner Belajar"
         arabic="رَفِيقُ الدِّرَاسَةِ"

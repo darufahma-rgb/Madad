@@ -427,7 +427,142 @@ Kalau paham, jawab singkat: "Wa'alaikumussalam, siap membantu." Lalu tunggu pert
 };
 
 /* ============ DASHBOARD PAGE ============ */
-const DashboardPage = () => {
+/* ══════════════════════════════════════════════════════════════
+   BERANDA MEMBER — pilih masuk ke Library atau AI Partner
+   ══════════════════════════════════════════════════════════════ */
+const HomeChoiceCard = ({ tone, arabic, title, badge, desc, points, cta, onClick }) => {
+  const t = tone === "gold"
+    ? { border: "rgba(201,168,106,0.28)", glow: "rgba(201,168,106,0.14)", arabic: "text-gold-300", check: "text-gold-400", btn: "btn btn-gold" }
+    : { border: "rgba(62,207,142,0.32)",  glow: "rgba(62,207,142,0.16)",  arabic: "text-emerald-300", check: "text-emerald-400", btn: "btn btn-primary" };
+  return (
+    <button onClick={onClick}
+      className="card-glass-strong p-6 md:p-8 text-left relative overflow-hidden hov-lift flex flex-col h-full w-full"
+      style={{ border: `1px solid ${t.border}` }}>
+      <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full blur-3xl pointer-events-none" style={{ background: t.glow }}/>
+      <div className="relative flex flex-col flex-1">
+        <div className="flex items-start justify-between gap-3 mb-5">
+          <div className={`arabic-display text-2xl md:text-3xl ${t.arabic}`} style={{ direction: "rtl" }}>{arabic}</div>
+          {badge}
+        </div>
+        <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink mb-2">{title}</h2>
+        <p className="text-sm text-ink-muted leading-relaxed mb-5">{desc}</p>
+        <ul className="space-y-2 mb-7 flex-1">
+          {points.map(p => (
+            <li key={p} className="flex items-start gap-2.5 text-sm text-ink">
+              <Icon name="check" className={`w-4 h-4 mt-0.5 flex-shrink-0 ${t.check}`}/>{p}
+            </li>
+          ))}
+        </ul>
+        <span className={`${t.btn} w-full py-3.5 text-sm font-medium justify-center pointer-events-none`}>
+          {cta} <Icon name="arrowRight" className="w-4 h-4"/>
+        </span>
+      </div>
+    </button>
+  );
+};
+
+const HomeBadge = ({ children, tone }) => (
+  <span className={`text-[11px] font-medium px-2.5 py-1 rounded-full border flex-shrink-0 ${
+    tone === "emerald" ? "bg-emerald-500/12 text-emerald-300 border-emerald-500/25"
+    : tone === "gold"  ? "bg-gold-500/10 text-gold-300 border-gold-500/25"
+    : "bg-white/5 text-ink-muted border-white/10"}`}>
+    {children}
+  </span>
+);
+
+const DashboardHomePage = () => {
+  const { session, profile } = useAuth();
+  const [aiAccess, setAiAccess] = useState("checking");
+
+  useEffect(() => {
+    if (!session) { navigate("/"); return; }
+    if (!profile?.onboarded) { navigate("/onboarding"); return; }
+    markPresenceToday();
+  }, [session, profile]);
+
+  useEffect(() => {
+    if (!session) return;
+    let alive = true;
+    window.checkAiSubscription?.().then(r => { if (alive) setAiAccess(r.active ? "active" : "inactive"); });
+    return () => { alive = false; };
+  }, [session]);
+
+  if (!session || !profile?.onboarded) return null;
+
+  const firstName = session.name.split(" ")[0];
+  const myMaddahCount = (typeof getMaddahsForProfile !== "undefined") ? getMaddahsForProfile(profile).length : 0;
+  const aiActive = aiAccess === "active";
+
+  return (
+    <div className="page-enter">
+      <section className="relative pt-6 md:pt-16 pb-16 overflow-hidden">
+        <div className="hero-light-beam"/>
+        <Blob color="rgba(62,207,142,0.20)" size={600} top={-200} right={-100}/>
+        <Blob color="rgba(201,168,106,0.10)" size={400} top={120} left={-150}/>
+
+        <div className="container-x relative">
+          <Reveal className="mb-8 md:mb-12">
+            <div className="arabic-classic text-gold-300 text-xl md:text-2xl mb-2" style={{ direction: "rtl", width: "fit-content" }}>
+              السلام عليكم
+            </div>
+            <h1 className="font-display text-3xl md:text-5xl font-semibold text-ink leading-tight mb-3">
+              Assalamu'alaikum, <span className="gradient-text-anim">{firstName}</span> <span className="text-gold-300">🌙</span>
+            </h1>
+            <p className="text-base md:text-lg text-ink-muted">Mau belajar pakai apa hari ini?</p>
+          </Reveal>
+
+          <div className="grid md:grid-cols-2 gap-4 md:gap-5 max-w-5xl">
+            <Reveal>
+              <HomeChoiceCard
+                tone="gold"
+                arabic="المكتبة"
+                title="Library"
+                badge={<HomeBadge tone="gold">Aktif · selamanya</HomeBadge>}
+                desc="Prompt siap pakai untuk tiap maddah — salin, lalu tempel ke AI favoritmu."
+                points={[
+                  myMaddahCount ? `${myMaddahCount} maddah sesuai fakultas & tingkatmu` : `${CATALOG.maddah} maddah Al-Azhar`,
+                  "Bank soal imtihan & Siap Imtihan",
+                  "Muqaranah, Kurasah, dan Learning Path",
+                ]}
+                cta="Masuk Library"
+                onClick={() => navigate("/library")}
+              />
+            </Reveal>
+            <Reveal>
+              <HomeChoiceCard
+                tone="emerald"
+                arabic="رفيق الدراسة"
+                title="AI Partner Belajar"
+                badge={aiAccess === "checking" ? <HomeBadge>Memeriksa…</HomeBadge>
+                  : aiActive ? <HomeBadge tone="emerald">Aktif</HomeBadge>
+                  : <HomeBadge>Belum berlangganan</HomeBadge>}
+                desc="Upload diktat atau catatanmu — Talqeeh langsung mengolahnya jadi bahan belajar."
+                points={[
+                  "Ringkasan + ta'rif istilah berharakat",
+                  "Flashcard hafalan & kuis dengan pembahasan",
+                  "Tutor AI yang menjawab dari materimu",
+                ]}
+                cta={aiActive || aiAccess === "checking" ? "Buka AI Partner" : "Lihat & berlangganan"}
+                onClick={() => navigate("/ai-partner")}
+              />
+            </Reveal>
+          </div>
+
+          <div className="mt-6">
+            <button onClick={() => navigate("/onboarding?edit=1")} className="btn btn-ghost text-xs inline-flex items-center gap-1.5">
+              <Icon name="pen" className="w-3.5 h-3.5"/> Ubah Profil
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};
+
+/* ══════════════════════════════════════════════════════════════
+   LIBRARY — isi dashboard belajar berbasis prompt
+   ══════════════════════════════════════════════════════════════ */
+const LibraryPage = () => {
   const { session, profile, progress, clearProfile } = useAuth();
 
   const recs = useMemo(() => profile ? recommend(profile) : [], [profile]);
@@ -577,7 +712,12 @@ const DashboardPage = () => {
               )}
             </div>
           </Reveal>
-          <div className="mt-3">
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="btn btn-ghost text-xs inline-flex items-center gap-1.5">
+              <Icon name="arrowLeft" className="w-3.5 h-3.5"/> Beranda
+            </button>
             <button
               onClick={() => navigate("/onboarding?edit=1")}
               className="btn btn-ghost text-xs inline-flex items-center gap-1.5">
@@ -1331,4 +1471,5 @@ const QuickAction = ({ icon, title, desc, to, onClick, color = "violet" }) => {
   );
 };
 
-window.DashboardPage = DashboardPage;
+window.DashboardPage = DashboardHomePage;
+window.LibraryPage = LibraryPage;
