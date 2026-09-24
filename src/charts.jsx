@@ -137,6 +137,45 @@ const ProportionBar = ({ parts }) => {
   );
 };
 
+// Radar (jaring laba-laba). dims: [{ key, label }], values: { key: 0–100 }.
+// progress 0–1 untuk animasi tumbuh dari tengah; highlight = key yang disorot.
+const RadarChart = ({ dims, values, size = 320, color = '#3ecf8e', progress = 1, highlight = null }) => {
+  const c = size / 2;
+  const r = size / 2 - 52;
+  const n = dims.length;
+  const angle = (i) => (Math.PI * 2 * i) / n - Math.PI / 2;
+  const point = (i, v) => [c + Math.cos(angle(i)) * r * v, c + Math.sin(angle(i)) * r * v];
+  const ring = (f) => dims.map((_, i) => point(i, f).join(',')).join(' ');
+  const shape = dims.map((d, i) => point(i, ((values?.[d.key] ?? 0) / 100) * progress).join(',')).join(' ');
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', maxWidth: size, height: 'auto', overflow: 'visible' }} role="img"
+      aria-label={dims.map(d => `${d.label} ${values?.[d.key] ?? 0}`).join(', ')}>
+      {[0.25, 0.5, 0.75, 1].map(f => (
+        <polygon key={f} points={ring(f)} fill="none" stroke="rgba(255,255,255,0.09)" strokeWidth="1"/>
+      ))}
+      {dims.map((_, i) => {
+        const [x, y] = point(i, 1);
+        return <line key={i} x1={c} y1={c} x2={x} y2={y} stroke="rgba(255,255,255,0.07)"/>;
+      })}
+      <polygon points={shape} fill={color} fillOpacity="0.22" stroke={color} strokeWidth="2.5" strokeLinejoin="round"/>
+      {dims.map((d, i) => {
+        const [x, y] = point(i, ((values?.[d.key] ?? 0) / 100) * progress);
+        return <circle key={d.key} cx={x} cy={y} r="4" fill={color}/>;
+      })}
+      {dims.map((d, i) => {
+        const [x, y] = point(i, 1.2);
+        const anchor = Math.abs(x - c) < 4 ? 'middle' : x > c ? 'start' : 'end';
+        return (
+          <text key={d.key} x={x} y={y} textAnchor={anchor} dominantBaseline="middle"
+            fontSize="12" fontWeight="600" fill={highlight === d.key ? color : 'rgba(255,255,255,0.6)'}>
+            {d.label}
+          </text>
+        );
+      })}
+    </svg>
+  );
+};
+
 // Perubahan vs periode sebelumnya.
 const Delta = ({ now, prev, invert = false }) => {
   if (!prev) return null;
@@ -146,4 +185,4 @@ const Delta = ({ now, prev, invert = false }) => {
   return <span className={`text-[11px] ${good ? 'text-emerald-300' : 'text-rose-300'}`}>{pct > 0 ? '▲' : '▼'} {Math.abs(pct)}% vs periode lalu</span>;
 };
 
-Object.assign(window, { BarChart, LineChart, HBarList, ProportionBar, Delta, shortDay });
+Object.assign(window, { BarChart, LineChart, HBarList, ProportionBar, Delta, shortDay, RadarChart });

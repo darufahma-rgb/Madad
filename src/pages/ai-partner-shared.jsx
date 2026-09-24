@@ -18,6 +18,7 @@ const learnerPayload = (profile = window.getProfile?.()) => {
     goal: profile.studyGoal || null,
     examWindow: window.currentExamWindow?.(profile) || null,
     struggles: profile.struggle || [],
+    cognitive: profile.cognitive?.scores || null,
   };
 };
 
@@ -31,6 +32,7 @@ const learnerSummary = (profile = window.getProfile?.()) => {
     styles.length ? styles.join(' & ') : null,
     arabic ? `bahasa Arab: ${arabic.toLowerCase()}` : null,
     goal ? `target: ${goal.toLowerCase()}` : null,
+    profile.cognitive?.scores ? 'profil belajar ✓' : null,
   ].filter(Boolean).join(' · ');
 };
 

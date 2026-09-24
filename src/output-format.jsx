@@ -19,9 +19,13 @@ const OUTPUT_FORMAT_INSTRUCTION = `
 5. Jika ada khilaf (perbedaan pendapat) ulama, sajikan secara berimbang antar madzhab.
 ---`;
 
+// Dipakai semua tombol salin prompt Library: tambah format jawaban (opsional)
+// dan catatan cara belajar dari profil member (onboarding + Profil Belajar).
 const withFormatInstruction = (promptText, enabled) => {
-  if (!enabled) return promptText;
-  return promptText + "\n\n" + OUTPUT_FORMAT_INSTRUCTION;
+  let text = enabled ? promptText + "\n\n" + OUTPUT_FORMAT_INSTRUCTION : promptText;
+  const notes = window.getSession?.() && window.learnerNotesForPrompt?.(window.getProfile?.());
+  if (notes) text += "\n\n" + notes;
+  return text;
 };
 
 const getFormatPref = () => {

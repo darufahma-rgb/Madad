@@ -132,6 +132,29 @@ const StatistikPage = () => {
         </div>
         <Box title="Ritme 12 pekan terakhir"><Heatmap days={presence}/></Box>
 
+        {/* Profil Belajar */}
+        <Box title="Profil belajarku">
+          {cognitiveScores(profile) ? (
+            <div className="grid md:grid-cols-2 gap-4 items-center">
+              <div className="flex justify-center"><RadarChart dims={COGNITIVE_DIMS} values={cognitiveScores(profile)} size={280}/></div>
+              <div>
+                <ul className="space-y-2 text-sm text-ink mb-4">
+                  {cognitiveInsights(cognitiveScores(profile)).adaptations.slice(0, 3).map(a => <li key={a}>→ {a}</li>)}
+                </ul>
+                <div className="flex gap-2 flex-wrap">
+                  <button onClick={() => navigate('/profil-belajar')} className="btn btn-ghost text-xs px-4 py-2">Lihat detail</button>
+                  <button onClick={() => navigate('/profil-belajar?retake=1')} className="btn btn-ghost text-xs px-4 py-2">Ulangi tes</button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-4 flex-wrap">
+              <p className="text-sm text-ink-muted flex-1 min-w-[220px]">Isi Profil Belajar (±3 menit) supaya AI Partner, prompt, dan saran harian menyesuaikan cara belajarmu.</p>
+              <button onClick={() => navigate('/profil-belajar')} className="btn btn-primary text-xs px-4 py-2">Mulai</button>
+            </div>
+          )}
+        </Box>
+
         {/* Library */}
         <div>
           <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-3">Library</div>

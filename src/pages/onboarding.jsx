@@ -404,7 +404,8 @@ const OnboardingPage = () => {
       setTimeout(() => navigate("/dashboard"), 400);
     } else {
       toast.push("Dashboard personal sudah siap untukmu.");
-      setTimeout(() => navigate("/welcome"), 400);
+      // Langkah terakhir (boleh dilewati): Profil Belajar, lalu halaman Selamat Datang.
+      setTimeout(() => navigate(finalProfile.cognitive ? "/welcome" : "/profil-belajar?from=onboarding"), 400);
     }
   };
 

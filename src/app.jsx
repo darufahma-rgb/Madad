@@ -89,7 +89,7 @@ const App = () => {
       "/dashboard", "/library", "/tools", "/paths", "/onboarding",
       "/kurasah", "/maddah", "/siap-imtihan",
       "/s2-maddah", "/mahad-maddah", "/prompt-library",
-      "/soal-detail", "/ai-partner", "/statistik",
+      "/soal-detail", "/ai-partner", "/statistik", "/profil-belajar",
     ];
     const isMemberRoute = memberOnly.some(r => path === r || path.startsWith(r + "?") || path.startsWith(r + "/"));
 
@@ -192,6 +192,7 @@ const App = () => {
   else if (path === "/dashboard")    { page = <DashboardPage/>; routeLabel = "Beranda Member"; }
   else if (path === "/library")      { page = <LibraryPage/>; routeLabel = "Library"; }
   else if (path === "/statistik")    { page = <StatistikPage/>; routeLabel = "Statistik Belajarku"; }
+  else if (path === "/profil-belajar" || path.startsWith("/profil-belajar?")) { page = <ProfilBelajarPage key={path}/>; routeLabel = "Profil Belajar"; }
   else if (path.startsWith("/tools")) { page = <ToolGuidePage/>; routeLabel = "Tool Guide"; }
   else if (path === "/paths")                              { page = <PathsPage/>; routeLabel = "Learning Path"; }
   else if (path === "/paths/muqaranah" && !path.includes("?id=")) { page = <MuqaranahPage/>; routeLabel = "Muqaranah"; }

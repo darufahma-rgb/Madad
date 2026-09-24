@@ -542,6 +542,52 @@ const PersonalizeCard = () => {
   );
 };
 
+// Saran ritme harian dari Profil Belajar, atau ajakan mengisinya.
+const PROFILE_INVITE_KEY = 'talqeeh_profil_invite_later';
+const DailyAdviceCard = () => {
+  const { profile } = useAuth();
+  const [hidden, setHidden] = useState(() => {
+    try { return Date.now() - Number(localStorage.getItem(PROFILE_INVITE_KEY) || 0) < 7 * 86400000; } catch { return false; }
+  });
+  if (!profile?.onboarded || !profile.arabicLevel) return null; // tunggu kartu personalisasi selesai dulu
+  const advice = dailyAdvice(profile);
+
+  if (!advice) {
+    if (hidden) return null;
+    return (
+      <div className="card-glass p-5 max-w-5xl mb-5 flex items-center gap-4 flex-wrap" style={{ border: '1px solid rgba(62,207,142,0.3)' }}>
+        <span className="w-10 h-10 rounded-xl bg-emerald-500/12 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
+          <Icon name="target" className="w-5 h-5 text-emerald-300"/>
+        </span>
+        <div className="flex-1 min-w-[220px]">
+          <div className="text-sm text-ink font-medium">Kenali cara belajarmu · 3 menit</div>
+          <div className="text-xs text-ink-muted leading-relaxed">16 pernyataan singkat → profil 8 dimensi. AI Partner, prompt Library, dan saran harianmu ikut menyesuaikan.</div>
+        </div>
+        <div className="flex gap-2">
+          <button onClick={() => { try { localStorage.setItem(PROFILE_INVITE_KEY, String(Date.now())); } catch {} setHidden(true); }}
+            className="text-xs text-ink-soft hover:text-ink px-2">Nanti</button>
+          <button onClick={() => navigate('/profil-belajar')} className="btn btn-primary text-xs px-4 py-2">Mulai</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card-glass p-5 max-w-5xl mb-5">
+      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+        <div className="text-xs uppercase tracking-[0.18em] text-gold-400">Saran belajar hari ini</div>
+        <button onClick={() => navigate('/profil-belajar')} className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2">Lihat profil belajarku</button>
+      </div>
+      <div className="flex flex-wrap gap-2 mb-3">
+        <span className="text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-ink">⏱️ {advice.count} × {advice.minutes} menit</span>
+        <span className="text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-ink">☕ istirahat {advice.rest} menit</span>
+        <span className="text-xs px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-ink">🗂️ {advice.cards} flashcard</span>
+      </div>
+      <ul className="space-y-1 text-sm text-ink-muted">{advice.tips.map(t => <li key={t}>• {t}</li>)}</ul>
+    </div>
+  );
+};
+
 const DashboardHomePage = () => {
   const { session, profile, isFree } = useAuth();
   const [aiAccess, setAiAccess] = useState("checking");
@@ -588,6 +634,7 @@ const DashboardHomePage = () => {
 
           {isFree && <div className="max-w-5xl mb-5"><FreeTierBanner/></div>}
           <PersonalizeCard/>
+          <DailyAdviceCard/>
 
           <div className="grid md:grid-cols-2 gap-4 md:gap-5 max-w-5xl">
             <Reveal>

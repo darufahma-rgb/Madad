@@ -18,6 +18,7 @@ import './intentions-data.jsx';
 import './adaptive-prompt.jsx';
 import './output-format.jsx';
 import './learning-frameworks-data.jsx';
+import './learning-profile.jsx';
 
 // Shared components
 import './markdown-render.jsx';
@@ -63,6 +64,7 @@ import './pages/ai-partner-study.jsx';
 import './pages/ai-partner.jsx';
 import './pages/statistik.jsx';
 import './pages/gabung.jsx';
+import './pages/profil-belajar.jsx';
 
 // App shell — terakhir
 import App from './app.jsx';

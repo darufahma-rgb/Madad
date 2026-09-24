@@ -74,6 +74,26 @@ const EXAM_RULES = {
   '3m': 'Imtihan masih 1–3 bulan: bangun pemahaman yang kuat dulu.',
 };
 
+// Skor Profil Belajar (0–100, isian diri) → instruksi penyajian.
+const cognitiveRules = (c) => {
+  if (!c || typeof c !== 'object') return [];
+  const n = (k) => { const v = Number(c[k]); return Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : null; };
+  const rules = [];
+  const fokus = n('fokus'), stres = n('stres'), praktik = n('praktik'), memori = n('memori');
+  const kecepatan = n('kecepatan'), motivasi = n('motivasi'), ambisi = n('ambisi'), energi = n('energi');
+  if (fokus !== null && fokus < 40) rules.push('Fokus mudah terpecah: pecah penjelasan jadi bagian pendek (maks ±5 poin per bagian) dengan subjudul jelas; hindari paragraf panjang.');
+  if (stres !== null && stres >= 70) rules.push('Mudah cemas menjelang imtihan: gunakan nada tenang dan menyemangati, tekankan langkah kecil yang bisa langsung dikerjakan, jangan menakut-nakuti.');
+  if (praktik !== null && praktik >= 65) rules.push('Condong praktik: dahulukan contoh, kasus, dan latihan; teori seperlunya.');
+  if (praktik !== null && praktik <= 35) rules.push('Condong teori: dahulukan kaidah, definisi, dan alasan sebelum contoh.');
+  if (memori !== null && memori < 40) rules.push('Hafalan cepat hilang: ulangi poin kunci di akhir, beri jembatan keledai; flashcard lebih banyak dan jawabannya pendek.');
+  if (kecepatan !== null && kecepatan < 40) rules.push('Butuh waktu memahami: jelaskan bertahap, satu konsep per langkah, dengan contoh sederhana.');
+  if (kecepatan !== null && kecepatan >= 70) rules.push('Cepat menangkap: boleh padat dan langsung ke inti, tanpa pengulangan berlebihan.');
+  if (motivasi !== null && motivasi < 40) rules.push('Motivasi perlu dijaga: kaitkan materi dengan manfaat nyata dan beri target kecil yang realistis.');
+  if (ambisi !== null && ambisi >= 70) rules.push('Ambisius: sertakan tantangan atau soal tingkat lanjut dan kiat meraih nilai tertinggi.');
+  if (energi !== null && energi < 40) rules.push('Energi terbatas: susun materi dalam potongan yang bisa diselesaikan dalam sesi singkat.');
+  return rules;
+};
+
 const clip = (v, n = 80) => (typeof v === 'string' ? v.replace(/[\r\n<>]/g, ' ').trim().slice(0, n) : '');
 
 export const learnerContext = (learner) => {
@@ -89,6 +109,8 @@ export const learnerContext = (learner) => {
   if (Array.isArray(learner.struggles) && learner.struggles.includes('arab') && learner.arabicLevel !== 'lancar') {
     lines.push('Pelajar ini sering kesulitan dengan materi berbahasa Arab — perbanyak terjemah dan penjelasan kata kunci.');
   }
+  const cog = cognitiveRules(learner.cognitive);
+  if (cog.length) lines.push('Profil belajar (isian diri):\n' + cog.map(r => `  - ${r}`).join('\n'));
   if (!lines.length) return '';
   return `\n\nPROFIL PELAJAR (sesuaikan gaya penyajian dengan profil ini, tapi tetap HANYA berdasarkan materi dan tetap ikuti format keluaran yang diminta persis):\n${lines.join('\n')}`;
 };
