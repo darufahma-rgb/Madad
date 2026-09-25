@@ -1140,7 +1140,8 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
     if (soal.soal.includes('[SOAL_ARAB]')) {
       return soal.soal
         .split('[SOAL_ARAB]')
-        .filter(Boolean)
+        .slice(1) // teks sebelum penanda pertama bukan soal
+        .filter(b => b.trim())
         .map(block => {
           const parts = block.split('[ARTI]');
           return { arab: parts[0]?.trim() || '', arti: parts[1]?.trim() || '' };

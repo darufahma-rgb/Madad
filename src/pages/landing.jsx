@@ -993,7 +993,7 @@ const BankSoalPreview = ({ onOpenLogin }) => {
     if (!teks) return '';
     let soal = '';
     if (teks.includes('[SOAL_ARAB]')) {
-      const block = teks.split('[SOAL_ARAB]').filter(Boolean)[0];
+      const block = teks.split('[SOAL_ARAB]').slice(1).filter(b => b.trim())[0];
       soal = block?.split('[ARTI]')[0]?.trim() || '';
     } else {
       soal = teks.split('\n').find(l => l.trim()) || '';

@@ -18,7 +18,7 @@ const cleanArab = (teks) => {
 const getFirstSoal = (raw) => {
   if (!raw) return '';
   let s = raw.includes('[SOAL_ARAB]')
-    ? (raw.split('[SOAL_ARAB]').filter(Boolean)[0] || '').split('[ARTI]')[0]
+    ? (raw.split('[SOAL_ARAB]').slice(1).filter(b => b.trim())[0] || '').split('[ARTI]')[0]
     : raw.split('\n').find(l => l.trim()) || '';
   return cleanArab(s).slice(0, 120);
 };
@@ -44,7 +44,7 @@ const SoalModal = ({ group, onClose }) => {
   const allSoal = group.soalList || [];
   const allBlocks = allSoal.flatMap((soal, si) => {
     const blocks = soal.soal?.includes('[SOAL_ARAB]')
-      ? soal.soal.split('[SOAL_ARAB]').filter(Boolean).map(b => {
+      ? soal.soal.split('[SOAL_ARAB]').slice(1).filter(b => b.trim()).map(b => {
           const parts = b.split('[ARTI]');
           return {
             arab: cleanArab(parts[0]?.trim()),

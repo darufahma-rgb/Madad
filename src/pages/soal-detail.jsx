@@ -112,7 +112,8 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
   const soalBlocks = React.useMemo(() => {
     if (!soal?.soal) return [];
     if (soal.soal.includes('[SOAL_ARAB]')) {
-      return soal.soal.split('[SOAL_ARAB]').filter(Boolean).map(block => {
+      // Mulai dari penanda pertama: teks sebelumnya (sisa judul AI dsb.) bukan soal.
+      return soal.soal.split('[SOAL_ARAB]').slice(1).filter(b => b.trim()).map(block => {
         const parts = block.split('[ARTI]');
         return { arab: parts[0]?.trim() || '', arti: parts[1]?.trim() || '' };
       });

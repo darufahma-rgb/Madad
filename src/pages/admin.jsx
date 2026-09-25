@@ -3297,11 +3297,11 @@ const AdminBankSoal = () => {
                     borderRadius: 10, padding: '12px 14px',
                     maxHeight: 300, overflowY: 'auto',
                   }}>
-                    {soalTeks.split('[SOAL_ARAB]').filter(Boolean).map((block, i) => {
+                    {soalTeks.split('[SOAL_ARAB]').slice(1).filter(b => b.trim()).map((block, i) => {
                       const parts = block.split('[ARTI]');
                       const arab  = parts[0]?.trim();
                       const arti  = parts[1]?.trim();
-                      const total = soalTeks.split('[SOAL_ARAB]').filter(Boolean).length;
+                      const total = soalTeks.split('[SOAL_ARAB]').slice(1).filter(b => b.trim()).length;
                       return (
                         <div key={i} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: i < total - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
                           {arab && (

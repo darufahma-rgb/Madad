@@ -19,6 +19,20 @@ export default async function handler(req, res) {
   return res.status(400).json({ ok: false, error: 'Action tidak valid' });
 }
 
+/* Teks soal disimpan mulai dari blok [SOAL_ARAB] pertama. Semua yang sebelumnya — bagian [TAHUN_AKADEMIK],
+   judul/omongan AI ("Hasil Ekstraksi…") — dibuang, karena halaman soal menampilkannya sebagai "SOAL 1".
+   Skor yang kadang tertinggal di situ (mis. "[٤٠ درجة]") dipindah ke awal soal pertama. */
+export const cleanSoalText = (hasil) => {
+  const text = String(hasil || '').trim();
+  const first = text.indexOf('[SOAL_ARAB]');
+  if (first < 0) return text.replace(/\[TAHUN_AKADEMIK\][^\n]*\n?[^\n]*/, '').trim();
+  const before = text.slice(0, first);
+  let rest = text.slice(first);
+  const score = before.match(/[\[(]\s*[٠-٩0-9]+\s*درج[ةه]\s*[\])]/);
+  if (score) rest = rest.replace('[SOAL_ARAB]', `[SOAL_ARAB]\n**${score[0]}**`);
+  return rest.trim();
+};
+
 /* ── PARSE SOAL ── */
 async function handleParseSoal(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
@@ -133,9 +147,7 @@ Catatan penting:
       if (raw && raw !== 'TIDAK_TERTERA') tahunDariSoal = raw;
     }
 
-    const teksBersih = hasil
-      .replace(/\[TAHUN_AKADEMIK\][^\[]*/, '')
-      .trim();
+    const teksBersih = cleanSoalText(hasil);
 
     await fetch(`${supabaseUrl}/rest/v1/bank_soal?id=eq.${soal_id}`, {
       method: 'PATCH',
