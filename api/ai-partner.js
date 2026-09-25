@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { verifyToken } from './admin-auth.js';
 import { sbConfig, sbHeaders, normalizeCode, requireAiTier, consumeQuota, isActiveMember } from './_lib/member.js';
-import { callAI, callAIJson, requestAI, streamAI, friendlyAiError } from './_lib/ai.js';
+import { callAI, callAIJson, requestAI, streamAI, friendlyAiError, aiErrorDetail } from './_lib/ai.js';
 import { resolveModels, isValidModelId, clearModelCache } from './_lib/models.js';
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
@@ -224,7 +224,7 @@ const openStream = (res) => {
   return {
     delta: (d) => send({ t: 'delta', d }),
     done: (data) => { send({ t: 'done', ...data }); res.end(); },
-    fail: (error) => { send({ t: 'error', ok: false, error }); res.end(); },
+    fail: (error, detail) => { send({ t: 'error', ok: false, error, ...(detail ? { detail } : {}) }); res.end(); },
   };
 };
 
@@ -236,7 +236,7 @@ const runAI = async (body, res, opts) => {
     return { out: await streamAI(opts, stream.delta), stream };
   } catch (err) {
     console.error('[ai-partner:stream]', err.message);
-    stream.fail(friendlyAiError(err));
+    stream.fail(friendlyAiError(err), aiErrorDetail(err));
     return { failed: true };
   }
 };
@@ -972,7 +972,7 @@ async function handleAdmin(action, req, res, body) {
     const started = Date.now();
     try {
       const reply = await callAI({
-        model, maxTokens: 20, temperature: 0,
+        model, maxTokens: 300, temperature: 0,
         messages: [{ role: 'user', content: 'Terjemahkan ke bahasa Indonesia dalam 1-3 kata saja: الطَّهَارَةُ' }],
       });
       clearModelCache();
@@ -1057,12 +1057,12 @@ export default async function handler(req, res) {
     }
   } catch (err) {
     console.error(`[ai-partner:${action}]`, err.message);
-    const message = /openrouter|credit|rate.?limit|AI /i.test(err.message) ? friendlyAiError(err) : 'Terjadi kesalahan. Coba lagi sebentar.';
+    const message = /openrouter|credit|limit|auth|AI /i.test(err.message) ? friendlyAiError(err) : 'Terjadi kesalahan. Coba lagi sebentar.';
     // Kalau balasan bertahap sudah dimulai, header tidak bisa diganti — laporkan lewat stream.
     if (res.headersSent) {
-      try { res.write(JSON.stringify({ t: 'error', ok: false, error: message }) + '\n'); res.end(); } catch {}
+      try { res.write(JSON.stringify({ t: 'error', ok: false, error: message, detail: aiErrorDetail(err) }) + '\n'); res.end(); } catch {}
       return;
     }
-    return res.status(500).json({ ok: false, error: message });
+    return res.status(500).json({ ok: false, error: message, detail: aiErrorDetail(err) });
   }
 }

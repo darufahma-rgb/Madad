@@ -28,10 +28,19 @@ const modelParams = async () => {
   return paramCache.map || {};
 };
 // OpenRouter menerima "claude-sonnet-4-6" maupun "claude-sonnet-4.6"; daftarnya memakai titik.
-export const acceptsTemperature = async (modelId) => {
+const paramsOf = async (modelId) => {
   const map = await modelParams();
-  const params = map[modelId] || map[String(modelId).replace(/(\d)-(\d)/g, '$1.$2')];
+  return map[modelId] || map[String(modelId).replace(/(\d)-(\d)/g, '$1.$2')] || null;
+};
+export const acceptsTemperature = async (modelId) => {
+  const params = await paramsOf(modelId);
   return params ? params.includes('temperature') : !NO_TEMPERATURE_FALLBACK.test(modelId);
+};
+// Model yang "berpikir" dulu secara bawaan (mis. Sonnet 5): tidak menerima temperature tapi menerima reasoning.
+// Token berpikir memakai jatah max_tokens, jadi jawabannya bisa kosong/terpotong kalau jatahnya pas-pasan.
+const isReasoningModel = async (modelId) => {
+  const params = await paramsOf(modelId);
+  return params ? !params.includes('temperature') && params.includes('reasoning') : NO_TEMPERATURE_FALLBACK.test(modelId);
 };
 
 // Isi permintaan OpenRouter: temperature hanya untuk model yang menerimanya, plus model cadangan
@@ -39,20 +48,30 @@ export const acceptsTemperature = async (modelId) => {
 const buildBody = async ({ modelId, maxTokens, temperature, messages, stream }) => {
   const hasAudio = messages.some(m => Array.isArray(m.content) && m.content.some(p => p?.type === 'input_audio'));
   const fallback = !hasAudio && modelId !== FALLBACK_MODEL && modelId.replace(/(\d)-(\d)/g, '$1.$2') !== FALLBACK_MODEL;
+  const reasoning = await isReasoningModel(modelId);
   return {
     model: modelId,
     ...(fallback ? { models: [modelId, FALLBACK_MODEL] } : {}),
-    max_tokens: maxTokens,
+    // Model berpikir: berpikir singkat saja (hemat & cepat), jatah token ditambah supaya jawabannya tetap utuh,
+    // dan teks berpikirnya tidak dikirim balik.
+    max_tokens: reasoning ? Math.ceil(maxTokens * 1.25) : maxTokens,
+    ...(reasoning ? { reasoning: { effort: 'low', exclude: true } } : {}),
     ...((await acceptsTemperature(modelId)) ? { temperature } : {}),
     ...(stream ? { stream: true } : {}),
     messages,
   };
 };
 
-// Pesan untuk pengguna dari error OpenRouter (detail teknis tetap di log server).
+// Pesan untuk pengguna dari error OpenRouter. Detail teknis singkat ikut dikirim (field `detail`, tidak
+// ditampilkan) supaya penyebabnya terlihat di DevTools tanpa membuka log server — isinya pesan OpenRouter,
+// bukan kunci API.
+export const aiErrorDetail = (err) => String(err?.message || '').replace(/sk-or-[\w-]+/g, '[key]').slice(0, 240);
+
 export const friendlyAiError = (err) => {
   const m = String(err?.message || '');
   if (/credit|insufficient|payment required|402/i.test(m)) return 'Layanan AI sedang tidak tersedia (saldo AI habis). Kabari admin Talqeeh, ya.';
+  if (/key limit|total limit|403/i.test(m)) return 'Layanan AI sedang tidak tersedia (batas kunci API tercapai). Kabari admin Talqeeh, ya.';
+  if (/401|no auth|unauthori[sz]ed|user not found|invalid.*(key|token)|OPENROUTER_API_KEY/i.test(m)) return 'Layanan AI sedang tidak tersedia (kunci API tidak valid). Kabari admin Talqeeh, ya.';
   if (/rate.?limit|429|overloaded|capacity/i.test(m)) return 'AI sedang sibuk. Coba lagi sebentar.';
   if (/terlalu lama/i.test(m)) return 'AI terlalu lama merespons. Coba lagi, atau persingkat pertanyaannya.';
   return 'AI sedang bermasalah. Coba lagi sebentar.';
@@ -89,7 +108,10 @@ export const requestAI = async ({ system, messages, maxTokens = 2000, temperatur
   if (data.error) throw new Error(data.error.message || `OpenRouter error (${res.status})`);
   const choice = data.choices?.[0] || {};
   const text = choice.message?.content || '';
-  if (!text) throw new Error('AI tidak mengembalikan hasil');
+  if (!text) {
+    const cut = choice.finish_reason === 'length' || choice.native_finish_reason === 'max_tokens';
+    throw new Error(cut ? 'AI tidak mengembalikan hasil (jatah token habis untuk berpikir)' : 'AI tidak mengembalikan hasil');
+  }
   const truncated = choice.finish_reason === 'length' || choice.native_finish_reason === 'max_tokens';
   // data.model = model yang benar-benar menjawab (bisa model cadangan).
   return { text, truncated, model: data.model || modelId };
