@@ -345,17 +345,31 @@ const GabungPage = () => {
             price={LIBRARY_PRICE} strike={LIBRARY_PRICE_ORIGINAL} saving="Hemat 29%" sub="Sekali bayar · akses selamanya"
             items={LIBRARY_ITEMS} current={paidMember} selected={plan === 'library'} ctaClass="btn btn-gold"
             cta={isFree ? 'Upgrade ke Library' : 'Pilih Library'} onClick={() => choosePaid('library')}/>
-          <PlanCard color={EMERALD} icon="sparkles" recommended={!!bundle} badge={bundle ? 'Paling lengkap' : undefined} title="Library + AI Study Partner" tagline="Belajar langsung dari diktatmu"
-            price={bundle ? formatRupiah(bundle.total) : LIBRARY_PRICE} priceNote={bundle ? 'sekali bayar' : '+ AI Partner bulanan'}
-            sub={bundle ? 'Library selamanya + AI 30 hari' : 'Harga AI Partner segera diumumkan'}
-            extra={bundle && (
-              <div className="mb-5 -mt-2">
-                <AiBundleBreakdown bundle={bundle}/>
-                <p className="text-[11.5px] mt-2" style={{ color: EMERALD }}>AI Partner cuma sekitar {formatRupiah(bundle.perDay)}/hari.</p>
-              </div>
-            )}
-            items={AI_ITEMS} selected={plan === 'library_ai'} ctaClass="btn btn-primary"
-            cta={paidMember ? 'Berlangganan AI Partner' : 'Pilih Library + AI'} onClick={() => choosePaid('library_ai')}/>
+          {paidMember ? (
+            // Sudah punya Library: cukup bayar AI Partner (server menagih paket 'ai' saja).
+            <PlanCard color={EMERALD} icon="sparkles" recommended={!!bundle} badge={bundle ? 'Untuk member Library' : undefined} title="AI Study Partner" tagline="Tambahan untuk Library-mu"
+              price={aiPrice ? formatRupiah(aiPrice) : 'Segera'} priceNote={aiPrice ? '/ 30 hari' : ''}
+              sub={aiPrice ? 'Library-mu sudah aktif — cukup bayar AI' : 'Harga AI Partner segera diumumkan'}
+              extra={bundle && (
+                <p className="text-[11.5px] mb-5 -mt-2" style={{ color: EMERALD }}>
+                  Cuma sekitar {formatRupiah(bundle.perDay)}/hari · tanpa potongan otomatis, perpanjang kapan saja.
+                </p>
+              )}
+              items={AI_BUNDLE_FEATURES.map(f => [f, true])} ctaClass="btn btn-primary"
+              cta={aiPrice ? `Tambah AI Partner · ${formatRupiah(aiPrice)}` : 'Hubungi admin'} onClick={() => choosePaid('library_ai')}/>
+          ) : (
+            <PlanCard color={EMERALD} icon="sparkles" recommended={!!bundle} badge={bundle ? 'Paling lengkap' : undefined} title="Library + AI Study Partner" tagline="Belajar langsung dari diktatmu"
+              price={bundle ? formatRupiah(bundle.total) : LIBRARY_PRICE} priceNote={bundle ? 'sekali bayar' : '+ AI Partner bulanan'}
+              sub={bundle ? 'Library selamanya + AI 30 hari' : 'Harga AI Partner segera diumumkan'}
+              extra={bundle && (
+                <div className="mb-5 -mt-2">
+                  <AiBundleBreakdown bundle={bundle}/>
+                  <p className="text-[11.5px] mt-2" style={{ color: EMERALD }}>AI Partner cuma sekitar {formatRupiah(bundle.perDay)}/hari.</p>
+                </div>
+              )}
+              items={AI_ITEMS} selected={plan === 'library_ai'} ctaClass="btn btn-primary"
+              cta="Pilih Library + AI" onClick={() => choosePaid('library_ai')}/>
+          )}
         </div>
         {freeError && <div className="text-sm text-rose-400 text-center mt-4">{freeError}</div>}
 
