@@ -1,7 +1,17 @@
 import React, { useState, useRef, useMemo } from 'react';
 /* Talqeeh — AI Partner: wizard tambah materi (pilih file → diproses → cek & simpan) */
 
-const MAX_CONTENT = 60000;
+// Batas panjang materi: pelanggan ±100 halaman, coba gratis lebih pendek (sama dengan server).
+const MAX_CONTENT_PRO = 200000;
+const MAX_CONTENT_TRIAL = 60000;
+const DIALECT_KEY = 'talqeeh_transcribe_dialect';
+const DIALECTS = [
+  { id: 'campur', label: "Campur fushah & 'ammiyah" },
+  { id: 'fusha', label: 'Fushah' },
+  { id: 'ammiyah', label: "'Ammiyah Mesir" },
+  { id: 'indonesia', label: 'Bahasa Indonesia' },
+];
+const readDialect = () => { try { return DIALECTS.some(d => d.id === localStorage.getItem(DIALECT_KEY)) ? localStorage.getItem(DIALECT_KEY) : 'campur'; } catch { return 'campur'; } };
 const PRO_ONLY_KINDS = ['audio', 'video'];
 const FORMAT_CHIPS = [
   { kinds: ['pdf'],           label: 'PDF (termasuk scan)' },
@@ -51,6 +61,9 @@ const CreateWizard = ({ tier, onCancel }) => {
   const cancelRef = useRef(false);
   const fileRef = useRef(null);
   const isTrial = tier !== 'pro';
+  const MAX_CONTENT = isTrial ? MAX_CONTENT_TRIAL : MAX_CONTENT_PRO;
+  const [dialect, setDialect] = useState(readDialect);
+  const chooseDialect = (d) => { setDialect(d); try { localStorage.setItem(DIALECT_KEY, d); } catch {} };
 
   const maddahOptions = useMemo(() => {
     if (!profile) return [];
@@ -120,7 +133,12 @@ const CreateWizard = ({ tier, onCancel }) => {
         patchItem(i, { note: `Mentranskrip menit ${c + 1} dari ${media.count}…`, progress: c / media.count });
         const chunk = await media.getChunk(c);
         if (chunk.silent) continue;
-        const d = await aiCall('transcribe', { audio_base64: chunk.base64 });
+        // Ujung potongan sebelumnya + judul membantu AI menyambung kalimat & mengenali istilah.
+        const d = await aiCall('transcribe', {
+          audio_base64: chunk.base64, dialect,
+          title: title || file.name.replace(/\.[^.]+$/, ''),
+          prev_tail: parts.length ? parts[parts.length - 1].slice(-300) : '',
+        });
         if (!d.ok) fail(d.error || 'Gagal mentranskrip', d.upgrade);
         if (d.teks) parts.push(d.teks);
       }
@@ -188,7 +206,7 @@ const CreateWizard = ({ tier, onCancel }) => {
       else setError(data.error || 'Gagal menyimpan');
       return;
     }
-    if (data.truncated) toast.push(`Materi dipotong ke ${MAX_CONTENT.toLocaleString('id-ID')} karakter pertama.`);
+    if (data.truncated) toast.push(`Materi dipotong ke ${(data.limit || MAX_CONTENT).toLocaleString('id-ID')} karakter pertama.`);
     navigate(`/ai-partner/${data.id}`);
   };
 
@@ -247,6 +265,17 @@ const CreateWizard = ({ tier, onCancel }) => {
               Atau tempel teks langsung
             </button>
           </div>
+          {!isTrial && (
+            <div className="mt-5 flex items-center justify-center gap-2 flex-wrap">
+              <span className="text-xs text-ink-muted">Bahasa rekaman kuliah:</span>
+              {DIALECTS.map(d => (
+                <button key={d.id} onClick={() => chooseDialect(d.id)}
+                  className={`text-xs px-3 py-1.5 rounded-lg border transition ${dialect === d.id ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200' : 'border-white/10 text-ink-muted hover:text-ink'}`}>
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          )}
           <p className="text-[11px] text-ink-soft text-center mt-4 leading-relaxed">
             Dokumen dibaca di perangkatmu; foto & rekaman dikirim ke AI untuk dibaca. File aslinya tidak disimpan.
             {!isTrial && ` Rekaman maks ${window.MAX_MEDIA_MINUTES || 30} menit per file.`}

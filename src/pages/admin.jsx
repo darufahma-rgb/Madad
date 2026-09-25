@@ -1957,6 +1957,7 @@ const AdminSettings = () => {
     aiModelArabic:  "",
     aiModelGrade:   "",
     aiModelChat:    "",
+    aiModelTranscribe: "",
     ...loadLocalSettings(),
   }));
   const [saved, setSaved] = useState(false);
@@ -2048,6 +2049,7 @@ const AdminSettings = () => {
             ['aiModelArabic', "Terjemah & i'rab, harakat", 'arabic', 'Butuh ketelitian nahwu-sharaf paling tinggi — kandidat untuk model terkuat.'],
             ['aiModelGrade', 'Penilaian tahriri', 'grade', 'Menilai jawaban esai & mengoreksi bahasa Arab mahasiswa.'],
             ['aiModelChat', 'Tutor & simulasi syafawi', 'chat', 'Paling sering dipakai — pertimbangkan biaya per pesan.'],
+            ['aiModelTranscribe', 'Transkrip rekaman kuliah', 'transcribe', "Harus model yang bisa mendengar audio (Gemini). Coba google/gemini-2.5-pro kalau transkrip 'ammiyah kurang akurat. Tes hanya memeriksa ID-nya, bukan kemampuan audio."],
           ].map(([key, label, task, hint]) => (
             <ModelField key={key} label={label} hint={hint} value={settings[key] || ''}
               active={activeModels?.[task]} onChange={v => setSettings({ ...settings, [key]: v })}/>

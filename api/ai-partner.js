@@ -1,12 +1,14 @@
 import crypto from 'crypto';
 import { verifyToken } from './admin-auth.js';
 import { sbConfig, sbHeaders, normalizeCode, requireAiTier, consumeQuota, isActiveMember } from './_lib/member.js';
-import { callAI, callAIJson, requestAI, streamAI, transcribeModel } from './_lib/ai.js';
+import { callAI, callAIJson, requestAI, streamAI } from './_lib/ai.js';
 import { resolveModels, isValidModelId, clearModelCache } from './_lib/models.js';
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
-  OCR_PROMPT, TRANSCRIBE_PROMPT, tutorSystem, syafawiSystem, learnerContext,
+  OCR_PROMPT, transcribePrompt, TRANSCRIBE_DIALECTS, tutorSystem, syafawiSystem, learnerContext,
+  SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE,
 } from './_lib/ai-partner/prompts.js';
+import { splitChunks, spreadSample, relevantExcerpt } from './_lib/ai-partner/chunks.js';
 import {
   isStr, cleanFlashcards, cleanQuiz, cleanGlossary, cleanMindmap, cleanEssays,
   cleanGrade, cleanIrab, cleanProgressPatch,
@@ -18,7 +20,12 @@ const TRIAL_OCR_LIMIT  = 3;
 const TRIAL_KINDS      = ['summary', 'flashcards', 'quiz', 'glossary'];
 const PRO_ONLY_ACTIONS = ['transcribe', 'analyze', 'grade', 'chat'];
 
-const MAX_CONTENT     = 60000;
+// Materi panjang (±100 halaman) disimpan utuh; tiap permintaan AI hanya menerima potongan yang muat.
+const MAX_CONTENT       = 200000;
+const TRIAL_MAX_CONTENT = 60000;   // coba gratis tetap dibatasi supaya biaya terkendali
+const SINGLE_PASS_CHARS = 60000;   // muat dalam satu permintaan
+const MAP_CHUNK_CHARS   = 40000;   // ringkasan materi panjang: dibaca per bagian sebesar ini
+const MAP_PART_TOKENS   = 1800;
 const MIN_CONTENT     = 50;
 const CHAT_HISTORY    = 12;
 // Ringkasan dibuat bertahap supaya tiap request selesai di bawah batas 60 detik Vercel.
@@ -124,7 +131,13 @@ const upgradeRequired = (res, feature, message) =>
     message: message || 'Fitur ini khusus pelanggan AI Partner. Berlangganan untuk membuka semua fitur.',
   });
 
-const materialMessage = (set) => [{ role: 'user', content: `Judul materi: ${set.title}\n\nMATERI:\n${set.content}` }];
+// Materi yang lebih panjang dari satu permintaan diwakili contoh merata dari seluruh bab.
+const materialMessage = (set) => {
+  const long = set.content.length > SINGLE_PASS_CHARS;
+  const body = long ? spreadSample(set.content, SINGLE_PASS_CHARS) : set.content;
+  const note = long ? '\n(Materi panjang: berikut contoh merata dari seluruh materi; bagian yang dilewati ditandai […]. Sebarkan hasilmu ke semua bagian.)' : '';
+  return [{ role: 'user', content: `Judul materi: ${set.title}${note}\n\nMATERI:\n${body}` }];
+};
 
 /* ── Balasan bertahap (streaming) ──
    Browser yang mengirim `stream: true` menerima NDJSON: {"t":"delta","d":"…"} per potongan teks, lalu
@@ -205,15 +218,16 @@ async function handleTranscribe(ctx, body, res) {
     return res.status(429).json({ ok: false, error: 'quota', message: `Batas transkripsi harian (${LIMITS.transcribe} menit) tercapai. Coba lagi besok.` });
   }
 
+  const dialect = TRANSCRIBE_DIALECTS.includes(body.dialect) ? body.dialect : 'campur';
   const text = await callAI({
-    model: transcribeModel(),
+    model: (await resolveModels()).transcribe,
     maxTokens: 2500,
     temperature: 0,
     messages: [{
       role: 'user',
       content: [
         { type: 'input_audio', input_audio: { data: audio, format: 'wav' } },
-        { type: 'text', text: TRANSCRIBE_PROMPT },
+        { type: 'text', text: transcribePrompt({ dialect, title: body.title, prevTail: body.prev_tail }) },
       ],
     }],
   });
@@ -227,6 +241,7 @@ async function handleCreate(ctx, body, res) {
     return res.status(400).json({ ok: false, error: `Materi terlalu pendek (min ${MIN_CONTENT} karakter)` });
   }
   const sourceType = SOURCE_TYPES.includes(body.source_type) ? body.source_type : 'teks';
+  const limit = ctx.tier === 'trial' ? TRIAL_MAX_CONTENT : MAX_CONTENT;
 
   const id = crypto.randomUUID();
   if (ctx.tier === 'trial') {
@@ -248,14 +263,14 @@ async function handleCreate(ctx, body, res) {
       title:       (isStr(body.title) ? body.title.trim() : 'Materi tanpa judul').slice(0, 120),
       maddah_id:   isStr(body.maddah_id) ? body.maddah_id.slice(0, 80) : null,
       source_type: sourceType,
-      content:     content.slice(0, MAX_CONTENT),
+      content:     content.slice(0, limit),
     }),
   });
   if (!r.ok) {
     if (ctx.tier === 'trial') await releaseTrial(ctx.code, id);
     throw new Error(`Gagal menyimpan materi (${r.status})`);
   }
-  return res.status(200).json({ ok: true, id, truncated: content.length > MAX_CONTENT });
+  return res.status(200).json({ ok: true, id, truncated: content.length > limit, limit });
 }
 
 async function handleList(ctx, res) {
@@ -305,7 +320,9 @@ const GENERATE_FIELD = {
 
 /* ── Ringkasan bertahap ──
    Satu request dibatasi SUMMARY_PART_TOKENS supaya selesai < 60 detik. Kalau AI terpotong, bagian yang sudah
-   lengkap disimpan (progress.summary_partial) dan browser otomatis meminta lanjutan (generate + continue). */
+   lengkap disimpan (progress.summary_partial) dan browser otomatis meminta lanjutan (generate + continue).
+   Materi panjang (> SINGLE_PASS_CHARS): tiap bagian dicatat dulu (tahap "map"), lalu semua catatan digabung
+   jadi satu ringkasan utuh. Tiap langkah = satu request, diminta otomatis oleh browser; kuota terpakai sekali. */
 const SUMMARY_CONTINUE_ASK =
   'Ringkasanmu di atas terpotong. Lanjutkan tepat setelah baris terakhir: jangan ulangi judul atau poin yang sudah ditulis, ' +
   'langsung tulis baris berikutnya dengan format yang sama. Kalau semua bagian sudah lengkap, balas hanya: [SELESAI]';
@@ -323,13 +340,67 @@ const joinSummary = (done, next) => {
   return done + (/^\s*(\||[-*] |\d+\. |↳|>)/.test(cont) ? '\n' : '\n\n') + cont.trimStart();
 };
 
+// Tampilan sementara saat materi panjang masih dibaca: catatan tiap bagian di bawah judul "Bagian k dari n".
+const demoteHeadings = (md) => md.replace(/^(#{2,5})\s/gm, (m, h) => `${h}# `);
+const interimSummary = (notes, total) =>
+  notes.map((t, i) => `## 📄 Bagian ${i + 1} dari ${total}\n${demoteHeadings(t)}`).join('\n\n');
+
+// Sumber untuk menulis/melanjutkan ringkasan akhir: materinya sendiri, atau catatan per bagian kalau materinya panjang.
+const summaryBaseMessages = (set) => {
+  const notes = set.progress?.summary_notes;
+  if (set.content.length > SINGLE_PASS_CHARS && Array.isArray(notes) && notes.length) {
+    const joined = notes.map((t, i) => `=== Bagian ${i + 1} ===\n${t}`).join('\n\n');
+    return [{ role: 'user', content: `Judul materi: ${set.title}\n\nCATATAN PER BAGIAN (dari materi yang panjang):\n\n${joined}` }];
+  }
+  return materialMessage(set);
+};
+
 const saveSummaryPart = async (ctx, set, lang, text, truncated, parts, model) => {
   const partial = truncated && parts < MAX_SUMMARY_PARTS;
   const summary = partial ? keepCompleteLines(text) : text.trimEnd();
-  const progress = mergeProgress(set, { summary: true, summary_partial: partial, summary_parts: parts, models: withModel(set, 'summary', model) });
+  const progress = mergeProgress(set, {
+    summary: true, summary_partial: partial, summary_parts: parts, summary_stage: partial ? 'final' : null,
+    models: withModel(set, 'summary', model),
+    // Catatan per bagian hanya dibutuhkan sampai ringkasan akhir selesai.
+    ...(partial ? {} : { summary_notes: null, summary_step: null, summary_steps: null }),
+  });
   await updateSet(ctx.code, set.id, { summary, summary_lang: lang, progress });
   return { summary, partial };
 };
+
+async function summaryMapStep(ctx, set, body, res, lang, step, model) {
+  const chunks = splitChunks(set.content, MAP_CHUNK_CHARS);
+  const total = chunks.length;
+  const prev = Array.isArray(set.progress?.summary_notes) ? set.progress.summary_notes : [];
+  const notes = step === 1 ? [] : prev.slice(0, step - 1);
+  const { out, stream, failed } = await runAI(body, res, {
+    system: summaryPrompt(lang) + learnerContext(body.learner) + SUMMARY_MAP_NOTE(step, total),
+    messages: [{ role: 'user', content: `Judul materi: ${set.title}\n\nBAGIAN ${step} DARI ${total}:\n${chunks[step - 1]}` }],
+    maxTokens: MAP_PART_TOKENS,
+    model,
+  });
+  if (failed) return;
+  notes.push(out.truncated ? keepCompleteLines(out.text) : out.text.trim());
+  const summary = interimSummary(notes, total);
+  const progress = mergeProgress(set, {
+    summary: true, summary_partial: true, summary_stage: 'map', summary_step: step, summary_steps: total,
+    summary_notes: notes, summary_parts: 0, models: withModel(set, 'summary', out.model),
+  });
+  await updateSet(ctx.code, set.id, { summary, summary_lang: lang, progress });
+  return sendResult(res, stream, { data: summary, lang, partial: true, stage: 'map', step, steps: total, model: out.model });
+}
+
+async function summaryReduceStep(ctx, set, body, res, lang, model) {
+  const { out, stream, failed } = await runAI(body, res, {
+    system: summaryPrompt(lang) + learnerContext(body.learner) + SUMMARY_REDUCE_NOTE,
+    messages: summaryBaseMessages(set),
+    maxTokens: SUMMARY_PART_TOKENS,
+    model,
+  });
+  if (failed) return;
+  const saved = await saveSummaryPart(ctx, set, lang, out.text, out.truncated, 1, out.model);
+  return sendResult(res, stream, { data: saved.summary, lang, partial: saved.partial, stage: saved.partial ? 'final' : null, model: out.model });
+}
 
 async function continueSummary(ctx, set, body, res) {
   const progress = set.progress || {};
@@ -338,22 +409,30 @@ async function continueSummary(ctx, set, body, res) {
     const trial = await getTrialSetId(ctx.code);
     if (trial.setId !== set.id) return upgradeRequired(res, 'trial_set');
   }
-  // Lanjutan bagian dari satu kali "Buat ringkasan": tidak memotong kuota lagi, dibatasi MAX_SUMMARY_PARTS.
-  const parts = (Number(progress.summary_parts) || 1) + 1;
+  // Lanjutan bagian dari satu kali "Buat ringkasan": tidak memotong kuota lagi, jumlah langkahnya dibatasi.
   const lang = SUMMARY_LANGS.includes(set.summary_lang) ? set.summary_lang : 'id';
+  const model = (await resolveModels()).default;
+
+  if (progress.summary_stage === 'map') {
+    const step = Number(progress.summary_step) || 0;
+    const total = Number(progress.summary_steps) || 0;
+    if (step < total) return summaryMapStep(ctx, set, body, res, lang, step + 1, model);
+    return summaryReduceStep(ctx, set, body, res, lang, model);
+  }
+
+  const parts = (Number(progress.summary_parts) || 1) + 1;
   const done = set.summary.trimEnd();
-  const models = await resolveModels();
   const { out, stream, failed } = await runAI(body, res, {
-    system: summaryPrompt(lang) + learnerContext(body.learner),
-    messages: [...materialMessage(set), { role: 'assistant', content: done }, { role: 'user', content: SUMMARY_CONTINUE_ASK }],
+    system: summaryPrompt(lang) + learnerContext(body.learner) + (set.content.length > SINGLE_PASS_CHARS ? SUMMARY_REDUCE_NOTE : ''),
+    messages: [...summaryBaseMessages(set), { role: 'assistant', content: done }, { role: 'user', content: SUMMARY_CONTINUE_ASK }],
     maxTokens: SUMMARY_PART_TOKENS,
-    model: models.default,
+    model,
   });
   if (failed) return;
   const finished = /^\s*\[SELESAI\]\s*$/.test(out.text);
   const text = finished ? done : joinSummary(done, out.text.replace(/\[SELESAI\]\s*$/, ''));
   const saved = await saveSummaryPart(ctx, set, lang, text, !finished && out.truncated, parts, out.model);
-  return sendResult(res, stream, { data: saved.summary, lang, partial: saved.partial, model: out.model });
+  return sendResult(res, stream, { data: saved.summary, lang, partial: saved.partial, stage: saved.partial ? 'final' : null, model: out.model });
 }
 
 async function handleGenerate(ctx, body, res) {
@@ -388,6 +467,7 @@ async function handleGenerate(ctx, body, res) {
 
   if (kind === 'summary') {
     const lang = SUMMARY_LANGS.includes(body.lang) ? body.lang : 'id';
+    if (set.content.length > SINGLE_PASS_CHARS) return summaryMapStep(ctx, set, body, res, lang, 1, model);
     const { out, stream, failed } = await runAI(body, res, { system: summaryPrompt(lang) + learner, messages, maxTokens: SUMMARY_PART_TOKENS, model });
     if (failed) return;
     const saved = await saveSummaryPart(ctx, set, lang, out.text, out.truncated, 1, out.model);
@@ -522,8 +602,16 @@ async function handleChat(ctx, body, res) {
   const all = Array.isArray(set.chat) ? set.chat : [];
   // Riwayat per mode supaya simulasi syafawi tidak tercampur tanya-jawab biasa.
   const history = all.filter(m => (m.mode || 'tutor') === mode).slice(-CHAT_HISTORY);
-  // Seluruh materi (maks MAX_CONTENT) masuk konteks; system prompt di-cache supaya pesan berikutnya murah.
-  const material = set.content;
+  // Materi yang muat dikirim utuh (system prompt di-cache supaya pesan berikutnya murah). Materi panjang:
+  // tutor menerima potongan yang paling relevan dengan pertanyaan, syafawi menerima contoh merata dari semua bab.
+  const long = set.content.length > SINGLE_PASS_CHARS;
+  const recentAsk = history.filter(m => m.role === 'user').slice(-1).map(m => m.content).join(' ');
+  const excerpt = !long ? set.content
+    : mode === 'syafawi' ? spreadSample(set.content, SINGLE_PASS_CHARS)
+    : relevantExcerpt(set.content, `${message} ${recentAsk}`, SINGLE_PASS_CHARS);
+  const material = long
+    ? `(Materi panjang — yang ditampilkan hanya potongan ${mode === 'syafawi' ? 'dari seluruh bab' : 'yang paling berkaitan dengan pertanyaan'}; bagian yang dilewati ditandai […]. Jika jawabannya tidak ada di potongan ini, katakan mungkin dibahas di bagian lain materi.)\n\n${excerpt}`
+    : excerpt;
   const { out, stream, failed } = await runAI(body, res, {
     system: (mode === 'syafawi' ? syafawiSystem(set.title, material) : tutorSystem(set.title, material)) + learnerContext(body.learner),
     messages: [...history.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: message }],

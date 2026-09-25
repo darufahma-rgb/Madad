@@ -205,12 +205,47 @@ export const OCR_PROMPT = `Baca foto materi kuliah ini dan ekstrak seluruh teksn
 - Bagian tidak terbaca: tulis [...]
 - Jika foto tidak memuat teks: tulis FOTO_TIDAK_TERBACA`;
 
-export const TRANSCRIBE_PROMPT = `Transkripsikan potongan rekaman kuliah ini kata demi kata.
-- Ucapan bahasa Arab ditulis dengan huruf Arab (harakat pada ayat, hadits, dan istilah bila jelas terdengar).
+/* ── Transkripsi rekaman kuliah ──
+   Duktur Azhar sering berpindah antara fushah dan 'ammiyah Mesir. Mahasiswa memilih bahasa rekamannya di wizard. */
+export const TRANSCRIBE_DIALECTS = ['fusha', 'ammiyah', 'campur', 'indonesia'];
+
+const AMMIYAH_RULES = `- Ucapan 'ammiyah Mesir (misal: ده، دي، دول، إزاي، كده، عايز، بتاع، مش، إيه، لسه، خلاص) ditulis APA ADANYA dengan huruf Arab — jangan diubah ke fushah.
+- Bunyi khas logat Mesir tulis dengan huruf aslinya: ج yang dibaca "g" tetap ج, hamzah pengganti ق tetap ق (ʾāl → قال، ʾalb → قلب).
+- Kata fushah yang sekadar dilafalkan dengan logat Mesir (misal: "sawab" → ثواب, "zikr" → ذكر) tetap ditulis dengan ejaan fushah-nya.`;
+
+const DIALECT_RULES = {
+  fusha: '- Duktur berbicara dengan bahasa Arab fushah. Tulis dengan ejaan fushah yang benar.',
+  ammiyah: `- Duktur banyak memakai 'ammiyah Mesir.\n${AMMIYAH_RULES}`,
+  campur: `- Duktur mencampur fushah dan 'ammiyah Mesir, kadang menyelipkan bahasa Indonesia/Inggris.\n${AMMIYAH_RULES}`,
+  indonesia: '- Kuliah terutama berbahasa Indonesia dengan istilah dan kutipan Arab. Bagian Indonesia tulis dengan huruf Latin; istilah dan kutipan Arab tulis dengan huruf Arab.',
+};
+
+const clipLine = (v, n) => (typeof v === 'string' ? v.replace(/[\r\n<>]/g, ' ').trim().slice(-n) : '');
+
+export const transcribePrompt = ({ dialect = 'campur', title = '', prevTail = '' } = {}) => {
+  const topic = clipLine(title, 120);
+  const tail = clipLine(prevTail, 300);
+  return `Transkripsikan potongan rekaman kuliah Universitas Al-Azhar ini kata demi kata.
+${DIALECT_RULES[dialect] || DIALECT_RULES.campur}
+- Ayat Al-Qur'an, hadits, matan, nama kitab, dan istilah ilmu (fiqh, ushul, nahwu, dst.) tulis dengan ejaan fushah baku; beri harakat bila jelas terdengar.
 - Ucapan bahasa Indonesia atau bahasa lain ditulis apa adanya dengan huruf Latin.
-- Jangan meringkas, jangan menerjemahkan, jangan menambah komentar.
-- Potongan ini bisa mulai atau berhenti di tengah kalimat — tulis saja apa adanya.
+- Jangan meringkas, jangan menerjemahkan, jangan menambah komentar atau keterangan pembicara.
+- Potongan ini bisa mulai atau berhenti di tengah kalimat — tulis saja apa adanya.${topic ? `\n- Topik kuliah: "${topic}" — gunakan untuk mengenali istilah yang kurang jelas terdengar.` : ''}${tail ? `\n- Potongan sebelumnya berakhir dengan: «${tail}». Lanjutkan dari sana tanpa mengulang kalimat itu.` : ''}
 - Jika tidak ada ucapan yang jelas, tulis HANYA: [HENING]`;
+};
+
+/* ── Ringkasan materi panjang: dicatat per bagian, lalu digabung ── */
+export const SUMMARY_MAP_NOTE = (step, total) => `
+
+CATATAN: Materi ini panjang dan dibaca per bagian. Yang dikirim sekarang BAGIAN ${step} DARI ${total}.
+Buat CATATAN RINGKAS bagian ini saja (maks ±700 kata) dengan format markdown di atas; lewati judul yang tidak ada isinya di bagian ini.
+Kutipan "> " tetap disalin persis dari materi. Catatan ini nanti digabung dengan catatan bagian lain.`;
+
+export const SUMMARY_REDUCE_NOTE = `
+
+CATATAN: Materi aslinya panjang, jadi yang kamu terima adalah CATATAN dari tiap bagiannya.
+Gabungkan semuanya menjadi SATU ringkasan utuh dengan format di atas: satukan poin yang sama, jangan ulangi, urutkan sesuai alur materi, dan pastikan setiap bagian materi terwakili.
+Kutipan "> " salin persis dari catatan (jangan diubah).`;
 
 export const tutorSystem = (title, content) => `Kamu adalah Tutor Talqeeh, partner belajar mahasiswa Indonesia di Universitas Al-Azhar Kairo.
 Jawab pertanyaan berdasarkan MATERI di bawah. Jika jawabannya tidak ada di materi, katakan dulu "Ini tidak dibahas di materimu", lalu jelaskan secara umum dengan hati-hati dan sarankan merujuk kitab atau duktur.

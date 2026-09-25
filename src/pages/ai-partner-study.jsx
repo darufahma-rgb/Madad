@@ -41,7 +41,7 @@ const useGenerate = (set, setSet, kind, field) => {
     setSet(s => ({
       ...s,
       [field]: data.data,
-      progress: { ...(s.progress || {}), [kind]: true, models: { ...(s.progress?.models || {}), ...(data.model ? { [kind]: data.model } : {}) }, ...(kind === 'summary' ? { summary_partial: !!data.partial } : {}) },
+      progress: { ...(s.progress || {}), [kind]: true, models: { ...(s.progress?.models || {}), ...(data.model ? { [kind]: data.model } : {}) }, ...(kind === 'summary' ? summaryStageOf(data) : {}) },
       ...(kind === 'quiz' ? { quiz_best_score: null } : {}),
       ...(kind === 'essays' ? { essay_attempts: [] } : {}),
       ...(kind === 'summary' ? { summary_lang: data.lang } : {}),
@@ -305,7 +305,7 @@ const useSummaryContinuation = (set, setSet) => {
     setContinuing(false);
     resetLive();
     if (!d.ok) { setError(d.error || 'Gagal melanjutkan ringkasan'); return; }
-    setSet(s => ({ ...s, summary: d.data, progress: { ...(s.progress || {}), summary_partial: !!d.partial } }));
+    setSet(s => ({ ...s, summary: d.data, progress: { ...(s.progress || {}), ...summaryStageOf(d) } }));
   };
 
   useEffect(() => {
@@ -315,8 +315,15 @@ const useSummaryContinuation = (set, setSet) => {
   return { partial, continuing, error, retry: continueOnce, live };
 };
 
-const SummaryContinuationNote = ({ state }) => {
+const SummaryContinuationNote = ({ state, progress }) => {
   if (!state.partial) return null;
+  const p = progress || {};
+  const reading = p.summary_stage === 'map' && (p.summary_step || 0) < (p.summary_steps || 0);
+  const merging = p.summary_stage === 'map' && !reading;
+  const waiting = reading
+    ? `Materimu panjang — AI membaca bagian ${(p.summary_step || 0) + 1} dari ${p.summary_steps}…`
+    : merging ? 'Semua bagian sudah dibaca — AI menggabungkannya jadi satu ringkasan…'
+    : 'Materimu panjang — AI sedang menulis bagian berikutnya…';
   return (
     <div className="mt-3 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] px-4 py-3 flex items-center gap-3 flex-wrap">
       {state.error ? (
@@ -327,11 +334,41 @@ const SummaryContinuationNote = ({ state }) => {
       ) : (
         <>
           <span className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin flex-shrink-0"/>
-          <span className="text-sm text-ink-muted">Materimu panjang — AI sedang menulis bagian berikutnya…</span>
+          <span className="text-sm text-ink-muted">{waiting}</span>
+          {reading && (
+            <span className="ms-auto flex gap-1">
+              {Array.from({ length: p.summary_steps }, (_, i) => (
+                <span key={i} className={`w-5 h-1.5 rounded-full ${i < p.summary_step ? 'bg-emerald-400' : i === p.summary_step ? 'bg-emerald-400/50 animate-pulse' : 'bg-white/10'}`}/>
+              ))}
+            </span>
+          )}
         </>
       )}
     </div>
   );
+};
+
+// Materi lebih panjang dari ini diringkas per bagian di server (lihat SINGLE_PASS_CHARS).
+const LONG_MATERIAL_CHARS = 60000;
+const demoteHeadings = (md) => md.replace(/^(#{2,5})\s/gm, (m, h) => `${h}# `);
+
+const summaryStageOf = (d) => ({
+  summary_partial: !!d.partial,
+  summary_stage: d.stage || null,
+  ...(d.stage === 'map' ? { summary_step: d.step, summary_steps: d.steps } : {}),
+});
+
+// Pratinjau saat lanjutan sedang ditulis: bagian baru materi panjang, penggabungan, atau sambungan biasa.
+const summaryPreview = (set, live) => {
+  const text = live.replace(/\[SELESAI\]\s*$/, '');
+  const p = set.progress || {};
+  if (p.summary_stage === 'map') {
+    if ((p.summary_step || 0) < (p.summary_steps || 0)) {
+      return `${set.summary}\n\n## 📄 Bagian ${p.summary_step + 1} dari ${p.summary_steps}\n${demoteHeadings(text)}`;
+    }
+    return text; // tahap penggabungan menulis ringkasan akhir dari awal
+  }
+  return `${set.summary.trimEnd()}\n\n${text}`;
 };
 
 const SummaryTab = ({ set, setSet, access }) => {
@@ -342,6 +379,7 @@ const SummaryTab = ({ set, setSet, access }) => {
   const [live, pushLive, resetLive] = useLiveText();
   const cite = useCite(set);
   const start = (l) => { resetLive(); generate({ lang: l }, (_, full) => pushLive(full)); };
+  const longMaterial = (set.content || '').length > LONG_MATERIAL_CHARS;
 
   useEffect(() => { if (set.summary) markProgress(set, setSet, 'summary_read'); }, [!!set.summary]);
   useEffect(() => { if (!busy) resetLive(); }, [busy]);
@@ -351,7 +389,7 @@ const SummaryTab = ({ set, setSet, access }) => {
     return (
       <div>
         <LiveWritingNote text="AI sedang menulis ringkasanmu…"/>
-        <SummaryView markdown={live} rtl={lang === 'ar'} source={set.content}/>
+        <SummaryView markdown={longMaterial ? `## 📄 Bagian 1\n${demoteHeadings(live)}` : live} rtl={lang === 'ar'} source={set.content}/>
       </div>
     );
   }
@@ -379,10 +417,8 @@ const SummaryTab = ({ set, setSet, access }) => {
         </div>
       </div>
       <SummaryView rtl={isArabic} source={set.content} onCite={cite.onCite}
-        markdown={continuation.continuing && continuation.live
-          ? `${set.summary.trimEnd()}\n\n${continuation.live.replace(/\[SELESAI\]\s*$/, '')}`
-          : set.summary}/>
-      <SummaryContinuationNote state={continuation}/>
+        markdown={continuation.continuing && continuation.live ? summaryPreview(set, continuation.live) : set.summary}/>
+      <SummaryContinuationNote state={continuation} progress={set.progress}/>
       {cite.modal}
       {!continuation.partial && (
         <FeedbackBar setId={set.id} kind="summary" content={set.summary} model={set.progress?.models?.summary} className="mt-4" label="Ringkasan ini akurat & membantu?"/>
@@ -391,29 +427,135 @@ const SummaryTab = ({ set, setSet, access }) => {
   );
 };
 
-/* ── 1b. Peta konsep ── */
+/* ── 1b. Peta konsep ──
+   Dua tampilan: "Peta" (pohon bercabang ke kanan, tiap cabang utama berwarna sendiri) dan "Daftar"
+   (kerangka bernomor gaya taqsim 1 · 1.1 · 1.1.1). Kotak peta sengaja ringkas — penjelasan muncul di panel
+   saat kotak diketuk, atau di dalam kotak kalau "Keterangan" dinyalakan. */
 
-// bulk = { open: true | false | null, n } — n berubah tiap tombol "Buka/Tutup semua" ditekan.
-const MindNode = ({ node, depth, bulk }) => {
-  const [open, setOpen] = useState(depth < 2);
-  useEffect(() => { if (bulk.open !== null) setOpen(bulk.open); }, [bulk.n]);
-  const kids = node.children || [];
-  const tone = ['border-emerald-500/50 bg-emerald-500/12', 'border-gold-500/40 bg-gold-500/8', 'border-white/15 bg-white/5', 'border-white/10 bg-white/3'][Math.min(depth, 3)];
+const MM_COLORS = ['#3ecf8e', '#c9a86a', '#60a5fa', '#a78bfa', '#f472b6', '#f59e0b', '#2dd4bf'];
+const MM_VIEW_KEY = 'talqeeh_mindmap_view';
+const MM_NOTES_KEY = 'talqeeh_mindmap_notes';
+
+const mmChildren = (node) => (Array.isArray(node?.children) ? node.children : []);
+const mmCount = (node) => mmChildren(node).reduce((n, c) => n + 1 + mmCount(c), 0);
+const mmAt = (root, path) => path.split('.').slice(1).reduce((n, i) => mmChildren(n)[+i], root);
+const mmTrail = (root, path) => {
+  const parts = path.split('.');
+  return parts.map((_, i) => mmAt(root, parts.slice(0, i + 1).join('.'))).filter(Boolean);
+};
+// Awal: tampilkan 3 tingkat; cabang yang lebih dalam dilipat.
+const mmDefaultCollapsed = (root) => {
+  const out = new Set();
+  const walk = (node, path, depth) => mmChildren(node).forEach((c, i) => {
+    const p = `${path}.${i}`;
+    if (depth + 1 >= 2 && mmChildren(c).length) out.add(p);
+    walk(c, p, depth + 1);
+  });
+  walk(root, '0', 0);
+  return out;
+};
+const readPref = (key, fallback) => { try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; } };
+const savePref = (key, v) => { try { localStorage.setItem(key, v); } catch {} };
+
+const MapNode = ({ node, path, depth, color, ui }) => {
+  const kids = mmChildren(node);
+  const folded = ui.collapsed.has(path);
+  const selected = ui.selected === path;
   return (
-    <div className={depth > 0 ? 'relative pl-5 md:pl-7' : ''}>
-      {depth > 0 && <span className="absolute left-0 top-0 bottom-0 w-px bg-white/10"/>}
-      {depth > 0 && <span className="absolute left-0 top-6 w-4 md:w-6 h-px bg-white/15"/>}
-      <button onClick={() => kids.length && setOpen(o => !o)}
-        className={`text-left rounded-xl border px-4 py-2.5 my-1.5 inline-flex items-start gap-2 max-w-full ${tone} ${kids.length ? 'cursor-pointer' : 'cursor-default'}`}>
-        {kids.length > 0 && <Icon name={open ? 'chevronDown' : 'chevronRight'} className="w-4 h-4 mt-0.5 text-ink-soft flex-shrink-0"/>}
-        <span className="min-w-0">
-          <span className={`block text-ink ${depth === 0 ? 'font-display text-lg font-semibold' : 'text-sm font-medium'}`}>{node.label}</span>
-          {node.ar && <span dir="rtl" className="block text-gold-300" style={{ fontFamily: '"Noto Naskh Arabic", serif', fontSize: depth === 0 ? 20 : 16, lineHeight: 1.8 }}>{node.ar}</span>}
-          {node.note && <span className="block text-xs text-ink-muted mt-0.5">{node.note}</span>}
-        </span>
-      </button>
-      {open && kids.length > 0 && (
-        <div>{kids.map((k, i) => <MindNode key={i} node={k} depth={depth + 1} bulk={bulk}/>)}</div>
+    <div className="mm-item">
+      <div role="button" tabIndex={0} onClick={() => ui.select(path)} onKeyDown={e => { if (e.key === 'Enter') ui.select(path); }}
+        className={`mm-box mm-d${Math.min(depth, 2)} ${kids.length ? 'has-kids' : ''} ${selected ? 'is-selected' : ''} ${ui.dimmed(path) ? 'is-dim' : ''}`}
+        style={{ '--c': color }}>
+        <div className="mm-label">{node.label}</div>
+        {node.ar && <div className="mm-ar" dir="rtl">{node.ar}</div>}
+        {ui.showNotes && node.note && <div className="mm-note">{node.note}</div>}
+        {kids.length > 0 && (
+          <button className="mm-toggle" onClick={e => { e.stopPropagation(); ui.toggle(path); }}
+            title={folded ? 'Buka cabang' : 'Tutup cabang'} aria-label={folded ? 'Buka cabang' : 'Tutup cabang'}>
+            {folded ? `+${mmCount(node)}` : '−'}
+          </button>
+        )}
+      </div>
+      {kids.length > 0 && !folded && (
+        <div className="mm-children" style={{ '--pc': color }}>
+          {kids.map((k, i) => {
+            const c = depth === 0 ? MM_COLORS[i % MM_COLORS.length] : color;
+            return (
+              <div key={i} className="mm-branch" style={{ '--c': c }}>
+                <MapNode node={k} path={`${path}.${i}`} depth={depth + 1} color={c} ui={ui}/>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const OutlineNode = ({ node, num, depth, color, showNotes, onSelect, path }) => (
+  <li className={depth === 1 ? 'mm-ol-top' : ''} style={{ '--c': color }}>
+    <button onClick={() => onSelect(path)} className="mm-ol-row">
+      <span className="mm-ol-num">{num}</span>
+      <span className="min-w-0">
+        <span className={depth === 1 ? 'mm-ol-label-top' : 'mm-ol-label'}>{node.label}</span>
+        {node.ar && <span className="mm-ol-ar" dir="rtl">{node.ar}</span>}
+        {showNotes && node.note && <span className="mm-ol-note">{node.note}</span>}
+      </span>
+    </button>
+    {mmChildren(node).length > 0 && (
+      <ol className="mm-ol">
+        {mmChildren(node).map((c, i) => (
+          <OutlineNode key={i} node={c} num={`${num}.${i + 1}`} depth={depth + 1} color={color} showNotes={showNotes} onSelect={onSelect} path={`${path}.${i}`}/>
+        ))}
+      </ol>
+    )}
+  </li>
+);
+
+// Panel penjelasan kotak yang dipilih: jalur dari pusat, istilah Arab, keterangan, dan sub-cabangnya.
+const MindDetail = ({ root, path, onSelect, onClose }) => {
+  const trail = mmTrail(root, path);
+  const node = trail[trail.length - 1];
+  if (!node) return null;
+  const branchIndex = +path.split('.')[1];
+  const color = path === '0' ? '#3ecf8e' : MM_COLORS[branchIndex % MM_COLORS.length];
+  const parent = trail.length > 1 ? path.split('.').slice(0, -1).join('.') : null;
+  return (
+    <div className="card-glass-strong p-4 md:p-5 mt-3" style={{ borderLeft: `3px solid ${color}` }}>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-1 text-[11px] text-ink-soft min-w-0">
+          {trail.map((n, i) => (
+            <React.Fragment key={i}>
+              {i > 0 && <Icon name="chevronRight" className="w-3 h-3 opacity-50"/>}
+              <button onClick={() => onSelect(path.split('.').slice(0, i + 1).join('.'))}
+                className={`truncate max-w-[160px] hover:text-ink ${i === trail.length - 1 ? 'text-ink' : ''}`}>{n.label}</button>
+            </React.Fragment>
+          ))}
+        </div>
+        <button onClick={onClose} aria-label="Tutup" className="w-7 h-7 -mt-1 rounded-lg flex items-center justify-center text-ink-soft hover:bg-white/5 flex-shrink-0">
+          <Icon name="x" className="w-4 h-4"/>
+        </button>
+      </div>
+      <div className="font-display text-lg font-semibold text-ink mt-2 leading-snug">{node.label}</div>
+      {node.ar && <div dir="rtl" className="text-gold-300 mt-1" style={{ fontFamily: '"Noto Naskh Arabic", serif', fontSize: 21, lineHeight: 1.9 }}>{node.ar}</div>}
+      {node.note
+        ? <p className="text-sm text-ink-muted leading-relaxed mt-2"><AiInline text={node.note}/></p>
+        : <p className="text-xs text-ink-soft mt-2">Tidak ada keterangan tambahan untuk bagian ini.</p>}
+      {mmChildren(node).length > 0 && (
+        <div className="mt-3">
+          <div className="text-[11px] uppercase tracking-wider text-ink-soft mb-1.5">Terbagi menjadi</div>
+          <div className="flex flex-wrap gap-1.5">
+            {mmChildren(node).map((c, i) => (
+              <button key={i} onClick={() => onSelect(`${path}.${i}`)}
+                className="text-xs px-2.5 py-1 rounded-lg border border-white/10 bg-white/4 text-ink hover:border-white/25">{c.label}</button>
+            ))}
+          </div>
+        </div>
+      )}
+      {parent && (
+        <button onClick={() => onSelect(parent)} className="text-xs text-emerald-300 hover:text-emerald-200 mt-3 inline-flex items-center gap-1">
+          <Icon name="chevronLeft" className="w-3.5 h-3.5"/> Naik ke "{trail[trail.length - 2].label}"
+        </button>
       )}
     </div>
   );
@@ -421,16 +563,29 @@ const MindNode = ({ node, depth, bulk }) => {
 
 const mindmapToMarkdown = (node, depth = 0) =>
   `${'  '.repeat(depth)}- **${node.label}**${node.ar ? ` — ${node.ar}` : ''}${node.note ? `: ${node.note}` : ''}\n` +
-  (node.children || []).map(c => mindmapToMarkdown(c, depth + 1)).join('');
+  mmChildren(node).map(c => mindmapToMarkdown(c, depth + 1)).join('');
 
 const MindmapTab = ({ set, setSet, access }) => {
   const { busy, generate, upgrade } = useGenerate(set, setSet, 'mindmap', 'mindmap');
-  const [bulk, setBulk] = useState({ open: null, n: 0 });
   const saveKurasah = useKurasahSave();
+  const root = set.mindmap;
+  const narrow = typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)').matches;
+  const [view, setView] = useState(() => readPref(MM_VIEW_KEY, narrow ? 'outline' : 'map'));
+  const [showNotes, setShowNotes] = useState(() => readPref(MM_NOTES_KEY, '0') === '1');
+  const [collapsed, setCollapsed] = useState(() => (root ? mmDefaultCollapsed(root) : new Set()));
+  const [selected, setSelected] = useState(null);
+  const [zoom, setZoom] = useState(1);
+  const scrollRef = useRef(null);
+  const drag = useRef(null);
+  const detailRef = useRef(null);
+
   useEffect(() => { if (set.mindmap) markProgress(set, setSet, 'mindmap_viewed'); }, [!!set.mindmap]);
+  useEffect(() => { if (root) { setCollapsed(mmDefaultCollapsed(root)); setSelected(null); } }, [root]);
+  // Panel penjelasan ada di bawah peta/daftar — gulirkan supaya langsung terlihat setelah kotak diketuk.
+  useEffect(() => { if (selected) setTimeout(() => detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60); }, [selected]);
 
   if (upgrade) return <UpgradeCard message={upgrade}/>;
-  if (!set.mindmap || busy) {
+  if (!root || busy) {
     if (!busy && !canGenerate(access, 'mindmap', set)) {
       return <UpgradeCard title="Peta konsep khusus pelanggan" message="Lihat seluruh materi sebagai pohon taqsimat: ta'rif, pembagian, syarat, rukun, khilaf, dan dalil — bisa dibuka-tutup per cabang."/>;
     }
@@ -441,18 +596,101 @@ const MindmapTab = ({ set, setSet, access }) => {
     );
   }
 
+  const changeView = (v) => { setView(v); savePref(MM_VIEW_KEY, v); };
+  const toggleNotes = () => { setShowNotes(v => { savePref(MM_NOTES_KEY, v ? '0' : '1'); return !v; }); };
+  const toggle = (path) => setCollapsed(prev => { const n = new Set(prev); n.has(path) ? n.delete(path) : n.add(path); return n; });
+  // Memilih kotak juga membuka cabang-cabang di atasnya supaya kotak itu terlihat di peta.
+  const select = (path) => {
+    setSelected(cur => (cur === path ? null : path));
+    setCollapsed(prev => {
+      const n = new Set(prev);
+      const parts = path.split('.');
+      for (let i = 1; i < parts.length; i++) n.delete(parts.slice(0, i).join('.'));
+      return n;
+    });
+  };
+  // Saat ada yang dipilih, kotak di luar jalurnya diredupkan supaya hubungan antar-konsep terlihat.
+  const dimmed = (path) => !!selected && !(selected === path || selected.startsWith(`${path}.`) || path.startsWith(`${selected}.`));
+  const ui = { collapsed, toggle, selected, select, showNotes, dimmed };
+
+  const startDrag = (e) => {
+    if (e.button !== 0 || e.target.closest('.mm-box, button')) return;
+    const el = scrollRef.current;
+    drag.current = { x: e.clientX, y: e.clientY, left: el.scrollLeft, top: el.scrollTop };
+    el.classList.add('is-dragging');
+  };
+  const moveDrag = (e) => {
+    if (!drag.current) return;
+    const el = scrollRef.current;
+    el.scrollLeft = drag.current.left - (e.clientX - drag.current.x);
+    el.scrollTop = drag.current.top - (e.clientY - drag.current.y);
+  };
+  const endDrag = () => { drag.current = null; scrollRef.current?.classList.remove('is-dragging'); };
+
   return (
     <div>
-      <div className="flex gap-2 mb-3 flex-wrap justify-end">
-        <ToolbarButton icon="chevronDown" onClick={() => setBulk(b => ({ open: true, n: b.n + 1 }))}>Buka semua</ToolbarButton>
-        <ToolbarButton icon="chevronUp" onClick={() => setBulk(b => ({ open: false, n: b.n + 1 }))}>Tutup semua</ToolbarButton>
-        <ToolbarButton icon="bookmark" onClick={() => saveKurasah(`Peta konsep — ${set.title}`, mindmapToMarkdown(set.mindmap), ['peta-konsep'])}>Simpan ke Kurasah</ToolbarButton>
-        <ToolbarButton icon="refresh" onClick={() => generate()} disabled={busy}>Buat ulang</ToolbarButton>
+      <div className="flex items-center gap-2 mb-3 flex-wrap">
+        <div className="inline-flex rounded-xl border border-white/10 bg-white/4 p-1 gap-1">
+          {[['map', 'Peta', 'network'], ['outline', 'Daftar', 'list']].map(([id, label, icon]) => (
+            <button key={id} onClick={() => changeView(id)}
+              className={`text-xs px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 ${view === id ? 'bg-emerald-500/20 text-emerald-200' : 'text-ink-muted hover:text-ink'}`}>
+              <Icon name={icon} className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/>{label}
+            </button>
+          ))}
+        </div>
+        <button onClick={toggleNotes}
+          className={`text-xs px-3 py-2 rounded-lg border inline-flex items-center gap-1.5 ${showNotes ? 'border-emerald-500/40 bg-emerald-500/12 text-emerald-200' : 'border-white/10 bg-white/4 text-ink-muted hover:text-ink'}`}>
+          <Icon name="info" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Keterangan {showNotes ? 'tampil' : 'tersembunyi'}
+        </button>
+        {view === 'map' && (
+          <div className="inline-flex items-center rounded-lg border border-white/10 bg-white/4">
+            <button onClick={() => setZoom(z => Math.max(0.6, +(z - 0.1).toFixed(1)))} className="w-8 h-8 text-ink-muted hover:text-ink" aria-label="Perkecil">−</button>
+            <button onClick={() => setZoom(1)} className="text-[11px] text-ink-soft w-11 hover:text-ink" title="Ukuran normal">{Math.round(zoom * 100)}%</button>
+            <button onClick={() => setZoom(z => Math.min(1.4, +(z + 0.1).toFixed(1)))} className="w-8 h-8 text-ink-muted hover:text-ink" aria-label="Perbesar">+</button>
+          </div>
+        )}
+        <div className="flex gap-2 flex-wrap ms-auto">
+          {view === 'map' && <>
+            <ToolbarButton icon="chevronDown" onClick={() => setCollapsed(new Set())}>Buka semua</ToolbarButton>
+            <ToolbarButton icon="chevronUp" onClick={() => { setCollapsed(new Set(mmChildren(root).map((_, i) => `0.${i}`))); setSelected(null); }}>Tutup semua</ToolbarButton>
+          </>}
+          <ToolbarButton icon="bookmark" onClick={() => saveKurasah(`Peta konsep — ${set.title}`, mindmapToMarkdown(root), ['peta-konsep'])}>Simpan ke Kurasah</ToolbarButton>
+          <ToolbarButton icon="refresh" onClick={() => generate()} disabled={busy}>Buat ulang</ToolbarButton>
+        </div>
       </div>
-      <div className="card-glass p-4 md:p-6 overflow-x-auto">
-        <MindNode node={set.mindmap} depth={0} bulk={bulk}/>
+
+      {view === 'map' ? (
+        <>
+          <div ref={scrollRef} className="mm-canvas card-glass" onMouseDown={startDrag} onMouseMove={moveDrag} onMouseUp={endDrag} onMouseLeave={endDrag}>
+            <div className="mm-zoom" style={{ zoom }}>
+              <MapNode node={root} path="0" depth={0} color="#3ecf8e" ui={ui}/>
+            </div>
+          </div>
+          <p className="text-[11px] text-ink-soft mt-2">
+            Ketuk kotak untuk melihat penjelasannya · <span className="text-ink-muted">+N</span> membuka cabang · geser untuk melihat bagian lain
+          </p>
+        </>
+      ) : (
+        <div className="card-glass p-4 md:p-6">
+          <button onClick={() => select('0')} className="text-left w-full mb-4">
+            <div className="font-display text-lg md:text-xl font-semibold text-ink leading-snug">{root.label}</div>
+            {root.ar && <div dir="rtl" className="text-gold-300" style={{ fontFamily: '"Noto Naskh Arabic", serif', fontSize: 20, lineHeight: 1.8 }}>{root.ar}</div>}
+            {showNotes && root.note && <div className="text-sm text-ink-muted mt-1">{root.note}</div>}
+          </button>
+          <ol className="mm-ol mm-ol-root">
+            {mmChildren(root).map((c, i) => (
+              <OutlineNode key={i} node={c} num={`${i + 1}`} depth={1} color={MM_COLORS[i % MM_COLORS.length]}
+                showNotes={showNotes} onSelect={select} path={`0.${i}`}/>
+            ))}
+          </ol>
+        </div>
+      )}
+
+      <div ref={detailRef} className="scroll-mb-24">
+        {selected && <MindDetail root={root} path={selected} onSelect={select} onClose={() => setSelected(null)}/>}
       </div>
-      <FeedbackBar setId={set.id} kind="mindmap" model={set.progress?.models?.mindmap} content={mindmapToMarkdown(set.mindmap)} className="mt-4" label="Peta konsep ini sesuai materi?"/>
+
+      <FeedbackBar setId={set.id} kind="mindmap" model={set.progress?.models?.mindmap} content={mindmapToMarkdown(root)} className="mt-4" label="Peta konsep ini sesuai materi?"/>
     </div>
   );
 };

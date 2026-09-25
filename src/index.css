@@ -533,3 +533,48 @@ html.app-shell { --app-header-h: calc(57px + var(--safe-top)); }
 /* Baris sumber tutor: 📍 Dari materimu: "…" */
 .ai-rich .ai-source { margin-top: 0.9em; padding: 0.6em 0.8em; border-radius: 10px; background: rgba(255,255,255,0.035); border: 1px dashed rgba(255,255,255,0.14); font-size: 0.92em; color: #bdbdbd; }
 .ai-rich li.ai-source::before { display: none; }
+
+/* ── Peta konsep: pohon bercabang ke kanan ── */
+.mm-canvas { overflow: auto; padding: 22px; max-height: 72vh; cursor: grab; }
+.mm-canvas.is-dragging { cursor: grabbing; user-select: none; }
+.mm-zoom { width: max-content; }
+.mm-item { display: flex; align-items: center; }
+.mm-children { position: relative; display: flex; flex-direction: column; justify-content: center; margin-left: 26px; }
+.mm-children::before { content: ""; position: absolute; left: -26px; top: 50%; width: 26px; border-top: 2px solid var(--pc); opacity: .5; }
+.mm-branch { position: relative; padding: 5px 0 5px 26px; }
+.mm-branch::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; border-left: 2px solid var(--c); opacity: .5; }
+.mm-branch:first-child::before { top: 50%; }
+.mm-branch:last-child::before { bottom: 50%; }
+.mm-branch:only-child::before { display: none; }
+.mm-branch::after { content: ""; position: absolute; left: 0; top: 50%; width: 26px; border-top: 2px solid var(--c); opacity: .5; }
+
+.mm-box { position: relative; border-radius: 14px; padding: 10px 14px; cursor: pointer; transition: opacity .2s, box-shadow .2s, transform .15s; max-width: 250px; }
+.mm-box:hover { transform: translateY(-1px); }
+.mm-box.has-kids { padding-right: 22px; }
+.mm-box.is-selected { box-shadow: 0 0 0 2px var(--c), 0 8px 24px -10px var(--c); }
+.mm-box.is-dim { opacity: .35; }
+.mm-d0 { max-width: 280px; padding: 14px 18px; background: linear-gradient(160deg, rgba(62,207,142,0.22), rgba(62,207,142,0.08)); border: 1px solid rgba(62,207,142,0.55); }
+.mm-d1 { background: color-mix(in srgb, var(--c) 14%, #141414); border: 1px solid color-mix(in srgb, var(--c) 55%, transparent); }
+.mm-d2 { background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.1); border-left: 3px solid var(--c); padding: 8px 12px; max-width: 230px; }
+.mm-label { color: #f2f2f2; font-weight: 600; font-size: 14px; line-height: 1.35; }
+.mm-d0 .mm-label { font-family: "DM Sans", system-ui, sans-serif; font-size: 17px; }
+.mm-d2 .mm-label { font-weight: 500; font-size: 13px; }
+.mm-ar { font-family: "Noto Naskh Arabic", Amiri, serif; color: #e8d5a8; font-size: 16px; line-height: 1.7; text-align: right; margin-top: 2px; }
+.mm-d0 .mm-ar { font-size: 19px; }
+.mm-d2 .mm-ar { font-size: 14.5px; }
+.mm-note { font-size: 11.5px; color: #a3a3a3; line-height: 1.5; margin-top: 4px; }
+.mm-toggle { position: absolute; right: -11px; top: 50%; transform: translateY(-50%); min-width: 22px; height: 22px; padding: 0 5px; border-radius: 999px; background: #161616; border: 1.5px solid var(--c); color: #eaeaea; font-size: 11px; font-weight: 700; line-height: 1; display: flex; align-items: center; justify-content: center; z-index: 1; }
+.mm-toggle:hover { background: color-mix(in srgb, var(--c) 30%, #161616); }
+
+/* ── Peta konsep: tampilan daftar bernomor ── */
+.mm-ol { list-style: none; margin: 0; padding: 0; }
+.mm-ol .mm-ol { margin: 2px 0 4px 12px; padding-left: 14px; border-left: 2px solid color-mix(in srgb, var(--c) 45%, transparent); }
+.mm-ol-root > li + li { margin-top: 10px; }
+.mm-ol-top { padding: 10px 12px; border-radius: 14px; background: color-mix(in srgb, var(--c) 8%, transparent); border: 1px solid color-mix(in srgb, var(--c) 30%, transparent); }
+.mm-ol-row { display: flex; gap: 10px; align-items: flex-start; text-align: left; width: 100%; padding: 5px 4px; border-radius: 8px; }
+.mm-ol-row:hover { background: rgba(255,255,255,0.03); }
+.mm-ol-num { flex-shrink: 0; min-width: 28px; font-weight: 700; font-size: 12px; color: var(--c); padding-top: 2px; font-variant-numeric: tabular-nums; }
+.mm-ol-label-top { display: block; color: #f2f2f2; font-weight: 600; font-size: 15px; line-height: 1.35; }
+.mm-ol-label { display: block; color: #e5e5e5; font-size: 13.5px; line-height: 1.4; }
+.mm-ol-ar { display: block; font-family: "Noto Naskh Arabic", Amiri, serif; color: #e8d5a8; font-size: 15.5px; line-height: 1.7; }
+.mm-ol-note { display: block; font-size: 12px; color: #a3a3a3; line-height: 1.5; margin-top: 1px; }
