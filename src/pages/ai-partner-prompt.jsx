@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import AiRichText from '../components/AiRichText.jsx';
+import AiRichText, { aiTextForCopy } from '../components/AiRichText.jsx';
 /* Talqeeh — AI Partner: jalankan prompt Talqeeh langsung di sini, tanpa salin-tempel ke AI lain.
    Tombol "Jalankan di Talqeeh" di halaman prompt memanggil runPromptInTalqeeh(); percakapan disimpan di perangkat. */
 
@@ -245,10 +245,10 @@ const PromptChat = () => {
               <div className="min-w-0 flex-1">
                 <AiRichText content={m.content} size="md"/>
                 <div className="mt-2 flex gap-1 text-xs text-ink-soft">
-                  <button onClick={() => copy(m.content)} className="h-7 px-2 rounded-md inline-flex items-center gap-1 hover:text-ink hover:bg-white/5">
+                  <button onClick={() => copy(aiTextForCopy(m.content))} className="h-7 px-2 rounded-md inline-flex items-center gap-1 hover:text-ink hover:bg-white/5">
                     <Icon name="copy" className="w-3.5 h-3.5"/> Salin
                   </button>
-                  <button onClick={() => saveNote(m.content)} className="h-7 px-2 rounded-md inline-flex items-center gap-1 hover:text-ink hover:bg-white/5">
+                  <button onClick={() => saveNote(aiTextForCopy(m.content))} className="h-7 px-2 rounded-md inline-flex items-center gap-1 hover:text-ink hover:bg-white/5">
                     <Icon name="bookmark" className="w-3.5 h-3.5"/> Simpan ke Kurasah
                   </button>
                 </div>

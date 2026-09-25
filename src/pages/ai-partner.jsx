@@ -254,6 +254,7 @@ const STARTERS = [
   { icon: 'lightbulb', label: 'Jelaskan konsep', text: 'Jelaskan konsep [tulis topik] dengan bahasa sederhana, lengkap dengan contoh dan istilah Arabnya.' },
   { icon: 'target',    label: 'Latihan soal',    text: 'Buat 5 soal latihan gaya imtihan Azhar tentang [tulis topik]. Jangan beri jawaban dulu — tunggu aku jawab, lalu koreksi.' },
   { icon: 'type',      label: "I'rab kalimat",   text: "I'rab-kan kalimat berikut kata per kata, lalu terjemahkan:\n[tempel kalimat Arab]" },
+  { icon: 'network',   label: 'Buat diagram',    text: 'Buatkan diagram pembagian [tulis topik], lengkap dengan istilah Arabnya.' },
   { icon: 'scale',     label: 'Bandingkan madzhab', text: 'Bandingkan pendapat 4 madzhab tentang [tulis masalah], sertakan dalil singkat tiap pendapat.' },
   { icon: 'list',      label: "Rencana muraja'ah", text: "Buatkan rencana muraja'ah 7 hari untuk maddah [nama maddah] menjelang imtihan." },
 ];

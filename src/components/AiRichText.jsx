@@ -2,6 +2,7 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useMemo } from 'react';
 import { sourceIndex, quoteScore, verdictOf } from './sourceMatch.js';
+import AiChart, { parseChart, chartToMarkdown } from './AiChart.jsx';
 /* Talqeeh — tampilan hasil AI yang enak dibaca:
    - teks Arab otomatis pakai huruf Naskh, lebih besar, rata kanan (blok) atau terisolasi (di tengah kalimat)
    - baris "↳ ..." tampil sebagai terjemah di bawah teks Arab
@@ -195,14 +196,43 @@ export function AiInline({ text }) {
 }
 
 /* source: teks materi → kutipan dicocokkan & diberi label. onCite(teks, verdict): label diketuk. */
+// Blok ```grafik … ``` dipisah dari teks supaya bisa digambar sebagai komponen. Blok yang belum ditutup
+// (jawaban masih mengalir) ditandai pending.
+const CHART_BLOCK = /```grafik[^\n]*\n([\s\S]*?)(```|$)/g;
+const splitCharts = (content) => {
+  const parts = [];
+  let last = 0;
+  for (const m of (content || '').matchAll(CHART_BLOCK)) {
+    if (m.index > last) parts.push({ text: content.slice(last, m.index) });
+    parts.push({ chart: m[1], pending: m[2] !== '```' });
+    last = m.index + m[0].length;
+  }
+  if (last < (content || '').length) parts.push({ text: content.slice(last) });
+  return parts;
+};
+
+// Teks untuk Salin / Kurasah: blok grafik diganti versi daftar yang bisa dibaca.
+export const aiTextForCopy = (content) =>
+  (content || '').replace(CHART_BLOCK, (_, raw) => chartToMarkdown(parseChart(raw)));
+
 export default function AiRichText({ content, rtl = false, size = 'md', className = '', style, source, onCite }) {
-  const html = useMemo(() => renderAiHtml(content, source ? sourceIndex(source) : null), [content, source]);
+  const parts = useMemo(() => {
+    const index = source ? sourceIndex(source) : null;
+    return splitCharts(content).map(p => (p.text != null ? { html: renderAiHtml(p.text, index) } : p));
+  }, [content, source]);
   const handleClick = (e) => {
     const btn = e.target.closest?.('[data-cite]');
     if (btn && onCite) { e.preventDefault(); onCite(btn.getAttribute('data-cite'), btn.getAttribute('data-verdict')); }
   };
+  const cls = `ai-rich ai-rich-${size} ${rtl ? 'ai-rich-rtl' : ''} ${className}`;
+  if (parts.length <= 1 && parts[0]?.html != null) {
+    return <div className={cls} dir={rtl ? 'rtl' : 'ltr'} style={style} onClick={handleClick} dangerouslySetInnerHTML={{ __html: parts[0].html }}/>;
+  }
   return (
-    <div className={`ai-rich ai-rich-${size} ${rtl ? 'ai-rich-rtl' : ''} ${className}`} dir={rtl ? 'rtl' : 'ltr'}
-      style={style} onClick={handleClick} dangerouslySetInnerHTML={{ __html: html }}/>
+    <div className={cls} dir={rtl ? 'rtl' : 'ltr'} style={style} onClick={handleClick}>
+      {parts.map((p, i) => p.html != null
+        ? <div key={i} className="ai-rich-part" dangerouslySetInnerHTML={{ __html: p.html }}/>
+        : <AiChart key={i} raw={p.chart} pending={p.pending}/>)}
+    </div>
   );
 }
