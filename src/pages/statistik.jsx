@@ -67,9 +67,29 @@ const Box = ({ title, children, className = '' }) => (
 );
 
 const QUOTA_LABELS = {
-  generate: 'Pembuatan AI', chat: 'Tutor & syafawi', analyze: "I'rab & harakat",
+  prompt: 'Tanya AI', generate: 'Pembuatan AI', chat: 'Tutor & syafawi', analyze: "I'rab & harakat",
   grade: 'Nilai tahriri', ocr: 'Baca foto', transcribe: 'Transkrip (menit)', create: 'Materi baru',
 };
+
+const QuotaBox = ({ title, used, limits, note }) => (
+  <Box title={title}>
+    <div className="grid grid-cols-2 gap-x-4 md:gap-x-6 gap-y-3">
+      {Object.entries(QUOTA_LABELS).filter(([k]) => limits[k]).map(([k, label]) => {
+        const u = used[k] || 0;
+        const limit = limits[k];
+        return (
+          <div key={k}>
+            <div className="flex justify-between text-xs mb-1"><span className="text-ink-muted">{label}</span><span className="text-ink">{u}/{limit}</span></div>
+            <div className="h-1.5 rounded-full bg-white/8 overflow-hidden">
+              <div className="h-full rounded-full" style={{ width: `${Math.min(100, (u / limit) * 100)}%`, background: u >= limit ? '#f43f5e' : '#3ecf8e' }}/>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+    <p className="text-[11px] text-ink-soft mt-3">{note}</p>
+  </Box>
+);
 
 const readJson = (key, fallback) => {
   try { return JSON.parse(localStorage.getItem(key) || 'null') ?? fallback; } catch { return fallback; }
@@ -215,23 +235,14 @@ const StatistikPage = () => {
                 </Box>
               </div>
               {ai.limits && (
-                <Box title="Jatah AI hari ini">
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-x-4 md:gap-x-6 gap-y-3">
-                    {Object.entries(QUOTA_LABELS).filter(([k]) => ai.limits[k]).map(([k, label]) => {
-                      const used = ai.usageToday[k] || 0;
-                      const limit = ai.limits[k];
-                      return (
-                        <div key={k}>
-                          <div className="flex justify-between text-xs mb-1"><span className="text-ink-muted">{label}</span><span className="text-ink">{used}/{limit}</span></div>
-                          <div className="h-1.5 rounded-full bg-white/8 overflow-hidden">
-                            <div className="h-full rounded-full" style={{ width: `${Math.min(100, (used / limit) * 100)}%`, background: used >= limit ? '#f43f5e' : '#3ecf8e' }}/>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <p className="text-[11px] text-ink-soft mt-3">Jatah direset setiap hari pukul 07.00 WIB (tengah malam UTC).</p>
-                </Box>
+                <div className="grid lg:grid-cols-2 gap-4">
+                  <QuotaBox title="Jatah AI hari ini" used={ai.usageToday} limits={ai.limits}
+                    note="Jatah harian direset setiap hari pukul 07.00 WIB (tengah malam UTC)."/>
+                  {ai.monthlyLimits && (
+                    <QuotaBox title="Jatah AI bulan ini" used={ai.usageMonth || {}} limits={ai.monthlyLimits}
+                      note="Jatah bulanan direset setiap tanggal 1."/>
+                  )}
+                </div>
               )}
             </div>
           )}

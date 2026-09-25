@@ -17,6 +17,8 @@ import {
 
 // Kuota harian pelanggan. Pengguna coba gratis dibatasi per materi (lihat TRIAL_*), bukan per hari.
 const LIMITS = { create: 10, ocr: 20, transcribe: 60, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40 };
+// Kuota bulanan pelanggan (direset tiap tanggal 1, UTC) — menahan biaya dari pemakaian sangat berat.
+const MONTHLY_LIMITS = { create: 30, ocr: 150, transcribe: 600, generate: 100, analyze: 300, grade: 150, chat: 400, prompt: 400 };
 const TRIAL_OCR_LIMIT  = 3;
 const TRIAL_KINDS      = ['summary', 'flashcards', 'quiz', 'glossary'];
 const PRO_ONLY_ACTIONS = ['transcribe', 'analyze', 'grade', 'chat'];
@@ -139,8 +141,40 @@ const releaseTrial = async (code, setId) => {
 
 /* ── Respon umum ── */
 
-const quotaExceeded = (res, kind) =>
-  res.status(429).json({ ok: false, error: 'quota', message: `Batas harian (${LIMITS[kind]}x) untuk fitur ini tercapai. Coba lagi besok.` });
+const quotaExceeded = (res, kind, scope = 'daily') => scope === 'unavailable'
+  ? res.status(503).json({ ok: false, error: 'Tidak bisa memeriksa kuota sekarang. Coba lagi sebentar.' })
+  : res.status(429).json({
+    ok: false, error: 'quota', scope,
+    message: scope === 'monthly'
+      ? `Kuota bulanan (${MONTHLY_LIMITS[kind]}x) untuk fitur ini sudah habis. Kuota direset tanggal 1 bulan depan.`
+      : `Batas harian (${LIMITS[kind]}x) untuk fitur ini tercapai. Coba lagi besok.`,
+  });
+
+const monthStart = () => `${new Date().toISOString().slice(0, 7)}-01`;
+
+// Pemakaian bulan ini per jenis: { chat: 12, … }. Gagal membaca → null (pemanggil memutuskan).
+const monthlyUsage = async (code) => {
+  const { url, key } = sbConfig();
+  const r = await fetch(
+    `${url}/rest/v1/ai_usage?member_code=eq.${encodeURIComponent(code)}&day=gte.${monthStart()}&select=kind,count`,
+    { headers: sbHeaders(key) }
+  );
+  if (!r.ok) return null;
+  const rows = await r.json();
+  return (Array.isArray(rows) ? rows : []).reduce((m, row) => ({ ...m, [row.kind]: (m[row.kind] || 0) + (Number(row.count) || 0) }), {});
+};
+
+// Pakai satu jatah pelanggan: cek kuota bulanan dulu, lalu catat di kuota harian (atomik).
+// Mengembalikan null kalau boleh, 'monthly' / 'daily' kalau habis, atau 'unavailable' kalau pemakaian
+// tidak bisa dibaca (ditolak sementara — fail closed, tanpa mengaku kuota habis).
+const takeQuota = async (ctx, kind) => {
+  if (MONTHLY_LIMITS[kind]) {
+    const used = await monthlyUsage(ctx.code);
+    if (!used) return 'unavailable';
+    if ((used[kind] || 0) >= MONTHLY_LIMITS[kind]) return 'monthly';
+  }
+  return (await consumeQuota(ctx.code, kind, LIMITS[kind])) ? null : 'daily';
+};
 
 const upgradeRequired = (res, feature, message) =>
   res.status(403).json({
@@ -202,11 +236,11 @@ async function handleOcr(ctx, body, res) {
     return res.status(400).json({ ok: false, error: 'Foto tidak valid' });
   }
   if (foto_base64.length > 3_500_000) return res.status(400).json({ ok: false, error: 'Foto terlalu besar' });
-  const limit = ctx.tier === 'pro' ? LIMITS.ocr : TRIAL_OCR_LIMIT;
-  if (!(await consumeQuota(ctx.code, 'ocr', limit))) {
-    return ctx.tier === 'pro'
-      ? quotaExceeded(res, 'ocr')
-      : upgradeRequired(res, 'ocr', `Coba gratis bisa membaca ${TRIAL_OCR_LIMIT} foto per hari. Berlangganan untuk membaca lebih banyak.`);
+  if (ctx.tier === 'pro') {
+    const over = await takeQuota(ctx, 'ocr');
+    if (over) return quotaExceeded(res, 'ocr', over);
+  } else if (!(await consumeQuota(ctx.code, 'ocr', TRIAL_OCR_LIMIT))) {
+    return upgradeRequired(res, 'ocr', `Coba gratis bisa membaca ${TRIAL_OCR_LIMIT} foto per hari. Berlangganan untuk membaca lebih banyak.`);
   }
 
   const teks = await callAI({
@@ -232,8 +266,13 @@ async function handleTranscribe(ctx, body, res) {
   // WAV selalu diawali "RIFF" → base64 "UklGR".
   if (!isStr(audio) || !audio.startsWith('UklGR')) return res.status(400).json({ ok: false, error: 'Potongan audio tidak valid' });
   if (audio.length > MAX_AUDIO_B64) return res.status(400).json({ ok: false, error: 'Potongan audio terlalu besar' });
-  if (!(await consumeQuota(ctx.code, 'transcribe', LIMITS.transcribe))) {
+  const overAudio = await takeQuota(ctx, 'transcribe');
+  if (overAudio === 'daily') {
     return res.status(429).json({ ok: false, error: 'quota', message: `Batas transkripsi harian (${LIMITS.transcribe} menit) tercapai. Coba lagi besok.` });
+  }
+  if (overAudio === 'unavailable') return quotaExceeded(res, 'transcribe', overAudio);
+  if (overAudio) {
+    return res.status(429).json({ ok: false, error: 'quota', message: `Kuota transkripsi bulanan (${MONTHLY_LIMITS.transcribe} menit) sudah habis. Kuota direset tanggal 1 bulan depan.` });
   }
 
   const dialect = TRANSCRIBE_DIALECTS.includes(body.dialect) ? body.dialect : 'campur';
@@ -267,8 +306,9 @@ async function handleCreate(ctx, body, res) {
     if (!(await claimTrial(ctx.code, id))) {
       return upgradeRequired(res, 'trial_used', 'Jatah coba gratis (1 materi) sudah terpakai. Berlangganan AI Partner untuk menambah materi baru.');
     }
-  } else if (!(await consumeQuota(ctx.code, 'create', LIMITS.create))) {
-    return quotaExceeded(res, 'create');
+  } else {
+    const over = await takeQuota(ctx, 'create');
+    if (over) return quotaExceeded(res, 'create', over);
   }
 
   const { url, key } = sbConfig();
@@ -474,8 +514,9 @@ async function handleGenerate(ctx, body, res) {
     if (alreadyMade) {
       return upgradeRequired(res, 'regenerate', 'Coba gratis hanya bisa membuat tiap fitur sekali. Berlangganan untuk membuat ulang.');
     }
-  } else if (!(await consumeQuota(ctx.code, 'generate', LIMITS.generate))) {
-    return quotaExceeded(res, 'generate');
+  } else {
+    const over = await takeQuota(ctx, 'generate');
+    if (over) return quotaExceeded(res, 'generate', over);
   }
 
   const messages = materialMessage(set);
@@ -572,7 +613,8 @@ async function handleAnalyze(ctx, body, res) {
   const cached = analyses.find(a => a.mode === mode && a.input === text);
   if (cached) return res.status(200).json({ ok: true, data: cached.output, cached: true, model: cached.model || null });
 
-  if (!(await consumeQuota(ctx.code, 'analyze', LIMITS.analyze))) return quotaExceeded(res, 'analyze');
+  const over = await takeQuota(ctx, 'analyze');
+  if (over) return quotaExceeded(res, 'analyze', over);
 
   const model = (await resolveModels()).arabic;
   let output;
@@ -597,7 +639,8 @@ async function handleGrade(ctx, body, res) {
   const index = Number(body.index);
   const essay = Array.isArray(set.essays) ? set.essays[index] : null;
   if (!essay) return res.status(400).json({ ok: false, error: 'Soal tidak ditemukan' });
-  if (!(await consumeQuota(ctx.code, 'grade', LIMITS.grade))) return quotaExceeded(res, 'grade');
+  const over = await takeQuota(ctx, 'grade');
+  if (over) return quotaExceeded(res, 'grade', over);
 
   const prompt = gradeUserPrompt(essay, answer);
   const model = (await resolveModels()).grade;
@@ -616,7 +659,8 @@ async function handleChat(ctx, body, res) {
   const mode = body.mode === 'syafawi' ? 'syafawi' : 'tutor';
   const set = await getOwnedSet(ctx.code, body.set_id, 'id,title,content,chat');
   if (!set) return res.status(404).json({ ok: false, error: 'Materi tidak ditemukan' });
-  if (!(await consumeQuota(ctx.code, 'chat', LIMITS.chat))) return quotaExceeded(res, 'chat');
+  const over = await takeQuota(ctx, 'chat');
+  if (over) return quotaExceeded(res, 'chat', over);
 
   const all = Array.isArray(set.chat) ? set.chat : [];
   // Riwayat per mode supaya simulasi syafawi tidak tercampur tanya-jawab biasa.
@@ -681,7 +725,10 @@ async function handlePromptChat(ctx, body, res) {
     if (used >= TRIAL_PROMPT_MESSAGES) return outOfTrial();
     if (!(await consumeQuota(ctx.code, 'prompt_trial', TRIAL_PROMPT_MESSAGES))) return outOfTrial();
     trialLeft = TRIAL_PROMPT_MESSAGES - used - 1;
-  } else if (!(await consumeQuota(ctx.code, 'prompt', LIMITS.prompt))) return quotaExceeded(res, 'prompt');
+  } else {
+    const over = await takeQuota(ctx, 'prompt');
+    if (over) return quotaExceeded(res, 'prompt', over);
+  }
 
   const { out, stream, failed } = await runAI(body, res, {
     system: promptChatSystem() + learnerContext(body.learner, { material: false }),
@@ -757,7 +804,10 @@ async function handleFeedback(ctx, body, res) {
 async function handleStats(ctx, res) {
   const { url, key } = sbConfig();
   const today = new Date().toISOString().slice(0, 10);
-  const since = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
+  // Ambil 30 hari terakhir, atau sejak tanggal 1 kalau lebih awal (untuk kuota bulanan).
+  const last30 = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
+  const month = monthStart();
+  const since = month < last30 ? month : last30;
   const [setsRes, usageRes] = await Promise.all([
     fetch(`${url}/rest/v1/study_sets?member_code=eq.${encodeURIComponent(ctx.code)}&select=id,title,source_type,flashcards,quiz,quiz_best_score,essay_attempts,created_at&order=created_at.desc&limit=200`, { headers: sbHeaders(key) }),
     fetch(`${url}/rest/v1/ai_usage?member_code=eq.${encodeURIComponent(ctx.code)}&day=gte.${since}&select=day,kind,count`, { headers: sbHeaders(key) }),
@@ -783,8 +833,10 @@ async function handleStats(ctx, res) {
 
   const usageToday = {};
   const usage30 = {};
+  const usageMonth = {};
   for (const u of usage) {
-    usage30[u.kind] = (usage30[u.kind] || 0) + u.count;
+    if (u.day >= last30) usage30[u.kind] = (usage30[u.kind] || 0) + u.count;
+    if (u.day >= month) usageMonth[u.kind] = (usageMonth[u.kind] || 0) + u.count;
     if (u.day === today) usageToday[u.kind] = u.count;
   }
 
@@ -801,7 +853,9 @@ async function handleStats(ctx, res) {
       essayAvg: essays.length ? Math.round((essays.reduce((a, e) => a + e.skor, 0) / essays.length) * 10) / 10 : null,
       usage30,
       usageToday,
+      usageMonth,
       limits: ctx.tier === 'pro' ? LIMITS : null,
+      monthlyLimits: ctx.tier === 'pro' ? MONTHLY_LIMITS : null,
     },
   });
 }
