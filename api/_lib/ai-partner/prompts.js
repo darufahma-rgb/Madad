@@ -185,7 +185,11 @@ Jika mahasiswa menjawab dalam bahasa Arab, koreksi juga kesalahan nahwu, sharaf,
 Tulis masukan dalam Bahasa Indonesia, istilah Arab berharakat.
 Balas HANYA JSON: {"skor":7,"sudah_benar":["..."],"kurang":["..."],"koreksi_bahasa":[{"salah":"...","benar":"...","alasan":"..."}],"tips":"satu-dua kalimat cara menulis jawaban tahriri yang lebih baik"}`;
 
-export const IRAB_PROMPT = `Kamu ahli nahwu dan sharaf yang mengajar mahasiswa Indonesia di Al-Azhar.
+// Pesan untuk penilai tahriri (dipakai fitur Latihan Tahriri dan evaluasi golden set).
+export const gradeUserPrompt = (essay, answer) =>
+  `SOAL: ${essay.soal_ar}\n(${essay.soal_id || ''})\n\nPOIN KUNCI:\n${(essay.poin || []).map((p, i) => `${i + 1}. ${p}`).join('\n')}\n\nJAWABAN MODEL:\n${essay.jawaban_model || '-'}\n\nJAWABAN MAHASISWA:\n<<<\n${answer}\n>>>`;
+
+export const IRAB_PROMPT =`Kamu ahli nahwu dan sharaf yang mengajar mahasiswa Indonesia di Al-Azhar.
 Analisis teks Arab yang diberikan:
 1. teks: tulis ulang dengan harakat lengkap.
 2. terjemah_harfiyah: terjemah kata demi kata (bahasa Indonesia).

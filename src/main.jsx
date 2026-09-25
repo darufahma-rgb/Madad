@@ -45,6 +45,7 @@ import './pages/paths.jsx';
 import './pages/ethics.jsx';
 import './pages/privacy.jsx';
 import './pages/admin.jsx';
+import './pages/admin-eval.jsx';
 import './pages/muqaranah.jsx';
 import './pages/muqaranah-detail.jsx';
 import './pages/muqaranah-form.jsx';

@@ -6,8 +6,9 @@ import { resolveModels, isValidModelId, clearModelCache } from './_lib/models.js
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
   OCR_PROMPT, transcribePrompt, TRANSCRIBE_DIALECTS, tutorSystem, syafawiSystem, learnerContext,
-  SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE,
+  SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt,
 } from './_lib/ai-partner/prompts.js';
+import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { splitChunks, spreadSample, relevantExcerpt } from './_lib/ai-partner/chunks.js';
 import {
   isStr, cleanFlashcards, cleanQuiz, cleanGlossary, cleanMindmap, cleanEssays,
@@ -580,7 +581,7 @@ async function handleGrade(ctx, body, res) {
   if (!essay) return res.status(400).json({ ok: false, error: 'Soal tidak ditemukan' });
   if (!(await consumeQuota(ctx.code, 'grade', LIMITS.grade))) return quotaExceeded(res, 'grade');
 
-  const prompt = `SOAL: ${essay.soal_ar}\n(${essay.soal_id})\n\nPOIN KUNCI:\n${essay.poin.map((p, i) => `${i + 1}. ${p}`).join('\n')}\n\nJAWABAN MODEL:\n${essay.jawaban_model}\n\nJAWABAN MAHASISWA:\n<<<\n${answer}\n>>>`;
+  const prompt = gradeUserPrompt(essay, answer);
   const model = (await resolveModels()).grade;
   const result = cleanGrade(await callAIJson({ system: GRADE_PROMPT + learnerContext(body.learner), messages: [{ role: 'user', content: prompt }], maxTokens: 2000, temperature: 0.2, model }));
   if (!result) throw new Error('AI gagal menilai jawaban');
@@ -823,6 +824,12 @@ async function handleAdmin(action, req, res, body) {
 
   if (action === 'admin-models') {
     return res.status(200).json({ ok: true, data: await resolveModels() });
+  }
+
+  // Golden set & evaluasi AI (lihat api/_lib/ai-partner/eval.js).
+  if (action.startsWith('admin-golden-') || action.startsWith('admin-eval-')) {
+    const handled = await handleEvalAdmin(action, body, res);
+    if (handled !== null) return handled;
   }
 
   return res.status(400).json({ ok: false, error: 'Action tidak valid' });
