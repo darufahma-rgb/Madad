@@ -9,6 +9,7 @@ import {
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
+import { getMonthlyLimits, cachedMonthlyLimits } from './_lib/ai-partner/limits.js';
 import { splitChunks, spreadSample, relevantExcerpt } from './_lib/ai-partner/chunks.js';
 import {
   isStr, cleanFlashcards, cleanQuiz, cleanGlossary, cleanMindmap, cleanEssays,
@@ -17,8 +18,6 @@ import {
 
 // Kuota harian pelanggan. Pengguna coba gratis dibatasi per materi (lihat TRIAL_*), bukan per hari.
 const LIMITS = { create: 10, ocr: 20, transcribe: 60, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40 };
-// Kuota bulanan pelanggan (direset tiap tanggal 1, UTC) — menahan biaya dari pemakaian sangat berat.
-const MONTHLY_LIMITS = { create: 30, ocr: 150, transcribe: 600, generate: 100, analyze: 300, grade: 150, chat: 400, prompt: 400 };
 const TRIAL_OCR_LIMIT  = 3;
 const TRIAL_KINDS      = ['summary', 'flashcards', 'quiz', 'glossary'];
 const PRO_ONLY_ACTIONS = ['transcribe', 'analyze', 'grade', 'chat'];
@@ -146,7 +145,7 @@ const quotaExceeded = (res, kind, scope = 'daily') => scope === 'unavailable'
   : res.status(429).json({
     ok: false, error: 'quota', scope,
     message: scope === 'monthly'
-      ? `Kuota bulanan (${MONTHLY_LIMITS[kind]}x) untuk fitur ini sudah habis. Kuota direset tanggal 1 bulan depan.`
+      ? `Kuota bulanan (${cachedMonthlyLimits()[kind]}x) untuk fitur ini sudah habis. Kuota direset tanggal 1 bulan depan.`
       : `Batas harian (${LIMITS[kind]}x) untuk fitur ini tercapai. Coba lagi besok.`,
   });
 
@@ -168,10 +167,11 @@ const monthlyUsage = async (code) => {
 // Mengembalikan null kalau boleh, 'monthly' / 'daily' kalau habis, atau 'unavailable' kalau pemakaian
 // tidak bisa dibaca (ditolak sementara — fail closed, tanpa mengaku kuota habis).
 const takeQuota = async (ctx, kind) => {
-  if (MONTHLY_LIMITS[kind]) {
+  const monthly = (await getMonthlyLimits())[kind];
+  if (monthly != null) {
     const used = await monthlyUsage(ctx.code);
     if (!used) return 'unavailable';
-    if ((used[kind] || 0) >= MONTHLY_LIMITS[kind]) return 'monthly';
+    if ((used[kind] || 0) >= monthly) return 'monthly';
   }
   return (await consumeQuota(ctx.code, kind, LIMITS[kind])) ? null : 'daily';
 };
@@ -272,7 +272,7 @@ async function handleTranscribe(ctx, body, res) {
   }
   if (overAudio === 'unavailable') return quotaExceeded(res, 'transcribe', overAudio);
   if (overAudio) {
-    return res.status(429).json({ ok: false, error: 'quota', message: `Kuota transkripsi bulanan (${MONTHLY_LIMITS.transcribe} menit) sudah habis. Kuota direset tanggal 1 bulan depan.` });
+    return res.status(429).json({ ok: false, error: 'quota', message: `Kuota transkripsi bulanan (${cachedMonthlyLimits().transcribe} menit) sudah habis. Kuota direset tanggal 1 bulan depan.` });
   }
 
   const dialect = TRANSCRIBE_DIALECTS.includes(body.dialect) ? body.dialect : 'campur';
@@ -738,7 +738,7 @@ async function handlePromptChat(ctx, body, res) {
     // Sisakan waktu untuk menutup stream sebelum batas 60 detik Vercel.
     timeLimitMs: 48000,
     cacheSystem: true,
-    model: (await resolveModels()).chat,
+    model: (await resolveModels()).prompt,
   });
   if (failed) return;
   const note = '\n\n_(Jawaban terpotong karena terlalu panjang — ketik **lanjutkan** untuk meneruskan.)_';
@@ -855,7 +855,7 @@ async function handleStats(ctx, res) {
       usageToday,
       usageMonth,
       limits: ctx.tier === 'pro' ? LIMITS : null,
-      monthlyLimits: ctx.tier === 'pro' ? MONTHLY_LIMITS : null,
+      monthlyLimits: ctx.tier === 'pro' ? await getMonthlyLimits() : null,
     },
   });
 }

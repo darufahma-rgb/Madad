@@ -5,6 +5,7 @@ import { MODEL_SETTING_KEYS, isValidModelId } from './_lib/models.js';
 import { newActivationPin, PIN_TTL_DAYS } from './_lib/pin.js';
 import { buildAdminAnalytics } from './_lib/analytics.js';
 import { parseAiPrice } from './_lib/payments.js';
+import { QUOTA_KINDS } from './_lib/ai-partner/limits.js';
 
 const sbRequest = (supabaseUrl, serviceKey, method, path, body, prefer = 'return=representation') => {
   const url = new URL(`${supabaseUrl}/rest/v1/${path}`);
@@ -162,6 +163,13 @@ export default async function handler(req, res) {
         return;
       }
       if (typeof row?.aiPriceMonthly === 'string' && row.aiPriceMonthly.trim()) row.aiPriceMonthly = String(parseAiPrice(row.aiPriceMonthly));
+      // Kuota bulanan AI: disimpan sebagai JSON angka bulat 0–5000 per jenis (0 = fitur ditutup).
+      if (row && row.aiMonthlyLimits != null && typeof row.aiMonthlyLimits !== 'string') {
+        const src = row.aiMonthlyLimits || {};
+        const bad = QUOTA_KINDS.find(k => src[k] !== '' && src[k] != null && !(Number.isInteger(Number(src[k])) && Number(src[k]) >= 0 && Number(src[k]) <= 5000));
+        if (bad) { res.status(400).json({ ok: false, error: `Kuota bulanan "${bad}" harus angka 0–5000` }); return; }
+        row.aiMonthlyLimits = JSON.stringify(Object.fromEntries(QUOTA_KINDS.filter(k => src[k] !== '' && src[k] != null).map(k => [k, Number(src[k])])));
+      }
       const now = new Date().toISOString();
       const rows = ADMIN_SETTING_KEYS
         .filter(k => typeof row?.[k] === 'string')

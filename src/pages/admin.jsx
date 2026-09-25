@@ -418,6 +418,7 @@ const StatCard = ({ label, value, icon, color }) => {
 const rupiah = (n) => 'Rp ' + Math.round(n || 0).toLocaleString('id-ID');
 const usd = (n) => '$' + (n || 0).toFixed(2);
 const AI_KIND_LABELS = {
+  prompt:     { label: 'Tanya AI',         sub: 'pesan', color: '#2dd4bf' },
   generate:   { label: 'Pembuatan AI',     sub: 'ringkasan, kartu, kuis, mufradat, peta, tahriri', color: '#3ecf8e' },
   chat:       { label: 'Tutor & syafawi',  sub: 'pesan', color: '#60a5fa' },
   analyze:    { label: "I'rab & harakat",  sub: 'analisis', color: '#c9a86a' },
@@ -2201,9 +2202,12 @@ const AdminSettings = () => {
     aiModelArabic:  "",
     aiModelGrade:   "",
     aiModelChat:    "",
+    aiModelPrompt:  "",
     aiModelTranscribe: "",
     ...loadLocalSettings(),
   }));
+  // Kuota bulanan AI per pelanggan; kosong = bawaan server (DEFAULT_MONTHLY_LIMITS).
+  const [limits, setLimits] = useState({});
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeModels, setActiveModels] = useState(null);
@@ -2211,7 +2215,11 @@ const AdminSettings = () => {
 
   useEffect(() => {
     adminMembersAPI('get-settings')
-      .then(server => { if (server && typeof server === 'object') setSettings(s => ({ ...s, ...server })); })
+      .then(server => {
+        if (!server || typeof server !== 'object') return;
+        setSettings(s => ({ ...s, ...server }));
+        try { setLimits(JSON.parse(server.aiMonthlyLimits || '{}') || {}); } catch { setLimits({}); }
+      })
       .catch(err => toast.push("Gagal memuat settings: " + err.message));
     aiPartnerAdmin('admin-models').then(d => { if (d.ok) setActiveModels(d.data); }).catch(() => {});
   }, []);
@@ -2219,7 +2227,7 @@ const AdminSettings = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await adminMembersAPI('save-settings', null, settings);
+      await adminMembersAPI('save-settings', null, { ...settings, aiMonthlyLimits: limits });
       localStorage.removeItem("talqee_admin_settings");
       setSaved(true);
       toast.push("Settings tersimpan & langsung berlaku untuk semua pengunjung.");
@@ -2277,29 +2285,58 @@ const AdminSettings = () => {
             <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Model AI per tugas</div>
             <p className="text-[11px] text-ink-soft leading-relaxed">
               Pakai ID model dari <a href="https://openrouter.ai/models" target="_blank" rel="noopener noreferrer" className="text-emerald-300 underline">openrouter.ai/models</a>.
-              Kosongkan untuk memakai model utama. Tekan <span className="text-ink">Tes</span> sebelum menyimpan; perubahan berlaku ±1 menit setelah disimpan.
+              Kosongkan untuk memakai bawaan (terlihat di kolom sebagai "Sekarang: …") — bawaannya sudah dipilih hemat:
+              Sonnet 5 untuk tugas berat, Haiku 4.5 untuk flashcard/kuis dan tutor, Gemini 2.5 Flash untuk baca foto.
+              Tekan <span className="text-ink">Tes</span> sebelum menyimpan; perubahan berlaku ±1 menit setelah disimpan.
               Bandingkan hasilnya di Analitik → Kualitas AI → "Per model".
             </p>
           </div>
           <datalist id="ai-model-suggestions">
-            <option value="anthropic/claude-sonnet-5"/>
-            <option value="anthropic/claude-sonnet-4-6"/>
-            <option value="anthropic/claude-haiku-4-5"/>
-            <option value="google/gemini-2.5-pro"/>
-            <option value="google/gemini-2.5-flash"/>
+            <option value="anthropic/claude-sonnet-5" label="$2 / $10 per 1 jt token — kuat, bawaan tugas berat"/>
+            <option value="anthropic/claude-haiku-4.5" label="$1 / $5 — hemat, bagus untuk tugas terstruktur"/>
+            <option value="anthropic/claude-sonnet-4.6" label="$3 / $15 — model lama, lebih mahal"/>
+            <option value="google/gemini-2.5-flash" label="$0.30 / $2.50 — sangat hemat, bisa gambar & audio"/>
+            <option value="google/gemini-2.5-pro" label="$1.25 / $10 — bisa gambar & audio"/>
           </datalist>
           {[
-            ['aiModelDefault', 'Model utama', 'default', 'Ringkasan, peta konsep, soal tahriri. Juga cadangan untuk semua setelan yang dikosongkan.'],
-            ['aiModelStudy', 'Flashcard, kuis & mufradat', 'study', 'Tugas terstruktur — cocok untuk model hemat (mis. Haiku) supaya biaya turun.'],
-            ['aiModelVision', 'Baca foto (OCR)', 'vision', 'Foto materi AI Partner, foto talkhisan & soal. Harus model yang bisa membaca gambar (Claude / Gemini).'],
+            ['aiModelDefault', 'Model utama', 'default', 'Ringkasan, peta konsep, soal tahriri. Juga cadangan untuk i\'rab, penilaian, dan Tanya AI kalau dikosongkan.'],
+            ['aiModelPrompt', 'Tanya AI', 'prompt', 'Paling sering dipakai dan butuh pengetahuan luas tanpa materi — bawaannya ikut model utama.'],
+            ['aiModelStudy', 'Flashcard, kuis & mufradat', 'study', 'Tugas terstruktur dari materi — bawaan Haiku 4.5 (±3× lebih hemat dari Sonnet).'],
+            ['aiModelVision', 'Baca foto (OCR)', 'vision', 'Foto materi AI Partner, foto talkhisan & soal. Harus model yang bisa membaca gambar — bawaan Gemini 2.5 Flash.'],
             ['aiModelArabic', "Terjemah & i'rab, harakat", 'arabic', 'Butuh ketelitian nahwu-sharaf paling tinggi — kandidat untuk model terkuat.'],
             ['aiModelGrade', 'Penilaian tahriri', 'grade', 'Menilai jawaban esai & mengoreksi bahasa Arab mahasiswa.'],
-            ['aiModelChat', 'Tutor & simulasi syafawi', 'chat', 'Paling sering dipakai — pertimbangkan biaya per pesan.'],
+            ['aiModelChat', 'Tutor & simulasi syafawi', 'chat', 'Jawaban bersandar pada materi yang diunggah — bawaan Haiku 4.5. Ganti ke Sonnet 5 kalau kualitas tutor kurang.'],
             ['aiModelTranscribe', 'Transkrip rekaman kuliah', 'transcribe', "Harus model yang bisa mendengar audio (Gemini). Coba google/gemini-2.5-pro kalau transkrip 'ammiyah kurang akurat. Tes hanya memeriksa ID-nya, bukan kemampuan audio."],
           ].map(([key, label, task, hint]) => (
             <ModelField key={key} label={label} hint={hint} value={settings[key] || ''}
               active={activeModels?.[task]} onChange={v => setSettings({ ...settings, [key]: v })}/>
           ))}
+        </div>
+
+        <div className="card-glass p-6 space-y-4">
+          <div>
+            <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Kuota bulanan AI per pelanggan</div>
+            <p className="text-[11px] text-ink-soft leading-relaxed">
+              Batas pemakaian tiap pelanggan AI Partner per bulan (direset tanggal 1). Menahan biaya dari pemakai paling berat
+              supaya tetap sebanding dengan harga langganan. Kosong = bawaan; 0 = fitur ditutup. Batas harian tetap berlaku.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              ['prompt', 'Tanya AI', 'pesan', 150], ['chat', 'Tutor & syafawi', 'pesan', 150],
+              ['generate', 'Pembuatan AI', 'kali', 40], ['create', 'Materi baru', 'materi', 15],
+              ['analyze', "I'rab & harakat", 'kali', 150], ['grade', 'Nilai tahriri', 'jawaban', 60],
+              ['ocr', 'Baca foto', 'halaman', 60], ['transcribe', 'Transkrip', 'menit', 300],
+            ].map(([k, label, unit, def]) => (
+              <div key={k}>
+                <label className="text-[11px] text-ink-muted block mb-1">{label} <span className="text-ink-soft">({unit})</span></label>
+                <input inputMode="numeric" value={limits[k] ?? ""} placeholder={String(def)}
+                  onChange={e => { const v = e.target.value.replace(/[^\d]/g, "").slice(0, 4); setLimits(l => { const n = { ...l }; if (v === "") delete n[k]; else n[k] = Number(v); return n; }); }}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink outline-none font-mono focus:border-emerald-500/45"/>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-ink-soft">Angka abu-abu = bawaan. Perkiraan biaya per fitur (mengikuti model di atas) ada di Analitik → AI Partner.</p>
         </div>
 
         <div className="flex justify-between items-center">

@@ -1,20 +1,63 @@
 // Agregasi analitik admin: dihitung di server supaya browser admin tidak menerima baris mentah.
 import { sbConfig, sbHeaders } from './member.js';
 import { readSettings } from './settings.js';
+import { resolveModels } from './models.js';
 
 const DAY_MS = 86400000;
 const dayKey = (d) => new Date(d).toISOString().slice(0, 10);
 
-// Perkiraan kasar biaya AI per pemakaian (USD), dari ukuran prompt rata-rata × harga model di OpenRouter.
-// Sesuaikan kalau model atau harga berubah.
-export const AI_COST_USD = {
-  generate: 0.06,   // ringkasan/flashcard/kuis/mufradat/peta konsep/tahriri — Claude Sonnet, materi panjang
-  chat: 0.035,      // tutor & syafawi — materi penuh (≤60rb karakter), system prompt di-cache per sesi
-  ocr: 0.02,        // baca satu foto/halaman
-  analyze: 0.012,   // terjemah & i'rab / harakat
-  grade: 0.02,      // nilai satu jawaban tahriri
-  transcribe: 0.004, // satu menit audio — Gemini Flash
-  create: 0,
+/* Perkiraan biaya AI per pemakaian (USD) = ukuran rata-rata permintaan × harga model yang sedang dipakai
+   untuk tugas itu (harga diambil dari OpenRouter). Ukuran token masih taksiran — cocokkan dengan
+   OpenRouter → Activity setelah ada pemakaian nyata. */
+const TOKEN_PROFILE = {
+  generate: { in: 12000, out: 1500, tasks: ['default', 'study'] }, // separuh ringkasan/peta/tahriri, separuh kartu/kuis/mufradat
+  chat:     { in: 6000,  out: 1100, tasks: ['chat'] },    // tutor & syafawi — materi di-cache, jadi input efektif lebih kecil
+  prompt:   { in: 5000,  out: 900,  tasks: ['prompt'] },  // Tanya AI — jawaban ±600 kata
+  ocr:      { in: 2000,  out: 1000, tasks: ['vision'] },  // satu foto/halaman
+  analyze:  { in: 1500,  out: 500,  tasks: ['arabic'] },  // terjemah & i'rab / harakat
+  grade:    { in: 2000,  out: 1000, tasks: ['grade'] },   // nilai satu jawaban tahriri
+};
+const TRANSCRIBE_PER_MINUTE_USD = 0.004; // input audio dihargai berbeda dari teks — taksiran tetap per menit
+const FALLBACK_PRICE = { in: 3, out: 15 }; // $ per 1 juta token (Sonnet 4.6) bila harga model tidak ditemukan
+
+let priceCache = { at: 0, map: null };
+const PRICE_CACHE_MS = 6 * 3600 * 1000;
+const modelPrices = async () => {
+  if (priceCache.map && Date.now() - priceCache.at < PRICE_CACHE_MS) return priceCache.map;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 6000);
+    const r = await fetch('https://openrouter.ai/api/v1/models', { signal: controller.signal });
+    clearTimeout(timer);
+    const list = (await r.json())?.data || [];
+    const map = {};
+    for (const m of list) {
+      const pin = Number(m?.pricing?.prompt) * 1e6, pout = Number(m?.pricing?.completion) * 1e6;
+      if (m?.id && Number.isFinite(pin) && Number.isFinite(pout)) map[m.id] = { in: pin, out: pout };
+    }
+    if (Object.keys(map).length) priceCache = { at: Date.now(), map };
+  } catch {}
+  return priceCache.map || {};
+};
+// OpenRouter menerima "claude-sonnet-4-6" maupun "claude-sonnet-4.6"; daftar harganya memakai titik.
+const priceOf = (prices, id) => prices[id] || prices[String(id).replace(/(\d)-(\d)/g, '$1.$2')] || null;
+
+export const aiCostTable = async () => {
+  const [models, prices] = await Promise.all([resolveModels(), modelPrices()]);
+  let estimated = false;
+  const table = {};
+  for (const [kind, p] of Object.entries(TOKEN_PROFILE)) {
+    const costs = p.tasks.map(t => {
+      const price = priceOf(prices, models[t]);
+      if (!price) estimated = true;
+      const { in: pin, out: pout } = price || FALLBACK_PRICE;
+      return (p.in * pin + p.out * pout) / 1e6;
+    });
+    table[kind] = +(costs.reduce((a, b) => a + b, 0) / costs.length).toFixed(4);
+  }
+  table.transcribe = TRANSCRIBE_PER_MINUTE_USD;
+  table.create = 0;
+  return { table, models, pricesMissing: estimated || !Object.keys(prices).length };
 };
 
 const fetchAll = async (path) => {
@@ -69,7 +112,7 @@ export async function buildAdminAnalytics(days) {
 
   const [
     members, payments, subs, usage, sets, presence, activity, profiles, settings,
-    notesCount, muqaranahCount, soalPaham, soalBelum, feedback, checkouts,
+    notesCount, muqaranahCount, soalPaham, soalBelum, feedback, checkouts, costInfo,
   ] = await Promise.all([
     fetchMembers(),
     fetchAll(`payment_events?select=created_at,event,product_id,product_name,amount,handled_as&created_at=gte.${since}&order=created_at.asc`),
@@ -86,7 +129,9 @@ export async function buildAdminAnalytics(days) {
     countRows('user_soal_progress?select=member_code&status=eq.belum'),
     fetchAll(`ai_feedback?select=member_code,kind,rating,category,note,snippet,model,updated_at&updated_at=gte.${since}&order=updated_at.desc`),
     fetchAll(`payment_checkouts?select=paid_at,library_amount,ai_amount&status=eq.paid&paid_at=gte.${since}&order=paid_at.asc`),
+    aiCostTable(),
   ]);
+  const AI_COST_USD = costInfo.table;
 
   /* ── Pemasukan ── */
   const libraryId = (settings.mayarLibraryProductId || '').trim();
@@ -189,7 +234,9 @@ export async function buildAdminAnalytics(days) {
   const usageByKind = Object.fromEntries([...kinds, 'create'].map(k => [k, 0]));
   const perMember = {};
   let costPrev = 0;
-  for (const u of usage.rows) {
+  for (const raw of usage.rows) {
+    // Tanya AI akun coba gratis tercatat terpisah, tapi biayanya sama dengan Tanya AI biasa.
+    const u = raw.kind === 'prompt_trial' ? { ...raw, kind: 'prompt' } : raw;
     if (!(u.kind in AI_COST_USD)) continue; // hanya pemakaian model AI
     const cost = AI_COST_USD[u.kind] * u.count;
     if (u.day >= prevFrom && u.day <= prevTo) { costPrev += cost; continue; }
@@ -215,6 +262,8 @@ export async function buildAdminAnalytics(days) {
     costByKind,
     estCostUsd: +Object.values(costByKind).reduce((a, b) => a + b, 0).toFixed(2),
     estCostPrevUsd: +costPrev.toFixed(2),
+    costModels: costInfo.models,
+    costPricesMissing: costInfo.pricesMissing,
     transcribeMinutes: usageByKind.transcribe,
     setsCreated: setsInRange.length,
     setsTotal: sets.rows.length,

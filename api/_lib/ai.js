@@ -1,4 +1,5 @@
-const DEFAULT_MODEL = 'anthropic/claude-sonnet-4-6';
+// Sonnet 5: lebih baru dan lebih murah dari Sonnet 4.6 di OpenRouter ($2/$10 vs $3/$15 per 1 juta token).
+const DEFAULT_MODEL = 'anthropic/claude-sonnet-5';
 // Transkripsi audio butuh model yang menerima input audio; Gemini Flash murah dan kuat untuk Arab.
 const DEFAULT_TRANSCRIBE_MODEL = 'google/gemini-2.5-flash';
 
