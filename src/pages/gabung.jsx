@@ -74,11 +74,13 @@ const FAQS = [
   ['Apa bedanya dengan pakai ChatGPT langsung?',
     'Kamu tidak mulai dari nol. Talqeeh sudah menyiapkan prompt untuk tiap maddah muqarrar Azhar, rekomendasi AI yang paling cocok, dan bank soal imtihan. AI Partner juga dibuat khusus untuk teks Arab: i\'rab, harakat, dan ringkasan gaya kitab.'],
   ['Library bayar sekali atau bulanan?',
-    `Sekali bayar ${LIBRARY_PRICE}, aksesnya berlaku selamanya — termasuk semua update fitur Library ke depan. Hanya AI Partner yang berlangganan bulanan, dan itu opsional.`],
+    `Sekali bayar ${LIBRARY_PRICE}, aksesnya berlaku selamanya — termasuk semua update fitur Library ke depan. Hanya AI Partner yang dibayar per 30 hari, dan itu opsional.`],
   ['Boleh coba gratis dulu?',
     'Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 3 soal bank soal, dan 1 materi AI Partner. Kalau cocok, upgrade kapan saja — progresmu tetap tersimpan.'],
   ['Bayarnya pakai apa? Berapa lama aktifnya?',
-    'Lewat Mayar: QRIS, virtual account, atau e-wallet. Akses aktif otomatis beberapa detik setelah pembayaran, asalkan email checkout sama dengan akun Google-mu.'],
+    'Lewat Mayar: QRIS, virtual account, atau e-wallet. Tagihannya dibuat langsung untuk akun Google-mu, jadi akses aktif otomatis begitu pembayaran masuk — biasanya kurang dari 1 menit.'],
+  ['AI Partner diperpanjang otomatis?',
+    'Tidak. AI Partner dibayar per 30 hari tanpa potongan otomatis. Kalau mau lanjut, perpanjang kapan saja — sisa harimu tidak hangus.'],
   ['Saya member lama, harus bayar lagi?',
     'Tidak. Minta PIN aktivasi ke admin, lalu masukkan lewat tautan "Member lama? Masukkan PIN" di halaman ini.'],
 ];
@@ -175,9 +177,7 @@ const GabungPage = () => {
   const panelRef = useRef(null);
 
   const [plan, setPlan]         = useState(planFromHash());
-  const [step, setStep]         = useState(null); // null | pay | waiting | redeem
-  const [pollRun, setPollRun]   = useState(0);
-  const [timedOut, setTimedOut] = useState(false);
+  const [step, setStep]         = useState(null); // null | pay | redeem  (menunggu bayar diatur useCheckout)
   const [pin, setPin]           = useState('');
   const [pinError, setPinError] = useState(null);
   const [redeeming, setRedeeming] = useState(false);
@@ -188,42 +188,51 @@ const GabungPage = () => {
   const noAccount    = authStatus === 'needs_activation';
   const paidMember   = authStatus === 'member' && !!session && !isFree;
   const email        = authInfo?.email || session?.email || '';
-  const payUrl       = safeHttpsUrl(settings.mayarLibraryUrl);
-  const aiPriceLabel = settings.aiPriceLabel || 'harga menyusul';
+  const payOnline    = !!settings.payOnline;
+  const aiPrice      = settings.aiPriceMonthly || null;
   const adminWa      = (settings.whatsapp || '').replace(/\D/g, '') || DEFAULT_ADMIN_WA;
+  // Library + AI tanpa harga AI → hanya Library yang bisa dibayar sekarang.
+  const payPlan      = plan === 'library_ai' && !aiPrice ? 'library' : (plan === 'library_ai' ? 'library_ai' : 'library');
+  const payTotal     = LIBRARY_PRICE_IDR + (payPlan === 'library_ai' ? aiPrice : 0);
+
+  // Tagihan Library/Library+AI yang sedang ditunggu (juga dilanjutkan setelah kembali dari Mayar).
+  const checkout = useCheckout({
+    plans: ['library', 'library_ai', 'ai'],
+    enabled: !signedOut,
+    onPaid: async (c) => {
+      saveJoinPlanLocal(null);
+      if (c.plan === 'ai') {
+        window.dispatchEvent(new Event('talqeeh:ai-status-changed'));
+        toast.push('Pembayaran diterima — AI Partner aktif 30 hari!');
+        navigate('/ai-partner');
+        return;
+      }
+      await refreshMemberSession(); // sesi berubah jadi Library → efek di bawah pindah ke Beranda
+    },
+  });
+  const waiting = checkout.status === 'waiting' || checkout.status === 'timeout';
 
   // Member lama (pernah login pakai kode di browser ini) langsung ditawari PIN.
   useEffect(() => { if (noAccount && authInfo?.likelyLegacyMember) setStep('redeem'); }, [noAccount]);
 
   // Plan dari tautan (?plan=library) langsung membuka panel bayar untuk yang sudah login.
   useEffect(() => {
-    if ((noAccount || isFree) && (plan === 'library' || plan === 'library_ai') && step === null) setStep('pay');
+    if ((noAccount || isFree) && (plan === 'library' || plan === 'library_ai') && step === null && !waiting) setStep('pay');
   }, [noAccount, isFree]);
 
   useEffect(() => {
-    if (step) setTimeout(() => panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
-  }, [step]);
+    if (step || waiting) setTimeout(() => panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }, [step, waiting]);
 
   // Pembayaran/PIN berhasil → akun berbayar.
+  const paidPlan = checkout.status === 'paid' ? checkout.checkout?.plan : null;
   useEffect(() => {
-    if (!paidMember || !step) return;
+    if (!paidMember || (!step && !paidPlan)) return;
     saveJoinPlanLocal(null);
-    toast.push('Selamat, akses Library-mu sudah aktif!');
-    navigate('/dashboard');
-    if (plan === 'library_ai') setTimeout(() => window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library_ai' } })), 600);
-  }, [paidMember]);
-
-  // Menunggu webhook Mayar: cek status tiap 5 detik, maksimal 10 menit.
-  useEffect(() => {
-    if (step !== 'waiting') return;
-    setTimedOut(false);
-    const started = Date.now();
-    const timer = setInterval(() => {
-      if (Date.now() - started > PAYMENT_WAIT_LIMIT_MS) { setTimedOut(true); clearInterval(timer); return; }
-      refreshMemberSession();
-    }, 5000);
-    return () => clearInterval(timer);
-  }, [step, pollRun]);
+    if (paidPlan === 'ai') return;
+    toast.push(paidPlan === 'library_ai' ? 'Selamat, Library & AI Partner-mu sudah aktif!' : 'Selamat, akses Library-mu sudah aktif!');
+    navigate(paidPlan === 'library_ai' ? '/ai-partner' : '/dashboard');
+  }, [paidMember, paidPlan]);
 
   const requireLogin = (nextPlan) => {
     saveJoinPlanLocal(nextPlan);
@@ -254,11 +263,7 @@ const GabungPage = () => {
     navigate('/dashboard');
   };
 
-  const openPayment = () => {
-    if (!payUrl) return;
-    window.open(payUrl, '_blank', 'noopener,noreferrer');
-    setStep('waiting');
-  };
+  const openPayment = () => { setStep(null); checkout.start(payPlan); };
 
   const pinComplete = pin.replace(/-/g, '').length === 8;
   const handleRedeem = async (e) => {
@@ -273,9 +278,6 @@ const GabungPage = () => {
   };
 
   const askPinMessage = encodeURIComponent(`Assalamu'alaikum admin Talqeeh, saya member lama dan mau pindah ke login Google (${email}). Mohon dikirimkan PIN aktivasi 🙏`);
-  const waMessage = encodeURIComponent(
-    `Assalamu'alaikum admin Talqeeh, saya sudah bayar paket ${PLAN_LABELS[plan] || 'Library'} dengan email ${email} (${new Date().toLocaleString('id-ID')}), tapi aksesnya belum aktif. Mohon dicek 🙏`
-  );
 
   if (authStatus === 'loading') {
     return <div className="container-x py-16"><div className="card-glass p-6 max-w-xl mx-auto"><Skeleton lines={3}/></div></div>;
@@ -346,8 +348,8 @@ const GabungPage = () => {
             items={LIBRARY_ITEMS} current={paidMember} selected={plan === 'library'} ctaClass="btn btn-gold"
             cta={isFree ? 'Upgrade ke Library' : 'Pilih Library'} onClick={() => choosePaid('library')}/>
           <PlanCard color={EMERALD} icon="sparkles" title="Library + AI Partner" tagline="Belajar langsung dari diktatmu"
-            price={LIBRARY_PRICE} priceNote={settings.aiPriceLabel ? `+ ${settings.aiPriceLabel}/bln` : '+ AI Partner bulanan'}
-            sub={settings.aiPriceLabel ? 'Library sekali bayar · AI Partner bulanan' : 'Harga AI Partner segera diumumkan'}
+            price={LIBRARY_PRICE} priceNote={aiPrice ? `+ ${formatRupiah(aiPrice)}/bln` : '+ AI Partner bulanan'}
+            sub={aiPrice ? 'Library selamanya · AI Partner per 30 hari' : 'Harga AI Partner segera diumumkan'}
             items={AI_ITEMS} selected={plan === 'library_ai'} ctaClass="btn btn-primary"
             cta={paidMember ? 'Berlangganan AI Partner' : 'Pilih Library + AI'} onClick={() => choosePaid('library_ai')}/>
         </div>
@@ -369,26 +371,31 @@ const GabungPage = () => {
 
       {/* Panel bayar / tunggu / PIN */}
       <Section sectionRef={panelRef} className="pb-10 scroll-mt-24">
-        {step === 'pay' && (
+        {step === 'pay' && !waiting && (
           <div className="card-glass-strong p-6 md:p-8 max-w-2xl mx-auto">
-            <h2 className="font-display text-2xl font-semibold text-ink mb-1">Bayar paket {PLAN_LABELS[plan] || 'Library'}</h2>
-            <p className="text-sm text-ink-muted mb-5">
-              {LIBRARY_PRICE} · sekali bayar{plan === 'library_ai' && <> — langganan AI Partner ({aiPriceLabel}) di langkah berikutnya</>}
-            </p>
-            <div className="card-glass p-4 mb-5">
-              <StepList items={[
-                <>Klik <span className="text-ink">Bayar di Mayar</span>, halaman pembayaran terbuka di tab baru.</>,
-                <span>
-                  Isi email checkout dengan <span className="text-ink font-medium">{email}</span>{' '}
-                  <button onClick={() => { navigator.clipboard.writeText(email); toast.push('Email tersalin'); }} className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2">salin</button>
-                  <span className="block text-[11px] text-amber-300/90 mt-0.5">Wajib sama dengan akun Google-mu, supaya akses aktif otomatis.</span>
-                </span>,
-                'Selesaikan pembayaran (QRIS, virtual account, atau e-wallet).',
-                isFree ? 'Kembali ke tab ini — akun gratismu otomatis naik ke Library, progresmu tetap aman.' : 'Kembali ke tab ini — akses aktif otomatis dalam hitungan detik.',
-              ]}/>
+            <h2 className="font-display text-2xl font-semibold text-ink mb-1">Bayar paket {PLAN_LABELS[payPlan]}</h2>
+            <p className="text-sm text-ink-muted mb-5">Tagihan dibuat langsung untuk akun <span className="text-ink">{email}</span> — tidak perlu isi data lagi.</p>
+            <div className="card-glass p-4 mb-5 text-sm space-y-2">
+              <div className="flex justify-between gap-3"><span className="text-ink-muted">Library · akses selamanya</span><span className="text-ink">{LIBRARY_PRICE}</span></div>
+              {payPlan === 'library_ai' && (
+                <div className="flex justify-between gap-3"><span className="text-ink-muted">AI Partner · 30 hari pertama</span><span className="text-ink">{formatRupiah(aiPrice)}</span></div>
+              )}
+              <div className="flex justify-between gap-3 border-t border-white/10 pt-2 font-semibold"><span className="text-ink">Total</span><span className="text-ink">{formatRupiah(payTotal)}</span></div>
+              {plan === 'library_ai' && !aiPrice && (
+                <p className="text-[11px] text-amber-300/90 pt-1">Harga AI Partner belum dibuka. Bayar Library dulu — AI Partner bisa ditambahkan nanti dari akunmu.</p>
+              )}
+              {payPlan === 'library_ai' && (
+                <p className="text-[11px] text-ink-soft pt-1">AI Partner tidak diperpanjang otomatis. Perpanjang kapan saja dari akunmu.</p>
+              )}
             </div>
-            {payUrl ? (
-              <button onClick={openPayment} className="btn btn-gold w-full text-base py-3.5 font-semibold">Bayar {LIBRARY_PRICE} di Mayar</button>
+            {payOnline ? (
+              <>
+                <button onClick={openPayment} disabled={checkout.status === 'creating'}
+                  className={`btn btn-gold w-full text-base py-3.5 font-semibold ${checkout.status === 'creating' ? 'opacity-60 cursor-wait' : ''}`}>
+                  {checkout.status === 'creating' ? 'Menyiapkan tagihan…' : `Bayar ${formatRupiah(payTotal)} di Mayar`}
+                </button>
+                <p className="text-center text-[11px] text-ink-soft mt-2">QRIS · virtual account · e-wallet. {isFree ? 'Akun gratismu naik ke Library, progresmu tetap aman.' : 'Akses aktif otomatis setelah pembayaran masuk.'}</p>
+              </>
             ) : (
               <div className="card-glass p-4 text-sm text-ink-muted text-center">
                 Pembayaran online sedang disiapkan.{' '}
@@ -399,29 +406,16 @@ const GabungPage = () => {
           </div>
         )}
 
-        {step === 'waiting' && (
-          <div className="card-glass-strong p-6 md:p-8 max-w-2xl mx-auto text-center">
-            {!timedOut ? (
-              <>
-                <div className="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin mx-auto mb-5"/>
-                <h2 className="font-display text-2xl font-semibold text-ink mb-2">Menunggu pembayaran…</h2>
-                <p className="text-sm text-ink-muted leading-relaxed mb-5">
-                  Selesaikan pembayaran di tab Mayar. Halaman ini otomatis lanjut begitu pembayaranmu terkonfirmasi — biasanya kurang dari 1 menit.
-                </p>
-                <button onClick={openPayment} className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2">Buka lagi halaman pembayaran</button>
-              </>
-            ) : (
-              <>
-                <h2 className="font-display text-2xl font-semibold text-ink mb-2">Pembayaran belum terdeteksi</h2>
-                <p className="text-sm text-ink-muted leading-relaxed mb-5">
-                  Kalau sudah bayar tapi belum aktif (misalnya email checkout berbeda dengan {email}), kabari admin — kami aktifkan manual.
-                </p>
-                <div className="flex gap-2 max-w-sm mx-auto">
-                  <button onClick={() => setPollRun(n => n + 1)} className="btn btn-ghost flex-1 text-sm">Cek lagi</button>
-                  <a href={`https://wa.me/${adminWa}?text=${waMessage}`} target="_blank" rel="noopener noreferrer" className="btn btn-gold flex-1 text-sm">Hubungi admin</a>
-                </div>
-              </>
-            )}
+        {checkout.status === 'error' && !waiting && (
+          <div className="max-w-2xl mx-auto mt-3"><ErrorBox message={checkout.error}/></div>
+        )}
+        {checkout.status === 'expired' && (
+          <div className="max-w-2xl mx-auto mt-3 text-center text-sm text-ink-muted">Tagihan sebelumnya sudah kedaluwarsa. Pilih paket lagi untuk membuat tagihan baru.</div>
+        )}
+
+        {waiting && (
+          <div className="card-glass-strong p-6 md:p-8 max-w-2xl mx-auto">
+            <CheckoutWaiting checkout={checkout} email={email} adminWa={adminWa}/>
           </div>
         )}
 
@@ -450,7 +444,7 @@ const GabungPage = () => {
           </form>
         )}
 
-        {(noAccount || isFree) && step !== 'redeem' && (
+        {(noAccount || isFree) && step !== 'redeem' && !waiting && (
           <div className="text-center mt-6 text-sm">
             <button onClick={() => setStep('redeem')} className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
               Member lama? Masukkan PIN aktivasi dari admin
@@ -525,7 +519,7 @@ const GabungPage = () => {
                 <td className="px-3 md:px-5 py-4 text-ink-muted text-xs">Harga</td>
                 <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm">Rp 0</td>
                 <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm" style={{ background: 'rgba(201,168,106,0.05)' }}>{LIBRARY_PRICE}<div className="text-[10px] text-ink-soft font-normal">sekali bayar</div></td>
-                <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm">{LIBRARY_PRICE}<div className="text-[10px] text-ink-soft font-normal">+ {settings.aiPriceLabel ? `${settings.aiPriceLabel}/bln` : 'AI bulanan'}</div></td>
+                <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm">{LIBRARY_PRICE}<div className="text-[10px] text-ink-soft font-normal">+ {aiPrice ? `${formatRupiah(aiPrice)}/bln` : 'AI bulanan'}</div></td>
               </tr>
             </tbody>
           </table>

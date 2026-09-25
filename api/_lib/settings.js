@@ -1,12 +1,13 @@
 // Pengaturan yang boleh disimpan admin di tabel app_settings.
 export const ADMIN_SETTING_KEYS = [
   'platformName', 'tagline', 'whatsapp',
-  'mayarLibraryUrl', 'mayarLibraryProductId', 'mayarUrl', 'mayarAiProductId', 'aiPriceLabel',
+  'mayarLibraryUrl', 'mayarLibraryProductId', 'mayarUrl', 'mayarAiProductId', 'aiPriceLabel', 'aiPriceMonthly',
   'aiModelDefault', 'aiModelStudy', 'aiModelVision', 'aiModelArabic', 'aiModelGrade', 'aiModelChat', 'aiModelTranscribe',
 ];
 
 // Subset yang dikirim ke semua pengunjung lewat /api/config (product ID sengaja tidak publik).
-export const PUBLIC_SETTING_KEYS = ['whatsapp', 'mayarLibraryUrl', 'mayarUrl', 'aiPriceLabel'];
+// aiPriceLabel tidak diambil dari sini lagi — /api/config membentuknya dari aiPriceMonthly.
+export const PUBLIC_SETTING_KEYS = ['whatsapp', 'aiPriceMonthly'];
 
 export const readSettings = async (keys) => {
   const url = process.env.SUPABASE_URL;

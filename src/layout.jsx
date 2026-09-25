@@ -566,7 +566,9 @@ const LoginModal = ({ open, onClose, onSuccess, joinPlan }) => {
 };
 
 /* ---------------- Paket & Join Modal ---------------- */
+const LIBRARY_PRICE_IDR      = 63000; // sama dengan LIBRARY_PRICE_IDR di api/_lib/payments.js
 const LIBRARY_PRICE          = "Rp 63.000";
+const formatRupiah = (n) => `Rp ${Number(n || 0).toLocaleString("id-ID")}`;
 const LIBRARY_PRICE_ORIGINAL = "Rp 89.000";
 // Angka katalog yang dipakai di semua copy. Sesuaikan kalau data maddah/prompt bertambah
 // (61 maddah S1 di maddah-data + 27 maddah Ma'had di mahad-data; 1.201 prompt per September 2026).
@@ -587,7 +589,7 @@ const AI_PARTNER_FEATURES = [
   "Flashcard pengulangan berjarak, kuis, dan latihan tahriri dinilai AI",
   "Tutor dari materimu + simulasi ujian syafawi",
 ];
-const PLAN_LABELS = { library: "Library", library_ai: "Library + AI Partner" };
+const PLAN_LABELS = { library: "Library", library_ai: "Library + AI Partner", ai: "AI Partner 30 hari" };
 const DEFAULT_ADMIN_WA = "6281311506025";
 const PAYMENT_WAIT_LIMIT_MS = 10 * 60 * 1000;
 
@@ -697,29 +699,244 @@ const FreeMaddahGate = ({ maddah, backPath, backLabel }) => {
   );
 };
 
-/* ---------------- AI Subscription Modal (add-on bulanan) ---------------- */
+/* ---------------- Pembayaran lewat Mayar API ---------------- */
+// Tagihan yang sedang ditunggu disimpan di browser, supaya menunggu bisa dilanjutkan setelah
+// kembali dari halaman Mayar (redirect /?checkout=…) atau setelah halaman dimuat ulang.
+const PENDING_CHECKOUT_KEY = "talqeeh_pending_checkout";
+const PENDING_CHECKOUT_TTL_MS = 24 * 3600 * 1000;
+const readPendingCheckout = () => {
+  try {
+    const v = JSON.parse(localStorage.getItem(PENDING_CHECKOUT_KEY) || "null");
+    return v?.id && Date.now() - (v.at || 0) < PENDING_CHECKOUT_TTL_MS ? v : null;
+  } catch { return null; }
+};
+const savePendingCheckout = (v) => {
+  try { v ? localStorage.setItem(PENDING_CHECKOUT_KEY, JSON.stringify(v)) : localStorage.removeItem(PENDING_CHECKOUT_KEY); } catch {}
+};
+
+const CHECKOUT_ERRORS = {
+  payments_disabled: "Pembayaran online belum dibuka. Hubungi admin lewat WhatsApp untuk bergabung.",
+  ai_price_unset:    "Harga AI Partner belum diumumkan. Hubungi admin untuk akses AI Partner.",
+  already_library:   "Akunmu sudah member Library.",
+  needs_library:     "AI Partner adalah tambahan untuk member Library. Pilih paket Library + AI Partner.",
+  rate_limited:      "Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.",
+  network:           "Tidak bisa terhubung ke server. Cek koneksi lalu coba lagi.",
+  error:             "Gagal membuat tagihan. Coba lagi sebentar, atau hubungi admin.",
+};
+
+// status: idle | creating | waiting | timeout | paid | expired | error
+// plans: paket yang boleh dilanjutkan dari tagihan tersimpan; enabled=false → tidak memantau.
+const useCheckout = ({ plans, enabled = true, onPaid } = {}) => {
+  const resumable = () => {
+    const p = readPendingCheckout();
+    return p && (!p.plan || !plans || plans.includes(p.plan)) ? p : null;
+  };
+  const [state, setState] = useState(() => {
+    const p = enabled ? resumable() : null;
+    return p ? { status: "waiting", checkout: p } : { status: "idle", checkout: null };
+  });
+  const [run, setRun] = useState(0);
+  const onPaidRef = useRef(onPaid);
+  onPaidRef.current = onPaid;
+
+  useEffect(() => {
+    if (!enabled || state.status !== "idle") return;
+    const p = resumable();
+    if (p) setState({ status: "waiting", checkout: p });
+  }, [enabled]);
+
+  useEffect(() => {
+    if (!enabled || state.status !== "waiting" || !state.checkout?.id) return;
+    const current = state.checkout;
+    // Tagihan sudah diselesaikan/dibatalkan oleh pemantau lain (halaman Gabung, modal AI) → berhenti.
+    if (readPendingCheckout()?.id !== current.id) { setState({ status: "idle", checkout: null }); return; }
+    const started = Date.now();
+    let busy = false;
+    let stopped = false;
+    const check = async () => {
+      if (busy || stopped) return;
+      if (Date.now() - started > PAYMENT_WAIT_LIMIT_MS) { stopped = true; setState(s => ({ ...s, status: "timeout" })); return; }
+      busy = true;
+      const r = await checkCheckout(current.id);
+      busy = false;
+      if (stopped) return;
+      if (r.status === "paid") {
+        stopped = true;
+        savePendingCheckout(null);
+        const checkout = { ...current, plan: current.plan || r.plan };
+        setState({ status: "paid", checkout });
+        onPaidRef.current?.(checkout);
+      } else if (r.status === "expired" || r.status === "not_found") {
+        stopped = true;
+        savePendingCheckout(null);
+        setState({ status: "expired", checkout: null });
+      }
+    };
+    check();
+    const timer = setInterval(check, 5000);
+    // Kembali dari tab Mayar → langsung cek, tidak menunggu 5 detik.
+    const onVisible = () => { if (document.visibilityState === "visible") check(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { stopped = true; clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
+  }, [enabled, state.status, state.checkout?.id, run]);
+
+  const start = async (plan) => {
+    // Tab dibuka saat klik (sebelum menunggu server) supaya tidak diblokir popup blocker.
+    let tab = null;
+    try {
+      tab = window.open("", "_blank");
+      if (tab) tab.document.write('<p style="font-family:sans-serif;padding:24px;color:#444">Menyiapkan halaman pembayaran…</p>');
+    } catch {}
+    setState({ status: "creating", checkout: null });
+    const r = await createCheckout(plan);
+    if (!r.ok) {
+      try { tab?.close(); } catch {}
+      setState({ status: "error", checkout: null, code: r.status, error: CHECKOUT_ERRORS[r.status] || CHECKOUT_ERRORS.error });
+      return;
+    }
+    const checkout = { ...r.checkout, at: Date.now() };
+    savePendingCheckout(checkout);
+    if (!tab) { window.location.href = checkout.link; return; } // popup diblokir → pindah di tab ini, Mayar mengarahkan kembali
+    try { tab.opener = null; tab.location.href = checkout.link; }
+    catch { window.location.href = checkout.link; return; }
+    setState({ status: "waiting", checkout });
+  };
+
+  const reopen = () => { if (state.checkout?.link) window.open(state.checkout.link, "_blank", "noopener,noreferrer"); };
+  const retry = () => { setState(s => ({ ...s, status: "waiting" })); setRun(n => n + 1); };
+  const cancel = () => { savePendingCheckout(null); setState({ status: "idle", checkout: null }); };
+  return { ...state, start, reopen, retry, cancel };
+};
+
+// Panel "menunggu pembayaran" yang dipakai halaman Gabung dan modal AI Partner.
+const CheckoutWaiting = ({ checkout, email, adminWa }) => {
+  const plan = checkout.checkout?.plan;
+  const amount = checkout.checkout?.amount;
+  const waMessage = encodeURIComponent(
+    `Assalamu'alaikum admin Talqeeh, saya sudah bayar ${PLAN_LABELS[plan] || "paket Talqeeh"}${amount ? ` (${formatRupiah(amount)})` : ""} dengan akun ${email || "-"} (${new Date().toLocaleString("id-ID")}), tapi aksesnya belum aktif. Mohon dicek 🙏`
+  );
+  if (checkout.status === "timeout") {
+    return (
+      <div className="text-center">
+        <h2 className="font-display text-2xl font-semibold text-ink mb-2">Pembayaran belum terdeteksi</h2>
+        <p className="text-sm text-ink-muted leading-relaxed mb-5">
+          Kalau belum bayar, buka lagi halaman pembayarannya. Kalau sudah bayar tapi belum aktif, kabari admin — kami cek dan aktifkan manual.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
+          <button onClick={checkout.retry} className="btn btn-ghost flex-1 text-sm">Cek lagi</button>
+          {checkout.checkout?.link && <button onClick={checkout.reopen} className="btn btn-ghost flex-1 text-sm">Buka pembayaran</button>}
+          <a href={`https://wa.me/${adminWa}?text=${waMessage}`} target="_blank" rel="noopener noreferrer" className="btn btn-gold flex-1 text-sm">Hubungi admin</a>
+        </div>
+        <button onClick={checkout.cancel} className="text-xs text-ink-soft hover:text-ink-muted mt-4">Batalkan tagihan ini</button>
+      </div>
+    );
+  }
+  return (
+    <div className="text-center">
+      <div className="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin mx-auto mb-5"/>
+      <h2 className="font-display text-2xl font-semibold text-ink mb-2">Menunggu pembayaran…</h2>
+      {(plan || amount) && (
+        <p className="text-sm text-ink-muted leading-relaxed mb-1">
+          {PLAN_LABELS[plan] || "Paket Talqeeh"}{amount ? <> · <span className="text-ink">{formatRupiah(amount)}</span></> : null}
+        </p>
+      )}
+      <p className="text-sm text-ink-muted leading-relaxed mb-5">
+        Selesaikan pembayaran di halaman Mayar (QRIS, virtual account, atau e-wallet). Halaman ini lanjut otomatis begitu pembayaranmu masuk.
+      </p>
+      <div className="flex flex-col items-center gap-2 text-xs">
+        {checkout.checkout?.link && (
+          <button onClick={checkout.reopen} className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2">Buka lagi halaman pembayaran</button>
+        )}
+        <button onClick={checkout.cancel} className="text-ink-soft hover:text-ink-muted">Batal</button>
+      </div>
+    </div>
+  );
+};
+
+// Pemantau tagihan di halaman mana pun: pembeli yang kembali dari Mayar bisa dialihkan ke Beranda/onboarding,
+// jadi pembayaran tetap dicek di sini. Halaman Gabung dan modal AI punya pemantau sendiri.
+const CheckoutWatcher = ({ paused }) => {
+  const { session } = useAuth();
+  const toast = useToast();
+  const path = useRoute();
+  const onGabung = path === "/gabung" || path.startsWith("/gabung?");
+  const checkout = useCheckout({
+    enabled: !!session && !paused && !onGabung,
+    onPaid: async (c) => {
+      window.dispatchEvent(new Event("talqeeh:ai-status-changed"));
+      await refreshMemberSession();
+      toast.push(c.plan === "ai" ? "Pembayaran diterima — AI Partner aktif 30 hari!"
+        : c.plan === "library_ai" ? "Pembayaran diterima — Library & AI Partner aktif!"
+        : "Pembayaran diterima — Library-mu sudah aktif!");
+    },
+  });
+  if (paused || onGabung || (checkout.status !== "waiting" && checkout.status !== "timeout")) return null;
+  const timedOut = checkout.status === "timeout";
+  return (
+    <div className="fixed left-1/2 -translate-x-1/2 z-[70] w-[calc(100%-32px)] max-w-md"
+      style={{ bottom: "calc(var(--tabbar-height, 0px) + 16px)" }}>
+      <div className="card-glass-strong flex items-center gap-3 px-4 py-3 shadow-2xl shadow-black/50" style={{ border: "1px solid rgba(201,168,106,0.35)" }}>
+        {timedOut
+          ? <Icon name="alert" className="w-4 h-4 flex-shrink-0" style={{ stroke: "#c9a86a" }}/>
+          : <span className="w-4 h-4 flex-shrink-0 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin"/>}
+        <div className="flex-1 min-w-0 text-sm text-ink leading-snug">
+          {timedOut ? "Pembayaran belum terdeteksi" : "Menunggu pembayaran…"}
+          <span className="block text-[11px] text-ink-muted truncate">{PLAN_LABELS[checkout.checkout?.plan] || "Paket Talqeeh"} · aktif otomatis setelah lunas</span>
+        </div>
+        <button onClick={() => navigate("/gabung")} className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2 flex-shrink-0">Lihat</button>
+      </div>
+    </div>
+  );
+};
+
+/* ---------------- AI Subscription Modal (AI Partner per 30 hari) ---------------- */
+const formatAiDate = (iso) => new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
+
 const AiSubscriptionModal = ({ open, onClose, onNeedMembership }) => {
   const { session } = useAuth();
-  const [checking, setChecking] = useState(false);
-  const [active, setActive] = useState(false);
+  const toast = useToast();
+  const [status, setStatus] = useState({ loading: false, active: false, expiresAt: null });
   const memberCode = session?.code || null;
-  // Langganan AI adalah tambahan untuk member Library; akun gratis harus ambil Library dulu.
+  // AI Partner adalah tambahan untuk member Library; akun gratis ambil paket Library + AI.
   const needsLibrary = !memberCode || session?.tier === "free";
 
   const settings = useAppSettings();
-  const mayarUrl     = safeHttpsUrl(settings.mayarUrl) || "";
-  const aiPriceLabel = settings.aiPriceLabel || "Segera diumumkan";
+  const aiPrice  = settings.aiPriceMonthly || null;
+  const canPay   = !!settings.payOnline && !!aiPrice;
+  const adminWa  = (settings.whatsapp || "").replace(/\D/g, "") || DEFAULT_ADMIN_WA;
 
-  useEffect(() => {
-    if (!open || !memberCode) return;
-    setChecking(true);
-    window.checkAiSubscription?.().then(r => setActive(!!r.active)).finally(() => setChecking(false));
-  }, [open, memberCode]);
-
-  const handlePayClick = () => {
-    if (!mayarUrl) return;
-    window.open(mayarUrl, "_blank", "noopener,noreferrer");
+  const loadStatus = () => {
+    if (!memberCode) return;
+    setStatus(s => ({ ...s, loading: true }));
+    window.checkAiSubscription?.().then(r => setStatus({ loading: false, active: !!r.active, expiresAt: r.expiresAt || null }));
   };
+  useEffect(() => { if (open) loadStatus(); }, [open, memberCode]);
+
+  const checkout = useCheckout({
+    plans: ["ai"],
+    enabled: open && !needsLibrary,
+    onPaid: () => {
+      toast.push("Pembayaran diterima — AI Partner aktif 30 hari!");
+      window.dispatchEvent(new Event("talqeeh:ai-status-changed"));
+      loadStatus();
+    },
+  });
+  const waiting = checkout.status === "waiting" || checkout.status === "timeout";
+  // Akses tanpa tanggal habis = diberikan admin / langganan lama → tidak perlu diperpanjang.
+  const unlimited = status.active && !status.expiresAt;
+  const daysLeft = status.expiresAt ? Math.ceil((Date.parse(status.expiresAt) - Date.now()) / 86400000) : null;
+
+  const payButton = (label) => canPay ? (
+    <button onClick={() => checkout.start("ai")} disabled={checkout.status === "creating"}
+      className={`btn btn-gold w-full text-base py-3.5 font-semibold ${checkout.status === "creating" ? "opacity-60 cursor-wait" : ""}`}>
+      {checkout.status === "creating" ? "Menyiapkan tagihan…" : label}
+    </button>
+  ) : (
+    <div className="card-glass p-4 text-sm text-ink-muted text-center">
+      Pembayaran AI Partner belum dibuka.{" "}
+      <a href={`https://wa.me/${adminWa}`} target="_blank" rel="noopener noreferrer" className="text-emerald-300 underline underline-offset-2">Hubungi admin</a>{" "}untuk akses.
+    </div>
+  );
 
   return (
     <Modal open={open} onClose={onClose} size="md">
@@ -738,49 +955,57 @@ const AiSubscriptionModal = ({ open, onClose, onNeedMembership }) => {
         {needsLibrary ? (
           <div className="text-center py-4">
             <p className="text-ink-muted text-sm leading-relaxed mb-6">
-              AI Partner Belajar adalah tambahan untuk member Library. Mulai dari paket <span className="text-ink">Library + AI Partner</span>:
-              login Google, bayar Library sekali, lalu lanjut berlangganan AI.
+              AI Partner Belajar adalah tambahan untuk member Library. Ambil paket <span className="text-ink">Library + AI Partner</span> —
+              sekali bayar, Library aktif selamanya dan AI Partner aktif 30 hari.
             </p>
             <button onClick={() => { onClose(); onNeedMembership && onNeedMembership(); }} className="btn btn-primary w-full text-sm">
               Pilih paket Library + AI
             </button>
           </div>
-        ) : active ? (
-          <div className="text-center py-4">
+        ) : waiting ? (
+          <div className="py-2"><CheckoutWaiting checkout={checkout} email={session?.email} adminWa={adminWa}/></div>
+        ) : status.loading && !status.active ? (
+          <div className="py-8"><Skeleton lines={3}/></div>
+        ) : status.active ? (
+          <div className="text-center py-2">
             <div className="w-16 h-16 rounded-full text-emerald-200 flex items-center justify-center mx-auto mb-5" style={{background:"rgba(62,207,142,0.18)",border:"1px solid rgba(62,207,142,0.30)"}}>
               <Icon name="check" className="w-8 h-8" strokeWidth={2.4}/>
             </div>
-            <h2 className="font-display text-2xl font-semibold text-ink mb-3">Langganan aktif</h2>
-            <p className="text-ink-muted text-sm leading-relaxed mb-6">
-              AI Partner Belajar kamu sedang aktif. Terima kasih sudah berlangganan!
-            </p>
-            <button onClick={onClose} className="btn btn-ghost w-full text-sm">Tutup</button>
+            <h2 className="font-display text-2xl font-semibold text-ink mb-2">AI Partner aktif</h2>
+            {unlimited ? (
+              <p className="text-ink-muted text-sm leading-relaxed mb-6">Akses AI Partner Belajar-mu sedang aktif. Selamat belajar!</p>
+            ) : (
+              <>
+                <p className="text-ink-muted text-sm leading-relaxed mb-1">
+                  Aktif sampai <span className="text-ink font-medium">{formatAiDate(status.expiresAt)}</span>
+                  {daysLeft != null && <> · {daysLeft <= 0 ? "berakhir hari ini" : `${daysLeft} hari lagi`}</>}
+                </p>
+                <p className="text-[11px] text-ink-soft mb-6">Perpanjangan menambah 30 hari dari tanggal itu — sisa harimu tidak hangus.</p>
+                {payButton(`Perpanjang 30 hari · ${formatRupiah(aiPrice)}`)}
+                <ErrorBox message={checkout.status === "error" ? checkout.error : null}/>
+              </>
+            )}
+            <button onClick={onClose} className="btn btn-ghost w-full text-sm mt-3">Tutup</button>
           </div>
         ) : (
           <>
             <div className="mb-5">
               <div className="font-display font-bold text-ink leading-none mb-1" style={{fontSize:"clamp(1.6rem,6vw,2.2rem)"}}>
-                {aiPriceLabel}
+                {aiPrice ? formatRupiah(aiPrice) : "Segera diumumkan"}
               </div>
-              <div className="text-[11px] uppercase tracking-widest text-ink-muted">Langganan bulanan · Tambahan untuk paket Library</div>
+              <div className="text-[11px] uppercase tracking-widest text-ink-muted">Per 30 hari · tanpa perpanjangan otomatis</div>
             </div>
-
-            <div className="card-glass p-4 mb-6 text-left">
-              <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-2">Cara berlangganan</div>
-              <ol className="text-sm text-ink-muted space-y-2">
-                <li className="flex items-start gap-2"><span className="text-emerald-300 font-semibold">1.</span> Klik "Berlangganan Sekarang" di bawah</li>
-                <li className="flex items-start gap-2"><span className="text-emerald-300 font-semibold">2.</span> <span>Isi email checkout dengan <span className="text-ink">{session?.email}</span> (sama dengan akun Google-mu)</span></li>
-                <li className="flex items-start gap-2"><span className="text-emerald-300 font-semibold">3.</span> Setelah bayar, akses aktif otomatis dalam beberapa menit — cek lagi halaman ini</li>
-              </ol>
-            </div>
-
-            <button onClick={handlePayClick} disabled={!mayarUrl || checking}
-              className={`btn btn-gold w-full text-base py-3.5 mb-2 font-semibold ${!mayarUrl ? "opacity-50 cursor-not-allowed" : ""}`}>
-              {mayarUrl ? "Berlangganan Sekarang" : "Segera dibuka"}
-            </button>
-            <p className="text-center text-xs text-ink-soft">
-              Kalau form checkout meminta ID member, isi <span className="font-mono text-ink-muted">{memberCode}</span>.
-              {!mayarUrl && " Selama pembayaran langganan belum dibuka, akses AI Partner diaktifkan admin — hubungi admin lewat tombol WhatsApp."}
+            <ul className="space-y-2 mb-6">
+              {AI_PARTNER_FEATURES.map(f => (
+                <li key={f} className="flex items-start gap-2 text-sm text-ink-muted">
+                  <Icon name="check" className="w-4 h-4 flex-shrink-0 mt-0.5" style={{ stroke: "#3ecf8e" }}/>{f}
+                </li>
+              ))}
+            </ul>
+            {payButton(aiPrice ? `Bayar ${formatRupiah(aiPrice)}` : "Segera dibuka")}
+            <ErrorBox message={checkout.status === "error" ? checkout.error : null}/>
+            <p className="text-center text-[11px] text-ink-soft mt-3">
+              Bayar lewat Mayar: QRIS, virtual account, atau e-wallet. Aktif otomatis setelah pembayaran masuk.
             </p>
           </>
         )}
@@ -949,7 +1174,8 @@ Object.assign(window, {
   FreeMaddahGate, isMaddahLocked, canOpenMaddahFree, FREE_SAMPLE_MADDAH,
   GoogleButton, ErrorBox, useGoogleSignIn, formatPinInput, ACTIVATION_ERRORS, StepList,
   PLAN_LABELS, DEFAULT_ADMIN_WA, PAYMENT_WAIT_LIMIT_MS,
-  LIBRARY_PRICE, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
+  useCheckout, CheckoutWaiting, CheckoutWatcher, readPendingCheckout, savePendingCheckout, formatRupiah,
+  LIBRARY_PRICE, LIBRARY_PRICE_IDR, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
   scrollToLandingSection, scrollToPaket,
   MobileTabBar, SupportButton,
 });

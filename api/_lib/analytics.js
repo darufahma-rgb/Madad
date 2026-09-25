@@ -49,6 +49,12 @@ const fetchMembers = async () => {
   return { rows: [], missing: true };
 };
 
+// expires_at datang dari migrasi mayar_api.sql.
+const fetchSubs = async () => {
+  const withExpiry = await fetchAll('ai_subscriptions?select=member_code,status,product_id,created_at,expires_at');
+  return withExpiry.missing ? fetchAll('ai_subscriptions?select=member_code,status,product_id,created_at') : withExpiry;
+};
+
 const inRange = (iso, from, to) => { const d = dayKey(iso); return d >= from && d <= to; };
 
 export async function buildAdminAnalytics(days) {
@@ -63,11 +69,11 @@ export async function buildAdminAnalytics(days) {
 
   const [
     members, payments, subs, usage, sets, presence, activity, profiles, settings,
-    notesCount, muqaranahCount, soalPaham, soalBelum, feedback,
+    notesCount, muqaranahCount, soalPaham, soalBelum, feedback, checkouts,
   ] = await Promise.all([
     fetchMembers(),
     fetchAll(`payment_events?select=created_at,event,product_id,product_name,amount,handled_as&created_at=gte.${since}&order=created_at.asc`),
-    fetchAll('ai_subscriptions?select=member_code,status,product_id,created_at'),
+    fetchSubs(),
     fetchAll(`ai_usage?select=member_code,day,kind,count&day=gte.${prevFrom}`),
     fetchAll('study_sets?select=member_code,source_type,created_at'),
     fetchAll('user_presence?select=member_code,days_present'),
@@ -79,6 +85,7 @@ export async function buildAdminAnalytics(days) {
     countRows('user_soal_progress?select=member_code&status=eq.paham'),
     countRows('user_soal_progress?select=member_code&status=eq.belum'),
     fetchAll(`ai_feedback?select=member_code,kind,rating,category,note,snippet,model,updated_at&updated_at=gte.${since}&order=updated_at.desc`),
+    fetchAll(`payment_checkouts?select=paid_at,library_amount,ai_amount&status=eq.paid&paid_at=gte.${since}&order=paid_at.asc`),
   ]);
 
   /* ── Pemasukan ── */
@@ -86,6 +93,7 @@ export async function buildAdminAnalytics(days) {
   const aiId = (settings.mayarAiProductId || '').trim();
   const classify = (p) => {
     if (p.event !== 'payment.received' || !Number.isFinite(p.amount)) return null;
+    if (p.handled_as === 'checkout') return null; // dihitung dari payment_checkouts di bawah
     if (p.handled_as === 'library' || (libraryId && p.product_id === libraryId)) return 'library';
     if (aiId && p.product_id === aiId) return 'ai';
     return 'other';
@@ -102,9 +110,21 @@ export async function buildAdminAnalytics(days) {
     revenue.transactions++;
     revenueByDay[dayKey(p.created_at)][kind] += p.amount;
   }
+  // Tagihan Mayar API: satu pembayaran bisa berisi Library + AI sekaligus.
+  for (const c of checkouts.rows) {
+    const lib = c.library_amount || 0;
+    const ai = c.ai_amount || 0;
+    if (inRange(c.paid_at, prevFrom, prevTo)) { revenue.prevTotal += lib + ai; continue; }
+    if (!inRange(c.paid_at, from, to)) continue;
+    revenue.library += lib;
+    revenue.ai += ai;
+    revenue.transactions++;
+    revenueByDay[dayKey(c.paid_at)].library += lib;
+    revenueByDay[dayKey(c.paid_at)].ai += ai;
+  }
   revenue.total = revenue.library + revenue.ai;
   revenue.byDay = Object.values(revenueByDay);
-  revenue.aiProductConfigured = !!aiId;
+  revenue.checkoutsReady = !checkouts.missing;
 
   /* ── Member ── */
   const m = members.rows;
@@ -158,7 +178,8 @@ export async function buildAdminAnalytics(days) {
   };
 
   /* ── AI Partner ── */
-  const activeSubs = new Set(subs.rows.filter(s => s.status === 'active').map(s => s.member_code));
+  const nowIso = new Date().toISOString();
+  const activeSubs = new Set(subs.rows.filter(s => s.status === 'active' && (!s.expires_at || s.expires_at > nowIso)).map(s => s.member_code));
   const everPaid = new Set(subs.rows.filter(s => s.product_id !== 'manual').map(s => s.member_code));
   const trialMembers = m.filter(x => x.ai_trial_set_id);
   const trialConverted = trialMembers.filter(x => everPaid.has(x.code)).length;

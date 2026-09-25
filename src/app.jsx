@@ -74,6 +74,18 @@ const App = () => {
     if (s) { s.style.opacity = "0"; setTimeout(() => s.remove(), 580); }
   }, []);
 
+  // Kembali dari halaman pembayaran Mayar (redirectUrl /?checkout=<id>) → lanjut menunggu di halaman Gabung.
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get("checkout");
+    if (!id) return;
+    url.searchParams.delete("checkout");
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+    if (!/^[0-9a-f-]{36}$/i.test(id)) return;
+    if (readPendingCheckout()?.id !== id) savePendingCheckout({ id, at: Date.now() });
+    navigate("/gabung");
+  }, []);
+
   // Sudah login Google tapi belum punya akun (juga jalur balik dari redirect OAuth):
   // langsung buatkan akun gratis dan masuk dashboard — onboarding & tawaran paket muncul di sana.
   // Yang memilih paket berbayar sebelum login, atau member lama (perlu PIN), tetap ke halaman Gabung.
@@ -259,6 +271,7 @@ const App = () => {
       )}
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} onSuccess={handleLoginSuccess} joinPlan={joinPlan}/>
       <AiSubscriptionModal open={aiPaymentOpen} onClose={() => setAiPaymentOpen(false)} onNeedMembership={() => openJoin("library_ai")}/>
+      <CheckoutWatcher paused={aiPaymentOpen}/>
       {showQuickNote && <QuickNoteButton/>}
       {isMember && <SupportButton/>}
       {isMember && !useShell && <MobileTabBar/>}

@@ -132,9 +132,35 @@ const checkAiSubscription = async () => {
   try {
     const res = await authFetch('/api/ai-partner?action=status', { method: 'POST', body: '{}' });
     const data = await res.json();
-    return { active: !!data.active, tier: data.tier || (data.active ? 'pro' : 'none'), trial: data.trial || null };
+    return { active: !!data.active, tier: data.tier || (data.active ? 'pro' : 'none'), trial: data.trial || null, expiresAt: data.expires_at || null };
   } catch {
     return { active: false, tier: 'none', trial: null };
+  }
+};
+
+/* ── PEMBAYARAN (Mayar API) ── */
+
+// Buat tagihan untuk paket 'library' | 'library_ai' | 'ai'. Harga ditentukan server.
+const createCheckout = async (plan) => {
+  try {
+    const res = await authFetch('/api/login?action=checkout', { method: 'POST', body: JSON.stringify({ plan }) });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 429) return { ok: false, status: 'rate_limited' };
+    return data.ok ? data : { ok: false, status: data.status || 'error' };
+  } catch {
+    return { ok: false, status: 'network' };
+  }
+};
+
+// Status tagihan: 'pending' | 'paid' | 'expired' | 'not_found' | 'error'.
+const checkCheckout = async (id) => {
+  try {
+    const res = await authFetch('/api/login?action=checkout-status', { method: 'POST', body: JSON.stringify({ id }) });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 404) return { status: 'not_found' };
+    return data.ok ? { status: data.status, plan: data.plan } : { status: 'error' };
+  } catch {
+    return { status: 'error' };
   }
 };
 
@@ -428,7 +454,7 @@ const sbPushAllUserData = async () => {
 
 Object.assign(window, {
   getMemberCode, isPaidMember,
-  checkAiSubscription,
+  checkAiSubscription, createCheckout, checkCheckout,
   sbLoadNotes, sbSaveNote, sbDeleteNote,
   sbLoadProgress, sbSaveProgress,
   sbLoadIntentions, sbSaveIntention,

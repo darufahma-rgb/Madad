@@ -99,11 +99,14 @@ const useAiStatus = () => {
   const [state, setState] = useState({ loading: true, tier: 'none', trial: null });
   useEffect(() => {
     let alive = true;
-    aiCall('status').then(d => {
+    const load = () => aiCall('status').then(d => {
       if (!alive) return;
       setState({ loading: false, tier: d.ok ? (d.tier || (d.active ? 'pro' : 'none')) : 'none', trial: d.trial || null });
     });
-    return () => { alive = false; };
+    load();
+    // Dipicu setelah pembayaran AI Partner lunas, supaya halaman langsung terbuka tanpa refresh.
+    window.addEventListener('talqeeh:ai-status-changed', load);
+    return () => { alive = false; window.removeEventListener('talqeeh:ai-status-changed', load); };
   }, []);
   return state;
 };

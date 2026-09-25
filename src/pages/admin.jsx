@@ -635,9 +635,9 @@ const AdminAnalytics = () => {
                   {revenue.otherCount} transaksi produk lain di akun Mayar ({rupiah(revenue.otherAmount)}) tidak dihitung — misalnya penjualan Nemsyi.
                 </div>
               )}
-              {!revenue.aiProductConfigured && (
+              {revenue.checkoutsReady === false && (
                 <div className="text-[11px] text-amber-300 leading-relaxed">
-                  Isi "Product ID Mayar AI Partner" di Settings supaya pemasukan langganan AI ikut terhitung.
+                  Jalankan migrations/mayar_api.sql di Supabase supaya pembayaran lewat Mayar API ikut terhitung.
                 </div>
               )}
             </div>
@@ -1950,11 +1950,7 @@ const AdminSettings = () => {
     platformName: "Talqeeh",
     tagline:      "Panduan Belajar Al-Azhar dengan AI",
     whatsapp:     "",
-    mayarLibraryUrl:       "",
-    mayarLibraryProductId: "",
-    mayarUrl:     "",
-    mayarAiProductId: "",
-    aiPriceLabel: "",
+    aiPriceMonthly: "",
     aiModelDefault: "",
     aiModelStudy:   "",
     aiModelVision:  "",
@@ -1967,6 +1963,7 @@ const AdminSettings = () => {
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeModels, setActiveModels] = useState(null);
+  const payOnline = !!useAppSettings().payOnline;
 
   useEffect(() => {
     adminMembersAPI('get-settings')
@@ -2012,26 +2009,23 @@ const AdminSettings = () => {
         </div>
 
         <div className="card-glass p-6 space-y-3">
-          <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Paket Library (Mayar)</div>
-          <SettingsField label="URL Mayar — Paket Library" value={settings.mayarLibraryUrl} mono
-            onChange={v => setSettings({...settings, mayarLibraryUrl: v})}
-            hint="Link produk digital 'Talqeeh Library' di Mayar. Harus diawali https://"/>
-          <SettingsField label="Product ID Mayar Library" value={settings.mayarLibraryProductId} mono
-            onChange={v => setSettings({...settings, mayarLibraryProductId: v})}
-            hint="Webhook hanya mengaktifkan member untuk produk ini. Salin product_id dari tab 'Langganan & Pembayaran' setelah transaksi tes pertama. Tidak ditampilkan ke publik."/>
-        </div>
-
-        <div className="card-glass p-6 space-y-3">
-          <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">AI Partner Belajar (Add-on)</div>
-          <SettingsField label="URL Mayar — AI Partner" value={settings.mayarUrl} mono
-            onChange={v => setSettings({...settings, mayarUrl: v})}
-            hint="Link produk Membership AI Partner di Mayar. Kosongkan kalau belum siap — akses diberikan manual dari tab Langganan & Bayar."/>
-          <SettingsField label="Product ID Mayar AI Partner" value={settings.mayarAiProductId} mono
-            onChange={v => setSettings({...settings, mayarAiProductId: v})}
-            hint="Opsional, dipakai tab Analitik untuk menghitung pemasukan langganan AI. Salin product_id dari riwayat pembayaran setelah transaksi langganan pertama."/>
-          <SettingsField label="Label harga" value={settings.aiPriceLabel}
-            onChange={v => setSettings({...settings, aiPriceLabel: v})}
-            hint="Teks harga yang ditampilkan di CTA, misal 'Rp 25.000 / bulan'."/>
+          <div className="flex items-center justify-between gap-3 mb-1">
+            <div className="text-xs uppercase tracking-wider text-gold-400">Pembayaran (Mayar API)</div>
+            <span className={`text-[11px] px-2 py-0.5 rounded-full border ${payOnline ? "text-emerald-300 border-emerald-500/30 bg-emerald-500/10" : "text-amber-300 border-amber-500/30 bg-amber-500/10"}`}>
+              {payOnline ? "API key terpasang" : "API key belum diisi"}
+            </span>
+          </div>
+          <p className="text-[11px] text-ink-soft leading-relaxed">
+            Tagihan dibuat otomatis per pembeli — tidak perlu produk di dashboard Mayar. API key diisi di Vercel
+            (<span className="font-mono">MAYAR_API_KEY</span>), bukan di sini. Selama belum diisi, tombol bayar diganti arahan hubungi admin.
+          </p>
+          <div className="flex items-center justify-between text-sm border-t border-white/8 pt-3">
+            <span className="text-ink-muted">Harga Library</span>
+            <span className="text-ink">{LIBRARY_PRICE} · sekali bayar</span>
+          </div>
+          <SettingsField label="Harga AI Partner per 30 hari (Rp)" value={settings.aiPriceMonthly} mono
+            onChange={v => setSettings({...settings, aiPriceMonthly: v.replace(/[^\d]/g, "")})}
+            hint="Angka saja, misal 49000. Harga ini yang ditampilkan dan ditagihkan. Kosongkan untuk menutup penjualan AI Partner (akses manual dari tab Langganan & Bayar tetap bisa)."/>
         </div>
 
         <div className="card-glass p-6 space-y-4">
@@ -2115,15 +2109,17 @@ const AdminSubscriptions = () => {
   const [grantCode, setGrantCode] = useState('');
   const [busy, setBusy]       = useState(false);
   const [payments, setPayments] = useState([]);
+  const [checkouts, setCheckouts] = useState({ data: [], missing: false });
 
   const fetchData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [data, pay] = await Promise.all([aiPartnerAdmin('admin-list'), aiPartnerAdmin('admin-payments')]);
+      const [data, pay, bills] = await Promise.all([aiPartnerAdmin('admin-list'), aiPartnerAdmin('admin-payments'), aiPartnerAdmin('admin-checkouts')]);
       if (data.ok) setRows(data.data);
       else setError(data.error || 'Gagal memuat data');
       if (pay.ok) setPayments(pay.data);
+      if (bills.ok) setCheckouts({ data: bills.data, missing: !!bills.missing });
     } catch (e) { setError(e.message); }
     finally { setLoading(false); }
   };
@@ -2185,6 +2181,7 @@ const AdminSubscriptions = () => {
               <tr className="text-left text-ink-soft text-xs uppercase tracking-wider border-b border-line">
                 <th className="px-4 py-3">Member Code</th>
                 <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Aktif sampai</th>
                 <th className="px-4 py-3">Email/WA (Mayar)</th>
                 <th className="px-4 py-3">Event Terakhir</th>
                 <th className="px-4 py-3">Update Terakhir</th>
@@ -2198,6 +2195,10 @@ const AdminSubscriptions = () => {
                   <td className="px-4 py-3">
                     <span style={{ color: statusColor(r.status) }} className="font-semibold">{r.status}</span>
                     {r.product_id === 'manual' && <span className="text-[10px] text-ink-soft ml-2">manual</span>}
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap" style={{ color: r.expires_at && new Date(r.expires_at) < new Date() ? '#ffb84d' : undefined }}>
+                    {r.expires_at ? new Date(r.expires_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : <span className="text-ink-soft">tanpa batas</span>}
+                    {r.expires_at && new Date(r.expires_at) < new Date() && <span className="text-[10px] ml-1.5">habis</span>}
                   </td>
                   <td className="px-4 py-3 text-ink-muted">{r.mayar_email || r.mayar_mobile || '-'}</td>
                   <td className="px-4 py-3 text-ink-muted">{r.last_event || '-'}</td>
@@ -2215,8 +2216,53 @@ const AdminSubscriptions = () => {
       )}
 
       <div className="mt-10 mb-3">
+        <h2 className="font-display text-2xl font-semibold text-ink mb-1">Tagihan (Mayar API)</h2>
+        <p className="text-ink-muted text-sm">100 tagihan terakhir dari halaman Gabung & AI Partner. "Lunas" = akses sudah diaktifkan otomatis.</p>
+      </div>
+      {checkouts.missing ? (
+        <div className="text-amber-300 text-sm">Tabel tagihan belum ada — jalankan migrations/mayar_api.sql di Supabase.</div>
+      ) : checkouts.data.length === 0 ? (
+        <div className="text-ink-muted text-sm">Belum ada tagihan.</div>
+      ) : (
+        <div className="card-glass overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="text-left text-ink-soft text-xs uppercase tracking-wider border-b border-line">
+                <th className="px-4 py-3">Dibuat</th>
+                <th className="px-4 py-3">Paket</th>
+                <th className="px-4 py-3">Pembeli</th>
+                <th className="px-4 py-3">Nominal</th>
+                <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3">Kode</th>
+              </tr>
+            </thead>
+            <tbody>
+              {checkouts.data.map(c => (
+                <tr key={c.id} className="border-b border-line/50">
+                  <td className="px-4 py-3 text-ink-muted whitespace-nowrap">{new Date(c.created_at).toLocaleString('id-ID')}</td>
+                  <td className="px-4 py-3 text-ink">{{ library: 'Library', library_ai: 'Library + AI', ai: 'AI 30 hari' }[c.plan] || c.plan}</td>
+                  <td className="px-4 py-3 text-ink-muted">
+                    <div className="text-ink">{c.name || '-'}</div>
+                    <div className="text-[11px]">{c.email}</div>
+                  </td>
+                  <td className="px-4 py-3 text-ink-muted">Rp {Number(c.amount).toLocaleString('id-ID')}</td>
+                  <td className="px-4 py-3 whitespace-nowrap">
+                    <span className="font-semibold" style={{ color: c.status === 'paid' ? '#3ecf8e' : c.status === 'pending' ? '#ffb84d' : '#888' }}>
+                      {{ paid: 'Lunas', pending: 'Menunggu', expired: 'Kedaluwarsa' }[c.status] || c.status}
+                    </span>
+                    {c.paid_at && <div className="text-[10px] text-ink-soft">{new Date(c.paid_at).toLocaleString('id-ID')} · {c.paid_via === 'webhook' ? 'webhook' : 'cek status'}</div>}
+                  </td>
+                  <td className="px-4 py-3 font-mono text-xs">{c.member_code || '-'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="mt-10 mb-3">
         <h2 className="font-display text-2xl font-semibold text-ink mb-1">Riwayat pembayaran Mayar</h2>
-        <p className="text-ink-muted text-sm">100 webhook terakhir. Kolom "Diproses" = library (member dibuat/diaktifkan), ai (langganan AI), atau ignored (produk tidak dikenali).</p>
+        <p className="text-ink-muted text-sm">100 webhook terakhir. Kolom "Diproses" = checkout (tagihan API, lihat tabel di atas), library/ai (produk Mayar lama), error (akan diproses lagi saat Mayar mengirim ulang), atau ignored (produk lain, misalnya Nemsyi).</p>
       </div>
       {payments.length === 0 ? (
         <div className="text-ink-muted text-sm">Belum ada webhook masuk.</div>
@@ -2248,7 +2294,7 @@ const AdminSubscriptions = () => {
                   </td>
                   <td className="px-4 py-3 text-ink-muted">{p.customer_email || '-'}</td>
                   <td className="px-4 py-3 text-ink-muted">{p.amount != null ? `Rp ${Number(p.amount).toLocaleString('id-ID')}` : '-'}</td>
-                  <td className="px-4 py-3" style={{ color: p.handled_as === 'library' || p.handled_as === 'ai' ? '#3ecf8e' : '#888' }}>{p.handled_as || '-'}</td>
+                  <td className="px-4 py-3" style={{ color: ['library', 'ai', 'checkout'].includes(p.handled_as) ? '#3ecf8e' : p.handled_as === 'error' || p.handled_as === 'checkout_amount_mismatch' ? '#f87171' : '#888' }}>{p.handled_as || '-'}</td>
                   <td className="px-4 py-3 font-mono text-xs">{p.member_code || '-'}</td>
                 </tr>
               ))}

@@ -4,6 +4,7 @@ import { ADMIN_SETTING_KEYS, readSettings } from './_lib/settings.js';
 import { MODEL_SETTING_KEYS, isValidModelId } from './_lib/models.js';
 import { newActivationPin, PIN_TTL_DAYS } from './_lib/pin.js';
 import { buildAdminAnalytics } from './_lib/analytics.js';
+import { parseAiPrice } from './_lib/payments.js';
 
 const sbRequest = (supabaseUrl, serviceKey, method, path, body, prefer = 'return=representation') => {
   const url = new URL(`${supabaseUrl}/rest/v1/${path}`);
@@ -96,6 +97,11 @@ export default async function handler(req, res) {
       const badModel = Object.values(MODEL_SETTING_KEYS)
         .find(k => typeof row?.[k] === 'string' && row[k].trim() && !isValidModelId(row[k]));
       if (badModel) { res.status(400).json({ ok: false, error: `ID model tidak valid: "${row[badModel].trim().slice(0, 60)}" (contoh: anthropic/claude-sonnet-4-6)` }); return; }
+      if (typeof row?.aiPriceMonthly === 'string' && row.aiPriceMonthly.trim() && !parseAiPrice(row.aiPriceMonthly)) {
+        res.status(400).json({ ok: false, error: 'Harga AI Partner harus angka rupiah antara 5.000 dan 2.000.000 (contoh: 49000)' });
+        return;
+      }
+      if (typeof row?.aiPriceMonthly === 'string' && row.aiPriceMonthly.trim()) row.aiPriceMonthly = String(parseAiPrice(row.aiPriceMonthly));
       const now = new Date().toISOString();
       const rows = ADMIN_SETTING_KEYS
         .filter(k => typeof row?.[k] === 'string')

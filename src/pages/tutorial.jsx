@@ -320,7 +320,7 @@ const STEPS = [
       "Klik \"Masuk\" di pojok kanan atas, lalu \"Masuk dengan Google\".",
       "Pilih akun Google yang mau kamu pakai untuk Talqeeh.",
       "Belum member? Kamu langsung diarahkan ke pilihan paket: Library, atau Library + AI Partner.",
-      "Bayar di Mayar pakai email Google yang sama — akses aktif otomatis dalam hitungan detik.",
+      "Bayar di Mayar (QRIS, VA, atau e-wallet) — tagihannya langsung atas akunmu, akses aktif otomatis.",
     ],
     tip: "Member lama yang dulu login pakai kode: masuk dengan Google, lalu masukkan PIN aktivasi yang dikirim admin via WhatsApp. Cukup sekali — setelah itu tinggal login pakai Google.",
   },

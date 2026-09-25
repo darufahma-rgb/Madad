@@ -878,10 +878,12 @@ async function handleAdmin(action, req, res, body) {
   const { url, key } = sbConfig();
 
   if (action === 'admin-list') {
-    const r = await fetch(
-      `${url}/rest/v1/ai_subscriptions?select=id,member_code,product_id,status,mayar_email,mayar_mobile,last_event,last_event_at,updated_at&order=updated_at.desc&limit=500`,
+    const list = (extra) => fetch(
+      `${url}/rest/v1/ai_subscriptions?select=id,member_code,product_id,status,mayar_email,mayar_mobile,last_event,last_event_at,updated_at${extra}&order=updated_at.desc&limit=500`,
       { headers: sbHeaders(key) }
     );
+    let r = await list(',expires_at');
+    if (r.status === 400) r = await list(''); // migrasi mayar_api.sql belum dijalankan
     const data = await r.json();
     return res.status(200).json({ ok: true, data: Array.isArray(data) ? data : [] });
   }
@@ -893,6 +895,15 @@ async function handleAdmin(action, req, res, body) {
     );
     const data = await r.json();
     return res.status(200).json({ ok: true, data: Array.isArray(data) ? data : [] });
+  }
+
+  if (action === 'admin-checkouts') {
+    const r = await fetch(
+      `${url}/rest/v1/payment_checkouts?select=id,created_at,plan,amount,email,name,member_code,status,paid_via,paid_at,link&order=created_at.desc&limit=100`,
+      { headers: sbHeaders(key) }
+    );
+    const data = r.ok ? await r.json() : [];
+    return res.status(200).json({ ok: true, data: Array.isArray(data) ? data : [], missing: !r.ok });
   }
 
   if (action === 'admin-grant') {
@@ -975,7 +986,7 @@ export default async function handler(req, res) {
       }
       const access = await requireAiTier(req);
       if (!access.ok) return res.status(200).json({ ok: true, active: false, tier: 'none' });
-      if (access.tier === 'pro') return res.status(200).json({ ok: true, active: true, tier: 'pro' });
+      if (access.tier === 'pro') return res.status(200).json({ ok: true, active: true, tier: 'pro', expires_at: access.aiExpiresAt || null });
       const [trial, promptUsed] = await Promise.all([getTrialSetId(access.code), lifetimeUsage(access.code, 'prompt_trial')]);
       return res.status(200).json({
         ok: true, active: false, tier: 'trial',

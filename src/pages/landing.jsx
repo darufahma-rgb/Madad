@@ -461,7 +461,7 @@ const HowItWorks = () => {
     { num:"02", title:"Pilih paket", sub:"Library atau Library + AI",
       desc:`Library: ${CATALOG.prompts} prompt, sekali bayar selamanya. Tambah AI Partner kalau mau belajar langsung dari materimu.` },
     { num:"03", title:"Bayar di Mayar", sub:"Aktif otomatis",
-      desc:"QRIS, virtual account, atau e-wallet. Pakai email Google yang sama — akses langsung terbuka tanpa nunggu admin." },
+      desc:"QRIS, virtual account, atau e-wallet. Tagihan langsung atas akunmu — akses terbuka tanpa nunggu admin." },
     { num:"04", title:"Mulai belajar", sub:"Isi profil 5 pertanyaan",
       desc:"Fakultas, tingkat, gaya belajar. Dashboard langsung menyiapkan prompt dan AI yang cocok." },
   ];
@@ -802,13 +802,13 @@ const LANDING_FAQ = [
   { q: "Library-nya berlaku sampai kapan?",
     a: "Selamanya. Sekali bayar, dan maddah, prompt, atau fitur Library yang ditambahkan nanti ikut terbuka tanpa biaya tambahan." },
   { q: "Bayarnya pakai apa?",
-    a: "Lewat Mayar: QRIS, virtual account bank, atau e-wallet. Saat checkout, isi email yang sama dengan akun Google-mu supaya akses langsung aktif." },
+    a: "Lewat Mayar: QRIS, virtual account bank, atau e-wallet. Tagihannya dibuat langsung untuk akun Google-mu, jadi akses aktif otomatis begitu pembayaran masuk." },
   { q: "Kalau berhenti langganan AI Partner, Library-nya hilang?",
     a: "Nggak. Library tetap milikmu selamanya. Yang berhenti cuma fitur AI Partner, dan bisa diaktifkan lagi kapan saja." },
   { q: "Aku member lama yang dulu login pakai kode. Gimana?",
     a: "Admin akan mengirim PIN aktivasi khusus lewat WhatsApp. Login pakai Google, pilih \"Punya PIN aktivasi dari admin?\", lalu masukkan PIN itu sekali. Keanggotaan, catatan, dan progressmu pindah ke akun Google — setelah itu cukup login pakai Google. Belum dapat PIN? Ada tombol untuk minta ke admin di layar yang sama." },
   { q: "Sudah bayar tapi akses belum aktif?",
-    a: "Biasanya aktif dalam hitungan detik. Kalau belum, kemungkinan email checkout beda dengan email Google-mu — tekan tombol \"Hubungi admin\" di layar pembayaran, kami aktifkan manual." },
+    a: "Biasanya aktif kurang dari 1 menit setelah pembayaran masuk. Kalau belum, tekan tombol \"Hubungi admin\" di layar pembayaran — kami cek dan aktifkan manual." },
 ];
 
 const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
@@ -903,8 +903,8 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
             {[
               ["Login Google", "Tombol paket langsung minta login dulu."],
               ["Pilih paket", "Library, atau Library + AI Partner."],
-              ["Bayar di Mayar", "QRIS, VA, e-wallet. Pakai email Google yang sama."],
-              ["Aktif otomatis", "Tanpa kode, tanpa nunggu admin. Paket AI lanjut ke langganan bulanan."],
+              ["Bayar di Mayar", "QRIS, VA, e-wallet. Tagihan langsung atas akunmu."],
+              ["Aktif otomatis", "Tanpa kode, tanpa nunggu admin. Paket AI langsung aktif 30 hari."],
             ].map(([title, desc], i) => (
               <div key={title} className="flex flex-col md:flex-row gap-2 md:gap-3">
                 <span className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-semibold text-emerald-200"

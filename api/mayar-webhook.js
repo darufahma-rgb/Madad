@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { readSettings } from './_lib/settings.js';
-import { newMemberCode } from './_lib/member.js';
+import { activateLibrary, matchWebhookCheckout, fulfillCheckout } from './_lib/payments.js';
 
 const readRawBody = (req) => new Promise((resolve) => {
   let body = '';
@@ -45,14 +45,18 @@ async function forwardWebhook(req, raw) {
   }
 }
 
+const tokenMatches = (given, expected) => {
+  const a = Buffer.from(String(given || '').trim());
+  const b = Buffer.from(expected);
+  return a.length > 0 && a.length === b.length && crypto.timingSafeEqual(a, b);
+};
+
+// MAYAR_WEBHOOK_TOKEN = "Webhook Token" dari dashboard Mayar (Integrasi → API Keys). Diterima lewat
+// header x-callback-token (cara Mayar mengirim token; belum ada di docs resmi) atau ?token= di URL webhook.
 const verifyWebhookToken = (req) => {
   const expected = (process.env.MAYAR_WEBHOOK_TOKEN || '').trim();
-  const given = (req.query?.token || '').trim();
-  if (!expected || !given) return false;
-  const a = Buffer.from(given);
-  const b = Buffer.from(expected);
-  if (a.length !== b.length) return false;
-  return crypto.timingSafeEqual(a, b);
+  if (!expected) return false;
+  return tokenMatches((req.headers || {})['x-callback-token'], expected) || tokenMatches(req.query?.token, expected);
 };
 
 // custom_field dari Mayar berbentuk array [{ dataLabel/label, dataValue/value }, ...]
@@ -70,8 +74,6 @@ const extractMemberCode = (data) =>
 const extractEmail = (data) =>
   (customFieldValue(data.custom_field, l => l.includes('email')) || data.customerEmail || '').trim().toLowerCase() || null;
 
-const LIFETIME_EXPIRY = '2099-12-31';
-
 const AI_STATUS_BY_EVENT = {
   'membership.newMemberRegistered':        'active',
   'membership.changeTierMemberRegistered': 'active',
@@ -87,53 +89,11 @@ const makeSb = () => {
   return { url, headers };
 };
 
-// Paket Library lunas → member aktif selamanya untuk email pembeli (dibuat kalau belum ada).
-async function activateLibraryMember(sb, data) {
+// Produk Library lama di dashboard Mayar (sebelum pakai API) → member aktif selamanya untuk email pembeli.
+async function activateLibraryMember(data) {
   const email = extractEmail(data);
   if (!email) return null;
-
-  // Kolom tier ada setelah migrasi free_tier.sql; tanpa itu anggap semua member 'library'.
-  const lookup = (fields) => fetch(
-    `${sb.url}/rest/v1/members?email=eq.${encodeURIComponent(email)}&select=${fields}&limit=1`,
-    { headers: sb.headers }
-  );
-  let found = await lookup('code,status,tier');
-  if (found.status === 400) found = await lookup('code,status');
-  const existing = await found.json().catch(() => []);
-
-  if (Array.isArray(existing) && existing[0]) {
-    const { code, status, tier } = existing[0];
-    // Member nonaktif diaktifkan lagi; akun gratis naik ke Library.
-    if (status !== 'active' || tier === 'free') {
-      await fetch(`${sb.url}/rest/v1/members?code=eq.${encodeURIComponent(code)}`, {
-        method: 'PATCH',
-        headers: { ...sb.headers, Prefer: 'return=minimal' },
-        body: JSON.stringify({ status: 'active', expires_at: LIFETIME_EXPIRY, ...(tier === 'free' ? { tier: 'library', notes: `Upgrade dari akun gratis · Mayar ${data.id || ''}`.trim() } : {}) }),
-      });
-    }
-    return code;
-  }
-
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const code = newMemberCode();
-    const r = await fetch(`${sb.url}/rest/v1/members`, {
-      method: 'POST',
-      headers: { ...sb.headers, Prefer: 'return=minimal' },
-      body: JSON.stringify({
-        code,
-        name:       (data.customerName || email.split('@')[0]).slice(0, 120),
-        whatsapp:   data.customerMobile || '',
-        duration:   36500,
-        status:     'active',
-        expires_at: LIFETIME_EXPIRY,
-        email,
-        notes:      `Mayar ${data.id || ''}`.trim(),
-      }),
-    });
-    if (r.ok) return code;
-    if (r.status !== 409) throw new Error(`Gagal membuat member (${r.status}): ${await r.text()}`);
-  }
-  throw new Error('Gagal membuat kode member unik');
+  return activateLibrary({ email, name: data.customerName, mobile: data.customerMobile, note: `Mayar ${data.id || ''}`.trim() });
 }
 
 // Event langganan AI Partner → status di ai_subscriptions.
@@ -210,6 +170,7 @@ async function processEvent(body) {
   const data  = body.data || {};
   const eventKey = `${event || 'unknown'}:${data.id || crypto.createHash('sha256').update(JSON.stringify(body)).digest('hex').slice(0, 32)}`;
 
+  let logId = null;
   try {
     // Catat dulu. Kalau event_key sudah ada, ini kiriman ulang → jangan proses dua kali.
     const logRes = await fetch(`${sb.url}/rest/v1/payment_events?on_conflict=event_key`, {
@@ -226,27 +187,44 @@ async function processEvent(body) {
         raw:            body,
       }),
     });
-    const logged = logRes.ok ? await logRes.json().catch(() => null) : null;
+    let logged = logRes.ok ? await logRes.json().catch(() => null) : null;
     if (!logRes.ok) console.warn('[mayar-webhook] payment_events log failed:', logRes.status);
     if (Array.isArray(logged) && logged.length === 0) {
-      return { status: 200, body: { ok: true, ignored: 'duplicate' } };
+      // Kiriman ulang: diproses lagi hanya kalau percobaan sebelumnya gagal.
+      const prev = await fetch(`${sb.url}/rest/v1/payment_events?event_key=eq.${encodeURIComponent(eventKey)}&select=id,handled_as`, { headers: sb.headers })
+        .then(r => (r.ok ? r.json() : [])).catch(() => []);
+      if (prev[0]?.handled_as !== 'error') return { status: 200, body: { ok: true, ignored: 'duplicate' } };
+      logged = prev;
     }
+    logId = Array.isArray(logged) && logged[0]?.id;
 
     let handledAs = 'ignored';
     let memberCode = null;
 
     if (event === 'payment.received' && data.status !== false) {
-      const { mayarLibraryProductId } = await readSettings(['mayarLibraryProductId']);
-      if (mayarLibraryProductId && data.productId === mayarLibraryProductId.trim()) {
-        memberCode = await activateLibraryMember(sb, data);
-        handledAs = memberCode ? 'library' : 'library_no_email';
+      // Tagihan dari Mayar API (halaman Gabung / AI Partner).
+      const match = await matchWebhookCheckout(data);
+      if (match) {
+        const { checkout } = match;
+        if (Number.isFinite(data.amount) && data.amount < checkout.amount) {
+          handledAs = 'checkout_amount_mismatch';
+        } else {
+          const done = await fulfillCheckout(checkout, { via: 'webhook', mobile: data.customerMobile });
+          memberCode = done.memberCode || checkout.member_code || null;
+          handledAs = 'checkout';
+        }
+      } else {
+        const { mayarLibraryProductId } = await readSettings(['mayarLibraryProductId']);
+        if (mayarLibraryProductId && data.productId === mayarLibraryProductId.trim()) {
+          memberCode = await activateLibraryMember(data);
+          handledAs = memberCode ? 'library' : 'library_no_email';
+        }
       }
     } else if (AI_STATUS_BY_EVENT[event]) {
       memberCode = await applyAiSubscription(sb, event, data, body);
       handledAs = memberCode ? 'ai' : 'ai_no_member';
     }
 
-    const logId = Array.isArray(logged) && logged[0]?.id;
     if (logId) {
       await fetch(`${sb.url}/rest/v1/payment_events?id=eq.${logId}`, {
         method: 'PATCH',
@@ -258,6 +236,15 @@ async function processEvent(body) {
     return { status: 200, body: { ok: true, handled_as: handledAs } };
   } catch (err) {
     console.error('[mayar-webhook] error:', err.message);
+    // Tandai gagal lalu minta Mayar mengirim ulang; kiriman ulang akan diproses lagi (lihat di atas).
+    if (logId) {
+      await fetch(`${sb.url}/rest/v1/payment_events?id=eq.${logId}`, {
+        method: 'PATCH',
+        headers: { ...sb.headers, Prefer: 'return=minimal' },
+        body: JSON.stringify({ handled_as: 'error' }),
+      }).catch(() => {});
+      return { status: 500, body: { ok: false, error: 'internal_error_logged' } };
+    }
     return { status: 200, body: { ok: true, error: 'internal_error_logged' } };
   }
 }

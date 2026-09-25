@@ -85,15 +85,21 @@ export const isActiveMember = async (code) => {
   return Array.isArray(rows) && rows.length > 0;
 };
 
-export const hasAiAccess = async (code) => {
+// Langganan aktif = status active dan expires_at belum lewat (kosong = tanpa batas: akses manual admin /
+// Membership lama). Sebelum migrasi mayar_api.sql kolom expires_at belum ada → cek status saja.
+export const getAiAccess = async (code) => {
   const { url, key } = sbConfig();
-  const r = await fetch(
-    `${url}/rest/v1/ai_subscriptions?member_code=eq.${encodeURIComponent(code)}&status=eq.active&select=id&limit=1`,
-    { headers: sbHeaders(key) }
-  );
+  const base = `${url}/rest/v1/ai_subscriptions?member_code=eq.${encodeURIComponent(code)}&status=eq.active`;
+  let r = await fetch(`${base}&or=(expires_at.is.null,expires_at.gt.${new Date().toISOString()})&select=expires_at`, { headers: sbHeaders(key) });
+  if (r.status === 400) r = await fetch(`${base}&select=id`, { headers: sbHeaders(key) });
   const rows = await r.json();
-  return Array.isArray(rows) && rows.length > 0;
+  if (!Array.isArray(rows) || rows.length === 0) return { active: false, expiresAt: null };
+  const unlimited = rows.some(x => !x.expires_at);
+  const latest = unlimited ? null : rows.map(x => x.expires_at).sort().pop();
+  return { active: true, expiresAt: latest };
 };
+
+export const hasAiAccess = async (code) => (await getAiAccess(code)).active;
 
 export const requireMember = async (req) => {
   const user = await getAuthUser(req);
@@ -107,8 +113,8 @@ export const requireMember = async (req) => {
 export const requireAiTier = async (req) => {
   const result = await requireMember(req);
   if (!result.ok) return result;
-  const pro = await hasAiAccess(result.code);
-  return { ...result, tier: pro ? 'pro' : 'trial' };
+  const ai = await getAiAccess(result.code);
+  return { ...result, tier: ai.active ? 'pro' : 'trial', aiExpiresAt: ai.expiresAt };
 };
 
 // Fails closed: any error means the request is denied.
