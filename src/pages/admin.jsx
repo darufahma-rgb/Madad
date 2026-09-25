@@ -797,6 +797,61 @@ const MEMBER_TYPE_CONFIG = {
   reward:   { label: 'Reward',   color: '#f97316', bg: 'rgba(249,115,22,0.1)',  icon: '🏆' },
 };
 
+// Member berbayar yang belum punya email Google dan belum login → perlu diisi admin.
+const needsEmail = (m) => m.tier !== "free" && !m.googleLinked && !m.email;
+
+// Isi email langsung di baris tabel member: Enter untuk menyimpan (Library selamanya, tanpa PIN).
+const InlineEmail = ({ member, onLinked }) => {
+  const toast = useToast();
+  const [editing, setEditing] = useState(!member.email);
+  const [value, setValue] = useState(member.email || "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  const save = async () => {
+    const email = value.trim().toLowerCase();
+    if (!email || busy) return;
+    if (email === (member.email || "").toLowerCase()) { setEditing(false); return; }
+    setBusy(true);
+    setError("");
+    try {
+      const [r] = await adminLinkEmails([{ code: member.code, email }]);
+      if (!r?.ok) { setError(r?.error || "Gagal menyimpan"); return; }
+      toast.push(`${member.name}: email tersimpan${r.mergedFree ? " · akun gratisnya digabung" : ""}.`);
+      setEditing(false);
+      onLinked(r);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!editing) {
+    return (
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-ink">{member.email}</span>
+        <button onClick={() => setEditing(true)} className="text-[11px] text-emerald-300 hover:text-emerald-200">ubah</button>
+      </div>
+    );
+  }
+  return (
+    <div className="min-w-[220px]">
+      <div className="flex items-center gap-1.5">
+        <input type="email" value={value} disabled={busy} placeholder="email Google…"
+          onChange={e => { setValue(e.target.value); setError(""); }}
+          onKeyDown={e => { if (e.key === "Enter") save(); if (e.key === "Escape" && member.email) { setValue(member.email); setEditing(false); } }}
+          className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-ink outline-none font-mono focus:border-emerald-500/50"/>
+        <button onClick={save} disabled={busy || !value.trim()} title="Simpan (Enter)"
+          className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 border ${value.trim() ? "border-emerald-500/40 bg-emerald-500/15 text-emerald-200" : "border-white/10 text-ink-soft"}`}>
+          {busy ? <span className="w-3 h-3 border-2 border-emerald-400/30 border-t-emerald-300 rounded-full animate-spin"/> : <Icon name="check" className="w-3.5 h-3.5"/>}
+        </button>
+      </div>
+      {error && <div className="text-[11px] text-rose-400 mt-1">{error}</div>}
+    </div>
+  );
+};
+
 /* ── Member lama: admin memasukkan email Google → Library selamanya, login tanpa PIN ── */
 const LegacyLinkPanel = ({ members, onDone, onClose }) => {
   const toast = useToast();
@@ -958,11 +1013,15 @@ const AdminMembers = () => {
   };
 
   const filtered = members.filter(m => {
+    const q = search.toLowerCase();
     const matchSearch = !search ||
-      m.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.code.toLowerCase().includes(search.toLowerCase());
+      m.name.toLowerCase().includes(q) ||
+      m.code.toLowerCase().includes(q) ||
+      (m.email || "").toLowerCase().includes(q) ||
+      (m.whatsapp || "").replace(/\D/g, "").includes(q.replace(/\D/g, "") || "~");
     const matchType = filterType === 'semua'
-      || (filterType === 'akun_gratis' ? m.tier === 'free' : m.tier !== 'free' && m.member_type === filterType);
+      || (filterType === 'belum_email' ? needsEmail(m)
+        : filterType === 'akun_gratis' ? m.tier === 'free' : m.tier !== 'free' && m.member_type === filterType);
     return matchSearch && matchType;
   });
 
@@ -1027,7 +1086,7 @@ const AdminMembers = () => {
         <div className="relative mb-3">
           <Icon name="search" className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-soft"/>
           <input value={search} onChange={(e)=>setSearch(e.target.value)}
-            placeholder="Cari nama atau kode..."
+            placeholder="Cari nama, kode, email, atau nomor WA..."
             className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-3 py-2.5 text-sm text-ink placeholder:text-ink-soft outline-none transition-colors"
             onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
             onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
@@ -1036,6 +1095,7 @@ const AdminMembers = () => {
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {[
             { value: 'semua',       label: 'Semua',                 color: '#888' },
+            { value: 'belum_email', label: 'Belum ada email',       color: '#c9a86a' },
             { value: 'berbayar',    label: 'Berbayar',              color: '#3ecf8e' },
             { value: 'gratis',      label: 'Gratis (akses penuh)',  color: '#a78bfa' },
             { value: 'trial',       label: 'Trial',                 color: '#fbbf24' },
@@ -1059,7 +1119,7 @@ const AdminMembers = () => {
               {t.label}
               {t.value !== 'semua' && (
                 <span style={{ marginLeft: 5, opacity: 0.7 }}>
-                  ({members.filter(m => t.value === 'akun_gratis' ? m.tier === 'free' : m.tier !== 'free' && m.member_type === t.value).length})
+                  ({members.filter(m => t.value === 'belum_email' ? needsEmail(m) : t.value === 'akun_gratis' ? m.tier === 'free' : m.tier !== 'free' && m.member_type === t.value).length})
                 </span>
               )}
             </button>
@@ -1114,9 +1174,15 @@ const AdminMembers = () => {
                     </div>
                   </td>
                   <td className="px-4 py-3.5">
-                    {m.email && <div className="text-xs text-ink">{m.email}</div>}
+                    {m.tier !== "free" && !m.googleLinked ? (
+                      <InlineEmail member={m} onLinked={(r) => setMembers(prev => prev.map(x => x.code === m.code
+                        ? { ...x, email: r.email, status: "active", tier: "library", expiresAt: "2099-12-31", googleLinked: x.googleLinked || !!r.linkedNow }
+                        : r.mergedFree && x.code === r.mergedFree ? { ...x, email: "", status: "disabled", googleLinked: false } : x))}/>
+                    ) : m.email && <div className="text-xs text-ink">{m.email}</div>}
                     {m.googleLinked
                       ? <span className="text-[11px] text-emerald-300">✓ terhubung</span>
+                      : m.email && m.tier !== "free"
+                        ? <span className="text-[11px] text-ink-soft">menunggu login Google</span>
                       : m.pinExpiresAt
                         ? <span className={`text-[11px] ${new Date(m.pinExpiresAt) < new Date() ? "text-rose-400" : "text-gold-300"}`}>
                             PIN {new Date(m.pinExpiresAt) < new Date() ? "kedaluwarsa" : `aktif s/d ${formatPinExpiry(m.pinExpiresAt)}`}
@@ -1370,8 +1436,9 @@ const MemberActions = ({ member, updateMember, onDelete }) => {
       </button>
       {open && (
         <>
-          <div className="fixed inset-0 z-10" onClick={close}/>
-          <div className="absolute right-0 top-full mt-1 z-20 card-glass-strong shadow-glass w-52 py-1.5 text-sm">
+          <div className="fixed inset-0 z-30" onClick={close}/>
+          <div className="absolute right-0 top-full mt-1 z-40 rounded-xl border border-white/10 shadow-2xl shadow-black/60 w-52 py-1.5 text-sm text-left"
+            style={{ background: "#161616" }}>
             <button onClick={() => { setShowProfile(true); close(); }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5 flex items-center gap-2">
               <Icon name="user" className="w-3.5 h-3.5 text-ink-soft"/> Lihat Profil
             </button>
