@@ -28,6 +28,7 @@ const TRIAL_PROMPT_MESSAGES = 5;
 const MAX_CONTENT       = 200000;
 const TRIAL_MAX_CONTENT = 60000;   // coba gratis tetap dibatasi supaya biaya terkendali
 const SINGLE_PASS_CHARS = 60000;   // muat dalam satu permintaan
+const STUDY_SAMPLE_CHARS = 30000;  // flashcard/kuis/mufradat: contoh materi secukupnya
 const MAP_CHUNK_CHARS   = 40000;   // ringkasan materi panjang: dibaca per bagian sebesar ini
 const MAP_PART_TOKENS   = 1800;
 const MIN_CONTENT     = 50;
@@ -203,9 +204,9 @@ const upgradeRequired = (res, feature, message) =>
   });
 
 // Materi yang lebih panjang dari satu permintaan diwakili contoh merata dari seluruh bab.
-const materialMessage = (set) => {
-  const long = set.content.length > SINGLE_PASS_CHARS;
-  const body = long ? spreadSample(set.content, SINGLE_PASS_CHARS) : set.content;
+const materialMessage = (set, limit = SINGLE_PASS_CHARS) => {
+  const long = set.content.length > limit;
+  const body = long ? spreadSample(set.content, limit) : set.content;
   const note = long ? '\n(Materi panjang: berikut contoh merata dari seluruh materi; bagian yang dilewati ditandai […]. Sebarkan hasilmu ke semua bagian.)' : '';
   return [{ role: 'user', content: `Judul materi: ${set.title}${note}\n\nMATERI:\n${body}` }];
 };
@@ -539,7 +540,9 @@ async function handleGenerate(ctx, body, res) {
     if (over) return quotaExceeded(res, 'generate', over, ctx);
   }
 
-  const messages = materialMessage(set);
+  // Flashcard, kuis, mufradat cukup membaca contoh merata ±30rb karakter — teks Arab ±1 token per karakter,
+  // jadi ini memangkas biaya input kira-kira setengahnya. Ringkasan, peta konsep, dan soal tahriri membaca penuh.
+  const messages = materialMessage(set, STUDY_KINDS.includes(kind) ? STUDY_SAMPLE_CHARS : SINGLE_PASS_CHARS);
   const learner = learnerContext(body.learner);
   const models = await resolveModels();
   const model = STUDY_KINDS.includes(kind) ? models.study : models.default;
@@ -555,7 +558,7 @@ async function handleGenerate(ctx, body, res) {
   }
 
   if (kind === 'mindmap') {
-    const data = cleanMindmap(await callAIJson({ system: PROMPTS.mindmap + learner, messages, maxTokens: 3000, model }));
+    const data = cleanMindmap(await callAIJson({ system: PROMPTS.mindmap + learner, messages, maxTokens: 3500, model }));
     if (!data) throw new Error('AI gagal membuat peta konsep yang valid');
     await updateSet(ctx.code, set.id, { mindmap: data, progress });
     return res.status(200).json({ ok: true, data, model });

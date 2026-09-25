@@ -10,8 +10,9 @@ const dayKey = (d) => new Date(d).toISOString().slice(0, 10);
    untuk tugas itu (harga diambil dari OpenRouter). Ukuran token masih taksiran — cocokkan dengan
    OpenRouter → Activity setelah ada pemakaian nyata. */
 const TOKEN_PROFILE = {
-  generate: { in: 12000, out: 1500, tasks: ['default', 'study'] }, // separuh ringkasan/peta/tahriri, separuh kartu/kuis/mufradat
-  chat:     { in: 6000,  out: 1100, tasks: ['chat'] },    // tutor & syafawi — materi di-cache, jadi input efektif lebih kecil
+  // Teks Arab ±1 token per karakter (dari log OpenRouter): materi 60rb karakter ≈ 57rb token.
+  generate: { in: 42000, out: 2500, tasks: ['default', 'study'] }, // separuh ringkasan/peta/tahriri (±57rb), separuh kartu/kuis/mufradat (±28rb)
+  chat:     { in: 12000, out: 900,  tasks: ['chat'] },    // tutor & syafawi — materi di-cache (±10% harga) sebagian besar pesan
   prompt:   { in: 5000,  out: 900,  tasks: ['prompt'] },  // Tanya AI — jawaban ±600 kata
   ocr:      { in: 2000,  out: 1000, tasks: ['vision'] },  // satu foto/halaman
   analyze:  { in: 1500,  out: 500,  tasks: ['arabic'] },  // terjemah & i'rab / harakat

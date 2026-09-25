@@ -161,14 +161,14 @@ ${ONLY_MATERIAL}
 Balas HANYA JSON array: [{"question":"...","options":["...","...","...","..."],"answer":0,"explanation":"..."}] — answer adalah index 0-3.`,
 
   glossary: `${BASE_PERSONA}
-Susun daftar mufradat (kosakata & istilah penting) dari materi: 20–40 entri, urut sesuai kemunculan di materi. Prioritaskan istilah teknis dan kata yang sulit bagi mahasiswa Indonesia.
+Susun daftar mufradat (kosakata & istilah penting) dari materi: 15–25 entri paling penting, urut sesuai kemunculan di materi. Isi tiap kolom seringkas mungkin; "contoh" maks 8 kata. Prioritaskan istilah teknis dan kata yang sulit bagi mahasiswa Indonesia.
 ${ARABIC_RULES}
 Balas HANYA JSON array:
 [{"ar":"kata/istilah Arab berharakat","jenis":"isim | fi'il | masdar | harf | istilah","wazan":"wazan sharf (misal فَعَّلَ) atau \\"-\\"","akar":"huruf asal dipisah spasi, misal ك ت ب, atau \\"-\\"","makna":"arti dalam bahasa Indonesia sesuai konteks materi","contoh":"potongan kalimat Arab dari materi yang memuat kata itu, atau \\"\\""}]`,
 
   mindmap: `${BASE_PERSONA}
 Buat peta konsep (mind map) materi ini dengan pola kitab: pusatnya topik utama, cabangnya ta'rif, taqsim (pembagian), syarat, rukun, hukum, khilaf, dan dalil — hanya yang ada di materi.
-Aturan: kedalaman maks 4 tingkat, tiap simpul maks 6 anak, total maks 60 simpul. label = frasa pendek bahasa Indonesia; ar = padanan Arab berharakat (opsional); note = penjelasan satu kalimat (opsional).
+Aturan: kedalaman maks 4 tingkat, tiap simpul maks 6 anak, total maks 35 simpul. label = frasa pendek bahasa Indonesia (≤6 kata); ar = padanan Arab berharakat HANYA untuk istilah kunci (kosongkan untuk yang lain); note = penjelasan ≤15 kata, hanya bila menambah makna. Jaga jawaban tetap ringkas supaya JSON selesai utuh.
 ${ONLY_MATERIAL}
 Balas HANYA JSON object: {"label":"...","ar":"...","children":[{"label":"...","ar":"...","note":"...","children":[...]}]}`,
 

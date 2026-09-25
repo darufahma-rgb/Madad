@@ -198,11 +198,42 @@ const parseJsonReply = (text) => {
   return JSON.parse(start > 0 ? cleaned.slice(start) : cleaned);
 };
 
+/* JSON yang terpotong batas token: ambil bagian yang sudah lengkap (kartu/soal/simpul terakhir yang utuh)
+   lalu tutup kurung yang masih terbuka. Mengembalikan null kalau tidak ada yang bisa diselamatkan. */
+export const salvageJson = (text) => {
+  const cleaned = String(text || '').replace(/^\s*```(?:json)?\s*/i, '');
+  const start = cleaned.search(/[[{]/);
+  if (start < 0) return null;
+  const src = cleaned.slice(start);
+  // Posisi tiap '}' / ']' di luar string beserta tumpukan kurung yang masih terbuka setelahnya.
+  const cuts = [];
+  const stack = [];
+  let inStr = false, esc = false;
+  for (let i = 0; i < src.length; i++) {
+    const c = src[i];
+    if (inStr) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inStr = false; continue; }
+    if (c === '"') inStr = true;
+    else if (c === '{' || c === '[') stack.push(c);
+    else if (c === '}' || c === ']') { stack.pop(); cuts.push([i, stack.slice()]); }
+  }
+  for (let k = cuts.length - 1; k >= 0 && k >= cuts.length - 400; k--) {
+    const [i, open] = cuts[k];
+    const closers = open.slice().reverse().map(b => (b === '{' ? '}' : ']')).join('');
+    try { return JSON.parse(src.slice(0, i + 1) + closers); } catch {}
+  }
+  return null;
+};
+
 export const callAIJson = async (opts) => {
   const first = await requestAI(opts);
   try {
     return parseJsonReply(first.text);
   } catch {
+    // Terpotong batas token: selamatkan item yang sudah lengkap — tanpa mengirim ulang materi (mahal).
+    if (first.truncated) {
+      const saved = salvageJson(first.text);
+      if (saved && (Array.isArray(saved) ? saved.length : Object.keys(saved).length)) return saved;
+    }
     // JSON yang terpotong batas token tidak akan valid kalau dikirim ulang sama panjangnya — minta versi lebih ringkas.
     const retryAsk = first.truncated
       ? 'Balasan tadi terpotong karena terlalu panjang. Kirim ulang versi yang LEBIH RINGKAS (kurangi jumlah item dan panjang teks tiap item) sebagai JSON valid saja, tanpa teks lain.'
