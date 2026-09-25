@@ -158,27 +158,6 @@ const MaddahHubPage = () => {
         </div>
       </section>
 
-      {/* Banner untuk user Ma'had */}
-      {isMahad && (
-        <div className="container-x mb-2 mt-1">
-          <div
-            onClick={() => navigate("/mahad-maddah")}
-            className="flex items-center justify-between gap-3 p-4 rounded-xl cursor-pointer transition-colors hover:opacity-90"
-            style={{background:"rgba(139,92,246,0.10)",border:"1px solid rgba(139,92,246,0.25)"}}
-          >
-            <div>
-              <div className="text-sm font-medium text-ink mb-0.5">
-                Maddah Ma'had Al-Azhar ada di halaman khusus
-              </div>
-              <div className="text-xs text-ink-muted">
-                Halaman ini untuk Masisir S1. Klik untuk buka Maddah Ma'had-mu.
-              </div>
-            </div>
-            <Icon name="arrowRight" className="w-5 h-5 flex-shrink-0" style={{color:"rgb(167,139,250)"}}/>
-          </div>
-        </div>
-      )}
-
       {/* Filter Bar — sticky */}
       <div className="sticky top-[var(--app-header-h)] z-30 border-y border-line bg-night-950/70 backdrop-blur-md">
         <div className="container-x py-3">

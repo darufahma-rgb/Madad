@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import AiRichText, { AiInline } from '../components/AiRichText.jsx';
 import { sourceIndex, bestPassage, normalizeText } from '../components/sourceMatch.js';
 /* Talqeeh — AI Partner: tab-tab belajar di halaman materi */
@@ -513,7 +514,8 @@ const OutlineNode = ({ node, num, depth, color, showNotes, onSelect, path }) => 
 );
 
 // Panel penjelasan kotak yang dipilih: jalur dari pusat, istilah Arab, keterangan, dan sub-cabangnya.
-const MindDetail = ({ root, path, onSelect, onClose }) => {
+// floating = panel mengambang di atas peta (desktop & layar penuh); selain itu tampil di bawah peta/daftar.
+const MindDetail = ({ root, path, onSelect, onClose, floating = false }) => {
   const trail = mmTrail(root, path);
   const node = trail[trail.length - 1];
   if (!node) return null;
@@ -521,7 +523,8 @@ const MindDetail = ({ root, path, onSelect, onClose }) => {
   const color = path === '0' ? '#3ecf8e' : MM_COLORS[branchIndex % MM_COLORS.length];
   const parent = trail.length > 1 ? path.split('.').slice(0, -1).join('.') : null;
   return (
-    <div className="card-glass-strong p-4 md:p-5 mt-3" style={{ borderLeft: `3px solid ${color}` }}>
+    <div className={floating ? 'mm-detail-float' : 'card-glass-strong p-4 md:p-5 mt-3'} style={{ borderLeft: `3px solid ${color}` }}
+      onMouseDown={e => e.stopPropagation()}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-wrap items-center gap-1 text-[11px] text-ink-soft min-w-0">
           {trail.map((n, i) => (
@@ -532,7 +535,7 @@ const MindDetail = ({ root, path, onSelect, onClose }) => {
             </React.Fragment>
           ))}
         </div>
-        <button onClick={onClose} aria-label="Tutup" className="w-7 h-7 -mt-1 rounded-lg flex items-center justify-center text-ink-soft hover:bg-white/5 flex-shrink-0">
+        <button onClick={onClose} aria-label="Tutup penjelasan" className="w-7 h-7 -mt-1 rounded-lg flex items-center justify-center text-ink-soft hover:bg-white/5 flex-shrink-0">
           <Icon name="x" className="w-4 h-4"/>
         </button>
       </div>
@@ -565,6 +568,129 @@ const mindmapToMarkdown = (node, depth = 0) =>
   `${'  '.repeat(depth)}- **${node.label}**${node.ar ? ` — ${node.ar}` : ''}${node.note ? `: ${node.note}` : ''}\n` +
   mmChildren(node).map(c => mindmapToMarkdown(c, depth + 1)).join('');
 
+const MM_ZOOM_MIN = 0.3;
+const MM_ZOOM_MAX = 1.6;
+const clampZoom = (z) => Math.min(MM_ZOOM_MAX, Math.max(MM_ZOOM_MIN, Math.round(z * 20) / 20));
+
+/* Kanvas peta: bisa digeser dengan mouse, diperbesar, dan diberi lapisan (panel penjelasan) di atasnya. */
+const MapCanvas = ({ root, ui, zoom, className = '', canvasClass = '', canvasRef, zoomRef, children }) => {
+  const drag = useRef(null);
+  const startDrag = (e) => {
+    if (e.button !== 0 || e.target.closest('.mm-box, button')) return;
+    const el = canvasRef.current;
+    drag.current = { x: e.clientX, y: e.clientY, left: el.scrollLeft, top: el.scrollTop };
+    el.classList.add('is-dragging');
+  };
+  const moveDrag = (e) => {
+    if (!drag.current) return;
+    const el = canvasRef.current;
+    el.scrollLeft = drag.current.left - (e.clientX - drag.current.x);
+    el.scrollTop = drag.current.top - (e.clientY - drag.current.y);
+  };
+  const endDrag = () => { drag.current = null; canvasRef.current?.classList.remove('is-dragging'); };
+  return (
+    <div className={`relative ${className}`}>
+      <div ref={canvasRef} className={`mm-canvas ${canvasClass}`} onMouseDown={startDrag} onMouseMove={moveDrag} onMouseUp={endDrag} onMouseLeave={endDrag}>
+        <div ref={zoomRef} className="mm-zoom" style={{ zoom }}>
+          <MapNode node={root} path="0" depth={0} color="#3ecf8e" ui={ui}/>
+        </div>
+      </div>
+      {children}
+    </div>
+  );
+};
+
+// Zoom supaya seluruh peta (yang sedang terbuka) muat di kanvas.
+const fitZoom = (canvas, content, current) => {
+  if (!canvas || !content) return current;
+  const rect = content.getBoundingClientRect();
+  const w = rect.width / current, h = rect.height / current;
+  if (!w || !h) return current;
+  return clampZoom(Math.min((canvas.clientWidth - 48) / w, (canvas.clientHeight - 48) / h, 1));
+};
+
+const ZoomControl = ({ zoom, setZoom, onFit }) => (
+  <div className="inline-flex items-center rounded-lg border border-white/10 bg-white/4 flex-shrink-0">
+    <button onClick={() => setZoom(z => clampZoom(z - 0.1))} className="w-8 h-8 text-ink-muted hover:text-ink" aria-label="Perkecil">−</button>
+    <button onClick={() => setZoom(1)} className="text-[11px] text-ink-soft w-11 hover:text-ink" title="Ukuran normal">{Math.round(zoom * 100)}%</button>
+    <button onClick={() => setZoom(z => clampZoom(z + 0.1))} className="w-8 h-8 text-ink-muted hover:text-ink" aria-label="Perbesar">+</button>
+    {onFit && <button onClick={onFit} className="h-8 px-2.5 text-[11px] text-ink-muted hover:text-ink border-l border-white/10" title="Paskan seluruh peta ke layar">Paskan</button>}
+  </div>
+);
+
+/* Layar penuh: fullscreen asli browser bila didukung (desktop/Android), selain itu lapisan penuh (iPhone). */
+const MindFullscreen = ({ title, root, ui, selected, onSelect, onClearSelection, onClose, onExpandAll, onCollapseAll, showNotes, toggleNotes }) => {
+  const shellRef = useRef(null);
+  const canvasRef = useRef(null);
+  const zoomRef = useRef(null);
+  const [zoom, setZoom] = useState(1);
+  const native = useRef(false);
+  const fit = () => setZoom(z => fitZoom(canvasRef.current, zoomRef.current, z));
+
+  useEffect(() => {
+    const el = shellRef.current;
+    document.body.style.overflow = 'hidden';
+    if (el?.requestFullscreen) el.requestFullscreen().then(() => { native.current = true; }).catch(() => {});
+    const onChange = () => { if (native.current && !document.fullscreenElement) onClose(); };
+    const onKey = (e) => {
+      if (e.target.closest?.('input, textarea')) return;
+      if (e.key === 'Escape' && !document.fullscreenElement) onClose();
+      else if (e.key === '+' || e.key === '=') setZoom(z => clampZoom(z + 0.1));
+      else if (e.key === '-') setZoom(z => clampZoom(z - 0.1));
+      else if (e.key === '0') setZoom(1);
+      else if (e.key.toLowerCase() === 'f') fit();
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    document.addEventListener('keydown', onKey);
+    // Saat dibuka: paskan ke layar, tapi di HP jangan lebih kecil dari 60% supaya teks tetap terbaca (sisanya digeser).
+    const t = setTimeout(() => setZoom(z => {
+      const f = fitZoom(canvasRef.current, zoomRef.current, z);
+      return window.innerWidth < 768 ? Math.max(f, 0.6) : f;
+    }), 120);
+    return () => {
+      clearTimeout(t);
+      document.body.style.overflow = '';
+      document.removeEventListener('fullscreenchange', onChange);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, []);
+
+  const close = () => {
+    if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+    onClose();
+  };
+
+  return createPortal(
+    <div ref={shellRef} className="fixed inset-0 z-[130] flex flex-col" style={{ background: '#0b0b0b' }}>
+      <div className="flex items-center gap-2 px-3 md:px-5 py-2.5 border-b border-white/[0.07] flex-wrap" style={{ paddingTop: 'max(10px, var(--safe-top))' }}>
+        <Icon name="network" className="w-4 h-4 flex-shrink-0" style={{ stroke: '#3ecf8e' }}/>
+        <div className="font-display text-sm md:text-base font-semibold text-ink truncate min-w-0 flex-1">{title}</div>
+        <div className="flex items-center gap-2 order-3 md:order-none w-full md:w-auto overflow-x-auto no-scrollbar">
+          <ZoomControl zoom={zoom} setZoom={setZoom} onFit={fit}/>
+          <button onClick={toggleNotes}
+            className={`text-xs px-3 h-8 rounded-lg border inline-flex items-center gap-1.5 flex-shrink-0 ${showNotes ? 'border-emerald-500/40 bg-emerald-500/12 text-emerald-200' : 'border-white/10 bg-white/4 text-ink-muted hover:text-ink'}`}>
+            <Icon name="info" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Keterangan
+          </button>
+          <button onClick={() => { onExpandAll(); setTimeout(fit, 60); }} className="text-xs px-3 h-8 rounded-lg border border-white/10 bg-white/4 text-ink-muted hover:text-ink flex-shrink-0">Buka semua</button>
+          <button onClick={() => { onCollapseAll(); setTimeout(fit, 60); }} className="text-xs px-3 h-8 rounded-lg border border-white/10 bg-white/4 text-ink-muted hover:text-ink flex-shrink-0">Tutup semua</button>
+        </div>
+        <button onClick={close} aria-label="Keluar layar penuh" title="Keluar layar penuh (Esc)"
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-ink hover:bg-white/10 border border-white/10 flex-shrink-0">
+          <Icon name="x" className="w-4 h-4"/>
+        </button>
+      </div>
+      <MapCanvas root={root} ui={ui} zoom={zoom} canvasRef={canvasRef} zoomRef={zoomRef}
+        className="flex-1 min-h-0" canvasClass="mm-canvas-full">
+        {selected && <MindDetail floating root={root} path={selected} onSelect={onSelect} onClose={onClearSelection}/>}
+      </MapCanvas>
+      <div className="hidden md:block px-5 py-1.5 text-[11px] text-ink-soft border-t border-white/[0.06]">
+        Klik kotak untuk penjelasan · +N membuka cabang · seret untuk menggeser · tombol <span className="text-ink-muted">+ / − / F</span> untuk zoom & paskan · Esc untuk keluar
+      </div>
+    </div>,
+    document.body
+  );
+};
+
 const MindmapTab = ({ set, setSet, access }) => {
   const { busy, generate, upgrade } = useGenerate(set, setSet, 'mindmap', 'mindmap');
   const saveKurasah = useKurasahSave();
@@ -575,14 +701,19 @@ const MindmapTab = ({ set, setSet, access }) => {
   const [collapsed, setCollapsed] = useState(() => (root ? mmDefaultCollapsed(root) : new Set()));
   const [selected, setSelected] = useState(null);
   const [zoom, setZoom] = useState(1);
-  const scrollRef = useRef(null);
-  const drag = useRef(null);
+  const [full, setFull] = useState(false);
+  const canvasRef = useRef(null);
+  const zoomRef = useRef(null);
   const detailRef = useRef(null);
+  // Di desktop, penjelasan mengambang di atas peta; di HP dan tampilan Daftar, di bawahnya.
+  const floatingDetail = view === 'map' && !narrow;
 
   useEffect(() => { if (set.mindmap) markProgress(set, setSet, 'mindmap_viewed'); }, [!!set.mindmap]);
   useEffect(() => { if (root) { setCollapsed(mmDefaultCollapsed(root)); setSelected(null); } }, [root]);
-  // Panel penjelasan ada di bawah peta/daftar — gulirkan supaya langsung terlihat setelah kotak diketuk.
-  useEffect(() => { if (selected) setTimeout(() => detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60); }, [selected]);
+  // Panel di bawah peta/daftar digulirkan supaya langsung terlihat setelah kotak diketuk.
+  useEffect(() => {
+    if (selected && !full && !floatingDetail) setTimeout(() => detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+  }, [selected]);
 
   if (upgrade) return <UpgradeCard message={upgrade}/>;
   if (!root || busy) {
@@ -609,23 +740,11 @@ const MindmapTab = ({ set, setSet, access }) => {
       return n;
     });
   };
+  const expandAll = () => setCollapsed(new Set());
+  const collapseAll = () => { setCollapsed(new Set(mmChildren(root).map((_, i) => `0.${i}`))); setSelected(null); };
   // Saat ada yang dipilih, kotak di luar jalurnya diredupkan supaya hubungan antar-konsep terlihat.
   const dimmed = (path) => !!selected && !(selected === path || selected.startsWith(`${path}.`) || path.startsWith(`${selected}.`));
   const ui = { collapsed, toggle, selected, select, showNotes, dimmed };
-
-  const startDrag = (e) => {
-    if (e.button !== 0 || e.target.closest('.mm-box, button')) return;
-    const el = scrollRef.current;
-    drag.current = { x: e.clientX, y: e.clientY, left: el.scrollLeft, top: el.scrollTop };
-    el.classList.add('is-dragging');
-  };
-  const moveDrag = (e) => {
-    if (!drag.current) return;
-    const el = scrollRef.current;
-    el.scrollLeft = drag.current.left - (e.clientX - drag.current.x);
-    el.scrollTop = drag.current.top - (e.clientY - drag.current.y);
-  };
-  const endDrag = () => { drag.current = null; scrollRef.current?.classList.remove('is-dragging'); };
 
   return (
     <div>
@@ -642,17 +761,15 @@ const MindmapTab = ({ set, setSet, access }) => {
           className={`text-xs px-3 py-2 rounded-lg border inline-flex items-center gap-1.5 ${showNotes ? 'border-emerald-500/40 bg-emerald-500/12 text-emerald-200' : 'border-white/10 bg-white/4 text-ink-muted hover:text-ink'}`}>
           <Icon name="info" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Keterangan {showNotes ? 'tampil' : 'tersembunyi'}
         </button>
-        {view === 'map' && (
-          <div className="inline-flex items-center rounded-lg border border-white/10 bg-white/4">
-            <button onClick={() => setZoom(z => Math.max(0.6, +(z - 0.1).toFixed(1)))} className="w-8 h-8 text-ink-muted hover:text-ink" aria-label="Perkecil">−</button>
-            <button onClick={() => setZoom(1)} className="text-[11px] text-ink-soft w-11 hover:text-ink" title="Ukuran normal">{Math.round(zoom * 100)}%</button>
-            <button onClick={() => setZoom(z => Math.min(1.4, +(z + 0.1).toFixed(1)))} className="w-8 h-8 text-ink-muted hover:text-ink" aria-label="Perbesar">+</button>
-          </div>
-        )}
+        {view === 'map' && <ZoomControl zoom={zoom} setZoom={setZoom} onFit={() => setZoom(z => fitZoom(canvasRef.current, zoomRef.current, z))}/>}
+        <button onClick={() => setFull(true)}
+          className="text-xs px-3 py-2 rounded-lg border border-emerald-500/35 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20 inline-flex items-center gap-1.5">
+          <Icon name="maximize" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Layar penuh
+        </button>
         <div className="flex gap-2 flex-wrap ms-auto">
           {view === 'map' && <>
-            <ToolbarButton icon="chevronDown" onClick={() => setCollapsed(new Set())}>Buka semua</ToolbarButton>
-            <ToolbarButton icon="chevronUp" onClick={() => { setCollapsed(new Set(mmChildren(root).map((_, i) => `0.${i}`))); setSelected(null); }}>Tutup semua</ToolbarButton>
+            <ToolbarButton icon="chevronDown" onClick={expandAll}>Buka semua</ToolbarButton>
+            <ToolbarButton icon="chevronUp" onClick={collapseAll}>Tutup semua</ToolbarButton>
           </>}
           <ToolbarButton icon="bookmark" onClick={() => saveKurasah(`Peta konsep — ${set.title}`, mindmapToMarkdown(root), ['peta-konsep'])}>Simpan ke Kurasah</ToolbarButton>
           <ToolbarButton icon="refresh" onClick={() => generate()} disabled={busy}>Buat ulang</ToolbarButton>
@@ -661,13 +778,11 @@ const MindmapTab = ({ set, setSet, access }) => {
 
       {view === 'map' ? (
         <>
-          <div ref={scrollRef} className="mm-canvas card-glass" onMouseDown={startDrag} onMouseMove={moveDrag} onMouseUp={endDrag} onMouseLeave={endDrag}>
-            <div className="mm-zoom" style={{ zoom }}>
-              <MapNode node={root} path="0" depth={0} color="#3ecf8e" ui={ui}/>
-            </div>
-          </div>
+          <MapCanvas root={root} ui={ui} zoom={zoom} canvasRef={canvasRef} zoomRef={zoomRef} canvasClass="card-glass mm-canvas-inline">
+            {floatingDetail && selected && <MindDetail floating root={root} path={selected} onSelect={select} onClose={() => setSelected(null)}/>}
+          </MapCanvas>
           <p className="text-[11px] text-ink-soft mt-2">
-            Ketuk kotak untuk melihat penjelasannya · <span className="text-ink-muted">+N</span> membuka cabang · geser untuk melihat bagian lain
+            Ketuk kotak untuk melihat penjelasannya · <span className="text-ink-muted">+N</span> membuka cabang · geser untuk melihat bagian lain · <button onClick={() => setFull(true)} className="text-emerald-300 hover:text-emerald-200">buka layar penuh</button>
           </p>
         </>
       ) : (
@@ -686,14 +801,23 @@ const MindmapTab = ({ set, setSet, access }) => {
         </div>
       )}
 
-      <div ref={detailRef} className="scroll-mb-24">
-        {selected && <MindDetail root={root} path={selected} onSelect={select} onClose={() => setSelected(null)}/>}
-      </div>
+      {!floatingDetail && (
+        <div ref={detailRef} className="scroll-mb-24">
+          {selected && !full && <MindDetail root={root} path={selected} onSelect={select} onClose={() => setSelected(null)}/>}
+        </div>
+      )}
+
+      {full && (
+        <MindFullscreen title={set.title} root={root} ui={ui} selected={selected} onSelect={select}
+          onClearSelection={() => setSelected(null)} onClose={() => setFull(false)}
+          onExpandAll={expandAll} onCollapseAll={collapseAll} showNotes={showNotes} toggleNotes={toggleNotes}/>
+      )}
 
       <FeedbackBar setId={set.id} kind="mindmap" model={set.progress?.models?.mindmap} content={mindmapToMarkdown(root)} className="mt-4" label="Peta konsep ini sesuai materi?"/>
     </div>
   );
 };
+
 
 /* ── 1c. Materi asli + terjemah, i'rab, harakat ── */
 
