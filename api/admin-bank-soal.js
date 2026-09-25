@@ -1,4 +1,38 @@
 import { verifyToken } from './admin-auth.js';
+import { callAIJson, friendlyAiError } from './_lib/ai.js';
+import { resolveModels } from './_lib/models.js';
+
+/* ── Draf jawaban AI (diperiksa asatidz sebelum tampil) ──
+   Draf disimpan di kolom *_draft yang tidak terbaca publik (migrations/bank_soal_answer_drafts.sql).
+   Dibuat per blok [SOAL_ARAB] supaya tiap panggilan selesai jauh di bawah batas 60 detik Vercel. */
+const soalBlocks = (text) => {
+  const t = String(text || '');
+  if (!t.includes('[SOAL_ARAB]')) return t.trim() ? [{ arab: t.trim(), arti: '' }] : [];
+  return t.split('[SOAL_ARAB]').slice(1).filter(b => b.trim()).map(b => {
+    const [arab, arti] = b.split('[ARTI]');
+    return { arab: (arab || '').replace(/\n-{3,}\s*$/, '').trim(), arti: (arti || '').replace(/\n-{3,}\s*$/, '').trim() };
+  });
+};
+
+const DRAFT_SYSTEM = `Kamu membantu asatidz Talqeeh menyiapkan DRAF jawaban ujian tahriri Universitas Al-Azhar. Draf ini akan diperiksa dan diedit asatidz sebelum ditampilkan ke mahasiswa.
+
+Tulis dua bagian:
+1. "jawaban": jawaban dalam BAHASA ARAB fushah sesuai manhaj Al-Azhar — mulai dengan ta'rif bila relevan, lalu inti jawaban, dalil/syahid, dan tafshil seperlunya. Panjang sebanding bobot soal; maksimal ±350 kata.
+   - Soal pilihan ganda / benar-salah / isian dengan banyak nomor: jawab per nomor, satu baris per nomor (mis. "١. صح" atau "٢٦. (أ) مرادف"), tanpa uraian panjang.
+2. "penjelasan": penjelasan dalam BAHASA INDONESIA untuk mahasiswa Indonesia — inti jawaban 2–3 kalimat, istilah kunci, dan hal yang biasanya dituntut dosen. Maksimal ±200 kata.
+
+Aturan akurasi (WAJIB):
+- Kutip ayat hanya bila yakin 100% teks & letaknya; kalau tidak, tulis "كما ورد في القرآن الكريم" tanpa menyebut ayat.
+- Kutip hadits hanya bila yakin 100% matan & perawinya; kalau tidak, tulis "كما ثبت في السنة النبوية".
+- Jangan mengarang nama ulama, kitab, halaman, atau angka.
+- Bagian yang kamu tidak yakin: tandai persis dengan [PERLU DIVERIFIKASI: alasan singkat].
+- Soal yang teksnya terpotong/tidak lengkap: jawab bagian yang terbaca dan tandai [PERLU DIVERIFIKASI: soal terpotong].
+
+Format: teks polos tanpa markdown (tanpa **, #, tabel). Pisahkan paragraf dengan baris baru.
+Balas HANYA JSON valid: {"jawaban": "...", "penjelasan": "..."}`;
+
+const needsVerify = (arr) => (arr || []).some(t => /\[PERLU DIVERIFIKASI/i.test(String(t || '')));
+const cleanList = (v, n) => (Array.isArray(v) ? v : []).slice(0, n).map(x => (typeof x === 'string' ? x.slice(0, 12000) : ''));
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -57,5 +91,99 @@ export default async function handler(req, res) {
     });
   }
 
-  return res.status(400).json({ ok: false, error: 'Action tidak valid. Gunakan list atau stats.' });
+  // Kolom draf belum ada di database → pesan yang jelas, bukan error mentah.
+  const missingDraftColumns = (txt) => /draft|reviewed_/.test(txt) && /column|schema cache|PGRST204|42703/.test(txt);
+  const getSoal = async (id) => {
+    const r = await fetch(`${supabaseUrl}/rest/v1/bank_soal?id=eq.${encodeURIComponent(id)}&select=*&limit=1`, { headers });
+    const rows = await r.json();
+    return Array.isArray(rows) ? rows[0] : null;
+  };
+  const patchSoal = async (id, patch) => {
+    const r = await fetch(`${supabaseUrl}/rest/v1/bank_soal?id=eq.${encodeURIComponent(id)}`, {
+      method: 'PATCH', headers: { ...headers, 'Content-Type': 'application/json', Prefer: 'return=minimal' }, body: JSON.stringify(patch),
+    });
+    if (r.ok) return null;
+    const txt = await r.text();
+    return missingDraftColumns(txt)
+      ? 'Kolom draf belum ada — jalankan migrations/bank_soal_answer_drafts.sql di Supabase SQL Editor.'
+      : `Gagal menyimpan (${r.status}).`;
+  };
+
+  if (action === 'draft-generate') {
+    const { soal_id, index } = body;
+    const soal = soal_id && await getSoal(soal_id);
+    if (!soal) return res.status(404).json({ ok: false, error: 'Soal tidak ditemukan' });
+    if (soal.status !== 'approved') return res.status(400).json({ ok: false, error: 'Draf hanya untuk soal yang sudah di-approve.' });
+    const blocks = soalBlocks(soal.soal);
+    const i = Number(index);
+    if (!Number.isInteger(i) || i < 0 || i >= blocks.length) return res.status(400).json({ ok: false, error: 'Nomor blok tidak valid' });
+    const b = blocks[i];
+    const ctx = `Maddah: ${soal.maddah_nama || '-'} · Fakultas: ${soal.fakultas || '-'} · Tingkat: ${soal.tingkat || '-'} · ${soal.tahun || '-'} ${soal.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}`;
+    const model = (await resolveModels()).grade;
+    let out;
+    try {
+      out = await callAIJson({
+        system: DRAFT_SYSTEM,
+        messages: [{ role: 'user', content: `${ctx}\nBlok soal ${i + 1} dari ${blocks.length}.\n\nSOAL (Arab):\n${b.arab}\n\n${b.arti ? `TERJEMAH:\n${b.arti}\n` : ''}` }],
+        maxTokens: 2200, temperature: 0.2, model,
+      });
+    } catch (err) {
+      return res.status(502).json({ ok: false, error: friendlyAiError(err) });
+    }
+    const jawaban = typeof out?.jawaban === 'string' ? out.jawaban.trim() : '';
+    const penjelasan = typeof out?.penjelasan === 'string' ? out.penjelasan.trim() : '';
+    if (!jawaban) return res.status(502).json({ ok: false, error: 'AI tidak mengembalikan jawaban. Coba lagi.' });
+    const jd = Array.from({ length: blocks.length }, (_, k) => (Array.isArray(soal.jawaban_draft) ? soal.jawaban_draft[k] : '') || '');
+    const pd = Array.from({ length: blocks.length }, (_, k) => (Array.isArray(soal.penjelasan_draft) ? soal.penjelasan_draft[k] : '') || '');
+    jd[i] = jawaban; pd[i] = penjelasan;
+    const err = await patchSoal(soal_id, { jawaban_draft: jd, penjelasan_draft: pd, draft_status: 'draft', draft_model: model, draft_at: new Date().toISOString() });
+    if (err) return res.status(500).json({ ok: false, error: err });
+    return res.status(200).json({ ok: true, index: i, total: blocks.length, jawaban, penjelasan, model });
+  }
+
+  if (action === 'draft-save') {
+    const { soal_id } = body;
+    const soal = soal_id && await getSoal(soal_id);
+    if (!soal) return res.status(404).json({ ok: false, error: 'Soal tidak ditemukan' });
+    const n = soalBlocks(soal.soal).length;
+    const err = await patchSoal(soal_id, {
+      jawaban_draft: cleanList(body.jawaban, n), penjelasan_draft: cleanList(body.penjelasan, n),
+      draft_status: soal.draft_status === 'published' ? 'published' : 'draft',
+    });
+    if (err) return res.status(500).json({ ok: false, error: err });
+    return res.status(200).json({ ok: true });
+  }
+
+  if (action === 'draft-publish') {
+    const { soal_id } = body;
+    const reviewer = typeof body.reviewer === 'string' ? body.reviewer.trim().slice(0, 120) : '';
+    if (!reviewer) return res.status(400).json({ ok: false, error: 'Isi nama pemeriksa dulu.' });
+    const soal = soal_id && await getSoal(soal_id);
+    if (!soal) return res.status(404).json({ ok: false, error: 'Soal tidak ditemukan' });
+    const n = soalBlocks(soal.soal).length;
+    const jawaban = cleanList(body.jawaban, n);
+    const penjelasan = cleanList(body.penjelasan, n);
+    if (!jawaban.some(t => t.trim())) return res.status(400).json({ ok: false, error: 'Belum ada jawaban untuk dipublikasikan.' });
+    // Server ikut menjaga: jangan tampilkan jawaban yang masih ditandai belum diverifikasi.
+    if (needsVerify(jawaban) || needsVerify(penjelasan)) {
+      return res.status(400).json({ ok: false, error: 'Masih ada tanda [PERLU DIVERIFIKASI]. Periksa & hapus tandanya dulu.' });
+    }
+    const now = new Date().toISOString();
+    const err = await patchSoal(soal_id, {
+      jawaban, penjelasan, jawaban_draft: jawaban, penjelasan_draft: penjelasan,
+      draft_status: 'published', reviewed_by: reviewer, reviewed_at: now,
+    });
+    if (err) return res.status(500).json({ ok: false, error: err });
+    return res.status(200).json({ ok: true });
+  }
+
+  if (action === 'draft-unpublish') {
+    const { soal_id } = body;
+    if (!soal_id) return res.status(400).json({ ok: false, error: 'soal_id wajib' });
+    const err = await patchSoal(soal_id, { jawaban: null, penjelasan: null, draft_status: 'draft' });
+    if (err) return res.status(500).json({ ok: false, error: err });
+    return res.status(200).json({ ok: true });
+  }
+
+  return res.status(400).json({ ok: false, error: 'Action tidak valid.' });
 }

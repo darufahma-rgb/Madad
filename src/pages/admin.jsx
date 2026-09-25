@@ -2741,6 +2741,157 @@ const AdminSubscriptions = () => {
 
 /* ============== ADMIN BANK SOAL ============== */
 
+/* ── Draf jawaban AI untuk soal approved: buat → periksa & edit → publikasikan ──
+   Draf tersimpan di kolom *_draft (tidak terbaca publik). Hanya "Publikasikan" yang membuatnya tampil ke user. */
+const REVIEWER_KEY = 'talqeeh_reviewer_name';
+const splitSoalBlocks = (text) => {
+  const t = String(text || '');
+  if (!t.includes('[SOAL_ARAB]')) return t.trim() ? [{ arab: t.trim(), arti: '' }] : [];
+  return t.split('[SOAL_ARAB]').slice(1).filter(b => b.trim()).map(b => {
+    const [arab, arti] = b.split('[ARTI]');
+    return { arab: (arab || '').replace(/\n-{3,}\s*$/, '').trim(), arti: (arti || '').replace(/\n-{3,}\s*$/, '').trim() };
+  });
+};
+const VERIFY_RE = /\[PERLU DIVERIFIKASI/i;
+const draftStatusOf = (s) => (s?.draft_status === 'published' || (Array.isArray(s?.jawaban) && s.jawaban.some(Boolean)))
+  ? 'published' : (Array.isArray(s?.jawaban_draft) && s.jawaban_draft.some(Boolean)) ? 'draft' : null;
+
+const bankSoalApi = async (action, payload) => {
+  try {
+    const r = await fetch('/api/admin-bank-soal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
+      body: JSON.stringify({ action, ...payload }),
+    });
+    return await r.json();
+  } catch { return { ok: false, error: 'Tidak bisa terhubung ke server.' }; }
+};
+
+const BankSoalDraftPanel = ({ soal, onChanged }) => {
+  const blocks = React.useMemo(() => splitSoalBlocks(soal.soal), [soal.soal]);
+  const pick = (a, b, i) => (Array.isArray(a) && a[i]) || (Array.isArray(b) && b[i]) || '';
+  const [jawaban, setJawaban] = useState(() => blocks.map((_, i) => pick(soal.jawaban_draft, soal.jawaban, i)));
+  const [penjelasan, setPenjelasan] = useState(() => blocks.map((_, i) => pick(soal.penjelasan_draft, soal.penjelasan, i)));
+  const [busy, setBusy] = useState(null);       // 'gen:3' | 'save' | 'publish' | 'unpublish'
+  const [msg, setMsg] = useState('');
+  const [reviewer, setReviewer] = useState(() => { try { return localStorage.getItem(REVIEWER_KEY) || ''; } catch { return ''; } });
+  const [checked, setChecked] = useState(false);
+  const [published, setPublished] = useState(draftStatusOf(soal) === 'published');
+  const stop = React.useRef(false);
+
+  const flagged = [...jawaban, ...penjelasan].filter(t => VERIFY_RE.test(t)).length;
+  const filled = jawaban.filter(t => t.trim()).length;
+
+  const genOne = async (i) => {
+    setBusy(`gen:${i}`);
+    const d = await bankSoalApi('draft-generate', { soal_id: soal.id, index: i });
+    if (!d.ok) { setMsg(d.error || 'Gagal membuat draf'); return false; }
+    setJawaban(a => a.map((t, k) => (k === i ? d.jawaban : t)));
+    setPenjelasan(a => a.map((t, k) => (k === i ? d.penjelasan : t)));
+    return true;
+  };
+  const genAllEmpty = async () => {
+    stop.current = false; setMsg('');
+    for (let i = 0; i < blocks.length; i++) {
+      if (stop.current) break;
+      if (jawaban[i]?.trim()) continue;
+      if (!(await genOne(i))) break;
+    }
+    setBusy(null); onChanged?.();
+  };
+  const save = async () => {
+    setBusy('save'); setMsg('');
+    const d = await bankSoalApi('draft-save', { soal_id: soal.id, jawaban, penjelasan });
+    setBusy(null); setMsg(d.ok ? 'Draf tersimpan (belum tampil ke user).' : (d.error || 'Gagal menyimpan'));
+    if (d.ok) onChanged?.();
+  };
+  const publish = async () => {
+    try { localStorage.setItem(REVIEWER_KEY, reviewer.trim()); } catch {}
+    setBusy('publish'); setMsg('');
+    const d = await bankSoalApi('draft-publish', { soal_id: soal.id, jawaban, penjelasan, reviewer });
+    setBusy(null);
+    if (d.ok) { setPublished(true); setMsg(`Terpublikasi — diperiksa oleh ${reviewer.trim()}.`); onChanged?.(); }
+    else setMsg(d.error || 'Gagal mempublikasikan');
+  };
+  const unpublish = async () => {
+    if (!confirm('Sembunyikan jawaban dari user? Draf tetap tersimpan.')) return;
+    setBusy('unpublish');
+    const d = await bankSoalApi('draft-unpublish', { soal_id: soal.id });
+    setBusy(null);
+    if (d.ok) { setPublished(false); setMsg('Jawaban disembunyikan dari user.'); onChanged?.(); } else setMsg(d.error || 'Gagal');
+  };
+
+  const area = 'w-full rounded-xl px-3 py-2 text-sm text-ink outline-none resize-y';
+  const areaStyle = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' };
+
+  return (
+    <div className="mb-5 rounded-2xl p-4" style={{ background: 'rgba(201,168,106,0.05)', border: '1px solid rgba(201,168,106,0.25)' }}>
+      <div className="flex items-center justify-between gap-3 flex-wrap mb-2">
+        <div>
+          <div className="text-sm font-semibold text-ink">Draf Jawaban AI</div>
+          <div className="text-xs text-ink-muted">
+            {filled}/{blocks.length} blok terisi · {published ? <span className="text-emerald-300">tampil ke user</span> : 'belum tampil ke user'}
+            {soal.reviewed_by && published && <> · diperiksa {soal.reviewed_by}</>}
+          </div>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          {busy?.startsWith('gen') ? (
+            <button onClick={() => { stop.current = true; }} className="btn btn-ghost text-xs px-3 py-1.5">Hentikan</button>
+          ) : (
+            <button onClick={genAllEmpty} disabled={!!busy || filled === blocks.length} className="btn btn-ghost text-xs px-3 py-1.5">
+              ✦ Buat draf AI {filled ? '(blok kosong)' : `(${blocks.length} blok)`}
+            </button>
+          )}
+          <button onClick={save} disabled={!!busy} className="btn btn-ghost text-xs px-3 py-1.5">{busy === 'save' ? 'Menyimpan…' : 'Simpan draf'}</button>
+        </div>
+      </div>
+      <p className="text-[11px] text-ink-soft mb-3">
+        Draf AI bisa keliru. Periksa tiap ayat, hadits, nama ulama, dan hapus semua tanda <b>[PERLU DIVERIFIKASI]</b> sebelum publikasi.
+      </p>
+
+      <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
+        {blocks.map((b, i) => (
+          <div key={i} className="rounded-xl p-3" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <span className="text-xs font-semibold text-gold-300">Soal {i + 1}</span>
+              <div className="flex items-center gap-2">
+                {VERIFY_RE.test(jawaban[i] + penjelasan[i]) && <span className="text-[10px] text-amber-300">⚠ perlu diverifikasi</span>}
+                <button onClick={async () => { setMsg(''); await genOne(i); setBusy(null); onChanged?.(); }} disabled={!!busy}
+                  className="text-[11px] text-emerald-300 hover:text-emerald-200 disabled:opacity-40">
+                  {busy === `gen:${i}` ? 'Membuat…' : jawaban[i] ? 'Buat ulang' : 'Buat draf'}
+                </button>
+              </div>
+            </div>
+            <div dir="rtl" className="text-[13px] text-ink-muted mb-2 line-clamp-3" style={{ fontFamily: '"Noto Naskh Arabic", serif' }}>{b.arab}</div>
+            <textarea dir="rtl" rows={4} value={jawaban[i]} onChange={e => setJawaban(a => a.map((t, k) => (k === i ? e.target.value : t)))}
+              placeholder="الجواب…" className={area} style={{ ...areaStyle, fontFamily: '"Noto Naskh Arabic", serif', fontSize: 15 }}/>
+            <textarea rows={3} value={penjelasan[i]} onChange={e => setPenjelasan(a => a.map((t, k) => (k === i ? e.target.value : t)))}
+              placeholder="Penjelasan (Bahasa Indonesia)…" className={`${area} mt-2`} style={areaStyle}/>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 pt-3 border-t border-white/8 space-y-2">
+        <input value={reviewer} onChange={e => setReviewer(e.target.value)} placeholder="Nama pemeriksa (asatidz / senior)"
+          className="w-full rounded-xl px-3 py-2 text-sm text-ink outline-none" style={areaStyle}/>
+        <label className="flex items-start gap-2 text-xs text-ink-muted">
+          <input type="checkbox" checked={checked} onChange={e => setChecked(e.target.checked)} className="mt-0.5"/>
+          Saya sudah memeriksa semua jawaban & penjelasan, termasuk ayat, hadits, dan pendapat ulama.
+        </label>
+        {flagged > 0 && <div className="text-xs text-amber-300">Masih ada {flagged} tanda [PERLU DIVERIFIKASI] — periksa & hapus dulu.</div>}
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={publish} disabled={!!busy || !checked || !reviewer.trim() || flagged > 0 || !filled}
+            className="btn btn-primary text-xs px-4 py-2 disabled:opacity-40">
+            {busy === 'publish' ? 'Mempublikasikan…' : published ? 'Perbarui jawaban yang tampil' : 'Publikasikan ke user'}
+          </button>
+          {published && <button onClick={unpublish} disabled={!!busy} className="btn btn-ghost text-xs px-3 py-2">Sembunyikan dari user</button>}
+        </div>
+        {msg && <div className="text-xs text-ink">{msg}</div>}
+      </div>
+    </div>
+  );
+};
+
 const AdminBankSoal = () => {
   const [soals, setSoals]       = useState([]);
   const [stats, setStats]       = useState({ pending: 0, approved: 0, rejected: 0 });
@@ -3007,6 +3158,12 @@ const AdminBankSoal = () => {
                     <span className={`text-xs px-2 py-0.5 rounded-full border ${STATUS_BADGE[s.status] || ''}`}>
                       {s.status}
                     </span>
+                    {s.status === 'approved' && (() => {
+                      const d = draftStatusOf(s);
+                      return <div className={`text-[10px] mt-1 ${d === 'published' ? 'text-emerald-300' : d === 'draft' ? 'text-amber-300' : 'text-ink-soft'}`}>
+                        {d === 'published' ? 'Jawaban terbit' : d === 'draft' ? 'Draf jawaban' : 'Belum ada jawaban'}
+                      </div>;
+                    })()}
                   </td>
                   <td className="px-4 py-3 text-ink-muted text-xs">{s.created_at?.slice(0,10)}</td>
                   <td className="px-4 py-3" style={{ whiteSpace: 'nowrap' }}>
@@ -3341,6 +3498,10 @@ const AdminBankSoal = () => {
                   }}
                 />
               </div>
+
+              {selected.status === 'approved' && (
+                <BankSoalDraftPanel key={selected.id} soal={selected} onChanged={() => fetchData(filter)}/>
+              )}
 
               {/* Tombol Salin Prompt */}
               <div style={{ marginBottom: 20 }}>

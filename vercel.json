@@ -6,6 +6,7 @@
   "framework": null,
   "functions": {
     "api/ai-partner.js": { "maxDuration": 60 },
+    "api/admin-bank-soal.js": { "maxDuration": 60 },
     "api/login.js": { "maxDuration": 30 },
     "api/mayar-webhook.js": { "maxDuration": 30 }
   },

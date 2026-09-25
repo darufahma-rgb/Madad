@@ -1311,7 +1311,7 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
                     </div>
                     <div style={{ position: 'relative' }}>
                       <div style={{
-                        direction: 'rtl', textAlign: 'right',
+                        direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap',
                         fontSize: 16, lineHeight: 2.1,
                         fontFamily: '"Scheherazade New", "Noto Naskh Arabic", "Traditional Arabic", serif',
                         color: '#e8e4dc',
@@ -1365,7 +1365,7 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
                     background: 'rgba(255,255,255,0.025)',
                     border: '1px solid rgba(255,255,255,0.07)',
                     borderRadius: 10, padding: '12px 14px',
-                    fontSize: 13, lineHeight: 1.75, color: '#bbb', marginTop: 10,
+                    fontSize: 13, lineHeight: 1.75, color: '#bbb', marginTop: 10, whiteSpace: 'pre-wrap',
                   }}>
                     <div style={{ fontSize: 10, color: '#555', fontWeight: 700, marginBottom: 6, letterSpacing: 0.6 }}>
                       PENJELASAN

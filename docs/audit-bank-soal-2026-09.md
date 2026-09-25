@@ -8,9 +8,11 @@ Cakupan: 55 soal berstatus **approved** (dibaca lewat akses publik, read-only). 
 - Semua `maddah_id` valid, nama maddah sesuai katalog, semua soal memakai format `[SOAL_ARAB]`/`[ARTI]`.
 - Tidak ada soal dobel (pasangan Fiqh Muqaran Dirasat tkt 3 2024/2025 tsani berbeda isinya — kemungkinan versi Banin & Banat).
 - 4 soal punya sisa teks AI/OCR sebelum soal pertama → dibersihkan dengan `migrations/bank_soal_cleanup_2026_09.sql`.
-- `jawaban` & `penjelasan` kosong di semua 55 soal → draf AI + review asatidz lewat Admin → Bank Soal.
+- `jawaban` & `penjelasan` kosong di semua 55 soal → draf AI + review asatidz lewat Admin → Bank Soal (lihat bagian di bawah).
 
 ## Wajib dicek manual dari foto asli
+
+Catatan: foto soal otomatis dihapus dari storage saat soal di-approve (`api/bank-soal.js`), jadi foto asli harus diminta lagi ke pengirimnya.
 
 - `a6364d82` Mustholah Hadits · tkt 1 · 2023/2024 awwal — soal no. 27–50 terpotong di tepi foto, satu pilihan jawaban `[...]`.
 - `d5fe103c` Ushul Fiqh · tkt 1 · 2023/2024 tsani — satu pilihan jawaban tidak terbaca `[...]`.
@@ -58,3 +60,12 @@ Centang kalau benar diujikan di tingkat itu → tambahkan ke `tingkat` maddah te
 | Lughah | 6 | 0 | 0 | 0 |
 
 Belum ada: tingkat 4 semua fakultas, Syariah tkt 3, Lughah tkt 2–3, Dirasat tkt 1–2. Tahun 2023/2024 baru 5 soal.
+
+## Draf jawaban AI + review asatidz
+
+1. Jalankan `migrations/bank_soal_answer_drafts.sql` di Supabase SQL Editor (sekali).
+2. Admin → Bank Soal → buka soal **approved** → panel **Draf Jawaban AI** → **Buat draf AI**. Draf dibuat per blok soal
+   dengan model **Penilaian tahriri** di Settings (bawaan Sonnet 5) dan disimpan di kolom draf yang tidak terbaca publik.
+3. Pemeriksa membaca & mengedit tiap blok, menghapus semua tanda `[PERLU DIVERIFIKASI: …]`, lalu **Simpan draf**.
+4. Isi nama pemeriksa, centang konfirmasi, **Publikasikan ke user**. Server menolak publikasi kalau nama pemeriksa kosong
+   atau masih ada tanda `[PERLU DIVERIFIKASI]`. **Sembunyikan dari user** menarik jawaban tanpa menghapus draf.
