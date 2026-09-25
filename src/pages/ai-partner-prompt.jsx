@@ -64,8 +64,16 @@ const PromptChat = () => {
   const [sending, setSending] = useState(false);
   const [error, setError]     = useState('');
   const [live, setLive]       = useState('');
-  const bottomRef = useRef(null);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const inputRef  = useRef(null);
+
+  // Kotak ketik tumbuh mengikuti isi, maksimal ±12 baris.
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 300) + 'px';
+  }, [input]);
 
   // Prompt kiriman dari halaman lain → percakapan baru, isi kotak input supaya bisa diedit dulu.
   useEffect(() => {
@@ -83,7 +91,8 @@ const PromptChat = () => {
   }, []);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    // Kotak ketik menempel di bawah layar, jadi gulir halaman ke paling bawah (bukan ke elemen penanda).
+    if (thread?.messages.length || sending) window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
   }, [thread?.messages.length, sending, Math.floor(live.length / 300)]);
 
   const persist = (t) => {
@@ -152,120 +161,146 @@ const PromptChat = () => {
 
   const messages = thread?.messages || [];
   const hasPlaceholder = PLACEHOLDER_RE.test(input);
+  const pickThread = (t) => { setThread(t); setInput(''); setError(''); setHistoryOpen(false); };
 
   return (
-    <div className="container-x pb-24">
-      <div className="grid lg:grid-cols-[1fr_280px] gap-5 items-start">
-        <div>
-          <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
-            <div className="min-w-0">
-              <div className="text-sm text-ink font-medium truncate">{thread ? threadTitle(thread) : 'Percakapan baru'}</div>
-              {thread?.source && <div className="text-xs text-ink-soft truncate">{thread.source}</div>}
-            </div>
-            {messages.length > 0 && (
-              <button onClick={startNew} className="btn btn-ghost text-xs px-3 py-1.5 inline-flex items-center gap-1.5">
-                <Icon name="refresh" className="w-3.5 h-3.5"/> Percakapan baru
-              </button>
-            )}
+    <div className="flex flex-col" style={{ minHeight: 'calc(100vh - var(--app-header-h, 64px) - var(--tabbar-height, 0px))' }}>
+      {/* Bar atas: kembali · judul · riwayat · percakapan baru */}
+      <div className="container-x w-full pt-3 md:pt-5">
+        <div className="max-w-3xl mx-auto flex items-center gap-2">
+          <button onClick={() => navigate('/ai-partner')} aria-label="Kembali ke AI Partner"
+            className="w-9 h-9 -ml-2 rounded-lg flex items-center justify-center text-ink-soft hover:text-ink hover:bg-white/5 flex-shrink-0">
+            <Icon name="chevronLeft" className="w-5 h-5"/>
+          </button>
+          <div className="min-w-0 flex-1">
+            <div className="text-sm text-ink font-medium truncate">{thread ? threadTitle(thread) : 'Percakapan baru'}</div>
+            {thread?.source && <div className="text-[11px] text-ink-soft truncate">{thread.source}</div>}
           </div>
-
-          <div className="card-glass p-4 md:p-6 flex flex-col" style={{ minHeight: 440 }}>
-            <div className="flex-1 space-y-4 overflow-y-auto mb-4" style={{ maxHeight: 560 }}>
-              {messages.length === 0 && !sending && (
-                <div className="text-center py-6 max-w-md mx-auto">
-                  <p className="text-ink-muted text-sm leading-relaxed mb-4">
-                    {input
-                      ? 'Prompt sudah siap di kotak bawah. Lengkapi bagian dalam [kurung siku] kalau ada, lalu kirim.'
-                      : 'Tempel prompt Talqeeh atau tulis pertanyaanmu. Bisa juga buka Maddah dan tekan "Jalankan di Talqeeh" di prompt mana pun.'}
-                  </p>
-                  {!input && (
-                    <button onClick={() => navigate('/maddah')} className="btn btn-ghost text-xs px-4 py-2 inline-flex items-center gap-1.5">
-                      <Icon name="layers" className="w-3.5 h-3.5"/> Pilih prompt dari Maddah
-                    </button>
-                  )}
-                </div>
-              )}
-              {messages.map((m, i) => (
-                <div key={i} className={`flex gap-2.5 ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  {m.role !== 'user' && (
-                    <span className="hidden sm:flex w-8 h-8 rounded-full flex-shrink-0 items-center justify-center mt-0.5"
-                      style={{ background: 'rgba(62,207,142,0.14)', border: '1px solid rgba(62,207,142,0.3)' }}>
-                      <Icon name="sparkles" className="w-4 h-4" style={{ stroke: '#3ecf8e' }}/>
-                    </span>
-                  )}
-                  <div className={`rounded-2xl min-w-0 ${m.role === 'user'
-                    ? 'max-w-[85%] px-4 py-2.5 text-sm bg-emerald-500/15 border border-emerald-500/25 text-ink rounded-br-md'
-                    : 'max-w-[94%] sm:max-w-[88%] px-4 py-3.5 bg-white/[0.035] border border-white/10 rounded-tl-md'}`}>
-                    {m.role === 'user'
-                      ? <UserMessage text={m.content}/>
-                      : <>
-                          <AiRichText content={m.content} size="sm"/>
-                          <div className="mt-2.5 pt-2 border-t border-white/[0.06] flex gap-3 text-xs text-ink-soft">
-                            <button onClick={() => copy(m.content)} className="inline-flex items-center gap-1 hover:text-ink">
-                              <Icon name="copy" className="w-3 h-3"/> Salin
-                            </button>
-                            <button onClick={() => saveNote(m.content)} className="inline-flex items-center gap-1 hover:text-ink">
-                              <Icon name="bookmark" className="w-3 h-3"/> Simpan ke Kurasah
+          <div className="relative flex-shrink-0">
+            <button onClick={() => setHistoryOpen(o => !o)} aria-expanded={historyOpen}
+              className="h-9 px-3 rounded-lg text-xs text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5">
+              <Icon name="messageSquare" className="w-4 h-4"/> <span className="hidden sm:inline">Riwayat</span>
+            </button>
+            {historyOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setHistoryOpen(false)}/>
+                <div className="absolute right-0 top-11 z-50 w-[300px] max-w-[85vw] rounded-2xl border border-white/10 p-2 shadow-2xl shadow-black/50"
+                  style={{ background: '#161616' }}>
+                  <div className="px-2.5 py-1.5 text-[11px] uppercase tracking-wider text-ink-soft">Riwayat · disimpan di perangkat ini</div>
+                  {threads.length === 0
+                    ? <p className="px-2.5 py-3 text-xs text-ink-soft">Belum ada percakapan.</p>
+                    : <div className="max-h-[360px] overflow-y-auto">
+                        {threads.map(t => (
+                          <div key={t.id} onClick={() => pickThread(t)}
+                            className={`flex items-center gap-2 rounded-lg px-2.5 py-2 cursor-pointer ${thread?.id === t.id ? 'bg-emerald-500/12' : 'hover:bg-white/5'}`}>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-xs text-ink truncate">{threadTitle(t)}</div>
+                              <div className="text-[10px] text-ink-soft">{new Date(t.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} · {t.messages.length} pesan</div>
+                            </div>
+                            <button onClick={e => { e.stopPropagation(); removeThread(t.id); }} className="text-ink-soft hover:text-rose-300 p-1" aria-label="Hapus">
+                              <Icon name="trash" className="w-3.5 h-3.5"/>
                             </button>
                           </div>
-                        </>}
-                  </div>
+                        ))}
+                      </div>}
                 </div>
-              ))}
-              {sending && (live ? (
-                <div className="flex gap-2.5 justify-start">
-                  <span className="hidden sm:flex w-8 h-8 rounded-full flex-shrink-0 items-center justify-center mt-0.5"
-                    style={{ background: 'rgba(62,207,142,0.14)', border: '1px solid rgba(62,207,142,0.3)' }}>
-                    <Icon name="sparkles" className="w-4 h-4" style={{ stroke: '#3ecf8e' }}/>
-                  </span>
-                  <div className="max-w-[94%] sm:max-w-[88%] px-4 py-3.5 rounded-2xl rounded-tl-md bg-white/[0.035] border border-white/10 min-w-0">
-                    <AiRichText content={live} size="sm"/>
-                    <span className="inline-block w-2 h-4 bg-emerald-400/80 align-middle animate-pulse mt-1"/>
-                  </div>
-                </div>
-              ) : <div className="text-xs text-ink-soft">AI sedang menulis…</div>)}
-              <div ref={bottomRef}/>
-            </div>
-
-            {error && <div className="text-sm text-rose-400 mb-2">{error}</div>}
-            {hasPlaceholder && !sending && (
-              <div className="text-xs text-amber-400/90 mb-2">💡 Masih ada bagian [dalam kurung siku] — isi dulu supaya jawabannya pas.</div>
+              </>
             )}
-            <div className="flex gap-2">
-              <textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)} maxLength={MAX_INPUT}
-                rows={input.length > 200 ? 8 : 2}
-                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && input.length < 200) { e.preventDefault(); send(); } }}
-                placeholder={messages.length ? 'Lanjutkan percakapan…' : 'Tempel prompt atau tulis pertanyaanmu…'}
-                className={`${aiInputClass} resize-y`} style={{ fontSize: 16 }} dir="auto"/>
-              <button onClick={send} disabled={sending || !input.trim()} className="btn btn-primary px-4 self-end py-2.5" aria-label="Kirim">
-                <Icon name="arrowRight" className="w-4 h-4"/>
-              </button>
+          </div>
+          <button onClick={startNew} title="Percakapan baru"
+            className="h-9 px-3 rounded-lg text-xs text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5 flex-shrink-0">
+            <Icon name="pen" className="w-4 h-4"/> <span className="hidden sm:inline">Baru</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Percakapan: satu kolom di tengah */}
+      <div className="container-x w-full flex-1">
+        <div className="max-w-3xl mx-auto pt-6 pb-6 space-y-7">
+          {messages.length === 0 && !sending && (
+            <div className="text-center pt-10 md:pt-16 max-w-md mx-auto">
+              <LogoMark size={44} className="mb-4"/>
+              <p className="text-ink-muted text-sm leading-relaxed">
+                {input
+                  ? 'Prompt sudah siap di kotak bawah. Lengkapi bagian dalam [kurung siku] kalau ada, lalu kirim.'
+                  : 'Tulis pertanyaanmu atau tempel prompt Talqeeh.'}
+              </p>
+              {!input && (
+                <button onClick={() => navigate('/maddah')} className="mt-4 h-9 px-3.5 rounded-xl border border-white/10 text-xs text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5">
+                  <Icon name="layers" className="w-3.5 h-3.5"/> Pilih prompt dari Maddah
+                </button>
+              )}
             </div>
+          )}
+
+          {messages.map((m, i) => m.role === 'user' ? (
+            <div key={i} className="flex justify-end">
+              <div className="max-w-[85%] rounded-2xl px-4 py-2.5 text-[15px] text-ink bg-white/[0.07] border border-white/[0.06] min-w-0">
+                <UserMessage text={m.content}/>
+              </div>
+            </div>
+          ) : (
+            <div key={i} className="flex gap-3">
+              <LogoMark size={28} className="flex-shrink-0 mt-0.5"/>
+              <div className="min-w-0 flex-1">
+                <AiRichText content={m.content} size="md"/>
+                <div className="mt-2 flex gap-1 text-xs text-ink-soft">
+                  <button onClick={() => copy(m.content)} className="h-7 px-2 rounded-md inline-flex items-center gap-1 hover:text-ink hover:bg-white/5">
+                    <Icon name="copy" className="w-3.5 h-3.5"/> Salin
+                  </button>
+                  <button onClick={() => saveNote(m.content)} className="h-7 px-2 rounded-md inline-flex items-center gap-1 hover:text-ink hover:bg-white/5">
+                    <Icon name="bookmark" className="w-3.5 h-3.5"/> Simpan ke Kurasah
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {sending && (
+            <div className="flex gap-3">
+              <LogoMark size={28} className={`flex-shrink-0 mt-0.5 ${live.trim() ? '' : 'animate-pulse'}`}/>
+              <div className="min-w-0 flex-1">
+                {live.trim()
+                  ? <><AiRichText content={live} size="md"/><span className="inline-block w-2 h-4 bg-emerald-400/80 align-middle animate-pulse mt-1"/></>
+                  : <div className="text-sm text-ink-soft pt-1">Sedang berpikir…</div>}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Kotak ketik menempel di bawah */}
+      <div className="sticky z-20 pt-3 pb-3 md:pb-5" style={{ bottom: 'var(--tabbar-height, 0px)', background: 'linear-gradient(to top, rgb(12,12,12) 70%, rgba(12,12,12,0))' }}>
+        <div className="container-x w-full">
+          <div className="max-w-3xl mx-auto">
+            {error && <div className="text-sm text-rose-400 mb-2 px-1">{error}</div>}
+            {hasPlaceholder && !sending && (
+              <div className="text-xs text-amber-400/90 mb-2 px-1">💡 Masih ada bagian [dalam kurung siku] — isi dulu supaya jawabannya pas.</div>
+            )}
+            <div className="rounded-2xl border border-white/12 bg-[#1a1a1a] shadow-2xl shadow-black/40 focus-within:border-emerald-500/40 transition-colors">
+              <textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)} maxLength={MAX_INPUT} rows={1} dir="auto"
+                onKeyDown={e => {
+                  if (e.key !== 'Enter' || e.shiftKey || e.nativeEvent.isComposing) return;
+                  // Prompt panjang yang sedang diedit: Enter = baris baru, Ctrl/Cmd+Enter = kirim.
+                  if (input.length < 200 || e.metaKey || e.ctrlKey) { e.preventDefault(); send(); }
+                }}
+                placeholder={messages.length ? 'Balas…' : 'Tulis pertanyaan atau tempel prompt…'}
+                className="w-full bg-transparent resize-none outline-none focus-visible:outline-none px-4 pt-3.5 text-ink placeholder-ink-soft leading-relaxed"
+                style={{ fontSize: 16, minHeight: 52 }}/>
+              <div className="flex items-center justify-between gap-2 px-2.5 pb-2.5">
+                <span className="text-[11px] text-ink-soft px-1.5 hidden sm:inline">
+                  {input.length >= 200 ? 'Ctrl + Enter untuk kirim' : 'Enter kirim · Shift + Enter baris baru'}
+                </span>
+                <button onClick={send} disabled={sending || !input.trim()} aria-label="Kirim"
+                  className="ml-auto w-9 h-9 rounded-xl flex items-center justify-center transition-colors disabled:opacity-40"
+                  style={{ background: input.trim() && !sending ? '#3ecf8e' : 'rgba(255,255,255,0.08)' }}>
+                  <Icon name="arrowRight" className="w-4 h-4" style={{ stroke: input.trim() && !sending ? '#0b0b0b' : 'currentColor' }}/>
+                </button>
+              </div>
+            </div>
+            <p className="text-[11px] text-ink-soft text-center mt-2">AI bisa keliru. Cek kembali ke kitab muqarrar atau duktur.</p>
           </div>
         </div>
-
-        <aside className="card-glass p-4">
-          <div className="flex items-center justify-between mb-3">
-            <div className="text-xs uppercase tracking-wider text-gold-400">Riwayat</div>
-            <button onClick={startNew} className="text-xs text-emerald-300 hover:text-emerald-200">+ Baru</button>
-          </div>
-          {threads.length === 0
-            ? <p className="text-xs text-ink-soft">Belum ada percakapan. Riwayat disimpan di perangkat ini.</p>
-            : <div className="space-y-1.5 max-h-[420px] overflow-y-auto">
-                {threads.map(t => (
-                  <div key={t.id} className={`group flex items-center gap-2 rounded-lg px-2.5 py-2 cursor-pointer ${thread?.id === t.id ? 'bg-emerald-500/12' : 'hover:bg-white/5'}`}
-                    onClick={() => { setThread(t); setInput(''); setError(''); }}>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs text-ink truncate">{threadTitle(t)}</div>
-                      <div className="text-[10px] text-ink-soft">{new Date(t.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} · {t.messages.length} pesan</div>
-                    </div>
-                    <button onClick={e => { e.stopPropagation(); removeThread(t.id); }} className="text-ink-soft hover:text-rose-300 p-1" aria-label="Hapus">
-                      <Icon name="trash" className="w-3.5 h-3.5"/>
-                    </button>
-                  </div>
-                ))}
-              </div>}
-        </aside>
       </div>
     </div>
   );
@@ -291,27 +326,13 @@ const AiPromptPage = () => {
   const status = useAiStatus();
   return (
     <div className="page-enter">
-      <div className="container-x pt-4 md:pt-8">
-        <button onClick={() => navigate('/ai-partner')} className="text-sm text-ink-soft hover:text-ink inline-flex items-center gap-1.5" style={{ minHeight: 40 }}>
-          <Icon name="chevronLeft" className="w-4 h-4"/> AI Partner
-        </button>
-      </div>
-      <section className="container-x pt-2 pb-6">
-        <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-2">AI Partner · Jalankan Prompt</div>
-        <h1 className="font-display text-2xl md:text-4xl font-semibold text-ink leading-tight">
-          Prompt Talqeeh, langsung dijawab di sini.
-        </h1>
-        <p className="mt-2 text-sm md:text-base text-ink-muted max-w-2xl leading-relaxed">
-          Tidak perlu salin-tempel ke AI lain. Jawaban disesuaikan dengan profil belajarmu.
-        </p>
-      </section>
       {status.loading
-        ? <div className="container-x pb-24"><div className="card-glass p-6 max-w-xl"><Skeleton lines={3}/></div></div>
+        ? <div className="container-x pt-10 pb-24"><div className="card-glass p-6 max-w-xl mx-auto"><Skeleton lines={3}/></div></div>
         : status.tier === 'pro'
           ? <PromptChat/>
-          : <div className="container-x pb-24">
+          : <div className="container-x pt-10 pb-24 max-w-2xl mx-auto">
               <UpgradeCard
-                title={status.tier === 'none' ? 'Khusus member Talqeeh' : 'Jalankan prompt khusus pelanggan AI Partner'}
+                title={status.tier === 'none' ? 'Khusus member Talqeeh' : 'Tanya AI khusus pelanggan AI Partner'}
                 message="Jalankan semua prompt Talqeeh langsung di sini dan lanjutkan percakapannya, tanpa salin-tempel ke AI lain."/>
             </div>}
     </div>

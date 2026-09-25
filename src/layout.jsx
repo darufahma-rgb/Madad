@@ -905,8 +905,10 @@ const MobileTabBar = () => {
 /* ── Floating Support Button (BN-11) ── */
 const SupportButton = () => {
   const wa = useAppSettings().whatsapp || "";
+  const path = useRoute();
   const isPlaceholder = !wa || wa.includes("xxxxxxxxx") || wa === "+201xxxxxxxxx";
-  if (isPlaceholder) return null;
+  // Halaman chat AI punya kotak ketik di bawah; tombol melayang akan menutupinya.
+  if (isPlaceholder || path.startsWith("/ai-partner/prompt")) return null;
 
   const handleClick = () => {
     const num = wa.replace(/\D/g, "");

@@ -148,6 +148,9 @@ const useQuickNoteContext = () => {
 const QuickNoteButton = () => {
   const [open, setOpen] = React.useState(false);
   const { contextLabel, contextSource } = useQuickNoteContext();
+  const path = useRoute();
+  // Halaman chat AI punya kotak ketik di bawah; tombol melayang akan menutupinya.
+  if (path.startsWith("/ai-partner/prompt")) return null;
 
   return (
     <>
