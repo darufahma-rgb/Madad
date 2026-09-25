@@ -964,6 +964,7 @@ const AdminMembers = () => {
   const [search,     setSearch]     = useState("");
   const [filterType, setFilterType] = useState("semua");
   const [linkOpen,   setLinkOpen]   = useState(false);
+  const [grantOpen,  setGrantOpen]  = useState(false);
   const [picked,     setPicked]     = useState(() => new Set());
   const [deleting,   setDeleting]   = useState(false);
   const toast = useToast();
@@ -1074,6 +1075,9 @@ const AdminMembers = () => {
           </button>
           <button onClick={() => setLinkOpen(o => !o)} className="btn btn-ghost text-xs px-3 py-2 flex items-center gap-1.5">
             <Icon name="users" className="w-3.5 h-3.5"/> Member lama ({members.filter(m => m.tier !== "free" && !m.googleLinked).length})
+          </button>
+          <button onClick={() => setGrantOpen(true)} className="btn btn-ghost text-sm">
+            <Icon name="crown" className="w-4 h-4"/> Beri akses
           </button>
           <button onClick={() => setGenOpen(true)} className="btn btn-primary">
             <Icon name="sparkles" className="w-4 h-4"/> Tambah Member
@@ -1255,7 +1259,7 @@ const AdminMembers = () => {
                   </td>
                   <td className="px-4 py-3.5 text-xs text-ink-muted num">{m.expiresAt}</td>
                   <td className="px-4 py-3.5 text-right">
-                    <MemberActions member={m} updateMember={updateMember} onDelete={() => deleteMember(m.code, m.name)}/>
+                    <MemberActions member={m} updateMember={updateMember} onDelete={() => deleteMember(m.code, m.name)} onReload={loadFromSupabase} members={members}/>
                   </td>
                 </tr>
               ))}
@@ -1268,6 +1272,7 @@ const AdminMembers = () => {
       </div>
 
       <GenerateModal open={genOpen} onClose={() => setGenOpen(false)} members={members} onAdd={handleAdd}/>
+      <GrantAccessModal open={grantOpen} onClose={() => setGrantOpen(false)} members={members} onDone={loadFromSupabase}/>
     </div>
   );
 };
@@ -1483,11 +1488,147 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
   );
 };
 
-const MemberActions = ({ member, updateMember, onDelete }) => {
+/* ── Beri akses: Library selamanya dan/atau AI Study Partner, lewat email Google atau kode member ── */
+const AI_GRANT_DURATIONS = [[30, "30 hari"], [60, "60 hari"], [90, "90 hari"], [180, "6 bulan"], [365, "1 tahun"], [0, "Tanpa batas"]];
+const GRANT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const GrantAccessModal = ({ open, onClose, members = [], initialTarget = "", onDone }) => {
+  const toast = useToast();
+  const [target, setTarget] = useState(initialTarget);
+  const [library, setLibrary] = useState(true);
+  const [ai, setAi] = useState(true);
+  const [days, setDays] = useState(30);
+  const [note, setNote] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState(null);
+
+  useEffect(() => {
+    if (!open) return;
+    setTarget(initialTarget); setLibrary(true); setAi(true); setDays(30); setNote(""); setError(""); setResult(null);
+  }, [open, initialTarget]);
+
+  const t = target.trim();
+  const match = members.find(m => m.code === t.toUpperCase() || (m.email && m.email.toLowerCase() === t.toLowerCase()));
+  const isEmail = GRANT_EMAIL_RE.test(t);
+
+  const submit = async (e) => {
+    e?.preventDefault();
+    if (!t || busy) return;
+    setBusy(true); setError("");
+    try {
+      const data = await adminMembersAPI("grant-access", null, null, { target: t, library, aiDays: ai ? days : null, note });
+      setResult({ ...data, whatsapp: match?.whatsapp || "" });
+      toast.push(`Akses diberikan ke ${data.name || data.email || data.code}.`);
+      onDone && onDone();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const aiText = (r) => !r.aiUntil ? null : r.aiUntil === "unlimited" ? "AI Study Partner tanpa batas waktu"
+    : `AI Study Partner sampai ${new Date(r.aiUntil).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}`;
+  const waText = (r) => {
+    const parts = [r.library && "Library selamanya", aiText(r)].filter(Boolean).join(" + ");
+    return `Assalamu'alaikum ${r.name || ""}, akses Talqeeh kamu sudah aktif: ${parts}.\n\nMasuk di https://talqeeh.vercel.app dengan akun Google *${r.email || "-"}* — langsung aktif, tanpa kode. Selamat belajar! 🌙`;
+  };
+
+  return (
+    <Modal open={open} onClose={onClose} size="md">
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="font-display text-xl font-semibold text-ink">Beri akses</h2>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5 flex items-center justify-center"><Icon name="x" className="w-4 h-4"/></button>
+        </div>
+
+        {result ? (
+          <div>
+            <div className="card-glass p-4 mb-4" style={{ border: "1px solid rgba(62,207,142,0.3)" }}>
+              <div className="text-sm text-ink font-medium">{result.name || result.email} <span className="font-mono text-xs text-gold-300 ml-1">{result.code}</span></div>
+              <ul className="text-xs text-ink-muted mt-2 space-y-1">
+                {result.library && <li>✓ Library selamanya</li>}
+                {aiText(result) && <li>✓ {aiText(result)}</li>}
+                {result.created && <li className="text-amber-300">Akun baru dibuat — aktif saat dia login Google dengan {result.email}.</li>}
+              </ul>
+            </div>
+            <label className="text-xs text-ink-soft block mb-1">Pesan untuk dikirim</label>
+            <textarea readOnly value={waText(result)} rows={5} className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-ink outline-none"/>
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => { navigator.clipboard.writeText(waText(result)); toast.push("Pesan tersalin"); }} className="btn btn-ghost flex-1 text-sm">Salin pesan</button>
+              {result.whatsapp && (
+                <button onClick={() => sendAdminWa(result.whatsapp, waText(result), toast)} className="btn btn-primary flex-1 text-sm">Kirim WA</button>
+              )}
+            </div>
+            <button onClick={onClose} className="w-full text-center text-xs text-ink-soft hover:text-ink mt-4">Selesai</button>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="space-y-4">
+            <div>
+              <label className="text-xs text-ink-muted block mb-1">Email Google atau kode member</label>
+              <input value={target} onChange={e => { setTarget(e.target.value); setError(""); }} list="grant-targets" autoFocus
+                placeholder="nama@gmail.com / MSR-XXXX-XXXX"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-ink outline-none font-mono focus:border-emerald-500/45"/>
+              <datalist id="grant-targets">
+                {members.slice(0, 400).map(m => <option key={m.code} value={m.email || m.code} label={`${m.name} · ${m.code}`}/>)}
+              </datalist>
+              <div className="text-[11px] mt-1.5 min-h-[16px]">
+                {match ? (
+                  <span className="text-ink-muted">
+                    <span className="text-ink">{match.name}</span> · {match.tier === "free" ? "Akun gratis" : "Member Library"} · {match.googleLinked ? "sudah login Google" : "belum login Google"}
+                  </span>
+                ) : isEmail ? (
+                  <span className="text-amber-300">Belum terdaftar — akun dibuat, aktif saat dia login Google dengan email ini.</span>
+                ) : t ? (
+                  <span className="text-ink-soft">Ketik email lengkap atau kode member yang ada.</span>
+                ) : <span className="text-ink-soft">Pilih dari daftar atau ketik email/kode.</span>}
+              </div>
+            </div>
+
+            <label className="flex items-start gap-3 card-glass p-3.5 cursor-pointer">
+              <input type="checkbox" checked={library} onChange={e => setLibrary(e.target.checked)} className="accent-emerald-500 w-4 h-4 mt-0.5"/>
+              <span><span className="text-sm text-ink">Library selamanya</span><span className="block text-[11px] text-ink-soft">Semua maddah, bank soal, Siap Imtihan.</span></span>
+            </label>
+
+            <div className="card-glass p-3.5">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" checked={ai} onChange={e => setAi(e.target.checked)} className="accent-emerald-500 w-4 h-4 mt-0.5"/>
+                <span><span className="text-sm text-ink">AI Study Partner</span><span className="block text-[11px] text-ink-soft">Kalau masih aktif, durasinya ditambahkan dari tanggal habis.</span></span>
+              </label>
+              {ai && (
+                <div className="flex flex-wrap gap-1.5 mt-3 pl-7">
+                  {AI_GRANT_DURATIONS.map(([d, label]) => (
+                    <button type="button" key={d} onClick={() => setDays(d)}
+                      className={`text-xs px-3 py-1.5 rounded-lg border ${days === d ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-200" : "border-white/10 text-ink-muted hover:text-ink"}`}>{label}</button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="text-xs text-ink-muted block mb-1">Catatan (opsional)</label>
+              <input value={note} onChange={e => setNote(e.target.value)} placeholder="mis. bayar via WA, reward, kolaborasi"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-ink outline-none focus:border-emerald-500/45"/>
+            </div>
+
+            {error && <div className="text-xs text-rose-400">{error}</div>}
+            <button type="submit" disabled={busy || !t || (!library && !ai)} className="btn btn-primary w-full text-sm py-3">
+              {busy ? "Memproses…" : "Beri akses"}
+            </button>
+          </form>
+        )}
+      </div>
+    </Modal>
+  );
+};
+
+const MemberActions = ({ member, updateMember, onDelete, onReload, members }) => {
   const [open, setOpen] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [showPin, setShowPin] = useState(false);
+  const [showGrant, setShowGrant] = useState(false);
   const toast = useToast();
   const close = () => setOpen(false);
   return (
@@ -1505,6 +1646,9 @@ const MemberActions = ({ member, updateMember, onDelete }) => {
             </button>
             <button onClick={() => { setShowEdit(true); close(); }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5 flex items-center gap-2">
               <Icon name="edit" className="w-3.5 h-3.5 text-ink-soft"/> Edit Member
+            </button>
+            <button onClick={() => { setShowGrant(true); close(); }} className="w-full text-left px-4 py-2 text-emerald-300 hover:bg-white/5 flex items-center gap-2">
+              <Icon name="crown" className="w-3.5 h-3.5"/> Beri akses…
             </button>
             <div className="my-1 h-px bg-line"/>
             {member.status !== "disabled" && (
@@ -1535,6 +1679,8 @@ const MemberActions = ({ member, updateMember, onDelete }) => {
       {showProfile && <MemberProfileModal member={member} onClose={() => setShowProfile(false)}/>}
       {showEdit && <EditMemberModal member={member} onClose={() => setShowEdit(false)} onSave={updateMember}/>}
       {showPin && <PinModal member={member} onClose={() => setShowPin(false)}/>}
+      <GrantAccessModal open={showGrant} onClose={() => setShowGrant(false)} members={members || []}
+        initialTarget={member.email || member.code} onDone={onReload}/>
     </div>
   );
 };

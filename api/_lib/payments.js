@@ -242,7 +242,7 @@ export async function activateLibrary({ authUserId, email, name, mobile, note })
 }
 
 // +30 hari AI Partner, dihitung dari tanggal habis kalau masih aktif (perpanjangan tidak hangus).
-export async function extendAi(memberCode, { email, event = 'checkout.paid' } = {}) {
+export async function extendAi(memberCode, { email, event = 'checkout.paid', days = AI_PERIOD_DAYS } = {}) {
   const { url, h } = sb();
   const rows = await fetch(
     `${url}/rest/v1/ai_subscriptions?member_code=eq.${encodeURIComponent(memberCode)}&product_id=eq.${AI_PRODUCT_ID}&select=status,expires_at`,
@@ -251,7 +251,7 @@ export async function extendAi(memberCode, { email, event = 'checkout.paid' } = 
   const current = Array.isArray(rows) ? rows[0] : null;
   const currentEnd = current?.status === 'active' && current.expires_at ? Date.parse(current.expires_at) : 0;
   const start = Math.max(Date.now(), currentEnd || 0);
-  const expiresAt = new Date(start + AI_PERIOD_DAYS * 86400000).toISOString();
+  const expiresAt = new Date(start + days * 86400000).toISOString();
   const now = new Date().toISOString();
 
   const r = await fetch(`${url}/rest/v1/ai_subscriptions?on_conflict=member_code,product_id`, {

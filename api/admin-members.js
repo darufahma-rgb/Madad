@@ -4,7 +4,8 @@ import { ADMIN_SETTING_KEYS, readSettings } from './_lib/settings.js';
 import { MODEL_SETTING_KEYS, isValidModelId } from './_lib/models.js';
 import { newActivationPin, PIN_TTL_DAYS } from './_lib/pin.js';
 import { buildAdminAnalytics } from './_lib/analytics.js';
-import { parseAiPrice } from './_lib/payments.js';
+import { parseAiPrice, extendAi } from './_lib/payments.js';
+import { newMemberCode } from './_lib/member.js';
 import { QUOTA_KINDS } from './_lib/ai-partner/limits.js';
 
 const sbRequest = (supabaseUrl, serviceKey, method, path, body, prefer = 'return=representation') => {
@@ -70,6 +71,72 @@ async function deleteMembers(url, key, codes) {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LIBRARY_EXPIRY = '2099-12-31';
+
+/* Admin memberi akses: Library selamanya dan/atau AI Study Partner (sekian hari atau tanpa batas).
+   target = email Google atau kode member. Email yang belum terdaftar dibuatkan akun — aktif saat pemiliknya
+   login Google dengan email itu (resolveMember menautkan lewat email). aiDays: angka hari, 0 = tanpa batas,
+   null = tidak memberi AI. Perpanjangan AI dihitung dari tanggal habis kalau masih aktif. */
+async function grantAccess(url, key, { target, library, aiDays, note }) {
+  const raw = String(target || '').trim();
+  const email = raw.toLowerCase();
+  const byEmail = EMAIL_RE.test(email);
+  const code = byEmail ? null : raw.toUpperCase();
+  if (!byEmail && !/^[A-Z0-9-]{3,40}$/.test(code || '')) return { ok: false, error: 'Isi email Google atau kode member yang valid' };
+  const giveAi = aiDays !== null && aiDays !== undefined;
+  const days = giveAi ? Number(aiDays) : null;
+  if (giveAi && !(Number.isInteger(days) && days >= 0 && days <= 3650)) return { ok: false, error: 'Durasi AI tidak valid' };
+  if (!library && !giveAi) return { ok: false, error: 'Pilih minimal satu akses: Library atau AI Study Partner' };
+  const why = String(note || '').trim().slice(0, 120);
+
+  const fields = 'code,name,email,status,tier,auth_user_id';
+  const found = await sbRequest(url, key, 'GET', `members?${byEmail ? `email=eq.${encodeURIComponent(email)}` : `code=eq.${encodeURIComponent(code)}`}&select=${fields}&limit=1`, null);
+  let member = Array.isArray(found.data) ? found.data[0] : null;
+  if (!member && !byEmail) return { ok: false, error: 'Kode member tidak ditemukan' };
+
+  let created = false;
+  if (!member) {
+    const now = new Date().toISOString();
+    for (let attempt = 0; attempt < 5 && !member; attempt++) {
+      const r = await sbRequest(url, key, 'POST', `members?select=${fields}`, {
+        code: newMemberCode(), name: email.split('@')[0].slice(0, 120), email, whatsapp: '', duration: 36500,
+        status: 'active', tier: library ? 'library' : 'free', expires_at: LIBRARY_EXPIRY,
+        ...(library ? {} : { free_started_at: now }),
+        notes: `Diberi admin${why ? ` · ${why}` : ''}`.slice(0, 300),
+      });
+      if (r.status < 400) { member = r.data[0]; created = true; }
+      else if (r.status !== 409) return { ok: false, error: `Gagal membuat akun (${r.status})` };
+    }
+    if (!member) return { ok: false, error: 'Gagal membuat kode member unik' };
+  } else if (library || member.status !== 'active') {
+    const patch = {
+      status: 'active',
+      ...(library ? { tier: 'library', expires_at: LIBRARY_EXPIRY } : {}),
+      ...(library && member.tier === 'free' ? { notes: `Library diberi admin${why ? ` · ${why}` : ''}`.slice(0, 300) } : {}),
+    };
+    const r = await sbRequest(url, key, 'PATCH', `members?code=eq.${encodeURIComponent(member.code)}`, patch, 'return=minimal');
+    if (r.status >= 400) return { ok: false, error: `Gagal mengaktifkan member (${r.status})` };
+  }
+
+  let aiUntil = null;
+  if (giveAi) {
+    if (days === 0) {
+      const now = new Date().toISOString();
+      const r = await sbRequest(url, key, 'POST', 'ai_subscriptions?on_conflict=member_code,product_id', {
+        member_code: member.code, product_id: 'manual', status: 'active',
+        last_event: `admin.grant${why ? `: ${why}` : ''}`.slice(0, 120), last_event_at: now, updated_at: now,
+      }, 'resolution=merge-duplicates,return=minimal');
+      if (r.status >= 400) return { ok: false, error: `Library tersimpan, tapi AI gagal diberikan (${r.status})`, code: member.code };
+      aiUntil = 'unlimited';
+    } else {
+      try { aiUntil = await extendAi(member.code, { email: member.email, event: `admin.grant${why ? `: ${why}` : ''}`.slice(0, 120), days }); }
+      catch (err) { return { ok: false, error: `Library tersimpan, tapi AI gagal diberikan: ${err.message}`, code: member.code }; }
+    }
+  }
+  return {
+    ok: true, code: member.code, name: member.name, email: member.email || email || null,
+    created, linked: !!member.auth_user_id, library: library || member.tier !== 'free', aiUntil,
+  };
+}
 
 // Admin memasukkan email Google member lama → member itu jadi Library selamanya dan langsung
 // terhubung saat login Google (tanpa PIN). AI Partner tidak ikut: tetap dibayar terpisah.
@@ -182,6 +249,11 @@ export default async function handler(req, res) {
           result = { status: 200, data: { pin, expiresAt } };
         }
       }
+    } else if (action === 'grant-access') {
+      const g = JSON.parse(body || '{}');
+      const out = await grantAccess(supabaseUrl, serviceKey, { target: g.target, library: !!g.library, aiDays: g.aiDays, note: g.note });
+      if (!out.ok) { res.status(400).json({ ok: false, error: out.error }); return; }
+      result = { status: 200, data: out };
     } else if (action === 'link-emails') {
       const list = Array.isArray(links) ? links.slice(0, 200) : [];
       const results = [];
