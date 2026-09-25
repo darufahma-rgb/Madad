@@ -193,7 +193,7 @@ const ProfilBelajarPage = () => {
     ? { price: LIBRARY_PRICE, per: 'sekali bayar', cta: 'Buka semua dengan Library', later: 'Nanti aja, pakai gratisan dulu',
         onClick: () => navigate('/gabung?plan=library') }
     : aiStatus.loading || aiStatus.tier === 'pro' ? null
-    : { price: settings.aiPriceLabel || null, per: settings.aiPriceLabel ? '/bulan' : '', cta: 'Mulai AI Partner', later: 'Nanti saja',
+    : { price: settings.aiPriceLabel || null, per: settings.aiPriceLabel ? '/30 hari' : '', cta: 'Mulai AI Partner', later: 'Nanti saja',
         note: 'Ringkasan, flashcard, kuis, dan tutor dari materimu — disesuaikan dengan profil ini.',
         onClick: () => window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library_ai' } })) };
 

@@ -549,14 +549,21 @@ const clearUpgradeOffer = () => { try { localStorage.removeItem(UPGRADE_OFFER_KE
 
 const UpgradeOfferModal = ({ onClose }) => {
   const settings = useAppSettings();
-  const aiPrice = settings.aiPriceLabel;
+  const bundle = aiBundle(settings);
   const go = (plan) => { clearUpgradeOffer(); onClose(); navigate(`/gabung?plan=${plan}`); };
   const later = () => { clearUpgradeOffer(); onClose(); };
   const plans = [
     { plan: "library", title: "Library", price: LIBRARY_PRICE, note: "sekali bayar · selamanya", color: "#c9a86a",
-      items: LIBRARY_FEATURES.slice(0, 4) },
-    { plan: "library_ai", title: "Library + AI Study Partner", price: LIBRARY_PRICE, note: aiPrice ? `+ ${aiPrice}/bulan untuk AI` : "+ langganan AI bulanan", color: "#3ecf8e",
-      items: ["Semua isi paket Library", "Tanya AI tanpa salin-tempel — langsung dijawab di Talqeeh", ...AI_PARTNER_FEATURES.slice(0, 2)], recommended: true },
+      items: LIBRARY_FEATURES.slice(0, 4), cta: "Pilih Library" },
+    { plan: "library_ai", title: "Library + AI Study Partner", color: "#3ecf8e", recommended: true,
+      price: bundle ? formatRupiah(bundle.total) : LIBRARY_PRICE,
+      note: bundle ? "sekali bayar" : "+ AI Partner bulanan",
+      tagline: bundle ? "Library selamanya + AI Study Partner 30 hari" : null,
+      breakdown: bundle,
+      itemsTitle: "Semua isi Library, ditambah:",
+      items: AI_BUNDLE_FEATURES,
+      footnote: bundle ? `AI Partner cuma sekitar ${formatRupiah(bundle.perDay)}/hari.` : null,
+      cta: bundle ? `Ambil paket lengkap · ${formatRupiah(bundle.total)}` : "Pilih Library + AI Study Partner" },
   ];
   return (
     <Modal>
@@ -578,18 +585,22 @@ const UpgradeOfferModal = ({ onClose }) => {
                     style={{ background: p.color, color: "#0b0b0b" }}>Paling lengkap</span>
                 )}
                 <div className="font-display text-lg font-semibold text-ink">{p.title}</div>
-                <div className="mt-1 mb-3">
+                <div className="mt-1">
                   <span className="font-display text-2xl font-semibold" style={{ color: p.color }}>{p.price}</span>
                   <span className="text-xs text-ink-muted ml-1.5">{p.note}</span>
                 </div>
-                <ul className="space-y-1.5 text-[13px] text-ink-muted flex-1">
+                {p.tagline && <div className="text-xs text-ink mt-0.5">{p.tagline}</div>}
+                {p.breakdown && <AiBundleBreakdown bundle={p.breakdown} className="mt-3"/>}
+                {p.itemsTitle && <div className="text-xs text-ink font-medium mt-3 mb-1.5">{p.itemsTitle}</div>}
+                <ul className={`space-y-1.5 text-[13px] text-ink-muted flex-1 ${p.itemsTitle ? "" : "mt-3"}`}>
                   {p.items.map(it => (
                     <li key={it} className="flex gap-2"><Icon name="check" className="w-3.5 h-3.5 flex-shrink-0 mt-1" style={{ stroke: p.color }}/>{it}</li>
                   ))}
                 </ul>
+                {p.footnote && <p className="text-[11.5px] mt-3" style={{ color: p.color }}>{p.footnote}</p>}
                 <button onClick={() => go(p.plan)} className="mt-4 w-full py-2.5 rounded-xl text-sm font-semibold"
                   style={{ background: p.color, color: "#0b0b0b" }}>
-                  Pilih {p.title}
+                  {p.cta}
                 </button>
               </div>
             ))}

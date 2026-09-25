@@ -26,12 +26,8 @@ const LIBRARY_ITEMS = [
   ['Semua update fitur ke depan ikut terbuka', true],
 ];
 const AI_ITEMS = [
-  ['Semua isi paket Library', true],
-  ['Unggah diktat, PDF scan, slide, atau rekaman kuliah', true],
-  ['Ringkasan gaya kitab + peta konsep taqsimat', true],
-  ["Terjemah & i'rab kalimat, harakat otomatis", true],
-  ['Latihan tahriri dinilai AI', true],
-  ['Tutor dari materimu + simulasi syafawi', true],
+  ['Semua isi paket Library — selamanya', true],
+  ...AI_BUNDLE_FEATURES.map(f => [f, true]),
 ];
 
 // Keunggulan yang memang ada di aplikasi — jangan tambah klaim yang belum dibangun.
@@ -95,7 +91,7 @@ const Mark = ({ ok, color, className = 'w-4 h-4' }) => ok
   ? <Icon name="check" strokeWidth={2.2} className={`${className} flex-shrink-0`} style={{ stroke: color }}/>
   : <Icon name="x" strokeWidth={2} className={`${className} flex-shrink-0`} style={{ stroke: 'rgba(255,255,255,0.28)' }}/>;
 
-const PlanCard = ({ color, icon, badge, title, tagline, price, priceNote, strike, saving, sub, items, cta, ctaClass, onClick, current, selected, recommended }) => {
+const PlanCard = ({ color, icon, badge, title, tagline, price, priceNote, strike, saving, sub, extra, items, cta, ctaClass, onClick, current, selected, recommended }) => {
   const accent = recommended || selected;
   return (
     <div className={`card-glass-strong p-6 md:p-7 relative overflow-hidden flex flex-col transition-transform ${recommended ? 'md:-translate-y-3' : ''}`}
@@ -127,6 +123,7 @@ const PlanCard = ({ color, icon, badge, title, tagline, price, priceNote, strike
           {priceNote && <span className="text-sm text-ink-muted">{priceNote}</span>}
         </div>
         <div className="text-[11px] uppercase tracking-wider text-ink-soft mt-1 mb-5">{sub}</div>
+        {extra}
         <div className="h-px bg-white/10 mb-5"/>
         <ul className="space-y-2.5 flex-1 mb-6">
           {items.map(([text, ok]) => (
@@ -190,6 +187,7 @@ const GabungPage = () => {
   const email        = authInfo?.email || session?.email || '';
   const payOnline    = !!settings.payOnline;
   const aiPrice      = settings.aiPriceMonthly || null;
+  const bundle       = aiBundle(settings);
   const adminWa      = (settings.whatsapp || '').replace(/\D/g, '') || DEFAULT_ADMIN_WA;
   // Library + AI tanpa harga AI → hanya Library yang bisa dibayar sekarang.
   const payPlan      = plan === 'library_ai' && !aiPrice ? 'library' : (plan === 'library_ai' ? 'library_ai' : 'library');
@@ -343,13 +341,19 @@ const GabungPage = () => {
             current={isFree} selected={plan === 'free'} ctaClass="btn btn-ghost"
             cta={startingFree ? 'Menyiapkan akun…' : paidMember ? 'Sudah termasuk di Library' : 'Mulai gratis'}
             onClick={paidMember ? () => navigate('/dashboard') : chooseFree}/>
-          <PlanCard color={GOLD} icon="bookOpen" badge="Paling populer" recommended title="Library" tagline="Semua bekal belajar & imtihan"
+          <PlanCard color={GOLD} icon="bookOpen" recommended={!bundle} badge={bundle ? undefined : 'Paling populer'} title="Library" tagline="Semua bekal belajar & imtihan"
             price={LIBRARY_PRICE} strike={LIBRARY_PRICE_ORIGINAL} saving="Hemat 29%" sub="Sekali bayar · akses selamanya"
             items={LIBRARY_ITEMS} current={paidMember} selected={plan === 'library'} ctaClass="btn btn-gold"
             cta={isFree ? 'Upgrade ke Library' : 'Pilih Library'} onClick={() => choosePaid('library')}/>
-          <PlanCard color={EMERALD} icon="sparkles" title="Library + AI Partner" tagline="Belajar langsung dari diktatmu"
-            price={LIBRARY_PRICE} priceNote={aiPrice ? `+ ${formatRupiah(aiPrice)}/bln` : '+ AI Partner bulanan'}
-            sub={aiPrice ? 'Library selamanya · AI Partner per 30 hari' : 'Harga AI Partner segera diumumkan'}
+          <PlanCard color={EMERALD} icon="sparkles" recommended={!!bundle} badge={bundle ? 'Paling lengkap' : undefined} title="Library + AI Study Partner" tagline="Belajar langsung dari diktatmu"
+            price={bundle ? formatRupiah(bundle.total) : LIBRARY_PRICE} priceNote={bundle ? 'sekali bayar' : '+ AI Partner bulanan'}
+            sub={bundle ? 'Library selamanya + AI 30 hari' : 'Harga AI Partner segera diumumkan'}
+            extra={bundle && (
+              <div className="mb-5 -mt-2">
+                <AiBundleBreakdown bundle={bundle}/>
+                <p className="text-[11.5px] mt-2" style={{ color: EMERALD }}>AI Partner cuma sekitar {formatRupiah(bundle.perDay)}/hari.</p>
+              </div>
+            )}
             items={AI_ITEMS} selected={plan === 'library_ai'} ctaClass="btn btn-primary"
             cta={paidMember ? 'Berlangganan AI Partner' : 'Pilih Library + AI'} onClick={() => choosePaid('library_ai')}/>
         </div>
@@ -519,7 +523,7 @@ const GabungPage = () => {
                 <td className="px-3 md:px-5 py-4 text-ink-muted text-xs">Harga</td>
                 <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm">Rp 0</td>
                 <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm" style={{ background: 'rgba(201,168,106,0.05)' }}>{LIBRARY_PRICE}<div className="text-[10px] text-ink-soft font-normal">sekali bayar</div></td>
-                <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm">{LIBRARY_PRICE}<div className="text-[10px] text-ink-soft font-normal">+ {aiPrice ? `${formatRupiah(aiPrice)}/bln` : 'AI bulanan'}</div></td>
+                <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm">{bundle ? formatRupiah(bundle.total) : LIBRARY_PRICE}<div className="text-[10px] text-ink-soft font-normal">{bundle ? 'Library selamanya + AI 30 hari' : '+ AI bulanan'}</div></td>
               </tr>
             </tbody>
           </table>

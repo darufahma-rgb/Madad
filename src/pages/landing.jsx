@@ -813,7 +813,7 @@ const LANDING_FAQ = [
 
 const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
   const settings = useAppSettings();
-  const aiPriceLabel = settings.aiPriceLabel || "harga segera diumumkan";
+  const bundle = aiBundle(settings);
   return (
   <section id="paket" className="section pt-0 pb-32">
     <div className="container-x">
@@ -862,21 +862,24 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
               <div className="inline-flex self-start items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 mb-5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>Library + AI Partner
               </div>
-              <span className="text-sm text-ink-soft block mb-1">{LIBRARY_PRICE} sekali</span>
+              <span className="text-sm text-ink-soft block mb-1">{bundle ? "Satu kali bayar" : `${LIBRARY_PRICE} sekali`}</span>
               <span className="font-display text-4xl md:text-5xl font-semibold bg-gradient-to-br from-emerald-300 to-gold-400 bg-clip-text text-transparent block leading-tight">
-                + {aiPriceLabel}
+                {bundle ? formatRupiah(bundle.total) : "+ AI Partner"}
               </span>
-              <div className="text-xs text-ink-soft uppercase tracking-wider mt-2 mb-6">AI Partner · langganan bulanan</div>
-              <div className="flex-1 mb-8">
-                <div className="text-sm text-ink font-medium mb-3">Semua isi paket Library, ditambah:</div>
-                <FeatureList items={AI_PARTNER_FEATURES} color="text-emerald-400"/>
-                <p className="text-xs text-ink-soft mt-4 leading-relaxed">
-                  Library tetap milikmu selamanya; langganan AI bisa berhenti kapan saja.
-                </p>
+              <div className="text-xs text-ink-soft uppercase tracking-wider mt-2 mb-4">
+                {bundle ? "Library selamanya + AI Study Partner 30 hari" : "Harga AI Partner segera diumumkan"}
               </div>
+              {bundle && <AiBundleBreakdown bundle={bundle} className="mb-6"/>}
+              <div className="flex-1 mb-6">
+                <div className="text-sm text-ink font-medium mb-3">Semua isi paket Library, ditambah:</div>
+                <FeatureList items={AI_BUNDLE_FEATURES} color="text-emerald-400"/>
+              </div>
+              {bundle && (
+                <p className="text-xs text-emerald-300 mb-3">AI Partner cuma sekitar {formatRupiah(bundle.perDay)}/hari.</p>
+              )}
               <button onClick={() => onOpenJoin("library_ai")}
                 className="btn btn-primary w-full py-4 text-base font-medium">
-                Pilih Library + AI
+                {bundle ? `Ambil paket lengkap · ${formatRupiah(bundle.total)}` : "Pilih Library + AI"}
               </button>
             </div>
           </div>

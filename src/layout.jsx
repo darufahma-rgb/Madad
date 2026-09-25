@@ -590,6 +590,44 @@ const AI_PARTNER_FEATURES = [
   "Tutor dari materimu + simulasi ujian syafawi",
 ];
 const PLAN_LABELS = { library: "Library", library_ai: "Library + AI Partner", ai: "AI Partner 30 hari" };
+
+/* Paket Library + AI Study Partner: satu kali bayar di awal = Library selamanya + AI 30 hari pertama.
+   Harga AI dari Admin → Settings (aiPriceMonthly); null kalau belum diisi. */
+const aiBundle = (settings) => {
+  const ai = settings?.aiPriceMonthly || null;
+  if (!ai) return null;
+  return { ai, total: LIBRARY_PRICE_IDR + ai, perDay: Math.ceil(ai / 30 / 100) * 100 };
+};
+// Manfaat AI Study Partner — hanya fitur yang memang ada di aplikasi.
+const AI_BUNDLE_FEATURES = [
+  "Tanya AI langsung di Talqeeh — tanpa salin-tempel ke ChatGPT, dijawab sesuai muqarrar & jurusanmu",
+  "Unggah diktat, PDF scan, slide, foto, atau rekaman kuliah duktur",
+  "Ringkasan gaya kitab, peta konsep taqsimat, flashcard, dan kuis dari materimu sendiri",
+  "Terjemah & i'rab kalimat Arab, harakat otomatis, mufradat lengkap dengan wazan",
+  "Latihan tahriri dinilai AI + simulasi ujian syafawi",
+];
+
+// Rincian harga paket: total besar, lalu apa yang didapat dan apa yang terjadi setelah 30 hari.
+const AiBundleBreakdown = ({ bundle, className = "" }) => bundle ? (
+  <div className={`rounded-xl border border-white/10 bg-black/20 p-3.5 text-[13px] ${className}`}>
+    <div className="flex items-start justify-between gap-3">
+      <span className="text-ink-muted"><span className="text-ink">Library</span> · akses selamanya</span>
+      <span className="text-ink tabular-nums flex-shrink-0">{formatRupiah(LIBRARY_PRICE_IDR)}</span>
+    </div>
+    <div className="flex items-start justify-between gap-3 mt-1.5">
+      <span className="text-ink-muted"><span className="text-ink">AI Study Partner</span> · 30 hari penuh</span>
+      <span className="text-ink tabular-nums flex-shrink-0">{formatRupiah(bundle.ai)}</span>
+    </div>
+    <div className="flex items-start justify-between gap-3 mt-2 pt-2 border-t border-white/10 font-semibold">
+      <span className="text-ink">Total sekali bayar</span>
+      <span className="text-emerald-300 tabular-nums flex-shrink-0">{formatRupiah(bundle.total)}</span>
+    </div>
+    <p className="text-[11.5px] text-ink-soft leading-relaxed mt-2.5">
+      Setelah 30 hari, Library tetap milikmu selamanya. AI Partner bisa diperpanjang {formatRupiah(bundle.ai)}/30 hari
+      kapan saja — tanpa potongan otomatis, sisa hari tidak hangus.
+    </p>
+  </div>
+) : null;
 const DEFAULT_ADMIN_WA = "6281311506025";
 const PAYMENT_WAIT_LIMIT_MS = 10 * 60 * 1000;
 
@@ -1173,7 +1211,7 @@ Object.assign(window, {
   Navbar, Footer, LoginModal, AiSubscriptionModal, PageHeader, FreeUpgradeWall,
   FreeMaddahGate, isMaddahLocked, canOpenMaddahFree, FREE_SAMPLE_MADDAH,
   GoogleButton, ErrorBox, useGoogleSignIn, formatPinInput, ACTIVATION_ERRORS, StepList,
-  PLAN_LABELS, DEFAULT_ADMIN_WA, PAYMENT_WAIT_LIMIT_MS,
+  PLAN_LABELS, DEFAULT_ADMIN_WA, PAYMENT_WAIT_LIMIT_MS, aiBundle, AI_BUNDLE_FEATURES, AiBundleBreakdown,
   useCheckout, CheckoutWaiting, CheckoutWatcher, readPendingCheckout, savePendingCheckout, formatRupiah,
   LIBRARY_PRICE, LIBRARY_PRICE_IDR, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
   scrollToLandingSection, scrollToPaket,
