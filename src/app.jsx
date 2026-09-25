@@ -224,7 +224,7 @@ const App = () => {
   const showQuickNote = session && profile?.onboarded && !isAdmin && !isPublic;
   const isMember = session && profile?.onboarded;
   // Member memakai kerangka aplikasi (sidebar); onboarding & landing tetap layout publik.
-  const useShell = isMember && path !== "/" && path !== "" && path !== "/welcome" && !path.startsWith("/onboarding");
+  const useShell = isMember && path !== "/" && path !== "" && !path.startsWith("/onboarding");
 
   return (
     <ToastProvider>
