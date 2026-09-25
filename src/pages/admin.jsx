@@ -2892,6 +2892,164 @@ const BankSoalDraftPanel = ({ soal, onChanged }) => {
   );
 };
 
+/* ── Review soal pending di luar aplikasi (mis. oleh Claude) ──
+   Ekspor: unduh file soal pending TANPA data pengirim, link foto berlaku 24 jam.
+   Impor: file keputusan {"decisions":[{id, action: approve|reject|fix|skip, reason, fix:{...}}]} ditampilkan
+   sebagai rekomendasi — tidak ada yang jalan sebelum admin mencentang & menekan Terapkan. */
+const REVIEW_FIX_KEYS = ['maddah_id', 'maddah_nama', 'fakultas', 'tingkat', 'tahun', 'fashl', 'soal'];
+const REVIEW_ACTIONS = { approve: 'Approve', reject: 'Reject', fix: 'Perbaiki info', skip: 'Lewati' };
+const REVIEW_ACTION_CLS = {
+  approve: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+  reject:  'bg-rose-500/15 text-rose-300 border-rose-500/30',
+  fix:     'bg-sky-500/15 text-sky-300 border-sky-500/30',
+  skip:    'bg-white/5 text-ink-soft border-white/10',
+};
+
+const BankSoalReviewPanel = ({ onDone }) => {
+  const toast = useToast();
+  const [exporting, setExporting] = useState(false);
+  const [rows, setRows] = useState(null);
+  const [applying, setApplying] = useState(false);
+  const fileRef = useRef(null);
+
+  const exportPending = async () => {
+    setExporting(true);
+    const d = await bankSoalApi('review-export', {});
+    setExporting(false);
+    if (!d.ok) { toast.push('Ekspor gagal: ' + (d.error || 'coba lagi')); return; }
+    const blob = new Blob([JSON.stringify(d.data, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `bank-soal-pending-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast.push(`${d.data.pending.length} soal pending diekspor (tanpa data pengirim).`);
+  };
+
+  const importDecisions = async (file) => {
+    let json;
+    try { json = JSON.parse(await file.text()); } catch { toast.push('File bukan JSON yang valid.'); return; }
+    const decisions = Array.isArray(json) ? json : json?.decisions;
+    if (!Array.isArray(decisions) || !decisions.length) { toast.push('Tidak ada "decisions" di file ini.'); return; }
+    const list = await bankSoalApi('list', { status_filter: 'pending' });
+    const byId = Object.fromEntries((list.ok ? list.data : []).map(x => [x.id, x]));
+    const seen = new Set();
+    const unique = decisions.filter(dec => dec?.id && !seen.has(dec.id) && seen.add(dec.id));
+    const out = unique.slice(0, 300).map(dec => {
+      const soal = byId[dec?.id] || null;
+      const action = REVIEW_ACTIONS[dec?.action] ? dec.action : 'skip';
+      const fix = Object.fromEntries(Object.entries(dec?.fix || {}).filter(([k, v]) => REVIEW_FIX_KEYS.includes(k) && v != null && String(v).trim() !== '').map(([k, v]) => [k, String(v)]));
+      const needsText = action === 'approve' && !(fix.soal || soal?.soal || '').trim();
+      return {
+        id: dec?.id, soal, action, fix, reason: String(dec?.reason || '').slice(0, 500),
+        checked: !!soal && action !== 'skip' && !needsText,
+        problem: !soal ? 'Tidak ditemukan / bukan pending lagi' : needsText ? 'Teks soal kosong — parse foto dulu di Admin' : null,
+        result: null,
+      };
+    });
+    setRows(out);
+  };
+
+  const update = (i, patch) => setRows(r => r.map((x, j) => (j === i ? { ...x, ...patch } : x)));
+  const chosen = (rows || []).filter(r => r.checked && !r.problem);
+  const rejects = chosen.filter(r => r.action === 'reject').length;
+
+  const apply = async () => {
+    if (!chosen.length || applying) return;
+    const msg = `Terapkan ${chosen.length} keputusan?` + (rejects ? `\n\n${rejects} soal akan di-REJECT dan pengirimnya otomatis menerima WhatsApp berisi alasannya.` : '');
+    if (!confirm(msg)) return;
+    setApplying(true);
+    const post = (payload) => fetch('/api/bank-soal?action=approve', {
+      method: 'POST', headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() }, body: JSON.stringify(payload),
+    }).then(r => r.json()).catch(() => ({ ok: false, error: 'Tidak bisa terhubung' }));
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r.checked || r.problem) continue;
+      let res = { ok: true };
+      if (Object.keys(r.fix).length && (r.action === 'fix' || r.action === 'approve')) {
+        res = await bankSoalApi('update-info', { soal_id: r.id, ...r.fix });
+      }
+      if (res.ok && r.action === 'approve') res = await post({ soal_id: r.id, action: 'approve', reward_type: null, soal_teks: r.fix.soal || r.soal.soal });
+      if (res.ok && r.action === 'reject') {
+        if (!r.reason.trim()) res = { ok: false, error: 'Alasan reject kosong' };
+        else res = await post({ soal_id: r.id, action: 'reject', reject_reason: r.reason.trim() });
+      }
+      update(i, { result: res.ok ? 'ok' : (res.error || 'gagal'), checked: !res.ok });
+    }
+    setApplying(false);
+    toast.push('Keputusan diterapkan. Cek kolom hasil di tabel.');
+    onDone && onDone();
+  };
+
+  return (
+    <div className="card-glass p-4 mb-5">
+      <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex-1 min-w-[220px]">
+          <div className="text-sm text-ink font-medium">Review soal pending dengan Claude</div>
+          <div className="text-[11px] text-ink-soft">Ekspor (tanpa nama/WA pengirim, link foto 24 jam) → kirim ke Claude → impor file keputusannya.</div>
+        </div>
+        <button onClick={exportPending} disabled={exporting} className="btn btn-ghost text-xs px-3 py-2">
+          {exporting ? 'Mengekspor…' : 'Ekspor pending untuk review'}
+        </button>
+        <button onClick={() => fileRef.current?.click()} className="btn btn-primary text-xs px-3 py-2">Impor hasil review</button>
+        <input ref={fileRef} type="file" accept="application/json,.json" className="hidden"
+          onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) importDecisions(f); }}/>
+      </div>
+
+      {rows && (
+        <div className="mt-4">
+          <div className="flex items-center gap-3 flex-wrap mb-2 text-xs">
+            <span className="text-ink">{rows.length} rekomendasi · <span className="text-emerald-300">{chosen.length} dipilih</span></span>
+            {rejects > 0 && <span className="text-amber-300">⚠️ Reject mengirim WhatsApp berisi alasan ke pengirim — periksa kalimatnya.</span>}
+            <button onClick={() => setRows(null)} className="ms-auto text-ink-soft hover:text-ink">Tutup</button>
+          </div>
+          <div className="max-h-[520px] overflow-auto rounded-xl border border-white/8">
+            <table className="w-full text-xs">
+              <thead><tr className="text-left text-ink-soft uppercase tracking-wider border-b border-white/8">
+                <th className="p-2 w-8"></th><th className="p-2">Soal</th><th className="p-2">Rekomendasi</th><th className="p-2">Alasan / perbaikan</th><th className="p-2">Hasil</th>
+              </tr></thead>
+              <tbody>
+                {rows.map((r, i) => (
+                  <tr key={r.id || i} className="border-b border-white/5 align-top">
+                    <td className="p-2"><input type="checkbox" className="accent-emerald-500" checked={r.checked} disabled={!!r.problem || r.result === 'ok'}
+                      onChange={e => update(i, { checked: e.target.checked })}/></td>
+                    <td className="p-2 min-w-[180px]">
+                      <div className="text-ink">{r.soal ? r.soal.maddah_nama : '—'}</div>
+                      <div className="text-ink-soft">{r.soal ? `tkt ${r.soal.tingkat || '?'} · ${r.soal.tahun} · ${r.soal.fashl}` : ''} <span className="font-mono">{String(r.id || '').slice(0, 8)}</span></div>
+                      {r.problem && <div className="text-rose-400 mt-0.5">{r.problem}</div>}
+                    </td>
+                    <td className="p-2">
+                      <select value={r.action} onChange={e => update(i, { action: e.target.value })} disabled={r.result === 'ok'}
+                        className={`rounded-lg border px-2 py-1 bg-transparent ${REVIEW_ACTION_CLS[r.action]}`}>
+                        {Object.entries(REVIEW_ACTIONS).map(([k, v]) => <option key={k} value={k} className="bg-[#161616] text-ink">{v}</option>)}
+                      </select>
+                    </td>
+                    <td className="p-2 min-w-[260px]">
+                      {r.action === 'reject' ? (
+                        <textarea value={r.reason} onChange={e => update(i, { reason: e.target.value })} rows={2}
+                          className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-ink" placeholder="Alasan (dikirim ke pengirim via WA)"/>
+                      ) : <div className="text-ink-muted">{r.reason || '—'}</div>}
+                      {Object.keys(r.fix).length > 0 && (
+                        <div className="text-sky-300 mt-1">Perbaikan: {Object.entries(r.fix).filter(([k]) => k !== 'soal').map(([k, v]) => `${k}=${v}`).join(', ')}{r.fix.soal ? ' · teks soal diperbarui' : ''}</div>
+                      )}
+                    </td>
+                    <td className="p-2">{r.result === 'ok' ? <span className="text-emerald-300">✓</span> : r.result ? <span className="text-rose-400">{r.result}</span> : ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex justify-end mt-3">
+            <button onClick={apply} disabled={!chosen.length || applying} className="btn btn-primary text-sm px-5 py-2">
+              {applying ? 'Menerapkan…' : `Terapkan ${chosen.length} keputusan`}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const AdminBankSoal = () => {
   const [soals, setSoals]       = useState([]);
   const [stats, setStats]       = useState({ pending: 0, approved: 0, rejected: 0 });
@@ -3093,6 +3251,8 @@ const AdminBankSoal = () => {
         <h2 className="font-display text-xl font-semibold text-ink mb-1">Bank Soal Imtihan</h2>
         <p className="text-sm text-ink-muted">Review, parse dengan AI, approve/reject soal dari kontributor.</p>
       </div>
+
+      <BankSoalReviewPanel onDone={() => fetchData(filter)}/>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
