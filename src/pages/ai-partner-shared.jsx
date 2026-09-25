@@ -87,7 +87,8 @@ const aiStream = async (action, payload = {}, onDelta) => {
       while ((nl = buffer.indexOf('\n')) >= 0) { handle(buffer.slice(0, nl)); buffer = buffer.slice(nl + 1); }
     }
     handle(buffer);
-    return result || { ok: false, error: 'Koneksi terputus sebelum AI selesai. Coba lagi.' };
+    // partial: teks yang sempat diterima, supaya pemanggil bisa menyimpannya alih-alih membuang.
+    return result || { ok: false, error: 'Koneksi terputus sebelum AI selesai. Coba lagi.', partial: text };
   } catch {
     return { ok: false, error: 'Tidak bisa terhubung ke server. Cek koneksi lalu coba lagi.' };
   }

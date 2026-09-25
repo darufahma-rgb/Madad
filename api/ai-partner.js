@@ -617,6 +617,7 @@ async function handleChat(ctx, body, res) {
     system: (mode === 'syafawi' ? syafawiSystem(set.title, material) : tutorSystem(set.title, material)) + learnerContext(body.learner),
     messages: [...history.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: message }],
     maxTokens: 1500,
+    timeLimitMs: 48000,
     cacheSystem: true,
     model: (await resolveModels()).chat,
   });
@@ -660,6 +661,8 @@ async function handlePromptChat(ctx, body, res) {
     system: promptChatSystem() + learnerContext(body.learner, { material: false }),
     messages,
     maxTokens: 3000,
+    // Sisakan waktu untuk menutup stream sebelum batas 60 detik Vercel.
+    timeLimitMs: 48000,
     cacheSystem: true,
     model: (await resolveModels()).chat,
   });

@@ -104,6 +104,11 @@ const PromptChat = () => {
     }, (_, full) => setLive(full));
     setSending(false);
     setLive('');
+    // Koneksi putus di tengah jawaban: simpan yang sudah diterima, pengguna bisa minta lanjutkan.
+    if (!data.ok && data.partial?.trim()) {
+      data.ok = true;
+      data.reply = `${data.partial.trimEnd()}\n\n_(Koneksi terputus sebelum jawaban selesai — ketik **lanjutkan** untuk meneruskan.)_`;
+    }
     if (!data.ok) {
       setError(data.error || 'Gagal mengirim pesan');
       setThread(base);
