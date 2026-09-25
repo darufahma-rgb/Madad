@@ -36,6 +36,56 @@ const sbRequest = (supabaseUrl, serviceKey, method, path, body, prefer = 'return
   });
 };
 
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const LIBRARY_EXPIRY = '2099-12-31';
+
+// Admin memasukkan email Google member lama → member itu jadi Library selamanya dan langsung
+// terhubung saat login Google (tanpa PIN). AI Partner tidak ikut: tetap dibayar terpisah.
+// Kalau email itu sudah dipakai akun gratis (member lama sempat login lalu dibuatkan akun gratis),
+// akun gratis dilepas dan akun Google-nya dipindah ke member lama — seperti tukar PIN.
+async function linkLegacyEmail(url, key, rawCode, rawEmail) {
+  const code = String(rawCode || '').trim().toUpperCase();
+  const email = String(rawEmail || '').trim().toLowerCase();
+  const out = { code, email };
+  if (!code) return { ...out, ok: false, error: 'Kode kosong' };
+  if (!EMAIL_RE.test(email)) return { ...out, ok: false, error: 'Format email tidak valid' };
+
+  const fields = 'code,name,email,status,tier,auth_user_id';
+  const get = (query) => sbRequest(url, key, 'GET', `members?${query}&select=${fields}`, null)
+    .then(r => (Array.isArray(r.data) ? r.data : []));
+  const [target] = await get(`code=eq.${encodeURIComponent(code)}&limit=1`);
+  if (!target) return { ...out, ok: false, error: 'Kode member tidak ditemukan' };
+  if (target.tier === 'free') return { ...out, ok: false, error: 'Ini akun gratis, bukan member lama' };
+
+  const others = (await get(`email=eq.${encodeURIComponent(email)}`)).filter(m => m.code !== code);
+  const other = others[0];
+  if (other && other.tier !== 'free') return { ...out, ok: false, error: `Email sudah dipakai member ${other.code}` };
+  const carryAuth = other?.auth_user_id || null;
+  if (carryAuth && target.auth_user_id && target.auth_user_id !== carryAuth) {
+    return { ...out, ok: false, error: 'Member ini sudah terhubung ke akun Google lain' };
+  }
+
+  if (other) {
+    const detached = await sbRequest(url, key, 'PATCH', `members?code=eq.${encodeURIComponent(other.code)}`,
+      { email: null, auth_user_id: null, status: 'disabled', notes: `Digabung ke member lama ${code}` }, 'return=minimal');
+    if (detached.status >= 400) return { ...out, ok: false, error: 'Gagal melepas akun gratis' };
+  }
+
+  const patch = {
+    email, status: 'active', tier: 'library', expires_at: LIBRARY_EXPIRY,
+    ...(carryAuth && !target.auth_user_id ? { auth_user_id: carryAuth } : {}),
+  };
+  const r = await sbRequest(url, key, 'PATCH', `members?code=eq.${encodeURIComponent(code)}`, patch, 'return=minimal');
+  if (r.status >= 400) {
+    if (other) {
+      await sbRequest(url, key, 'PATCH', `members?code=eq.${encodeURIComponent(other.code)}`,
+        { email: other.email, auth_user_id: other.auth_user_id, status: other.status, notes: 'Akun gratis' }, 'return=minimal');
+    }
+    return { ...out, ok: false, error: `Gagal menyimpan (${r.status})` };
+  }
+  return { ...out, ok: true, name: target.name, mergedFree: other?.code || null, linkedNow: !!(carryAuth || target.auth_user_id) };
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-token');
@@ -61,7 +111,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { action, code, row, days } = JSON.parse(body || '{}');
+    const { action, code, row, days, links } = JSON.parse(body || '{}');
     let result;
 
     if (action === 'list') {
@@ -89,6 +139,11 @@ export default async function handler(req, res) {
           result = { status: 200, data: { pin, expiresAt } };
         }
       }
+    } else if (action === 'link-emails') {
+      const list = Array.isArray(links) ? links.slice(0, 200) : [];
+      const results = [];
+      for (const l of list) results.push(await linkLegacyEmail(supabaseUrl, serviceKey, l?.code, l?.email));
+      result = { status: 200, data: results };
     } else if (action === 'analytics') {
       result = { status: 200, data: await buildAdminAnalytics(Number(days)) };
     } else if (action === 'get-settings') {

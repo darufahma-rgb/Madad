@@ -71,6 +71,8 @@ const adminAddMember      = async (member)       => { const rows = await adminMe
 const adminUpdateMember   = async (code, patch)  => { const rows = await adminMembersAPI('update', code, memberToSb(patch)); return sbToMember(Array.isArray(rows) ? rows[0] : rows); };
 const adminDeleteMember   = async (code)         => adminMembersAPI('delete', code);
 const adminGeneratePin    = async (code)         => adminMembersAPI('generate-pin', code);
+// Hubungkan email Google ke member lama → Library selamanya (akun gratis dengan email sama digabung).
+const adminLinkEmails     = async (links)        => adminMembersAPI('link-emails', null, null, { links });
 
 // Kirim via Fonnte; kalau gagal, buka WhatsApp manual dengan pesan yang sama.
 const sendAdminWa = async (to, message, toast) => {
@@ -795,6 +797,105 @@ const MEMBER_TYPE_CONFIG = {
   reward:   { label: 'Reward',   color: '#f97316', bg: 'rgba(249,115,22,0.1)',  icon: '🏆' },
 };
 
+/* ── Member lama: admin memasukkan email Google → Library selamanya, login tanpa PIN ── */
+const LegacyLinkPanel = ({ members, onDone, onClose }) => {
+  const toast = useToast();
+  const legacy = members
+    .filter(m => m.tier !== "free" && !m.googleLinked)
+    .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  const [emails, setEmails] = useState(() => Object.fromEntries(legacy.map(m => [m.code, m.email || ""])));
+  const [results, setResults] = useState({});
+  const [busy, setBusy] = useState(false);
+  const [query, setQuery] = useState("");
+
+  const shown = legacy.filter(m => !query || `${m.name} ${m.code} ${m.whatsapp}`.toLowerCase().includes(query.toLowerCase()));
+  const pending = legacy.filter(m => (emails[m.code] || "").trim() && (emails[m.code] || "").trim().toLowerCase() !== (m.email || "").toLowerCase() || ((emails[m.code] || "").trim() && m.status !== "active"));
+
+  const run = async (list) => {
+    if (!list.length) return;
+    setBusy(true);
+    try {
+      const data = await adminLinkEmails(list.map(m => ({ code: m.code, email: emails[m.code] })));
+      const next = { ...results };
+      for (const r of (Array.isArray(data) ? data : [])) next[r.code] = r;
+      setResults(next);
+      const ok = (data || []).filter(r => r.ok).length;
+      const fail = (data || []).length - ok;
+      toast.push(`${ok} member terhubung${fail ? `, ${fail} gagal — lihat keterangan merah` : ""}.`);
+      if (ok) onDone();
+    } catch (err) {
+      toast.push("Gagal: " + err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="card-glass p-5 mb-4" style={{ border: "1px solid rgba(201,168,106,0.3)" }}>
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div>
+          <div className="font-display text-lg font-semibold text-ink">Hubungkan email member lama</div>
+          <p className="text-xs text-ink-muted leading-relaxed mt-1 max-w-2xl">
+            Isi email Google tiap member lama. Setelah disimpan, member itu jadi <span className="text-ink">Library selamanya</span> dan
+            cukup login Google dengan email tersebut — tanpa PIN. AI Partner tidak termasuk (tetap bayar sendiri).
+            Kalau member sudah telanjur punya akun gratis dengan email itu, akun gratisnya otomatis digabung ke keanggotaan lama.
+          </p>
+        </div>
+        <button onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5 flex items-center justify-center flex-shrink-0">
+          <Icon name="x" className="w-4 h-4"/>
+        </button>
+      </div>
+
+      {legacy.length === 0 ? (
+        <div className="text-sm text-ink-muted py-4">Semua member lama sudah terhubung ke akun Google. 🎉</div>
+      ) : (
+        <>
+          <div className="flex flex-wrap items-center gap-2 mb-3">
+            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Cari nama / kode / WA…"
+              className="flex-1 min-w-[180px] bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink outline-none"/>
+            <span className="text-xs text-ink-soft">{legacy.length} belum terhubung</span>
+            <button onClick={() => run(pending)} disabled={busy || !pending.length} className="btn btn-gold text-sm px-4 py-2">
+              {busy ? "Menyimpan…" : `Simpan ${pending.length || ""} yang diisi`}
+            </button>
+          </div>
+          <div className="max-h-[480px] overflow-y-auto rounded-xl border border-white/8">
+            {shown.map(m => {
+              const r = results[m.code];
+              const expired = m.status !== "active";
+              return (
+                <div key={m.code} className="flex flex-col md:flex-row md:items-center gap-2 px-3 py-2.5 border-b border-white/5 last:border-0">
+                  <div className="md:w-64 min-w-0">
+                    <div className="text-sm text-ink truncate">{m.name}</div>
+                    <div className="text-[11px] text-ink-soft font-mono truncate">
+                      {m.code}{m.whatsapp ? ` · ${m.whatsapp}` : ""}
+                      {expired && <span className="text-amber-300 font-sans"> · {m.status}</span>}
+                    </div>
+                  </div>
+                  <input type="email" value={emails[m.code] || ""} placeholder="email@gmail.com"
+                    onChange={e => { setEmails(v => ({ ...v, [m.code]: e.target.value })); setResults(v => ({ ...v, [m.code]: undefined })); }}
+                    onKeyDown={e => { if (e.key === "Enter" && (emails[m.code] || "").trim()) run([m]); }}
+                    className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-ink outline-none font-mono"/>
+                  <div className="flex items-center gap-2 md:w-56 justify-between md:justify-end">
+                    {r && (r.ok
+                      ? <span className="text-[11px] text-emerald-300">✓ Library aktif{r.mergedFree ? " · akun gratis digabung" : ""}</span>
+                      : <span className="text-[11px] text-rose-400">{r.error}</span>)}
+                    <button onClick={() => run([m])} disabled={busy || !(emails[m.code] || "").trim()}
+                      className="btn btn-ghost text-xs px-3 py-1.5 flex-shrink-0">Simpan</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-[11px] text-ink-soft mt-3">
+            Kirim ke member: "Buka talqeeh.vercel.app → Masuk dengan Google pakai email yang kamu daftarkan. Akses Library langsung aktif."
+            Catatan & progres dari akun gratis mereka (kalau ada) tidak ikut pindah.
+          </p>
+        </>
+      )}
+    </div>
+  );
+};
+
 const AdminMembers = () => {
   const [members,    setMembers]    = useState([]);
   const [loading,    setLoading]    = useState(true);
@@ -802,6 +903,7 @@ const AdminMembers = () => {
   const [genOpen,    setGenOpen]    = useState(false);
   const [search,     setSearch]     = useState("");
   const [filterType, setFilterType] = useState("semua");
+  const [linkOpen,   setLinkOpen]   = useState(false);
   const toast = useToast();
 
   const loadFromSupabase = async () => {
@@ -822,10 +924,22 @@ const AdminMembers = () => {
 
   const updateMember = async (code, patch) => {
     try {
+      const current = members.find(m => m.code === code);
+      const newEmail = (patch.email || "").trim().toLowerCase();
+      // Email baru untuk member berbayar → lewat alur "hubungkan" (Library selamanya, gabung akun gratis).
+      if (newEmail && current && current.tier !== "free" && newEmail !== (current.email || "").toLowerCase()) {
+        const [r] = await adminLinkEmails([{ code, email: newEmail }]);
+        if (!r?.ok) throw new Error(r?.error || "Gagal menghubungkan email");
+        const { email, ...rest } = patch;
+        patch = rest;
+        if (r.mergedFree) toast.push(`Akun gratis ${r.mergedFree} digabung ke member ini.`);
+      }
       const updated = await adminUpdateMember(code, patch);
       setMembers(prev => prev.map(m => m.code === code ? updated : m));
+      return true;
     } catch (err) {
       toast.push("Gagal update: " + err.message);
+      return false;
     }
   };
 
@@ -868,6 +982,9 @@ const AdminMembers = () => {
           <button onClick={loadFromSupabase} className="btn btn-ghost text-xs px-3 py-2 flex items-center gap-1.5">
             <Icon name="refresh" className="w-3.5 h-3.5"/> Refresh
           </button>
+          <button onClick={() => setLinkOpen(o => !o)} className="btn btn-ghost text-xs px-3 py-2 flex items-center gap-1.5">
+            <Icon name="users" className="w-3.5 h-3.5"/> Member lama ({members.filter(m => m.tier !== "free" && !m.googleLinked).length})
+          </button>
           <button onClick={() => setGenOpen(true)} className="btn btn-primary">
             <Icon name="sparkles" className="w-4 h-4"/> Tambah Member
           </button>
@@ -883,6 +1000,8 @@ const AdminMembers = () => {
           <button onClick={loadFromSupabase} className="text-xs text-emerald-300 hover:text-emerald-200 underline">Coba lagi</button>
         </div>
       )}
+
+      {linkOpen && <LegacyLinkPanel members={members} onDone={loadFromSupabase} onClose={() => setLinkOpen(false)}/>}
 
       {/* Summary stats member type */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
@@ -1125,7 +1244,7 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
     if (!form.code.trim() || !form.name.trim()) return;
     setSaving(true);
     try {
-      await onSave(member.code, {
+      const saved = await onSave(member.code, {
         code:        form.code.trim().toUpperCase(),
         name:        form.name.trim(),
         whatsapp:    form.whatsapp.trim(),
@@ -1136,6 +1255,7 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
         // Kirim tier hanya kalau diubah (kolomnya baru ada setelah migrasi free_tier.sql).
         ...(form.tier !== (member.tier || "library") ? { tier: form.tier } : {}),
       });
+      if (saved === false) return;
       toast.push("Member diperbarui");
       onClose();
     } catch (err) {
