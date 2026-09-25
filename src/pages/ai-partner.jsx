@@ -293,8 +293,8 @@ const Composer = ({ tier, onUpload }) => {
   return (
     <section className="pt-10 md:pt-20 pb-10 md:pb-14">
       <div className="container-x"><div className="max-w-2xl mx-auto">
-        <div className="flex items-center justify-center gap-3 mb-7 md:mb-9">
-          <LogoMark size={52} className="flex-shrink-0 md:scale-110"/>
+        <div className="flex flex-col items-center justify-center gap-3 md:gap-4 mb-7 md:mb-9">
+          <LogoMark size={64} className="flex-shrink-0 md:scale-125"/>
           <h1 className="font-display text-[28px] md:text-[40px] font-semibold text-ink leading-tight tracking-tight text-center">
             {greetingNow()}{firstName ? `, ${firstName}` : ''}
           </h1>
