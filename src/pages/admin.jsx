@@ -70,6 +70,7 @@ const adminGetAllMembers  = async ()            => { const rows = await adminMem
 const adminAddMember      = async (member)       => { const rows = await adminMembersAPI('add', null, memberToSb(member)); return sbToMember(Array.isArray(rows) ? rows[0] : rows); };
 const adminUpdateMember   = async (code, patch)  => { const rows = await adminMembersAPI('update', code, memberToSb(patch)); return sbToMember(Array.isArray(rows) ? rows[0] : rows); };
 const adminDeleteMember   = async (code)         => adminMembersAPI('delete', code);
+const adminBulkDelete     = async (codes)        => adminMembersAPI('bulk-delete', null, null, { codes });
 const adminGeneratePin    = async (code)         => adminMembersAPI('generate-pin', code);
 // Hubungkan email Google ke member lama → Library selamanya (akun gratis dengan email sama digabung).
 const adminLinkEmails     = async (links)        => adminMembersAPI('link-emails', null, null, { links });
@@ -959,6 +960,8 @@ const AdminMembers = () => {
   const [search,     setSearch]     = useState("");
   const [filterType, setFilterType] = useState("semua");
   const [linkOpen,   setLinkOpen]   = useState(false);
+  const [picked,     setPicked]     = useState(() => new Set());
+  const [deleting,   setDeleting]   = useState(false);
   const toast = useToast();
 
   const loadFromSupabase = async () => {
@@ -1007,6 +1010,30 @@ const AdminMembers = () => {
       toast.push("Gagal hapus: " + err.message);
     }
   };
+
+  // Hapus banyak member sekaligus. Permanen — konfirmasi menyebut jumlah dan contoh nama.
+  const bulkDelete = async () => {
+    const chosen = members.filter(m => picked.has(m.code));
+    if (!chosen.length || deleting) return;
+    const names = chosen.slice(0, 8).map(m => `• ${m.name} (${m.code})`).join("\n");
+    const more = chosen.length > 8 ? `\n…dan ${chosen.length - 8} lainnya` : "";
+    const linked = chosen.filter(m => m.googleLinked).length;
+    const warn = linked ? `\n\n⚠️ ${linked} di antaranya sudah login Google — mereka kehilangan akses.` : "";
+    if (!confirm(`Hapus ${chosen.length} member secara permanen?\n\n${names}${more}${warn}\n\nTindakan ini tidak bisa dibatalkan.`)) return;
+    setDeleting(true);
+    try {
+      const rows = await adminBulkDelete(chosen.map(m => m.code));
+      const gone = new Set((Array.isArray(rows) ? rows : []).map(r => r.code));
+      setMembers(prev => prev.filter(m => !gone.has(m.code)));
+      setPicked(new Set());
+      toast.push(`${gone.size} member dihapus.${gone.size < chosen.length ? ` ${chosen.length - gone.size} gagal — coba Refresh.` : ""}`);
+    } catch (err) {
+      toast.push("Gagal hapus: " + err.message);
+    } finally {
+      setDeleting(false);
+    }
+  };
+  const togglePick = (code) => setPicked(prev => { const n = new Set(prev); n.has(code) ? n.delete(code) : n.add(code); return n; });
 
   const handleAdd = (newMember) => {
     setMembers(prev => [newMember, ...prev]);
@@ -1127,11 +1154,37 @@ const AdminMembers = () => {
         </div>
       </div>
 
+      {picked.size > 0 && (
+        <div className="sticky top-[calc(var(--app-header-h,0px)+8px)] z-30 mb-3 flex items-center gap-3 flex-wrap rounded-xl px-4 py-3 border border-rose-500/30 shadow-xl shadow-black/40"
+          style={{ background: "#1a1414" }}>
+          <span className="text-sm text-ink"><span className="font-semibold">{picked.size}</span> member dipilih</span>
+          <button onClick={() => setPicked(new Set(filtered.map(m => m.code)))} className="text-xs text-emerald-300 hover:text-emerald-200">
+            Pilih semua yang tampil ({filtered.length})
+          </button>
+          <button onClick={() => setPicked(new Set())} className="text-xs text-ink-soft hover:text-ink">Batal pilih</button>
+          <button onClick={bulkDelete} disabled={deleting}
+            className="ms-auto text-sm font-semibold px-4 py-2 rounded-lg text-white bg-rose-600 hover:bg-rose-500 disabled:opacity-60 inline-flex items-center gap-2">
+            <Icon name="trash" className="w-4 h-4" style={{ stroke: "currentColor" }}/>
+            {deleting ? "Menghapus…" : `Hapus ${picked.size} member`}
+          </button>
+        </div>
+      )}
+
       <div className="card-glass overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-white/3 text-left">
+                <th className="pl-4 pr-1 py-3 w-8">
+                  <input type="checkbox" aria-label="Pilih semua yang tampil" className="accent-rose-500 w-4 h-4 cursor-pointer"
+                    checked={filtered.length > 0 && filtered.every(m => picked.has(m.code))}
+                    ref={el => { if (el) el.indeterminate = filtered.some(m => picked.has(m.code)) && !filtered.every(m => picked.has(m.code)); }}
+                    onChange={e => setPicked(prev => {
+                      const n = new Set(prev);
+                      filtered.forEach(m => (e.target.checked ? n.add(m.code) : n.delete(m.code)));
+                      return n;
+                    })}/>
+                </th>
                 <th className="px-4 py-3 font-medium text-ink-muted text-xs uppercase tracking-wider">Member</th>
                 <th className="px-4 py-3 font-medium text-ink-muted text-xs uppercase tracking-wider">Kode</th>
                 <th className="px-4 py-3 font-medium text-ink-muted text-xs uppercase tracking-wider">Akun Google</th>
@@ -1142,7 +1195,11 @@ const AdminMembers = () => {
             </thead>
             <tbody>
               {filtered.map(m => (
-                <tr key={m.code} className="border-t border-line">
+                <tr key={m.code} className={`border-t border-line ${picked.has(m.code) ? "bg-rose-500/[0.06]" : ""}`}>
+                  <td className="pl-4 pr-1 py-3.5 w-8">
+                    <input type="checkbox" aria-label={`Pilih ${m.name}`} className="accent-rose-500 w-4 h-4 cursor-pointer"
+                      checked={picked.has(m.code)} onChange={() => togglePick(m.code)}/>
+                  </td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center flex-wrap gap-1">
                       <span className="text-ink font-medium">{m.name}</span>
@@ -1199,7 +1256,7 @@ const AdminMembers = () => {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan="6" className="px-4 py-10 text-center text-ink-muted">Tidak ada member yang cocok.</td></tr>
+                <tr><td colSpan="7" className="px-4 py-10 text-center text-ink-muted">Tidak ada member yang cocok.</td></tr>
               )}
             </tbody>
           </table>

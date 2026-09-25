@@ -111,7 +111,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { action, code, row, days, links } = JSON.parse(body || '{}');
+    const { action, code, row, days, links, codes } = JSON.parse(body || '{}');
     let result;
 
     if (action === 'list') {
@@ -120,6 +120,11 @@ export default async function handler(req, res) {
       result = await sbRequest(supabaseUrl, serviceKey, 'POST', 'members', row);
     } else if (action === 'update') {
       result = await sbRequest(supabaseUrl, serviceKey, 'PATCH', `members?code=eq.${encodeURIComponent(code)}`, row);
+    } else if (action === 'bulk-delete') {
+      const list = [...new Set((Array.isArray(codes) ? codes : []).map(c => String(c || '').trim().toUpperCase()))]
+        .filter(c => /^[A-Z0-9-]{3,40}$/.test(c)).slice(0, 500);
+      if (!list.length) { res.status(400).json({ ok: false, error: 'Tidak ada kode member yang dipilih' }); return; }
+      result = await sbRequest(supabaseUrl, serviceKey, 'DELETE', `members?code=in.(${list.map(c => `"${c}"`).join(',')})&select=code`, null);
     } else if (action === 'delete') {
       result = await sbRequest(supabaseUrl, serviceKey, 'DELETE', `members?code=eq.${encodeURIComponent(code)}`, null);
     } else if (action === 'aggregate-profiles') {
