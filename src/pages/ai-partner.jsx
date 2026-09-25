@@ -294,10 +294,7 @@ const Composer = ({ tier, onUpload }) => {
     <section className="pt-10 md:pt-20 pb-10 md:pb-14">
       <div className="container-x"><div className="max-w-2xl mx-auto">
         <div className="flex items-center justify-center gap-3 mb-7 md:mb-9">
-          <span className="w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center flex-shrink-0"
-            style={{ background: 'rgba(62,207,142,0.14)', border: '1px solid rgba(62,207,142,0.3)' }}>
-            <Icon name="sparkles" className="w-5 h-5 text-emerald-300"/>
-          </span>
+          <LogoMark size={52} className="flex-shrink-0 md:scale-110"/>
           <h1 className="font-display text-[28px] md:text-[40px] font-semibold text-ink leading-tight tracking-tight text-center">
             {greetingNow()}{firstName ? `, ${firstName}` : ''}
           </h1>
