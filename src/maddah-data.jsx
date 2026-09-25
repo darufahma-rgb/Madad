@@ -655,7 +655,7 @@ Jelaskan bagaimana pilihan nahwu memengaruhi makna dan balaghah, untuk fenomena 
     category: "fiqhi",
     fakultas: ["ushuluddin", "syariah", "dirasat", "dirasat-banin"],
     jurusan: ["dirasat_syariah"],
-    tingkat: ["2", "3", "4", "5", "pasca"],
+    tingkat: ["1", "2", "3", "4", "5", "pasca"],
     description: "Ilmu yang membahas dalil-dalil syar'i dan kaidah-kaidah istinbat hukum dari dalil tersebut. Pondasi semua ijtihad fiqhi.",
     descriptionArabic: "علم القواعد التي يتوصل بها إلى استنباط الأحكام الشرعية من أدلتها التفصيلية",
     kitabUtama: [
@@ -3297,7 +3297,7 @@ Untuk tema/hadits [SEBUTKAN], bandingkan pendekatan maudhu'i vs tahlili:
     category: "haditsi",
     fakultas: ["ushuluddin", "dirasat", "dirasat-banin", "syariah"],
     jurusan: ["dirasat_ushuluddin"],
-    tingkat: ["2", "3", "4", "pasca"],
+    tingkat: ["1", "2", "3", "4", "pasca"],
     description: "Ilmu klasifikasi hadits — shahih, hasan, dha'if, mawdhu', kaidah-kaidah ilmu rijal, dan terminologi muhadditsin.",
     descriptionArabic: "علم قواعد تصنيف الأحاديث وأحوال الرواة",
     kitabUtama: [
@@ -4470,7 +4470,7 @@ Untuk mas'alah [SEBUTKAN], bandingkan 4 madzhab secara ringkas:
     category: "fiqhi",
     fakultas: ["syariah", "dirasat"],
     jurusan: ["dirasat_syariah"],
-    tingkat: ["3", "4", "5", "pasca"],
+    tingkat: ["1", "3", "4", "5", "pasca"],
     description: "Perbandingan fiqh antar 4 madzhab — dalil, wajh istidlal, tarjih ulama. Ilmu inti di Fakultas Syariah. Cocok juga dipadukan dengan fitur Muqaranah di Talqeeh.",
     descriptionArabic: "مقارنة الفقه بين المذاهب",
     kitabUtama: [
@@ -5056,7 +5056,7 @@ Jelaskan kaitan qawa'id fiqhiyyah dengan maqashid syariah:
     category: "fiqhi",
     fakultas: ["syariah", "dirasat"],
     jurusan: ["dirasat_syariah"],
-    tingkat: ["3", "4", "5", "pasca"],
+    tingkat: ["2", "3", "4", "5", "pasca"],
     description: "Hukum keluarga Islam — nikah, talaq, 'iddah, ruju', nafaqah, hadhanah, dan faraidh (pembagian warisan).",
     descriptionArabic: "أحكام الأسرة والميراث",
     kitabUtama: [
@@ -9292,7 +9292,7 @@ Jelaskan aspek akhlak Nabi ﷺ:
     category: "tarikhi",
     fakultas: ["syariah", "dirasat", "dirasat-banin", "ushuluddin"],
     jurusan: [],
-    tingkat: ["2", "3", "4", "5", "pasca"],
+    tingkat: ["1", "2", "3", "4", "5", "pasca"],
     description: "Sejarah legislasi Islam — fase Nabi, Sahabat, Tabi'in, kodifikasi madzhab, dan fiqh modern. Memahami bagaimana hukum Islam berkembang.",
     descriptionArabic: "تاريخ التشريع الإسلامي عبر العصور",
     kitabUtama: [
