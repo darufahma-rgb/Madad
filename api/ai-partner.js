@@ -19,7 +19,9 @@ import {
 const LIMITS = { create: 10, ocr: 20, transcribe: 60, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40 };
 const TRIAL_OCR_LIMIT  = 3;
 const TRIAL_KINDS      = ['summary', 'flashcards', 'quiz', 'glossary'];
-const PRO_ONLY_ACTIONS = ['transcribe', 'analyze', 'grade', 'chat', 'prompt-chat'];
+const PRO_ONLY_ACTIONS = ['transcribe', 'analyze', 'grade', 'chat'];
+// Tanya AI untuk pengguna coba gratis: satu percakapan, maksimal sekian pesan seumur akun.
+const TRIAL_PROMPT_MESSAGES = 5;
 
 // Materi panjang (±100 halaman) disimpan utuh; tiap permintaan AI hanya menerima potongan yang muat.
 const MAX_CONTENT       = 200000;
@@ -95,6 +97,18 @@ const getTrialSetId = async (code) => {
   if (!r.ok) return { available: false, setId: null };
   const rows = await r.json();
   return { available: true, setId: Array.isArray(rows) && rows[0] ? rows[0].ai_trial_set_id : null };
+};
+
+// Total pemakaian sepanjang masa untuk satu jenis kuota (ai_usage menyimpan per hari).
+const lifetimeUsage = async (code, kind) => {
+  const { url, key } = sbConfig();
+  const r = await fetch(
+    `${url}/rest/v1/ai_usage?member_code=eq.${encodeURIComponent(code)}&kind=eq.${encodeURIComponent(kind)}&select=count`,
+    { headers: sbHeaders(key) }
+  );
+  if (!r.ok) return Infinity; // gagal membaca → anggap habis (fail closed)
+  const rows = await r.json();
+  return (Array.isArray(rows) ? rows : []).reduce((n, row) => n + (Number(row.count) || 0), 0);
 };
 
 // Klaim jatah coba gratis secara atomik; false kalau sudah terpakai.
@@ -655,7 +669,15 @@ async function handlePromptChat(ctx, body, res) {
   // Buang giliran terlama sampai total muat; pesan pertama harus dari pengguna.
   while (messages.length > 1 && messages.reduce((n, m) => n + m.content.length, 0) > PROMPT_MAX_TOTAL) messages.shift();
   while (messages.length > 1 && messages[0].role !== 'user') messages.shift();
-  if (!(await consumeQuota(ctx.code, 'prompt', LIMITS.prompt))) return quotaExceeded(res, 'prompt');
+  let trialLeft = null;
+  if (ctx.tier === 'trial') {
+    const used = await lifetimeUsage(ctx.code, 'prompt_trial');
+    const outOfTrial = () => upgradeRequired(res, 'prompt_trial_used',
+      `Percakapan gratismu (${TRIAL_PROMPT_MESSAGES} pesan) sudah terpakai. Berlangganan AI Partner untuk bertanya tanpa batas.`);
+    if (used >= TRIAL_PROMPT_MESSAGES) return outOfTrial();
+    if (!(await consumeQuota(ctx.code, 'prompt_trial', TRIAL_PROMPT_MESSAGES))) return outOfTrial();
+    trialLeft = TRIAL_PROMPT_MESSAGES - used - 1;
+  } else if (!(await consumeQuota(ctx.code, 'prompt', LIMITS.prompt))) return quotaExceeded(res, 'prompt');
 
   const { out, stream, failed } = await runAI(body, res, {
     system: promptChatSystem() + learnerContext(body.learner, { material: false }),
@@ -671,7 +693,7 @@ async function handlePromptChat(ctx, body, res) {
   const note = '\n\n_(Jawaban terpotong karena terlalu panjang — ketik **lanjutkan** untuk meneruskan.)_';
   if (out.truncated && stream) stream.delta(note);
   const reply = out.truncated ? `${out.text.trimEnd()}${note}` : out.text;
-  return sendResult(res, stream, { reply, model: out.model });
+  return sendResult(res, stream, { reply, model: out.model, ...(trialLeft != null ? { trial_left: trialLeft } : {}) });
 }
 
 /* ── Masukan kualitas (👍/👎 + laporan kesalahan) ── */
@@ -896,10 +918,14 @@ export default async function handler(req, res) {
       const access = await requireAiTier(req);
       if (!access.ok) return res.status(200).json({ ok: true, active: false, tier: 'none' });
       if (access.tier === 'pro') return res.status(200).json({ ok: true, active: true, tier: 'pro' });
-      const trial = await getTrialSetId(access.code);
+      const [trial, promptUsed] = await Promise.all([getTrialSetId(access.code), lifetimeUsage(access.code, 'prompt_trial')]);
       return res.status(200).json({
         ok: true, active: false, tier: 'trial',
-        trial: { available: trial.available, used: !!trial.setId, set_id: trial.setId },
+        trial: {
+          available: trial.available, used: !!trial.setId, set_id: trial.setId,
+          prompt_left: Math.max(0, TRIAL_PROMPT_MESSAGES - (Number.isFinite(promptUsed) ? promptUsed : TRIAL_PROMPT_MESSAGES)),
+          prompt_limit: TRIAL_PROMPT_MESSAGES,
+        },
       });
     }
 

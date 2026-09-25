@@ -56,7 +56,12 @@ const newThread = (pending) => ({
 
 const threadTitle = (t) => t.title || t.messages.find(m => m.role === 'user')?.content.slice(0, 60) || 'Percakapan';
 
-const PromptChat = () => {
+// Pengguna coba gratis: satu percakapan (dicatat di perangkat); jumlah pesannya dibatasi server.
+const TRIAL_THREAD_KEY = 'talqeeh_trial_prompt_thread';
+const readTrialThread = () => { try { return localStorage.getItem(TRIAL_THREAD_KEY) || ''; } catch { return ''; } };
+const saveTrialThread = (id) => { try { localStorage.setItem(TRIAL_THREAD_KEY, id); } catch {} };
+
+const PromptChat = ({ trial = null }) => {
   const toast = useToast();
   const [threads, setThreads] = useState(readThreads);
   const [thread, setThread]   = useState(null);
@@ -65,6 +70,8 @@ const PromptChat = () => {
   const [error, setError]     = useState('');
   const [live, setLive]       = useState('');
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [trialLeft, setTrialLeft] = useState(trial ? trial.left : null);
+  const isTrial = trial != null;
   const inputRef  = useRef(null);
 
   // Kotak ketik tumbuh mengikuti isi, maksimal ±12 baris.
@@ -105,6 +112,16 @@ const PromptChat = () => {
     const message = (typeof text === 'string' ? text : input).trim();
     if (!message || sending) return;
     const base = startThread || thread || newThread({ title: message.slice(0, 60) });
+    if (isTrial) {
+      if (trialLeft <= 0) { openAiUpgrade(); return; }
+      const trialId = readTrialThread();
+      if (trialId && trialId !== base.id && readThreads().some(t => t.id === trialId)) {
+        toast.push('Percakapan gratismu cuma satu — lanjutkan di percakapan itu, atau berlangganan.');
+        if (startThread) setInput(message);
+        return;
+      }
+      if (!trialId) saveTrialThread(base.id);
+    }
     const withUser = {
       ...base,
       messages: [...base.messages, { role: 'user', content: message }].slice(-MAX_MESSAGES),
@@ -125,6 +142,7 @@ const PromptChat = () => {
       data.ok = true;
       data.reply = `${data.partial.trimEnd()}\n\n_(Koneksi terputus sebelum jawaban selesai — ketik **lanjutkan** untuk meneruskan.)_`;
     }
+    if (!data.ok && data.upgrade && isTrial) setTrialLeft(0);
     if (!data.ok) {
       setError(data.error || 'Gagal mengirim pesan');
       setThread(base);
@@ -138,9 +156,17 @@ const PromptChat = () => {
     };
     setThread(done);
     persist(done);
+    if (isTrial) setTrialLeft(typeof data.trial_left === 'number' ? data.trial_left : Math.max(0, trialLeft - 1));
   };
 
-  const startNew = () => { setThread(null); setInput(''); setError(''); };
+  const startNew = () => {
+    const trialId = isTrial && readTrialThread();
+    if (trialId && readThreads().some(t => t.id === trialId)) {
+      toast.push('Percakapan gratis cuma satu. Berlangganan AI Partner untuk percakapan tanpa batas.');
+      return;
+    }
+    setThread(null); setInput(''); setError('');
+  };
 
   const removeThread = (id) => {
     const next = readThreads().filter(x => x.id !== id);
@@ -273,6 +299,17 @@ const PromptChat = () => {
       <div className="sticky z-20 pt-3 pb-3 md:pb-5" style={{ bottom: 'var(--tabbar-height, 0px)', background: 'linear-gradient(to top, rgb(12,12,12) 70%, rgba(12,12,12,0))' }}>
         <div className="container-x w-full">
           <div className="max-w-3xl mx-auto">
+            {isTrial && trialLeft > 0 && (
+              <div className="flex items-center justify-between gap-3 mb-2 px-3 py-2 rounded-xl text-xs"
+                style={{ background: 'rgba(201,168,106,0.08)', border: '1px solid rgba(201,168,106,0.25)' }}>
+                <span className="text-ink-muted">Coba gratis · 1 percakapan · <span className="text-gold-300 font-medium">sisa {trialLeft} dari {trial.limit} pesan</span></span>
+                <button onClick={openAiUpgrade} className="text-gold-300 hover:text-gold-200 underline underline-offset-2 flex-shrink-0">Berlangganan</button>
+              </div>
+            )}
+            {isTrial && trialLeft <= 0 ? (
+              <UpgradeCard compact title="Percakapan gratismu sudah terpakai"
+                message="Berlangganan AI Partner untuk bertanya tanpa batas, lanjutkan percakapan, dan jalankan semua prompt Talqeeh di sini."/>
+            ) : <>
             {error && <div className="text-sm text-rose-400 mb-2 px-1">{error}</div>}
             {hasPlaceholder && !sending && (
               <div className="text-xs text-amber-400/90 mb-2 px-1">💡 Masih ada bagian [dalam kurung siku] — isi dulu supaya jawabannya pas.</div>
@@ -298,6 +335,7 @@ const PromptChat = () => {
                 </button>
               </div>
             </div>
+            </>}
             <p className="text-[11px] text-ink-soft text-center mt-2">AI bisa keliru. Cek kembali ke kitab muqarrar atau duktur.</p>
           </div>
         </div>
@@ -330,6 +368,8 @@ const AiPromptPage = () => {
         ? <div className="container-x pt-10 pb-24"><div className="card-glass p-6 max-w-xl mx-auto"><Skeleton lines={3}/></div></div>
         : status.tier === 'pro'
           ? <PromptChat/>
+          : status.tier === 'trial'
+            ? <PromptChat trial={{ left: status.trial?.prompt_left ?? 0, limit: status.trial?.prompt_limit ?? 5 }}/>
           : <div className="container-x pt-10 pb-24 max-w-2xl mx-auto">
               <UpgradeCard
                 title={status.tier === 'none' ? 'Khusus member Talqeeh' : 'Tanya AI khusus pelanggan AI Partner'}

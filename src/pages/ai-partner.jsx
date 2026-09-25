@@ -259,7 +259,7 @@ const STARTERS = [
   { icon: 'list',      label: "Rencana muraja'ah", text: "Buatkan rencana muraja'ah 7 hari untuk maddah [nama maddah] menjelang imtihan." },
 ];
 
-const Composer = ({ tier, onUpload }) => {
+const Composer = ({ tier, trial, onUpload }) => {
   const { profile, session } = useAuth();
   const toast = useToast();
   const [text, setText] = useState('');
@@ -276,7 +276,8 @@ const Composer = ({ tier, onUpload }) => {
   const submit = () => {
     const msg = text.trim();
     if (!msg) return;
-    if (tier !== 'pro') { toast.push('Tanya AI khusus pelanggan AI Partner.'); openAiUpgrade(); return; }
+    // Coba gratis: satu percakapan; kalau jatahnya habis, tawarkan berlangganan.
+    if (tier !== 'pro' && !(trial?.prompt_left > 0)) { toast.push('Percakapan gratismu sudah terpakai.'); openAiUpgrade(); return; }
     runPromptInTalqeeh(msg, { autoSend: true, source: 'AI Partner' });
   };
 
@@ -333,6 +334,14 @@ const Composer = ({ tier, onUpload }) => {
           ))}
         </div>
 
+        {tier !== 'pro' && trial?.prompt_limit && (
+          <p className="text-center text-xs text-ink-soft mt-3">
+            {trial.prompt_left > 0
+              ? <>Coba gratis: <span className="text-gold-300">1 percakapan · sisa {trial.prompt_left} dari {trial.prompt_limit} pesan</span></>
+              : <>Percakapan gratismu sudah terpakai · </>}
+            <button onClick={openAiUpgrade} className="text-gold-300 hover:text-gold-200 underline underline-offset-2 ml-1">Berlangganan</button>
+          </p>
+        )}
         <div className="flex justify-center"><PersonalizationChip/></div>
         <RecentChats/>
       </div></div>
@@ -385,7 +394,7 @@ const AiPartnerPage = () => {
               <div className="container-x pt-6 pb-24"><UpgradeCard title="Khusus member Talqeeh" message="Masuk dengan Google dan buat akun gratis untuk mencoba AI Partner 1 materi."/></div>
             </>
           : <>
-              <Composer tier={status.tier} onUpload={startUpload}/>
+              <Composer tier={status.tier} trial={status.trial} onUpload={startUpload}/>
               <div ref={listRef} className="scroll-mt-20 pt-6 md:pt-10 border-t border-white/[0.06]">
                 <AiPartnerList status={status} creating={creating} setCreating={setCreating}/>
               </div>
