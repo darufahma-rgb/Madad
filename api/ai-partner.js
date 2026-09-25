@@ -660,7 +660,8 @@ async function handlePromptChat(ctx, body, res) {
   const { out, stream, failed } = await runAI(body, res, {
     system: promptChatSystem() + learnerContext(body.learner, { material: false }),
     messages,
-    maxTokens: 3000,
+    // Jawaban dijaga ringkas (±600 kata) supaya selesai jauh sebelum batas waktu.
+    maxTokens: 1800,
     // Sisakan waktu untuk menutup stream sebelum batas 60 detik Vercel.
     timeLimitMs: 48000,
     cacheSystem: true,
