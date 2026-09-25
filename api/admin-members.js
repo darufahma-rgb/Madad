@@ -37,6 +37,37 @@ const sbRequest = (supabaseUrl, serviceKey, method, path, body, prefer = 'return
   });
 };
 
+// Data belajar milik member (kolom member_code). Kalau database menolak menghapus member karena masih
+// dirujuk salah satu tabel ini (foreign key), barisnya dihapus dulu. Data pembayaran & bank soal tidak
+// pernah ikut dihapus — kalau itu yang merujuk, penghapusan dibatalkan dengan pesan yang jelas.
+const MEMBER_DATA_TABLES = new Set([
+  'user_notes', 'user_progress', 'user_intentions', 'user_presence', 'user_muqaranah', 'user_profiles',
+  'user_maddah_activity', 'user_soal_progress', 'study_sets', 'ai_usage', 'ai_feedback', 'ai_subscriptions', 'parse_usage',
+]);
+
+const pgErrorText = (data) => (data && typeof data === 'object'
+  ? [data.message, data.details, data.hint].filter(Boolean).join(' — ')
+  : String(data || 'Gagal'));
+
+async function deleteMembers(url, key, codes) {
+  const inList = `(${codes.map(c => `"${c}"`).join(',')})`;
+  const cleaned = [];
+  for (let attempt = 0; attempt < MEMBER_DATA_TABLES.size + 1; attempt++) {
+    const r = await sbRequest(url, key, 'DELETE', `members?code=in.${inList}&select=code`, null);
+    if (r.status < 400) return { status: 200, data: Array.isArray(r.data) ? r.data : [], cleaned };
+    const table = r.data?.code === '23503' ? (pgErrorText(r.data).match(/(?:from|on) table "([a-z_]+)"/g) || [])
+      .map(m => m.match(/"([a-z_]+)"/)[1]).find(t => t !== 'members') : null;
+    if (!table) return { status: r.status, error: pgErrorText(r.data) };
+    if (!MEMBER_DATA_TABLES.has(table) || cleaned.includes(table)) {
+      return { status: 409, error: `Member tidak bisa dihapus karena masih tercatat di tabel "${table}" (mis. riwayat pembayaran). Nonaktifkan saja (Disable).` };
+    }
+    const d = await sbRequest(url, key, 'DELETE', `${table}?member_code=in.${inList}`, null, 'return=minimal');
+    if (d.status >= 400) return { status: d.status, error: `Gagal membersihkan data di "${table}": ${pgErrorText(d.data)}` };
+    cleaned.push(table);
+  }
+  return { status: 500, error: 'Gagal menghapus member' };
+}
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LIBRARY_EXPIRY = '2099-12-31';
 
@@ -125,9 +156,15 @@ export default async function handler(req, res) {
       const list = [...new Set((Array.isArray(codes) ? codes : []).map(c => String(c || '').trim().toUpperCase()))]
         .filter(c => /^[A-Z0-9-]{3,40}$/.test(c)).slice(0, 500);
       if (!list.length) { res.status(400).json({ ok: false, error: 'Tidak ada kode member yang dipilih' }); return; }
-      result = await sbRequest(supabaseUrl, serviceKey, 'DELETE', `members?code=in.(${list.map(c => `"${c}"`).join(',')})&select=code`, null);
+      const del = await deleteMembers(supabaseUrl, serviceKey, list);
+      if (del.error) { res.status(del.status).json({ ok: false, error: del.error }); return; }
+      result = { status: 200, data: del.data };
     } else if (action === 'delete') {
-      result = await sbRequest(supabaseUrl, serviceKey, 'DELETE', `members?code=eq.${encodeURIComponent(code)}`, null);
+      const one = String(code || '').trim().toUpperCase();
+      if (!/^[A-Z0-9-]{3,40}$/.test(one)) { res.status(400).json({ ok: false, error: 'Kode member tidak valid' }); return; }
+      const del = await deleteMembers(supabaseUrl, serviceKey, [one]);
+      if (del.error) { res.status(del.status).json({ ok: false, error: del.error }); return; }
+      result = { status: 200, data: del.data };
     } else if (action === 'aggregate-profiles') {
       result = await sbRequest(supabaseUrl, serviceKey, 'GET', 'user_profiles?select=member_code,profile&limit=1000', null);
     } else if (action === 'aggregate-activity') {
@@ -183,7 +220,7 @@ export default async function handler(req, res) {
     }
 
     if (result.status >= 400) {
-      res.status(result.status).json({ ok: false, error: result.data });
+      res.status(result.status).json({ ok: false, error: pgErrorText(result.data) });
     } else {
       res.status(200).json({ ok: true, data: result.data });
     }

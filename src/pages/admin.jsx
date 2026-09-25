@@ -62,7 +62,10 @@ const adminMembersAPI = async (action, code, row, extra = {}) => {
     throw new Error('Sesi expired, silakan login ulang');
   }
   const j = await r.json();
-  if (!j.ok) throw new Error(j.error || 'API error');
+  if (!j.ok) {
+    const e = j.error;
+    throw new Error(typeof e === 'string' ? e : (e && (e.message || e.details)) || JSON.stringify(e) || 'API error');
+  }
   return j.data;
 };
 
@@ -1020,7 +1023,7 @@ const AdminMembers = () => {
     const more = chosen.length > 8 ? `\n…dan ${chosen.length - 8} lainnya` : "";
     const linked = chosen.filter(m => m.googleLinked).length;
     const warn = linked ? `\n\n⚠️ ${linked} di antaranya sudah login Google — mereka kehilangan akses.` : "";
-    if (!confirm(`Hapus ${chosen.length} member secara permanen?\n\n${names}${more}${warn}\n\nTindakan ini tidak bisa dibatalkan.`)) return;
+    if (!confirm(`Hapus ${chosen.length} member secara permanen?\n\n${names}${more}${warn}\n\nData belajar mereka (catatan, progres, profil, materi AI) ikut terhapus. Tindakan ini tidak bisa dibatalkan.`)) return;
     setDeleting(true);
     try {
       const rows = await adminBulkDelete(chosen.map(m => m.code));
@@ -1525,7 +1528,7 @@ const MemberActions = ({ member, updateMember, onDelete }) => {
               }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5">Lepas akun Google</button>
             )}
             <div className="my-1 h-px bg-line"/>
-            <button onClick={() => { if (confirm("Hapus member ini?")) { onDelete(); close(); } }} className="w-full text-left px-4 py-2 text-rose-600 hover:bg-white/5">Delete</button>
+            <button onClick={() => { if (confirm("Hapus member ini? Data belajarnya (catatan, progres, profil, materi AI) ikut terhapus.")) { onDelete(); close(); } }} className="w-full text-left px-4 py-2 text-rose-600 hover:bg-white/5">Delete</button>
           </div>
         </>
       )}
