@@ -111,6 +111,8 @@ const MaddahPromptCard = ({ prompt, maddah, profile, formatEnabled }) => {
           <button onClick={handleCopy} className="btn btn-ghost text-xs px-3 py-2.5 flex items-center justify-center gap-1.5 w-full sm:w-auto" style={{minHeight:44}}>
             <Icon name="copy" className="w-3 h-3"/>{copied ? "Tersalin ✓" : "Salin"}
           </button>
+          <RunInTalqeehButton getText={getTextToCopy} title={`${maddah.name} — ${safePrompt.title}`} source="Maddah S1"
+            label="Jalankan di sini" className="btn btn-ghost text-xs px-3 py-2.5 justify-center w-full sm:w-auto"/>
           {tool?.link && (
             <button onClick={handleCopyAndOpen} className="btn btn-primary text-xs px-3 py-2.5 flex items-center justify-center gap-1.5 w-full sm:w-auto" style={{minHeight:44}}>
               Buka {tool.name}<Icon name="external" className="w-3 h-3"/>

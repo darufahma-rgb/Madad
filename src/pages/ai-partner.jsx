@@ -267,6 +267,20 @@ const AiPartnerPage = () => {
           Unggah diktat, slide, foto kitab, atau rekaman kuliah — Talqeeh menyiapkan ringkasan, peta konsep, mufradat, flashcard, soal, dan duktur AI untuk latihan.
         </p>
         <PersonalizationChip/>
+        {!status.loading && status.tier !== 'none' && (
+          <button onClick={() => navigate('/ai-partner/prompt')}
+            className="mt-5 w-full md:w-auto flex items-center gap-3 p-4 rounded-xl text-left transition-colors hover:bg-emerald-500/10"
+            style={{ background: 'rgba(62,207,142,0.06)', border: '1px solid rgba(62,207,142,0.25)' }}>
+            <span className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(62,207,142,0.14)' }}>
+              <Icon name="sparkles" className="w-5 h-5 text-emerald-300"/>
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-ink">Jalankan Prompt Talqeeh {status.tier !== 'pro' && <Icon name="crown" className="inline w-3 h-3 text-gold-300 ml-1"/>}</span>
+              <span className="block text-xs text-ink-muted">Semua prompt Maddah langsung dijawab di sini — tanpa salin-tempel ke AI lain.</span>
+            </span>
+            <Icon name="arrowRight" className="w-4 h-4 text-ink-soft ml-auto flex-shrink-0"/>
+          </button>
+        )}
       </section>
       {status.loading ? <GateLoading/>
         : status.tier === 'none'

@@ -6,7 +6,7 @@ import { resolveModels, isValidModelId, clearModelCache } from './_lib/models.js
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
   OCR_PROMPT, transcribePrompt, TRANSCRIBE_DIALECTS, tutorSystem, syafawiSystem, learnerContext,
-  SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt,
+  SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { splitChunks, spreadSample, relevantExcerpt } from './_lib/ai-partner/chunks.js';
@@ -16,10 +16,10 @@ import {
 } from './_lib/ai-partner/sanitize.js';
 
 // Kuota harian pelanggan. Pengguna coba gratis dibatasi per materi (lihat TRIAL_*), bukan per hari.
-const LIMITS = { create: 10, ocr: 20, transcribe: 60, generate: 25, analyze: 30, grade: 20, chat: 40 };
+const LIMITS = { create: 10, ocr: 20, transcribe: 60, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40 };
 const TRIAL_OCR_LIMIT  = 3;
 const TRIAL_KINDS      = ['summary', 'flashcards', 'quiz', 'glossary'];
-const PRO_ONLY_ACTIONS = ['transcribe', 'analyze', 'grade', 'chat'];
+const PRO_ONLY_ACTIONS = ['transcribe', 'analyze', 'grade', 'chat', 'prompt-chat'];
 
 // Materi panjang (±100 halaman) disimpan utuh; tiap permintaan AI hanya menerima potongan yang muat.
 const MAX_CONTENT       = 200000;
@@ -635,6 +635,41 @@ async function handleChat(ctx, body, res) {
   return sendResult(res, stream, { reply, model: out.model });
 }
 
+/* ── Jalankan prompt Talqeeh langsung (tanpa materi) ──
+   Percakapan disimpan di perangkat pengguna; server hanya menerima riwayat terakhir dan tidak menyimpannya. */
+const PROMPT_MAX_TURNS   = 16;
+const PROMPT_MAX_MESSAGE = 12000;
+const PROMPT_MAX_TOTAL   = 40000;
+
+async function handlePromptChat(ctx, body, res) {
+  const raw = Array.isArray(body.messages) ? body.messages.slice(-PROMPT_MAX_TURNS) : [];
+  const messages = raw
+    .filter(m => m && (m.role === 'user' || m.role === 'assistant') && isStr(m.content) && m.content.trim())
+    .map(m => ({ role: m.role, content: m.content.trim().slice(0, PROMPT_MAX_MESSAGE) }));
+  const last = raw[raw.length - 1];
+  if (!messages.length || messages[messages.length - 1].role !== 'user' || !isStr(last?.content)) {
+    return res.status(400).json({ ok: false, error: 'Pesan kosong' });
+  }
+  if (last.content.trim().length > PROMPT_MAX_MESSAGE) return res.status(400).json({ ok: false, error: 'Pesan terlalu panjang' });
+  // Buang giliran terlama sampai total muat; pesan pertama harus dari pengguna.
+  while (messages.length > 1 && messages.reduce((n, m) => n + m.content.length, 0) > PROMPT_MAX_TOTAL) messages.shift();
+  while (messages.length > 1 && messages[0].role !== 'user') messages.shift();
+  if (!(await consumeQuota(ctx.code, 'prompt', LIMITS.prompt))) return quotaExceeded(res, 'prompt');
+
+  const { out, stream, failed } = await runAI(body, res, {
+    system: promptChatSystem() + learnerContext(body.learner, { material: false }),
+    messages,
+    maxTokens: 3000,
+    cacheSystem: true,
+    model: (await resolveModels()).chat,
+  });
+  if (failed) return;
+  const note = '\n\n_(Jawaban terpotong karena terlalu panjang — ketik **lanjutkan** untuk meneruskan.)_';
+  if (out.truncated && stream) stream.delta(note);
+  const reply = out.truncated ? `${out.text.trimEnd()}${note}` : out.text;
+  return sendResult(res, stream, { reply, model: out.model });
+}
+
 /* ── Masukan kualitas (👍/👎 + laporan kesalahan) ── */
 const FEEDBACK_KINDS = ['summary', 'mindmap', 'flashcards', 'quiz', 'glossary', 'essays', 'grade', 'irab', 'tasykil', 'tutor', 'syafawi'];
 const FEEDBACK_TASK = {
@@ -886,6 +921,7 @@ export default async function handler(req, res) {
       case 'grade':         return await handleGrade(ctx, body, res);
       case 'chat':          return await handleChat(ctx, body, res);
       case 'clear-chat':    return await handleClearChat(ctx, body, res);
+      case 'prompt-chat':   return await handlePromptChat(ctx, body, res);
       case 'stats':         return await handleStats(ctx, res);
       case 'feedback':      return await handleFeedback(ctx, body, res);
       default:              return res.status(400).json({ ok: false, error: 'Action tidak valid' });

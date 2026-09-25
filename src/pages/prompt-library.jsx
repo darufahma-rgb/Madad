@@ -367,6 +367,10 @@ const PromptCard = ({ item, formatEnabled }) => {
         >
           {copied ? "✓ Tersalin!" : "📋 Salin"}
         </button>
+        <RunInTalqeehButton
+          getText={() => typeof withFormatInstruction !== "undefined" ? withFormatInstruction(item.template, formatEnabled) : item.template}
+          title={item.title} source="Prompt Library" label="Jalankan"
+          className="flex-1 py-2.5 rounded-lg text-[12px] font-semibold justify-center border"/>
       </div>
     </div>
   );

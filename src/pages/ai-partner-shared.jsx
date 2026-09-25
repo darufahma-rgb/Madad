@@ -36,7 +36,7 @@ const learnerSummary = (profile = window.getProfile?.()) => {
   ].filter(Boolean).join(' · ');
 };
 
-const PERSONALIZED_ACTIONS = ['generate', 'chat', 'grade'];
+const PERSONALIZED_ACTIONS = ['generate', 'chat', 'grade', 'prompt-chat'];
 
 const aiCall = async (action, payload = {}) => {
   let data;

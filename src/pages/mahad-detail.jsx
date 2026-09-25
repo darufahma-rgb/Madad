@@ -44,6 +44,8 @@ const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled }) => {
             <Icon name="copy" className="w-3.5 h-3.5"/>
             {copied ? "Tersalin ✓" : "Salin"}
           </button>
+          <RunInTalqeehButton getText={getTextToCopy} title={`${maddah?.name || "Maddah"} — ${p.title}`} source="Maddah Ma'had"
+            label="Jalankan di sini" className="btn btn-ghost text-xs px-3 py-2.5 justify-center"/>
           {tool?.link && (
             <button
               onClick={() => {

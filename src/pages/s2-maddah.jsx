@@ -436,6 +436,8 @@ const S2MaddahPage = () => {
                   <Icon name="copy" className="w-3.5 h-3.5"/>
                   {copied ? "Tersalin ✓" : "Salin Prompt"}
                 </button>
+                <RunInTalqeehButton getText={getPrompt}
+                  title={`Maddah S2${selectedMaddah ? " — " + selectedMaddah.nama : ""}`} source="Maddah S2"/>
                 <button onClick={() => handleCopyAndOpen("claude")}
                   className="btn-primary text-xs px-4 py-2.5 flex items-center gap-1.5"
                   style={{minHeight:40}}>
@@ -547,6 +549,8 @@ const S2MaddahPage = () => {
                   <Icon name="copy" className="w-3.5 h-3.5"/>
                   {copied ? "Tersalin ✓" : "Salin Prompt"}
                 </button>
+                <RunInTalqeehButton getText={getPrompt}
+                  title={`Maddah S2${selectedMaddah ? " — " + selectedMaddah.nama : ""}`} source="Maddah S2"/>
                 <button onClick={() => handleCopyAndOpen("claude")}
                   className="btn-primary text-xs px-4 py-2.5 flex items-center gap-1.5"
                   style={{minHeight:40}}>

@@ -114,7 +114,7 @@ const cognitiveRules = (c) => {
 
 const clip = (v, n = 80) => (typeof v === 'string' ? v.replace(/[\r\n<>]/g, ' ').trim().slice(0, n) : '');
 
-export const learnerContext = (learner) => {
+export const learnerContext = (learner, { material = true } = {}) => {
   if (!learner || typeof learner !== 'object') return '';
   const lines = [];
   const jenjang = [clip(learner.level), clip(learner.faculty), clip(learner.major)].filter(Boolean).join(', ');
@@ -130,7 +130,8 @@ export const learnerContext = (learner) => {
   const cog = cognitiveRules(learner.cognitive);
   if (cog.length) lines.push('Profil belajar (isian diri):\n' + cog.map(r => `  - ${r}`).join('\n'));
   if (!lines.length) return '';
-  return `\n\nPROFIL PELAJAR (sesuaikan gaya penyajian dengan profil ini, tapi tetap HANYA berdasarkan materi dan tetap ikuti format keluaran yang diminta persis):\n${lines.join('\n')}`;
+  const scope = material ? 'tetap HANYA berdasarkan materi dan ' : '';
+  return `\n\nPROFIL PELAJAR (sesuaikan gaya penyajian dengan profil ini, tapi ${scope}tetap ikuti format keluaran yang diminta persis):\n${lines.join('\n')}`;
 };
 
 export const summaryPrompt = (lang) => `${BASE_PERSONA}
@@ -270,6 +271,15 @@ MATERI (judul: ${title}):
 <<<
 ${content}
 >>>`;
+
+// Untuk prompt Talqeeh yang dijalankan langsung (tanpa materi unggahan): prompt pengguna yang menentukan tugasnya.
+export const promptChatSystem = () => `${BASE_PERSONA}
+Pengguna menjalankan prompt belajar dari Talqeeh. Ikuti instruksi, struktur, dan format dalam prompt pengguna dengan saksama — prompt itulah yang menentukan tugasmu.
+- Jangan mengarang ayat, hadits, qaul ulama, judul kitab, atau nomor halaman. Jika tidak yakin, katakan terus terang dan sarankan merujuk kitab muqarrar atau duktur.
+- Untuk masalah khilafiyah, sebutkan perbedaan madzhab secara adil; jangan memberi fatwa.
+- Istilah Arab berharakat; teks Arab panjang di baris sendiri lalu terjemahnya.
+- Jika prompt memintamu menunggu jawaban pengguna (misalnya soal latihan), berhenti dan tunggu.
+- Tulis dalam markdown yang rapi dan mudah dibaca di HP.`;
 
 export const syafawiSystem = (title, content) => `Kamu adalah duktur penguji ujian syafawi (lisan) Universitas Al-Azhar. Mahasiswa sedang berlatih dengan materi di bawah.
 Alur:

@@ -53,6 +53,10 @@ const PraktikContent = ({ content }) => {
               <Icon name="copy" className="w-3 h-3"/> Salin
             </button>
           </div>
+          <div className="px-4 pt-3">
+            <RunInTalqeehButton getText={content.practicePrompt} title="Learning Path — Prompt latihan" source="Learning Path"
+              className="text-xs px-3 py-1.5 rounded-lg border"/>
+          </div>
           <pre className="text-xs text-ink-muted font-mono leading-relaxed whitespace-pre-wrap p-4 max-h-52 overflow-y-auto">{content.practicePrompt}</pre>
         </div>
       )}

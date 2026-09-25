@@ -217,6 +217,7 @@ const App = () => {
   else if (path === "/bank-soal") { page = <BankSoalPublikPage/>; routeLabel = "Bank Soal"; }
   else if (path === "/checklist-soal") { page = <ChecklistSoalPage/>; routeLabel = "Checklist Soal"; }
   else if (path === "/ai-partner" || path === "/ai-partner/") { page = <AiPartnerPage/>; routeLabel = "AI Partner"; }
+  else if (path === "/ai-partner/prompt" || path.startsWith("/ai-partner/prompt?")) { page = <AiPromptPage/>; routeLabel = "AI Partner"; }
   else if (path.startsWith("/ai-partner/")) { page = <AiPartnerDetailPage key={path} setId={path.split("/")[2].split("?")[0]}/>; routeLabel = "AI Partner"; }
 
   // QuickNote muncul di semua halaman member yang sudah onboarded, kecuali admin & public

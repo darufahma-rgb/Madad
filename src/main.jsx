@@ -65,6 +65,7 @@ import './pages/ai-partner-shared.jsx';
 import './pages/ai-partner-create.jsx';
 import './pages/ai-partner-study.jsx';
 import './pages/ai-partner.jsx';
+import './pages/ai-partner-prompt.jsx';
 import './pages/statistik.jsx';
 import './pages/gabung.jsx';
 import './pages/profil-belajar.jsx';

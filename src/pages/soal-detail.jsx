@@ -458,6 +458,11 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
                       EM={EM}
                       variant="solid"
                     />
+                    <RunInTalqeehButton
+                      getText={() => buildPromptJawaban(i + 1, block.arab, arti)}
+                      title={`Jawaban Soal ${i + 1}`} source="Bank Soal"
+                      label={`Jawab Soal ${i + 1} di Talqeeh`}
+                      className="text-xs px-3 py-2 rounded-lg border justify-center"/>
                   </div>
                 )}
 

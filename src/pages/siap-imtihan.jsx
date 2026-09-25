@@ -788,6 +788,7 @@ const TalkhisanSection = ({ profile }) => {
             <Icon name="copy" className="w-3.5 h-3.5"/>
             {copied ? "Tersalin ✓" : "Salin Prompt"}
           </button>
+          <RunInTalqeehButton getText={resolvedPrompt} title={`Siap Imtihan — ${mode?.label || "Prompt"}`} source="Siap Imtihan"/>
           {targetTool && (
             <button
               onClick={handleCopyAndOpen}
@@ -963,6 +964,8 @@ const ImtihanPromptCard = ({ mode, maddah, profile }) => {
             <Icon name="copy" className="w-3 h-3"/>
             {copied ? "Tersalin ✓" : "Salin Prompt"}
           </button>
+          <RunInTalqeehButton getText={prompt} title={`Siap Imtihan — ${mode?.label || "Prompt"}`} source="Siap Imtihan"
+            className="btn-ghost text-xs px-3 py-2"/>
           <button onClick={handleCopyAndOpen}
             className="btn-primary text-xs px-4 py-2 flex items-center gap-1.5"
             style={{minHeight:40}}>
