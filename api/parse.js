@@ -1,5 +1,6 @@
 import { verifyToken } from './admin-auth.js';
 import { requireMember } from './_lib/member.js';
+import { resolveModels } from './_lib/models.js';
 
 const parseBody = (req) => new Promise((resolve) => {
   let body = '';
@@ -67,7 +68,7 @@ async function handleParseSoal(req, res) {
         'X-Title': 'Talqeeh Bank Soal',
       },
       body: JSON.stringify({
-        model: 'anthropic/claude-sonnet-4-6',
+        model: (await resolveModels()).vision,
         max_tokens: 4000,
         temperature: 0,
         messages: [{
@@ -252,7 +253,7 @@ async function handleParseTalkhisan(req, res) {
           'X-Title': 'Talqeeh Talkhisan',
         },
         body: JSON.stringify({
-          model: 'anthropic/claude-sonnet-4-6',
+          model: (await resolveModels()).vision,
           max_tokens: 3000,
           temperature: 0,
           messages: [{
@@ -296,7 +297,7 @@ async function handleParseTalkhisan(req, res) {
             'HTTP-Referer': 'https://talqeeh.vercel.app',
           },
           body: JSON.stringify({
-            model: 'anthropic/claude-sonnet-4-6',
+            model: (await resolveModels()).arabic,
             max_tokens: 2000,
             temperature: 0,
             messages: [{

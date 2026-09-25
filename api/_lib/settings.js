@@ -2,7 +2,7 @@
 export const ADMIN_SETTING_KEYS = [
   'platformName', 'tagline', 'whatsapp',
   'mayarLibraryUrl', 'mayarLibraryProductId', 'mayarUrl', 'mayarAiProductId', 'aiPriceLabel',
-  'aiModelDefault', 'aiModelArabic', 'aiModelGrade', 'aiModelChat', 'aiModelTranscribe',
+  'aiModelDefault', 'aiModelStudy', 'aiModelVision', 'aiModelArabic', 'aiModelGrade', 'aiModelChat', 'aiModelTranscribe',
 ];
 
 // Subset yang dikirim ke semua pengunjung lewat /api/config (product ID sengaja tidak publik).

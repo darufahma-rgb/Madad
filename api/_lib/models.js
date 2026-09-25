@@ -4,7 +4,9 @@ import { readSettings } from './settings.js';
 import { activeModel, transcribeModel } from './ai.js';
 
 export const MODEL_SETTING_KEYS = {
-  default:    'aiModelDefault',    // ringkasan, flashcard, kuis, mufradat, peta konsep, soal tahriri
+  default:    'aiModelDefault',    // ringkasan, peta konsep, soal tahriri, Tanya AI (lewat chat) — juga cadangan tugas lain
+  study:      'aiModelStudy',      // flashcard, kuis, mufradat — tugas terstruktur, cocok untuk model hemat
+  vision:     'aiModelVision',     // baca foto: OCR materi, foto talkhisan & soal — harus model yang menerima gambar
   arabic:     'aiModelArabic',     // terjemah & i'rab, harakat
   grade:      'aiModelGrade',      // penilaian jawaban tahriri
   chat:       'aiModelChat',       // tutor & simulasi syafawi
@@ -29,6 +31,7 @@ export const resolveModels = async () => {
   const base = pick('default') || activeModel();
   const value = {
     default: base, arabic: pick('arabic') || base, grade: pick('grade') || base, chat: pick('chat') || base,
+    study: pick('study') || base, vision: pick('vision') || base,
     // Transkrip tidak ikut model utama: model teks biasa tidak bisa mendengar audio.
     transcribe: pick('transcribe') || transcribeModel(),
   };

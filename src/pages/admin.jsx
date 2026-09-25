@@ -1956,6 +1956,8 @@ const AdminSettings = () => {
     mayarAiProductId: "",
     aiPriceLabel: "",
     aiModelDefault: "",
+    aiModelStudy:   "",
+    aiModelVision:  "",
     aiModelArabic:  "",
     aiModelGrade:   "",
     aiModelChat:    "",
@@ -2042,12 +2044,16 @@ const AdminSettings = () => {
             </p>
           </div>
           <datalist id="ai-model-suggestions">
+            <option value="anthropic/claude-sonnet-5"/>
             <option value="anthropic/claude-sonnet-4-6"/>
+            <option value="anthropic/claude-haiku-4-5"/>
             <option value="google/gemini-2.5-pro"/>
             <option value="google/gemini-2.5-flash"/>
           </datalist>
           {[
-            ['aiModelDefault', 'Model utama', 'default', 'Ringkasan, flashcard, kuis, mufradat, peta konsep, soal tahriri. Juga cadangan untuk tugas lain.'],
+            ['aiModelDefault', 'Model utama', 'default', 'Ringkasan, peta konsep, soal tahriri. Juga cadangan untuk semua setelan yang dikosongkan.'],
+            ['aiModelStudy', 'Flashcard, kuis & mufradat', 'study', 'Tugas terstruktur — cocok untuk model hemat (mis. Haiku) supaya biaya turun.'],
+            ['aiModelVision', 'Baca foto (OCR)', 'vision', 'Foto materi AI Partner, foto talkhisan & soal. Harus model yang bisa membaca gambar (Claude / Gemini).'],
             ['aiModelArabic', "Terjemah & i'rab, harakat", 'arabic', 'Butuh ketelitian nahwu-sharaf paling tinggi — kandidat untuk model terkuat.'],
             ['aiModelGrade', 'Penilaian tahriri', 'grade', 'Menilai jawaban esai & mengoreksi bahasa Arab mahasiswa.'],
             ['aiModelChat', 'Tutor & simulasi syafawi', 'chat', 'Paling sering dipakai — pertimbangkan biaya per pesan.'],

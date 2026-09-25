@@ -41,6 +41,8 @@ const MAX_CARDS       = 80;
 const MAX_AUDIO_B64   = 2_800_000; // ±60 detik WAV 16kHz mono
 const SOURCE_TYPES = ['pdf', 'foto', 'teks', 'docx', 'pptx', 'xlsx', 'txt', 'audio', 'video', 'campuran'];
 const GENERATE_KINDS = ['summary', 'flashcards', 'quiz', 'glossary', 'mindmap', 'essays'];
+// Memakai setelan "model belajar" (aiModelStudy); jenis lain memakai model utama.
+const STUDY_KINDS = ['flashcards', 'quiz', 'glossary'];
 
 const statusAttempts = new Map();
 const checkStatusRateLimit = (ip) => {
@@ -208,6 +210,7 @@ async function handleOcr(ctx, body, res) {
   }
 
   const teks = await callAI({
+    model: (await resolveModels()).vision,
     maxTokens: 3000,
     temperature: 0,
     messages: [{
@@ -477,7 +480,8 @@ async function handleGenerate(ctx, body, res) {
 
   const messages = materialMessage(set);
   const learner = learnerContext(body.learner);
-  const model = (await resolveModels()).default;
+  const models = await resolveModels();
+  const model = STUDY_KINDS.includes(kind) ? models.study : models.default;
   const progress = mergeProgress(set, { [kind]: true, models: withModel(set, kind, model) });
 
   if (kind === 'summary') {
@@ -699,7 +703,7 @@ async function handlePromptChat(ctx, body, res) {
 /* ── Masukan kualitas (👍/👎 + laporan kesalahan) ── */
 const FEEDBACK_KINDS = ['summary', 'mindmap', 'flashcards', 'quiz', 'glossary', 'essays', 'grade', 'irab', 'tasykil', 'tutor', 'syafawi'];
 const FEEDBACK_TASK = {
-  summary: 'default', mindmap: 'default', flashcards: 'default', quiz: 'default', glossary: 'default', essays: 'default',
+  summary: 'default', mindmap: 'default', flashcards: 'study', quiz: 'study', glossary: 'study', essays: 'default',
   irab: 'arabic', tasykil: 'arabic', grade: 'grade', tutor: 'chat', syafawi: 'chat',
 };
 const FEEDBACK_CATEGORIES = ['salah_fakta', 'salah_arab', 'salah_harakat', 'tidak_sesuai_materi', 'kurang_jelas', 'terpotong', 'lainnya'];
