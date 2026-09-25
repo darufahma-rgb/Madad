@@ -2434,8 +2434,10 @@ const AdminSettings = () => {
             <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Model AI per tugas</div>
             <p className="text-[11px] text-ink-soft leading-relaxed">
               Pakai ID model dari <a href="https://openrouter.ai/models" target="_blank" rel="noopener noreferrer" className="text-emerald-300 underline">openrouter.ai/models</a>.
-              Kosongkan untuk memakai bawaan (terlihat di kolom sebagai "Sekarang: …") — bawaannya sudah dipilih hemat:
-              Sonnet 5 untuk tugas berat, Haiku 4.5 untuk flashcard/kuis dan tutor, Gemini 2.5 Flash untuk baca foto.
+              Kosongkan untuk memakai bawaan (terlihat di kolom sebagai "Sekarang: …") — bawaannya sudah dipilih supaya
+              biaya per pelanggan di bawah harga langganan: Gemini 2.5 Flash untuk tugas yang membaca materi panjang
+              (ringkasan, peta konsep, soal, flashcard, kuis, foto), Haiku 4.5 untuk tutor & Tanya AI, Sonnet 5 hanya
+              untuk i'rab, harakat, dan penilaian tahriri.
               Tekan <span className="text-ink">Tes</span> sebelum menyimpan; perubahan berlaku ±1 menit setelah disimpan.
               Bandingkan hasilnya di Analitik → Kualitas AI → "Per model".
             </p>
@@ -2448,12 +2450,12 @@ const AdminSettings = () => {
             <option value="google/gemini-2.5-pro" label="$1.25 / $10 — bisa gambar & audio"/>
           </datalist>
           {[
-            ['aiModelDefault', 'Model utama', 'default', 'Ringkasan, peta konsep, soal tahriri. Juga cadangan untuk i\'rab, penilaian, dan Tanya AI kalau dikosongkan.'],
-            ['aiModelPrompt', 'Tanya AI', 'prompt', 'Paling sering dipakai dan butuh pengetahuan luas tanpa materi — bawaannya ikut model utama.'],
-            ['aiModelStudy', 'Flashcard, kuis & mufradat', 'study', 'Tugas terstruktur dari materi — bawaan Haiku 4.5 (±3× lebih hemat dari Sonnet).'],
+            ['aiModelDefault', 'Model utama', 'default', 'Ringkasan, peta konsep, soal tahriri — membaca materi penuh. Bawaan Gemini 2.5 Flash (±8× lebih murah dari Sonnet 5).'],
+            ['aiModelPrompt', 'Tanya AI', 'prompt', 'Paling sering dipakai, input pendek — bawaan Haiku 4.5. Ganti ke Sonnet 5 kalau jawabannya kurang akurat.'],
+            ['aiModelStudy', 'Flashcard, kuis & mufradat', 'study', 'Tugas terstruktur dari materi — bawaan Gemini 2.5 Flash.'],
             ['aiModelVision', 'Baca foto (OCR)', 'vision', 'Foto materi AI Partner, foto talkhisan & soal. Harus model yang bisa membaca gambar — bawaan Gemini 2.5 Flash.'],
-            ['aiModelArabic', "Terjemah & i'rab, harakat", 'arabic', 'Butuh ketelitian nahwu-sharaf paling tinggi — kandidat untuk model terkuat.'],
-            ['aiModelGrade', 'Penilaian tahriri', 'grade', 'Menilai jawaban esai & mengoreksi bahasa Arab mahasiswa.'],
+            ['aiModelArabic', "Terjemah & i'rab, harakat", 'arabic', 'Butuh ketelitian nahwu-sharaf paling tinggi — bawaan Sonnet 5 (input pendek, jadi tetap murah).'],
+            ['aiModelGrade', 'Penilaian tahriri', 'grade', 'Menilai jawaban esai & mengoreksi bahasa Arab mahasiswa — bawaan Sonnet 5.'],
             ['aiModelChat', 'Tutor & simulasi syafawi', 'chat', 'Jawaban bersandar pada materi yang diunggah — bawaan Haiku 4.5. Ganti ke Sonnet 5 kalau kualitas tutor kurang.'],
             ['aiModelTranscribe', 'Transkrip rekaman kuliah', 'transcribe', "Harus model yang bisa mendengar audio (Gemini). Coba google/gemini-2.5-pro kalau transkrip 'ammiyah kurang akurat. Tes hanya memeriksa ID-nya, bukan kemampuan audio."],
           ].map(([key, label, task, hint]) => (

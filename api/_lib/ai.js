@@ -49,6 +49,9 @@ const buildBody = async ({ modelId, maxTokens, temperature, messages, stream }) 
   const hasAudio = messages.some(m => Array.isArray(m.content) && m.content.some(p => p?.type === 'input_audio'));
   const fallback = !hasAudio && modelId !== FALLBACK_MODEL && modelId.replace(/(\d)-(\d)/g, '$1.$2') !== FALLBACK_MODEL;
   const reasoning = await isReasoningModel(modelId);
+  // Gemini 2.5 Flash berpikir secara bawaan (dan tetap menerima temperature): matikan supaya jatah token
+  // dipakai untuk jawaban. Kalau ditolak, model cadangan tetap menjawab.
+  const geminiThinkingOff = /^google\/gemini-2\.5-flash(?!-lite)/.test(modelId);
   return {
     model: modelId,
     ...(fallback ? { models: [modelId, FALLBACK_MODEL] } : {}),
@@ -56,6 +59,7 @@ const buildBody = async ({ modelId, maxTokens, temperature, messages, stream }) 
     // dan teks berpikirnya tidak dikirim balik.
     max_tokens: reasoning ? Math.ceil(maxTokens * 1.25) : maxTokens,
     ...(reasoning ? { reasoning: { effort: 'low', exclude: true } } : {}),
+    ...(geminiThinkingOff ? { reasoning: { enabled: false } } : {}),
     ...((await acceptsTemperature(modelId)) ? { temperature } : {}),
     ...(stream ? { stream: true } : {}),
     messages,
