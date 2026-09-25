@@ -396,7 +396,7 @@ const GabungPage = () => {
               <>
                 <button onClick={openPayment} disabled={checkout.status === 'creating'}
                   className={`btn btn-gold w-full text-base py-3.5 font-semibold ${checkout.status === 'creating' ? 'opacity-60 cursor-wait' : ''}`}>
-                  {checkout.status === 'creating' ? 'Menyiapkan tagihan…' : `Bayar ${formatRupiah(payTotal)} di Mayar`}
+                  {checkout.status === 'creating' ? 'Menyiapkan pembayaran…' : `Bayar ${formatRupiah(payTotal)}`}
                 </button>
                 <p className="text-center text-[11px] text-ink-soft mt-2">QRIS · virtual account · e-wallet. {isFree ? 'Akun gratismu naik ke Library, progresmu tetap aman.' : 'Akses aktif otomatis setelah pembayaran masuk.'}</p>
               </>
@@ -422,6 +422,7 @@ const GabungPage = () => {
             <CheckoutWaiting checkout={checkout} email={email} adminWa={adminWa}/>
           </div>
         )}
+        <CheckoutPayModal checkout={checkout} email={email}/>
 
         {step === 'redeem' && (
           <form onSubmit={handleRedeem} className="card-glass-strong p-6 md:p-8 max-w-lg mx-auto">
