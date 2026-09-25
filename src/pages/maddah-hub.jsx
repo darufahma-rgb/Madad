@@ -58,6 +58,38 @@ const MaddahCard = ({ maddah }) => {
   );
 };
 
+/* ── Switcher katalog: S1 · Ma'had · S2 — dipasang di ketiga halaman Maddah ── */
+const MADDAH_CATALOGS = [
+  { id: "s1",    to: "/maddah",       label: "Maddah S1",     arabic: "المواد الدراسية" },
+  { id: "mahad", to: "/mahad-maddah", label: "Maddah Ma'had" },
+  { id: "s2",    to: "/s2-maddah",    label: "Maddah S2",     arabic: "الدراسات العليا" },
+];
+
+const MaddahCatalogSwitcher = ({ current }) => {
+  const { session } = useAuth();
+  const isFree = session?.tier === "free";
+  return (
+    <div className="flex gap-1.5 p-1 bg-white/4 rounded-xl w-full md:w-fit overflow-x-auto no-scrollbar">
+      {MADDAH_CATALOGS.map(c => {
+        const active = c.id === current;
+        const locked = isFree && c.id === "s2";
+        return (
+          <button key={c.id}
+            onClick={() => { if (!active) navigate(c.to); }}
+            aria-current={active ? "page" : undefined}
+            className={`flex-1 md:flex-none flex-shrink-0 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+              active ? "text-emerald-200" : "text-ink-muted hover:text-ink hover:bg-white/5"
+            }`}
+            style={active ? {background:"rgba(62,207,142,0.20)",minHeight:40} : {minHeight:40}}>
+            {c.label}
+            {locked && <Icon name="crown" className="w-3 h-3 text-gold-300"/>}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
 const MaddahHubPage = () => {
   const { session, profile } = useAuth();
 
@@ -120,6 +152,9 @@ const MaddahHubPage = () => {
             Pilih Maddah → dapat AI rekomendasi, tutorial, dan belasan prompt template per Maddah.{" "}
             <span className="text-gold-400">{withContent} Maddah sudah lengkap.</span>
           </p>
+          <div className="mt-5">
+            <MaddahCatalogSwitcher current="s1"/>
+          </div>
         </div>
       </section>
 
@@ -238,3 +273,4 @@ const MaddahHubPage = () => {
 };
 
 window.MaddahHubPage = MaddahHubPage;
+window.MaddahCatalogSwitcher = MaddahCatalogSwitcher;

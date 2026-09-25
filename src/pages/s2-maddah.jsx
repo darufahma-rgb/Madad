@@ -208,11 +208,13 @@ const S2MaddahPage = () => {
 
   if (!session || !profile?.onboarded) { navigate("/"); return null; }
 
+  // Katalog S2 bisa dibuka dari jenjang mana pun; non-S2 dapat maddah wajib S2.
   const isS2 = profile?.level === "s2_kuliyyat" || profile?.level === "s2_dirasat";
-  if (!isS2) { navigate("/library"); return null; }
 
-  const maddahList = profile?.s2Maddah || [];
-  const jalur = profile.level === "s2_kuliyyat" ? "Kuliyyat Ulum" : "Dirasat Ulya";
+  const maddahList = isS2
+    ? (profile?.s2Maddah || [])
+    : [{ nama: "Manahij Bahts Ilmi", kitab: "مناهج البحث العلمي", id: "manahij", isPreset: true }];
+  const jalur = !isS2 ? "Katalog S2" : profile.level === "s2_kuliyyat" ? "Kuliyyat Ulum" : "Dirasat Ulya";
 
   const getPrompt = () => {
     if (activeTab === "risalah") {
@@ -284,6 +286,9 @@ const S2MaddahPage = () => {
           <p className="text-sm text-ink-muted max-w-lg leading-relaxed">
             {jalur} · Prompt setara level riset akademik.
           </p>
+          <div className="mt-4">
+            <MaddahCatalogSwitcher current="s2"/>
+          </div>
         </div>
       </section>
 
@@ -314,12 +319,12 @@ const S2MaddahPage = () => {
                 )}
               </button>
             ))}
-            <button
+            {isS2 && <button
               onClick={() => navigate("/onboarding")}
               className="flex-shrink-0 px-4 py-2.5 rounded-xl text-sm border border-dashed text-ink-soft hover:text-ink transition-colors"
               style={{minHeight:44,borderColor:"rgba(62,207,142,0.28)"}}>
               + Edit Maddah
-            </button>
+            </button>}
           </div>
           {selectedMaddah && (
             <div className="mt-2">

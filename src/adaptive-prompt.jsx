@@ -348,7 +348,9 @@ const generateS2Prompt = (template, profile, maddah) => {
   if (!template) return "";
   const jalur = profile?.level === "s2_kuliyyat"
     ? "Kuliyyat Ulum (Maajistir 1 tahun)"
-    : "Dirasat Ulya (Maajistir 2 tahun)";
+    : profile?.level === "s2_dirasat"
+      ? "Dirasat Ulya (Maajistir 2 tahun)"
+      : "Al-Azhar, sedang mempelajari materi S2";
   const fakultasData = (typeof FACULTIES !== "undefined")
     ? FACULTIES.find(f => f.id === profile?.faculty) : null;
   const fakultas = fakultasData?.label || "Al-Azhar";

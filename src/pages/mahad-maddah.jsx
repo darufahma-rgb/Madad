@@ -7,11 +7,13 @@ const MahadMaddahPage = () => {
   const { session, profile } = useAuth();
   const toast = useToast();
   const [activeCategory, setActiveCategory] = useState("all");
+  const isMahadUser = isMahadLevel(profile?.level);
+  // Katalog Ma'had bisa dibuka dari jenjang mana pun; non-Ma'had mulai dari I'dadi.
+  const [viewLevel, setViewLevel] = useState(isMahadUser ? profile.level : "idad_1");
 
   if (!session || !profile?.onboarded) { navigate("/"); return null; }
-  if (!isMahadLevel(profile?.level))   { navigate("/library"); return null; }
 
-  const level    = profile.level;
+  const level    = viewLevel;
   const isIdad   = isIdadLevel(level);
   const isTsanawi = isTsanawiLevel(level);
   const isIlmi   = isIlmiLevel(level);
@@ -21,6 +23,18 @@ const MahadMaddahPage = () => {
     ? TINGKATAN_LABEL[level] : level;
 
   const myMaddah = getMahadMaddahByJenjang(level);
+
+  const jenjangOptions = [
+    { id: "idad_1",          label: "I'dadi" },
+    { id: "tsanawi_1_adabi", label: "Tsanawi Adabi" },
+    { id: "tsanawi_1_ilmi",  label: "Tsanawi Ilmi" },
+  ];
+  const jenjangKey = (lv) => isIdadLevel(lv) ? "idad" : isIlmiLevel(lv) ? "ilmi" : "adabi";
+  const pickJenjang = (id) => {
+    // Kalau kembali ke jenjang sendiri, pakai level asli user (kelasnya).
+    setViewLevel(isMahadUser && jenjangKey(profile.level) === jenjangKey(id) ? profile.level : id);
+  };
+  const isOwnLevel = isMahadUser && level === profile.level;
 
   const categories = [
     { id: "all",   label: "Semua"       },
@@ -50,8 +64,11 @@ const MahadMaddahPage = () => {
           <h1 className="font-display text-3xl md:text-4xl font-semibold text-ink mb-2">
             Maddah Ma'had
           </h1>
+          <div className="mb-4">
+            <MaddahCatalogSwitcher current="mahad"/>
+          </div>
           <p className="text-sm text-ink-muted leading-relaxed">
-            {levelLabel}
+            {isOwnLevel ? levelLabel : "Katalog Ma'had"}
             {isIdad    && " · I'dadi (SMP)"}
             {isTsanawi && isIlmi  && " · Tsanawi Ilmi (IPA)"}
             {isTsanawi && isAdabi && " · Tsanawi Adabi (IPS)"}
@@ -59,7 +76,27 @@ const MahadMaddahPage = () => {
           </p>
           <div className="mt-3 flex items-center gap-2 text-xs text-ink-soft">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>
-            {myMaddah.length} maddah tersedia untuk levelmu
+            {myMaddah.length} maddah {isOwnLevel ? "tersedia untuk levelmu" : "di jenjang ini"}
+          </div>
+          <div className="mt-4 flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+            {jenjangOptions.map(j => {
+              const active = jenjangKey(level) === jenjangKey(j.id);
+              return (
+                <button key={j.id}
+                  onClick={() => pickJenjang(j.id)}
+                  className={`flex-shrink-0 px-3 py-1.5 text-xs font-medium rounded-xl border transition-colors ${
+                    active
+                      ? "text-emerald-200 border-emerald-600/35"
+                      : "bg-white/4 text-ink-muted border-white/8 hover:bg-white/7 hover:text-ink"
+                  }`}
+                  style={active ? {background:"rgba(62,207,142,0.20)"} : {}}>
+                  {j.label}
+                  {isMahadUser && jenjangKey(profile.level) === jenjangKey(j.id) && (
+                    <span className="ml-1 text-[10px] text-gold-400">· jenjangmu</span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -90,7 +127,7 @@ const MahadMaddahPage = () => {
         <div className="container-x">
           {filtered.length === 0 ? (
             <div className="text-center py-12 text-ink-soft text-sm">
-              Belum ada maddah untuk kategori ini di levelmu.
+              Belum ada maddah untuk kategori ini di jenjang ini.
             </div>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-3">
