@@ -1,6 +1,7 @@
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { useMemo } from 'react';
+import { sourceIndex, quoteScore, verdictOf } from './sourceMatch.js';
 /* Talqeeh — tampilan hasil AI yang enak dibaca:
    - teks Arab otomatis pakai huruf Naskh, lebih besar, rata kanan (blok) atau terisolasi (di tengah kalimat)
    - baris "↳ ..." tampil sebagai terjemah di bawah teks Arab
@@ -78,7 +79,7 @@ const VERDICTS = [
   [/^\s*❌/, 'ai-verdict ai-verdict-bad'],
 ];
 
-export const renderAiHtml = (content) => {
+export const renderAiHtml = (content, index = null) => {
   if (!content) return '';
   let html;
   try {
@@ -129,7 +130,53 @@ export const renderAiHtml = (content) => {
   // Tautan dari AI dibuka di tab baru.
   root.querySelectorAll('a[href]').forEach(a => { a.setAttribute('target', '_blank'); a.setAttribute('rel', 'noopener noreferrer'); });
 
+  if (index) markCitations(root, doc, index);
+
   return root.innerHTML;
+};
+
+/* ── Verifikasi kutipan terhadap materi ── */
+const CITE_LABELS = {
+  ok:   '✓ Ada di materimu',
+  near: '≈ Mirip dengan materimu',
+  miss: '⚠ Tidak ditemukan di materimu',
+};
+const CITE_TITLES = {
+  ok:   'Kutipan ini cocok dengan materimu — ketuk untuk melihat konteksnya.',
+  near: 'Sebagian kutipan cocok; mungkin disalin tidak persis. Ketuk untuk membandingkan.',
+  miss: 'AI mungkin mengutip dari luar materi atau keliru menyalin. Cek ke kitab/mushaf sebelum dipakai.',
+};
+
+const markCitations = (root, doc, index) => {
+  const targets = [];
+  root.querySelectorAll('blockquote').forEach(el => targets.push({ el, text: textWithoutTranslation(el), block: true }));
+  root.querySelectorAll('td[data-label]').forEach(el => {
+    if (/dalil|nash|الدليل|الأدلة/i.test(el.getAttribute('data-label')) && arabicRatio(el.textContent || '') >= 0.6) {
+      targets.push({ el, text: el.textContent || '' });
+    }
+  });
+  root.querySelectorAll('p, li').forEach(el => {
+    const t = el.textContent || '';
+    if (!/^\s*📍/.test(t)) return;
+    el.classList.add('ai-source');
+    const quoted = t.match(/[“"«]([^”"»]{8,})[”"»]/);
+    targets.push({ el, text: quoted ? quoted[1] : t.replace(/^\s*📍[^:]*:\s*/, '') });
+  });
+
+  targets.forEach(({ el, text, block }) => {
+    const verdict = verdictOf(quoteScore(text, index));
+    if (!verdict) return;
+    el.classList.add(`ai-quote-${verdict}`);
+    const badge = doc.createElement('button');
+    badge.setAttribute('type', 'button');
+    badge.className = `ai-cite ai-cite-${verdict}${block ? ' ai-cite-block' : ''}`;
+    badge.setAttribute('data-cite', text.trim().slice(0, 600));
+    badge.setAttribute('data-verdict', verdict);
+    badge.setAttribute('title', CITE_TITLES[verdict]);
+    badge.setAttribute('dir', 'ltr');
+    badge.textContent = CITE_LABELS[verdict];
+    el.appendChild(badge);
+  });
 };
 
 // Teks pendek (bukan markdown): potongan Arab diberi huruf & arah yang benar, sisanya apa adanya.
@@ -147,10 +194,15 @@ export function AiInline({ text }) {
   return <>{parts}</>;
 }
 
-export default function AiRichText({ content, rtl = false, size = 'md', className = '', style }) {
-  const html = useMemo(() => renderAiHtml(content), [content]);
+/* source: teks materi → kutipan dicocokkan & diberi label. onCite(teks, verdict): label diketuk. */
+export default function AiRichText({ content, rtl = false, size = 'md', className = '', style, source, onCite }) {
+  const html = useMemo(() => renderAiHtml(content, source ? sourceIndex(source) : null), [content, source]);
+  const handleClick = (e) => {
+    const btn = e.target.closest?.('[data-cite]');
+    if (btn && onCite) { e.preventDefault(); onCite(btn.getAttribute('data-cite'), btn.getAttribute('data-verdict')); }
+  };
   return (
     <div className={`ai-rich ai-rich-${size} ${rtl ? 'ai-rich-rtl' : ''} ${className}`} dir={rtl ? 'rtl' : 'ltr'}
-      style={style} dangerouslySetInnerHTML={{ __html: html }}/>
+      style={style} onClick={handleClick} dangerouslySetInnerHTML={{ __html: html }}/>
   );
 }

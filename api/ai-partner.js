@@ -1,7 +1,8 @@
 import crypto from 'crypto';
 import { verifyToken } from './admin-auth.js';
 import { sbConfig, sbHeaders, normalizeCode, requireAiTier, consumeQuota, isActiveMember } from './_lib/member.js';
-import { callAI, callAIJson, requestAI, transcribeModel, activeModel } from './_lib/ai.js';
+import { callAI, callAIJson, requestAI, streamAI, transcribeModel } from './_lib/ai.js';
+import { resolveModels, isValidModelId, clearModelCache } from './_lib/models.js';
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
   OCR_PROMPT, TRANSCRIBE_PROMPT, tutorSystem, syafawiSystem, learnerContext,
@@ -124,6 +125,42 @@ const upgradeRequired = (res, feature, message) =>
   });
 
 const materialMessage = (set) => [{ role: 'user', content: `Judul materi: ${set.title}\n\nMATERI:\n${set.content}` }];
+
+/* ── Balasan bertahap (streaming) ──
+   Browser yang mengirim `stream: true` menerima NDJSON: {"t":"delta","d":"…"} per potongan teks, lalu
+   {"t":"done",…hasil} atau {"t":"error","error":…}. Kalau platform menahan stream, browser tetap menerima
+   semuanya di akhir — hasilnya sama, hanya tidak bertahap. */
+const openStream = (res) => {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'application/x-ndjson; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-transform');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders?.();
+  const send = (obj) => res.write(JSON.stringify(obj) + '\n');
+  return {
+    delta: (d) => send({ t: 'delta', d }),
+    done: (data) => { send({ t: 'done', ...data }); res.end(); },
+    fail: (error) => { send({ t: 'error', ok: false, error }); res.end(); },
+  };
+};
+
+// Panggil AI biasa, atau bertahap kalau diminta. Kegagalan di tengah stream dilaporkan lewat stream itu sendiri.
+const runAI = async (body, res, opts) => {
+  if (body.stream !== true) return { out: await requestAI(opts), stream: null };
+  const stream = openStream(res);
+  try {
+    return { out: await streamAI(opts, stream.delta), stream };
+  } catch (err) {
+    console.error('[ai-partner:stream]', err.message);
+    stream.fail('AI sedang bermasalah. Coba lagi sebentar.');
+    return { failed: true };
+  }
+};
+
+const sendResult = (res, stream, data) => (stream ? stream.done({ ok: true, ...data }) : res.status(200).json({ ok: true, ...data }));
+
+// Catat model yang membuat tiap hasil (untuk membandingkan kualitas antar model).
+const withModel = (set, kind, model) => ({ ...(set.progress?.models && typeof set.progress.models === 'object' ? set.progress.models : {}), [kind]: model });
 
 const mergeProgress = (set, patch) => ({ ...(set.progress && typeof set.progress === 'object' ? set.progress : {}), ...patch });
 
@@ -286,10 +323,10 @@ const joinSummary = (done, next) => {
   return done + (/^\s*(\||[-*] |\d+\. |↳|>)/.test(cont) ? '\n' : '\n\n') + cont.trimStart();
 };
 
-const saveSummaryPart = async (ctx, set, lang, text, truncated, parts) => {
+const saveSummaryPart = async (ctx, set, lang, text, truncated, parts, model) => {
   const partial = truncated && parts < MAX_SUMMARY_PARTS;
   const summary = partial ? keepCompleteLines(text) : text.trimEnd();
-  const progress = mergeProgress(set, { summary: true, summary_partial: partial, summary_parts: parts });
+  const progress = mergeProgress(set, { summary: true, summary_partial: partial, summary_parts: parts, models: withModel(set, 'summary', model) });
   await updateSet(ctx.code, set.id, { summary, summary_lang: lang, progress });
   return { summary, partial };
 };
@@ -305,15 +342,18 @@ async function continueSummary(ctx, set, body, res) {
   const parts = (Number(progress.summary_parts) || 1) + 1;
   const lang = SUMMARY_LANGS.includes(set.summary_lang) ? set.summary_lang : 'id';
   const done = set.summary.trimEnd();
-  const out = await requestAI({
+  const models = await resolveModels();
+  const { out, stream, failed } = await runAI(body, res, {
     system: summaryPrompt(lang) + learnerContext(body.learner),
     messages: [...materialMessage(set), { role: 'assistant', content: done }, { role: 'user', content: SUMMARY_CONTINUE_ASK }],
     maxTokens: SUMMARY_PART_TOKENS,
+    model: models.default,
   });
+  if (failed) return;
   const finished = /^\s*\[SELESAI\]\s*$/.test(out.text);
   const text = finished ? done : joinSummary(done, out.text.replace(/\[SELESAI\]\s*$/, ''));
-  const saved = await saveSummaryPart(ctx, set, lang, text, !finished && out.truncated, parts);
-  return res.status(200).json({ ok: true, data: saved.summary, lang, partial: saved.partial });
+  const saved = await saveSummaryPart(ctx, set, lang, text, !finished && out.truncated, parts, out.model);
+  return sendResult(res, stream, { data: saved.summary, lang, partial: saved.partial, model: out.model });
 }
 
 async function handleGenerate(ctx, body, res) {
@@ -342,25 +382,27 @@ async function handleGenerate(ctx, body, res) {
   }
 
   const messages = materialMessage(set);
-  const progress = mergeProgress(set, { [kind]: true });
   const learner = learnerContext(body.learner);
+  const model = (await resolveModels()).default;
+  const progress = mergeProgress(set, { [kind]: true, models: withModel(set, kind, model) });
 
   if (kind === 'summary') {
     const lang = SUMMARY_LANGS.includes(body.lang) ? body.lang : 'id';
-    const out = await requestAI({ system: summaryPrompt(lang) + learner, messages, maxTokens: SUMMARY_PART_TOKENS });
-    const saved = await saveSummaryPart(ctx, set, lang, out.text, out.truncated, 1);
-    return res.status(200).json({ ok: true, data: saved.summary, lang, partial: saved.partial });
+    const { out, stream, failed } = await runAI(body, res, { system: summaryPrompt(lang) + learner, messages, maxTokens: SUMMARY_PART_TOKENS, model });
+    if (failed) return;
+    const saved = await saveSummaryPart(ctx, set, lang, out.text, out.truncated, 1, out.model);
+    return sendResult(res, stream, { data: saved.summary, lang, partial: saved.partial, model: out.model });
   }
 
   if (kind === 'mindmap') {
-    const data = cleanMindmap(await callAIJson({ system: PROMPTS.mindmap + learner, messages, maxTokens: 3000 }));
+    const data = cleanMindmap(await callAIJson({ system: PROMPTS.mindmap + learner, messages, maxTokens: 3000, model }));
     if (!data) throw new Error('AI gagal membuat peta konsep yang valid');
     await updateSet(ctx.code, set.id, { mindmap: data, progress });
-    return res.status(200).json({ ok: true, data });
+    return res.status(200).json({ ok: true, data, model });
   }
 
   const clean = { flashcards: cleanFlashcards, quiz: cleanQuiz, glossary: cleanGlossary, essays: cleanEssays }[kind];
-  let data = clean(await callAIJson({ system: PROMPTS[kind] + learner, messages, maxTokens: 4000 }));
+  let data = clean(await callAIJson({ system: PROMPTS[kind] + learner, messages, maxTokens: 4000, model }));
   if (data.length === 0) throw new Error('AI gagal membuat hasil yang valid');
   if (kind === 'flashcards') {
     // Kartu lama (termasuk progres hafalannya) dipertahankan; kartu AI yang sama tidak diduplikasi.
@@ -373,7 +415,7 @@ async function handleGenerate(ctx, body, res) {
   if (kind === 'quiz') patch.quiz_best_score = null;
   if (kind === 'essays') patch.essay_attempts = [];
   await updateSet(ctx.code, set.id, patch);
-  return res.status(200).json({ ok: true, data });
+  return res.status(200).json({ ok: true, data, model });
 }
 
 async function handleSaveProgress(ctx, body, res) {
@@ -429,21 +471,22 @@ async function handleAnalyze(ctx, body, res) {
   if (!set) return res.status(404).json({ ok: false, error: 'Materi tidak ditemukan' });
   const analyses = Array.isArray(set.analyses) ? set.analyses : [];
   const cached = analyses.find(a => a.mode === mode && a.input === text);
-  if (cached) return res.status(200).json({ ok: true, data: cached.output, cached: true });
+  if (cached) return res.status(200).json({ ok: true, data: cached.output, cached: true, model: cached.model || null });
 
   if (!(await consumeQuota(ctx.code, 'analyze', LIMITS.analyze))) return quotaExceeded(res, 'analyze');
 
+  const model = (await resolveModels()).arabic;
   let output;
   if (mode === 'irab') {
-    output = cleanIrab(await callAIJson({ system: IRAB_PROMPT, messages: [{ role: 'user', content: text }], maxTokens: 3000, temperature: 0.1 }));
+    output = cleanIrab(await callAIJson({ system: IRAB_PROMPT, messages: [{ role: 'user', content: text }], maxTokens: 3000, temperature: 0.1, model }));
     if (!output) throw new Error('AI gagal menganalisis teks');
   } else {
-    output = (await callAI({ system: TASYKIL_PROMPT, messages: [{ role: 'user', content: text }], maxTokens: 6000, temperature: 0 })).trim();
+    output = (await callAI({ system: TASYKIL_PROMPT, messages: [{ role: 'user', content: text }], maxTokens: 6000, temperature: 0, model })).trim();
   }
 
-  const next = [...analyses, { mode, input: text, output, at: new Date().toISOString() }].slice(-MAX_ANALYSES);
+  const next = [...analyses, { mode, input: text, output, model, at: new Date().toISOString() }].slice(-MAX_ANALYSES);
   await updateSet(ctx.code, set.id, { analyses: next });
-  return res.status(200).json({ ok: true, data: output });
+  return res.status(200).json({ ok: true, data: output, model });
 }
 
 async function handleGrade(ctx, body, res) {
@@ -458,10 +501,11 @@ async function handleGrade(ctx, body, res) {
   if (!(await consumeQuota(ctx.code, 'grade', LIMITS.grade))) return quotaExceeded(res, 'grade');
 
   const prompt = `SOAL: ${essay.soal_ar}\n(${essay.soal_id})\n\nPOIN KUNCI:\n${essay.poin.map((p, i) => `${i + 1}. ${p}`).join('\n')}\n\nJAWABAN MODEL:\n${essay.jawaban_model}\n\nJAWABAN MAHASISWA:\n<<<\n${answer}\n>>>`;
-  const result = cleanGrade(await callAIJson({ system: GRADE_PROMPT + learnerContext(body.learner), messages: [{ role: 'user', content: prompt }], maxTokens: 2000, temperature: 0.2 }));
+  const model = (await resolveModels()).grade;
+  const result = cleanGrade(await callAIJson({ system: GRADE_PROMPT + learnerContext(body.learner), messages: [{ role: 'user', content: prompt }], maxTokens: 2000, temperature: 0.2, model }));
   if (!result) throw new Error('AI gagal menilai jawaban');
 
-  const attempt = { index, answer, ...result, at: new Date().toISOString() };
+  const attempt = { index, answer, ...result, model, at: new Date().toISOString() };
   const attempts = [...(Array.isArray(set.essay_attempts) ? set.essay_attempts : []), attempt].slice(-MAX_ATTEMPTS);
   await updateSet(ctx.code, set.id, { essay_attempts: attempts, progress: mergeProgress(set, { essays_done: true }) });
   return res.status(200).json({ ok: true, data: attempt });
@@ -480,28 +524,34 @@ async function handleChat(ctx, body, res) {
   const history = all.filter(m => (m.mode || 'tutor') === mode).slice(-CHAT_HISTORY);
   // Seluruh materi (maks MAX_CONTENT) masuk konteks; system prompt di-cache supaya pesan berikutnya murah.
   const material = set.content;
-  const out = await requestAI({
+  const { out, stream, failed } = await runAI(body, res, {
     system: (mode === 'syafawi' ? syafawiSystem(set.title, material) : tutorSystem(set.title, material)) + learnerContext(body.learner),
     messages: [...history.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: message }],
     maxTokens: 1500,
     cacheSystem: true,
+    model: (await resolveModels()).chat,
   });
-  const reply = out.truncated
-    ? `${out.text.trimEnd()}\n\n_(Jawaban terpotong karena terlalu panjang — ketik **lanjutkan** untuk meneruskan.)_`
-    : out.text;
+  if (failed) return;
+  const note = '\n\n_(Jawaban terpotong karena terlalu panjang — ketik **lanjutkan** untuk meneruskan.)_';
+  if (out.truncated && stream) stream.delta(note);
+  const reply = out.truncated ? `${out.text.trimEnd()}${note}` : out.text;
 
   const now = new Date().toISOString();
   const chat = [
     ...all,
     { role: 'user', content: message, at: now, mode },
-    { role: 'assistant', content: reply, at: now, mode },
+    { role: 'assistant', content: reply, at: now, mode, model: out.model },
   ].slice(-CHAT_MAX_STORED);
   await updateSet(ctx.code, set.id, { chat });
-  return res.status(200).json({ ok: true, reply });
+  return sendResult(res, stream, { reply, model: out.model });
 }
 
 /* ── Masukan kualitas (👍/👎 + laporan kesalahan) ── */
 const FEEDBACK_KINDS = ['summary', 'mindmap', 'flashcards', 'quiz', 'glossary', 'essays', 'grade', 'irab', 'tasykil', 'tutor', 'syafawi'];
+const FEEDBACK_TASK = {
+  summary: 'default', mindmap: 'default', flashcards: 'default', quiz: 'default', glossary: 'default', essays: 'default',
+  irab: 'arabic', tasykil: 'arabic', grade: 'grade', tutor: 'chat', syafawi: 'chat',
+};
 const FEEDBACK_CATEGORIES = ['salah_fakta', 'salah_arab', 'salah_harakat', 'tidak_sesuai_materi', 'kurang_jelas', 'terpotong', 'lainnya'];
 const feedbackAttempts = new Map();
 const checkFeedbackRate = (code) => {
@@ -531,7 +581,8 @@ async function handleFeedback(ctx, body, res) {
     category: rating < 0 && FEEDBACK_CATEGORIES.includes(body.category) ? body.category : null,
     note: rating < 0 ? clipText(body.note, 1000) || null : null,
     snippet: clipText(body.snippet, 1500) || null,
-    model: activeModel(),
+    // Browser mengirim model yang membuat hasil itu (tersimpan bersama hasilnya); cadangannya model tugas saat ini.
+    model: isValidModelId(body.model) ? body.model.trim() : (await resolveModels())[FEEDBACK_TASK[kind]],
     updated_at: new Date().toISOString(),
   };
   const { url, key } = sbConfig();
@@ -665,6 +716,27 @@ async function handleAdmin(action, req, res, body) {
     return res.status(200).json({ ok: true });
   }
 
+  // Uji apakah ID model OpenRouter valid & menjawab, sebelum dipakai di Settings.
+  if (action === 'admin-test-model') {
+    const model = typeof body.model === 'string' ? body.model.trim() : '';
+    if (!isValidModelId(model)) return res.status(400).json({ ok: false, error: 'Format ID model tidak valid (contoh: anthropic/claude-sonnet-4-6)' });
+    const started = Date.now();
+    try {
+      const reply = await callAI({
+        model, maxTokens: 20, temperature: 0,
+        messages: [{ role: 'user', content: 'Terjemahkan ke bahasa Indonesia dalam 1-3 kata saja: الطَّهَارَةُ' }],
+      });
+      clearModelCache();
+      return res.status(200).json({ ok: true, reply: reply.trim().slice(0, 80), ms: Date.now() - started });
+    } catch (err) {
+      return res.status(200).json({ ok: false, error: `Model tidak bisa dipakai: ${err.message}`.slice(0, 200) });
+    }
+  }
+
+  if (action === 'admin-models') {
+    return res.status(200).json({ ok: true, data: await resolveModels() });
+  }
+
   return res.status(400).json({ ok: false, error: 'Action tidak valid' });
 }
 
@@ -725,6 +797,11 @@ export default async function handler(req, res) {
     }
   } catch (err) {
     console.error(`[ai-partner:${action}]`, err.message);
+    // Kalau balasan bertahap sudah dimulai, header tidak bisa diganti — laporkan lewat stream.
+    if (res.headersSent) {
+      try { res.write(JSON.stringify({ t: 'error', ok: false, error: 'Terjadi kesalahan. Coba lagi sebentar.' }) + '\n'); res.end(); } catch {}
+      return;
+    }
     return res.status(500).json({ ok: false, error: 'Terjadi kesalahan. Coba lagi sebentar.' });
   }
 }

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import AiRichText, { AiInline } from '../components/AiRichText.jsx';
+import { sourceIndex, bestPassage, normalizeText } from '../components/sourceMatch.js';
 /* Talqeeh — AI Partner: tab-tab belajar di halaman materi */
 
 const BOX_INTERVAL_DAYS = { 1: 0, 2: 1, 3: 3, 4: 7, 5: 14 };
@@ -25,9 +26,12 @@ const useGenerate = (set, setSet, kind, field) => {
   const toast = useToast();
   const [busy, setBusy] = useState(false);
   const [upgrade, setUpgrade] = useState('');
-  const generate = async (extra = {}) => {
+  // onDelta diberikan → teks AI tampil bertahap (streaming).
+  const generate = async (extra = {}, onDelta) => {
     setBusy(true);
-    const data = await aiCall('generate', { set_id: set.id, kind, ...extra });
+    const data = onDelta
+      ? await aiStream('generate', { set_id: set.id, kind, ...extra }, onDelta)
+      : await aiCall('generate', { set_id: set.id, kind, ...extra });
     setBusy(false);
     if (!data.ok) {
       if (data.upgrade) setUpgrade(data.error);
@@ -37,7 +41,7 @@ const useGenerate = (set, setSet, kind, field) => {
     setSet(s => ({
       ...s,
       [field]: data.data,
-      progress: { ...(s.progress || {}), [kind]: true, ...(kind === 'summary' ? { summary_partial: !!data.partial } : {}) },
+      progress: { ...(s.progress || {}), [kind]: true, models: { ...(s.progress?.models || {}), ...(data.model ? { [kind]: data.model } : {}) }, ...(kind === 'summary' ? { summary_partial: !!data.partial } : {}) },
       ...(kind === 'quiz' ? { quiz_best_score: null } : {}),
       ...(kind === 'essays' ? { essay_attempts: [] } : {}),
       ...(kind === 'summary' ? { summary_lang: data.lang } : {}),
@@ -63,6 +67,84 @@ const useKurasahSave = () => {
       toast.push('Gagal menyimpan ke Kurasah');
     }
   };
+};
+
+/* ── Teks AI bertahap: diperbarui maks ±20x/detik supaya HP tidak berat ── */
+const useLiveText = () => {
+  const [text, setText] = useState('');
+  const pending = useRef('');
+  const timer = useRef(null);
+  const push = (full) => {
+    pending.current = full;
+    if (!timer.current) timer.current = setTimeout(() => { timer.current = null; setText(pending.current); }, 50);
+  };
+  const reset = () => { clearTimeout(timer.current); timer.current = null; pending.current = ''; setText(''); };
+  useEffect(() => () => clearTimeout(timer.current), []);
+  return [text, push, reset];
+};
+
+const LiveWritingNote = ({ text }) => (
+  <div className="inline-flex items-center gap-2 text-xs text-emerald-200 mb-3 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25">
+    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"/>{text}
+  </div>
+);
+
+/* ── Konteks kutipan: kutipan AI dibandingkan dengan paragraf materi yang paling cocok ── */
+const Highlighted = ({ text, words }) => {
+  const parts = text.split(/(\s+)/);
+  return <>{parts.map((w, i) => (words.has(normalizeText(w)) && normalizeText(w)
+    ? <mark key={i} className="bg-emerald-500/25 text-inherit rounded px-0.5">{w}</mark>
+    : <React.Fragment key={i}>{w}</React.Fragment>))}</>;
+};
+
+const CITE_HEAD = {
+  ok:   { title: 'Ditemukan di materimu', tone: 'text-emerald-300', icon: 'check' },
+  near: { title: 'Mirip dengan materimu — bandingkan', tone: 'text-amber-300', icon: 'info' },
+  miss: { title: 'Tidak ditemukan di materimu', tone: 'text-rose-300', icon: 'alert' },
+};
+
+const CiteModal = ({ cite, set, onClose }) => {
+  const passage = useMemo(() => bestPassage(cite.text, sourceIndex(set.content)), [cite.text, set.content]);
+  const quoteWords = useMemo(() => new Set(normalizeText(cite.text).split(' ').filter(Boolean)), [cite.text]);
+  const head = CITE_HEAD[cite.verdict] || CITE_HEAD.near;
+  const shown = passage && passage.score >= 0.2 ? passage : null;
+  const arabicStyle = (t) => (isMostlyArabic(t) ? { fontFamily: '"Noto Naskh Arabic", serif', fontSize: 19, lineHeight: 2, direction: 'rtl', textAlign: 'right' } : {});
+  return (
+    <Modal open onClose={onClose} size="lg">
+      <div className="p-5 md:p-7 max-h-[85vh] overflow-y-auto">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className={`flex items-center gap-2 font-display text-lg font-semibold ${head.tone}`}>
+            <Icon name={head.icon} className="w-5 h-5" style={{ stroke: 'currentColor' }}/>{head.title}
+          </div>
+          <button onClick={onClose} className="w-8 h-8 rounded-lg text-ink-muted hover:bg-white/5 flex items-center justify-center"><Icon name="x" className="w-4 h-4"/></button>
+        </div>
+        <div className="text-[11px] uppercase tracking-wider text-ink-soft mb-1.5">Kutipan dari AI</div>
+        <div className="rounded-xl bg-white/4 border border-white/10 p-4 text-ink mb-5" style={arabicStyle(cite.text)}>{cite.text}</div>
+        {shown ? (
+          <>
+            <div className="text-[11px] uppercase tracking-wider text-ink-soft mb-1.5">
+              Di materimu · paragraf {shown.index + 1} dari {shown.total} <span className="normal-case tracking-normal">(kata yang sama ditandai)</span>
+            </div>
+            <div className="rounded-xl bg-emerald-500/[0.05] border border-emerald-500/20 p-4 text-ink-muted whitespace-pre-wrap max-h-72 overflow-y-auto" style={arabicStyle(shown.text)}>
+              <Highlighted text={shown.text} words={quoteWords}/>
+            </div>
+          </>
+        ) : (
+          <div className="rounded-xl bg-rose-500/[0.06] border border-rose-500/25 p-4 text-sm text-ink-muted leading-relaxed">
+            Tidak ada bagian materimu yang mirip dengan kutipan ini. Bisa jadi AI mengutip dari luar materi atau keliru menyalin —
+            cek dulu ke kitab, mushaf, atau diktatmu sebelum menghafal atau menuliskannya di ujian. Kalau memang salah, laporkan lewat tombol 👎.
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+};
+
+const useCite = (set) => {
+  const [cite, setCite] = useState(null);
+  const onCite = (text, verdict) => setCite({ text, verdict });
+  const modal = cite ? <CiteModal cite={cite} set={set} onClose={() => setCite(null)}/> : null;
+  return { onCite, modal };
 };
 
 /* ── 1a. Ringkasan ── */
@@ -136,7 +218,7 @@ const ReadSizePicker = ({ value, onChange }) => (
   </div>
 );
 
-const SummarySection = ({ section, rtl, size, open, onToggle }) => {
+const SummarySection = ({ section, rtl, size, open, onToggle, source, onCite }) => {
   const { kind } = section;
   const exam = kind.id === 'exam';
   return (
@@ -157,14 +239,14 @@ const SummarySection = ({ section, rtl, size, open, onToggle }) => {
       {open && section.body && (
         <div className={`px-4 md:px-6 pb-5 ${section.title ? 'pt-0' : 'pt-5'}`}>
           {section.title && <div className="h-px bg-white/[0.06] mb-4"/>}
-          <AiRichText content={section.body} rtl={rtl} size={size}/>
+          <AiRichText content={section.body} rtl={rtl} size={size} source={source} onCite={onCite}/>
         </div>
       )}
     </section>
   );
 };
 
-const SummaryView = ({ markdown, rtl }) => {
+const SummaryView = ({ markdown, rtl, source, onCite }) => {
   const sections = useMemo(() => splitSections(markdown), [markdown]);
   const [size, setSize] = useReadSize();
   const [closed, setClosed] = useState({});
@@ -199,7 +281,7 @@ const SummaryView = ({ markdown, rtl }) => {
       </div>
       <div className="space-y-3">
         {sections.map(s => (
-          <SummarySection key={s.id} section={s} rtl={rtl} size={size} open={!closed[s.id]}
+          <SummarySection key={s.id} section={s} rtl={rtl} size={size} open={!closed[s.id]} source={source} onCite={onCite}
             onToggle={() => setClosed(c => ({ ...c, [s.id]: !c[s.id] }))}/>
         ))}
       </div>
@@ -213,11 +295,15 @@ const useSummaryContinuation = (set, setSet) => {
   const [error, setError] = useState('');
   const partial = !!(set.summary && set.progress?.summary_partial);
 
+  const [live, pushLive, resetLive] = useLiveText();
+
   const continueOnce = async () => {
     setContinuing(true);
     setError('');
-    const d = await aiCall('generate', { set_id: set.id, kind: 'summary', continue: true });
+    resetLive();
+    const d = await aiStream('generate', { set_id: set.id, kind: 'summary', continue: true }, (_, full) => pushLive(full));
     setContinuing(false);
+    resetLive();
     if (!d.ok) { setError(d.error || 'Gagal melanjutkan ringkasan'); return; }
     setSet(s => ({ ...s, summary: d.data, progress: { ...(s.progress || {}), summary_partial: !!d.partial } }));
   };
@@ -226,7 +312,7 @@ const useSummaryContinuation = (set, setSet) => {
     if (partial && !continuing && !error) continueOnce();
   }, [partial, set.summary, continuing, error]);
 
-  return { partial, continuing, error, retry: continueOnce };
+  return { partial, continuing, error, retry: continueOnce, live };
 };
 
 const SummaryContinuationNote = ({ state }) => {
@@ -253,16 +339,28 @@ const SummaryTab = ({ set, setSet, access }) => {
   const [lang, setLang] = useState(set.summary_lang || 'id');
   const saveKurasah = useKurasahSave();
   const continuation = useSummaryContinuation(set, setSet);
+  const [live, pushLive, resetLive] = useLiveText();
+  const cite = useCite(set);
+  const start = (l) => { resetLive(); generate({ lang: l }, (_, full) => pushLive(full)); };
 
   useEffect(() => { if (set.summary) markProgress(set, setSet, 'summary_read'); }, [!!set.summary]);
+  useEffect(() => { if (!busy) resetLive(); }, [busy]);
 
   if (upgrade) return <UpgradeCard message={upgrade}/>;
+  if (busy && live) {
+    return (
+      <div>
+        <LiveWritingNote text="AI sedang menulis ringkasanmu…"/>
+        <SummaryView markdown={live} rtl={lang === 'ar'} source={set.content}/>
+      </div>
+    );
+  }
   if (!set.summary || busy) {
     if (!busy && !canGenerate(access, 'summary', set)) return <UpgradeCard/>;
     return (
       <GeneratePanel icon="bookOpen" title="Ringkasan gaya kitab"
         desc="Poin inti, ta'rif lughatan & istilahan, taqsim, syarat & rukun, khilaf & tarjih, dalil, dan perkiraan soal imtihan — dari materimu sendiri."
-        cta="Buat ringkasan" busy={busy} onGenerate={() => generate({ lang })}>
+        cta="Buat ringkasan" busy={busy} onGenerate={() => start(lang)}>
         <div className="mb-5"><LangPicker value={lang} onChange={setLang}/></div>
       </GeneratePanel>
     );
@@ -273,17 +371,21 @@ const SummaryTab = ({ set, setSet, access }) => {
     <div>
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         {access.tier === 'pro'
-          ? <LangPicker value={set.summary_lang || 'id'} disabled={continuation.continuing} onChange={(l) => { setLang(l); generate({ lang: l }); }}/>
+          ? <LangPicker value={set.summary_lang || 'id'} disabled={continuation.continuing} onChange={(l) => { setLang(l); start(l); }}/>
           : <Pill>{SUMMARY_LANG_OPTIONS.find(o => o.id === (set.summary_lang || 'id'))?.label}</Pill>}
         <div className="flex gap-2">
           <ToolbarButton icon="copy" onClick={() => navigator.clipboard?.writeText(set.summary)}>Salin</ToolbarButton>
           <ToolbarButton icon="bookmark" onClick={() => saveKurasah(`Ringkasan — ${set.title}`, set.summary, ['ringkasan'])}>Simpan ke Kurasah</ToolbarButton>
         </div>
       </div>
-      <SummaryView markdown={set.summary} rtl={isArabic}/>
+      <SummaryView rtl={isArabic} source={set.content} onCite={cite.onCite}
+        markdown={continuation.continuing && continuation.live
+          ? `${set.summary.trimEnd()}\n\n${continuation.live.replace(/\[SELESAI\]\s*$/, '')}`
+          : set.summary}/>
       <SummaryContinuationNote state={continuation}/>
+      {cite.modal}
       {!continuation.partial && (
-        <FeedbackBar setId={set.id} kind="summary" content={set.summary} className="mt-4" label="Ringkasan ini akurat & membantu?"/>
+        <FeedbackBar setId={set.id} kind="summary" content={set.summary} model={set.progress?.models?.summary} className="mt-4" label="Ringkasan ini akurat & membantu?"/>
       )}
     </div>
   );
@@ -350,14 +452,14 @@ const MindmapTab = ({ set, setSet, access }) => {
       <div className="card-glass p-4 md:p-6 overflow-x-auto">
         <MindNode node={set.mindmap} depth={0} bulk={bulk}/>
       </div>
-      <FeedbackBar setId={set.id} kind="mindmap" content={mindmapToMarkdown(set.mindmap)} className="mt-4" label="Peta konsep ini sesuai materi?"/>
+      <FeedbackBar setId={set.id} kind="mindmap" model={set.progress?.models?.mindmap} content={mindmapToMarkdown(set.mindmap)} className="mt-4" label="Peta konsep ini sesuai materi?"/>
     </div>
   );
 };
 
 /* ── 1c. Materi asli + terjemah, i'rab, harakat ── */
 
-const IrabResult = ({ result, onSaveKurasah, onAddCard, setId }) => (
+const IrabResult = ({ result, onSaveKurasah, onAddCard, setId, model }) => (
   <div className="space-y-5">
     <div className="flex items-start gap-2">
       <ArabicText size={26} className="flex-1">{result.teks}</ArabicText>
@@ -409,7 +511,7 @@ const IrabResult = ({ result, onSaveKurasah, onAddCard, setId }) => (
       <ToolbarButton icon="bookmark" onClick={onSaveKurasah}>Simpan ke Kurasah</ToolbarButton>
     </div>
     {setId && (
-      <FeedbackBar setId={setId} kind="irab" label="Terjemah & i'rab ini tepat?"
+      <FeedbackBar setId={setId} kind="irab" model={model} label="Terjemah & i'rab ini tepat?"
         content={`${result.teks}\n${result.terjemah_bebas}\n${result.irab.map(w => `${w.kata}: ${w.irab}`).join('\n')}`}/>
     )}
   </div>
@@ -424,6 +526,7 @@ const IrabModal = ({ set, setSet, text, onClose }) => {
   const toast = useToast();
   const saveKurasah = useKurasahSave();
   const [result, setResult] = useState(null);
+  const [model, setModel] = useState(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -432,7 +535,8 @@ const IrabModal = ({ set, setSet, text, onClose }) => {
       if (!alive) return;
       if (!d.ok) { setError(d.error || 'Gagal menganalisis'); return; }
       setResult(d.data);
-      if (!d.cached) setSet(s => ({ ...s, analyses: [...(s.analyses || []), { mode: 'irab', input: text, output: d.data }] }));
+      setModel(d.model || null);
+      if (!d.cached) setSet(s => ({ ...s, analyses: [...(s.analyses || []), { mode: 'irab', input: text, output: d.data, model: d.model }] }));
     });
     return () => { alive = false; };
   }, [text]);
@@ -463,7 +567,7 @@ const IrabModal = ({ set, setSet, text, onClose }) => {
             <Skeleton lines={7}/>
           </div>
         ) : (
-          <IrabResult result={result} onAddCard={addCard} setId={set.id}
+          <IrabResult result={result} onAddCard={addCard} setId={set.id} model={model}
             onSaveKurasah={() => saveKurasah(`I'rab — ${result.teks.slice(0, 40)}`, irabToMarkdown(result), ['irab'])}/>
         )}
       </div>
@@ -485,6 +589,7 @@ const MaterialTab = ({ set, setSet, access }) => {
   const paragraphs = useMemo(() => splitParagraphs(set.content), [set.content]);
   const analyses = set.analyses || [];
   const harakatOf = (p) => analyses.find(a => a.mode === 'tasykil' && a.input === p)?.output;
+  const harakatModel = (p) => analyses.find(a => a.mode === 'tasykil' && a.input === p)?.model;
   const irabHistory = analyses.filter(a => a.mode === 'irab').slice().reverse();
 
   useEffect(() => { markProgress(set, setSet, 'material_viewed'); }, []);
@@ -509,7 +614,7 @@ const MaterialTab = ({ set, setSet, access }) => {
     const d = await aiCall('analyze', { set_id: set.id, mode: 'tasykil', text: p });
     setBusyPara(null);
     if (!d.ok) { toast.push(d.error || 'Gagal memberi harakat'); return; }
-    if (!d.cached) setSet(s => ({ ...s, analyses: [...(s.analyses || []), { mode: 'tasykil', input: p, output: d.data }] }));
+    if (!d.cached) setSet(s => ({ ...s, analyses: [...(s.analyses || []), { mode: 'tasykil', input: p, output: d.data, model: d.model }] }));
     setShowHarakat(true);
   };
 
@@ -543,7 +648,7 @@ const MaterialTab = ({ set, setSet, access }) => {
               {arabic && (
                 <div className="flex gap-1.5 mt-1 justify-end opacity-80">
                   <SpeakButton text={vowelled || p}/>
-                  {vowelled && <FeedbackBar compact setId={set.id} kind="tasykil" content={vowelled} className="flex flex-col items-end"/>}
+                  {vowelled && <FeedbackBar compact setId={set.id} kind="tasykil" model={harakatModel(p)} content={vowelled} className="flex flex-col items-end"/>}
                   {!harakatOf(p) && p.length <= 6000 && (
                     <button onClick={() => tasykil(p, i)} disabled={busyPara !== null}
                       className="text-[11px] px-2.5 py-1 rounded-lg border border-white/10 text-ink-muted hover:text-emerald-300 hover:border-emerald-500/30 inline-flex items-center gap-1">
@@ -689,7 +794,7 @@ const FlashcardTab = ({ set, setSet, access }) => {
             </div>
           )}
           {flipped && (
-            <FeedbackBar setId={set.id} kind="flashcards" content={`${current.q}\n${current.a}`} label="Isi kartu ini benar?"
+            <FeedbackBar setId={set.id} kind="flashcards" model={set.progress?.models?.flashcards} content={`${current.q}\n${current.a}`} label="Isi kartu ini benar?"
               className="mt-3 flex flex-col items-center"/>
           )}
         </>
@@ -777,7 +882,7 @@ const GlossaryTab = ({ set, setSet, access }) => {
         ))}
       </div>
       <div className="flex items-start justify-between gap-3 mt-4 flex-wrap">
-        <FeedbackBar setId={set.id} kind="glossary" label="Mufradat ini tepat?"
+        <FeedbackBar setId={set.id} kind="glossary" model={set.progress?.models?.glossary} label="Mufradat ini tepat?"
           content={items.map(g => `${g.ar} (${g.wazan || '-'}): ${g.makna}`).join('\n')}/>
         {access.tier === 'pro' && <ToolbarButton icon="refresh" onClick={() => generate()} disabled={busy}>Susun ulang</ToolbarButton>}
       </div>
@@ -869,7 +974,7 @@ const QuizTab = ({ set, setSet, access }) => {
             </div>
           )}
           <div className="flex items-center justify-between gap-3 mt-5 flex-wrap">
-            <FeedbackBar setId={set.id} kind="quiz" label="Soal & kunci ini benar?"
+            <FeedbackBar setId={set.id} kind="quiz" model={set.progress?.models?.quiz} label="Soal & kunci ini benar?"
               content={`${q.question}\n${(q.options || []).map((o, i) => `${i === q.answer ? '✓' : '-'} ${o}`).join('\n')}\n${q.explanation || ''}`}/>
             <button onClick={next} className="btn btn-primary text-sm px-5 py-2">
               {idx + 1 >= quiz.length ? 'Lihat skor' : 'Lanjut'} <Icon name="arrowRight" className="w-4 h-4"/>
@@ -890,7 +995,7 @@ const ScoreBadge = ({ skor }) => {
   </div>;
 };
 
-const GradeResult = ({ attempt, essay, setId }) => {
+const GradeResult = ({ attempt, essay, setId, source, onCite, essaysModel }) => {
   const [showModel, setShowModel] = useState(false);
   return (
     <div className="space-y-4 mt-5">
@@ -932,12 +1037,12 @@ const GradeResult = ({ attempt, essay, setId }) => {
         <div className="rounded-xl bg-white/3 border border-white/8 p-4 space-y-3">
           <ul className="space-y-1 text-sm text-ink">{essay.poin.map((p, i) => <li key={i}>{i + 1}. <AiInline text={p}/></li>)}</ul>
           <div className="text-[11px] uppercase tracking-wider text-emerald-300 pt-1">Jawaban model</div>
-          <AiRichText content={essay.jawaban_model} size="md"/>
-          {setId && <FeedbackBar setId={setId} kind="essays" label="Soal & jawaban model ini benar?"
+          <AiRichText content={essay.jawaban_model} size="md" source={source} onCite={onCite}/>
+          {setId && <FeedbackBar setId={setId} kind="essays" model={essaysModel} label="Soal & jawaban model ini benar?"
             content={`${essay.soal_ar}\n${essay.poin.join('\n')}\n${essay.jawaban_model}`}/>}
         </div>
       )}
-      {setId && <FeedbackBar setId={setId} kind="grade" label="Penilaian ini adil & tepat?" refId={`${attempt.index}:${attempt.at}`}
+      {setId && <FeedbackBar setId={setId} kind="grade" model={attempt.model} label="Penilaian ini adil & tepat?" refId={`${attempt.index}:${attempt.at}`}
         content={`Skor ${attempt.skor}/10\n${attempt.answer}\n\nKurang: ${attempt.kurang.join('; ')}\nTips: ${attempt.tips}`}/>}
     </div>
   );
@@ -952,6 +1057,7 @@ const EssayTab = ({ set, setSet, access }) => {
   const [result, setResult] = useState(null);
   const essays = set.essays || [];
   const attempts = set.essay_attempts || [];
+  const essayCite = useCite(set);
 
   if (upgrade) return <UpgradeCard message={upgrade}/>;
   if (essays.length === 0 || busy) {
@@ -1005,7 +1111,8 @@ const EssayTab = ({ set, setSet, access }) => {
               style={{ fontSize: hasArabic(result.answer) ? 18 : 14, fontFamily: hasArabic(result.answer) ? '"Noto Naskh Arabic", serif' : 'inherit' }}>
               {result.answer}
             </div>
-            <GradeResult attempt={result} essay={essay} setId={set.id}/>
+            <GradeResult attempt={result} essay={essay} setId={set.id} source={set.content} onCite={essayCite.onCite} essaysModel={set.progress?.models?.essays}/>
+            {essayCite.modal}
             <div className="flex gap-2 justify-end mt-5 flex-wrap">
               <button onClick={() => setResult(null)} className="btn btn-ghost text-sm px-4 py-2">Perbaiki jawaban</button>
               {active + 1 < essays.length && (
@@ -1063,9 +1170,11 @@ const TutorTab = ({ set, setSet, access }) => {
   const [sending, setSending] = useState(false);
   const [error, setError]     = useState('');
   const bottomRef = useRef(null);
+  const [live, pushLive, resetLive] = useLiveText();
+  const cite = useCite(set);
   const chat = (set.chat || []).filter(m => (m.mode || 'tutor') === mode);
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, [chat.length, sending, mode]);
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, [chat.length, sending, mode, Math.floor(live.length / 300)]);
 
   if (access.tier !== 'pro') {
     return <UpgradeCard title="Tutor & simulasi syafawi khusus pelanggan" message="Tanya apa saja tentang materimu, atau latihan ujian lisan dengan duktur AI yang bertanya satu per satu lalu menilai jawabanmu."/>;
@@ -1078,15 +1187,17 @@ const TutorTab = ({ set, setSet, access }) => {
     setError('');
     setSending(true);
     setSet(s => ({ ...s, chat: [...(s.chat || []), { role: 'user', content: message, mode }] }));
-    const data = await aiCall('chat', { set_id: set.id, message, mode });
+    resetLive();
+    const data = await aiStream('chat', { set_id: set.id, message, mode }, (_, full) => pushLive(full));
     setSending(false);
+    resetLive();
     if (!data.ok) {
       setError(data.error || 'Gagal mengirim pesan');
       setSet(s => ({ ...s, chat: (s.chat || []).slice(0, -1) }));
       setInput(message);
       return;
     }
-    setSet(s => ({ ...s, chat: [...(s.chat || []), { role: 'assistant', content: data.reply, mode }] }));
+    setSet(s => ({ ...s, chat: [...(s.chat || []), { role: 'assistant', content: data.reply, mode, model: data.model }] }));
   };
 
   const restart = async () => {
@@ -1143,14 +1254,25 @@ const TutorTab = ({ set, setSet, access }) => {
                 {m.role === 'user'
                   ? <span className="whitespace-pre-wrap" dir="auto">{m.content}</span>
                   : <>
-                      <AiRichText content={m.content} size="sm"/>
-                      <FeedbackBar compact setId={set.id} kind={mode} content={m.content}
+                      <AiRichText content={m.content} size="sm" source={set.content} onCite={cite.onCite}/>
+                      <FeedbackBar compact setId={set.id} kind={mode} content={m.content} model={m.model}
                         className="mt-2.5 pt-2 border-t border-white/[0.06] flex flex-col items-start"/>
                     </>}
               </div>
             </div>
           ))}
-          {sending && <div className="text-xs text-ink-soft">{mode === 'syafawi' ? 'Duktur sedang menilai…' : 'Tutor sedang mengetik…'}</div>}
+          {sending && (live ? (
+            <div className="flex gap-2.5 justify-start">
+              <span className="hidden sm:flex w-8 h-8 rounded-full flex-shrink-0 items-center justify-center mt-0.5"
+                style={{ background: 'rgba(62,207,142,0.14)', border: '1px solid rgba(62,207,142,0.3)' }}>
+                <Icon name={mode === 'syafawi' ? 'mosque' : 'sparkles'} className="w-4 h-4" style={{ stroke: '#3ecf8e' }}/>
+              </span>
+              <div className="max-w-[94%] sm:max-w-[88%] px-4 py-3.5 rounded-2xl rounded-tl-md bg-white/[0.035] border border-white/10">
+                <AiRichText content={live} size="sm"/>
+                <span className="inline-block w-2 h-4 bg-emerald-400/80 align-middle animate-pulse mt-1"/>
+              </div>
+            </div>
+          ) : <div className="text-xs text-ink-soft">{mode === 'syafawi' ? 'Duktur sedang menilai…' : 'Tutor sedang mengetik…'}</div>)}
           <div ref={bottomRef}/>
         </div>
         {error && <div className="text-sm text-rose-400 mb-2">{error}</div>}
@@ -1166,6 +1288,7 @@ const TutorTab = ({ set, setSet, access }) => {
           </div>
         )}
       </div>
+      {cite.modal}
     </div>
   );
 };

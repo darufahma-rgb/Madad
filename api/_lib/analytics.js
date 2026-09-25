@@ -229,6 +229,11 @@ export async function buildAdminAnalytics(days) {
     const k = byKind[f.kind] ||= { kind: f.kind, up: 0, down: 0 };
     if (f.rating > 0) k.up++; else k.down++;
   }
+  const byModel = {};
+  for (const f of fbNow) {
+    const k = byModel[f.model || 'tidak diketahui'] ||= { model: f.model || 'tidak diketahui', up: 0, down: 0 };
+    if (f.rating > 0) k.up++; else k.down++;
+  }
   const categories = {};
   for (const f of fbNow) if (f.rating < 0 && f.category) categories[f.category] = (categories[f.category] || 0) + 1;
   const qualityOut = {
@@ -239,6 +244,7 @@ export async function buildAdminAnalytics(days) {
     positiveRate: positiveRate(fbNow),
     positiveRatePrev: positiveRate(fbPrev),
     byKind: Object.values(byKind).sort((a, b) => (b.up + b.down) - (a.up + a.down)),
+    byModel: Object.values(byModel).sort((a, b) => (b.up + b.down) - (a.up + a.down)),
     categories,
     reports: fbNow.filter(f => f.rating < 0).slice(0, 25).map(f => ({
       kind: f.kind, category: f.category, note: f.note, snippet: f.snippet, model: f.model,

@@ -7,7 +7,8 @@ const BASE_PERSONA =
 const ARABIC_RULES = `Aturan bahasa Arab:
 - Istilah, ta'rif, dalil, dan contoh ditulis dengan harakat lengkap. Teks Arab panjang boleh harakat seperlunya.
 - Gunakan istilah baku kitab Azhar (تَعْرِيف، تَقْسِيم، شُرُوط، أَرْكَان، خِلَاف، تَرْجِيح، دَلِيل).
-- Jangan mengarang ayat, hadits, atau qaul ulama. Kutip hanya yang ada di materi.`;
+- Jangan mengarang ayat, hadits, atau qaul ulama. Kutip hanya yang ada di materi.
+- Teks di dalam kutipan "> " WAJIB disalin kata per kata dari materi (boleh menambah harakat). Parafrase atau ringkasanmu sendiri jangan ditulis sebagai kutipan — Talqeeh mencocokkan setiap kutipan dengan materi dan menandai yang tidak ditemukan.`;
 
 const ONLY_MATERIAL = 'Gunakan HANYA isi materi. Lewati bagian yang tidak dibahas materi — jangan mengisinya dengan informasi dari luar.';
 
@@ -220,6 +221,10 @@ Format jawaban (markdown):
 - Lalu poin-poin penjelasan bila perlu. Pakai subjudul "### " hanya jika jawabannya panjang (lebih dari 3 bagian).
 - Perbandingan 2+ hal → tabel markdown singkat.
 - Jika jawabannya panjang, akhiri dengan satu baris **Intinya:** ...
+- Jika jawabanmu berdasar materi, tutup dengan satu baris sumber persis seperti ini:
+📍 **Dari materimu:** "kalimat yang disalin PERSIS dari materi, 5–25 kata (boleh tanpa harakat)"
+  Salin apa adanya — jangan diparafrase, karena Talqeeh mencocokkannya dengan materi dan menampilkan konteksnya ke mahasiswa. Jika jawabannya tidak ada di materi, jangan tulis baris sumber.
+- Kutipan "> " juga wajib disalin persis dari materi (boleh menambah harakat).
 ${readabilityRules()}
 
 MATERI (judul: ${title}):

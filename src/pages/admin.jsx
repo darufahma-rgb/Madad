@@ -499,6 +499,23 @@ const AiQualitySection = ({ quality }) => {
                 })}
               </div>
             )}
+          {(quality.byModel || []).length > 0 && (
+            <div className="mt-5 pt-4 border-t border-white/8">
+              <div className="text-[11px] uppercase tracking-wider text-ink-soft mb-2">Per model</div>
+              <div className="space-y-2">
+                {quality.byModel.map(m => {
+                  const total = m.up + m.down;
+                  return (
+                    <div key={m.model} className="flex items-center justify-between gap-3 text-xs">
+                      <span className="font-mono text-ink-muted truncate" title={m.model}>{m.model}</span>
+                      <span className="text-ink flex-shrink-0">{Math.round((m.up / total) * 100)}% <span className="text-ink-soft">dari {total}</span></span>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-[10px] text-ink-soft mt-2">Bandingkan hanya kalau jumlah masukannya sudah cukup (±30+ per model).</p>
+            </div>
+          )}
           {Object.keys(quality.categories).length > 0 && (
             <div className="mt-5 pt-4 border-t border-white/8">
               <div className="text-[11px] uppercase tracking-wider text-ink-soft mb-2">Jenis kesalahan</div>
@@ -1887,6 +1904,37 @@ const SettingsField = ({ label, value, onChange, mono = false, hint }) => (
   </div>
 );
 
+// Satu pilihan model AI + tombol uji (memanggil model sungguhan dengan pertanyaan kecil).
+const ModelField = ({ label, hint, value, active, onChange }) => {
+  const [test, setTest] = useState(null);
+  const run = async () => {
+    const model = (value || active || '').trim();
+    if (!model) return;
+    setTest({ busy: true });
+    try {
+      const d = await aiPartnerAdmin('admin-test-model', { model });
+      setTest(d.ok ? { ok: true, text: `Berhasil (${(d.ms / 1000).toFixed(1)} dtk): "${d.reply}"` } : { ok: false, text: d.error || 'Gagal' });
+    } catch (e) {
+      setTest({ ok: false, text: e.message });
+    }
+  };
+  return (
+    <div>
+      <label className="text-xs text-ink-muted block mb-1">{label}</label>
+      <div className="flex gap-2">
+        <input value={value} onChange={e => { onChange(e.target.value); setTest(null); }} list="ai-model-suggestions"
+          placeholder={active ? `Sekarang: ${active}` : 'vendor/nama-model'}
+          className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink text-sm outline-none font-mono focus:border-emerald-500/45"/>
+        <button onClick={run} disabled={test?.busy || !(value || active)} className="btn btn-ghost text-xs px-4 flex-shrink-0">
+          {test?.busy ? 'Menguji…' : 'Tes'}
+        </button>
+      </div>
+      {test && !test.busy && <div className={`text-[11px] mt-1 ${test.ok ? 'text-emerald-300' : 'text-rose-400'}`}>{test.text}</div>}
+      {hint && <div className="text-[11px] text-ink-soft mt-1">{hint}</div>}
+    </div>
+  );
+};
+
 const AdminSettings = () => {
   const toast = useToast();
 
@@ -1905,15 +1953,21 @@ const AdminSettings = () => {
     mayarUrl:     "",
     mayarAiProductId: "",
     aiPriceLabel: "",
+    aiModelDefault: "",
+    aiModelArabic:  "",
+    aiModelGrade:   "",
+    aiModelChat:    "",
     ...loadLocalSettings(),
   }));
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [activeModels, setActiveModels] = useState(null);
 
   useEffect(() => {
     adminMembersAPI('get-settings')
       .then(server => { if (server && typeof server === 'object') setSettings(s => ({ ...s, ...server })); })
       .catch(err => toast.push("Gagal memuat settings: " + err.message));
+    aiPartnerAdmin('admin-models').then(d => { if (d.ok) setActiveModels(d.data); }).catch(() => {});
   }, []);
 
   const handleSave = async () => {
@@ -1973,6 +2027,31 @@ const AdminSettings = () => {
           <SettingsField label="Label harga" value={settings.aiPriceLabel}
             onChange={v => setSettings({...settings, aiPriceLabel: v})}
             hint="Teks harga yang ditampilkan di CTA, misal 'Rp 25.000 / bulan'."/>
+        </div>
+
+        <div className="card-glass p-6 space-y-4">
+          <div>
+            <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Model AI per tugas</div>
+            <p className="text-[11px] text-ink-soft leading-relaxed">
+              Pakai ID model dari <a href="https://openrouter.ai/models" target="_blank" rel="noopener noreferrer" className="text-emerald-300 underline">openrouter.ai/models</a>.
+              Kosongkan untuk memakai model utama. Tekan <span className="text-ink">Tes</span> sebelum menyimpan; perubahan berlaku ±1 menit setelah disimpan.
+              Bandingkan hasilnya di Analitik → Kualitas AI → "Per model".
+            </p>
+          </div>
+          <datalist id="ai-model-suggestions">
+            <option value="anthropic/claude-sonnet-4-6"/>
+            <option value="google/gemini-2.5-pro"/>
+            <option value="google/gemini-2.5-flash"/>
+          </datalist>
+          {[
+            ['aiModelDefault', 'Model utama', 'default', 'Ringkasan, flashcard, kuis, mufradat, peta konsep, soal tahriri. Juga cadangan untuk tugas lain.'],
+            ['aiModelArabic', "Terjemah & i'rab, harakat", 'arabic', 'Butuh ketelitian nahwu-sharaf paling tinggi — kandidat untuk model terkuat.'],
+            ['aiModelGrade', 'Penilaian tahriri', 'grade', 'Menilai jawaban esai & mengoreksi bahasa Arab mahasiswa.'],
+            ['aiModelChat', 'Tutor & simulasi syafawi', 'chat', 'Paling sering dipakai — pertimbangkan biaya per pesan.'],
+          ].map(([key, label, task, hint]) => (
+            <ModelField key={key} label={label} hint={hint} value={settings[key] || ''}
+              active={activeModels?.[task]} onChange={v => setSettings({ ...settings, [key]: v })}/>
+          ))}
         </div>
 
         <div className="flex justify-between items-center">

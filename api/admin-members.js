@@ -1,6 +1,7 @@
 import https from 'https';
 import { verifyToken } from './admin-auth.js';
 import { ADMIN_SETTING_KEYS, readSettings } from './_lib/settings.js';
+import { MODEL_SETTING_KEYS, isValidModelId } from './_lib/models.js';
 import { newActivationPin, PIN_TTL_DAYS } from './_lib/pin.js';
 import { buildAdminAnalytics } from './_lib/analytics.js';
 
@@ -92,6 +93,9 @@ export default async function handler(req, res) {
     } else if (action === 'get-settings') {
       result = { status: 200, data: await readSettings(ADMIN_SETTING_KEYS) };
     } else if (action === 'save-settings') {
+      const badModel = Object.values(MODEL_SETTING_KEYS)
+        .find(k => typeof row?.[k] === 'string' && row[k].trim() && !isValidModelId(row[k]));
+      if (badModel) { res.status(400).json({ ok: false, error: `ID model tidak valid: "${row[badModel].trim().slice(0, 60)}" (contoh: anthropic/claude-sonnet-4-6)` }); return; }
       const now = new Date().toISOString();
       const rows = ADMIN_SETTING_KEYS
         .filter(k => typeof row?.[k] === 'string')

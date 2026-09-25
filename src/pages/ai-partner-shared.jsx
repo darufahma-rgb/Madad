@@ -50,10 +50,47 @@ const aiCall = async (action, payload = {}) => {
   } catch {
     data = { ok: false, error: 'Tidak bisa terhubung ke server. Cek koneksi lalu coba lagi.' };
   }
+  return normalizeAiError(data);
+};
+
+const normalizeAiError = (data) => {
   if (!data.ok && data.error === 'quota') data.error = data.message;
   if (!data.ok && data.error === 'upgrade') { data.upgrade = true; data.error = data.message; }
   if (!data.ok && data.error === 'not_member') data.error = 'Fitur ini untuk member Talqeeh.';
   return data;
+};
+
+/* Seperti aiCall, tapi teks AI datang bertahap: onDelta(potongan, teksSejauhIni).
+   Server membalas NDJSON; kalau ada penolakan (kuota, upgrade) balasannya JSON biasa. */
+const aiStream = async (action, payload = {}, onDelta) => {
+  try {
+    const body = { ...(PERSONALIZED_ACTIONS.includes(action) ? { ...payload, learner: learnerPayload() } : payload), stream: true };
+    const res = await window.authFetch(`/api/ai-partner?action=${action}`, { method: 'POST', body: JSON.stringify(body) });
+    if (!(res.headers.get('content-type') || '').includes('ndjson') || !res.body) return normalizeAiError(await res.json());
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '', text = '', result = null;
+    const handle = (line) => {
+      if (!line.trim()) return;
+      let msg;
+      try { msg = JSON.parse(line); } catch { return; }
+      if (msg.t === 'delta') { text += msg.d; onDelta?.(msg.d, text); }
+      else if (msg.t === 'done') { const { t, ...rest } = msg; result = rest; }
+      else if (msg.t === 'error') result = { ok: false, error: msg.error };
+    };
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let nl;
+      while ((nl = buffer.indexOf('\n')) >= 0) { handle(buffer.slice(0, nl)); buffer = buffer.slice(nl + 1); }
+    }
+    handle(buffer);
+    return result || { ok: false, error: 'Koneksi terputus sebelum AI selesai. Coba lagi.' };
+  } catch {
+    return { ok: false, error: 'Tidak bisa terhubung ke server. Cek koneksi lalu coba lagi.' };
+  }
 };
 
 // Status akses: { loading, tier: 'pro' | 'trial' | 'none', trial: { used, set_id } }
@@ -269,7 +306,7 @@ const hashRef = (s) => {
 };
 const readFeedback = (key) => { try { return Number(localStorage.getItem(key)) || 0; } catch { return 0; } };
 
-const FeedbackBar = ({ setId, kind, refId, content, label = 'Hasil ini membantu?', compact = false, className = '' }) => {
+const FeedbackBar = ({ setId, kind, refId, content, model, label = 'Hasil ini membantu?', compact = false, className = '' }) => {
   const toast = useToast();
   const text = typeof content === 'string' ? content : JSON.stringify(content || '');
   const ref = refId != null ? String(refId) : hashRef(`${kind}:${text}`);
@@ -283,7 +320,7 @@ const FeedbackBar = ({ setId, kind, refId, content, label = 'Hasil ini membantu?
 
   const send = async (value, extra = {}) => {
     setSending(true);
-    const d = await aiCall('feedback', { set_id: setId, kind, ref, rating: value, snippet: text.slice(0, 1500), ...extra });
+    const d = await aiCall('feedback', { set_id: setId, kind, ref, rating: value, snippet: text.slice(0, 1500), ...(model ? { model } : {}), ...extra });
     setSending(false);
     if (!d.ok) { toast.push(d.error || 'Gagal mengirim masukan'); return false; }
     setRating(value);
@@ -349,7 +386,7 @@ const FeedbackBar = ({ setId, kind, refId, content, label = 'Hasil ini membantu?
 };
 
 Object.assign(window, {
-  aiCall, useAiStatus, FeedbackBar, openAiUpgrade, learnerPayload, learnerSummary, maddahName, hasArabic, isMostlyArabic, speakArabic, saveToKurasah,
+  aiCall, aiStream, useAiStatus, FeedbackBar, openAiUpgrade, learnerPayload, learnerSummary, maddahName, hasArabic, isMostlyArabic, speakArabic, saveToKurasah,
   SOURCE_META, STUDY_STEPS, stepDone, studyPercent,
   ProgressRing, Skeleton, GeneratePanel, UpgradeCard, Pill, ArabicText, SpeakButton, aiInputClass,
 });
