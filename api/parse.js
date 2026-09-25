@@ -179,6 +179,11 @@ async function handleParseTalkhisan(req, res) {
     return res.status(401).json({ ok: false, error: 'Fitur ini hanya untuk member Talqeeh.' });
   }
   const member_code = access.code;
+  // Bedah Talkhisan adalah fitur Library (halaman Siap Imtihan terkunci untuk akun gratis) — tegakkan juga di server,
+  // supaya akun gratis buatan massal tidak bisa memakai model AI mahal lewat endpoint ini.
+  if (access.member?.tier === 'free') {
+    return res.status(403).json({ ok: false, error: 'upgrade', message: 'Bedah Talkhisan khusus member Library.' });
+  }
 
   // ── GUARDRAIL 2: Rate limit 3x per hari per member ──
   try {
@@ -224,7 +229,9 @@ async function handleParseTalkhisan(req, res) {
       });
     }
   } catch (err) {
+    // Gagal memeriksa batas → tolak (jangan sampai batas harian terlewati saat database bermasalah).
     console.warn('[parse-talkhisan] rate limit check failed:', err.message);
+    return res.status(503).json({ ok: false, error: 'Tidak bisa memeriksa batas pemakaian. Coba lagi sebentar.' });
   }
 
   // ── GUARDRAIL 3: Validasi PDF max 30 halaman (double check server side) ──

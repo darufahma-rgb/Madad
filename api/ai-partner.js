@@ -19,6 +19,13 @@ import {
 // Kuota harian pelanggan. Pengguna coba gratis dibatasi per materi (lihat TRIAL_*), bukan per hari.
 const LIMITS = { create: 10, ocr: 20, transcribe: 60, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40 };
 const TRIAL_OCR_LIMIT  = 3;
+// Pengaman biaya: total pemanggilan AI oleh SEMUA pengguna coba gratis per hari. Akun gratis bisa dibuat siapa saja
+// yang punya akun Google, jadi tanpa batas bersama ini satu orang dengan banyak akun bisa menguras saldo AI.
+// ±200 × ±$0.03 ≈ $6/hari paling banyak. Atur lewat env TRIAL_DAILY_LIMIT.
+const TRIAL_DAILY_LIMIT = Math.max(0, parseInt(process.env.TRIAL_DAILY_LIMIT || '200', 10) || 0);
+const trialGateOpen = () => consumeQuota('TRIAL-GLOBAL', 'trial_all', TRIAL_DAILY_LIMIT);
+const trialGateClosed = (res) => upgradeRequired(res, 'trial_busy',
+  'Kuota coba gratis untuk hari ini sudah penuh. Coba lagi besok, atau berlangganan AI Partner untuk memakai AI kapan saja.');
 const TRIAL_KINDS      = ['summary', 'flashcards', 'quiz', 'glossary'];
 const PRO_ONLY_ACTIONS = ['transcribe', 'analyze', 'grade', 'chat'];
 // Tanya AI untuk pengguna coba gratis: satu percakapan, maksimal sekian pesan seumur akun.
@@ -262,6 +269,8 @@ async function handleOcr(ctx, body, res) {
     if (over) return quotaExceeded(res, 'ocr', over, ctx);
   } else if (!(await consumeQuota(ctx.code, 'ocr', TRIAL_OCR_LIMIT))) {
     return upgradeRequired(res, 'ocr', `Coba gratis bisa membaca ${TRIAL_OCR_LIMIT} foto per hari. Berlangganan untuk membaca lebih banyak.`);
+  } else if (!(await trialGateOpen())) {
+    return trialGateClosed(res);
   }
 
   const teks = await callAI({
@@ -535,6 +544,7 @@ async function handleGenerate(ctx, body, res) {
     if (alreadyMade) {
       return upgradeRequired(res, 'regenerate', 'Coba gratis hanya bisa membuat tiap fitur sekali. Berlangganan untuk membuat ulang.');
     }
+    if (!(await trialGateOpen())) return trialGateClosed(res);
   } else {
     const over = await takeQuota(ctx, 'generate');
     if (over) return quotaExceeded(res, 'generate', over, ctx);
@@ -752,6 +762,7 @@ async function handlePromptChat(ctx, body, res) {
     const outOfTrial = () => upgradeRequired(res, 'prompt_trial_used',
       `Percakapan gratismu (${TRIAL_PROMPT_MESSAGES} pesan) sudah terpakai. Berlangganan AI Partner untuk bertanya tanpa batas.`);
     if (used >= TRIAL_PROMPT_MESSAGES) return outOfTrial();
+    if (!(await trialGateOpen())) return trialGateClosed(res);
     if (!(await consumeQuota(ctx.code, 'prompt_trial', TRIAL_PROMPT_MESSAGES))) return outOfTrial();
     trialLeft = TRIAL_PROMPT_MESSAGES - used - 1;
   } else {

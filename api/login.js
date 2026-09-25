@@ -1,4 +1,4 @@
-import { sbConfig, sbHeaders, getAuthUser, resolveMember, newMemberCode } from './_lib/member.js';
+import { sbConfig, sbHeaders, getAuthUser, resolveMember, newMemberCode, consumeQuota } from './_lib/member.js';
 import { normalizePin } from './_lib/pin.js';
 import {
   CHECKOUT_PLANS, mayarConfigured, checkoutBlockReason, createCheckout, getOwnedCheckout, refreshCheckout,
@@ -126,11 +126,16 @@ async function handleRedeem(req, user, res) {
 }
 
 // Login Google tanpa bayar → akun gratis terbatas (tier 'free').
-async function handleStartFree(user, res) {
+async function handleStartFree(req, user, res) {
   const current = await resolveMember(user);
   if (current) {
     if (current.status !== 'active') return res.status(200).json({ ok: false, status: current.status });
     return res.status(200).json({ ok: true, member: toPublicMember(current, user) });
+  }
+  // Maks 20 akun gratis baru per IP per hari (Vercel mengisi x-real-ip dengan IP asli pengunjung).
+  const ip = String(req.headers['x-real-ip'] || (req.headers['x-forwarded-for'] || '').split(',')[0] || '').trim();
+  if (ip && !(await consumeQuota(`IP-${ip}`.slice(0, 60), 'signup', 20))) {
+    return res.status(429).json({ ok: false, status: 'rate_limited' });
   }
 
   const { url, key } = sbConfig();
@@ -236,7 +241,7 @@ export default async function handler(req, res) {
 
     if (action === 'session') return await handleSession(user, res);
     if (action === 'redeem')  return await handleRedeem(req, user, res);
-    if (action === 'start-free') return await handleStartFree(user, res);
+    if (action === 'start-free') return await handleStartFree(req, user, res);
     if (action === 'checkout') return await handleCheckout(req, user, res);
     if (action === 'checkout-status') return await handleCheckoutStatus(req, user, res);
     return res.status(400).json({ ok: false, error: 'Action tidak valid' });

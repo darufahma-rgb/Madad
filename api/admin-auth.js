@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import { consumeQuota } from './_lib/member.js';
 
 const TOKEN_TTL = 8 * 60 * 60 * 1000;
 
@@ -73,6 +74,14 @@ export default async function handler(req, res) {
       return;
     }
 
+    // Batas tahan-restart di database (penghitung di memori di atas hilang saat server berganti instance):
+    // 10 percobaan per IP per hari, 100 percobaan total per hari — menghentikan tebak-PIN terdistribusi.
+    const realIp = String(req.headers['x-real-ip'] || ip).slice(0, 60);
+    if (!(await consumeQuota(`ADMIN-IP-${realIp}`, 'admin_login', 10)) || !(await consumeQuota('ADMIN-ALL', 'admin_login', 100))) {
+      res.status(429).json({ ok: false, error: 'Terlalu banyak percobaan login admin hari ini. Coba lagi besok.' });
+      return;
+    }
+
     const { pin } = JSON.parse(body || '{}');
     const adminPin = (process.env.ADMIN_PIN || '').trim();
 
@@ -80,7 +89,9 @@ export default async function handler(req, res) {
       res.status(500).json({ ok: false, error: 'ADMIN_PIN belum diset di server.' });
       return;
     }
-    if (!pin || pin.trim() !== adminPin) {
+    const given = Buffer.from(String(pin || '').trim());
+    const expected = Buffer.from(adminPin);
+    if (given.length !== expected.length || !crypto.timingSafeEqual(given, expected)) {
       res.status(401).json({ ok: false, error: 'PIN salah' });
       return;
     }
