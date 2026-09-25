@@ -1,7 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { MapCanvas, MindDetail, MindFullscreen, fitZoom, useMindmapUi } from './MindMap.jsx';
 /* Talqeeh — grafik di dalam jawaban AI.
    AI menulis blok ```grafik berisi JSON kecil; komponen ini menggambarnya (tanpa pustaka luar):
    - tree     : pohon taqsim          { root: { label, ar?, note?, children: [...] } }
+   - mindmap  : peta konsep bercabang { root: { label, ar?, note?, children: [...] } } — tampilan sama dengan
+                tab Peta Konsep di materi (bisa layar penuh, kotak diketuk untuk penjelasan)
    - flow     : alur/langkah          { steps: [{ label, ar?, note? }] }
    - timeline : urutan waktu          { items: [{ time, label, ar?, note? }] }
    - bar      : perbandingan angka    { items: [{ label, value }], unit? }
@@ -40,7 +43,7 @@ export const parseChart = (raw) => {
   const title = str(spec.title, 120);
   const type = spec.type;
   const list = (arr) => (Array.isArray(arr) ? arr.slice(0, MAX_ITEMS) : []);
-  if (type === 'tree') {
+  if (type === 'tree' || type === 'mindmap') {
     const root = cleanNode(spec.root);
     return root ? { type, title, root } : null;
   }
@@ -65,7 +68,7 @@ export const chartToMarkdown = (spec) => {
   if (!spec) return '';
   const head = spec.title ? `**${spec.title}**\n` : '';
   const withAr = (x) => `${x.label}${x.ar ? ` (${x.ar})` : ''}${x.note ? ` — ${x.note}` : ''}`;
-  if (spec.type === 'tree') {
+  if (spec.type === 'tree' || spec.type === 'mindmap') {
     const walk = (n, d) => `${'  '.repeat(d)}- ${withAr(n)}\n` + n.children.map(c => walk(c, d + 1)).join('');
     return head + walk(spec.root, 0);
   }
@@ -198,15 +201,50 @@ const Pie = ({ items, unit }) => {
   );
 };
 
+/* ── Mindmap: peta bercabang di dalam jawaban, bisa dibuka layar penuh ── */
+const MindmapChart = ({ spec }) => {
+  const [showNotes, setShowNotes] = useState(false);
+  const { ui, selected, setSelected, select, expandAll, collapseAll } = useMindmapUi(spec.root, showNotes);
+  const [zoom, setZoom] = useState(1);
+  const [full, setFull] = useState(false);
+  const canvasRef = useRef(null);
+  const zoomRef = useRef(null);
+  // Awal: paskan peta ke lebar jawaban, tapi tidak lebih kecil dari 70% supaya tulisannya tetap terbaca.
+  useEffect(() => {
+    const t = setTimeout(() => setZoom(z => Math.max(0.7, fitZoom(canvasRef.current, zoomRef.current, z))), 60);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <>
+      <MapCanvas root={spec.root} ui={ui} zoom={zoom} canvasRef={canvasRef} zoomRef={zoomRef} canvasClass="mm-canvas-chat"/>
+      {selected && !full && <MindDetail root={spec.root} path={selected} onSelect={select} onClose={() => setSelected(null)}/>}
+      <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+        <button type="button" onClick={() => setFull(true)}
+          className="text-xs px-3 py-1.5 rounded-lg border border-emerald-500/35 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20 inline-flex items-center gap-1.5">
+          <Icon name="maximize" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Layar penuh
+        </button>
+        <span className="text-[11px] text-ink-soft">Ketuk kotak untuk penjelasan · +N membuka cabang · geser untuk melihat semua</span>
+      </div>
+      {full && (
+        <MindFullscreen title={spec.title || spec.root.label} root={spec.root} ui={ui} selected={selected} onSelect={select}
+          onClearSelection={() => setSelected(null)} onClose={() => setFull(false)}
+          onExpandAll={expandAll} onCollapseAll={collapseAll} showNotes={showNotes} toggleNotes={() => setShowNotes(v => !v)}/>
+      )}
+    </>
+  );
+};
+
 export default function AiChart({ raw, pending }) {
+  // Di-memo supaya peta tidak kembali ke keadaan awal setiap kali jawaban di-render ulang.
+  const spec = useMemo(() => (pending ? null : parseChart(raw)), [raw, pending]);
   if (pending) {
     return <div className="ai-chart my-3 rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-6 text-center text-xs text-ink-soft animate-pulse">Menyiapkan grafik…</div>;
   }
-  const spec = parseChart(raw);
   if (!spec) return null; // spesifikasi rusak: lewati saja, teks jawaban tetap tampil
   return (
-    <figure className="ai-chart my-4 rounded-2xl border border-white/10 bg-white/[0.02] p-3.5 md:p-4 overflow-x-auto" style={{ lineHeight: 1.5 }}>
+    <figure className={`ai-chart my-4 rounded-2xl border border-white/10 bg-white/[0.02] p-3.5 md:p-4 ${spec.type === 'mindmap' ? '' : 'overflow-x-auto'}`} style={{ lineHeight: 1.5 }}>
       {spec.title && <figcaption className="text-[0.8em] uppercase tracking-wider text-ink-soft mb-3">{spec.title}</figcaption>}
+      {spec.type === 'mindmap' && <MindmapChart spec={spec}/>}
       {spec.type === 'tree' && <TreeNode node={spec.root} depth={0} color={CHART_COLORS[0]} last/>}
       {spec.type === 'flow' && <Flow steps={spec.steps}/>}
       {spec.type === 'timeline' && <Timeline items={spec.items}/>}
