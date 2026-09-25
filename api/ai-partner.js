@@ -22,7 +22,7 @@ const TRIAL_OCR_LIMIT  = 3;
 const TRIAL_KINDS      = ['summary', 'flashcards', 'quiz', 'glossary'];
 const PRO_ONLY_ACTIONS = ['transcribe', 'analyze', 'grade', 'chat'];
 // Tanya AI untuk pengguna coba gratis: satu percakapan, maksimal sekian pesan seumur akun.
-const TRIAL_PROMPT_MESSAGES = 5;
+const TRIAL_PROMPT_MESSAGES = 2;
 
 // Materi panjang (±100 halaman) disimpan utuh; tiap permintaan AI hanya menerima potongan yang muat.
 const MAX_CONTENT       = 200000;

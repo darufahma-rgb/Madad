@@ -410,7 +410,7 @@ const AiPromptPage = () => {
         : status.tier === 'pro'
           ? <PromptChat/>
           : status.tier === 'trial'
-            ? <PromptChat trial={{ left: status.trial?.prompt_left ?? 0, limit: status.trial?.prompt_limit ?? 5 }}/>
+            ? <PromptChat trial={{ left: status.trial?.prompt_left ?? 0, limit: status.trial?.prompt_limit ?? 2 }}/>
           : <div className="container-x pt-10 pb-24 max-w-2xl mx-auto">
               <UpgradeCard
                 title={status.tier === 'none' ? 'Khusus member Talqeeh' : 'Tanya AI khusus pelanggan AI Partner'}
