@@ -2954,7 +2954,10 @@ const AdminBankSoal = () => {
     setReward('');
     setSignedUrl(null);
     setShowEdit(false);
-    setEditForm({ maddah_nama: soal.maddah_nama || '', tahun: soal.tahun || '', fashl: soal.fashl || 'tsani', fakultas: soal.fakultas || '' });
+    setEditForm({
+      maddah_id: soal.maddah_id || '', maddah_nama: soal.maddah_nama || '', tahun: soal.tahun || '',
+      fashl: soal.fashl || 'tsani', fakultas: soal.fakultas || '', tingkat: String(soal.tingkat || ''), soal: soal.soal || '',
+    });
   };
 
   React.useEffect(() => {
@@ -3042,39 +3045,41 @@ const AdminBankSoal = () => {
   const handleSaveEdit = async () => {
     setSavingEdit(true);
     try {
-      const supabaseUrl = window.__SUPABASE_URL__ || '';
-      const anonKey     = window.__SUPABASE_ANON_KEY__ || '';
-      const r = await fetch(
-        `${supabaseUrl}/rest/v1/bank_soal?id=eq.${selected.id}`,
-        {
-          method: 'PATCH',
-          headers: {
-            apikey: anonKey,
-            Authorization: `Bearer ${anonKey}`,
-            'Content-Type': 'application/json',
-            Prefer: 'return=representation',
-          },
-          body: JSON.stringify({
-            maddah_nama: editForm.maddah_nama,
-            tahun:       editForm.tahun,
-            fashl:       editForm.fashl,
-            fakultas:    editForm.fakultas,
-          }),
-        }
-      );
-      if (r.ok) {
+      const payload = {
+        soal_id: selected.id,
+        maddah_id: editForm.maddah_id, maddah_nama: editForm.maddah_nama,
+        fakultas: editForm.fakultas, tingkat: editForm.tingkat,
+        tahun: editForm.tahun, fashl: editForm.fashl,
+      };
+      // Soal pending diedit lewat kolom teks di bawah (ikut terkirim saat Approve).
+      if (selected.status === 'approved' && editForm.soal !== (selected.soal || '')) payload.soal = editForm.soal;
+      const d = await bankSoalApi('update-info', payload);
+      if (d.ok) {
+        setSelected(d.soal);
+        if (payload.soal) setSoalTeks(d.soal.soal || '');
         setSavedEdit(true);
         setTimeout(() => setSavedEdit(false), 2500);
         fetchData(filter);
       } else {
-        alert('Gagal edit: ' + r.status);
+        alert('Gagal edit: ' + (d.error || 'unknown'));
       }
-    } catch (err) {
-      alert('Error: ' + err.message);
     } finally {
       setSavingEdit(false);
     }
   };
+
+  const editMaddahOptions = React.useMemo(() => {
+    const all = typeof MADDAHS !== 'undefined' ? MADDAHS : [];
+    const fak = editForm.fakultas;
+    return (fak ? all.filter(m => (m.fakultas || []).includes(fak)) : all)
+      .slice().sort((x, y) => x.name.localeCompare(y.name));
+  }, [editForm.fakultas]);
+  const editTingkatHint = React.useMemo(() => {
+    const m = editForm.maddah_id && typeof getMaddahById !== 'undefined' ? getMaddahById(editForm.maddah_id) : null;
+    const list = (m?.tingkat || []).filter(t => /^[1-5]$/.test(t));
+    if (!m || !list.length || !editForm.tingkat || list.includes(editForm.tingkat)) return '';
+    return `Di katalog, ${m.name} tercatat di tingkat ${list.join(', ')}.`;
+  }, [editForm.maddah_id, editForm.tingkat]);
 
   const STATUS_BADGE = {
     pending:  'bg-yellow-500/15 text-yellow-300 border-yellow-500/30',
@@ -3238,18 +3243,28 @@ const AdminBankSoal = () => {
                     EDIT INFO SOAL
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
-                    <div>
+                    <div style={{ gridColumn: '1 / -1' }}>
                       <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>MADDAH</label>
-                      <input
-                        value={editForm.maddah_nama || ''}
-                        onChange={e => setEditForm(f => ({ ...f, maddah_nama: e.target.value }))}
+                      <select
+                        value={editForm.maddah_id || ''}
+                        onChange={e => {
+                          const m = (typeof getMaddahById !== 'undefined' && getMaddahById(e.target.value)) || null;
+                          setEditForm(f => ({ ...f, maddah_id: e.target.value, maddah_nama: m ? m.name : f.maddah_nama }));
+                        }}
                         style={{
                           width: '100%', padding: '7px 10px', borderRadius: 7,
                           border: '1px solid rgba(255,255,255,0.1)',
-                          background: 'rgba(255,255,255,0.05)', color: '#fff',
+                          background: '#1a1a1a', color: '#fff',
                           fontSize: 13, boxSizing: 'border-box',
                         }}
-                      />
+                      >
+                        {!editMaddahOptions.some(m => m.id === editForm.maddah_id) && (
+                          <option value={editForm.maddah_id || ''}>{editForm.maddah_nama || '-- Pilih Maddah --'}</option>
+                        )}
+                        {editMaddahOptions.map(m => (
+                          <option key={m.id} value={m.id}>{m.name}{m.nameArabic ? ` — ${m.nameArabic}` : ''}</option>
+                        ))}
+                      </select>
                     </div>
                     <div>
                       <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>TAHUN</label>
@@ -3299,7 +3314,44 @@ const AdminBankSoal = () => {
                         ))}
                       </select>
                     </div>
+                    <div>
+                      <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>TINGKAT</label>
+                      <select
+                        value={editForm.tingkat || ''}
+                        onChange={e => setEditForm(f => ({ ...f, tingkat: e.target.value }))}
+                        style={{
+                          width: '100%', padding: '7px 10px', borderRadius: 7,
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          background: '#1a1a1a', color: '#fff',
+                          fontSize: 13, boxSizing: 'border-box',
+                        }}
+                      >
+                        <option value="">-- Pilih Tingkat --</option>
+                        {['1', '2', '3', '4', '5'].map(t => <option key={t} value={t}>Tingkat {t}</option>)}
+                      </select>
+                      {editTingkatHint && (
+                        <div style={{ fontSize: 10, color: '#e0b85c', marginTop: 4 }}>{editTingkatHint}</div>
+                      )}
+                    </div>
                   </div>
+                  {selected.status === 'approved' && (
+                    <div style={{ marginBottom: 12 }}>
+                      <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                        TEKS SOAL <span style={{ fontWeight: 400 }}>(untuk koreksi salah ketik / OCR)</span>
+                      </label>
+                      <textarea
+                        value={editForm.soal || ''}
+                        onChange={e => setEditForm(f => ({ ...f, soal: e.target.value }))}
+                        rows={8} dir="auto"
+                        style={{
+                          width: '100%', padding: '8px 10px', borderRadius: 7,
+                          border: '1px solid rgba(255,255,255,0.1)',
+                          background: 'rgba(255,255,255,0.05)', color: '#fff',
+                          fontSize: 12, fontFamily: 'monospace', boxSizing: 'border-box', resize: 'vertical',
+                        }}
+                      />
+                    </div>
+                  )}
                   <button
                     onClick={handleSaveEdit}
                     disabled={savingEdit}

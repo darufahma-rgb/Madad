@@ -109,6 +109,47 @@ export default async function handler(req, res) {
       : `Gagal menyimpan (${r.status}).`;
   };
 
+  if (action === 'update-info') {
+    const { soal_id } = body;
+    const soal = soal_id && await getSoal(soal_id);
+    if (!soal) return res.status(404).json({ ok: false, error: 'Soal tidak ditemukan' });
+    const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+    const patch = {};
+    const maddahId = str(body.maddah_id, 120), maddahNama = str(body.maddah_nama, 200);
+    if (maddahId) {
+      if (!/^[a-z0-9-]+$/.test(maddahId) || !maddahNama) return res.status(400).json({ ok: false, error: 'Maddah tidak valid' });
+      patch.maddah_id = maddahId; patch.maddah_nama = maddahNama;
+    }
+    const fakultas = str(body.fakultas, 60);
+    if (fakultas) {
+      if (!/^[a-z0-9-]+$/.test(fakultas)) return res.status(400).json({ ok: false, error: 'Fakultas tidak valid' });
+      patch.fakultas = fakultas;
+    }
+    const tingkat = str(String(body.tingkat ?? ''), 2);
+    if (tingkat) {
+      if (!/^[1-5]$/.test(tingkat)) return res.status(400).json({ ok: false, error: 'Tingkat harus 1–5' });
+      patch.tingkat = tingkat;
+    }
+    const tahun = str(body.tahun, 9);
+    if (tahun) {
+      if (!/^\d{4}\/\d{4}$/.test(tahun)) return res.status(400).json({ ok: false, error: 'Format tahun: 2025/2026' });
+      patch.tahun = tahun;
+    }
+    if (body.fashl) {
+      if (!['awwal', 'tsani'].includes(body.fashl)) return res.status(400).json({ ok: false, error: 'Fashl tidak valid' });
+      patch.fashl = body.fashl;
+    }
+    if (typeof body.soal === 'string') {
+      const t = body.soal.trim();
+      if (!t || t.length > 40000) return res.status(400).json({ ok: false, error: 'Teks soal kosong atau terlalu panjang' });
+      patch.soal = t;
+    }
+    if (!Object.keys(patch).length) return res.status(400).json({ ok: false, error: 'Tidak ada perubahan' });
+    const err = await patchSoal(soal_id, patch);
+    if (err) return res.status(500).json({ ok: false, error: err });
+    return res.status(200).json({ ok: true, soal: { ...soal, ...patch } });
+  }
+
   if (action === 'draft-generate') {
     const { soal_id, index } = body;
     const soal = soal_id && await getSoal(soal_id);
