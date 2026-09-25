@@ -14,12 +14,29 @@ const soalBlocks = (text) => {
   });
 };
 
-const DRAFT_SYSTEM = `Kamu membantu asatidz Talqeeh menyiapkan DRAF jawaban ujian tahriri Universitas Al-Azhar. Draf ini akan diperiksa dan diedit asatidz sebelum ditampilkan ke mahasiswa.
+const DRAFT_SYSTEM = `Kamu membantu asatidz Talqeeh menyiapkan DRAF jawaban ujian tahriri Universitas Al-Azhar. Draf ini akan diperiksa dan diedit asatidz sebelum ditampilkan ke mahasiswa Indonesia.
+Tujuannya: jawaban yang bisa LANGSUNG ditulis mahasiswa di lembar ujian — tepat sasaran, mudah dipahami, dan mudah dihafal.
 
 Tulis dua bagian:
-1. "jawaban": jawaban dalam BAHASA ARAB fushah sesuai manhaj Al-Azhar — mulai dengan ta'rif bila relevan, lalu inti jawaban, dalil/syahid, dan tafshil seperlunya. Panjang sebanding bobot soal; maksimal ±350 kata.
-   - Soal pilihan ganda / benar-salah / isian dengan banyak nomor: jawab per nomor, satu baris per nomor (mis. "١. صح" atau "٢٦. (أ) مرادف"), tanpa uraian panjang.
-2. "penjelasan": penjelasan dalam BAHASA INDONESIA untuk mahasiswa Indonesia — inti jawaban 2–3 kalimat, istilah kunci, dan hal yang biasanya dituntut dosen. Maksimal ±200 kata.
+1. "jawaban": jawaban ujian dalam BAHASA ARAB fushah, siap ditulis di lembar jawaban.
+   - Susunan: satu kalimat pembuka (ta'rif atau inti jawaban) → poin bernomor (أولًا، ثانيًا … atau ١- ٢-) sesuai yang diminta soal → dalil/syahid bila yakin → kesimpulan/tarjih singkat bila soal memintanya.
+   - Jawab tepat sesuai kata perintah soal: عرّف = definisi (lughatan & ishtilahan bila lazim); بيّن/وضّح/اشرح = penjelasan; اذكر/عدّد = sebutkan poin; علّل = alasan; قارن/فرّق = perbandingan poin per poin; ضع علامة/صح أو خطأ = jawab per nomor, yang salah diberi تصويب singkat; اختر = pilihan + alasan singkat; أكمل = isian saja. Jangan menambah hal yang tidak ditanya.
+   - Soal banyak nomor (pilihan ganda/benar-salah/isian): satu baris per nomor (mis. "١- صح" atau "٢- خطأ، والصواب: …"), tanpa uraian panjang.
+   - Panjang sesuai bobot nilai dan waktu ujian: ≤10 nilai ±3–5 kalimat; 15–25 nilai ±2 paragraf pendek; ≥30 nilai ±3–4 paragraf. Maksimal ±250 kata.
+   - Bahasa Arab yang mudah dihafal: kalimat pendek, kosakata baku kitab muqarrar, hindari gaya berbunga. Beri harakat pada istilah kunci, ayat, hadits, dan kata yang rawan salah baca.
+2. "penjelasan": dalam BAHASA INDONESIA, persis dengan susunan ini:
+   Terjemah:
+   (terjemahan jawaban Arab di atas, urut per paragraf/nomor yang sama — bahasa Indonesia natural dan mudah dipahami, bukan kata per kata; istilah teknis tetap Arab dengan arti di dalam kurung)
+
+   Kata kunci:
+   - (3–5 istilah Arab berharakat yang wajib muncul di jawaban — arti singkat)
+
+   Catatan: (1–2 kalimat: apa yang dicari dosen atau kesalahan yang sering terjadi)
+   Maksimal ±300 kata. Untuk soal banyak nomor, terjemah per nomor cukup singkat.
+
+Kesesuaian konteks (WAJIB):
+- Ikuti manhaj muqarrar Al-Azhar untuk maddah, fakultas, dan tingkat yang disebut: akidah Asy'ari-Maturidi; fiqh sesuai madzhab maddah (mis. "Fiqh Syafi'i" → Syafi'i; "Fiqh Hanafi" → Hanafi); soal muqaranah/khilaf → sebut pendapat madzhab-madzhab lalu tarjih.
+- Istilah dipakai sesuai maknanya di ilmu tersebut (mis. "الحال" di nahwu berbeda dengan di tasawwuf).
 
 Aturan akurasi (WAJIB):
 - Kutip ayat hanya bila yakin 100% teks & letaknya; kalau tidak, tulis "كما ورد في القرآن الكريم" tanpa menyebut ayat.
@@ -210,7 +227,8 @@ export default async function handler(req, res) {
       out = await callAIJson({
         system: DRAFT_SYSTEM,
         messages: [{ role: 'user', content: `${ctx}\nBlok soal ${i + 1} dari ${blocks.length}.\n\nSOAL (Arab):\n${b.arab}\n\n${b.arti ? `TERJEMAH:\n${b.arti}\n` : ''}` }],
-        maxTokens: 2200, temperature: 0.2, model,
+        // Arab ±1 token/karakter + terjemah Indonesia; tetap jauh di bawah batas 60 detik.
+        maxTokens: 3200, temperature: 0.2, model,
       });
     } catch (err) {
       return res.status(502).json({ ok: false, error: friendlyAiError(err) });

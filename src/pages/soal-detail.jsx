@@ -1,5 +1,47 @@
 import React, { useState, useEffect } from 'react';
 
+/* Prompt jawaban soal bank soal — satu format untuk Soal Detail, Siap Imtihan, dan Admin.
+   Tujuannya jawaban yang bisa langsung ditulis di lembar ujian: Arab fushah yang mudah dihafal + terjemah Indonesia.
+   Formatnya sejalan dengan DRAFT_SYSTEM di api/admin-bank-soal.js (jawaban resmi yang diperiksa asatidz). */
+const JAWABAN_RULES = `Aturan:
+- Jawab tepat sesuai kata perintah soal: عرّف = definisi; بيّن/وضّح/اشرح = penjelasan; اذكر/عدّد = sebutkan poin; علّل = alasan; قارن/فرّق = perbandingan poin per poin; صح أو خطأ = jawab per nomor, yang salah diberi تصويب singkat; اختر = pilihan + alasan singkat; أكمل = isian saja. Jangan menambah hal yang tidak ditanya.
+- Soal banyak nomor (pilihan ganda/benar-salah/isian): satu baris Arab per nomor + terjemah singkat, tanpa uraian panjang.
+- Panjang sesuai bobot nilai dan waktu ujian: ≤10 nilai ±3–5 kalimat; 15–25 nilai ±2 paragraf pendek; ≥30 nilai ±3–4 paragraf.
+- Bahasa Arab yang mudah dihafal: kalimat pendek, kosakata baku kitab muqarrar, tanpa gaya berbunga. Harakat pada istilah kunci, ayat, hadits, dan kata yang rawan salah baca.
+- Terjemah Indonesia natural dan mudah dipahami (bukan kata per kata); istilah teknis tetap Arab dengan arti di dalam kurung.
+- Ikuti manhaj muqarrar Al-Azhar untuk maddah ini: akidah Asy'ari-Maturidi; fiqh sesuai madzhab maddah (mis. "Fiqh Syafi'i" → Syafi'i); soal muqaranah/khilaf → sebut pendapat madzhab lalu tarjih. Istilah dipakai sesuai maknanya di ilmu tersebut.
+- Jangan mengarang ayat, hadits, nama ulama, kitab, atau angka. Kalau tidak yakin redaksinya, tulis maknanya saja dan tandai (perlu dicek).`;
+
+const buildJawabanPrompt = ({ maddah, fakultas, tingkat, tahun, fashl, nomor, arab, arti } = {}) => {
+  const info = [
+    `Mata kuliah : ${maddah || '[maddah]'}`,
+    fakultas ? `Fakultas    : ${fakultas}` : '',
+    tingkat ? `Tingkat     : ${tingkat}` : '',
+    `Tahun/Fashl : ${tahun || '[tahun]'} · ${fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}`,
+    nomor ? `Nomor soal  : ${nomor}` : '',
+  ].filter(Boolean).join('\n');
+  return `Aku mahasiswa Al-Azhar yang sedang bersiap ujian tahriri. Bantu aku menyiapkan jawaban yang bisa langsung kutulis di lembar ujian.
+
+${info}
+
+Soal (teks Arab):
+${arab || '[teks Arab soal]'}
+${arti ? `\nTerjemahan soal:\n${arti}\n` : ''}
+Tulis dengan format ini:
+
+## ✍️ Jawaban ujian
+Jawaban dalam bahasa Arab fushah, siap ditulis di lembar jawaban. Tiap paragraf/poin Arab di baris sendiri diawali "> ", lalu terjemah Indonesianya di baris berikutnya diawali "↳ ".
+Susunan: satu kalimat pembuka (ta'rif atau inti jawaban) → poin bernomor (أولًا، ثانيًا …) sesuai yang diminta soal → dalil bila yakin → kesimpulan/tarjih singkat bila diminta.
+
+## 🔑 Kata kunci wajib
+3–5 istilah Arab berharakat yang harus muncul di jawaban — arti singkat.
+
+## ⚠️ Catatan
+1–2 poin: apa yang dicari dosen atau kesalahan yang sering terjadi.
+
+${JAWABAN_RULES}`;
+};
+
 const CopyPromptButton = ({ label, onCopy, EM, variant = 'outline' }) => {
   const [copied, setCopied] = React.useState(false);
   const handleClick = () => {
@@ -64,7 +106,7 @@ const SoalDetailPage = () => {
         const anonKey     = cfg.supabaseAnonKey || '';
         if (!supabaseUrl || !anonKey) { setNotFound(true); setLoading(false); return; }
         const r = await fetch(
-          `${supabaseUrl}/rest/v1/bank_soal?id=eq.${encodeURIComponent(soalId)}&status=eq.approved&select=id,fakultas,maddah_nama,tahun,fashl,soal,arti_soal,jawaban,penjelasan`,
+          `${supabaseUrl}/rest/v1/bank_soal?id=eq.${encodeURIComponent(soalId)}&status=eq.approved&select=id,fakultas,maddah_nama,tingkat,tahun,fashl,soal,arti_soal,jawaban,penjelasan`,
           { headers: { apikey: anonKey, Authorization: `Bearer ${anonKey}` } }
         );
         const data = await r.json();
@@ -83,31 +125,10 @@ const SoalDetailPage = () => {
 
   if (!session) { navigate('/'); return null; }
 
-  const buildPromptJawaban = (nomorSoal, arabSoal, artiSoal) => {
-    if (!soal) return '';
-    const maddah   = soal.maddah_nama || '[maddah]';
-    const tahun    = soal.tahun       || '[tahun]';
-    const fashlStr = soal.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani';
-    return `Aku mahasiswa Al-Azhar sedang mempersiapkan jawaban untuk soal ujian berikut.
-
-Mata kuliah : ${maddah}
-Tahun / Fashl: ${tahun} · ${fashlStr}
-Nomor soal  : ${nomorSoal}
-
-Soal (teks Arab):
-${arabSoal || '[teks Arab soal]'}
-
-${artiSoal ? `Terjemahan soal:\n${artiSoal}\n` : ''}
-Tolong bantu aku menyusun jawaban ideal untuk soal ini dengan format berikut:
-
-1. **Ta'rif** – definisi istilah kunci (Arab + terjemah, lengkap harakat)
-2. **Jawaban inti** – sesuai gaya imtihan Al-Azhar: padat, terstruktur, ada dalil jika relevan
-3. **Dalil / Syahid** – teks Arab (harakat) + terjemah + sumber
-4. **Poin penguat** – 2-3 hal yang biasanya dituntut dosen untuk soal seperti ini
-5. **Yang sering keliru** – kesalahan umum mahasiswa dalam menjawab soal ini
-
-Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.`;
-  };
+  const buildPromptJawaban = (nomorSoal, arabSoal, artiSoal) => (soal ? buildJawabanPrompt({
+    maddah: soal.maddah_nama, fakultas: soal.fakultas, tingkat: soal.tingkat, tahun: soal.tahun, fashl: soal.fashl,
+    nomor: nomorSoal, arab: arabSoal, arti: artiSoal,
+  }) : '');
 
   const soalBlocks = React.useMemo(() => {
     if (!soal?.soal) return [];
@@ -479,7 +500,7 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
                       fontSize: 10, color: '#555', fontWeight: 700,
                       marginBottom: 8, letterSpacing: 0.6,
                     }}>
-                      PENJELASAN
+                      TERJEMAH & KATA KUNCI
                     </div>
                     {penj}
                   </div>
@@ -493,4 +514,4 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
   );
 };
 
-window.SoalDetailPage = SoalDetailPage;
+Object.assign(window, { SoalDetailPage, buildJawabanPrompt, JAWABAN_RULES });

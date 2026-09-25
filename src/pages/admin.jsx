@@ -2866,7 +2866,7 @@ const BankSoalDraftPanel = ({ soal, onChanged }) => {
             <textarea dir="rtl" rows={4} value={jawaban[i]} onChange={e => setJawaban(a => a.map((t, k) => (k === i ? e.target.value : t)))}
               placeholder="الجواب…" className={area} style={{ ...areaStyle, fontFamily: '"Noto Naskh Arabic", serif', fontSize: 15 }}/>
             <textarea rows={3} value={penjelasan[i]} onChange={e => setPenjelasan(a => a.map((t, k) => (k === i ? e.target.value : t)))}
-              placeholder="Penjelasan (Bahasa Indonesia)…" className={`${area} mt-2`} style={areaStyle}/>
+              placeholder="Terjemah + kata kunci + catatan (Bahasa Indonesia)…" className={`${area} mt-2`} style={areaStyle}/>
           </div>
         ))}
       </div>
@@ -3792,25 +3792,20 @@ Terjemahkan soal di atas ke dalam bahasa Indonesia yang jelas dan natural. Perta
 ═══════════════════════════════
 2. JAWABAN (Bahasa Arab)
 ═══════════════════════════════
-Jawab soal dalam bahasa Arab sesuai manhaj Al-Azhar. Ikuti aturan ini KETAT:
-
-- Gunakan gaya jawaban tahriri Azhari: mulai dengan definisi (ta'rif), lalu dalil/syahid, lalu tafshil jika diperlukan.
-- Kutip ayat Al-Quran HANYA kalau kamu yakin 100% teks dan nomornya benar — kalau tidak yakin, tulis "كما ورد في القرآن الكريم" tanpa menyebut ayat spesifik.
-- Kutip hadits HANYA kalau kamu yakin 100% matan dan perawinya — kalau tidak yakin, tulis "كما ثبت في السنة النبوية" tanpa menyebut matan spesifik.
-- Sebut pendapat ulama HANYA yang kamu yakin benar — kalau tidak yakin, jangan sebut nama ulama atau kitab spesifik.
-- Kalau soal meminta perbandingan (muqaranah), sebutkan pendapat minimal 2 mazhab dengan perbedaannya yang jelas.
-- Kalau ada bagian yang tidak yakin, tandai dengan: [PERLU DIVERIFIKASI: ...]
-- JANGAN mengarang dalil, nama ulama, atau referensi kitab yang tidak diyakini.
-- Panjang jawaban proporsional dengan bobot soal.
+Jawaban ujian dalam bahasa Arab fushah yang bisa LANGSUNG ditulis mahasiswa di lembar jawaban: satu kalimat pembuka (ta'rif atau inti jawaban) → poin bernomor (أولًا، ثانيًا …) sesuai yang diminta soal → dalil bila yakin → kesimpulan/tarjih singkat bila diminta. Tandai bagian yang tidak yakin dengan [PERLU DIVERIFIKASI: ...].
 
 ═══════════════════════════════
 3. PENJELASAN (Bahasa Indonesia)
 ═══════════════════════════════
-Jelaskan jawaban di atas dalam bahasa Indonesia yang mudah dipahami mahasiswa Indonesia. Sertakan:
-- Inti/poin utama jawaban dalam 2-3 kalimat pembuka
-- Penjelasan istilah teknis yang dipakai
-- Kenapa jawaban ini relevan dengan konteks maddah
-- Kalau ada [PERLU DIVERIFIKASI], jelaskan bahwa bagian itu perlu dicek ulang
+Terjemah:
+(terjemahan jawaban Arab di atas, urut per paragraf/nomor yang sama — natural dan mudah dipahami)
+
+Kata kunci:
+- (3–5 istilah Arab berharakat yang wajib muncul — arti singkat)
+
+Catatan: (1–2 kalimat: apa yang dicari dosen atau kesalahan yang sering terjadi)
+
+${window.JAWABAN_RULES || ''}
 
 Format output: gunakan persis 3 section dengan header yang sama seperti di atas.`;
 
