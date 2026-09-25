@@ -444,9 +444,13 @@ html.app-shell { --app-header-h: calc(57px + var(--safe-top)); }
 .ai-rich-md { font-size: 15.5px; }
 .ai-rich-lg { font-size: 17.5px; line-height: 1.85; }
 @media (max-width: 640px) {
+  /* HP: teks sedikit lebih kecil & rapat supaya satu layar memuat lebih banyak jawaban */
+  .ai-rich { line-height: 1.65; }
   .ai-rich-sm { font-size: 14px; }
-  .ai-rich-md { font-size: 15px; }
-  .ai-rich-lg { font-size: 16.5px; }
+  .ai-rich-md { font-size: 14.5px; }
+  .ai-rich-lg { font-size: 16px; line-height: 1.75; }
+  .ai-rich p { margin: 0.55em 0; }
+  .ai-rich blockquote { padding: 0.6em 0.8em; margin: 0.75em 0; }
 }
 .ai-rich > :first-child { margin-top: 0 !important; }
 .ai-rich > :last-child { margin-bottom: 0 !important; }

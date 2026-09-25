@@ -74,12 +74,19 @@ const PromptChat = ({ trial = null }) => {
   const isTrial = trial != null;
   const inputRef  = useRef(null);
 
-  // Kotak ketik tumbuh mengikuti isi, maksimal ±12 baris.
+  // Kotak ketik tumbuh mengikuti isi, maksimal ±12 baris. Diukur ulang setelah tata letak selesai dan saat
+  // lebar layar berubah — ukuran pertama bisa keliru selagi lebar kotak belum final.
   useEffect(() => {
-    const el = inputRef.current;
-    if (!el) return;
-    el.style.height = 'auto';
-    el.style.height = Math.min(el.scrollHeight, 300) + 'px';
+    const fit = () => {
+      const el = inputRef.current;
+      if (!el) return;
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 300) + 'px';
+    };
+    fit();
+    const raf = requestAnimationFrame(fit);
+    window.addEventListener('resize', fit);
+    return () => { cancelAnimationFrame(raf); window.removeEventListener('resize', fit); };
   }, [input]);
 
   // Prompt kiriman dari halaman lain → percakapan baru, isi kotak input supaya bisa diedit dulu.
@@ -288,13 +295,13 @@ const PromptChat = ({ trial = null }) => {
 
           {messages.map((m, i) => m.role === 'user' ? (
             <div key={i} className="flex justify-end">
-              <div className="max-w-[85%] rounded-2xl px-4 py-2.5 text-[15px] text-ink bg-white/[0.07] border border-white/[0.06] min-w-0">
+              <div className="max-w-[88%] sm:max-w-[85%] rounded-2xl px-3.5 py-2 sm:px-4 sm:py-2.5 text-[14.5px] sm:text-[15px] text-ink bg-white/[0.07] border border-white/[0.06] min-w-0">
                 <UserMessage text={m.content}/>
               </div>
             </div>
           ) : (
             <div key={i} className="flex gap-3">
-              <LogoMark size={28} className="flex-shrink-0 mt-0.5"/>
+              <LogoMark size={28} className="hidden sm:block flex-shrink-0 mt-0.5"/>
               <div className="min-w-0 flex-1">
                 <AiRichText content={m.content} size="md"/>
                 <div className="mt-2 flex gap-1 text-xs text-ink-soft">
@@ -311,7 +318,7 @@ const PromptChat = ({ trial = null }) => {
 
           {sending && (
             <div className="flex gap-3">
-              <LogoMark size={28} className={`flex-shrink-0 mt-0.5 ${live.trim() ? '' : 'animate-pulse'}`}/>
+              <LogoMark size={28} className={`flex-shrink-0 mt-0.5 ${live.trim() ? 'hidden sm:block' : 'animate-pulse'}`}/>
               <div className="min-w-0 flex-1">
                 {live.trim()
                   ? <><AiRichText content={live} size="md"/><span className="inline-block w-2 h-4 bg-emerald-400/80 align-middle animate-pulse mt-1"/></>
@@ -323,7 +330,7 @@ const PromptChat = ({ trial = null }) => {
       </div>
 
       {/* Kotak ketik menempel di bawah */}
-      <div className="sticky z-20 pt-3 pb-3 md:pb-5" style={{ bottom: 'var(--tabbar-height, 0px)', background: 'linear-gradient(to top, rgb(12,12,12) 70%, rgba(12,12,12,0))' }}>
+      <div className="sticky z-20 pt-2 pb-2 sm:pt-3 sm:pb-3 md:pb-5" style={{ bottom: 'var(--tabbar-height, 0px)', background: 'linear-gradient(to top, rgb(12,12,12) 70%, rgba(12,12,12,0))' }}>
         <div className="container-x w-full">
           <div className="max-w-3xl mx-auto relative">
             {showJump && (messages.length > 0 || sending) && (
@@ -348,7 +355,7 @@ const PromptChat = ({ trial = null }) => {
             {hasPlaceholder && !sending && (
               <div className="text-xs text-amber-400/90 mb-2 px-1">💡 Masih ada bagian [dalam kurung siku] — isi dulu supaya jawabannya pas.</div>
             )}
-            <div className="rounded-2xl border border-white/12 bg-[#1a1a1a] shadow-2xl shadow-black/40 focus-within:border-emerald-500/40 transition-colors">
+            <div className="flex items-end sm:block rounded-2xl border border-white/12 bg-[#1a1a1a] shadow-2xl shadow-black/40 focus-within:border-emerald-500/40 transition-colors">
               <textarea ref={inputRef} value={input} onChange={e => setInput(e.target.value)} maxLength={MAX_INPUT} rows={1} dir="auto"
                 onKeyDown={e => {
                   if (e.key !== 'Enter' || e.shiftKey || e.nativeEvent.isComposing) return;
@@ -356,9 +363,9 @@ const PromptChat = ({ trial = null }) => {
                   if (input.length < 200 || e.metaKey || e.ctrlKey) { e.preventDefault(); send(); }
                 }}
                 placeholder={messages.length ? 'Balas…' : 'Tulis pertanyaan atau tempel prompt…'}
-                className="w-full bg-transparent resize-none outline-none focus-visible:outline-none px-4 pt-3.5 text-ink placeholder-ink-soft leading-relaxed"
-                style={{ fontSize: 16, minHeight: 52 }}/>
-              <div className="flex items-center justify-between gap-2 px-2.5 pb-2.5">
+                className="flex-1 min-w-0 w-full bg-transparent resize-none outline-none focus-visible:outline-none pl-4 pr-2 py-2.5 sm:px-4 sm:pt-3.5 sm:pb-0 text-ink placeholder-ink-soft leading-normal sm:leading-relaxed min-h-[44px] sm:min-h-[52px]"
+                style={{ fontSize: 16 }}/>
+              <div className="flex items-center justify-between gap-2 pr-1.5 pb-1.5 sm:px-2.5 sm:pb-2.5 flex-shrink-0">
                 <span className="text-[11px] text-ink-soft px-1.5 hidden sm:inline">
                   {input.length >= 200 ? 'Ctrl + Enter untuk kirim' : 'Enter kirim · Shift + Enter baris baru'}
                 </span>
@@ -370,7 +377,7 @@ const PromptChat = ({ trial = null }) => {
               </div>
             </div>
             </>}
-            <p className="text-[11px] text-ink-soft text-center mt-2">AI bisa keliru. Cek kembali ke kitab muqarrar atau duktur.</p>
+            <p className="text-[10.5px] sm:text-[11px] text-ink-soft text-center mt-1.5 sm:mt-2">AI bisa keliru. Cek kembali ke kitab muqarrar atau duktur.</p>
           </div>
         </div>
       </div>
