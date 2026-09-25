@@ -61,23 +61,7 @@ const isFreeLocked = (path) => FREE_LOCKED_PATHS.some(p => path === p || path.st
 
 const gabungPath = (plan) => `/gabung${plan ? `?plan=${plan}` : ""}`;
 
-// Halaman ini dibuka Mayar di dalam jendela checkout (iframe) setelah bayar → kabari jendela induk saja.
-const EMBEDDED_CHECKOUT_RETURN = window.top !== window.self && new URLSearchParams(window.location.search).has("checkout");
-if (EMBEDDED_CHECKOUT_RETURN) {
-  try { window.parent.postMessage({ type: "talqeeh:checkout-return" }, window.location.origin); } catch {}
-}
-const EmbeddedCheckoutReturn = () => (
-  <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#0c0c0c", color: "#e5e5e5", fontFamily: "DM Sans, sans-serif", fontSize: 14, padding: 24, textAlign: "center" }}>
-    Pembayaran selesai — memeriksa status…
-  </div>
-);
-
 const App = () => {
-  if (EMBEDDED_CHECKOUT_RETURN) return <EmbeddedCheckoutReturn/>;
-  return <AppMain/>;
-};
-
-const AppMain = () => {
   const path = useRoute();
   const { session, profile, authStatus, authInfo, isFree, startFreeAccount } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);

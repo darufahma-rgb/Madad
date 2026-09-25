@@ -763,16 +763,6 @@ const CHECKOUT_ERRORS = {
   error:             "Gagal membuat tagihan. Coba lagi sebentar, atau hubungi admin.",
 };
 
-// Halaman bayar Mayar gagal tampil di dalam iframe bila browser memblokir penyimpanan pihak ketiga — selalu
-// begitu di Safari/iPhone/iPad. Di sana pembeli dipindah ke halaman Mayar di tab yang sama; Mayar mengarahkan
-// kembali ke /?checkout=… dan pemantau tagihan melanjutkan.
-const canEmbedCheckout = () => {
-  const ua = navigator.userAgent || "";
-  const ios = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
-  const safari = /Safari/.test(ua) && !/Chrome|Chromium|CriOS|FxiOS|EdgiOS|Edg\/|Android/.test(ua);
-  return !ios && !safari;
-};
-
 // status: idle | creating | waiting | timeout | paid | expired | error
 // plans: paket yang boleh dilanjutkan dari tagihan tersimpan; enabled=false → tidak memantau.
 const useCheckout = ({ plans, enabled = true, onPaid } = {}) => {
@@ -785,21 +775,10 @@ const useCheckout = ({ plans, enabled = true, onPaid } = {}) => {
     return p ? { status: "waiting", checkout: p } : { status: "idle", checkout: null };
   });
   const [run, setRun] = useState(0);
-  // Jendela checkout di dalam Talqeeh (halaman bayar Mayar di iframe) sedang terbuka?
+  // Layar checkout Talqeeh sebelum pindah ke halaman bayar Mayar sedang tampil?
   const [payOpen, setPayOpen] = useState(false);
   const onPaidRef = useRef(onPaid);
   onPaidRef.current = onPaid;
-  const checkNowRef = useRef(null);
-
-  // Setelah bayar, Mayar mengarahkan iframe ke /?checkout=… — halaman itu mengabari jendela ini.
-  useEffect(() => {
-    const onMessage = (e) => {
-      if (e.origin !== window.location.origin || e.data?.type !== "talqeeh:checkout-return") return;
-      checkNowRef.current?.();
-    };
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, []);
 
   useEffect(() => {
     if (!enabled || state.status !== "idle") return;
@@ -834,7 +813,6 @@ const useCheckout = ({ plans, enabled = true, onPaid } = {}) => {
         setState({ status: "expired", checkout: null });
       }
     };
-    checkNowRef.current = check;
     check();
     const timer = setInterval(check, 5000);
     // Kembali dari tab Mayar → langsung cek, tidak menunggu 5 detik.
@@ -843,7 +821,8 @@ const useCheckout = ({ plans, enabled = true, onPaid } = {}) => {
     return () => { stopped = true; clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
   }, [enabled, state.status, state.checkout?.id, run]);
 
-  // Buat tagihan lalu buka jendela checkout di dalam Talqeeh (tanpa pindah ke halaman Mayar).
+  // Buat tagihan, tampilkan layar checkout Talqeeh, lalu pindah ke halaman bayar Mayar (Mayar mengarahkan
+  // kembali ke /?checkout=… setelah bayar). Halaman Mayar tidak bisa dipakai di dalam iframe situs lain.
   const start = async (plan) => {
     setState({ status: "creating", checkout: null });
     const r = await createCheckout(plan);
@@ -853,17 +832,14 @@ const useCheckout = ({ plans, enabled = true, onPaid } = {}) => {
     }
     const checkout = { ...r.checkout, at: Date.now() };
     savePendingCheckout(checkout);
-    if (!canEmbedCheckout()) { window.location.href = checkout.link; return; }
     setState({ status: "waiting", checkout });
     setPayOpen(true);
   };
 
-  // Cadangan kalau metode bayar tertentu tidak jalan di dalam jendela (mis. aplikasi e-wallet).
-  const openInTab = () => { if (state.checkout?.link) window.open(state.checkout.link, "_blank", "noopener,noreferrer"); };
   const reopen = () => { if (state.checkout?.link) setPayOpen(true); };
   const retry = () => { setState(s => ({ ...s, status: "waiting" })); setRun(n => n + 1); };
   const cancel = () => { savePendingCheckout(null); setPayOpen(false); setState({ status: "idle", checkout: null }); };
-  return { ...state, start, reopen, retry, cancel, openInTab, payOpen, closePay: () => setPayOpen(false) };
+  return { ...state, start, reopen, retry, cancel, payOpen, closePay: () => setPayOpen(false) };
 };
 
 // Panel "menunggu pembayaran" yang dipakai halaman Gabung dan modal AI Partner.
@@ -947,10 +923,12 @@ const CheckoutWatcher = ({ paused }) => {
   );
 };
 
-/* ---------------- Checkout di dalam Talqeeh ----------------
-   Halaman bayar Mayar (tagihan milik pembeli) ditampilkan di iframe, dengan ringkasan pesanan Talqeeh di
-   sampingnya. Mayar mendukung checkout tertanam (script mayarEmbed resmi). Status lunas tetap dipantau
-   useCheckout, jadi jendela ini cukup menampilkan dan menutup diri. */
+/* ---------------- Layar checkout Talqeeh ----------------
+   Ringkasan pesanan bermerek Talqeeh sesaat sebelum pindah ke halaman bayar Mayar (tab yang sama).
+   Halaman Mayar menolak dijalankan di dalam iframe situs lain, jadi pembayaran tetap di halaman Mayar;
+   setelah bayar Mayar mengarahkan kembali ke /?checkout=… dan status dicek otomatis. */
+const REDIRECT_DELAY_MS = 1600;
+
 const checkoutLines = (c) => {
   const amount = c?.amount || 0;
   if (c?.plan === "library") return [["Library", "akses selamanya", amount]];
@@ -958,126 +936,63 @@ const checkoutLines = (c) => {
   return [["Library", "akses selamanya", LIBRARY_PRICE_IDR], ["AI Study Partner", "30 hari penuh", Math.max(0, amount - LIBRARY_PRICE_IDR)]];
 };
 
-const CheckoutPayModal = (props) => (props.checkout.payOpen && props.checkout.checkout?.link ? <CheckoutPayWindow {...props}/> : null);
+const CheckoutPayModal = (props) => (props.checkout.payOpen && props.checkout.checkout?.link ? <CheckoutRedirect {...props}/> : null);
 
-const CheckoutPayWindow = ({ checkout, email }) => {
-  const [loaded, setLoaded] = useState(false);
-  // Isi iframe lintas domain tidak bisa diperiksa, jadi setelah beberapa detik tawarkan jalan cadangan.
-  const [hint, setHint] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setHint(true), 7000); return () => clearTimeout(t); }, []);
+const CheckoutRedirect = ({ checkout, email }) => {
   const c = checkout.checkout;
-  const paid = checkout.status === "paid";
   const lines = checkoutLines(c);
+  const [leaving, setLeaving] = useState(false);
+  const go = () => { setLeaving(true); window.location.href = c.link; };
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = ""; };
+    const t = setTimeout(go, REDIRECT_DELAY_MS);
+    return () => { clearTimeout(t); document.body.style.overflow = ""; };
   }, []);
 
-  const close = () => {
-    if (!paid && !confirm("Tutup halaman pembayaran?\n\nKalau kamu sudah bayar, akses tetap aktif otomatis. Tagihan ini bisa dilanjutkan dari tombol \"Lanjutkan pembayaran\".")) return;
-    checkout.closePay();
-  };
-
-  const status = paid ? (
-    <div className="flex items-center gap-2 text-sm text-emerald-300"><Icon name="check" className="w-4 h-4"/> Pembayaran diterima — mengaktifkan akses…</div>
-  ) : (
-    <div className="flex items-center gap-2 text-sm text-ink-muted">
-      <span className="w-3.5 h-3.5 flex-shrink-0 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin"/>
-      Menunggu pembayaran · lanjut otomatis setelah lunas
-    </div>
-  );
-
   return createPortal(
-    <div className="fixed inset-0 z-[160] flex items-stretch md:items-center justify-center md:p-6 modal-back"
-      style={{ background: "rgba(5,5,5,0.82)", backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)" }}>
-      <div className="modal-pop w-full md:max-w-5xl h-full md:h-[min(780px,92vh)] flex flex-col md:flex-row overflow-hidden md:rounded-3xl md:border md:border-white/10 shadow-2xl shadow-black/60"
-        style={{ background: "linear-gradient(180deg,#151515,#0f0f0f)" }}>
-
-        {/* Ringkasan pesanan (desktop) */}
-        <aside className="hidden md:flex md:w-[330px] flex-shrink-0 flex-col p-7 border-r border-white/[0.07]">
-          <div className="flex items-center gap-2.5 mb-8">
-            <img src="/assets/talqeeh-logo.png" alt="" className="w-8 h-8 object-contain"/>
-            <div>
-              <div className="font-display text-base font-semibold text-ink leading-tight">Talqeeh</div>
-              <div className="text-[11px] text-ink-soft">Checkout aman</div>
-            </div>
+    <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 modal-back"
+      style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}>
+      <div className="modal-pop w-full max-w-md rounded-3xl border border-white/10 shadow-2xl shadow-black/60 p-6 md:p-8"
+        style={{ background: "linear-gradient(180deg,#171717,#101010)" }}>
+        <div className="flex items-center gap-2.5 mb-6">
+          <img src="/assets/talqeeh-logo.png" alt="" className="w-8 h-8 object-contain"/>
+          <div>
+            <div className="font-display text-base font-semibold text-ink leading-tight">Talqeeh</div>
+            <div className="text-[11px] text-ink-soft">Checkout aman</div>
           </div>
-          <div className="text-[11px] uppercase tracking-[0.18em] text-gold-400 mb-2">Pesananmu</div>
-          <div className="font-display text-xl font-semibold text-ink mb-4">{PLAN_LABELS[c.plan] || "Paket Talqeeh"}</div>
-          <div className="space-y-2.5 text-sm">
-            {lines.map(([name, note, value]) => (
-              <div key={name} className="flex items-start justify-between gap-3">
-                <span className="text-ink-muted"><span className="text-ink">{name}</span><br/><span className="text-[11px]">{note}</span></span>
-                <span className="text-ink tabular-nums">{formatRupiah(value)}</span>
-              </div>
-            ))}
-            <div className="flex items-center justify-between gap-3 pt-3 border-t border-white/10">
-              <span className="text-ink font-semibold">Total</span>
-              <span className="font-display text-2xl font-semibold text-emerald-300 tabular-nums">{formatRupiah(c.amount)}</span>
-            </div>
-          </div>
-          {email && <div className="text-[11px] text-ink-soft mt-4">Untuk akun <span className="text-ink-muted">{email}</span></div>}
-
-          <div className="mt-auto space-y-4">
-            {status}
-            <div className="rounded-xl bg-white/[0.03] border border-white/[0.07] p-3.5 text-[11.5px] text-ink-soft leading-relaxed">
-              <div className="flex items-center gap-1.5 text-ink-muted mb-1"><Icon name="shield" className="w-3.5 h-3.5"/> Pembayaran diproses Mayar</div>
-              QRIS, virtual account, atau e-wallet. Talqeeh tidak menyimpan data rekening atau kartumu.
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <button onClick={checkout.openInTab} className="text-ink-soft hover:text-ink underline underline-offset-2">Buka di tab baru</button>
-              <button onClick={close} className="text-ink-soft hover:text-ink">Tutup</button>
-            </div>
-          </div>
-        </aside>
-
-        {/* Header ringkas (HP) */}
-        <div className="md:hidden flex items-center gap-3 px-4 py-3 border-b border-white/[0.07]" style={{ paddingTop: "max(12px, var(--safe-top, 0px))" }}>
-          <img src="/assets/talqeeh-logo.png" alt="" className="w-7 h-7 object-contain"/>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold text-ink truncate">{PLAN_LABELS[c.plan] || "Paket Talqeeh"}</div>
-            <div className="text-[11px] text-ink-soft">Total <span className="text-emerald-300 font-semibold">{formatRupiah(c.amount)}</span> · checkout aman</div>
-          </div>
-          <button onClick={close} aria-label="Tutup pembayaran" className="w-9 h-9 rounded-lg flex items-center justify-center text-ink border border-white/10">
-            <Icon name="x" className="w-4 h-4"/>
-          </button>
         </div>
-
-        {/* Form bayar Mayar */}
-        <div className="relative flex-1 min-h-0 bg-white">
-          {!loaded && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-sm text-neutral-500">
-              <span className="w-8 h-8 border-2 border-neutral-300 border-t-neutral-600 rounded-full animate-spin"/>
-              Menyiapkan halaman pembayaran…
+        <div className="text-[11px] uppercase tracking-[0.18em] text-gold-400 mb-1.5">Pesananmu</div>
+        <div className="font-display text-xl font-semibold text-ink mb-4">{PLAN_LABELS[c.plan] || "Paket Talqeeh"}</div>
+        <div className="space-y-2.5 text-sm rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
+          {lines.map(([name, note, value]) => (
+            <div key={name} className="flex items-start justify-between gap-3">
+              <span className="text-ink-muted"><span className="text-ink">{name}</span> · <span className="text-[12px]">{note}</span></span>
+              <span className="text-ink tabular-nums flex-shrink-0">{formatRupiah(value)}</span>
             </div>
-          )}
-          <iframe src={c.link} title="Pembayaran Mayar" onLoad={() => setLoaded(true)}
-            allow="payment; clipboard-write" referrerPolicy="strict-origin-when-cross-origin"
-            className="absolute inset-0 w-full h-full border-0"/>
-          {hint && !paid && (
-            <div className="absolute left-1/2 -translate-x-1/2 bottom-3 w-[calc(100%-24px)] max-w-md flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-[12.5px] shadow-lg"
-              style={{ background: "#111", color: "#e5e5e5", border: "1px solid rgba(255,255,255,0.12)" }}>
-              <span className="flex-1">Form pembayaran belum muncul?</span>
-              <button onClick={checkout.openInTab} className="font-semibold text-emerald-300 hover:text-emerald-200 flex-shrink-0">Buka halaman pembayaran ↗</button>
-              <button onClick={() => setHint(false)} aria-label="Tutup" className="text-neutral-400 hover:text-white flex-shrink-0"><Icon name="x" className="w-3.5 h-3.5"/></button>
-            </div>
-          )}
-          {paid && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center p-6" style={{ background: "rgba(12,12,12,0.94)" }}>
-              <div className="w-16 h-16 rounded-full flex items-center justify-center text-emerald-200" style={{ background: "rgba(62,207,142,0.18)", border: "1px solid rgba(62,207,142,0.35)" }}>
-                <Icon name="check" className="w-8 h-8" strokeWidth={2.4}/>
-              </div>
-              <div className="font-display text-2xl font-semibold text-ink">Pembayaran berhasil</div>
-              <div className="text-sm text-ink-muted">Mengaktifkan aksesmu…</div>
-            </div>
-          )}
+          ))}
+          <div className="flex items-center justify-between gap-3 pt-3 border-t border-white/10">
+            <span className="text-ink font-semibold">Total</span>
+            <span className="font-display text-2xl font-semibold text-emerald-300 tabular-nums">{formatRupiah(c.amount)}</span>
+          </div>
         </div>
+        {email && <div className="text-[11px] text-ink-soft mt-3">Untuk akun <span className="text-ink-muted">{email}</span></div>}
 
-        {/* Status (HP) */}
-        <div className="md:hidden flex items-center justify-between gap-3 px-4 py-2.5 border-t border-white/[0.07]" style={{ paddingBottom: "max(10px, var(--safe-bottom, 0px))" }}>
-          {status}
-          <button onClick={checkout.openInTab} className="text-[11px] text-ink-soft underline underline-offset-2 flex-shrink-0">Tab baru</button>
+        <div className="flex items-center gap-2.5 mt-6 text-sm text-ink">
+          <span className="w-4 h-4 flex-shrink-0 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin"/>
+          Mengalihkan ke halaman pembayaran aman…
+        </div>
+        <p className="text-[12px] text-ink-soft leading-relaxed mt-2">
+          Bayar lewat QRIS, virtual account, atau e-wallet di halaman Mayar. Setelah lunas, kamu otomatis kembali ke Talqeeh
+          dan aksesnya langsung aktif.
+        </p>
+
+        <button onClick={go} disabled={leaving} className="btn btn-gold w-full py-3 text-sm font-semibold mt-5">
+          {leaving ? "Membuka halaman pembayaran…" : "Lanjut ke pembayaran"}
+        </button>
+        <div className="flex items-center justify-between mt-3 text-[11px] text-ink-soft">
+          <span className="inline-flex items-center gap-1.5"><Icon name="shield" className="w-3.5 h-3.5"/> Diproses aman oleh Mayar</span>
+          {!leaving && <button onClick={checkout.closePay} className="hover:text-ink">Batal</button>}
         </div>
       </div>
     </div>,
