@@ -18,10 +18,12 @@ const writeThreads = (threads) => {
 };
 
 // Dipanggil dari halaman prompt: simpan prompt, lalu buka halaman ini.
-const runPromptInTalqeeh = (text, { title = '', source = '' } = {}) => {
-  try { sessionStorage.setItem(PENDING_KEY, JSON.stringify({ text, title, source })); } catch {}
+// autoSend: langsung dikirim (dari kotak tanya di beranda AI Partner); threadId: buka percakapan lama.
+const runPromptInTalqeeh = (text, { title = '', source = '', autoSend = false, threadId = '' } = {}) => {
+  try { sessionStorage.setItem(PENDING_KEY, JSON.stringify({ text, title, source, autoSend, threadId })); } catch {}
   navigate('/ai-partner/prompt');
 };
+const openPromptThread = (threadId) => runPromptInTalqeeh('', { threadId });
 
 const takePending = () => {
   try {
@@ -68,7 +70,12 @@ const PromptChat = () => {
   // Prompt kiriman dari halaman lain → percakapan baru, isi kotak input supaya bisa diedit dulu.
   useEffect(() => {
     const pending = takePending();
-    if (pending?.text) {
+    if (pending?.threadId) {
+      const found = readThreads().find(t => t.id === pending.threadId);
+      if (found) setThread(found);
+    } else if (pending?.text && pending.autoSend) {
+      send(pending.text.slice(0, MAX_INPUT), newThread({ ...pending, title: pending.title || pending.text.slice(0, 60) }));
+    } else if (pending?.text) {
       setThread(newThread(pending));
       setInput(pending.text.slice(0, MAX_INPUT));
       setTimeout(() => inputRef.current?.focus(), 50);
@@ -85,10 +92,10 @@ const PromptChat = () => {
     setThreads(next.slice(0, MAX_THREADS));
   };
 
-  const send = async () => {
-    const message = input.trim();
+  const send = async (text, startThread) => {
+    const message = (typeof text === 'string' ? text : input).trim();
     if (!message || sending) return;
-    const base = thread || newThread(null);
+    const base = startThread || thread || newThread({ title: message.slice(0, 60) });
     const withUser = {
       ...base,
       messages: [...base.messages, { role: 'user', content: message }].slice(-MAX_MESSAGES),
@@ -311,4 +318,4 @@ const AiPromptPage = () => {
   );
 };
 
-Object.assign(window, { AiPromptPage, runPromptInTalqeeh, RunInTalqeehButton });
+Object.assign(window, { AiPromptPage, runPromptInTalqeeh, openPromptThread, RunInTalqeehButton, readPromptThreads: readThreads, promptThreadTitle: threadTitle });

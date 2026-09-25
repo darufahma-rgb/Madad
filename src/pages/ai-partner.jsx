@@ -2,15 +2,6 @@ import React, { useState, useEffect } from 'react';
 /* Talqeeh — AI Partner Belajar Muqarrar: daftar materi & halaman belajar per materi.
    Helper di ai-partner-shared.jsx, wizard di ai-partner-create.jsx, tab di ai-partner-study.jsx. */
 
-const FEATURE_TOUR = [
-  { icon: 'bookOpen',      title: 'Ringkasan gaya kitab', desc: "Ta'rif, taqsim, syarat, khilaf & tarjih, dalil — Indonesia, Arab, atau dwibahasa." },
-  { icon: 'network',       title: 'Peta konsep',          desc: 'Seluruh materi sebagai pohon taqsimat yang bisa dibuka-tutup.' },
-  { icon: 'type',          title: "Terjemah & i'rab",     desc: "Blok kalimat Arab → terjemah harfiyah, bebas, dan i'rab per kata." },
-  { icon: 'layers',        title: 'Flashcard & mufradat', desc: 'Kosakata berharakat + wazan, dengan pengulangan berjarak dan suara.' },
-  { icon: 'target',        title: 'Kuis & tahriri',       desc: 'Pilihan ganda + latihan esai gaya ujian tulis, dinilai AI.' },
-  { icon: 'messageSquare', title: 'Tutor & syafawi',      desc: 'Tanya materimu, atau simulasi ujian lisan dengan duktur AI.' },
-];
-
 const TrialBanner = ({ trial }) => (
   <div className="card-glass p-4 md:p-5 mb-6 flex items-center gap-4 flex-wrap" style={{ border: '1px solid rgba(201,168,106,0.28)' }}>
     <span className="w-10 h-10 rounded-xl bg-gold-500/12 border border-gold-500/25 flex items-center justify-center flex-shrink-0">
@@ -131,10 +122,9 @@ const HowItWorksStrip = () => (
   </div>
 );
 
-const AiPartnerList = ({ status }) => {
+const AiPartnerList = ({ status, creating, setCreating }) => {
   const [sets, setSets]   = useState(null);
   const [error, setError] = useState('');
-  const [creating, setCreating] = useState(false);
   const [toDelete, setToDelete] = useState(null);
   const toast = useToast();
   const isTrial = status.tier !== 'pro';
@@ -159,15 +149,22 @@ const AiPartnerList = ({ status }) => {
     <div className="container-x pb-24">
       {isTrial && <TrialBanner trial={status.trial}/>}
 
-      {sets?.length > 0 && (
-        <div className="grid grid-cols-3 gap-3 mb-6">
-          <StatTile icon="book" value={sets.length} label="Materi"/>
-          <StatTile icon="layers" value={totalDue} label="Kartu perlu diulang"/>
-          <StatTile icon="target" value={quizzed} label="Kuis dikerjakan"/>
+      {empty && !creating && (
+        <div className="card-glass p-5 md:p-6 mb-8 flex flex-col md:flex-row md:items-center gap-4">
+          <span className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(201,168,106,0.12)', border: '1px solid rgba(201,168,106,0.3)' }}>
+            <Icon name="upload" className="w-5 h-5 text-gold-300"/>
+          </span>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-medium text-ink">Belajar dari materimu sendiri</div>
+            <div className="text-xs text-ink-muted leading-relaxed mt-0.5">Unggah diktat, slide, foto kitab, atau rekaman kuliah — dapat ringkasan, peta konsep, flashcard, kuis, dan tutor yang menjawab dari materimu.</div>
+          </div>
+          <button onClick={() => trialUsed ? openAiUpgrade() : setCreating(true)} className="btn btn-primary text-sm px-5 py-2.5 flex-shrink-0">
+            <Icon name="upload" className="w-4 h-4"/> Unggah materi
+          </button>
         </div>
       )}
 
-      {(creating || empty) && (
+      {creating && (
         trialUsed
           ? <div className="mb-8"><UpgradeCard title="Tambah materi baru" message="Jatah coba gratis (1 materi) sudah terpakai. Berlangganan AI Partner untuk menambah materi tanpa batas, termasuk rekaman audio & video."/></div>
           : <>
@@ -185,6 +182,14 @@ const AiPartnerList = ({ status }) => {
         </div>
       )}
 
+      {sets?.length > 0 && !creating && (
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <StatTile icon="book" value={sets.length} label="Materi"/>
+          <StatTile icon="layers" value={totalDue} label="Kartu perlu diulang"/>
+          <StatTile icon="target" value={quizzed} label="Kuis dikerjakan"/>
+        </div>
+      )}
+
       {error && <div className="text-sm text-rose-400">{error}</div>}
       {sets === null && !error && (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
@@ -199,22 +204,6 @@ const AiPartnerList = ({ status }) => {
         <DeleteSetDialog set={toDelete} isTrialSet={isTrialSet(toDelete)} onClose={() => setToDelete(null)} onDeleted={handleDeleted}/>
       )}
 
-      {empty && (
-        <div className="mt-12">
-          <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-4 text-center">Yang bisa kamu lakukan</div>
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 md:gap-3">
-            {FEATURE_TOUR.map(f => (
-              <div key={f.title} className="card-glass p-3.5 md:p-4 flex flex-col md:flex-row gap-2 md:gap-3">
-                <Icon name={f.icon} className="w-5 h-5 text-emerald-300 flex-shrink-0 mt-0.5"/>
-                <div>
-                  <div className="text-[13px] md:text-sm text-ink font-medium leading-tight">{f.title}</div>
-                  <div className="text-[11px] md:text-xs text-ink-muted leading-relaxed mt-0.5">{f.desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
@@ -249,43 +238,160 @@ const BackToHome = ({ to = '/dashboard', label = 'Beranda' }) => (
   </div>
 );
 
+/* ── Beranda AI Partner: sapaan + satu kotak tanya, seperti sesi baru di asisten AI ── */
+
+const greetingNow = () => {
+  const h = new Date().getHours();
+  if (h < 4)  return 'Selamat malam';
+  if (h < 11) return 'Selamat pagi';
+  if (h < 15) return 'Selamat siang';
+  if (h < 18) return 'Selamat sore';
+  return 'Selamat malam';
+};
+
+// Chip mengisi kotak tanya (tidak langsung terkirim) supaya pengguna bisa melengkapi [bagian] dulu.
+const STARTERS = [
+  { icon: 'lightbulb', label: 'Jelaskan konsep', text: 'Jelaskan konsep [tulis topik] dengan bahasa sederhana, lengkap dengan contoh dan istilah Arabnya.' },
+  { icon: 'target',    label: 'Latihan soal',    text: 'Buat 5 soal latihan gaya imtihan Azhar tentang [tulis topik]. Jangan beri jawaban dulu — tunggu aku jawab, lalu koreksi.' },
+  { icon: 'type',      label: "I'rab kalimat",   text: "I'rab-kan kalimat berikut kata per kata, lalu terjemahkan:\n[tempel kalimat Arab]" },
+  { icon: 'scale',     label: 'Bandingkan madzhab', text: 'Bandingkan pendapat 4 madzhab tentang [tulis masalah], sertakan dalil singkat tiap pendapat.' },
+  { icon: 'list',      label: "Rencana muraja'ah", text: "Buatkan rencana muraja'ah 7 hari untuk maddah [nama maddah] menjelang imtihan." },
+];
+
+const Composer = ({ tier, onUpload }) => {
+  const { profile, session } = useAuth();
+  const toast = useToast();
+  const [text, setText] = useState('');
+  const ref = React.useRef(null);
+  const firstName = (session?.name || profile?.name || '').trim().split(/\s+/)[0];
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 260) + 'px';
+  }, [text]);
+
+  const submit = () => {
+    const msg = text.trim();
+    if (!msg) return;
+    if (tier !== 'pro') { toast.push('Tanya AI khusus pelanggan AI Partner.'); openAiUpgrade(); return; }
+    runPromptInTalqeeh(msg, { autoSend: true, source: 'AI Partner' });
+  };
+
+  const pick = (starter) => {
+    setText(starter.text);
+    setTimeout(() => {
+      const el = ref.current;
+      if (!el) return;
+      el.focus();
+      const at = starter.text.indexOf('[');
+      if (at >= 0) el.setSelectionRange(at, starter.text.indexOf(']', at) + 1);
+    }, 0);
+  };
+
+  return (
+    <section className="pt-10 md:pt-20 pb-10 md:pb-14">
+      <div className="container-x"><div className="max-w-2xl mx-auto">
+        <div className="flex items-center justify-center gap-3 mb-7 md:mb-9">
+          <span className="w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ background: 'rgba(62,207,142,0.14)', border: '1px solid rgba(62,207,142,0.3)' }}>
+            <Icon name="sparkles" className="w-5 h-5 text-emerald-300"/>
+          </span>
+          <h1 className="font-display text-[28px] md:text-[40px] font-semibold text-ink leading-tight tracking-tight text-center">
+            {greetingNow()}{firstName ? `, ${firstName}` : ''}
+          </h1>
+        </div>
+
+        <div className="rounded-2xl border border-white/12 bg-white/[0.045] shadow-2xl shadow-black/30 focus-within:border-emerald-500/40 transition-colors">
+          <textarea ref={ref} value={text} onChange={e => setText(e.target.value)} rows={2} maxLength={12000} dir="auto"
+            onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); submit(); } }}
+            placeholder="Mau belajar apa hari ini? Tanya apa saja, atau tempel prompt Talqeeh…"
+            className="w-full bg-transparent resize-none outline-none focus-visible:outline-none px-4 md:px-5 pt-4 text-ink placeholder-ink-soft leading-relaxed"
+            style={{ fontSize: 16, minHeight: 64 }}/>
+          <div className="flex items-center gap-2 px-2.5 md:px-3 pb-2.5 md:pb-3">
+            <button onClick={onUpload} title="Unggah materi (PDF, foto, slide, audio)"
+              className="h-9 px-3 rounded-xl border border-white/10 text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5 text-xs">
+              <Icon name="upload" className="w-4 h-4"/> <span className="hidden sm:inline">Unggah materi</span>
+            </button>
+            <button onClick={() => navigate('/maddah')} title="Pilih prompt dari Maddah"
+              className="h-9 px-3 rounded-xl border border-white/10 text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5 text-xs">
+              <Icon name="layers" className="w-4 h-4"/> <span className="hidden sm:inline">Prompt Maddah</span>
+            </button>
+            <button onClick={submit} disabled={!text.trim()} aria-label="Kirim"
+              className="ml-auto w-9 h-9 rounded-xl flex items-center justify-center transition-colors disabled:opacity-40"
+              style={{ background: text.trim() ? '#3ecf8e' : 'rgba(255,255,255,0.08)' }}>
+              <Icon name="arrowRight" className="w-4 h-4" style={{ stroke: text.trim() ? '#0b0b0b' : 'currentColor' }}/>
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap justify-center gap-2 mt-4">
+          {STARTERS.map(s => (
+            <button key={s.label} onClick={() => pick(s)}
+              className="h-9 px-3.5 rounded-xl border border-white/10 bg-white/[0.02] text-xs text-ink-muted hover:text-ink hover:bg-white/[0.06] inline-flex items-center gap-1.5">
+              <Icon name={s.icon} className="w-3.5 h-3.5"/> {s.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex justify-center"><PersonalizationChip/></div>
+        <RecentChats/>
+      </div></div>
+    </section>
+  );
+};
+
+// Percakapan terakhir dari "Tanya AI" (disimpan di perangkat).
+const RecentChats = () => {
+  const threads = (window.readPromptThreads?.() || []).slice(0, 4);
+  if (!threads.length) return null;
+  return (
+    <div className="mt-10">
+      <div className="flex items-center justify-between mb-2.5 px-1">
+        <div className="text-xs text-ink-soft inline-flex items-center gap-1.5"><Icon name="messageSquare" className="w-3.5 h-3.5"/> Percakapan terakhir</div>
+        <button onClick={() => navigate('/ai-partner/prompt')} className="text-xs text-emerald-300 hover:text-emerald-200">Lihat semua</button>
+      </div>
+      <div className="grid sm:grid-cols-2 gap-2">
+        {threads.map(t => (
+          <button key={t.id} onClick={() => openPromptThread(t.id)}
+            className="text-left rounded-xl border border-white/8 bg-white/[0.02] hover:bg-white/[0.05] px-3.5 py-3 min-w-0">
+            <div className="text-sm text-ink truncate">{promptThreadTitle(t)}</div>
+            <div className="text-[11px] text-ink-soft mt-0.5">
+              {new Date(t.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} · {t.messages.length} pesan
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const AiPartnerPage = () => {
   const status = useAiStatus();
+  const [creating, setCreating] = useState(false);
+  const listRef = React.useRef(null);
+
+  const startUpload = () => {
+    if (status.tier === 'trial' && status.trial?.used) { openAiUpgrade(); return; }
+    setCreating(true);
+    setTimeout(() => listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  };
+
   return (
     <div className="page-enter">
-      <BackToHome/>
-      <section className="container-x pt-2 pb-8 md:pb-10">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-xs uppercase tracking-[0.22em] text-gold-400">AI Partner Belajar</span>
-          {!status.loading && status.tier === 'pro' && <Pill tone="emerald">Aktif</Pill>}
-        </div>
-        <div className="arabic-display-classical text-xl md:text-2xl text-emerald-200/60 mb-2">رَفِيقُ الدِّرَاسَةِ</div>
-        <h1 className="font-display text-3xl md:text-5xl font-semibold text-ink leading-[1.05] max-w-3xl">
-          Belajar muqarrar langsung dari materimu sendiri.
-        </h1>
-        <p className="mt-3 text-base md:text-lg text-ink-muted max-w-2xl leading-relaxed">
-          Unggah diktat, slide, foto kitab, atau rekaman kuliah — Talqeeh menyiapkan ringkasan, peta konsep, mufradat, flashcard, soal, dan duktur AI untuk latihan.
-        </p>
-        <PersonalizationChip/>
-        {!status.loading && status.tier !== 'none' && (
-          <button onClick={() => navigate('/ai-partner/prompt')}
-            className="mt-5 w-full md:w-auto flex items-center gap-3 p-4 rounded-xl text-left transition-colors hover:bg-emerald-500/10"
-            style={{ background: 'rgba(62,207,142,0.06)', border: '1px solid rgba(62,207,142,0.25)' }}>
-            <span className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: 'rgba(62,207,142,0.14)' }}>
-              <Icon name="sparkles" className="w-5 h-5 text-emerald-300"/>
-            </span>
-            <span className="min-w-0">
-              <span className="block text-sm font-medium text-ink">Jalankan Prompt Talqeeh {status.tier !== 'pro' && <Icon name="crown" className="inline w-3 h-3 text-gold-300 ml-1"/>}</span>
-              <span className="block text-xs text-ink-muted">Semua prompt Maddah langsung dijawab di sini — tanpa salin-tempel ke AI lain.</span>
-            </span>
-            <Icon name="arrowRight" className="w-4 h-4 text-ink-soft ml-auto flex-shrink-0"/>
-          </button>
-        )}
-      </section>
-      {status.loading ? <GateLoading/>
+      {status.loading ? <div className="pt-16"><GateLoading/></div>
         : status.tier === 'none'
-          ? <div className="container-x pb-24"><UpgradeCard title="Khusus member Talqeeh" message="Masuk dengan Google dan buat akun gratis untuk mencoba AI Partner 1 materi."/></div>
-          : <AiPartnerList status={status}/>}
+          ? <>
+              <BackToHome/>
+              <div className="container-x pt-6 pb-24"><UpgradeCard title="Khusus member Talqeeh" message="Masuk dengan Google dan buat akun gratis untuk mencoba AI Partner 1 materi."/></div>
+            </>
+          : <>
+              <Composer tier={status.tier} onUpload={startUpload}/>
+              <div ref={listRef} className="scroll-mt-20 pt-6 md:pt-10 border-t border-white/[0.06]">
+                <AiPartnerList status={status} creating={creating} setCreating={setCreating}/>
+              </div>
+            </>}
     </div>
   );
 };
