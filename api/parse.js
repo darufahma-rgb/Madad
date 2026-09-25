@@ -1,6 +1,7 @@
 import { verifyToken } from './admin-auth.js';
 import { requireMember } from './_lib/member.js';
 import { resolveModels } from './_lib/models.js';
+import { acceptsTemperature } from './_lib/ai.js';
 
 const parseBody = (req) => new Promise((resolve) => {
   let body = '';
@@ -70,7 +71,8 @@ async function handleParseSoal(req, res) {
       body: JSON.stringify({
         model: (await resolveModels()).vision,
         max_tokens: 4000,
-        temperature: 0,
+        // Sebagian model (mis. Sonnet 5) menolak temperature.
+        ...((await acceptsTemperature((await resolveModels()).vision)) ? { temperature: 0 } : {}),
         messages: [{
           role: 'user',
           content: [
@@ -255,7 +257,8 @@ async function handleParseTalkhisan(req, res) {
         body: JSON.stringify({
           model: (await resolveModels()).vision,
           max_tokens: 3000,
-          temperature: 0,
+          // Sebagian model (mis. Sonnet 5) menolak temperature.
+          ...((await acceptsTemperature((await resolveModels()).vision)) ? { temperature: 0 } : {}),
           messages: [{
             role: 'user',
             content: [
@@ -299,7 +302,8 @@ async function handleParseTalkhisan(req, res) {
           body: JSON.stringify({
             model: (await resolveModels()).arabic,
             max_tokens: 2000,
-            temperature: 0,
+            // Sebagian model (mis. Sonnet 5) menolak temperature.
+            ...((await acceptsTemperature((await resolveModels()).arabic)) ? { temperature: 0 } : {}),
             messages: [{
               role: 'user',
               content: `Rapikan teks Arab dari halaman talkhisan berikut. Pertahankan SEMUA teks Arab persis seperti aslinya. Hapus header/footer yang tidak relevan.\n\n${batchText}`

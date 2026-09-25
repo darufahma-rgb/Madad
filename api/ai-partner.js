@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { verifyToken } from './admin-auth.js';
 import { sbConfig, sbHeaders, normalizeCode, requireAiTier, consumeQuota, isActiveMember } from './_lib/member.js';
-import { callAI, callAIJson, requestAI, streamAI } from './_lib/ai.js';
+import { callAI, callAIJson, requestAI, streamAI, friendlyAiError } from './_lib/ai.js';
 import { resolveModels, isValidModelId, clearModelCache } from './_lib/models.js';
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
@@ -236,7 +236,7 @@ const runAI = async (body, res, opts) => {
     return { out: await streamAI(opts, stream.delta), stream };
   } catch (err) {
     console.error('[ai-partner:stream]', err.message);
-    stream.fail('AI sedang bermasalah. Coba lagi sebentar.');
+    stream.fail(friendlyAiError(err));
     return { failed: true };
   }
 };
@@ -1057,11 +1057,12 @@ export default async function handler(req, res) {
     }
   } catch (err) {
     console.error(`[ai-partner:${action}]`, err.message);
+    const message = /openrouter|credit|rate.?limit|AI /i.test(err.message) ? friendlyAiError(err) : 'Terjadi kesalahan. Coba lagi sebentar.';
     // Kalau balasan bertahap sudah dimulai, header tidak bisa diganti — laporkan lewat stream.
     if (res.headersSent) {
-      try { res.write(JSON.stringify({ t: 'error', ok: false, error: 'Terjadi kesalahan. Coba lagi sebentar.' }) + '\n'); res.end(); } catch {}
+      try { res.write(JSON.stringify({ t: 'error', ok: false, error: message }) + '\n'); res.end(); } catch {}
       return;
     }
-    return res.status(500).json({ ok: false, error: 'Terjadi kesalahan. Coba lagi sebentar.' });
+    return res.status(500).json({ ok: false, error: message });
   }
 }
