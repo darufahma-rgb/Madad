@@ -29,28 +29,35 @@ const maddahPathFor = (profile) => {
   return '/maddah';
 };
 
+// Utama = sama dengan tab bawah HP. Menu yang jarang dipakai dilipat di "Lainnya".
 const navGroups = (profile) => [
   { label: 'Utama', items: [
     { to: '/dashboard',  label: 'Beranda',    icon: 'home' },
-    { to: '/library',    label: 'Library',    icon: 'bookOpen' },
-    { to: '/ai-partner', label: 'AI Partner', icon: 'sparkles' },
-    { to: '/statistik',  label: 'Statistik',  icon: 'chart' },
-  ]},
-  { label: 'Belajar', items: [
     { to: maddahPathFor(profile), label: 'Maddah', icon: 'layers', match: ['/maddah', '/mahad-maddah', '/s2-maddah'] },
+    { to: '/ai-partner', label: 'AI Partner', icon: 'sparkles' },
+    { to: '/kurasah',    label: 'Kurasah',    icon: 'pen' },
+  ]},
+  { label: 'Latihan', items: [
     { to: '/siap-imtihan',    label: 'Siap Imtihan',   icon: 'target',  locked: true },
     { to: '/paths/muqaranah', label: 'Muqaranah',      icon: 'scale',   locked: true },
     { to: '/paths',           label: 'Learning Path',  icon: 'compass', locked: true, exact: true },
     { to: '/prompt-library',  label: 'Prompt Library', icon: 'copy',    locked: true },
-    { to: '/kurasah',         label: 'Kurasah',        icon: 'pen' },
   ]},
-  { label: 'Panduan', items: [
+  { label: 'Progres', items: [
+    { to: '/statistik',      label: 'Statistik',      icon: 'chart' },
     { to: '/profil-belajar', label: 'Profil Belajar', icon: 'brain' },
-    { to: '/framework',      label: 'Metode Belajar', icon: 'lightbulb' },
-    { action: openTutorial,  label: 'Tutorial',       icon: 'info' },
-    { to: '/ethics',         label: 'Etika Pakai AI', icon: 'shield' },
+  ]},
+  { label: 'Lainnya', collapsible: true, items: [
+    { to: '/library',       label: 'Library',        icon: 'bookOpen' },
+    { to: '/framework',     label: 'Metode Belajar', icon: 'lightbulb' },
+    { action: openTutorial, label: 'Tutorial',       icon: 'info' },
+    { to: '/ethics',        label: 'Etika Pakai AI', icon: 'shield' },
   ]},
 ];
+
+const MORE_KEY = 'talqeeh_sidebar_more_open';
+const readMoreOpen = () => { try { return localStorage.getItem(MORE_KEY) === '1'; } catch { return false; } };
+const saveMoreOpen = (v) => { try { localStorage.setItem(MORE_KEY, v ? '1' : '0'); } catch {} };
 
 const pathMatches = (path, to, exact) => {
   if (path === to) return true;
@@ -94,7 +101,9 @@ const SidebarContent = ({ collapsed, onToggle, onNavigate, onClose, mobile }) =>
   const pwa = usePwaInstall();
   const path = useRoute();
   const [confirmLogout, setConfirmLogout] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(readMoreOpen);
   useEffect(() => setConfirmLogout(false), [path]);
+  const toggleMore = () => { const next = !moreOpen; setMoreOpen(next); saveMoreOpen(next); };
 
   const tierLabel = isFree ? 'Akun gratis' : 'Member Library';
   const groups = navGroups(profile);
@@ -136,19 +145,30 @@ const SidebarContent = ({ collapsed, onToggle, onNavigate, onClose, mobile }) =>
             <Icon name="sidebar" className="w-4 h-4" style={{ stroke: 'currentColor' }}/>
           </button>
         )}
-        {groups.map((group, gi) => (
+        {groups.map((group, gi) => {
+          // Grup lipat tetap terbuka kalau halaman aktif ada di dalamnya.
+          const hasActive = group.items.some(item => isItemActive(path, item));
+          const open = !group.collapsible || collapsed || moreOpen || hasActive;
+          return (
           <div key={group.label} className={gi ? 'mt-5' : 'mt-1'}>
             {collapsed
               ? (gi > 0 && <div className="h-px bg-white/[0.06] mx-3 mb-3"/>)
-              : <div className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft">{group.label}</div>}
-            <div className="space-y-0.5">
+              : group.collapsible
+                ? <button onClick={toggleMore} disabled={hasActive} aria-expanded={open}
+                    className="w-full flex items-center justify-between px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft hover:text-ink-muted">
+                    {group.label}
+                    {!hasActive && <Icon name={open ? 'chevronUp' : 'chevronDown'} className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/>}
+                  </button>
+                : <div className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-soft">{group.label}</div>}
+            {open && <div className="space-y-0.5">
               {group.items.map(item => (
                 <SidebarItem key={item.label} item={item} collapsed={collapsed} onNavigate={onNavigate}
                   active={isItemActive(path, item)} locked={isFree && item.locked}/>
               ))}
-            </div>
+            </div>}
           </div>
-        ))}
+          );
+        })}
       </nav>
 
       {/* Upgrade + akun */}
@@ -207,7 +227,7 @@ const ShellTabBar = ({ onMenu, menuOpen }) => {
   const path = useRoute();
   const maddahTo = maddahPathFor(profile);
   const tabs = [
-    { to: '/dashboard',  label: 'Beranda',    icon: 'home',     active: path === '/dashboard' || path === '/library' },
+    { to: '/dashboard',  label: 'Beranda',    icon: 'home',     active: path === '/dashboard' },
     { to: maddahTo,      label: 'Maddah',     icon: 'layers',   active: ['/maddah', '/mahad-maddah', '/s2-maddah'].some(m => pathMatches(path, m)) },
     { to: '/ai-partner', label: 'AI Partner', icon: 'sparkles', active: pathMatches(path, '/ai-partner') },
     { to: '/kurasah',    label: 'Kurasah',    icon: 'pen',      active: pathMatches(path, '/kurasah') },
