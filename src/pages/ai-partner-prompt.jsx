@@ -223,7 +223,7 @@ const PromptChat = () => {
               <p className="text-ink-muted text-sm leading-relaxed">
                 {input
                   ? 'Prompt sudah siap di kotak bawah. Lengkapi bagian dalam [kurung siku] kalau ada, lalu kirim.'
-                  : 'Tulis pertanyaanmu atau tempel prompt Talqeeh.'}
+                  : 'Tanya seputar ilmu keislaman, bahasa Arab, dan maddahmu — atau tempel prompt Talqeeh.'}
               </p>
               {!input && (
                 <button onClick={() => navigate('/maddah')} className="mt-4 h-9 px-3.5 rounded-xl border border-white/10 text-xs text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5">

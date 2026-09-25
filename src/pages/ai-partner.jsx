@@ -303,7 +303,7 @@ const Composer = ({ tier, onUpload }) => {
         <div className="rounded-2xl border border-white/12 bg-white/[0.045] shadow-2xl shadow-black/30 focus-within:border-emerald-500/40 transition-colors">
           <textarea ref={ref} value={text} onChange={e => setText(e.target.value)} rows={2} maxLength={12000} dir="auto"
             onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); submit(); } }}
-            placeholder="Mau belajar apa hari ini? Tanya apa saja, atau tempel prompt Talqeeh…"
+            placeholder="Mau belajar apa hari ini? Tanya seputar ilmu keislaman & maddahmu, atau tempel prompt Talqeeh…"
             className="w-full bg-transparent resize-none outline-none focus-visible:outline-none px-4 md:px-5 pt-4 text-ink placeholder-ink-soft leading-relaxed"
             style={{ fontSize: 16, minHeight: 64 }}/>
           <div className="flex items-center gap-2 px-2.5 md:px-3 pb-2.5 md:pb-3">
