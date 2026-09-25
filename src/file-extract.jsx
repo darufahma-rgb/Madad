@@ -194,7 +194,6 @@ const encodeWav = (samples) => {
     const s = Math.max(-1, Math.min(1, samples[i]));
     view.setInt16(44 + i * 2, s < 0 ? s * 0x8000 : s * 0x7fff, true);
   }
-  // Pakai File, bukan Blob: window.Blob di app ini tertimpa komponen dekorasi <Blob/> (ui.jsx).
   return new File([buffer], 'chunk.wav', { type: 'audio/wav' });
 };
 

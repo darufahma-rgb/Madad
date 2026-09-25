@@ -273,7 +273,7 @@ const AdminLogin = ({ onLogin }) => {
   return (
     <div className="page-enter min-h-screen flex items-center justify-center px-4">
       <div className="card-glass-strong p-10 max-w-md w-full relative overflow-hidden">
-        <Blob color="rgba(62,207,142,0.35)" size={300} top={-100} right={-100}/>
+        <GlowBlob color="rgba(62,207,142,0.35)" size={300} top={-100} right={-100}/>
         <div className="relative">
           <span className="chip chip-gold text-[10px] mb-3 inline-flex">ADMIN ACCESS</span>
           <h2 className="font-display text-3xl font-semibold text-ink mb-1">Talqeeh Control Center</h2>
@@ -2912,18 +2912,41 @@ const BankSoalReviewPanel = ({ onDone }) => {
   const [applying, setApplying] = useState(false);
   const fileRef = useRef(null);
 
+  const [exported, setExported] = useState(null); // { name, url, count, photos } | { error }
+
+  const download = (file) => {
+    const a = document.createElement('a');
+    a.href = file.url; a.download = file.name;
+    document.body.appendChild(a); a.click(); a.remove();
+  };
+
   const exportPending = async () => {
     setExporting(true);
-    const d = await bankSoalApi('review-export', {});
+    setExported(prev => { if (prev?.url) URL.revokeObjectURL(prev.url); return null; });
+    let d;
+    try {
+      const r = await fetch('/api/admin-bank-soal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-token': adminToken() },
+        body: JSON.stringify({ action: 'review-export' }),
+        signal: AbortSignal.timeout(60000),
+      });
+      d = await r.json().catch(() => ({ ok: false, error: `Server membalas ${r.status}` }));
+      if (r.status === 401) d = { ok: false, error: 'Sesi admin habis — logout lalu login ulang' };
+    } catch (e) {
+      d = { ok: false, error: e?.name === 'TimeoutError' ? 'Server terlalu lama (lebih dari 60 detik)' : 'Tidak bisa terhubung ke server' };
+    }
     setExporting(false);
-    if (!d.ok) { toast.push('Ekspor gagal: ' + (d.error || 'coba lagi')); return; }
+    if (!d.ok || !Array.isArray(d.data?.pending)) { setExported({ error: d.error || 'Respons tidak dikenali' }); return; }
     const blob = new Blob([JSON.stringify(d.data, null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `bank-soal-pending-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-    toast.push(`${d.data.pending.length} soal pending diekspor (tanpa data pengirim).`);
+    const file = {
+      name: `bank-soal-pending-${new Date().toISOString().slice(0, 10)}.json`,
+      url: URL.createObjectURL(blob),
+      count: d.data.pending.length,
+      photos: d.data.pending.filter(x => x.foto).length,
+    };
+    setExported(file);
+    download(file);
   };
 
   const importDecisions = async (file) => {
@@ -2995,6 +3018,16 @@ const BankSoalReviewPanel = ({ onDone }) => {
         <input ref={fileRef} type="file" accept="application/json,.json" className="hidden"
           onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) importDecisions(f); }}/>
       </div>
+
+      {exported && (exported.error ? (
+        <div className="mt-3 text-xs text-rose-400">Ekspor gagal: {exported.error}</div>
+      ) : (
+        <div className="mt-3 flex items-center gap-2 flex-wrap text-xs">
+          <span className="text-emerald-300">✓ {exported.count} soal diekspor ({exported.photos} dengan foto) → <span className="font-mono">{exported.name}</span> di folder Download.</span>
+          <button onClick={() => download(exported)} className="text-ink-soft hover:text-ink underline">Unduh lagi</button>
+          <span className="text-ink-soft">Kirim file ini ke Claude hari ini (link foto berlaku 24 jam).</span>
+        </div>
+      ))}
 
       {rows && (
         <div className="mt-4">

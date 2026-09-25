@@ -212,7 +212,7 @@ const MaddahDetailPage = () => {
 
       {/* Header */}
       <section className="relative pt-4 md:pt-10 pb-6 md:pb-8 overflow-hidden">
-        <Blob color="rgba(62,207,142,0.18)" size={500} top={-150} right={-100}/>
+        <GlowBlob color="rgba(62,207,142,0.18)" size={500} top={-150} right={-100}/>
         <div className="container-x relative">
           <button onClick={() => navigate("/maddah")}
             className="text-sm text-ink-soft hover:text-ink inline-flex items-center gap-2 mb-5">

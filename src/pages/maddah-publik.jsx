@@ -56,7 +56,7 @@ const MaddahPublikPage = ({ onOpenPayment, onOpenJoin, onOpenLogin }) => {
 
       {/* ── Header ── */}
       <section className="relative pt-10 md:pt-16 pb-8 overflow-hidden">
-        <Blob color="rgba(124,77,255,0.15)" size={500} top={-150} right={-100}/>
+        <GlowBlob color="rgba(124,77,255,0.15)" size={500} top={-150} right={-100}/>
         <div className="container-x relative">
 
           <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-4 flex items-center gap-2">

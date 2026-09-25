@@ -511,8 +511,8 @@ const OnboardingPage = ({ overlay = false }) => {
 const PageFrame = ({ children }) => (
   <div className="page-enter min-h-screen flex flex-col">
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      <Blob color="rgba(62,207,142,0.30)" size={520} top={-100} right={-100}/>
-      <Blob color="rgba(201,168,106,0.15)" size={400} bottom={-100} left={-100}/>
+      <GlowBlob color="rgba(62,207,142,0.30)" size={520} top={-100} right={-100}/>
+      <GlowBlob color="rgba(201,168,106,0.15)" size={400} bottom={-100} left={-100}/>
     </div>
     <div className="container-x py-12 md:py-16 flex-1 flex flex-col relative">{children}</div>
   </div>

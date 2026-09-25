@@ -9,7 +9,7 @@ const FrameworkPage = () => {
 
       {/* Header */}
       <section className="relative pt-8 md:pt-14 pb-8 md:pb-10 overflow-hidden">
-        <Blob color="rgba(62,207,142,0.15)" size={500} top={-180} right={-80}/>
+        <GlowBlob color="rgba(62,207,142,0.15)" size={500} top={-180} right={-80}/>
         <div className="container-x relative">
           <Reveal>
             <div className="text-[11px] uppercase tracking-[0.22em] text-emerald-400 mb-3 font-medium">

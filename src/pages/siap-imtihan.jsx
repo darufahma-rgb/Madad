@@ -1675,7 +1675,7 @@ const SiapImtihanPage = () => {
       {/* Header */}
       <section className="relative pt-6 md:pt-12 pb-6 overflow-hidden">
         <div className="pattern-talqih"/>
-        <Blob color="rgba(62,207,142,0.2)" size={500} top={-150} right={-80}/>
+        <GlowBlob color="rgba(62,207,142,0.2)" size={500} top={-150} right={-80}/>
 
         <div className="container-x relative">
           <button onClick={() => navigate("/library")}

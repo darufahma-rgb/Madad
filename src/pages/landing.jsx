@@ -218,8 +218,8 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
   <section className="relative overflow-hidden pt-8 md:pt-28 pb-12 md:pb-20">
     {/* Background */}
     <HeroGeoBg/>
-    <Blob color="rgba(62,207,142,0.14)" size={700} top={-200} left={-100}/>
-    <Blob color="rgba(201,168,106,0.08)" size={500} top={300} right={-150}/>
+    <GlowBlob color="rgba(62,207,142,0.14)" size={700} top={-200} left={-100}/>
+    <GlowBlob color="rgba(201,168,106,0.08)" size={500} top={300} right={-150}/>
     {/* Radial vignette — fokus ke tengah */}
     <div className="absolute inset-0 pointer-events-none" style={{
       background: "radial-gradient(ellipse 75% 65% at 50% 40%, transparent 25%, rgba(12,12,12,0.45) 100%)"

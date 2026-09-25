@@ -592,7 +592,7 @@ const DailyAdviceCard = () => {
 const DashboardOnboarding = ({ name }) => (
   <div className="page-enter">
     <section className="relative pt-10 md:pt-16 pb-16 overflow-hidden">
-      <Blob color="rgba(62,207,142,0.20)" size={600} top={-200} right={-100}/>
+      <GlowBlob color="rgba(62,207,142,0.20)" size={600} top={-200} right={-100}/>
       <div className="container-x relative">
         <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-3">Beranda</div>
         <h1 className="font-display text-4xl md:text-6xl font-semibold text-ink leading-tight">Ahlan, {name}.</h1>
@@ -640,8 +640,8 @@ const DashboardHomePage = () => {
       {showOffer && isFree && <UpgradeOfferModal onClose={() => setShowOffer(false)}/>}
       <section className="relative pt-6 md:pt-16 pb-16 overflow-hidden">
         <div className="hero-light-beam"/>
-        <Blob color="rgba(62,207,142,0.20)" size={600} top={-200} right={-100}/>
-        <Blob color="rgba(201,168,106,0.10)" size={400} top={120} left={-150}/>
+        <GlowBlob color="rgba(62,207,142,0.20)" size={600} top={-200} right={-100}/>
+        <GlowBlob color="rgba(201,168,106,0.10)" size={400} top={120} left={-150}/>
 
         <div className="container-x relative">
           <Reveal className="mb-8 md:mb-12">
@@ -773,8 +773,8 @@ const LibraryPage = () => {
       {/* 1. GREETING (ringkas) */}
       <section className="relative pt-4 md:pt-16 pb-6 md:pb-8 overflow-hidden">
         <div className="hero-light-beam"/>
-        <Blob color="rgba(62,207,142,0.22)" size={600} top={-200} right={-100}/>
-        <Blob color="rgba(201,168,106,0.10)" size={400} top={100} left={-150}/>
+        <GlowBlob color="rgba(62,207,142,0.22)" size={600} top={-200} right={-100}/>
+        <GlowBlob color="rgba(201,168,106,0.10)" size={400} top={100} left={-150}/>
 
         <div className="container-x relative">
           <Reveal>
@@ -1372,7 +1372,7 @@ const ContinueCard = ({ className = "", progress }) => {
   if (!last) {
     return (
       <div className={`${className} card-glass-strong p-4 md:p-7 relative overflow-hidden`}>
-        <Blob color="rgba(62,207,142,0.18)" size={250} top={-80} right={-80}/>
+        <GlowBlob color="rgba(62,207,142,0.18)" size={250} top={-80} right={-80}/>
         <div className="relative flex items-start gap-4">
           <span className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style={{background:"var(--kraken-purple)"}}>
 
@@ -1400,7 +1400,7 @@ const ContinueCard = ({ className = "", progress }) => {
   }
   return (
     <div className={`${className} card-glass-strong p-4 md:p-7 relative overflow-hidden`}>
-      <Blob color="rgba(62,207,142,0.15)" size={200} top={-60} right={-60}/>
+      <GlowBlob color="rgba(62,207,142,0.15)" size={200} top={-60} right={-60}/>
       <div className="relative">
         <div className="flex items-center gap-2 mb-3">
           <span className="badge-purple text-[10px]">Continue Learning</span>
@@ -1515,8 +1515,8 @@ const AdaptiveGuideQuick = ({ profile, topRec }) => {
         </Reveal>
 
         <Reveal className="card-glass-strong p-4 md:p-10 relative overflow-hidden">
-          <Blob color={tool.color + "30"} size={380} top={-100} right={-100}/>
-          <Blob color="rgba(62,207,142,0.12)" size={280} bottom={-80} left={-60}/>
+          <GlowBlob color={tool.color + "30"} size={380} top={-100} right={-100}/>
+          <GlowBlob color="rgba(62,207,142,0.12)" size={280} bottom={-80} left={-60}/>
           <div className="relative grid md:grid-cols-12 gap-8">
 
             <div className="md:col-span-7">

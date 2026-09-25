@@ -95,27 +95,34 @@ export default async function handler(req, res) {
      (nama, WA, info) — reviewer hanya butuh isi soal & fotonya. Foto diberi link sementara 24 jam.
      Ikut disertakan indeks soal approved (tanpa teks) untuk mendeteksi kiriman dobel. */
   if (action === 'review-export') {
+    // select=* supaya tidak gagal kalau ada kolom opsional yang belum dibuat; data pengirim dibuang di bawah.
     const [pendingRes, approvedRes] = await Promise.all([
-      fetch(`${supabaseUrl}/rest/v1/bank_soal?status=eq.pending&select=id,created_at,fakultas,maddah_id,maddah_nama,tingkat,tahun,fashl,soal,arti_soal,foto_url,foto_deleted&order=created_at.asc&limit=300`, { headers }),
-      fetch(`${supabaseUrl}/rest/v1/bank_soal?status=eq.approved&select=id,fakultas,maddah_id,maddah_nama,tingkat,tahun,fashl&limit=2000`, { headers }),
-    ]);
-    const pending = await pendingRes.json();
-    const approved = await approvedRes.json();
-    if (!Array.isArray(pending)) return res.status(500).json({ ok: false, error: 'Gagal membaca soal pending' });
-    const sign = async (fotoUrl) => {
-      const path = String(fotoUrl || '').split('/soal-foto/')[1];
-      if (!path) return null;
-      const r = await fetch(`${supabaseUrl}/storage/v1/object/sign/soal-foto/${path}`, {
-        method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' }, body: JSON.stringify({ expiresIn: 86400 }),
+      fetch(`${supabaseUrl}/rest/v1/bank_soal?status=eq.pending&select=*&order=created_at.asc&limit=300`, { headers, signal: AbortSignal.timeout(15000) }),
+      fetch(`${supabaseUrl}/rest/v1/bank_soal?status=eq.approved&select=id,fakultas,maddah_id,maddah_nama,tingkat,tahun,fashl&limit=2000`, { headers, signal: AbortSignal.timeout(15000) }),
+    ]).catch(() => [null, null]);
+    const pending = pendingRes ? await pendingRes.json().catch(() => null) : null;
+    const approved = approvedRes ? await approvedRes.json().catch(() => null) : null;
+    if (!Array.isArray(pending)) return res.status(500).json({ ok: false, error: 'Gagal membaca soal pending dari database' });
+
+    // Semua link foto dibuat dalam SATU permintaan ke Storage (bukan satu per soal).
+    const photoPath = (s) => (s.foto_url && !s.foto_deleted ? String(s.foto_url).split('/soal-foto/')[1] || null : null);
+    const paths = [...new Set(pending.map(photoPath).filter(Boolean))];
+    const signed = {};
+    if (paths.length) {
+      const r = await fetch(`${supabaseUrl}/storage/v1/object/sign/soal-foto`, {
+        method: 'POST', headers: { ...headers, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ expiresIn: 86400, paths }), signal: AbortSignal.timeout(20000),
       }).catch(() => null);
-      const d = r && r.ok ? await r.json().catch(() => null) : null;
-      return d?.signedURL ? `${supabaseUrl}/storage/v1${d.signedURL}` : null;
-    };
-    const items = await Promise.all(pending.map(async (s) => ({
+      const list = r && r.ok ? await r.json().catch(() => null) : null;
+      for (const x of Array.isArray(list) ? list : []) {
+        if (x?.path && x.signedURL) signed[x.path] = `${supabaseUrl}/storage/v1${x.signedURL}`;
+      }
+    }
+    const items = pending.map((s) => ({
       id: s.id, created_at: s.created_at, fakultas: s.fakultas, maddah_id: s.maddah_id, maddah_nama: s.maddah_nama,
-      tingkat: s.tingkat, tahun: s.tahun, fashl: s.fashl, soal: s.soal || '', arti_soal: s.arti_soal || '',
-      foto: s.foto_url && !s.foto_deleted ? await sign(s.foto_url) : null,
-    })));
+      tingkat: s.tingkat ?? null, tahun: s.tahun, fashl: s.fashl, soal: s.soal || '', arti_soal: s.arti_soal || '',
+      foto: signed[photoPath(s)] || null,
+    }));
     return res.status(200).json({
       ok: true,
       data: {

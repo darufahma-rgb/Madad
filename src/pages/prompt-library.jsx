@@ -574,8 +574,8 @@ const PromptLibraryPage = () => {
     <div className="page-enter">
       {/* Header */}
       <section className="relative pt-10 pb-6 overflow-hidden">
-        <Blob color="rgba(16,185,129,0.12)" size={420} top={-180} right={-80}/>
-        <Blob color="rgba(62,207,142,0.10)" size={300} top={-80} left={-100}/>
+        <GlowBlob color="rgba(16,185,129,0.12)" size={420} top={-180} right={-80}/>
+        <GlowBlob color="rgba(62,207,142,0.10)" size={300} top={-80} left={-100}/>
         <div className="container-x relative">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-[10px] uppercase tracking-[0.2em] text-ink-muted">Talqeeh</span>

@@ -269,8 +269,8 @@ const S2MaddahPage = () => {
 
       {/* Header */}
       <section className="relative pt-6 md:pt-12 pb-6 overflow-hidden">
-        <Blob color="rgba(62,207,142,0.2)" size={500} top={-150} right={-80}/>
-        <Blob color="rgba(201,168,106,0.1)" size={300} top={200} left={-100}/>
+        <GlowBlob color="rgba(62,207,142,0.2)" size={500} top={-150} right={-80}/>
+        <GlowBlob color="rgba(201,168,106,0.1)" size={300} top={200} left={-100}/>
         <div className="container-x relative">
           <button onClick={() => navigate("/library")}
             className="text-sm text-ink-soft inline-flex items-center gap-1.5 mb-4"
