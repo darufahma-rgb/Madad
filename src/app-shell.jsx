@@ -192,7 +192,7 @@ const SidebarContent = ({ collapsed, onToggle, onNavigate, onClose, mobile }) =>
 
         {collapsed ? (
           <div className="flex flex-col items-center gap-1">
-            <div title={`${session?.name || ''} · ${tierLabel}`}><Avatar name={session?.name} size={34}/></div>
+            <div title={`${session?.name || ''}${session?.email ? ` · ${session.email}` : ''} · ${tierLabel}`}><Avatar name={session?.name} size={34}/></div>
             <button onClick={() => (confirmLogout ? logout() : setConfirmLogout(true))} title={confirmLogout ? 'Klik lagi untuk keluar' : 'Logout'}
               className={`w-11 h-9 rounded-xl flex items-center justify-center ${confirmLogout ? 'bg-rose-500/15 text-rose-400' : 'text-ink-soft hover:text-ink hover:bg-white/5'}`}>
               <Icon name="logout" className="w-4 h-4" style={{ stroke: 'currentColor' }}/>
@@ -208,7 +208,9 @@ const SidebarContent = ({ collapsed, onToggle, onNavigate, onClose, mobile }) =>
           <div className="flex items-center gap-3 px-1.5 py-1">
             <Avatar name={session?.name}/>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-medium text-ink truncate" title={session?.email || ''}>{session?.name || 'Member'}</div>
+              <div className="text-sm font-medium text-ink truncate">{session?.name || 'Member'}</div>
+              {/* Email Google yang dipakai login — sering ditanya saat bayar atau minta bantuan admin. */}
+              {session?.email && <div className="text-[11px] text-ink-muted break-all leading-snug" title={session.email}>{session.email}</div>}
               <div className="text-[11px] truncate" style={{ color: isFree ? '#c9a86a' : '#3ecf8e' }}>{tierLabel}</div>
             </div>
             <button onClick={() => setConfirmLogout(true)} title="Logout" className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-soft hover:text-ink hover:bg-white/5">
