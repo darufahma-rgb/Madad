@@ -10,7 +10,7 @@ import {
 } from './_lib/ai-partner/prompts.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { getMonthlyLimits, cachedMonthlyLimits } from './_lib/ai-partner/limits.js';
-import { splitChunks, spreadSample, relevantExcerpt } from './_lib/ai-partner/chunks.js';
+import { splitChunks, spreadSample, stickyExcerpt } from './_lib/ai-partner/chunks.js';
 import {
   isStr, cleanFlashcards, cleanQuiz, cleanGlossary, cleanMindmap, cleanEssays,
   cleanGrade, cleanIrab, cleanProgressPatch,
@@ -686,12 +686,18 @@ async function handleChat(ctx, body, res) {
   // Riwayat per mode supaya simulasi syafawi tidak tercampur tanya-jawab biasa.
   const history = all.filter(m => (m.mode || 'tutor') === mode).slice(-CHAT_HISTORY);
   // Materi yang muat dikirim utuh (system prompt di-cache supaya pesan berikutnya murah). Materi panjang:
-  // tutor menerima potongan yang paling relevan dengan pertanyaan, syafawi menerima contoh merata dari semua bab.
+  // tutor menerima potongan yang relevan — dipakai ulang selama masih cocok supaya cache tetap kena —
+  // syafawi menerima contoh merata dari semua bab (selalu sama, jadi cache juga kena).
   const long = set.content.length > SINGLE_PASS_CHARS;
-  const recentAsk = history.filter(m => m.role === 'user').slice(-1).map(m => m.content).join(' ');
-  const excerpt = !long ? set.content
-    : mode === 'syafawi' ? spreadSample(set.content, SINGLE_PASS_CHARS)
-    : relevantExcerpt(set.content, `${message} ${recentAsk}`, SINGLE_PASS_CHARS);
+  let tutorCtx = null;
+  let excerpt = set.content;
+  if (long && mode === 'syafawi') excerpt = spreadSample(set.content, SINGLE_PASS_CHARS);
+  else if (long) {
+    const prevCtx = [...history].reverse().find(m => m.role === 'assistant' && m.ctx)?.ctx || null;
+    const sticky = stickyExcerpt(set.content, message, SINGLE_PASS_CHARS, prevCtx);
+    excerpt = sticky.excerpt;
+    tutorCtx = sticky.ctx;
+  }
   const material = long
     ? `(Materi panjang — yang ditampilkan hanya potongan ${mode === 'syafawi' ? 'dari seluruh bab' : 'yang paling berkaitan dengan pertanyaan'}; bagian yang dilewati ditandai […]. Jika jawabannya tidak ada di potongan ini, katakan mungkin dibahas di bagian lain materi.)\n\n${excerpt}`
     : excerpt;
@@ -712,7 +718,7 @@ async function handleChat(ctx, body, res) {
   const chat = [
     ...all,
     { role: 'user', content: message, at: now, mode },
-    { role: 'assistant', content: reply, at: now, mode, model: out.model },
+    { role: 'assistant', content: reply, at: now, mode, model: out.model, ...(tutorCtx ? { ctx: tutorCtx } : {}) },
   ].slice(-CHAT_MAX_STORED);
   await updateSet(ctx.code, set.id, { chat });
   return sendResult(res, stream, { reply, model: out.model });
