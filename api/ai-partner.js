@@ -140,22 +140,40 @@ const releaseTrial = async (code, setId) => {
 
 /* ── Respon umum ── */
 
-const quotaExceeded = (res, kind, scope = 'daily') => scope === 'unavailable'
+/* Kuota "bulanan" berlaku per periode 30 hari langganan, dihitung mundur dari tanggal habis — jadi tiap
+   pembeli dapat jatah yang sama berapa pun tanggal belinya, dan perpanjangan lebih awal tidak menggandakan
+   jatah periode yang sedang berjalan. Akses tanpa tanggal habis (manual admin / Membership lama) memakai
+   bulan kalender. */
+const QUOTA_CYCLE_MS = 30 * 86400000;
+const quotaPeriod = (expiresAt) => {
+  const end = expiresAt ? Date.parse(expiresAt) : NaN;
+  const now = Date.now();
+  if (!Number.isFinite(end) || end <= now) {
+    const d = new Date();
+    return {
+      start: `${d.toISOString().slice(0, 7)}-01`,
+      resetAt: new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 1)).toISOString(),
+    };
+  }
+  const startMs = end - Math.ceil((end - now) / QUOTA_CYCLE_MS) * QUOTA_CYCLE_MS;
+  return { start: new Date(startMs).toISOString().slice(0, 10), resetAt: new Date(startMs + QUOTA_CYCLE_MS).toISOString() };
+};
+const formatQuotaDate = (iso) => new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', timeZone: 'Asia/Jakarta' });
+
+const quotaExceeded = (res, kind, scope = 'daily', ctx = null) => scope === 'unavailable'
   ? res.status(503).json({ ok: false, error: 'Tidak bisa memeriksa kuota sekarang. Coba lagi sebentar.' })
   : res.status(429).json({
     ok: false, error: 'quota', scope,
     message: scope === 'monthly'
-      ? `Kuota bulanan (${cachedMonthlyLimits()[kind]}x) untuk fitur ini sudah habis. Kuota direset tanggal 1 bulan depan.`
+      ? `Jatah ${cachedMonthlyLimits()[kind]}x untuk fitur ini di periode langgananmu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx?.quotaResetAt || quotaPeriod(null).resetAt)}.`
       : `Batas harian (${LIMITS[kind]}x) untuk fitur ini tercapai. Coba lagi besok.`,
   });
 
-const monthStart = () => `${new Date().toISOString().slice(0, 7)}-01`;
-
-// Pemakaian bulan ini per jenis: { chat: 12, … }. Gagal membaca → null (pemanggil memutuskan).
-const monthlyUsage = async (code) => {
+// Pemakaian sejak tanggal `since` per jenis: { chat: 12, … }. Gagal membaca → null (pemanggil memutuskan).
+const monthlyUsage = async (code, since) => {
   const { url, key } = sbConfig();
   const r = await fetch(
-    `${url}/rest/v1/ai_usage?member_code=eq.${encodeURIComponent(code)}&day=gte.${monthStart()}&select=kind,count`,
+    `${url}/rest/v1/ai_usage?member_code=eq.${encodeURIComponent(code)}&day=gte.${since}&select=kind,count`,
     { headers: sbHeaders(key) }
   );
   if (!r.ok) return null;
@@ -169,7 +187,9 @@ const monthlyUsage = async (code) => {
 const takeQuota = async (ctx, kind) => {
   const monthly = (await getMonthlyLimits())[kind];
   if (monthly != null) {
-    const used = await monthlyUsage(ctx.code);
+    const period = quotaPeriod(ctx.aiExpiresAt);
+    ctx.quotaResetAt = period.resetAt;
+    const used = await monthlyUsage(ctx.code, period.start);
     if (!used) return 'unavailable';
     if ((used[kind] || 0) >= monthly) return 'monthly';
   }
@@ -238,7 +258,7 @@ async function handleOcr(ctx, body, res) {
   if (foto_base64.length > 3_500_000) return res.status(400).json({ ok: false, error: 'Foto terlalu besar' });
   if (ctx.tier === 'pro') {
     const over = await takeQuota(ctx, 'ocr');
-    if (over) return quotaExceeded(res, 'ocr', over);
+    if (over) return quotaExceeded(res, 'ocr', over, ctx);
   } else if (!(await consumeQuota(ctx.code, 'ocr', TRIAL_OCR_LIMIT))) {
     return upgradeRequired(res, 'ocr', `Coba gratis bisa membaca ${TRIAL_OCR_LIMIT} foto per hari. Berlangganan untuk membaca lebih banyak.`);
   }
@@ -270,9 +290,9 @@ async function handleTranscribe(ctx, body, res) {
   if (overAudio === 'daily') {
     return res.status(429).json({ ok: false, error: 'quota', message: `Batas transkripsi harian (${LIMITS.transcribe} menit) tercapai. Coba lagi besok.` });
   }
-  if (overAudio === 'unavailable') return quotaExceeded(res, 'transcribe', overAudio);
+  if (overAudio === 'unavailable') return quotaExceeded(res, 'transcribe', overAudio, ctx);
   if (overAudio) {
-    return res.status(429).json({ ok: false, error: 'quota', message: `Kuota transkripsi bulanan (${cachedMonthlyLimits().transcribe} menit) sudah habis. Kuota direset tanggal 1 bulan depan.` });
+    return res.status(429).json({ ok: false, error: 'quota', message: `Jatah transkripsi ${cachedMonthlyLimits().transcribe} menit di periode langgananmu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx.quotaResetAt || quotaPeriod(null).resetAt)}.` });
   }
 
   const dialect = TRANSCRIBE_DIALECTS.includes(body.dialect) ? body.dialect : 'campur';
@@ -308,7 +328,7 @@ async function handleCreate(ctx, body, res) {
     }
   } else {
     const over = await takeQuota(ctx, 'create');
-    if (over) return quotaExceeded(res, 'create', over);
+    if (over) return quotaExceeded(res, 'create', over, ctx);
   }
 
   const { url, key } = sbConfig();
@@ -516,7 +536,7 @@ async function handleGenerate(ctx, body, res) {
     }
   } else {
     const over = await takeQuota(ctx, 'generate');
-    if (over) return quotaExceeded(res, 'generate', over);
+    if (over) return quotaExceeded(res, 'generate', over, ctx);
   }
 
   const messages = materialMessage(set);
@@ -614,7 +634,7 @@ async function handleAnalyze(ctx, body, res) {
   if (cached) return res.status(200).json({ ok: true, data: cached.output, cached: true, model: cached.model || null });
 
   const over = await takeQuota(ctx, 'analyze');
-  if (over) return quotaExceeded(res, 'analyze', over);
+  if (over) return quotaExceeded(res, 'analyze', over, ctx);
 
   const model = (await resolveModels()).arabic;
   let output;
@@ -640,7 +660,7 @@ async function handleGrade(ctx, body, res) {
   const essay = Array.isArray(set.essays) ? set.essays[index] : null;
   if (!essay) return res.status(400).json({ ok: false, error: 'Soal tidak ditemukan' });
   const over = await takeQuota(ctx, 'grade');
-  if (over) return quotaExceeded(res, 'grade', over);
+  if (over) return quotaExceeded(res, 'grade', over, ctx);
 
   const prompt = gradeUserPrompt(essay, answer);
   const model = (await resolveModels()).grade;
@@ -660,7 +680,7 @@ async function handleChat(ctx, body, res) {
   const set = await getOwnedSet(ctx.code, body.set_id, 'id,title,content,chat');
   if (!set) return res.status(404).json({ ok: false, error: 'Materi tidak ditemukan' });
   const over = await takeQuota(ctx, 'chat');
-  if (over) return quotaExceeded(res, 'chat', over);
+  if (over) return quotaExceeded(res, 'chat', over, ctx);
 
   const all = Array.isArray(set.chat) ? set.chat : [];
   // Riwayat per mode supaya simulasi syafawi tidak tercampur tanya-jawab biasa.
@@ -727,7 +747,7 @@ async function handlePromptChat(ctx, body, res) {
     trialLeft = TRIAL_PROMPT_MESSAGES - used - 1;
   } else {
     const over = await takeQuota(ctx, 'prompt');
-    if (over) return quotaExceeded(res, 'prompt', over);
+    if (over) return quotaExceeded(res, 'prompt', over, ctx);
   }
 
   const { out, stream, failed } = await runAI(body, res, {
@@ -804,9 +824,10 @@ async function handleFeedback(ctx, body, res) {
 async function handleStats(ctx, res) {
   const { url, key } = sbConfig();
   const today = new Date().toISOString().slice(0, 10);
-  // Ambil 30 hari terakhir, atau sejak tanggal 1 kalau lebih awal (untuk kuota bulanan).
+  // Ambil 30 hari terakhir, atau sejak awal periode kuota kalau lebih awal.
   const last30 = new Date(Date.now() - 29 * 86400000).toISOString().slice(0, 10);
-  const month = monthStart();
+  const period = quotaPeriod(ctx.aiExpiresAt);
+  const month = period.start;
   const since = month < last30 ? month : last30;
   const [setsRes, usageRes] = await Promise.all([
     fetch(`${url}/rest/v1/study_sets?member_code=eq.${encodeURIComponent(ctx.code)}&select=id,title,source_type,flashcards,quiz,quiz_best_score,essay_attempts,created_at&order=created_at.desc&limit=200`, { headers: sbHeaders(key) }),
@@ -856,6 +877,9 @@ async function handleStats(ctx, res) {
       usageMonth,
       limits: ctx.tier === 'pro' ? LIMITS : null,
       monthlyLimits: ctx.tier === 'pro' ? await getMonthlyLimits() : null,
+      quotaPeriodStart: ctx.tier === 'pro' ? period.start : null,
+      quotaResetAt: ctx.tier === 'pro' ? period.resetAt : null,
+      quotaPerSubscription: !!ctx.aiExpiresAt,
     },
   });
 }
@@ -1000,7 +1024,7 @@ export default async function handler(req, res) {
 
     const access = await requireAiTier(req);
     if (!access.ok) return res.status(access.status).json({ ok: false, error: access.reason });
-    const ctx = { code: access.code, tier: access.tier };
+    const ctx = { code: access.code, tier: access.tier, aiExpiresAt: access.aiExpiresAt || null };
 
     if (ctx.tier === 'trial' && PRO_ONLY_ACTIONS.includes(action)) {
       return upgradeRequired(res, action);

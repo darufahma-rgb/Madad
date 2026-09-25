@@ -2318,9 +2318,10 @@ const AdminSettings = () => {
 
         <div className="card-glass p-6 space-y-4">
           <div>
-            <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Kuota bulanan AI per pelanggan</div>
+            <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Kuota AI per 30 hari langganan</div>
             <p className="text-[11px] text-ink-soft leading-relaxed">
-              Batas pemakaian tiap pelanggan AI Partner per bulan (direset tanggal 1). Menahan biaya dari pemakai paling berat
+              Batas pemakaian tiap pelanggan AI Partner per periode 30 hari langganan (dihitung dari tanggal bayar; akses manual tanpa
+              tanggal habis memakai bulan kalender). Menahan biaya dari pemakai paling berat
               supaya tetap sebanding dengan harga langganan. Kosong = bawaan; 0 = fitur ditutup. Batas harian tetap berlaku.
             </p>
           </div>

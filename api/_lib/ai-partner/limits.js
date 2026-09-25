@@ -1,4 +1,5 @@
-// Kuota bulanan pelanggan AI Partner (direset tiap tanggal 1, UTC), diatur admin dari Settings tanpa redeploy.
+// Kuota per periode 30 hari langganan AI Partner (lihat quotaPeriod di api/ai-partner.js), diatur admin
+// dari Settings tanpa redeploy.
 // Tujuannya menahan biaya pemakai paling berat supaya tetap sebanding dengan harga langganan.
 import { readSettings } from '../settings.js';
 

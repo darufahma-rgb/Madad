@@ -239,8 +239,10 @@ const StatistikPage = () => {
                   <QuotaBox title="Jatah AI hari ini" used={ai.usageToday} limits={ai.limits}
                     note="Jatah harian direset setiap hari pukul 07.00 WIB (tengah malam UTC)."/>
                   {ai.monthlyLimits && (
-                    <QuotaBox title="Jatah AI bulan ini" used={ai.usageMonth || {}} limits={ai.monthlyLimits}
-                      note="Jatah bulanan direset setiap tanggal 1."/>
+                    <QuotaBox title={ai.quotaPerSubscription ? "Jatah AI periode langgananmu" : "Jatah AI bulan ini"} used={ai.usageMonth || {}} limits={ai.monthlyLimits}
+                      note={ai.quotaResetAt
+                        ? `${ai.quotaPerSubscription ? "Berlaku per 30 hari langganan" : "Berlaku per bulan"} · jatah baru mulai ${new Date(ai.quotaResetAt).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}.`
+                        : "Jatah dihitung per periode langganan."}/>
                   )}
                 </div>
               )}
