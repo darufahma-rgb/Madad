@@ -2937,7 +2937,7 @@ const BankSoalReviewPanel = ({ onDone }) => {
       d = { ok: false, error: e?.name === 'TimeoutError' ? 'Server terlalu lama (lebih dari 60 detik)' : 'Tidak bisa terhubung ke server' };
     }
     setExporting(false);
-    if (!d.ok || !Array.isArray(d.data?.pending)) { setExported({ error: d.error || 'Respons tidak dikenali' }); return; }
+    if (!d.ok || !Array.isArray(d.data?.pending)) { setExported({ error: 'Ekspor gagal: ' + (d.error || 'Respons tidak dikenali') }); return; }
     const blob = new Blob([JSON.stringify(d.data, null, 2)], { type: 'application/json' });
     const file = {
       name: `bank-soal-pending-${new Date().toISOString().slice(0, 10)}.json`,
@@ -2954,8 +2954,15 @@ const BankSoalReviewPanel = ({ onDone }) => {
     try { json = JSON.parse(await file.text()); } catch { toast.push('File bukan JSON yang valid.'); return; }
     const decisions = Array.isArray(json) ? json : json?.decisions;
     if (!Array.isArray(decisions) || !decisions.length) { toast.push('Tidak ada "decisions" di file ini.'); return; }
+    // Kalau daftar pending gagal diambil (mis. sesi admin habis), jangan tandai semua soal "tidak ditemukan".
     const list = await bankSoalApi('list', { status_filter: 'pending' });
-    const byId = Object.fromEntries((list.ok ? list.data : []).map(x => [x.id, x]));
+    if (!list.ok || !Array.isArray(list.data)) {
+      const msg = /unauthori/i.test(list.error || '') ? 'Sesi admin habis — logout, login lagi, lalu impor ulang file-nya.' : (list.error || 'Gagal mengambil daftar soal pending.');
+      setRows(null); setExported({ error: 'Impor gagal: ' + msg }); toast.push('Impor gagal: ' + msg);
+      return;
+    }
+    setExported(prev => (prev?.error ? null : prev));
+    const byId = Object.fromEntries(list.data.map(x => [x.id, x]));
     const seen = new Set();
     const unique = decisions.filter(dec => dec?.id && !seen.has(dec.id) && seen.add(dec.id));
     const out = unique.slice(0, 300).map(dec => {
@@ -3020,7 +3027,7 @@ const BankSoalReviewPanel = ({ onDone }) => {
       </div>
 
       {exported && (exported.error ? (
-        <div className="mt-3 text-xs text-rose-400">Ekspor gagal: {exported.error}</div>
+        <div className="mt-3 text-xs text-rose-400">{exported.error}</div>
       ) : (
         <div className="mt-3 flex items-center gap-2 flex-wrap text-xs">
           <span className="text-emerald-300">✓ {exported.count} soal diekspor ({exported.photos} dengan foto) → <span className="font-mono">{exported.name}</span> di folder Download.</span>
@@ -3063,7 +3070,7 @@ const BankSoalReviewPanel = ({ onDone }) => {
                           className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1 text-ink" placeholder="Alasan (dikirim ke pengirim via WA)"/>
                       ) : <div className="text-ink-muted">{r.reason || '—'}</div>}
                       {Object.keys(r.fix).length > 0 && (
-                        <div className="text-sky-300 mt-1">Perbaikan: {Object.entries(r.fix).filter(([k]) => k !== 'soal').map(([k, v]) => `${k}=${v}`).join(', ')}{r.fix.soal ? ' · teks soal diperbarui' : ''}</div>
+                        <div className="text-sky-300 mt-1">Perbaikan: {[...Object.entries(r.fix).filter(([k]) => k !== 'soal').map(([k, v]) => `${k}=${v}`), ...(r.fix.soal ? ['teks soal diisi'] : [])].join(' · ')}</div>
                       )}
                     </td>
                     <td className="p-2">{r.result === 'ok' ? <span className="text-emerald-300">✓</span> : r.result ? <span className="text-rose-400">{r.result}</span> : ''}</td>
