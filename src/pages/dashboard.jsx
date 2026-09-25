@@ -588,14 +588,34 @@ const DailyAdviceCard = () => {
   );
 };
 
+// Pengguna baru langsung masuk dashboard; onboarding singkat muncul sebagai jendela di atasnya.
+const DashboardOnboarding = ({ name }) => (
+  <div className="page-enter">
+    <section className="relative pt-10 md:pt-16 pb-16 overflow-hidden">
+      <Blob color="rgba(62,207,142,0.20)" size={600} top={-200} right={-100}/>
+      <div className="container-x relative">
+        <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-3">Beranda</div>
+        <h1 className="font-display text-4xl md:text-6xl font-semibold text-ink leading-tight">Ahlan, {name}.</h1>
+        <p className="text-ink-muted mt-3 max-w-xl">Dashboard-mu sedang disiapkan sesuai tingkat dan fakultasmu.</p>
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mt-8 opacity-50">
+          {[0, 1, 2].map(i => <div key={i} className="card-glass p-5 h-28"/>)}
+        </div>
+      </div>
+    </section>
+    <OnboardingPage overlay/>
+  </div>
+);
+
 const DashboardHomePage = () => {
   const { session, profile, isFree } = useAuth();
   const [aiAccess, setAiAccess] = useState("checking");
+  const [showOffer, setShowOffer] = useState(() => !!window.readUpgradeOffer?.());
 
   useEffect(() => {
     if (!session) { navigate("/"); return; }
-    if (!profile?.onboarded) { navigate("/onboarding"); return; }
+    if (!profile?.onboarded) return;
     markPresenceToday();
+    setShowOffer(!!window.readUpgradeOffer?.());
   }, [session, profile]);
 
   useEffect(() => {
@@ -608,7 +628,8 @@ const DashboardHomePage = () => {
     return () => { alive = false; };
   }, [session]);
 
-  if (!session || !profile?.onboarded) return null;
+  if (!session) return null;
+  if (!profile?.onboarded) return <DashboardOnboarding name={session.name.split(" ")[0]}/>;
 
   const firstName = session.name.split(" ")[0];
   const myMaddahCount = (typeof getMaddahsForProfile !== "undefined") ? getMaddahsForProfile(profile).length : 0;
@@ -616,6 +637,7 @@ const DashboardHomePage = () => {
 
   return (
     <div className="page-enter">
+      {showOffer && isFree && <UpgradeOfferModal onClose={() => setShowOffer(false)}/>}
       <section className="relative pt-6 md:pt-16 pb-16 overflow-hidden">
         <div className="hero-light-beam"/>
         <Blob color="rgba(62,207,142,0.20)" size={600} top={-200} right={-100}/>

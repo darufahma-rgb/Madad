@@ -322,13 +322,17 @@ export default function TutorialModal() {
   };
 
   let isLoggedIn = false;
+  let onboarded = false;
   try {
     const s = JSON.parse(localStorage.getItem("madad_session") || "{}");
     isLoggedIn = !!s.code;
+    onboarded = !!JSON.parse(localStorage.getItem("madad_profile") || "{}")?.onboarded;
   } catch {}
 
   useEffect(() => {
-    if (isLoggedIn) {
+    // Pengguna baru mendapat onboarding singkat + tawaran paket dulu; tutorial tidak ikut terbuka sendiri
+    // (tetap bisa dibuka lewat tombol Tutorial).
+    if (isLoggedIn && onboarded) {
       const done = localStorage.getItem("talqeeh_tutorial_done");
       if (!done) {
         const t = setTimeout(() => setOpen(true), 800);

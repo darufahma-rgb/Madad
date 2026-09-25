@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import TutorialModal, { openTutorial } from './components/tutorial-modal.jsx';
 
 /* Talqih, App shell + routing */
@@ -63,8 +63,9 @@ const gabungPath = (plan) => `/gabung${plan ? `?plan=${plan}` : ""}`;
 
 const App = () => {
   const path = useRoute();
-  const { session, profile, authStatus, isFree } = useAuth();
+  const { session, profile, authStatus, authInfo, isFree, startFreeAccount } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
+  const autoFreeStarted = useRef(false);
   const [joinPlan, setJoinPlan] = useState(null);
   const [aiPaymentOpen, setAiPaymentOpen] = useState(false);
 
@@ -73,11 +74,24 @@ const App = () => {
     if (s) { s.style.opacity = "0"; setTimeout(() => s.remove(), 580); }
   }, []);
 
-  // Sudah login Google tapi belum punya akun → halaman Gabung (juga jalur balik dari redirect OAuth).
+  // Sudah login Google tapi belum punya akun (juga jalur balik dari redirect OAuth):
+  // langsung buatkan akun gratis dan masuk dashboard — onboarding & tawaran paket muncul di sana.
+  // Yang memilih paket berbayar sebelum login, atau member lama (perlu PIN), tetap ke halaman Gabung.
   useEffect(() => {
     if (authStatus === "needs_activation") {
       setLoginOpen(false);
-      if (!path.startsWith("/gabung")) navigate(gabungPath(readJoinPlan()));
+      const plan = readJoinPlan();
+      const wantsPaid = plan === "library" || plan === "library_ai";
+      if (wantsPaid || authInfo?.likelyLegacyMember) {
+        if (!path.startsWith("/gabung")) navigate(gabungPath(plan));
+        return;
+      }
+      if (autoFreeStarted.current) return;
+      autoFreeStarted.current = true;
+      startFreeAccount().then(r => {
+        if (r.ok) { saveJoinPlan(null); navigate("/dashboard"); }
+        else { autoFreeStarted.current = false; if (!path.startsWith("/gabung")) navigate(gabungPath()); }
+      });
     } else if (authStatus === "inactive") {
       setLoginOpen(true);
     }
@@ -104,14 +118,14 @@ const App = () => {
     // 2) Sudah login & sedang di landing murni → dorong ke "rumah"-nya
     //    (jangan ganggu /maddah-publik, /framework, /ethics, /sample — itu memang publik)
     if (session && (path === "/" || path === "")) {
-      navigate(profile?.onboarded ? "/dashboard" : "/onboarding");
+      navigate("/dashboard");
       return;
     }
 
-    // 3) Sudah login tapi belum onboarded & nyasar ke halaman member → ke onboarding
+    // 3) Sudah login tapi belum onboarded & nyasar ke halaman member → ke dashboard (onboarding muncul di sana)
     if (session && profile && !profile.onboarded) {
-      if (path === "/dashboard" || path === "/library" || path.startsWith("/tools") || path === "/paths") {
-        navigate("/onboarding");
+      if (path === "/library" || path.startsWith("/tools") || path === "/paths") {
+        navigate("/dashboard");
       }
     }
   }, [path, session, profile, authStatus]);
@@ -125,8 +139,7 @@ const App = () => {
       setTimeout(() => navigate(gabungPath(saved)), 50);
       return;
     }
-    const p = getProfile();
-    setTimeout(() => navigate(!p?.onboarded ? "/onboarding" : "/dashboard"), 50);
+    setTimeout(() => navigate("/dashboard"), 50);
     if (saved === "library_ai") setTimeout(() => setAiPaymentOpen(true), 400);
   };
 
@@ -137,7 +150,7 @@ const App = () => {
       setLoginOpen(false);
       if (isFree) navigate(gabungPath(plan));
       else if (plan === "library_ai") setAiPaymentOpen(true);
-      else navigate(profile?.onboarded ? "/dashboard" : "/onboarding");
+      else navigate("/dashboard");
       return;
     }
     saveJoinPlan(plan);
@@ -223,8 +236,9 @@ const App = () => {
   // QuickNote muncul di semua halaman member yang sudah onboarded, kecuali admin & public
   const showQuickNote = session && profile?.onboarded && !isAdmin && !isPublic;
   const isMember = session && profile?.onboarded;
-  // Member memakai kerangka aplikasi (sidebar); onboarding & landing tetap layout publik.
-  const useShell = isMember && path !== "/" && path !== "" && !path.startsWith("/onboarding");
+  // Member memakai kerangka aplikasi (sidebar); landing & Ubah Profil tetap layout publik. Pengguna baru
+  // (belum onboarding) juga sudah memakai kerangka ini di dashboard, dengan onboarding sebagai jendela.
+  const useShell = session && path !== "/" && path !== "" && !path.startsWith("/onboarding");
 
   return (
     <ToastProvider>

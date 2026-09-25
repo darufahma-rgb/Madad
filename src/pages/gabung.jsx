@@ -209,7 +209,7 @@ const GabungPage = () => {
     if (!paidMember || !step) return;
     saveJoinPlanLocal(null);
     toast.push('Selamat, akses Library-mu sudah aktif!');
-    navigate(profile?.onboarded ? '/dashboard' : '/onboarding');
+    navigate('/dashboard');
     if (plan === 'library_ai') setTimeout(() => window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library_ai' } })), 600);
   }, [paidMember]);
 
@@ -251,7 +251,7 @@ const GabungPage = () => {
     if (!r.ok) { setFreeError('Gagal membuat akun gratis. Coba lagi sebentar, atau hubungi admin.'); return; }
     saveJoinPlanLocal(null);
     toast.push('Akun gratismu sudah aktif. Selamat belajar!');
-    navigate('/onboarding');
+    navigate('/dashboard');
   };
 
   const openPayment = () => {

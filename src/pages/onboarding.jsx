@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
+import { createPortal } from 'react-dom';
 /* Talqih — Onboarding (faculty · level · major conditional · S2 maddah) */
 
 const S2SetupStep = ({ profile, onSave }) => {
@@ -123,8 +124,14 @@ const S2SetupStep = ({ profile, onSave }) => {
   );
 };
 
-const OnboardingPage = () => {
-  const { session, profile, saveProfile } = useAuth();
+// Onboarding pertama kali cukup yang penting untuk menyesuaikan maddah & AI; sisanya bisa diisi
+// belakangan lewat "Ubah Profil" (mode edit tetap menanyakan semuanya).
+const FIRST_RUN_SKIP = ["intro", "struggle", "mahad_struggle", "learningStyle", "examWindow"];
+const UPGRADE_OFFER_KEY = "talqeeh_upgrade_offer_pending";
+
+// overlay: tampil sebagai jendela di atas dashboard (pengguna baru). Tanpa overlay: halaman Ubah Profil.
+const OnboardingPage = ({ overlay = false }) => {
+  const { session, profile, saveProfile, isFree } = useAuth();
   const path = useRoute();
   const isEditMode = path.includes("edit=1") || path.includes("edit=true");
   const [step, setStep] = useState(0);
@@ -160,7 +167,8 @@ const OnboardingPage = () => {
   const toast = useToast();
 
   useEffect(() => { if (!session) navigate("/"); }, [session]);
-  useEffect(() => { if (profile?.onboarded && !isEditMode) navigate("/dashboard"); }, [profile, isEditMode]);
+  // Onboarding pertama kali kini muncul di atas dashboard, bukan halaman sendiri.
+  useEffect(() => { if (!overlay && !isEditMode && session) navigate("/dashboard"); }, [profile, isEditMode, overlay, session]);
 
   const QUESTIONS = [
     { key: "intro", kind: "intro" },
@@ -321,7 +329,8 @@ const OnboardingPage = () => {
     },
   ];
 
-  const getActiveQuestions = (d) => QUESTIONS.filter(q => !q.conditional || q.conditional(d));
+  const getActiveQuestions = (d) => QUESTIONS.filter(q =>
+    (isEditMode || !FIRST_RUN_SKIP.includes(q.key)) && (!q.conditional || q.conditional(d)));
 
   // [TECH-1] Safeguard: saat level berubah, activeQuestions bisa menjadi lebih pendek.
   // Pastikan step tidak pernah out-of-bounds (mencegah loncat pertanyaan / profil tidak lengkap).
@@ -334,8 +343,10 @@ const OnboardingPage = () => {
 
   const activeQuestions = getActiveQuestions(data);
   const cur = activeQuestions[step];
-  const totalSteps = activeQuestions.length - 1; // exclude intro
-  const progress = step === 0 ? 0 : Math.round((step / totalSteps) * 100);
+  const hasIntro = activeQuestions[0]?.kind === "intro";
+  const totalSteps = activeQuestions.length - (hasIntro ? 1 : 0); // intro tidak dihitung
+  const stepNo = hasIntro ? step : step + 1;
+  const progress = hasIntro && step === 0 ? 0 : Math.round((stepNo / totalSteps) * 100);
 
   const currentOptions = cur?.optionsFromState
     ? (FACULTIES.find(f => f.id === data.faculty)?.majors || [])
@@ -398,14 +409,15 @@ const OnboardingPage = () => {
       examWindowAt: examChanged ? new Date().toISOString() : profile?.examWindowAt,
       onboarded: true, onboardedAt: profile?.onboardedAt || new Date().toISOString(),
     };
+    // Tandai tawaran paket sebelum menyimpan, supaya dashboard langsung menampilkannya.
+    if (!isEditMode && isFree) { try { localStorage.setItem(UPGRADE_OFFER_KEY, "1"); } catch {} }
     saveProfile(finalProfile);
     if (isEditMode) {
       toast.push("Profil berhasil diperbarui. Dashboard sudah disesuaikan.");
       setTimeout(() => navigate("/dashboard"), 400);
     } else {
       toast.push("Dashboard personal sudah siap untukmu.");
-      // Langkah terakhir (boleh dilewati): Profil Belajar, lalu halaman Selamat Datang.
-      setTimeout(() => navigate(finalProfile.cognitive ? "/welcome" : "/profil-belajar?from=onboarding"), 400);
+      if (!overlay) navigate("/dashboard");
     }
   };
 
@@ -430,24 +442,22 @@ const OnboardingPage = () => {
   };
 
   const onBack = () => { if (step > 0) setStep(step - 1); };
+  const firstName = (session?.name || "").split(" ")[0];
 
   if (!session) return null;
 
   const isLast = step === getActiveQuestions(data).length - 1;
 
+  const Wrapper = overlay ? OverlayFrame : PageFrame;
+
   return (
-    <div className="page-enter min-h-screen flex flex-col">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <Blob color="rgba(62,207,142,0.30)" size={520} top={-100} right={-100}/>
-        <Blob color="rgba(201,168,106,0.15)" size={400} bottom={-100} left={-100}/>
-      </div>
-      <div className="container-x py-12 md:py-16 flex-1 flex flex-col relative">
+    <Wrapper firstName={firstName}>
 
         {/* Progress bar */}
-        {step > 0 && (
-          <div className="max-w-2xl mx-auto w-full mb-10">
+        {!(hasIntro && step === 0) && (
+          <div className={`max-w-2xl mx-auto w-full ${overlay ? "mb-6" : "mb-10"}`}>
             <div className="flex items-center justify-between mb-2 text-xs">
-              <span className="text-gold-400 uppercase tracking-wider">Langkah {step} dari {totalSteps}</span>
+              <span className="text-gold-400 uppercase tracking-wider">Langkah {stepNo} dari {totalSteps}</span>
               <span className="text-ink-muted num">{progress}%</span>
             </div>
             <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
@@ -476,13 +486,13 @@ const OnboardingPage = () => {
 
         {/* Nav — hide outer button for s2_setup (it has its own) */}
         {cur?.kind !== "intro" && cur?.kind !== "s2_setup" && (
-          <div className="max-w-2xl mx-auto w-full mt-10 flex items-center justify-between">
-            <button onClick={onBack} className="btn btn-ghost">
+          <div className={`max-w-2xl mx-auto w-full ${overlay ? "mt-6" : "mt-10"} flex items-center justify-between`}>
+            <button onClick={onBack} disabled={step === 0} className={`btn btn-ghost ${step === 0 ? "invisible" : ""}`}>
               <Icon name="chevronLeft" className="w-4 h-4"/> Kembali
             </button>
             <button onClick={onNext} disabled={!canNext}
               className={`btn btn-primary ${!canNext ? "opacity-40 cursor-not-allowed" : ""}`}>
-              {isLast ? (isEditMode ? "Simpan Perubahan" : "Selesai & buka dashboard") : "Lanjut"} <Icon name="arrowRight" className="w-4 h-4"/>
+              {isLast ? (isEditMode ? "Simpan Perubahan" : "Selesai") : "Lanjut"} <Icon name="arrowRight" className="w-4 h-4"/>
             </button>
           </div>
         )}
@@ -493,8 +503,104 @@ const OnboardingPage = () => {
             </button>
           </div>
         )}
+    </Wrapper>
+  );
+};
+
+// Halaman penuh (Ubah Profil).
+const PageFrame = ({ children }) => (
+  <div className="page-enter min-h-screen flex flex-col">
+    <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      <Blob color="rgba(62,207,142,0.30)" size={520} top={-100} right={-100}/>
+      <Blob color="rgba(201,168,106,0.15)" size={400} bottom={-100} left={-100}/>
+    </div>
+    <div className="container-x py-12 md:py-16 flex-1 flex flex-col relative">{children}</div>
+  </div>
+);
+
+// Jendela di atas dashboard untuk pengguna baru.
+// Dirender ke <body> lewat portal: animasi halaman memakai transform, yang membuat position:fixed
+// ikut terpotong di dalam halaman.
+const Modal = ({ children }) => createPortal(children, document.body);
+
+const OverlayFrame = ({ firstName, children }) => (
+  <Modal>
+  <div className="fixed inset-0 z-[130] overflow-y-auto" style={{ background: "rgba(8,8,8,0.78)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}>
+    <div className="min-h-full flex items-start md:items-center justify-center p-3 md:p-8">
+      <div className="page-enter w-full max-w-3xl rounded-3xl border border-white/10 shadow-2xl shadow-black/60 p-5 md:p-8"
+        style={{ background: "linear-gradient(180deg, #171717, #111)" }}>
+        <div className="flex items-center gap-3 mb-6">
+          <LogoMark size={36}/>
+          <div className="min-w-0">
+            <div className="text-ink font-semibold">Ahlan{firstName ? `, ${firstName}` : ""}! Kenalan dulu, 1 menit saja</div>
+            <div className="text-xs text-ink-muted">Supaya maddah, prompt, dan AI langsung menyesuaikan tingkat & fakultasmu.</div>
+          </div>
+        </div>
+        {children}
       </div>
     </div>
+  </div>
+  </Modal>
+);
+
+// Setelah onboarding, akun gratis ditawari paket berbayar sekali. "Nanti saja" menutupnya.
+const readUpgradeOffer = () => { try { return localStorage.getItem(UPGRADE_OFFER_KEY) === "1"; } catch { return false; } };
+const clearUpgradeOffer = () => { try { localStorage.removeItem(UPGRADE_OFFER_KEY); } catch {} };
+
+const UpgradeOfferModal = ({ onClose }) => {
+  const settings = useAppSettings();
+  const aiPrice = settings.aiPriceLabel;
+  const go = (plan) => { clearUpgradeOffer(); onClose(); navigate(`/gabung?plan=${plan}`); };
+  const later = () => { clearUpgradeOffer(); onClose(); };
+  const plans = [
+    { plan: "library", title: "Library", price: LIBRARY_PRICE, note: "sekali bayar · selamanya", color: "#c9a86a",
+      items: LIBRARY_FEATURES.slice(0, 4) },
+    { plan: "library_ai", title: "Library + AI Study Partner", price: LIBRARY_PRICE, note: aiPrice ? `+ ${aiPrice}/bulan untuk AI` : "+ langganan AI bulanan", color: "#3ecf8e",
+      items: ["Semua isi paket Library", "Tanya AI tanpa salin-tempel — langsung dijawab di Talqeeh", ...AI_PARTNER_FEATURES.slice(0, 2)], recommended: true },
+  ];
+  return (
+    <Modal>
+    <div className="fixed inset-0 z-[130] overflow-y-auto" style={{ background: "rgba(8,8,8,0.78)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}>
+      <div className="min-h-full flex items-start md:items-center justify-center p-3 md:p-8">
+        <div className="page-enter w-full max-w-3xl rounded-3xl border border-white/10 shadow-2xl shadow-black/60 p-5 md:p-8"
+          style={{ background: "linear-gradient(180deg, #171717, #111)" }}>
+          <div className="text-center mb-6">
+            <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-2">Profilmu sudah siap ✦</div>
+            <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink leading-tight">Mau buka semua fitur Talqeeh?</h2>
+            <p className="text-sm text-ink-muted mt-2 max-w-lg mx-auto">Akun gratismu sudah aktif. Upgrade kapan saja untuk membuka semua maddah dan AI Study Partner.</p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-3">
+            {plans.map(p => (
+              <div key={p.plan} className="rounded-2xl p-5 flex flex-col relative"
+                style={{ background: `${p.color}0f`, border: `1px solid ${p.color}${p.recommended ? "66" : "40"}` }}>
+                {p.recommended && (
+                  <span className="absolute -top-2.5 right-4 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                    style={{ background: p.color, color: "#0b0b0b" }}>Paling lengkap</span>
+                )}
+                <div className="font-display text-lg font-semibold text-ink">{p.title}</div>
+                <div className="mt-1 mb-3">
+                  <span className="font-display text-2xl font-semibold" style={{ color: p.color }}>{p.price}</span>
+                  <span className="text-xs text-ink-muted ml-1.5">{p.note}</span>
+                </div>
+                <ul className="space-y-1.5 text-[13px] text-ink-muted flex-1">
+                  {p.items.map(it => (
+                    <li key={it} className="flex gap-2"><Icon name="check" className="w-3.5 h-3.5 flex-shrink-0 mt-1" style={{ stroke: p.color }}/>{it}</li>
+                  ))}
+                </ul>
+                <button onClick={() => go(p.plan)} className="mt-4 w-full py-2.5 rounded-xl text-sm font-semibold"
+                  style={{ background: p.color, color: "#0b0b0b" }}>
+                  Pilih {p.title}
+                </button>
+              </div>
+            ))}
+          </div>
+          <button onClick={later} className="block mx-auto mt-5 text-sm text-ink-muted hover:text-ink underline underline-offset-4">
+            Nanti saja, pakai versi gratis dulu
+          </button>
+        </div>
+      </div>
+    </div>
+    </Modal>
   );
 };
 
@@ -630,3 +736,5 @@ const QuestionStep = ({ question, options, value, onPick, mahadJenjang, onClearJ
 };
 
 window.OnboardingPage = OnboardingPage;
+window.UpgradeOfferModal = UpgradeOfferModal;
+window.readUpgradeOffer = readUpgradeOffer;
