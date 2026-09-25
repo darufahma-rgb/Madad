@@ -97,10 +97,37 @@ const PromptChat = ({ trial = null }) => {
     }
   }, []);
 
+  // Ikuti jawaban yang sedang mengalir hanya selama pengguna ada di bawah. Begitu ia menggulir ke atas,
+  // berhenti mengikuti dan tampilkan tombol "Jawaban terbaru" (seperti asisten AI pada umumnya).
+  const followRef = useRef(true);
+  const [showJump, setShowJump] = useState(false);
+  const atBottom = () => window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 120;
+  // Selalu lompat langsung: gulir halus kalah cepat dengan jawaban yang terus bertambah.
+  const toBottom = () => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'auto' });
+
   useEffect(() => {
-    // Kotak ketik menempel di bawah layar, jadi gulir halaman ke paling bawah (bukan ke elemen penanda).
-    if (thread?.messages.length || sending) window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'smooth' });
-  }, [thread?.messages.length, sending, Math.floor(live.length / 300)]);
+    const onScroll = () => {
+      const near = atBottom();
+      followRef.current = near;
+      setShowJump(!near);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Pesan baru dari pengguna: selalu turun ke bawah dan mulai mengikuti lagi.
+  const userCount = (thread?.messages || []).filter(m => m.role === 'user').length;
+  useEffect(() => {
+    if (!userCount) return;
+    followRef.current = true;
+    toBottom();
+  }, [userCount, thread?.id]);
+
+  // Teks jawaban bertambah / selesai: ikuti hanya kalau pengguna masih di bawah.
+  useEffect(() => {
+    if (followRef.current) toBottom();
+    else setShowJump(true);
+  }, [thread?.messages.length, sending, Math.floor(live.length / 120)]);
 
   const persist = (t) => {
     const next = [t, ...readThreads().filter(x => x.id !== t.id)];
@@ -298,7 +325,14 @@ const PromptChat = ({ trial = null }) => {
       {/* Kotak ketik menempel di bawah */}
       <div className="sticky z-20 pt-3 pb-3 md:pb-5" style={{ bottom: 'var(--tabbar-height, 0px)', background: 'linear-gradient(to top, rgb(12,12,12) 70%, rgba(12,12,12,0))' }}>
         <div className="container-x w-full">
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-3xl mx-auto relative">
+            {showJump && (messages.length > 0 || sending) && (
+              <button onClick={() => { followRef.current = true; setShowJump(false); toBottom(); }}
+                className="absolute left-1/2 -translate-x-1/2 -top-11 h-9 px-3.5 rounded-full text-xs text-ink inline-flex items-center gap-1.5 border border-white/15 shadow-lg shadow-black/40 hover:bg-white/10"
+                style={{ background: '#1f1f1f' }}>
+                <span aria-hidden>↓</span> {sending ? 'Jawaban sedang ditulis' : 'Jawaban terbaru'}
+              </button>
+            )}
             {isTrial && trialLeft > 0 && (
               <div className="flex items-center justify-between gap-3 mb-2 px-3 py-2 rounded-xl text-xs"
                 style={{ background: 'rgba(201,168,106,0.08)', border: '1px solid rgba(201,168,106,0.25)' }}>
