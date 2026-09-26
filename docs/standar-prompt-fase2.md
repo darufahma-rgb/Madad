@@ -26,9 +26,9 @@ dan `[METODE]`/`[LEVEL_BAHASA]` ada. Diff harus hanya menyentuh blok maddah yang
 
 ## Progres
 
-15 maddah prioritas selesai (270 prompt): Nahwu, Fiqh Madzhabi, Tauhid, Ushul Fiqh, Mustholah Hadits, Tarikh Tasyri',
+18 maddah selesai (324 prompt): Nahwu, Fiqh Madzhabi, Tauhid, Ushul Fiqh, Mustholah Hadits, Tarikh Tasyri',
 Sharaf, Al-Qur'an (Tahfidz), Sirah Nabawiyah, Fiqh Muqaran, Tarikh Islam, 'Ulum Al-Qur'an, Tajwid, Ahwal Syakhshiyah,
-Balaghah. Urutan dipilih dari jangkauan (fakultas × tingkat) dan jumlah kertas di Bank Soal, karena data jumlah buka
+Balaghah, Mantiq, Tafsir Tahlili, Hadits Tahlili. Urutan dipilih dari jangkauan (fakultas × tingkat) dan jumlah kertas di Bank Soal, karena data jumlah buka
 maddah hanya ada di Supabase.
 
 Catatan dari kertas asli yang memengaruhi penulisan:
@@ -37,5 +37,10 @@ Catatan dari kertas asli yang memengaruhi penulisan:
   diyakini, lalu menilai berdasarkan teks mushaf yang ditempel pengguna.
 - Tajwid di tingkat kuliah menguji teori mendalam (makharij ra'isah/far'iyyah, perbandingan shifat, syarah bait matan).
 - Fiqh Muqaran menguji jumlah pendapat ("بالاتفاق – على قولين – على ثلاثة أقوال").
+- Tafsir Tahlili: kertas mengutip "قال تعالى {…} الآيات" lalu 4–6 sub-soal beruntun (munasabah, makna, i'rab, حكمة/سرّ).
+  AI menulis ayat hanya kalau yakin redaksinya; kalau ragu, minta pengguna menempel dari mushaf.
+- Hadits Tahlili: matan selalu ditempel pengguna (`[TEMPEL HADITS]`), tidak dilengkapi dari ingatan. Pola soal: rawi a'la,
+  شكّل، بيّن في سطر، تعارض ظاهر، أقوال الأئمة والراجح، ✓/✗ مع التعليل.
+- Mantiq: tidak ada kertas Mantiq di 44 kertas yang ditranskrip; drill mengikuti pola umum semua kertas (ta'rif 40%, 'allil 27%) plus mitsal.
 - Kertas "Tarikh Islam" satu-satunya di Bank Soal ternyata Tarikh As-Sunnah; Sirah belum punya kertas.
 - Rujukan kitab boleh juga dari kitab yang disebut di kertas asli, selalu dengan "kalau kamu yakin".
