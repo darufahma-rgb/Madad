@@ -700,40 +700,46 @@ Jelaskan bagaimana pilihan nahwu melahirkan makna balaghi, untuk fenomena [SEBUT
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri kerangka utuh Ushul Fiqh:
-1. Definisi & tujuan ushul fiqh (beda dengan fiqh & qawa'id fiqhiyyah).
-2. Pembagian besar: al-adillah (sumber), dilalat al-alfazh (cara teks menunjukkan hukum), al-ijtihad wat-taqlid, ta'arudh wat-tarjih.
-3. Outline bercabang agar mudah dipahami.
-4. Urutan belajar ideal.
+Beri aku kerangka utuh Ushul Fiqh:
+1. Ta'rif ushul fiqh بِالْمَعْنَى الْإِضَافِيِّ وَاللَّقَبِيِّ, غَايَتُهُ, dan bedanya dengan fiqh dan qawa'id fiqhiyyah.
+2. Bagian besar: الْحُكْمُ الشَّرْعِيّ، الْأَدِلَّة، دَلَالَاتُ الْأَلْفَاظ، الِاجْتِهَادُ وَالتَّقْلِيد، التَّعَارُضُ وَالتَّرْجِيح.
+3. Dua thariqah penulisan: mutakallimin dan fuqaha (Hanafiyah), dengan ciri masing-masing.
+4. Siapa yang pertama menulis ushul fiqh, nama kitabnya, dan sebabnya — ini sering ditanyakan.
+
+Format: outline bercabang.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Sumber Hukum (Adillah)",
+          title: "Pahami Hukum Syar'i dan Pembagiannya",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan al-adillah asy-syar'iyyah:
-1. Muttafaq 'alaih: Qur'an, Sunnah, Ijma', Qiyas — definisi + kehujjahan tiap satu (teks Arab berharakat untuk istilah).
-2. Mukhtalaf fih: istihsan, mashlahah mursalah, 'urf, sad adz-dzari'ah, dll — ringkas.
-3. Urutan/hierarki dalil.
+Jelaskan bab الْحُكْمُ الشَّرْعِيّ yang jadi pintu ushul fiqh:
+1. Ta'rif hukum syar'i menurut ushuliyyin dan menurut fuqaha, dan letak perbedaannya.
+2. Hukum taklifi dan pembagian wajib: mu'ayyan vs mukhayyar, mudhayyaq vs muwassa', 'aini vs kifa'i — masing-masing dengan contoh.
+3. Hukum wadh'i: sabab, syarth, mani', shihhah, fasad, rukhshah, 'azimah.
+4. Satu soal pendek untuk mengujiku — jangan beri jawabannya dulu.
+
+Format: subjudul per pembagian, contoh selalu dari nash atau furu' fiqh.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Dilalat Alfazh (Amr, Nahy, 'Am, Khas)",
+          title: "Pahami Dilalat Alfazh ('Am, Khash, Musytarak, Amr, Nahy)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dilalat al-alfazh yang inti:
-1. Al-Amr (perintah) — apakah menunjukkan wajib? + kaidahnya.
-2. An-Nahy (larangan) — apakah menunjukkan haram & fasad?
-3. Al-'Am wal-Khas, Al-Mutlaq wal-Muqayyad, Al-Mujmal wal-Mubayyan.
-Untuk tiap: definisi (teks Arab berharakat), kaidah, contoh dari nash.
+Jelaskan bab دَلَالَاتُ الْأَلْفَاظ untuk topik [SEBUTKAN TOPIK, mis. al-'am dan takhshish, al-musytarak, al-amr]:
+1. Ta'rif (teks Arab berharakat + arti) dan pembagiannya.
+2. وَجْهُ الْحَصْرِ pembagian itu bila ada — kertas ujian sering menanyakannya.
+3. Kaidah utamanya dan khilaf ushuliyyin di dalamnya (mis. aqall al-jam', penggunaan musytarak untuk dua makna) dengan dalil tiap pendapat.
+4. Perbedaan cara Hanafiyah dan mutakallimin bila ada.
+5. Dua contoh dari nash.
 
 [METODE]
 
@@ -742,13 +748,14 @@ Untuk tiap: definisi (teks Arab berharakat), kaidah, contoh dari nash.
         {
           title: "Bedah Qiyas secara Tuntas",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan qiyas:
-1. Definisi + rukun qiyas (ashl, far', 'illah, hukm ashl) — teks Arab berharakat + arti.
-2. Cara menentukan 'illah (masalik al-'illah): nash, ijma', sabr wa taqsim, munasabah.
-3. Satu contoh qiyas lengkap dari kitab ushul.
-4. Kesalahan umum thalib memahami qiyas.
+Jelaskan qiyas sampai aku bisa menerapkannya:
+1. Ta'rif dan empat rukun: ashl, far', hukm al-ashl, 'illah.
+2. Syarat tiap rukun secara ringkas.
+3. مَسَالِكُ الْعِلَّة: nash, ijma', sabr wa taqsim, munasabah — dengan contoh.
+4. Satu qiyas lengkap dari furu' fiqh, diuraikan per rukun.
+5. Kesalahan umum thalib: menyamakan 'illah dengan hikmah.
 
 [METODE]
 
@@ -759,25 +766,27 @@ Jelaskan qiyas:
         {
           title: "Hafal Kaidah Ushuliyyah Kunci",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal kaidah ushuliyyah penting (mis. الأمر يقتضي الوجوب, النهي يقتضي التحريم, العبرة بعموم اللفظ لا بخصوص السبب):
-1. Daftar kaidah (teks Arab berharakat + arti).
-2. Mnemonic/asosiasi tiap kaidah.
-3. Contoh penerapan singkat.
+Bantu aku menghafal kaidah ushuliyyah bab [SEBUTKAN BAB, mis. al-amr wan-nahy, al-'am wal-khash]:
+1. Daftar kaidahnya dalam redaksi Arab baku, berharakat + arti.
+2. Untuk tiap kaidah: satu contoh penerapan pada nash atau furu'.
+3. Tandai kaidah yang diperselisihkan dan siapa yang menyelisihinya, hanya kalau kamu yakin.
+4. Tes: sebut awal kaidah, aku lanjutkan.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Tabel Definisi Istilah Ushul",
+          title: "Tabel Istilah Ushul yang Sering Tertukar",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan tabel hafalan istilah ushul untuk bab [SEBUTKAN]:
-1. Kolom: istilah Arab berharakat | definisi ringkas | contoh.
-2. Tandai istilah yang sering tertukar (mis. 'am vs mutlaq, mujmal vs mubham).
+Buatkan tabel istilah ushul untuk bab [SEBUTKAN BAB]:
+1. Kolom: istilah (Arab berharakat) | ta'rif singkat | contoh.
+2. Kelompokkan pasangan yang sering tertukar: 'am vs muthlaq, mujmal vs musykil, rukun vs syarat, muharram li dzatihi vs li ghairihi.
+3. Setelah tabel: 5 soal مَيِّزِ الصَّوَابَ مِنَ الْخَطَأِ dan 3 soal أَكْمِلِ الْعِبَارَاتِ dari isi tabel. Jangan beri jawabannya dulu.
 
 [METODE]
 
@@ -786,13 +795,15 @@ Buatkan tabel hafalan istilah ushul untuk bab [SEBUTKAN]:
         {
           title: "Jadwal Muraja'ah Ushul",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah:
-1. Urutkan dari fondasi (adillah) ke turunan (dilalat, ta'arudh).
-2. H+1, H+3, H+7, mingguan.
-3. Cara menguji (sebut kaidah + contoh penerapan).
-4. Tabel.
+Bab yang sudah kupelajari: [SEBUTKAN BAB-BAB, mis. mabadi', al-hukm asy-syar'i, al-wajib]. Buatkan jadwal muraja'ah:
+1. Urutkan dari mabadi' dan hukum syar'i ke adillah, dilalat, lalu ta'arudh.
+2. Jadwal ulang H+1, H+3, H+7, lalu mingguan sampai imtihan.
+3. Cara menguji diri per sesi: ta'rif, pembagian beserta wajh al-hashr, satu tathbiq.
+4. Dua hari terakhir untuk latihan soal gaya kertas ujian.
+
+Format: tabel (hari | bab | cara menguji | durasi).
 
 [METODE]
 
@@ -801,40 +812,45 @@ Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah:
       ],
       latihan: [
         {
+          title: "Latihan Dirasah Nashshiyyah (Qala Asy-Syarih)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Kertas Ushul Azhar hampir selalu memuat الدِّرَاسَةُ النَّصِّيَّة: قَالَ الْمُصَنِّفُ / الشَّارِحُ "..." lalu beberapa pertanyaan. Dari potongan kitab muqarrar-ku di bawah:
+1. Buat 4–5 soal seperti di kertas ujian: مَنْ هُوَ الْمُصَنِّفُ، مَا مَعْنَى قَوْلِهِ...، عَرِّفْ ... مَعَ التَّمْثِيلِ، اُذْكُرِ الْأَقْسَامَ، بَيِّنِ الْخِلَافَ مَعَ الدَّلِيلِ، مَيِّزِ الصَّوَابَ مِنَ الْخَطَأِ.
+2. JANGAN beri jawaban. Tunggu jawabanku.
+3. Setelah aku jawab: nilai per soal, lengkapi yang kurang, dan tunjukkan redaksi yang lebih tepat.
+
+Nash dari kitab:
+[TEMPEL NASH KITAB]
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
           title: "Latihan Takhrij Furu' 'ala Ushul",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri aku 6 kasus furu' (fiqh). Tugasku: tunjukkan kaidah ushul mana yang menjadi dasarnya.
-1. Tulis kasusnya.
-2. JANGAN beri jawaban dulu.
-3. Setelah aku jawab, koreksi: kaidah ushul yang benar + cara penerapannya.
-
-[METODE]
-
-[LEVEL_BAHASA]`,
-        },
-        {
-          title: "Drill Analisis Nash (Amr/Nahy/'Am/Khas)",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Beri 8 potongan nash (ayat/hadits — teks Arab berharakat, sebut sumber, jangan mengarang). Tugasku: analisis dilalah-nya (amr/nahy/'am/khas/mutlaq/muqayyad).
-1. JANGAN beri jawaban dulu.
-2. Setelah aku jawab, koreksi + jelaskan kaidah dilalah-nya.
+Latih aku melihat kaidah ushul di balik hukum fiqh, untuk bab [SEBUTKAN BAB, mis. al-amr, al-'am]:
+1. Tulis 6 hukum furu' (sebagian yang diperselisihkan madzhab).
+2. JANGAN beri jawaban. Untuk tiap nomor aku sebutkan kaidah ushul yang menjadi dasarnya dan cara penerapannya.
+3. Koreksi per nomor: kaidah yang benar, cara kerjanya, dan bila khilaf furu'-nya lahir dari khilaf kaidah.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Latihan Identifikasi 'Illah",
+          title: "Drill Analisis Dilalah Nash",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 6 contoh hukum yang ada qiyas-nya. Tugasku: tentukan 'illah-nya & maslak penetapannya.
-1. JANGAN beri jawaban dulu.
-2. Setelah aku jawab, koreksi: 'illah benar + masalik al-'illah yang dipakai.
+Latih aku menganalisis dilalah nash untuk bab [SEBUTKAN BAB, mis. al-'am wal-khash, al-mujmal wal-mubayyan]:
+1. Beri 6 potongan ayat atau hadits yang kamu yakini teksnya, dengan sumbernya.
+2. JANGAN beri jawaban. Aku tentukan jenis dilalah-nya ('am, khash, muthlaq, muqayyad, mujmal, amr, nahy) dan hukum yang diambil.
+3. Koreksi per nomor dan jelaskan kaidah dilalah yang dipakai.
 
 [METODE]
 
@@ -843,14 +859,15 @@ Beri 6 contoh hukum yang ada qiyas-nya. Tugasku: tentukan 'illah-nya & maslak pe
       ],
       ujian: [
         {
-          title: "Mock Imtihan Tahriri Ushul (Gaya Azhari)",
+          title: "Mock Imtihan Tahriri Ushul (Gaya Kertas Azhar)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan tahriri.
 
-Buatkan soal ujian tulis Ushul gaya Azhar untuk bab [SEBUTKAN]:
-1. Tipe khas: 'arrif + matsil, udzkur al-khilaf ma'a ad-dalil, tathbiq (terapkan kaidah ke kasus), bayyin wajh istidlal.
-2. 5-6 soal bobot bervariasi.
-3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
+Buatkan satu kertas ujian tahriri Ushul Fiqh untuk bab [SEBUTKAN BAB, mis. "semester ini" atau al-hukm asy-syar'i]:
+1. Bagian soal umum dan bagian الدِّرَاسَةُ النَّصِّيَّة, masing-masing dengan sub-soal.
+2. Pakai pola yang benar-benar keluar di kertas Ushul Azhar: عَرِّفْ ... بِالْمَعْنَى الْإِضَافِيِّ وَاللَّقَبِيِّ، مَا وَجْهُ الْحَصْرِ فِي...، حَرِّرْ مَحَلَّ النِّزَاعِ وَاذْكُرِ الْأَقْوَالَ مَعَ دَلِيلِ كُلِّ قَوْلٍ، اِشْرَحِ الْفَرْقَ بَيْنَ...، أَكْمِلِ الْعِبَارَاتِ، مَيِّزِ الصَّوَابَ مِنَ الْخَطَأِ.
+3. Untuk dirasah nashshiyyah, tulis potongan nash hanya kalau kamu yakin redaksinya; kalau tidak, minta aku menempelkan nash dari kitabku.
+4. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai seperti mushahhih.
 
 [METODE]
 
@@ -859,13 +876,13 @@ Buatkan soal ujian tulis Ushul gaya Azhar untuk bab [SEBUTKAN]:
         {
           title: "Simulasi Imtihan Syafawi Ushul",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan syafawi.
 
-Berperanlah sebagai mumtahin syafawi Ushul Fiqh:
-1. Tanya definisi, khilaf + dalil, penerapan kaidah ke furu'.
-2. Satu pertanyaan dulu, tunggu jawabanku.
-3. Umpan balik, naikkan kesulitan.
-4. Penilaian akhir + area lemah.
+Berperanlah sebagai mumtahin syafawi Ushul Fiqh untuk bab [SEBUTKAN BAB, mis. "semester ini"]:
+1. Satu pertanyaan sekali jalan, dalam bahasa Arab: ta'rif, pembagian, khilaf dengan dalil, atau penerapan kaidah pada furu'.
+2. Tunggu jawabanku sebelum lanjut.
+3. Umpan balik singkat seperti penguji, lalu naikkan kesulitan bertahap.
+4. Setelah 8 pertanyaan: nilai kesiapanku (dari 10), bab yang lemah, dan 3 hal yang harus kuperbaiki.
 
 [METODE]
 
@@ -874,13 +891,15 @@ Berperanlah sebagai mumtahin syafawi Ushul Fiqh:
         {
           title: "Kisi-kisi & Strategi Ujian Ushul",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Dari bab yang kupelajari ([SEBUTKAN]):
-1. Bab yang paling sering jadi soal tathbiq & khilaf.
-2. Tipe soal paling mungkin keluar.
-3. Cara menjawab agar dapat nilai penuh (definisi + dalil + tathbiq).
-4. Prioritas H-7.
+Bab semester ini: [SEBUTKAN BAB-BAB]. Bantu aku menyusun strategi ujian:
+1. Untuk tiap bab: tipe soal yang cocok (ta'rif, wajh al-hashr, tahrir mahall an-niza', al-farq baina, dirasah nashshiyyah, benar/salah) dan satu contoh redaksi soalnya dalam bahasa Arab.
+2. Ta'rif dan pembagian yang wajib hafal persis.
+3. Cara menulis jawaban khilaf yang dapat nilai penuh: tahrir mahall an-niza' → pendapat → dalil tiap pendapat → tarjih.
+4. Rencana H-7 sampai H-1.
+
+Jangan mengklaim bab tertentu "pasti keluar". Susun berdasarkan pola soal.
 
 [METODE]
 
@@ -891,75 +910,84 @@ Dari bab yang kupelajari ([SEBUTKAN]):
         {
           title: "Rapikan Catatan Talaqqi Ushul",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan talaqqi-ku (di bawah) berantakan. Bantu:
-1. Rapikan jadi poin kaidah + contoh + khilaf.
+Aku baru talaqqi dan catatanku berantakan. Bantu aku:
+1. Rapikan per mas'alah: ta'rif → pembagian → khilaf dan dalil → contoh, mengikuti urutan penjelasan syaikh.
 2. Lengkapi harakat istilah Arab.
-3. Tandai yang perlu ditanyakan.
-4. Ringkas 5 poin inti.
+3. Tandai (?) bagian yang terpotong atau perlu kutanyakan lagi. Jangan menambal dengan tebakan.
+4. Tutup dengan 5 poin inti dan 3 pertanyaan muraja'ah.
+
+Catatanku:
+[TEMPEL CATATAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Catatanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
         {
           title: "Verifikasi Pemahaman Pasca-Talaqqi Ushul",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Setelah talaqqi bab [SEBUTKAN], aku jelaskan ulang (di bawah):
-1. Periksa keakuratan, koreksi dengan teks Arab berharakat + contoh.
-2. Ajukan 3 pertanyaan penguji yang menggali penerapan.
+Setelah talaqqi bab [SEBUTKAN BAB], aku menjelaskan ulang dengan bahasaku sendiri (di bawah). Tolong:
+1. Periksa mana yang tepat, kurang, atau keliru.
+2. Koreksi yang keliru dengan ta'rif yang benar dan contoh.
+3. Ajukan 3 pertanyaan penerapan — satu per satu, tunggu jawabanku.
+
+Penjelasanku:
+[TEMPEL PENJELASAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Penjelasanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
       eksplorasi: [
         {
           title: "Ta'arudh & Tarjih antar Dalil",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan ta'arudh wat-tarjih:
-1. Apa itu ta'arudh al-adillah & syaratnya.
-2. Cara penyelesaian: al-jam' wat-taufiq, naskh, tarjih, tasaqut — urutan & contoh.
-3. Bagaimana ini dipakai saat dua nash tampak bertentangan.
-
-[METODE]
-
-[LEVEL_BAHASA]`,
-        },
-        {
-          title: "Hubungkan Ushul dengan Istinbath Nyata",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Ambil satu hukum fiqh [SEBUTKAN], lalu bedah proses istinbath-nya dari sisi ushul:
-1. Dari dalil apa hukum ini diambil.
-2. Kaidah ushul/dilalah apa yang dipakai.
-3. Kalau ada qiyas, apa 'illah-nya.
-Tujuan: melihat ushul bekerja secara nyata, bukan teori kosong.
+Jelaskan التَّعَارُضُ وَالتَّرْجِيح:
+1. Ta'rif ta'arudh dan syarat-syaratnya.
+2. Cara penyelesaian: al-jam', an-naskh, at-tarjih, at-tasaqut — dan perbedaan urutannya antara Hanafiyah dan jumhur.
+3. Beberapa murajjihat yang masyhur (dari sisi sanad, matan, dan hal luar).
+4. Satu contoh dua nash yang tampak bertentangan dan cara ulama menyelesaikannya, dengan nash yang kamu yakini.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Perbedaan Madrasah Ushul (Mutakallimin vs Fuqaha)",
+          title: "Bedah Istinbath Satu Hukum",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dua metode penulisan ushul:
-1. Thariqah al-Mutakallimin (Syafi'iyah) vs Thariqah al-Fuqaha (Hanafiyah) — ciri masing-masing.
-2. Contoh kitab tiap metode (bila kamu tahu; jika ragu, katakan).
-3. Kenapa penting tahu ini saat membaca kitab ushul berbeda.
+Ambil hukum [SEBUTKAN HUKUM, mis. wajibnya niat dalam wudhu], lalu bedah proses istinbath-nya:
+1. Dalil yang dipakai dan jenisnya.
+2. Dilalah atau kaidah ushul yang bekerja.
+3. 'Illah bila ada qiyas.
+4. Bila ada madzhab yang berbeda: di kaidah mana jalannya berpisah.
+
+Tujuannya melihat ushul bekerja nyata, bukan teori.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Thariqah Mutakallimin vs Thariqah Fuqaha",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan dua metode penulisan ushul fiqh:
+1. Thariqah al-mutakallimin dan thariqah al-fuqaha (Hanafiyah): ciri, cara berdalil, dan kelebihan masing-masing.
+2. Thariqah penggabungan (al-jam' baina ath-thariqatain) yang muncul belakangan.
+3. Contoh kitab tiap thariqah, hanya kalau kamu yakin.
+4. Manfaatnya saat membaca kitab muqarrar dari thariqah yang berbeda.
+
+Format: tabel perbandingan, lalu 3 poin manfaat.
 
 [METODE]
 
@@ -4208,10 +4236,13 @@ Jelaskan peran takhrij melawan penyebaran hadits lemah/palsu:
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]).
 
-Beri aku peta besar fiqh madzhab ini:
-1. Sistematika bab fiqh klasik (thaharah → shalat → zakat → shaum → haji → muamalah → munakahat → jinayat → dst).
-2. Kitab rujukan utama madzhab ini di Azhar + posisinya (matan, syarah, hasyiyah).
-3. Tampilkan sebagai outline agar aku punya gambaran utuh.
+Beri aku peta besar fiqh madzhab ini supaya tiap bab yang kupelajari punya tempat:
+1. Sistematika bab fiqh: 'ibadat → mu'amalat → munakahat → jinayat dan qadha', dengan sub-bab utama masing-masing.
+2. Jenjang kitab madzhab ini: matan, syarah, hasyiyah — sebut contohnya hanya kalau kamu yakin.
+3. Istilah tarjih dalam madzhab ini (mis. الْأَظْهَر، الْأَصَحّ، الْمَذْهَب، الْمُعْتَمَد untuk Syafi'iyah) dan artinya.
+4. Tandai bab yang biasanya dipelajari di tingkat awal.
+
+Format: outline bercabang, bukan paragraf.
 
 [METODE]
 
@@ -4220,42 +4251,48 @@ Beri aku peta besar fiqh madzhab ini:
         {
           title: "Pahami Satu Mas'alah Fiqh secara Tuntas",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN]).
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]).
 
-Jelaskan mas'alah [SEBUTKAN MAS'ALAH] secara tuntas dalam madzhab ini:
-1. Hukumnya + dalil (ayat/hadits dengan teks Arab berharakat — jangan mengarang dalil).
-2. Syarat, rukun, dan hal yang membatalkan (bila relevan).
-3. Khilaf di dalam madzhab (qaul qadim/jadid, atau antar ashhab) bila ada.
-4. Istilah teknis fiqh yang muncul + artinya.
-
-[METODE]
-
-[LEVEL_BAHASA]`,
-        },
-        {
-          title: "Pahami Istilah & Kategori Hukum (Ahkam Taklifi)",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Jelaskan fondasi yang sering muncul di kitab fiqh:
-1. Al-Ahkam at-Taklifiyah (wajib, mandub, mubah, makruh, haram) + al-Ahkam al-Wadh'iyah (sabab, syarat, mani') — teks Arab berharakat + arti + contoh.
-2. Istilah seperti fardh 'ain/kifayah, sunnah muakkadah/ghairu muakkadah, sah/batal/fasid.
-3. Kapan tiap istilah dipakai.
+Jelaskan mas'alah [SEBUTKAN MAS'ALAH, mis. mengusap khuff, wasiat lebih dari sepertiga] sampai aku bisa menjawab soal ujiannya:
+1. Ta'rif lughatan dan ishthilahan (teks Arab berharakat + arti).
+2. Hukumnya dalam madzhab ini beserta dalil dan wajh istidlal-nya.
+3. Syarat, rukun, dan pembatalnya bila ada.
+4. Khilaf di dalam madzhab (antar qaul atau wajh) dan mana yang mu'tamad.
+5. Satu kasus penerapan singkat untuk mengujiku — jangan beri jawabannya dulu.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Bandingkan Pendapat dalam Madzhab (Tarjih)",
+          title: "Pahami Istilah & Kategori Hukum",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN]).
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk mas'alah [SEBUTKAN], di dalam madzhab ini ada beberapa pendapat:
-1. Sebutkan pendapat-pendapat (mis. mu'tamad vs marjuh) + siapa yang memegangnya bila kamu tahu.
-2. Dalil/alasan tiap pendapat.
-3. Pendapat mu'tamad (yang difatwakan) dalam madzhab.
-PENTING: kalau tidak yakin rujukan/penisbatan, katakan terus terang.
+Jelaskan istilah hukum yang terus muncul di kitab fiqh:
+1. الْأَحْكَامُ التَّكْلِيفِيَّة (wajib, mandub, mubah, makruh, haram) dan الْأَحْكَامُ الْوَضْعِيَّة (sabab, syarth, mani', shihhah, buthlan).
+2. Pasangan yang sering tertukar: fardh 'ain vs kifayah, rukun vs syarat, batil vs fasid, 'azimah vs rukhshah.
+3. Untuk tiap istilah: arti singkat dan satu contoh dari bab ibadah.
+4. Tutup dengan 5 pernyataan benar/salah untuk mengujiku.
+
+Format: tabel (istilah | arti | contoh).
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Bandingkan Pendapat di Dalam Madzhab",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]).
+
+Kertas ujian sering meminta ذِكْرُ الْخِلَافِ دَاخِلَ الْمَذْهَبِ. Untuk mas'alah [SEBUTKAN MAS'ALAH], jelaskan:
+1. Pendapat-pendapat di dalam madzhab ini dan istilahnya (qaul qadim/jadid, wajh, riwayat).
+2. Siapa yang memegang tiap pendapat, hanya kalau kamu yakin penisbatannya.
+3. Dalil atau ta'lil tiap pendapat.
+4. Pendapat yang mu'tamad dan istilah tarjih yang dipakai kitab untuk menandainya.
+
+Format: tabel (pendapat | pemilik | dalil/ta'lil | status), lalu satu paragraf kesimpulan.
 
 [METODE]
 
@@ -4266,26 +4303,28 @@ PENTING: kalau tidak yakin rujukan/penisbatan, katakan terus terang.
         {
           title: "Hafal Syarat & Rukun dengan Mnemonic",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]).
 
-Bantu aku menghafal syarat/rukun [SEBUTKAN, mis. rukun shalat, syarat wudhu]:
-1. Daftar lengkap (teks Arab berharakat + arti).
-2. Mnemonic/jembatan keledai Indonesia agar mudah diingat.
-3. Urutan yang benar bila urutan penting.
+Bantu aku menghafal [SEBUTKAN YANG DIHAFAL, mis. rukun shalat, syarat wajib zakat]:
+1. Daftar lengkap menurut madzhab ini, berharakat + arti, dengan urutan yang benar bila urutan penting.
+2. Tandai butir yang diperselisihkan dengan madzhab lain.
+3. Jembatan keledai berbahasa Indonesia untuk seluruh daftar.
+4. Tes: sebut nomor acak, aku sebutkan butirnya.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Tabel Perbandingan Hukum untuk Dihafal",
+          title: "Tabel Ringkas Hukum per Bab",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]).
 
-Buatkan tabel hafalan untuk bab [SEBUTKAN]:
-1. Kolom: kasus / hukum / syarat / dalil ringkas.
-2. Isi ringkas tapi akurat (istilah Arab berharakat).
-3. Tandai poin yang sering tertukar.
+Buatkan tabel hafalan untuk bab [SEBUTKAN BAB, mis. nawaqidh al-wudhu', al-wadi'ah]:
+1. Kolom: kasus | hukum | syarat/qayd | dalil atau ta'lil singkat.
+2. Istilah Arab berharakat, isi tiap sel ringkas.
+3. Tandai ⚠️ kasus yang sering tertukar hukumnya.
+4. Setelah tabel, 5 soal ضَعْ عَلَامَةَ (✓) أَوْ (✗) dari isi tabel.
 
 [METODE]
 
@@ -4294,13 +4333,15 @@ Buatkan tabel hafalan untuk bab [SEBUTKAN]:
         {
           title: "Jadwal Muraja'ah Bab Fiqh",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah:
-1. Kelompokkan bab yang berkaitan.
-2. Jadwal H+1, H+3, H+7, mingguan.
-3. Cara menguji (sebutkan hukum+dalil, selesaikan kasus).
-4. Tabel.
+Bab yang sudah kupelajari: [SEBUTKAN BAB-BAB, mis. thaharah, shalat, zakat]. Buatkan jadwal muraja'ah:
+1. Kelompokkan bab yang saling berkaitan.
+2. Jadwal ulang H+1, H+3, H+7, lalu mingguan sampai imtihan.
+3. Cara menguji diri per sesi: ta'rif lughatan wa ishthilahan, hukum + dalil, dan satu kasus.
+4. Dua hari terakhir untuk latihan soal gaya kertas ujian.
+
+Format: tabel (hari | bab | cara menguji | durasi).
 
 [METODE]
 
@@ -4309,27 +4350,31 @@ Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah:
       ],
       latihan: [
         {
-          title: "Latihan Kasus Fiqh (Tathbiq)",
+          title: "Latihan Kasus Fiqh (Bayyin Al-Hukm)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN]).
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]).
 
-Beri aku 8 kasus (nazilah) fiqh dari bab [SEBUTKAN]. Tugasku: tentukan hukumnya menurut madzhab + alasannya.
-1. Tulis kasusnya.
-2. JANGAN beri jawaban dulu.
-3. Setelah aku jawab, koreksi: hukum yang benar + dalil/ta'lil-nya.
+Latih aku dengan soal tipe بَيِّنِ الْحُكْمَ فِيمَا يَأْتِي مَعَ التَّوْجِيهِ untuk bab [SEBUTKAN BAB]:
+1. Tulis 8 kasus pendek, sebagian kasus kontemporer (mis. operasi medis, transaksi digital).
+2. JANGAN beri jawaban. Aku tulis hukumnya beserta taujih (dalil atau ta'lil).
+3. Setelah aku jawab: nilai per kasus (hukum benar? taujih tepat?), tulis jawaban yang benar menurut madzhab ini, dan sebut bila ada khilaf di dalam madzhab.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Soal Pilihan & Ta'lil",
+          title: "Latihan Dirasah Nashshiyyah (Qala Al-Mushannif)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]).
 
-Beri 10 soal campuran (definisi, hukum, ta'lil) dari bab [SEBUTKAN].
-1. JANGAN beri jawaban dulu.
-2. Setelah aku jawab, koreksi + jelaskan illat tiap hukum.
+Kertas Fiqh Azhar hampir selalu memuat soal قَالَ الْمُصَنِّفُ: "..." lalu meminta syarah nash dan istinbath hukumnya. Dari potongan kitab muqarrar-ku di bawah:
+1. Buat 4–5 soal seperti di kertas ujian: اِشْرَحِ النَّصَّ شَرْحًا وَافِيًا، اِسْتَخْرِجِ الْأَحْكَامَ، اُذْكُرِ الْخِلَافَ دَاخِلَ الْمَذْهَبِ، مَا مَعْنَى قَوْلِهِ...، مَا الْحُكْمُ لَوْ... (satu kasus turunan).
+2. JANGAN beri jawaban. Tunggu jawabanku.
+3. Setelah aku jawab: nilai per soal, lengkapi syarah yang kurang, dan tunjukkan redaksi yang lebih tepat.
+
+Nash dari kitab:
+[TEMPEL NASH KITAB]
 
 [METODE]
 
@@ -4338,30 +4383,33 @@ Beri 10 soal campuran (definisi, hukum, ta'lil) dari bab [SEBUTKAN].
         {
           title: "Bandingkan Jawabanku dengan 'Ibarah Kitab",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]).
 
-Aku menulis jawaban untuk mas'alah [SEBUTKAN] (di bawah). Bandingkan dengan 'ibarah/redaksi kitab madzhab yang baku:
-1. Apakah jawabanku tepat secara madzhab?
-2. Istilah/redaksi yang seharusnya kupakai.
-3. Yang kurang/keliru.
+Aku menulis jawaban untuk soal tentang [SEBUTKAN MAS'ALAH]. Periksa seperti mushahhih:
+1. Apakah hukumnya tepat menurut madzhab ini, dan apakah dalil atau ta'lil-nya disebut.
+2. Istilah dan redaksi baku kitab fiqh yang seharusnya kupakai.
+3. Poin yang hilang dan yang keliru.
+4. Beri nilai dari 10 dan tulis ulang jawabanku dalam versi yang layak nilai penuh.
+
+Jawabanku:
+[TEMPEL JAWABAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Jawabanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Imtihan Tahriri Fiqh (Gaya Azhari)",
+          title: "Mock Imtihan Tahriri Fiqh (Gaya Kertas Azhar)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]), persiapan imtihan tahriri.
 
-Buatkan soal ujian tulis Fiqh gaya Azhar untuk bab [SEBUTKAN]:
-1. Tipe khas: 'arrif (definisikan), udzkur al-hukm wad-dalil, ma hukm... ma'a at-ta'lil, qaranat baina.
-2. 5-6 soal bobot bervariasi.
-3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih Azhar + skor & catatan.
+Buatkan satu kertas ujian tahriri Fiqh untuk bab [SEBUTKAN BAB, mis. "semester ini" atau thaharah sampai zakat]:
+1. Tiga atau empat السؤال dengan sub-soal.
+2. Pakai pola yang benar-benar keluar di kertas Fiqh Azhar: عَرِّفْ ... لُغَةً وَاصْطِلَاحًا، بَيِّنِ الْحُكْمَ مَعَ الِاسْتِدْلَالِ، قَالَ الْمُصَنِّفُ "..." ثُمَّ اشْرَحْ وَاسْتَخْرِجِ الْأَحْكَامَ، ضَعْ عَلَامَةَ (✓) أَوْ (✗)، اِخْتَرِ الْإِجَابَةَ الصَّحِيحَةَ مَعَ التَّوْجِيهِ، آرَاءُ الْفُقَهَاءِ مَعَ الرَّأْيِ الرَّاجِحِ.
+3. Untuk soal قال المصنف, tulis potongan nash hanya kalau kamu yakin redaksinya; kalau tidak, buat soal tipe lain.
+4. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai seperti mushahhih.
 
 [METODE]
 
@@ -4370,13 +4418,13 @@ Buatkan soal ujian tulis Fiqh gaya Azhar untuk bab [SEBUTKAN]:
         {
           title: "Simulasi Imtihan Syafawi Fiqh",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]), persiapan imtihan syafawi.
 
-Berperanlah sebagai mumtahin syafawi Fiqh:
-1. Tanya definisi, hukum + dalil, penyelesaian kasus.
-2. Satu pertanyaan dulu, tunggu jawabanku.
-3. Umpan balik, naikkan kesulitan.
-4. Penilaian akhir + area lemah.
+Berperanlah sebagai mumtahin syafawi Fiqh untuk bab [SEBUTKAN BAB, mis. "semester ini"]:
+1. Satu pertanyaan sekali jalan, dalam bahasa Arab: ta'rif, hukum dan dalilnya, syarat atau rukun, atau satu kasus.
+2. Tunggu jawabanku sebelum lanjut.
+3. Umpan balik singkat seperti penguji, lalu naikkan kesulitan bertahap.
+4. Setelah 8 pertanyaan: nilai kesiapanku (dari 10), bab yang lemah, dan 3 hal yang harus kuperbaiki.
 
 [METODE]
 
@@ -4385,13 +4433,15 @@ Berperanlah sebagai mumtahin syafawi Fiqh:
         {
           title: "Kisi-kisi & Strategi Ujian Fiqh",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]).
 
-Dari bab yang kupelajari ([SEBUTKAN]):
-1. Bab yang paling sering jadi soal ta'lil & kasus.
-2. Tipe soal paling mungkin keluar.
-3. Cara menulis jawaban fiqh yang dapat nilai penuh (sebut hukum + dalil + ta'lil).
-4. Prioritas H-7.
+Bab semester ini: [SEBUTKAN BAB-BAB]. Bantu aku menyusun strategi ujian:
+1. Untuk tiap bab: tipe soal yang cocok (ta'rif, bayyin al-hukm, dirasah nashshiyyah, benar/salah, pilihan) dan satu contoh redaksi soalnya dalam bahasa Arab.
+2. Ta'rif, syarat, dan rukun yang wajib hafal persis.
+3. Cara menulis jawaban fiqh yang dapat nilai penuh: hukum → dalil → wajh istidlal → khilaf bila diminta.
+4. Rencana H-7 sampai H-1.
+
+Jangan mengklaim bab tertentu "pasti keluar". Susun berdasarkan pola soal.
 
 [METODE]
 
@@ -4402,60 +4452,64 @@ Dari bab yang kupelajari ([SEBUTKAN]):
         {
           title: "Rapikan Catatan Talaqqi Fiqh",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]).
 
-Catatan talaqqi-ku (di bawah) berantakan. Bantu:
-1. Rapikan jadi poin hukum + dalil + ta'lil.
+Aku baru talaqqi dan catatanku berantakan. Bantu aku:
+1. Rapikan per mas'alah: hukum → dalil → ta'lil → catatan khilaf, mengikuti urutan penjelasan syaikh.
 2. Lengkapi harakat istilah Arab.
-3. Tandai yang perlu ditanyakan lagi.
-4. Ringkas 5 poin inti.
+3. Tandai (?) bagian yang terpotong atau perlu kutanyakan lagi. Jangan menambal dengan tebakan.
+4. Tutup dengan 5 poin inti dan 3 pertanyaan muraja'ah.
 
-[METODE]
-
-[LEVEL_BAHASA]
-
-Catatanku: [TEMPEL]`,
-        },
-        {
-          title: "Verifikasi Pemahaman Pasca-Talaqqi Fiqh",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Setelah talaqqi bab [SEBUTKAN], aku jelaskan ulang (di bawah):
-1. Periksa keakuratan secara madzhab, koreksi + dalil berharakat.
-2. Ajukan 3 pertanyaan penguji.
-
-[METODE]
-
-[LEVEL_BAHASA]
-
-Penjelasanku: [TEMPEL]`,
-        },
-      ],
-      eksplorasi: [
-        {
-          title: "Telusuri Dalil & Wajh Istidlal",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Untuk hukum [SEBUTKAN] dalam madzhab [SEBUTKAN]:
-1. Dalil utamanya (ayat/hadits — teks Arab berharakat, sebut sumber; jangan mengarang).
-2. Wajh istidlal (bagaimana dalil menunjukkan hukum).
-3. Apakah ada dalil yang tampak bertentangan & bagaimana madzhab menyelesaikannya.
+Catatanku:
+[TEMPEL CATATAN]
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Fiqh Kontemporer & Tatbiq Nyata",
+          title: "Verifikasi Pemahaman Pasca-Talaqqi Fiqh",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]).
 
-Untuk bab [SEBUTKAN], bantu aku melihat penerapan nyata:
-1. Bagaimana kaidah klasik diterapkan ke kasus kontemporer (mis. muamalah modern, ibadah dalam kondisi khusus).
-2. Hal yang perlu hati-hati saat mengqiyaskan.
-3. Mengapa pemahaman ushul penting agar tidak salah terap.
+Setelah talaqqi bab [SEBUTKAN BAB], aku menjelaskan ulang dengan bahasaku sendiri (di bawah). Tolong:
+1. Periksa ketepatannya menurut madzhab ini: mana yang tepat, kurang, atau keliru.
+2. Koreksi yang keliru dengan dalil atau ta'lil yang benar.
+3. Ajukan 3 kasus untuk menguji pemahamanku — satu per satu, tunggu jawabanku.
+
+Penjelasanku:
+[TEMPEL PENJELASAN]
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      eksplorasi: [
+        {
+          title: "Telusuri Dalil & Wajh Istidlal",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]).
+
+Untuk hukum [SEBUTKAN HUKUM, mis. batalnya wudhu karena menyentuh lawan jenis]:
+1. Dalil utama madzhab ini dan وَجْهُ الِاسْتِدْلَال-nya.
+2. Dalil yang tampak bertentangan dan cara madzhab ini menjawabnya (jam', takhshish, naskh, atau tarjih).
+3. Kaidah ushul yang bekerja di balik istidlal itu.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Fiqh Kontemporer & Takhrij Kasus Baru",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] (madzhab [SEBUTKAN MADZHAB, mis. Syafi'i]).
+
+Kertas ujian mulai memuat kasus modern (mis. pasien yang saluran kencingnya dipindah lewat operasi). Untuk kasus [SEBUTKAN KASUS]:
+1. Bab fiqh klasik tempat kasus ini bisa ditakhrij.
+2. Mas'alah klasik yang paling mirip dan hukumnya dalam madzhab ini.
+3. Titik persamaan dan perbedaannya, serta apakah qiyas-nya kuat.
+4. Kesimpulan sebagai latihan akademik, dengan catatan bahwa fatwa tetap ditanyakan ke lembaga fatwa.
 
 [METODE]
 
@@ -4464,12 +4518,14 @@ Untuk bab [SEBUTKAN], bantu aku melihat penerapan nyata:
         {
           title: "Bandingkan Lintas Madzhab (Pengantar Muqaran)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk mas'alah [SEBUTKAN], bandingkan 4 madzhab secara ringkas:
-1. Tabel: Madzhab | Hukum | Dalil utama | Wajh istidlal.
-2. Sumber pendapat bila kamu tahu (jika ragu, katakan).
-3. Catatan: ini untuk memahami, bukan rukhshah shopping.
+Untuk mas'alah [SEBUTKAN MAS'ALAH], bandingkan madzhab empat:
+1. Tahrir mahall an-niza': apa yang disepakati dan di mana titik khilafnya.
+2. Pendapat tiap madzhab beserta dalil utamanya.
+3. Sebab khilaf (perbedaan memahami nash, perbedaan kaidah, dll).
+
+Format: tabel (madzhab | hukum | dalil utama), lalu sebab khilaf dalam 2–3 poin.
 
 [METODE]
 
@@ -5395,40 +5451,46 @@ Untuk hukum [SEBUTKAN, mis. 'iddah, pembagian waris]:
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri kerangka utuh ilmu Tauhid (manhaj Asy'ari-Maturidi sesuai Azhar):
-1. Pembagian: ilahiyat (sifat Allah), nubuwwat (kenabian), sam'iyyat (hal ghaib).
-2. Istilah inti: wajib, mustahil, jaiz 'aqli.
-3. Outline bercabang.
-4. Urutan belajar ideal.
+Beri aku kerangka utuh ilmu Tauhid menurut manhaj Asy'ari-Maturidi yang dipakai Azhar:
+1. Ta'rif ilmu tauhid, مَوْضُوعُهُ، وَثَمَرَتُهُ — tiga hal yang sering diminta di kertas ujian.
+2. Tiga bagian besar: الْإِلٰهِيَّات، النُّبُوَّات، السَّمْعِيَّات, dengan isi utama masing-masing.
+3. Hukum akal: وَاجِب، مُسْتَحِيل، جَائِز — arti dan satu contoh.
+4. Firqah yang biasa dibahas dalam bab-bab itu (mis. Mu'tazilah, Musyabbihah, falasifah) dan di bab mana mereka muncul.
+
+Format: outline bercabang.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami 20 Sifat Wajib bagi Allah",
+          title: "Pahami Sifat-sifat Allah beserta Ta'alluq-nya",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan sifat wajib bagi Allah (manhaj Asy'ari):
-1. 20 sifat wajib — teks Arab berharakat + arti + dalil 'aqli ringkas tiap sifat.
-2. Pengelompokan: nafsiyah, salbiyah, ma'ani, ma'nawiyah.
-3. Lawan tiap sifat (sifat mustahil).
-4. Sifat jaiz bagi Allah.
+Jelaskan sifat [SEBUTKAN SIFAT, mis. al-qudrah, al-iradah, al-'ilm] seperti yang dituntut kertas ujian:
+1. Ta'rif sifat ini menurut jumhur mutakallimin (teks Arab berharakat + arti).
+2. Dalil 'aqli dan dalil naqli-nya.
+3. Ta'alluq-nya: dengan apa sifat ini berta'alluq dan kenapa tidak dengan yang lain (mis. kenapa iradah hanya berta'alluq dengan mumkin).
+4. Pendapat firqah yang menyelisihi dan jawaban Ahlussunnah.
+5. Satu soal ميِّز الصواب من الخطأ untuk mengujiku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Dalil 'Aqli & Naqli dalam Aqidah",
+          title: "Pahami Dalil Wujud Allah (Huduts & Imkan)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan metode pembuktian dalam ilmu kalam:
-1. Dalil naqli (Qur'an-Sunnah) & dalil 'aqli — kapan tiap dipakai.
-2. Contoh dalil 'aqli untuk wujud Allah (dalil huduts, imkan).
-3. Bagaimana akal & wahyu diposisikan dalam manhaj Asy'ari-Maturidi.
+Jelaskan jalan pembuktian wujud Ash-Shani':
+1. دَلِيلُ الْحُدُوثِ: susun premis kecil, premis besar, dan kesimpulannya; jelaskan makna الْعَالَم dan الْحَادِث; apakah premis besarnya butuh dalil.
+2. دَلِيلُ الْإِمْكَانِ: susunannya dan bedanya dengan dalil huduts.
+3. Dua jalan istidlal (dari diri manusia dan dari alam) dengan dua contoh dalil tiap jalan.
+4. Jawaban atas orang yang menolak wujud Allah karena tidak terindra.
+
+Format: tiap dalil ditulis sebagai premis bernomor, lalu penjelasan singkat.
 
 [METODE]
 
@@ -5437,12 +5499,13 @@ Jelaskan metode pembuktian dalam ilmu kalam:
         {
           title: "Pahami Nubuwwat & Sam'iyyat",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dua bab:
-1. Nubuwwat: sifat wajib/mustahil/jaiz bagi rasul, mukjizat, hikmah pengutusan.
-2. Sam'iyyat: hal-hal ghaib yang wajib diimani (hari akhir, mizan, shirath, dll) — yang ditetapkan dengan dalil naqli.
-Sertakan teks Arab istilah berharakat + arti.
+Jelaskan dua bab ini sesuai yang dituntut kertas ujian:
+1. Nubuwwat: makna nubuwwah dan risalah menurut Ahlussunnah dibanding falasifah; sifat wajib, mustahil, dan jaiz bagi rasul; 'ishmah (sebelum dan sesudah bi'tsah).
+2. Mu'jizat: ta'rif, syarat-syaratnya, dan bedanya dengan karamah dan sihir.
+3. Sam'iyyat: istilah yang sering diminta ta'rif-nya (الْإِسْلَام، الْإِيمَان، السَّاعَة، الْبَعْث، الصِّرَاط) dan kenapa ditetapkan dengan dalil naqli.
+4. Satu syubhat tentang kenabian (mis. klaim bahwa Nabi ﷺ hanya diutus untuk bangsa Arab) dan jawabannya.
 
 [METODE]
 
@@ -5451,27 +5514,30 @@ Sertakan teks Arab istilah berharakat + arti.
       ],
       hafal: [
         {
-          title: "Hafal 20 Sifat dengan Pengelompokan",
+          title: "Hafal Sifat Wajib, Mustahil, dan Jaiz",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal 20 sifat wajib + mustahil + jaiz:
-1. Susun per kelompok (nafsiyah, salbiyah, ma'ani, ma'nawiyah) — Arab berharakat + arti.
-2. Mnemonic Indonesia untuk tiap kelompok.
-3. Pasangkan tiap sifat wajib dengan lawannya (mustahil).
+Bantu aku menghafal sifat-sifat Allah:
+1. Susun per kelompok: نَفْسِيَّة، سَلْبِيَّة، مَعَانٍ، مَعْنَوِيَّة — berharakat + arti.
+2. Pasangkan tiap sifat wajib dengan lawannya (mustahil), lalu sifat jaiz.
+3. Tandai sifat yang punya ta'alluq dan yang tidak.
+4. Jembatan keledai berbahasa Indonesia per kelompok.
+5. Tes: sebut sifat acak, aku sebutkan kelompok dan lawannya.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Tabel Sifat + Dalil untuk Dihafal",
+          title: "Tabel Sifat, Ta'rif, Dalil, dan Ta'alluq",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan tabel hafalan:
-1. Kolom: sifat (Arab berharakat) | arti | kelompok | dalil 'aqli ringkas.
-2. Tandai sifat yang dalilnya sering jadi soal.
+Buatkan tabel hafalan sifat-sifat Allah:
+1. Kolom: sifat (Arab berharakat) | ta'rif singkat | dalil 'aqli ringkas | ta'alluq (atau "tidak berta'alluq").
+2. Tandai ⚠️ poin yang sering keliru, mis. qudrah hanya berta'alluq dengan mumkin, dan baqa' berarti tidak ada akhir.
+3. Setelah tabel: 5 soal ميِّز الصواب من الخطأ مع تصويب الخطأ dari isi tabel. Jangan beri jawabannya dulu.
 
 [METODE]
 
@@ -5480,9 +5546,15 @@ Buatkan tabel hafalan:
         {
           title: "Jadwal Muraja'ah Aqidah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji. Tabel.
+Bab yang sudah kupelajari: [SEBUTKAN BAB-BAB, mis. mabadi' ilmu tauhid, dalil wujud, sifat ma'ani]. Buatkan jadwal muraja'ah:
+1. Urutkan dari mabadi' dan dalil wujud ke sifat, lalu nubuwwat dan sam'iyyat.
+2. Jadwal ulang H+1, H+3, H+7, lalu mingguan sampai imtihan.
+3. Cara menguji diri per sesi: ta'rif, susun dalil 'aqli tanpa melihat, jawab satu syubhat.
+4. Dua hari terakhir untuk latihan soal gaya kertas ujian.
+
+Format: tabel (hari | bab | cara menguji | durasi).
 
 [METODE]
 
@@ -5491,41 +5563,44 @@ Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, m
       ],
       latihan: [
         {
-          title: "Drill Dalil 'Aqli tiap Sifat",
+          title: "Drill Menyusun Dalil 'Aqli",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sebutkan satu per satu sifat, lalu tugasku menyebutkan dalil 'aqli-nya.
-1. Sebut sifatnya (8 sifat).
-2. JANGAN beri jawaban dulu.
-3. Setelah aku jawab, koreksi dalil-ku + perbaiki penalarannya.
+Latih aku menyusun dalil 'aqli seperti yang diminta kertas ujian (اُذْكُرِ الدَّلِيلَ الْعَقْلِيَّ عَلَى...):
+1. Sebut 6 sifat atau perkara (mis. wujud, qidam, wahdaniyyah, 'ilm), satu per satu.
+2. Untuk tiap nomor, aku susun dalilnya dalam bentuk premis dan kesimpulan.
+3. Tunggu jawabanku sebelum lanjut ke nomor berikutnya.
+4. Koreksi: premis yang kurang, lompatan logika, dan versi dalil yang rapi.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Soal Definisi & Klasifikasi Aqidah",
+          title: "Drill Ta'rif & Benar-Salah dengan Tashwib",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 10 soal campuran (definisi, kelompok sifat, dalil, hukum) dari bab [SEBUTKAN].
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
+Buat latihan dua bagian untuk bab [SEBUTKAN BAB]:
+1. عَرِّفِ الْمُصْطَلَحَاتِ الْآتِيَةَ — 5 istilah.
+2. مَيِّزِ الصَّوَابَ مِنَ الْخَطَأِ مَعَ تَصْوِيبِ الْخَطَأِ — 7 pernyataan, sebagian keliru secara halus (mis. tertukar ta'alluq, tertukar kelompok sifat, pendapat firqah dinisbatkan ke Ahlussunnah).
+3. JANGAN beri jawaban. Tunggu jawabanku untuk kedua bagian.
+4. Koreksi per nomor dan jelaskan letak kekeliruannya.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Latihan Menjawab Syubhat (Tathbiq)",
+          title: "Latihan Radd Syubhat",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri aku 4 syubhat/pertanyaan aqidah. Tugasku menjawabnya dengan dalil.
-1. Tulis syubhatnya.
-2. JANGAN beri jawaban dulu.
-3. Koreksi jawabanku, sempurnakan dengan dalil 'aqli/naqli yang benar.
+Kertas Tauhid sering meminta بَيَانُ مَذْهَبِ ... وَالرَّدُّ عَلَيْهِ. Latih aku untuk bab [SEBUTKAN BAB, mis. al-jihah, ru'yatullah, af'al al-'ibad]:
+1. Sajikan 3 syubhat atau pendapat firqah (mis. Musyabbihah, Mu'tazilah, falasifah) secara jujur, lengkap dengan argumen mereka.
+2. JANGAN beri jawaban. Aku tulis bantahannya dengan dalil 'aqli dan naqli.
+3. Koreksi: argumen yang lemah, dalil yang terlewat, dan susunan jawaban yang layak nilai penuh.
 
 [METODE]
 
@@ -5534,14 +5609,14 @@ Beri aku 4 syubhat/pertanyaan aqidah. Tugasku menjawabnya dengan dalil.
       ],
       ujian: [
         {
-          title: "Mock Imtihan Tahriri Tauhid (Gaya Azhari)",
+          title: "Mock Imtihan Tahriri Tauhid (Gaya Kertas Azhar)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan tahriri.
 
-Buatkan soal ujian tulis Tauhid gaya Azhar untuk bab [SEBUTKAN]:
-1. Tipe khas: 'arrif, udzkur ad-dalil al-'aqli, ma hukm... ma'a at-ta'lil, raddu asy-syubhah.
-2. 5-6 soal bobot bervariasi.
-3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
+Buatkan satu kertas ujian tahriri Tauhid untuk bab [SEBUTKAN BAB, mis. "semester ini" atau dalil wujud sampai sifat ma'ani]:
+1. Tiga atau empat السؤال dengan sub-soal.
+2. Pakai pola yang benar-benar keluar di kertas Tauhid Azhar: اُكْتُبْ مُذَكِّرَاتٍ مُخْتَصَرَةً عَمَّا يَأْتِي، عَرِّفِ الصِّفَةَ وَاذْكُرْ دَلِيلَهَا عَقْلًا وَنَقْلًا، اُذْكُرْ تَعَلُّقَاتِ...، بَيِّنْ مَذْهَبَ ... مَعَ الرَّدِّ، كَيْفَ تَرُدُّ عَلَى...، مَيِّزِ الصَّوَابَ مِنَ الْخَطَأِ مَعَ التَّصْوِيبِ.
+3. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai seperti mushahhih.
 
 [METODE]
 
@@ -5550,13 +5625,13 @@ Buatkan soal ujian tulis Tauhid gaya Azhar untuk bab [SEBUTKAN]:
         {
           title: "Simulasi Imtihan Syafawi Tauhid",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan syafawi.
 
-Berperanlah sebagai mumtahin syafawi:
-1. Tanya sifat + dalil, definisi, jawaban atas syubhat.
-2. Satu pertanyaan dulu, tunggu jawabanku.
-3. Umpan balik, naikkan kesulitan.
-4. Penilaian akhir + area lemah.
+Berperanlah sebagai mumtahin syafawi Tauhid untuk bab [SEBUTKAN BAB, mis. "semester ini"]:
+1. Satu pertanyaan sekali jalan, dalam bahasa Arab: ta'rif sifat, susunan dalil, ta'alluq, atau jawaban atas syubhat.
+2. Tunggu jawabanku sebelum lanjut.
+3. Umpan balik singkat seperti penguji, lalu naikkan kesulitan bertahap.
+4. Setelah 8 pertanyaan: nilai kesiapanku (dari 10), bab yang lemah, dan 3 hal yang harus kuperbaiki.
 
 [METODE]
 
@@ -5565,9 +5640,15 @@ Berperanlah sebagai mumtahin syafawi:
         {
           title: "Kisi-kisi & Strategi Ujian Tauhid",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Dari bab yang kupelajari ([SEBUTKAN]): bab tersering jadi soal (biasanya dalil sifat & radd syubhat), tipe soal, cara jawab dapat nilai penuh, prioritas H-7.
+Bab semester ini: [SEBUTKAN BAB-BAB]. Bantu aku menyusun strategi ujian:
+1. Untuk tiap bab: tipe soal yang cocok (ta'rif, dalil 'aqli/naqli, ta'alluq, radd syubhat, benar/salah) dan satu contoh redaksi soalnya dalam bahasa Arab.
+2. Ta'rif dan susunan dalil yang wajib hafal persis.
+3. Cara menulis jawaban kalam yang dapat nilai penuh: ta'rif → dalil 'aqli → dalil naqli → pendapat penyelisih → jawaban.
+4. Rencana H-7 sampai H-1.
+
+Jangan mengklaim bab tertentu "pasti keluar". Susun berdasarkan pola soal.
 
 [METODE]
 
@@ -5578,76 +5659,92 @@ Dari bab yang kupelajari ([SEBUTKAN]): bab tersering jadi soal (biasanya dalil s
         {
           title: "Rapikan Catatan Talaqqi Tauhid",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi poin sifat+dalil, lengkapi harakat, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+Aku baru talaqqi dan catatanku berantakan. Bantu aku:
+1. Rapikan per pokok bahasan: ta'rif → dalil → ta'alluq → pendapat penyelisih dan jawabannya, mengikuti urutan penjelasan syaikh.
+2. Lengkapi harakat istilah kalam.
+3. Tandai (?) bagian yang terpotong atau perlu kutanyakan lagi. Jangan menambal dengan tebakan.
+4. Tutup dengan 5 poin inti dan 3 pertanyaan muraja'ah.
+
+Catatanku:
+[TEMPEL CATATAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Catatanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
         {
           title: "Verifikasi Pemahaman Pasca-Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Setelah talaqqi bab [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan manhaj (Asy'ari/Maturidi), koreksi, ajukan 3 pertanyaan penguji.
+Setelah talaqqi bab [SEBUTKAN BAB], aku menjelaskan ulang dengan bahasaku sendiri (di bawah). Tolong:
+1. Periksa ketepatannya menurut manhaj Asy'ari-Maturidi: mana yang tepat, kurang, atau keliru.
+2. Koreksi yang keliru, terutama susunan dalil dan istilah kalam.
+3. Ajukan 3 pertanyaan yang menguji pemahaman — satu per satu, tunggu jawabanku.
+
+Penjelasanku:
+[TEMPEL PENJELASAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Penjelasanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
       eksplorasi: [
         {
           title: "Perbedaan Aliran Kalam (Asy'ari, Maturidi, Mu'tazilah)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bandingkan aliran kalam untuk isu [SEBUTKAN, mis. sifat Allah, af'al 'ibad, ru'yatullah]:
-1. Pendapat Asy'ariyah, Maturidiyah, Mu'tazilah.
-2. Dalil/alasan tiap aliran.
-3. Mana yang dipegang Ahlussunnah & manhaj Azhar.
-Sajikan berimbang & ilmiah.
+Bandingkan aliran kalam untuk isu [SEBUTKAN ISU, mis. sifat Allah, af'al al-'ibad, ru'yatullah, al-husn wal-qubh]:
+1. Tahrir mahall an-niza': apa yang disepakati dan di mana titik khilafnya.
+2. Pendapat Asy'ariyah, Maturidiyah, dan Mu'tazilah beserta dalil masing-masing.
+3. Perbedaan kecil antara Asy'ariyah dan Maturidiyah bila ada.
+4. Jawaban Ahlussunnah atas dalil Mu'tazilah.
 
-[METODE]
-
-[LEVEL_BAHASA]`,
-        },
-        {
-          title: "Aqidah & Kehidupan Nyata",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Jelaskan buah/tsamarah aqidah yang benar dalam kehidupan:
-1. Bagaimana memahami sifat Allah memengaruhi cara seorang muslim memandang takdir, musibah, & usaha.
-2. Bahaya akidah yang menyimpang.
-3. Kaitan tauhid dengan akhlak & ibadah.
+Format: tabel (aliran | pendapat | dalil), lalu jawaban dalam 2–3 poin. Sajikan berimbang dan ilmiah.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Bedah Matan Aqidah (Jauharah / Kharidah / Sanusiyah)",
+          title: "Tsamarah Aqidah dalam Kehidupan",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu aku memahami potongan matan aqidah yang kutempel (mis. dari Jauharah at-Tauhid):
-1. Beri harakat lengkap bila perlu.
-2. Jelaskan maksud tiap bait/kalimat.
-3. Istilah kalam yang muncul + artinya.
-PENTING: kalau ragu teks matannya, minta aku tempel; jangan mengarang bait.
+Jelaskan buah (ثَمَرَة) dari bab [SEBUTKAN BAB, mis. sifat al-iradah, qadha' dan qadar] dalam kehidupan seorang muslim:
+1. Bagaimana pemahaman yang benar tentang bab ini membentuk sikap terhadap usaha, musibah, dan takdir.
+2. Kesalahan pemahaman yang umum di masyarakat dan akibatnya.
+3. Kaitannya dengan ibadah dan akhlak.
+
+Tetap berpijak pada penjelasan ulama Ahlussunnah, bukan motivasi umum.
 
 [METODE]
 
-[LEVEL_BAHASA]
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Bedah Matan Aqidah (Jawharah / Sanusiyyah)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Teks: [TEMPEL]`,
+Bantu aku memahami potongan matan aqidah di bawah (mis. dari Jawharatut Tauhid atau Ummul Barahin):
+1. Beri harakat lengkap.
+2. Jelaskan maksud tiap bait atau kalimat.
+3. Istilah kalam yang muncul dan artinya.
+4. Kaitkan dengan bab yang dibahas di kitab muqarrar-ku.
+
+Kalau teks yang kutempel tampak terpotong atau salah tulis, sebutkan — jangan mengganti dengan bait dari ingatanmu.
+
+Teks matan:
+[TEMPEL TEKS MATAN]
+
+[METODE]
+
+[LEVEL_BAHASA]`,
         },
       ],
     },
