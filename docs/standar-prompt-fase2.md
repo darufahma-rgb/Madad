@@ -26,9 +26,10 @@ dan `[METODE]`/`[LEVEL_BAHASA]` ada. Diff harus hanya menyentuh blok maddah yang
 
 ## Progres
 
-18 maddah selesai (324 prompt): Nahwu, Fiqh Madzhabi, Tauhid, Ushul Fiqh, Mustholah Hadits, Tarikh Tasyri',
+22 maddah selesai (396 prompt): Nahwu, Fiqh Madzhabi, Tauhid, Ushul Fiqh, Mustholah Hadits, Tarikh Tasyri',
 Sharaf, Al-Qur'an (Tahfidz), Sirah Nabawiyah, Fiqh Muqaran, Tarikh Islam, 'Ulum Al-Qur'an, Tajwid, Ahwal Syakhshiyah,
-Balaghah, Mantiq, Tafsir Tahlili, Hadits Tahlili. Urutan dipilih dari jangkauan (fakultas × tingkat) dan jumlah kertas di Bank Soal, karena data jumlah buka
+Balaghah, Mantiq, Tafsir Tahlili, Hadits Tahlili, Tafsir Maudhu'i, Manahij Mufassirin, Hadits Maudhu'i,
+Takhrij Hadits. Urutan dipilih dari jangkauan (fakultas × tingkat) dan jumlah kertas di Bank Soal, karena data jumlah buka
 maddah hanya ada di Supabase.
 
 Catatan dari kertas asli yang memengaruhi penulisan:
@@ -41,6 +42,10 @@ Catatan dari kertas asli yang memengaruhi penulisan:
   AI menulis ayat hanya kalau yakin redaksinya; kalau ragu, minta pengguna menempel dari mushaf.
 - Hadits Tahlili: matan selalu ditempel pengguna (`[TEMPEL HADITS]`), tidak dilengkapi dari ingatan. Pola soal: rawi a'la,
   شكّل، بيّن في سطر، تعارض ظاهر، أقوال الأئمة والراجح، ✓/✗ مع التعليل.
-- Mantiq: tidak ada kertas Mantiq di 44 kertas yang ditranskrip; drill mengikuti pola umum semua kertas (ta'rif 40%, 'allil 27%) plus mitsal.
+- Mantiq (kertas Tk 1 Ushuluddin): ta'rif + qaul syarih, علّل ٦ butir, مثّل ٦ butir, بيّن الصواب والخطأ ٨ butir (26+30+24+20).
+- Tafsir/Hadits Maudhu'i: soal terikat tema muqarrar ("من خلال دراستك لموضوع …", "مستشهدًا بالآيات"), lalu ✓/✗ مع التعليل,
+  اختر, dan أكمل (termasuk makna gharib). Prompt meminta pengguna menyebut tema-tema muqarrar.
+- Manahij Mufassirin & Takhrij: banyak "تحدث عن تفسير/كتاب … مبينًا …" (penulis, manhaj, cara takhrij, sumber asli atau
+  bukan). Data tahun wafat, nomor hadits, dan letak bab rawan halusinasi — prompt menyuruh AI menandai "perlu dicek".
 - Kertas "Tarikh Islam" satu-satunya di Bank Soal ternyata Tarikh As-Sunnah; Sirah belum punya kertas.
 - Rujukan kitab boleh juga dari kitab yang disebut di kertas asli, selalu dengan "kalau kamu yakin".
