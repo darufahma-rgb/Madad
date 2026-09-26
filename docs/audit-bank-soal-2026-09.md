@@ -69,3 +69,16 @@ Belum ada: tingkat 4 semua fakultas, Syariah tkt 3, Lughah tkt 2–3, Dirasat tk
 3. Pemeriksa membaca & mengedit tiap blok, menghapus semua tanda `[PERLU DIVERIFIKASI: …]`, lalu **Simpan draf**.
 4. Isi nama pemeriksa, centang konfirmasi, **Publikasikan ke user**. Server menolak publikasi kalau nama pemeriksa kosong
    atau masih ada tanda `[PERLU DIVERIFIKASI]`. **Sembunyikan dari user** menarik jawaban tanpa menghapus draf.
+
+## Akses audit (hanya baca)
+
+`/api/admin-bank-soal` menerima header `x-audit-token` yang cocok dengan env `BANK_SOAL_AUDIT_TOKEN`
+(minimal 32 karakter). Token ini hanya bisa `list` dan `stats`. `submitter_name`, `submitter_wa`, dan
+`foto_url` dibuang dari hasilnya, dan semua aksi tulis ditolak (403). Untuk mencabut akses, hapus atau
+ganti env tersebut di Vercel.
+
+```
+curl -s -X POST https://<domain>/api/admin-bank-soal \
+  -H "Content-Type: application/json" -H "x-audit-token: $BANK_SOAL_AUDIT_TOKEN" \
+  -d '{"action":"list","status_filter":"pending"}'
+```

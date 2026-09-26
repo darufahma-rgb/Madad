@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'node:crypto';
 import { verifyToken } from './admin-auth.js';
 import { callAIJson, friendlyAiError } from './_lib/ai.js';
 import { resolveModels } from './_lib/models.js';
@@ -31,18 +32,32 @@ Aturan akurasi (WAJIB):
 Format: teks polos tanpa markdown (tanpa **, #, tabel). Pisahkan paragraf dengan baris baru.
 Balas HANYA JSON valid: {"jawaban": "...", "penjelasan": "..."}`;
 
+/* ── Mode audit (hanya baca) ──
+   Header x-audit-token = env BANK_SOAL_AUDIT_TOKEN (min. 32 karakter). Hanya boleh action 'list'/'stats',
+   dan data pengirim (nama, WA) serta path foto dibuang. Cabut akses dengan menghapus/mengganti env-nya. */
+const AUDIT_ACTIONS = new Set(['list', 'stats']);
+const AUDIT_HIDDEN = new Set(['submitter_name', 'submitter_wa', 'foto_url']);
+const isAuditToken = (given) => {
+  const expected = (process.env.BANK_SOAL_AUDIT_TOKEN || '').trim();
+  if (expected.length < 32 || typeof given !== 'string') return false;
+  const a = Buffer.from(given.trim()), b = Buffer.from(expected);
+  return a.length === b.length && timingSafeEqual(a, b);
+};
+const stripForAudit = (row) => Object.fromEntries(Object.entries(row || {}).filter(([k]) => !AUDIT_HIDDEN.has(k)));
+
 const needsVerify = (arr) => (arr || []).some(t => /\[PERLU DIVERIFIKASI/i.test(String(t || '')));
 const cleanList = (v, n) => (Array.isArray(v) ? v : []).slice(0, n).map(x => (typeof x === 'string' ? x.slice(0, 12000) : ''));
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-token');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-token, x-audit-token');
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
   if (req.method !== 'POST') return res.status(405).end();
 
   const token = (req.headers || {})['x-admin-token'];
-  if (!verifyToken(token)) {
+  const audit = !verifyToken(token) && isAuditToken((req.headers || {})['x-audit-token']);
+  if (!audit && !verifyToken(token)) {
     return res.status(401).json({ ok: false, error: 'Unauthorized' });
   }
 
@@ -62,6 +77,9 @@ export default async function handler(req, res) {
   }
 
   const headers = { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` };
+  if (audit && !AUDIT_ACTIONS.has(action)) {
+    return res.status(403).json({ ok: false, error: 'Token audit hanya untuk membaca (list/stats).' });
+  }
 
   if (action === 'list') {
     const filter = status_filter && status_filter !== 'all'
@@ -72,7 +90,8 @@ export default async function handler(req, res) {
       { headers }
     );
     const data = await r.json();
-    return res.status(200).json({ ok: true, data: Array.isArray(data) ? data : [] });
+    const rows = Array.isArray(data) ? data : [];
+    return res.status(200).json({ ok: true, data: audit ? rows.map(stripForAudit) : rows });
   }
 
   if (action === 'stats') {
