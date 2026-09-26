@@ -39,8 +39,8 @@ Manahij Bahts, Hadhir Al-Alam Al-Islami, Falsafah Yunaniyah, Ilm Nafs, Tarbiyah 
 Firaq, Filsafat Islam, Qira'at, Tarikh Dakwah, Adab, 'Arudh, Fiqh Lughah, Naqd Adabi, Hadharah, Dakwah & I'lam,
 Mu'jam wa Lahajat, Qa'at Bahts. Belum: 3 maddah Program DL (format tabs).
 
-Ma'had (src/mahad-data.jsx, splice dengan scratchpad `splice_mahad.py`): 4 dari 27 selesai — Dirasat Ijtima'iyyah,
-Komputer, Fisika, Kimia. Aturan khusus Ma'had:
+Ma'had (src/mahad-data.jsx, splice dengan scratchpad `splice_mahad.py`): 8 dari 27 selesai — Dirasat Ijtima'iyyah,
+Komputer, Fisika, Kimia, Riyadhiyat Bahtsah, Riyadhiyat Tathbiqiyyah, Biologi, Tsaqafah Islamiyah. Aturan khusus Ma'had:
 - Baris profil: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].` — tidak lagi menulis "Al-Bu'uts",
   karena tidak semua siswa Ma'had belajar di sana.
 - Jenis prompt Ma'had hanya pahami, hafal, latihan, ujian; jumlah per jenis dipertahankan.

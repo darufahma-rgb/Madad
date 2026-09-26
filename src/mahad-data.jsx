@@ -3411,43 +3411,45 @@ Dari bab yang kupelajari ([SEBUTKAN]): yang sering jadi soal, cara jawab benar, 
     prompts: {
       pahami: [
         {
-          title: "Pahami Unsur Tsaqafah Islamiyah",
+          title: "Pahami Satu Bab Tsaqafah dengan Mudah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts Al-Islamiyyah (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dengan bahasa SANGAT sederhana:
-1. Apa itu tsaqafah (wawasan/kebudayaan) Islam & kenapa penting.
-2. Tiga unsur utama: aqidah (keyakinan), syariah (aturan), akhlak (perilaku).
-3. Bagaimana tsaqafah Islamiyah membentuk kepribadian muslim.
-4. Beri contoh nyata tiap unsur.
+Jelaskan bab [SEBUTKAN BAB, mis. keistimewaan Islam, akhlak Muslim, peradaban Islam, tantangan pemuda] dengan sederhana:
+1. Istilah kunci dalam bahasa Arab berharakat + artinya.
+2. Penjelasan inti dalam 5–7 poin dengan contoh dari kehidupan remaja.
+3. Satu ayat atau hadits pendek yang terkait — hanya yang kamu yakini redaksinya.
+4. Tutup dengan 3 pertanyaan cepat. Tunggu jawabanku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Islam sebagai Sistem Hidup",
+          title: "Pahami Islam sebagai Jalan Hidup yang Menyeluruh",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dengan mudah:
-1. Mengapa Islam disebut sistem hidup yang lengkap (diin kamil).
-2. Bagaimana Islam mengatur: ibadah, muamalah, akhlak, sosial.
-3. Contoh sederhana penerapan dalam kehidupan sehari-hari.
+Jelaskan bahwa Islam mengatur seluruh sisi hidup (الشُّمُولُ):
+1. Akidah, ibadah, akhlak, dan muamalah — satu contoh sederhana untuk tiap sisi dari kehidupan sehari-hari pelajar.
+2. Keistimewaan Islam: رَبَّانِيَّةٌ، وَسَطِيَّةٌ، يُسْرٌ — dengan dalil pendek yang kamu yakini.
+3. Tabel ringkas yang bisa kusalin: sisi | contoh | dalil.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Tantangan Tsaqafah Islam di Era Modern",
+          title: "Pahami Tantangan Remaja Muslim Masa Kini",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dengan bahasa mudah:
-1. Tantangan yang dihadapi generasi muda muslim sekarang.
-2. Bagaimana tsaqafah Islam yang kuat menjadi tameng.
-3. Cara praktis membangun wawasan Islam sejak dini.
+Bahas satu tantangan: [SEBUTKAN TANTANGAN, mis. kecanduan gawai, ikut-ikutan tren, pergaulan, keraguan tentang agama].
+1. Kenapa hal itu jadi tantangan bagi remaja.
+2. Tuntunan Islam yang terkait, dengan dalil pendek yang kamu yakini.
+3. Tiga langkah nyata yang bisa kulakukan mulai minggu ini.
+
+Gunakan bahasa yang hangat dan tidak menghakimi.
 
 [METODE]
 
@@ -3456,24 +3458,31 @@ Jelaskan dengan bahasa mudah:
       ],
       hafal: [
         {
-          title: "Hafal Komponen Tsaqafah Islamiyah",
+          title: "Kartu Hafalan Istilah & Dalil Pendek",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal komponen tsaqafah:
-1. Tabel: komponen | arti sederhana | contoh.
-2. Mnemonic Indonesia yang mudah.
+Untuk bab [SEBUTKAN BAB], buatkan kartu hafalan:
+1. Tabel: istilah Arab berharakat | arti | satu kalimat penjelasan.
+2. Dalil pendek yang wajib hafal — hanya yang kamu yakini redaksinya.
+3. Cara mudah mengingat.
+4. Lalu uji aku 8 soal, satu per satu. Tunggu jawabanku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Jadwal Muraja'ah Tsaqafah",
+          title: "Jadwal Muraja'ah Tsaqafah Ma'had",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah sederhana + cara uji. Tabel.
+Bab yang harus kupelajari: [SEBUTKAN BAB-BAB]. Buatkan jadwal belajar sampai ujian:
+1. Bagi per bab, 20–30 menit per sesi.
+2. Jadwal ulang H+1, H+3, H+7.
+3. Cara menguji diri tiap sesi: istilah, satu dalil, dan satu contoh penerapan.
+
+Format: tabel (hari | bab | cara menguji | durasi).
 
 [METODE]
 
@@ -3482,52 +3491,65 @@ Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah sederhana + ca
       ],
       latihan: [
         {
-          title: "Drill Soal Tsaqafah",
+          title: "Latihan Soal Gaya Ujian Ma'had",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 10 soal sederhana (definisi, komponen, penerapan) dari [SEBUTKAN].
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
+Dari bab [SEBUTKAN BAB], buat latihan seperti ujian Ma'had, soal dalam bahasa Arab berharakat + terjemah singkat:
+1. 4 soal "اِخْتَرِ الْإِجَابَةَ الصَّحِيحَةَ".
+2. 3 soal "أَكْمِلْ".
+3. 2 soal "اُذْكُرْ ... مَعَ الدَّلِيلِ".
+4. 3 pernyataan "ضَعْ عَلَامَةَ (✓) أَوْ (✗)".
+5. JANGAN beri jawaban. Tunggu jawabanku, lalu koreksi dengan penjelasan singkat.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Latihan Jelaskan Konsep (Aku Coba)",
+          title: "Latihan Jelaskan Konsep (Aku Coba, AI Koreksi)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku akan menjelaskan konsep [SEBUTKAN] dengan kata-kataku sendiri.
-Koreksi + tambahkan yang terlewat.
+Aku menjelaskan satu konsep tsaqafah dengan kata-kataku sendiri (di bawah). Koreksi dengan ramah:
+1. Bagian yang sudah benar dan yang kurang.
+2. Dalil yang kupakai: tepat atau tidak.
+3. Bahasa Arab tulisanku bila kutulis dalam Arab: maksimal 3 koreksi.
+4. Versi perbaikan yang ringkas.
+
+Penjelasanku:
+[TEMPEL JAWABANKU]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Penjelasanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Imtihan Tsaqafah (I'dadi)",
+          title: "Simulasi Ujian Tsaqafah Ma'had",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
 
-Buatkan soal ujian tingkat I'dadi: definisi, komponen, penerapan. 5-6 soal mudah ke sedang.
-JANGAN beri jawaban. Tunggu jawabanku, koreksi & beri nilai dengan bahasa mendukung.
+Buatkan satu lembar ujian dari bab [SEBUTKAN BAB-BAB], soal dalam bahasa Arab berharakat + terjemah singkat:
+1. Tiga السؤال dengan bobot درجة: pilihan ganda dan isian, lalu "اُذْكُرْ مَعَ الدَّلِيلِ", lalu satu soal uraian pendek.
+2. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai dan jelaskan yang salah.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kisi-kisi & Strategi Ujian",
+          title: "Kisi-kisi & Tips Ujian Tsaqafah Ma'had",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (I'dadi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Yang sering jadi soal, cara jawab benar, prioritas H-7.
+Bab yang diujikan: [SEBUTKAN BAB-BAB]. Bantu aku bersiap:
+1. Untuk tiap bab: jenis soal yang mungkin keluar dan satu contoh redaksi soal dalam bahasa Arab.
+2. Istilah dan dalil yang wajib hafal.
+3. Rencana 5 hari sebelum ujian.
+
+Jangan mengklaim soal tertentu "pasti keluar".
 
 [METODE]
 
@@ -4489,42 +4511,44 @@ Jangan mengklaim soal tertentu "pasti keluar".
     prompts: {
       pahami: [
         {
-          title: "Pahami Konsep Biologi dengan Analogi",
+          title: "Pahami Satu Bab Biologi dengan Analogi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan konsep [SEBUTKAN, mis. sel, fotosintesis, sistem pencernaan, genetika] dengan bahasa mudah:
-1. Definisi + analogi yang mudah dibayangkan.
-2. Cara kerja bertahap.
-3. Contoh nyata / kaitan dengan tubuh manusia.
+Jelaskan bab [SEBUTKAN BAB, mis. sel, pencernaan, peredaran darah, genetika, ekosistem] dengan analogi sehari-hari:
+1. Istilah kunci dalam bahasa Arab (seperti buku Ma'had) + artinya, mis. الْخَلِيَّةُ، النَّوَاةُ، الْجِهَازُ الْهَضْمِيُّ، الْوِرَاثَةُ.
+2. Struktur dan fungsi, dengan satu analogi untuk tiap bagian utama.
+3. Proses utama di bab ini dalam bentuk urutan panah.
+4. Kesalahan konsep yang sering terjadi.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Sistem Tubuh Manusia",
+          title: "Pahami Proses & Sistem Tubuh secara Berurutan",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk sistem [SEBUTKAN, mis. pencernaan, peredaran darah, saraf]:
-1. Organ-organ yang terlibat + fungsinya.
-2. Proses kerjanya secara bertahap.
-3. Gangguan/penyakit yang terkait + pencegahannya.
+Jelaskan proses [SEBUTKAN PROSES, mis. pencernaan makanan, pernapasan, peredaran darah, pembelahan sel, fotosintesis]:
+1. Urutan tahapnya dengan nama organ atau struktur (Arab berharakat + arti).
+2. Apa yang terjadi di tiap tahap dan kenapa tahap itu penting.
+3. Diagram teks sederhana yang bisa kusalin ke buku catatan.
+4. Tiga pertanyaan "عَلِّلْ" yang mungkin keluar dari proses ini. Jangan beri jawabannya dulu.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Hubungan Biologi & Penciptaan Allah",
+          title: "Pahami Biologi & Tanda Kebesaran Allah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk topik biologi [SEBUTKAN]:
-1. Keajaiban ilmiah yang menunjukkan kebesaran Allah.
-2. Ayat Qur'an yang berkaitan (sebut yang kamu yakin; jangan mengarang).
-3. Bagaimana ilmu biologi memperkuat iman.
+Hubungkan bab [SEBUTKAN BAB] dengan tadabbur ciptaan Allah:
+1. Fakta ilmiah pokok di bab ini.
+2. Ayat yang mengajak merenungkan ciptaan terkait (surat:ayat; redaksi hanya kalau kamu yakin).
+3. Batas yang sehat: tidak memaksakan ayat sebagai "rumus sains" dan tidak mengklaim mukjizat ilmiah yang diperselisihkan.
 
 [METODE]
 
@@ -4533,13 +4557,15 @@ Untuk topik biologi [SEBUTKAN]:
       ],
       hafal: [
         {
-          title: "Hafal Istilah & Klasifikasi Biologi",
+          title: "Kartu Hafalan Istilah & Klasifikasi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk bab [SEBUTKAN], bantu hafal:
-1. Tabel: istilah | definisi | contoh.
-2. Klasifikasi/urutan dengan mnemonic.
+Untuk bab [SEBUTKAN BAB], buatkan kartu hafalan:
+1. Tabel: istilah Arab berharakat | arti | fungsi atau ciri.
+2. Klasifikasi dalam bentuk pohon (mis. jenis jaringan, kelompok makhluk hidup).
+3. Cara mudah mengingat.
+4. Lalu uji aku 8 soal, satu per satu. Tunggu jawabanku.
 
 [METODE]
 
@@ -4548,9 +4574,14 @@ Untuk bab [SEBUTKAN], bantu hafal:
         {
           title: "Jadwal Belajar Biologi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal belajar + muraja'ah. Tabel.
+Bab yang harus kupelajari: [SEBUTKAN BAB-BAB]. Buatkan jadwal belajar sampai ujian:
+1. Tiap sesi: 10 menit membaca, 10 menit menggambar diagram dari ingatan, 10 menit soal.
+2. Jadwal ulang H+1, H+3, H+7.
+3. Target jumlah soal per bab.
+
+Format: tabel (hari | bab | kegiatan | durasi).
 
 [METODE]
 
@@ -4559,40 +4590,50 @@ Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal belajar + muraja'ah. Tabel
       ],
       latihan: [
         {
-          title: "Drill Soal Biologi",
+          title: "Latihan Soal Gaya Ujian Ma'had",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 8 soal (konsep, proses, klasifikasi, fungsi organ) dari [SEBUTKAN].
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
+Dari bab [SEBUTKAN BAB], buat latihan seperti ujian Ma'had, soal dalam bahasa Arab berharakat + terjemah singkat:
+1. 4 soal "اِخْتَرِ الْإِجَابَةَ الصَّحِيحَةَ".
+2. 3 soal "أَكْمِلْ".
+3. 3 soal "عَلِّلْ" tentang fungsi organ atau proses.
+4. 2 soal "قَارِنْ بَيْنَ".
+5. JANGAN beri jawaban. Tunggu jawabanku, lalu koreksi dengan penjelasan singkat.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Latihan Jelaskan Proses (Aku Coba)",
+          title: "Latihan Jelaskan Proses (Aku Coba, AI Koreksi)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku jelaskan proses [SEBUTKAN] dengan kata-kataku. Koreksi + tambahkan yang terlewat.
+Aku menjelaskan satu proses biologi dengan kata-kataku sendiri (di bawah). Koreksi dengan ramah:
+1. Tahap yang benar, yang terlewat, dan urutan yang keliru.
+2. Istilah yang salah pakai.
+3. Bahasa Arab tulisanku bila kutulis dalam Arab: maksimal 3 koreksi.
+4. Versi perbaikan yang ringkas.
+
+Penjelasanku:
+[TEMPEL JAWABANKU]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Penjelasanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Ujian Biologi (Tsanawi Ilmi)",
+          title: "Simulasi Ujian Biologi Ma'had",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
 
-Buatkan soal ujian Biologi: 6-8 soal (definisi, proses, sebab-akibat, sistem tubuh).
-JANGAN beri jawaban. Koreksi & beri skor.
+Buatkan satu lembar ujian dari bab [SEBUTKAN BAB-BAB], soal dalam bahasa Arab berharakat + terjemah singkat:
+1. Tiga السؤال dengan bobot درجة: pilihan ganda dan isian, lalu "عَلِّلْ" dan "قَارِنْ", lalu satu soal menjelaskan proses atau melabeli diagram yang dijelaskan dengan kata-kata.
+2. Hanya fakta yang kamu yakini.
+3. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai dan jelaskan yang salah.
 
 [METODE]
 
@@ -4601,9 +4642,14 @@ JANGAN beri jawaban. Koreksi & beri skor.
         {
           title: "Kisi-kisi & Strategi Ujian Biologi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bab yang sering keluar, cara jawab uraian dapat nilai penuh, prioritas H-7.
+Bab yang diujikan: [SEBUTKAN BAB-BAB]. Bantu aku bersiap:
+1. Untuk tiap bab: istilah dan proses wajib, jenis soal yang mungkin keluar, dan satu contoh redaksi soal dalam bahasa Arab.
+2. Tips menjawab soal "عَلِّلْ" dan soal diagram.
+3. Rencana 5 hari sebelum ujian.
+
+Jangan mengklaim soal tertentu "pasti keluar".
 
 [METODE]
 
@@ -4628,43 +4674,43 @@ Bab yang sering keluar, cara jawab uraian dapat nilai penuh, prioritas H-7.
     prompts: {
       pahami: [
         {
-          title: "Pahami Konsep Matematika Murni Step-by-Step",
+          title: "Pahami Konsep Matematika Murni Langkah demi Langkah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan konsep [SEBUTKAN, mis. fungsi, limit, trigonometri, matriks] dengan bahasa mudah:
-1. Intuisi di balik konsep ini (kenapa ada & kegunaannya).
-2. Definisi formal + rumus.
-3. Contoh soal dikerjakan lengkap langkah demi langkah.
-4. Kesalahan umum & cara menghindarinya.
+Jelaskan bab [SEBUTKAN BAB, mis. persamaan kuadrat, fungsi, limit, turunan, trigonometri, geometri analitik]:
+1. Istilah kunci dalam bahasa Arab (seperti buku Ma'had) + artinya, mis. الْمُعَادَلَةُ، الدَّالَّةُ، الْمُشْتَقَّةُ، النِّهَايَةُ.
+2. Ide dasarnya dengan gambaran atau grafik sederhana, sebelum rumus.
+3. Rumus atau teorema pokok, dan dari mana asalnya secara singkat.
+4. Dua contoh soal dikerjakan bertahap — periksa ulang hitunganmu sebelum menulis.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Rumus & Kapan Memakainya",
+          title: "Pahami Kapan Memakai Rumus atau Metode",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk bab [SEBUTKAN]:
-1. Daftar rumus penting + arti simbol + kondisi pemakaian.
-2. Kapan pakai rumus A vs B (decision tree sederhana).
-3. Dua contoh penerapan.
+Untuk bab [SEBUTKAN BAB], aku sering bingung memilih cara penyelesaian. Bantu aku:
+1. Daftar metode atau rumus di bab ini, masing-masing dengan "tanda" soal yang cocok untuknya.
+2. Pohon keputusan sederhana: lihat bentuk soal → pilih metode.
+3. Tiga soal pendek: aku menyebut metode yang cocok dulu sebelum mengerjakan. Satu per satu, tunggu jawabanku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami dari Soal ke Solusi",
+          title: "Pahami Pembuktian & Soal Cerita",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Ajari aku strategi membaca soal matematika murni:
-1. Cara mengidentifikasi tipe soal dari kalimat pertanyaan.
-2. Langkah sistematis dari membaca → rencana → eksekusi → cek.
-3. Contoh 2 soal berbeda tipe.
+Ajari aku dua keterampilan yang sering membuat nilai turun, dengan contoh dari bab [SEBUTKAN BAB]:
+1. Menulis pembuktian (الْبُرْهَانُ) yang rapi: yang diketahui, yang dibuktikan, langkah dengan alasan tiap langkah.
+2. Menerjemahkan soal cerita berbahasa Arab ke bentuk matematika: kata kunci Arab (مَجْمُوعٌ، فَرْقٌ، حَاصِلُ ضَرْبٍ، ضِعْفُ) dan artinya.
+3. Satu contoh untuk masing-masing, dikerjakan bertahap.
 
 [METODE]
 
@@ -4673,13 +4719,16 @@ Ajari aku strategi membaca soal matematika murni:
       ],
       hafal: [
         {
-          title: "Hafal Rumus Matematika Murni",
+          title: "Lembar Rumus Matematika Murni",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk bab [SEBUTKAN], bantu hafal rumus:
-1. Tabel: rumus | kapan dipakai | cara mengingat (logika/mnemonic).
-2. Tandai rumus yang paling sering dipakai.
+Buatkan lembar rumus untuk bab [SEBUTKAN BAB-BAB]:
+1. Tabel: rumus | nama Arab | kapan dipakai | contoh singkat.
+2. Tandai rumus yang bisa diturunkan dari rumus lain, supaya hafalanku lebih sedikit.
+3. Lalu uji aku 8 soal cepat: kamu sebut situasi, aku tulis rumusnya. Satu per satu, tunggu jawabanku.
+
+Periksa ulang setiap rumus sebelum menulis.
 
 [METODE]
 
@@ -4688,9 +4737,14 @@ Untuk bab [SEBUTKAN], bantu hafal rumus:
         {
           title: "Jadwal Latihan Matematika Murni",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal latihan soal harian + muraja'ah rumus. Tabel.
+Bab yang diujikan: [SEBUTKAN BAB-BAB]. Buatkan jadwal latihan sampai ujian:
+1. Tiap sesi: 10 menit rumus dan konsep, 30 menit soal bertingkat, 5 menit mencatat kesalahan.
+2. Jadwal ulang H+1, H+3, H+7 untuk bab yang paling sering salah.
+3. Target jumlah soal per bab dan satu sesi simulasi ujian berwaktu.
+
+Format: tabel (hari | bab | kegiatan | durasi).
 
 [METODE]
 
@@ -4701,49 +4755,61 @@ Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal latihan soal harian + mura
         {
           title: "Latihan Soal Bertingkat",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 6 soal [SEBUTKAN TOPIK] dari mudah ke sulit.
-1. JANGAN beri jawaban dulu.
-2. Koreksi langkah demi langkah setelah aku jawab.
+Dari bab [SEBUTKAN BAB], beri 6 soal dalam bahasa Arab berharakat + terjemah singkat: 2 mudah, 2 sedang, 2 sulit (termasuk satu pembuktian bila babnya memungkinkan).
+1. Satu soal sekali jalan. JANGAN beri jawaban. Tunggu jawabanku.
+2. Koreksi langkahku, bukan hanya hasil akhirnya; tunjukkan di langkah mana aku keliru.
+3. Periksa ulang kunci jawabanmu sendiri sebelum menilai.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Bedah Soal yang Aku Salah",
+          title: "Bedah Soal yang Aku Salah (Aku Tempel, AI Periksa)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Soal + jawabanku (kutempel). Tunjukkan persis di mana aku salah. Beri 2 soal serupa.
+Aku salah mengerjakan soal di bawah. Bantu aku belajar dari kesalahannya:
+1. Temukan langkah pertama yang keliru dan jenis kesalahannya (konsep, rumus, aljabar, tanda, atau hitungan).
+2. Tunjukkan cara yang benar, langkah demi langkah.
+3. Beri satu soal mirip untuk kucoba ulang. JANGAN beri jawabannya. Tunggu jawabanku.
+
+Soal dan jawabanku:
+[TEMPEL JAWABANKU]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Soal + jawabanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Ujian Riyadhiyat Bahtsah",
+          title: "Simulasi Ujian Riyadhiyat Bahtsah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
 
-Buatkan soal ujian Matematika Murni: 6-8 soal campur (hitung, pembuktian, aplikasi).
-JANGAN beri jawaban. Koreksi langkah & beri skor.
+Buatkan satu lembar ujian dari bab [SEBUTKAN BAB-BAB], soal dalam bahasa Arab berharakat + terjemah singkat:
+1. Tiga atau empat السؤال dengan bobot درجة: pilihan ganda dan isian, soal hitungan, dan satu pembuktian.
+2. Periksa ulang semua kunci jawabanmu sebelum memberikan soal.
+3. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai langkah demi langkah.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kisi-kisi & Strategi Ujian",
+          title: "Kisi-kisi & Strategi Ujian Matematika Murni",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bab yang sering keluar, cara bagi waktu saat ujian, prioritas H-7.
+Bab yang diujikan: [SEBUTKAN BAB-BAB]. Bantu aku bersiap:
+1. Untuk tiap bab: tipe soal yang mungkin keluar dan satu contoh redaksi soal dalam bahasa Arab.
+2. Strategi di ruang ujian: urutan mengerjakan, mengelola waktu, dan cara mengecek jawaban.
+3. Rencana 5 hari sebelum ujian.
+
+Jangan mengklaim soal tertentu "pasti keluar".
 
 [METODE]
 
@@ -4768,43 +4834,45 @@ Bab yang sering keluar, cara bagi waktu saat ujian, prioritas H-7.
     prompts: {
       pahami: [
         {
-          title: "Pahami Matematika Terapan (Statistika/Mekanika)",
+          title: "Pahami Satu Bab Matematika Terapan",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan konsep [SEBUTKAN, mis. statistika, probabilitas, mekanika, vektor] dengan mudah:
-1. Apa itu & aplikasinya dalam kehidupan nyata.
-2. Rumus utama + cara pakai.
-3. Contoh soal dikerjakan lengkap.
+Jelaskan bab [SEBUTKAN BAB, mis. statistika, peluang, vektor, statika, dinamika] dengan contoh dunia nyata:
+1. Istilah kunci dalam bahasa Arab (seperti buku Ma'had) + artinya, mis. الْوَسَطُ الْحِسَابِيُّ، الِاحْتِمَالُ، الْمُتَّجِهُ، الْقُوَّةُ.
+2. Ide dasarnya dengan situasi nyata (data nilai kelas, benda di bidang miring, dsb.).
+3. Rumus pokok, arti simbol, dan satuannya bila ada.
+4. Dua contoh soal dikerjakan bertahap — periksa ulang hitunganmu sebelum menulis.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Statistika Dasar",
+          title: "Pahami Statistika & Peluang dari Data Nyata",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk topik statistika [SEBUTKAN]:
-1. Mean, median, modus — definisi + cara hitung.
-2. Penyebaran data: variansi, simpangan baku.
-3. Cara membaca/membuat grafik data.
-4. Contoh soal dari data nyata.
+Pakai data sederhana (mis. nilai 10 teman sekelas) untuk mengajariku:
+1. Ukuran pemusatan (mean, median, modus) dan ukuran penyebaran (jangkauan, simpangan baku) — hitung bertahap dari data itu.
+2. Cara membaca tabel frekuensi dan diagram.
+3. Peluang kejadian sederhana dan peluang gabungan, dengan contoh.
+
+Istilah Arab berharakat + artinya. Periksa ulang semua hitungan.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Mekanika / Vektor",
+          title: "Pahami Mekanika: Gaya, Vektor & Keseimbangan",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk topik [SEBUTKAN, mis. vektor, gaya, keseimbangan]:
-1. Konsep dasar + intuisi fisik.
-2. Cara menghitung + rumus.
-3. Contoh soal aplikasi.
+Jelaskan mekanika di muqarrar-ku ([SEBUTKAN BAB, mis. penjumlahan vektor, keseimbangan benda, gerak lurus]):
+1. Cara menggambar diagram gaya dan menguraikan vektor.
+2. Syarat keseimbangan dan cara menyusun persamaannya.
+3. Satu soal dikerjakan bertahap: gambar → uraikan → susun persamaan → hitung → cek satuan.
 
 [METODE]
 
@@ -4813,13 +4881,16 @@ Untuk topik [SEBUTKAN, mis. vektor, gaya, keseimbangan]:
       ],
       hafal: [
         {
-          title: "Hafal Rumus & Metode Matematika Terapan",
+          title: "Lembar Rumus Statistika & Mekanika",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk bab [SEBUTKAN], bantu hafal rumus & metode:
-1. Tabel: rumus/metode | kegunaan | contoh.
-2. Cara mengingat (logika/mnemonic).
+Buatkan lembar rumus untuk bab [SEBUTKAN BAB-BAB]:
+1. Tabel: rumus | nama Arab | arti simbol | satuan | kapan dipakai.
+2. Kelompokkan: statistika, peluang, dan mekanika.
+3. Lalu uji aku 8 soal cepat: kamu beri situasi nyata, aku pilih rumusnya. Satu per satu, tunggu jawabanku.
+
+Periksa ulang setiap rumus sebelum menulis.
 
 [METODE]
 
@@ -4828,9 +4899,14 @@ Untuk bab [SEBUTKAN], bantu hafal rumus & metode:
         {
           title: "Jadwal Latihan Matematika Terapan",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal latihan + muraja'ah. Tabel.
+Bab yang diujikan: [SEBUTKAN BAB-BAB]. Buatkan jadwal latihan sampai ujian:
+1. Tiap sesi: 10 menit rumus, 25 menit soal (statistika dengan data, mekanika dengan diagram), 5 menit mencatat kesalahan.
+2. Jadwal ulang H+1, H+3, H+7.
+3. Satu sesi simulasi ujian berwaktu.
+
+Format: tabel (hari | bab | kegiatan | durasi).
 
 [METODE]
 
@@ -4839,51 +4915,63 @@ Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal latihan + muraja'ah. Tabel
       ],
       latihan: [
         {
-          title: "Latihan Soal Bertingkat",
+          title: "Latihan Soal Terapan Bertingkat",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 6 soal [SEBUTKAN TOPIK] dari mudah ke sulit.
-1. JANGAN beri jawaban dulu.
-2. Koreksi langkah demi langkah.
+Dari bab [SEBUTKAN BAB], beri 6 soal terapan dalam bahasa Arab berharakat + terjemah singkat: 2 mudah, 2 sedang, 2 sulit (dengan data atau diagram yang dijelaskan dengan kata-kata).
+1. Satu soal sekali jalan. JANGAN beri jawaban. Tunggu jawabanku.
+2. Koreksi langkahku, termasuk diagram gaya atau tabel data yang kususun.
+3. Periksa ulang kunci jawabanmu sendiri sebelum menilai.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Bedah Soal yang Aku Salah",
+          title: "Bedah Soal Terapan yang Aku Salah (Aku Tempel, AI Periksa)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Soal + jawabanku (kutempel). Tunjukkan di mana aku salah. Beri 2 soal serupa.
+Aku salah mengerjakan soal terapan di bawah. Bantu aku:
+1. Temukan langkah pertama yang keliru: salah membaca data, salah menggambar gaya, salah rumus, atau salah hitung.
+2. Tunjukkan cara yang benar, langkah demi langkah.
+3. Beri satu soal mirip untuk kucoba ulang. JANGAN beri jawabannya. Tunggu jawabanku.
+
+Soal dan jawabanku:
+[TEMPEL JAWABANKU]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Soal + jawabanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Ujian Riyadhiyat Tatbiqiyyah",
+          title: "Simulasi Ujian Riyadhiyat Tathbiqiyyah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
 
-Buatkan soal ujian Matematika Terapan: 6-8 soal (statistika, mekanika/vektor, aplikasi).
-JANGAN beri jawaban. Koreksi & beri skor.
+Buatkan satu lembar ujian dari bab [SEBUTKAN BAB-BAB], soal dalam bahasa Arab berharakat + terjemah singkat:
+1. Tiga atau empat السؤال dengan bobot درجة: soal statistika dengan tabel data, soal peluang, dan soal mekanika dengan diagram yang dijelaskan dengan kata-kata.
+2. Periksa ulang semua kunci jawabanmu sebelum memberikan soal.
+3. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai langkah demi langkah.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kisi-kisi & Strategi Ujian",
+          title: "Kisi-kisi & Strategi Ujian Matematika Terapan",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Bu'uts (Tsanawi Ilmi), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bab yang sering keluar, strategi mengerjakan soal aplikasi, prioritas H-7.
+Bab yang diujikan: [SEBUTKAN BAB-BAB]. Bantu aku bersiap:
+1. Untuk tiap bab: tipe soal yang mungkin keluar dan satu contoh redaksi soal dalam bahasa Arab.
+2. Kesalahan yang paling sering terjadi (membaca data, arah gaya, satuan) dan cara menghindarinya.
+3. Rencana 5 hari sebelum ujian.
+
+Jangan mengklaim soal tertentu "pasti keluar".
 
 [METODE]
 
