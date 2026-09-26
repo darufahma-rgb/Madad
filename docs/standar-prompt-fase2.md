@@ -26,11 +26,11 @@ dan `[METODE]`/`[LEVEL_BAHASA]` ada. Diff harus hanya menyentuh blok maddah yang
 
 ## Progres
 
-30 maddah selesai (523 prompt): Nahwu, Fiqh Madzhabi, Tauhid, Ushul Fiqh, Mustholah Hadits, Tarikh Tasyri',
+34 maddah selesai (570 prompt): Nahwu, Fiqh Madzhabi, Tauhid, Ushul Fiqh, Mustholah Hadits, Tarikh Tasyri',
 Sharaf, Al-Qur'an (Tahfidz), Sirah Nabawiyah, Fiqh Muqaran, Tarikh Islam, 'Ulum Al-Qur'an, Tajwid, Ahwal Syakhshiyah,
 Balaghah, Mantiq, Tafsir Tahlili, Hadits Tahlili, Tafsir Maudhu'i, Manahij Mufassirin, Hadits Maudhu'i,
 Takhrij Hadits, Manahij Muhadditsin, Syubhat Hawla As-Sunnah, Tasawwuf, Qadhaya Fiqhiyyah, Adyan,
-Wasail Tabligh, Khithabah, Qawa'id Fiqhiyyah. Urutan dipilih dari jangkauan (fakultas × tingkat) dan jumlah kertas di Bank Soal, karena data jumlah buka
+Wasail Tabligh, Khithabah, Qawa'id Fiqhiyyah, Ushul Dakwah, Maqashid Syariah, Istisyraq, Tiarat Fikriyyah. Urutan dipilih dari jangkauan (fakultas × tingkat) dan jumlah kertas di Bank Soal, karena data jumlah buka
 maddah hanya ada di Supabase.
 
 Catatan dari kertas asli yang memengaruhi penulisan:
@@ -58,5 +58,9 @@ Catatan dari kertas asli yang memengaruhi penulisan:
 - Wasail Tabligh: didominasi ta'rif, daftar bernomor ("اذكر … إجمالًا"), صح/خطأ مع التصويب, dan أكمل (١) (٢).
 - Khithabah: rukun khutbah Jumat, sifat khatib + dalil, sejarah (masa Nabi ﷺ & Khulafa'), lalu menulis khutbah lengkap.
 - Qawa'id Fiqhiyyah belum punya kertas di Bank Soal; memakai pola umum (syarah kaidah, indiraj furu', مثّل, ✓/✗).
+- Ushul Dakwah (kertas "مناهج دعوة" Tk 4): turats (آليات التعامل، الطريقة المثلى في القراءة), adab da'i saat khilaf
+  dengan contoh, dan "قارن بين المنهج العاطفي والتجريبي من حيث التعريف، مواطن الاستعمال، الخصائص".
+- Maddah Fakultas Dakwah kini memakai [FAKULTAS][JURUSAN] seperti maddah lain (dulu "Fakultas Dakwah" ditulis langsung),
+  supaya ikut benar untuk mahasiswa Ushuluddin yang juga mempelajarinya. Label fakultas Dakwah ditambahkan ke resolver.
 - Kertas "Tarikh Islam" satu-satunya di Bank Soal ternyata Tarikh As-Sunnah; Sirah belum punya kertas.
 - Rujukan kitab boleh juga dari kitab yang disebut di kertas asli, selalu dengan "kalau kamu yakin".

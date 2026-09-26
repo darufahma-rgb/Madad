@@ -12040,44 +12040,48 @@ Bantu aku menerapkan teori khithabah pada ceramah atau kajian online:
     prompts: {
       pahami: [
         {
-          title: "Peta Besar Ushul Dakwah",
+          title: "Peta Besar Ushul Dakwah wa Manahijuha",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri kerangka utuh Ushul Dakwah:
-1. Definisi dakwah + hukumnya (fardhu 'ain/kifayah).
-2. Rukun dakwah: da'i, mad'u, maudhu', uslub, wasilah.
-3. Sumber & fondasi: Qur'an, Sunnah, sirah.
-4. Outline bercabang.
+Beri aku peta besar maddah ini:
+1. Ta'rif الدَّعْوَةُ secara bahasa dan istilah, hukumnya, dan dalilnya — ayat hanya yang kamu yakini redaksinya.
+2. Rukun dakwah: الدَّاعِي، الْمَدْعُوُّ، مَوْضُوعُ الدَّعْوَةِ، الْوَسَائِلُ وَالْأَسَالِيبُ.
+3. Beda istilah الْمَنْهَجُ، الْأُسْلُوبُ، الْوَسِيلَةُ dalam ilmu dakwah, dengan satu contoh untuk tiap istilah.
+4. Pembagian manahij dakwah yang biasa diajarkan: الْمَنْهَجُ الْعَاطِفِيُّ، الْعَقْلِيُّ، الْحِسِّيُّ (التَّجْرِيبِيُّ).
+
+Format: bagan, lalu tabel istilah | ta'rif | contoh.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Metode Dakwah Qur'ani",
+          title: "Pahami Manhaj 'Athifi, 'Aqli & Hissi (Tajribi)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan tiga metode dakwah dari An-Nahl:
-1. Al-Hikmah — definisi + contoh penerapan.
-2. Al-Mau'izhah Al-Hasanah — definisi + contoh.
-3. Al-Mujadalah billati hiya ahsan — definisi + contoh.
-4. Kapan tiap metode paling tepat dipakai.
+Kertas ujian pernah meminta "قَارِنْ بَيْنَ الْمَنْهَجِ الْعَاطِفِيِّ وَالْمَنْهَجِ التَّجْرِيبِيِّ أَوِ الْحِسِّيِّ مِنْ حَيْثُ: تَعْرِيفُهُ، مَوَاطِنُ اسْتِعْمَالِهِ، أَبْرَزُ خَصَائِصِهِ". Jelaskan ketiga manhaj:
+1. Ta'rif tiap manhaj.
+2. Sasaran dakwah dan situasi yang cocok untuk tiap manhaj (مَوَاطِنُ الِاسْتِعْمَالِ).
+3. Ciri-ciri menonjol (الْخَصَائِصُ).
+4. Contoh penggunaannya dalam Al-Qur'an atau sirah — hanya yang kamu yakini.
+
+Format: tabel perbandingan tiga kolom, lalu jawaban model singkat dalam bahasa Arab + terjemah untuk soal di atas.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Maratib Dakwah (Tahapan)",
+          title: "Pahami Adab Da'i saat Berbeda Pendapat & Manhaj terhadap Turats",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan tahapan dakwah:
-1. Dakwah sirriyah ke jahriyah (teladan dari sirah).
-2. Prioritas dakwah: tauhid dulu, lalu ibadah, lalu akhlak & muamalah.
-3. Kenapa urutan ini penting secara metodologis.
+Jelaskan dua tema yang pernah diuji:
+1. آدَابُ الدَّاعِيَةِ عِنْدَ الْخِلَافِ: sebutkan adab-adabnya, masing-masing dengan dalil atau contoh dari salaf — hanya yang kamu yakini sumbernya.
+2. الِاسْتِفَادَةُ مِنْ كُتُبِ التُّرَاثِ: cara berinteraksi dengan turats Islam (آلِيَّاتُ التَّعَامُلِ) dan cara terbaik membaca kitab turats (الطَّرِيقَةُ الْمُثْلَى فِي الْقِرَاءَةِ).
+3. Untuk tiap tema: kerangka jawaban dalam poin yang siap ditulis di lembar ujian.
 
 [METODE]
 
@@ -12086,13 +12090,14 @@ Jelaskan tahapan dakwah:
       ],
       hafal: [
         {
-          title: "Hafal Rukun & Metode Dakwah",
+          title: "Hafal Ta'rif, Rukun & Daftar Bernomor",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal rukun dakwah + tiga metode Qur'ani:
-1. Daftar (Arab berharakat + arti).
-2. Mnemonic.
+Buatkan daftar hafalan dari bab [SEBUTKAN BAB, mis. manahij dakwah, adab da'i, rukun dakwah]:
+1. Ta'rif yang wajib hafal persis (Arab berharakat + terjemah).
+2. Semua daftar bernomor di bab itu (rukun, khasha'ish, adab, aliyat) — hanya poin yang kamu yakini; kalau ragu, minta aku menempel dari diktat.
+3. Lalu uji aku: kamu sebut judul daftar, aku sebutkan isinya. Satu per satu, tunggu jawabanku.
 
 [METODE]
 
@@ -12101,9 +12106,15 @@ Bantu hafal rukun dakwah + tiga metode Qur'ani:
         {
           title: "Jadwal Muraja'ah Ushul Dakwah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7 + cara uji. Tabel.
+Muqarrar-ku mencakup [SEBUTKAN BAB-BAB]. Buatkan jadwal muraja'ah:
+1. Bagi per bab.
+2. Jadwal ulang H+1, H+3, H+7, lalu mingguan sampai imtihan.
+3. Cara menguji diri tiap sesi: satu ta'rif, satu daftar bernomor, satu soal perbandingan.
+4. Dua hari terakhir untuk latihan soal gaya kertas ujian.
+
+Format: tabel (hari | bab | cara menguji | durasi).
 
 [METODE]
 
@@ -12112,40 +12123,47 @@ Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7 
       ],
       latihan: [
         {
-          title: "Latihan Rancang Strategi Dakwah",
+          title: "Latihan Soal Uraian Gaya Kertas Azhar",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 4 skenario mad'u berbeda. Tugasku: rancang strategi dakwah yang sesuai.
-1. JANGAN beri jawaban dulu.
-2. Koreksi + sarankan perbaikan.
+Buat 3 soal uraian dari bab [SEBUTKAN BAB] dengan redaksi Arab seperti kertas asli:
+1. Pola: "... اِشْرَحْ ذَلِكَ مُبَيِّنًا الْآتِيَ"، "تَحَدَّثْ عَنْ ثَلَاثَةٍ مِنْهَا مُعَزِّزًا إِجَابَتَكَ بِالْأَمْثِلَةِ"، "قَارِنْ بَيْنَ ... مِنْ حَيْثُ ...".
+2. Cantumkan bobot درجة tiap soal.
+3. JANGAN beri jawaban. Tunggu jawabanku.
+4. Koreksi: poin yang kurang, contoh yang lemah, dan susunan jawaban.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Soal Ushul Dakwah",
+          title: "Studi Kasus Dakwah Nabi ﷺ",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 10 soal (definisi, metode, dalil, penerapan) dari [SEBUTKAN].
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
+Latih aku membaca manhaj dakwah dari sirah. Ambil peristiwa [SEBUTKAN PERISTIWA, mis. dakwah di Thaif, surat kepada Heraklius]:
+1. Ceritakan peristiwanya singkat — hanya detail yang kamu yakini riwayatnya.
+2. Tanyakan padaku: manhaj apa yang dipakai (عاطفي/عقلي/حسي), uslub dan wasilahnya, serta pelajaran untuk da'i. JANGAN beri jawaban dulu.
+3. Tunggu jawabanku, lalu koreksi dan lengkapi.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Studi Kasus Dakwah Nabi",
+          title: "Latihan Rancang Strategi Dakwah (Aku Coba, AI Koreksi)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk peristiwa dakwah [SEBUTKAN dari sirah]:
-1. Identifikasi metode/uslub yang dipakai Nabi.
-2. Faktor keberhasilan dakwah di situasi itu.
-3. Pelajaran untuk dakwah kontemporer.
+Aku menyusun rencana dakwah untuk sasaran tertentu (di bawah). Koreksi seperti dosen:
+1. Apakah manhaj, uslub, dan wasilah yang kupilih cocok dengan keadaan mad'u?
+2. Rukun dakwah mana yang sudah dan belum kuperhatikan?
+3. Risiko dan adab yang terlewat.
+4. Versi perbaikan yang ringkas.
+
+Rencanaku:
+[TEMPEL RENCANAKU]
 
 [METODE]
 
@@ -12154,23 +12172,30 @@ Untuk peristiwa dakwah [SEBUTKAN dari sirah]:
       ],
       ujian: [
         {
-          title: "Mock Imtihan Ushul Dakwah (Gaya Azhari)",
+          title: "Mock Imtihan Tahriri Ushul Dakwah (Gaya Kertas Azhar)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan tahriri.
 
-Buatkan soal ujian Ushul Dakwah gaya Azhar: 'arrif, bayyin al-asalib, thabbiq 'ala, udzkur maratib. 5-6 soal.
-JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih.
+Buatkan satu kertas ujian tahriri dari muqarrar [SEBUTKAN BAB-BAB]:
+1. Tiga السؤال dengan bobot درجة (total 100), redaksi Arab seperti kertas asli.
+2. Isi: satu soal "اِشْرَحْ ... مُبَيِّنًا الْآتِيَ" dengan dua bagian; satu soal "تَحَدَّثْ عَنْ ثَلَاثَةٍ ... مُعَزِّزًا إِجَابَتَكَ بِالْأَمْثِلَةِ"; satu soal "قَارِنْ بَيْنَ ... مِنْ حَيْثُ: تَعْرِيفُهُ، مَوَاطِنُ اسْتِعْمَالِهِ، خَصَائِصُهُ".
+3. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai seperti mushahhih.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kisi-kisi & Strategi Ujian",
+          title: "Kisi-kisi & Strategi Ujian Ushul Dakwah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Dari topik yang kupelajari: topik tersering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
+Muqarrar semester ini: [SEBUTKAN BAB-BAB]. Bantu aku menyusun strategi ujian:
+1. Untuk tiap bab: jenis soal yang cocok (ta'rif, daftar + contoh, perbandingan, syarah) dan satu contoh redaksinya dalam bahasa Arab.
+2. Cara menulis jawaban "مُعَزِّزًا بِالْأَمْثِلَةِ" dan jawaban perbandingan berbentuk tabel yang dapat nilai penuh.
+3. Rencana H-7 sampai H-1.
+
+Jangan mengklaim soal tertentu "pasti keluar". Susun berdasarkan pola soal.
 
 [METODE]
 
@@ -12179,29 +12204,34 @@ Dari topik yang kupelajari: topik tersering jadi soal, cara jawab dapat nilai pe
       ],
       talaqqi: [
         {
-          title: "Rapikan Catatan Talaqqi",
+          title: "Rapikan Catatan Talaqqi Ushul Dakwah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan talaqqi-ku berantakan (di bawah). Rapikan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+Aku baru talaqqi dan catatanku berantakan. Bantu aku:
+1. Rapikan per bab: ta'rif → daftar bernomor → dalil → contoh dari syaikh.
+2. Lengkapi harakat istilah.
+3. Tandai (?) bagian yang terpotong atau perlu kutanyakan lagi. Jangan menambal dengan tebakan.
+4. Tutup dengan 5 poin inti dan 3 pertanyaan muraja'ah.
+
+Catatanku:
+[TEMPEL CATATAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Catatanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Dakwah Kontemporer & Media Sosial",
+          title: "Terapkan Manhaj Dakwah di Media Sosial",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bagaimana ushul dakwah klasik diterapkan di media sosial:
-1. Prinsip hikmah, mau'izhah, jidal dalam konteks digital.
-2. Tantangan khusus dakwah online.
-3. Menjaga kualitas & integritas da'i di media.
+Aku ingin berdakwah kepada [SEBUTKAN SASARAN, mis. mahasiswa umum, remaja, komunitas pekerja] lewat media sosial.
+1. Manhaj yang paling cocok (عاطفي/عقلي/حسي) untuk sasaran ini dan alasannya.
+2. Tiga contoh konten dengan uslub yang berbeda.
+3. Adab da'i yang harus dijaga, terutama saat ada perbedaan pendapat di kolom komentar.
 
 [METODE]
 
@@ -12575,46 +12605,46 @@ Untuk kawasan di mana muslim adalah minoritas [SEBUTKAN]:
     prompts: {
       pahami: [
         {
-          title: "Peta Besar Tiarat Fikriyyah",
+          title: "Peta Besar Tiarat Fikriyyah Mu'ashirah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri kerangka utuh ilmu tiarat fikriyyah:
-1. Definisi + tujuan mempelajarinya (memahami & merespons, bukan mengikuti).
-2. Aliran-aliran utama: sekularisme, liberalisme, nasionalisme, komunisme, fundamentalisme.
-3. Mengapa da'i harus memahami arus pemikiran.
-4. Outline bercabang.
+Beri aku peta besar maddah ini secara akademis dan berimbang:
+1. Ta'rif التَّيَّارَاتُ الْفِكْرِيَّةُ dan pentingnya mengkaji arus pemikiran bagi da'i.
+2. Arus-arus yang biasa dibahas: الْعَلْمَانِيَّةُ، اللِّيبْرَالِيَّةُ، الْمَارْكْسِيَّةُ، الْحَدَاثَةُ، الْإِلْحَادُ، الْقَوْمِيَّةُ، serta arus ekstrem yang mengatasnamakan agama.
+3. Untuk tiap arus: asal-usul, pokok pemikiran, dan pintu masuknya ke dunia Islam — secara ringkas.
+4. Kerangka umum menilai arus pemikiran: paparkan dengan adil, uji dengan dalil dan akal, lalu tunjukkan sikap Islam yang moderat.
+
+Format: tabel arus | asal | pokok pemikiran | titik benturan dengan Islam.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Sekularisme & Liberalisme",
+          title: "Pahami Satu Arus secara Tuntas",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan secara berimbang & akademis:
-1. Akar historis & inti pemikiran sekularisme.
-2. Liberalisme: prinsip-prinsip dasarnya.
-3. Pengaruh keduanya terhadap dunia Islam.
-4. Respons Islam yang ilmiah & konstruktif.
+Bedah arus [SEBUTKAN ARUS, mis. sekularisme, liberalisme, ateisme] dengan urutan yang biasa diuji:
+1. Ta'rif secara bahasa dan istilah (Arab berharakat + terjemah).
+2. Latar kemunculan dan tokoh-tokoh pokoknya — nama dan tahun hanya yang kamu yakini.
+3. Pokok-pokok pemikirannya (الْأُسُسُ وَالْأَفْكَارُ), dipaparkan secara adil.
+4. Pengaruhnya di dunia Islam dan sikap Islam terhadapnya, dengan dalil dan argumen akal.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Arus Pemikiran [SEBUTKAN]",
+          title: "Pahami Wasathiyyah Azhar Menghadapi Arus Ekstrem",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan aliran [SEBUTKAN, mis. nasionalisme, komunisme, post-modernisme]:
-1. Latar historis & inti pemikiran.
-2. Pengaruhnya di dunia Islam.
-3. Titik pertemuan & perbedaan dengan Islam.
-4. Respons ilmiah Ahlussunnah.
-Sajikan berimbang & akademis.
+Jelaskan dua kutub ekstrem yang dibahas dalam kajian arus pemikiran: ekstrem yang meninggalkan agama dan ekstrem yang berlebihan dalam beragama (الْغُلُوُّ وَالتَّطَرُّفُ).
+1. Ciri-ciri pemikiran tiap kutub.
+2. Makna الْوَسَطِيَّةُ dan dalilnya — ayat dan hadits hanya yang kamu yakini.
+3. Cara da'i menghadapi keduanya: ilmu, hikmah, dan dialog.
 
 [METODE]
 
@@ -12623,13 +12653,14 @@ Sajikan berimbang & akademis.
       ],
       hafal: [
         {
-          title: "Hafal Aliran & Ciri Pokoknya",
+          title: "Hafal Ta'rif & Pokok Tiap Arus",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal aliran-aliran fikriyyah:
-1. Tabel: aliran | inti pemikiran | dampak di dunia Islam.
-2. Mnemonic.
+Buatkan kartu hafalan untuk arus-arus di muqarrar-ku: [SEBUTKAN ARUS-ARUS].
+1. Satu kartu per arus: ta'rif (Arab berharakat) | asal | 3 pokok pemikiran | titik benturan dengan Islam | satu argumen bantahan.
+2. Tokoh dan tahun hanya yang kamu yakini.
+3. Lalu uji aku: kamu sebut satu pernyataan, aku tebak arusnya. Satu per satu, tunggu jawabanku.
 
 [METODE]
 
@@ -12638,9 +12669,15 @@ Bantu hafal aliran-aliran fikriyyah:
         {
           title: "Jadwal Muraja'ah Tiarat Fikriyyah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aliran yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Tabel.
+Arus di muqarrar-ku: [SEBUTKAN ARUS-ARUS]. Buatkan jadwal muraja'ah:
+1. Bagi per arus.
+2. Jadwal ulang H+1, H+3, H+7, lalu mingguan sampai imtihan.
+3. Cara menguji diri tiap sesi: satu ta'rif, pokok pemikiran, dan satu bantahan dalam poin.
+4. Dua hari terakhir untuk latihan soal gaya kertas ujian.
+
+Format: tabel (hari | arus | cara menguji | durasi).
 
 [METODE]
 
@@ -12649,39 +12686,49 @@ Aliran yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. T
       ],
       latihan: [
         {
-          title: "Drill Identifikasi Aliran dari Pernyataan",
+          title: "Drill Kenali Arus dari Pernyataan",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 8 pernyataan/pandangan. Tugasku: identifikasi aliran yang memegangnya.
-1. JANGAN beri jawaban dulu.
-2. Koreksi + jelaskan penandanya.
+Buat 8 pernyataan pendek yang mewakili pemikiran arus-arus di muqarrar-ku ([SEBUTKAN ARUS-ARUS]).
+1. Untuk tiap pernyataan aku harus menyebut: arusnya, pokok pemikiran yang tercermin, dan satu tanggapan singkat.
+2. Satu pernyataan sekali jalan. JANGAN beri jawaban. Tunggu jawabanku.
+3. Koreksi dengan alasan.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Latihan Merespons Syubhat Fikriyyah",
+          title: "Drill Soal Gaya Kertas Azhar",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 4 argumen dari aliran [SEBUTKAN]. Tugasku: respons secara ilmiah & berimbang.
-1. JANGAN beri respons dulu.
-2. Koreksi + sempurnakan dengan manhaj yang benar.
+Dari arus [SEBUTKAN ARUS], buat drill dengan redaksi Arab seperti kertas ujian:
+1. 2 soal "عَرِّفْ ... وَبَيِّنْ نَشْأَتَهُ" dan 2 soal "عَلِّلْ".
+2. 5 pernyataan "ضَعْ عَلَامَةَ (✓) أَوْ (✗) مَعَ التَّعْلِيلِ".
+3. 1 soal "مَا مَوْقِفُ الْإِسْلَامِ مِنْ ...؟ نَاقِشْ".
+4. JANGAN beri jawaban. Tunggu jawabanku, lalu koreksi dengan alasan.
+
+Hanya buat pernyataan yang kamu yakini benar atau salahnya.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Soal Tiarat Fikriyyah",
+          title: "Latihan Menanggapi Syubhat Fikriyyah (Aku Coba, AI Koreksi)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 10 soal (definisi, aliran, dampak, respons) dari [SEBUTKAN].
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
+Aku mencoba menanggapi satu pemikiran atau syubhat (soal dan jawabanku di bawah). Koreksi seperti mushahhih:
+1. Apakah pemikiran itu kupaparkan dengan adil?
+2. Kekuatan argumenku dari dalil dan akal: mana yang kuat, lemah, atau terlewat.
+3. Apakah bahasaku ilmiah, moderat, dan beradab?
+4. Perkiraan nilai dan versi perbaikan dalam poin.
+
+Soal dan jawabanku:
+[TEMPEL JAWABANKU]
 
 [METODE]
 
@@ -12690,23 +12737,30 @@ Beri 10 soal (definisi, aliran, dampak, respons) dari [SEBUTKAN].
       ],
       ujian: [
         {
-          title: "Mock Imtihan Tiarat Fikriyyah (Gaya Azhari)",
+          title: "Mock Imtihan Tahriri Tiarat Fikriyyah (Gaya Kertas Azhar)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan tahriri.
 
-Buatkan soal ujian Tiarat gaya Azhar: 'arrif, bayyin asbab intisyar, raddu 'ala, 5-6 soal.
-JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih.
+Buatkan satu kertas ujian tahriri dari arus-arus di muqarrar-ku ([SEBUTKAN ARUS-ARUS]):
+1. Tiga atau empat السؤال dengan bobot درجة (total 100), redaksi Arab seperti kertas asli.
+2. Campuran: "عَرِّفْ ... وَبَيِّنْ نَشْأَتَهُ وَأَبْرَزَ أَفْكَارِهِ"، "مَا مَوْقِفُ الْإِسْلَامِ مِنْ ...؟"، "عَلِّلْ"، ✓/✗ مَعَ التَّعْلِيلِ.
+3. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai seperti mushahhih.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kisi-kisi & Strategi Ujian",
+          title: "Kisi-kisi & Strategi Ujian Tiarat Fikriyyah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik tersering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
+Arus di muqarrar semester ini: [SEBUTKAN ARUS-ARUS]. Bantu aku menyusun strategi ujian:
+1. Untuk tiap arus: jenis soal yang cocok (ta'rif + nasy'ah, pokok pemikiran, sikap Islam, 'allil, ✓/✗) dan satu contoh redaksinya dalam bahasa Arab.
+2. Kerangka jawaban "مَوْقِفُ الْإِسْلَامِ مِنْ ..." yang dapat nilai penuh.
+3. Rencana H-7 sampai H-1.
+
+Jangan mengklaim soal tertentu "pasti keluar". Susun berdasarkan pola soal.
 
 [METODE]
 
@@ -12715,29 +12769,37 @@ Topik tersering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
       ],
       talaqqi: [
         {
-          title: "Rapikan Catatan Talaqqi",
+          title: "Rapikan Catatan Talaqqi Tiarat Fikriyyah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan talaqqi-ku berantakan (di bawah). Rapikan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+Aku baru talaqqi dan catatanku berantakan. Bantu aku:
+1. Rapikan per arus: ta'rif → nasy'ah → pokok pemikiran → pengaruh → sikap Islam.
+2. Lengkapi harakat istilah.
+3. Tandai (?) nama tokoh, tahun, atau kutipan yang terpotong atau meragukan. Jangan menambal dengan tebakan.
+4. Tutup dengan 5 poin inti dan 3 pertanyaan muraja'ah.
+
+Catatanku:
+[TEMPEL CATATAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Catatanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Tiarat Fikriyyah di Era Digital",
+          title: "Arus Pemikiran di Media Sosial",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bagaimana arus pemikiran kontemporer menyebar lewat media digital:
-1. Platform & mekanisme penyebaran.
-2. Cara da'i mengenali & merespons di ruang digital.
-3. Strategi kontra-narasi yang bijak.
+Ada unggahan populer yang membawa gagasan dari arus pemikiran tertentu (ringkasannya kutempel di bawah). Bantu aku:
+1. Kenali arusnya dan gagasan pokok yang dibawa.
+2. Pisahkan bagian yang bisa diterima dari bagian yang berbenturan dengan Islam, beserta alasannya.
+3. Susun tanggapan singkat yang santun untuk orang awam (5–7 kalimat), tanpa menyerang pribadi.
+
+Ringkasan unggahan:
+[TEMPEL UNGGAHAN]
 
 [METODE]
 
@@ -13128,41 +13190,46 @@ Bantu aku menemukan topik penelitian yang relevan untuk Fakultas Dakwah:
         {
           title: "Peta Besar Maqashid Syariah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri kerangka utuh Maqashid Syariah:
-1. Definisi maqashid + siapa yang mengembangkan ilmu ini (Asy-Syathibi dll).
-2. Al-Kulliyyat Al-Khams: hifzh ad-din, nafs, 'aql, nasl, mal.
-3. Tingkatan: dharuriyyat, hajiyyat, tahsiniyyat.
-4. Outline bercabang.
+Beri aku peta besar maddah ini:
+1. Ta'rif مَقَاصِدُ الشَّرِيعَةِ secara bahasa dan istilah, dan bedanya dengan 'illah dan hikmah.
+2. Cara mengetahui maqashid (طُرُقُ الْكَشْفِ عَنِ الْمَقَاصِدِ), dengan satu contoh untuk tiap cara.
+3. Pembagian maqashid dari sisi tingkatan (ضَرُورِيَّاتٌ، حَاجِيَّاتٌ، تَحْسِينِيَّاتٌ) dan dari sisi cakupan (عَامَّةٌ، خَاصَّةٌ، جُزْئِيَّةٌ).
+4. Tokoh dan kitab penting — Al-Juwaini, Al-Ghazali, Asy-Syathibi (Al-Muwafaqat), Ibnu 'Asyur — hanya yang kamu yakini.
 
-[METODE]
-
-[LEVEL_BAHASA]`,
-        },
-        {
-          title: "Pahami Al-Kulliyyat Al-Khams",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Jelaskan lima maqashid pokok secara tuntas:
-1. Hifzh ad-din, nafs, 'aql, nasl, mal — definisi + dalil + contoh hukum yang melindunginya.
-2. Bagaimana tiap maqshad termanifestasi dalam fiqh.
-PENTING: sebut dalil dengan benar; jika ragu, katakan.
+Format: bagan, lalu tabel istilah | ta'rif | contoh.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Maqashid untuk Ijtihad Kontemporer",
+          title: "Pahami Adh-Dharuriyyat Al-Khams: Hifzh min Janib Al-Wujud wal 'Adam",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan peran maqashid dalam ijtihad:
-1. Bagaimana maqashid memandu pengambilan hukum isu baru.
-2. Metode penimbangan maslahat & mafsadat.
-3. Contoh penerapan maqashid pada isu kontemporer (tanpa mengarang fatwa).
+Jelaskan lima dharuriyyat: حِفْظُ الدِّينِ، النَّفْسِ، الْعَقْلِ، النَّسْلِ، الْمَالِ.
+1. Untuk tiap dharurah: penjagaan dari sisi keberadaan (مِنْ جَانِبِ الْوُجُودِ) dan dari sisi ketiadaan (مِنْ جَانِبِ الْعَدَمِ), masing-masing dengan satu hukum sebagai contoh.
+2. Urutan kelima dharurah dan khilaf ulama tentang urutannya.
+3. Dalil yang menunjukkan penjagaan tiap dharurah — ayat dan hadits hanya yang kamu yakini.
+
+Format: tabel dharurah | min janib al-wujud | min janib al-'adam | dalil.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Maqashid dalam Ijtihad & Tarjih",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan fungsi maqashid bagi mujtahid:
+1. Peran maqashid dalam memahami nash, qiyas, dan masalah baru.
+2. Kaidah saat maslahat bertentangan: mendahulukan dharuri atas haji, kulli atas juz'i, dan kaidah "دَرْءُ الْمَفَاسِدِ مُقَدَّمٌ عَلَى جَلْبِ الْمَصَالِحِ".
+3. Batas penggunaan maqashid: kenapa maqashid tidak boleh dipakai untuk menggugurkan nash yang qath'i.
+4. Dua contoh penerapan yang benar dan satu contoh penyalahgunaan.
 
 [METODE]
 
@@ -13171,14 +13238,15 @@ Jelaskan peran maqashid dalam ijtihad:
       ],
       hafal: [
         {
-          title: "Hafal Al-Kulliyyat Al-Khams & Tingkatannya",
+          title: "Hafal Ta'rif, Tingkatan & Contoh Hukum",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal:
-1. Lima maqashid (Arab berharakat + arti) + satu contoh hukum tiap satu.
-2. Tiga tingkatan (dharuriyyat-hajiyyat-tahsiniyyat) + contoh.
-3. Mnemonic.
+Buatkan kartu hafalan:
+1. Ta'rif maqashid menurut beberapa ulama, dengan penisbatan hanya kalau kamu yakin.
+2. Tingkatan dharuri, haji, dan tahsini: ta'rif dan dua contoh hukum untuk tiap tingkatan.
+3. Lima dharuriyyat beserta contoh hukum "min janib al-wujud" dan "min janib al-'adam".
+4. Lalu uji aku: kamu sebut satu hukum, aku tentukan maqshad dan tingkatannya. Satu per satu, tunggu jawabanku.
 
 [METODE]
 
@@ -13187,9 +13255,15 @@ Bantu hafal:
         {
           title: "Jadwal Muraja'ah Maqashid",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Tabel.
+Muqarrar-ku mencakup [SEBUTKAN BAB-BAB]. Buatkan jadwal muraja'ah:
+1. Bagi per bab.
+2. Jadwal ulang H+1, H+3, H+7, lalu mingguan sampai imtihan.
+3. Cara menguji diri tiap sesi: satu ta'rif, lima hukum yang dikembalikan ke maqshad-nya, dan satu soal 'allil.
+4. Dua hari terakhir untuk latihan soal gaya kertas ujian.
+
+Format: tabel (hari | bab | cara menguji | durasi).
 
 [METODE]
 
@@ -13198,39 +13272,49 @@ Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Ta
       ],
       latihan: [
         {
-          title: "Latihan Terapkan Maqashid ke Kasus",
+          title: "Drill Kembalikan Hukum ke Maqshad-nya",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 6 kasus hukum. Tugasku: identifikasi maqshad yang dilindungi & tingkatannya.
-1. JANGAN beri jawaban dulu.
-2. Koreksi penalaran-ku.
+Buat 10 hukum syar'i dari berbagai bab (ibadah, muamalah, jinayat, keluarga).
+1. Untuk tiap hukum aku harus menyebut: maqshad yang dijaga, tingkatannya (dharuri/haji/tahsini), dan dari sisi wujud atau 'adam.
+2. Satu hukum sekali jalan. JANGAN beri jawaban. Tunggu jawabanku.
+3. Koreksi dengan alasan.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Soal Maqashid",
+          title: "Drill 'Allil, Shahih-Khatha' & Akmil",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 10 soal (definisi, tingkatan, penerapan) dari [SEBUTKAN].
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
+Dari bab [SEBUTKAN BAB], buat drill dengan redaksi Arab seperti kertas ujian:
+1. 4 soal "عَلِّلْ" (mis. "عَلِّلْ: تَقْدِيمُ الضَّرُورِيِّ عَلَى الْحَاجِيِّ").
+2. 5 pernyataan "ضَعْ عَلَامَةَ (✓) أَوْ (✗) مَعَ التَّعْلِيلِ".
+3. 4 soal "أَكْمِلْ".
+4. JANGAN beri jawaban. Tunggu jawabanku, lalu koreksi dengan alasan.
+
+Hanya buat pernyataan yang kamu yakini benar atau salahnya.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Hubungkan Maqashid dengan Qawa'id Fiqhiyyah",
+          title: "Latihan Analisis Kasus dengan Maqashid (Aku Coba, AI Koreksi)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Tunjukkan hubungan maqashid dengan kaidah fiqhiyyah:
-1. Bagaimana kaidah "adh-dharar yuzal" berakar pada hifzh an-nafs.
-2. Kaitan tiap kaidah induk dengan maqshad tertentu.
+Aku menganalisis sebuah kasus dengan pendekatan maqashid (kasus dan analisisku di bawah). Koreksi seperti dosen:
+1. Apakah maslahat dan mafsadatnya kupetakan dengan benar, termasuk tingkatannya?
+2. Apakah kaidah tarjih antar-maslahat kupakai dengan tepat?
+3. Apakah analisisku tetap berada di bawah nash, atau justru menabraknya?
+4. Versi perbaikan yang ringkas. Tegaskan bahwa ini latihan akademik, bukan fatwa.
+
+Kasus dan analisisku:
+[TEMPEL ANALISISKU]
 
 [METODE]
 
@@ -13239,23 +13323,30 @@ Tunjukkan hubungan maqashid dengan kaidah fiqhiyyah:
       ],
       ujian: [
         {
-          title: "Mock Imtihan Maqashid (Gaya Azhari)",
+          title: "Mock Imtihan Tahriri Maqashid (Gaya Kertas Azhar)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan tahriri.
 
-Buatkan soal ujian Maqashid gaya Azhar: 'arrif, udzkur al-kulliyyat ma'a al-amtsilah, thabbiq, 5-6 soal.
-JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih.
+Buatkan satu kertas ujian tahriri dari muqarrar [SEBUTKAN BAB-BAB]:
+1. Tiga atau empat السؤال dengan bobot درجة (total 100), redaksi Arab seperti kertas asli.
+2. Campuran: "عَرِّفْ ... وَاذْكُرْ ..."، "بَيِّنْ كَيْفَ حَفِظَتِ الشَّرِيعَةُ ... مِنْ جَانِبِ الْوُجُودِ وَالْعَدَمِ"، "عَلِّلْ"، "قَارِنْ بَيْنَ"، ✓/✗ مَعَ التَّعْلِيلِ.
+3. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai seperti mushahhih.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kisi-kisi & Strategi Ujian",
+          title: "Kisi-kisi & Strategi Ujian Maqashid",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik tersering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
+Muqarrar semester ini: [SEBUTKAN BAB-BAB]. Bantu aku menyusun strategi ujian:
+1. Untuk tiap bab: jenis soal yang cocok (ta'rif, pembagian + contoh, 'allil, perbandingan, ✓/✗) dan satu contoh redaksinya dalam bahasa Arab.
+2. Contoh hukum yang wajib siap untuk tiap dharurah dan tiap tingkatan.
+3. Rencana H-7 sampai H-1.
+
+Jangan mengklaim soal tertentu "pasti keluar". Susun berdasarkan pola soal.
 
 [METODE]
 
@@ -13264,29 +13355,35 @@ Topik tersering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
       ],
       talaqqi: [
         {
-          title: "Rapikan Catatan Talaqqi",
+          title: "Rapikan Catatan Talaqqi Maqashid",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan talaqqi-ku berantakan (di bawah). Rapikan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+Aku baru talaqqi dan catatanku berantakan. Bantu aku:
+1. Rapikan per bab: ta'rif → pembagian → dalil → contoh hukum yang disebut syaikh.
+2. Lengkapi harakat istilah.
+3. Tandai (?) bagian yang terpotong atau perlu kutanyakan lagi, terutama penisbatan pendapat ke ulama tertentu. Jangan menambal dengan tebakan.
+4. Tutup dengan 5 poin inti dan 3 pertanyaan muraja'ah.
+
+Catatanku:
+[TEMPEL CATATAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Catatanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Maqashid & Isu Kontemporer",
+          title: "Maqashid untuk Membaca Isu Kontemporer",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk isu [SEBUTKAN, mis. teknologi, lingkungan, bioetika]:
-1. Maqashid mana yang relevan.
-2. Bagaimana menimbang maslahat-mafsadat.
-3. Prinsip yang bisa jadi pegangan tanpa memaksakan fatwa.
+Pakai kacamata maqashid untuk isu [SEBUTKAN ISU, mis. kesehatan publik, lingkungan, keamanan data].
+1. Maqashid yang terkait dan tingkatannya.
+2. Maslahat dan mafsadat yang saling berhadapan, lalu kaidah tarjihnya.
+3. Batas: bagian mana yang sudah diatur nash dan tidak bisa diubah dengan alasan maslahat.
+4. Tegaskan bahwa ini kajian akademik, bukan fatwa.
 
 [METODE]
 
@@ -13314,43 +13411,44 @@ Untuk isu [SEBUTKAN, mis. teknologi, lingkungan, bioetika]:
         {
           title: "Peta Besar Istisyraq & Tabsyir",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri kerangka utuh:
-1. Definisi istisyraq (orientalisme) + tabsyir (misionarisme) + bedanya.
-2. Latar historis: kapan & mengapa muncul.
-3. Kaitan keduanya dengan kolonialisme.
-4. Outline bercabang.
+Beri aku peta besar maddah ini secara akademis dan berimbang:
+1. Ta'rif الِاسْتِشْرَاقُ dan التَّبْشِيرُ secara bahasa dan istilah, serta hubungan keduanya.
+2. Sejarah kemunculan dan fase-fasenya (pendorong keagamaan, politik-kolonial, dan akademik).
+3. Tujuan-tujuan (الْأَهْدَافُ) dan sarana-sarananya (الْوَسَائِلُ): lembaga kajian, penerbitan, ensiklopedia, dan pendidikan.
+4. Bedakan orientalis yang bersikap objektif dari yang memusuhi — contoh tokoh hanya yang kamu yakini.
 
-[METODE]
-
-[LEVEL_BAHASA]`,
-        },
-        {
-          title: "Pahami Metode & Tujuan Orientalis",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Jelaskan secara akademis & berimbang:
-1. Metode yang dipakai orientalis dalam mengkaji Islam & Qur'an.
-2. Tujuan: akademis murni vs agenda tersembunyi (bedakan adil).
-3. Kontribusi positif orientalis yang diakui ulama.
-4. Kritik akademis terhadap metodologi yang bermasalah.
+Format: bagan, lalu tabel fase | pendorong | ciri.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Respons Ulama terhadap Istisyraq",
+          title: "Pahami Metode Orientalis & Titik Lemahnya",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan:
-1. Bagaimana ulama merespons syubhat orientalis (metode ilmiah, bukan emosional).
-2. Tokoh-tokoh yang menulis bantahan akademis.
-3. Pentingnya menguasai argumen orientalis untuk berdakwah di Barat.
-PENTING: sajikan berimbang; sebut yang kamu yakin.
+Jelaskan manhaj yang dipakai sebagian orientalis dalam mengkaji Islam, seperti yang dibahas di muqarrar:
+1. Ciri-ciri metodologisnya (mis. memakai sumber lemah, menggeneralisasi, menafsirkan dengan kerangka luar Islam, mencari "pengaruh asing").
+2. Untuk tiap ciri: satu contoh klaim yang dikenal dan titik lemah metodologisnya — nisbat ke tokoh tertentu hanya kalau kamu yakin.
+3. Kerangka menilai sebuah tulisan orientalis secara adil.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Pahami Respons Ulama & Jawaban atas Syubhat Pokok",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Untuk syubhat [SEBUTKAN SYUBHAT, mis. sumber Al-Qur'an, otentisitas sunnah, penyebaran Islam dengan pedang]:
+1. Ringkas syubhatnya secara adil.
+2. Jawaban ilmiah dalam poin: dalil naqli, bukti sejarah, dan logika — rujukan hanya yang kamu yakini.
+3. Tokoh Muslim yang dikenal menjawab syubhat itu, hanya kalau kamu yakin.
+4. Satu jawaban model dalam bahasa Arab + terjemah, gaya jawaban ujian.
 
 [METODE]
 
@@ -13359,14 +13457,14 @@ PENTING: sajikan berimbang; sebut yang kamu yakin.
       ],
       hafal: [
         {
-          title: "Hafal Definisi, Tokoh & Metode",
+          title: "Hafal Ta'rif, Tujuan, Sarana & Fase",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal:
-1. Tabel: orientalis/misionaris masyhur | metode | karya | respons ulama.
-2. Mnemonic.
-PENTING: sebut yang kamu yakin; jika ragu, katakan.
+Buatkan daftar hafalan:
+1. Ta'rif istisyraq dan tabsyir (Arab berharakat + terjemah).
+2. Daftar bernomor: tujuan, sarana, fase sejarah, dan ciri manhaj — hanya poin yang kamu yakini sesuai kajian umum; kalau ragu, minta aku menempel dari diktat.
+3. Lalu uji aku: kamu sebut judul daftar, aku sebutkan isinya. Satu per satu, tunggu jawabanku.
 
 [METODE]
 
@@ -13375,9 +13473,15 @@ PENTING: sebut yang kamu yakin; jika ragu, katakan.
         {
           title: "Jadwal Muraja'ah Istisyraq",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Tabel.
+Muqarrar-ku mencakup [SEBUTKAN BAB-BAB]. Buatkan jadwal muraja'ah:
+1. Bagi per bab.
+2. Jadwal ulang H+1, H+3, H+7, lalu mingguan sampai imtihan.
+3. Cara menguji diri tiap sesi: satu ta'rif, satu daftar bernomor, satu jawaban syubhat dalam poin.
+4. Dua hari terakhir untuk latihan soal gaya kertas ujian.
+
+Format: tabel (hari | bab | cara menguji | durasi).
 
 [METODE]
 
@@ -13386,27 +13490,35 @@ Topik yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah + cara uji. Ta
       ],
       latihan: [
         {
-          title: "Latihan Merespons Syubhat Orientalis",
+          title: "Latihan Menjawab Syubhat Orientalis (Aku Coba, AI Koreksi)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 4 syubhat/klaim orientalis tentang Islam/Qur'an. Tugasku: respons secara ilmiah & berimbang.
-1. JANGAN beri respons dulu.
-2. Koreksi + sempurnakan dengan argumen yang kuat.
-PENTING: respons harus akademis, bukan emosional.
+Aku mencoba menjawab satu syubhat (soal dan jawabanku di bawah). Koreksi seperti mushahhih:
+1. Apakah syubhatnya kuringkas dengan adil?
+2. Poin bantahan yang kuat, lemah, atau terlewat — dan dalil atau bukti yang kurang.
+3. Apakah bahasaku ilmiah dan beradab?
+4. Perkiraan nilai dan versi perbaikan dalam poin.
+
+Soal dan jawabanku:
+[TEMPEL JAWABANKU]
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Soal Istisyraq & Tabsyir",
+          title: "Drill Soal Gaya Kertas Azhar",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 10 soal (definisi, sejarah, metode, respons) dari [SEBUTKAN].
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
+Dari bab [SEBUTKAN BAB], buat drill dengan redaksi Arab seperti kertas ujian:
+1. 2 soal "عَرِّفْ ... وَاذْكُرْ ..." dan 2 soal "عَلِّلْ".
+2. 5 pernyataan "ضَعْ عَلَامَةَ (✓) أَوْ (✗) مَعَ التَّعْلِيلِ".
+3. 1 soal "كَيْفَ تَرُدُّ عَلَى ...؟".
+4. JANGAN beri jawaban. Tunggu jawabanku, lalu koreksi dengan alasan.
+
+Hanya buat pernyataan yang kamu yakini benar atau salahnya.
 
 [METODE]
 
@@ -13415,23 +13527,30 @@ Beri 10 soal (definisi, sejarah, metode, respons) dari [SEBUTKAN].
       ],
       ujian: [
         {
-          title: "Mock Imtihan Istisyraq (Gaya Azhari)",
+          title: "Mock Imtihan Tahriri Istisyraq (Gaya Kertas Azhar)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan tahriri.
 
-Buatkan soal ujian Istisyraq gaya Azhar: 'arrif, bayyin ahdaf, raddu 'ala, 5-6 soal.
-JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih.
+Buatkan satu kertas ujian tahriri dari muqarrar [SEBUTKAN BAB-BAB]:
+1. Tiga atau empat السؤال dengan bobot درجة (total 100), redaksi Arab seperti kertas asli.
+2. Campuran: ta'rif + tujuan/sarana; "تَحَدَّثْ عَنْ مَرَاحِلِ ..."؛ satu kutipan klaim lalu "كَيْفَ تَرُدُّ عَلَى هَذِهِ الشُّبْهَةِ؟"؛ ✓/✗ مَعَ التَّعْلِيلِ.
+3. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai seperti mushahhih.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kisi-kisi & Strategi Ujian",
+          title: "Kisi-kisi & Strategi Ujian Istisyraq",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Topik tersering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
+Muqarrar semester ini: [SEBUTKAN BAB-BAB]. Bantu aku menyusun strategi ujian:
+1. Untuk tiap bab: jenis soal yang cocok (ta'rif, daftar, sejarah, bantahan syubhat, ✓/✗) dan satu contoh redaksinya dalam bahasa Arab.
+2. Kerangka jawaban bantahan syubhat yang dapat nilai penuh.
+3. Rencana H-7 sampai H-1.
+
+Jangan mengklaim soal tertentu "pasti keluar". Susun berdasarkan pola soal.
 
 [METODE]
 
@@ -13440,29 +13559,37 @@ Topik tersering jadi soal, cara jawab dapat nilai penuh, prioritas H-7.
       ],
       talaqqi: [
         {
-          title: "Rapikan Catatan Talaqqi",
+          title: "Rapikan Catatan Talaqqi Istisyraq",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan talaqqi-ku berantakan (di bawah). Rapikan, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+Aku baru talaqqi dan catatanku berantakan. Bantu aku:
+1. Rapikan per bab: ta'rif → sejarah → tujuan & sarana → syubhat dan bantahannya.
+2. Lengkapi harakat istilah.
+3. Tandai (?) nama tokoh, tahun, atau judul karya yang terpotong atau meragukan. Jangan menambal dengan tebakan.
+4. Tutup dengan 5 poin inti dan 3 pertanyaan muraja'ah.
+
+Catatanku:
+[TEMPEL CATATAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Catatanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
       eksplorasi: [
         {
-          title: "Istisyraq Digital & Media Kontemporer",
+          title: "Wacana Orientalis di Media Digital",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Fakultas Dakwah Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan:
-1. Bagaimana orientalisme & misionarisme berevolusi di era digital.
-2. Konten anti-Islam di media: pola & respons yang bijak.
-3. Peran da'i dalam melindungi umat dari pengaruh negatif.
+Ada konten populer yang membawa klaim khas orientalis (ringkasannya kutempel di bawah). Bantu aku:
+1. Kenali klaim intinya dan kaitkan dengan syubhat klasik yang sudah kupelajari.
+2. Susun jawaban ilmiah dalam poin, dengan rujukan yang kamu yakini.
+3. Ubah menjadi jawaban singkat yang santun untuk orang awam (5–7 kalimat), tanpa menyerang pribadi.
+
+Ringkasan konten:
+[TEMPEL KONTEN]
 
 [METODE]
 

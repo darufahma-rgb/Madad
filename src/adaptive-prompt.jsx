@@ -34,6 +34,7 @@ const FAKULTAS_LABEL = {
   dirasat:       "Fakultas Dirasat Islamiyah",
   "dirasat-banin": "Fakultas Dirasat Islamiyah (Banin)",
   quran:         "Fakultas Al-Qur'an Al-Karim",
+  dakwah:        "Fakultas Dakwah Islamiyah",
   umum:       "Al-Azhar",
 };
 
@@ -150,7 +151,10 @@ const metodeBlock = (profile) => {
 };
 
 // Baris kosong berlebih (mis. setelah [METODE] dihapus) dirapikan jadi satu baris kosong.
-const tidyPrompt = (text) => text.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+// Fakultas "Umum"/kosong terisi "Al-Azhar", jadi "di [FAKULTAS] Al-Azhar" bisa jadi "Al-Azhar Al-Azhar".
+const tidyPrompt = (text) => text
+  .replace(/\bAl-Azhar Al-Azhar\b/g, "Al-Azhar")
+  .replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
 
 /* ============ Isian di dalam prompt: [SEBUTKAN …], [TULIS …], [TEMPEL …] ============
    Tiap kemunculan jadi satu kotak isian di kartu prompt. [SEBUTKAN]/[TULIS] wajib diisi sebelum
