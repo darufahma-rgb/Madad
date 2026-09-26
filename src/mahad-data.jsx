@@ -700,43 +700,41 @@ Jangan mengklaim soal tertentu "pasti keluar".
         {
           title: "Pahami Dasar Tauhid dengan Bahasa Sederhana",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Azhar (program persiapan), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dasar tauhid untuk pemula dengan bahasa SANGAT mudah:
-1. Apa itu tauhid & kenapa ini pokok agama.
-2. Rukun iman yang enam — penjelasan ringkas tiap satu.
-3. Contoh sederhana penerapan iman dalam kehidupan.
-Hindari istilah kalam yang rumit.
+Jelaskan dasar ilmu tauhid dengan sederhana:
+1. Ta'rif عِلْمُ التَّوْحِيدِ, objeknya, dan kenapa ia ilmu paling mulia.
+2. Tiga hukum akal: الْوَاجِبُ، الْمُسْتَحِيلُ، الْجَائِزُ — dengan contoh sehari-hari yang mudah.
+3. Kewajiban pertama seorang mukallaf menurut ulama Ahlussunnah.
+4. Tutup dengan 3 pertanyaan cepat. Tunggu jawabanku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Sifat-Sifat Allah (Dasar)",
+          title: "Pahami Sifat Wajib Allah secara Bertahap",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan sifat Allah untuk pemula:
-1. Sifat wajib bagi Allah (mulai dari pokok: wujud, qidam, baqa', dll) — Arab berharakat + arti sederhana.
-2. Sifat mustahil (lawannya).
-3. Sifat jaiz.
-Jelaskan bertahap dengan bahasa mudah.
+Jelaskan sifat [SEBUTKAN SIFAT ATAU KELOMPOK SIFAT, mis. al-wujud, sifat salbiyyah, sifat ma'ani] sesuai manhaj Asy'ari-Maturidi yang diajarkan di Al-Azhar:
+1. Arti sifat itu (Arab berharakat + arti) dan lawannya yang mustahil.
+2. Dalil naqli pendek yang kamu yakini redaksinya, dan dalil 'aqli yang sederhana.
+3. Contoh yang membantu memahami tanpa menyerupakan Allah dengan makhluk.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Iman kepada Malaikat, Kitab, Rasul",
+          title: "Pahami Iman kepada Malaikat, Kitab & Rasul",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dengan sederhana:
-1. Iman kepada malaikat (tugas-tugas malaikat).
-2. Iman kepada kitab-kitab Allah.
-3. Iman kepada para rasul (sifat wajib rasul).
-Beri contoh & dalil ringkas yang kamu yakin; jika ragu, katakan.
+Jelaskan rukun iman [SEBUTKAN RUKUN, mis. malaikat, kitab-kitab, para rasul]:
+1. Makna beriman kepadanya dan dalilnya — ayat hanya yang kamu yakini redaksinya.
+2. Hal-hal yang wajib diketahui (mis. nama malaikat dan tugasnya, sifat wajib bagi rasul: الصِّدْقُ، الْأَمَانَةُ، التَّبْلِيغُ، الْفَطَانَةُ).
+3. Buah iman itu dalam kehidupan sehari-hari pelajar.
 
 [METODE]
 
@@ -747,10 +745,10 @@ Beri contoh & dalil ringkas yang kamu yakin; jika ragu, katakan.
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dengan sederhana:
-1. Iman kepada hari akhir (tanda, peristiwa pokok).
-2. Iman kepada qadha & qadar (takdir) tanpa membuat bingung.
-3. Bagaimana iman ini memengaruhi sikap hidup.
+Jelaskan dengan bahasa yang menenangkan:
+1. Peristiwa hari akhir secara berurutan (kematian, alam barzakh, kebangkitan, hisab, mizan, shirath, surga-neraka), dengan dalil yang kamu yakini.
+2. Iman kepada qadha' dan qadar: maknanya, dan hubungannya dengan ikhtiar serta tawakkal.
+3. Jawaban sederhana untuk pertanyaan remaja "kalau sudah ditakdirkan, kenapa aku harus berusaha?".
 
 [METODE]
 
@@ -759,27 +757,28 @@ Jelaskan dengan sederhana:
       ],
       hafal: [
         {
-          title: "Hafal Rukun Iman & Islam",
+          title: "Hafal Rukun Iman & Rukun Islam dengan Dalil",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal rukun iman (6) & rukun Islam (5):
-1. Daftar berurutan (Arab berharakat + arti).
-2. Mnemonic Indonesia yang mudah.
+Buatkan kartu hafalan:
+1. Rukun iman dan rukun Islam dalam bahasa Arab berharakat + arti.
+2. Dalil pokoknya (mis. hadits Jibril) — sebut sumbernya dan redaksinya hanya kalau kamu yakin; kalau tidak, minta aku menempel dari buku.
+3. Lalu uji aku satu per satu. Tunggu jawabanku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Hafal Sifat Wajib Allah (Bertahap)",
+          title: "Hafal Sifat Wajib, Mustahil & Jaiz",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal sifat wajib Allah secara bertahap:
-1. Kelompokkan (mulai dari pokok).
-2. Arab berharakat + arti.
-3. Mnemonic + pasangkan dengan lawannya (sifat mustahil).
+Bantu aku menghafal sifat-sifat Allah dan para rasul secara bertahap:
+1. Tabel: sifat wajib (Arab berharakat) | arti | lawannya (mustahil) | arti.
+2. Bagi hafalan menjadi kelompok kecil (nafsiyyah, salbiyyah, ma'ani, ma'nawiyyah), lalu sifat jaiz.
+3. Lalu uji aku: kamu sebut satu sifat, aku sebut lawannya. Satu per satu, tunggu jawabanku.
 
 [METODE]
 
@@ -790,7 +789,12 @@ Bantu hafal sifat wajib Allah secara bertahap:
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah sederhana H+1, H+3, H+7, mingguan + cara uji. Tabel.
+Bab yang diujikan: [SEBUTKAN BAB-BAB]. Buatkan jadwal belajar sampai ujian:
+1. Tiap sesi: 10 menit hafalan sifat, 15 menit memahami dalil dan contoh.
+2. Jadwal ulang H+1, H+3, H+7.
+3. Dua hari terakhir untuk soal gaya ujian.
+
+Format: tabel (hari | bab | kegiatan | durasi).
 
 [METODE]
 
@@ -799,83 +803,94 @@ Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah sederhana H+1, H
       ],
       latihan: [
         {
-          title: "Drill Sifat Allah & Lawannya",
+          title: "Drill Sifat & Lawannya",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Sebutkan sifat wajib, tugasku sebutkan arti & lawannya (sifat mustahil).
-1. Beri 8 sifat.
-2. JANGAN beri jawaban dulu.
-3. Koreksi setelah aku jawab.
+Latih hafalanku tentang sifat Allah dan rasul:
+1. Beri 8 soal campuran dalam bahasa Arab berharakat: "مَا ضِدُّ صِفَةِ ...؟" dan "اُذْكُرْ دَلِيلًا عَلَى صِفَةِ ...".
+2. Satu soal sekali jalan. JANGAN beri jawaban. Tunggu jawabanku.
+3. Koreksi dengan penjelasan singkat.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Soal Tauhid Sederhana",
+          title: "Latihan Soal Gaya Ujian Ma'had",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 10 soal sederhana (rukun iman, sifat Allah, definisi) dari bab [SEBUTKAN].
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
+Dari bab [SEBUTKAN BAB-BAB], buat latihan seperti ujian Ma'had, dalam bahasa Arab berharakat + terjemah singkat:
+1. 3 soal "عَرِّفْ".
+2. 3 soal "أَكْمِلْ".
+3. 2 soal "اُذْكُرِ الدَّلِيلَ عَلَى ...".
+4. 3 pernyataan "ضَعْ عَلَامَةَ (✓) أَوْ (✗)".
+5. JANGAN beri jawaban. Tunggu jawabanku, lalu koreksi dengan penjelasan singkat.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Latihan Jelaskan Konsep Iman (Aku Coba)",
+          title: "Latihan Jelaskan Konsep Iman (Aku Coba, AI Koreksi)",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku akan menjelaskan konsep [SEBUTKAN, mis. iman kepada takdir] dengan kemampuanku.
-1. Koreksi penjelasanku dengan bahasa sederhana.
-2. Betulkan jika ada pemahaman keliru (penting untuk akidah).
+Aku menjelaskan satu konsep akidah dengan kata-kataku sendiri (di bawah). Koreksi dengan ramah:
+1. Bagian yang sudah benar dan yang kurang tepat menurut manhaj Ahlussunnah.
+2. Dalil yang kupakai: tepat atau tidak.
+3. Bahasa Arab tulisanku bila kutulis dalam Arab: maksimal 3 koreksi.
+4. Contoh penjelasan yang lebih baik tapi tetap singkat.
+
+Penjelasanku:
+[TEMPEL JAWABANKU]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Penjelasanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
       ujian: [
         {
-          title: "Mock Imtihan Tauhid Ma'had",
+          title: "Simulasi Ujian Tulis Tauhid Ma'had",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
 
-Buatkan soal ujian Tauhid tingkat Ma'had untuk bab [SEBUTKAN]:
-1. Tipe: definisi, rukun iman, sifat Allah, contoh penerapan.
-2. 5-6 soal mudah ke sedang.
-3. JANGAN beri jawaban. Tunggu jawabanku, koreksi & nilai dengan bahasa mendukung.
+Buatkan satu lembar ujian dari bab [SEBUTKAN BAB-BAB], soal dalam bahasa Arab berharakat + terjemah singkat:
+1. Tiga السؤال dengan bobot درجة: ta'rif dan hukum akal; sifat, lawannya, dan dalilnya; lalu ✓/✗ dan "أَكْمِلْ".
+2. Dalil hanya yang kamu yakini redaksinya.
+3. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai dan jelaskan yang salah.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Simulasi Tanya-Jawab Lisan Tauhid",
+          title: "Simulasi Ujian Lisan Tauhid",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian lisan.
 
-Berperanlah sebagai penguji ramah:
-1. Tanya rukun iman, sifat Allah, atau konsep dasar.
-2. Satu pertanyaan dulu, tunggu jawabanku.
-3. Umpan balik membangun, naikkan kesulitan perlahan.
+Berperanlah sebagai guru penguji lisan untuk bab [SEBUTKAN BAB-BAB]:
+1. Satu pertanyaan sekali jalan, dalam bahasa Arab sederhana: sebutkan sifat, lawannya, artinya, atau dalilnya.
+2. Tunggu jawabanku sebelum lanjut, lalu beri umpan balik singkat dan ramah.
+3. Setelah 6 pertanyaan: nilai kesiapanku (dari 10) dan bagian yang perlu diulang.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kisi-kisi & Strategi Ujian Ma'had",
+          title: "Kisi-kisi & Tips Ujian Tauhid Ma'had",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Dari bab yang kupelajari ([SEBUTKAN]): yang sering jadi soal, cara jawab benar, prioritas belajar H-7.
+Bab yang diujikan: [SEBUTKAN BAB-BAB]. Bantu aku bersiap:
+1. Jenis soal yang mungkin keluar dan satu contoh redaksi soal dalam bahasa Arab.
+2. Sifat, dalil, dan ta'rif yang wajib hafal.
+3. Rencana 5 hari sebelum ujian.
+
+Jangan mengklaim soal tertentu "pasti keluar".
 
 [METODE]
 
@@ -906,59 +921,64 @@ Dari bab yang kupelajari ([SEBUTKAN]): yang sering jadi soal, cara jawab benar, 
     prompts: {
       pahami: [
         {
-          title: "Pahami Dasar Fiqh Ibadah dengan Mudah",
+          title: "Pahami Dasar Fiqh & Hukum Taklifi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Azhar (program persiapan), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dasar fiqh ibadah untuk pemula dengan bahasa sederhana:
-1. Bab thaharah (wudhu, mandi, najis) — rukun & cara, dengan bahasa mudah.
-2. Bab shalat — rukun, syarat, hal yang membatalkan.
-3. Contoh praktis sehari-hari.
-PENTING: sebut dalil dengan benar bila perlu; jika ragu, katakan. Hindari istilah terlalu rumit.
+Jelaskan dasar fiqh dengan sederhana:
+1. Ta'rif الْفِقْهُ dan sumber-sumbernya secara ringkas.
+2. Hukum taklifi: الْوَاجِبُ، الْمَنْدُوبُ، الْمُبَاحُ، الْمَكْرُوهُ، الْحَرَامُ — arti dan contoh dari kehidupan pelajar.
+3. Beda الرُّكْنُ dan الشَّرْطُ dengan contoh dari shalat.
+4. Tutup dengan 3 pertanyaan cepat. Tunggu jawabanku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Bab Thaharah Tuntas",
+          title: "Pahami Bab Thaharah secara Tuntas",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan bab thaharah untuk pemula:
-1. Jenis air & najis.
-2. Wudhu: rukun, sunnah, pembatal — langkah demi langkah.
-3. Mandi wajib & tayammum (kapan & cara).
-4. Contoh kasus sehari-hari.
+Jelaskan bab thaharah sesuai buku sekolahku ([SEBUTKAN SUB-BAB, mis. air, najis, wudhu, mandi, tayammum]):
+1. Ta'rif dan pembagiannya (Arab berharakat + arti).
+2. Rukun atau fardhu, syarat, sunnah, dan pembatal — dalam tabel.
+3. Dalil pokok yang kamu yakini redaksinya.
+4. Contoh kasus sehari-hari di asrama atau sekolah.
+
+Ikuti madzhab di profilku; kalau ada perbedaan madzhab yang penting, sebut singkat saja.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Bab Shalat Tuntas",
+          title: "Pahami Bab Shalat secara Tuntas",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan bab shalat untuk pemula:
-1. Syarat sah & rukun shalat.
-2. Hal yang membatalkan & sunnah-sunnahnya.
-3. Sujud sahwi (kapan & cara) secara sederhana.
-4. Contoh praktis.
+Jelaskan bab shalat sesuai buku sekolahku ([SEBUTKAN SUB-BAB, mis. syarat, rukun, sunnah, pembatal, sujud sahwi, shalat jama'ah]):
+1. Tabel: syarat wajib | syarat sah | rukun | sunnah | pembatal — Arab berharakat + arti.
+2. Urutan rukun shalat dengan cara mudah menghafalnya.
+3. Kesalahan shalat yang sering terjadi pada pelajar dan cara memperbaikinya.
+
+Ikuti madzhab di profilku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Bab Puasa & Zakat Dasar",
+          title: "Pahami Bab Puasa & Zakat",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dasar puasa & zakat:
-1. Puasa: syarat wajib, rukun, pembatal, yang membolehkan tidak puasa.
-2. Zakat: jenis harta wajib zakat & nisabnya secara sederhana.
-3. Contoh praktis.
+Jelaskan bab [SEBUTKAN BAB, mis. puasa, zakat fitrah, zakat mal] sesuai buku sekolahku:
+1. Ta'rif, hukum, dan dalilnya — dalil hanya yang kamu yakini.
+2. Syarat, rukun, dan pembatal (untuk puasa) atau syarat, nishab, dan penerima (untuk zakat), dalam tabel.
+3. Satu contoh kasus dengan perhitungan sederhana bila babnya zakat — periksa ulang hitunganmu.
+
+Ikuti madzhab di profilku.
 
 [METODE]
 
@@ -971,10 +991,10 @@ Jelaskan dasar puasa & zakat:
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal rukun/syarat [SEBUTKAN, mis. rukun shalat, rukun wudhu]:
-1. Daftar lengkap (Arab berharakat + arti) dengan bahasa mudah.
-2. Mnemonic Indonesia.
-3. Urutan bila penting.
+Untuk ibadah [SEBUTKAN IBADAH, mis. wudhu, shalat, puasa], buatkan kartu hafalan:
+1. Daftar rukun dan syarat berharakat + arti, sesuai madzhab di profilku.
+2. Cara menghafal urutannya (singkatan atau gerakan).
+3. Lalu uji aku: kamu sebut nomor, aku sebut rukun atau syaratnya. Satu per satu, tunggu jawabanku.
 
 [METODE]
 
@@ -985,9 +1005,10 @@ Bantu hafal rukun/syarat [SEBUTKAN, mis. rukun shalat, rukun wudhu]:
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan tabel hafalan pembatal (mubthilat) untuk wudhu/shalat/puasa:
-1. Kolom: ibadah | hal yang membatalkan.
-2. Mnemonic.
+Buatkan tabel hafalan pembatal:
+1. Kolom: ibadah (wudhu, shalat, puasa) | pembatal (Arab berharakat) | arti | contoh kasus.
+2. Sesuai madzhab di profilku.
+3. Lalu kuis 6 soal: kamu beri kasus, aku tentukan batal atau tidak. Satu per satu, tunggu jawabanku.
 
 [METODE]
 
@@ -998,9 +1019,10 @@ Buatkan tabel hafalan pembatal (mubthilat) untuk wudhu/shalat/puasa:
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal istilah fiqh dasar (fardhu, sunnah, makruh, najis, hadats, dll):
-1. Daftar (Arab berharakat + arti sederhana + contoh).
-2. Mnemonic.
+Buatkan daftar istilah fiqh yang harus kuhafal dari bab [SEBUTKAN BAB]:
+1. Istilah Arab berharakat | arti | contoh pemakaian dalam kalimat.
+2. Tandai istilah yang mirip dan mudah tertukar (mis. الْحَدَثُ وَالنَّجَسُ، الْفَرْضُ وَالسُّنَّةُ).
+3. Lalu uji aku satu per satu. Tunggu jawabanku.
 
 [METODE]
 
@@ -1011,7 +1033,12 @@ Bantu hafal istilah fiqh dasar (fardhu, sunnah, makruh, najis, hadats, dll):
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah sederhana H+1, H+3, H+7, mingguan + cara uji. Tabel.
+Bab yang diujikan: [SEBUTKAN BAB-BAB]. Buatkan jadwal belajar sampai ujian:
+1. Tiap sesi: 10 menit hafalan rukun dan syarat, 15 menit kasus sehari-hari.
+2. Jadwal ulang H+1, H+3, H+7.
+3. Dua hari terakhir untuk soal gaya ujian.
+
+Format: tabel (hari | bab | kegiatan | durasi).
 
 [METODE]
 
@@ -1024,36 +1051,40 @@ Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah sederhana H+1, H
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri aku 6 kasus ibadah sederhana (mis. "wudhu batal atau tidak jika..."). Tugasku: tentukan hukumnya.
-1. Tulis kasusnya.
-2. JANGAN beri jawaban dulu.
-3. Koreksi + jelaskan dengan bahasa mudah.
+Beri aku 6 kasus ibadah sehari-hari dari bab [SEBUTKAN BAB] (mis. lupa rakaat, wudhu terkena najis, puasa lalu muntah).
+1. Untuk tiap kasus aku menyebut hukumnya dan alasannya, dengan redaksi soal Arab "مَا حُكْمُ ...؟ مَعَ التَّعْلِيلِ".
+2. Satu kasus sekali jalan. JANGAN beri jawaban. Tunggu jawabanku.
+3. Koreksi sesuai madzhab di profilku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Soal Rukun & Syarat",
+          title: "Drill Rukun, Syarat & Hukum",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 10 soal sederhana (rukun, syarat, pembatal, istilah) dari bab [SEBUTKAN].
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
+Dari bab [SEBUTKAN BAB], buat drill campuran:
+1. 4 soal: "هَلْ ... رُكْنٌ أَمْ شَرْطٌ أَمْ سُنَّةٌ؟".
+2. 4 soal: tentukan hukum taklifi sebuah perbuatan (wajib, sunnah, mubah, makruh, haram).
+3. Satu soal sekali jalan. JANGAN beri jawaban. Tunggu jawabanku, lalu koreksi.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Bedakan Hukum (Fardhu/Sunnah/dll)",
+          title: "Latihan Soal Gaya Ujian Ma'had",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 8 amalan/perbuatan. Tugasku: tentukan hukumnya (fardhu/sunnah/makruh/mubah/haram).
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
+Dari bab [SEBUTKAN BAB-BAB], buat latihan seperti ujian Ma'had, dalam bahasa Arab berharakat + terjemah singkat:
+1. 3 soal "عَرِّفْ".
+2. 3 soal "اُذْكُرْ أَرْكَانَ / شُرُوطَ ...".
+3. 2 soal "عَلِّلْ".
+4. 3 pernyataan "ضَعْ عَلَامَةَ (✓) أَوْ (✗)".
+5. JANGAN beri jawaban. Tunggu jawabanku, lalu koreksi dengan penjelasan singkat.
 
 [METODE]
 
@@ -1062,39 +1093,44 @@ Beri 8 amalan/perbuatan. Tugasku: tentukan hukumnya (fardhu/sunnah/makruh/mubah/
       ],
       ujian: [
         {
-          title: "Mock Imtihan Fiqh Ma'had",
+          title: "Simulasi Ujian Tulis Fiqh Ma'had",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
 
-Buatkan soal ujian Fiqh tingkat Ma'had untuk bab [SEBUTKAN]:
-1. Tipe soal sesuai level: definisi, rukun/syarat, kasus sederhana.
-2. 5-6 soal dari mudah ke sedang.
-3. JANGAN beri jawaban. Tunggu jawabanku, koreksi & nilai dengan bahasa mendukung.
+Buatkan satu lembar ujian dari bab [SEBUTKAN BAB-BAB], soal dalam bahasa Arab berharakat + terjemah singkat:
+1. Tiga السؤال dengan bobot درجة: ta'rif dan dalil; rukun, syarat, dan pembatal; lalu kasus "مَا حُكْمُ ...؟" dan ✓/✗.
+2. Sesuai madzhab di profilku.
+3. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai dan jelaskan yang salah.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Simulasi Tanya-Jawab Lisan Fiqh",
+          title: "Simulasi Ujian Lisan Fiqh",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian lisan.
 
-Berperanlah sebagai penguji yang ramah:
-1. Tanya rukun/syarat/hukum, atau beri kasus sederhana.
-2. Satu pertanyaan dulu, tunggu jawabanku.
-3. Umpan balik membangun, naikkan kesulitan perlahan.
+Berperanlah sebagai guru penguji lisan untuk bab [SEBUTKAN BAB-BAB]:
+1. Satu pertanyaan sekali jalan, dalam bahasa Arab sederhana: rukun, syarat, pembatal, atau "bagaimana hukumnya kalau ...".
+2. Tunggu jawabanku sebelum lanjut, lalu beri umpan balik singkat dan ramah.
+3. Setelah 6 pertanyaan: nilai kesiapanku (dari 10) dan bab yang perlu diulang.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kisi-kisi & Strategi Ujian Ma'had",
+          title: "Kisi-kisi & Tips Ujian Fiqh Ma'had",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Dari bab yang kupelajari ([SEBUTKAN]): bab tersering jadi soal di Ma'had, cara jawab yang benar, prioritas belajar H-7.
+Bab yang diujikan: [SEBUTKAN BAB-BAB]. Bantu aku bersiap:
+1. Jenis soal yang mungkin keluar dan satu contoh redaksi soal dalam bahasa Arab.
+2. Rukun, syarat, dan dalil yang wajib hafal.
+3. Rencana 5 hari sebelum ujian.
+
+Jangan mengklaim soal tertentu "pasti keluar".
 
 [METODE]
 
@@ -1128,56 +1164,55 @@ Dari bab yang kupelajari ([SEBUTKAN]): bab tersering jadi soal di Ma'had, cara j
         {
           title: "Pahami Dasar Nahwu dengan Bahasa Sederhana",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di Ma'had Al-Azhar (program persiapan), [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dasar nahwu untuk pemula dengan bahasa SANGAT sederhana:
-1. Apa itu kalimat (isim, fi'il, harf) — dengan contoh sehari-hari.
-2. Konsep i'rab (rafa', nashab, jar, jazm) secara mudah.
-3. Beri contoh konkret tiap konsep (teks Arab berharakat + arti).
-Hindari istilah yang terlalu rumit; jelaskan bertahap.
+Jelaskan dasar nahwu untuk pemula:
+1. Ta'rif الْكَلَامُ dan tiga jenis kata: الِاسْمُ، الْفِعْلُ، الْحَرْفُ — dengan tanda-tanda pengenalnya.
+2. الْمُعْرَبُ وَالْمَبْنِيُّ dengan contoh.
+3. Empat keadaan i'rab: رَفْعٌ، نَصْبٌ، جَرٌّ، جَزْمٌ — satu contoh kalimat untuk tiap keadaan.
+4. Tutup dengan 3 pertanyaan cepat. Tunggu jawabanku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Mubtada-Khabar & Fi'il-Fa'il",
+          title: "Pahami Jumlah Ismiyyah & Fi'liyyah",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dua struktur kalimat dasar dengan mudah:
-1. Jumlah ismiyah (mubtada + khabar) — contoh berharakat sederhana.
-2. Jumlah fi'liyah (fi'il + fa'il) — contoh berharakat sederhana.
-3. Cara membedakan keduanya.
-4. Latihan kecil mengenali keduanya.
+Jelaskan dua jenis kalimat Arab:
+1. الْجُمْلَةُ الِاسْمِيَّةُ: الْمُبْتَدَأُ وَالْخَبَرُ, hukum i'rab, dan jenis khabar (mufrad, jumlah, syibh jumlah).
+2. الْجُمْلَةُ الْفِعْلِيَّةُ: الْفِعْلُ وَالْفَاعِلُ وَالْمَفْعُولُ بِهِ, dan kesesuaian fi'il dengan fa'il.
+3. Lima contoh kalimat berharakat yang dibedah bagiannya.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Tanda I'rab Dasar",
+          title: "Pahami Tanda I'rab Asli & Pengganti",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan tanda i'rab untuk pemula:
-1. Tanda asli: dhammah (rafa'), fathah (nashab), kasrah (jar), sukun (jazm).
-2. Contoh kata dengan tiap tanda (berharakat).
-3. Cara menentukan tanda i'rab sebuah kata.
+Jelaskan tanda-tanda i'rab:
+1. Tanda asli (dhammah, fathah, kasrah, sukun).
+2. Tanda pengganti untuk الْمُثَنَّى، جَمْعُ الْمُذَكَّرِ السَّالِمِ، جَمْعُ الْمُؤَنَّثِ السَّالِمِ، الْأَسْمَاءُ الْخَمْسَةُ، الْمَمْنُوعُ مِنَ الصَّرْفِ، الْأَفْعَالُ الْخَمْسَةُ.
+3. Tabel ringkas: jenis kata | rafa' | nashab | jarr/jazm, dengan contoh.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Bab Penting (Kana, Inna, dll) secara Mudah",
+          title: "Pahami Bab Nawasikh (Kana & Inna) dengan Mudah",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan bab [SEBUTKAN, mis. kana wa akhawatuha, inna wa akhawatuha] dengan bahasa sederhana:
-1. Apa fungsinya & pengaruhnya pada kalimat.
-2. Contoh sebelum & sesudah masuknya 'amil (berharakat).
-3. Cara mengingatnya dengan mudah.
+Jelaskan bab [SEBUTKAN BAB, mis. kana wa akhawatuha, inna wa akhawatuha, zhanna wa akhawatuha] dengan sederhana:
+1. Apa yang berubah pada mubtada' dan khabar setelah nasikh masuk.
+2. Daftar saudara-saudaranya dengan arti.
+3. Lima contoh kalimat sebelum → sesudah nasikh, dengan i'rab singkat.
 
 [METODE]
 
@@ -1186,40 +1221,45 @@ Jelaskan bab [SEBUTKAN, mis. kana wa akhawatuha, inna wa akhawatuha] dengan baha
       ],
       hafal: [
         {
-          title: "Hafal Tanda I'rab dengan Mudah",
+          title: "Hafal Tanda I'rab dengan Tabel",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal tanda i'rab:
-1. Tabel sederhana: kondisi (rafa'/nashab/jar/jazm) → tanda → contoh.
-2. Mnemonic Indonesia yang mudah diingat pemula.
+Buatkan tabel hafalan tanda i'rab asli dan pengganti:
+1. Kolom: jenis kata | rafa' | nashab | jarr | jazm | contoh.
+2. Cara mudah mengingat.
+3. Lalu uji aku: kamu sebut kata dan kedudukannya, aku sebut tandanya. 8 soal, satu per satu, tunggu jawabanku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Hafal Huruf-Huruf Penting (Jar, Nashab, dll)",
+          title: "Hafal Huruf Jar, Nawashib & Jawazim",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal kelompok huruf:
-1. Huruf jar, huruf nashab, akhawat kana & inna (Arab berharakat + arti).
-2. Mnemonic untuk tiap kelompok.
+Bantu aku menghafal kelompok huruf yang beramal:
+1. حُرُوفُ الْجَرِّ، نَوَاصِبُ الْمُضَارِعِ، جَوَازِمُ الْمُضَارِعِ — daftar berharakat + arti + satu contoh.
+2. Cara mengingat tiap kelompok.
+3. Lalu uji aku satu per satu. Tunggu jawabanku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Hafal Kaidah Dasar + Contoh",
+          title: "Hafal Kaidah Bab dengan Contoh",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk bab [SEBUTKAN], buatkan ringkasan hafalan:
-1. Kaidah inti (kalimat pendek, berharakat).
-2. Satu contoh mudah per kaidah.
-3. Mnemonic.
+Untuk bab [SEBUTKAN BAB], buatkan ringkasan hafalan:
+1. Kaidah inti dalam 3–5 kalimat pendek.
+2. Satu contoh berharakat untuk tiap kaidah, dengan kata yang dimaksud ditandai.
+3. Kalau aku menempelkan bait nazham dari buku (mis. Al-Ajurrumiyyah atau Alfiyah), jelaskan maksudnya tanpa mengubah teksnya.
+
+Nazham (opsional):
+[TEMPEL NAZHAM]
 
 [METODE]
 
@@ -1230,7 +1270,12 @@ Untuk bab [SEBUTKAN], buatkan ringkasan hafalan:
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah sederhana H+1, H+3, H+7, mingguan + cara uji. Tabel.
+Bab yang diujikan: [SEBUTKAN BAB-BAB]. Buatkan jadwal belajar sampai ujian:
+1. Tiap sesi: 10 menit kaidah, 20 menit i'rab kalimat.
+2. Jadwal ulang H+1, H+3, H+7.
+3. Dua hari terakhir untuk soal gaya ujian.
+
+Format: tabel (hari | bab | kegiatan | durasi).
 
 [METODE]
 
@@ -1239,14 +1284,13 @@ Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah sederhana H+1, H
       ],
       latihan: [
         {
-          title: "Latihan I'rab Kalimat Sederhana",
+          title: "Latihan I'rab Kalimat Bertahap",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri aku 8 kalimat Arab SEDERHANA berharakat untuk di-i'rab.
-1. Mulai dari yang sangat mudah.
-2. JANGAN beri jawaban dulu.
-3. Setelah aku i'rab, koreksi dengan penjelasan mudah.
+Dari bab [SEBUTKAN BAB], beri 6 kalimat berharakat untuk kui'rab (2 mudah, 2 sedang, 2 sulit), dengan instruksi "أَعْرِبْ مَا تَحْتَهُ خَطٌّ".
+1. Satu kalimat sekali jalan. JANGAN beri jawaban. Tunggu i'rab-ku.
+2. Koreksi kata per kata dan jelaskan kaidahnya dengan singkat.
 
 [METODE]
 
@@ -1257,22 +1301,26 @@ Beri aku 8 kalimat Arab SEDERHANA berharakat untuk di-i'rab.
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri aku 8 kalimat tanpa harakat akhir. Tugasku: tentukan harakat akhir tiap kata sesuai i'rab.
-1. JANGAN beri jawaban dulu.
-2. Koreksi + jelaskan kenapa.
+Beri aku 5 kalimat Arab tanpa harakat akhir dari bab [SEBUTKAN BAB], dengan instruksi "اِضْبِطْ أَوَاخِرَ الْكَلِمَاتِ".
+1. Aku memberi harakat akhir tiap kata dan alasannya.
+2. Satu kalimat sekali jalan. JANGAN beri jawaban. Tunggu jawabanku.
+3. Koreksi dengan alasan.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Kenali Jenis Kata & Struktur",
+          title: "Latihan Soal Gaya Ujian Ma'had",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 10 contoh. Tugasku: tentukan jenis kata (isim/fi'il/harf) atau struktur (ismiyah/fi'liyah).
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
+Dari bab [SEBUTKAN BAB-BAB], buat latihan seperti ujian Ma'had, dalam bahasa Arab berharakat + terjemah singkat:
+1. 3 soal "عَرِّفْ ... مَعَ التَّمْثِيلِ".
+2. 3 soal "أَعْرِبْ مَا تَحْتَهُ خَطٌّ".
+3. 2 soal "اِسْتَخْرِجْ مِنَ الْجُمَلِ الْآتِيَةِ ...".
+4. 2 soal "صَوِّبِ الْخَطَأَ".
+5. JANGAN beri jawaban. Tunggu jawabanku, lalu koreksi dengan penjelasan singkat.
 
 [METODE]
 
@@ -1281,39 +1329,44 @@ Beri 10 contoh. Tugasku: tentukan jenis kata (isim/fi'il/harf) atau struktur (is
       ],
       ujian: [
         {
-          title: "Mock Imtihan Nahwu Ma'had",
+          title: "Simulasi Ujian Tulis Nahwu Ma'had",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
 
-Buatkan soal ujian Nahwu tingkat Ma'had untuk bab [SEBUTKAN]:
-1. Tipe soal sesuai level pemula: i'rab kalimat sederhana, lengkapi harakat, sebut kaidah.
-2. 5-6 soal dari mudah ke sedang.
-3. JANGAN beri jawaban. Tunggu jawabanku, lalu koreksi & nilai dengan bahasa yang mendukung.
+Buatkan satu lembar ujian dari bab [SEBUTKAN BAB-BAB], soal dalam bahasa Arab berharakat + terjemah singkat:
+1. Tiga السؤال dengan bobot درجة: ta'rif dan contoh; "أَعْرِبْ" dan "اِسْتَخْرِجْ"; lalu "اِضْبِطْ" dan "صَوِّبِ الْخَطَأَ".
+2. Periksa ulang kunci i'rab-mu sebelum memberikan soal.
+3. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai dan jelaskan yang salah.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Simulasi Tanya-Jawab Lisan Nahwu",
+          title: "Simulasi Ujian Lisan Nahwu",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian lisan.
 
-Berperanlah sebagai penguji yang ramah:
-1. Tanya kaidah dasar atau minta i'rab kata sederhana.
-2. Satu pertanyaan dulu, tunggu jawabanku.
-3. Beri umpan balik yang membangun, naikkan kesulitan perlahan.
+Berperanlah sebagai guru penguji lisan untuk bab [SEBUTKAN BAB-BAB]:
+1. Satu pertanyaan sekali jalan, dalam bahasa Arab sederhana: ta'rif, contoh, atau i'rab satu kata dalam kalimat pendek.
+2. Tunggu jawabanku sebelum lanjut, lalu beri umpan balik singkat dan ramah.
+3. Setelah 6 pertanyaan: nilai kesiapanku (dari 10) dan bab yang perlu diulang.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kisi-kisi & Strategi Ujian Ma'had",
+          title: "Kisi-kisi & Tips Ujian Nahwu Ma'had",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Dari bab yang kupelajari ([SEBUTKAN]): bab tersering jadi soal di tingkat Ma'had, cara jawab yang benar, prioritas belajar H-7.
+Bab yang diujikan: [SEBUTKAN BAB-BAB]. Bantu aku bersiap:
+1. Jenis soal yang mungkin keluar dan satu contoh redaksi soal dalam bahasa Arab.
+2. Kaidah dan contoh yang wajib hafal, serta kesalahan i'rab yang paling sering terjadi.
+3. Rencana 5 hari sebelum ujian.
+
+Jangan mengklaim soal tertentu "pasti keluar".
 
 [METODE]
 
@@ -1341,176 +1394,193 @@ Dari bab yang kupelajari ([SEBUTKAN]): bab tersering jadi soal di tingkat Ma'had
       { tool: "chatgpt", rank: 2, strength: "Drill tashrif interaktif",
         why: "ChatGPT efektif untuk latihan tashrif secara interaktif, bisa memberi soal bertahap" },
     ],
-  prompts: {
-    pahami: [
-      {
-        title: "Pahami Dasar Sharf dengan Bahasa Sederhana",
-        targetAI: "claude",
-        template: `Aku [TINGKATAN] di Ma'had Al-Azhar (program persiapan), [GAYA_BELAJAR]. Belajar [MADDAH].
+    prompts: {
+      pahami: [
+        {
+          title: "Pahami Dasar Sharaf dengan Bahasa Sederhana",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan dasar sharf untuk pemula dengan bahasa SANGAT mudah:
-1. Apa itu sharf & bedanya dengan nahwu (sharf = bentuk kata, nahwu = posisi kata).
-2. Konsep tashrif (perubahan kata) — contoh sederhana.
-3. Kenapa sharf penting untuk membaca & memahami Arab.
-Hindari istilah rumit; pakai contoh kata sehari-hari.
-
-[METODE]
-
-[LEVEL_BAHASA]`,
-      },
-      {
-        title: "Pahami Tashrif Istilahi Dasar",
-        targetAI: "claude",
-        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Jelaskan tashrif istilahi (نَصَرَ يَنْصُرُ...) untuk pemula:
-1. Apa itu & urutannya (madhi → mudhari → mashdar → ...).
-2. Contoh tashrif satu fi'il berharakat, langkah demi langkah.
-3. Cara mengingat urutannya.
+Jelaskan dasar ilmu sharaf untuk pemula:
+1. Ta'rif عِلْمُ الصَّرْفِ dan bedanya dengan nahwu (bentuk kata vs kedudukan kata).
+2. Huruf asli dan huruf tambahan, dan cara menemukan akar kata (الْجَذْرُ) dengan timbangan فَعَلَ.
+3. الْمُجَرَّدُ وَالْمَزِيدُ dengan contoh.
+4. Tutup dengan 3 pertanyaan cepat. Tunggu jawabanku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
-      },
-      {
-        title: "Pahami Wazan (Timbangan Kata) Sederhana",
-        targetAI: "claude",
-        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+        },
+        {
+          title: "Pahami Tashrif Istilahi",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan konsep wazan untuk pemula:
-1. Konsep fa-'ain-lam (ف ع ل) sebagai timbangan, dengan bahasa mudah.
-2. Contoh menimbang kata sederhana.
-3. Manfaat tahu wazan untuk menebak makna.
+Jelaskan التَّصْرِيفُ الِاصْطِلَاحِيُّ dengan kata [SEBUTKAN KATA DASAR, mis. نَصَرَ، ضَرَبَ، كَتَبَ]:
+1. Urutan bentuknya: fi'il madhi, mudhari', mashdar, isim fa'il, isim maf'ul, fi'il amr, fi'il nahi, isim zaman/makan, isim alat.
+2. Arti tiap bentuk dan satu contoh kalimat pendek.
+3. Kesalahan yang sering terjadi saat mentashrif.
 
-[METODE]
-
-[LEVEL_BAHASA]`,
-      },
-    ],
-    hafal: [
-      {
-        title: "Hafal Tashrif Istilahi dengan Irama",
-        targetAI: "claude",
-        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Bantu hafal tashrif istilahi seperti metode pesantren:
-1. Susun urutan berirama agar mudah dilafalkan berulang.
-2. Pecah per kelompok.
-3. Tandai bagian yang sering lupa.
+Periksa ulang setiap bentuk sebelum menulis.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
-      },
-      {
-        title: "Hafal Pola Wazan Dasar",
-        targetAI: "claude",
-        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+        },
+        {
+          title: "Pahami Wazan Tsulatsi Mazid",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal wazan tsulatsi dasar:
-1. Tabel sederhana: wazan | contoh | makna umum.
-2. Mnemonic untuk mengingatnya.
-
-[METODE]
-
-[LEVEL_BAHASA]`,
-      },
-      {
-        title: "Jadwal Muraja'ah Sharf Ma'had",
-        targetAI: "claude",
-        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Bab yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah sederhana H+1, H+3, H+7, mingguan + cara uji (tashrif lisan). Tabel.
+Jelaskan wazan-wazan fi'il tsulatsi mazid yang ada di bukuku ([SEBUTKAN WAZAN, mis. أَفْعَلَ، فَعَّلَ، فَاعَلَ، تَفَعَّلَ، اِسْتَفْعَلَ]):
+1. Untuk tiap wazan: bentuk madhi dan mudhari', huruf tambahannya, dan faedah makna yang paling umum.
+2. Dua contoh kata nyata untuk tiap wazan, dengan arti.
+3. Tabel ringkas yang bisa kusalin.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
-      },
-    ],
-    latihan: [
-      {
-        title: "Latihan Tashrif dari Akar Kata",
-        targetAI: "claude",
-        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+        },
+      ],
+      hafal: [
+        {
+          title: "Hafal Tashrif Istilahi Berirama",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri aku 6 akar kata sederhana. Tugasku: tashrif istilahi-nya.
-1. Sebut akarnya saja.
-2. JANGAN beri jawaban dulu.
-3. Koreksi dengan penjelasan mudah.
-
-[METODE]
-
-[LEVEL_BAHASA]`,
-      },
-      {
-        title: "Drill Tentukan Wazan",
-        targetAI: "claude",
-        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Beri 8 kata berharakat. Tugasku: tentukan wazan-nya.
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
+Bantu aku menghafal tashrif istilahi seperti cara di pesantren (dilagukan):
+1. Tulis tashrif lengkap kata [SEBUTKAN KATA DASAR] dalam satu baris yang bisa dilagukan, berharakat.
+2. Beri dua kata lain dengan wazan yang sama untuk latihan.
+3. Lalu uji aku: kamu beri kata dasar baru, aku tuliskan tashrif-nya. Satu per satu, tunggu jawabanku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
-      },
-      {
-        title: "Drill Soal Sharf Sederhana",
-        targetAI: "claude",
-        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+        },
+        {
+          title: "Hafal Pola Wazan & Faedahnya",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 10 soal sederhana (tashrif, wazan, definisi) dari bab [SEBUTKAN].
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
-
-[METODE]
-
-[LEVEL_BAHASA]`,
-      },
-    ],
-    ujian: [
-      {
-        title: "Mock Imtihan Sharf Ma'had",
-        targetAI: "claude",
-        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
-
-Buatkan soal ujian Sharf tingkat Ma'had untuk bab [SEBUTKAN]:
-1. Tipe: tashrif kata, tentukan wazan, definisi.
-2. 5-6 soal mudah ke sedang.
-3. JANGAN beri jawaban. Tunggu jawabanku, koreksi & nilai dengan bahasa mendukung.
+Buatkan kartu hafalan wazan di muqarrar-ku:
+1. Tabel: wazan | madhi | mudhari' | mashdar | faedah makna | contoh.
+2. Cara mudah mengingat huruf tambahan tiap wazan.
+3. Lalu kuis 8 soal: kamu beri kata, aku sebut wazannya. Satu per satu, tunggu jawabanku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
-      },
-      {
-        title: "Simulasi Tanya-Jawab Lisan Sharf",
-        targetAI: "claude",
-        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian lisan.
+        },
+        {
+          title: "Jadwal Muraja'ah Sharaf Ma'had",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Berperanlah sebagai penguji ramah:
-1. Minta aku tashrif kata atau tentukan wazan secara lisan.
-2. Satu pertanyaan dulu, tunggu jawabanku.
-3. Umpan balik membangun, naikkan kesulitan perlahan.
+Bab yang diujikan: [SEBUTKAN BAB-BAB]. Buatkan jadwal belajar sampai ujian:
+1. Tiap sesi: 10 menit melagukan tashrif, 15 menit menentukan wazan dan akar kata.
+2. Jadwal ulang H+1, H+3, H+7.
+3. Dua hari terakhir untuk soal gaya ujian.
 
-[METODE]
-
-[LEVEL_BAHASA]`,
-      },
-      {
-        title: "Kisi-kisi & Strategi Ujian Ma'had",
-        targetAI: "claude",
-        template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Dari bab yang kupelajari ([SEBUTKAN]): yang sering jadi soal, cara jawab benar, prioritas belajar H-7.
+Format: tabel (hari | bab | kegiatan | durasi).
 
 [METODE]
 
 [LEVEL_BAHASA]`,
-      },
-    ],
-  }
+        },
+      ],
+      latihan: [
+        {
+          title: "Latihan Tashrif dari Akar Kata",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri aku 5 kata dasar (tsulatsi mujarrad dan mazid) dari bab [SEBUTKAN BAB].
+1. Untuk tiap kata aku menuliskan mudhari', mashdar, isim fa'il, isim maf'ul, dan amr — dengan instruksi "صَرِّفِ الْأَفْعَالَ الْآتِيَةَ".
+2. Satu kata sekali jalan. JANGAN beri jawaban. Tunggu jawabanku.
+3. Koreksi bentuk yang salah dan jelaskan polanya.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Tentukan Akar & Wazan",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Beri aku 8 kata berimbuhan (mis. مُسْتَغْفِرٌ، تَعَلَّمَ، مَكْتَبَةٌ) dengan instruksi "زِنِ الْكَلِمَاتِ الْآتِيَةَ وَبَيِّنْ جَذْرَهَا".
+1. Untuk tiap kata aku menyebut akar, wazan, dan jenis katanya.
+2. Satu kata sekali jalan. JANGAN beri jawaban. Tunggu jawabanku.
+3. Koreksi dengan alasan.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Latihan Soal Gaya Ujian Ma'had",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Dari bab [SEBUTKAN BAB-BAB], buat latihan seperti ujian Ma'had, dalam bahasa Arab berharakat + terjemah singkat:
+1. 3 soal "عَرِّفْ ... مَعَ التَّمْثِيلِ".
+2. 3 soal "هَاتِ الْمُضَارِعَ / الْمَصْدَرَ / اسْمَ الْفَاعِلِ مِنْ ...".
+3. 2 soal "زِنْ".
+4. 2 pernyataan "ضَعْ عَلَامَةَ (✓) أَوْ (✗)".
+5. JANGAN beri jawaban. Tunggu jawabanku, lalu koreksi dengan penjelasan singkat.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+      ujian: [
+        {
+          title: "Simulasi Ujian Tulis Sharaf Ma'had",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian.
+
+Buatkan satu lembar ujian dari bab [SEBUTKAN BAB-BAB], soal dalam bahasa Arab berharakat + terjemah singkat:
+1. Tiga السؤال dengan bobot درجة: ta'rif dan contoh; tashrif dan "هَاتِ ... مِنْ"; lalu "زِنْ" dan ✓/✗.
+2. Periksa ulang semua bentuk kata di kunci jawabanmu sebelum memberikan soal.
+3. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai dan jelaskan yang salah.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Simulasi Ujian Lisan Sharaf",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian lisan.
+
+Berperanlah sebagai guru penguji lisan untuk bab [SEBUTKAN BAB-BAB]:
+1. Satu permintaan sekali jalan, dalam bahasa Arab sederhana: lagukan tashrif sebuah kata, sebut wazan, atau sebut bentuk tertentu.
+2. Tunggu jawabanku sebelum lanjut, lalu beri umpan balik singkat dan ramah.
+3. Setelah 6 permintaan: nilai kesiapanku (dari 10) dan bab yang perlu diulang.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Kisi-kisi & Tips Ujian Sharaf Ma'had",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Bab yang diujikan: [SEBUTKAN BAB-BAB]. Bantu aku bersiap:
+1. Jenis soal yang mungkin keluar dan satu contoh redaksi soal dalam bahasa Arab.
+2. Wazan dan pola tashrif yang wajib hafal.
+3. Rencana 5 hari sebelum ujian.
+
+Jangan mengklaim soal tertentu "pasti keluar".
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+      ],
+    },
   },
 
   {

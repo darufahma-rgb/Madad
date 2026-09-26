@@ -39,9 +39,9 @@ Manahij Bahts, Hadhir Al-Alam Al-Islami, Falsafah Yunaniyah, Ilm Nafs, Tarbiyah 
 Firaq, Filsafat Islam, Qira'at, Tarikh Dakwah, Adab, 'Arudh, Fiqh Lughah, Naqd Adabi, Hadharah, Dakwah & I'lam,
 Mu'jam wa Lahajat, Qa'at Bahts. Belum: 3 maddah Program DL (format tabs).
 
-Ma'had (src/mahad-data.jsx): 16 dari 27 selesai — Dirasat Ijtima'iyyah, Komputer, Fisika, Kimia, Riyadhiyat Bahtsah,
+Ma'had (src/mahad-data.jsx): 20 dari 27 selesai — Dirasat Ijtima'iyyah, Komputer, Fisika, Kimia, Riyadhiyat Bahtsah,
 Riyadhiyat Tathbiqiyyah, Biologi, Tsaqafah Islamiyah, 'Arudh Tsanawi, Adab wan Nushus, Hadits, Balaghah, Mantiq,
-Sejarah, Geografi, Insya'.
+Sejarah, Geografi, Insya', Tauhid, Fiqh, Nahwu, Sharaf.
 Catatan teknis: sebagian blok Ma'had menulis `prompts:` dengan indentasi 2 spasi. Splice harus mencari `prompts` hanya di
 dalam blok maddah yang dituju dan menemukan akhirnya dengan mencocokkan kurung kurawal; setelah splice, pastikan hanya
 blok target yang berubah dan jumlah prompt per maddah tetap. Aturan khusus Ma'had:
