@@ -26,10 +26,10 @@ dan `[METODE]`/`[LEVEL_BAHASA]` ada. Diff harus hanya menyentuh blok maddah yang
 
 ## Progres
 
-22 maddah selesai (396 prompt): Nahwu, Fiqh Madzhabi, Tauhid, Ushul Fiqh, Mustholah Hadits, Tarikh Tasyri',
+26 maddah selesai (464 prompt): Nahwu, Fiqh Madzhabi, Tauhid, Ushul Fiqh, Mustholah Hadits, Tarikh Tasyri',
 Sharaf, Al-Qur'an (Tahfidz), Sirah Nabawiyah, Fiqh Muqaran, Tarikh Islam, 'Ulum Al-Qur'an, Tajwid, Ahwal Syakhshiyah,
 Balaghah, Mantiq, Tafsir Tahlili, Hadits Tahlili, Tafsir Maudhu'i, Manahij Mufassirin, Hadits Maudhu'i,
-Takhrij Hadits. Urutan dipilih dari jangkauan (fakultas × tingkat) dan jumlah kertas di Bank Soal, karena data jumlah buka
+Takhrij Hadits, Manahij Muhadditsin, Syubhat Hawla As-Sunnah, Tasawwuf, Qadhaya Fiqhiyyah. Urutan dipilih dari jangkauan (fakultas × tingkat) dan jumlah kertas di Bank Soal, karena data jumlah buka
 maddah hanya ada di Supabase.
 
 Catatan dari kertas asli yang memengaruhi penulisan:
@@ -47,5 +47,10 @@ Catatan dari kertas asli yang memengaruhi penulisan:
   اختر, dan أكمل (termasuk makna gharib). Prompt meminta pengguna menyebut tema-tema muqarrar.
 - Manahij Mufassirin & Takhrij: banyak "تحدث عن تفسير/كتاب … مبينًا …" (penulis, manhaj, cara takhrij, sumber asli atau
   bukan). Data tahun wafat, nomor hadits, dan letak bab rawan halusinasi — prompt menyuruh AI menandai "perlu dicek".
+- Syubhat Sunnah: teks hadits + "كيف تفند الشبهات … في نقاط مع التدليل", "لخص قول … ثم فصل القول في الرد",
+  "ما قولك فيمن زعم …", ✓/✗ مع التعليل. Prompt tidak menisbatkan ucapan ke tokoh tertentu kecuali AI yakin.
+- Qadhaya Fiqhiyyah: langkah baku تحرير محل النزاع ← الآراء ← دليلان لكل رأي ← الراجح وسببه, farq antar akad,
+  "استدل لكل مما يأتي بدليل واحد", dan صح/خطأ tentang ada atau tidaknya khilaf. Eksplorasi ditegaskan bukan fatwa.
+- Tasawwuf: maqamat & ahwal (ta'rif, farq, tamtsil, rincian satu maqam), pemikiran tokoh di muqarrar, bantahan syubhat.
 - Kertas "Tarikh Islam" satu-satunya di Bank Soal ternyata Tarikh As-Sunnah; Sirah belum punya kertas.
 - Rujukan kitab boleh juga dari kitab yang disebut di kertas asli, selalu dengan "kalau kamu yakin".
