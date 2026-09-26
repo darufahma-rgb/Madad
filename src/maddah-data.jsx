@@ -1036,11 +1036,13 @@ Format: tabel perbandingan, lalu 3 poin manfaat.
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu aku memahami strategi tahfidz yang efektif:
-1. Prinsip hifzh jadid (hafalan baru) vs muraja'ah (mengulang).
-2. Metode menghafal (per ayat, per halaman, talqin, tasmi').
-3. Pentingnya konsistensi & kualitas bacaan (tajwid) sebelum hafal.
-4. Kesalahan umum penghafal pemula.
+Bantu aku menyusun strategi tahfidz yang cocok untuk ujian Azhar, yang diuji secara tahriri (menulis ayat dari hafalan) dan syafawi:
+1. Prinsip hifzh jadid dan muraja'ah, dan porsi yang sehat untuk keduanya.
+2. Metode menghafal: per ayat, per halaman mushaf, talqin, tasmi', dan menulis ulang dari hafalan.
+3. Kenapa latihan menulis penting untuk ujian tahriri (rasm, harakat, dan ayat yang tertukar).
+4. Kesalahan umum penghafal dan cara menghindarinya.
+
+Format: poin bernomor, tiap poin dengan satu langkah praktis.
 
 [METODE]
 
@@ -1049,12 +1051,13 @@ Bantu aku memahami strategi tahfidz yang efektif:
         {
           title: "Pahami Manajemen Hafalan & Muraja'ah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
 Jelaskan sistem menjaga hafalan:
-1. Beda muraja'ah hafalan dekat (qarib) & jauh (ba'id).
-2. Cara membagi porsi: hafalan baru vs mengulang lama.
-3. Cara mengatasi ayat-ayat mutasyabihat (mirip) yang sering tertukar.
+1. Muraja'ah qarib (hafalan dekat) dan ba'id (hafalan lama): porsi dan frekuensinya.
+2. Cara membagi waktu harian antara hafalan baru, muraja'ah, dan latihan menulis.
+3. Cara menangani ayat mutasyabihat yang sering tertukar.
+4. Tanda hafalan mulai melemah dan cara memulihkannya.
 
 [METODE]
 
@@ -1063,12 +1066,14 @@ Jelaskan sistem menjaga hafalan:
         {
           title: "Pahami Ayat Mutasyabihat (Mirip)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk surat/juz [SEBUTKAN], bantu aku dengan ayat-ayat mutasyabihat:
-1. Identifikasi ayat yang mirip/berulang (sebut surat & nomor; jangan mengarang).
-2. Tunjukkan perbedaan halus antar ayat mirip.
-3. Tips mengingat pembeda agar tidak tertukar saat menghafal.
+Untuk bagian [SEBUTKAN SURAT/JUZ, mis. Al-Baqarah 1–100], bantu aku dengan ayat mutasyabihat lafzhi:
+1. Daftar ayat yang mirip dengan surat dan nomor ayatnya, hanya yang kamu yakini.
+2. Pembeda halusnya (tambahan huruf, urutan kata, penutup ayat).
+3. Kaidah atau asosiasi untuk mengingat pembedanya.
+
+Teks ayat wajib kucek ke mushaf. Kalau kamu ragu pada satu teks, tulis nomor ayatnya saja dan minta aku membuka mushaf.
 
 [METODE]
 
@@ -1077,12 +1082,12 @@ Untuk surat/juz [SEBUTKAN], bantu aku dengan ayat-ayat mutasyabihat:
         {
           title: "Pahami Adab & Keutamaan Penghafal Qur'an",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan:
-1. Keutamaan menghafal Al-Qur'an (sebut dalil yang kamu yakin; jika ragu, katakan).
-2. Adab penghafal terhadap Al-Qur'an.
-3. Bahaya melupakan hafalan & cara menjaganya.
+Jelaskan, merujuk At-Tibyan fi Adab Hamalatil Qur'an bila kamu yakin isinya:
+1. Keutamaan menghafal dan mempelajari Al-Qur'an.
+2. Adab penghafal: terhadap mushaf, saat membaca, dan terhadap guru.
+3. Ancaman melupakan hafalan menurut ulama dan cara menjaganya.
 
 [METODE]
 
@@ -1093,13 +1098,17 @@ Jelaskan:
         {
           title: "Rencana Hafalan Terjadwal",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku mau menghafal [SEBUTKAN TARGET, mis. juz 30, surat tertentu] dalam [SEBUTKAN WAKTU]. Buatkan rencana:
-1. Pembagian hafalan harian yang realistis.
-2. Jadwal muraja'ah agar tidak lupa.
-3. Cara tasmi' (memperdengarkan) untuk verifikasi.
-4. Sajikan sebagai tabel jadwal.
+Target hafalanku: [SEBUTKAN TARGET, mis. Al-Baqarah dan Ali 'Imran untuk imtihan]. Waktu yang tersedia: [SEBUTKAN WAKTU, mis. 8 pekan].
+
+Buatkan rencana:
+1. Pembagian hafalan harian yang realistis (per halaman mushaf Madinah).
+2. Jadwal muraja'ah qarib dan ba'id.
+3. Satu sesi menulis dari hafalan tiap pekan untuk persiapan ujian tahriri.
+4. Cadangan waktu untuk bagian yang sulit.
+
+Format: tabel (pekan | hafalan baru | muraja'ah | latihan menulis).
 
 [METODE]
 
@@ -1108,13 +1117,15 @@ Aku mau menghafal [SEBUTKAN TARGET, mis. juz 30, surat tertentu] dalam [SEBUTKAN
         {
           title: "Teknik Mengikat Hafalan dengan Makna",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk ayat/surat [SEBUTKAN], bantu aku menghafal dengan memahami makna:
-1. Terjemah & makna ringkas per ayat (agar hafalan berbasis paham).
-2. Alur/tema yang menghubungkan ayat-ayat.
-3. Tips visual/asosiasi untuk bagian yang sulit.
-PENTING: gunakan ayat yang benar; jika ragu, minta aku tempel.
+Untuk bagian [SEBUTKAN AYAT/SURAT], bantu aku menghafal dengan memahami:
+1. Tema besar dan alur perpindahan antar kelompok ayat.
+2. Makna ringkas tiap kelompok ayat.
+3. Kata kunci pembuka tiap ayat sebagai "jangkar" hafalan.
+4. Asosiasi untuk bagian yang sulit.
+
+Jangan menuliskan teks ayat panjang dari ingatan; cukup sebut nomor ayat dan kata pembukanya.
 
 [METODE]
 
@@ -1123,12 +1134,16 @@ PENTING: gunakan ayat yang benar; jika ragu, minta aku tempel.
         {
           title: "Jadwal Muraja'ah Hafalan",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku sudah hafal [SEBUTKAN]. Buatkan jadwal muraja'ah berbasis spaced repetition:
-1. Bagi hafalan ke siklus muraja'ah harian & mingguan.
-2. Prioritaskan hafalan baru & yang rentan lupa.
-3. Tabel jadwal.
+Hafalanku saat ini: [SEBUTKAN HAFALAN, mis. juz 1–3]. Bagian yang paling rawan: [SEBUTKAN BAGIAN RAWAN, mis. akhir Al-Baqarah].
+
+Buatkan jadwal muraja'ah:
+1. Siklus harian dan mingguan sehingga seluruh hafalan terulang.
+2. Porsi lebih untuk bagian yang rawan.
+3. Satu cara menguji diri tiap sesi (tasmi' ke teman, menulis, atau sambung ayat).
+
+Format: tabel (hari | bagian | cara menguji).
 
 [METODE]
 
@@ -1137,44 +1152,55 @@ Aku sudah hafal [SEBUTKAN]. Buatkan jadwal muraja'ah berbasis spaced repetition:
       ],
       latihan: [
         {
-          title: "Drill Sambung Ayat",
+          title: "Latihan Tahriri: Tulis Ayat dari Hafalan",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Uji hafalanku surat/juz [SEBUTKAN] dengan latihan sambung ayat:
-1. Beri potongan awal ayat, aku lanjutkan (atau sebaliknya).
-2. JANGAN tampilkan lanjutannya dulu.
-3. Setelah aku jawab, koreksi dari mushaf.
-PENTING: pakai teks Qur'an yang benar; jika ragu, katakan.
+Ujian tahfidz Azhar berbentuk tahriri: اُكْتُبْ مِنْ قَوْلِهِ تَعَالَى ﴿...﴾ إِلَى قَوْلِهِ تَعَالَى ﴿...﴾. Latih aku untuk bagian [SEBUTKAN SURAT/JUZ]:
+1. Beri 5 soal dengan format itu. Cukup sebut surat dan nomor ayat awal–akhir, plus 2–3 kata pembuka ayat awal yang kamu yakini.
+2. Aku menulis ayatnya dari hafalan.
+3. Untuk koreksi, aku akan menempelkan teks mushaf yang benar (dari Quran.com atau Tanzil). Bandingkan tulisanku kata per kata dengan teks itu — bukan dengan ingatanmu — lalu tandai kata yang hilang, bertambah, tertukar, atau salah harakat.
+4. Nilai tiap soal dari 10.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Tebak Posisi Ayat",
+          title: "Drill Sambung Ayat & Tebak Posisi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri aku potongan ayat dari [SEBUTKAN]. Tugasku: sebutkan surat & posisinya.
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
-PENTING: pakai ayat yang benar; jika ragu, katakan.
+Uji hafalanku untuk bagian [SEBUTKAN SURAT/JUZ]:
+1. Sebut surat dan nomor ayat (bukan teks panjang), lalu aku membacakan atau menuliskan ayat itu dan ayat sesudahnya.
+2. Sesekali balik: beri 2–3 kata pembuka ayat yang kamu yakini, aku sebutkan surat dan nomornya.
+3. Satu soal sekali jalan, tunggu jawabanku.
+4. Setelah 10 soal, rekap bagian yang goyah.
+
+Aku akan mengecek teks ke mushaf. Jangan menulis teks ayat yang tidak kamu yakini.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Latihan Tasmi' Terstruktur",
+          title: "Koreksi Tulisan Hafalanku dengan Teks Mushaf",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu aku menyiapkan sesi tasmi' (setor hafalan):
-1. Buat checklist persiapan sebelum tasmi'.
-2. Tips mengurangi gugup & kesalahan saat setor.
-3. Cara menandai & memperbaiki bagian yang sering salah.
-(Untuk verifikasi bacaan suara, sarankan aku pakai Tarteel atau setor ke guru.)
+Aku menulis ayat dari hafalan, dan aku menempelkan teks mushaf yang benar di bawahnya. Bandingkan keduanya:
+1. Kata per kata: yang hilang, bertambah, tertukar urutan, atau salah huruf/harakat.
+2. Kelompokkan kesalahan: hafalan (lafazh) vs penulisan (rasm dan harakat).
+3. Pola kesalahanku dan saran latihan untuk memperbaikinya.
+4. Nilai dari 10 seperti mushahhih ujian tahriri.
+
+Gunakan hanya teks mushaf yang kutempel sebagai acuan.
+
+Tulisanku:
+[TEMPEL TULISAN HAFALAN]
+
+Teks mushaf:
+[TEMPEL TEKS MUSHAF]
 
 [METODE]
 
@@ -1183,40 +1209,49 @@ Bantu aku menyiapkan sesi tasmi' (setor hafalan):
       ],
       ujian: [
         {
-          title: "Simulasi Ujian Tahfidz",
+          title: "Simulasi Ujian Tahriri Tahfidz",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan ujian hafalan.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan.
 
-Simulasikan ujian tahfidz untuk [SEBUTKAN]:
-1. Beri pertanyaan model ujian (sambung ayat, sebut posisi, baca dari ayat tertentu).
-2. JANGAN beri jawaban dulu.
-3. Setelah aku jawab, koreksi & nilai kesiapan hafalanku.
-PENTING: pakai teks yang benar; jika ragu, katakan.
+Buatkan satu kertas ujian tahriri tahfidz untuk bagian [SEBUTKAN BAGIAN, mis. Al-Baqarah dan Ali 'Imran]:
+1. Lima السؤال, masing-masing (١٠ درجات) dengan sub-soal أ dan ب, format: اُكْتُبْ مِنْ قَوْلِهِ تَعَالَى ﴿...﴾ إِلَى قَوْلِهِ تَعَالَى ﴿...﴾.
+2. Cukup sebut surat, nomor ayat awal–akhir, dan kata pembuka yang kamu yakini; sebar soal merata di seluruh bagian.
+3. Aku menjawab dengan menulis. Setelah itu aku menempelkan teks mushaf untuk soal-soal itu, dan kamu menilai tulisanku berdasarkan teks tersebut.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Strategi Menghadapi Ujian Hafalan",
+          title: "Simulasi Ujian Syafawi Tahfidz",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan syafawi.
 
-Bantu strategi ujian tahfidz:
-1. Cara muraja'ah intensif H-7 sebelum ujian.
-2. Bagian yang biasanya diuji & cara mengantisipasi.
-3. Menjaga ketenangan & fokus saat setor di hadapan penguji.
+Berperanlah sebagai mumtahin syafawi untuk bagian [SEBUTKAN BAGIAN]:
+1. Satu permintaan sekali jalan, dalam bahasa Arab: اِقْرَأْ مِنْ قَوْلِهِ تَعَالَى... (sebut surat dan nomor ayat), atau "apa ayat sesudahnya", atau "di surat mana ayat ini".
+2. Aku menjawab secara tertulis atau merekam bacaanku sendiri; untuk mengecek bacaan dengan suara, aku akan memakai guru atau aplikasi seperti Tarteel.
+3. Setelah 8 permintaan: rekap bagian yang goyah dan rencana perbaikan.
+
+Jangan menulis teks ayat yang tidak kamu yakini.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kisi-kisi & Prioritas Muraja'ah",
+          title: "Strategi & Prioritas Muraja'ah Menjelang Ujian",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Dari hafalan yang kupunya ([SEBUTKAN]): bagian yang perlu prioritas muraja'ah, ayat mutasyabihat yang rawan, rencana H-7.
+Bagian yang diujikan: [SEBUTKAN BAGIAN]. Bagian yang paling goyah: [SEBUTKAN BAGIAN GOYAH].
+
+Bantu aku menyusun strategi H-14 sampai H-1:
+1. Pembagian muraja'ah harian dengan porsi lebih untuk bagian goyah.
+2. Latihan menulis dari hafalan minimal tiga kali, dengan fokus pada awal dan akhir ayat karena soal tahriri dimulai dan diakhiri di sana.
+3. Daftar mutasyabihat yang harus dicek ulang.
+4. Tips menulis rapi dan tenang di ruang ujian.
+
+Format: tabel harian.
 
 [METODE]
 
@@ -1227,28 +1262,29 @@ Dari hafalan yang kupunya ([SEBUTKAN]): bagian yang perlu prioritas muraja'ah, a
         {
           title: "Catat Koreksi dari Guru Tahfidz",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Setelah setor ke guru, aku punya catatan koreksi (di bawah). Bantu:
-1. Rapikan jadi daftar bagian yang perlu diperbaiki.
-2. Kelompokkan (kesalahan hafalan vs tajwid).
-3. Buat rencana perbaikan untuk sesi berikutnya.
+Setelah setor ke guru, aku punya catatan koreksi (di bawah). Bantu aku:
+1. Rapikan jadi daftar: surat dan ayat → jenis kesalahan → koreksi guru.
+2. Kelompokkan: kesalahan hafalan, tajwid, dan makharij.
+3. Rencana perbaikan untuk setoran berikutnya.
+
+Catatanku:
+[TEMPEL CATATAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Catatanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
         {
-          title: "Verifikasi Hafalan Pasca-Setor",
+          title: "Rencana Perbaikan Pasca-Setor",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk bagian [SEBUTKAN] yang baru kusetor:
-1. Bantu aku susun daftar ayat yang masih goyah.
-2. Beri latihan fokus untuk ayat-ayat itu.
-3. Jadwalkan muraja'ah khusus untuknya.
+Untuk bagian [SEBUTKAN BAGIAN] yang baru kusetor, ayat yang masih goyah adalah [SEBUTKAN AYAT GOYAH, mis. Al-Baqarah 102, 164]. Bantu aku:
+1. Latihan fokus untuk ayat-ayat itu (menulis ulang, sambung dari ayat sebelumnya, mengikat dengan makna).
+2. Jadwal muraja'ah khusus 7 hari untuk ayat-ayat itu.
+3. Cara menguji diri sebelum setoran ulang.
 
 [METODE]
 
@@ -1259,27 +1295,28 @@ Untuk bagian [SEBUTKAN] yang baru kusetor:
         {
           title: "Tadabbur Ayat yang Dihafal",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk ayat/surat [SEBUTKAN] yang kuhafal, bantu aku tadabbur:
-1. Makna & pelajaran tiap bagian.
-2. Bagaimana tadabbur memperkuat hafalan sekaligus iman.
+Untuk bagian [SEBUTKAN AYAT/SURAT] yang kuhafal, bantu aku tadabbur:
+1. Makna dan pelajaran tiap kelompok ayat, merujuk tafsir yang mu'tabar bila kamu yakin.
+2. Kaitan tema antar kelompok ayat.
 3. Pesan praktis untuk kehidupan.
-PENTING: pakai ayat yang benar; jika ragu, minta aku tempel.
+
+Cukup sebut nomor ayat; aku membaca teksnya dari mushaf.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Hubungkan Hafalan dengan Tilawah Indah",
+          title: "Hubungkan Hafalan dengan Tilawah yang Indah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
 Jelaskan:
-1. Bagaimana memadukan hafalan kuat dengan tilawah yang fasih & indah.
-2. Peran tajwid & waqf dalam memperindah bacaan hafalan.
-3. Sarankan praktik (talaqqi, aplikasi seperti Tarteel).
+1. Cara memadukan hafalan yang kuat dengan tilawah yang fasih.
+2. Peran tajwid, waqf, dan ibtida' dalam bacaan hafalan.
+3. Latihan praktis: talaqqi, mendengarkan qari mu'tabar, merekam dan mengevaluasi bacaan sendiri.
 
 [METODE]
 
@@ -1288,12 +1325,14 @@ Jelaskan:
         {
           title: "Menjaga Hafalan Seumur Hidup",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
 Jelaskan:
-1. Sistem muraja'ah jangka panjang agar hafalan tidak hilang.
-2. Cara mengintegrasikan muraja'ah ke ibadah harian (shalat, dll).
-3. Mengembalikan hafalan yang sudah mulai pudar.
+1. Sistem muraja'ah jangka panjang setelah lulus ujian.
+2. Cara menyatukan muraja'ah dengan ibadah harian (shalat sunnah, qiyamul lail).
+3. Langkah mengembalikan hafalan yang mulai pudar.
+
+Format: tiga bagian dengan langkah bernomor.
 
 [METODE]
 
@@ -4606,15 +4645,15 @@ Format: tabel (madzhab | hukum | dalil utama), lalu sebab khilaf dalam 2–3 poi
     prompts: {
       pahami: [
         {
-          title: "Pahami Metode Fiqh Muqaran (Perbandingan)",
+          title: "Pahami Metode Fiqh Muqaran",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan apa itu fiqh muqaran & cara kerjanya:
-1. Definisi fiqh muqaran + bedanya dengan fiqh madzhabi.
-2. Langkah muqaranah: tahrir mahall an-niza' → paparan pendapat + dalil → munaqasyah dalil → tarjih.
-3. Adab & syarat muqaranah yang ilmiah (bukan sekadar cari yang mudah).
-4. Kitab rujukan (mis. Bidayatul Mujtahid Ibn Rusyd, Al-Fiqh 'ala al-Madzahib al-Arba'ah) + karakternya.
+Jelaskan fiqh muqaran dan cara kerjanya:
+1. Ta'rif fiqh muqaran dan bedanya dengan fiqh madzhabi.
+2. Langkah muqaranah yang dituntut kertas ujian: تَحْرِيرُ مَحَلِّ النِّزَاعِ → الْأَقْوَال → الْأَدِلَّة وَوَجْهُ الدَّلَالَة → سَبَبُ الْخِلَاف → الْمُنَاقَشَة → الرَّاجِح وَسَبَبُ التَّرْجِيح.
+3. Adab muqaranah: jujur memaparkan pendapat lawan dan tanpa tatabbu' ar-rukhash.
+4. Karakter kitab rujukan seperti Bidayatul Mujtahid dan Al-Mughni, kalau kamu yakin.
 
 [METODE]
 
@@ -4623,13 +4662,16 @@ Jelaskan apa itu fiqh muqaran & cara kerjanya:
         {
           title: "Muqaranah Satu Mas'alah (Demonstrasi Lengkap)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Lakukan muqaranah lengkap untuk mas'alah [SEBUTKAN]:
-1. Tahrir mahall an-niza' (di mana titik perbedaannya).
-2. Pendapat tiap madzhab (Hanafi, Maliki, Syafi'i, Hanbali) + dalil masing-masing (teks Arab berharakat untuk dalil; jangan mengarang).
-3. Munaqasyah (diskusi kekuatan tiap dalil).
-4. Tarjih + alasannya, dengan adab (tanpa merendahkan madzhab lain).
+Lakukan muqaranah lengkap untuk mas'alah [SEBUTKAN MAS'ALAH, mis. kadar mengusap kepala dalam wudhu, diyat al-janin], dengan urutan jawaban ujian:
+1. Tahrir mahall an-niza': apa yang disepakati dan di mana khilafnya.
+2. Jumlah pendapat dan pemiliknya — kertas ujian sering menguji jumlahnya (mis. "tiga pendapat").
+3. Satu atau dua dalil tiap pendapat dengan wajh ad-dalalah.
+4. Sebab khilaf.
+5. Munaqasyah singkat dan pendapat rajih beserta sebab tarjih, dengan adab terhadap madzhab lain.
+
+Format: judul untuk tiap langkah; tabel ringkas di akhir (pendapat | pemilik | dalil).
 
 [METODE]
 
@@ -4638,13 +4680,15 @@ Lakukan muqaranah lengkap untuk mas'alah [SEBUTKAN]:
         {
           title: "Pahami Sebab Ikhtilaf Fuqaha",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan asbab ikhtilaf al-fuqaha (sebab perbedaan ulama):
-1. Sebab terkait dalil (perbedaan riwayat, keabsahan hadits, lafazh musytarak).
-2. Sebab terkait kaidah ushul (mafhum mukhalafah, 'am-khas, qiyas).
-3. Sebab terkait metode istinbath.
-Beri contoh tiap sebab + kenapa memahami ini penting agar tidak fanatik.
+Jelaskan أَسْبَابُ اخْتِلَافِ الْفُقَهَاء:
+1. Sebab terkait dalil: sampai atau tidaknya hadits, penilaian keshahihannya, perbedaan qira'at atau riwayat.
+2. Sebab terkait lafazh: musytarak (mis. qur'), haqiqah dan majaz, huruf ma'ani (mis. ba' dalam وَامْسَحُوا بِرُءُوسِكُمْ).
+3. Sebab terkait kaidah ushul: mafhum mukhalafah, 'am-khash, qiyas, qaul shahabi.
+4. Untuk tiap sebab, satu mas'alah contoh yang biasa muncul di kertas ujian.
+
+Format: tabel (sebab | penjelasan | mas'alah contoh).
 
 [METODE]
 
@@ -4653,13 +4697,13 @@ Beri contoh tiap sebab + kenapa memahami ini penting agar tidak fanatik.
         {
           title: "Pahami Adab Ikhtilaf & Sikap Bermadzhab",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan adab dalam menyikapi perbedaan madzhab:
-1. Sikap ilmiah terhadap khilaf yang mu'tabar.
-2. Beda ikhtilaf tanawwu' vs ikhtilaf tadhadd.
-3. Bahaya talfiq & tatabbu' rukhash (cari-cari yang mudah).
-4. Sikap pertengahan: menghormati madzhab tanpa fanatik buta.
+Jelaskan adab menyikapi perbedaan madzhab:
+1. Khilaf yang mu'tabar dan yang tidak.
+2. Ikhtilaf tanawwu' dan ikhtilaf tadhadd.
+3. Talfiq dan tatabbu' ar-rukhash: pengertian dan sikap ulama.
+4. Sikap pertengahan: menghormati madzhab tanpa ta'ashshub.
 
 [METODE]
 
@@ -4668,15 +4712,14 @@ Jelaskan adab dalam menyikapi perbedaan madzhab:
       ],
       hafal: [
         {
-          title: "Tabel Perbandingan 4 Madzhab untuk Dihafal",
+          title: "Tabel Muqaranah per Mas'alah untuk Dihafal",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk mas'alah [SEBUTKAN], buatkan tabel hafalan:
-1. Kolom: Madzhab | Hukum | Dalil utama (ringkas).
-2. Tandai titik perbedaan inti.
-3. Sebutkan pendapat rajih bila ada.
-PENTING: sebut dalil dengan benar; jika ragu, katakan.
+Untuk bab [SEBUTKAN BAB, mis. nawaqidh al-wudhu', ad-diyat], buatkan tabel hafalan per mas'alah:
+1. Kolom: mas'alah | disepakati atau diperselisihkan | jumlah pendapat | pemilik tiap pendapat | pendapat rajih.
+2. Tandai ⚠️ mas'alah yang sering dijadikan jebakan "بِالِاتِّفَاقِ" padahal ada khilaf, atau sebaliknya.
+3. Setelah tabel: 5 soal اِخْتَرْ dengan pilihan (بالاتفاق – على قولين – على ثلاثة أقوال). Jangan beri jawabannya dulu.
 
 [METODE]
 
@@ -4685,12 +4728,13 @@ PENTING: sebut dalil dengan benar; jika ragu, katakan.
         {
           title: "Hafal Sebab-Sebab Ikhtilaf",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal kategori asbab ikhtilaf:
-1. Daftar sebab (Arab berharakat + arti) dikelompokkan.
-2. Mnemonic untuk mengingatnya.
-3. Satu contoh mas'alah untuk tiap sebab.
+Bantu aku menghafal sebab-sebab ikhtilaf:
+1. Daftar sebab dikelompokkan, dengan istilah Arab berharakat + arti.
+2. Satu mas'alah contoh untuk tiap sebab dari bab yang kupelajari: [SEBUTKAN BAB].
+3. Jembatan keledai untuk kelompoknya.
+4. Tes: sebut mas'alah, aku sebutkan sebab khilafnya.
 
 [METODE]
 
@@ -4699,9 +4743,15 @@ Bantu hafal kategori asbab ikhtilaf:
         {
           title: "Jadwal Muraja'ah Fiqh Muqaran",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Mas'alah yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji (sebut pendapat madzhab + dalil + tarjih). Tabel.
+Mas'alah yang sudah kupelajari: [SEBUTKAN MAS'ALAH]. Buatkan jadwal muraja'ah:
+1. Kelompokkan per bab.
+2. Jadwal ulang H+1, H+3, H+7, lalu mingguan sampai imtihan.
+3. Cara menguji diri per sesi: jumlah dan pemilik pendapat, satu dalil tiap pendapat, sebab khilaf, dan rajih.
+4. Dua hari terakhir untuk latihan soal gaya kertas ujian.
+
+Format: tabel (hari | mas'alah | cara menguji | durasi).
 
 [METODE]
 
@@ -4712,41 +4762,45 @@ Mas'alah yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H
         {
           title: "Latihan Muqaranah Mandiri (Aku Coba, AI Koreksi)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku akan melakukan muqaranah untuk mas'alah [SEBUTKAN] dengan kemampuanku (kutulis di bawah).
-1. Koreksi: apakah tahrir mahall niza'-ku tepat, pendapat & dalil akurat, tarjih beralasan.
-2. Tunjukkan langkah yang terlewat.
-3. Lengkapi dgn rujukan mu'tabar (jika ragu, katakan).
+Aku menulis muqaranah untuk mas'alah [SEBUTKAN MAS'ALAH] (di bawah). Periksa seperti mushahhih:
+1. Apakah tahrir mahall an-niza', jumlah pendapat, dan penisbatannya tepat.
+2. Apakah dalil tiap pendapat benar dan wajh ad-dalalah-nya disebut.
+3. Apakah sebab khilaf dan tarjih beralasan.
+4. Beri nilai dari 10 dan tunjukkan langkah yang terlewat.
 
-[METODE]
-
-[LEVEL_BAHASA]
-
-Muqaranah-ku: [TEMPEL]`,
-        },
-        {
-          title: "Drill Munaqasyah Dalil",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Beri aku 5 mas'alah khilafiyah beserta dalil tiap pendapat. Tugasku: lakukan munaqasyah (kritik kekuatan tiap dalil).
-1. JANGAN beri jawaban dulu.
-2. Setelah aku jawab, koreksi penalaran munaqasyah-ku.
-PENTING: dalil yang benar; jika ragu, katakan.
+Muqaranah-ku:
+[TEMPEL MUQARANAH]
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Drill Identifikasi Sebab Ikhtilaf",
+          title: "Drill Akmil & Benar-Salah Muqaran",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 6 mas'alah khilafiyah. Tugasku: tentukan apa sebab ikhtilaf di tiap mas'alah.
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab + jelaskan.
+Buat latihan dua bagian seperti kertas Fiqh Muqaran, untuk bab [SEBUTKAN BAB]:
+1. أَكْمِلِ الْعِبَارَاتِ — 5 kalimat rumpang (mis. "اِخْتَلَفَ الْفُقَهَاءُ فِي ... عَلَى ثَلَاثَةِ أَقْوَالٍ: الْأَوَّلُ ......").
+2. ضَعْ عَلَامَةَ (✓) أَوْ (✗) — 5 pernyataan, sebagian keliru pada klaim "اِتَّفَقَ الْفُقَهَاءُ" atau pada penisbatan pendapat.
+3. JANGAN beri jawaban. Tunggu jawabanku.
+4. Koreksi per nomor dengan alasan singkat.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Drill Munaqasyah Dalil",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Kertas ujian sering meminta مُنَاقَشَةُ اسْتِدْلَالِ ... بِقَوْلِهِ تَعَالَى.... Latih aku untuk bab [SEBUTKAN BAB]:
+1. Sajikan 4 istidlal dari satu madzhab dengan dalil yang kamu yakini.
+2. JANGAN beri jawaban. Aku tulis munaqasyah-nya: sisi lemah wajh ad-dalalah, jawaban pihak lain, dan tanggapan balik.
+3. Koreksi penalaran munaqasyah-ku dan tunjukkan jawaban yang dipakai ulama.
 
 [METODE]
 
@@ -4755,14 +4809,15 @@ Beri 6 mas'alah khilafiyah. Tugasku: tentukan apa sebab ikhtilaf di tiap mas'ala
       ],
       ujian: [
         {
-          title: "Mock Imtihan Tahriri Fiqh Muqaran (Gaya Azhari)",
+          title: "Mock Imtihan Tahriri Fiqh Muqaran (Gaya Kertas Azhar)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan tahriri.
 
-Buatkan soal ujian tulis Fiqh Muqaran gaya Azhar untuk mas'alah [SEBUTKAN]:
-1. Tipe khas: qarin baina al-madzahib fi..., udzkur al-adillah ma'a al-munaqasyah, rajjih ma'a bayan as-sabab, ma sabab al-ikhtilaf.
-2. 5-6 soal bobot bervariasi.
-3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
+Buatkan satu kertas ujian tahriri Fiqh Muqaran untuk bab [SEBUTKAN BAB, mis. "semester ini" atau thaharah, al-jinayat]:
+1. Tiga atau empat السؤال.
+2. Minimal satu soal berpola: دَرَسْتَ أَنَّ لِلْفُقَهَاءِ فِي ... أَقْوَالًا ثَلَاثَةً — ١- اُذْكُرِ الْأَقْوَالَ ٢- دَلِيلٌ وَاحِدٌ لِكُلِّ قَوْلٍ مَعَ وَجْهِ الدَّلَالَةِ ٣- سَبَبُ الْخِلَافِ ٤- الْقَوْلُ الرَّاجِحُ وَسَبَبُ التَّرْجِيحِ, dengan bobot per butir.
+3. Soal lain dari pola yang keluar di kertas asli: أَكْمِلِ الْعِبَارَاتِ، ضَعْ عَلَامَةَ (✓) أَوْ (✗)، اِخْتَرِ الْإِجَابَةَ الصَّحِيحَةَ (بالاتفاق – على قولين – على ثلاثة أقوال)، مُنَاقَشَةُ الِاسْتِدْلَالِ.
+4. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai seperti mushahhih.
 
 [METODE]
 
@@ -4771,13 +4826,13 @@ Buatkan soal ujian tulis Fiqh Muqaran gaya Azhar untuk mas'alah [SEBUTKAN]:
         {
           title: "Simulasi Imtihan Syafawi Fiqh Muqaran",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan syafawi.
 
-Berperanlah sebagai mumtahin syafawi:
-1. Minta aku paparkan khilaf, dalil, munaqasyah, & tarjih secara lisan.
-2. Satu pertanyaan dulu, tunggu jawabanku.
-3. Umpan balik, naikkan kesulitan.
-4. Penilaian akhir + area lemah.
+Berperanlah sebagai mumtahin syafawi Fiqh Muqaran untuk bab [SEBUTKAN BAB, mis. "semester ini"]:
+1. Satu pertanyaan sekali jalan, dalam bahasa Arab: jumlah dan pemilik pendapat, dalil satu pendapat, sebab khilaf, atau rajih.
+2. Tunggu jawabanku sebelum lanjut.
+3. Umpan balik singkat seperti penguji, lalu naikkan kesulitan bertahap.
+4. Setelah 8 pertanyaan: nilai kesiapanku (dari 10), mas'alah yang lemah, dan 3 hal yang harus kuperbaiki.
 
 [METODE]
 
@@ -4786,9 +4841,15 @@ Berperanlah sebagai mumtahin syafawi:
         {
           title: "Kisi-kisi & Strategi Ujian Fiqh Muqaran",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Dari mas'alah yang kupelajari ([SEBUTKAN]): mas'alah yang sering jadi soal muqaranah, cara menulis jawaban lengkap (tahrir niza' + dalil + munaqasyah + tarjih), prioritas H-7.
+Mas'alah semester ini: [SEBUTKAN MAS'ALAH]. Bantu aku menyusun strategi ujian:
+1. Untuk tiap mas'alah: jumlah pendapat, pemiliknya, dan satu dalil kunci — dalam bentuk ringkas untuk dihafal.
+2. Tipe soal yang cocok per mas'alah (muqaranah lengkap, akmil, benar/salah, pilihan jumlah pendapat) dengan contoh redaksi Arabnya.
+3. Cara menulis jawaban muqaranah yang dapat nilai penuh: ikuti persis urutan butir yang diminta soal.
+4. Rencana H-7 sampai H-1.
+
+Jangan mengklaim mas'alah tertentu "pasti keluar". Susun berdasarkan pola soal.
 
 [METODE]
 
@@ -4799,41 +4860,51 @@ Dari mas'alah yang kupelajari ([SEBUTKAN]): mas'alah yang sering jadi soal muqar
         {
           title: "Rapikan Catatan Talaqqi Fiqh Muqaran",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi: mas'alah → pendapat tiap madzhab + dalil → tarjih, lengkapi harakat, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+Aku baru talaqqi dan catatanku berantakan. Bantu aku:
+1. Rapikan per mas'alah: tahrir mahall an-niza' → pendapat dan pemilik → dalil → sebab khilaf → rajih.
+2. Lengkapi harakat istilah dan dalil Arab.
+3. Tandai (?) bagian yang terpotong atau perlu kutanyakan lagi. Jangan menambal dengan tebakan.
+4. Tutup dengan 5 poin inti dan 3 pertanyaan muraja'ah.
+
+Catatanku:
+[TEMPEL CATATAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Catatanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
         {
           title: "Verifikasi Pemahaman Pasca-Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Setelah talaqqi mas'alah [SEBUTKAN], aku jelaskan ulang muqaranah-nya (di bawah). Periksa keakuratan pendapat & dalil, koreksi, ajukan 3 pertanyaan penguji.
+Setelah talaqqi mas'alah [SEBUTKAN MAS'ALAH], aku menjelaskan ulang muqaranah-nya (di bawah). Tolong:
+1. Periksa penisbatan pendapat, dalil, dan tarjih: mana yang tepat, kurang, atau keliru.
+2. Koreksi yang keliru.
+3. Ajukan 3 pertanyaan penguji — satu per satu, tunggu jawabanku.
+
+Penjelasanku:
+[TEMPEL PENJELASAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Penjelasanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
       eksplorasi: [
         {
           title: "Fiqh Muqaran untuk Masalah Kontemporer",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk masalah kontemporer [SEBUTKAN, mis. transaksi digital, isu medis]:
-1. Bagaimana pendekatan madzhab/ulama berbeda menyikapinya.
-2. Dalil & qiyas yang dipakai tiap pendapat.
-3. Pendapat lembaga fatwa kontemporer bila kamu tahu (jika ragu, katakan).
-PENTING: jangan mengarang fatwa/dalil.
+Untuk masalah [SEBUTKAN MASALAH, mis. transaksi digital, transplantasi organ]:
+1. Mas'alah klasik yang menjadi dasar takhrij-nya dan pendapat madzhab empat di sana.
+2. Pendapat ulama kontemporer dan dalil atau qiyas masing-masing.
+3. Keputusan lembaga fatwa atau majma' fiqh, hanya bila kamu yakin isinya dan tahunnya.
+
+Ini latihan akademik; fatwa untuk diamalkan tetap ditanyakan ke lembaga fatwa.
 
 [METODE]
 
@@ -4842,12 +4913,13 @@ PENTING: jangan mengarang fatwa/dalil.
         {
           title: "Telaah Manhaj Tarjih Ulama",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan cara ulama melakukan tarjih:
-1. Murajjihat (faktor penguat) dari sisi sanad, matan, dilalah.
-2. Bagaimana menimbang saat dalil tampak sama kuat.
-3. Contoh penerapan tarjih pada satu mas'alah.
+Jelaskan cara ulama melakukan tarjih, karena tiap soal muqaranah meminta الرَّاجِحُ وَسَبَبُ التَّرْجِيحِ:
+1. Murajjihat dari sisi sanad, matan, dilalah, dan hal luar (mis. 'amal ahl al-Madinah, qiyas yang mendukung).
+2. Kapan jam' didahulukan atas tarjih.
+3. Contoh penerapan pada satu mas'alah dari bab [SEBUTKAN BAB].
+4. Kalimat baku untuk menulis sebab tarjih di lembar jawaban.
 
 [METODE]
 
@@ -4856,12 +4928,12 @@ Jelaskan cara ulama melakukan tarjih:
         {
           title: "Hubungkan Fiqh Muqaran dengan Ushul & Maqashid",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk mas'alah [SEBUTKAN]:
-1. Tunjukkan bagaimana perbedaan kaidah ushul tiap madzhab menghasilkan hukum berbeda.
-2. Bagaimana pertimbangan maqashid syariah berperan dalam tarjih.
-3. Kenapa penguasaan ushul penting untuk fiqh muqaran yang benar.
+Untuk mas'alah [SEBUTKAN MAS'ALAH]:
+1. Kaidah ushul tiap madzhab yang melahirkan hukum yang berbeda.
+2. Peran pertimbangan maqashid dalam tarjih, dan batas-batasnya.
+3. Kenapa penguasaan ushul menjadi syarat muqaranah yang benar.
 
 [METODE]
 
@@ -9200,11 +9272,13 @@ PENTING: jika tidak yakin fakta, katakan.
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri kerangka utuh Sirah Nabawiyah:
-1. Fase besar: sebelum bi'tsah → periode Makkah → hijrah → periode Madinah → wafat.
-2. Peristiwa kunci tiap fase.
-3. Timeline bercabang.
-4. Tujuan belajar sirah: teladan & pelajaran (bukan sekadar cerita).
+Beri aku kerangka utuh Sirah Nabawiyah:
+1. Fase: sebelum bi'tsah → dakwah Makkah (sirriyyah lalu jahriyyah) → hijrah → Madinah → wafat.
+2. Peristiwa kunci tiap fase, dengan tahun yang disepakati; bila diperselisihkan, sebut pendapat yang masyhur.
+3. Sumber sirah: Al-Qur'an, hadits, kitab maghazi dan sirah (mis. Sirah Ibnu Hisyam), serta cara menilai riwayatnya.
+4. Tujuan belajar sirah menurut ulama: teladan, fiqh, dan dakwah.
+
+Format: timeline bercabang.
 
 [METODE]
 
@@ -9213,43 +9287,47 @@ Beri kerangka utuh Sirah Nabawiyah:
         {
           title: "Pahami Periode Makkah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
 Jelaskan periode dakwah Makkah:
-1. Permulaan wahyu & dakwah sirriyah lalu jahriyah.
-2. Tahapan & tantangan (boikot, penyiksaan, hijrah Habasyah).
-3. Tahun kesedihan & Isra' Mi'raj.
-4. Pelajaran dakwah dari fase ini.
-PENTING: sebut peristiwa yang kamu yakin; jika ragu, katakan.
+1. Turunnya wahyu pertama, dakwah sirriyyah, lalu jahriyyah.
+2. Bentuk penentangan Quraisy dan tahapannya: celaan, penyiksaan, boikot.
+3. Hijrah ke Habasyah, 'Am al-Huzn, perjalanan ke Tha'if, Isra' Mi'raj, dan Bai'at 'Aqabah.
+4. Pelajaran (عِبَر) dakwah dari tiap tahap.
+
+Sebut riwayat yang kuat; bila suatu kisah populer tetapi riwayatnya lemah, beri tanda.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Periode Madinah & Pembangunan Negara",
+          title: "Pahami Periode Madinah & Pembangunan Masyarakat",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
 Jelaskan periode Madinah:
-1. Hijrah & peristiwa di sekitarnya.
-2. Pembangunan masyarakat: masjid, ukhuwah Muhajirin-Anshar, Piagam Madinah.
-3. Fase peperangan besar (Badr, Uhud, Khandaq) & maknanya.
-4. Fathu Makkah & haji wada'.
+1. Hijrah dan tiga langkah pertama: membangun masjid, mempersaudarakan Muhajirin dan Anshar, dan Shahifah Madinah.
+2. Ghazawat besar (Badr, Uhud, Khandaq, Khaibar): sebab, jalannya, hasil, dan pelajaran.
+3. Shulh Hudaibiyah, Fath Makkah, dan Haji Wada'.
+4. Perkembangan hukum yang turun terkait peristiwa-peristiwa ini.
+
+Format: satu subjudul per peristiwa, dengan poin sebab → peristiwa → 'ibrah.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Pahami Cara Mengambil Pelajaran dari Sirah",
+          title: "Pahami Cara Mengambil 'Ibrah dan Menilai Riwayat Sirah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan metode mengambil 'ibrah dari sirah:
-1. Beda riwayat sirah dengan hadits (sisi keabsahan).
-2. Cara menarik pelajaran dakwah, kepemimpinan, & akhlak dari peristiwa.
-3. Sikap kritis terhadap riwayat sirah yang lemah.
+Jelaskan manhaj belajar sirah:
+1. Beda standar periwayatan sirah dan hadits hukum menurut ulama.
+2. Contoh kisah sirah yang masyhur di masyarakat tetapi riwayatnya dikritik ulama, hanya bila kamu yakin.
+3. Cara menarik 'ibrah dan fiqh dari peristiwa tanpa berlebihan menafsirkan.
+4. Contoh satu peristiwa yang diurai menjadi fakta → 'ibrah → hukum.
 
 [METODE]
 
@@ -9260,25 +9338,27 @@ Jelaskan metode mengambil 'ibrah dari sirah:
         {
           title: "Hafal Kronologi Peristiwa Penting",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Bantu hafal timeline sirah:
-1. Urutan peristiwa kunci + tahun (Hijriah/sebelum hijrah).
-2. Mnemonic untuk urutan peperangan & peristiwa besar.
-PENTING: sebut yang kamu yakin; jika ragu, katakan.
+Bantu aku menghafal timeline sirah untuk periode [SEBUTKAN PERIODE, mis. Madinah, atau "seluruhnya"]:
+1. Urutan peristiwa dengan tahun (sebelum hijrah atau hijriah).
+2. Tandai tahun yang diperselisihkan.
+3. Jembatan keledai untuk urutan peristiwa dan ghazawat.
+4. Tes: sebut peristiwa acak, aku sebutkan tahunnya.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Tabel Peperangan (Ghazawat) untuk Dihafal",
+          title: "Tabel Ghazawat untuk Dihafal",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
 Buatkan tabel hafalan ghazawat utama:
-1. Kolom: perang | tahun | sebab | hasil | pelajaran.
-2. Tandai yang sering jadi soal.
+1. Kolom: ghazwah | tahun | sebab | jumlah pasukan (bila masyhur) | hasil | ayat yang turun terkait (sebut surat saja bila yakin) | 'ibrah.
+2. Tandai ⚠️ fakta yang sering tertukar antarperang.
+3. Setelah tabel: 5 soal benar/salah dari isi tabel. Jangan beri jawabannya dulu.
 
 [METODE]
 
@@ -9287,9 +9367,15 @@ Buatkan tabel hafalan ghazawat utama:
         {
           title: "Jadwal Muraja'ah Sirah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Periode/peristiwa yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+1, H+3, H+7, mingguan + cara uji. Tabel.
+Periode yang sudah kupelajari: [SEBUTKAN PERIODE, mis. sebelum bi'tsah, dakwah Makkah]. Buatkan jadwal muraja'ah:
+1. Urutkan sesuai kronologi.
+2. Jadwal ulang H+1, H+3, H+7, lalu mingguan sampai imtihan.
+3. Cara menguji diri per sesi: urutan peristiwa, sebab-akibat, dan 'ibrah.
+4. Dua hari terakhir untuk latihan soal gaya kertas ujian.
+
+Format: tabel (hari | periode | cara menguji | durasi).
 
 [METODE]
 
@@ -9298,26 +9384,28 @@ Periode/peristiwa yang sudah kupelajari: [SEBUTKAN]. Buatkan jadwal muraja'ah H+
       ],
       latihan: [
         {
-          title: "Drill Kronologi & Peristiwa",
+          title: "Drill Kronologi & Sebab-Akibat",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 10 soal campuran (urutan peristiwa, tokoh, sebab-akibat) dari periode [SEBUTKAN].
-1. JANGAN beri jawaban dulu.
-2. Koreksi setelah aku jawab.
+Buat 10 soal campuran untuk periode [SEBUTKAN PERIODE]:
+1. Urutkan peristiwa, sebab suatu peristiwa, tokoh yang terlibat, dan benar/salah.
+2. JANGAN beri jawaban. Tunggu jawabanku.
+3. Koreksi per nomor dengan alasan singkat.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Latihan Analisis Pelajaran (Ibrah)",
+          title: "Latihan Mengambil 'Ibrah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri aku 5 peristiwa sirah. Tugasku: ambil pelajaran (ibrah) dari tiap peristiwa.
-1. JANGAN beri jawaban dulu.
-2. Koreksi + tambahkan pelajaran yang terlewat.
+Latih aku menjawab soal tipe مَا الْعِبَرُ الْمُسْتَفَادَةُ مِنْ...:
+1. Sebut 5 peristiwa dari periode [SEBUTKAN PERIODE].
+2. JANGAN beri jawaban. Aku tulis 3 'ibrah untuk tiap peristiwa.
+3. Koreksi: 'ibrah yang tepat, yang terlalu umum, dan yang terlewat — terutama 'ibrah fiqh dan dakwah.
 
 [METODE]
 
@@ -9326,11 +9414,15 @@ Beri aku 5 peristiwa sirah. Tugasku: ambil pelajaran (ibrah) dari tiap peristiwa
         {
           title: "Latihan Esai Sirah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri 1 topik esai (mis. "strategi dakwah Nabi di Makkah"). Aku tulis esainya, lalu:
-1. Koreksi keakuratan fakta & logika.
-2. Tunjukkan poin penting yang terlewat.
+Beri aku satu soal esai tipe تَحَدَّثْ عَنْ... dari periode [SEBUTKAN PERIODE] (mis. strategi dakwah Nabi ﷺ di Makkah). Setelah aku menulis jawabanku:
+1. Periksa ketepatan fakta dan riwayatnya.
+2. Nilai susunannya: muqaddimah, uraian peristiwa, 'ibrah, dan penutup.
+3. Tunjukkan poin penting yang terlewat.
+4. Beri nilai dari 10.
+
+Tunggu jawabanku sebelum memberi contoh jawaban.
 
 [METODE]
 
@@ -9339,40 +9431,46 @@ Beri 1 topik esai (mis. "strategi dakwah Nabi di Makkah"). Aku tulis esainya, la
       ],
       ujian: [
         {
-          title: "Mock Imtihan Tahriri (Gaya Azhari)",
+          title: "Mock Imtihan Tahriri Sirah (Gaya Kertas Azhar)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan tahriri.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan tahriri.
 
-Buatkan soal ujian tulis Sirah gaya Azhar untuk periode [SEBUTKAN]:
-1. Tipe khas: tahaddats 'an..., ma al-'ibar al-mustafadah min..., 'allil, udzkur ahdats...
-2. 5-6 soal bobot bervariasi.
-3. JANGAN beri jawaban. Tunggu jawabanku, nilai ala mushahhih + skor & catatan.
+Buatkan satu kertas ujian tahriri Sirah untuk periode [SEBUTKAN PERIODE, mis. "semester ini" atau periode Madinah]:
+1. Tiga atau empat السؤال dengan sub-soal.
+2. Pola soal: تَحَدَّثْ عَنْ...، اُذْكُرْ أَسْبَابَ...، مَا الْعِبَرُ الْمُسْتَفَادَةُ مِنْ...، رَتِّبِ الْأَحْدَاثَ، ضَعْ عَلَامَةَ (✓) أَوْ (✗) مَعَ التَّصْوِيبِ، اِخْتَرِ الْإِجَابَةَ الصَّحِيحَةَ.
+3. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai seperti mushahhih.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Simulasi Imtihan Syafawi",
+          title: "Simulasi Imtihan Syafawi Sirah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan syafawi.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan syafawi.
 
-Berperanlah sebagai mumtahin syafawi:
-1. Tanya peristiwa, tokoh, sebab-akibat, pelajaran.
-2. Satu pertanyaan dulu, tunggu jawabanku.
-3. Umpan balik, naikkan kesulitan.
-4. Penilaian akhir + area lemah.
+Berperanlah sebagai mumtahin syafawi Sirah untuk periode [SEBUTKAN PERIODE, mis. "semester ini"]:
+1. Satu pertanyaan sekali jalan, dalam bahasa Arab: peristiwa, tahun, sebab, tokoh, atau 'ibrah.
+2. Tunggu jawabanku sebelum lanjut.
+3. Umpan balik singkat seperti penguji, lalu naikkan kesulitan bertahap.
+4. Setelah 8 pertanyaan: nilai kesiapanku (dari 10), bagian yang lemah, dan 3 hal yang harus kuperbaiki.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Kisi-kisi & Strategi Ujian",
+          title: "Kisi-kisi & Strategi Ujian Sirah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Dari periode yang kupelajari ([SEBUTKAN]): topik tersering jadi soal, cara menulis jawaban (fakta + ibrah), prioritas H-7.
+Periode semester ini: [SEBUTKAN PERIODE]. Bantu aku menyusun strategi ujian:
+1. Peristiwa utama tiap periode dan tipe soal yang cocok (tahaddats 'an, asbab, 'ibar, tartib, benar/salah) dengan contoh redaksi Arabnya.
+2. Tahun dan angka yang wajib hafal.
+3. Cara menulis jawaban sirah yang dapat nilai penuh: fakta berurutan, lalu 'ibrah bernomor.
+4. Rencana H-7 sampai H-1.
+
+Jangan mengklaim peristiwa tertentu "pasti keluar". Susun berdasarkan pola soal.
 
 [METODE]
 
@@ -9383,68 +9481,79 @@ Dari periode yang kupelajari ([SEBUTKAN]): topik tersering jadi soal, cara menul
         {
           title: "Rapikan Catatan Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Catatan talaqqi-ku berantakan (di bawah). Rapikan jadi timeline peristiwa → sebab → akibat → ibrah, tandai yang perlu ditanyakan, ringkas 5 poin inti.
+Aku baru talaqqi dan catatanku berantakan. Bantu aku:
+1. Rapikan jadi timeline: peristiwa → sebab → akibat → 'ibrah, mengikuti urutan penjelasan syaikh.
+2. Lengkapi nama tokoh dan tempat yang kutulis setengah.
+3. Tandai (?) bagian yang terpotong atau perlu kutanyakan lagi. Jangan menambal dengan tebakan.
+4. Tutup dengan 5 poin inti dan 3 pertanyaan muraja'ah.
+
+Catatanku:
+[TEMPEL CATATAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Catatanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
         {
           title: "Verifikasi Pemahaman Pasca-Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Setelah talaqqi periode [SEBUTKAN], aku jelaskan ulang (di bawah). Periksa keakuratan fakta, koreksi, ajukan 3 pertanyaan penguji.
+Setelah talaqqi periode [SEBUTKAN PERIODE], aku menjelaskan ulang dengan bahasaku sendiri (di bawah). Tolong:
+1. Periksa ketepatan fakta dan urutannya.
+2. Koreksi yang keliru dan beri tanda pada kisah yang riwayatnya lemah.
+3. Ajukan 3 pertanyaan "kenapa" — satu per satu, tunggu jawabanku.
+
+Penjelasanku:
+[TEMPEL PENJELASAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Penjelasanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
       eksplorasi: [
         {
           title: "Sirah sebagai Teladan Kepemimpinan",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk peristiwa/aspek [SEBUTKAN]:
-1. Pelajaran kepemimpinan & manajemen dari Nabi ﷺ.
-2. Bagaimana diterapkan dalam konteks organisasi/dakwah modern.
-3. Keseimbangan ketegasan & kelembutan beliau.
-
-[METODE]
-
-[LEVEL_BAHASA]`,
-        },
-        {
-          title: "Fiqh Sirah (Pelajaran Hukum & Dakwah)",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Untuk peristiwa [SEBUTKAN]:
-1. Pelajaran fiqh/syar'i yang bisa diambil.
-2. Kaitan peristiwa dengan turunnya ayat/hukum bila ada (sebut yang kamu yakin).
-3. Relevansi untuk kehidupan muslim hari ini.
+Untuk peristiwa [SEBUTKAN PERISTIWA, mis. musyawarah sebelum Uhud, Shulh Hudaibiyah]:
+1. Sikap dan keputusan Nabi ﷺ dalam peristiwa itu, dari riwayat yang kuat.
+2. Pelajaran kepemimpinan: musyawarah, ketegasan, kelembutan, dan menjaga janji.
+3. Penerapannya dalam organisasi dan dakwah hari ini, tanpa memaksakan analogi.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Akhlak & Kepribadian Nabi ﷺ",
+          title: "Fiqh As-Sirah (Pelajaran Hukum & Dakwah)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan aspek akhlak Nabi ﷺ:
-1. Sifat & akhlak mulia beliau (dengan contoh peristiwa).
-2. Bagaimana akhlak beliau jadi teladan praktis.
-3. Cara meneladani dalam kehidupan sehari-hari.
+Untuk peristiwa [SEBUTKAN PERISTIWA]:
+1. Hukum fiqh yang diambil ulama dari peristiwa itu.
+2. Ayat yang turun terkait peristiwa itu (sebut surat dan nomor ayat bila yakin).
+3. Pelajaran dakwah dan relevansinya untuk muslim hari ini.
+
+Pisahkan fakta sirah dari kesimpulan fiqh.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Syama'il: Akhlak & Kepribadian Nabi ﷺ",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Jelaskan akhlak Nabi ﷺ dalam aspek [SEBUTKAN ASPEK, mis. terhadap keluarga, terhadap musuh, dalam kepemimpinan]:
+1. Sifat beliau dalam aspek itu, dengan contoh peristiwa dari riwayat yang kuat.
+2. Bagaimana akhlak itu menjadi teladan praktis.
+3. Langkah kecil untuk meneladaninya sehari-hari.
 
 [METODE]
 
