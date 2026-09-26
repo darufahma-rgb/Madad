@@ -23,3 +23,19 @@ ditulis ulang di template**: manhaj Azhar, madzhab dari profil, aturan dalil, da
 
 `check.mjs` (scratchpad) memastikan: 18 prompt, jenis sama, semua placeholder profil terisi, tiap isian punya label,
 dan `[METODE]`/`[LEVEL_BAHASA]` ada. Diff harus hanya menyentuh blok maddah yang ditulis ulang.
+
+## Progres
+
+15 maddah prioritas selesai (270 prompt): Nahwu, Fiqh Madzhabi, Tauhid, Ushul Fiqh, Mustholah Hadits, Tarikh Tasyri',
+Sharaf, Al-Qur'an (Tahfidz), Sirah Nabawiyah, Fiqh Muqaran, Tarikh Islam, 'Ulum Al-Qur'an, Tajwid, Ahwal Syakhshiyah,
+Balaghah. Urutan dipilih dari jangkauan (fakultas × tingkat) dan jumlah kertas di Bank Soal, karena data jumlah buka
+maddah hanya ada di Supabase.
+
+Catatan dari kertas asli yang memengaruhi penulisan:
+- Fiqh dan Ushul hampir selalu memuat dirasah nashshiyyah (قال المصنف / الشارح) — ada prompt latihan khusus.
+- Ujian Tahfidz berbentuk tahriri (menulis ayat dari hafalan). AI hanya menyebut surat, nomor ayat, dan kata pembuka yang
+  diyakini, lalu menilai berdasarkan teks mushaf yang ditempel pengguna.
+- Tajwid di tingkat kuliah menguji teori mendalam (makharij ra'isah/far'iyyah, perbandingan shifat, syarah bait matan).
+- Fiqh Muqaran menguji jumlah pendapat ("بالاتفاق – على قولين – على ثلاثة أقوال").
+- Kertas "Tarikh Islam" satu-satunya di Bank Soal ternyata Tarikh As-Sunnah; Sirah belum punya kertas.
+- Rujukan kitab boleh juga dari kitab yang disebut di kertas asli, selalu dengan "kalau kamu yakin".
