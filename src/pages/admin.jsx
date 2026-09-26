@@ -807,6 +807,44 @@ const MEMBER_TYPE_CONFIG = {
 // Member berbayar yang belum punya email Google dan belum login → perlu diisi admin.
 const needsEmail = (m) => m.tier !== "free" && !m.googleLinked && !m.email;
 
+// Paket per member: Library dari tabel members, AI Partner dari ai_subscriptions (aturan sama dengan getAiAccess).
+const isLibraryMember = (m) => m.tier !== "free" && m.status === "active";
+const buildAiIndex = (rows) => {
+  const now = new Date();
+  const idx = {};
+  for (const r of rows || []) {
+    if (!r.member_code) continue;
+    const cur = idx[r.member_code] || { active: false, expiresAt: null, unlimited: false, lastExpired: null };
+    const live = r.status === "active" && (!r.expires_at || new Date(r.expires_at) > now);
+    if (live) {
+      cur.active = true;
+      if (!r.expires_at) cur.unlimited = true;
+      else if (!cur.expiresAt || r.expires_at > cur.expiresAt) cur.expiresAt = r.expires_at;
+    } else if (r.expires_at && (!cur.lastExpired || r.expires_at > cur.lastExpired)) {
+      cur.lastExpired = r.expires_at;
+    }
+    idx[r.member_code] = cur;
+  }
+  return idx;
+};
+const formatShortDate = (iso) => iso ? new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "";
+
+const PLAN_FILTERS = [
+  { value: 'library',      label: 'Member Library',      color: '#c9a86a', test: (m, ai) => isLibraryMember(m) },
+  { value: 'ai_aktif',     label: 'AI Partner aktif',    color: '#3ecf8e', test: (m, ai) => !!ai[m.code]?.active },
+  { value: 'library_ai',   label: 'Library + AI',        color: '#a78bfa', test: (m, ai) => isLibraryMember(m) && !!ai[m.code]?.active },
+  { value: 'library_only', label: 'Library tanpa AI',    color: '#f59e0b', test: (m, ai) => isLibraryMember(m) && !ai[m.code]?.active },
+  { value: 'ai_habis',     label: 'AI Partner habis',    color: '#f97316', test: (m, ai) => !ai[m.code]?.active && !!ai[m.code]?.lastExpired },
+];
+const matchesMemberFilter = (m, value, ai) => {
+  if (value === 'semua') return true;
+  if (value === 'belum_email') return needsEmail(m);
+  if (value === 'akun_gratis') return m.tier === 'free';
+  const plan = PLAN_FILTERS.find(p => p.value === value);
+  if (plan) return plan.test(m, ai);
+  return m.tier !== 'free' && m.member_type === value;
+};
+
 // Isi email langsung di baris tabel member: Enter untuk menyimpan (Library selamanya, tanpa PIN).
 const InlineEmail = ({ member, onLinked }) => {
   const toast = useToast();
@@ -969,11 +1007,25 @@ const AdminMembers = () => {
   const [grantOpen,  setGrantOpen]  = useState(false);
   const [picked,     setPicked]     = useState(() => new Set());
   const [deleting,   setDeleting]   = useState(false);
+  const [aiIndex,    setAiIndex]    = useState({});
+  const [aiError,    setAiError]    = useState(null);
   const toast = useToast();
+
+  const loadAiSubs = async () => {
+    try {
+      const r = await aiPartnerAdmin('admin-list');
+      if (!r.ok) throw new Error(r.error || 'gagal');
+      setAiIndex(buildAiIndex(r.data));
+      setAiError(null);
+    } catch (err) {
+      setAiError(err.message);
+    }
+  };
 
   const loadFromSupabase = async () => {
     setLoading(true);
     setError(null);
+    loadAiSubs();
     try {
       const data = await adminGetAllMembers();
       setMembers(data);
@@ -1053,10 +1105,7 @@ const AdminMembers = () => {
       m.code.toLowerCase().includes(q) ||
       (m.email || "").toLowerCase().includes(q) ||
       (m.whatsapp || "").replace(/\D/g, "").includes(q.replace(/\D/g, "") || "~");
-    const matchType = filterType === 'semua'
-      || (filterType === 'belum_email' ? needsEmail(m)
-        : filterType === 'akun_gratis' ? m.tier === 'free' : m.tier !== 'free' && m.member_type === filterType);
-    return matchSearch && matchType;
+    return matchSearch && matchesMemberFilter(m, filterType, aiIndex);
   });
 
   const copyCode = (code) => {
@@ -1099,6 +1148,33 @@ const AdminMembers = () => {
 
       {linkOpen && <LegacyLinkPanel members={members} onDone={loadFromSupabase} onClose={() => setLinkOpen(false)}/>}
 
+      {/* Ringkasan paket: klik untuk memfilter tabel */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+        {[
+          { value: 'library',      label: 'Member Library',   hint: 'akun berbayar aktif',          color: '#c9a86a' },
+          { value: 'ai_aktif',     label: 'AI Partner aktif', hint: 'langganan belum habis',        color: '#3ecf8e' },
+          { value: 'library_ai',   label: 'Library + AI',     hint: 'punya keduanya',               color: '#a78bfa' },
+          { value: 'akun_gratis',  label: 'Akun gratis',      hint: 'login Google, belum bayar',    color: '#60a5fa' },
+        ].map(s => {
+          const count = members.filter(m => matchesMemberFilter(m, s.value, aiIndex)).length;
+          const on = filterType === s.value;
+          return (
+            <button key={s.value} onClick={() => setFilterType(on ? 'semua' : s.value)}
+              className="text-left rounded-xl px-4 py-3 transition-colors"
+              style={{ background: on ? `${s.color}18` : 'rgba(255,255,255,0.03)', border: `1px solid ${on ? s.color : s.color + '33'}` }}>
+              <div style={{ fontSize: 22, fontWeight: 800, color: s.color, lineHeight: 1 }}>
+                {s.value !== 'library' && s.value !== 'akun_gratis' && aiError ? '–' : count}
+              </div>
+              <div className="text-xs text-ink mt-1 font-medium">{s.label}</div>
+              <div className="text-[10px] text-ink-soft">{s.hint}</div>
+            </button>
+          );
+        })}
+      </div>
+      {aiError && (
+        <div className="text-xs text-rose-400 mb-3">Data AI Partner gagal dimuat ({aiError}). Kolom AI Partner mungkin tidak lengkap — coba Refresh.</div>
+      )}
+
       {/* Summary stats member type */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
         {Object.entries(MEMBER_TYPE_CONFIG).map(([value, t]) => (
@@ -1138,6 +1214,7 @@ const AdminMembers = () => {
             { value: 'trial',       label: 'Trial',                 color: '#fbbf24' },
             { value: 'reward',      label: 'Reward Bank Soal',      color: '#f97316' },
             { value: 'akun_gratis', label: 'Akun gratis (belum bayar)', color: '#60a5fa' },
+            ...PLAN_FILTERS,
           ].map(t => (
             <button
               key={t.value}
@@ -1156,7 +1233,7 @@ const AdminMembers = () => {
               {t.label}
               {t.value !== 'semua' && (
                 <span style={{ marginLeft: 5, opacity: 0.7 }}>
-                  ({members.filter(m => t.value === 'belum_email' ? needsEmail(m) : t.value === 'akun_gratis' ? m.tier === 'free' : m.tier !== 'free' && m.member_type === t.value).length})
+                  ({members.filter(m => matchesMemberFilter(m, t.value, aiIndex)).length})
                 </span>
               )}
             </button>
@@ -1198,6 +1275,7 @@ const AdminMembers = () => {
                 <th className="px-4 py-3 font-medium text-ink-muted text-xs uppercase tracking-wider">Member</th>
                 <th className="px-4 py-3 font-medium text-ink-muted text-xs uppercase tracking-wider">Kode</th>
                 <th className="px-4 py-3 font-medium text-ink-muted text-xs uppercase tracking-wider">Akun Google</th>
+                <th className="px-4 py-3 font-medium text-ink-muted text-xs uppercase tracking-wider">Paket</th>
                 <th className="px-4 py-3 font-medium text-ink-muted text-xs uppercase tracking-wider">Status</th>
                 <th className="px-4 py-3 font-medium text-ink-muted text-xs uppercase tracking-wider">Expires</th>
                 <th className="px-4 py-3 text-right font-medium text-ink-muted text-xs uppercase tracking-wider">Actions</th>
@@ -1257,6 +1335,9 @@ const AdminMembers = () => {
                         : <span className="text-[11px] text-ink-soft italic">belum aktivasi</span>}
                   </td>
                   <td className="px-4 py-3.5">
+                    <PlanBadges member={m} ai={aiIndex[m.code]}/>
+                  </td>
+                  <td className="px-4 py-3.5">
                     <StatusPill status={m.status}/>
                   </td>
                   <td className="px-4 py-3.5 text-xs text-ink-muted num">{m.expiresAt}</td>
@@ -1266,7 +1347,7 @@ const AdminMembers = () => {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan="7" className="px-4 py-10 text-center text-ink-muted">Tidak ada member yang cocok.</td></tr>
+                <tr><td colSpan="8" className="px-4 py-10 text-center text-ink-muted">Tidak ada member yang cocok.</td></tr>
               )}
             </tbody>
           </table>
@@ -1275,6 +1356,26 @@ const AdminMembers = () => {
 
       <GenerateModal open={genOpen} onClose={() => setGenOpen(false)} members={members} onAdd={handleAdd}/>
       <GrantAccessModal open={grantOpen} onClose={() => setGrantOpen(false)} members={members} onDone={loadFromSupabase}/>
+    </div>
+  );
+};
+
+const PlanBadges = ({ member, ai }) => {
+  const pill = (color, text, title) => (
+    <span title={title} style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: `${color}1f`, color, border: `1px solid ${color}44`, whiteSpace: 'nowrap' }}>{text}</span>
+  );
+  return (
+    <div className="flex flex-col items-start gap-1">
+      {isLibraryMember(member)
+        ? pill('#c9a86a', '📚 Library')
+        : member.tier === 'free'
+          ? pill('#60a5fa', 'Gratis')
+          : pill('#888888', 'Library nonaktif')}
+      {ai?.active
+        ? pill('#3ecf8e', `✨ AI ${ai.unlimited ? 'tanpa batas' : `s/d ${formatShortDate(ai.expiresAt)}`}`)
+        : ai?.lastExpired
+          ? pill('#f97316', `AI habis ${formatShortDate(ai.lastExpired)}`)
+          : <span className="text-[11px] text-ink-soft">tanpa AI</span>}
     </div>
   );
 };
