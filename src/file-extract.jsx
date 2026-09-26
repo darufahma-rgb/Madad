@@ -23,44 +23,108 @@ const loadPdfJs = () => {
   return pdfJsPromise;
 };
 
-// pages === null berarti PDF melebihi maxPages dan tidak diekstrak.
-const extractPdfPages = async (file, maxPages = 30) => {
-  const pdfjs = await loadPdfJs();
-  const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
-  if (pdf.numPages > maxPages) return { numPages: pdf.numPages, pages: null };
+/* ── Teks Arab dari lapisan teks PDF ──
+   Sebagian PDF Arab menyimpan huruf dalam "presentation forms" (bentuk awal/tengah/akhir, mis. ﺍﻟﺤﻤﺪ) atau dalam
+   urutan visual (terbalik), dan ada yang font-nya tanpa peta Unicode sehingga keluar karakter acak. Bentuk huruf
+   dikembalikan ke huruf biasa, baris terbalik dibalik lagi, dan halaman yang tetap rusak ditandai supaya dibaca AI. */
+const AR_MARKS = 'ؐ-ًؚ-ٰٟۖ-ۭ';
+const AR_CLUSTER = new RegExp(`[^${AR_MARKS}][${AR_MARKS}]*`, 'gsu');
+// Angka (Latin & Arab) dan teks Latin tersimpan kiri-ke-kanan walau barisnya dalam urutan visual.
+const LTR_RUN = /[0-9٠-٩A-Za-z][0-9٠-٩A-Za-z.,:/%\-]*/g;
 
-  const pages = [];
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const textContent = await page.getTextContent();
-    let pageText = '';
-    let lastY = null;
-    for (const item of textContent.items) {
-      if (lastY !== null && Math.abs(item.transform[5] - lastY) > 5) pageText += '\n';
-      pageText += item.str;
-      lastY = item.transform[5];
-    }
-    if (pageText.trim()) pages.push(pageText.trim());
+const fixPresentationForms = (t) => t.replace(/﻿/g, '').replace(/[ﭐ-﷿ﹰ-ﻼ]/g, c => c.normalize('NFKC'));
+
+// Skor urutan: kata Arab biasa sering diawali "ال"; di teks terbalik muncul sebagai akhiran "لا".
+const arabicOrderScore = (t) => {
+  const words = (t.replace(new RegExp(`[${AR_MARKS}ـ]`, 'g'), '').match(/[ء-ي]{3,}/g)) || [];
+  return { words: words.length, al: words.filter(w => w.startsWith('ال')).length, la: words.filter(w => w.endsWith('لا')).length };
+};
+const looksReversed = (sc) => sc.words >= 12 && sc.la >= 4 && sc.la > sc.al * 2;
+
+// Balik satu baris; angka & teks Latin dikembalikan ke arah semula. PDF menyimpan harakat bisa sebelum atau sesudah
+// hurufnya, jadi dicoba dua cara (per karakter / per huruf+harakat) dan dipilih yang harakatnya tidak "menggantung".
+const fixLtr = (t) => t.replace(LTR_RUN, run => [...run].reverse().join(''));
+const strayMarks = (t) => (t.match(new RegExp(`(^|[\\s.,،؛:()])[${AR_MARKS}]`, 'gmu')) || []).length;
+const reverseLine = (line) => {
+  const byChar = fixLtr([...line].reverse().join(''));
+  const byCluster = fixLtr((line.match(AR_CLUSTER) || []).reverse().join(''));
+  return strayMarks(byCluster) < strayMarks(byChar) ? byCluster : byChar;
+};
+
+// Hasil: { text, status } — status 'ok' | 'fixed' (dirapikan) | 'empty' (hasil scan) | 'garbled' (tidak bisa dipakai).
+const cleanPdfText = (raw) => {
+  let text = String(raw || '').trim();
+  if (text.replace(/\s/g, '').length < 20) return { text: '', status: 'empty' };
+  let fixed = false;
+  if (/[ﭐ-﷿ﹰ-﻿]/.test(text)) { text = fixPresentationForms(text); fixed = true; }
+  const letters = (text.match(/\p{L}/gu) || []).length || 1;
+  const junk = (text.match(/[-�]/g) || []).length;
+  const arabic = (text.match(/[؀-ۿ]/g) || []).length;
+  const latin1 = (text.match(/[À-ÿ]/g) || []).length;
+  // Font tanpa peta Unicode: huruf Arab keluar sebagai karakter privat/acak atau huruf Latin beraksen (mis. "ÇáÍãÏ").
+  if (junk / letters > 0.05 || (arabic / letters < 0.1 && latin1 / letters > 0.3)) return { text, status: 'garbled' };
+  const score = arabicOrderScore(text);
+  if (looksReversed(score)) {
+    const flipped = text.split('\n').map(l => (/[؀-ۿ]/.test(l) ? reverseLine(l) : l)).join('\n');
+    const after = arabicOrderScore(flipped);
+    if (after.al > after.la * 2) return { text: flipped, status: 'fixed' };
+    return { text, status: 'garbled' };
   }
-  return { numPages: pdf.numPages, pages };
+  return { text, status: fixed ? 'fixed' : 'ok' };
+};
+
+const openPdf = async (file) => {
+  const pdfjs = await loadPdfJs();
+  return pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+};
+
+const pdfPageText = async (pdf, n) => {
+  const page = await pdf.getPage(n);
+  const textContent = await page.getTextContent();
+  let pageText = '';
+  let lastY = null;
+  for (const item of textContent.items) {
+    if (lastY !== null && Math.abs(item.transform[5] - lastY) > 5) pageText += '\n';
+    pageText += item.str;
+    lastY = item.transform[5];
+  }
+  return cleanPdfText(pageText);
+};
+
+// Semua halaman beserta statusnya; pages === null berarti PDF melebihi maxPages dan tidak diekstrak.
+const readPdfPages = async (file, maxPages = 120) => {
+  const pdf = await openPdf(file);
+  if (pdf.numPages > maxPages) return { pdf, numPages: pdf.numPages, pages: null };
+  const pages = [];
+  for (let n = 1; n <= pdf.numPages; n++) pages.push({ n, ...(await pdfPageText(pdf, n)) });
+  return { pdf, numPages: pdf.numPages, pages };
+};
+
+// Satu halaman → JPEG untuk dibaca OCR.
+const renderPdfPage = async (pdf, n) => {
+  const page = await pdf.getPage(n);
+  const base = page.getViewport({ scale: 1 });
+  const viewport = page.getViewport({ scale: Math.min(2, 1600 / base.width) });
+  const canvas = document.createElement('canvas');
+  canvas.width = viewport.width;
+  canvas.height = viewport.height;
+  await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+  return new Promise(r => canvas.toBlob(b => r(new File([b], `hal-${n}.jpg`, { type: 'image/jpeg' })), 'image/jpeg', 0.85));
+};
+
+// Versi lama (Siap Imtihan): hanya halaman berteks, sudah dirapikan.
+const extractPdfPages = async (file, maxPages = 30) => {
+  const { numPages, pages } = await readPdfPages(file, maxPages);
+  if (!pages) return { numPages, pages: null };
+  return { numPages, pages: pages.filter(p => p.status === 'ok' || p.status === 'fixed').map(p => p.text) };
 };
 
 // PDF hasil scan (tanpa lapisan teks): render tiap halaman jadi JPEG untuk dibaca OCR.
 const renderPdfPagesAsImages = async (file, maxPages = 20) => {
-  const pdfjs = await loadPdfJs();
-  const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+  const pdf = await openPdf(file);
   if (pdf.numPages > maxPages) return { numPages: pdf.numPages, images: null };
   const images = [];
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const base = page.getViewport({ scale: 1 });
-    const viewport = page.getViewport({ scale: Math.min(2, 1600 / base.width) });
-    const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-    images.push(await new Promise(r => canvas.toBlob(b => r(new File([b], `hal-${i}.jpg`, { type: 'image/jpeg' })), 'image/jpeg', 0.85)));
-  }
+  for (let i = 1; i <= pdf.numPages; i++) images.push(await renderPdfPage(pdf, i));
   return { numPages: pdf.numPages, images };
 };
 
@@ -275,7 +339,7 @@ const detectFileKind = (file) => {
 const ACCEPTED_FILE_TYPES = Object.values(FILE_KINDS).flatMap(v => v.exts.map(e => '.' + e)).join(',') + ',image/*,audio/*,video/*';
 
 Object.assign(window, {
-  extractPdfPages, renderPdfPagesAsImages, compressImage, fileToBase64,
+  extractPdfPages, renderPdfPagesAsImages, readPdfPages, renderPdfPage, cleanPdfText, compressImage, fileToBase64,
   extractDocx, extractPptx, extractXlsx, prepareMediaChunks,
   detectFileKind, FILE_KINDS, ACCEPTED_FILE_TYPES, MAX_MEDIA_MINUTES,
 });
