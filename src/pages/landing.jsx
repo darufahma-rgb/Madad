@@ -211,6 +211,20 @@ const HeroShowcaseCard = () => (
   </div>
 );
 
+/* Bukti sosial: jumlah member aktif dari server, sudah dibulatkan ke bawah (mis. 157 → "150+").
+   Tidak tampil kalau jumlahnya belum ada atau masih sedikit — jadi klaimnya selalu sesuai data. */
+const UserCountBadge = () => {
+  const count = useAppSettings().userCount;
+  if (!Number.isFinite(count) || count <= 0) return null;
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 mb-6 text-sm"
+      style={{ background: "rgba(62,207,142,0.08)", border: "1px solid rgba(62,207,142,0.25)", color: "rgba(255,255,255,0.78)" }}>
+      <Icon name="users" className="w-4 h-4 text-emerald-300 flex-shrink-0"/>
+      <span><span className="font-semibold text-emerald-200">{count.toLocaleString('id-ID')}+ Masisir</span> sudah pakai Talqeeh</span>
+    </div>
+  );
+};
+
 /* ══════════════════════════════════════════════════════════════
    1. HERO
    ══════════════════════════════════════════════════════════════ */
@@ -243,6 +257,10 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
           />
         </Reveal>
 
+        {/* Bukti sosial */}
+        <Reveal delay={60}>
+          <UserCountBadge/>
+        </Reveal>
 
         {/* Headline */}
         <Reveal delay={120}>
