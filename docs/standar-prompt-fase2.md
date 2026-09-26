@@ -29,14 +29,15 @@ dan `[METODE]`/`[LEVEL_BAHASA]` ada. Diff harus hanya menyentuh blok maddah yang
 Sebelum commit, jalankan `npm run lint:prompts -- --strict <id maddah>` (lihat `docs/mutu-prompt-fase3.md`). Rubrik ini
 menangkap template yang kembar dengan maddah lain.
 
-54 maddah selesai (841 prompt): Nahwu, Fiqh Madzhabi, Tauhid, Ushul Fiqh, Mustholah Hadits, Tarikh Tasyri',
+58 maddah selesai (900 prompt) — semua maddah kuliah reguler: Nahwu, Fiqh Madzhabi, Tauhid, Ushul Fiqh, Mustholah Hadits, Tarikh Tasyri',
 Sharaf, Al-Qur'an (Tahfidz), Sirah Nabawiyah, Fiqh Muqaran, Tarikh Islam, 'Ulum Al-Qur'an, Tajwid, Ahwal Syakhshiyah,
 Balaghah, Mantiq, Tafsir Tahlili, Hadits Tahlili, Tafsir Maudhu'i, Manahij Mufassirin, Hadits Maudhu'i,
 Takhrij Hadits, Manahij Muhadditsin, Syubhat Hawla As-Sunnah, Tasawwuf, Qadhaya Fiqhiyyah, Adyan,
 Wasail Tabligh, Khithabah, Qawa'id Fiqhiyyah, Ushul Dakwah, Maqashid Syariah, Istisyraq, Tiarat Fikriyyah,
 Fiqh Dakwah, Akhlaq Islamiyah, Tsaqafah Islamiyah, Nizham Islamiyah, Jughrafiyah Alam Islami, Ilmu Ijtima',
 Manahij Bahts, Hadhir Al-Alam Al-Islami, Falsafah Yunaniyah, Ilm Nafs, Tarbiyah wa Ilm Nafs, Manahij Tadris,
-Firaq, Filsafat Islam, Qira'at, Tarikh Dakwah, Adab, 'Arudh, Fiqh Lughah, Naqd Adabi.
+Firaq, Filsafat Islam, Qira'at, Tarikh Dakwah, Adab, 'Arudh, Fiqh Lughah, Naqd Adabi, Hadharah, Dakwah & I'lam,
+Mu'jam wa Lahajat, Qa'at Bahts. Belum: 3 maddah Program DL (format tabs) dan 27 maddah Ma'had.
 Semua maddah Fakultas Dakwah sudah selesai. Urutan dipilih dari jangkauan (fakultas × tingkat) dan jumlah kertas di Bank Soal, karena data jumlah buka
 maddah hanya ada di Supabase.
 
@@ -79,5 +80,7 @@ Catatan dari kertas asli yang memengaruhi penulisan:
   tetap lewat guru bersanad.
 - Adab, 'Arudh, Naqd: bait syair hanya dikutip bila AI yakin redaksinya; soal taqthi' dan kritik memakai bait yang
   ditempel pengguna. Taqthi' ditulis langkah demi langkah (kitabah 'arudhiyyah → lambang → taf'ilah → bahr) supaya bisa dicek.
+- Qa'at Bahts: AI tidak menulis bahts atau naskah presentasi; ia menilai draf, mensimulasikan munaqasyah, dan membantu
+  menyusun kerangka, supaya tulisan tetap karya mahasiswa.
 - Kertas "Tarikh Islam" satu-satunya di Bank Soal ternyata Tarikh As-Sunnah; Sirah belum punya kertas.
 - Rujukan kitab boleh juga dari kitab yang disebut di kertas asli, selalu dengan "kalau kamu yakin".
