@@ -353,18 +353,19 @@ PENTING: sebut sumber; jangan mengarang.
       ],
     },
     prompts: {
-
       pahami: [
         {
           title: "Peta Besar Ilmu Nahwu (Marfu'at, Manshubat, Majrurat)",
           targetAI: "claude",
           template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri aku peta besar (kharitah) ilmu Nahwu agar aku punya kerangka utuh sebelum masuk detail:
-1. Tiga kelompok i'rab utama: al-marfu'at, al-manshubat, al-majrurat — apa saja anggota tiap kelompok (sertakan istilah Arab berharakat + arti).
-2. Untuk tiap anggota, satu kalimat penjelas fungsinya.
-3. Tampilkan dalam bentuk pohon/outline bercabang agar mudah kuhafal strukturnya.
-4. Tunjukkan mana yang paling sering keluar di teks kitab turats.
+Buatkan peta besar (خَرِيطَة) ilmu Nahwu supaya aku punya kerangka utuh sebelum masuk detail bab:
+1. Tiga kelompok besar: الْمَرْفُوعَات، الْمَنْصُوبَات، الْمَجْرُورَات — plus الْمَجْزُومَات untuk fi'il mudhari'.
+2. Anggota tiap kelompok dengan istilah Arab berharakat dan artinya, masing-masing satu kalimat fungsi + satu contoh pendek.
+3. Tandai bab yang biasanya dipelajari di tingkat awal dan yang di tingkat lanjut.
+4. Tutup dengan 3 pertanyaan cepat untuk mengecek apakah aku sudah menangkap petanya.
+
+Format: outline bercabang (kelompok → anggota → contoh), bukan paragraf.
 
 [METODE]
 
@@ -373,28 +374,32 @@ Beri aku peta besar (kharitah) ilmu Nahwu agar aku punya kerangka utuh sebelum m
         {
           title: "Pahami Konsep I'rab dan Bina secara Tuntas",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan fondasi i'rab dan bina:
-1. Definisi i'rab (إعراب) dan bina (بناء) dengan teks Arab berharakat + arti.
-2. Tanda-tanda i'rab asli (harakat) dan pengganti (huruf/hadzf) — beserta kapan dipakai.
-3. Kata yang mu'rab vs mabni: isim, fi'il, harf — mana yang mana dan kenapa.
-4. Contoh satu kalimat, lalu i'rab tiap katanya sebagai demonstrasi.
+Jelaskan fondasi الْإِعْرَاب dan الْبِنَاء sampai aku bisa menerapkannya sendiri:
+1. Ta'rif i'rab dan bina secara bahasa dan istilah (teks Arab berharakat + arti).
+2. Tanda i'rab asli (harakat) dan tanda pengganti (huruf, hadzf) — kapan masing-masing dipakai.
+3. Mana yang mu'rab dan mana yang mabni dari isim, fi'il, dan harf, beserta alasannya.
+4. Demonstrasi: satu kalimat, i'rab kata per kata dengan redaksi i'rab yang biasa ditulis di lembar jawaban Azhar.
+5. Satu kalimat latihan untukku — jangan beri jawabannya sebelum aku mencoba.
+
+Format: subjudul per poin, contoh selalu berharakat.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Bedah Masalah Sulit: Isytighal, Tanazu', dan Naib Fa'il",
+          title: "Bedah Bab Sulit: Isytighal, Tanazu', dan Naib Fa'il",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku kesulitan di bab-bab nahwu yang rumit. Jelaskan satu per satu dengan bahasa sederhana + contoh berharakat:
-1. Al-Isytighal (الاشتغال) — apa kaidahnya, kapan wajib/boleh nashab.
-2. At-Tanazu' (التنازع) — saat dua amil berebut satu ma'mul.
-3. Naib al-Fa'il (نائب الفاعل) — perubahan fi'il ma'lum ke majhul.
-Untuk tiap bab: definisi, kaidah inti, 2 contoh, dan kesalahan umum thalib.
+Jelaskan tiga bab yang sering bikin thalib bingung, satu per satu:
+1. الِاشْتِغَال — kaidah inti, kapan isim yang didahulukan wajib nashab, wajib rafa', atau boleh dua-duanya.
+2. التَّنَازُع — dua 'amil berebut satu ma'mul: pendapat Bashrah dan Kufah tentang 'amil yang diutamakan.
+3. نَائِبُ الْفَاعِل — cara mengubah fi'il ma'lum ke majhul dan apa saja yang boleh menggantikan fa'il.
+
+Untuk tiap bab: ta'rif, kaidah inti dalam 2–3 poin, 2 contoh berharakat, dan satu kesalahan yang paling sering dilakukan thalib.
 
 [METODE]
 
@@ -403,31 +408,33 @@ Untuk tiap bab: definisi, kaidah inti, 2 contoh, dan kesalahan umum thalib.
         {
           title: "Pahami Perbedaan Pendapat Bashrah vs Kufah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan perbedaan dua madrasah nahwu (madzhab Bashrah & Kufah) untuk topik [SEBUTKAN TOPIK, mis. amal "kana", i'rab fi'il mudhari']:
-1. Pendapat masing-masing madrasah + alasannya (illat).
-2. Pendapat yang dipegang mayoritas/dipakai di kurikulum Azhar.
-3. Kenapa perbedaan ini penting dipahami saat membaca syarah.
-Sertakan istilah Arab berharakat dan rujukan kitab bila kamu tahu (jika tidak yakin, katakan terus terang).
+Jelaskan khilaf madrasah Bashrah dan Kufah untuk topik [SEBUTKAN TOPIK, mis. 'amal "kana", rafa' fi'il mudhari'] :
+1. Pendapat masing-masing madrasah dan 'illat-nya.
+2. Contoh yang dipakai tiap pihak.
+3. Pendapat mana yang dipegang dalam kitab muqarrar (mis. Syarh Ibnu 'Aqil atau Qatr An-Nada), kalau kamu yakin.
+4. Kenapa khilaf ini penting saat membaca syarah.
+
+Format: tabel perbandingan (Bashrah | Kufah) lalu kesimpulan singkat.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
-
       hafal: [
         {
           title: "Hafal Matan Alfiyah per Bab dengan Pemahaman",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH] dari Alfiyah Ibn Malik.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH] dari Alfiyah Ibnu Malik.
 
-Bantu aku menghafal bait Alfiyah untuk bab [SEBUTKAN BAB]:
-1. Tampilkan bait-baitnya (kalau kamu tahu persis; kalau ragu teksnya, katakan dan minta aku tempel).
-2. Pecah tiap bait jadi makna per potong agar hafalanku berbasis paham, bukan beo.
-3. Beri jembatan keledai/asosiasi untuk bait yang sulit.
-4. Tandai kata kunci tiap bait yang jadi inti kaidah.
+Bantu aku menghafal bait Alfiyah bab [SEBUTKAN BAB, mis. al-mubtada' wal khabar] dengan paham, bukan sekadar hafal bunyi:
+1. Tulis bait-baitnya berharakat hanya kalau kamu yakin teksnya persis. Kalau ragu, bilang dan minta aku menempelkan baitnya.
+2. Pecah tiap bait jadi potongan makna, lalu tunjukkan kaidah yang dikandungnya.
+3. Tandai kata kunci tiap bait yang menjadi inti kaidah.
+4. Beri jembatan keledai untuk bait yang sulit.
+5. Akhiri dengan tes: sebut awal bait, aku lanjutkan.
 
 [METODE]
 
@@ -436,13 +443,15 @@ Bantu aku menghafal bait Alfiyah untuk bab [SEBUTKAN BAB]:
         {
           title: "Tabel Tanda I'rab untuk Dihafal",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Buatkan tabel hafalan tanda-tanda i'rab yang ringkas:
-1. Kolom: jenis kata (isim mufrad, jamak taksir, jamak mudzakkar salim, jamak muannats salim, mutsanna, asma' khamsah, af'al khamsah, fi'il mu'tal akhir).
-2. Baris: rafa', nashab, jar/jazm — tanda masing-masing (berharakat).
-3. Beri 1 contoh kata per sel.
-4. Tandai yang paling sering jadi jebakan di ujian.
+Buatkan tabel hafalan tanda i'rab:
+1. Baris: isim mufrad, jamak taksir, jamak mudzakkar salim, jamak muannats salim, mutsanna, al-asma' al-khamsah, al-af'al al-khamsah, isim ghairu munsharif, fi'il mudhari' mu'tal akhir.
+2. Kolom: rafa', nashab, jar/jazm — isi dengan tandanya (berharakat).
+3. Satu contoh kata per baris.
+4. Tandai dengan ⚠️ sel yang paling sering jadi jebakan, seperti jamak muannats salim yang dinashab dengan kasrah dan isim ghairu munsharif yang dijar dengan fathah.
+
+Setelah tabel, uji aku dengan 5 kata acak: aku sebutkan tandanya, kamu koreksi.
 
 [METODE]
 
@@ -451,161 +460,168 @@ Buatkan tabel hafalan tanda-tanda i'rab yang ringkas:
         {
           title: "Jadwal Muraja'ah Kaidah Nahwu",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku sudah belajar bab-bab nahwu berikut: [SEBUTKAN BAB-BAB]. Buatkan jadwal muraja'ah:
-1. Urutkan bab dari yang paling fundamental ke turunannya.
-2. Jadwal pengulangan H+1, H+3, H+7, mingguan.
-3. Untuk tiap sesi, sebutkan cara mengujinya (i'rab kalimat, sebut kaidah, dll).
-4. Sajikan sebagai tabel.
+Bab yang sudah kupelajari: [SEBUTKAN BAB-BAB, mis. kalam, i'rab, mubtada' khabar, kana wa akhawatuha].
+
+Buatkan jadwal muraja'ah:
+1. Urutkan bab dari yang paling mendasar ke turunannya.
+2. Jadwal ulang H+1, H+3, H+7, lalu mingguan sampai hari imtihan.
+3. Tiap sesi punya cara menguji diri yang konkret (i'rab 3 kalimat, sebut kaidah tanpa melihat, perbaiki kalimat salah).
+4. Sisakan 2 hari terakhir untuk latihan soal gaya kertas ujian.
+
+Format: tabel (hari | bab | cara menguji | durasi).
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
-
       latihan: [
         {
           title: "10 Soal I'rab Bertingkat",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Beri aku 10 kalimat Arab berharakat untuk di-i'rab, bertingkat dari mudah ke sulit, fokus bab [SEBUTKAN BAB atau "campuran"]:
-1. Nomori dan beri harakat penuh.
-2. JANGAN beri jawaban dulu — aku akan i'rab sendiri.
-3. Setelah aku menjawab, koreksi i'rab-ku kata per kata dan jelaskan yang salah.
-
-[METODE]
-
-[LEVEL_BAHASA]`,
-        },
-        {
-          title: "Drill Tashhih Khata' (Perbaiki Kalimat Salah)",
-          targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
-
-Beri aku 8 kalimat Arab yang mengandung kesalahan nahwu (khata' nahwi) yang umum dilakukan thalib:
-1. Tulis kalimat berharakat dengan kesalahannya.
-2. Aku akan menemukan & memperbaikinya sendiri.
-3. Setelah aku jawab, tunjukkan kesalahan persisnya, perbaikan, dan kaidah yang dilanggar.
-Variasikan jenis kesalahan (i'rab, kesesuaian, idhafah, dll).
+Beri aku 10 kalimat berharakat untuk di-i'rab, fokus bab [SEBUTKAN BAB, mis. al-manshubat atau "campuran"]:
+1. Bertingkat: 4 mudah, 4 sedang, 2 sulit. Sebagian boleh diambil dari ayat yang kamu yakini teksnya.
+2. Tandai kata yang harus di-i'rab dengan garis bawah atau tanda kurung, seperti instruksi أَعْرِبْ مَا تَحْتَهُ خَطٌّ.
+3. JANGAN beri jawaban. Tunggu i'rab-ku.
+4. Setelah aku jawab: koreksi kata per kata, tulis redaksi i'rab yang benar, dan jelaskan kaidah di balik kesalahanku.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Latihan Tarkib (Susun Kalimat dari Kaidah)",
+          title: "Drill Tashwib: Perbaiki Kalimat yang Salah",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Latih aku menyusun kalimat (tarkib) menerapkan kaidah [SEBUTKAN KAIDAH, mis. kana wa akhawatuha, inna wa akhawatuha]:
-1. Beri 6 instruksi (mis. "buat jumlah dengan inna + khabar jar majrur").
-2. Aku susun kalimatnya berharakat.
-3. Koreksi hasilku, tunjukkan benar/salahnya dan kenapa.
+Latih aku dengan soal tipe صَوِّبِ الْخَطَأَ مَعَ التَّعْلِيلِ yang sering keluar di kertas ujian:
+1. Buat satu paragraf pendek berharakat (4–6 kalimat) yang berisi 5 kesalahan nahwu, dari bab [SEBUTKAN BAB, mis. al-mubtada' wal khabar atau "campuran"].
+2. Variasikan kesalahannya: tanda i'rab, muthabaqah (kesesuaian), 'amal nawasikh, idhafah, jamak dan mutsanna.
+3. JANGAN tunjukkan letak kesalahan. Aku yang menemukan dan membetulkannya dengan ta'lil.
+4. Setelah aku jawab: nilai per kesalahan (ketemu? benar? ta'lil tepat?), lalu tunjukkan yang terlewat.
+
+[METODE]
+
+[LEVEL_BAHASA]`,
+        },
+        {
+          title: "Latihan Tamtsil & Tahwil (Buat dan Ubah Kalimat)",
+          targetAI: "claude",
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
+
+Latih aku dengan dua tipe soal yang sering keluar di ujian Nahwu Azhar, untuk bab [SEBUTKAN BAB, mis. kana wa akhawatuha, naib al-fa'il]:
+1. مَثِّلْ لِمَا يَأْتِي فِي جُمَلٍ مُفِيدَةٍ — beri 5 perintah membuat contoh (mis. "khabar inna berupa jumlah fi'liyyah").
+2. حَوِّلِ التَّرَاكِيبَ الْآتِيَةَ وَغَيِّرْ مَا يَلْزَمُ — beri 5 kalimat untuk diubah (mis. dari ma'lum ke majhul, atau dimasuki nasikh).
+3. JANGAN beri jawaban. Tunggu jawabanku untuk kedua bagian.
+4. Koreksi: benar/salah per nomor, perbaikan berharakat, dan kaidah yang dipakai.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
-
       ujian: [
         {
-          title: "Mock Imtihan Tahriri Gaya Azhari",
+          title: "Mock Imtihan Tahriri Nahwu (Gaya Kertas Azhar)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan tahriri.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan tahriri.
 
-Buatkan satu set soal ujian tulis (tahriri) Nahwu bergaya Azhar untuk bab [SEBUTKAN BAB / "semester ini"]:
-1. Sertakan tipe soal khas Azhar: a'rib ma tahta khat (i'rab kata bergaris bawah), 'allil (jelaskan illat), istakhrij (temukan dari teks), tsm akmil/shahhih.
-2. Buat 5-6 soal dengan bobot bervariasi.
-3. JANGAN beri jawaban dulu. Tunggu jawabanku, lalu nilai seperti mushahhih Azhar + beri skor & catatan.
+Buatkan satu kertas ujian tahriri Nahwu untuk bab [SEBUTKAN BAB, mis. "semester ini" atau al-fa'il sampai al-mustatsna]:
+1. Tiga atau empat السؤال, masing-masing dengan sub-soal أ- ب- ج-.
+2. Pakai pola soal yang benar-benar keluar di kertas Nahwu Azhar: اُذْكُرْ ... مَعَ التَّمْثِيلِ، مَا حُكْمُ ... فِي الْجُمَلِ الْآتِيَةِ، مَثِّلْ لِمَا يَأْتِي فِي جُمَلٍ مُفِيدَةٍ، حَوِّلِ التَّرَاكِيبَ، اِسْتَخْرِجْ مِنَ النَّصِّ، صَوِّبِ الْخَطَأَ مَعَ التَّعْلِيلِ، أَعْرِبْ مَا تَحْتَهُ خَطٌّ.
+3. Kalau fakultasku Syariah, tambahkan satu السؤال Sharaf (mis. زِنِ الْكَلِمَاتِ، اِضْبِطْ بِالشَّكْلِ، صواب أم خطأ مع التصحيح), karena kertas Nahwu di sana memuat bagian Sharaf.
+4. JANGAN beri jawaban. Tunggu jawabanku seluruhnya, lalu nilai seperti mushahhih.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Simulasi Imtihan Syafawi (Tanya-Jawab Lisan)",
+          title: "Simulasi Imtihan Syafawi Nahwu",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan syafawi.
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH], persiapan imtihan syafawi.
 
-Berperanlah sebagai mumtahin (penguji) syafawi Nahwu di Azhar:
-1. Ajukan pertanyaan lisan satu per satu (definisi, i'rab spontan, illat kaidah, syawahid).
-2. Tunggu jawabanku tiap pertanyaan sebelum lanjut.
-3. Beri umpan balik singkat ala penguji, lalu naikkan kesulitan bertahap.
-4. Di akhir, beri penilaian kesiapanku dan area yang perlu diperkuat.
+Berperanlah sebagai mumtahin syafawi Nahwu untuk bab [SEBUTKAN BAB, mis. "semester ini"]:
+1. Ajukan satu pertanyaan sekali jalan, dalam bahasa Arab: ta'rif, i'rab spontan satu kalimat, 'illat kaidah, atau syahid.
+2. Tunggu jawabanku sebelum lanjut.
+3. Beri umpan balik singkat seperti penguji (apa yang kurang dari jawabanku), lalu naikkan kesulitan bertahap.
+4. Setelah 8 pertanyaan: nilai kesiapanku (dari 10), bab yang masih lemah, dan 3 hal yang harus kuperbaiki.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
         {
-          title: "Prediksi & Kisi-kisi Soal Nahwu",
+          title: "Kisi-kisi & Strategi Ujian Nahwu",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Dari bab-bab yang kupelajari semester ini ([SEBUTKAN BAB-BAB]), bantu aku menyusun strategi ujian:
-1. Bab mana yang paling sering jadi soal i'rab dan ta'lil di Azhar.
-2. Tipe soal yang paling mungkin keluar + contoh formatnya.
-3. Kesalahan yang paling sering menurunkan nilai thalib.
-4. Prioritas belajar H-7 sebelum ujian.
+Bab semester ini: [SEBUTKAN BAB-BAB]. Bantu aku menyusun strategi ujian:
+1. Untuk tiap bab: tipe soal yang paling cocok keluar (hafalan ta'rif dan pembagian, tamtsil, i'rab, tashwib, hukm) dan satu contoh redaksi soalnya dalam bahasa Arab.
+2. Kaidah dan pembagian yang wajib hafal persis karena biasa ditanya dengan اُذْكُرْ.
+3. Kesalahan yang paling sering menurunkan nilai: i'rab tanpa menyebut tanda, contoh yang bukan جُمْلَة مُفِيدَة, ta'lil yang tidak disebut.
+4. Rencana H-7 sampai H-1.
+
+Jangan mengklaim bab tertentu "pasti keluar". Susun berdasarkan pola soal, bukan bocoran.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
-
       talaqqi: [
         {
           title: "Rapikan Catatan Talaqqi Nahwu",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku baru talaqqi dengan syaikh dan punya catatan berantakan (kutempel di bawah). Bantu aku:
-1. Rapikan jadi poin-poin kaidah yang terstruktur.
-2. Lengkapi istilah Arab berharakat yang mungkin kutulis tanpa harakat.
-3. Tandai bagian yang kelihatannya belum lengkap/perlu kutanyakan lagi.
-4. Buat ringkasan 5 poin inti dari sesi ini.
+Aku baru talaqqi dan catatanku berantakan. Bantu aku:
+1. Rapikan jadi poin kaidah yang terstruktur, mengikuti urutan penjelasan syaikh.
+2. Lengkapi harakat istilah dan contoh Arab yang kutulis tanpa harakat.
+3. Tandai (?) bagian yang kelihatannya terpotong atau perlu kutanyakan lagi ke syaikh. Jangan menambal dengan tebakan.
+4. Tutup dengan ringkasan 5 poin inti dan 3 pertanyaan untuk muraja'ah.
+
+Catatanku:
+[TEMPEL CATATAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Catatanku:
-[TEMPEL CATATAN]`,
+[LEVEL_BAHASA]`,
         },
         {
           title: "Verifikasi Pemahaman Setelah Talaqqi",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Setelah talaqqi bab [SEBUTKAN BAB], aku ingin memastikan pemahamanku benar:
-1. Aku akan jelaskan ulang kaidah yang kupelajari dengan bahasaku (kutempel di bawah).
-2. Periksa apakah pemahamanku akurat — koreksi yang keliru dengan rujukan + teks Arab berharakat.
-3. Ajukan 3 pertanyaan untuk menguji apakah pemahamanku benar-benar mantap.
+Setelah talaqqi bab [SEBUTKAN BAB], aku menjelaskan ulang kaidahnya dengan bahasaku sendiri (di bawah). Tolong:
+1. Periksa bagian mana yang tepat, kurang lengkap, atau keliru.
+2. Koreksi yang keliru dengan kaidah yang benar dan contoh berharakat.
+3. Ajukan 3 pertanyaan yang menguji pemahaman, bukan hafalan — satu per satu, tunggu jawabanku.
+
+Penjelasanku:
+[TEMPEL PENJELASAN]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Penjelasanku: [TEMPEL]`,
+[LEVEL_BAHASA]`,
         },
       ],
-
       eksplorasi: [
         {
-          title: "Telusuri Syawahid (Bukti dari Al-Qur'an, Hadits, Syi'r)",
+          title: "Telusuri Syawahid Kaidah (Al-Qur'an, Hadits, Syi'r)",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Untuk kaidah [SEBUTKAN KAIDAH], bantu aku memahami syawahid (bukti-bukti) klasiknya:
-1. Syahid dari Al-Qur'an (sebutkan ayat + surat, jelaskan wajh istisyhad).
-2. Syahid dari syi'r Arab (kalau kamu tahu baitnya; jika ragu, katakan).
-3. Bagaimana ulama nahwu memakai syahid ini untuk menetapkan kaidah.
-PENTING: jangan mengarang ayat/bait. Jika tidak yakin, sebutkan ketidakyakinanmu.
+Untuk kaidah [SEBUTKAN KAIDAH, mis. jawaz taqdim al-khabar], tunjukkan syawahid-nya:
+1. Syahid dari Al-Qur'an dan وَجْهُ الِاسْتِشْهَاد (bagian mana yang jadi bukti dan kenapa).
+2. Syahid dari syi'r Arab yang masyhur di kitab nahwu, hanya bila kamu yakin baitnya.
+3. Bagaimana ulama nahwu memakai syahid itu untuk menetapkan kaidah, dan adakah syahid yang diperselisihkan.
+
+Lebih baik sedikit syahid yang pasti daripada banyak yang meragukan.
 
 [METODE]
 
@@ -614,37 +630,37 @@ PENTING: jangan mengarang ayat/bait. Jika tidak yakin, sebutkan ketidakyakinanmu
         {
           title: "Aplikasi Nahwu untuk Membaca Kitab Turats",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Aku ingin nahwu-ku berguna untuk membaca kitab gundul (turats). Dari potongan teks yang kutempel:
-1. Beri harakat lengkap pada teks.
+Aku ingin nahwu-ku terpakai saat membaca kitab gundul. Dari teks di bawah:
+1. Beri harakat lengkap.
 2. I'rab kata-kata kunci yang menentukan makna.
-3. Tunjukkan bagaimana pemahaman nahwu mengubah/menentukan makna kalimat.
-4. Tandai struktur nahwu yang sering muncul di kitab turats agar aku kenali lain kali.
+3. Tunjukkan tempat yang bisa dibaca dua cara dan bagaimana i'rab mengubah maknanya.
+4. Daftar pola nahwu yang sering muncul di kitab turats dari teks ini, supaya aku kenali lain kali.
+
+Teks:
+[TEMPEL TEKS GUNDUL]
 
 [METODE]
 
-[LEVEL_BAHASA]
-
-Teks: [TEMPEL TEKS GUNDUL]`,
+[LEVEL_BAHASA]`,
         },
         {
           title: "Hubungkan Nahwu dengan Balaghah & Makna",
           targetAI: "claude",
-          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN], [GAYA_BELAJAR]. Belajar [MADDAH].
+          template: `Aku [TINGKATAN] di [FAKULTAS][JURUSAN] Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].
 
-Jelaskan bagaimana pilihan nahwu memengaruhi makna dan balaghah, untuk fenomena [SEBUTKAN, mis. taqdim-ta'khir, hadzf, iltifat]:
-1. Apa kaidah nahwunya.
-2. Bagaimana penyimpangan dari urutan asli membawa makna balaghi (mis. taqdim untuk ikhtishash).
-3. Contoh dari Al-Qur'an bila ada (sebut ayatnya, jangan mengarang).
-4. Kenapa ini penting untuk tafsir & pemahaman teks.
+Jelaskan bagaimana pilihan nahwu melahirkan makna balaghi, untuk fenomena [SEBUTKAN FENOMENA, mis. taqdim wa ta'khir, hadzf, ta'rif wa tankir]:
+1. Kaidah nahwunya: susunan asal dan kapan boleh menyimpang.
+2. Makna balaghi yang muncul dari penyimpangan itu (mis. taqdim untuk ikhtishash).
+3. Dua contoh ayat yang kamu yakini, dengan penjelasan maknanya.
+4. Manfaatnya untuk tafsir dan memahami teks.
 
 [METODE]
 
 [LEVEL_BAHASA]`,
         },
       ],
-
     }
   },
 
