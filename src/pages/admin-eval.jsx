@@ -8,6 +8,7 @@ const TASKS = {
   irab:    { label: "I'rab", color: '#c9a86a', how: "Pasti: kata kunci i'rab ditemukan di analisis kata yang tepat" },
   tasykil: { label: 'Harakat', color: '#a78bfa', how: 'Pasti: harakat per huruf dibanding kunci' },
   grade:   { label: 'Penilaian tahriri', color: '#f472b6', how: 'Pasti: nilai AI di dalam rentang asatidz (−25 per poin meleset)' },
+  prompt:  { label: 'Prompt Library', color: '#34d399', how: 'Prompt dijalankan seperti "Jalankan di sini", lalu AI penguji menilai 7 kriteria rubrik (+ poin tambahan asatidz bila ada). Teks prompt diambil dari data terbaru setiap evaluasi.' },
 };
 const STATUS = {
   draft:    { label: 'Draft', cls: 'bg-amber-500/12 text-amber-300 border-amber-500/30' },
@@ -52,6 +53,203 @@ const lines = (t) => (t || '').split('\n').map(s => s.trim()).filter(Boolean);
 /* ── Editor soal uji ── */
 const emptyItem = (task = 'qa') => ({ task, title: '', maddah: '', status: 'draft', reviewer: '', notes: '', input: {}, expected: {} });
 
+/* ── Soal uji "Prompt Library": pilih prompt, profil uji, dan isiannya ── */
+const libraryOf = (source) => (source === 'mahad' ? (window.MAHAD_MADDAH || []) : (window.MADDAHS || []));
+const KIND_LABEL = { pahami: 'Pahami', hafal: 'Hafal', latihan: 'Latihan', ujian: 'Ujian', talaqqi: 'Talaqqi', eksplorasi: 'Eksplorasi', tabs: 'Program DL' };
+const MAHAD_LEVELS = ['idad_1', 'idad_2', 'idad_3', 'tsanawi_1_adabi', 'tsanawi_1_ilmi', 'tsanawi_2_adabi', 'tsanawi_2_ilmi', 'tsanawi_3_adabi', 'tsanawi_3_ilmi'];
+const KULIAH_LEVELS = ['mustawa', '1', '2', '3', '4', '5', 'pasca'];
+const TOPIK_RE = /\[TOPIK\]/;
+
+// Isi awal soal uji prompt: profil uji bawaan maddah + isian contoh dari petunjuk "mis. …".
+const promptItemFor = (source, maddah, p) => {
+  const profile = defaultTestProfile(maddah, source);
+  const slotValues = defaultSlotValues(source, maddah, p.template, profile);
+  if (source === 'mahad' && TOPIK_RE.test(p.template)) slotValues.Topik = '';
+  const { text } = resolveLibraryPrompt({ source, maddah, template: p.template, profile, slotValues });
+  return {
+    ...emptyItem('prompt'),
+    title: `Prompt — ${maddah.name}: ${p.title}`.slice(0, 160), maddah: maddah.id,
+    input: { source, maddah_id: maddah.id, maddah_name: maddah.name, kind: p.kind, prompt_title: p.title, profile, slots: slotValues, prompt: text },
+    expected: { poin: [] },
+    notes: 'Dibuat dari prompt library — cek isian & profil uji, lalu tandai verified.',
+  };
+};
+
+// Teks prompt terbaru untuk soal uji (null kalau prompt sudah tidak ada di data).
+const freshPromptText = (item) => {
+  const inp = item?.input || {};
+  const { maddah, prompt } = findLibraryPrompt(inp.source, inp.maddah_id, inp.kind, inp.prompt_title);
+  if (!maddah || !prompt) return null;
+  return resolveLibraryPrompt({ source: inp.source, maddah, template: prompt.template, profile: inp.profile || {}, slotValues: inp.slots || {} }).text;
+};
+
+const PromptItemFields = ({ item, set }) => {
+  const inp = item.input || {};
+  const source = inp.source || 'kuliah';
+  const list = useMemo(() => [...libraryOf(source)].sort((a, b) => a.name.localeCompare(b.name)), [source]);
+  const maddah = list.find(m => m.id === inp.maddah_id) || null;
+  const prompts = maddah ? flattenMaddahPrompts(maddah) : [];
+  const kinds = [...new Set(prompts.map(p => p.kind))];
+  const prompt = prompts.find(p => p.kind === inp.kind && p.title === inp.prompt_title) || null;
+  const profile = inp.profile || {};
+  const resolved = prompt ? resolveLibraryPrompt({ source, maddah, template: prompt.template, profile, slotValues: inp.slots || {} }) : null;
+  const hasTopik = source === 'mahad' && prompt && TOPIK_RE.test(prompt.template);
+  const [showText, setShowText] = useState(false);
+
+  // Memilih prompt → isi ulang profil & isian contoh. Mengganti profil/isian → dipertahankan.
+  const choosePrompt = (title) => {
+    const p = prompts.find(x => x.kind === inp.kind && x.title === title);
+    if (!p) { set({ input: { ...inp, prompt_title: '' } }); return; }
+    const fresh = promptItemFor(source, maddah, p);
+    set({ input: fresh.input, title: fresh.title, maddah: maddah.id });
+  };
+  const setProfile = (k, v) => set({ input: { ...inp, profile: { ...profile, [k]: v } } });
+  const setSlot = (label, v) => set({ input: { ...inp, slots: { ...(inp.slots || {}), [label]: v } } });
+  const sel = `${inputCls} mt-1`;
+
+  return (
+    <div className="space-y-3">
+      <div className="grid md:grid-cols-4 gap-3">
+        <label className="text-xs text-ink-muted">Sumber
+          <select className={sel} value={source} onChange={e => set({ input: { source: e.target.value } })}>
+            <option value="kuliah">Maddah kuliah</option><option value="mahad">Maddah Ma'had</option>
+          </select>
+        </label>
+        <label className="text-xs text-ink-muted">Maddah
+          <select className={sel} value={inp.maddah_id || ''} onChange={e => set({ input: { source, maddah_id: e.target.value } })}>
+            <option value="">— pilih —</option>
+            {list.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+          </select>
+        </label>
+        <label className="text-xs text-ink-muted">Jenis
+          <select className={sel} value={inp.kind || ''} onChange={e => set({ input: { source, maddah_id: inp.maddah_id, kind: e.target.value } })} disabled={!maddah}>
+            <option value="">— pilih —</option>
+            {kinds.map(k => <option key={k} value={k}>{KIND_LABEL[k] || k}</option>)}
+          </select>
+        </label>
+        <label className="text-xs text-ink-muted">Prompt
+          <select className={sel} value={inp.prompt_title || ''} onChange={e => choosePrompt(e.target.value)} disabled={!inp.kind}>
+            <option value="">— pilih —</option>
+            {prompts.filter(p => p.kind === inp.kind).map(p => <option key={p.title} value={p.title}>{p.title}</option>)}
+          </select>
+        </label>
+      </div>
+
+      {prompt && (<>
+        <div className="grid md:grid-cols-4 gap-3">
+          <label className="text-xs text-ink-muted">Tingkat uji
+            <select className={sel} value={profile.level || ''} onChange={e => setProfile('level', e.target.value)}>
+              {(source === 'mahad' ? MAHAD_LEVELS : KULIAH_LEVELS).map(l => <option key={l} value={l}>{(window.TINGKATAN_LABEL || {})[l] || l}</option>)}
+            </select>
+          </label>
+          {source === 'kuliah' && (<>
+            <label className="text-xs text-ink-muted">Fakultas
+              <select className={sel} value={profile.faculty || ''} onChange={e => setProfile('faculty', e.target.value)}>
+                {Object.entries(window.FAKULTAS_LABEL || {}).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+              </select>
+            </label>
+            <label className="text-xs text-ink-muted">Jurusan
+              <select className={sel} value={profile.major || ''} onChange={e => setProfile('major', e.target.value)}>
+                <option value="">— tanpa jurusan —</option>
+                {Object.entries(window.JURUSAN_LABEL || {}).map(([k, v]) => <option key={k} value={k}>{v.replace(/^,\s*/, '')}</option>)}
+              </select>
+            </label>
+          </>)}
+          <label className="text-xs text-ink-muted">Madzhab
+            <select className={sel} value={profile.madzhab || ''} onChange={e => setProfile('madzhab', e.target.value)}>
+              <option value="">— tidak diisi —</option>
+              {Object.entries(window.MADZHAB_LABEL || {}).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+            </select>
+          </label>
+        </div>
+
+        {(resolved.slots.length > 0 || hasTopik) && (
+          <div className="grid md:grid-cols-2 gap-3">
+            {hasTopik && (
+              <label className="text-xs text-ink-muted">Topik
+                <input dir="auto" className={sel} value={inp.slots?.Topik || ''} onChange={e => setSlot('Topik', e.target.value)}/>
+              </label>
+            )}
+            {resolved.slots.map(s => (
+              <label key={s.index} className={`text-xs text-ink-muted ${s.kind === 'tempel' ? 'md:col-span-2' : ''}`}>{s.label}{s.kind === 'tempel' ? ' (tempelan, boleh kosong)' : ''}
+                {s.kind === 'tempel'
+                  ? <textarea dir="auto" rows={3} className={sel} value={inp.slots?.[s.label] || ''} onChange={e => setSlot(s.label, e.target.value)}/>
+                  : <input dir="auto" className={sel} value={inp.slots?.[s.label] || ''} placeholder={s.hint} onChange={e => setSlot(s.label, e.target.value)}/>}
+              </label>
+            ))}
+          </div>
+        )}
+        {resolved.missing.length > 0 && <p className="text-[11px] text-amber-300">Isian wajib belum diisi: {resolved.missing.map(s => s.label).join(', ')}</p>}
+
+        <div>
+          <button type="button" onClick={() => setShowText(v => !v)} className="text-xs text-emerald-300 hover:text-emerald-200">{showText ? 'Sembunyikan' : 'Lihat'} teks prompt yang dikirim</button>
+          {showText && <pre dir="auto" className="mt-2 text-xs text-ink-muted whitespace-pre-wrap bg-black/30 rounded-lg p-3 max-h-72 overflow-y-auto">{resolved.text}</pre>}
+        </div>
+      </>)}
+    </div>
+  );
+};
+
+/* ── Tambah banyak soal uji dari prompt library sekaligus ── */
+const BulkPromptAdd = ({ existing, onClose, onDone }) => {
+  const toast = useToast();
+  const [source, setSource] = useState('kuliah');
+  const [maddahId, setMaddahId] = useState('');
+  const [kinds, setKinds] = useState(['ujian', 'latihan']);
+  const [busy, setBusy] = useState(false);
+  const list = useMemo(() => [...libraryOf(source)].sort((a, b) => a.name.localeCompare(b.name)), [source]);
+  const maddah = list.find(m => m.id === maddahId);
+  const have = new Set(existing.filter(i => i.task === 'prompt').map(i => `${i.input?.source}|${i.input?.maddah_id}|${i.input?.kind}|${i.input?.prompt_title}`));
+  const candidates = maddah ? flattenMaddahPrompts(maddah).filter(p => kinds.includes(p.kind)) : [];
+  const fresh = candidates.filter(p => !have.has(`${source}|${maddah.id}|${p.kind}|${p.title}`));
+
+  const add = async () => {
+    setBusy(true);
+    let ok = 0, fail = 0;
+    for (const p of fresh) {
+      const d = await evalApi('admin-golden-save', { item: promptItemFor(source, maddah, p) });
+      if (d.ok) ok++; else fail++;
+    }
+    setBusy(false);
+    toast.push(`${ok} soal uji prompt ditambahkan (draft)${fail ? ` · ${fail} gagal` : ''}`);
+    onDone();
+  };
+
+  return (
+    <Modal open onClose={onClose} size="lg">
+      <div className="p-5 md:p-7 space-y-4">
+        <h3 className="font-display text-xl font-semibold text-ink">Tambah dari prompt library</h3>
+        <p className="text-xs text-ink-soft">Tiap prompt jadi satu soal uji (draft) dengan profil uji bawaan maddah dan isian contoh dari petunjuk "mis. …". Prompt yang sudah ada di golden set dilewati. Cek isiannya sebelum ditandai verified.</p>
+        <div className="grid md:grid-cols-2 gap-3">
+          <label className="text-xs text-ink-muted">Sumber
+            <select className={`${inputCls} mt-1`} value={source} onChange={e => { setSource(e.target.value); setMaddahId(''); }}>
+              <option value="kuliah">Maddah kuliah</option><option value="mahad">Maddah Ma'had</option>
+            </select>
+          </label>
+          <label className="text-xs text-ink-muted">Maddah
+            <select className={`${inputCls} mt-1`} value={maddahId} onChange={e => setMaddahId(e.target.value)}>
+              <option value="">— pilih —</option>
+              {list.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+            </select>
+          </label>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          {Object.entries(KIND_LABEL).map(([k, l]) => (
+            <label key={k} className="text-sm text-ink-muted inline-flex items-center gap-1.5">
+              <input type="checkbox" checked={kinds.includes(k)} onChange={e => setKinds(v => e.target.checked ? [...v, k] : v.filter(x => x !== k))}/>{l}
+            </label>
+          ))}
+        </div>
+        {maddah && <div className="text-xs text-ink-muted">{fresh.length} prompt baru akan ditambahkan{candidates.length - fresh.length ? ` · ${candidates.length - fresh.length} sudah ada` : ''}.</div>}
+        <div className="flex justify-end gap-2">
+          <button onClick={onClose} className="btn btn-ghost text-sm px-4 py-2">Batal</button>
+          <button onClick={add} disabled={busy || !fresh.length} className="btn btn-primary text-sm px-5 py-2">{busy ? 'Menambahkan…' : `Tambah ${fresh.length || ''}`}</button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
 const GoldenEditor = ({ initial, onClose, onSaved }) => {
   const toast = useToast();
   const [item, setItem] = useState(() => JSON.parse(JSON.stringify(initial)));
@@ -68,6 +266,13 @@ const GoldenEditor = ({ initial, onClose, onSaved }) => {
   const save = async () => {
     setSaving(true); setError('');
     const payload = { ...item };
+    if (item.task === 'prompt') {
+      const text = freshPromptText(item);
+      if (!text) { setSaving(false); setError('Pilih maddah dan prompt yang diuji'); return; }
+      payload.input = { ...item.input, prompt: text };
+      payload.maddah = item.input.maddah_id;
+      if (!payload.title) payload.title = `Prompt — ${item.input.maddah_name}: ${item.input.prompt_title}`.slice(0, 160);
+    }
     if (item.task === 'irab') {
       payload.expected = { kata: lines(irabRaw).map(l => { const [kata, kunci = ''] = l.split('|'); return { kata: kata.trim(), kunci: kunci.split(/[,،]/).map(s => s.trim()).filter(Boolean) }; }) };
     }
@@ -104,6 +309,14 @@ const GoldenEditor = ({ initial, onClose, onSaved }) => {
             <input className={`${inputCls} mt-1`} value={item.maddah || ''} onChange={e => set({ maddah: e.target.value })} placeholder="nahwu, fiqh…"/>
           </label>
         </div>
+
+        {T === 'prompt' && (<>
+          <PromptItemFields item={item} set={set}/>
+          <label className="block text-xs text-ink-muted">Poin tambahan dari asatidz (opsional) — satu per baris
+            <textarea dir="auto" rows={3} className={`${inputCls} mt-1`} value={(item.expected.poin || []).join('\n')} onChange={e => setEx('poin', e.target.value.split('\n'))}
+              placeholder="mis. Soal memakai redaksi علّل dan ضع علامة"/>
+          </label>
+        </>)}
 
         {(T === 'summary' || T === 'qa') && (<>
           <label className="block text-xs text-ink-muted">Materi (potongan diktat/kitab asli)
@@ -226,6 +439,30 @@ const ResultDetail = ({ result, item }) => {
           ))}
         </div>
       )}
+      {result.task === 'prompt' && d.kriteria && (<>
+        <div className="grid sm:grid-cols-2 gap-1.5">
+          {d.kriteria.map(k => (
+            <div key={k.id} className="flex gap-2 items-start rounded-lg bg-white/3 px-2.5 py-1.5">
+              <span className={`text-xs font-semibold tabular-nums w-7 ${k.nilai == null ? 'text-ink-soft' : k.nilai === 2 ? 'text-emerald-300' : k.nilai === 1 ? 'text-amber-300' : 'text-rose-300'}`}>{k.nilai == null ? '—' : `${k.nilai}/2`}</span>
+              <span className="text-xs text-ink-muted">{k.label}{k.catatan && <span className="text-ink-soft"> — {k.catatan}</span>}</span>
+            </div>
+          ))}
+        </div>
+        {d.poin?.length > 0 && (
+          <div className="space-y-1">{d.poin.map((p, i) => (
+            <div key={i} className="flex gap-2 text-xs"><span className={p.ada ? 'text-emerald-300' : 'text-rose-300'}>{p.ada ? '✓' : '✗'}</span><span className="text-ink-muted">{p.poin}{p.catatan && <span className="text-ink-soft"> — {p.catatan}</span>}</span></div>
+          ))}</div>
+        )}
+        {d.masalah?.length > 0 && (
+          <div className="rounded-lg bg-rose-500/[0.07] border border-rose-500/25 p-3">
+            <div className="text-xs text-rose-300 mb-1">Masalah yang ditemukan penguji</div>
+            <ul className="text-xs text-ink-muted space-y-0.5">{d.masalah.map((k, i) => <li key={i} dir="auto">• {k}</li>)}</ul>
+          </div>
+        )}
+        {d.catatan && <div className="text-xs text-ink-soft italic">Penguji: {d.catatan}</div>}
+        {d.prompt_fresh === false && <div className="text-[11px] text-amber-300">Memakai salinan prompt saat soal uji dibuat — prompt ini sudah diganti atau dihapus di library.</div>}
+        {d.prompt_used && <details className="text-xs"><summary className="text-emerald-300 cursor-pointer">Lihat prompt yang dijalankan</summary><pre dir="auto" className="mt-2 text-xs text-ink-muted whitespace-pre-wrap bg-black/30 rounded-lg p-3 max-h-72 overflow-y-auto">{d.prompt_used}</pre></details>}
+      </>)}
       {result.task === 'grade' && d.rentang && (
         <div className="text-ink-muted">Nilai AI: <span className="text-ink font-semibold">{d.skor_ai ?? '—'}</span> · rentang asatidz {d.rentang[0]}–{d.rentang[1]}{d.selisih ? ` · meleset ${d.selisih}` : ' · ✓ sesuai'}</div>
       )}
@@ -310,7 +547,8 @@ const AdminEval = () => {
   const [missing, setMissing] = useState('');
   const [editing, setEditing] = useState(null);
   const [filter, setFilter] = useState({ task: 'all', status: 'all' });
-  const [cfg, setCfg] = useState({ model: '', judge_model: '', include_drafts: true, label: '' });
+  const [cfg, setCfg] = useState({ model: '', judge_model: '', include_drafts: true, label: '', scope: 'all' });
+  const [bulk, setBulk] = useState(false);
   const [progress, setProgress] = useState(null);
   const [openRun, setOpenRun] = useState(null);
 
@@ -354,15 +592,19 @@ const AdminEval = () => {
   const run = async () => {
     setOpenRun(null);
     setProgress({ done: 0, total: 1, phase: 'Menyiapkan…' });
-    const s = await evalApi('admin-eval-start', cfg);
+    const tasks = cfg.scope === 'prompt' ? ['prompt'] : cfg.scope === 'ai' ? Object.keys(TASKS).filter(t => t !== 'prompt') : undefined;
+    const s = await evalApi('admin-eval-start', { ...cfg, ...(tasks ? { tasks } : {}) });
     if (!s.ok) { setProgress(null); toast.push(s.error || 'Gagal memulai'); return; }
-    const judgedCount = s.items.filter(i => i.task === 'summary' || i.task === 'qa').length;
+    const judgedCount = s.items.filter(i => i.task === 'summary' || i.task === 'qa' || i.task === 'prompt').length;
+    const full = Object.fromEntries((items || []).map(i => [i.id, i]));
     const total = s.items.length + judgedCount + 1;
     let done = 0;
     const tick = (phase) => { done++; setProgress({ done, total, phase }); };
     const toJudge = [];
     await pool(s.items, 3, async (it) => {
-      const d = await evalApi('admin-eval-item', { run_id: s.run.id, item_id: it.id });
+      // Prompt library: kirim teks prompt terbaru dari data saat ini.
+      const promptText = it.task === 'prompt' ? freshPromptText(full[it.id]) : null;
+      const d = await evalApi('admin-eval-item', { run_id: s.run.id, item_id: it.id, ...(promptText ? { prompt_text: promptText } : {}) });
       if (d.result?.needs_judge) toJudge.push(it);
       tick(`Menjalankan soal (${it.title})`);
     });
@@ -414,6 +656,11 @@ const AdminEval = () => {
           <option value="anthropic/claude-sonnet-4-6"/><option value="google/gemini-2.5-pro"/><option value="google/gemini-2.5-flash"/>
         </datalist>
         <div className="flex items-center gap-4 flex-wrap">
+          <select className="bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-ink" value={cfg.scope} onChange={e => setCfg({ ...cfg, scope: e.target.value })}>
+            <option value="all">Semua soal uji</option>
+            <option value="ai">Hanya fitur AI Partner</option>
+            <option value="prompt">Hanya Prompt Library</option>
+          </select>
           <label className="text-sm text-ink-muted inline-flex items-center gap-2">
             <input type="checkbox" checked={cfg.include_drafts} onChange={e => setCfg({ ...cfg, include_drafts: e.target.checked })}/>
             Ikutkan soal draft ({counts.draft})
@@ -484,6 +731,7 @@ const AdminEval = () => {
               {Object.entries(STATUS).map(([id, s]) => <option key={id} value={id}>{s.label}</option>)}
             </select>
             <button onClick={seed} className="btn btn-ghost text-xs px-3 py-1.5">Muat contoh awal</button>
+            <button onClick={() => setBulk(true)} className="btn btn-ghost text-xs px-3 py-1.5">Tambah dari prompt library</button>
             <button onClick={() => setEditing(emptyItem())} className="btn btn-primary text-xs px-3 py-1.5"><Icon name="sparkles" className="w-3.5 h-3.5"/> Tambah soal</button>
           </div>
         </div>
@@ -515,6 +763,7 @@ const AdminEval = () => {
         )}
       </div>
 
+      {bulk && <BulkPromptAdd existing={items || []} onClose={() => setBulk(false)} onDone={() => { setBulk(false); load(); }}/>}
       {editing && <GoldenEditor initial={editing} onClose={() => setEditing(null)} onSaved={() => { setEditing(null); load(); }}/>}
     </div>
   );

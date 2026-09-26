@@ -202,6 +202,7 @@ const AdminPage = () => {
               { id: "bank-soal",  label: "Bank Soal",         icon: "fileText" },
               { id: "ai-subs",    label: "Langganan & Bayar", icon: "sparkles" },
               { id: "ai-eval",    label: "Evaluasi AI",       icon: "target" },
+              { id: "prompt-quality", label: "Mutu Prompt",   icon: "check" },
               { id: "settings",   label: "Settings",          icon: "shield" },
             ].map(t => (
               <button key={t.id} onClick={() => setTab(t.id)}
@@ -228,6 +229,7 @@ const AdminPage = () => {
         {tab === "bank-soal"  && <AdminBankSoal/>}
         {tab === "ai-subs"    && <AdminSubscriptions/>}
         {tab === "ai-eval"    && <AdminEval/>}
+        {tab === "prompt-quality" && <AdminPromptQuality/>}
         {tab === "settings"   && <AdminSettings/>}
       </div>
     </div>

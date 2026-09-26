@@ -184,7 +184,96 @@ const guardSlots = (slotState, idPrefix, toast, action) => () => {
   document.getElementById(`${idPrefix}-${slotState.missing[0].index}`)?.focus();
 };
 
-const MaddahPromptCard = ({ prompt, maddah, profile, formatEnabled, slotShared, setSlotShared }) => {
+/* ---- "Prompt ini membantu?" ----
+   Muncul setelah prompt disalin. Satu penilaian per prompt per member (bisa diubah); 👎 menanyakan alasannya
+   supaya prompt yang bermasalah bisa diperbaiki. Dipakai kuliah & Ma'had. */
+const PROMPT_FB_KEY = "talqeeh_prompt_feedback";
+const PROMPT_FB_REASONS = [
+  ["tidak_sesuai_maddah", "Kurang cocok dengan maddah/bab"],
+  ["tidak_sesuai_ujian", "Tidak mirip soal ujian"],
+  ["jawaban_ai_salah", "Jawaban AI salah"],
+  ["bingung_isian", "Bingung mengisinya"],
+  ["terlalu_panjang", "Terlalu panjang"],
+  ["lainnya", "Lainnya"],
+];
+const loadPromptFb = () => { try { return JSON.parse(localStorage.getItem(PROMPT_FB_KEY) || "{}") || {}; } catch { return {}; } };
+
+const PromptFeedback = ({ source, maddahId, kind, title }) => {
+  const toast = useToast();
+  const fbKey = `${source}|${maddahId}|${kind}|${title}`;
+  const [rating, setRating] = useState(() => loadPromptFb()[fbKey] || 0);
+  const [asking, setAsking] = useState(false);
+  const [reason, setReason] = useState("");
+  const [note, setNote] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const send = async (value, extra = {}) => {
+    setSending(true);
+    try {
+      const res = await authFetch("/api/ai-partner?action=prompt-feedback", {
+        method: "POST",
+        body: JSON.stringify({ source, maddah_id: maddahId, kind, title, rating: value, ...extra }),
+      });
+      const d = await res.json().catch(() => ({}));
+      if (res.status === 401) throw new Error("Masuk dulu untuk memberi masukan.");
+      if (!res.ok || !d.ok) throw new Error(d.error || "Masukan belum terkirim. Coba lagi.");
+      try { localStorage.setItem(PROMPT_FB_KEY, JSON.stringify({ ...loadPromptFb(), [fbKey]: value })); } catch {}
+      setRating(value);
+      setAsking(false);
+      toast.push(value > 0 ? "Terima kasih atas masukannya!" : "Terima kasih — masukanmu dipakai untuk memperbaiki prompt ini.");
+    } catch (e) {
+      toast.push(e.message);
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const chip = (active) => `text-xs px-3 py-1.5 rounded-full border transition-colors ${active
+    ? "bg-emerald-500/15 border-emerald-500/40 text-emerald-200" : "bg-white/4 border-white/10 text-ink-muted hover:text-ink"}`;
+
+  if (asking) {
+    return (
+      <div className="mt-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+        <div className="text-xs text-ink mb-2">Apa yang kurang dari prompt ini?</div>
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          {PROMPT_FB_REASONS.map(([id, label]) => (
+            <button key={id} onClick={() => setReason(id)} className={chip(reason === id)} style={{ minHeight: 32 }}>{label}</button>
+          ))}
+        </div>
+        <textarea rows={2} value={note} onChange={e => setNote(e.target.value)} maxLength={500} dir="auto"
+          placeholder="Ceritakan singkat (opsional), mis. soalnya tidak dari bab yang kuisi"
+          className="w-full text-sm px-3 py-2 rounded-lg text-ink placeholder:text-ink-soft outline-none focus:ring-1 focus:ring-emerald-500/50"
+          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}/>
+        <div className="flex justify-end gap-2 mt-2">
+          <button onClick={() => setAsking(false)} className="btn btn-ghost text-xs px-3 py-1.5">Batal</button>
+          <button onClick={() => send(-1, { reason: reason || "lainnya", note })} disabled={sending || !reason}
+            className="btn btn-primary text-xs px-4 py-1.5">{sending ? "Mengirim…" : "Kirim"}</button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-3 flex items-center gap-2 flex-wrap text-xs text-ink-soft">
+      {rating ? (
+        <>
+          <span>{rating > 0 ? "Kamu menilai prompt ini membantu." : "Masukanmu sudah kami terima."}</span>
+          <button onClick={() => (rating > 0 ? setAsking(true) : send(1))} disabled={sending} className="text-emerald-300 hover:text-emerald-200">
+            {rating > 0 ? "Ternyata kurang?" : "Ternyata membantu?"}
+          </button>
+        </>
+      ) : (
+        <>
+          <span>Prompt ini membantu?</span>
+          <button onClick={() => send(1)} disabled={sending} className={chip(false)} style={{ minHeight: 32 }}>👍 Membantu</button>
+          <button onClick={() => setAsking(true)} disabled={sending} className={chip(false)} style={{ minHeight: 32 }}>👎 Kurang</button>
+        </>
+      )}
+    </div>
+  );
+};
+
+const MaddahPromptCard = ({ prompt, maddah, profile, formatEnabled, slotShared, setSlotShared, kind }) => {
   const toast = useToast();
 
   // Guard: kalau prompt tidak valid, jangan render
@@ -301,6 +390,10 @@ const MaddahPromptCard = ({ prompt, maddah, profile, formatEnabled, slotShared, 
             Simpan
           </button>
         </div>
+      )}
+
+      {(copied || loadPromptFb()[`kuliah|${maddah.id}|${kind}|${safePrompt.title}`]) && (
+        <PromptFeedback source="kuliah" maddahId={maddah.id} kind={kind} title={safePrompt.title}/>
       )}
     </div>
   );
@@ -473,7 +566,7 @@ const MaddahDetailPage = () => {
                 : []
               ).filter(p => p && p.template && p.title)
                 .map((p, i) => (
-                  <MaddahPromptCard key={`${activeKind}-${i}`} prompt={p} maddah={maddah} profile={profile} formatEnabled={formatEnabled}
+                  <MaddahPromptCard key={`${activeKind}-${i}`} prompt={p} maddah={maddah} profile={profile} formatEnabled={formatEnabled} kind={activeKind}
                     slotShared={slotShared} setSlotShared={setSlotShared}/>
                 ))}
               {(Array.isArray(maddah.prompts?.[activeKind])
@@ -494,4 +587,4 @@ const MaddahDetailPage = () => {
 window.MaddahDetailPage = MaddahDetailPage;
 window.MaddahDetailErrorBoundary = MaddahDetailErrorBoundary;
 window.MaddahGuide = MaddahGuide;
-Object.assign(window, { useSlotShared, usePromptSlots, PromptSlotFields, guardSlots });
+Object.assign(window, { useSlotShared, usePromptSlots, PromptSlotFields, guardSlots, PromptFeedback, loadPromptFb });

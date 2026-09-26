@@ -3,17 +3,20 @@
 // (prompt produksi), lalu memberi skor 0–100:
 //   - harakat & i'rab & penilaian tahriri → dihitung pasti oleh kode (per huruf / kata kunci / rentang nilai)
 //   - ringkasan & tanya tutor → dinilai "AI penguji" terhadap poin kunci + cek kutipan terhadap materi
+//   - prompt library → prompt dijalankan seperti "Jalankan di sini", lalu dinilai AI penguji dengan rubrik mutu prompt
 import { sbConfig, sbHeaders } from '../member.js';
 import { callAI, callAIJson } from '../ai.js';
 import { resolveModels, isValidModelId } from '../models.js';
-import { summaryPrompt, tutorSystem, IRAB_PROMPT, TASYKIL_PROMPT, GRADE_PROMPT, gradeUserPrompt } from './prompts.js';
+import { summaryPrompt, tutorSystem, IRAB_PROMPT, TASYKIL_PROMPT, GRADE_PROMPT, gradeUserPrompt, promptChatSystem } from './prompts.js';
 import { cleanIrab, cleanGrade } from './sanitize.js';
 import { normalizeText } from './chunks.js';
 
-export const EVAL_TASKS = ['summary', 'qa', 'irab', 'tasykil', 'grade'];
+export const EVAL_TASKS = ['summary', 'qa', 'irab', 'tasykil', 'grade', 'prompt'];
 // Model produksi yang dipakai tiap tugas (sama dengan fitur di aplikasi).
-const TASK_MODEL = { summary: 'default', qa: 'chat', irab: 'arabic', tasykil: 'arabic', grade: 'grade' };
-const JUDGED = ['summary', 'qa'];
+const TASK_MODEL = { summary: 'default', qa: 'chat', irab: 'arabic', tasykil: 'arabic', grade: 'grade', prompt: 'prompt' };
+const JUDGED = ['summary', 'qa', 'prompt'];
+const PROMPT_KINDS = ['pahami', 'hafal', 'latihan', 'ujian', 'talaqqi', 'eksplorasi', 'tabs'];
+export const MAX_PROMPT_TEXT = 15000;
 
 const str = (v, n) => (typeof v === 'string' ? v.trim().slice(0, n) : '');
 const strList = (v, n, max) => (Array.isArray(v) ? v.map(x => str(x, n)).filter(Boolean).slice(0, max) : []);
@@ -32,6 +35,21 @@ export const cleanGoldenItem = (raw) => {
     if (raw.task === 'qa') { input.pertanyaan = str(inp.pertanyaan, 1000); if (!input.pertanyaan) return { error: 'Pertanyaan wajib diisi' }; }
     expected = { poin: strList(exp.poin, 500, 20) };
     if (expected.poin.length < 1) return { error: 'Isi minimal 1 poin kunci' };
+  } else if (raw.task === 'prompt') {
+    // Prompt library: halaman admin menyimpan maddah/prompt yang diuji, profil uji, isian, dan teks prompt jadi.
+    const prof = inp.profile || {};
+    input = {
+      source: inp.source === 'mahad' ? 'mahad' : 'kuliah',
+      maddah_id: str(inp.maddah_id, 80), maddah_name: str(inp.maddah_name, 120),
+      kind: PROMPT_KINDS.includes(inp.kind) ? inp.kind : '', prompt_title: str(inp.prompt_title, 160),
+      profile: Object.fromEntries(['level', 'faculty', 'major', 'madzhab'].map(k => [k, str(prof[k], 40)]).filter(([, v]) => v)),
+      slots: Object.fromEntries(Object.entries(inp.slots || {}).slice(0, 8).map(([k, v]) => [str(k, 80), str(v, 4000)]).filter(([k]) => k)),
+      prompt: str(inp.prompt, MAX_PROMPT_TEXT),
+    };
+    if (!input.maddah_id || !input.kind || !input.prompt_title) return { error: 'Pilih maddah dan prompt yang diuji' };
+    if (input.prompt.length < 50) return { error: 'Teks prompt kosong — pilih prompt lalu isi isiannya' };
+    // Poin tambahan dari asatidz (opsional): hal yang wajib ada di jawaban AI untuk prompt ini.
+    expected = { poin: strList(exp.poin, 500, 10) };
   } else if (raw.task === 'irab') {
     input = { teks: str(inp.teks, 400) };
     if (!input.teks) return { error: 'Teks Arab wajib diisi' };
@@ -180,6 +198,59 @@ export const judgeAnswer = async ({ item, output, model }) => {
   };
 };
 
+/* ── Rubrik penguji untuk prompt library ── */
+// Bobot kriteria; null dari penguji berarti kriteria tidak berlaku untuk prompt itu.
+export const PROMPT_RUBRIC = [
+  { id: 'patuh', label: 'Mengikuti instruksi prompt', weight: 3 },
+  { id: 'relevan', label: 'Sesuai maddah, bab, dan tingkat', weight: 2 },
+  { id: 'format_azhar', label: 'Format soal khas Azhar (Arab, redaksi asli, bobot)', weight: 2 },
+  { id: 'interaktif', label: 'Berhenti menunggu jawaban bila diminta', weight: 2 },
+  { id: 'akurasi', label: 'Isi benar, tanpa dalil/kitab/data karangan', weight: 3 },
+  { id: 'bahasa_arab', label: 'Bahasa Arab benar & berharakat seperlunya', weight: 1 },
+  { id: 'keterbacaan', label: 'Rapi, ringkas, enak dibaca di HP', weight: 1 },
+];
+
+const PROMPT_JUDGE = `Kamu penguji mutu prompt belajar Talqeeh (aplikasi belajar mahasiswa & pelajar Al-Azhar Kairo).
+Kamu menerima PROMPT yang dikirim pelajar dan JAWABAN PERTAMA AI atas prompt itu. Nilai JAWABAN itu dengan ketat dan adil untuk tiap kriteria, skala 0–2 (0 = gagal, 1 = sebagian, 2 = baik), atau null bila kriteria tidak berlaku:
+- patuh: mengikuti langkah, jumlah, urutan, dan format yang diminta prompt.
+- relevan: sesuai maddah, bab/topik yang diisi, dan tingkat pelajar di prompt.
+- format_azhar: HANYA bila prompt meminta soal/ujian — soal dalam bahasa Arab fushah dengan redaksi khas kertas Azhar (عَرِّفْ، اُذْكُرْ، عَلِّلْ، ضَعْ عَلَامَةَ …), bobot درجة bila tahriri, susunan السؤال الأول/الثاني. Selain itu null.
+- interaktif: HANYA bila prompt meminta AI menunggu jawaban pelajar — jawaban memberi soal/pertanyaan lalu BERHENTI tanpa membocorkan jawaban. Selain itu null.
+- akurasi: isi ilmiahnya benar menurut ulama muktabar; tidak mengarang ayat, hadits, qaul ulama, nama kitab, nomor halaman, atau tahun; hal yang tidak pasti ditandai. Pelanggaran berat = 0.
+- bahasa_arab: teks Arab benar (nahwu/imla'), berharakat bila perlu. null bila jawaban tidak memuat teks Arab.
+- keterbacaan: rapi dan ringkas, mudah dibaca di HP.
+Tulis "masalah": daftar kesalahan konkret (kutip bagian jawabannya). Jangan menilai gaya bahasa di luar kriteria.
+Bila ada POIN TAMBAHAN dari asatidz, nilai tiap poin: "ada": true bila tercakup benar.
+Balas HANYA JSON: {"kriteria":{"patuh":2,"relevan":2,"format_azhar":null,"interaktif":1,"akurasi":2,"bahasa_arab":1,"keterbacaan":2},"catatan_kriteria":{"interaktif":"singkat"},"poin":[{"ada":true,"catatan":"singkat"}],"masalah":["..."],"catatan":"satu kalimat kesimpulan"}`;
+
+export const scorePromptVerdict = (verdict, poin = []) => {
+  const k = verdict?.kriteria || {};
+  const notes = verdict?.catatan_kriteria || {};
+  const rows = PROMPT_RUBRIC.map(c => {
+    const v = k[c.id];
+    const nilai = v === null || v === undefined || v === 'null' ? null : Math.max(0, Math.min(2, Number(v) || 0));
+    return { id: c.id, label: c.label, weight: c.weight, nilai, catatan: str(notes[c.id], 300) };
+  });
+  const used = rows.filter(r => r.nilai !== null);
+  const rubric = used.length ? used.reduce((s, r) => s + r.weight * r.nilai / 2, 0) / used.reduce((s, r) => s + r.weight, 0) : 0;
+  const marks = Array.isArray(verdict?.poin) ? verdict.poin : [];
+  const covered = poin.map((p, i) => ({ poin: p, ada: marks[i]?.ada === true, catatan: str(marks[i]?.catatan, 300) }));
+  const coverage = covered.length ? covered.filter(c => c.ada).length / covered.length : null;
+  // Poin tambahan asatidz ikut 30% bila ada.
+  const score = Math.round((coverage === null ? rubric : rubric * 0.7 + coverage * 0.3) * 100);
+  return { score, detail: { kriteria: rows, poin: covered, masalah: strList(verdict?.masalah, 400, 10), catatan: str(verdict?.catatan, 400), rubrik: Math.round(rubric * 100) } };
+};
+
+export const judgePrompt = async ({ item, promptText, output, model }) => {
+  const poin = item.expected?.poin || [];
+  const extra = poin.length ? `\n\nPOIN TAMBAHAN DARI ASATIDZ (${poin.length}):\n${poin.map((p, i) => `${i + 1}. ${p}`).join('\n')}` : '';
+  const verdict = await callAIJson({
+    system: PROMPT_JUDGE, model, maxTokens: 1500, temperature: 0,
+    messages: [{ role: 'user', content: `MADDAH: ${item.input.maddah_name || item.input.maddah_id} · jenis prompt: ${item.input.kind} · judul: ${item.input.prompt_title}\n\nPROMPT:\n<<<\n${promptText}\n>>>${extra}\n\nJAWABAN AI:\n<<<\n${output}\n>>>` }],
+  });
+  return scorePromptVerdict(verdict, poin);
+};
+
 /* ── Menjalankan tugas persis seperti fitur aplikasi ── */
 export const runTask = async (item, model) => {
   const t = item.task;
@@ -189,6 +260,11 @@ export const runTask = async (item, model) => {
   }
   if (t === 'qa') {
     const text = await callAI({ system: tutorSystem(item.title, item.input.materi), model, maxTokens: 1500, messages: [{ role: 'user', content: item.input.pertanyaan }] });
+    return { output: text, judged: true };
+  }
+  if (t === 'prompt') {
+    // Sama dengan "Jalankan di sini": sistem promptChatSystem + prompt pengguna sebagai pesan pertama.
+    const text = await callAI({ system: promptChatSystem(), model, maxTokens: 1800, messages: [{ role: 'user', content: item.input.prompt }] });
     return { output: text, judged: true };
   }
   if (t === 'irab') {
@@ -316,11 +392,16 @@ export async function handleEvalAdmin(action, body, res) {
     const model = r0.models_used?.[it.task] || (await resolveModels())[TASK_MODEL[it.task]];
 
     if (action === 'admin-eval-item') {
+      // Prompt library: halaman admin mengirim teks prompt terbaru (dari data prompt saat ini, isian soal uji tetap),
+      // supaya evaluasi menguji prompt yang sedang terbit — bukan salinan lama saat soal uji dibuat.
+      const fresh = it.task === 'prompt' && typeof body.prompt_text === 'string' && body.prompt_text.trim().length >= 50;
+      const runItem = fresh ? { ...it, input: { ...it.input, prompt: body.prompt_text.trim().slice(0, MAX_PROMPT_TEXT) } } : it;
       const started = Date.now();
       let row;
       try {
-        const out = await runTask(it, model);
-        row = { run_id: r0.id, item_id: it.id, task: it.task, model, output: out.output.slice(0, 20000), score: out.judged ? null : out.score, detail: out.detail || null, ms: Date.now() - started, error: null };
+        const out = await runTask(runItem, model);
+        const detail = it.task === 'prompt' ? { prompt_used: runItem.input.prompt, prompt_fresh: fresh } : (out.detail || null);
+        row = { run_id: r0.id, item_id: it.id, task: it.task, model, output: out.output.slice(0, 20000), score: out.judged ? null : out.score, detail, ms: Date.now() - started, error: null };
       } catch (err) {
         row = { run_id: r0.id, item_id: it.id, task: it.task, model, output: null, score: 0, detail: null, ms: Date.now() - started, error: String(err.message).slice(0, 300) };
       }
@@ -333,8 +414,14 @@ export async function handleEvalAdmin(action, body, res) {
     if (!result?.output) return res.status(400).json({ ok: false, error: 'Belum ada jawaban AI untuk dinilai' });
     let patch;
     try {
-      const j = await judgeAnswer({ item: it, output: result.output, model: r0.judge_model });
-      patch = { score: j.score, detail: j.detail };
+      if (it.task === 'prompt') {
+        const promptText = result.detail?.prompt_used || it.input.prompt;
+        const j = await judgePrompt({ item: it, promptText, output: result.output, model: r0.judge_model });
+        patch = { score: j.score, detail: { ...j.detail, prompt_used: promptText, prompt_fresh: !!result.detail?.prompt_fresh } };
+      } else {
+        const j = await judgeAnswer({ item: it, output: result.output, model: r0.judge_model });
+        patch = { score: j.score, detail: j.detail };
+      }
     } catch (err) {
       patch = { score: 0, error: `Penguji gagal: ${String(err.message).slice(0, 200)}` };
     }

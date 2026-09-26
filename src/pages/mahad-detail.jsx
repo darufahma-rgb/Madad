@@ -8,7 +8,7 @@ const loadSlotSharedTopik = (maddahId) => {
   try { const v = JSON.parse(localStorage.getItem(`talqeeh_prompt_slots_${maddahId}`) || "{}"); return v.topik || v.bab || ""; } catch { return ""; }
 };
 
-const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled, slotShared, setSlotShared }) => {
+const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled, slotShared, setSlotShared, kind }) => {
   const toast = useToast();
   const [copied, setCopied] = useState(false);
   const [showFull, setShowFull] = useState(false);
@@ -125,6 +125,10 @@ const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled, slotShared, 
             Simpan
           </button>
         </div>
+      )}
+
+      {(copied || loadPromptFb()[`mahad|${maddah.id}|${kind}|${p.title}`]) && (
+        <PromptFeedback source="mahad" maddahId={maddah.id} kind={kind} title={p.title}/>
       )}
     </div>
   );
@@ -345,7 +349,7 @@ const MahadDetailPage = () => {
         {/* Prompt cards */}
         <div className="space-y-4">
           {activePrompts.map((p, i) => (
-            <MahadPromptCard key={`${activeKind}-${i}`} p={p} maddah={maddah} resolvePrompt={resolvePrompt} formatEnabled={formatEnabled}
+            <MahadPromptCard key={`${activeKind}-${i}`} p={p} maddah={maddah} resolvePrompt={resolvePrompt} formatEnabled={formatEnabled} kind={activeKind}
               slotShared={slotShared} setSlotShared={setSlotShared}/>
           ))}
 

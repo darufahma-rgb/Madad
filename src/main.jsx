@@ -19,6 +19,7 @@ import './muqaranah-data.jsx';
 import './intentions-data.jsx';
 import './adaptive-prompt.jsx';
 import './output-format.jsx';
+import './prompt-rubric.jsx';
 import './learning-frameworks-data.jsx';
 import './learning-profile.jsx';
 
@@ -46,6 +47,7 @@ import './pages/ethics.jsx';
 import './pages/privacy.jsx';
 import './pages/admin.jsx';
 import './pages/admin-eval.jsx';
+import './pages/admin-prompt-quality.jsx';
 import './pages/muqaranah.jsx';
 import './pages/muqaranah-detail.jsx';
 import './pages/muqaranah-form.jsx';

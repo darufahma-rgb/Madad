@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { verifyToken } from './admin-auth.js';
-import { sbConfig, sbHeaders, normalizeCode, requireAiTier, consumeQuota, isActiveMember } from './_lib/member.js';
+import { sbConfig, sbHeaders, normalizeCode, requireAiTier, requireMember, consumeQuota, isActiveMember } from './_lib/member.js';
 import { callAI, callAIJson, requestAI, streamAI, friendlyAiError, aiErrorDetail } from './_lib/ai.js';
 import { resolveModels, isValidModelId, clearModelCache } from './_lib/models.js';
 import {
@@ -9,6 +9,7 @@ import {
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
+import { handlePromptFeedback, handlePromptQualityAdmin } from './_lib/prompt-quality.js';
 import { getMonthlyLimits, cachedMonthlyLimits } from './_lib/ai-partner/limits.js';
 import { splitChunks, spreadSample, stickyExcerpt } from './_lib/ai-partner/chunks.js';
 import {
@@ -1032,6 +1033,12 @@ async function handleAdmin(action, req, res, body) {
     if (handled !== null) return handled;
   }
 
+  // Mutu prompt library: masukan pengguna & tinjauan asatidz (lihat api/_lib/prompt-quality.js).
+  if (action.startsWith('admin-prompt-')) {
+    const handled = await handlePromptQualityAdmin(action, body, res);
+    if (handled !== null) return handled;
+  }
+
   return res.status(400).json({ ok: false, error: 'Action tidak valid' });
 }
 
@@ -1066,6 +1073,13 @@ export default async function handler(req, res) {
           prompt_limit: TRIAL_PROMPT_MESSAGES,
         },
       });
+    }
+
+    // "Prompt ini membantu?" dipakai semua member prompt library, termasuk yang tanpa AI Partner.
+    if (action === 'prompt-feedback') {
+      const member = await requireMember(req);
+      if (!member.ok) return res.status(member.status).json({ ok: false, error: member.reason });
+      return await handlePromptFeedback(member.code, body, res);
     }
 
     const access = await requireAiTier(req);

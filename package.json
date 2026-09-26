@@ -6,7 +6,8 @@
     "dev": "node_modules/.bin/vite",
     "build": "node_modules/.bin/vite build",
     "preview": "node_modules/.bin/vite preview",
-    "start": "node server.cjs"
+    "start": "node server.cjs",
+    "lint:prompts": "node scripts/prompt-lint.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.2",
