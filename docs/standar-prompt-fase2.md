@@ -37,7 +37,17 @@ Wasail Tabligh, Khithabah, Qawa'id Fiqhiyyah, Ushul Dakwah, Maqashid Syariah, Is
 Fiqh Dakwah, Akhlaq Islamiyah, Tsaqafah Islamiyah, Nizham Islamiyah, Jughrafiyah Alam Islami, Ilmu Ijtima',
 Manahij Bahts, Hadhir Al-Alam Al-Islami, Falsafah Yunaniyah, Ilm Nafs, Tarbiyah wa Ilm Nafs, Manahij Tadris,
 Firaq, Filsafat Islam, Qira'at, Tarikh Dakwah, Adab, 'Arudh, Fiqh Lughah, Naqd Adabi, Hadharah, Dakwah & I'lam,
-Mu'jam wa Lahajat, Qa'at Bahts. Belum: 3 maddah Program DL (format tabs) dan 27 maddah Ma'had.
+Mu'jam wa Lahajat, Qa'at Bahts. Belum: 3 maddah Program DL (format tabs).
+
+Ma'had (src/mahad-data.jsx, splice dengan scratchpad `splice_mahad.py`): 4 dari 27 selesai — Dirasat Ijtima'iyyah,
+Komputer, Fisika, Kimia. Aturan khusus Ma'had:
+- Baris profil: `Aku [TINGKATAN] di Ma'had Al-Azhar, [GAYA_BELAJAR]. Belajar [MADDAH].` — tidak lagi menulis "Al-Bu'uts",
+  karena tidak semua siswa Ma'had belajar di sana.
+- Jenis prompt Ma'had hanya pahami, hafal, latihan, ujian; jumlah per jenis dipertahankan.
+- Pelajaran umum di Ma'had diajarkan dalam bahasa Arab: istilah ditulis Arab berharakat + arti, soal latihan berbahasa Arab
+  berharakat + terjemah singkat (blok format pusat menambah terjemah untuk profil Ma'had).
+- Sains & matematika: konsep dulu baru rumus, langkah kerja baku, dan AI diminta memeriksa ulang hitungan dan kunci
+  jawabannya sebelum memberi soal.
 Semua maddah Fakultas Dakwah sudah selesai. Urutan dipilih dari jangkauan (fakultas × tingkat) dan jumlah kertas di Bank Soal, karena data jumlah buka
 maddah hanya ada di Supabase.
 
