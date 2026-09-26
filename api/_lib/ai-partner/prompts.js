@@ -242,6 +242,17 @@ ${DIALECT_RULES[dialect] || DIALECT_RULES.campur}
 - Jika tidak ada ucapan yang jelas, tulis HANYA: [HENING]`;
 };
 
+// Jawaban lisan mahasiswa di simulasi syafawi (satu rekaman pendek).
+export const transcribeAnswerPrompt = ({ question = '' } = {}) => {
+  const q = clipLine(question, 400);
+  return `Transkripsikan jawaban lisan seorang mahasiswa dalam latihan ujian syafawi Universitas Al-Azhar, kata demi kata.
+- Mahasiswa boleh menjawab dengan bahasa Arab fushah, bahasa Indonesia, atau campuran keduanya.
+- Bagian Arab tulis dengan huruf Arab (ejaan fushah baku, harakat bila jelas terdengar); bagian Indonesia tulis dengan huruf Latin.
+- Tulis apa yang benar-benar diucapkan, termasuk jawaban yang keliru atau terputus. Jangan membetulkan, meringkas, menerjemahkan, atau menambah komentar.${q ? `
+- Pertanyaan duktur: «${q}» — gunakan hanya untuk mengenali istilah yang kurang jelas terdengar.` : ''}
+- Jika tidak ada ucapan yang jelas, tulis HANYA: [HENING]`;
+};
+
 /* ── Ringkasan materi panjang: dicatat per bagian, lalu digabung ── */
 export const SUMMARY_MAP_NOTE = (step, total) => `
 

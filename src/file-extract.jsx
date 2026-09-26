@@ -310,6 +310,37 @@ const prepareMediaChunks = async (file) => {
   return { duration: decoded.duration, count, getChunk };
 };
 
+// Rekaman mikrofon (webm/mp4 dari MediaRecorder) → WAV 16kHz mono base64, siap untuk action "transcribe".
+const recordingToWavBase64 = async (blob) => {
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  if (!Ctx) throw new Error('Browser ini tidak bisa memproses audio. Coba pakai Chrome terbaru.');
+  const ctx = new Ctx({ sampleRate: AUDIO_RATE });
+  let decoded;
+  try {
+    decoded = await ctx.decodeAudioData(await blob.arrayBuffer());
+  } catch {
+    throw new Error('Rekaman tidak bisa dibaca. Coba rekam ulang.');
+  } finally {
+    ctx.close?.();
+  }
+  const mono = new Float32Array(decoded.length);
+  for (let ch = 0; ch < decoded.numberOfChannels; ch++) {
+    const data = decoded.getChannelData(ch);
+    for (let i = 0; i < data.length; i++) mono[i] += data[i] / decoded.numberOfChannels;
+  }
+  let samples = mono.subarray(0, Math.min(mono.length, decoded.sampleRate * CHUNK_SECONDS));
+  let peak = 0;
+  for (let j = 0; j < samples.length; j += 16) peak = Math.max(peak, Math.abs(samples[j]));
+  if (peak < 0.01) return { base64: null, silent: true, duration: decoded.duration };
+  if (decoded.sampleRate !== AUDIO_RATE) {
+    const ratio = decoded.sampleRate / AUDIO_RATE;
+    const out = new Float32Array(Math.floor(samples.length / ratio));
+    for (let j = 0; j < out.length; j++) out[j] = samples[Math.floor(j * ratio)];
+    samples = out;
+  }
+  return { base64: await fileToBase64(encodeWav(samples)), silent: false, duration: decoded.duration };
+};
+
 /* ── Deteksi jenis file ── */
 
 const FILE_KINDS = {
@@ -340,6 +371,6 @@ const ACCEPTED_FILE_TYPES = Object.values(FILE_KINDS).flatMap(v => v.exts.map(e 
 
 Object.assign(window, {
   extractPdfPages, renderPdfPagesAsImages, readPdfPages, renderPdfPage, cleanPdfText, compressImage, fileToBase64,
-  extractDocx, extractPptx, extractXlsx, prepareMediaChunks,
+  extractDocx, extractPptx, extractXlsx, prepareMediaChunks, recordingToWavBase64,
   detectFileKind, FILE_KINDS, ACCEPTED_FILE_TYPES, MAX_MEDIA_MINUTES,
 });

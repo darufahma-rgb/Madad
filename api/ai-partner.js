@@ -5,7 +5,7 @@ import { callAI, callAIJson, requestAI, streamAI, friendlyAiError, aiErrorDetail
 import { resolveModels, isValidModelId, clearModelCache } from './_lib/models.js';
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
-  OCR_PROMPT, transcribePrompt, TRANSCRIBE_DIALECTS, tutorSystem, syafawiSystem, learnerContext,
+  OCR_PROMPT, transcribePrompt, transcribeAnswerPrompt, TRANSCRIBE_DIALECTS, tutorSystem, syafawiSystem, learnerContext,
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
@@ -341,7 +341,10 @@ async function handleTranscribe(ctx, body, res) {
       role: 'user',
       content: [
         { type: 'input_audio', input_audio: { data: audio, format: 'wav' } },
-        { type: 'text', text: transcribePrompt({ dialect, title: body.title, prevTail: body.prev_tail }) },
+        // Simulasi syafawi mengirim jawaban lisan mahasiswa, bukan potongan kuliah.
+        { type: 'text', text: body.purpose === 'syafawi'
+          ? transcribeAnswerPrompt({ question: body.question })
+          : transcribePrompt({ dialect, title: body.title, prevTail: body.prev_tail }) },
       ],
     }],
   });

@@ -1282,6 +1282,98 @@ const TUTOR_SUGGESTIONS = [
 ];
 const SYAFAWI_START = 'Mulai simulasi syafawi. Silakan ajukan pertanyaan pertama.';
 
+/* ── Suara untuk simulasi syafawi ──
+   Duktur: pertanyaan Arab dibacakan dengan suara Arab bawaan perangkat (Web Speech API, gratis).
+   Mahasiswa: jawaban direkam (maks 60 detik), lalu ditranskrip lewat action "transcribe". */
+const SYAFAWI_VOICE_KEY = 'talqeeh_syafawi_voice';
+const SYAFAWI_MAX_SECONDS = 60;
+const ARABIC_RE = /[؀-ۿ]/;
+
+// Ambil pertanyaan Arab dari balasan duktur (baris kutipan "> ..." yang berhuruf Arab); cadangannya baris Arab lain.
+const arabicQuestionOf = (text) => {
+  const lines = (text || '').split('\n').map(l => l.trim()).filter(Boolean);
+  const clean = (l) => l.replace(/^>\s?/, '').replace(/[*_`#]/g, '').replace(/[\u{1F300}-\u{1FAFF}☀-➿]/gu, '').trim();
+  const quoted = lines.filter(l => l.startsWith('>') && ARABIC_RE.test(l)).map(clean);
+  if (quoted.length) return quoted[quoted.length - 1];
+  const arabic = lines.filter(l => (l.match(/[؀-ۿ]/g) || []).length > l.length * 0.4).map(clean);
+  return arabic[arabic.length - 1] || '';
+};
+
+const useArabicSpeech = () => {
+  const synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
+  const [voice, setVoice] = useState(null);
+  const [speaking, setSpeaking] = useState(null); // teks yang sedang dibacakan
+  useEffect(() => {
+    if (!synth) return;
+    const pick = () => {
+      const vs = synth.getVoices().filter(v => /^ar/i.test(v.lang));
+      setVoice(vs.find(v => /EG/i.test(v.lang)) || vs.find(v => /SA/i.test(v.lang)) || vs[0] || null);
+    };
+    pick();
+    synth.addEventListener?.('voiceschanged', pick);
+    return () => { synth.removeEventListener?.('voiceschanged', pick); synth.cancel(); };
+  }, []);
+  const speak = (text) => {
+    if (!synth || !voice || !text) return;
+    synth.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.voice = voice; u.lang = voice.lang; u.rate = 0.9;
+    u.onend = u.onerror = () => setSpeaking(cur => (cur === text ? null : cur));
+    setSpeaking(text);
+    synth.speak(u);
+  };
+  const stop = () => { synth?.cancel(); setSpeaking(null); };
+  // iOS hanya mengizinkan suara yang dimulai dari ketukan: "buka kunci" saat tombol ditekan.
+  const unlock = () => { if (synth && voice) { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; synth.speak(u); } };
+  return { supported: !!synth, available: !!voice, speaking, speak, stop, unlock };
+};
+
+const useAnswerRecorder = ({ onDone, onError }) => {
+  const [state, setState] = useState('idle'); // idle | recording | processing
+  const [seconds, setSeconds] = useState(0);
+  const rec = useRef(null);
+  const supported = typeof window !== 'undefined' && !!navigator.mediaDevices?.getUserMedia && typeof window.MediaRecorder !== 'undefined';
+
+  const stopTracks = () => rec.current?.stream?.getTracks().forEach(t => t.stop());
+  useEffect(() => () => { clearInterval(rec.current?.timer); stopTracks(); }, []);
+
+  const start = async () => {
+    if (state !== 'idle') return;
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    } catch {
+      onError('Izin mikrofon ditolak. Aktifkan izin mikrofon untuk situs ini di pengaturan browser.');
+      return;
+    }
+    const mr = new MediaRecorder(stream);
+    const chunks = [];
+    mr.ondataavailable = (e) => { if (e.data?.size) chunks.push(e.data); };
+    mr.onstop = async () => {
+      clearInterval(rec.current?.timer);
+      stopTracks();
+      setState('processing');
+      try {
+        await onDone(new Blob(chunks, { type: mr.mimeType || 'audio/webm' }));
+      } finally {
+        setState('idle');
+        setSeconds(0);
+      }
+    };
+    const startedAt = Date.now();
+    const timer = setInterval(() => {
+      const s = Math.floor((Date.now() - startedAt) / 1000);
+      setSeconds(s);
+      if (s >= SYAFAWI_MAX_SECONDS && mr.state === 'recording') mr.stop();
+    }, 250);
+    rec.current = { mr, stream, timer };
+    mr.start();
+    setState('recording');
+  };
+  const stop = () => { if (rec.current?.mr?.state === 'recording') rec.current.mr.stop(); };
+  return { supported, state, seconds, start, stop };
+};
+
 const TutorTab = ({ set, setSet, access }) => {
   const toast = useToast();
   const [mode, setMode]       = useState('tutor');
@@ -1292,8 +1384,34 @@ const TutorTab = ({ set, setSet, access }) => {
   const [live, pushLive, resetLive] = useLiveText();
   const cite = useCite(set);
   const chat = (set.chat || []).filter(m => (m.mode || 'tutor') === mode);
+  const speech = useArabicSpeech();
+  const [voiceOn, setVoiceOn] = useState(() => { try { return localStorage.getItem(SYAFAWI_VOICE_KEY) !== 'off'; } catch { return true; } });
+  const toggleVoice = () => setVoiceOn(v => {
+    try { localStorage.setItem(SYAFAWI_VOICE_KEY, v ? 'off' : 'on'); } catch {}
+    if (v) speech.stop();
+    return !v;
+  });
+
+  // Jawaban lisan → teks. Hasilnya masuk ke kotak jawaban supaya bisa dicek sebelum dikirim ke duktur.
+  const transcribeAnswer = async (blob) => {
+    setError('');
+    try {
+      const wav = await recordingToWavBase64(blob);
+      if (wav.silent) { setError('Suaramu tidak terdengar. Coba rekam lagi lebih dekat ke mikrofon.'); return; }
+      const lastQuestion = arabicQuestionOf([...(set.chat || [])].reverse().find(m => m.role === 'assistant' && m.mode === 'syafawi')?.content);
+      const d = await aiCall('transcribe', { audio_base64: wav.base64, purpose: 'syafawi', question: lastQuestion });
+      if (!d.ok) { setError(d.message || d.error || 'Gagal mengubah suara jadi teks. Coba lagi.'); return; }
+      if (!d.teks) { setError('Tidak ada ucapan yang jelas. Coba rekam lagi.'); return; }
+      setInput(prev => (prev.trim() ? `${prev.trim()} ` : '') + d.teks);
+      toast.push('Periksa hasil suaramu, lalu kirim.');
+    } catch (e) {
+      setError(e.message || 'Gagal memproses rekaman.');
+    }
+  };
+  const recorder = useAnswerRecorder({ onDone: transcribeAnswer, onError: setError });
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, [chat.length, sending, mode, Math.floor(live.length / 300)]);
+  useEffect(() => { if (mode !== 'syafawi') speech.stop(); }, [mode]);
 
   if (access.tier !== 'pro') {
     return <UpgradeCard title="Tutor & simulasi syafawi khusus pelanggan" message="Tanya apa saja tentang materimu, atau latihan ujian lisan dengan duktur AI yang bertanya satu per satu lalu menilai jawabanmu."/>;
@@ -1302,6 +1420,7 @@ const TutorTab = ({ set, setSet, access }) => {
   const send = async (text) => {
     const message = (text ?? input).trim();
     if (!message || sending) return;
+    if (mode === 'syafawi' && voiceOn) { speech.stop(); speech.unlock(); }
     setInput('');
     setError('');
     setSending(true);
@@ -1317,6 +1436,7 @@ const TutorTab = ({ set, setSet, access }) => {
       return;
     }
     setSet(s => ({ ...s, chat: [...(s.chat || []), { role: 'assistant', content: data.reply, mode, model: data.model }] }));
+    if (mode === 'syafawi' && voiceOn) speech.speak(arabicQuestionOf(data.reply));
   };
 
   const restart = async () => {
@@ -1334,8 +1454,18 @@ const TutorTab = ({ set, setSet, access }) => {
               className={`text-xs px-3 py-1.5 rounded-lg ${mode === id ? 'bg-emerald-500/20 text-emerald-200' : 'text-ink-muted hover:text-ink'}`}>{label}</button>
           ))}
         </div>
-        {chat.length > 0 && <ToolbarButton icon="refresh" onClick={restart}>{mode === 'syafawi' ? 'Ulang simulasi' : 'Hapus percakapan'}</ToolbarButton>}
+        <div className="flex items-center gap-2 flex-wrap">
+          {mode === 'syafawi' && speech.supported && (
+            <ToolbarButton icon={voiceOn ? 'volume' : 'volumeOff'} onClick={toggleVoice}>{voiceOn ? 'Suara duktur: aktif' : 'Suara duktur: mati'}</ToolbarButton>
+          )}
+          {chat.length > 0 && <ToolbarButton icon="refresh" onClick={restart}>{mode === 'syafawi' ? 'Ulang simulasi' : 'Hapus percakapan'}</ToolbarButton>}
+        </div>
       </div>
+      {mode === 'syafawi' && voiceOn && speech.supported && !speech.available && (
+        <p className="text-[11px] text-amber-300/90 mb-3">
+          Perangkatmu belum punya suara bahasa Arab, jadi pertanyaan hanya tampil sebagai teks. Tambahkan lewat pengaturan Text-to-speech (Android) atau Pengaturan → Waktu & bahasa → Ucapan (Windows).
+        </p>
+      )}
 
       <div className="card-glass p-4 md:p-6 flex flex-col" style={{ minHeight: 440 }}>
         <div className="flex-1 space-y-4 overflow-y-auto mb-4" style={{ maxHeight: 540 }}>
@@ -1356,6 +1486,11 @@ const TutorTab = ({ set, setSet, access }) => {
               <p className="text-ink-muted text-sm mb-5 leading-relaxed">
                 Duktur AI mengajukan 5 pertanyaan dalam bahasa Arab satu per satu, menilai tiap jawabanmu, lalu memberi nilai akhir. Jawab boleh bahasa Arab atau Indonesia.
               </p>
+              {(speech.supported || recorder.supported) && (
+                <p className="text-ink-soft text-xs mb-5 leading-relaxed">
+                  {speech.supported && 'Pertanyaan dibacakan dengan suara. '}{recorder.supported && 'Jawab dengan menekan tombol mikrofon — suaramu diubah jadi teks untuk kamu periksa sebelum dikirim.'}
+                </p>
+              )}
               <button onClick={() => send(SYAFAWI_START)} className="btn btn-primary text-sm px-5 py-2.5">Mulai simulasi</button>
             </div>
           )}
@@ -1373,7 +1508,15 @@ const TutorTab = ({ set, setSet, access }) => {
                 {m.role === 'user'
                   ? <span className="whitespace-pre-wrap" dir="auto">{m.content}</span>
                   : <>
-                      <AiRichText content={m.content} size="sm" source={set.content} onCite={cite.onCite}/>
+                      {/* Di syafawi, baris "> …" adalah pertanyaan duktur, bukan kutipan materi → jangan dicek ke materi. */}
+                      <AiRichText content={m.content} size="sm" source={mode === 'tutor' ? set.content : undefined} onCite={cite.onCite}/>
+                      {mode === 'syafawi' && speech.available && arabicQuestionOf(m.content) && (
+                        <button onClick={() => (speech.speaking === arabicQuestionOf(m.content) ? speech.stop() : speech.speak(arabicQuestionOf(m.content)))}
+                          className="mt-2 inline-flex items-center gap-1.5 text-xs text-emerald-300 hover:text-emerald-200">
+                          <Icon name={speech.speaking === arabicQuestionOf(m.content) ? 'pause' : 'volume'} className="w-3.5 h-3.5"/>
+                          {speech.speaking === arabicQuestionOf(m.content) ? 'Hentikan suara' : 'Dengarkan pertanyaan'}
+                        </button>
+                      )}
                       <FeedbackBar compact setId={set.id} kind={mode} content={m.content} model={m.model}
                         className="mt-2.5 pt-2 border-t border-white/[0.06] flex flex-col items-start"/>
                     </>}
@@ -1395,8 +1538,32 @@ const TutorTab = ({ set, setSet, access }) => {
           <div ref={bottomRef}/>
         </div>
         {error && <div className="text-sm text-rose-400 mb-2">{error}</div>}
+        {mode === 'syafawi' && chat.length > 0 && recorder.state !== 'idle' && (
+          <div className={`mb-2 flex items-center justify-between gap-3 rounded-xl px-3.5 py-2.5 text-sm ${recorder.state === 'recording'
+            ? 'bg-rose-500/10 border border-rose-500/30 text-rose-200' : 'bg-white/4 border border-white/10 text-ink-muted'}`}>
+            {recorder.state === 'recording' ? (
+              <>
+                <span className="inline-flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-rose-400 animate-pulse"/>
+                  Merekam jawaban… {Math.floor(recorder.seconds / 60)}:{String(recorder.seconds % 60).padStart(2, '0')} / 1:00
+                </span>
+                <button onClick={recorder.stop} className="text-xs px-3 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-100">Selesai</button>
+              </>
+            ) : <span className="animate-pulse">Mengubah suaramu jadi teks…</span>}
+          </div>
+        )}
         {(mode === 'tutor' || chat.length > 0) && (
           <div className="flex gap-2">
+            {mode === 'syafawi' && recorder.supported && (
+              <button onClick={() => (recorder.state === 'recording' ? recorder.stop() : recorder.start())}
+                disabled={sending || recorder.state === 'processing'}
+                aria-label={recorder.state === 'recording' ? 'Selesai merekam' : 'Jawab dengan suara'}
+                title={recorder.state === 'recording' ? 'Selesai merekam' : 'Jawab dengan suara'}
+                className={`self-end flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center border transition-colors ${recorder.state === 'recording'
+                  ? 'bg-rose-500/25 border-rose-500/50 text-rose-100' : 'bg-emerald-500/15 border-emerald-500/35 text-emerald-200 hover:bg-emerald-500/25'} disabled:opacity-50`}>
+                <Icon name="mic" className="w-5 h-5"/>
+              </button>
+            )}
             <textarea value={input} onChange={e => setInput(e.target.value)} rows={2} maxLength={2000}
               onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
               placeholder={mode === 'syafawi' ? 'Jawab pertanyaan duktur…' : 'Tulis pertanyaanmu…'}
