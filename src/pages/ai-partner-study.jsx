@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import AiRichText, { AiInline } from '../components/AiRichText.jsx';
 import { sourceIndex, bestPassage, normalizeText } from '../components/sourceMatch.js';
 import {
-  MM_COLORS, mmChildren, MindDetail, mindmapToMarkdown, MapCanvas, fitZoom, ZoomControl, MindFullscreen, useMindmapUi,
+  MM_COLORS, mmChildren, mmText, MindDetail, mindmapToMarkdown, MapCanvas, useMapView, ZoomControl, MindFullscreen, useMindmapUi,
 } from '../components/MindMap.jsx';
 /* Talqeeh — AI Partner: tab-tab belajar di halaman materi */
 
@@ -442,13 +442,15 @@ const MM_NOTES_KEY = 'talqeeh_mindmap_notes';
 const readPref = (key, fallback) => { try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; } };
 const savePref = (key, v) => { try { localStorage.setItem(key, v); } catch {} };
 
-const OutlineNode = ({ node, num, depth, color, showNotes, onSelect, path }) => (
+const OutlineNode = ({ node, num, depth, color, showNotes, onSelect, path }) => {
+  const t = mmText(node);
+  return (
   <li className={depth === 1 ? 'mm-ol-top' : ''} style={{ '--c': color }}>
     <button onClick={() => onSelect(path)} className="mm-ol-row">
       <span className="mm-ol-num">{num}</span>
       <span className="min-w-0">
-        <span className={depth === 1 ? 'mm-ol-label-top' : 'mm-ol-label'}>{node.label}</span>
-        {node.ar && <span className="mm-ol-ar" dir="rtl">{node.ar}</span>}
+        {t.label && <span className={depth === 1 ? 'mm-ol-label-top' : 'mm-ol-label'}>{t.label}</span>}
+        {t.ar && <span className="mm-ol-ar" dir="rtl">{t.ar}</span>}
         {showNotes && node.note && <span className="mm-ol-note">{node.note}</span>}
       </span>
     </button>
@@ -460,7 +462,8 @@ const OutlineNode = ({ node, num, depth, color, showNotes, onSelect, path }) => 
       </ol>
     )}
   </li>
-);
+  );
+};
 
 const noteText = (text) => <AiInline text={text}/>;
 
@@ -472,10 +475,8 @@ const MindmapTab = ({ set, setSet, access }) => {
   const [view, setView] = useState(() => readPref(MM_VIEW_KEY, narrow ? 'outline' : 'map'));
   const [showNotes, setShowNotes] = useState(() => readPref(MM_NOTES_KEY, '0') === '1');
   const { ui, selected, setSelected, select, expandAll, collapseAll } = useMindmapUi(root, showNotes);
-  const [zoom, setZoom] = useState(1);
+  const mapView = useMapView();
   const [full, setFull] = useState(false);
-  const canvasRef = useRef(null);
-  const zoomRef = useRef(null);
   const detailRef = useRef(null);
   // Di desktop, penjelasan mengambang di atas peta; di HP dan tampilan Daftar, di bawahnya.
   const floatingDetail = view === 'map' && !narrow;
@@ -516,7 +517,7 @@ const MindmapTab = ({ set, setSet, access }) => {
           className={`text-xs px-3 py-2 rounded-lg border inline-flex items-center gap-1.5 ${showNotes ? 'border-emerald-500/40 bg-emerald-500/12 text-emerald-200' : 'border-white/10 bg-white/4 text-ink-muted hover:text-ink'}`}>
           <Icon name="info" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Keterangan {showNotes ? 'tampil' : 'tersembunyi'}
         </button>
-        {view === 'map' && <ZoomControl zoom={zoom} setZoom={setZoom} onFit={() => setZoom(z => fitZoom(canvasRef.current, zoomRef.current, z))}/>}
+        {view === 'map' && <ZoomControl view={mapView}/>}
         <button onClick={() => setFull(true)}
           className="text-xs px-3 py-2 rounded-lg border border-emerald-500/35 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20 inline-flex items-center gap-1.5">
           <Icon name="maximize" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Layar penuh
@@ -533,11 +534,12 @@ const MindmapTab = ({ set, setSet, access }) => {
 
       {view === 'map' ? (
         <>
-          <MapCanvas root={root} ui={ui} zoom={zoom} canvasRef={canvasRef} zoomRef={zoomRef} canvasClass="card-glass mm-canvas-inline">
-            {floatingDetail && selected && <MindDetail floating root={root} path={selected} onSelect={select} onClose={() => setSelected(null)} renderNote={noteText}/>}
+          <MapCanvas root={root} ui={ui} view={mapView} minZoom={0.45} canvasClass="card-glass">
+            {floatingDetail && selected && <MindDetail floating root={root} path={selected} onSelect={select} onClose={() => setSelected(null)}
+              onFocus={(p) => mapView.ctl.current?.focus(p)} renderNote={noteText}/>}
           </MapCanvas>
           <p className="text-[11px] text-ink-soft mt-2">
-            Ketuk kotak untuk melihat penjelasannya · <span className="text-ink-muted">+N</span> membuka cabang · geser untuk melihat bagian lain · <button onClick={() => setFull(true)} className="text-emerald-300 hover:text-emerald-200">buka layar penuh</button>
+            Ketuk kotak untuk penjelasan · <span className="text-ink-muted">+N</span> membuka cabang · seret untuk menggeser · {narrow ? 'cubit dua jari' : 'Ctrl + scroll'} untuk zoom · <button onClick={() => setFull(true)} className="text-emerald-300 hover:text-emerald-200">buka layar penuh</button>
           </p>
         </>
       ) : (

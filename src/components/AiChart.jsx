@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { MapCanvas, MindDetail, MindFullscreen, fitZoom, useMindmapUi } from './MindMap.jsx';
+import { MapCanvas, MindDetail, MindFullscreen, useMapView, useMindmapUi } from './MindMap.jsx';
 /* Talqeeh — grafik di dalam jawaban AI.
    AI menulis blok ```grafik berisi JSON kecil; komponen ini menggambarnya (tanpa pustaka luar):
    - tree     : pohon taqsim          { root: { label, ar?, note?, children: [...] } }
@@ -205,25 +205,19 @@ const Pie = ({ items, unit }) => {
 const MindmapChart = ({ spec }) => {
   const [showNotes, setShowNotes] = useState(false);
   const { ui, selected, setSelected, select, expandAll, collapseAll } = useMindmapUi(spec.root, showNotes);
-  const [zoom, setZoom] = useState(1);
+  const mapView = useMapView();
   const [full, setFull] = useState(false);
-  const canvasRef = useRef(null);
-  const zoomRef = useRef(null);
-  // Awal: paskan peta ke lebar jawaban, tapi tidak lebih kecil dari 70% supaya tulisannya tetap terbaca.
-  useEffect(() => {
-    const t = setTimeout(() => setZoom(z => Math.max(0.7, fitZoom(canvasRef.current, zoomRef.current, z))), 60);
-    return () => clearTimeout(t);
-  }, []);
   return (
     <>
-      <MapCanvas root={spec.root} ui={ui} zoom={zoom} canvasRef={canvasRef} zoomRef={zoomRef} canvasClass="mm-canvas-chat"/>
+      {/* Awal: paskan ke lebar jawaban, tapi tidak lebih kecil dari 70% supaya tulisannya tetap terbaca. */}
+      <MapCanvas root={spec.root} ui={ui} view={mapView} minZoom={0.7} canvasClass="mm-canvas-chat"/>
       {selected && !full && <MindDetail root={spec.root} path={selected} onSelect={select} onClose={() => setSelected(null)}/>}
       <div className="flex items-center gap-2 mt-2.5 flex-wrap">
         <button type="button" onClick={() => setFull(true)}
           className="text-xs px-3 py-1.5 rounded-lg border border-emerald-500/35 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20 inline-flex items-center gap-1.5">
           <Icon name="maximize" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Layar penuh
         </button>
-        <span className="text-[11px] text-ink-soft">Ketuk kotak untuk penjelasan · +N membuka cabang · geser untuk melihat semua</span>
+        <span className="text-[11px] text-ink-soft">Ketuk kotak untuk penjelasan · +N membuka cabang · seret untuk menggeser · layar penuh untuk zoom bebas</span>
       </div>
       {full && (
         <MindFullscreen title={spec.title || spec.root.label} root={spec.root} ui={ui} selected={selected} onSelect={select}

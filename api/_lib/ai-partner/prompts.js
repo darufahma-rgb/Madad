@@ -168,7 +168,7 @@ Balas HANYA JSON array:
 
   mindmap: `${BASE_PERSONA}
 Buat peta konsep (mind map) materi ini dengan pola kitab: pusatnya topik utama, cabangnya ta'rif, taqsim (pembagian), syarat, rukun, hukum, khilaf, dan dalil — hanya yang ada di materi.
-Aturan: kedalaman maks 4 tingkat, tiap simpul maks 6 anak, total maks 35 simpul. label = frasa pendek bahasa Indonesia (≤6 kata); ar = padanan Arab berharakat HANYA untuk istilah kunci (kosongkan untuk yang lain); note = penjelasan ≤15 kata, hanya bila menambah makna. Jaga jawaban tetap ringkas supaya JSON selesai utuh.
+Aturan: kedalaman maks 4 tingkat, tiap simpul maks 6 anak, total maks 35 simpul. label = frasa pendek bahasa Indonesia (≤6 kata) — JANGAN menulis teks Arab di label; ar = teks Arab berharakat (istilah kunci, atau potongan ayat/hadits untuk simpul dalil — label-nya tetap ringkasan Indonesia, mis. label "Ayat kisah para rasul"), kosongkan untuk yang lain; note = penjelasan ≤15 kata, hanya bila menambah makna. Jaga jawaban tetap ringkas supaya JSON selesai utuh.
 ${ONLY_MATERIAL}
 Balas HANYA JSON object: {"label":"...","ar":"...","children":[{"label":"...","ar":"...","note":"...","children":[...]}]}`,
 
@@ -326,7 +326,7 @@ GRAFIK (Talqeeh bisa menggambar grafik di dalam jawaban):
   • tree — pohon taqsim: {"type":"tree","title":"…","root":{"label":"…","ar":"…","children":[{"label":"…","ar":"…","note":"…","children":[…]}]}} (kedalaman ≤3)
   • mindmap — peta konsep satu topik/bab (bentuk sama dengan tree): {"type":"mindmap","title":"…","root":{"label":"…","ar":"…","note":"…","children":[…]}}
     Pakai mindmap bila pengguna meminta mindmap/peta konsep, atau untuk merangkum satu bab/topik dari beberapa sisi (ta'rif, pembagian, syarat, rukun, hukum, khilaf, dalil). Pakai tree untuk satu pembagian/taqsim saja.
-    Aturan mindmap: pusat = topik; 3–6 cabang utama; tiap cabang ≤4 anak; kedalaman ≤3; total ≤25 kotak. Label kotak ≤6 kata; "note" ≤15 kata dan hanya bila menambah makna. Karena peta sudah memuat isinya, teks di luar blok cukup 1–3 kalimat pengantar/penutup — jangan mengulang isi peta.
+    Aturan mindmap: pusat = topik; 3–6 cabang utama; tiap cabang ≤4 anak; kedalaman ≤3; total ≤25 kotak. Label kotak ≤6 kata dalam bahasa Indonesia — teks Arab (istilah, ayat, hadits) hanya di "ar", jangan di label (simpul dalil: label = ringkasan Indonesia, ar = potongan ayat/hadits); "note" ≤15 kata dan hanya bila menambah makna. Karena peta sudah memuat isinya, teks di luar blok cukup 1–3 kalimat pengantar/penutup — jangan mengulang isi peta.
   • flow — alur/langkah: {"type":"flow","title":"…","steps":[{"label":"…","note":"…"}]}
   • timeline — kronologi: {"type":"timeline","title":"…","items":[{"time":"w. 170 H","label":"…","note":"…"}]}
   • pie — bagian dari keseluruhan, mis. faraidh: {"type":"pie","title":"…","items":[{"label":"Istri","value":"1/8"}]} (value angka atau pecahan "a/b")
