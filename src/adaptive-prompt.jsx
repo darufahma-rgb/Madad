@@ -214,6 +214,53 @@ const fillPromptSlots = (text, slots, values = {}) => {
 const missingPromptSlots = (slots, values = {}) =>
   slots.filter(s => s.kind === "isi" && !String(values[s.index] ?? "").trim());
 
+/* ============ Standar Al-Azhar: otomatis nempel di akhir semua prompt maddah ============
+   Berlaku untuk prompt yang disalin maupun yang dijalankan di Talqeeh. Aturan format ujian didasarkan pada
+   kertas ujian asli di Bank Soal: per "السؤال", bobot "(٣٠ درجة)", umumnya total 100, sub-soal أ- ب- ج-. */
+const MADZHAB_LABEL = { syafii: "Syafi'i", hanafi: "Hanafi", maliki: "Maliki", hanbali: "Hanbali" };
+
+// Prompt yang meminta AI membuat/menilai soal → ikut aturan kertas ujian.
+const EXAM_PROMPT_RE = /\b(soal|ujian|imtihan|tahriri|syafawi|kuis|quiz|mumtahin|mushahhih|as'ilah)\b/i;
+
+const isMahadProfile = (profile) => /^(idad|tsanawi)/.test(profile?.level || "");
+
+const madzhabLine = (profile) => {
+  const m = MADZHAB_LABEL[profile?.madzhab];
+  return m
+    ? `- Madzhab fiqh-ku ${m}. Untuk masalah fiqh, dahulukan pendapat mu'tamad madzhab ${m}, lalu sebut pendapat madzhab lain secara ringkas bila khilafnya penting.`
+    : "- Untuk masalah fiqh khilafiyah, sajikan pendapat madzhab empat secara adil tanpa men-tarjih.";
+};
+
+const examFormatBlock = (profile) => {
+  const easy = isMahadProfile(profile) || profile?.level === "mustawa" || profile?.arabicLevel === "pemula";
+  return `FORMAT SOAL (berlaku saat kamu membuat atau menilai soal):
+- Tulis soal dalam bahasa Arab fushah seperti kertas ujian Azhar${easy ? ", berharakat, dengan terjemah Indonesia singkat di bawah tiap soal" : ""}. Instruksi, koreksi, dan penjelasan tetap bahasa Indonesia.
+- Susun per السؤال الأول / الثاني / ... dengan bobot nilai di tiap soal, mis. (٣٠ درجة), totalnya 100 درجة kecuali permintaan di atas menentukan lain. Soal panjang dipecah jadi أ- ب- ج-. Jumlah soal ikuti permintaan di atas.
+- Pakai jenis soal khas Azhar sesuai maddah: عَرِّفْ، اُذْكُرْ مَعَ الدَّلِيلِ، بَيِّنْ / وَضِّحْ، مَا حُكْمُ...، عَلِّلْ، قَارِنْ، ضَعْ عَلَامَةَ (✓) أَوْ (✗) مَعَ تَصْوِيبِ الْخَطَأِ، أَكْمِلْ، اِخْتَرْ، أَعْرِبْ.
+- Simulasi syafawi: ajukan pertanyaan lisan dalam bahasa Arab satu per satu.
+- Saat menilai: beri nilai per soal sesuai bobotnya, sebut poin yang kurang, dan beri contoh jawaban singkat berbahasa Arab.`;
+};
+
+const azharStandardBlock = (profile, text = "") => {
+  const rules = `STANDAR AL-AZHAR (selalu berlaku):
+- Ikuti manhaj Al-Azhar: 'aqidah Asy'ari/Maturidi, fiqh madzhab empat, serta istilah dan urutan bahasan kitab muqarrar.
+${madzhabLine(profile)}
+- Dalil: sebut ayat dengan nama surat dan nomor ayat, hadits dengan perawi/mukharrij (dan derajatnya bila diketahui) — hanya yang kamu yakini. Kalau ragu pada redaksi atau sumbernya, sampaikan maknanya saja dan tandai "(perlu dicek)". Jangan mengarang ayat, hadits, qaul ulama, nama kitab, atau nomor halaman.
+- Bedakan pendapat mu'tamad, pendapat lain, dan pendapatmu sendiri. Jangan memberi fatwa.`;
+  return EXAM_PROMPT_RE.test(text) ? `${rules}\n\n${examFormatBlock(profile)}` : rules;
+};
+
+const withAzharStandard = (text, profile) => text ? `${text}\n\n${azharStandardBlock(profile, text)}` : text;
+
+// Isian madzhab di template ("(madzhab [SEBUTKAN])", "[SEBUTKAN MADZHAB, mis. Syafi'i]") diisi dari profil.
+const fillMadzhab = (text, profile) => {
+  const m = MADZHAB_LABEL[profile?.madzhab];
+  if (!m) return text;
+  return text
+    .replace(/\(madzhab \[SEBUTKAN[^\]\n]*\]\)/gi, `(madzhab ${m})`)
+    .replace(/\[SEBUTKAN MADZHAB[^\]\n]*\]/gi, m);
+};
+
 /* ============ MAIN RESOLVER ============ */
 
 const resolveAdaptivePrompt = (template, profile, maddahName) => {
@@ -235,28 +282,28 @@ const resolveAdaptivePrompt = (template, profile, maddahName) => {
     ? (LEVEL_BAHASA_INSTRUCTION[profile.level] || LEVEL_BAHASA_INSTRUCTION["2"])
     : LEVEL_BAHASA_INSTRUCTION["2"];
 
-  return tidyPrompt(template
+  return tidyPrompt(withAzharStandard(fillMadzhab(template, profile)
     .replace(/\[TINGKATAN\]/g,   tingkatan)
     .replace(/\[FAKULTAS\]/g,    fakultas)
     .replace(/\[JURUSAN\]/g,     jurusan)
     .replace(/\[GAYA_BELAJAR\]/g, gayaBelajar)
     .replace(/\[MADDAH\]/g,      maddahName || "[MADDAH]")
     .replace(/\[METODE\]/g,      metodeBlock(profile))
-    .replace(/\[LEVEL_BAHASA\]/g, levelBahasa));
+    .replace(/\[LEVEL_BAHASA\]/g, levelBahasa), profile));
 };
 
 /* ============ GENERIC RESOLVE (sample page / no profile) ============ */
 
 const resolveGenericPrompt = (template, maddahName) => {
   if (!template) return "";
-  return tidyPrompt(template
+  return tidyPrompt(withAzharStandard(template
     .replace(/\[TINGKATAN\]/g,    "thalib")
     .replace(/\[FAKULTAS\]/g,     "Al-Azhar")
     .replace(/\[JURUSAN\]/g,      "")
     .replace(/\[GAYA_BELAJAR\]/g, "belajar dengan pendekatan kombinasi")
     .replace(/\[MADDAH\]/g,       maddahName || "[MADDAH]")
     .replace(/\[METODE\]/g,       "")
-    .replace(/\[LEVEL_BAHASA\]/g, LEVEL_BAHASA_INSTRUCTION["2"]));
+    .replace(/\[LEVEL_BAHASA\]/g, LEVEL_BAHASA_INSTRUCTION["2"]), null));
 };
 
 /* ============ MA'HAD STARTER PACK ============ */
@@ -351,7 +398,7 @@ CARA KAMU MEMBANTUKU
 
 PENTING
 - Kamu adalah teman belajar, bukan pengganti guru atau ustadz-ku
-- Kalau tidak yakin, katakan jujur
+- Kalau tidak yakin, katakan jujur — jangan mengarang ayat, hadits, atau dalil
 - Beri semangat — aku sedang dalam proses belajar!
 
 Kalau paham, jawab: "Wa'alaikumussalam, siap menemani belajar!" Lalu tunggu pertanyaanku.`;
@@ -400,6 +447,8 @@ CARA KAMU MEMBANTUKU
 - ${levelBahasa}
 - Saat menyebut ayat, hadits, atau kaidah: WAJIB sertakan teks Arab asli dengan harakat, lalu terjemahnya
 - Saat menyebut istilah teknis: tulis Arab + transliterasi (contoh: قِيَاسٌ (qiyas))
+${madzhabLine(profile)}
+- Jangan mengarang ayat, hadits, qaul ulama, nama kitab, atau nomor halaman; kalau ragu, tandai "(perlu dicek)"
 - Saat menyebut ulama: pakai nama transliterasi natural (Imam Syafi'i, Ibnu Hajar)
 - Saat menyebut kitab: pakai nama Arab (Al-Umm, Fathul Bari)
 
@@ -445,7 +494,7 @@ const generateS2Prompt = (template, profile, maddah) => {
     || LEVEL_BAHASA_INSTRUCTION["s2_kuliyyat"];
   const maddahContext = resolveS2MaddahContext(maddah);
   const gaya = (profile?.learningStyle || []).join(", ") || "kombinasi";
-  return template
+  return withAzharStandard(fillMadzhab(template, profile)
     .replace(/\[TINGKATAN\]/g,    tingkatan)
     .replace(/\[JALUR_S2\]/g,     jalur)
     .replace(/\[FAKULTAS\]/g,     fakultas)
@@ -454,7 +503,7 @@ const generateS2Prompt = (template, profile, maddah) => {
     .replace(/\[NAMA_MADDAH\]/g,  maddah?.nama || "[nama maddah]")
     .replace(/\[KITAB\]/g,        maddah?.kitab || "[kitab muqarrar]")
     .replace(/\[LEVEL_BAHASA\]/g, levelBahasa)
-    .replace(/\[GAYA_BELAJAR\]/g, gaya);
+    .replace(/\[GAYA_BELAJAR\]/g, gaya), profile);
 };
 
 Object.assign(window, {
@@ -469,6 +518,9 @@ Object.assign(window, {
   parseMahadLevel,
   resolveS2MaddahContext,
   generateS2Prompt,
+  azharStandardBlock,
+  withAzharStandard,
+  MADZHAB_LABEL,
   TINGKATAN_LABEL,
   FAKULTAS_LABEL,
   LEVEL_BAHASA_INSTRUCTION,

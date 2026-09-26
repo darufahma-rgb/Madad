@@ -18,6 +18,7 @@ const learnerPayload = (profile = window.getProfile?.()) => {
     goal: profile.studyGoal || null,
     examWindow: window.currentExamWindow?.(profile) || null,
     struggles: profile.struggle || [],
+    madzhab: profile.madzhab || null,
     cognitive: profile.cognitive?.scores || null,
   };
 };

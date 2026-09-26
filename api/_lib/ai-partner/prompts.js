@@ -86,6 +86,7 @@ const GOAL_RULES = {
   paham:   'Target: PAHAM MENDALAM — prioritaskan alasan (ta\'lil), dalil, dan hubungan antar konsep, bukan sekadar daftar.',
   hafalan: 'Target: KUAT HAFALAN — prioritaskan ta\'rif, matan, dan daftar yang harus dihafal, dalam bentuk yang mudah diulang.',
 };
+const MADZHAB_NAMES = { syafii: "Syafi'i", hanafi: 'Hanafi', maliki: 'Maliki', hanbali: 'Hanbali' };
 const EXAM_RULES = {
   '2w': 'Imtihan kurang dari 2 pekan lagi: mode kebut — ringkas, langsung ke poin paling penting.',
   '1m': 'Imtihan 2–4 pekan lagi: seimbangkan pemahaman dan latihan soal.',
@@ -127,6 +128,8 @@ export const learnerContext = (learner, { material = true } = {}) => {
   if (Array.isArray(learner.struggles) && learner.struggles.includes('arab') && learner.arabicLevel !== 'lancar') {
     lines.push('Pelajar ini sering kesulitan dengan materi berbahasa Arab — perbanyak terjemah dan penjelasan kata kunci.');
   }
+  const madzhab = MADZHAB_NAMES[learner.madzhab];
+  if (madzhab) lines.push(`Madzhab fiqh pelajar: ${madzhab} — untuk masalah fiqh, dahulukan pendapat mu'tamad madzhab ${madzhab}, lalu sebut madzhab lain secara ringkas bila khilafnya penting.`);
   const cog = cognitiveRules(learner.cognitive);
   if (cog.length) lines.push('Profil belajar (isian diri):\n' + cog.map(r => `  - ${r}`).join('\n'));
   if (!lines.length) return '';
