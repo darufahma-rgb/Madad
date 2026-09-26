@@ -349,10 +349,20 @@ const Composer = ({ tier, trial, onUpload }) => {
   );
 };
 
-// Percakapan terakhir dari "Tanya AI" (disimpan di perangkat).
+// Percakapan terakhir dari "Tanya AI" (disimpan di perangkat). Hapus butuh dua ketukan: ikon tong sampah → "Hapus".
 const RecentChats = () => {
-  const threads = (window.readPromptThreads?.() || []).slice(0, 4);
+  const toast = useToast();
+  const [all, setAll] = useState(() => window.readPromptThreads?.() || []);
+  const [confirmId, setConfirmId] = useState(null);
+  const threads = all.slice(0, 4);
   if (!threads.length) return null;
+
+  const remove = (id) => {
+    setAll(window.deletePromptThread?.(id) || []);
+    setConfirmId(null);
+    toast.push('Percakapan dihapus.');
+  };
+
   return (
     <div className="mt-10">
       <div className="flex items-center justify-between mb-2.5 px-1">
@@ -361,13 +371,28 @@ const RecentChats = () => {
       </div>
       <div className="grid sm:grid-cols-2 gap-2">
         {threads.map(t => (
-          <button key={t.id} onClick={() => openPromptThread(t.id)}
-            className="text-left rounded-xl border border-white/8 bg-white/[0.02] hover:bg-white/[0.05] px-3.5 py-3 min-w-0">
-            <div className="text-sm text-ink truncate">{promptThreadTitle(t)}</div>
-            <div className="text-[11px] text-ink-soft mt-0.5">
-              {new Date(t.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} · {t.messages.length} pesan
-            </div>
-          </button>
+          <div key={t.id} className="relative rounded-xl border border-white/8 bg-white/[0.02] hover:bg-white/[0.05] min-w-0">
+            <button onClick={() => openPromptThread(t.id)} className="w-full text-left pl-3.5 pr-11 py-3 min-w-0">
+              <div className="text-sm text-ink truncate">{promptThreadTitle(t)}</div>
+              <div className="text-[11px] text-ink-soft mt-0.5">
+                {new Date(t.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} · {t.messages.length} pesan
+              </div>
+            </button>
+            {confirmId === t.id ? (
+              <div className="absolute inset-0 rounded-xl flex items-center justify-between gap-2 px-3.5" style={{ background: 'rgba(20,20,20,0.96)' }}>
+                <span className="text-xs text-ink-muted">Hapus percakapan ini?</span>
+                <span className="flex gap-1.5 flex-shrink-0">
+                  <button onClick={() => setConfirmId(null)} className="text-xs px-3 py-1.5 rounded-lg text-ink-soft hover:text-ink">Batal</button>
+                  <button onClick={() => remove(t.id)} className="text-xs px-3 py-1.5 rounded-lg bg-rose-500/15 text-rose-300 hover:bg-rose-500/25">Hapus</button>
+                </span>
+              </div>
+            ) : (
+              <button onClick={() => setConfirmId(t.id)} aria-label="Hapus percakapan"
+                className="absolute top-1/2 -translate-y-1/2 right-1.5 w-9 h-9 rounded-lg flex items-center justify-center text-ink-soft hover:text-rose-300 hover:bg-white/5">
+                <Icon name="trash" className="w-4 h-4"/>
+              </button>
+            )}
+          </div>
         ))}
       </div>
     </div>

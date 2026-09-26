@@ -24,6 +24,12 @@ const runPromptInTalqeeh = (text, { title = '', source = '', autoSend = false, t
   navigate('/ai-partner/prompt');
 };
 const openPromptThread = (threadId) => runPromptInTalqeeh('', { threadId });
+// Hapus percakapan dari perangkat ini (dipakai halaman Tanya AI dan kartu "Percakapan terakhir").
+const deletePromptThread = (threadId) => {
+  const next = readThreads().filter(t => t.id !== threadId);
+  writeThreads(next);
+  return next;
+};
 
 const takePending = () => {
   try {
@@ -202,11 +208,13 @@ const PromptChat = ({ trial = null }) => {
     setThread(null); setInput(''); setError('');
   };
 
+  // Hapus butuh dua ketukan (ikon tong sampah → "Hapus") karena riwayat hanya ada di perangkat ini.
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const removeThread = (id) => {
-    const next = readThreads().filter(x => x.id !== id);
-    writeThreads(next);
-    setThreads(next);
+    setThreads(deletePromptThread(id));
+    setConfirmDelete(null);
     if (thread?.id === id) startNew();
+    toast.push('Percakapan dihapus.');
   };
 
   const copy = (text) => {
@@ -257,9 +265,16 @@ const PromptChat = ({ trial = null }) => {
                               <div className="text-xs text-ink truncate">{threadTitle(t)}</div>
                               <div className="text-[10px] text-ink-soft">{new Date(t.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} · {t.messages.length} pesan</div>
                             </div>
-                            <button onClick={e => { e.stopPropagation(); removeThread(t.id); }} className="text-ink-soft hover:text-rose-300 p-1" aria-label="Hapus">
-                              <Icon name="trash" className="w-3.5 h-3.5"/>
-                            </button>
+                            {confirmDelete === t.id ? (
+                              <span className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                                <button onClick={() => removeThread(t.id)} className="text-[11px] px-2 py-1 rounded-md bg-rose-500/15 text-rose-300 hover:bg-rose-500/25">Hapus</button>
+                                <button onClick={() => setConfirmDelete(null)} className="text-[11px] px-2 py-1 rounded-md text-ink-soft hover:text-ink">Batal</button>
+                              </span>
+                            ) : (
+                              <button onClick={e => { e.stopPropagation(); setConfirmDelete(t.id); }} className="text-ink-soft hover:text-rose-300 p-1" aria-label="Hapus percakapan">
+                                <Icon name="trash" className="w-3.5 h-3.5"/>
+                              </button>
+                            )}
                           </div>
                         ))}
                       </div>}
@@ -420,4 +435,4 @@ const AiPromptPage = () => {
   );
 };
 
-Object.assign(window, { AiPromptPage, runPromptInTalqeeh, openPromptThread, RunInTalqeehButton, readPromptThreads: readThreads, promptThreadTitle: threadTitle });
+Object.assign(window, { AiPromptPage, runPromptInTalqeeh, openPromptThread, deletePromptThread, RunInTalqeehButton, readPromptThreads: readThreads, promptThreadTitle: threadTitle });
