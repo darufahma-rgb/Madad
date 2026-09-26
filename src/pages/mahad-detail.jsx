@@ -194,27 +194,22 @@ const MahadDetailPage = () => {
   return (
     <div className="page-enter mobile-page-wrap">
 
-      {/* Header */}
-      <section className="relative pt-4 md:pt-10 pb-6 md:pb-8 overflow-hidden">
+      {/* Header ringkas — supaya template prompt langsung terlihat */}
+      <section className="relative pt-3 md:pt-7 pb-4 md:pb-5 overflow-hidden">
         <GlowBlob color="rgba(62,207,142,0.18)" size={500} top={-150} right={-100}/>
         <div className="container-x relative">
           <button onClick={() => navigate("/mahad-maddah")}
-            className="text-sm text-ink-soft hover:text-ink inline-flex items-center gap-2 mb-5"
+            className="text-sm text-ink-soft hover:text-ink inline-flex items-center gap-2 mb-3"
             style={{minHeight:40}}>
             <Icon name="arrowLeft" className="w-4 h-4"/> Maddah Ma'had
           </button>
 
-          <div className="flex items-start justify-between flex-wrap gap-4 mb-3">
-            <div>
-              <div className="arabic-display text-gold-300 text-4xl md:text-5xl mb-2"
-                style={{direction:"rtl"}}>
-                {maddah.nameArabic}
-              </div>
-              <h1 className="font-display text-3xl md:text-4xl font-semibold text-ink">
-                {maddah.name}
-              </h1>
+          <div className="flex items-end justify-between flex-wrap gap-x-4 gap-y-1">
+            <div className="flex items-baseline gap-x-3 gap-y-1 flex-wrap min-w-0">
+              <h1 className="font-display text-2xl md:text-3xl font-semibold text-ink">{maddah.name}</h1>
+              <span className="arabic-display text-gold-300 text-2xl md:text-3xl" style={{direction:"rtl"}}>{maddah.nameArabic}</span>
             </div>
-            <span className={`text-[11px] px-3 py-1 rounded-full border flex-shrink-0 mt-1 ${
+            <span className={`text-[11px] px-3 py-1 rounded-full border flex-shrink-0 ${
               maddah.category === "agama"
                 ? "bg-gold-500/10 text-gold-300 border-gold-500/20"
                 : "bg-violet-500/10 text-violet-300 border-violet-500/20"
@@ -223,16 +218,28 @@ const MahadDetailPage = () => {
             </span>
           </div>
 
-          <p className="text-base md:text-lg text-ink-muted leading-relaxed max-w-2xl mt-4">
-            {maddah.description}
-          </p>
+          {maddah.description && (
+            <p className="text-sm md:text-base text-ink-muted leading-relaxed max-w-3xl mt-2 line-clamp-2">
+              {maddah.description}
+            </p>
+          )}
         </div>
       </section>
 
+      <MaddahGuide
+        kitabUtama={Array.isArray(maddah.kitabUtama) ? maddah.kitabUtama : []}
+        recommendedAI={Array.isArray(maddah.recommendedAI) ? maddah.recommendedAI : []}
+        tutorial={maddah.tutorial}
+        onStarterPack={() => {
+          const pack = typeof generateStarterPack !== "undefined" ? generateStarterPack(profile, session) : "";
+          navigator.clipboard.writeText(pack);
+          toast.push("Starter Pack tersalin. Paste ke AI di awal chat.");
+        }}/>
+
       {/* Topik Utama */}
       {maddah.topikUtama?.length > 0 && (
-        <section className="container-x mb-8">
-          <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 inline-flex items-center gap-2">
+        <section className="container-x mb-7">
+          <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-2 inline-flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>Topik yang Tersedia
           </h2>
           {/* Mobile: geser horizontal. Desktop: wrap biasa */}
@@ -288,78 +295,9 @@ const MahadDetailPage = () => {
         </section>
       )}
 
-      {/* Rekomendasi AI */}
-      {maddah.recommendedAI?.length > 0 && (
-        <section className="container-x mb-8">
-          <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
-            <span className="w-6 h-px bg-gold-500/70"/>AI yang Direkomendasikan
-          </h2>
-          <div className="grid grid-cols-2 gap-2.5 md:gap-4">
-            {maddah.recommendedAI.map((ai, i) => {
-              const tool = typeof AI_TOOLS !== "undefined"
-                ? AI_TOOLS.find(t => t.id === ai.tool) : null;
-              return (
-                <div key={i} className="card-glass-strong p-3.5 md:p-5 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2.5 md:mb-3">
-                    {tool && <ToolIcon tool={tool} size="w-9 h-9 md:w-11 md:h-11"/>}
-                    <div className="flex-1 min-w-0">
-                      <div className="font-display text-sm md:text-base font-semibold text-ink leading-tight">
-                        {tool?.name || ai.tool}
-                      </div>
-                      <div className="text-xs text-ink-soft">{ai.strength}</div>
-                    </div>
-                    {ai.rank === 1 && (
-                      <span className="badge-purple text-[10px] flex-shrink-0">TOP PICK</span>
-                    )}
-                  </div>
-                  <p className="text-xs md:text-sm text-ink-muted leading-relaxed">{ai.why}</p>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Starter Pack */}
-      <section className="container-x mb-8">
-        <div className="card-glass p-4 border border-emerald-600/20"
-          style={{background:"rgba(62,207,142,0.04)"}}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-start gap-3 flex-1 min-w-0">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{background:"rgba(62,207,142,0.15)"}}>
-                <Icon name="sparkles" className="w-4 h-4 text-emerald-400"/>
-              </div>
-              <div className="min-w-0">
-                <div className="text-xs text-emerald-400 uppercase tracking-wider mb-0.5">
-                  Mulai di sini
-                </div>
-                <div className="font-display text-sm font-semibold text-ink">
-                  Starter Pack: Kenalkan dirimu ke AI
-                </div>
-                <p className="text-xs text-ink-muted mt-0.5 leading-relaxed">
-                  Salin ini ke AI di awal sesi supaya semua prompt relevan untuk tingkat Ma'had-mu.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                const pack = typeof generateStarterPack !== "undefined"
-                  ? generateStarterPack(profile, session) : "";
-                navigator.clipboard.writeText(pack);
-                toast.push("Starter Pack tersalin!");
-              }}
-              className="btn btn-primary text-sm px-4 py-2.5 flex items-center gap-2 flex-shrink-0"
-              style={{minHeight:40}}>
-              <Icon name="copy" className="w-3.5 h-3.5"/> Salin Starter Pack
-            </button>
-          </div>
-        </div>
-      </section>
-
       {/* Prompts Section */}
       <section className="container-x mb-10">
-        <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 inline-flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>Template Prompt ({totalPrompts})
           </h2>
