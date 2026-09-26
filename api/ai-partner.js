@@ -273,9 +273,10 @@ async function handleOcr(ctx, body, res) {
     return trialGateClosed(res);
   }
 
-  const teks = await callAI({
+  // Halaman kitab yang padat bisa >3000 karakter Arab (±1 token/karakter) → beri ruang, dan laporkan bila tetap terpotong.
+  const { text: teks, truncated } = await requestAI({
     model: (await resolveModels()).vision,
-    maxTokens: 3000,
+    maxTokens: 6000,
     temperature: 0,
     messages: [{
       role: 'user',
@@ -288,7 +289,32 @@ async function handleOcr(ctx, body, res) {
   if (teks.includes('FOTO_TIDAK_TERBACA')) {
     return res.status(200).json({ ok: false, error: 'Foto tidak memuat teks yang terbaca. Coba foto lebih jelas.' });
   }
-  return res.status(200).json({ ok: true, teks });
+  return res.status(200).json({ ok: true, teks, truncated: !!truncated });
+}
+
+// Sisa jatah baca foto/halaman scan, supaya wizard membaca PDF scan sebanyak jatahnya saja
+// (sisanya ditandai "belum terbaca") — bukan berhenti di tengah dan membuang halaman yang sudah terbaca.
+async function handleOcrQuota(ctx, res) {
+  const { url, key } = sbConfig();
+  const today = new Date().toISOString().slice(0, 10); // sama dengan current_date (UTC) di consume_ai_quota
+  const r = await fetch(`${url}/rest/v1/ai_usage?member_code=eq.${encodeURIComponent(ctx.code)}&kind=eq.ocr&day=eq.${today}&select=count`, { headers: sbHeaders(key) });
+  if (!r.ok) return res.status(200).json({ ok: true, remaining: null });
+  const rows = await r.json();
+  const usedToday = Number(rows?.[0]?.count) || 0;
+  if (ctx.tier !== 'pro') {
+    return res.status(200).json({ ok: true, remaining: Math.max(0, TRIAL_OCR_LIMIT - usedToday), scope: 'trial' });
+  }
+  let remaining = Math.max(0, LIMITS.ocr - usedToday);
+  let scope = 'daily';
+  const monthly = (await getMonthlyLimits()).ocr;
+  if (monthly != null) {
+    const used = await monthlyUsage(ctx.code, quotaPeriod(ctx.aiExpiresAt).start);
+    if (used) {
+      const left = Math.max(0, monthly - (used.ocr || 0));
+      if (left < remaining) { remaining = left; scope = 'monthly'; }
+    }
+  }
+  return res.status(200).json({ ok: true, remaining, scope });
 }
 
 async function handleTranscribe(ctx, body, res) {
@@ -1052,6 +1078,7 @@ export default async function handler(req, res) {
 
     switch (action) {
       case 'ocr':           return await handleOcr(ctx, body, res);
+      case 'ocr-quota':     return await handleOcrQuota(ctx, res);
       case 'transcribe':    return await handleTranscribe(ctx, body, res);
       case 'create':        return await handleCreate(ctx, body, res);
       case 'list':          return await handleList(ctx, res);

@@ -1102,32 +1102,11 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
   const toast = useToast();
   const EM = '#3ecf8e';
 
-  const buildPromptJawaban = (nomorSoal, arabSoal, artiSoal) => {
-    const maddah   = soal.maddah_nama || '[maddah]';
-    const tahun    = soal.tahun       || '[tahun]';
-    const fashlStr = soal.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani';
-    return (
-`Aku mahasiswa Al-Azhar sedang mempersiapkan jawaban untuk soal ujian berikut.
-
-Mata kuliah : ${maddah}
-Tahun / Fashl: ${tahun} · ${fashlStr}
-Nomor soal  : ${nomorSoal}
-
-Soal (teks Arab):
-${arabSoal || '[teks Arab soal]'}
-
-${artiSoal ? `Terjemahan soal:\n${artiSoal}\n` : ''}
-Tolong bantu aku menyusun jawaban ideal untuk soal ini dengan format berikut:
-
-1. **Ta'rif** – definisi istilah kunci (Arab + terjemah, lengkap harakat)
-2. **Jawaban inti** – sesuai gaya imtihan Al-Azhar: padat, terstruktur, ada dalil jika relevan
-3. **Dalil / Syahid** – teks Arab (harakat) + terjemah + sumber
-4. **Poin penguat** – 2-3 hal yang biasanya dituntut dosen untuk soal seperti ini
-5. **Yang sering keliru** – kesalahan umum mahasiswa dalam menjawab soal ini
-
-Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.`
-    );
-  };
+  // Format jawaban bersama — didefinisikan di pages/soal-detail.jsx.
+  const buildPromptJawaban = (nomorSoal, arabSoal, artiSoal) => buildJawabanPrompt({
+    maddah: soal.maddah_nama, fakultas: soal.fakultas, tingkat: soal.tingkat, tahun: soal.tahun, fashl: soal.fashl,
+    nomor: nomorSoal, arab: arabSoal, arti: artiSoal,
+  });
 
   const handleCopySoal = (idx, arabSoal, artiSoal) => {
     const prompt = buildPromptJawaban(idx + 1, arabSoal, artiSoal);
@@ -1368,7 +1347,7 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab + transliterasi.
                     fontSize: 13, lineHeight: 1.75, color: '#bbb', marginTop: 10, whiteSpace: 'pre-wrap',
                   }}>
                     <div style={{ fontSize: 10, color: '#555', fontWeight: 700, marginBottom: 6, letterSpacing: 0.6 }}>
-                      PENJELASAN
+                      TERJEMAH & KATA KUNCI
                     </div>
                     {penj}
                   </div>
@@ -1675,7 +1654,7 @@ const SiapImtihanPage = () => {
       {/* Header */}
       <section className="relative pt-6 md:pt-12 pb-6 overflow-hidden">
         <div className="pattern-talqih"/>
-        <Blob color="rgba(62,207,142,0.2)" size={500} top={-150} right={-80}/>
+        <GlowBlob color="rgba(62,207,142,0.2)" size={500} top={-150} right={-80}/>
 
         <div className="container-x relative">
           <button onClick={() => navigate("/library")}

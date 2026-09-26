@@ -155,7 +155,7 @@ const Arch = ({ className = "", color = "rgba(212,165,116,0.25)" }) => (
 );
 
 /* ---------------- Glow blob ---------------- */
-const Blob = ({ color = "rgba(62,207,142,0.38)", size = 400, top, left, right, bottom }) => (
+const GlowBlob = ({ color = "rgba(62,207,142,0.38)", size = 400, top, left, right, bottom }) => (
   <div className="blob" style={{
     width: size, height: size, background: color, top, left, right, bottom
   }}/>
@@ -236,6 +236,6 @@ Object.assign(window, {
   Reveal, WordReveal,
   ToastProvider, useToast,
   CopyButton, Modal, Stars,
-  LogoMark, Arch, Blob, ToolIcon,
+  LogoMark, Arch, GlowBlob, ToolIcon,
   BottomSheet, SheetLink,
 });

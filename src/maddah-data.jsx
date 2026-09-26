@@ -14934,6 +14934,7 @@ const USHULUDDIN_MADDAH_MAP = {
     "quran-tahfidz", "khithabah", "tajwid", "ulum-quran",
     "tafsir-tahlili", "tasawwuf", "tafsir-maudhui",
     "hadits-tahlili", "manahij-mufassirin",
+    "tauhid", // kertas ujian Tk 3 qism "التفسير والحديث"
   ],
   "aqidah_3": [
     "quran-tahfidz", "qadhaiya-fiqhiyyah", "manahij-muhadditsin", "firaq",
@@ -14944,18 +14945,30 @@ const USHULUDDIN_MADDAH_MAP = {
     "quran-tahfidz", "qadhaiya-fiqhiyyah", "manahij-muhadditsin",
     "mustholah-hadits", "hadits-tahlili", "tasawwuf",
     "tafsir-maudhui", "hadits-maudhui", "wasail-tabligh", "syubhat-sunnah",
+    // Ditambah dari kertas ujian Bank Soal (Tk 3 qism Hadits, 2024/2025)
+    "takhrij-hadits", "manahij-mufassirin", "sirah-nabawiyah", "tauhid", "khithabah",
+  ],
+  // Tk 4 — dari kertas ujian Bank Soal (2023/2024–2025/2026)
+  "tafsir_4": [
+    "quran-tahfidz", "manahij-mufassirin", "tafsir-tahlili", "tafsir-maudhui",
+    "ulum-quran", "hadits-maudhui", "takhrij-hadits",
+  ],
+  "hadits_4": [
+    "quran-tahfidz", "syubhat-sunnah", "tafsir-maudhui", "sirah-nabawiyah", "takhrij-hadits",
+    "manahij-muhadditsin", "ushul-dakwah", "hadits-tahlili", "adyan",
   ],
   "dakwah_3": [
     "quran-tahfidz", "khithabah", "manahij-muhadditsin", "adyan",
     "tarikh-dakwah", "tsaqafah-islamiyah", "tafsir-maudhui",
     "tiarat-fikriyyah", "wasail-tabligh",
   ],
-  // Firqah 1, 2, 4 — fallback ke firqah 3 sampai data jadwal tersedia
-  "tafsir_1": null, "tafsir_2": null, "tafsir_4": null,
-  "aqidah_1": null, "aqidah_2": null, "aqidah_4": null,
-  "hadits_1": null, "hadits_2": null, "hadits_4": null,
-  "dakwah_1": null, "dakwah_2": null, "dakwah_4": null,
+  // Aqidah & Dakwah Tk 4 — belum ada data jadwal; memakai daftar Tk 3 jurusan yang sama.
+  "aqidah_4": null, "dakwah_4": null,
 };
+
+// Tk 1–2 Ushuluddin masih umum (kertas ujian: "القسم: عامة"), belum per jurusan → pakai tag fakultas & tingkat,
+// ditambah maddah yang terbukti diujikan di Tk 1 tetapi tag tingkatnya mulai Tk 2.
+const USHULUDDIN_UMUM_EXTRA = { "1": ["mantiq", "ulum-quran"], "2": [] };
 
 const getMaddahsForProfile = (profile) => {
   if (!profile) return MADDAHS;
@@ -14975,6 +14988,11 @@ const getMaddahsForProfile = (profile) => {
   if (profile.faculty === "ushuluddin") {
     const major = profile.major || "tafsir";  // "tafsir" | "aqidah" | "hadits" | "dakwah"
     const level = profile.level || "3";
+    if (level === "1" || level === "2") {
+      const extra = USHULUDDIN_UMUM_EXTRA[level] || [];
+      return MADDAHS.filter(m =>
+        ((m.fakultas || []).includes("ushuluddin") && (m.tingkat || []).includes(level)) || extra.includes(m.id));
+    }
     const key   = `${major}_${level}`;
     // Fallback: kalau key null/tidak ada, pakai jurusan yang sama firqah 3
     const allowedIds = USHULUDDIN_MADDAH_MAP[key]

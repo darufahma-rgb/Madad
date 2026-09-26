@@ -142,7 +142,7 @@ const OnboardingPage = ({ overlay = false }) => {
       dlMustawa: null,
       struggle: [], learningStyle: [], s2Maddah: null,
       mahad_struggle: [],
-      arabicLevel: null, studyGoal: null, examWindow: null,
+      arabicLevel: null, studyGoal: null, examWindow: null, madzhab: null,
     };
     if (profile?.onboarded) {
       return {
@@ -159,6 +159,7 @@ const OnboardingPage = ({ overlay = false }) => {
         arabicLevel: profile.arabicLevel ?? null,
         studyGoal: profile.studyGoal ?? null,
         examWindow: currentExamWindow(profile),
+        madzhab: profile.madzhab ?? null,
       };
     }
     return base;
@@ -296,6 +297,15 @@ const OnboardingPage = ({ overlay = false }) => {
       conditional: (d) => !isMahadLevel(d.level),
     },
     {
+      key: "madzhab",
+      title: "Kamu belajar fiqh madzhab apa?",
+      hint: "AI akan mendahulukan pendapat madzhab ini di semua prompt",
+      options: MADZHABS,
+      multi: false,
+      iconType: "arabic",
+      conditional: (d) => d.level !== "mustawa",
+    },
+    {
       key: "learningStyle",
       title: "Biasanya kamu lebih nyaman belajar dengan cara seperti apa?",
       hint: "Boleh pilih lebih dari satu",
@@ -329,8 +339,11 @@ const OnboardingPage = ({ overlay = false }) => {
     },
   ];
 
+  // Pengguna baru: madzhab hanya ditanyakan ke Syariah & Dirasat (fiqh per madzhab paling terasa di sana).
+  const firstRunSkips = (q, d) => FIRST_RUN_SKIP.includes(q.key)
+    || (q.key === "madzhab" && !/^(syariah|dirasat)/.test(d.faculty || ""));
   const getActiveQuestions = (d) => QUESTIONS.filter(q =>
-    (isEditMode || !FIRST_RUN_SKIP.includes(q.key)) && (!q.conditional || q.conditional(d)));
+    (isEditMode || !firstRunSkips(q, d)) && (!q.conditional || q.conditional(d)));
 
   // [TECH-1] Safeguard: saat level berubah, activeQuestions bisa menjadi lebih pendek.
   // Pastikan step tidak pernah out-of-bounds (mencegah loncat pertanyaan / profil tidak lengkap).
@@ -511,8 +524,8 @@ const OnboardingPage = ({ overlay = false }) => {
 const PageFrame = ({ children }) => (
   <div className="page-enter min-h-screen flex flex-col">
     <div className="absolute inset-0 pointer-events-none overflow-hidden">
-      <Blob color="rgba(62,207,142,0.30)" size={520} top={-100} right={-100}/>
-      <Blob color="rgba(201,168,106,0.15)" size={400} bottom={-100} left={-100}/>
+      <GlowBlob color="rgba(62,207,142,0.30)" size={520} top={-100} right={-100}/>
+      <GlowBlob color="rgba(201,168,106,0.15)" size={400} bottom={-100} left={-100}/>
     </div>
     <div className="container-x py-12 md:py-16 flex-1 flex flex-col relative">{children}</div>
   </div>

@@ -14,7 +14,7 @@ const EthicsPage = () => {
       <section className="pb-12">
         <div className="container-x">
           <Reveal className="card-glass-strong p-6 md:p-10 lg:p-14 mb-12 relative overflow-hidden">
-            <Blob color="rgba(201,168,106,0.22)" size={400} top={-150} right={-100}/>
+            <GlowBlob color="rgba(201,168,106,0.22)" size={400} top={-150} right={-100}/>
             <div className="absolute top-0 right-0 h-full w-1/3 opacity-15 pointer-events-none">
               <Arch className="w-full h-full" color="rgba(212,165,116,0.3)"/>
             </div>

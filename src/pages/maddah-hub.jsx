@@ -136,7 +136,7 @@ const MaddahHubPage = () => {
 
       {/* Header */}
       <section className="relative pt-6 md:pt-12 pb-6 md:pb-8 overflow-hidden">
-        <Blob color="rgba(62,207,142,0.18)" size={500} top={-150} right={-100}/>
+        <GlowBlob color="rgba(62,207,142,0.18)" size={500} top={-150} right={-100}/>
         <div className="container-x relative">
           <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 inline-flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>

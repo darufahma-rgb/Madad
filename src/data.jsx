@@ -230,6 +230,15 @@ const STUDY_GOALS = [
   { id: "hafalan", label: "Kuat hafalan",    desc: "Ta'rif, matan, dan daftar poin yang harus dihafal",      emoji: "🔁" },
 ];
 
+// Madzhab fiqh yang dipelajari; dipakai standar Azhar di semua prompt (lihat adaptive-prompt.jsx).
+const MADZHABS = [
+  { id: "syafii",  label: "Syafi'i", arabic: "الشافعي" },
+  { id: "hanafi",  label: "Hanafi",  arabic: "الحنفي" },
+  { id: "maliki",  label: "Maliki",  arabic: "المالكي" },
+  { id: "hanbali", label: "Hanbali", arabic: "الحنبلي" },
+  { id: "none",    label: "Belum tahu / tampilkan empat madzhab", arabic: "المذاهب الأربعة" },
+];
+
 // Kapan imtihan terdekat. days = perkiraan jarak saat dipilih; dipakai untuk tahu kapan jawabannya kedaluwarsa.
 const EXAM_WINDOWS = [
   { id: "2w",    label: "Kurang dari 2 pekan", desc: "Mode kebut: fokus poin paling mungkin keluar", emoji: "⏰", days: 14 },
@@ -1218,7 +1227,7 @@ const DEFAULT_MEMBERS = [
 /* ============ EXPORTS ============ */
 Object.assign(window, {
   STRUGGLES, FIELDS, FACULTIES, LEVELS, LEARNING_STYLES,
-  ARABIC_LEVELS, STUDY_GOALS, EXAM_WINDOWS, currentExamWindow,
+  ARABIC_LEVELS, STUDY_GOALS, EXAM_WINDOWS, currentExamWindow, MADZHABS,
   AI_TOOLS, recommend,
   LEARNING_PATHS, allModules,
   ETHICS_POINTS,

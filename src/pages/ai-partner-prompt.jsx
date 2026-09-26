@@ -44,7 +44,7 @@ const RunInTalqeehButton = ({ getText, title, source, className = 'btn-ghost tex
   </button>
 );
 
-const PLACEHOLDER_RE = /\[(tulis|nama|pengarang|penerbit|jilid|TOPIK|kitab|JUDUL)[^\]]*\]/i;
+const PLACEHOLDER_RE = /\[(tulis|nama|pengarang|penerbit|jilid|TOPIK|kitab|JUDUL|SEBUTKAN|TEMPEL|METODE|isi)[^\]]*\]/i;
 
 const newThread = (pending) => ({
   id: 'pc_' + Date.now(),

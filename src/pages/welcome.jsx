@@ -51,8 +51,8 @@ const WelcomePage = () => {
 
   return (
     <div className="page-enter min-h-screen relative overflow-hidden">
-      <Blob color="rgba(62,207,142,0.18)" size={600} top={-200} right={-150}/>
-      <Blob color="rgba(201,168,106,0.08)" size={400} top={200} left={-100}/>
+      <GlowBlob color="rgba(62,207,142,0.18)" size={600} top={-200} right={-150}/>
+      <GlowBlob color="rgba(201,168,106,0.08)" size={400} top={200} left={-100}/>
       <div className="pattern-talqih"/>
 
       <div className="container-x relative py-16 md:py-24 max-w-3xl mx-auto">

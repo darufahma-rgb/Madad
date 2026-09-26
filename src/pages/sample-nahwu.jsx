@@ -336,7 +336,7 @@ Untuk setiap bait:
 
       {/* Header */}
       <section className="relative pt-12 md:pt-16 pb-10 overflow-hidden">
-        <Blob color="rgba(62,207,142,.18)" size={500} top={-150} right={-100}/>
+        <GlowBlob color="rgba(62,207,142,.18)" size={500} top={-150} right={-100}/>
         <div className="container-x relative">
           <button onClick={() => navigate("/")}
             className="text-sm text-ink-soft hover:text-ink inline-flex items-center gap-2 mb-6">

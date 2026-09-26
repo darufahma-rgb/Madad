@@ -4,18 +4,25 @@ import React, { useState, useEffect, useRef, useCallback, useMemo, createContext
 */
 
 /* ── PromptCard — komponen terpisah agar useState tidak dipanggil di dalam .map() ── */
-const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled }) => {
+const loadSlotSharedTopik = (maddahId) => {
+  try { const v = JSON.parse(localStorage.getItem(`talqeeh_prompt_slots_${maddahId}`) || "{}"); return v.topik || v.bab || ""; } catch { return ""; }
+};
+
+const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled, slotShared, setSlotShared }) => {
   const toast = useToast();
   const [copied, setCopied] = useState(false);
   const [showFull, setShowFull] = useState(false);
+  const resolved = p?.template ? resolvePrompt(p.template) : "";
+  const slotState = usePromptSlots(resolved, slotShared, setSlotShared);
+  const idPrefix = useMemo(() => "slot-" + Math.random().toString(36).slice(2, 8), []);
 
   if (!p || !p.template) return null;
 
   const tool = typeof AI_TOOLS !== "undefined"
     ? AI_TOOLS.find(t => t.id === p.targetAI) : null;
-  const resolved = resolvePrompt(p.template);
   const getTextToCopy = () => typeof withFormatInstruction !== "undefined"
-    ? withFormatInstruction(resolved, formatEnabled) : resolved;
+    ? withFormatInstruction(slotState.finalText, formatEnabled) : slotState.finalText;
+  const runLocked = slotState.missing.length > 0;
 
   return (
     <div className="card-glass-strong p-4 md:p-5">
@@ -34,26 +41,34 @@ const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled }) => {
         </div>
         <div className="flex gap-2 flex-shrink-0 flex-wrap">
           <button
-            onClick={() => {
+            onClick={guardSlots(slotState, idPrefix, toast, () => {
               navigator.clipboard.writeText(getTextToCopy());
               toast.push("Prompt tersalin. Paste ke " + (tool?.name || "AI") + ".");
               setCopied(true);
-            }}
+            })}
             className="btn btn-ghost text-xs px-3 py-2.5 flex items-center justify-center gap-1.5"
             style={{minHeight:40}}>
             <Icon name="copy" className="w-3.5 h-3.5"/>
             {copied ? "Tersalin ✓" : "Salin"}
           </button>
-          <RunInTalqeehButton getText={getTextToCopy} title={`${maddah?.name || "Maddah"} — ${p.title}`} source="Maddah Ma'had"
-            label="Jalankan di sini" className="btn btn-ghost text-xs px-3 py-2.5 justify-center"/>
+          {runLocked ? (
+            <button onClick={guardSlots(slotState, idPrefix, toast, () => {})}
+              className="btn btn-ghost text-xs px-3 py-2.5 justify-center inline-flex items-center gap-1.5 opacity-60"
+              style={{ minHeight: 40, borderColor: 'rgba(62,207,142,0.35)', color: '#a7f3d0' }}>
+              <Icon name="sparkles" className="w-3.5 h-3.5"/> Jalankan di sini
+            </button>
+          ) : (
+            <RunInTalqeehButton getText={getTextToCopy} title={`${maddah?.name || "Maddah"} — ${p.title}`} source="Maddah Ma'had"
+              label="Jalankan di sini" className="btn btn-ghost text-xs px-3 py-2.5 justify-center"/>
+          )}
           {tool?.link && (
             <button
-              onClick={() => {
+              onClick={guardSlots(slotState, idPrefix, toast, () => {
                 navigator.clipboard.writeText(getTextToCopy());
                 toast.push("Tersalin. Membuka " + tool.name + "...");
                 setCopied(true);
                 setTimeout(() => window.open(tool.link, "_blank"), 400);
-              }}
+              })}
               className="btn btn-primary text-xs px-3 py-2.5 flex items-center justify-center gap-1.5"
               style={{minHeight:40}}>
               Buka {tool.name}
@@ -63,13 +78,15 @@ const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled }) => {
         </div>
       </div>
 
+      <PromptSlotFields slotState={slotState} idPrefix={idPrefix}/>
+
       {/* Prompt preview */}
       <div className="p-3 rounded-xl mb-3"
         style={{background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)"}}>
         <p className={`text-xs text-ink-muted leading-relaxed whitespace-pre-wrap font-mono ${
           showFull ? "" : "line-clamp-4"
         }`}>
-          {resolved}
+          {slotState.finalText}
         </p>
         <button onClick={() => setShowFull(!showFull)}
           className="text-[11px] text-violet-300 hover:text-violet-200 mt-2 block">
@@ -124,7 +141,10 @@ const MahadDetailPage = () => {
     ? getMahadMaddahById(maddahId) : null;
 
   const [activeKind, setActiveKind] = useState("pahami");
-  const [topikInput, setTopikInput] = useState("");
+  const [slotShared, setSlotShared] = useSlotShared(maddahId || "none");
+  const [topikInput, setTopikInputRaw] = useState(() => loadSlotSharedTopik(maddahId));
+  // Topik juga mengisi kolom Bab/Topik/Tema di prompt yang memakai [SEBUTKAN].
+  const setTopikInput = (v) => { setTopikInputRaw(v); ["bab", "topik", "tema", "materi"].forEach(k => setSlotShared(k, v)); };
   const [formatEnabled, setFormatEnabled] = useState(() => typeof getFormatPref !== "undefined" ? getFormatPref() : true);
 
   if (!session) { navigate("/"); return null; }
@@ -145,29 +165,13 @@ const MahadDetailPage = () => {
     return <FreeMaddahGate maddah={maddah} backPath="/mahad-maddah" backLabel="Maddah Ma'had"/>;
   }
 
+  // Resolver bersama (juga mengisi [METODE]); tingkat Ma'had memakai label level apa adanya bila tidak ada di daftar.
   const resolvePrompt = (template) => {
-    if (!template || !profile) return template || "";
-    const tingkat = typeof TINGKATAN_LABEL !== "undefined"
-      ? (TINGKATAN_LABEL[profile.level] || profile.level) : (profile.level || "");
-
-    let gayaBelajar = "belajar dengan pendekatan kombinasi";
-    if (profile?.learningStyle?.length > 0 && typeof GAYA_BELAJAR_LABEL !== "undefined") {
-      const labels = profile.learningStyle.map(s => GAYA_BELAJAR_LABEL[s]).filter(Boolean);
-      if (labels.length === 1)      gayaBelajar = labels[0];
-      else if (labels.length === 2) gayaBelajar = labels.join(" dan ");
-      else if (labels.length > 2)   gayaBelajar = labels.slice(0, -1).join(", ") + ", dan " + labels[labels.length - 1];
-    }
-
-    const levelBahasa = (typeof LEVEL_BAHASA_INSTRUCTION !== "undefined" && profile?.level)
-      ? (LEVEL_BAHASA_INSTRUCTION[profile.level] || LEVEL_BAHASA_INSTRUCTION["2"] || "")
-      : "";
-
-    return template
-      .replace(/\[TINGKATAN\]/g,    tingkat)
-      .replace(/\[MADDAH\]/g,       maddah.name)
-      .replace(/\[TOPIK\]/g,        topikInput || "[TOPIK]")
-      .replace(/\[GAYA_BELAJAR\]/g, gayaBelajar)
-      .replace(/\[LEVEL_BAHASA\]/g, levelBahasa);
+    if (!template) return "";
+    const tingkat = (typeof TINGKATAN_LABEL !== "undefined" && TINGKATAN_LABEL[profile?.level]) || profile?.level || "thalib";
+    return resolveAdaptivePrompt(
+      template.replace(/\[TINGKATAN\]/g, tingkat).replace(/\[TOPIK\]/g, topikInput || "[TOPIK]"),
+      profile, maddah.name);
   };
 
   const hasTopikPlaceholder = Object.values(maddah.prompts || {})
@@ -194,27 +198,22 @@ const MahadDetailPage = () => {
   return (
     <div className="page-enter mobile-page-wrap">
 
-      {/* Header */}
-      <section className="relative pt-4 md:pt-10 pb-6 md:pb-8 overflow-hidden">
-        <Blob color="rgba(62,207,142,0.18)" size={500} top={-150} right={-100}/>
+      {/* Header ringkas — supaya template prompt langsung terlihat */}
+      <section className="relative pt-3 md:pt-7 pb-4 md:pb-5 overflow-hidden">
+        <GlowBlob color="rgba(62,207,142,0.18)" size={500} top={-150} right={-100}/>
         <div className="container-x relative">
           <button onClick={() => navigate("/mahad-maddah")}
-            className="text-sm text-ink-soft hover:text-ink inline-flex items-center gap-2 mb-5"
+            className="text-sm text-ink-soft hover:text-ink inline-flex items-center gap-2 mb-3"
             style={{minHeight:40}}>
             <Icon name="arrowLeft" className="w-4 h-4"/> Maddah Ma'had
           </button>
 
-          <div className="flex items-start justify-between flex-wrap gap-4 mb-3">
-            <div>
-              <div className="arabic-display text-gold-300 text-4xl md:text-5xl mb-2"
-                style={{direction:"rtl"}}>
-                {maddah.nameArabic}
-              </div>
-              <h1 className="font-display text-3xl md:text-4xl font-semibold text-ink">
-                {maddah.name}
-              </h1>
+          <div className="flex items-end justify-between flex-wrap gap-x-4 gap-y-1">
+            <div className="flex items-baseline gap-x-3 gap-y-1 flex-wrap min-w-0">
+              <h1 className="font-display text-2xl md:text-3xl font-semibold text-ink">{maddah.name}</h1>
+              <span className="arabic-display text-gold-300 text-2xl md:text-3xl" style={{direction:"rtl"}}>{maddah.nameArabic}</span>
             </div>
-            <span className={`text-[11px] px-3 py-1 rounded-full border flex-shrink-0 mt-1 ${
+            <span className={`text-[11px] px-3 py-1 rounded-full border flex-shrink-0 ${
               maddah.category === "agama"
                 ? "bg-gold-500/10 text-gold-300 border-gold-500/20"
                 : "bg-violet-500/10 text-violet-300 border-violet-500/20"
@@ -223,16 +222,28 @@ const MahadDetailPage = () => {
             </span>
           </div>
 
-          <p className="text-base md:text-lg text-ink-muted leading-relaxed max-w-2xl mt-4">
-            {maddah.description}
-          </p>
+          {maddah.description && (
+            <p className="text-sm md:text-base text-ink-muted leading-relaxed max-w-3xl mt-2 line-clamp-2">
+              {maddah.description}
+            </p>
+          )}
         </div>
       </section>
 
+      <MaddahGuide
+        kitabUtama={Array.isArray(maddah.kitabUtama) ? maddah.kitabUtama : []}
+        recommendedAI={Array.isArray(maddah.recommendedAI) ? maddah.recommendedAI : []}
+        tutorial={maddah.tutorial}
+        onStarterPack={() => {
+          const pack = typeof generateStarterPack !== "undefined" ? generateStarterPack(profile, session) : "";
+          navigator.clipboard.writeText(pack);
+          toast.push("Starter Pack tersalin. Paste ke AI di awal chat.");
+        }}/>
+
       {/* Topik Utama */}
       {maddah.topikUtama?.length > 0 && (
-        <section className="container-x mb-8">
-          <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 inline-flex items-center gap-2">
+        <section className="container-x mb-7">
+          <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-2 inline-flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>Topik yang Tersedia
           </h2>
           {/* Mobile: geser horizontal. Desktop: wrap biasa */}
@@ -288,78 +299,9 @@ const MahadDetailPage = () => {
         </section>
       )}
 
-      {/* Rekomendasi AI */}
-      {maddah.recommendedAI?.length > 0 && (
-        <section className="container-x mb-8">
-          <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
-            <span className="w-6 h-px bg-gold-500/70"/>AI yang Direkomendasikan
-          </h2>
-          <div className="grid grid-cols-2 gap-2.5 md:gap-4">
-            {maddah.recommendedAI.map((ai, i) => {
-              const tool = typeof AI_TOOLS !== "undefined"
-                ? AI_TOOLS.find(t => t.id === ai.tool) : null;
-              return (
-                <div key={i} className="card-glass-strong p-3.5 md:p-5 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 md:gap-3 mb-2.5 md:mb-3">
-                    {tool && <ToolIcon tool={tool} size="w-9 h-9 md:w-11 md:h-11"/>}
-                    <div className="flex-1 min-w-0">
-                      <div className="font-display text-sm md:text-base font-semibold text-ink leading-tight">
-                        {tool?.name || ai.tool}
-                      </div>
-                      <div className="text-xs text-ink-soft">{ai.strength}</div>
-                    </div>
-                    {ai.rank === 1 && (
-                      <span className="badge-purple text-[10px] flex-shrink-0">TOP PICK</span>
-                    )}
-                  </div>
-                  <p className="text-xs md:text-sm text-ink-muted leading-relaxed">{ai.why}</p>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
-
-      {/* Starter Pack */}
-      <section className="container-x mb-8">
-        <div className="card-glass p-4 border border-emerald-600/20"
-          style={{background:"rgba(62,207,142,0.04)"}}>
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-start gap-3 flex-1 min-w-0">
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{background:"rgba(62,207,142,0.15)"}}>
-                <Icon name="sparkles" className="w-4 h-4 text-emerald-400"/>
-              </div>
-              <div className="min-w-0">
-                <div className="text-xs text-emerald-400 uppercase tracking-wider mb-0.5">
-                  Mulai di sini
-                </div>
-                <div className="font-display text-sm font-semibold text-ink">
-                  Starter Pack: Kenalkan dirimu ke AI
-                </div>
-                <p className="text-xs text-ink-muted mt-0.5 leading-relaxed">
-                  Salin ini ke AI di awal sesi supaya semua prompt relevan untuk tingkat Ma'had-mu.
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                const pack = typeof generateStarterPack !== "undefined"
-                  ? generateStarterPack(profile, session) : "";
-                navigator.clipboard.writeText(pack);
-                toast.push("Starter Pack tersalin!");
-              }}
-              className="btn btn-primary text-sm px-4 py-2.5 flex items-center gap-2 flex-shrink-0"
-              style={{minHeight:40}}>
-              <Icon name="copy" className="w-3.5 h-3.5"/> Salin Starter Pack
-            </button>
-          </div>
-        </div>
-      </section>
-
       {/* Prompts Section */}
       <section className="container-x mb-10">
-        <div className="flex items-center justify-between mb-5 flex-wrap gap-2">
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <h2 className="text-xs uppercase tracking-[0.22em] text-gold-400 inline-flex items-center gap-2">
             <span className="w-6 h-px bg-gold-500/70"/>Template Prompt ({totalPrompts})
           </h2>
@@ -403,7 +345,8 @@ const MahadDetailPage = () => {
         {/* Prompt cards */}
         <div className="space-y-4">
           {activePrompts.map((p, i) => (
-            <MahadPromptCard key={i} p={p} maddah={maddah} resolvePrompt={resolvePrompt} formatEnabled={formatEnabled}/>
+            <MahadPromptCard key={`${activeKind}-${i}`} p={p} maddah={maddah} resolvePrompt={resolvePrompt} formatEnabled={formatEnabled}
+              slotShared={slotShared} setSlotShared={setSlotShared}/>
           ))}
 
           {activePrompts.length === 0 && (

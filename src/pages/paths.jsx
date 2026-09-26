@@ -76,7 +76,7 @@ const TourContent = ({ content }) => {
     <div>
       <p className="text-sm text-ink-muted leading-relaxed mb-5">{content.intro}</p>
       <div className="card-glass p-5 mb-5 min-h-[140px] relative overflow-hidden">
-        <Blob color="rgba(62,207,142,0.15)" size={220} top={-60} right={-60}/>
+        <GlowBlob color="rgba(62,207,142,0.15)" size={220} top={-60} right={-60}/>
         <div className="relative">
           <div className="flex items-center gap-3 mb-3">
             {tool && <ToolIcon tool={tool} size="w-12 h-12"/>}
@@ -242,7 +242,7 @@ const PathsPage = () => {
             return (
               <div key={path.id} className="page-enter">
                 <Reveal className="card-glass-strong p-8 mb-6 relative overflow-hidden">
-                  <Blob color={path.color + "30"} size={300} top={-100} right={-50}/>
+                  <GlowBlob color={path.color + "30"} size={300} top={-100} right={-50}/>
                   <div className="relative grid md:grid-cols-12 gap-6 items-center">
                     <div className="md:col-span-8">
                       <div className="flex items-center gap-3 mb-3">
@@ -301,8 +301,8 @@ const PathsPage = () => {
                 {pct === 100 && (
                   <Reveal className="mt-6">
                     <div className="card-glass-strong p-7 text-center relative overflow-hidden">
-                      <Blob color="rgba(201,168,106,0.32)" size={300} top={-100} left={-50}/>
-                      <Blob color="rgba(62,207,142,0.28)" size={250} bottom={-100} right={-50}/>
+                      <GlowBlob color="rgba(201,168,106,0.32)" size={300} top={-100} left={-50}/>
+                      <GlowBlob color="rgba(62,207,142,0.28)" size={250} bottom={-100} right={-50}/>
                       <div className="relative">
                         <div className="arabic-display-classical text-3xl text-gold-300 mb-2 leading-loose">الْحَمْدُ لِلَّهِ الَّذِي بِنِعْمَتِهِ تَتِمُّ الصَّالِحَاتُ</div>
                         <p className="text-xs text-gold-400/70 mb-4 italic">"Segala puji bagi Allah yang dengan nikmat-Nya segala kebaikan menjadi sempurna."</p>
@@ -323,8 +323,8 @@ const PathsPage = () => {
         <div className="container-x">
           <Reveal>
             <div className="relative rounded-2xl overflow-hidden" style={{border:"1px solid rgba(62,207,142,0.16)",background:"rgba(255,255,255,0.04)"}}>
-              <Blob color="rgba(201,168,106,0.14)" size={400} top={-120} right={-80}/>
-              <Blob color="rgba(62,207,142,0.10)" size={350} bottom={-100} left={-60}/>
+              <GlowBlob color="rgba(201,168,106,0.14)" size={400} top={-120} right={-80}/>
+              <GlowBlob color="rgba(62,207,142,0.10)" size={350} bottom={-100} left={-60}/>
               <div className="relative p-8 md:p-12 grid md:grid-cols-12 gap-8 items-center">
                 <div className="md:col-span-8">
                   <div className="flex items-center gap-3 mb-5">

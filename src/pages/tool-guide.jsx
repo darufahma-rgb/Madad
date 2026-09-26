@@ -120,7 +120,7 @@ const SingleToolGuide = ({ toolId, profile }) => {
   return (
     <div className="page-enter">
       <section className="relative pt-12 pb-8 overflow-hidden">
-        <Blob color={tool.color + "40"} size={500} top={-200} right={-100}/>
+        <GlowBlob color={tool.color + "40"} size={500} top={-200} right={-100}/>
         <div className="container-x relative">
           <button onClick={() => navigate("/tools")} className="text-sm text-ink-muted hover:text-ink inline-flex items-center gap-1 mb-6">
             <Icon name="chevronLeft" className="w-4 h-4"/> Semua tools
@@ -214,7 +214,7 @@ const SingleToolGuide = ({ toolId, profile }) => {
             <div className="md:col-span-5 space-y-5">
               {/* Open AI */}
               <Reveal className="card-glass-strong p-6 relative overflow-hidden">
-                <Blob color={tool.color + "60"} size={200} top={-50} right={-50}/>
+                <GlowBlob color={tool.color + "60"} size={200} top={-50} right={-50}/>
                 <div className="relative">
                   <div className="text-xs uppercase tracking-wider text-gold-400 mb-2">Action</div>
                   <h3 className="font-display text-2xl font-semibold text-ink mb-2">Buka {tool.name}</h3>
