@@ -4,18 +4,25 @@ import React, { useState, useEffect, useRef, useCallback, useMemo, createContext
 */
 
 /* ── PromptCard — komponen terpisah agar useState tidak dipanggil di dalam .map() ── */
-const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled }) => {
+const loadSlotSharedTopik = (maddahId) => {
+  try { const v = JSON.parse(localStorage.getItem(`talqeeh_prompt_slots_${maddahId}`) || "{}"); return v.topik || v.bab || ""; } catch { return ""; }
+};
+
+const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled, slotShared, setSlotShared }) => {
   const toast = useToast();
   const [copied, setCopied] = useState(false);
   const [showFull, setShowFull] = useState(false);
+  const resolved = p?.template ? resolvePrompt(p.template) : "";
+  const slotState = usePromptSlots(resolved, slotShared, setSlotShared);
+  const idPrefix = useMemo(() => "slot-" + Math.random().toString(36).slice(2, 8), []);
 
   if (!p || !p.template) return null;
 
   const tool = typeof AI_TOOLS !== "undefined"
     ? AI_TOOLS.find(t => t.id === p.targetAI) : null;
-  const resolved = resolvePrompt(p.template);
   const getTextToCopy = () => typeof withFormatInstruction !== "undefined"
-    ? withFormatInstruction(resolved, formatEnabled) : resolved;
+    ? withFormatInstruction(slotState.finalText, formatEnabled) : slotState.finalText;
+  const runLocked = slotState.missing.length > 0;
 
   return (
     <div className="card-glass-strong p-4 md:p-5">
@@ -34,26 +41,34 @@ const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled }) => {
         </div>
         <div className="flex gap-2 flex-shrink-0 flex-wrap">
           <button
-            onClick={() => {
+            onClick={guardSlots(slotState, idPrefix, toast, () => {
               navigator.clipboard.writeText(getTextToCopy());
               toast.push("Prompt tersalin. Paste ke " + (tool?.name || "AI") + ".");
               setCopied(true);
-            }}
+            })}
             className="btn btn-ghost text-xs px-3 py-2.5 flex items-center justify-center gap-1.5"
             style={{minHeight:40}}>
             <Icon name="copy" className="w-3.5 h-3.5"/>
             {copied ? "Tersalin ✓" : "Salin"}
           </button>
-          <RunInTalqeehButton getText={getTextToCopy} title={`${maddah?.name || "Maddah"} — ${p.title}`} source="Maddah Ma'had"
-            label="Jalankan di sini" className="btn btn-ghost text-xs px-3 py-2.5 justify-center"/>
+          {runLocked ? (
+            <button onClick={guardSlots(slotState, idPrefix, toast, () => {})}
+              className="btn btn-ghost text-xs px-3 py-2.5 justify-center inline-flex items-center gap-1.5 opacity-60"
+              style={{ minHeight: 40, borderColor: 'rgba(62,207,142,0.35)', color: '#a7f3d0' }}>
+              <Icon name="sparkles" className="w-3.5 h-3.5"/> Jalankan di sini
+            </button>
+          ) : (
+            <RunInTalqeehButton getText={getTextToCopy} title={`${maddah?.name || "Maddah"} — ${p.title}`} source="Maddah Ma'had"
+              label="Jalankan di sini" className="btn btn-ghost text-xs px-3 py-2.5 justify-center"/>
+          )}
           {tool?.link && (
             <button
-              onClick={() => {
+              onClick={guardSlots(slotState, idPrefix, toast, () => {
                 navigator.clipboard.writeText(getTextToCopy());
                 toast.push("Tersalin. Membuka " + tool.name + "...");
                 setCopied(true);
                 setTimeout(() => window.open(tool.link, "_blank"), 400);
-              }}
+              })}
               className="btn btn-primary text-xs px-3 py-2.5 flex items-center justify-center gap-1.5"
               style={{minHeight:40}}>
               Buka {tool.name}
@@ -63,13 +78,15 @@ const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled }) => {
         </div>
       </div>
 
+      <PromptSlotFields slotState={slotState} idPrefix={idPrefix}/>
+
       {/* Prompt preview */}
       <div className="p-3 rounded-xl mb-3"
         style={{background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)"}}>
         <p className={`text-xs text-ink-muted leading-relaxed whitespace-pre-wrap font-mono ${
           showFull ? "" : "line-clamp-4"
         }`}>
-          {resolved}
+          {slotState.finalText}
         </p>
         <button onClick={() => setShowFull(!showFull)}
           className="text-[11px] text-violet-300 hover:text-violet-200 mt-2 block">
@@ -124,7 +141,10 @@ const MahadDetailPage = () => {
     ? getMahadMaddahById(maddahId) : null;
 
   const [activeKind, setActiveKind] = useState("pahami");
-  const [topikInput, setTopikInput] = useState("");
+  const [slotShared, setSlotShared] = useSlotShared(maddahId || "none");
+  const [topikInput, setTopikInputRaw] = useState(() => loadSlotSharedTopik(maddahId));
+  // Topik juga mengisi kolom Bab/Topik/Tema di prompt yang memakai [SEBUTKAN].
+  const setTopikInput = (v) => { setTopikInputRaw(v); ["bab", "topik", "tema", "materi"].forEach(k => setSlotShared(k, v)); };
   const [formatEnabled, setFormatEnabled] = useState(() => typeof getFormatPref !== "undefined" ? getFormatPref() : true);
 
   if (!session) { navigate("/"); return null; }
@@ -145,29 +165,13 @@ const MahadDetailPage = () => {
     return <FreeMaddahGate maddah={maddah} backPath="/mahad-maddah" backLabel="Maddah Ma'had"/>;
   }
 
+  // Resolver bersama (juga mengisi [METODE]); tingkat Ma'had memakai label level apa adanya bila tidak ada di daftar.
   const resolvePrompt = (template) => {
-    if (!template || !profile) return template || "";
-    const tingkat = typeof TINGKATAN_LABEL !== "undefined"
-      ? (TINGKATAN_LABEL[profile.level] || profile.level) : (profile.level || "");
-
-    let gayaBelajar = "belajar dengan pendekatan kombinasi";
-    if (profile?.learningStyle?.length > 0 && typeof GAYA_BELAJAR_LABEL !== "undefined") {
-      const labels = profile.learningStyle.map(s => GAYA_BELAJAR_LABEL[s]).filter(Boolean);
-      if (labels.length === 1)      gayaBelajar = labels[0];
-      else if (labels.length === 2) gayaBelajar = labels.join(" dan ");
-      else if (labels.length > 2)   gayaBelajar = labels.slice(0, -1).join(", ") + ", dan " + labels[labels.length - 1];
-    }
-
-    const levelBahasa = (typeof LEVEL_BAHASA_INSTRUCTION !== "undefined" && profile?.level)
-      ? (LEVEL_BAHASA_INSTRUCTION[profile.level] || LEVEL_BAHASA_INSTRUCTION["2"] || "")
-      : "";
-
-    return template
-      .replace(/\[TINGKATAN\]/g,    tingkat)
-      .replace(/\[MADDAH\]/g,       maddah.name)
-      .replace(/\[TOPIK\]/g,        topikInput || "[TOPIK]")
-      .replace(/\[GAYA_BELAJAR\]/g, gayaBelajar)
-      .replace(/\[LEVEL_BAHASA\]/g, levelBahasa);
+    if (!template) return "";
+    const tingkat = (typeof TINGKATAN_LABEL !== "undefined" && TINGKATAN_LABEL[profile?.level]) || profile?.level || "thalib";
+    return resolveAdaptivePrompt(
+      template.replace(/\[TINGKATAN\]/g, tingkat).replace(/\[TOPIK\]/g, topikInput || "[TOPIK]"),
+      profile, maddah.name);
   };
 
   const hasTopikPlaceholder = Object.values(maddah.prompts || {})
@@ -341,7 +345,8 @@ const MahadDetailPage = () => {
         {/* Prompt cards */}
         <div className="space-y-4">
           {activePrompts.map((p, i) => (
-            <MahadPromptCard key={i} p={p} maddah={maddah} resolvePrompt={resolvePrompt} formatEnabled={formatEnabled}/>
+            <MahadPromptCard key={`${activeKind}-${i}`} p={p} maddah={maddah} resolvePrompt={resolvePrompt} formatEnabled={formatEnabled}
+              slotShared={slotShared} setSlotShared={setSlotShared}/>
           ))}
 
           {activePrompts.length === 0 && (

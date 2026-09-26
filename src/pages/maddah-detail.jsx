@@ -118,7 +118,73 @@ const MaddahGuide = ({ kitabUtama = [], recommendedAI = [], tutorial = null, onS
   );
 };
 
-const MaddahPromptCard = ({ prompt, maddah, profile, formatEnabled }) => {
+/* ---- Isian di dalam prompt ([SEBUTKAN …] / [TEMPEL …]) ----
+   Isian wajib dibagi antar kartu lewat `shared` (bab yang diketik sekali ikut ke prompt lain) dan disimpan
+   per maddah. Prompt baru bisa disalin/dijalankan setelah isian wajibnya terisi. Dipakai kuliah & Ma'had. */
+const slotStoreKey = (maddahId) => `talqeeh_prompt_slots_${maddahId}`;
+const loadSlotShared = (maddahId) => {
+  try { return JSON.parse(localStorage.getItem(slotStoreKey(maddahId)) || "{}") || {}; } catch { return {}; }
+};
+const useSlotShared = (maddahId) => {
+  const [shared, setShared] = useState(() => loadSlotShared(maddahId));
+  const setValue = (key, value) => setShared(prev => {
+    const next = { ...prev, [key]: value };
+    try { localStorage.setItem(slotStoreKey(maddahId), JSON.stringify(next)); } catch {}
+    return next;
+  });
+  return [shared, setValue];
+};
+
+const usePromptSlots = (resolved, shared = {}, setShared = () => {}) => {
+  const slots = useMemo(() => findPromptSlots(resolved), [resolved]);
+  const [local, setLocal] = useState({});
+  const [tried, setTried] = useState(false);
+  const values = {};
+  slots.forEach(s => { values[s.index] = s.key ? (shared[s.key] || "") : (local[s.index] || ""); });
+  const setSlot = (s, v) => (s.key ? setShared(s.key, v) : setLocal(prev => ({ ...prev, [s.index]: v })));
+  const missing = missingPromptSlots(slots, values);
+  const finalText = fillPromptSlots(resolved, slots, values);
+  return { slots, values, setSlot, missing, finalText, tried, setTried };
+};
+
+const PromptSlotFields = ({ slotState, idPrefix }) => {
+  const { slots, values, setSlot, missing, tried } = slotState;
+  if (!slots.length) return null;
+  const missingIdx = new Set(missing.map(s => s.index));
+  return (
+    <div className="grid sm:grid-cols-2 gap-2 mb-3">
+      {slots.map(s => {
+        const bad = tried && missingIdx.has(s.index);
+        const cls = `w-full text-sm px-3 py-2 rounded-lg text-ink placeholder:text-ink-soft outline-none focus:ring-1 focus:ring-emerald-500/50 ${bad ? "ring-1 ring-amber-400/70" : ""}`;
+        const style = { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" };
+        return (
+          <label key={s.index} className={`block min-w-0 ${s.kind === "tempel" ? "sm:col-span-2" : ""}`}>
+            <span className="block text-[11px] text-ink-soft mb-1">
+              {s.label}{s.kind === "tempel" ? " (opsional — bisa juga dikirim setelahnya)" : ""}
+            </span>
+            {s.kind === "tempel" ? (
+              <textarea id={`${idPrefix}-${s.index}`} rows={2} value={values[s.index]} onChange={e => setSlot(s, e.target.value)}
+                placeholder="Tempel di sini…" dir="auto" className={cls} style={style}/>
+            ) : (
+              <input id={`${idPrefix}-${s.index}`} type="text" value={values[s.index]} onChange={e => setSlot(s, e.target.value)}
+                placeholder={s.hint || "Wajib diisi"} dir="auto" className={cls} style={{ ...style, minHeight: 40 }}/>
+            )}
+          </label>
+        );
+      })}
+    </div>
+  );
+};
+
+// Jalankan aksi hanya kalau isian wajib sudah terisi; kalau belum, tandai & fokus ke kotak pertama.
+const guardSlots = (slotState, idPrefix, toast, action) => () => {
+  if (!slotState.missing.length) return action();
+  slotState.setTried(true);
+  toast.push("Isi dulu: " + slotState.missing.map(s => s.label).join(", "));
+  document.getElementById(`${idPrefix}-${slotState.missing[0].index}`)?.focus();
+};
+
+const MaddahPromptCard = ({ prompt, maddah, profile, formatEnabled, slotShared, setSlotShared }) => {
   const toast = useToast();
 
   // Guard: kalau prompt tidak valid, jangan render
@@ -138,25 +204,28 @@ const MaddahPromptCard = ({ prompt, maddah, profile, formatEnabled }) => {
   const [copied, setCopied] = useState(false);
 
   const resolvedPrompt = resolveAdaptivePrompt(safePrompt.template, profile, maddah?.name || "") || "";
+  const slotState = usePromptSlots(resolvedPrompt, slotShared, setSlotShared);
+  const idPrefix = useMemo(() => "slot-" + Math.random().toString(36).slice(2, 8), []);
 
   const getTextToCopy = () => typeof withFormatInstruction !== "undefined"
-    ? withFormatInstruction(resolvedPrompt, formatEnabled)
-    : resolvedPrompt;
+    ? withFormatInstruction(slotState.finalText, formatEnabled)
+    : slotState.finalText;
 
-  const handleCopy = () => {
+  const handleCopy = guardSlots(slotState, idPrefix, toast, () => {
     navigator.clipboard.writeText(getTextToCopy());
     toast.push("Prompt tersalin. Paste ke " + (tool?.name || "AI") + ".");
     setCopied(true);
     if (typeof trackPromptCopied !== "undefined") trackPromptCopied(maddah.id);
-  };
+  });
 
-  const handleCopyAndOpen = () => {
+  const handleCopyAndOpen = guardSlots(slotState, idPrefix, toast, () => {
     navigator.clipboard.writeText(getTextToCopy());
     toast.push("Prompt tersalin. Membuka " + tool?.name + "...");
     setCopied(true);
     if (typeof trackPromptCopied !== "undefined") trackPromptCopied(maddah.id);
     if (tool?.link) setTimeout(() => window.open(tool.link, "_blank"), 400);
-  };
+  });
+  const runLocked = slotState.missing.length > 0;
 
   const handleSaveToKurasah = () => {
     const noteTemplate = `## Prompt yang dipakai\n**Maddah:** ${maddah.name}\n**Tujuan:** ${safePrompt.title}\n\n---\n\n## Jawaban AI\n\n*Paste jawaban AI di sini...*\n\n---\n\n## Catatanku\n\n*Tulis refleksi atau poin penting dari jawaban AI...*`;
@@ -189,8 +258,16 @@ const MaddahPromptCard = ({ prompt, maddah, profile, formatEnabled }) => {
           <button onClick={handleCopy} className="btn btn-ghost text-xs px-3 py-2.5 flex items-center justify-center gap-1.5 w-full sm:w-auto" style={{minHeight:44}}>
             <Icon name="copy" className="w-3 h-3"/>{copied ? "Tersalin ✓" : "Salin"}
           </button>
-          <RunInTalqeehButton getText={getTextToCopy} title={`${maddah.name} — ${safePrompt.title}`} source="Maddah S1"
-            label="Jalankan di sini" className="btn btn-ghost text-xs px-3 py-2.5 justify-center w-full sm:w-auto"/>
+          {runLocked ? (
+            <button onClick={guardSlots(slotState, idPrefix, toast, () => {})}
+              className="btn btn-ghost text-xs px-3 py-2.5 justify-center w-full sm:w-auto inline-flex items-center gap-1.5 opacity-60"
+              style={{ minHeight: 40, borderColor: 'rgba(62,207,142,0.35)', color: '#a7f3d0' }}>
+              <Icon name="sparkles" className="w-3.5 h-3.5"/> Jalankan di sini
+            </button>
+          ) : (
+            <RunInTalqeehButton getText={getTextToCopy} title={`${maddah.name} — ${safePrompt.title}`} source="Maddah S1"
+              label="Jalankan di sini" className="btn btn-ghost text-xs px-3 py-2.5 justify-center w-full sm:w-auto"/>
+          )}
           {tool?.link && (
             <button onClick={handleCopyAndOpen} className="btn btn-primary text-xs px-3 py-2.5 flex items-center justify-center gap-1.5 w-full sm:w-auto" style={{minHeight:44}}>
               Buka {tool.name}<Icon name="external" className="w-3 h-3"/>
@@ -199,9 +276,11 @@ const MaddahPromptCard = ({ prompt, maddah, profile, formatEnabled }) => {
         </div>
       </div>
 
+      <PromptSlotFields slotState={slotState} idPrefix={idPrefix}/>
+
       <div className="p-3 rounded-xl mb-3" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
         <div className={`text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap ${!showFull ? "line-clamp-4" : ""}`}>
-          {resolvedPrompt}
+          {slotState.finalText}
         </div>
         <button onClick={() => setShowFull(!showFull)} className="text-[11px] text-emerald-300 hover:text-emerald-200 mt-2 block">
           {showFull ? "Sembunyikan" : "Lihat lengkap"}
@@ -238,6 +317,9 @@ const MaddahDetailPage = () => {
 
   const [activeKind, setActiveKind] = useState("pahami");
   const [formatEnabled, setFormatEnabled] = useState(() => typeof getFormatPref !== "undefined" ? getFormatPref() : true);
+  const [slotShared, setSlotShared] = useSlotShared(maddahId || "none");
+  const topikValue = slotShared.bab || slotShared.topik || "";
+  const setTopik = (v) => ["bab", "topik", "tema", "materi"].forEach(k => setSlotShared(k, v));
 
   useEffect(() => {
     if (maddah && session && typeof trackMaddahOpen !== "undefined") {
@@ -348,6 +430,17 @@ const MaddahDetailPage = () => {
               </div>
             </div>
 
+            {/* Satu kotak untuk bab/topik: otomatis mengisi kolom Bab/Topik/Tema di semua prompt maddah ini */}
+            <div className="mb-3 flex items-center gap-2">
+              <input type="text" value={topikValue} onChange={e => setTopik(e.target.value)} dir="auto"
+                placeholder="Bab / topik yang sedang kamu pelajari — otomatis masuk ke semua prompt"
+                className="flex-1 min-w-0 text-sm px-3 py-2 rounded-xl text-ink placeholder:text-ink-soft outline-none focus:ring-1 focus:ring-emerald-500/50"
+                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)", minHeight: 40 }}/>
+              {topikValue && (
+                <button onClick={() => setTopik("")} className="text-xs text-ink-soft hover:text-ink px-2" style={{ minHeight: 40 }} aria-label="Hapus topik">✕</button>
+              )}
+            </div>
+
             <div className="sticky top-[var(--app-header-h)] z-20 -mx-4 md:mx-0 mb-5 border-b border-line"
               style={{ background: "rgba(10,5,20,0.92)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 px-4 md:px-0">
@@ -380,7 +473,8 @@ const MaddahDetailPage = () => {
                 : []
               ).filter(p => p && p.template && p.title)
                 .map((p, i) => (
-                  <MaddahPromptCard key={i} prompt={p} maddah={maddah} profile={profile} formatEnabled={formatEnabled}/>
+                  <MaddahPromptCard key={`${activeKind}-${i}`} prompt={p} maddah={maddah} profile={profile} formatEnabled={formatEnabled}
+                    slotShared={slotShared} setSlotShared={setSlotShared}/>
                 ))}
               {(Array.isArray(maddah.prompts?.[activeKind])
                 ? maddah.prompts[activeKind].length
@@ -400,3 +494,4 @@ const MaddahDetailPage = () => {
 window.MaddahDetailPage = MaddahDetailPage;
 window.MaddahDetailErrorBoundary = MaddahDetailErrorBoundary;
 window.MaddahGuide = MaddahGuide;
+Object.assign(window, { useSlotShared, usePromptSlots, PromptSlotFields, guardSlots });

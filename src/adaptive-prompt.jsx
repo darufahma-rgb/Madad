@@ -132,6 +132,88 @@ const LEVEL_BAHASA_INSTRUCTION = {
 - Tidak perlu jelaskan istilah dasar`,
 };
 
+/* ============ [METODE]: cara penyajian sesuai gaya belajar ============
+   Template library menaruh baris [METODE] sebelum [LEVEL_BAHASA]. Isinya instruksi penyajian
+   dari gaya belajar di profil; tanpa gaya belajar baris itu dihapus (bukan dibiarkan mentah). */
+const METODE_BY_GAYA = {
+  reading:      "Jelaskan bertahap dalam paragraf pendek, dari dasar ke rinci.",
+  summary:      "Tutup tiap bagian dengan ringkasan poin kunci.",
+  discussion:   "Sisipkan 1–2 pertanyaan pemantik untukku di sela penjelasan.",
+  practice:     "Beri contoh konkret dan satu latihan singkat di akhir.",
+  memorization: "Sertakan pola hafalan atau jembatan keledai untuk poin yang wajib dihafal.",
+  visual:       "Sajikan struktur materinya sebagai tabel atau bagan teks bercabang.",
+};
+
+const metodeBlock = (profile) => {
+  const lines = (profile?.learningStyle || []).map(s => METODE_BY_GAYA[s]).filter(Boolean);
+  return lines.length ? "Cara penyajian yang cocok untukku:\n" + lines.map(l => `- ${l}`).join("\n") : "";
+};
+
+// Baris kosong berlebih (mis. setelah [METODE] dihapus) dirapikan jadi satu baris kosong.
+const tidyPrompt = (text) => text.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+
+/* ============ Isian di dalam prompt: [SEBUTKAN …], [TULIS …], [TEMPEL …] ============
+   Tiap kemunculan jadi satu kotak isian di kartu prompt. [SEBUTKAN]/[TULIS] wajib diisi sebelum
+   prompt disalin atau dijalankan; [TEMPEL] boleh kosong — AI lalu diminta menunggu tempelan. */
+const PROMPT_SLOT_RE = /\[((SEBUTKAN|TULIS|TEMPEL)\b[^\]\n]*)\]/g;
+const SLOT_WAIT_TEXT = "(akan kukirim di pesan berikutnya — tunggu sampai aku mengirimnya sebelum menjawab)";
+
+const slotLabelText = (s) => s.replace(/_/g, " ").toLowerCase().replace(/^\w/, c => c.toUpperCase());
+const SLOT_LEAD_WORDS = /^(aku|untuk|dari|dalam|pada|di|ke|tentang|dan|atau|jelaskan|tafsirkan|analisis|bantu|beri|buat|buatkan|contoh|yaitu|mis\.|hafal|menghafal|pahami|susun|koreksi|latih)$/i;
+
+// Label untuk [SEBUTKAN] polos: 1–3 kata sebelum kurung, mis. "Bab yang sudah kupelajari: [SEBUTKAN]".
+const SLOT_NOUNS = /^(bab|bab-bab|topik|tema|periode|peristiwa|surat|surat\/bagian|surat\/juz|ayat|ayat\/surat|hadits|mas'alah|madzhab|kaidah|istilah|hukum|juz|bagian|fenomena|konsep|isu|tokoh|sifat|fase|kawasan|materi)$/i;
+
+const slotLabelFromContext = (text, at) => {
+  const line = text.slice(Math.max(0, text.lastIndexOf("\n", at - 1) + 1), at).replace(/[\s(:,–-]+$/, "");
+  const all = line.replace(/[()]/g, " ").split(/\s+/).filter(Boolean).slice(-6);
+  // Mulai dari kata benda kunci terakhir: "gaya Azhar untuk bab" → "bab", "Bab yang sudah kupelajari" tetap utuh.
+  let i = -1;
+  all.forEach((w, k) => { if (SLOT_NOUNS.test(w.replace(/[.,:;]$/, ""))) i = k; });
+  let words = i >= 0 ? all.slice(i) : all.slice(-3);
+  while (words.length && SLOT_LEAD_WORDS.test(words[0])) words = words.slice(1);
+  while (words.length && SLOT_LEAD_WORDS.test(words[words.length - 1])) words = words.slice(0, -1);
+  if (words.length === 1 && /^(sudah|yang|ini|itu|juga)$/i.test(words[0])) return "";
+  return words.length ? slotLabelText(words.join(" ").replace(/[,:;]+$/, "")) : "";
+};
+
+const findPromptSlots = (text) => {
+  const slots = [];
+  const re = new RegExp(PROMPT_SLOT_RE.source, "g");
+  let m;
+  while ((m = re.exec(text || ""))) {
+    const kind = m[2] === "TEMPEL" ? "tempel" : "isi";
+    let rest = m[1].slice(m[2].length).replace(/^[\s,:/]+/, "").trim();
+    let hint = "";
+    // "[SEBUTKAN/tempel]", "[SEBUTKAN, atau aku tempel]" → isian polos yang boleh berupa tempelan.
+    if (/^(atau\s+)?(aku\s+)?(tempel|sebut)\b/i.test(rest)) { hint = "boleh juga tempel teksnya"; rest = ""; }
+    const mis = rest.search(/\bmis\./i);
+    if (mis >= 0) { hint = rest.slice(mis).trim(); rest = rest.slice(0, mis).replace(/[\s,]+$/, "").trim(); }
+    const alt = rest.match(/^(.*?)\s+(atau|\/)\s+(.*)$/i);
+    if (alt && alt[1]) { hint = [alt[2] === "/" ? "atau " + alt[3] : `${alt[2]} ${alt[3]}`, hint].filter(Boolean).join(" · "); rest = alt[1]; }
+    let label = rest && !/^(di sini|di bawah|teks arab di sini)$/i.test(rest) ? slotLabelText(rest.split(",")[0]) : "";
+    if (!label) label = slotLabelFromContext(text, m.index) || (kind === "tempel" ? "Teks yang ditempel" : "Topik / bab");
+    // key: isian yang sama di kartu lain ikut terisi ("Bab" & "Bab yang sudah kupelajari" → "bab"). Tempelan tidak dibagi.
+    const key = kind === "tempel" ? null : label.split(/[\s/]/)[0].toLowerCase();
+    slots.push({ index: slots.length, token: m[0], start: m.index, end: m.index + m[0].length, kind, label, hint, key });
+  }
+  return slots;
+};
+
+// values: { [slot.index]: string }. Isian wajib yang kosong dibiarkan sebagai kurung (lihat missingPromptSlots).
+const fillPromptSlots = (text, slots, values = {}) => {
+  let out = "", pos = 0;
+  for (const s of slots) {
+    const v = String(values[s.index] ?? "").trim();
+    out += text.slice(pos, s.start) + (v || (s.kind === "tempel" ? SLOT_WAIT_TEXT : s.token));
+    pos = s.end;
+  }
+  return out + text.slice(pos);
+};
+
+const missingPromptSlots = (slots, values = {}) =>
+  slots.filter(s => s.kind === "isi" && !String(values[s.index] ?? "").trim());
+
 /* ============ MAIN RESOLVER ============ */
 
 const resolveAdaptivePrompt = (template, profile, maddahName) => {
@@ -153,26 +235,28 @@ const resolveAdaptivePrompt = (template, profile, maddahName) => {
     ? (LEVEL_BAHASA_INSTRUCTION[profile.level] || LEVEL_BAHASA_INSTRUCTION["2"])
     : LEVEL_BAHASA_INSTRUCTION["2"];
 
-  return template
+  return tidyPrompt(template
     .replace(/\[TINGKATAN\]/g,   tingkatan)
     .replace(/\[FAKULTAS\]/g,    fakultas)
     .replace(/\[JURUSAN\]/g,     jurusan)
     .replace(/\[GAYA_BELAJAR\]/g, gayaBelajar)
     .replace(/\[MADDAH\]/g,      maddahName || "[MADDAH]")
-    .replace(/\[LEVEL_BAHASA\]/g, levelBahasa);
+    .replace(/\[METODE\]/g,      metodeBlock(profile))
+    .replace(/\[LEVEL_BAHASA\]/g, levelBahasa));
 };
 
 /* ============ GENERIC RESOLVE (sample page / no profile) ============ */
 
 const resolveGenericPrompt = (template, maddahName) => {
   if (!template) return "";
-  return template
+  return tidyPrompt(template
     .replace(/\[TINGKATAN\]/g,    "thalib")
     .replace(/\[FAKULTAS\]/g,     "Al-Azhar")
     .replace(/\[JURUSAN\]/g,      "")
     .replace(/\[GAYA_BELAJAR\]/g, "belajar dengan pendekatan kombinasi")
     .replace(/\[MADDAH\]/g,       maddahName || "[MADDAH]")
-    .replace(/\[LEVEL_BAHASA\]/g, LEVEL_BAHASA_INSTRUCTION["2"]);
+    .replace(/\[METODE\]/g,       "")
+    .replace(/\[LEVEL_BAHASA\]/g, LEVEL_BAHASA_INSTRUCTION["2"]));
 };
 
 /* ============ MA'HAD STARTER PACK ============ */
@@ -376,6 +460,10 @@ const generateS2Prompt = (template, profile, maddah) => {
 Object.assign(window, {
   resolveAdaptivePrompt,
   resolveGenericPrompt,
+  metodeBlock,
+  findPromptSlots,
+  fillPromptSlots,
+  missingPromptSlots,
   generateStarterPack,
   generateMahadStarterPack,
   parseMahadLevel,
