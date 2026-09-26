@@ -26,11 +26,15 @@ dan `[METODE]`/`[LEVEL_BAHASA]` ada. Diff harus hanya menyentuh blok maddah yang
 
 ## Progres
 
-34 maddah selesai (570 prompt): Nahwu, Fiqh Madzhabi, Tauhid, Ushul Fiqh, Mustholah Hadits, Tarikh Tasyri',
+Sebelum commit, jalankan `npm run lint:prompts -- --strict <id maddah>` (lihat `docs/mutu-prompt-fase3.md`). Rubrik ini
+menangkap template yang kembar dengan maddah lain.
+
+38 maddah selesai (615 prompt): Nahwu, Fiqh Madzhabi, Tauhid, Ushul Fiqh, Mustholah Hadits, Tarikh Tasyri',
 Sharaf, Al-Qur'an (Tahfidz), Sirah Nabawiyah, Fiqh Muqaran, Tarikh Islam, 'Ulum Al-Qur'an, Tajwid, Ahwal Syakhshiyah,
 Balaghah, Mantiq, Tafsir Tahlili, Hadits Tahlili, Tafsir Maudhu'i, Manahij Mufassirin, Hadits Maudhu'i,
 Takhrij Hadits, Manahij Muhadditsin, Syubhat Hawla As-Sunnah, Tasawwuf, Qadhaya Fiqhiyyah, Adyan,
-Wasail Tabligh, Khithabah, Qawa'id Fiqhiyyah, Ushul Dakwah, Maqashid Syariah, Istisyraq, Tiarat Fikriyyah. Urutan dipilih dari jangkauan (fakultas × tingkat) dan jumlah kertas di Bank Soal, karena data jumlah buka
+Wasail Tabligh, Khithabah, Qawa'id Fiqhiyyah, Ushul Dakwah, Maqashid Syariah, Istisyraq, Tiarat Fikriyyah,
+Fiqh Dakwah, Akhlaq Islamiyah, Tsaqafah Islamiyah, Nizham Islamiyah. Urutan dipilih dari jangkauan (fakultas × tingkat) dan jumlah kertas di Bank Soal, karena data jumlah buka
 maddah hanya ada di Supabase.
 
 Catatan dari kertas asli yang memengaruhi penulisan:
