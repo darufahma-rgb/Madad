@@ -275,6 +275,11 @@ const SummarySection = ({ section, rtl, size, open, onToggle, source, onCite }) 
         </button>
       )}
       {open && section.body && (
+        <div className="flex justify-end px-3 md:px-5 -mt-2 mb-1">
+          <SpeakButton text={section.body} label={section.title} showLabel/>
+        </div>
+      )}
+      {open && section.body && (
         <div className={`px-3.5 md:px-6 pb-5 ${section.title ? 'pt-0' : 'pt-5'}`}>
           {section.title && <div className="h-px bg-white/[0.06] mb-4"/>}
           <AiRichText content={section.body} rtl={rtl} size={size} source={source} onCite={onCite}/>
@@ -1593,32 +1598,18 @@ const arabicQuestionOf = (text) => {
 };
 
 const useArabicSpeech = () => {
-  const synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
-  const [voice, setVoice] = useState(null);
-  const [speaking, setSpeaking] = useState(null); // teks yang sedang dibacakan
-  useEffect(() => {
-    if (!synth) return;
-    const pick = () => {
-      const vs = synth.getVoices().filter(v => /^ar/i.test(v.lang));
-      setVoice(vs.find(v => /EG/i.test(v.lang)) || vs.find(v => /SA/i.test(v.lang)) || vs[0] || null);
-    };
-    pick();
-    synth.addEventListener?.('voiceschanged', pick);
-    return () => { synth.removeEventListener?.('voiceschanged', pick); synth.cancel(); };
-  }, []);
-  const speak = (text) => {
-    if (!synth || !voice || !text) return;
-    synth.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.voice = voice; u.lang = voice.lang; u.rate = 0.9;
-    u.onend = u.onerror = () => setSpeaking(cur => (cur === text ? null : cur));
-    setSpeaking(text);
-    synth.speak(u);
+  const tts = useTts();
+  const available = !!tts.voices?.ar;
+  const speak = (text) => { if (available && text) TTS.speak(text, { key: text, label: 'Pertanyaan duktur' }); };
+  return {
+    supported: TTS.supported,
+    available,
+    speaking: tts.status === 'playing' ? tts.key : null, // teks yang sedang dibacakan
+    paused: tts.status === 'paused' ? tts.key : null,
+    speak,
+    stop: () => TTS.stop(),
+    unlock: () => TTS.unlock(),
   };
-  const stop = () => { synth?.cancel(); setSpeaking(null); };
-  // iOS hanya mengizinkan suara yang dimulai dari ketukan: "buka kunci" saat tombol ditekan.
-  const unlock = () => { if (synth && voice) { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; synth.speak(u); } };
-  return { supported: !!synth, available: !!voice, speaking, speak, stop, unlock };
 };
 
 const useAnswerRecorder = ({ onDone, onError }) => {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useSyncExternalStore } from 'react';
 /* Talqeeh — AI Partner: helper & komponen kecil yang dipakai halaman daftar, wizard, dan tab belajar */
 
 // Profil belajar (onboarding) → ringkas untuk server, supaya AI menyesuaikan gaya penyajian.
@@ -131,20 +131,151 @@ const isMostlyArabic = (text) => {
   return ((text.match(ARABIC_CHARS_RE) || []).length / letters.length) > 0.5;
 };
 
-// Lafal Arab pakai suara bawaan browser (gratis). Tidak semua perangkat punya suara Arab.
-const speakArabic = (text, onUnavailable) => {
-  const synth = window.speechSynthesis;
-  if (!synth) { onUnavailable?.(); return; }
-  const voices = synth.getVoices();
-  const voice = voices.find(v => v.lang?.toLowerCase().startsWith('ar'));
-  if (voices.length && !voice) { onUnavailable?.(); return; }
-  synth.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = voice?.lang || 'ar-SA';
-  if (voice) u.voice = voice;
-  u.rate = 0.85;
-  synth.speak(u);
+/* ── Suara (text-to-speech) ──
+   Memakai suara bawaan perangkat (gratis). Teks dipecah per bahasa: bagian Arab dibaca suara Arab,
+   bagian Latin dibaca suara Indonesia — masing-masing suara native terbaik yang tersedia
+   (Natural/Neural/Google/Enhanced lebih dulu). Dibacakan per kalimat supaya bisa dijeda & dilanjutkan
+   di semua browser (pause() bawaan tidak andal di Android), dan tidak terhenti di kalimat panjang (bug Chrome). */
+const TTS_RATE_KEY = 'talqeeh_tts_rate';
+const TTS_RATES = [{ id: 0.8, label: '0.8×' }, { id: 1, label: '1×' }, { id: 1.2, label: '1.2×' }];
+const TTS_BASE_RATE = { ar: 0.85, id: 1 };
+
+const isVoiceLang = (v, lang) => (lang === 'ar' ? /^ar([-_]|$)/i : /^(id|in)([-_]|$)/i).test(v.lang || '');
+const rankVoice = (v, lang) => {
+  const name = v.name || '';
+  let score = 0;
+  if (/natural|neural|online|premium|enhanced|wavenet|siri/i.test(name)) score += 100;
+  if (/google/i.test(name)) score += 60;
+  if (v.localService === false) score += 5; // suara cloud umumnya lebih natural
+  if (/compact|espeak|eloquence|novelty/i.test(name)) score -= 50;
+  if (lang === 'ar') {
+    if (/[-_](SA|001)$/i.test(v.lang)) score += 20; else if (/[-_]EG$/i.test(v.lang)) score += 18; else score += 5;
+    if (/maged|majed|tarik|laila|hamed|zariyah|salma|shakir|naayf|hoda/i.test(name)) score += 15;
+  } else if (/gadis|ardi|damayanti|andika/i.test(name)) score += 15;
+  return score;
 };
+const pickVoice = (voices, lang) =>
+  voices.filter(v => isVoiceLang(v, lang)).sort((a, b) => rankVoice(b, lang) - rankVoice(a, lang))[0] || null;
+
+// Bersihkan markdown/simbol supaya tidak ikut dibaca.
+const cleanForSpeech = (text) => String(text || '')
+  .replace(/```[\s\S]*?```/g, ' ')
+  .replace(/https?:\/\/\S+/g, ' ')
+  .replace(/^\s*(#{1,6}|>|↳|[-*•]|\d+\.)\s*/gm, '')
+  .replace(/\|/g, ', ').replace(/^[\s,:-]+$/gm, '')
+  .replace(/[*_`~#]/g, '')
+  .replace(/[→⇒←↔]/g, ', ')
+  .replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/gu, '')
+  .replace(/[ \t]+/g, ' ')
+  .trim();
+
+// Pecah teks jadi potongan berbahasa sama (ar / id), lalu per kalimat (maks ±180 huruf).
+const segmentForSpeech = (text) => {
+  const runs = [];
+  for (const line of cleanForSpeech(text).split(/\n+/)) {
+    for (const word of line.split(/\s+/).filter(Boolean)) {
+      const lang = /[\u0600-\u06FF]/.test(word) ? 'ar' : /[A-Za-z]/.test(word) ? 'id' : null;
+      const last = runs[runs.length - 1];
+      if (last && (lang === null || last.lang === lang) && !last.lineEnd) last.text += ' ' + word;
+      else runs.push({ lang: lang || last?.lang || 'id', text: word });
+    }
+    if (runs.length) runs[runs.length - 1].lineEnd = true;
+  }
+  const out = [];
+  for (const r of runs) {
+    const parts = r.text.match(/[^.!?؟،؛:;]+[.!?؟،؛:;]*\s*/g) || [r.text];
+    let buf = '';
+    for (const part of parts) {
+      if (buf && (buf + part).length > 180) { out.push({ lang: r.lang, text: buf.trim() }); buf = ''; }
+      buf += part;
+    }
+    if (buf.trim() && /[\p{L}\p{N}]/u.test(buf)) out.push({ lang: r.lang, text: buf.trim() });
+  }
+  return out;
+};
+
+const TTS = (() => {
+  const synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
+  const listeners = new Set();
+  let voices = { ar: null, id: null };
+  let state = { status: 'idle', key: null, label: '', index: 0, total: 0, rate: 1, voices };
+  let segments = [];
+  let current = 0; // id ucapan yang sedang aktif; 0 = tidak ada
+  let seq = 0;
+  try { const r = Number(localStorage.getItem(TTS_RATE_KEY)); if (TTS_RATES.some(x => x.id === r)) state.rate = r; } catch {}
+
+  const emit = (patch) => { state = { ...state, ...patch }; listeners.forEach(fn => fn()); };
+  const loadVoices = () => {
+    if (!synth) return;
+    const all = synth.getVoices();
+    voices = { ar: pickVoice(all, 'ar'), id: pickVoice(all, 'id') };
+    emit({ voices });
+  };
+  if (synth) { loadVoices(); synth.addEventListener?.('voiceschanged', loadVoices); }
+
+  const playFrom = (i) => {
+    if (i >= segments.length) { current = 0; emit({ status: 'idle', key: null, index: 0, total: 0 }); return; }
+    const seg = segments[i];
+    const u = new SpeechSynthesisUtterance(seg.text);
+    const voice = voices[seg.lang];
+    if (voice) u.voice = voice;
+    u.lang = voice?.lang || (seg.lang === 'ar' ? 'ar-SA' : 'id-ID');
+    u.rate = TTS_BASE_RATE[seg.lang] * state.rate;
+    const id = ++seq;
+    current = id;
+    const next = () => { if (current === id && state.status === 'playing') playFrom(i + 1); };
+    u.onend = next;
+    u.onerror = next;
+    TTS._utterance = u; // simpan referensi: Chrome kadang tidak memanggil onend kalau ucapan terkena GC
+    emit({ index: i });
+    synth.speak(u);
+  };
+
+  return {
+    supported: !!synth,
+    subscribe: (fn) => { listeners.add(fn); return () => listeners.delete(fn); },
+    get: () => state,
+    hasVoice: (lang) => !!voices[lang],
+    // Mengembalikan false bila teks tidak bisa dibacakan (mis. teks Arab tapi perangkat tanpa suara Arab).
+    speak: (text, { key = text, label = '' } = {}) => {
+      if (!synth) return false;
+      let segs = segmentForSpeech(text);
+      const missingArabic = segs.some(x => x.lang === 'ar') && !voices.ar && synth.getVoices().length > 0;
+      if (missingArabic) segs = segs.filter(x => x.lang !== 'ar');
+      if (!segs.length) return false;
+      current = 0;
+      synth.cancel();
+      segments = segs;
+      emit({ status: 'playing', key, label: label || cleanForSpeech(text).slice(0, 80), total: segs.length, index: 0 });
+      playFrom(0);
+      return !missingArabic;
+    },
+    pause: () => {
+      if (state.status !== 'playing') return;
+      current = 0;
+      emit({ status: 'paused' });
+      synth.cancel();
+    },
+    resume: () => {
+      if (state.status !== 'paused') return;
+      emit({ status: 'playing' });
+      playFrom(state.index); // ulang dari awal kalimat yang terjeda
+    },
+    stop: () => { current = 0; synth?.cancel(); emit({ status: 'idle', key: null, index: 0, total: 0 }); },
+    setRate: (rate) => {
+      try { localStorage.setItem(TTS_RATE_KEY, String(rate)); } catch {}
+      emit({ rate });
+      if (state.status === 'playing') { current = 0; synth.cancel(); playFrom(state.index); }
+    },
+    // iOS hanya mengizinkan suara yang dimulai dari ketukan: "buka kunci" saat tombol ditekan.
+    unlock: () => { if (synth) { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; synth.speak(u); } },
+  };
+})();
+
+const useTts = () => useSyncExternalStore(TTS.subscribe, TTS.get, TTS.get);
+
+// Kompatibilitas: pemanggil lama (bar seleksi Materi) — sekarang Arab & Indonesia dibaca suara masing-masing.
+const speakArabic = (text, onUnavailable) => { if (!TTS.speak(text)) onUnavailable?.(); };
 
 const saveToKurasah = (title, body, tags = []) => {
   const now = new Date().toISOString();
@@ -278,15 +409,70 @@ const ArabicText = ({ children, className = '', size = 22 }) => (
   </div>
 );
 
-const SpeakButton = ({ text, className = '' }) => {
+// Tombol dengar: ketuk = putar; saat teks ini sedang dibacakan, ketuk = jeda/lanjut.
+const SpeakButton = ({ text, label, className = '', size = 'sm', showLabel = false }) => {
   const toast = useToast();
-  if (!hasArabic(text)) return null;
+  const tts = useTts();
+  if (!TTS.supported || !cleanForSpeech(text)) return null;
+  const mine = tts.key === text && tts.status !== 'idle';
+  const playing = mine && tts.status === 'playing';
+  const onClick = (e) => {
+    e.stopPropagation();
+    if (playing) return TTS.pause();
+    if (mine) return TTS.resume();
+    if (!TTS.speak(text, { label })) toast.push(hasArabic(text) && !isMostlyArabic(text) ? 'Perangkat ini belum punya suara bahasa Arab — hanya bagian Indonesia yang dibacakan.' : 'Perangkat ini belum punya suara bahasa Arab.');
+  };
+  const dim = showLabel ? 'h-9 px-3 gap-1.5 text-xs' : size === 'md' ? 'w-10 h-10' : 'w-8 h-8';
+  const text_ = playing ? 'Jeda' : mine ? 'Lanjutkan' : 'Dengarkan';
   return (
-    <button type="button" title="Dengarkan lafal"
-      onClick={(e) => { e.stopPropagation(); speakArabic(text, () => toast.push('Perangkat ini belum punya suara bahasa Arab.')); }}
-      className={`w-8 h-8 rounded-lg inline-flex items-center justify-center text-ink-muted hover:text-emerald-300 hover:bg-white/5 ${className}`}>
-      <Icon name="headphones" className="w-4 h-4"/>
+    <button type="button" onClick={onClick} title={`${text_} suara`} aria-label={playing ? 'Jeda suara' : mine ? 'Lanjutkan suara' : 'Dengarkan'}
+      className={`${dim} rounded-lg inline-flex items-center justify-center flex-shrink-0 ${mine ? 'text-emerald-300 bg-emerald-500/12' : 'text-ink-muted hover:text-emerald-300 hover:bg-white/5'} ${className}`}>
+      <Icon name={playing ? 'pause' : mine ? 'play' : 'headphones'} className="w-4 h-4"/>{showLabel && text_}
     </button>
+  );
+};
+
+/* Pemutar mini: muncul di bawah layar selama ada suara yang dibacakan — jeda/lanjut, kecepatan, berhenti. */
+const SpeechPlayer = () => {
+  const tts = useTts();
+  const active = tts.status !== 'idle';
+  useEffect(() => () => TTS.stop(), []);
+  // Beri ruang di bawah halaman supaya pemutar tidak menutupi baris terakhir.
+  useEffect(() => {
+    if (!active) return;
+    const prev = document.body.style.paddingBottom;
+    document.body.style.paddingBottom = '84px';
+    return () => { document.body.style.paddingBottom = prev; };
+  }, [active]);
+  if (!active) return null;
+  const playing = tts.status === 'playing';
+  return (
+    <div className="fixed left-1/2 -translate-x-1/2 z-[75] w-[calc(100%-24px)] max-w-md rounded-2xl border border-emerald-500/30 shadow-2xl px-2.5 py-2 flex items-center gap-2"
+      style={{ bottom: 'calc(var(--tabbar-height, 0px) + var(--safe-bottom, 0px) + 12px)', background: '#151515' }}
+      role="region" aria-label="Pemutar suara">
+      <button onClick={() => (playing ? TTS.pause() : TTS.resume())} aria-label={playing ? 'Jeda' : 'Lanjutkan'}
+        className="w-10 h-10 rounded-xl bg-emerald-500 text-black flex items-center justify-center flex-shrink-0">
+        <Icon name={playing ? 'pause' : 'play'} className="w-4 h-4" style={{ fill: 'currentColor' }}/>
+      </button>
+      <div className="flex-1 min-w-0">
+        <div className="text-[13px] text-ink truncate" dir="auto">{tts.label}</div>
+        <div className="flex items-center gap-2 mt-1">
+          <div className="flex-1 h-1 rounded-full bg-white/10 overflow-hidden">
+            <div className="h-full bg-emerald-400 transition-all" style={{ width: `${tts.total ? ((tts.index + (playing ? 0.5 : 0)) / tts.total) * 100 : 0}%` }}/>
+          </div>
+          <span className="text-[10.5px] text-ink-soft tabular-nums">{playing ? 'Membaca' : 'Dijeda'}</span>
+        </div>
+      </div>
+      <button onClick={() => { const i = TTS_RATES.findIndex(r => r.id === tts.rate); TTS.setRate(TTS_RATES[(i + 1) % TTS_RATES.length].id); }}
+        aria-label="Kecepatan suara" title="Kecepatan suara"
+        className="h-10 min-w-[44px] px-2 rounded-xl border border-white/10 text-xs text-ink-muted hover:text-ink flex-shrink-0">
+        {TTS_RATES.find(r => r.id === tts.rate)?.label || '1×'}
+      </button>
+      <button onClick={() => TTS.stop()} aria-label="Berhenti" title="Berhenti"
+        className="w-10 h-10 rounded-xl text-ink-muted hover:text-ink hover:bg-white/5 flex items-center justify-center flex-shrink-0">
+        <Icon name="x" className="w-4 h-4"/>
+      </button>
+    </div>
   );
 };
 
@@ -392,6 +578,7 @@ const FeedbackBar = ({ setId, kind, refId, content, model, label = 'Hasil ini me
 
 Object.assign(window, {
   aiCall, aiStream, useAiStatus, FeedbackBar, openAiUpgrade, learnerPayload, learnerSummary, maddahName, hasArabic, isMostlyArabic, speakArabic, saveToKurasah,
+  TTS, useTts, SpeechPlayer, segmentForSpeech,
   SOURCE_META, STUDY_STEPS, stepDone, studyPercent,
   ProgressRing, Skeleton, GeneratePanel, UpgradeCard, Pill, ArabicText, SpeakButton, aiInputClass,
 });

@@ -548,6 +548,7 @@ const AiPartnerDetail = ({ setId, status }) => {
         </div>
       )}
 
+      <SpeechPlayer/>
       <TabBody key={`${set.id}-${current.id}`} set={set} setSet={setSet} access={access}
         askTutor={askTutor} initialAsk={current.id === 'tutor' ? pendingAsk : null} onAsked={() => setPendingAsk(null)}/>
     </div>
