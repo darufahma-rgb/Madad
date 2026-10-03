@@ -101,7 +101,7 @@ const MapNode = ({ node, path, depth, color, ui }) => {
 
 /* Penjelasan kotak yang dipilih: jalur dari pusat, istilah Arab, keterangan, sub-cabang, dan navigasi.
    variant: 'panel' = halaman samping di layar penuh; 'float' = kartu di atas peta; 'card' = di bawah peta. */
-const MindDetail = ({ root, path, onSelect, onClose, onFocus, variant = 'card', floating = false, renderNote = (t) => t }) => {
+const MindDetail = ({ root, path, onSelect, onClose, onFocus, onAsk, variant = 'card', floating = false, renderNote = (t) => t }) => {
   const trail = mmTrail(root, path);
   const node = trail[trail.length - 1];
   if (!node) return null;
@@ -165,6 +165,12 @@ const MindDetail = ({ root, path, onSelect, onClose, onFocus, variant = 'card', 
         )}
         {!node.note && !node.detail && !node.contoh && (
           <p className="text-xs text-ink-soft">Tidak ada keterangan tambahan untuk bagian ini.</p>
+        )}
+        {onAsk && (
+          <button onClick={() => onAsk(path)}
+            className="mm-detail-section inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border border-emerald-500/35 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20">
+            <Icon name="messageSquare" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Jelaskan lebih dalam (tanya tutor)
+          </button>
         )}
 
         {kids.length > 0 && (
@@ -437,7 +443,7 @@ const ZoomControl = ({ view, onFit }) => (
 /* Layar penuh: fullscreen asli browser bila didukung (desktop/Android), selain itu lapisan penuh (iPhone).
    Penjelasan kotak tampil sebagai halaman samping (desktop) atau lembar bawah (HP). */
 const PANEL_W = 400;
-const MindFullscreen = ({ title, root, ui, selected, onSelect, onClearSelection, onClose, onExpandAll, onCollapseAll, showNotes, toggleNotes, renderNote }) => {
+const MindFullscreen = ({ title, root, ui, selected, onSelect, onClearSelection, onClose, onExpandAll, onCollapseAll, showNotes, toggleNotes, renderNote, onAsk }) => {
   const shellRef = useRef(null);
   const view = useMapView();
   const native = useRef(false);
@@ -504,7 +510,8 @@ const MindFullscreen = ({ title, root, ui, selected, onSelect, onClearSelection,
         {selected && (
           <div className={narrow ? 'mm-sheet' : 'mm-side'} key={narrow ? 'sheet' : 'side'}>
             {narrow && <div className="mm-sheet-handle" onClick={onClearSelection}/>}
-            <MindDetail variant="panel" root={root} path={selected} onSelect={onSelect} onClose={onClearSelection} onFocus={focusNode} renderNote={renderNote}/>
+            <MindDetail variant="panel" root={root} path={selected} onSelect={onSelect} onClose={onClearSelection} onFocus={focusNode} renderNote={renderNote}
+              onAsk={onAsk ? (p) => { if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {}); onAsk(p); } : undefined}/>
           </div>
         )}
       </div>

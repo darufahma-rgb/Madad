@@ -448,6 +448,7 @@ const AiPartnerDetail = ({ setId, status }) => {
   const [step, setStep]   = useState('pahami');
   const [sub, setSub]     = useState({ pahami: 'summary', hafalkan: 'cards', uji: 'quiz', tanya: 'tutor' });
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [pendingAsk, setPendingAsk] = useState(null);
 
   useEffect(() => {
     aiCall('get', { set_id: setId }).then(d => d.ok ? setSet(d.data) : setError(d.error || 'Materi tidak ditemukan'));
@@ -464,6 +465,13 @@ const AiPartnerDetail = ({ setId, status }) => {
   const meta = SOURCE_META[set.source_type] || SOURCE_META.teks;
   const current = SUB_TABS[step].find(t => t.id === sub[step]) || SUB_TABS[step][0];
   const TabBody = window[current.C];
+  // "Tanya tutor" dari kuis, flashcard, peta konsep, atau tahriri: buka tab Tanya dan kirim pertanyaannya.
+  const askTutor = isPro ? (text) => {
+    setPendingAsk(text);
+    setSub(p => ({ ...p, tanya: 'tutor' }));
+    setStep('tanya');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } : null;
 
   return (
     <div className="container-x pb-24 max-w-5xl">
@@ -523,7 +531,8 @@ const AiPartnerDetail = ({ setId, status }) => {
         </div>
       )}
 
-      <TabBody key={`${set.id}-${current.id}`} set={set} setSet={setSet} access={access}/>
+      <TabBody key={`${set.id}-${current.id}`} set={set} setSet={setSet} access={access}
+        askTutor={askTutor} initialAsk={current.id === 'tutor' ? pendingAsk : null} onAsked={() => setPendingAsk(null)}/>
     </div>
   );
 };

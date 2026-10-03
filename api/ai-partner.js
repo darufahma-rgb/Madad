@@ -4,7 +4,7 @@ import { sbConfig, sbHeaders, normalizeCode, requireAiTier, requireMember, consu
 import { callAI, callAIJson, requestAI, streamAI, friendlyAiError, aiErrorDetail } from './_lib/ai.js';
 import { resolveModels, isValidModelId, clearModelCache } from './_lib/models.js';
 import {
-  PROMPTS, SUMMARY_LANGS, summaryPrompt, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
+  PROMPTS, SUMMARY_LANGS, summaryPrompt, weakPointsNote, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
   OCR_PROMPT, transcribePrompt, transcribeAnswerPrompt, TRANSCRIBE_DIALECTS, tutorSystem, syafawiSystem, learnerContext,
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
@@ -616,7 +616,8 @@ async function handleGenerate(ctx, body, res) {
   }
 
   const patch = { [field]: data, progress };
-  if (kind === 'quiz') patch.quiz_best_score = null;
+  // Kuis baru: daftar soal yang salah milik kuis lama tidak berlaku lagi.
+  if (kind === 'quiz') { patch.quiz_best_score = null; patch.progress = { ...progress, quiz_wrong: [] }; }
   if (kind === 'essays') patch.essay_attempts = [];
   await updateSet(ctx.code, set.id, patch);
   return res.status(200).json({ ok: true, data, model });
@@ -643,6 +644,10 @@ async function handleSaveProgress(ctx, body, res) {
   }
 
   const progressPatch = cleanProgressPatch(body.progress);
+  // Soal kuis yang salah di percobaan terakhir → dipakai tutor sebagai titik lemah.
+  if (Array.isArray(body.quiz_wrong) && Array.isArray(set.quiz)) {
+    progressPatch.quiz_wrong = [...new Set(body.quiz_wrong.filter(i => Number.isInteger(i) && i >= 0 && i < set.quiz.length))].slice(0, 20);
+  }
   if (Object.keys(progressPatch).length) patch.progress = mergeProgress(set, progressPatch);
 
   if (Object.keys(patch).length) await updateSet(ctx.code, set.id, patch);
@@ -721,7 +726,7 @@ async function handleChat(ctx, body, res) {
   const message = typeof body.message === 'string' ? body.message.trim() : '';
   if (!message || message.length > 2000) return res.status(400).json({ ok: false, error: 'Pesan kosong atau terlalu panjang' });
   const mode = body.mode === 'syafawi' ? 'syafawi' : 'tutor';
-  const set = await getOwnedSet(ctx.code, body.set_id, 'id,title,content,chat');
+  const set = await getOwnedSet(ctx.code, body.set_id, 'id,title,content,chat,quiz,flashcards,essays,essay_attempts,progress');
   if (!set) return res.status(404).json({ ok: false, error: 'Materi tidak ditemukan' });
   const over = await takeQuota(ctx, 'chat');
   if (over) return quotaExceeded(res, 'chat', over, ctx);
@@ -746,7 +751,7 @@ async function handleChat(ctx, body, res) {
     ? `(Materi panjang — yang ditampilkan hanya potongan ${mode === 'syafawi' ? 'dari seluruh bab' : 'yang paling berkaitan dengan pertanyaan'}; bagian yang dilewati ditandai […]. Jika jawabannya tidak ada di potongan ini, katakan mungkin dibahas di bagian lain materi.)\n\n${excerpt}`
     : excerpt;
   const { out, stream, failed } = await runAI(body, res, {
-    system: (mode === 'syafawi' ? syafawiSystem(set.title, material) : tutorSystem(set.title, material)) + learnerContext(body.learner),
+    system: (mode === 'syafawi' ? syafawiSystem(set.title, material) : tutorSystem(set.title, material) + weakPointsNote(set)) + learnerContext(body.learner),
     messages: [...history.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: message }],
     maxTokens: 1500,
     timeLimitMs: 48000,

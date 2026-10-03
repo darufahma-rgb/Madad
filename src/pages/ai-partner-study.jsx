@@ -431,6 +431,16 @@ const SummaryTab = ({ set, setSet, access }) => {
   );
 };
 
+// Tombol "Tanya tutor" (hanya tampil untuk pelanggan; askTutor null untuk akun coba gratis).
+const AskTutorButton = ({ askTutor, text, label = 'Tanya tutor', className = '' }) => (
+  askTutor ? (
+    <button onClick={() => askTutor(text)}
+      className={`inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border border-emerald-500/35 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20 ${className}`}>
+      <Icon name="messageSquare" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> {label}
+    </button>
+  ) : null
+);
+
 /* ── 1b. Peta konsep ──
    Dua tampilan: "Peta" (pohon bercabang ke kanan, tiap cabang utama berwarna sendiri) dan "Daftar"
    (kerangka bernomor gaya taqsim 1 · 1.1 · 1.1.1). Kotak peta sengaja ringkas — penjelasan muncul di panel
@@ -477,7 +487,7 @@ const OutlineNode = ({ node, num, depth, color, showNotes, onSelect, path }) => 
 
 const noteText = (text) => <AiInline text={text}/>;
 
-const MindmapTab = ({ set, setSet, access }) => {
+const MindmapTab = ({ set, setSet, access, askTutor }) => {
   const { busy, generate, upgrade } = useGenerate(set, setSet, 'mindmap', 'mindmap');
   const saveKurasah = useKurasahSave();
   const root = set.mindmap;
@@ -510,6 +520,15 @@ const MindmapTab = ({ set, setSet, access }) => {
   }
 
   const changeView = (v) => { setView(v); savePref(MM_VIEW_KEY, v); };
+  // Pertanyaan ke tutor tentang kotak yang dipilih, lengkap dengan jalurnya dari pusat peta.
+  const askAbout = askTutor ? (path) => {
+    const trail = path.split('.').map((_, i, a) => a.slice(0, i + 1).join('.'))
+      .map(pp => pp.split('.').slice(1).reduce((n, i) => mmChildren(n)[+i], root)).filter(Boolean);
+    const node = trail[trail.length - 1];
+    const name = (n) => { const t = mmText(n); return t.label || t.ar; };
+    setFull(false);
+    askTutor(`Jelaskan lebih dalam tentang "${name(node)}"${trail.length > 1 ? ` (bagian dari: ${trail.slice(0, -1).map(name).join(' → ')})` : ''} di materi ini. Ajarkan bertahap dengan contoh.`);
+  } : null;
   const toggleNotes = () => { setShowNotes(v => { savePref(MM_NOTES_KEY, v ? '0' : '1'); return !v; }); };
 
   return (
@@ -546,7 +565,7 @@ const MindmapTab = ({ set, setSet, access }) => {
         <>
           <MapCanvas root={root} ui={ui} view={mapView} minZoom={0.45} canvasClass="card-glass">
             {floatingDetail && selected && <MindDetail floating root={root} path={selected} onSelect={select} onClose={() => setSelected(null)}
-              onFocus={(p) => mapView.ctl.current?.focus(p)} renderNote={noteText}/>}
+              onFocus={(p) => mapView.ctl.current?.focus(p)} renderNote={noteText} onAsk={askAbout}/>}
           </MapCanvas>
           <p className="text-[11px] text-ink-soft mt-2">
             Ketuk kotak untuk penjelasan · <span className="text-ink-muted">+N</span> membuka cabang · seret untuk menggeser · {narrow ? 'cubit dua jari' : 'Ctrl + scroll'} untuk zoom · <button onClick={() => setFull(true)} className="text-emerald-300 hover:text-emerald-200">buka layar penuh</button>
@@ -570,14 +589,14 @@ const MindmapTab = ({ set, setSet, access }) => {
 
       {!floatingDetail && (
         <div ref={detailRef} className="scroll-mb-24">
-          {selected && !full && <MindDetail root={root} path={selected} onSelect={select} onClose={() => setSelected(null)} renderNote={noteText}/>}
+          {selected && !full && <MindDetail root={root} path={selected} onSelect={select} onClose={() => setSelected(null)} renderNote={noteText} onAsk={askAbout}/>}
         </div>
       )}
 
       {full && (
         <MindFullscreen title={set.title} root={root} ui={ui} selected={selected} onSelect={select}
           onClearSelection={() => setSelected(null)} onClose={() => setFull(false)}
-          onExpandAll={expandAll} onCollapseAll={collapseAll} showNotes={showNotes} toggleNotes={toggleNotes} renderNote={noteText}/>
+          onExpandAll={expandAll} onCollapseAll={collapseAll} showNotes={showNotes} toggleNotes={toggleNotes} renderNote={noteText} onAsk={askAbout}/>
       )}
 
       <FeedbackBar setId={set.id} kind="mindmap" model={set.progress?.models?.mindmap} content={mindmapToMarkdown(root)} className="mt-4" label="Peta konsep ini sesuai materi?"/>
@@ -839,7 +858,7 @@ const CardFace = ({ text, big }) => (
     : <div className={`text-ink leading-relaxed ${big ? 'text-xl font-display' : 'text-base'}`} dir="auto">{text}</div>
 );
 
-const FlashcardTab = ({ set, setSet, access }) => {
+const FlashcardTab = ({ set, setSet, access, askTutor }) => {
   const { busy, generate, upgrade } = useGenerate(set, setSet, 'flashcards', 'flashcards');
   const cards = set.flashcards || [];
   const dueQueue = () => cards.map((c, i) => i).filter(i => isDue(cards[i]));
@@ -920,6 +939,12 @@ const FlashcardTab = ({ set, setSet, access }) => {
                 Belum hafal
               </button>
               <button onClick={() => answer(true)} className="btn btn-primary py-3.5 text-sm">Hafal ✓</button>
+            </div>
+          )}
+          {flipped && askTutor && (
+            <div className="flex justify-center mt-3">
+              <AskTutorButton askTutor={askTutor} label="Belum paham? Tanya tutor"
+                text={`Aku sedang menghafal flashcard ini dan belum paham:\nPertanyaan: ${current.q}\nJawaban: ${current.a}\n\nJelaskan maksudnya dengan bahasa sederhana dan contoh, lalu beri cara mudah mengingatnya.`}/>
             </div>
           )}
           {flipped && (
@@ -1021,13 +1046,23 @@ const GlossaryTab = ({ set, setSet, access }) => {
 
 /* ── 3a. Kuis ── */
 
-const QuizTab = ({ set, setSet, access }) => {
+const quizAskText = (q, picked) => {
+  const opts = q.options || [];
+  const wrong = picked !== null && picked !== q.answer;
+  return `Aku sedang mengerjakan kuis materi ini.\nSoal: ${q.question}\nPilihan: ${opts.map((o, i) => `${'ABCD'[i]}. ${o}`).join(' | ')}\n${picked !== null ? `Jawabanku: ${'ABCD'[picked]}. ${opts[picked]}\n` : ''}Jawaban benar: ${'ABCD'[q.answer]}. ${opts[q.answer]}\n\n${wrong ? 'Jelaskan kenapa jawabanku salah dan kenapa jawaban yang benar itu tepat' : 'Jelaskan lebih dalam kenapa jawaban ini benar'}, berdasarkan materi. Lalu cek pemahamanku.`;
+};
+
+const QuizTab = ({ set, setSet, access, askTutor }) => {
   const { busy, generate, upgrade } = useGenerate(set, setSet, 'quiz', 'quiz');
   const quiz = set.quiz || [];
+  const all = () => quiz.map((_, i) => i);
+  const [order, setOrder]   = useState(all);     // soal yang sedang dikerjakan (semua, atau yang salah saja)
   const [idx, setIdx]       = useState(0);
   const [picked, setPicked] = useState(null);
   const [score, setScore]   = useState(0);
-  useEffect(() => { setIdx(0); setPicked(null); setScore(0); }, [set.id, quiz]);
+  const [wrong, setWrong]   = useState([]);      // [{ i, picked }]
+  const reset = (list = all()) => { setOrder(list); setIdx(0); setPicked(null); setScore(0); setWrong([]); };
+  useEffect(() => { reset(); }, [set.id, set.quiz]);
 
   if (upgrade) return <UpgradeCard message={upgrade}/>;
   if (quiz.length === 0 || busy) {
@@ -1039,42 +1074,89 @@ const QuizTab = ({ set, setSet, access }) => {
     );
   }
 
-  const finished = idx >= quiz.length;
-  const pick = (i) => { if (picked !== null) return; setPicked(i); if (i === quiz[idx].answer) setScore(s => s + 1); };
+  const fullRun = order.length === quiz.length;
+  const finished = idx >= order.length;
+  const qi = order[idx];
+  const pick = (i) => {
+    if (picked !== null) return;
+    setPicked(i);
+    if (i === quiz[qi].answer) setScore(s => s + 1);
+    else setWrong(w => [...w, { i: qi, picked: i }]);
+  };
   const next = () => {
     const nextIdx = idx + 1;
     setIdx(nextIdx);
     setPicked(null);
-    if (nextIdx >= quiz.length) {
-      aiCall('save-progress', { set_id: set.id, quiz_best_score: score });
-      setSet(s => ({ ...s, quiz_best_score: Math.max(s.quiz_best_score ?? 0, score) }));
+    if (nextIdx >= order.length) {
+      // Soal yang masih salah disimpan supaya tutor tahu bagian yang perlu diperkuat.
+      const wrongNow = wrong.map(w => w.i);
+      const prevWrong = Array.isArray(set.progress?.quiz_wrong) ? set.progress.quiz_wrong : [];
+      const quiz_wrong = fullRun ? wrongNow : prevWrong.filter(i => !order.includes(i) || wrongNow.includes(i));
+      aiCall('save-progress', { set_id: set.id, quiz_wrong, ...(fullRun ? { quiz_best_score: score } : {}) });
+      setSet(s => ({
+        ...s,
+        progress: { ...(s.progress || {}), quiz_wrong },
+        ...(fullRun ? { quiz_best_score: Math.max(s.quiz_best_score ?? 0, score) } : {}),
+      }));
     }
   };
 
   if (finished) {
-    const pct = Math.round((score / quiz.length) * 100);
+    const pct = Math.round((score / order.length) * 100);
     return (
-      <div className="card-glass p-8 text-center">
-        <div className="text-4xl mb-2">{pct >= 80 ? '🏆' : pct >= 60 ? '👍' : '💪'}</div>
-        <div className="font-display text-5xl font-semibold text-ink mb-2">{score}/{quiz.length}</div>
-        <p className="text-ink-muted text-sm mb-1">{pct >= 80 ? 'Mumtaz! Pemahamanmu sudah kuat.' : pct >= 60 ? 'Jayyid — ulangi bagian yang salah.' : 'Baca lagi ringkasannya, lalu coba ulang.'}</p>
-        {set.quiz_best_score != null && <p className="text-emerald-300 text-xs mb-6">Skor terbaik: {set.quiz_best_score}</p>}
-        <div className="flex gap-2 justify-center flex-wrap">
-          <button onClick={() => { setIdx(0); setPicked(null); setScore(0); }} className="btn btn-primary text-sm px-5 py-2">Ulangi</button>
-          {access.tier === 'pro' && <button onClick={() => generate()} disabled={busy} className="btn btn-ghost text-sm px-5 py-2">Buat soal baru</button>}
+      <div className="space-y-4">
+        <div className="card-glass p-8 text-center">
+          <div className="text-4xl mb-2">{pct >= 80 ? '🏆' : pct >= 60 ? '👍' : '💪'}</div>
+          <div className="font-display text-5xl font-semibold text-ink mb-2">{score}/{order.length}</div>
+          <p className="text-ink-muted text-sm mb-1">
+            {!fullRun ? (wrong.length ? 'Masih ada yang terlewat — baca pembahasannya di bawah.' : 'Semua soal yang tadi salah sekarang benar. Mantap!')
+              : pct >= 80 ? 'Mumtaz! Pemahamanmu sudah kuat.' : pct >= 60 ? 'Jayyid — ulangi bagian yang salah.' : 'Baca lagi ringkasannya, lalu coba ulang.'}
+          </p>
+          {fullRun && set.quiz_best_score != null && <p className="text-emerald-300 text-xs mb-6">Skor terbaik: {set.quiz_best_score}</p>}
+          <div className="flex gap-2 justify-center flex-wrap mt-4">
+            {wrong.length > 0 && <button onClick={() => reset(wrong.map(w => w.i))} className="btn btn-primary text-sm px-5 py-2">Ulangi yang salah ({wrong.length})</button>}
+            <button onClick={() => reset()} className={`btn ${wrong.length ? 'btn-ghost' : 'btn-primary'} text-sm px-5 py-2`}>Ulangi semua</button>
+            {access.tier === 'pro' && <button onClick={() => generate()} disabled={busy} className="btn btn-ghost text-sm px-5 py-2">Buat soal baru</button>}
+          </div>
         </div>
+
+        {wrong.length > 0 && (
+          <div className="card-glass p-5 md:p-6">
+            <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+              <h3 className="font-display text-lg font-semibold text-ink">Tinjau yang salah</h3>
+              <AskTutorButton askTutor={askTutor} label="Bahas semua dengan tutor"
+                text={`Di kuis materi ini aku salah ${wrong.length} soal:\n\n${wrong.map((w, n) => { const q = quiz[w.i]; return `${n + 1}. ${q.question}\n   Jawabanku: ${q.options[w.picked]}\n   Jawaban benar: ${q.options[q.answer]}`; }).join('\n\n')}\n\nBantu aku memahami konsep di balik soal-soal ini satu per satu, mulai dari yang paling mendasar. Cek pemahamanku setelah tiap konsep.`}/>
+            </div>
+            <div className="space-y-4">
+              {wrong.map((w, n) => {
+                const q = quiz[w.i];
+                return (
+                  <div key={n} className="rounded-xl border border-white/8 bg-white/3 p-4">
+                    <div className="mb-3"><CardFace text={q.question}/></div>
+                    <div className="text-sm space-y-1 mb-3" dir="auto">
+                      <div className="text-rose-300">✗ Jawabanmu: <AiInline text={q.options[w.picked]}/></div>
+                      <div className="text-emerald-300">✓ Benar: <AiInline text={q.options[q.answer]}/></div>
+                    </div>
+                    {q.explanation && <p className="text-sm text-ink-muted leading-relaxed mb-3" dir="auto"><span className="text-gold-400 font-semibold">Pembahasan: </span><AiInline text={q.explanation}/></p>}
+                    <AskTutorButton askTutor={askTutor} label="Masih bingung? Tanya tutor" text={quizAskText(q, w.picked)}/>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
 
-  const q = quiz[idx];
+  const q = quiz[qi];
   return (
     <div className="card-glass p-5 md:p-8">
       <div className="flex items-center gap-3 mb-4">
         <div className="flex-1 h-1.5 rounded-full bg-white/8 overflow-hidden">
-          <div className="h-full bg-emerald-400 transition-all" style={{ width: `${(idx / quiz.length) * 100}%` }}/>
+          <div className="h-full bg-emerald-400 transition-all" style={{ width: `${(idx / order.length) * 100}%` }}/>
         </div>
-        <span className="text-[11px] text-ink-soft">{idx + 1}/{quiz.length}</span>
+        <span className="text-[11px] text-ink-soft">{!fullRun && 'Ulang yang salah · '}{idx + 1}/{order.length}</span>
       </div>
       <div className="mb-5"><CardFace text={q.question}/></div>
       <div className="space-y-2.5">
@@ -1102,11 +1184,14 @@ const QuizTab = ({ set, setSet, access }) => {
               <span className="text-gold-400 font-semibold">Pembahasan: </span><AiInline text={q.explanation}/>
             </div>
           )}
+          {picked !== q.answer && (
+            <div className="mt-3"><AskTutorButton askTutor={askTutor} label="Kenapa salah? Tanya tutor" text={quizAskText(q, picked)}/></div>
+          )}
           <div className="flex items-center justify-between gap-3 mt-5 flex-wrap">
             <FeedbackBar setId={set.id} kind="quiz" model={set.progress?.models?.quiz} label="Soal & kunci ini benar?"
               content={`${q.question}\n${(q.options || []).map((o, i) => `${i === q.answer ? '✓' : '-'} ${o}`).join('\n')}\n${q.explanation || ''}`}/>
             <button onClick={next} className="btn btn-primary text-sm px-5 py-2">
-              {idx + 1 >= quiz.length ? 'Lihat skor' : 'Lanjut'} <Icon name="arrowRight" className="w-4 h-4"/>
+              {idx + 1 >= order.length ? 'Lihat skor' : 'Lanjut'} <Icon name="arrowRight" className="w-4 h-4"/>
             </button>
           </div>
         </>
@@ -1124,7 +1209,7 @@ const ScoreBadge = ({ skor }) => {
   </div>;
 };
 
-const GradeResult = ({ attempt, essay, setId, source, onCite, essaysModel }) => {
+const GradeResult = ({ attempt, essay, setId, source, onCite, essaysModel, askTutor }) => {
   const [showModel, setShowModel] = useState(false);
   return (
     <div className="space-y-4 mt-5">
@@ -1159,6 +1244,10 @@ const GradeResult = ({ attempt, essay, setId, source, onCite, essaysModel }) => 
           </div>
         </div>
       )}
+      {attempt.kurang.length > 0 && (
+        <AskTutorButton askTutor={askTutor} label="Bahas yang kurang dengan tutor"
+          text={`Aku latihan soal tahriri ini dan dapat nilai ${attempt.skor}/10:\n${essay.soal_ar}\n(${essay.soal_id || ''})\n\nJawabanku:\n${attempt.answer}\n\nYang masih kurang menurut penilaian:\n${attempt.kurang.map(k => `- ${k}`).join('\n')}\n\nAjari aku bagian yang kurang itu berdasarkan materi, lalu tunjukkan cara menuliskannya di lembar jawaban.`}/>
+      )}
       <button onClick={() => setShowModel(v => !v)} className="text-sm text-emerald-300 hover:text-emerald-200 flex items-center gap-1">
         <Icon name={showModel ? 'chevronUp' : 'chevronDown'} className="w-4 h-4"/> {showModel ? 'Sembunyikan' : 'Lihat'} poin kunci & jawaban model
       </button>
@@ -1177,7 +1266,7 @@ const GradeResult = ({ attempt, essay, setId, source, onCite, essaysModel }) => 
   );
 };
 
-const EssayTab = ({ set, setSet, access }) => {
+const EssayTab = ({ set, setSet, access, askTutor }) => {
   const toast = useToast();
   const { busy, generate, upgrade } = useGenerate(set, setSet, 'essays', 'essays');
   const [active, setActive] = useState(null);
@@ -1240,7 +1329,7 @@ const EssayTab = ({ set, setSet, access }) => {
               style={{ fontSize: hasArabic(result.answer) ? 18 : 14, fontFamily: hasArabic(result.answer) ? '"Noto Naskh Arabic", serif' : 'inherit' }}>
               {result.answer}
             </div>
-            <GradeResult attempt={result} essay={essay} setId={set.id} source={set.content} onCite={essayCite.onCite} essaysModel={set.progress?.models?.essays}/>
+            <GradeResult askTutor={askTutor} attempt={result} essay={essay} setId={set.id} source={set.content} onCite={essayCite.onCite} essaysModel={set.progress?.models?.essays}/>
             {essayCite.modal}
             <div className="flex gap-2 justify-end mt-5 flex-wrap">
               <button onClick={() => setResult(null)} className="btn btn-ghost text-sm px-4 py-2">Perbaiki jawaban</button>
@@ -1384,7 +1473,19 @@ const useAnswerRecorder = ({ onDone, onError }) => {
   return { supported, state, seconds, start, stop };
 };
 
-const TutorTab = ({ set, setSet, access }) => {
+// Chip lanjutan di bawah jawaban terakhir tutor: cara cepat minta penjelasan ulang, contoh, atau diuji.
+const TUTOR_FOLLOWUPS = [
+  'Belum paham, jelaskan dengan cara lain yang lebih sederhana',
+  'Kasih contoh lain',
+  'Uji aku satu soal tentang ini',
+];
+const WEAK_SUGGESTION = 'Bantu aku memahami bagian yang masih sering kusalahkan di materi ini';
+const hasWeakPoints = (set) =>
+  (set.progress?.quiz_wrong || []).length > 0 ||
+  (set.flashcards || []).some(c => c.box === 1 && c.due) ||
+  (set.essay_attempts || []).some(a => Number(a.skor) < 7);
+
+const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
   const toast = useToast();
   const [mode, setMode]       = useState('tutor');
   const [input, setInput]     = useState('');
@@ -1422,6 +1523,13 @@ const TutorTab = ({ set, setSet, access }) => {
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, [chat.length, sending, mode, Math.floor(live.length / 300)]);
   useEffect(() => { if (mode !== 'syafawi') speech.stop(); }, [mode]);
+  // Pertanyaan yang dikirim dari tab lain (kuis, flashcard, peta konsep, tahriri).
+  const sendRef = useRef(null);
+  useEffect(() => {
+    if (!initialAsk || !sendRef.current) return;
+    sendRef.current(initialAsk);
+    onAsked?.();
+  }, [initialAsk]);
 
   if (access.tier !== 'pro') {
     return <UpgradeCard title="Tutor & simulasi syafawi khusus pelanggan" message="Tanya apa saja tentang materimu, atau latihan ujian lisan dengan duktur AI yang bertanya satu per satu lalu menilai jawabanmu."/>;
@@ -1448,6 +1556,8 @@ const TutorTab = ({ set, setSet, access }) => {
     setSet(s => ({ ...s, chat: [...(s.chat || []), { role: 'assistant', content: data.reply, mode, model: data.model }] }));
     if (mode === 'syafawi' && voiceOn) speech.speak(arabicQuestionOf(data.reply));
   };
+
+  sendRef.current = send;
 
   const restart = async () => {
     const d = await aiCall('clear-chat', { set_id: set.id, mode });
@@ -1483,6 +1593,11 @@ const TutorTab = ({ set, setSet, access }) => {
             <div className="text-center py-6">
               <p className="text-ink-muted text-sm mb-4">Tanya apa saja tentang materi ini. Tutor menjawab berdasarkan isi materimu.</p>
               <div className="flex flex-col gap-2 max-w-md mx-auto">
+                {hasWeakPoints(set) && (
+                  <button onClick={() => send(WEAK_SUGGESTION)} className="text-xs text-left px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/35 text-emerald-200 hover:bg-emerald-500/15">
+                    🎯 {WEAK_SUGGESTION}
+                  </button>
+                )}
                 {TUTOR_SUGGESTIONS.map(s => (
                   <button key={s} onClick={() => send(s)} className="text-xs text-left px-4 py-2.5 rounded-xl bg-white/4 border border-white/8 text-ink-muted hover:text-ink hover:border-emerald-500/30">{s}</button>
                 ))}
@@ -1533,6 +1648,14 @@ const TutorTab = ({ set, setSet, access }) => {
               </div>
             </div>
           ))}
+          {mode === 'tutor' && !sending && chat.length > 0 && chat[chat.length - 1].role === 'assistant' && (
+            <div className="flex flex-wrap gap-2 sm:pl-10">
+              {TUTOR_FOLLOWUPS.map(f => (
+                <button key={f} onClick={() => send(f)}
+                  className="text-xs px-3 py-1.5 rounded-full bg-white/4 border border-white/10 text-ink-muted hover:text-ink hover:border-emerald-500/35">{f}</button>
+              ))}
+            </div>
+          )}
           {sending && (live ? (
             <div className="flex gap-2.5 justify-start">
               <span className="hidden sm:flex w-8 h-8 rounded-full flex-shrink-0 items-center justify-center mt-0.5"
