@@ -45,7 +45,7 @@ const useGenerate = (set, setSet, kind, field) => {
     setSet(s => ({
       ...s,
       [field]: data.data,
-      progress: { ...(s.progress || {}), [kind]: true, models: { ...(s.progress?.models || {}), ...(data.model ? { [kind]: data.model } : {}) }, ...(kind === 'summary' ? summaryStageOf(data) : {}) },
+      progress: { ...(s.progress || {}), [kind]: true, models: { ...(s.progress?.models || {}), ...(data.model ? { [kind]: data.model } : {}) }, ...(kind === 'summary' ? summaryStageOf(data) : {}), ...(kind === 'quiz' ? { quiz_wrong: [] } : {}) },
       ...(kind === 'quiz' ? { quiz_best_score: null } : {}),
       ...(kind === 'essays' ? { essay_attempts: [] } : {}),
       ...(kind === 'summary' ? { summary_lang: data.lang } : {}),
@@ -375,8 +375,10 @@ const summaryPreview = (set, live) => {
   return `${set.summary.trimEnd()}\n\n${text}`;
 };
 
-const SummaryTab = ({ set, setSet, access }) => {
+const SummaryTab = ({ set, setSet, access, askTutor }) => {
   const { busy, generate, upgrade } = useGenerate(set, setSet, 'summary', 'summary');
+  const summaryRef = useRef(null);
+  const selected = useTextSelection(summaryRef);
   const [lang, setLang] = useState(set.summary_lang || 'id');
   const saveKurasah = useKurasahSave();
   const continuation = useSummaryContinuation(set, setSet);
@@ -420,12 +422,129 @@ const SummaryTab = ({ set, setSet, access }) => {
           <ToolbarButton icon="bookmark" onClick={() => saveKurasah(`Ringkasan — ${set.title}`, set.summary, ['ringkasan'])}>Simpan ke Kurasah</ToolbarButton>
         </div>
       </div>
-      <SummaryView rtl={isArabic} source={set.content} onCite={cite.onCite}
-        markdown={continuation.continuing && continuation.live ? summaryPreview(set, continuation.live) : set.summary}/>
+      {askTutor && <p className="text-[11px] text-ink-soft mb-2">Ada yang belum jelas? Blok kalimatnya untuk minta penjelasan tutor.</p>}
+      <div ref={summaryRef}>
+        <SummaryView rtl={isArabic} source={set.content} onCite={cite.onCite}
+          markdown={continuation.continuing && continuation.live ? summaryPreview(set, continuation.live) : set.summary}/>
+      </div>
+      {askTutor && selected && (
+        <SelectionBar>
+          <button onClick={() => askTutor(explainSelectionText(selected, 'ringkasan'))} className="btn btn-primary text-xs px-4 py-2">
+            <Icon name="messageSquare" className="w-3.5 h-3.5"/> Jelaskan ke aku
+          </button>
+        </SelectionBar>
+      )}
       <SummaryContinuationNote state={continuation} progress={set.progress}/>
       {cite.modal}
       {!continuation.partial && (
         <FeedbackBar setId={set.id} kind="summary" content={set.summary} model={set.progress?.models?.summary} className="mt-4" label="Ringkasan ini akurat & membantu?"/>
+      )}
+    </div>
+  );
+};
+
+/* ── Titik lemah (cermin weakPoints di server) ──
+   Kuis yang salah di percobaan terakhir, flashcard yang terakhir ditandai "belum hafal", tahriri bernilai < 7. */
+const weakList = (set) => {
+  const out = [];
+  const quiz = set.quiz || [];
+  (set.progress?.quiz_wrong || []).forEach(i => { if (quiz[i]?.question) out.push({ kind: 'Kuis', text: quiz[i].question }); });
+  (set.flashcards || []).filter(c => c.box === 1 && c.due).forEach(c => out.push({ kind: 'Flashcard', text: c.q }));
+  const latest = new Map();
+  (set.essay_attempts || []).forEach(a => { if (Number.isInteger(a?.index)) latest.set(a.index, a); });
+  [...latest.values()].filter(a => Number(a.skor) < 7).forEach(a => {
+    const e = (set.essays || [])[a.index];
+    if (e) out.push({ kind: `Tahriri ${a.skor}/10`, text: e.soal_id || e.soal_ar });
+  });
+  return out;
+};
+
+// Teks yang sedang diblok di dalam container (kosong bila tidak ada).
+const useTextSelection = (containerRef) => {
+  const [selected, setSelected] = useState('');
+  useEffect(() => {
+    let timer;
+    const onSel = () => {
+      const sel = window.getSelection();
+      const text = sel?.toString().trim() || '';
+      clearTimeout(timer);
+      if (text && containerRef.current?.contains(sel.anchorNode)) { setSelected(text); return; }
+      // Ditunda supaya ketukan tombol di bar tidak kalah cepat dengan hilangnya seleksi.
+      timer = setTimeout(() => setSelected(''), 400);
+    };
+    document.addEventListener('selectionchange', onSel);
+    return () => { document.removeEventListener('selectionchange', onSel); clearTimeout(timer); };
+  }, []);
+  return selected;
+};
+
+const SelectionBar = ({ children }) => (
+  <div className="fixed left-1/2 -translate-x-1/2 z-[70] flex gap-2 p-2 rounded-2xl border border-emerald-500/30 shadow-2xl max-w-[calc(100vw-24px)] flex-wrap justify-center"
+    style={{ bottom: 'calc(var(--tabbar-height, 0px) + 20px)', background: 'rgba(12,12,12,0.95)', backdropFilter: 'blur(12px)' }}>
+    {children}
+  </div>
+);
+
+const explainSelectionText = (selected, where) =>
+  `Jelaskan bagian ${where}ku ini dengan bahasa sederhana, beri contoh, lalu cek pemahamanku:\n\n"${selected.slice(0, 1500)}"`;
+
+/* ── Kartu penguasaan materi ──
+   Ringkasan hasil latihan (hafalan, kuis, tahriri) + daftar yang perlu diperkuat, dengan jalan pintas ke tutor. */
+const MasteryCard = ({ set, askTutor }) => {
+  const [open, setOpen] = useState(false);
+  const cards = set.flashcards || [];
+  const quiz = set.quiz || [];
+  const weak = weakList(set);
+  const latest = new Map();
+  (set.essay_attempts || []).forEach(a => { if (Number.isInteger(a?.index)) latest.set(a.index, a); });
+  const essayScores = [...latest.values()].map(a => Number(a.skor)).filter(n => Number.isFinite(n));
+  const stats = [
+    cards.length > 0 && { label: 'Hafalan', value: `${cards.filter(c => (c.box || 1) >= 4).length}/${cards.length}`, hint: 'kartu hafal' },
+    set.quiz_best_score != null && quiz.length > 0 && { label: 'Kuis', value: `${set.quiz_best_score}/${quiz.length}`, hint: 'skor terbaik' },
+    essayScores.length > 0 && { label: 'Tahriri', value: (essayScores.reduce((a, b) => a + b, 0) / essayScores.length).toFixed(1), hint: 'rata-rata /10' },
+  ].filter(Boolean);
+  if (!stats.length && !weak.length) return null;
+
+  return (
+    <div className="card-glass mb-5 overflow-hidden">
+      <button onClick={() => setOpen(o => !o)} className="w-full flex items-center gap-3 px-4 py-3 text-left flex-wrap">
+        <Icon name="target" className="w-4 h-4 text-emerald-300 flex-shrink-0"/>
+        <span className="text-sm font-medium text-ink flex-1 sm:flex-none">Penguasaan materi</span>
+        <span className="flex items-center gap-3 flex-wrap text-xs text-ink-muted order-last basis-full pl-7 sm:order-none sm:basis-auto sm:pl-0 sm:flex-1 min-w-0">
+          {stats.map(st => <span key={st.label}>{st.label} <b className="text-ink">{st.value}</b></span>)}
+          {weak.length > 0 && <span className="text-amber-300">{weak.length} perlu diperkuat</span>}
+        </span>
+        <Icon name={open ? 'chevronUp' : 'chevronDown'} className="w-4 h-4 text-ink-soft flex-shrink-0"/>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 border-t border-white/[0.06] pt-3">
+          {stats.length > 0 && (
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {stats.map(st => (
+                <div key={st.label} className="rounded-xl bg-white/3 border border-white/8 px-3 py-2.5">
+                  <div className="font-display text-xl font-semibold text-ink leading-none">{st.value}</div>
+                  <div className="text-[11px] text-ink-muted mt-1">{st.label} · {st.hint}</div>
+                </div>
+              ))}
+            </div>
+          )}
+          {weak.length > 0 ? (
+            <>
+              <div className="text-xs font-semibold text-amber-300 mb-2">Perlu diperkuat</div>
+              <ul className="space-y-1.5 mb-4">
+                {weak.slice(0, 8).map((w, i) => (
+                  <li key={i} className="text-sm text-ink flex gap-2" dir="auto">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/6 text-ink-muted flex-shrink-0 h-fit mt-0.5">{w.kind}</span>
+                    <span className="min-w-0"><AiInline text={w.text.length > 160 ? w.text.slice(0, 160) + '…' : w.text}/></span>
+                  </li>
+                ))}
+              </ul>
+              <AskTutorButton askTutor={askTutor} label="Perkuat bagian ini dengan tutor" text={WEAK_SUGGESTION}/>
+            </>
+          ) : (
+            <p className="text-sm text-ink-muted">Belum ada bagian yang tercatat lemah. Lanjutkan latihan kuis, flashcard, dan tahriri untuk mengecek pemahamanmu.</p>
+          )}
+        </div>
       )}
     </div>
   );
@@ -726,10 +845,10 @@ const IrabModal = ({ set, setSet, text, onClose }) => {
 const splitParagraphs = (content) =>
   content.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
 
-const MaterialTab = ({ set, setSet, access }) => {
+const MaterialTab = ({ set, setSet, access, askTutor }) => {
   const toast = useToast();
   const containerRef = useRef(null);
-  const [selected, setSelected] = useState('');
+  const selected = useTextSelection(containerRef);
   const [irabText, setIrabText] = useState(null);
   const [busyPara, setBusyPara] = useState(null);
   const [showHarakat, setShowHarakat] = useState(true);
@@ -741,20 +860,6 @@ const MaterialTab = ({ set, setSet, access }) => {
   const irabHistory = analyses.filter(a => a.mode === 'irab').slice().reverse();
 
   useEffect(() => { markProgress(set, setSet, 'material_viewed'); }, []);
-
-  useEffect(() => {
-    let timer;
-    const onSel = () => {
-      const sel = window.getSelection();
-      const text = sel?.toString().trim() || '';
-      clearTimeout(timer);
-      if (text && containerRef.current?.contains(sel.anchorNode)) { setSelected(text); return; }
-      // Ditunda supaya ketukan tombol di bar tidak kalah cepat dengan hilangnya seleksi.
-      timer = setTimeout(() => setSelected(''), 400);
-    };
-    document.addEventListener('selectionchange', onSel);
-    return () => { document.removeEventListener('selectionchange', onSel); clearTimeout(timer); };
-  }, []);
 
   const tasykil = async (p, i) => {
     if (!isPro) { openAiUpgrade(); return; }
@@ -774,7 +879,7 @@ const MaterialTab = ({ set, setSet, access }) => {
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <p className="text-xs text-ink-muted">
           {isPro
-            ? 'Blok/tekan-tahan kalimat Arab untuk terjemah & i\'rab. Tombol "Harakat" memberi harakat per paragraf.'
+            ? 'Blok/tekan-tahan kalimat untuk minta penjelasan tutor, atau kalimat Arab untuk terjemah & i\'rab. Tombol "Harakat" memberi harakat per paragraf.'
             : 'Terjemah, i\'rab, dan harakat otomatis khusus pelanggan AI Partner.'}
         </p>
         {analyses.some(a => a.mode === 'tasykil') && (
@@ -826,20 +931,26 @@ const MaterialTab = ({ set, setSet, access }) => {
         </div>
       )}
 
-      {selected && selectedArabic && (
-        <div className="fixed left-1/2 -translate-x-1/2 z-[70] flex gap-2 p-2 rounded-2xl border border-emerald-500/30 shadow-2xl"
-          style={{ bottom: 'calc(var(--tabbar-height, 0px) + 20px)', background: 'rgba(12,12,12,0.95)', backdropFilter: 'blur(12px)' }}>
-          {tooLong ? (
+      {selected && (selectedArabic || askTutor) && (
+        <SelectionBar>
+          {selectedArabic && (tooLong ? (
             <span className="text-xs text-ink-muted px-3 py-2">Pilih maks 400 huruf untuk i'rab</span>
           ) : (
             <button onClick={() => isPro ? setIrabText(selected) : openAiUpgrade()} className="btn btn-primary text-xs px-4 py-2">
               {!isPro && <Icon name="crown" className="w-3.5 h-3.5"/>} Terjemah & I'rab
             </button>
+          ))}
+          {askTutor && (
+            <button onClick={() => askTutor(explainSelectionText(selected, 'materi'))} className={`btn ${selectedArabic ? 'btn-ghost' : 'btn-primary'} text-xs px-4 py-2`}>
+              <Icon name="messageSquare" className="w-3.5 h-3.5"/> Jelaskan ke aku
+            </button>
           )}
-          <button onClick={() => speakArabic(selected, () => toast.push('Perangkat ini belum punya suara bahasa Arab.'))} className="btn btn-ghost text-xs px-3 py-2">
-            <Icon name="headphones" className="w-3.5 h-3.5"/> Dengar
-          </button>
-        </div>
+          {selectedArabic && (
+            <button onClick={() => speakArabic(selected, () => toast.push('Perangkat ini belum punya suara bahasa Arab.'))} className="btn btn-ghost text-xs px-3 py-2">
+              <Icon name="headphones" className="w-3.5 h-3.5"/> Dengar
+            </button>
+          )}
+        </SelectionBar>
       )}
 
       {irabText && <IrabModal set={set} setSet={setSet} text={irabText} onClose={() => setIrabText(null)}/>}
@@ -1118,6 +1229,12 @@ const QuizTab = ({ set, setSet, access, askTutor }) => {
             <button onClick={() => reset()} className={`btn ${wrong.length ? 'btn-ghost' : 'btn-primary'} text-sm px-5 py-2`}>Ulangi semua</button>
             {access.tier === 'pro' && <button onClick={() => generate()} disabled={busy} className="btn btn-ghost text-sm px-5 py-2">Buat soal baru</button>}
           </div>
+          {access.tier === 'pro' && weakList(set).length > 0 && (
+            <button onClick={() => generate({ focus: 'weak' })} disabled={busy}
+              className="mt-4 inline-flex items-center gap-1.5 text-xs px-3 py-2 rounded-lg border border-amber-400/35 bg-amber-400/10 text-amber-200 hover:bg-amber-400/20">
+              🎯 Buat kuis baru yang fokus ke bagian yang masih lemah
+            </button>
+          )}
         </div>
 
         {wrong.length > 0 && (
@@ -1480,10 +1597,7 @@ const TUTOR_FOLLOWUPS = [
   'Uji aku satu soal tentang ini',
 ];
 const WEAK_SUGGESTION = 'Bantu aku memahami bagian yang masih sering kusalahkan di materi ini';
-const hasWeakPoints = (set) =>
-  (set.progress?.quiz_wrong || []).length > 0 ||
-  (set.flashcards || []).some(c => c.box === 1 && c.due) ||
-  (set.essay_attempts || []).some(a => Number(a.skor) < 7);
+const hasWeakPoints = (set) => weakList(set).length > 0;
 
 const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
   const toast = useToast();
@@ -1616,6 +1730,7 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
                   {speech.supported && 'Pertanyaan dibacakan dengan suara. '}{recorder.supported && 'Jawab dengan menekan tombol mikrofon — suaramu diubah jadi teks untuk kamu periksa sebelum dikirim.'}
                 </p>
               )}
+              {hasWeakPoints(set) && <p className="text-amber-200/90 text-xs mb-5">🎯 Duktur juga akan menguji ulang bagian yang masih sering kamu salahkan.</p>}
               <button onClick={() => send(SYAFAWI_START)} className="btn btn-primary text-sm px-5 py-2.5">Mulai simulasi</button>
             </div>
           )}
@@ -1713,5 +1828,5 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
 };
 
 Object.assign(window, {
-  SummaryTab, MindmapTab, MaterialTab, FlashcardTab, GlossaryTab, QuizTab, EssayTab, TutorTab,
+  MasteryCard, SummaryTab, MindmapTab, MaterialTab, FlashcardTab, GlossaryTab, QuizTab, EssayTab, TutorTab,
 });

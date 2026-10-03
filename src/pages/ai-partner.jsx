@@ -516,6 +516,8 @@ const AiPartnerDetail = ({ setId, status }) => {
         })}
       </div>
 
+      {window.MasteryCard && <window.MasteryCard set={set} askTutor={askTutor}/>}
+
       {/* Sub-tab */}
       {SUB_TABS[step].length > 1 && (
         <div className="flex gap-2 mb-5 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">

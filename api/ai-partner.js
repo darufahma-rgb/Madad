@@ -558,7 +558,9 @@ async function handleGenerate(ctx, body, res) {
   const kind = body.kind;
   if (!GENERATE_KINDS.includes(kind)) return res.status(400).json({ ok: false, error: 'Jenis tidak valid' });
   const field = GENERATE_FIELD[kind];
-  const set = await getOwnedSet(ctx.code, body.set_id, `id,title,content,progress,${field}${kind === 'summary' ? ',summary_lang' : ''}`);
+  // Kuis "fokus titik lemah" butuh data latihan (flashcard & tahriri) untuk menyusun daftarnya.
+  const weakFocus = kind === 'quiz' && body.focus === 'weak';
+  const set = await getOwnedSet(ctx.code, body.set_id, `id,title,content,progress,${field}${kind === 'summary' ? ',summary_lang' : ''}${weakFocus ? ',flashcards,essays,essay_attempts' : ''}`);
   if (!set) return res.status(404).json({ ok: false, error: 'Materi tidak ditemukan' });
   if (kind === 'summary' && body.continue === true) return continueSummary(ctx, set, body, res);
 
@@ -606,7 +608,8 @@ async function handleGenerate(ctx, body, res) {
   }
 
   const clean = { flashcards: cleanFlashcards, quiz: cleanQuiz, glossary: cleanGlossary, essays: cleanEssays }[kind];
-  let data = clean(await callAIJson({ system: PROMPTS[kind] + learner, messages, maxTokens: 4000, model }));
+  const focus = weakFocus ? weakPointsNote(set, 'quiz') : '';
+  let data = clean(await callAIJson({ system: PROMPTS[kind] + focus + learner, messages, maxTokens: 4000, model }));
   if (data.length === 0) throw new Error('AI gagal membuat hasil yang valid');
   if (kind === 'flashcards') {
     // Kartu lama (termasuk progres hafalannya) dipertahankan; kartu AI yang sama tidak diduplikasi.
@@ -751,7 +754,7 @@ async function handleChat(ctx, body, res) {
     ? `(Materi panjang — yang ditampilkan hanya potongan ${mode === 'syafawi' ? 'dari seluruh bab' : 'yang paling berkaitan dengan pertanyaan'}; bagian yang dilewati ditandai […]. Jika jawabannya tidak ada di potongan ini, katakan mungkin dibahas di bagian lain materi.)\n\n${excerpt}`
     : excerpt;
   const { out, stream, failed } = await runAI(body, res, {
-    system: (mode === 'syafawi' ? syafawiSystem(set.title, material) : tutorSystem(set.title, material) + weakPointsNote(set)) + learnerContext(body.learner),
+    system: (mode === 'syafawi' ? syafawiSystem(set.title, material) + weakPointsNote(set, 'syafawi') : tutorSystem(set.title, material) + weakPointsNote(set)) + learnerContext(body.learner),
     messages: [...history.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: message }],
     maxTokens: 1500,
     timeLimitMs: 48000,

@@ -361,11 +361,17 @@ export const weakPoints = (set) => {
   return out;
 };
 
-export const weakPointsNote = (set) => {
+// use: 'tutor' (default) | 'syafawi' | 'quiz' — cara memakai daftar titik lemah berbeda per fitur.
+const WEAK_USE = {
+  tutor: 'Pakai daftar ini: bila pertanyaannya berkaitan, beri perhatian ekstra dan pastikan salah pahamnya terkoreksi; bila pelajar minta diuji atau bingung mulai dari mana, mulai dari bagian ini. Jangan membacakan daftar ini kalau tidak relevan.',
+  syafawi: 'Dari 5 pertanyaan, jadikan 2 di antaranya menguji ulang konsep di daftar ini (dengan pertanyaan baru, bukan menyalin soal lama). Jangan menyebut bahwa ini titik lemahnya.',
+  quiz: 'FOKUS KUIS INI: sekitar 7 dari 10 soal menguji ulang konsep di daftar ini dari sudut yang berbeda (jangan menyalin soal lama), sisanya soal lain dari materi. Pembahasan tiap soal fokus meluruskan salah paham yang umum.',
+};
+
+export const weakPointsNote = (set, use = 'tutor') => {
   const list = weakPoints(set);
   if (!list.length) return '';
-  return `\n\nTITIK LEMAH PELAJAR DI MATERI INI (dari latihannya sendiri):\n${list.map(x => `- ${x}`).join('\n')}
-Pakai daftar ini: bila pertanyaannya berkaitan, beri perhatian ekstra dan pastikan salah pahamnya terkoreksi; bila pelajar minta diuji atau bingung mulai dari mana, mulai dari bagian ini. Jangan membacakan daftar ini kalau tidak relevan.`;
+  return `\n\nTITIK LEMAH PELAJAR DI MATERI INI (dari latihannya sendiri):\n${list.map(x => `- ${x}`).join('\n')}\n${WEAK_USE[use] || WEAK_USE.tutor}`;
 };
 
 // Untuk prompt Talqeeh yang dijalankan langsung (tanpa materi unggahan): prompt pengguna yang menentukan tugasnya.
