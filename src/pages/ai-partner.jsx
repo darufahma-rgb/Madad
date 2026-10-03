@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 /* Talqeeh — AI Partner Belajar Muqarrar: daftar materi & halaman belajar per materi.
    Helper di ai-partner-shared.jsx, wizard di ai-partner-create.jsx, tab di ai-partner-study.jsx. */
 
@@ -449,6 +449,8 @@ const AiPartnerDetail = ({ setId, status }) => {
   const [sub, setSub]     = useState({ pahami: 'summary', hafalkan: 'cards', uji: 'quiz', tanya: 'tutor' });
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [pendingAsk, setPendingAsk] = useState(null);
+  const contentTop = useRef(null);
+  const narrow = typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)').matches;
 
   useEffect(() => {
     aiCall('get', { set_id: setId }).then(d => d.ok ? setSet(d.data) : setError(d.error || 'Materi tidak ditemukan'));
@@ -465,65 +467,78 @@ const AiPartnerDetail = ({ setId, status }) => {
   const meta = SOURCE_META[set.source_type] || SOURCE_META.teks;
   const current = SUB_TABS[step].find(t => t.id === sub[step]) || SUB_TABS[step][0];
   const TabBody = window[current.C];
+  // Di HP tahapan menempel di atas layar; saat pindah tahap/tab, langsung tampilkan awal kontennya
+  // (bukan tetap di tengah halaman tab sebelumnya).
+  const showContent = () => setTimeout(() => {
+    const el = contentTop.current;
+    if (!el) return;
+    const y = el.getBoundingClientRect().top + window.scrollY - (narrow ? 56 : 0);
+    if (window.scrollY > y) window.scrollTo({ top: y, behavior: 'instant' in window ? 'instant' : 'auto' });
+  }, 0);
+  const goStep = (id) => { setStep(id); showContent(); };
+  const goSub = (id) => { setSub(p => ({ ...p, [step]: id })); showContent(); };
   // "Tanya tutor" dari kuis, flashcard, peta konsep, atau tahriri: buka tab Tanya dan kirim pertanyaannya.
   const askTutor = isPro ? (text) => {
     setPendingAsk(text);
     setSub(p => ({ ...p, tanya: 'tutor' }));
     setStep('tanya');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    showContent();
   } : null;
 
   return (
     <div className="container-x pb-24 max-w-5xl">
       {/* Header materi */}
-      <div className="flex items-start justify-between gap-4 mb-6">
+      <div className="flex items-start justify-between gap-4 mb-4 md:mb-6">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5 flex-wrap mb-2">
             <Pill tone="gold">{maddahName(set.maddah_id) || 'Materi umum'}</Pill>
             <Pill><Icon name={meta.icon} className="w-3 h-3"/>{meta.label}</Pill>
             {access.isTrialSet && <Pill tone="gold"><Icon name="crown" className="w-3 h-3"/>Coba gratis</Pill>}
           </div>
-          <h1 className="font-display text-2xl md:text-4xl font-semibold text-ink leading-tight">{set.title}</h1>
+          <h1 className="font-display text-lg md:text-4xl font-semibold text-ink leading-tight" style={narrow ? { fontSize: 21 } : undefined}>{set.title}</h1>
           <button onClick={() => setConfirmDelete(true)}
-            className="mt-3 inline-flex items-center gap-1.5 text-xs text-ink-soft hover:text-rose-400 px-2.5 py-1.5 -ml-2.5 rounded-lg hover:bg-rose-500/10 transition">
+            className="mt-1.5 md:mt-3 inline-flex items-center gap-1.5 text-xs text-ink-soft hover:text-rose-400 px-2.5 py-1.5 -ml-2.5 rounded-lg hover:bg-rose-500/10 transition">
             <Icon name="trash" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Hapus materi
           </button>
         </div>
-        <ProgressRing percent={studyPercent(set)} size={56}/>
+        <ProgressRing percent={studyPercent(set)} size={narrow ? 46 : 56}/>
       </div>
       {confirmDelete && (
         <DeleteSetDialog set={set} isTrialSet={access.isTrialSet} onClose={() => setConfirmDelete(false)} onDeleted={handleDeleted}/>
       )}
 
-      {/* Stepper alur belajar */}
-      <div className="grid grid-cols-4 gap-2 mb-5">
+      {/* Stepper alur belajar — di HP menempel di bawah top bar supaya pindah tahap tanpa menggulir ke atas */}
+      <div className="sticky md:static z-20 -mx-4 px-4 md:mx-0 md:px-0 py-2 md:py-0 mb-3 md:mb-5 border-b border-white/[0.06] md:border-0"
+        style={narrow ? { top: 'calc(56px + var(--safe-top, 0px))', background: '#0c0c0c' } : undefined}>
+      <div className="grid grid-cols-4 gap-1.5 md:gap-2">
         {STUDY_STEPS.map((s, i) => {
           const active = step === s.id;
           const done = stepDone(s, set.progress || {}, extra);
           return (
-            <button key={s.id} onClick={() => setStep(s.id)}
-              className={`rounded-2xl border px-2 py-3 md:px-4 md:py-4 text-center md:text-left transition ${active ? 'border-emerald-500/50 bg-emerald-500/12' : 'border-white/8 bg-white/3 hover:border-white/15'}`}>
-              <div className="flex items-center justify-center md:justify-start gap-2 mb-1">
-                <span className={`w-6 h-6 rounded-full text-[11px] font-semibold flex items-center justify-center ${done ? 'bg-emerald-500 text-black' : active ? 'bg-white/15 text-ink' : 'bg-white/8 text-ink-soft'}`}>
-                  {done ? <Icon name="check" className="w-3.5 h-3.5" strokeWidth={2.4}/> : i + 1}
+            <button key={s.id} onClick={() => goStep(s.id)}
+              className={`rounded-xl md:rounded-2xl border px-1 py-1.5 md:px-4 md:py-4 text-center md:text-left transition ${active ? 'border-emerald-500/50 bg-emerald-500/12' : 'border-white/8 bg-white/3 hover:border-white/15'}`}>
+              <div className="flex flex-col md:flex-row items-center justify-center md:justify-start gap-0.5 md:gap-2 md:mb-1">
+                <span className={`w-5 h-5 md:w-6 md:h-6 rounded-full text-[10px] md:text-[11px] font-semibold flex items-center justify-center flex-shrink-0 ${done ? 'bg-emerald-500 text-black' : active ? 'bg-white/15 text-ink' : 'bg-white/8 text-ink-soft'}`}>
+                  {done ? <Icon name="check" className="w-3 h-3 md:w-3.5 md:h-3.5" strokeWidth={2.4}/> : i + 1}
                 </span>
-                <span className={`hidden md:inline text-sm font-medium ${active ? 'text-ink' : 'text-ink-muted'}`}>{s.label}</span>
+                <span className={`text-[11.5px] md:text-sm font-medium leading-tight ${active ? 'text-ink' : 'text-ink-muted'}`}>{s.label}</span>
               </div>
-              <div className={`md:hidden text-[11px] font-medium ${active ? 'text-ink' : 'text-ink-muted'}`}>{s.label}</div>
               <div dir="rtl" className="hidden md:block text-gold-300/70 text-right" style={{ fontFamily: '"Noto Naskh Arabic", serif', fontSize: 15 }}>{s.ar}</div>
             </button>
           );
         })}
       </div>
+      </div>
+      <div ref={contentTop}/>
 
       {window.MasteryCard && <window.MasteryCard set={set} askTutor={askTutor}/>}
 
       {/* Sub-tab */}
       {SUB_TABS[step].length > 1 && (
-        <div className="flex gap-2 mb-5 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="flex gap-2 mb-4 md:mb-5 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
           {SUB_TABS[step].map(t => (
-            <button key={t.id} onClick={() => setSub(p => ({ ...p, [step]: t.id }))}
-              className={`flex-shrink-0 text-sm px-4 py-2 rounded-xl border font-medium flex items-center gap-2 transition ${sub[step] === t.id
+            <button key={t.id} onClick={() => goSub(t.id)}
+              className={`flex-shrink-0 text-[13px] md:text-sm px-3 md:px-4 py-2 rounded-xl border font-medium flex items-center gap-2 transition ${sub[step] === t.id
                 ? 'text-emerald-200 border-emerald-600/35 bg-emerald-500/15'
                 : 'bg-white/4 text-ink-muted border-white/8 hover:bg-white/7'}`}>
               <Icon name={t.icon} className="w-4 h-4"/>{t.label}

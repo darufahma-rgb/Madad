@@ -56,10 +56,43 @@ const useGenerate = (set, setSet, kind, field) => {
 
 const ToolbarButton = ({ icon, children, onClick, disabled }) => (
   <button onClick={onClick} disabled={disabled}
-    className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-white/10 bg-white/4 text-ink-muted hover:text-ink hover:border-emerald-500/30 disabled:opacity-50">
+    className="inline-flex items-center gap-1.5 text-xs px-3 py-2 md:py-1.5 rounded-lg border border-white/10 bg-white/4 text-ink-muted hover:text-ink hover:border-emerald-500/30 disabled:opacity-50">
     <Icon name={icon} className="w-3.5 h-3.5"/>{children}
   </button>
 );
+
+/* Aksi sekunder toolbar: di desktop tampil sebagai tombol, di HP dilipat ke menu ⋯ supaya toolbar tetap satu baris. */
+const ToolbarActions = ({ actions }) => {
+  const [open, setOpen] = useState(false);
+  const list = actions.filter(Boolean);
+  if (!list.length) return null;
+  return (
+    <>
+      <div className="hidden md:flex gap-2 flex-wrap">
+        {list.map(a => <ToolbarButton key={a.label} icon={a.icon} onClick={a.onClick} disabled={a.disabled}>{a.label}</ToolbarButton>)}
+      </div>
+      <div className="relative md:hidden">
+        <button onClick={() => setOpen(o => !o)} aria-label="Aksi lainnya" aria-expanded={open}
+          className={`w-10 h-10 rounded-lg border flex items-center justify-center ${open ? 'border-emerald-500/40 bg-emerald-500/12 text-emerald-200' : 'border-white/10 bg-white/4 text-ink-muted'}`}>
+          <Icon name="moreHorizontal" className="w-5 h-5"/>
+        </button>
+        {open && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)}/>
+            <div className="absolute right-0 top-full mt-1.5 z-50 min-w-[210px] rounded-xl border border-white/10 shadow-2xl p-1" style={{ background: '#171717' }}>
+              {list.map(a => (
+                <button key={a.label} disabled={a.disabled} onClick={() => { setOpen(false); a.onClick(); }}
+                  className="w-full flex items-center gap-3 px-3 py-3 text-sm text-ink rounded-lg hover:bg-white/5 text-left disabled:opacity-50">
+                  <Icon name={a.icon} className="w-4 h-4 text-ink-muted"/>{a.label}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+};
 
 const useKurasahSave = () => {
   const toast = useToast();
@@ -163,7 +196,7 @@ const LangPicker = ({ value, onChange, disabled }) => (
   <div className="inline-flex rounded-xl border border-white/10 bg-white/4 p-1 gap-1">
     {SUMMARY_LANG_OPTIONS.map(o => (
       <button key={o.id} onClick={() => onChange(o.id)} disabled={disabled}
-        className={`text-xs px-3 py-1.5 rounded-lg transition ${value === o.id ? 'bg-emerald-500/20 text-emerald-200' : 'text-ink-muted hover:text-ink'}`}>
+        className={`text-xs px-3 py-2 md:py-1.5 rounded-lg transition ${value === o.id ? 'bg-emerald-500/20 text-emerald-200' : 'text-ink-muted hover:text-ink'}`}>
         {o.label}
       </button>
     ))}
@@ -173,6 +206,7 @@ const LangPicker = ({ value, onChange, disabled }) => (
 // Jenis bagian ringkasan → ikon & warna. Dicocokkan dari judul (Indonesia atau Arab tanpa harakat).
 const SECTION_KINDS = [
   { id: 'key',    icon: 'sparkles', color: '#3ecf8e', match: /poin inti|intisari|النقاط|الرئيسة/i },
+  { id: 'explain', icon: 'lightbulb', color: '#2dd4bf', match: /penjelasan|الشرح/i },
   { id: 'def',    icon: 'bookOpen', color: '#c9a86a', match: /ta'?rif|definisi|التعريف/i },
   { id: 'split',  icon: 'network',  color: '#60a5fa', match: /taqsim|pembagian|klasifikasi|التقسيم/i },
   { id: 'rules',  icon: 'list',     color: '#a78bfa', match: /syarat|rukun|hukum|الشروط|الأركان|الحكم/i },
@@ -241,7 +275,7 @@ const SummarySection = ({ section, rtl, size, open, onToggle, source, onCite }) 
         </button>
       )}
       {open && section.body && (
-        <div className={`px-4 md:px-6 pb-5 ${section.title ? 'pt-0' : 'pt-5'}`}>
+        <div className={`px-3.5 md:px-6 pb-5 ${section.title ? 'pt-0' : 'pt-5'}`}>
           {section.title && <div className="h-px bg-white/[0.06] mb-4"/>}
           <AiRichText content={section.body} rtl={rtl} size={size} source={source} onCite={onCite}/>
         </div>
@@ -250,7 +284,7 @@ const SummarySection = ({ section, rtl, size, open, onToggle, source, onCite }) 
   );
 };
 
-const SummaryView = ({ markdown, rtl, source, onCite }) => {
+const SummaryView = ({ markdown, rtl, source, onCite, hint }) => {
   const sections = useMemo(() => splitSections(markdown), [markdown]);
   const [size, setSize] = useReadSize();
   const [closed, setClosed] = useState({});
@@ -263,12 +297,13 @@ const SummaryView = ({ markdown, rtl, source, onCite }) => {
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-3 flex-wrap md:flex-nowrap">
+        {hint && <p className="md:hidden flex-1 min-w-0 text-[11px] text-ink-soft leading-snug">{hint}</p>}
         {titled.length > 1 && (
-          <div className="flex-1 min-w-0 flex gap-1.5 overflow-x-auto no-scrollbar -mx-1 px-1" dir={rtl ? 'rtl' : 'ltr'}>
+          <div className="order-last md:order-none basis-full md:basis-auto flex-1 min-w-0 flex gap-1.5 overflow-x-auto no-scrollbar -mx-4 px-4 md:mx-0 md:px-1" dir={rtl ? 'rtl' : 'ltr'}>
             {titled.map(s => (
               <button key={s.id} onClick={() => jump(s.id)}
-                className="flex-shrink-0 inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/4 text-ink-muted hover:text-ink hover:border-white/20">
+                className="flex-shrink-0 inline-flex items-center gap-1.5 text-xs px-3 py-2 md:px-2.5 md:py-1.5 rounded-lg border border-white/10 bg-white/4 text-ink-muted hover:text-ink hover:border-white/20">
                 <span className="w-1.5 h-1.5 rounded-full" style={{ background: s.kind.color }}/>
                 <span className={rtl ? 'ai-heading-ar' : ''}>{s.title}</span>
               </button>
@@ -278,7 +313,7 @@ const SummaryView = ({ markdown, rtl, source, onCite }) => {
         <div className="flex items-center gap-1.5 flex-shrink-0 ms-auto">
           {titled.length > 1 && (
             <button onClick={() => setClosed(allOpen ? Object.fromEntries(titled.map(s => [s.id, true])) : {})}
-              className="text-[11px] text-ink-soft hover:text-ink px-2 py-1.5 whitespace-nowrap">{allOpen ? 'Tutup semua' : 'Buka semua'}</button>
+              className="hidden md:inline text-[11px] text-ink-soft hover:text-ink px-2 py-1.5 whitespace-nowrap">{allOpen ? 'Tutup semua' : 'Buka semua'}</button>
           )}
           <ReadSizePicker value={size} onChange={setSize}/>
         </div>
@@ -413,18 +448,18 @@ const SummaryTab = ({ set, setSet, access, askTutor }) => {
   const isArabic = set.summary_lang === 'ar';
   return (
     <div>
-      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+      <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
         {access.tier === 'pro'
           ? <LangPicker value={set.summary_lang || 'id'} disabled={continuation.continuing} onChange={(l) => { setLang(l); start(l); }}/>
           : <Pill>{SUMMARY_LANG_OPTIONS.find(o => o.id === (set.summary_lang || 'id'))?.label}</Pill>}
-        <div className="flex gap-2">
-          <ToolbarButton icon="copy" onClick={() => navigator.clipboard?.writeText(set.summary)}>Salin</ToolbarButton>
-          <ToolbarButton icon="bookmark" onClick={() => saveKurasah(`Ringkasan — ${set.title}`, set.summary, ['ringkasan'])}>Simpan ke Kurasah</ToolbarButton>
-        </div>
+        <ToolbarActions actions={[
+          { icon: 'copy', label: 'Salin', onClick: () => navigator.clipboard?.writeText(set.summary) },
+          { icon: 'bookmark', label: 'Simpan ke Kurasah', onClick: () => saveKurasah(`Ringkasan — ${set.title}`, set.summary, ['ringkasan']) },
+        ]}/>
       </div>
-      {askTutor && <p className="text-[11px] text-ink-soft mb-2">Ada yang belum jelas? Blok kalimatnya untuk minta penjelasan tutor.</p>}
+      {askTutor && <p className="hidden md:block text-[11px] text-ink-soft mb-2">Ada yang belum jelas? Blok kalimatnya untuk minta penjelasan tutor.</p>}
       <div ref={summaryRef}>
-        <SummaryView rtl={isArabic} source={set.content} onCite={cite.onCite}
+        <SummaryView rtl={isArabic} source={set.content} onCite={cite.onCite} hint={askTutor ? 'Blok kalimat yang belum jelas → tutor menjelaskan.' : null}
           markdown={continuation.continuing && continuation.live ? summaryPreview(set, continuation.live) : set.summary}/>
       </div>
       {askTutor && selected && (
@@ -652,37 +687,37 @@ const MindmapTab = ({ set, setSet, access, askTutor }) => {
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-3 flex-wrap">
+      <div className="flex items-center gap-1.5 md:gap-2 mb-3 flex-wrap">
         <div className="inline-flex rounded-xl border border-white/10 bg-white/4 p-1 gap-1">
           {[['map', 'Peta', 'network'], ['outline', 'Daftar', 'list']].map(([id, label, icon]) => (
             <button key={id} onClick={() => changeView(id)}
-              className={`text-xs px-3 py-1.5 rounded-lg inline-flex items-center gap-1.5 ${view === id ? 'bg-emerald-500/20 text-emerald-200' : 'text-ink-muted hover:text-ink'}`}>
-              <Icon name={icon} className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/>{label}
+              className={`text-xs px-2.5 md:px-3 py-2 md:py-1.5 rounded-lg inline-flex items-center gap-1.5 ${view === id ? 'bg-emerald-500/20 text-emerald-200' : 'text-ink-muted hover:text-ink'}`}>
+              <Icon name={icon} className="hidden sm:block w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/>{label}
             </button>
           ))}
         </div>
-        <button onClick={toggleNotes}
-          className={`text-xs px-3 py-2 rounded-lg border inline-flex items-center gap-1.5 ${showNotes ? 'border-emerald-500/40 bg-emerald-500/12 text-emerald-200' : 'border-white/10 bg-white/4 text-ink-muted hover:text-ink'}`}>
-          <Icon name="info" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Keterangan {showNotes ? 'tampil' : 'tersembunyi'}
+        <button onClick={toggleNotes} aria-pressed={showNotes}
+          className={`text-xs px-2.5 md:px-3 h-10 md:h-auto md:py-2 rounded-lg border inline-flex items-center gap-1.5 ${showNotes ? 'border-emerald-500/40 bg-emerald-500/12 text-emerald-200' : 'border-white/10 bg-white/4 text-ink-muted hover:text-ink'}`}>
+          <Icon name="info" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Keterangan<span className="hidden md:inline">{showNotes ? ' tampil' : ' tersembunyi'}</span>
         </button>
-        {view === 'map' && <ZoomControl view={mapView}/>}
-        <button onClick={() => setFull(true)}
-          className="text-xs px-3 py-2 rounded-lg border border-emerald-500/35 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20 inline-flex items-center gap-1.5">
-          <Icon name="maximize" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Layar penuh
+        {view === 'map' && <div className="hidden md:block"><ZoomControl view={mapView}/></div>}
+        <button onClick={() => setFull(true)} aria-label="Layar penuh"
+          className="text-xs px-3 h-10 md:h-auto md:py-2 rounded-lg border border-emerald-500/35 bg-emerald-500/10 text-emerald-200 hover:bg-emerald-500/20 inline-flex items-center gap-1.5">
+          <Icon name="maximize" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/><span className="hidden md:inline">Layar penuh</span>
         </button>
         <div className="flex gap-2 flex-wrap ms-auto">
-          {view === 'map' && <>
-            <ToolbarButton icon="chevronDown" onClick={expandAll}>Buka semua</ToolbarButton>
-            <ToolbarButton icon="chevronUp" onClick={collapseAll}>Tutup semua</ToolbarButton>
-          </>}
-          <ToolbarButton icon="bookmark" onClick={() => saveKurasah(`Peta konsep — ${set.title}`, mindmapToMarkdown(root), ['peta-konsep'])}>Simpan ke Kurasah</ToolbarButton>
-          <ToolbarButton icon="refresh" onClick={() => generate()} disabled={busy}>Buat ulang</ToolbarButton>
+          <ToolbarActions actions={[
+            view === 'map' && { icon: 'chevronDown', label: 'Buka semua', onClick: expandAll },
+            view === 'map' && { icon: 'chevronUp', label: 'Tutup semua', onClick: collapseAll },
+            { icon: 'bookmark', label: 'Simpan ke Kurasah', onClick: () => saveKurasah(`Peta konsep — ${set.title}`, mindmapToMarkdown(root), ['peta-konsep']) },
+            { icon: 'refresh', label: 'Buat ulang', onClick: () => generate(), disabled: busy },
+          ]}/>
         </div>
       </div>
 
       {view === 'map' ? (
         <>
-          <MapCanvas root={root} ui={ui} view={mapView} minZoom={0.45} canvasClass="card-glass">
+          <MapCanvas root={root} ui={ui} view={mapView} minZoom={narrow ? 0.72 : 0.45} canvasClass="card-glass">
             {floatingDetail && selected && <MindDetail floating root={root} path={selected} onSelect={select} onClose={() => setSelected(null)}
               onFocus={(p) => mapView.ctl.current?.focus(p)} renderNote={noteText} onAsk={askAbout}/>}
           </MapCanvas>
@@ -966,7 +1001,7 @@ const nextDue = (box) => new Date(Date.now() + BOX_INTERVAL_DAYS[box] * 86400000
 const CardFace = ({ text, big }) => (
   isMostlyArabic(text)
     ? <ArabicText size={big ? 28 : 22} className="text-center">{text}</ArabicText>
-    : <div className={`text-ink leading-relaxed ${big ? 'text-xl font-display' : 'text-base'}`} dir="auto">{text}</div>
+    : <div className={`text-ink leading-relaxed ${big ? 'text-xl font-display' : 'text-base'}`} dir={/[A-Za-z]/.test(text) ? 'ltr' : 'auto'}>{text}</div>
 );
 
 const FlashcardTab = ({ set, setSet, access, askTutor }) => {
@@ -1010,6 +1045,27 @@ const FlashcardTab = ({ set, setSet, access, askTutor }) => {
     saveTimer.current = setTimeout(flush, 1500);
   };
 
+  // Geser kartu di HP: kanan = hafal, kiri = belum hafal (hanya setelah jawaban terlihat).
+  const swipe = useRef({ x: 0, y: 0, dx: 0, active: false, moved: false });
+  const [dragX, setDragX] = useState(0);
+  const onTouchStart = (e) => { const t = e.touches[0]; swipe.current = { x: t.clientX, y: t.clientY, dx: 0, active: flipped, moved: false }; };
+  const onTouchMove = (e) => {
+    const sw = swipe.current;
+    if (!sw.active) return;
+    const t = e.touches[0];
+    const dx = t.clientX - sw.x, dy = t.clientY - sw.y;
+    if (!sw.moved && Math.abs(dy) > Math.abs(dx)) { sw.active = false; return; }
+    if (Math.abs(dx) > 8) sw.moved = true;
+    sw.dx = dx;
+    setDragX(dx);
+  };
+  const onTouchEnd = () => {
+    const sw = swipe.current;
+    setDragX(0);
+    if (sw.active && Math.abs(sw.dx) > 80) answer(sw.dx > 0);
+  };
+  const onCardClick = () => { if (swipe.current.moved) { swipe.current.moved = false; return; } setFlipped(f => !f); };
+
   const mastered = cards.filter(c => (c.box || 1) >= 4).length;
   const current = queue?.length ? cards[queue[0]] : null;
   const aiNeverMade = !set.progress?.flashcards && canGenerate(access, 'flashcards', set);
@@ -1032,10 +1088,15 @@ const FlashcardTab = ({ set, setSet, access, askTutor }) => {
 
       {current ? (
         <>
-          <div role="button" tabIndex={0} onClick={() => setFlipped(f => !f)}
+          <div role="button" tabIndex={0} onClick={onCardClick}
+            onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}
             onKeyDown={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); setFlipped(f => !f); } }}
-            className="card-glass-strong w-full min-h-[240px] p-6 md:p-10 flex flex-col items-center justify-center text-center cursor-pointer relative"
-            style={{ border: flipped ? '1px solid rgba(62,207,142,0.35)' : undefined }}>
+            className="card-glass-strong w-full min-h-[240px] p-6 md:p-10 flex flex-col items-center justify-center text-center cursor-pointer relative select-none"
+            style={{
+              border: dragX > 40 ? '1px solid rgba(62,207,142,0.7)' : dragX < -40 ? '1px solid rgba(255,184,77,0.7)' : flipped ? '1px solid rgba(62,207,142,0.35)' : undefined,
+              transform: dragX ? `translateX(${dragX}px) rotate(${dragX / 40}deg)` : undefined,
+              transition: dragX ? 'none' : 'transform .2s ease',
+            }}>
             <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
               <span className="text-[11px] uppercase tracking-wider text-gold-400">{flipped ? 'Jawaban' : 'Pertanyaan'}</span>
               <span className="text-[11px] text-ink-soft">sisa {queue.length}</span>
@@ -1045,7 +1106,10 @@ const FlashcardTab = ({ set, setSet, access, askTutor }) => {
             {!flipped && <div className="text-xs text-ink-soft mt-6">Ketuk untuk lihat jawaban</div>}
           </div>
           {flipped && (
-            <div className="grid grid-cols-2 gap-3 mt-4">
+            <p className="md:hidden text-center text-[11px] text-ink-soft mt-3">Geser kartu: ← belum hafal · hafal →</p>
+          )}
+          {flipped && (
+            <div className="grid grid-cols-2 gap-3 mt-3 md:mt-4">
               <button onClick={() => answer(false)} className="btn btn-ghost py-3.5 text-sm" style={{ borderColor: 'rgba(255,184,77,0.4)', color: '#ffb84d' }}>
                 Belum hafal
               </button>
@@ -1125,7 +1189,7 @@ const GlossaryTab = ({ set, setSet, access }) => {
           {picked.size ? `Jadikan flashcard (${picked.size})` : 'Semua jadi flashcard'}
         </ToolbarButton>
       </div>
-      <div className="grid grid-cols-2 gap-2.5 md:gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 md:gap-3">
         {shown.map(g => (
           <div key={g.i} onClick={() => toggle(g.i)}
             className={`card-glass p-3 md:p-4 cursor-pointer transition min-w-0 ${picked.has(g.i) ? 'ring-1 ring-emerald-400/60' : ''}`}>
@@ -1173,6 +1237,10 @@ const QuizTab = ({ set, setSet, access, askTutor }) => {
   const [score, setScore]   = useState(0);
   const [wrong, setWrong]   = useState([]);      // [{ i, picked }]
   const reset = (list = all()) => { setOrder(list); setIdx(0); setPicked(null); setScore(0); setWrong([]); };
+  const actionsRef = useRef(null);
+  useEffect(() => {
+    if (picked !== null) setTimeout(() => actionsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 60);
+  }, [picked]);
   useEffect(() => { reset(); }, [set.id, set.quiz]);
 
   if (upgrade) return <UpgradeCard message={upgrade}/>;
@@ -1304,7 +1372,8 @@ const QuizTab = ({ set, setSet, access, askTutor }) => {
           {picked !== q.answer && (
             <div className="mt-3"><AskTutorButton askTutor={askTutor} label="Kenapa salah? Tanya tutor" text={quizAskText(q, picked)}/></div>
           )}
-          <div className="flex items-center justify-between gap-3 mt-5 flex-wrap">
+          <div ref={actionsRef} className="flex items-center justify-between gap-3 mt-5 flex-wrap"
+            style={{ scrollMarginBottom: 'calc(var(--tabbar-height, 0px) + 16px)' }}>
             <FeedbackBar setId={set.id} kind="quiz" model={set.progress?.models?.quiz} label="Soal & kunci ini benar?"
               content={`${q.question}\n${(q.options || []).map((o, i) => `${i === q.answer ? '✓' : '-'} ${o}`).join('\n')}\n${q.explanation || ''}`}/>
             <button onClick={next} className="btn btn-primary text-sm px-5 py-2">
@@ -1393,6 +1462,14 @@ const EssayTab = ({ set, setSet, access, askTutor }) => {
   const essays = set.essays || [];
   const attempts = set.essay_attempts || [];
   const essayCite = useCite(set);
+  const topRef = useRef(null);
+  // Membuka soal → soal & kotak jawaban langsung terlihat (scroll-mt memberi ruang untuk top bar & tahapan).
+  useEffect(() => {
+    const el = topRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    if (r.top < 100 || r.top > window.innerHeight * 0.35) el.scrollIntoView({ block: 'start' });
+  }, [active]);
 
   if (upgrade) return <UpgradeCard message={upgrade}/>;
   if (essays.length === 0 || busy) {
@@ -1420,7 +1497,7 @@ const EssayTab = ({ set, setSet, access, askTutor }) => {
   if (active !== null) {
     const essay = essays[active];
     return (
-      <div className="card-glass p-5 md:p-8">
+      <div ref={topRef} className="card-glass p-4 md:p-8 scroll-mt-32 md:scroll-mt-6">
         <button onClick={() => { setActive(null); setResult(null); setAnswer(''); }} className="text-xs text-ink-muted hover:text-ink mb-4 flex items-center gap-1">
           <Icon name="chevronLeft" className="w-4 h-4"/> Semua soal
         </button>
@@ -1429,7 +1506,7 @@ const EssayTab = ({ set, setSet, access, askTutor }) => {
         <p className="text-sm text-ink-muted mb-5">{essay.soal_id}</p>
         {!result ? (
           <>
-            <textarea value={answer} onChange={e => setAnswer(e.target.value)} rows={9} maxLength={4000} dir="auto"
+            <textarea value={answer} onChange={e => setAnswer(e.target.value)} rows={8} maxLength={4000} dir="auto"
               placeholder="Tulis jawabanmu di sini — boleh bahasa Arab atau Indonesia. Tulis seperti di kertas ujian: muqaddimah, isi, dalil, khatimah."
               className={`${aiInputClass} leading-relaxed`} style={{ fontSize: hasArabic(answer) ? 19 : 15, fontFamily: hasArabic(answer) ? '"Noto Naskh Arabic", serif' : 'inherit' }}/>
             <div className="flex items-center justify-between mt-3 gap-3 flex-wrap">
@@ -1635,7 +1712,11 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
   };
   const recorder = useAnswerRecorder({ onDone: transcribeAnswer, onError: setError });
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, [chat.length, sending, mode, Math.floor(live.length / 300)]);
+  // Ditunda sedikit supaya menang dari pengguliran "awal konten" saat pindah tab: chat dibuka di pesan terbaru.
+  useEffect(() => {
+    const t = setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 40);
+    return () => clearTimeout(t);
+  }, [chat.length, sending, mode, Math.floor(live.length / 300)]);
   useEffect(() => { if (mode !== 'syafawi') speech.stop(); }, [mode]);
   // Pertanyaan yang dikirim dari tab lain (kuis, flashcard, peta konsep, tahriri).
   const sendRef = useRef(null);
@@ -1701,8 +1782,8 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
         </p>
       )}
 
-      <div className="card-glass p-4 md:p-6 flex flex-col" style={{ minHeight: 440 }}>
-        <div className="flex-1 space-y-4 overflow-y-auto mb-4" style={{ maxHeight: 540 }}>
+      <div className="card-glass p-4 md:p-6 flex flex-col md:min-h-[440px]">
+        <div className="flex-1 space-y-4 mb-4 md:overflow-y-auto md:max-h-[540px]">
           {chat.length === 0 && mode === 'tutor' && (
             <div className="text-center py-6">
               <p className="text-ink-muted text-sm mb-4">Tanya apa saja tentang materi ini. Tutor menjawab berdasarkan isi materimu.</p>
@@ -1783,7 +1864,7 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
               </div>
             </div>
           ) : <div className="text-xs text-ink-soft">{mode === 'syafawi' ? 'Duktur sedang menilai…' : 'Tutor sedang mengetik…'}</div>)}
-          <div ref={bottomRef}/>
+          <div ref={bottomRef} style={{ scrollMarginBottom: 'calc(var(--tabbar-height, 0px) + 96px)' }}/>
         </div>
         {error && <div className="text-sm text-rose-400 mb-2">{error}</div>}
         {mode === 'syafawi' && chat.length > 0 && recorder.state !== 'idle' && (
@@ -1801,7 +1882,8 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
           </div>
         )}
         {(mode === 'tutor' || chat.length > 0) && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 sticky md:static z-10 -mx-4 px-4 py-2.5 md:m-0 md:p-0 border-t border-white/[0.07] md:border-0 bg-[#121212] md:bg-transparent"
+            style={{ bottom: 'calc(var(--tabbar-height, 0px) + var(--safe-bottom, 0px))' }}>
             {mode === 'syafawi' && recorder.supported && (
               <button onClick={() => (recorder.state === 'recording' ? recorder.stop() : recorder.start())}
                 disabled={sending || recorder.state === 'processing'}
