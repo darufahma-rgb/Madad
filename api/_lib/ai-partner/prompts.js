@@ -21,9 +21,20 @@ const readabilityRules = ({ translate = true } = {}) => `Aturan keterbacaan (pem
 - Teks Arab panjang (ayat, hadits, ta'rif, matan, qaul) ditulis di baris sendiri sebagai kutipan diawali "> ", lalu terjemahnya di baris berikutnya diawali "↳ ".` : ''}
 - Tanpa kalimat pembuka atau penutup basa-basi.`;
 
+// Contoh boleh berupa ilustrasi sederhana, asal tidak menambah isi ilmu baru dari luar materi.
+const EXAMPLE_RULE = `Contoh diambil dari materi. Bila materi tidak memberi contoh, boleh satu ilustrasi sederhana yang ditulis "**Ilustrasi:**", asalkan tidak menambah hukum, dalil, qaul, atau fakta baru. Lewati baris yang tidak ada isinya.`;
+
 const SUMMARY_SECTIONS = {
   id: `## Poin Inti
 - 5–10 poin terpenting, masing-masing satu gagasan
+## Penjelasan Materi
+Uraikan isi materi bagian demi bagian sesuai alurnya, seperti kakak tingkat menerangkan ke adik tingkat. Untuk tiap subtopik:
+### judul subtopik
+- **Intinya:** 1–2 kalimat tentang apa yang dibahas
+- **Penjelasan:** 2–4 poin yang menguraikan maksudnya dengan bahasa sederhana, termasuk alasan/hikmahnya (ta'lil) bila disebut materi
+- **Contoh:** contoh atau penerapan dari materi
+- **Kaitannya:** → hubungan dengan subtopik lain (bila ada)
+${EXAMPLE_RULE}
 ## Ta'rif
 Untuk tiap istilah kunci, pakai pola ini:
 ### istilah Arab berharakat — transliterasi
@@ -32,20 +43,22 @@ Untuk tiap istilah kunci, pakai pola ini:
 > ta'rif istilahi dalam bahasa Arab berharakat
 ↳ terjemah Indonesia
 ## Taqsim (Pembagian)
-Pembagian/klasifikasi yang disebut materi, sebagai daftar bertingkat (sub-poin diberi indentasi 2 spasi)
+Pembagian/klasifikasi yang disebut materi, sebagai daftar bertingkat (sub-poin diberi indentasi 2 spasi). Tiap bagian diberi keterangan singkat: apa cirinya atau apa bedanya dengan bagian lain (dasar pembagiannya)
 ## Syarat, Rukun & Hukum
-Daftar bernomor; tiap butir satu syarat/rukun/hukum dengan penjelasan singkat
+Daftar bernomor; tiap butir: nama syarat/rukun/hukum → penjelasan 1–2 kalimat tentang maksudnya, plus akibatnya bila tidak terpenuhi (bila disebut materi)
 ## Khilaf & Tarjih
-Tabel markdown | Masalah | Pendapat & pemiliknya | Dalil | Yang rajih | — isi tiap sel singkat (maks ±12 kata). Setelah tabel, satu baris **Kesimpulan:** ...
+Tabel markdown | Masalah | Pendapat & pemiliknya | Dalil | Yang rajih | — isi tiap sel singkat (maks ±12 kata). Setelah tabel, untuk tiap masalah 1–2 poin yang menjelaskan alasan tiap pendapat dan sebab tarjihnya, lalu satu baris **Kesimpulan:** ...
 ## Dalil
 Untuk tiap dalil: satu baris keterangan (jenis & hukum yang ditunjukkan), lalu
 > teks Arab berharakat
 ↳ terjemah
+- **Wajh dilalah:** bagaimana dalil ini menunjukkan hukumnya, 1 kalimat (bila dijelaskan materi)
 ## Sering Keluar di Imtihan
-- 3–5 poin yang paling mungkin ditanyakan, berdasar penekanan di materi, masing-masing dengan kata kerja soalnya (misal: عَرِّفْ، بَيِّنْ، قَارِنْ)`,
+- 3–5 poin yang paling mungkin ditanyakan, berdasar penekanan di materi, masing-masing dengan kata kerja soalnya (misal: عَرِّفْ، بَيِّنْ، قَارِنْ) dan poin yang wajib ada di jawaban`,
 
   ar: `Tulis SELURUH ringkasan dalam bahasa Arab fushah yang mudah, dengan judul:
 ## النِّقَاطُ الرَّئِيسَةُ
+## الشَّرْحُ (اشرح كل موضوع في المادة بأسلوب سهل: الفكرة، والبيان، والمثال، والعلاقة بغيره)
 ## التَّعْرِيفُ (لُغَةً وَاصْطِلَاحًا)
 ## التَّقْسِيمُ
 ## الشُّرُوطُ وَالْأَرْكَانُ وَالْحُكْمُ
@@ -56,6 +69,8 @@ Untuk tiap dalil: satu baris keterangan (jenis & hukum yang ditunjukkan), lalu
   'id+ar': `Tulis dwibahasa: tiap poin ditulis dulu dalam bahasa Arab fushah (satu baris, diawali "- "), lalu di baris berikutnya terjemah Indonesia diawali "↳ ". Tabel khilaf boleh berbahasa Indonesia dengan istilah Arab.
 Gunakan judul:
 ## Poin Inti — النِّقَاطُ الرَّئِيسَةُ
+## Penjelasan Materi — الشَّرْحُ
+(tiap subtopik: intinya, penjelasan 2–4 poin, contoh dari materi, kaitannya dengan subtopik lain)
 ## Ta'rif — التَّعْرِيفُ
 ## Taqsim — التَّقْسِيمُ
 ## Syarat, Rukun & Hukum — الشُّرُوطُ وَالْأَرْكَانُ
@@ -138,7 +153,8 @@ export const learnerContext = (learner, { material = true } = {}) => {
 };
 
 export const summaryPrompt = (lang) => `${BASE_PERSONA}
-Rangkum materi kuliah (muqarrar) ini dengan gaya kitab: rapi, padat, siap untuk muraja'ah imtihan.
+Rangkum dan jelaskan materi kuliah (muqarrar) ini dengan gaya kitab: rapi, lengkap, dan mudah dipahami, siap untuk muraja'ah imtihan.
+Pembaca harus bisa memahami materi hanya dari ringkasan ini tanpa membuka diktat lagi. Jelaskan maksud setiap konsep, jangan sekadar mendaftar istilah. Semua subtopik di materi harus terwakili.
 ${ONLY_MATERIAL}
 ${ARABIC_RULES}
 ${readabilityRules({ translate: lang !== 'ar' })}
@@ -170,10 +186,17 @@ Balas HANYA JSON array:
 [{"ar":"kata/istilah Arab berharakat","jenis":"isim | fi'il | masdar | harf | istilah","wazan":"wazan sharf (misal فَعَّلَ) atau \\"-\\"","akar":"huruf asal dipisah spasi, misal ك ت ب, atau \\"-\\"","makna":"arti dalam bahasa Indonesia sesuai konteks materi","contoh":"potongan kalimat Arab dari materi yang memuat kata itu, atau \\"\\""}]`,
 
   mindmap: `${BASE_PERSONA}
-Buat peta konsep (mind map) materi ini dengan pola kitab: pusatnya topik utama, cabangnya ta'rif, taqsim (pembagian), syarat, rukun, hukum, khilaf, dan dalil — hanya yang ada di materi.
-Aturan: kedalaman maks 4 tingkat, tiap simpul maks 6 anak, total maks 35 simpul. label = frasa pendek bahasa Indonesia (≤6 kata) — JANGAN menulis teks Arab di label; ar = teks Arab berharakat (istilah kunci, atau potongan ayat/hadits untuk simpul dalil — label-nya tetap ringkasan Indonesia, mis. label "Ayat kisah para rasul"), kosongkan untuk yang lain; note = penjelasan ≤15 kata, hanya bila menambah makna. Jaga jawaban tetap ringkas supaya JSON selesai utuh.
+Buat peta konsep (mind map) materi ini dengan pola kitab: pusatnya topik utama, cabangnya ta'rif, taqsim (pembagian), syarat, rukun, hukum, khilaf, dan dalil — hanya yang ada di materi. Semua subtopik penting di materi harus muncul di peta.
+Struktur: kedalaman maks 4 tingkat, tiap simpul maks 6 anak, total 20–40 simpul.
+Isi tiap simpul (mahasiswa mengetuk kotak untuk membaca penjelasannya, jadi penjelasan harus cukup untuk dipahami tanpa membuka diktat):
+- label = frasa pendek bahasa Indonesia (≤6 kata). JANGAN menulis teks Arab di label.
+- ar = teks Arab berharakat (istilah kunci, atau potongan ayat/hadits untuk simpul dalil — label-nya tetap ringkasan Indonesia, mis. label "Ayat kisah para rasul"); kosongkan bila tidak ada.
+- note = ringkasan satu kalimat (≤15 kata) yang tampil di kotak. WAJIB di setiap simpul selain pusat.
+- detail = penjelasan 2–3 kalimat (≤50 kata) dengan bahasa sederhana: apa maksudnya, kenapa penting/alasannya, dan hubungannya dengan induknya. WAJIB di pusat dan setiap cabang utama; untuk simpul lain isi bila ada yang perlu dijelaskan lebih dari note.
+- contoh = satu contoh atau penerapan singkat dari materi (≤25 kata); kosongkan bila materi tidak memberi contoh. Jangan mengarang hukum, dalil, atau qaul.
+Tulis padat dan tanpa basa-basi supaya JSON selesai utuh.
 ${ONLY_MATERIAL}
-Balas HANYA JSON object: {"label":"...","ar":"...","children":[{"label":"...","ar":"...","note":"...","children":[...]}]}`,
+Balas HANYA JSON object: {"label":"...","ar":"...","detail":"...","children":[{"label":"...","ar":"...","note":"...","detail":"...","contoh":"...","children":[...]}]}`,
 
   essays: `${BASE_PERSONA}
 Buat 5 soal tahriri (esai) gaya ujian tulis Al-Azhar dari materi. Variasikan jenisnya: عَرِّفْ (ta'rif), بَيِّنْ / وَضِّحْ (penjelasan), قَارِنْ (perbandingan), اُذْكُرْ مَعَ الدَّلِيلِ (dalil), عَلِّلْ (alasan).
@@ -257,13 +280,13 @@ export const transcribeAnswerPrompt = ({ question = '' } = {}) => {
 export const SUMMARY_MAP_NOTE = (step, total) => `
 
 CATATAN: Materi ini panjang dan dibaca per bagian. Yang dikirim sekarang BAGIAN ${step} DARI ${total}.
-Buat CATATAN RINGKAS bagian ini saja (maks ±700 kata) dengan format markdown di atas; lewati judul yang tidak ada isinya di bagian ini.
+Buat CATATAN bagian ini saja (maks ±900 kata) dengan format markdown di atas; lewati judul yang tidak ada isinya di bagian ini. Sertakan penjelasan dan contoh pentingnya, jangan hanya daftar istilah.
 Kutipan "> " tetap disalin persis dari materi. Catatan ini nanti digabung dengan catatan bagian lain.`;
 
 export const SUMMARY_REDUCE_NOTE = `
 
 CATATAN: Materi aslinya panjang, jadi yang kamu terima adalah CATATAN dari tiap bagiannya.
-Gabungkan semuanya menjadi SATU ringkasan utuh dengan format di atas: satukan poin yang sama, jangan ulangi, urutkan sesuai alur materi, dan pastikan setiap bagian materi terwakili.
+Gabungkan semuanya menjadi SATU ringkasan utuh dengan format di atas: satukan poin yang sama, jangan ulangi, urutkan sesuai alur materi, dan pastikan setiap bagian materi terwakili — termasuk penjelasan dan contohnya di "Penjelasan Materi", jangan dipangkas jadi daftar.
 Kutipan "> " salin persis dari catatan (jangan diubah).`;
 
 // Info resmi pembuat Talqeeh (dari pemiliknya). AI hanya boleh memakai fakta di sini.

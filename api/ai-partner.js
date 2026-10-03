@@ -38,12 +38,13 @@ const TRIAL_MAX_CONTENT = 60000;   // coba gratis tetap dibatasi supaya biaya te
 const SINGLE_PASS_CHARS = 60000;   // muat dalam satu permintaan
 const STUDY_SAMPLE_CHARS = 30000;  // flashcard/kuis/mufradat: contoh materi secukupnya
 const MAP_CHUNK_CHARS   = 40000;   // ringkasan materi panjang: dibaca per bagian sebesar ini
-const MAP_PART_TOKENS   = 1800;
+const MAP_PART_TOKENS   = 2400;
 const MIN_CONTENT     = 50;
 const CHAT_HISTORY    = 12;
 // Ringkasan dibuat bertahap supaya tiap request selesai di bawah batas 60 detik Vercel.
 const SUMMARY_PART_TOKENS = 3000;
-const MAX_SUMMARY_PARTS   = 4;
+const MAX_SUMMARY_PARTS   = 5;
+const MINDMAP_TOKENS      = 6000;  // peta konsep + penjelasan tiap kotak
 const CHAT_MAX_STORED = 60;
 const MAX_ANALYSES    = 40;
 const MAX_ATTEMPTS    = 30;
@@ -598,7 +599,7 @@ async function handleGenerate(ctx, body, res) {
   }
 
   if (kind === 'mindmap') {
-    const data = cleanMindmap(await callAIJson({ system: PROMPTS.mindmap + learner, messages, maxTokens: 3500, model }));
+    const data = cleanMindmap(await callAIJson({ system: PROMPTS.mindmap + learner, messages, maxTokens: MINDMAP_TOKENS, model }));
     if (!data) throw new Error('AI gagal membuat peta konsep yang valid');
     await updateSet(ctx.code, set.id, { mindmap: data, progress });
     return res.status(200).json({ ok: true, data, model });

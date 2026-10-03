@@ -48,6 +48,8 @@ export const cleanMindmap = (raw) => {
     const out = { label: str(node.label, 140) };
     if (isStr(node.ar)) out.ar = str(node.ar, 140);
     if (isStr(node.note)) out.note = str(node.note, 300);
+    if (isStr(node.detail)) out.detail = str(node.detail, 600);
+    if (isStr(node.contoh)) out.contoh = str(node.contoh, 300);
     if (depth < 4 && Array.isArray(node.children)) {
       const kids = node.children.slice(0, 8).map(c => walk(c, depth + 1)).filter(Boolean);
       if (kids.length) out.children = kids;

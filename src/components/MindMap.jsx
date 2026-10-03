@@ -148,12 +148,22 @@ const MindDetail = ({ root, path, onSelect, onClose, onFocus, variant = 'card', 
       </div>
 
       <div className="mm-detail-body">
-        {node.note ? (
+        {node.note && (
+          <p className="text-[14.5px] text-ink leading-relaxed font-medium">{renderNote(node.note)}</p>
+        )}
+        {node.detail && (
           <div className="mm-detail-section">
-            <div className="mm-detail-sub">Keterangan</div>
-            <p className="text-[14px] text-ink-muted leading-relaxed">{renderNote(node.note)}</p>
+            <div className="mm-detail-sub">Penjelasan</div>
+            <p className="text-[14px] text-ink-muted leading-relaxed">{renderNote(node.detail)}</p>
           </div>
-        ) : (
+        )}
+        {node.contoh && (
+          <div className="mm-detail-section">
+            <div className="mm-detail-sub">Contoh</div>
+            <p className="text-[14px] text-ink-muted leading-relaxed rounded-lg px-3 py-2 border-l-2" style={{ borderColor: color, background: 'rgba(255,255,255,0.03)' }}>{renderNote(node.contoh)}</p>
+          </div>
+        )}
+        {!node.note && !node.detail && !node.contoh && (
           <p className="text-xs text-ink-soft">Tidak ada keterangan tambahan untuk bagian ini.</p>
         )}
 
@@ -208,7 +218,10 @@ const MindDetail = ({ root, path, onSelect, onClose, onFocus, variant = 'card', 
 
 const mindmapToMarkdown = (node, depth = 0) => {
   const t = mmText(node);
-  return `${'  '.repeat(depth)}- **${t.label || t.ar}**${t.label && t.ar ? ` — ${t.ar}` : ''}${node.note ? `: ${node.note}` : ''}\n` +
+  const pad = '  '.repeat(depth);
+  return `${pad}- **${t.label || t.ar}**${t.label && t.ar ? ` — ${t.ar}` : ''}${node.note ? `: ${node.note}` : ''}\n` +
+    (node.detail ? `${pad}  - ${node.detail}\n` : '') +
+    (node.contoh ? `${pad}  - _Contoh:_ ${node.contoh}\n` : '') +
     mmChildren(node).map(c => mindmapToMarkdown(c, depth + 1)).join('');
 };
 

@@ -434,13 +434,23 @@ const SummaryTab = ({ set, setSet, access }) => {
 /* ── 1b. Peta konsep ──
    Dua tampilan: "Peta" (pohon bercabang ke kanan, tiap cabang utama berwarna sendiri) dan "Daftar"
    (kerangka bernomor gaya taqsim 1 · 1.1 · 1.1.1). Kotak peta sengaja ringkas — penjelasan muncul di panel
-   saat kotak diketuk, atau di dalam kotak kalau "Keterangan" dinyalakan. */
+   saat kotak diketuk, atau di dalam kotak kalau "Keterangan" dinyalakan (default menyala). Di Daftar,
+   keterangan juga memuat penjelasan dan contoh tiap butir. */
 
 const MM_VIEW_KEY = 'talqeeh_mindmap_view';
 const MM_NOTES_KEY = 'talqeeh_mindmap_notes';
 
 const readPref = (key, fallback) => { try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; } };
 const savePref = (key, v) => { try { localStorage.setItem(key, v); } catch {} };
+
+// Tampilan Daftar = tampilan baca: keterangan, penjelasan, dan contoh ditulis langsung di bawah tiap butir.
+const OutlineExplain = ({ node }) => (
+  <>
+    {node.note && <span className="mm-ol-note">{node.note}</span>}
+    {node.detail && <span className="mm-ol-detail">{noteText(node.detail)}</span>}
+    {node.contoh && <span className="mm-ol-contoh"><b className="text-ink-muted font-semibold">Contoh:</b> {noteText(node.contoh)}</span>}
+  </>
+);
 
 const OutlineNode = ({ node, num, depth, color, showNotes, onSelect, path }) => {
   const t = mmText(node);
@@ -451,7 +461,7 @@ const OutlineNode = ({ node, num, depth, color, showNotes, onSelect, path }) => 
       <span className="min-w-0">
         {t.label && <span className={depth === 1 ? 'mm-ol-label-top' : 'mm-ol-label'}>{t.label}</span>}
         {t.ar && <span className="mm-ol-ar" dir="rtl">{t.ar}</span>}
-        {showNotes && node.note && <span className="mm-ol-note">{node.note}</span>}
+        {showNotes && <OutlineExplain node={node}/>}
       </span>
     </button>
     {mmChildren(node).length > 0 && (
@@ -473,7 +483,7 @@ const MindmapTab = ({ set, setSet, access }) => {
   const root = set.mindmap;
   const narrow = typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)').matches;
   const [view, setView] = useState(() => readPref(MM_VIEW_KEY, narrow ? 'outline' : 'map'));
-  const [showNotes, setShowNotes] = useState(() => readPref(MM_NOTES_KEY, '0') === '1');
+  const [showNotes, setShowNotes] = useState(() => readPref(MM_NOTES_KEY, '1') === '1');
   const { ui, selected, setSelected, select, expandAll, collapseAll } = useMindmapUi(root, showNotes);
   const mapView = useMapView();
   const [full, setFull] = useState(false);
@@ -547,7 +557,7 @@ const MindmapTab = ({ set, setSet, access }) => {
           <button onClick={() => select('0')} className="text-left w-full mb-4">
             <div className="font-display text-lg md:text-xl font-semibold text-ink leading-snug">{root.label}</div>
             {root.ar && <div dir="rtl" className="text-gold-300" style={{ fontFamily: '"Noto Naskh Arabic", serif', fontSize: 20, lineHeight: 1.8 }}>{root.ar}</div>}
-            {showNotes && root.note && <div className="text-sm text-ink-muted mt-1">{root.note}</div>}
+            {showNotes && <div className="mt-1" style={{ '--c': '#3ecf8e' }}><OutlineExplain node={root}/></div>}
           </button>
           <ol className="mm-ol mm-ol-root">
             {mmChildren(root).map((c, i) => (
