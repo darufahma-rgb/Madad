@@ -191,7 +191,7 @@ const App = () => {
   }, [session, authStatus, profile, isFree]);
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
-  const isPublic = path === "/" || path.startsWith("/gabung") || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/developer" || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal";
+  const isPublic = path === "/" || path.startsWith("/gabung") || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/developer" || path === window.SEMINAR_AI_PATH || path === window.SEMINAR_AI_SLIDES_PATH || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal";
 
   // Admin gets its own layout (no public nav/footer)
   if (isAdmin) {
@@ -211,6 +211,8 @@ const App = () => {
   else if (path.startsWith("/sample/nahwu"))        { page = <SampleNahwuPage/>; routeLabel = "Sample Nahwu"; }
   else if (path === "/ethics")            { page = <EthicsPage/>; routeLabel = "Etika"; }
   else if (path === "/privacy")           { page = <PrivacyPage/>; routeLabel = "Kebijakan Privasi"; }
+  else if (path === window.SEMINAR_AI_SLIDES_PATH) { page = <SeminarSlidesPage/>; routeLabel = "Slide Seminar"; }
+  else if (path === window.SEMINAR_AI_PATH) { page = <SeminarAiPage/>; routeLabel = "Materi Seminar"; }
   else if (path === "/developer")         { page = <DeveloperPage/>; routeLabel = "Tentang Developer"; }
   else if (path === "/maddah-publik")    { page = <MaddahPublikPage onOpenPayment={() => openJoin("library")} onOpenJoin={openJoin} onOpenLogin={openLogin}/>; routeLabel = "Katalog Maddah"; }
   else if (path === "/onboarding" || path.startsWith("/onboarding?"))   { page = <OnboardingPage/>; routeLabel = "Onboarding"; }

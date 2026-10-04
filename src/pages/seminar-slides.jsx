@@ -1,0 +1,357 @@
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+/* Talqeeh — Mode slide untuk materi seminar AI.
+   Data dari SEMINAR_CHAPTERS (seminar-ai.jsx): satu sumber untuk halaman baca dan slide.
+   Bahasa visual: gelap editorial, satu aksen emas, tiap tipe slide punya komposisi sendiri. */
+
+const SLIDES_KEY = "talqeeh_seminar_slide";
+
+const textLen = (pts) => pts.reduce((n, p) => n + p.replace(/\*/g, "").length, 0);
+
+const buildSeminarSlides = () => {
+  const chapters = window.SEMINAR_CHAPTERS;
+  const slides = [{ type: "title", seg: 0 }, { type: "agenda", seg: 0 }];
+  chapters.forEach((ch, ci) => {
+    const seg = ci + 1;
+    slides.push({ type: "chapter", ch, ci, seg });
+    const vizAfter = (window.SEMINAR_VIZ_AFTER || {})[ch.id] || {};
+    ch.sections.forEach(s => {
+      slides.push({ type: "section", ch, ci, s, seg });
+      if (vizAfter[s.h]) slides.push({ type: "viz", viz: vizAfter[s.h], ch, ci, seg });
+    });
+    if (ch.prompts) slides.push({ type: "prompts", ch, ci, seg });
+    slides.push({ type: "practice", ch, ci, seg });
+  });
+  slides.push({ type: "closing", seg: chapters.length + 1 });
+  return slides;
+};
+
+const pad2 = (n) => String(n).padStart(2, "0");
+const goldStroke = { WebkitTextStroke: "1.5px rgba(201,168,106,0.55)", color: "transparent" };
+
+const Item = ({ i = 0, className = "", children, ...rest }) => (
+  <div className={"sl-item " + className} style={{ animationDelay: (110 + i * 75) + "ms" }} {...rest}>{children}</div>
+);
+
+const SlideBody = ({ slide, goChapter }) => {
+  const chapters = window.SEMINAR_CHAPTERS;
+  const inline = window.seminarRenderInline;
+
+  /* ── Judul: kiri teks, kanan potret ── */
+  if (slide.type === "title") return (
+    <div className="w-full max-w-[1400px] mx-auto grid lg:grid-cols-12 gap-6 lg:gap-16 items-center">
+      <div className="lg:col-span-7 order-2 lg:order-1">
+        <Item i={0}><div className="arabic-display-classical text-[clamp(1.3rem,2.6vw,2.2rem)] text-gold-300 mb-[clamp(0.8rem,2vw,1.6rem)]" dir="rtl" style={{ textAlign: "left" }}>الذكاء الاصطناعي في التعليم</div></Item>
+        <Item i={1}>
+          <h1 className="font-display font-semibold text-ink tracking-tight leading-[1.04] text-[clamp(2.1rem,min(6vw,9vh),5.4rem)]">
+            Dari fundamental sampai AI untuk pendidikan.
+          </h1>
+        </Item>
+        <Item i={2}><p className="text-ink-muted text-[clamp(1.05rem,2vw,1.6rem)] mt-[clamp(1rem,2.4vw,2rem)]">Seminar AIGYPT × Talqeeh</p></Item>
+        <Item i={3}>
+          <div className="mt-[clamp(1.2rem,3vw,2.6rem)] pt-[clamp(0.9rem,2vw,1.4rem)] border-t border-white/10 inline-block pr-10">
+            <div className="text-ink font-medium text-[clamp(1rem,1.7vw,1.3rem)]">Daru Fahmaa Muliawan</div>
+            <div className="text-ink-muted text-[clamp(0.8rem,1.3vw,1rem)] mt-0.5">Pendiri Talqeeh dan AIGYPT</div>
+          </div>
+        </Item>
+      </div>
+      <Item i={1} className="lg:col-span-5 order-1 lg:order-2 relative mx-auto lg:ml-auto w-[min(46vw,200px)] lg:w-[min(100%,420px,44vh)]">
+        <div className="absolute -inset-6 lg:-inset-10 flex items-center justify-center pointer-events-none select-none" aria-hidden="true">
+          <span className="arabic-display-classical text-gold-500/[0.09] leading-none" dir="rtl" style={{ fontSize: "clamp(8rem,26vw,22rem)" }}>تلقيح</span>
+        </div>
+        <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-gold-500/30 bg-night-900">
+          <img src="/daru-fahmaa.webp" alt="Daru Fahmaa Muliawan" className="w-full h-full object-cover object-top"
+               onError={(e) => { e.currentTarget.style.display = "none"; }}/>
+        </div>
+      </Item>
+    </div>
+  );
+
+  /* ── Agenda: judul kiri, baris besar kanan ── */
+  if (slide.type === "agenda") return (
+    <div className="w-full max-w-[1400px] mx-auto grid lg:grid-cols-12 gap-6 lg:gap-16 items-center">
+      <div className="lg:col-span-4">
+        <Item i={0}><h2 className="font-display font-semibold text-ink tracking-tight leading-none text-[clamp(2.4rem,min(6.5vw,11vh),5.5rem)]">Agenda</h2></Item>
+        <Item i={1}><p className="text-ink-muted text-[clamp(1rem,1.8vw,1.35rem)] mt-[clamp(0.6rem,1.6vw,1.2rem)] max-w-[28ch]">Enam bab, dari dasar sampai praktik langsung.</p></Item>
+      </div>
+      <ol className="lg:col-span-8 grid gap-1.5">
+        {chapters.map((c, i) => (
+          <Item i={i + 1} key={c.id}>
+            <button onClick={() => goChapter(c.id)}
+                    className="group w-full flex items-baseline gap-[clamp(0.8rem,2.4vw,2rem)] text-left rounded-2xl px-3 md:px-5 py-[clamp(0.35rem,min(1.3vw,1.5vh),1rem)] hover:bg-white/[0.04] transition-colors">
+              <span className="num text-gold-400 text-[clamp(1rem,min(2vw,3.2vh),1.6rem)] w-8 md:w-12 shrink-0">{pad2(i + 1)}</span>
+              <span className="min-w-0">
+                <span className="block text-ink font-display font-medium text-[clamp(1.05rem,min(2.5vw,4vh),2rem)] leading-snug">{c.title}</span>
+                <span className="hidden lg:block [@media(max-height:850px)]:!hidden text-ink-muted text-[clamp(0.8rem,1.15vw,1rem)] mt-0.5 max-w-[60ch]">{c.summary}</span>
+              </span>
+            </button>
+          </Item>
+        ))}
+      </ol>
+    </div>
+  );
+
+  /* ── Pembuka bab: angka outline raksasa ── */
+  if (slide.type === "chapter") return (
+    <div className="w-full max-w-[1400px] mx-auto grid lg:grid-cols-12 gap-2 lg:gap-12 items-center">
+      <Item i={0} className="lg:col-span-5">
+        <div className="num font-display font-bold leading-[0.8] select-none text-[clamp(8rem,30vw,26rem)]" style={goldStroke} aria-hidden="true">{pad2(slide.ci + 1)}</div>
+      </Item>
+      <div className="lg:col-span-7">
+        <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.05] text-[clamp(2rem,5.4vw,4.6rem)]">{slide.ch.title}</h2></Item>
+        <Item i={2}><p className="text-ink-muted leading-relaxed text-[clamp(1.05rem,2vw,1.6rem)] mt-[clamp(0.8rem,2vw,1.6rem)] max-w-[42ch]">{slide.ch.summary}</p></Item>
+      </div>
+    </div>
+  );
+
+  /* ── Isi: satu poin = pernyataan, banyak poin = judul kiri + daftar kanan ── */
+  if (slide.type === "section") {
+    const pts = slide.s.points;
+    if (pts.length === 1) return (
+      <div className="w-full max-w-[1100px] mx-auto">
+        <Item i={0}><div className="text-gold-400 text-[clamp(0.85rem,1.4vw,1.1rem)] mb-[clamp(0.8rem,2vw,1.6rem)]">{slide.s.h}</div></Item>
+        <Item i={1}>
+          <p className="font-display text-ink leading-[1.25] tracking-tight pl-[clamp(1rem,2.4vw,2rem)] border-l-2 border-gold-500"
+             style={{ fontSize: "clamp(1.5rem,3.8vw,3.3rem)" }}>{inline(pts[0])}</p>
+        </Item>
+      </div>
+    );
+    const n = textLen(pts);
+    const fs = n <= 300 ? "clamp(1.1rem,2.3vw,1.9rem)" : n <= 560 ? "clamp(1rem,1.9vw,1.5rem)" : "clamp(0.92rem,1.6vw,1.25rem)";
+    return (
+      <div className="w-full max-w-[1400px] mx-auto grid lg:grid-cols-12 gap-5 lg:gap-16 items-start lg:items-center">
+        <div className="lg:col-span-4">
+          <Item i={0}><div className="text-ink-muted text-[clamp(0.8rem,1.2vw,1rem)] mb-[clamp(0.5rem,1.4vw,1rem)]">{slide.ch.title}</div></Item>
+          <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.08] text-[clamp(1.7rem,4.2vw,3.6rem)]">{slide.s.h}</h2></Item>
+        </div>
+        <ol className="lg:col-span-8 grid gap-[clamp(0.7rem,1.7vw,1.4rem)]" style={{ fontSize: fs }}>
+          {pts.map((p, i) => (
+            <Item i={i + 1} key={i}>
+              <li className="flex gap-[clamp(0.8rem,1.8vw,1.5rem)] items-baseline list-none">
+                <span className="num text-gold-400 text-[0.7em] w-[1.8em] shrink-0 pt-[0.15em]">{pad2(i + 1)}</span>
+                <span className="text-ink-muted leading-snug min-w-0">{inline(p)}</span>
+              </li>
+            </Item>
+          ))}
+        </ol>
+      </div>
+    );
+  }
+
+  /* ── Visual: diagram atau grafik animasi ── */
+  if (slide.type === "viz") {
+    const v = window.SEMINAR_VIZ[slide.viz];
+    const Viz = v.C;
+    return (
+      <div className="w-full max-w-[1300px] mx-auto">
+        <Item i={0}><div className="text-ink-muted text-[clamp(0.8rem,1.2vw,1rem)] mb-[clamp(0.4rem,1.2vh,0.8rem)]">{slide.ch.title}</div></Item>
+        <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.08] text-[clamp(1.6rem,min(4vw,6.4vh),3.3rem)]">{v.title}</h2></Item>
+        <Item i={2}><p className="text-ink-muted text-[clamp(0.95rem,min(1.7vw,3vh),1.35rem)] mt-[clamp(0.3rem,1vh,0.7rem)]">{v.sub}</p></Item>
+        <div className="mt-[clamp(0.9rem,3vh,2.2rem)]"><Viz/></div>
+        {v.note && <p className="sl-note text-ink-muted/80 text-xs md:text-sm mt-[clamp(0.6rem,2vh,1.4rem)]">{v.note}</p>}
+      </div>
+    );
+  }
+
+  /* ── Contoh prompt: dibandingkan berdampingan ── */
+  if (slide.type === "prompts") {
+    const list = slide.ch.prompts;
+    const pair = list.length > 1;
+    return (
+      <div className="w-full max-w-[1400px] mx-auto">
+        <Item i={0}><h2 className="font-display font-semibold text-ink tracking-tight leading-none text-[clamp(1.8rem,4.4vw,3.6rem)] mb-[clamp(1rem,2.6vw,2.2rem)]">Contoh prompt</h2></Item>
+        <div className={pair ? "grid md:grid-cols-2 gap-[clamp(0.7rem,1.8vw,1.5rem)]" : "max-w-[1000px]"}>
+          {list.map((p, i) => {
+            const good = i === list.length - 1;
+            return (
+              <Item i={i + 1} key={p.label}>
+                <div className={"h-full rounded-2xl p-[clamp(1rem,2.2vw,2rem)] border " + (good ? "border-gold-500/50 bg-gold-500/[0.06]" : "border-white/10 bg-white/[0.02]")}>
+                  <div className={"text-[clamp(0.8rem,1.2vw,1rem)] mb-[clamp(0.5rem,1.2vw,0.9rem)] font-medium " + (good ? "text-gold-300" : "text-ink-muted")}>{p.label}</div>
+                  <p className={"leading-relaxed whitespace-pre-line " + (good ? "text-ink" : "text-ink-muted")} style={{ fontSize: "clamp(0.92rem,1.7vw,1.35rem)" }}>{p.text}</p>
+                </div>
+              </Item>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Latihan: bingkai tunggal ── */
+  if (slide.type === "practice") return (
+    <div className="w-full max-w-[1100px] mx-auto">
+      <Item i={0}>
+        <div className="rounded-2xl border border-gold-500/40 bg-gold-500/[0.05] p-[clamp(1.2rem,3.6vw,3.4rem)]">
+          <div className="flex items-center gap-3 mb-[clamp(0.8rem,2.2vw,1.8rem)] text-gold-300">
+            <Icon name="lightbulb" className="w-[clamp(1.4rem,2.6vw,2.2rem)] h-[clamp(1.4rem,2.6vw,2.2rem)]" strokeWidth={1.5}/>
+            <span className="font-display font-semibold text-[clamp(1.2rem,2.4vw,2rem)]">Latihan</span>
+          </div>
+          <p className="text-ink leading-[1.35]" style={{ fontSize: "clamp(1.2rem,2.9vw,2.4rem)" }}>{slide.ch.practice}</p>
+          <div className="text-ink-muted text-[clamp(0.8rem,1.2vw,1rem)] mt-[clamp(1rem,2.4vw,2rem)]">{slide.ch.title}</div>
+        </div>
+      </Item>
+    </div>
+  );
+
+  /* ── Penutup ── */
+  return (
+    <div className="w-full max-w-[1100px] mx-auto text-center">
+      <Item i={0}><div className="arabic-display-classical text-gold-300 leading-none" dir="rtl" style={{ fontSize: "clamp(4rem,min(16vw,20vh),11rem)" }}>تَلْقِيح</div></Item>
+      <Item i={1}>
+        <h2 className="font-display font-semibold text-ink tracking-tight leading-[1.1] text-[clamp(1.5rem,min(4.4vw,6vh),3.6rem)] mt-[clamp(0.8rem,min(3vw,3vh),2.4rem)]">
+          Teknologi terbaik membuat manusia belajar lebih baik.
+        </h2>
+      </Item>
+      <Item i={2}><p className="text-ink-muted text-[clamp(1rem,1.9vw,1.5rem)] mt-[clamp(1rem,2.4vw,2rem)]">Terima kasih. Pertanyaan dan masukan: Instagram @ai.gypt</p></Item>
+    </div>
+  );
+};
+
+const SeminarSlidesPage = () => {
+  const slides = useMemo(buildSeminarSlides, []);
+  const total = slides.length;
+  const chapters = window.SEMINAR_CHAPTERS;
+
+  // Segmen progress: pembuka, tiap bab, penutup. Lebar sebanding jumlah slide.
+  const segments = useMemo(() => {
+    const out = [];
+    slides.forEach((s, i) => {
+      if (!out[s.seg]) out[s.seg] = { start: i, count: 0 };
+      out[s.seg].count++;
+    });
+    return out;
+  }, [slides]);
+
+  const [idx, setIdx] = useState(() => {
+    try { const v = parseInt(sessionStorage.getItem(SLIDES_KEY) || "0", 10); return v >= 0 && v < total ? v : 0; } catch { return 0; }
+  });
+  const [menuOpen, setMenuOpen] = useState(false);
+  const touch = useRef(null);
+  const prevIdx = useRef(idx);
+  const dir = idx >= prevIdx.current ? 1 : -1;
+  useEffect(() => { prevIdx.current = idx; }, [idx]);
+
+  const go = useCallback((n) => setIdx(i => Math.max(0, Math.min(total - 1, typeof n === "function" ? n(i) : n))), [total]);
+  const goChapter = useCallback((id) => {
+    const at = slides.findIndex(s => s.type === "chapter" && s.ch.id === id);
+    if (at >= 0) { setIdx(at); setMenuOpen(false); }
+  }, [slides]);
+  const exit = useCallback(() => {
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch {}
+    navigate(window.SEMINAR_AI_PATH);
+  }, []);
+  const toggleFull = useCallback(() => {
+    try {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+    } catch {}
+  }, []);
+
+  useEffect(() => { try { sessionStorage.setItem(SLIDES_KEY, String(idx)); } catch {} }, [idx]);
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); go(i => i + 1); }
+      else if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); go(i => i - 1); }
+      else if (e.key === "Home") go(0);
+      else if (e.key === "End") go(total - 1);
+      else if (e.key === "Escape") { if (menuOpen) setMenuOpen(false); else if (!document.fullscreenElement) exit(); }
+      else if (e.key === "f" || e.key === "F") toggleFull();
+    };
+    window.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prevOverflow; };
+  }, [go, total, menuOpen, exit, toggleFull]);
+
+  const onTouchStart = (e) => { const t = e.touches[0]; touch.current = { x: t.clientX, y: t.clientY }; };
+  const onTouchEnd = (e) => {
+    const s = touch.current; touch.current = null;
+    if (!s) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - s.x, dy = t.clientY - s.y;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(i => i + (dx < 0 ? 1 : -1));
+  };
+
+  const slide = slides[idx];
+  const label = slide.ch ? "Bab " + (slide.ci + 1) + " " + slide.ch.title : "Materi Seminar AI";
+  const iconBtn = "w-10 h-10 rounded-xl flex items-center justify-center text-ink-muted hover:text-ink hover:bg-white/[0.07] transition-colors";
+
+  return (
+    <div className="fixed inset-0 z-[200] flex flex-col"
+         style={{ background: "radial-gradient(ellipse 70% 50% at 8% -5%, rgba(201,168,106,0.11), transparent 60%), #0b0b0a" }}
+         onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <style>{(window.SEMINAR_VIZ_CSS || "") + `
+        @keyframes slIn { from { opacity: 0; transform: translateX(var(--dx, 24px)); } to { opacity: 1; transform: none; } }
+        @keyframes slItem { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+        .sl-stage { animation: slIn .38s cubic-bezier(.16,1,.3,1) both; }
+        .sl-item { animation: slItem .55s cubic-bezier(.16,1,.3,1) both; }
+        @media (prefers-reduced-motion: reduce) { .sl-stage, .sl-item { animation: none !important; } }
+      `}</style>
+
+      {/* progress per bab (bisa diklik) */}
+      <div className="flex gap-1 px-3 md:px-6 pt-3 shrink-0" style={{ paddingTop: "max(0.75rem, var(--safe-top, 0px))" }}>
+        {segments.map((sg, si) => {
+          const frac = idx < sg.start ? 0 : Math.min(1, (idx - sg.start + 1) / sg.count);
+          const name = si === 0 ? "Pembuka" : si === segments.length - 1 ? "Penutup" : chapters[si - 1].title;
+          return (
+            <button key={si} onClick={() => go(sg.start)} title={name} aria-label={"Ke " + name}
+                    className="group h-4 flex items-center" style={{ flexGrow: sg.count, flexBasis: 0 }}>
+              <span className="block w-full h-[3px] rounded-full bg-white/10 overflow-hidden group-hover:h-[5px] transition-all">
+                <span className="block h-full bg-gold-500 transition-[width] duration-300" style={{ width: frac * 100 + "%" }}/>
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* bar atas */}
+      <div className="flex items-center gap-1.5 px-3 md:px-6 py-1 shrink-0">
+        <button onClick={exit} className={iconBtn} aria-label="Keluar dari mode slide" title="Keluar (Esc)"><Icon name="x" className="w-5 h-5"/></button>
+        <div className="min-w-0 flex-1 text-xs md:text-sm text-ink-muted truncate pl-1">{label}</div>
+        <div className="relative">
+          <button onClick={() => setMenuOpen(o => !o)} className={iconBtn} aria-label="Loncat ke bab" title="Daftar bab"><Icon name="list" className="w-5 h-5"/></button>
+          {menuOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)}/>
+              <div className="absolute right-0 top-12 z-20 w-80 max-w-[88vw] rounded-2xl border border-white/10 bg-night-900 p-2 shadow-2xl">
+                {chapters.map((c, i) => (
+                  <button key={c.id} onClick={() => goChapter(c.id)}
+                          className="w-full flex items-baseline gap-3 px-3 py-2.5 rounded-xl text-left text-sm text-ink-muted hover:text-ink hover:bg-white/[0.06]">
+                    <span className="num text-gold-400 w-5 shrink-0">{pad2(i + 1)}</span>{c.title}
+                  </button>
+                ))}
+                <div className="hidden md:block px-3 pt-2.5 mt-1 border-t border-white/10 text-xs text-ink-muted">Panah atau spasi pindah slide, F layar penuh, Esc keluar</div>
+              </div>
+            </>
+          )}
+        </div>
+        <button onClick={toggleFull} className={iconBtn + " hidden md:flex"} aria-label="Layar penuh" title="Layar penuh (F)"><Icon name="maximize" className="w-5 h-5"/></button>
+        <div className="num tabular-nums text-xs md:text-sm text-ink-muted pl-1 pr-1 min-w-[3.2rem] text-right">{idx + 1}/{total}</div>
+      </div>
+
+      {/* panggung */}
+      <div className="flex-1 min-h-0 overflow-y-auto">
+        <div className="min-h-full flex items-center px-5 md:px-14 lg:px-20 pt-2 pb-20">
+          <div key={idx} className="sl-stage w-full" style={{ "--dx": dir * 28 + "px" }}>
+            <SlideBody slide={slide} goChapter={goChapter}/>
+          </div>
+        </div>
+      </div>
+
+      {/* navigasi */}
+      <div className="absolute right-3 md:right-6 flex gap-2" style={{ bottom: "max(1rem, var(--safe-bottom, 0px))" }}>
+        <button onClick={() => go(i => i - 1)} disabled={idx === 0} aria-label="Slide sebelumnya"
+                className="w-12 h-12 rounded-xl border border-white/12 bg-white/[0.04] text-ink flex items-center justify-center hover:bg-white/[0.09] transition-colors disabled:opacity-25 disabled:pointer-events-none">
+          <Icon name="chevronLeft" className="w-5 h-5"/>
+        </button>
+        <button onClick={() => go(i => i + 1)} disabled={idx === total - 1} aria-label="Slide berikutnya"
+                className="w-12 h-12 rounded-xl bg-gold-500 text-night-950 flex items-center justify-center hover:bg-gold-400 transition-colors disabled:opacity-25 disabled:pointer-events-none">
+          <Icon name="chevronRight" className="w-5 h-5" strokeWidth={2.2}/>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+Object.assign(window, { SeminarSlidesPage });
