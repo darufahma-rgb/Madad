@@ -1290,6 +1290,36 @@ const BankSoalPreview = ({ onOpenLogin }) => {
   );
 };
 
+/* ── Founder teaser ───────────────────────────────────────────── */
+const FounderTeaser = () => (
+  <section className="section pt-0">
+    <div className="container-x" style={{ maxWidth: 960 }}>
+      <Reveal>
+        <a
+          href="#/developer"
+          onClick={(e) => { e.preventDefault(); navigate("/developer"); }}
+          className="card-glass-strong hov-lift flex items-center gap-4 md:gap-8 p-4 md:p-8 no-underline"
+        >
+          <img
+            src="/daru-fahmaa.webp" alt="Daru Fahmaa Muliawan" loading="lazy"
+            className="w-20 h-24 md:w-32 md:h-40 rounded-2xl object-cover object-top shrink-0 border border-gold-500/30"
+          />
+          <div className="min-w-0 flex-1">
+            <div className="text-[11px] uppercase tracking-[0.22em] text-gold-400 mb-1.5">Di balik Talqeeh</div>
+            <div className="font-display text-lg md:text-2xl font-semibold text-ink leading-snug mb-1.5">
+              Dibangun oleh mahasiswa Al-Azhar, untuk mahasiswa Al-Azhar.
+            </div>
+            <p className="text-sm text-ink-muted leading-relaxed mb-2.5">
+              Kenalan dengan Daru Fahmaa Muliawan dan cerita kenapa Talqeeh lahir.
+            </p>
+            <span className="text-sm font-medium text-emerald-300">Baca ceritanya →</span>
+          </div>
+        </a>
+      </Reveal>
+    </div>
+  </section>
+);
+
 /* ── Root ─────────────────────────────────────────────────────── */
 const LandingPage = ({ onOpenLogin, onOpenJoin }) => (
   <div className="page-enter">
@@ -1366,6 +1396,7 @@ const LandingPage = ({ onOpenLogin, onOpenJoin }) => (
     <HowItWorks/>
     <AllMaddahPreview/>
     <TestimoniSection/>
+    <FounderTeaser/>
     <HadiahPreviewBanner/>
     <PricingAndCTA onOpenLogin={onOpenLogin} onOpenJoin={onOpenJoin}/>
   </div>

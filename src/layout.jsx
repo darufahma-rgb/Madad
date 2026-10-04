@@ -207,6 +207,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     { to: "/framework",        label: "Framework" },
     { to: "/tutorial",         label: "Tutorial" },
     { to: "/ethics",           label: "Etika" },
+    { to: "/developer",        label: "Tentang Developer" },
   ];
   const publicLinks = [
     { to: "/sample/nahwu", label: "Preview" },
@@ -215,6 +216,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     { to: "/framework",     label: "Framework" },
     { to: "/tutorial",      label: "Cara Pakai" },
     { to: "/checklist-soal", label: "Status Soal" },
+    { to: "/developer",     label: "Developer", wideOnly: true },
     { to: "/submit-soal",   label: "Submit Soal", highlight: true },
   ];
   const links = session ? memberLinks : publicLinks;
@@ -381,6 +383,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
             <SheetLink icon="target" label="Siap Imtihan" onClick={() => { navigate("/siap-imtihan"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="bookOpen" label="Learning Path" onClick={() => { navigate("/paths"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="shield" label="Etika" onClick={() => { navigate("/ethics"); setMobileSheetOpen(false); }}/>
+            <SheetLink icon="user" label="Tentang Developer" onClick={() => { navigate("/developer"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="bookOpen" label="Tutorial" onClick={() => { openTutorial(); setMobileSheetOpen(false); }}/>
             <div className="border-t border-line mt-2 pt-2">
               <button

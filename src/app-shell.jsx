@@ -52,6 +52,7 @@ const navGroups = (profile) => [
     { to: '/framework',     label: 'Metode Belajar', icon: 'lightbulb' },
     { action: openTutorial, label: 'Tutorial',       icon: 'info' },
     { to: '/ethics',        label: 'Etika Pakai AI', icon: 'shield' },
+    { to: '/developer',     label: 'Tentang Developer', icon: 'user' },
   ]},
 ];
 
