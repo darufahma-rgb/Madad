@@ -56,8 +56,8 @@ const COMPARE_ROWS = [
   ['Muqaranah 4 madzhab', false, true, true],
   ['Kurasah, Statistik & Profil Belajar', true, true, true],
   ['AI Partner: ringkasan, flashcard, kuis, mufradat', '1 materi', '1 materi', true],
-  ["AI Partner: terjemah & i'rab", '3× coba', '10× coba', '150×/bulan'],
-  ['AI Partner: tanya tutor dari materimu', '5× coba', '15× coba', '150×/bulan'],
+  ["AI Partner: terjemah & i'rab", '3× coba', '10× coba', 'Sepuasnya*'],
+  ['AI Partner: tanya tutor dari materimu', '5× coba', '15× coba', 'Sepuasnya*'],
   ['AI Partner: harakat, tahriri dinilai AI, simulasi syafawi', false, false, true],
   ['Unggah rekaman kuliah (audio/video)', false, false, true],
 ];
@@ -79,6 +79,8 @@ const FAQS = [
     "Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 3 soal bank soal, dan AI Partner untuk 1 materi — termasuk 3× terjemah & i'rab dan 5× tanya tutor (member Library: 10× dan 15×). Kalau cocok, upgrade kapan saja — progresmu tetap tersimpan."],
   ['Bayarnya pakai apa? Berapa lama aktifnya?',
     'Lewat Mayar: QRIS, virtual account, atau e-wallet. Tagihannya dibuat langsung untuk akun Google-mu, jadi akses aktif otomatis begitu pembayaran masuk — biasanya kurang dari 1 menit.'],
+  ['Paket Imtihan benar-benar sepuasnya?',
+    "Ya, tanpa kuota bulanan selama 120 hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, dan 25 kali membuat ringkasan/kuis/flashcard per hari — jauh di atas pemakaian belajar normal."],
   ['AI Partner diperpanjang otomatis?',
     'Tidak. Tidak ada potongan otomatis, baik Paket Imtihan maupun per 30 hari. Kalau mau lanjut, perpanjang kapan saja — sisa harimu tidak hangus.'],
   ['Saya member lama, harus bayar lagi?',
@@ -568,6 +570,9 @@ const GabungPage = () => {
             </tbody>
           </table>
         </div>
+        <p className="text-[11px] text-ink-soft text-center mt-3 max-w-2xl mx-auto">
+          *Paket Imtihan: tanpa kuota bulanan selama {IMTIHAN_AI_DAYS} hari, dengan batas wajar harian (30× i'rab, 40 pesan tutor per hari).
+        </p>
       </Section>
 
       {/* Testimoni */}

@@ -221,8 +221,23 @@ const monthlyUsage = async (code, since) => {
 // Pakai satu jatah pelanggan: cek kuota bulanan dulu, lalu catat di kuota harian (atomik).
 // Mengembalikan null kalau boleh, 'monthly' / 'daily' kalau habis, atau 'unavailable' kalau pemakaian
 // tidak bisa dibaca (ditolak sementara — fail closed, tanpa mengaku kuota habis).
+/* Pemegang Paket Imtihan (tagihan 'imtihan' lunas dalam 120 hari terakhir): tanpa kuota bulanan, hanya batas wajar
+   harian (LIMITS) sebagai pengaman biaya. Dihitung sekali per permintaan. */
+const IMTIHAN_WINDOW_DAYS = 120;
+const isImtihanHolder = async (ctx) => {
+  if (ctx.imtihan !== undefined) return ctx.imtihan;
+  ctx.imtihan = false;
+  try {
+    const { url, key } = sbConfig();
+    const since = new Date(Date.now() - IMTIHAN_WINDOW_DAYS * 86400000).toISOString();
+    const r = await fetch(`${url}/rest/v1/payment_checkouts?member_code=eq.${encodeURIComponent(ctx.code)}&plan=eq.imtihan&status=eq.paid&paid_at=gte.${since}&select=id&limit=1`, { headers: sbHeaders(key) });
+    ctx.imtihan = r.ok && ((await r.json()) || []).length > 0;
+  } catch {}
+  return ctx.imtihan;
+};
+
 const takeQuota = async (ctx, kind) => {
-  const monthly = (await getMonthlyLimits())[kind];
+  const monthly = (await isImtihanHolder(ctx)) ? null : (await getMonthlyLimits())[kind];
   if (monthly != null) {
     const period = quotaPeriod(ctx.aiExpiresAt);
     ctx.quotaResetAt = period.resetAt;
@@ -336,7 +351,7 @@ async function handleOcrQuota(ctx, res) {
   }
   let remaining = Math.max(0, LIMITS.ocr - usedToday);
   let scope = 'daily';
-  const monthly = (await getMonthlyLimits()).ocr;
+  const monthly = (await isImtihanHolder(ctx)) ? null : (await getMonthlyLimits()).ocr;
   if (monthly != null) {
     const used = await monthlyUsage(ctx.code, quotaPeriod(ctx.aiExpiresAt).start);
     if (used) {
@@ -1036,7 +1051,9 @@ async function handleStats(ctx, res) {
       usageToday,
       usageMonth,
       limits: ctx.tier === 'pro' ? LIMITS : null,
-      monthlyLimits: ctx.tier === 'pro' ? await getMonthlyLimits() : null,
+      // Paket Imtihan: tanpa kuota bulanan (hanya batas harian), jadi kotak jatah bulanan tidak ditampilkan.
+      monthlyLimits: ctx.tier === 'pro' && !(await isImtihanHolder(ctx)) ? await getMonthlyLimits() : null,
+      unlimitedMonthly: ctx.tier === 'pro' && (await isImtihanHolder(ctx)),
       quotaPeriodStart: ctx.tier === 'pro' ? period.start : null,
       quotaResetAt: ctx.tier === 'pro' ? period.resetAt : null,
       quotaPerSubscription: !!ctx.aiExpiresAt,

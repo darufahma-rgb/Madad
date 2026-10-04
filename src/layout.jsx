@@ -704,7 +704,7 @@ const ImtihanBreakdown = ({ bundle, className = "" }) => bundle ? (
       <span className="text-ink tabular-nums flex-shrink-0">{formatRupiah(LIBRARY_PRICE_IDR)}</span>
     </div>
     <div className="flex items-start justify-between gap-3 mt-1.5">
-      <span className="text-ink-muted"><span className="text-ink">AI Study Partner</span> · {IMTIHAN_AI_DAYS} hari (1 termin)</span>
+      <span className="text-ink-muted"><span className="text-ink">AI Study Partner</span> · {IMTIHAN_AI_DAYS} hari (1 termin), sepuasnya</span>
       <span className="text-ink tabular-nums flex-shrink-0">{formatRupiah(bundle.aiPart)}</span>
     </div>
     <div className="flex items-start justify-between gap-3 mt-2 pt-2 border-t border-white/10 font-semibold">
