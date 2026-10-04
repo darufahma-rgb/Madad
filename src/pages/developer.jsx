@@ -44,13 +44,13 @@ const DEV_PRINCIPLES = [
 const DevPhoto = () => {
   const [failed, setFailed] = useState(false);
   return (
-    <div className="relative w-40 h-40 md:w-56 md:h-56 rounded-3xl overflow-hidden border border-gold-500/30 bg-gradient-to-br from-gold-500/20 to-transparent shrink-0">
+    <div className="relative w-44 h-56 md:w-60 md:h-72 rounded-3xl overflow-hidden border border-gold-500/30 bg-gradient-to-br from-gold-500/20 to-transparent shrink-0">
       {failed ? (
         <div className="w-full h-full flex items-center justify-center font-display text-5xl md:text-7xl font-bold gradient-text">
           {DEV_PROFILE.initials}
         </div>
       ) : (
-        <img src={DEV_PROFILE.photo} alt={DEV_PROFILE.name} className="w-full h-full object-cover"
+        <img src={DEV_PROFILE.photo} alt={DEV_PROFILE.name} className="w-full h-full object-cover object-top"
              loading="lazy" onError={() => setFailed(true)}/>
       )}
     </div>
