@@ -23,6 +23,7 @@ const LIBRARY_ITEMS = [
   ['Bank soal imtihan tahriri + prompt jawaban', true],
   ['Siap Imtihan: persiapan tahriri & syafawi', true],
   ['Muqaranah qoul ulama 4 madzhab', true],
+  ["Coba AI Partner lebih banyak: 10× i'rab + 15× tanya tutor", true],
   ['Semua update fitur ke depan ikut terbuka', true],
 ];
 const AI_ITEMS = [
@@ -55,8 +56,8 @@ const COMPARE_ROWS = [
   ['Muqaranah 4 madzhab', false, true, true],
   ['Kurasah, Statistik & Profil Belajar', true, true, true],
   ['AI Partner: ringkasan, flashcard, kuis, mufradat', '1 materi', '1 materi', true],
-  ["AI Partner: terjemah & i'rab", '3× coba', '3× coba', true],
-  ['AI Partner: tanya tutor dari materimu', '5× coba', '5× coba', true],
+  ["AI Partner: terjemah & i'rab", '3× coba', '10× coba', '150×/bulan'],
+  ['AI Partner: tanya tutor dari materimu', '5× coba', '15× coba', '150×/bulan'],
   ['AI Partner: harakat, tahriri dinilai AI, simulasi syafawi', false, false, true],
   ['Unggah rekaman kuliah (audio/video)', false, false, true],
 ];
@@ -75,7 +76,7 @@ const FAQS = [
   ['Library bayar sekali atau bulanan?',
     `Sekali bayar ${LIBRARY_PRICE}, aksesnya berlaku selamanya — termasuk semua update fitur Library ke depan. AI Partner opsional: ambil Paket Imtihan untuk satu termin, atau per 30 hari.`],
   ['Boleh coba gratis dulu?',
-    "Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 3 soal bank soal, dan AI Partner untuk 1 materi — termasuk 3× terjemah & i'rab dan 5× tanya tutor. Kalau cocok, upgrade kapan saja — progresmu tetap tersimpan."],
+    "Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 3 soal bank soal, dan AI Partner untuk 1 materi — termasuk 3× terjemah & i'rab dan 5× tanya tutor (member Library: 10× dan 15×). Kalau cocok, upgrade kapan saja — progresmu tetap tersimpan."],
   ['Bayarnya pakai apa? Berapa lama aktifnya?',
     'Lewat Mayar: QRIS, virtual account, atau e-wallet. Tagihannya dibuat langsung untuk akun Google-mu, jadi akses aktif otomatis begitu pembayaran masuk — biasanya kurang dari 1 menit.'],
   ['AI Partner diperpanjang otomatis?',

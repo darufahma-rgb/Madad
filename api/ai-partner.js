@@ -34,15 +34,17 @@ const PRO_ONLY_ACTIONS = ['transcribe', 'grade', 'create-batch'];
 const TRIAL_PROMPT_MESSAGES = 2;
 /* Cicip fitur andalan di materi coba gratis: tanpa ini pengguna gratis tidak pernah merasakan i'rab dan tutor —
    nilai jual utama AI Partner. Jatah seumur akun, dihitung di ai_usage (seperti prompt_trial). Biaya ±$0,02 per
-   i'rab (Sonnet) dan ±$0,01 per pesan tutor (Haiku); tetap dibatasi gerbang harian trialGateOpen. */
+   i'rab (Sonnet) dan ±$0,01 per pesan tutor (Haiku); tetap dibatasi gerbang harian trialGateOpen.
+   Member Library (sudah membayar) mendapat jatah lebih besar daripada akun gratis. */
 const TRIAL_TASTE = {
-  irab:  { kind: 'irab_trial',  limit: 3, label: "i'rab" },
-  tutor: { kind: 'tutor_trial', limit: 5, label: 'pesan tutor' },
+  irab:  { kind: 'irab_trial',  limits: { free: 3, library: 10 }, label: "i'rab" },
+  tutor: { kind: 'tutor_trial', limits: { free: 5, library: 15 }, label: 'pesan tutor' },
 };
+const tasteLimit = (which, memberTier) => TRIAL_TASTE[which].limits[memberTier === 'free' ? 'free' : 'library'];
 
 // Jatah cicip untuk akun coba gratis. null = boleh lanjut (left = sisa sesudah ini), selain itu respons sudah dikirim.
 const takeTrialTaste = async (ctx, res, setId, which) => {
-  const t = TRIAL_TASTE[which];
+  const t = { ...TRIAL_TASTE[which], limit: tasteLimit(which, ctx.memberTier) };
   const trial = await getTrialSetId(ctx.code);
   if (trial.setId !== setId) {
     upgradeRequired(res, 'trial_set', 'Coba gratis hanya berlaku untuk materi pertamamu. Berlangganan untuk memakai AI di materi ini.');
@@ -1186,8 +1188,8 @@ export default async function handler(req, res) {
           available: trial.available, used: !!trial.setId, set_id: trial.setId,
           prompt_left: Math.max(0, TRIAL_PROMPT_MESSAGES - (Number.isFinite(promptUsed) ? promptUsed : TRIAL_PROMPT_MESSAGES)),
           prompt_limit: TRIAL_PROMPT_MESSAGES,
-          irab_left: left(TRIAL_TASTE.irab.limit, irabUsed), irab_limit: TRIAL_TASTE.irab.limit,
-          tutor_left: left(TRIAL_TASTE.tutor.limit, tutorUsed), tutor_limit: TRIAL_TASTE.tutor.limit,
+          irab_left: left(tasteLimit('irab', access.member?.tier), irabUsed), irab_limit: tasteLimit('irab', access.member?.tier),
+          tutor_left: left(tasteLimit('tutor', access.member?.tier), tutorUsed), tutor_limit: tasteLimit('tutor', access.member?.tier),
         },
       });
     }
@@ -1201,7 +1203,7 @@ export default async function handler(req, res) {
 
     const access = await requireAiTier(req);
     if (!access.ok) return res.status(access.status).json({ ok: false, error: access.reason });
-    const ctx = { code: access.code, tier: access.tier, aiExpiresAt: access.aiExpiresAt || null };
+    const ctx = { code: access.code, tier: access.tier, aiExpiresAt: access.aiExpiresAt || null, memberTier: access.member?.tier || 'library' };
 
     if (ctx.tier === 'trial' && PRO_ONLY_ACTIONS.includes(action)) {
       return upgradeRequired(res, action);
