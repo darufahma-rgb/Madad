@@ -67,6 +67,82 @@ const FileRow = ({ item, onContinue, busy }) => {
   );
 };
 
+/* PDF tebal: pengguna memilih bagian yang mau dipelajari (rentang halaman, atau bab dari daftar isi PDF).
+   Hanya halaman terpilih yang dibaca — termasuk jatah baca scan — dan satu materi per bab paling pas untuk muraja'ah. */
+const PDF_MAX_PAGES = 120;   // maksimal halaman per sekali simpan (±200rb karakter batas materi)
+const PDF_ASK_PAGES = 40;    // di atas ini pengguna diminta memilih bagian
+
+const PdfRangePicker = ({ info, onPick, onSkip }) => {
+  const { name, numPages, outline } = info;
+  const [from, setFrom] = useState('1');
+  const [to, setTo] = useState(String(Math.min(numPages, PDF_MAX_PAGES)));
+  const [chosen, setChosen] = useState(null);   // indeks bab dari daftar isi
+  const a = parseInt(from, 10), b = parseInt(to, 10);
+  const count = b - a + 1;
+  const err = !a || !b ? 'Isi nomor halaman awal dan akhir.'
+    : a < 1 || b > numPages ? `Halaman harus antara 1 dan ${numPages}.`
+    : a > b ? 'Halaman awal harus sebelum halaman akhir.'
+    : count > PDF_MAX_PAGES ? `Maksimal ${PDF_MAX_PAGES} halaman sekali simpan (terpilih ${count}). Pilih satu bab saja.`
+    : '';
+  const pickChapter = (k) => { const c = outline[k]; setChosen(k); setFrom(String(c.page)); setTo(String(c.end)); };
+  const numInput = (v, set) => { set(v.replace(/\D/g, '').slice(0, 5)); setChosen(null); };
+
+  return (
+    <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/6 p-4 md:p-5 mb-5">
+      <div className="text-sm text-ink font-medium break-all">{name}</div>
+      <p className="text-xs text-ink-muted mt-1 leading-relaxed">
+        PDF ini {numPages} halaman. Pilih bagian yang mau dipelajari{numPages > PDF_MAX_PAGES ? ` (maksimal ${PDF_MAX_PAGES} halaman sekali simpan)` : ''}.
+        Satu bab per materi biasanya paling pas: ringkasan, kuis, dan flashcard-nya lebih lengkap.
+      </p>
+
+      {outline.length > 0 && (
+        <div className="mt-3">
+          <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1.5">Daftar isi PDF</div>
+          <div className="max-h-64 overflow-y-auto rounded-lg border border-white/8 divide-y divide-white/6">
+            {outline.map((c, k) => {
+              const n = c.end - c.page + 1;
+              return (
+                <button key={k} type="button" onClick={() => pickChapter(k)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 text-left min-h-[44px] transition ${chosen === k ? 'bg-emerald-500/15' : 'hover:bg-white/4'} ${c.depth ? 'pl-7' : ''}`}>
+                  <span dir="auto" className={`flex-1 min-w-0 truncate text-sm ${chosen === k ? 'text-emerald-200' : 'text-ink'}`}>{c.title}</span>
+                  <span className={`text-[11px] whitespace-nowrap ${n > PDF_MAX_PAGES ? 'text-amber-300' : 'text-ink-soft'}`}>hlm. {c.page}–{c.end} · {n}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-end gap-2 mt-3 flex-wrap">
+        <label className="flex flex-col text-xs text-ink-muted">Dari halaman
+          <input value={from} onChange={e => numInput(e.target.value, setFrom)} inputMode="numeric" aria-label="Dari halaman"
+            className={`${aiInputClass} !w-24 mt-1`} style={{ fontSize: 16 }}/>
+        </label>
+        <label className="flex flex-col text-xs text-ink-muted">Sampai halaman
+          <input value={to} onChange={e => numInput(e.target.value, setTo)} inputMode="numeric" aria-label="Sampai halaman"
+            className={`${aiInputClass} !w-24 mt-1`} style={{ fontSize: 16 }}/>
+        </label>
+      </div>
+      <div className={`text-xs mt-2 min-h-[1rem] ${err ? 'text-amber-300' : 'text-ink-soft'}`} role="status">
+        {err || `${count} halaman akan dibaca.`}
+      </div>
+
+      <div className="flex gap-2 mt-3 flex-wrap">
+        <button type="button" disabled={!!err} onClick={() => onPick({ from: a, to: b, label: chosen != null ? outline[chosen].title : '' })}
+          className="btn btn-primary text-sm px-4 py-2 disabled:opacity-50">
+          Baca hlm. {a || '?'}–{b || '?'}
+        </button>
+        {numPages <= PDF_MAX_PAGES && (
+          <button type="button" onClick={() => onPick({ from: 1, to: numPages, label: '' })} className="btn btn-ghost text-sm px-4 py-2">
+            Semua halaman
+          </button>
+        )}
+        <button type="button" onClick={onSkip} className="text-xs text-ink-muted hover:text-ink underline px-2">Lewati file ini</button>
+      </div>
+    </div>
+  );
+};
+
 const CreateWizard = ({ tier, onCancel }) => {
   const toast = useToast();
   const { profile } = useAuth();
@@ -80,7 +156,10 @@ const CreateWizard = ({ tier, onCancel }) => {
   const [saving, setSaving]   = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [sourceKinds, setSourceKinds] = useState([]);
+  const [rangeAsk, setRangeAsk] = useState(null);   // PDF tebal yang menunggu pilihan halaman
   const cancelRef = useRef(false);
+  // Jeda pemrosesan sampai pengguna memilih halaman; null = file dilewati.
+  const askRange = (info) => new Promise(resolve => setRangeAsk({ ...info, resolve: (v) => { setRangeAsk(null); resolve(v); } }));
   const fileRef = useRef(null);
   const isTrial = tier !== 'pro';
   const MAX_CONTENT = isTrial ? MAX_CONTENT_TRIAL : MAX_CONTENT_PRO;
@@ -180,9 +259,21 @@ const CreateWizard = ({ tier, onCancel }) => {
 
     if (kind === 'pdf') {
       if (file.size > 30 * 1024 * 1024) fail('PDF terlalu besar (maks 30MB).');
-      patchItem(i, { note: 'Membaca teks PDF…' });
-      const { pdf, numPages, pages } = await window.readPdfPages(file, 120);
-      if (!pages) fail(`PDF punya ${numPages} halaman — maksimal 120.`);
+      patchItem(i, { note: 'Membuka PDF…' });
+      const pdf = await window.openPdf(file);
+      const numPages = pdf.numPages;
+      let from = 1, to = numPages, label = '';
+      if (numPages > PDF_ASK_PAGES) {
+        patchItem(i, { note: `${numPages} halaman — pilih bagian yang mau dipelajari` });
+        const outline = await window.readPdfOutline(pdf);
+        const choice = await askRange({ name: file.name, numPages, outline });
+        if (!choice) fail('Dilewati, tidak ada halaman yang dipilih.');
+        ({ from, to, label } = choice);
+      }
+      const ranged = from > 1 || to < numPages;
+      const pages = await window.readPdfRange(pdf, from, to,
+        (k, total) => { if (k % 10 === 0 || k === total) patchItem(i, { note: `Membaca teks PDF… ${k}/${total} halaman`, progress: k / total }); });
+      patchItem(i, { progress: null });
       const texts = {};
       pages.forEach(p => { if (p.status === 'ok' || p.status === 'fixed') texts[p.n] = p.text; });
       const fixedCount = pages.filter(p => p.status === 'fixed').length;
@@ -193,11 +284,15 @@ const CreateWizard = ({ tier, onCancel }) => {
       const text = Object.keys(texts).map(Number).sort((a, b) => a - b).map(n => texts[n]).join('\n\n');
       if (!text.trim() && r.pending.length) fail(r.reason.charAt(0).toUpperCase() + r.reason.slice(1) + '.', r.upgrade);
       const notes = [];
+      if (ranged) notes.push(`hlm. ${from}–${to} dari ${numPages}`);
       if (fixedCount) notes.push(`teks Arab ${fixedCount} halaman dirapikan`);
       if (Object.keys(r.texts).length) notes.push(`${Object.keys(r.texts).length} halaman scan dibaca AI`);
       if (r.truncated.length) notes.push(`hal. ${pageRanges(r.truncated)} mungkin terpotong — cek di langkah berikutnya`);
       if (r.upgrade) setUpgradeMsg(r.reason);
-      return { text, notes, pending: r.pending.length ? { pdf, pages: r.pending, reason: r.reason } : null };
+      // Judul bawaan: nama bab yang dipilih dari daftar isi, atau nama file + rentang halaman.
+      const base = file.name.replace(/\.[^.]+$/, '');
+      const suggest = label || (ranged ? `${base} (hlm. ${from}–${to})` : '');
+      return { text, notes, title: suggest, pending: r.pending.length ? { pdf, pages: r.pending, reason: r.reason } : null };
     }
 
     if (kind === 'docx') { patchItem(i, { note: 'Membaca dokumen Word…' }); return window.extractDocx(file); }
@@ -263,7 +358,7 @@ const CreateWizard = ({ tier, onCancel }) => {
         const res = typeof out === 'string' || !out ? { text: out || '' } : out;
         const text = (res.text || '').trim();
         if (!text) throw new Error('Tidak ada teks yang bisa dibaca dari file ini.');
-        results.push({ name: list[i].file.name, kind: list[i].kind, text });
+        results.push({ name: list[i].file.name, kind: list[i].kind, text, title: res.title || '' });
         const note = [`${text.length.toLocaleString('id-ID')} karakter`, ...(res.notes || [])].join(' · ');
         patchItem(i, { status: res.pending ? 'partial' : 'done', note, progress: null, pending: res.pending || null });
       } catch (err) {
@@ -277,7 +372,7 @@ const CreateWizard = ({ tier, onCancel }) => {
       ? results[0].text
       : results.map(r => `— ${r.name} —\n${r.text}`).join('\n\n');
     setContent(prev => prev ? `${prev}\n\n${combined}` : combined);
-    if (!title) setTitle(results[0].name.replace(/\.[^.]+$/, '').slice(0, 120));
+    if (!title) setTitle((results[0].title || results[0].name.replace(/\.[^.]+$/, '')).slice(0, 120));
     setSourceKinds(prev => [...new Set([...prev, ...results.map(r => r.kind)])]);
   };
 
@@ -380,14 +475,15 @@ const CreateWizard = ({ tier, onCancel }) => {
 
       {step === 'process' && (
         <>
-          <Header n={2} label={processing ? 'Membaca materi…' : 'Selesai dibaca'}/>
+          <Header n={2} label={rangeAsk ? 'Pilih halaman' : processing ? 'Membaca materi…' : 'Selesai dibaca'}/>
+          {rangeAsk && <PdfRangePicker key={rangeAsk.name} info={rangeAsk} onPick={rangeAsk.resolve} onSkip={() => rangeAsk.resolve(null)}/>}
           <div className="rounded-xl bg-white/3 border border-white/8 px-4 mb-5">
             {items.map((it, i) => <FileRow key={i} item={it} busy={processing} onContinue={it.pending ? () => continueFile(i) : null}/>)}
           </div>
           {upgradeMsg && <div className="mb-4"><UpgradeCard compact title="Sebagian file butuh langganan" message={upgradeMsg}/></div>}
           <div className="flex justify-end gap-2 flex-wrap">
             {processing ? (
-              <button onClick={() => { cancelRef.current = true; }} className="btn btn-ghost text-sm px-4 py-2">Hentikan</button>
+              <button onClick={() => { cancelRef.current = true; rangeAsk?.resolve(null); }} className="btn btn-ghost text-sm px-4 py-2">Hentikan</button>
             ) : (
               <>
                 <button onClick={() => setStep('pick')} className="btn btn-ghost text-sm px-4 py-2">Tambah file lain</button>

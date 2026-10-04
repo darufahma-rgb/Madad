@@ -129,13 +129,51 @@ const pdfPageText = async (pdf, n) => {
   return cleanPdfText(joinPdfItems(textContent.items));
 };
 
+// Halaman from..to (1-based, inklusif) beserta statusnya.
+const readPdfRange = async (pdf, from, to, onPage) => {
+  const pages = [];
+  for (let n = from; n <= to; n++) {
+    pages.push({ n, ...(await pdfPageText(pdf, n)) });
+    onPage?.(n - from + 1, to - from + 1);
+  }
+  return pages;
+};
+
 // Semua halaman beserta statusnya; pages === null berarti PDF melebihi maxPages dan tidak diekstrak.
 const readPdfPages = async (file, maxPages = 120) => {
   const pdf = await openPdf(file);
   if (pdf.numPages > maxPages) return { pdf, numPages: pdf.numPages, pages: null };
-  const pages = [];
-  for (let n = 1; n <= pdf.numPages; n++) pages.push({ n, ...(await pdfPageText(pdf, n)) });
-  return { pdf, numPages: pdf.numPages, pages };
+  return { pdf, numPages: pdf.numPages, pages: await readPdfRange(pdf, 1, pdf.numPages) };
+};
+
+/* Daftar isi (bookmark) PDF, dua tingkat teratas: [{ title, page, end, depth }] urut halaman, end = halaman
+   terakhir bagian itu (sebelum bagian berikutnya yang setingkat atau lebih tinggi). Kosong bila PDF tanpa bookmark. */
+const readPdfOutline = async (pdf) => {
+  let outline = null;
+  try { outline = await pdf.getOutline(); } catch { return []; }
+  const out = [];
+  const walk = async (items, depth) => {
+    for (const it of items || []) {
+      if (out.length >= 200) return;
+      let page = null;
+      try {
+        let dest = it.dest;
+        if (typeof dest === 'string') dest = await pdf.getDestination(dest);
+        if (Array.isArray(dest) && dest[0] != null) {
+          page = typeof dest[0] === 'number' ? dest[0] + 1 : (await pdf.getPageIndex(dest[0])) + 1;
+        }
+      } catch {}
+      const title = String(it.title || '').replace(/\s+/g, ' ').trim();
+      if (page && title) out.push({ title: title.slice(0, 120), page, depth });
+      if (depth < 1 && it.items?.length) await walk(it.items, depth + 1);
+    }
+  };
+  await walk(outline, 0);
+  out.sort((a, b) => a.page - b.page || a.depth - b.depth);
+  return out.map((e, k) => {
+    const next = out.slice(k + 1).find(x => x.depth <= e.depth && x.page > e.page);
+    return { ...e, end: next ? next.page - 1 : pdf.numPages };
+  });
 };
 
 // Satu halaman → JPEG untuk dibaca OCR. Lebar ±2000 px supaya harakat kecil di kitab padat tetap terbaca.
@@ -412,7 +450,7 @@ const detectFileKind = (file) => {
 const ACCEPTED_FILE_TYPES = Object.values(FILE_KINDS).flatMap(v => v.exts.map(e => '.' + e)).join(',') + ',image/*,audio/*,video/*';
 
 Object.assign(window, {
-  extractPdfPages, renderPdfPagesAsImages, readPdfPages, renderPdfPage, cleanPdfText, compressImage, fileToBase64,
+  extractPdfPages, renderPdfPagesAsImages, readPdfPages, readPdfRange, readPdfOutline, openPdf, renderPdfPage, cleanPdfText, compressImage, fileToBase64,
   extractDocx, extractPptx, extractXlsx, prepareMediaChunks, recordingToWavBase64,
   detectFileKind, FILE_KINDS, ACCEPTED_FILE_TYPES, MAX_MEDIA_MINUTES,
 });
