@@ -13,6 +13,14 @@ export const CHECKOUT_PLANS = ['library', 'library_ai', 'ai', 'imtihan'];
 // Samakan dengan IMTIHAN_PRICE_IDR di src/layout.jsx.
 export const IMTIHAN_PRICE_IDR = 199000;
 export const IMTIHAN_AI_DAYS = 120;
+/* Event promo: harga Paket Imtihan selama event (waktu Kairo, UTC+3 saat itu). Di luar rentang ini harga
+   normal berlaku otomatis. Samakan dengan IMTIHAN_PROMO di src/layout.jsx. */
+export const IMTIHAN_PROMO = {
+  name: 'Pekan Persiapan Imtihan', price: 149000,
+  startsAt: '2026-10-05T00:00:00+03:00', endsAt: '2026-10-18T23:59:59+03:00',
+};
+export const imtihanPrice = (now = Date.now()) =>
+  now >= Date.parse(IMTIHAN_PROMO.startsAt) && now <= Date.parse(IMTIHAN_PROMO.endsAt) ? IMTIHAN_PROMO.price : IMTIHAN_PRICE_IDR;
 
 const LIFETIME_EXPIRY = '2099-12-31';
 const CHECKOUT_TTL_MS = 24 * 3600 * 1000;
@@ -84,7 +92,7 @@ export async function getPrices() {
 }
 
 const splitAmount = (plan, prices) => (plan === 'imtihan'
-  ? { library_amount: prices.library, ai_amount: IMTIHAN_PRICE_IDR - prices.library }
+  ? { library_amount: prices.library, ai_amount: imtihanPrice() - prices.library }
   : {
     library_amount: plan === 'ai' ? 0 : prices.library,
     ai_amount: plan === 'library' ? 0 : prices.ai,

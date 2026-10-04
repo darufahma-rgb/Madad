@@ -9,6 +9,7 @@ const MAX_RECIPIENTS = 5000;
 const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;
 
 export const AUDIENCES = {
+  no_ai:      'Belum berlangganan AI (gratis + Library tanpa AI)',
   all:        'Semua member',
   free:       'Akun gratis',
   library:    'Pelanggan Library',
@@ -66,18 +67,20 @@ const fetchMembersForEmail = async () => {
   return [];
 };
 
-export const buildAudience = async (audience) => {
+// optional: daftar berhenti berlangganan boleh belum ada (ekspor CSV untuk dikirim sendiri tidak butuh tabel email).
+export const buildAudience = async (audience, { optoutsOptional = false } = {}) => {
   if (!AUDIENCES[audience]) return { error: 'Penerima tidak valid' };
   const [members, subs, optouts] = await Promise.all([
     fetchMembersForEmail(),
     fetchAll(`ai_subscriptions?select=member_code,expires_at&status=eq.active`),
     fetchAll('email_optouts?select=email'),
   ]);
-  if (optouts === null) return { error: 'Tabel email belum ada. Jalankan migrations/email_broadcast.sql di Supabase.' };
+  if (optouts === null && !optoutsOptional) return { error: 'Tabel email belum ada. Jalankan migrations/email_broadcast.sql di Supabase.' };
   const now = Date.now();
   const aiActive = new Set((subs || []).filter(s => !s.expires_at || Date.parse(s.expires_at) > now).map(s => s.member_code));
-  const out = new Set(optouts.map(o => String(o.email).toLowerCase()));
+  const out = new Set((optouts || []).map(o => String(o.email).toLowerCase()));
   const pick = {
+    no_ai: (m) => !aiActive.has(m.code),
     all: () => true,
     free: (m) => m.tier === 'free' && !aiActive.has(m.code),
     library: (m) => (m.tier || 'library') === 'library',
@@ -92,7 +95,7 @@ export const buildAudience = async (audience) => {
     if (!EMAIL_RE.test(email) || m.status !== 'active' || !pick(m) || seen.has(email)) continue;
     seen.add(email);
     if (out.has(email)) { optedOut++; continue; }
-    list.push({ email, name: (m.name || '').trim().slice(0, 80), member_code: m.code });
+    list.push({ email, name: (m.name || '').trim().slice(0, 80), member_code: m.code, tier: m.tier || 'library', tried_ai: !!m.ai_trial_set_id });
   }
   return { list: list.slice(0, MAX_RECIPIENTS), optedOut, capped: list.length > MAX_RECIPIENTS };
 };
@@ -166,6 +169,12 @@ const validCampaign = (c) => {
 export async function handleEmailAdmin(action, p) {
   if (action === 'email-status') {
     return { ok: true, data: { configured: emailConfigured(), from: process.env.EMAIL_FROM || null, audiences: AUDIENCES } };
+  }
+  // Daftar email untuk dikirim sendiri (Gmail/WhatsApp), tanpa Resend. Yang sudah berhenti berlangganan tidak ikut.
+  if (action === 'email-export') {
+    const a = await buildAudience(p.audience, { optoutsOptional: true });
+    if (a.error) return { ok: false, error: a.error };
+    return { ok: true, data: { rows: a.list.map(r => ({ name: r.name, email: r.email, tier: r.tier, tried_ai: r.tried_ai })), optedOut: a.optedOut, capped: a.capped } };
   }
   if (action === 'email-audience') {
     const a = await buildAudience(p.audience);

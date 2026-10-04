@@ -277,12 +277,14 @@ const App = () => {
       {useShell ? (
         <div data-screen-label={routeLabel}>
           <AppShell title={routeLabel === "Beranda Member" ? "Beranda" : routeLabel}>
+            <EventBanner/>
             <ErrorBoundary>{page}</ErrorBoundary>
           </AppShell>
         </div>
       ) : (
         <div data-screen-label={routeLabel} className="min-h-screen flex flex-col">
           <Navbar onOpenLogin={openLogin} onOpenPayment={() => openJoin("library")}/>
+          <EventBanner/>
           <main className={"flex-1" + (isMember ? " has-tabbar" : "")}>
             <ErrorBoundary>{page}</ErrorBoundary>
           </main>

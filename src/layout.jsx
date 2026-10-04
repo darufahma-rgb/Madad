@@ -579,6 +579,12 @@ const LIBRARY_PRICE_ORIGINAL = null;
 // Paket Imtihan: Library selamanya + AI Partner 1 termin (120 hari). Sama dengan api/_lib/payments.js.
 const IMTIHAN_PRICE_IDR = 199000;
 const IMTIHAN_AI_DAYS = 120;
+// Event promo Paket Imtihan (waktu Kairo). Sama dengan IMTIHAN_PROMO di api/_lib/payments.js — server yang menentukan harga tagihan.
+const IMTIHAN_PROMO = {
+  name: "Pekan Persiapan Imtihan", price: 149000,
+  startsAt: "2026-10-05T00:00:00+03:00", endsAt: "2026-10-18T23:59:59+03:00", endLabel: "18 Oktober",
+};
+const imtihanPromoActive = (now = Date.now()) => now >= Date.parse(IMTIHAN_PROMO.startsAt) && now <= Date.parse(IMTIHAN_PROMO.endsAt);
 // Angka katalog yang dipakai di semua copy. Sesuaikan kalau data maddah/prompt bertambah
 // (61 maddah S1 di maddah-data + 27 maddah Ma'had di mahad-data; 1.201 prompt per September 2026).
 const CATALOG = { maddah: 88, maddahS1: 61, maddahMahad: 27, prompts: "1.200+" };
@@ -610,14 +616,53 @@ const aiBundle = (settings) => {
 /* Paket Imtihan dibanding beli terpisah (Library + 4 × AI 30 hari). Harga AI bulanan dari Settings dipakai untuk
    perbandingan; kalau belum diisi, paket tetap bisa dibeli tanpa angka hemat. */
 const imtihanBundle = (settings) => {
+  const promo = imtihanPromoActive();
+  const total = promo ? IMTIHAN_PROMO.price : IMTIHAN_PRICE_IDR;
   const ai = settings?.aiPriceMonthly || null;
   const separate = ai ? LIBRARY_PRICE_IDR + ai * Math.ceil(IMTIHAN_AI_DAYS / 30) : null;
-  const saving = separate && separate > IMTIHAN_PRICE_IDR ? separate - IMTIHAN_PRICE_IDR : null;
+  const saving = separate && separate > total ? separate - total : null;
   return {
-    total: IMTIHAN_PRICE_IDR, aiPart: IMTIHAN_PRICE_IDR - LIBRARY_PRICE_IDR, ai, separate, saving,
+    total, aiPart: total - LIBRARY_PRICE_IDR, ai, separate, saving,
     savingPct: saving ? Math.round((saving / separate) * 100) : null,
-    perDay: Math.ceil((IMTIHAN_PRICE_IDR - LIBRARY_PRICE_IDR) / IMTIHAN_AI_DAYS / 100) * 100,
+    perDay: Math.ceil((total - LIBRARY_PRICE_IDR) / IMTIHAN_AI_DAYS / 100) * 100,
+    promo: promo ? { normal: IMTIHAN_PRICE_IDR, name: IMTIHAN_PROMO.name, endLabel: IMTIHAN_PROMO.endLabel } : null,
   };
+};
+
+// Sisa waktu event, diperbarui tiap menit: "3 hari 4 jam" / "5 jam 12 menit".
+const usePromoCountdown = () => {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 60000); return () => clearInterval(t); }, []);
+  const left = Date.parse(IMTIHAN_PROMO.endsAt) - now;
+  if (!imtihanPromoActive(now) || left <= 0) return null;
+  const d = Math.floor(left / 86400000), h = Math.floor((left % 86400000) / 3600000), m = Math.floor((left % 3600000) / 60000);
+  return d > 0 ? `${d} hari ${h} jam` : `${h} jam ${m} menit`;
+};
+
+/* Banner event untuk pengunjung & akun gratis (member Library tidak bisa membeli Paket Imtihan). */
+const EventBanner = () => {
+  const { session, isFree } = useAuth();
+  const path = useRoute();
+  const left = usePromoCountdown();
+  const [hidden, setHidden] = useState(() => { try { return sessionStorage.getItem("talqeeh_event_hide") === IMTIHAN_PROMO.endsAt; } catch { return false; } });
+  if (!left || hidden || (session && !isFree) || /^\/(admin|seminar|gabung)/.test(path)) return null;
+  const close = () => { setHidden(true); try { sessionStorage.setItem("talqeeh_event_hide", IMTIHAN_PROMO.endsAt); } catch {} };
+  return (
+    <div className="relative z-[5] border-b border-emerald-500/25" style={{ background: "linear-gradient(90deg, rgba(62,207,142,0.16), rgba(201,168,106,0.14))" }}>
+      <div className="container-x py-2.5 flex items-center gap-2.5 md:gap-3 text-[12.5px] md:text-[13px]">
+        <span className="hidden sm:inline px-2 py-0.5 rounded-full bg-emerald-500 text-black text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Event</span>
+        <span className="text-ink flex-1 min-w-0 leading-snug">
+          <b>{IMTIHAN_PROMO.name}</b> · Paket Imtihan <span className="line-through text-ink-soft whitespace-nowrap">{formatRupiah(IMTIHAN_PRICE_IDR)}</span>{" "}
+          <b className="text-emerald-300 whitespace-nowrap">{formatRupiah(IMTIHAN_PROMO.price)}</b> · berakhir dalam <b className="whitespace-nowrap">{left}</b>
+        </span>
+        <button onClick={() => { window.logFunnel?.("view_join", "event_banner"); navigate("/gabung?plan=imtihan"); }}
+          className="btn btn-primary text-xs px-3 py-1.5 flex-shrink-0 whitespace-nowrap">Ambil promo</button>
+        <button onClick={close} aria-label="Tutup banner event" className="w-7 h-7 -mr-1 rounded-lg text-ink-muted hover:text-ink hover:bg-white/5 flex items-center justify-center flex-shrink-0">
+          <Icon name="x" className="w-3.5 h-3.5"/>
+        </button>
+      </div>
+    </div>
+  );
 };
 
 // Manfaat AI Study Partner — hanya fitur yang memang ada di aplikasi.
@@ -664,8 +709,14 @@ const ImtihanBreakdown = ({ bundle, className = "" }) => bundle ? (
     </div>
     <div className="flex items-start justify-between gap-3 mt-2 pt-2 border-t border-white/10 font-semibold">
       <span className="text-ink">Total sekali bayar</span>
-      <span className="text-emerald-300 tabular-nums flex-shrink-0">{formatRupiah(bundle.total)}</span>
+      <span className="text-emerald-300 tabular-nums flex-shrink-0">
+        {bundle.promo && <span className="line-through text-ink-soft font-normal mr-1.5">{formatRupiah(bundle.promo.normal)}</span>}
+        {formatRupiah(bundle.total)}
+      </span>
     </div>
+    {bundle.promo && (
+      <div className="text-[12px] text-gold-300 mt-1.5">Harga {bundle.promo.name} — sampai {bundle.promo.endLabel}</div>
+    )}
     {bundle.saving && (
       <div className="text-[12px] text-emerald-300/90 mt-1.5">
         Beli terpisah {formatRupiah(bundle.separate)} → hemat {formatRupiah(bundle.saving)} ({bundle.savingPct}%)
@@ -1337,7 +1388,7 @@ Object.assign(window, {
   FreeMaddahGate, isMaddahLocked, canOpenMaddahFree, FREE_SAMPLE_MADDAH,
   GoogleButton, ErrorBox, useGoogleSignIn, formatPinInput, ACTIVATION_ERRORS, StepList,
   PLAN_LABELS, DEFAULT_ADMIN_WA, PAYMENT_WAIT_LIMIT_MS, aiBundle, AI_BUNDLE_FEATURES, AiBundleBreakdown,
-  imtihanBundle, ImtihanBreakdown, IMTIHAN_PRICE_IDR, IMTIHAN_AI_DAYS,
+  imtihanBundle, ImtihanBreakdown, IMTIHAN_PRICE_IDR, IMTIHAN_AI_DAYS, IMTIHAN_PROMO, imtihanPromoActive, EventBanner,
   useCheckout, CheckoutWaiting, CheckoutWatcher, CheckoutPayModal, readPendingCheckout, savePendingCheckout, formatRupiah,
   LIBRARY_PRICE, LIBRARY_PRICE_IDR, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
   scrollToLandingSection, scrollToPaket,

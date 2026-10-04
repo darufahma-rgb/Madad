@@ -71,7 +71,7 @@ const FAQS = [
   ['Apa bedanya dengan pakai ChatGPT langsung?',
     'Kamu tidak mulai dari nol. Talqeeh sudah menyiapkan prompt untuk tiap maddah muqarrar Azhar, rekomendasi AI yang paling cocok, dan bank soal imtihan. AI Partner juga dibuat khusus untuk teks Arab: i\'rab, harakat, dan ringkasan gaya kitab.'],
   ['Apa itu Paket Imtihan?',
-    `Library selamanya + AI Study Partner ${IMTIHAN_AI_DAYS} hari (satu termin penuh) dalam sekali bayar ${formatRupiah(IMTIHAN_PRICE_IDR)}. Lebih hemat daripada beli Library lalu memperpanjang AI tiap 30 hari, dan cukup untuk menemani dari awal kuliah sampai imtihan.`],
+    `Library selamanya + AI Study Partner ${IMTIHAN_AI_DAYS} hari (satu termin penuh) dalam sekali bayar — harga normal ${formatRupiah(IMTIHAN_PRICE_IDR)}, lebih murah selama event promo. Lebih hemat daripada beli Library lalu memperpanjang AI tiap 30 hari, dan cukup untuk menemani dari awal kuliah sampai imtihan.`],
   ['Library bayar sekali atau bulanan?',
     `Sekali bayar ${LIBRARY_PRICE}, aksesnya berlaku selamanya — termasuk semua update fitur Library ke depan. AI Partner opsional: ambil Paket Imtihan untuk satu termin, atau per 30 hari.`],
   ['Boleh coba gratis dulu?',
@@ -198,7 +198,7 @@ const GabungPage = () => {
   // Library + AI tanpa harga AI → hanya Library yang bisa dibayar sekarang.
   // Paket Imtihan berharga tetap (tidak bergantung harga AI bulanan).
   const payPlan      = plan === 'imtihan' ? 'imtihan' : (plan === 'library_ai' && aiPrice ? 'library_ai' : 'library');
-  const payTotal     = payPlan === 'imtihan' ? IMTIHAN_PRICE_IDR : LIBRARY_PRICE_IDR + (payPlan === 'library_ai' ? aiPrice : 0);
+  const payTotal     = payPlan === 'imtihan' ? imtihan.total : LIBRARY_PRICE_IDR + (payPlan === 'library_ai' ? aiPrice : 0);
 
   // Tagihan Library/Library+AI yang sedang ditunggu (juga dilanjutkan setelah kembali dari Mayar).
   const checkout = useCheckout({
@@ -370,7 +370,8 @@ const GabungPage = () => {
           ) : (
             <>
               {/* Paket utama di tengah: satu termin penuh sampai imtihan, sekali bayar. */}
-              <PlanCard className="order-first md:order-none" color={EMERALD} icon="sparkles" recommended badge="Paling hemat untuk imtihan" title="Paket Imtihan" tagline="Library + AI, satu termin penuh"
+              <PlanCard className="order-first md:order-none" color={EMERALD} icon="sparkles" recommended badge={imtihan.promo ? `Promo ${imtihan.promo.name}` : "Paling hemat untuk imtihan"} title="Paket Imtihan" tagline="Library + AI, satu termin penuh"
+                strike={imtihan.promo ? formatRupiah(imtihan.promo.normal) : undefined} saving={imtihan.promo ? `Sampai ${imtihan.promo.endLabel}` : undefined}
                 price={formatRupiah(imtihan.total)} priceNote="sekali bayar"
                 sub={`Library selamanya + AI ${IMTIHAN_AI_DAYS} hari`}
                 extra={<div className="mb-5 -mt-2"><ImtihanBreakdown bundle={imtihan}/></div>}

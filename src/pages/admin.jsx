@@ -202,6 +202,7 @@ const AdminPage = () => {
               { id: "bank-soal",  label: "Bank Soal",         icon: "fileText" },
               { id: "ai-subs",    label: "Langganan & Bayar", icon: "sparkles" },
               { id: "seminar",    label: "Akses Seminar",     icon: "book" },
+              { id: "email",      label: "Email & Event",     icon: "messageSquare" },
               { id: "ai-eval",    label: "Evaluasi AI",       icon: "target" },
               { id: "prompt-quality", label: "Mutu Prompt",   icon: "check" },
               { id: "settings",   label: "Settings",          icon: "shield" },
@@ -230,6 +231,7 @@ const AdminPage = () => {
         {tab === "bank-soal"  && <AdminBankSoal/>}
         {tab === "ai-subs"    && <AdminSubscriptions/>}
         {tab === "seminar"    && <AdminSeminar/>}
+        {tab === "email"      && <AdminEmail/>}
         {tab === "ai-eval"    && <AdminEval/>}
         {tab === "prompt-quality" && <AdminPromptQuality/>}
         {tab === "settings"   && <AdminSettings/>}

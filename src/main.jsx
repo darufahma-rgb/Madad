@@ -56,6 +56,7 @@ import './pages/seminar-guide.jsx';
 import './pages/admin.jsx';
 import './pages/admin-eval.jsx';
 import './pages/admin-seminar.jsx';
+import './pages/admin-email.jsx';
 import './pages/admin-prompt-quality.jsx';
 import './pages/muqaranah.jsx';
 import './pages/muqaranah-detail.jsx';
