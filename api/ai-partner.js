@@ -213,9 +213,10 @@ const upgradeRequired = (res, feature, message) =>
   });
 
 // Materi yang lebih panjang dari satu permintaan diwakili contoh merata dari seluruh bab.
-const materialMessage = (set, limit = SINGLE_PASS_CHARS) => {
+// round: putaran "buat ulang" — materi panjang dicuplik dari bagian yang berbeda tiap putaran (lihat spreadSample).
+const materialMessage = (set, limit = SINGLE_PASS_CHARS, round = 0) => {
   const long = set.content.length > limit;
-  const body = long ? spreadSample(set.content, limit) : set.content;
+  const body = long ? spreadSample(set.content, limit, undefined, round) : set.content;
   const note = long ? '\n(Materi panjang: berikut contoh merata dari seluruh materi; bagian yang dilewati ditandai […]. Sebarkan hasilmu ke semua bagian.)' : '';
   return [{ role: 'user', content: `Judul materi: ${set.title}${note}\n\nMATERI:\n${body}` }];
 };
@@ -585,11 +586,18 @@ async function handleGenerate(ctx, body, res) {
 
   // Flashcard, kuis, mufradat cukup membaca contoh merata ±30rb karakter — teks Arab ±1 token per karakter,
   // jadi ini memangkas biaya input kira-kira setengahnya. Ringkasan, peta konsep, dan soal tahriri membaca penuh.
-  const messages = materialMessage(set, STUDY_KINDS.includes(kind) ? STUDY_SAMPLE_CHARS : SINGLE_PASS_CHARS);
+  // Materi panjang: tiap "buat ulang" membaca cuplikan lain, supaya bab yang belum tersentuh ikut muncul.
+  const limit = STUDY_KINDS.includes(kind) ? STUDY_SAMPLE_CHARS : SINGLE_PASS_CHARS;
+  const rounds = set.progress?.sample_rounds && typeof set.progress.sample_rounds === 'object' ? set.progress.sample_rounds : {};
+  const round = Math.max(0, parseInt(rounds[kind], 10) || 0);
+  const messages = materialMessage(set, limit, round);
   const learner = learnerContext(body.learner);
   const models = await resolveModels();
   const model = STUDY_KINDS.includes(kind) ? models.study : models.default;
-  const progress = mergeProgress(set, { [kind]: true, models: withModel(set, kind, model) });
+  const progress = mergeProgress(set, {
+    [kind]: true, models: withModel(set, kind, model),
+    ...(set.content.length > limit ? { sample_rounds: { ...rounds, [kind]: round + 1 } } : {}),
+  });
 
   if (kind === 'summary') {
     const lang = SUMMARY_LANGS.includes(body.lang) ? body.lang : 'id';

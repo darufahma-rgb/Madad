@@ -35,15 +35,23 @@ export const splitChunks = (text, maxChars) => {
   return chunks;
 };
 
-// Contoh merata dari awal sampai akhir materi (untuk kuis, flashcard, mufradat, peta konsep, soal tahriri).
-export const spreadSample = (text, limit, segment = 6000) => {
+/* Contoh merata dari awal sampai akhir materi (untuk kuis, flashcard, mufradat, peta konsep, soal tahriri).
+   Materi dibagi jadi `count` kelompok berurutan dan dari tiap kelompok diambil satu potongan. round = berapa kali
+   hasil ini sudah dibuat: tiap putaran mengambil potongan berikutnya di setiap kelompok, jadi "buat ulang"
+   membaca bagian lain materi dan setelah beberapa putaran seluruh materi pernah terbaca. round 0 tetap. */
+export const spreadSample = (text, limit, segment = 6000, round = 0) => {
   if (!text || text.length <= limit) return text;
   const segs = splitChunks(text, segment);
   const count = Math.max(1, Math.floor(limit / segment));
   if (segs.length <= count) return segs.join('\n\n');
+  const r = Math.max(0, Math.floor(Number(round) || 0));
   const picked = [];
-  for (let i = 0; i < count; i++) picked.push(Math.round((i * (segs.length - 1)) / (count - 1 || 1)));
-  return [...new Set(picked)].map(i => segs[i]).join('\n\n[…]\n\n');
+  for (let i = 0; i < count; i++) {
+    const start = Math.floor((i * segs.length) / count);
+    const end = Math.floor(((i + 1) * segs.length) / count);
+    picked.push(start + (r % (end - start)));
+  }
+  return picked.map(i => segs[i]).join('\n\n[…]\n\n');
 };
 
 // Potongan materi yang paling relevan dengan pertanyaan (skor kata yang sama, diboboti kelangkaan kata).

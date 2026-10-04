@@ -6,8 +6,20 @@ const DEFAULT_TRANSCRIBE_MODEL = 'google/gemini-2.5-flash';
 export const transcribeModel = () => process.env.AI_TRANSCRIBE_MODEL || DEFAULT_TRANSCRIBE_MODEL;
 export const activeModel = () => process.env.AI_PARTNER_MODEL || DEFAULT_MODEL;
 
-// Cadangan otomatis bila model pilihan gagal di OpenRouter (model mati, ditolak, kehabisan kapasitas).
-const FALLBACK_MODEL = 'anthropic/claude-sonnet-4.6';
+/* Cadangan otomatis bila model pilihan gagal di OpenRouter (model mati, ditolak, kehabisan kapasitas), dari vendor
+   lain dan di kelas harga yang sama. Dulu semua tugas jatuh ke Sonnet 4.6 ($3/$15 per 1 juta token): ringkasan
+   materi panjang (±57rb token) yang biasanya di Gemini Flash jadi ±10× lebih mahal tanpa ketahuan.
+   - Claude Sonnet/Opus (i'rab, penilaian) → Sonnet 4.6: ketelitian tetap diutamakan, inputnya pendek.
+   - Model hemat (Gemini, dll.) → Haiku 4.5; Haiku sendiri → Gemini 2.5 Flash. */
+const PREMIUM_FALLBACK = 'anthropic/claude-sonnet-4.6';
+const ECONOMY_FALLBACK = 'anthropic/claude-haiku-4.5';
+const sameModel = (a, b) => String(a).replace(/(\d)-(\d)/g, '$1.$2') === String(b).replace(/(\d)-(\d)/g, '$1.$2');
+export const fallbackFor = (modelId) => {
+  const id = String(modelId || '');
+  if (/^anthropic\/claude-(sonnet|opus|fable)/.test(id)) return sameModel(id, PREMIUM_FALLBACK) ? ECONOMY_FALLBACK : PREMIUM_FALLBACK;
+  if (/^anthropic\/claude-haiku/.test(id)) return 'google/gemini-2.5-flash';
+  return ECONOMY_FALLBACK;
+};
 
 /* Sebagian model baru (mis. Claude Sonnet 5, GPT-5) menolak parameter `temperature`. Daftar parameter yang
    diterima tiap model dibaca dari OpenRouter (disimpan 6 jam); kalau gagal dibaca, pakai daftar cadangan. */
@@ -51,7 +63,8 @@ const isReasoningModel = async (modelId) => {
 // angka (bukan effort bebas) supaya waktu respons tetap di bawah batas 60 detik Vercel.
 const buildBody = async ({ modelId, maxTokens, temperature, messages, stream, thinking = 0 }) => {
   const hasAudio = messages.some(m => Array.isArray(m.content) && m.content.some(p => p?.type === 'input_audio'));
-  const fallback = !hasAudio && modelId !== FALLBACK_MODEL && modelId.replace(/(\d)-(\d)/g, '$1.$2') !== FALLBACK_MODEL;
+  const backup = fallbackFor(modelId);
+  const fallback = !hasAudio && !sameModel(modelId, backup);
   const reasoning = await isReasoningModel(modelId);
   // Gemini 2.5 Flash berpikir secara bawaan (dan tetap menerima temperature): matikan supaya jatah token
   // dipakai untuk jawaban. Kalau ditolak, model cadangan tetap menjawab.
@@ -59,7 +72,7 @@ const buildBody = async ({ modelId, maxTokens, temperature, messages, stream, th
   const geminiThinking = gemini && thinking > 0;
   return {
     model: modelId,
-    ...(fallback ? { models: [modelId, FALLBACK_MODEL] } : {}),
+    ...(fallback ? { models: [modelId, backup] } : {}),
     // Model berpikir: berpikir singkat saja (hemat & cepat), jatah token ditambah supaya jawabannya tetap utuh,
     // dan teks berpikirnya tidak dikirim balik.
     max_tokens: reasoning && thinking > 0 ? maxTokens + thinking
@@ -67,7 +80,8 @@ const buildBody = async ({ modelId, maxTokens, temperature, messages, stream, th
       : geminiThinking ? maxTokens + thinking : maxTokens,
     ...(reasoning ? { reasoning: thinking > 0 ? { max_tokens: thinking, exclude: true } : { effort: 'low', exclude: true } } : {}),
     ...(gemini ? { reasoning: geminiThinking ? { max_tokens: thinking, exclude: true } : { enabled: false } } : {}),
-    ...((await acceptsTemperature(modelId)) ? { temperature } : {}),
+    // Gemini yang sedang berpikir: temperature tidak dikirim (Claude cadangan menolak temperature bersama mode berpikir).
+    ...(!geminiThinking && (await acceptsTemperature(modelId)) ? { temperature } : {}),
     ...(stream ? { stream: true } : {}),
     messages,
   };
@@ -125,7 +139,15 @@ export const requestAI = async ({ system, messages, maxTokens = 2000, temperatur
   }
   const truncated = choice.finish_reason === 'length' || choice.native_finish_reason === 'max_tokens';
   // data.model = model yang benar-benar menjawab (bisa model cadangan).
+  logFallback(modelId, data.model);
   return { text, truncated, model: data.model || modelId };
+};
+
+// Catat di log Vercel bila model cadangan yang menjawab (OpenRouter bisa menambah akhiran versi pada nama model).
+const logFallback = (asked, used) => {
+  if (used && !String(used).startsWith(String(asked).replace(/(\d)-(\d)/g, '$1.$2')) && !String(used).startsWith(String(asked))) {
+    console.warn('[ai] model cadangan dipakai:', asked, '→', used);
+  }
 };
 
 export const callAI = async (opts) => (await requestAI(opts)).text;
@@ -197,6 +219,7 @@ export const streamAI = async ({ system, messages, maxTokens = 2000, temperature
       if (!timedOut) throw err;
     }
     if (!text) throw new Error(timedOut ? 'AI terlalu lama merespons' : 'AI tidak mengembalikan hasil');
+    logFallback(modelId, usedModel);
     return { text, truncated: truncated || timedOut, timedOut, model: usedModel };
   } finally {
     if (timer) clearTimeout(timer);
