@@ -130,20 +130,18 @@ const SlideBody = ({ slide, goChapter }) => {
         </Item>
         <Item i={2}><p className="text-ink-muted text-[clamp(1.05rem,2vw,1.6rem)] mt-[clamp(1rem,2.4vw,2rem)]">Seminar AIGYPT × Talqeeh</p></Item>
         <Item i={3}>
-          <div className="mt-[clamp(1.2rem,3vw,2.6rem)] pt-[clamp(0.9rem,2vw,1.4rem)] border-t border-white/10 inline-block pr-10">
-            <div className="text-ink font-medium text-[clamp(1rem,1.7vw,1.3rem)]">Daru Fahmaa Muliawan</div>
-            <div className="text-ink-muted text-[clamp(0.8rem,1.3vw,1rem)] mt-0.5">Pendiri Talqeeh dan AIGYPT</div>
+          <div className="mt-[clamp(1.2rem,3vw,2.6rem)] pt-[clamp(0.9rem,2vw,1.4rem)] border-t border-white/10 inline-flex items-center gap-4 pr-10">
+            <img src="/daru-fahmaa.webp" alt="Daru Fahmaa Muliawan" className="shrink-0 rounded-full object-cover object-top border border-gold-500/40 w-[clamp(3rem,5.5vw,4.5rem)] h-[clamp(3rem,5.5vw,4.5rem)]"
+                 onError={(e) => { e.currentTarget.style.display = "none"; }}/>
+            <div>
+              <div className="text-ink font-medium text-[clamp(1rem,1.7vw,1.3rem)]">Daru Fahmaa Muliawan</div>
+              <div className="text-ink-muted text-[clamp(0.8rem,1.3vw,1rem)] mt-0.5">Pendiri Talqeeh dan AIGYPT</div>
+            </div>
           </div>
         </Item>
       </div>
       <Item i={1} className="lg:col-span-5 order-1 lg:order-2 relative mx-auto lg:ml-auto w-[min(46vw,200px)] lg:w-[min(100%,420px,44vh)]">
-        <div className="absolute -inset-6 lg:-inset-10 flex items-center justify-center pointer-events-none select-none" aria-hidden="true">
-          <span className="arabic-display-classical text-gold-500/[0.09] leading-none" dir="rtl" style={{ fontSize: "clamp(8rem,26vw,22rem)" }}>تلقيح</span>
-        </div>
-        <div className="relative aspect-[4/5] rounded-2xl overflow-hidden border border-gold-500/30 bg-night-900">
-          <img src="/daru-fahmaa.webp" alt="Daru Fahmaa Muliawan" className="w-full h-full object-cover object-top"
-               onError={(e) => { e.currentTarget.style.display = "none"; }}/>
-        </div>
+        <img src="/assets/talqeeh-logo.png" alt="Talqeeh" className="relative w-full h-auto object-contain" style={{ mixBlendMode: "screen" }}/>
       </Item>
     </div>
   );
