@@ -53,6 +53,9 @@ export const getAuthUser = async (req) => {
     id:    u.id,
     email: (u.email || '').toLowerCase(),
     name:  u.user_metadata?.full_name || u.user_metadata?.name || '',
+    // Dipakai akses berbasis email (seminar): email hanya dipercaya kalau sudah terverifikasi.
+    emailVerified: !!u.email_confirmed_at,
+    provider: u.app_metadata?.provider || '',
   };
 };
 

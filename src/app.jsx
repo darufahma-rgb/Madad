@@ -59,6 +59,20 @@ const saveJoinPlan = (plan) => {
 const FREE_LOCKED_PATHS = ["/siap-imtihan", "/paths", "/prompt-library", "/tools", "/s2-maddah"];
 const isFreeLocked = (path) => FREE_LOCKED_PATHS.some(p => path === p || path.startsWith(p + "/") || path.startsWith(p + "?"));
 
+// Tujuan setelah login. Halaman yang meminta login (mis. gerbang seminar) menitipkan tujuannya di sessionStorage
+// (berlaku 15 menit); tanpa titipan, pengguna ke dashboard seperti biasa.
+const postLoginPath = () => {
+  try {
+    const raw = sessionStorage.getItem("talqeeh_return_to");
+    if (raw) {
+      sessionStorage.removeItem("talqeeh_return_to");
+      const r = JSON.parse(raw);
+      if (r && typeof r.path === "string" && r.path.startsWith("/") && Date.now() - (r.at || 0) < 15 * 60 * 1000) return r.path;
+    }
+  } catch {}
+  return "/dashboard";
+};
+
 const gabungPath = (plan) => `/gabung${plan ? `?plan=${plan}` : ""}`;
 
 const App = () => {
@@ -101,7 +115,7 @@ const App = () => {
       if (autoFreeStarted.current) return;
       autoFreeStarted.current = true;
       startFreeAccount().then(r => {
-        if (r.ok) { saveJoinPlan(null); navigate("/dashboard"); }
+        if (r.ok) { saveJoinPlan(null); navigate(postLoginPath()); }
         else { autoFreeStarted.current = false; if (!path.startsWith("/gabung")) navigate(gabungPath()); }
       });
     } else if (authStatus === "inactive") {
@@ -130,7 +144,7 @@ const App = () => {
     // 2) Sudah login & sedang di landing murni → dorong ke "rumah"-nya
     //    (jangan ganggu /maddah-publik, /framework, /ethics, /sample — itu memang publik)
     if (session && (path === "/" || path === "")) {
-      navigate("/dashboard");
+      navigate(postLoginPath());
       return;
     }
 
@@ -151,7 +165,7 @@ const App = () => {
       setTimeout(() => navigate(gabungPath(saved)), 50);
       return;
     }
-    setTimeout(() => navigate("/dashboard"), 50);
+    setTimeout(() => navigate(postLoginPath()), 50);
     if (saved === "library_ai") setTimeout(() => setAiPaymentOpen(true), 400);
   };
 

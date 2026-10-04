@@ -27,6 +27,20 @@ const statusOf = (row) => {
 };
 const fmt = (iso) => iso ? new Date(iso).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
 
+const EMAIL_STATUS = {
+  created: { label: "Ditambahkan", cls: "text-emerald-300" },
+  exists: { label: "Sudah terdaftar", cls: "text-ink-muted" },
+  revoked: { label: "Pernah dicabut (pulihkan lewat daftar di bawah)", cls: "text-gold-300" },
+  invalid: { label: "Email tidak valid", cls: "text-rose-600" },
+  error: { label: "Gagal disimpan", cls: "text-rose-600" },
+};
+// baris: "email", "nama, email", atau "email, nama" (dipisah koma, titik koma, atau tab)
+const parseEmailLines = (text) => text.split("\n").map(l => l.trim()).filter(Boolean).map(l => {
+  const parts = l.split(/[,;\t]/).map(x => x.trim()).filter(Boolean);
+  return { email: parts.find(x => x.includes("@")) || "", label: parts.find(x => !x.includes("@")) || "" };
+});
+const emailAnnouncement = () => "Materi seminar Talqeeh dapat dibuka di " + SEMINAR_URL + "\nLogin dengan akun Google yang emailnya Anda berikan kepada panitia. Tidak perlu PIN.";
+
 const copyText = async (text) => { try { await navigator.clipboard.writeText(text); return true; } catch { return false; } };
 
 const downloadCsv = (rows) => {
@@ -40,12 +54,14 @@ const downloadCsv = (rows) => {
 
 const AdminSeminar = () => {
   const [rows, setRows] = useState([]);
-  const [info, setInfo] = useState({ contentInstalled: null, contentUpdatedAt: null });
+  const [info, setInfo] = useState({ contentInstalled: null, contentUpdatedAt: null, emailReady: true });
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [toast, setToast] = useState("");
   const [form, setForm] = useState({ label: "", email: "", note: "", days: "" });
   const [bulk, setBulk] = useState({ text: "", days: "" });
+  const [emails, setEmails] = useState({ text: "", days: "" });
+  const [emailRes, setEmailRes] = useState(null);
   const [issued, setIssued] = useState([]);   // PIN yang baru dibuat (tampil sekali)
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState("");
@@ -53,7 +69,7 @@ const AdminSeminar = () => {
   const flash = (m) => { setToast(m); setTimeout(() => setToast(""), 2600); };
   const load = useCallback(async () => {
     setLoading(true); setErr("");
-    try { const d = await seminarAdminCall("admin-list"); setRows(d.rows || []); setInfo({ contentInstalled: d.contentInstalled, contentUpdatedAt: d.contentUpdatedAt }); }
+    try { const d = await seminarAdminCall("admin-list"); setRows(d.rows || []); setInfo({ contentInstalled: d.contentInstalled, contentUpdatedAt: d.contentUpdatedAt, emailReady: d.emailReady }); }
     catch (e) { setErr(e.message); }
     setLoading(false);
   }, []);
@@ -74,7 +90,14 @@ const AdminSeminar = () => {
     setIssued(withEmail); setBulk({ text: "", days: bulk.days }); await load();
   }); };
 
-  const regenerate = (row) => { if (!window.confirm("Ganti PIN untuk " + row.label + "? PIN lama langsung tidak berlaku.")) return; run(async () => {
+  const addEmails = (e) => { e.preventDefault(); run(async () => {
+    const entries = parseEmailLines(emails.text);
+    if (!entries.length) throw new Error("Isi minimal satu email");
+    const d = await seminarAdminCall("admin-add-emails", { entries, days: emails.days });
+    setEmailRes(d); setEmails({ text: "", days: emails.days }); await load();
+  }); };
+
+  const regenerate = (row) => { if (row.has_pin && !window.confirm("Ganti PIN untuk " + row.label + "? PIN lama langsung tidak berlaku.")) return; run(async () => {
     const d = await seminarAdminCall("admin-regenerate", { id: row.id }); setIssued([{ ...d, email: row.email }]); await load();
   }); };
   const toggleRevoke = (row) => run(async () => { await seminarAdminCall("admin-revoke", { id: row.id, revoke: !row.revoked_at }); flash(row.revoked_at ? "Akses dipulihkan" : "Akses dicabut"); await load(); });
@@ -89,7 +112,7 @@ const AdminSeminar = () => {
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <h2 className="font-display text-2xl font-semibold text-ink">Akses Seminar</h2>
-          <p className="text-sm text-ink-muted mt-1">PIN unik per orang untuk <span className="text-ink">{SEMINAR_URL}</span>. Member berbayar yang login otomatis punya akses tanpa PIN.</p>
+          <p className="text-sm text-ink-muted mt-1">Tiga jalan masuk ke <span className="text-ink">{SEMINAR_URL}</span>: email yang didaftarkan di sini (login Google, tanpa PIN), PIN pribadi, atau member berbayar yang login.</p>
         </div>
         <div className="text-sm text-ink-muted num">{active} aktif dari {rows.length}</div>
       </div>
@@ -97,6 +120,11 @@ const AdminSeminar = () => {
       {info.contentInstalled === false && (
         <div className="rounded-xl border border-rose-600/40 bg-rose-600/10 p-4 text-sm text-ink" role="alert">
           Isi materi belum dipasang di database, jadi peserta akan melihat "Materi belum dipasang". Jalankan <code>exports/seminar-seed.sql</code> di Supabase SQL Editor.
+        </div>
+      )}
+      {info.emailReady === false && (
+        <div className="rounded-xl border border-gold-500/40 bg-gold-500/10 p-4 text-sm text-ink" role="alert">
+          Akses lewat email belum aktif di database. Jalankan <code>migrations/seminar_access_email.sql</code> di Supabase SQL Editor, lalu muat ulang halaman ini.
         </div>
       )}
       {info.contentInstalled && <p className="text-xs text-ink-muted">Materi terpasang, diperbarui {fmt(info.contentUpdatedAt)}.</p>}
@@ -127,11 +155,40 @@ const AdminSeminar = () => {
         </div>
       )}
 
+      <form onSubmit={addEmails} className="card-glass-strong p-5 space-y-3">
+        <div>
+          <h3 className="font-display text-lg font-semibold text-ink">Beri akses lewat email</h3>
+          <p className="text-sm text-ink-muted mt-1">Pemilik email login dengan Google dan langsung masuk tanpa PIN. Email harus sama dengan akun Google yang dipakai. Untuk Gmail, titik dan +tag diabaikan.</p>
+        </div>
+        <div>
+          <label htmlFor="sa-emails" className="block text-sm text-ink mb-1">Satu per baris: email, atau nama dan email dipisah koma</label>
+          <textarea id="sa-emails" rows={6} className={field} value={emails.text} onChange={e => setEmails({ ...emails, text: e.target.value })} placeholder={"ahmad@gmail.com\nSiti Aisyah, siti@email.com"} style={{ fontSize: 16 }}/>
+        </div>
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="max-w-[11rem]"><label htmlFor="sa-edays" className="block text-sm text-ink mb-1">Berlaku (hari)</label><input id="sa-edays" inputMode="numeric" placeholder="kosong = tanpa batas" className={field} value={emails.days} onChange={e => setEmails({ ...emails, days: e.target.value.replace(/\D/g, "") })} style={{ fontSize: 16 }}/></div>
+          <button type="submit" disabled={busy || !emails.text.trim() || info.emailReady === false} className="btn btn-gold text-sm py-2.5 disabled:opacity-60">Daftarkan email</button>
+          <button type="button" onClick={async () => flash((await copyText(emailAnnouncement())) ? "Pesan pengumuman disalin" : "Gagal menyalin")} className="btn btn-ghost text-sm py-2.5">Salin pesan pengumuman</button>
+        </div>
+        {emailRes && (
+          <div className="rounded-lg bg-black/25 border border-white/10 p-3 text-sm" role="status">
+            <div className="text-ink mb-2">
+              {["created", "exists", "revoked", "invalid", "error"].filter(k => emailRes.some(x => x.status === k)).map(k => EMAIL_STATUS[k].label.split(" (")[0] + ": " + emailRes.filter(x => x.status === k).length).join(" | ")}
+            </div>
+            {emailRes.filter(x => x.status !== "created").length > 0 && (
+              <ul className="space-y-1 max-h-40 overflow-y-auto">
+                {emailRes.filter(x => x.status !== "created").map((x, i) => <li key={i} className={EMAIL_STATUS[x.status].cls}>{x.email}: {EMAIL_STATUS[x.status].label}</li>)}
+              </ul>
+            )}
+            <button type="button" onClick={() => setEmailRes(null)} className="mt-2 text-xs text-ink-muted hover:text-ink underline">Tutup</button>
+          </div>
+        )}
+      </form>
+
       <div className="grid lg:grid-cols-2 gap-4">
         <form onSubmit={createOne} className="card-glass p-5 space-y-3">
           <h3 className="font-display text-lg font-semibold text-ink">Buat satu PIN</h3>
           <div><label htmlFor="sa-label" className="block text-sm text-ink mb-1">Nama</label><input id="sa-label" className={field} value={form.label} onChange={e => setForm({ ...form, label: e.target.value })} style={{ fontSize: 16 }} required/></div>
-          <div><label htmlFor="sa-email" className="block text-sm text-ink mb-1">Email (opsional)</label><input id="sa-email" type="email" className={field} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} style={{ fontSize: 16 }}/></div>
+          <div><label htmlFor="sa-email" className="block text-sm text-ink mb-1">Email (opsional, hanya catatan)</label><input id="sa-email" type="email" className={field} value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} style={{ fontSize: 16 }}/></div>
           <div className="grid grid-cols-2 gap-3">
             <div><label htmlFor="sa-note" className="block text-sm text-ink mb-1">Catatan</label><input id="sa-note" className={field} value={form.note} onChange={e => setForm({ ...form, note: e.target.value })} style={{ fontSize: 16 }}/></div>
             <div><label htmlFor="sa-days" className="block text-sm text-ink mb-1">Berlaku (hari)</label><input id="sa-days" inputMode="numeric" placeholder="kosong = tanpa batas" className={field} value={form.days} onChange={e => setForm({ ...form, days: e.target.value.replace(/\D/g, "") })} style={{ fontSize: 16 }}/></div>
@@ -165,7 +222,7 @@ const AdminSeminar = () => {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead><tr className="text-left text-ink-muted border-b border-line">
-                <th className="px-4 py-2.5 font-medium">Nama</th><th className="px-3 py-2.5 font-medium">Status</th>
+                <th className="px-4 py-2.5 font-medium">Nama</th><th className="px-3 py-2.5 font-medium">Cara masuk</th><th className="px-3 py-2.5 font-medium">Status</th>
                 <th className="px-3 py-2.5 font-medium">Dibuat</th><th className="px-3 py-2.5 font-medium">Terakhir dipakai</th>
                 <th className="px-3 py-2.5 font-medium text-right">Dipakai</th><th className="px-4 py-2.5 font-medium text-right">Aksi</th>
               </tr></thead>
@@ -173,12 +230,13 @@ const AdminSeminar = () => {
                 {shown.map(r => { const st = statusOf(r); return (
                   <tr key={r.id} className="border-b border-line last:border-0 align-top">
                     <td className="px-4 py-2.5"><div className="text-ink">{r.label}</div>{r.email && <div className="text-xs text-ink-muted">{r.email}</div>}{r.note && <div className="text-xs text-ink-muted">{r.note}</div>}</td>
+                    <td className="px-3 py-2.5 text-xs text-ink-muted whitespace-nowrap">{[r.via_email && "Email", r.has_pin && "PIN"].filter(Boolean).join(" + ") || "-"}</td>
                     <td className="px-3 py-2.5"><span className={"inline-block rounded-md border px-2 py-0.5 text-xs " + st.cls}>{st.label}</span>{r.expires_at && st.key === "active" && <div className="text-xs text-ink-muted mt-1">sampai {fmt(r.expires_at)}</div>}</td>
                     <td className="px-3 py-2.5 text-ink-muted whitespace-nowrap">{fmt(r.created_at)}</td>
                     <td className="px-3 py-2.5 text-ink-muted whitespace-nowrap">{fmt(r.last_used_at)}</td>
                     <td className="px-3 py-2.5 text-ink-muted text-right num">{r.uses}x</td>
                     <td className="px-4 py-2.5 text-right whitespace-nowrap">
-                      <button onClick={() => regenerate(r)} disabled={busy} className="text-gold-300 hover:text-gold-200 text-xs mr-3">Ganti PIN</button>
+                      <button onClick={() => regenerate(r)} disabled={busy} className="text-gold-300 hover:text-gold-200 text-xs mr-3">{r.has_pin ? "Ganti PIN" : "Buat PIN"}</button>
                       <button onClick={() => toggleRevoke(r)} disabled={busy} className="text-ink-muted hover:text-ink text-xs mr-3">{r.revoked_at ? "Pulihkan" : "Cabut"}</button>
                       <button onClick={() => remove(r)} disabled={busy} className="text-rose-600 hover:text-rose-600/80 text-xs">Hapus</button>
                     </td>

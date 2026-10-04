@@ -46,6 +46,11 @@ const SeminarGate = ({ view = "baca" }) => {
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
   const hadToken = useRef(!!readSeminarToken());
+  const signedEmail = (auth && ((auth.authInfo && auth.authInfo.email) || (auth.session && auth.session.email))) || "";
+  const loginForSeminar = () => {
+    try { sessionStorage.setItem("talqeeh_return_to", JSON.stringify({ path: "/seminar", at: Date.now() })); } catch {}
+    window.dispatchEvent(new CustomEvent("talqeeh:open-login", { detail: { keepPlan: false } }));
+  };
 
   const load = async () => {
     setPhase("checking");
@@ -68,7 +73,7 @@ const SeminarGate = ({ view = "baca" }) => {
 
   useEffect(() => { if (!window.SEMINAR_SESSION) load(); }, []);
   // Member login lewat Google saat gerbang terbuka: cek ulang otomatis.
-  useEffect(() => { if (phase === "pin" && auth && auth.session) load(); }, [auth && auth.session && auth.session.code]);
+  useEffect(() => { if (phase === "pin" && signedEmail) load(); }, [signedEmail]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -93,7 +98,7 @@ const SeminarGate = ({ view = "baca" }) => {
         kicker="Materi Seminar"
         arabic="الذكاء الاصطناعي في التعليم"
         title="Materi khusus peserta."
-        subtitle="Masuk dengan PIN pribadi dari panitia, atau login sebagai member Talqeeh."
+        subtitle="Login dengan akun Google yang emailnya didaftarkan panitia, atau masukkan PIN pribadi."
       />
       <section className="pb-24">
         <div className="container-x max-w-xl">
@@ -124,13 +129,13 @@ const SeminarGate = ({ view = "baca" }) => {
               </button>
 
               <div className="mt-6 pt-5 border-t border-white/10 text-sm text-ink-muted leading-relaxed">
-                <p className="mb-3">Sudah menjadi member Talqeeh? Login dengan akun Google yang sama, maka materi ini terbuka otomatis tanpa PIN.</p>
-                {auth && auth.session && auth.session.tier === "free" && (
-                  <p className="mb-3 text-gold-300">Akun yang sedang login adalah akun gratis, yang belum termasuk akses seminar.</p>
+                <p className="mb-3">Tanpa PIN: login dengan akun Google yang emailnya didaftarkan panitia. Member Talqeeh berbayar juga langsung masuk.</p>
+                {signedEmail && (
+                  <p className="mb-3 text-gold-300" role="status">Anda login sebagai {signedEmail}, tetapi email ini belum terdaftar untuk seminar. Gunakan email yang didaftarkan panitia, atau masukkan PIN.</p>
                 )}
-                {!(auth && auth.session) && (
-                  <button type="button" onClick={() => window.dispatchEvent(new CustomEvent("talqeeh:open-login", { detail: { keepPlan: false } }))} className="btn btn-ghost text-sm py-2.5">
-                    <Icon name="user" className="w-4 h-4"/> Login sebagai member
+                {!signedEmail && (
+                  <button type="button" onClick={loginForSeminar} className="btn btn-ghost text-sm py-2.5">
+                    <Icon name="user" className="w-4 h-4"/> Login dengan Google
                   </button>
                 )}
               </div>

@@ -6,8 +6,9 @@ import { newActivationPin, normalizePin } from './_lib/pin.js';
 /* Akses materi seminar.
    Publik (POST, JSON {action}):
      verify  {pin}  → tukar PIN dengan token akses (30 hari, atau sampai kedaluwarsa PIN)
-     content        → isi materi; syarat: token PIN (header x-seminar-token) ATAU member berbayar yang login
-   Admin (header x-admin-token): admin-list, admin-create, admin-create-bulk, admin-regenerate, admin-revoke, admin-delete
+     content        → isi materi; syarat salah satu: token PIN (header x-seminar-token), member berbayar yang login,
+                      atau login Google dengan email yang didaftarkan admin (email harus terverifikasi)
+   Admin (header x-admin-token): admin-list, admin-create, admin-create-bulk, admin-add-emails, admin-regenerate, admin-revoke, admin-delete
    Satu file untuk semuanya karena paket Vercel Hobby dibatasi 12 fungsi. */
 
 const SLUG = 'seminar-ai';
@@ -78,6 +79,15 @@ const getAccessById = async (id) => {
   return r.ok && Array.isArray(r.data) ? r.data[0] || null : null;
 };
 
+// Kunci pencocokan email: huruf kecil; untuk Gmail titik dan +tag diabaikan (a.b+x@gmail.com = ab@gmail.com).
+export const normEmailKey = (raw) => {
+  const m = String(raw || '').trim().toLowerCase().match(/^([^@\s]+)@([^@\s]+\.[^@\s]+)$/);
+  if (!m) return null;
+  let [, local, domain] = m;
+  if (domain === 'gmail.com' || domain === 'googlemail.com') { local = local.split('+')[0].replace(/\./g, ''); domain = 'gmail.com'; }
+  return local && domain ? `${local}@${domain}` : null;
+};
+
 const clientIp = (req) => String(req.headers['x-real-ip'] || (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown').slice(0, 60);
 
 /* ---------- publik ---------- */
@@ -110,12 +120,23 @@ async function resolveAccess(req) {
     const row = await getAccessById(tok.aid);
     if (accessState(row) === 'active') return { via: 'pin', label: row.label };
   }
-  // 2) member berbayar yang login
   const user = await getAuthUser(req);
   if (user) {
+    // 2) member berbayar yang login
     const m = await resolveMember(user);
     const live = m && m.status === 'active' && m.tier === 'library' && (!m.expires_at || new Date(m.expires_at) > new Date());
     if (live) return { via: 'member', label: m.name || user.name || user.email };
+    // 3) email yang didaftarkan admin; hanya email yang sudah terverifikasi yang dipercaya
+    const key = user.emailVerified ? normEmailKey(user.email) : null;
+    if (key) {
+      const r = await sb('GET', `seminar_access?email_key=eq.${encodeURIComponent(key)}&select=id,label,expires_at,revoked_at,last_used_at&limit=1`);
+      const row = r.ok && Array.isArray(r.data) ? r.data[0] : null;
+      if (accessState(row) === 'active') {
+        const stale = !row.last_used_at || Date.now() - new Date(row.last_used_at).getTime() > 10 * 60 * 1000;
+        if (stale) sb('PATCH', `seminar_access?id=eq.${row.id}`, { last_used_at: new Date().toISOString() }).catch(() => {});
+        return { via: 'email', label: row.label || user.name || user.email };
+      }
+    }
   }
   return null;
 }
@@ -160,10 +181,30 @@ async function createOne({ label, email, note, days }) {
 
 async function actionAdmin(action, body, res) {
   if (action === 'admin-list') {
-    const r = await sb('GET', `seminar_access?select=${listFields}&order=created_at.desc&limit=2000`);
+    let emailReady = true;
+    let r = await sb('GET', `seminar_access?select=${listFields},pin_hash,email_key&order=created_at.desc&limit=2000`);
+    if (!r.ok) { emailReady = false; r = await sb('GET', `seminar_access?select=${listFields},pin_hash&order=created_at.desc&limit=2000`); }
     if (!r.ok) return send(res, 500, { ok: false, error: 'Gagal memuat daftar (sudah menjalankan migrations/seminar_access.sql?)' });
+    const rows = (r.data || []).map(({ pin_hash, email_key, ...rest }) => ({ ...rest, has_pin: !!pin_hash, via_email: !!email_key }));
     const cnt = await sb('GET', `seminar_content?slug=eq.${SLUG}&select=updated_at&limit=1`);
-    return send(res, 200, { ok: true, data: { rows: r.data, contentInstalled: !!(cnt.ok && cnt.data && cnt.data[0]), contentUpdatedAt: cnt.data?.[0]?.updated_at || null } });
+    return send(res, 200, { ok: true, data: { rows, emailReady, contentInstalled: !!(cnt.ok && cnt.data && cnt.data[0]), contentUpdatedAt: cnt.data?.[0]?.updated_at || null } });
+  }
+  if (action === 'admin-add-emails') {
+    const entries = Array.isArray(body.entries) ? body.entries.slice(0, BULK_MAX) : [];
+    if (!entries.length) return send(res, 400, { ok: false, error: 'Tidak ada email' });
+    const out = [];
+    for (const e of entries) {
+      const email = cleanEmail(e && e.email);
+      const key = normEmailKey(email);
+      if (!email || !key) { out.push({ email: String((e && e.email) || '').slice(0, 160), status: 'invalid' }); continue; }
+      const ex = await sb('GET', `seminar_access?email_key=eq.${encodeURIComponent(key)}&select=id,label,revoked_at&limit=1`);
+      if (!ex.ok) return send(res, 500, { ok: false, error: 'Kolom email belum ada. Jalankan migrations/seminar_access_email.sql di Supabase SQL Editor.' });
+      if (Array.isArray(ex.data) && ex.data[0]) { out.push({ email, status: ex.data[0].revoked_at ? 'revoked' : 'exists', id: ex.data[0].id, label: ex.data[0].label }); continue; }
+      const label = cleanLabel(e.label) || email.split('@')[0];
+      const r = await sb('POST', 'seminar_access', { label, email, email_key: key, pin_hash: null, expires_at: expiryFrom(body.days), note: String(body.note || '').trim().slice(0, 300) || null }, 'return=representation');
+      out.push(r.ok && Array.isArray(r.data) && r.data[0] ? { email, status: 'created', id: r.data[0].id, label } : { email, status: 'error' });
+    }
+    return send(res, 200, { ok: true, data: out });
   }
   if (action === 'admin-create') {
     if (!cleanLabel(body.label)) return send(res, 400, { ok: false, error: 'Nama wajib diisi' });

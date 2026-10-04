@@ -445,7 +445,7 @@ const SlideBody = ({ slide, goChapter }) => {
         <ol className="mt-[clamp(0.9rem,3vh,2.2rem)] grid gap-[clamp(0.6rem,2vh,1.4rem)]">
           {[
             "Scan QR di samping dengan kamera HP.",
-            "Masukkan PIN pribadimu dari panitia (member Talqeeh cukup login).",
+            "Login dengan Google memakai email yang kamu daftarkan ke panitia, atau masukkan PIN pribadimu.",
             "Isi lembar kerja di tiap bab. Isianmu tersimpan otomatis di HP.",
             "Salin, unduh, atau kirim ke WhatsApp sebagai Paket Belajar AI Pribadi.",
           ].map((t, i) => (
