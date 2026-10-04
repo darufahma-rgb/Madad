@@ -45,6 +45,7 @@ import './pages/tool-guide.jsx';
 import './pages/paths.jsx';
 import './pages/ethics.jsx';
 import './pages/privacy.jsx';
+import './pages/developer.jsx';
 import './pages/admin.jsx';
 import './pages/admin-eval.jsx';
 import './pages/admin-prompt-quality.jsx';

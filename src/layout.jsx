@@ -422,6 +422,7 @@ const Footer = () => {
             ["/tutorial", "Cara Pakai"],
             ["/ethics", "Etika Pakai AI"],
             ["/privacy", "Kebijakan Privasi"],
+            ["/developer", "Tentang Developer"],
           ].map(([to, label]) => (
             <a key={to} href={"#" + to} onClick={(e)=>{e.preventDefault(); navigate(to);}} className="text-ink-muted hover:text-ink">{label}</a>
           ))}
