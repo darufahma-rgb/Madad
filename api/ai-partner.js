@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import { verifyToken } from './admin-auth.js';
 import { sbConfig, sbHeaders, normalizeCode, requireAiTier, requireMember, consumeQuota, isActiveMember } from './_lib/member.js';
 import { callAI, callAIJson, requestAI, streamAI, friendlyAiError, aiErrorDetail } from './_lib/ai.js';
-import { resolveModels, isValidModelId, clearModelCache } from './_lib/models.js';
+import { resolveModels, isValidModelId, clearModelCache, TASK_THINKING } from './_lib/models.js';
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, weakPointsNote, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
   OCR_PROMPT, transcribePrompt, transcribeAnswerPrompt, TRANSCRIBE_DIALECTS, tutorSystem, syafawiSystem, learnerContext,
@@ -13,7 +13,7 @@ import { handlePromptFeedback, handlePromptQualityAdmin } from './_lib/prompt-qu
 import { getMonthlyLimits, cachedMonthlyLimits } from './_lib/ai-partner/limits.js';
 import { splitChunks, spreadSample, stickyExcerpt } from './_lib/ai-partner/chunks.js';
 import {
-  isStr, cleanFlashcards, cleanQuiz, cleanGlossary, cleanMindmap, cleanEssays,
+  isStr, cleanFlashcards, cleanQuiz, shuffleQuizOptions, cleanGlossary, cleanMindmap, cleanEssays,
   cleanGrade, cleanIrab, cleanProgressPatch,
 } from './_lib/ai-partner/sanitize.js';
 
@@ -609,8 +609,11 @@ async function handleGenerate(ctx, body, res) {
 
   const clean = { flashcards: cleanFlashcards, quiz: cleanQuiz, glossary: cleanGlossary, essays: cleanEssays }[kind];
   const focus = weakFocus ? weakPointsNote(set, 'quiz') : '';
-  let data = clean(await callAIJson({ system: PROMPTS[kind] + focus + learner, messages, maxTokens: 4000, model }));
+  // Kuis & soal tahriri: model hemat diberi sedikit jatah berpikir supaya kunci jawabannya dicek dulu.
+  const thinking = ['quiz', 'essays'].includes(kind) ? 2048 : 0;
+  let data = clean(await callAIJson({ system: PROMPTS[kind] + focus + learner, messages, maxTokens: 4000, model, thinking }));
   if (data.length === 0) throw new Error('AI gagal membuat hasil yang valid');
+  if (kind === 'quiz') data = shuffleQuizOptions(data);
   if (kind === 'flashcards') {
     // Kartu lama (termasuk progres hafalannya) dipertahankan; kartu AI yang sama tidak diduplikasi.
     const old = Array.isArray(set.flashcards) ? set.flashcards : [];
@@ -682,8 +685,10 @@ async function handleAnalyze(ctx, body, res) {
   const set = await getOwnedSet(ctx.code, body.set_id, 'id,analyses');
   if (!set) return res.status(404).json({ ok: false, error: 'Materi tidak ditemukan' });
   const analyses = Array.isArray(set.analyses) ? set.analyses : [];
+  // refresh: pengguna minta analisis ulang (mis. hasil lama meragukan) — hasil lama diganti, bukan ditumpuk.
+  const refresh = body.refresh === true;
   const cached = analyses.find(a => a.mode === mode && a.input === text);
-  if (cached) return res.status(200).json({ ok: true, data: cached.output, cached: true, model: cached.model || null });
+  if (cached && !refresh) return res.status(200).json({ ok: true, data: cached.output, cached: true, model: cached.model || null });
 
   const over = await takeQuota(ctx, 'analyze');
   if (over) return quotaExceeded(res, 'analyze', over, ctx);
@@ -691,13 +696,14 @@ async function handleAnalyze(ctx, body, res) {
   const model = (await resolveModels()).arabic;
   let output;
   if (mode === 'irab') {
-    output = cleanIrab(await callAIJson({ system: IRAB_PROMPT, messages: [{ role: 'user', content: text }], maxTokens: 3000, temperature: 0.1, model }));
+    output = cleanIrab(await callAIJson({ system: IRAB_PROMPT, messages: [{ role: 'user', content: text }], maxTokens: 3000, temperature: 0.1, model, thinking: TASK_THINKING.arabic }));
     if (!output) throw new Error('AI gagal menganalisis teks');
   } else {
     output = (await callAI({ system: TASYKIL_PROMPT, messages: [{ role: 'user', content: text }], maxTokens: 6000, temperature: 0, model })).trim();
   }
 
-  const next = [...analyses, { mode, input: text, output, model, at: new Date().toISOString() }].slice(-MAX_ANALYSES);
+  const kept = refresh ? analyses.filter(a => !(a.mode === mode && a.input === text)) : analyses;
+  const next = [...kept, { mode, input: text, output, model, at: new Date().toISOString() }].slice(-MAX_ANALYSES);
   await updateSet(ctx.code, set.id, { analyses: next });
   return res.status(200).json({ ok: true, data: output, model });
 }
@@ -716,7 +722,7 @@ async function handleGrade(ctx, body, res) {
 
   const prompt = gradeUserPrompt(essay, answer);
   const model = (await resolveModels()).grade;
-  const result = cleanGrade(await callAIJson({ system: GRADE_PROMPT + learnerContext(body.learner), messages: [{ role: 'user', content: prompt }], maxTokens: 2000, temperature: 0.2, model }));
+  const result = cleanGrade(await callAIJson({ system: GRADE_PROMPT + learnerContext(body.learner), messages: [{ role: 'user', content: prompt }], maxTokens: 2000, temperature: 0.2, model, thinking: TASK_THINKING.grade }));
   if (!result) throw new Error('AI gagal menilai jawaban');
 
   const attempt = { index, answer, ...result, model, at: new Date().toISOString() };

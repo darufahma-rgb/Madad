@@ -51,6 +51,18 @@ const reverseLine = (line) => {
   return strayMarks(byCluster) < strayMarks(byChar) ? byCluster : byChar;
 };
 
+/* pdf.js kadang menaruh harakat SEBELUM hurufnya saat menyusun teks kanan-ke-kiri ("َاْلَحْمُد"). Di teks yang
+   benar tidak ada kata yang diawali harakat, jadi bila banyak kata begitu, tiap harakat dipindah ke belakang huruf
+   sesudahnya — dipakai hanya kalau hasilnya memang lebih sedikit harakat yang menggantung. */
+const MARK_BEFORE_LETTER = new RegExp(`([${AR_MARKS}]+)([ء-ي])`, 'gu');
+const fixMarkOrder = (text) => {
+  const stray = strayMarks(text);
+  const vowelledWords = (text.match(new RegExp(`\\S*[${AR_MARKS}]\\S*`, 'gu')) || []).length;
+  if (stray < 3 || stray < vowelledWords * 0.3) return null;
+  const swapped = text.replace(MARK_BEFORE_LETTER, '$2$1');
+  return strayMarks(swapped) < stray ? swapped : null;
+};
+
 // Hasil: { text, status } — status 'ok' | 'fixed' (dirapikan) | 'empty' (hasil scan) | 'garbled' (tidak bisa dipakai).
 const cleanPdfText = (raw) => {
   let text = String(raw || '').trim();
@@ -67,9 +79,11 @@ const cleanPdfText = (raw) => {
   if (looksReversed(score)) {
     const flipped = text.split('\n').map(l => (/[؀-ۿ]/.test(l) ? reverseLine(l) : l)).join('\n');
     const after = arabicOrderScore(flipped);
-    if (after.al > after.la * 2) return { text: flipped, status: 'fixed' };
+    if (after.al > after.la * 2) return { text: fixMarkOrder(flipped) || flipped, status: 'fixed' };
     return { text, status: 'garbled' };
   }
+  const marks = fixMarkOrder(text);
+  if (marks) return { text: marks, status: 'fixed' };
   return { text, status: fixed ? 'fixed' : 'ok' };
 };
 
@@ -78,17 +92,41 @@ const openPdf = async (file) => {
   return pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
 };
 
+/* Susun teks halaman dari potongan pdf.js. Banyak PDF Arab tidak menyimpan karakter spasi: jarak antar-kata
+   hanya berupa posisi. Jadi spasi ditambahkan bila ada celah antara dua potongan di baris yang sama, dan
+   baris baru ditentukan dari selisih tinggi relatif terhadap ukuran huruf (bukan angka tetap) — harakat yang
+   disimpan sebagai potongan tersendiri, sedikit di atas/bawah hurufnya, tidak memutus kata. */
+const MARKS_ONLY = new RegExp(`^[${AR_MARKS}\\s]+$`, 'u');
+const joinPdfItems = (items) => {
+  let out = '';
+  let prev = null;
+  for (const it of items) {
+    if (typeof it?.str !== 'string') continue;
+    const s = it.str;
+    const [a, b, c, d, x, y] = it.transform;
+    const h = Math.hypot(c, d) || Math.hypot(a, b) || it.height || 10;
+    const w = it.width || 0;
+    if (s && prev) {
+      if (MARKS_ONLY.test(s)) {
+        // harakat lepas: tempel ke huruf sebelumnya
+      } else if (prev.eol || Math.abs(y - prev.y) > Math.max(prev.h, h) * 0.6) {
+        if (!prev.eol) out += '\n';
+      } else {
+        const gap = Math.max(x - (prev.x + prev.w), prev.x - (x + w));
+        if (gap > Math.min(prev.h, h) * 0.15 && !/\s$/.test(out) && !/^\s/.test(s)) out += ' ';
+      }
+    }
+    out += s;
+    if (it.hasEOL) { if (!/\n$/.test(out)) out += '\n'; }
+    if (s || it.hasEOL) prev = { x, y, w, h, eol: !!it.hasEOL };
+  }
+  return out.replace(/[ \t]+\n/g, '\n');
+};
+
 const pdfPageText = async (pdf, n) => {
   const page = await pdf.getPage(n);
   const textContent = await page.getTextContent();
-  let pageText = '';
-  let lastY = null;
-  for (const item of textContent.items) {
-    if (lastY !== null && Math.abs(item.transform[5] - lastY) > 5) pageText += '\n';
-    pageText += item.str;
-    lastY = item.transform[5];
-  }
-  return cleanPdfText(pageText);
+  return cleanPdfText(joinPdfItems(textContent.items));
 };
 
 // Semua halaman beserta statusnya; pages === null berarti PDF melebihi maxPages dan tidak diekstrak.
@@ -100,16 +138,20 @@ const readPdfPages = async (file, maxPages = 120) => {
   return { pdf, numPages: pdf.numPages, pages };
 };
 
-// Satu halaman → JPEG untuk dibaca OCR.
+// Satu halaman → JPEG untuk dibaca OCR. Lebar ±2000 px supaya harakat kecil di kitab padat tetap terbaca.
 const renderPdfPage = async (pdf, n) => {
   const page = await pdf.getPage(n);
   const base = page.getViewport({ scale: 1 });
-  const viewport = page.getViewport({ scale: Math.min(2, 1600 / base.width) });
+  const viewport = page.getViewport({ scale: Math.min(3, 2000 / base.width) });
   const canvas = document.createElement('canvas');
   canvas.width = viewport.width;
   canvas.height = viewport.height;
   await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
-  return new Promise(r => canvas.toBlob(b => r(new File([b], `hal-${n}.jpg`, { type: 'image/jpeg' })), 'image/jpeg', 0.85));
+  const toJpeg = (q) => new Promise(r => canvas.toBlob(r, 'image/jpeg', q));
+  // Batas unggah foto di server ±2,6 MB (base64 3,5 juta karakter): halaman yang sangat padat dikompres lagi.
+  let blob = await toJpeg(0.85);
+  if (blob.size > 2_300_000) blob = await toJpeg(0.7);
+  return new File([blob], `hal-${n}.jpg`, { type: 'image/jpeg' });
 };
 
 // Versi lama (Siap Imtihan): hanya halaman berteks, sudah dirapikan.

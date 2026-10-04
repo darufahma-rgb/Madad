@@ -45,21 +45,28 @@ const isReasoningModel = async (modelId) => {
 
 // Isi permintaan OpenRouter: temperature hanya untuk model yang menerimanya, plus model cadangan
 // (kecuali input audio — model cadangan tidak bisa mendengar).
-const buildBody = async ({ modelId, maxTokens, temperature, messages, stream }) => {
+// thinking: jatah token berpikir untuk tugas yang butuh pengecekan (kunci kuis, i'rab, penilaian tahriri).
+// Gemini 2.5 Flash: bawaannya dimatikan, diaktifkan dengan jatah ini. Model berpikir (Sonnet 5): jatah tetap
+// menggantikan effort "low". Jatahnya ditambahkan ke max_tokens supaya jawaban tetap utuh, dan sengaja berupa
+// angka (bukan effort bebas) supaya waktu respons tetap di bawah batas 60 detik Vercel.
+const buildBody = async ({ modelId, maxTokens, temperature, messages, stream, thinking = 0 }) => {
   const hasAudio = messages.some(m => Array.isArray(m.content) && m.content.some(p => p?.type === 'input_audio'));
   const fallback = !hasAudio && modelId !== FALLBACK_MODEL && modelId.replace(/(\d)-(\d)/g, '$1.$2') !== FALLBACK_MODEL;
   const reasoning = await isReasoningModel(modelId);
   // Gemini 2.5 Flash berpikir secara bawaan (dan tetap menerima temperature): matikan supaya jatah token
   // dipakai untuk jawaban. Kalau ditolak, model cadangan tetap menjawab.
-  const geminiThinkingOff = /^google\/gemini-2\.5-flash(?!-lite)/.test(modelId);
+  const gemini = /^google\/gemini-2\.5-flash(?!-lite)/.test(modelId);
+  const geminiThinking = gemini && thinking > 0;
   return {
     model: modelId,
     ...(fallback ? { models: [modelId, FALLBACK_MODEL] } : {}),
     // Model berpikir: berpikir singkat saja (hemat & cepat), jatah token ditambah supaya jawabannya tetap utuh,
     // dan teks berpikirnya tidak dikirim balik.
-    max_tokens: reasoning ? Math.ceil(maxTokens * 1.25) : maxTokens,
-    ...(reasoning ? { reasoning: { effort: 'low', exclude: true } } : {}),
-    ...(geminiThinkingOff ? { reasoning: { enabled: false } } : {}),
+    max_tokens: reasoning && thinking > 0 ? maxTokens + thinking
+      : reasoning ? Math.ceil(maxTokens * 1.25)
+      : geminiThinking ? maxTokens + thinking : maxTokens,
+    ...(reasoning ? { reasoning: thinking > 0 ? { max_tokens: thinking, exclude: true } : { effort: 'low', exclude: true } } : {}),
+    ...(gemini ? { reasoning: geminiThinking ? { max_tokens: thinking, exclude: true } : { enabled: false } } : {}),
     ...((await acceptsTemperature(modelId)) ? { temperature } : {}),
     ...(stream ? { stream: true } : {}),
     messages,
@@ -84,7 +91,7 @@ export const friendlyAiError = (err) => {
 /* Panggil model lewat OpenRouter. Mengembalikan teks + apakah jawabannya terpotong batas token.
    cacheSystem: system prompt (mis. materi panjang untuk tutor) di-cache Anthropic ±5 menit, jadi pesan
    berikutnya dalam satu sesi chat jauh lebih murah dan cepat. Model non-Anthropic menerima teks biasa. */
-export const requestAI = async ({ system, messages, maxTokens = 2000, temperature = 0.3, model, cacheSystem = false }) => {
+export const requestAI = async ({ system, messages, maxTokens = 2000, temperature = 0.3, model, cacheSystem = false, thinking = 0 }) => {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY belum diset');
 
@@ -103,7 +110,7 @@ export const requestAI = async ({ system, messages, maxTokens = 2000, temperatur
       'X-Title': 'Talqeeh AI Partner',
     },
     body: JSON.stringify(await buildBody({
-      modelId, maxTokens, temperature,
+      modelId, maxTokens, temperature, thinking,
       messages: systemMessage ? [systemMessage, ...messages] : messages,
     })),
   });

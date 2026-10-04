@@ -34,6 +34,11 @@ export const TASK_DEFAULTS = {
   grade:   'anthropic/claude-sonnet-5',   // menilai jawaban tahriri & mengoreksi bahasa Arab
 };
 
+/* Jatah token berpikir untuk tugas yang inputnya pendek tapi menuntut ketelitian nahwu-sharaf. Sonnet 5 bawaannya
+   berpikir singkat (±1.000 token); jatah ini menambah ruang mengecek 'amil dan kedudukan tiap kata dengan biaya
+   kecil (±$0,01–0,02 per klik), tapi tetap terukur supaya selesai sebelum batas 60 detik. */
+export const TASK_THINKING = { arabic: 1536, grade: 2048 };
+
 let cache = { at: 0, value: null };
 const CACHE_MS = 60 * 1000;
 

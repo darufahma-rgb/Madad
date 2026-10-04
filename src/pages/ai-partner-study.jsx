@@ -791,6 +791,12 @@ const IrabResult = ({ result, onSaveKurasah, onAddCard, setId, model }) => (
             <div className="min-w-0">
               <div dir="rtl" className="text-ink text-right" style={{ fontFamily: '"Noto Naskh Arabic", serif', fontSize: 16, lineHeight: 1.8 }}>{w.irab}</div>
               {w.penjelasan && <div className="text-xs text-ink-muted mt-0.5">{w.penjelasan}</div>}
+              {w.ragu && (
+                <div className="mt-2 rounded-lg border border-gold-500/30 bg-gold-500/8 px-3 py-2">
+                  <div className="text-[11px] text-gold-300 mb-0.5">Ada wajh lain, cek ke kitab nahwu atau ustaz</div>
+                  <div dir="auto" className="text-xs text-ink leading-relaxed" style={{ fontFamily: '"Noto Naskh Arabic", "DM Sans", serif' }}>{w.alternatif}</div>
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -826,7 +832,7 @@ const IrabResult = ({ result, onSaveKurasah, onAddCard, setId, model }) => (
 
 const irabToMarkdown = (r) =>
   `## ${r.teks}\n\n**Terjemah harfiyah:** ${r.terjemah_harfiyah}\n\n**Terjemah bebas:** ${r.terjemah_bebas}\n\n| Kata | I'rab | Penjelasan |\n|---|---|---|\n` +
-  r.irab.map(w => `| ${w.kata} | ${w.irab} | ${w.penjelasan} |`).join('\n') +
+  r.irab.map(w => `| ${w.kata} | ${w.irab} | ${w.penjelasan}${w.ragu ? ` (wajh lain: ${w.alternatif})` : ''} |`).join('\n') +
   (r.catatan ? `\n\n**Faedah:** ${r.catatan}` : '');
 
 const IrabModal = ({ set, setSet, text, onClose }) => {
@@ -835,18 +841,22 @@ const IrabModal = ({ set, setSet, text, onClose }) => {
   const [result, setResult] = useState(null);
   const [model, setModel] = useState(null);
   const [error, setError] = useState('');
+  const [cached, setCached] = useState(false);
+  const [run, setRun] = useState(0);   // > 0: analisis ulang (melewati hasil tersimpan)
 
   useEffect(() => {
     let alive = true;
-    aiCall('analyze', { set_id: set.id, mode: 'irab', text }).then(d => {
+    setResult(null); setError('');
+    aiCall('analyze', { set_id: set.id, mode: 'irab', text, ...(run > 0 ? { refresh: true } : {}) }).then(d => {
       if (!alive) return;
       if (!d.ok) { setError(d.error || 'Gagal menganalisis'); return; }
       setResult(d.data);
       setModel(d.model || null);
-      if (!d.cached) setSet(s => ({ ...s, analyses: [...(s.analyses || []), { mode: 'irab', input: text, output: d.data, model: d.model }] }));
+      setCached(!!d.cached);
+      if (!d.cached) setSet(s => ({ ...s, analyses: [...(s.analyses || []).filter(a => !(a.mode === 'irab' && a.input === text)), { mode: 'irab', input: text, output: d.data, model: d.model }] }));
     });
     return () => { alive = false; };
-  }, [text]);
+  }, [text, run]);
 
   const addCard = async () => {
     const d = await aiCall('add-cards', { set_id: set.id, cards: [{ q: result.teks, a: result.terjemah_bebas }] });
@@ -874,8 +884,18 @@ const IrabModal = ({ set, setSet, text, onClose }) => {
             <Skeleton lines={7}/>
           </div>
         ) : (
-          <IrabResult result={result} onAddCard={addCard} setId={set.id} model={model}
-            onSaveKurasah={() => saveKurasah(`I'rab — ${result.teks.slice(0, 40)}`, irabToMarkdown(result), ['irab'])}/>
+          <>
+            {cached && (
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-4 rounded-xl bg-white/4 border border-white/8 px-3 py-2">
+                <span className="text-xs text-ink-muted">Ini hasil analisis yang tersimpan. Kalau ada yang meragukan, minta AI menganalisis ulang.</span>
+                <button onClick={() => setRun(r => r + 1)} className="text-xs px-3 py-1.5 rounded-lg border border-white/10 text-ink hover:border-emerald-500/30 hover:text-emerald-300 inline-flex items-center gap-1.5">
+                  <Icon name="refresh" className="w-3.5 h-3.5"/> Analisis ulang
+                </button>
+              </div>
+            )}
+            <IrabResult result={result} onAddCard={addCard} setId={set.id} model={model}
+              onSaveKurasah={() => saveKurasah(`I'rab — ${result.teks.slice(0, 40)}`, irabToMarkdown(result), ['irab'])}/>
+          </>
         )}
       </div>
     </Modal>

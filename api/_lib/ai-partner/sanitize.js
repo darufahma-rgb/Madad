@@ -26,6 +26,21 @@ export const cleanQuiz = (raw) =>
       explanation: str(q.explanation, 1500),
     }));
 
+// Pilihan yang merujuk pilihan lain ("semua benar", "A dan B") harus tetap di tempatnya.
+const POSITIONAL_OPTION = /(semua|seluruh|keduanya|tidak ada)\b.*\b(benar|salah|jawaban|pilihan|di atas)|\b[A-D]\s*(dan|&|,)\s*[A-D]\b|(كل|جميع|لا شيء)\s*(مما|ما)\s*سبق|ما\s*سبق/i;
+
+/* Model cenderung menaruh jawaban benar di posisi yang sama; urutan pilihan diacak di server
+   (Fisher–Yates) dan indeks jawabannya ikut dipindah. */
+export const shuffleQuizOptions = (quiz, rand = Math.random) => quiz.map(q => {
+  if (q.options.some(o => POSITIONAL_OPTION.test(o))) return q;
+  const order = [0, 1, 2, 3];
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  return { ...q, options: order.map(i => q.options[i]), answer: order.indexOf(q.answer) };
+});
+
 export const cleanGlossary = (raw) =>
   (Array.isArray(raw) ? raw : [])
     .filter(g => isStr(g?.ar) && isStr(g?.makna))
@@ -93,7 +108,11 @@ export const cleanIrab = (raw) => {
   const irab = (Array.isArray(raw.irab) ? raw.irab : [])
     .filter(w => isStr(w?.kata) && isStr(w?.irab))
     .slice(0, 60)
-    .map(w => ({ kata: str(w.kata, 80), irab: str(w.irab, 300), penjelasan: str(w.penjelasan, 400) }));
+    .map(w => {
+      const alternatif = str(w.alternatif, 400);
+      // "ragu" hanya dipercaya bila wajh lainnya benar-benar ditulis.
+      return { kata: str(w.kata, 80), irab: str(w.irab, 300), penjelasan: str(w.penjelasan, 400), ...(w.ragu === true && alternatif ? { ragu: true, alternatif } : {}) };
+    });
   if (!isStr(raw.teks) || irab.length === 0) return null;
   return {
     teks:              str(raw.teks, 1200),

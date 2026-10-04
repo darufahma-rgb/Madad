@@ -6,7 +6,7 @@
 //   - prompt library → prompt dijalankan seperti "Jalankan di sini", lalu dinilai AI penguji dengan rubrik mutu prompt
 import { sbConfig, sbHeaders } from '../member.js';
 import { callAI, callAIJson } from '../ai.js';
-import { resolveModels, isValidModelId } from '../models.js';
+import { resolveModels, isValidModelId, TASK_THINKING } from '../models.js';
 import { summaryPrompt, tutorSystem, IRAB_PROMPT, TASYKIL_PROMPT, GRADE_PROMPT, gradeUserPrompt, promptChatSystem } from './prompts.js';
 import { cleanIrab, cleanGrade } from './sanitize.js';
 import { normalizeText } from './chunks.js';
@@ -268,7 +268,7 @@ export const runTask = async (item, model) => {
     return { output: text, judged: true };
   }
   if (t === 'irab') {
-    const out = cleanIrab(await callAIJson({ system: IRAB_PROMPT, model, maxTokens: 3000, temperature: 0.1, messages: [{ role: 'user', content: item.input.teks }] }));
+    const out = cleanIrab(await callAIJson({ system: IRAB_PROMPT, model, maxTokens: 3000, temperature: 0.1, thinking: TASK_THINKING.arabic, messages: [{ role: 'user', content: item.input.teks }] }));
     return { output: JSON.stringify(out || {}), ...scoreIrab(item.expected.kata, out) };
   }
   if (t === 'tasykil') {
@@ -276,7 +276,7 @@ export const runTask = async (item, model) => {
     return { output: text, ...scoreTasykil(item.expected.teks, text) };
   }
   const essay = { soal_ar: item.input.soal, soal_id: item.input.soal_id, poin: item.input.poin, jawaban_model: item.input.jawaban_model };
-  const g = cleanGrade(await callAIJson({ system: GRADE_PROMPT, model, maxTokens: 2000, temperature: 0.2, messages: [{ role: 'user', content: gradeUserPrompt(essay, item.input.jawaban) }] }));
+  const g = cleanGrade(await callAIJson({ system: GRADE_PROMPT, model, maxTokens: 2000, temperature: 0.2, thinking: TASK_THINKING.grade, messages: [{ role: 'user', content: gradeUserPrompt(essay, item.input.jawaban) }] }));
   return { output: JSON.stringify(g || {}), ...scoreGrade(item.expected.min, item.expected.max, g?.skor) };
 };
 

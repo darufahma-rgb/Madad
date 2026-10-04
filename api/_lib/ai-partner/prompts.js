@@ -175,7 +175,11 @@ ${ARABIC_RULES}
 Balas HANYA JSON array: [{"q":"...","a":"..."}]`,
 
   quiz: `${BASE_PERSONA}
-Buat 10 soal pilihan ganda gaya imtihan Al-Azhar untuk menguji pemahaman materi. Sebagian soal boleh berbahasa Arab (dengan harakat pada istilah). Tiap soal punya 4 pilihan, tepat satu benar, dan pembahasan singkat yang merujuk ke materi. Variasikan posisi jawaban benar.
+Buat 10 soal pilihan ganda gaya imtihan Al-Azhar untuk menguji pemahaman materi. Sebagian soal boleh berbahasa Arab (dengan harakat pada istilah). Tiap soal punya 4 pilihan, tepat satu benar, dan pembahasan singkat yang merujuk ke materi.
+Ketepatan kunci (wajib dicek untuk tiap soal sebelum ditulis):
+- Jawaban benar harus didukung langsung oleh kalimat di materi; pembahasan menyebut dasar itu.
+- Tiga pengecoh harus SALAH menurut materi — bukan sekadar redaksi lain dari jawaban benar, dan bukan pendapat lain yang juga diterima materi.
+- Jangan memakai pilihan "semua benar", "semua salah", atau "A dan B".
 ${ONLY_MATERIAL}
 Balas HANYA JSON array: [{"question":"...","options":["...","...","...","..."],"answer":0,"explanation":"..."}] — answer adalah index 0-3.`,
 
@@ -217,14 +221,16 @@ export const gradeUserPrompt = (essay, answer) =>
   `SOAL: ${essay.soal_ar}\n(${essay.soal_id || ''})\n\nPOIN KUNCI:\n${(essay.poin || []).map((p, i) => `${i + 1}. ${p}`).join('\n')}\n\nJAWABAN MODEL:\n${essay.jawaban_model || '-'}\n\nJAWABAN MAHASISWA:\n<<<\n${answer}\n>>>`;
 
 export const IRAB_PROMPT =`Kamu ahli nahwu dan sharaf yang mengajar mahasiswa Indonesia di Al-Azhar.
-Analisis teks Arab yang diberikan:
-1. teks: tulis ulang dengan harakat lengkap.
+Sebelum menulis jawaban, analisis dulu (dalam pikiranmu, jangan ditulis): jenis tiap jumlah (ismiyyah/fi'liyyah, utama/shilah/sifat/hal/khabar), 'amil yang bekerja pada tiap kata, lalu kedudukan dan tanda i'rab-nya (zhahirah/muqaddarah, huruf/harakat, mabni). Periksa ulang kata yang kedudukannya bergantung pada kata lain (na'at, 'athaf, badal, idhafah, syibhul jumlah dan muta'allaq-nya).
+Lalu tulis:
+1. teks: tulis ulang dengan harakat lengkap, konsisten dengan i'rab di bawah.
 2. terjemah_harfiyah: terjemah kata demi kata (bahasa Indonesia).
 3. terjemah_bebas: terjemah yang enak dibaca.
-4. irab: untuk tiap kata (partikel boleh digabung), i'rab singkat dalam bahasa Arab gaya kitab (misal: مُبْتَدَأٌ مَرْفُوعٌ وَعَلَامَةُ رَفْعِهِ الضَّمَّةُ الظَّاهِرَةُ) + penjelasan singkat bahasa Indonesia.
+4. irab: untuk tiap kata (partikel boleh digabung), i'rab singkat dalam bahasa Arab gaya kitab (misal: مُبْتَدَأٌ مَرْفُوعٌ وَعَلَامَةُ رَفْعِهِ الضَّمَّةُ الظَّاهِرَةُ) + penjelasan singkat bahasa Indonesia (sebut 'amil-nya bila membantu).
+   Bila ada lebih dari satu wajh i'rab yang sah, atau teks tanpa harakat bisa dibaca dua cara: isi "ragu": true dan tulis wajh lain di "alternatif" (Arab gaya kitab + alasan singkat). Selain itu "ragu": false dan "alternatif": "". Jangan menyembunyikan keraguan.
 5. mufradat: kata sulit + makna.
 6. catatan: faedah nahwu/balaghah singkat bila ada (boleh kosong).
-Balas HANYA JSON: {"teks":"...","terjemah_harfiyah":"...","terjemah_bebas":"...","irab":[{"kata":"...","irab":"...","penjelasan":"..."}],"mufradat":[{"ar":"...","makna":"..."}],"catatan":"..."}`;
+Balas HANYA JSON: {"teks":"...","terjemah_harfiyah":"...","terjemah_bebas":"...","irab":[{"kata":"...","irab":"...","penjelasan":"...","ragu":false,"alternatif":""}],"mufradat":[{"ar":"...","makna":"..."}],"catatan":"..."}`;
 
 export const TASYKIL_PROMPT = `Beri harakat lengkap (tasykil) pada teks Arab berikut sesuai kaidah nahwu dan sharaf.
 Kembalikan HANYA teks yang sama persis dengan harakat — jangan menambah, menghapus, atau menerjemahkan kata apa pun. Bagian yang bukan bahasa Arab biarkan apa adanya. Pertahankan baris dan tanda baca.`;
