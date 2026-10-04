@@ -911,6 +911,12 @@ const MaterialTab = ({ set, setSet, access, askTutor }) => {
     setShowHarakat(true);
   };
 
+  const irabParagraph = (p) => {
+    if (!isPro) { openAiUpgrade(); return; }
+    if (p.length > 400) { toast.push('Paragraf ini terlalu panjang. Blok satu kalimat saja (maks 400 huruf), lalu tekan "Terjemah & I\'rab".'); return; }
+    setIrabText(p);
+  };
+
   const selectedArabic = hasArabic(selected);
   const tooLong = selected.length > 400;
 
@@ -919,7 +925,7 @@ const MaterialTab = ({ set, setSet, access, askTutor }) => {
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <p className="text-xs text-ink-muted">
           {isPro
-            ? 'Blok/tekan-tahan kalimat untuk minta penjelasan tutor, atau kalimat Arab untuk terjemah & i\'rab. Tombol "Harakat" memberi harakat per paragraf.'
+            ? 'Tekan tombol "I\'rab" di bawah paragraf Arab, atau blok/tekan-tahan satu kalimat untuk terjemah & i\'rab (maks 400 huruf) atau minta penjelasan tutor. Tombol "Harakat" memberi harakat per paragraf.'
             : 'Terjemah, i\'rab, dan harakat otomatis khusus pelanggan AI Partner.'}
         </p>
         {analyses.some(a => a.mode === 'tasykil') && (
@@ -942,6 +948,11 @@ const MaterialTab = ({ set, setSet, access, askTutor }) => {
                 <div className="flex gap-1.5 mt-1 justify-end opacity-80">
                   <SpeakButton text={vowelled || p}/>
                   {vowelled && <FeedbackBar compact setId={set.id} kind="tasykil" model={harakatModel(p)} content={vowelled} className="flex flex-col items-end"/>}
+                  <button onClick={() => irabParagraph(p)}
+                    className="text-[11px] px-2.5 py-1 rounded-lg border border-white/10 text-ink-muted hover:text-emerald-300 hover:border-emerald-500/30 inline-flex items-center gap-1">
+                    {!isPro && <Icon name="crown" className="w-3 h-3 text-gold-300"/>}
+                    I'rab
+                  </button>
                   {!harakatOf(p) && p.length <= 6000 && (
                     <button onClick={() => tasykil(p, i)} disabled={busyPara !== null}
                       className="text-[11px] px-2.5 py-1 rounded-lg border border-white/10 text-ink-muted hover:text-emerald-300 hover:border-emerald-500/30 inline-flex items-center gap-1">
