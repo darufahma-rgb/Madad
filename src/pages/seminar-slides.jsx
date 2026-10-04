@@ -9,28 +9,55 @@ const textLen = (pts) => pts.reduce((n, p) => n + p.replace(/\*/g, "").length, 0
 
 const buildSeminarSlides = () => {
   const chapters = window.SEMINAR_CHAPTERS;
-  const slides = [{ type: "title", seg: 0 }, { type: "agenda", seg: 0 }];
+  const last = chapters.length + 1;
+  const slides = [
+    { type: "title", key: "title", seg: 0 },
+    { type: "hook-poll", key: "hook-poll", seg: 0 },
+    { type: "hook-demo", key: "hook-demo", seg: 0 },
+    { type: "hook-goals", key: "hook-goals", seg: 0 },
+    { type: "agenda", key: "agenda", seg: 0 },
+  ];
   chapters.forEach((ch, ci) => {
     const seg = ci + 1;
-    slides.push({ type: "chapter", ch, ci, seg });
+    slides.push({ type: "chapter", key: "ch:" + ch.id, ch, ci, seg });
     const vizAfter = (window.SEMINAR_VIZ_AFTER || {})[ch.id] || {};
     const shotAfter = (window.SEMINAR_SHOT_AFTER || {})[ch.id] || {};
-    ch.sections.forEach(s => {
-      slides.push({ type: "section", ch, ci, s, seg });
-      if (vizAfter[s.h]) slides.push({ type: "viz", viz: vizAfter[s.h], ch, ci, seg });
+    ch.sections.forEach((s, si) => {
+      slides.push({ type: "section", key: "sec:" + ch.id + ":" + si, ch, ci, s, seg });
+      if (vizAfter[s.h]) slides.push({ type: "viz", key: "viz:" + vizAfter[s.h], viz: vizAfter[s.h], ch, ci, seg });
       (shotAfter[s.h] || []).forEach(id => {
         const shot = window.SEMINAR_SHOTS[id];
-        if (shot && !shot.pending) slides.push({ type: "shot", shot, ch, ci, seg });
+        if (shot && !shot.pending) slides.push({ type: "shot", key: "shot:" + id, shot, ch, ci, seg });
       });
     });
-    if (ch.prompts) slides.push({ type: "prompts", ch, ci, seg });
-    slides.push({ type: "practice", ch, ci, seg });
+    if (ch.prompts) slides.push({ type: "prompts", key: "prompts:" + ch.id, ch, ci, seg });
+    slides.push({ type: "practice", key: "task:" + ch.id, ch, ci, seg });
   });
-  slides.push({ type: "outputs", seg: chapters.length + 1 });
-  slides.push({ type: "worksheet", seg: chapters.length + 1 });
-  slides.push({ type: "cta", seg: chapters.length + 1 });
-  slides.push({ type: "closing", seg: chapters.length + 1 });
+  ["outputs", "worksheet", "cta", "closing"].forEach(t => slides.push({ type: t, key: t, seg: last }));
   return slides;
+};
+
+/* Judul singkat sebuah slide, untuk panduan pemateri. */
+const seminarSlideTitle = (sl) => {
+  const V = window.SEMINAR_VIZ || {};
+  switch (sl.type) {
+    case "title": return "Judul";
+    case "hook-poll": return "Hook: angkat tangan";
+    case "hook-demo": return "Hook: demo percaya atau cek";
+    case "hook-goals": return "Yang kamu bawa pulang";
+    case "agenda": return "Agenda";
+    case "chapter": return "Pembuka Bab " + (sl.ci + 1) + ": " + sl.ch.title;
+    case "section": return sl.s.h;
+    case "viz": return "Visual: " + (V[sl.viz] ? V[sl.viz].title : sl.viz);
+    case "shot": return "Screenshot: " + sl.shot.title;
+    case "prompts": return "Contoh prompt";
+    case "practice": return "Tugas: " + sl.ch.task.title;
+    case "outputs": return "Paket Belajar AI Pribadi";
+    case "worksheet": return "Ambil lembar kerjamu";
+    case "cta": return "Lanjutkan bersama Talqeeh";
+    case "closing": return "Penutup";
+    default: return sl.type;
+  }
 };
 
 const pad2 = (n) => String(n).padStart(2, "0");
@@ -55,11 +82,39 @@ const QrCode = ({ id, className = "" }) => {
   );
 };
 
+/* Timer tugas: tombol atau tekan T. Menghitung mundur dari menit tugas. */
+const TaskTimer = ({ minutes }) => {
+  const [left, setLeft] = useState(minutes * 60);
+  const [run, setRun] = useState(false);
+  useEffect(() => {
+    if (!run) return;
+    const id = setInterval(() => setLeft(l => { if (l <= 1) { setRun(false); return 0; } return l - 1; }), 1000);
+    return () => clearInterval(id);
+  }, [run]);
+  useEffect(() => {
+    const h = () => setRun(r => (left > 0 ? !r : r));
+    window.addEventListener("seminar-timer", h);
+    return () => window.removeEventListener("seminar-timer", h);
+  }, [left]);
+  const mm = String(Math.floor(left / 60)).padStart(2, "0"), ss = String(left % 60).padStart(2, "0");
+  const done = left === 0;
+  return (
+    <div className="inline-flex items-center gap-[clamp(0.6rem,1.4vw,1.2rem)] mt-[clamp(0.6rem,1.8vh,1.2rem)]">
+      <span className={"num tabular-nums font-display font-semibold leading-none text-[clamp(1.8rem,min(4vw,7vh),3.4rem)] " + (done ? "text-gold-300" : "text-ink")}>{mm}:{ss}</span>
+      <button onClick={() => done ? (setLeft(minutes * 60), setRun(false)) : setRun(r => !r)}
+              className="rounded-xl border border-gold-500/60 text-gold-300 hover:bg-gold-500/10 transition-colors px-4 py-2 text-[clamp(0.85rem,1.3vw,1.05rem)] font-medium">
+        {done ? "Waktu habis, ulangi" : run ? "Jeda" : left === minutes * 60 ? "Mulai timer (T)" : "Lanjut"}
+      </button>
+    </div>
+  );
+};
+
 const Item = ({ i = 0, className = "", children, ...rest }) => (
   <div className={"sl-item " + className} style={{ animationDelay: (110 + i * 75) + "ms" }} {...rest}>{children}</div>
 );
 
 const SlideBody = ({ slide, goChapter }) => {
+  const clean = /[?&]clean=1/.test(window.location.hash);
   const chapters = window.SEMINAR_CHAPTERS;
   const inline = window.seminarRenderInline;
 
@@ -98,7 +153,7 @@ const SlideBody = ({ slide, goChapter }) => {
     <div className="w-full max-w-[1400px] mx-auto grid lg:grid-cols-12 gap-6 lg:gap-16 items-center">
       <div className="lg:col-span-4">
         <Item i={0}><h2 className="font-display font-semibold text-ink tracking-tight leading-none text-[clamp(2.4rem,min(6.5vw,11vh),5.5rem)]">Agenda</h2></Item>
-        <Item i={1}><p className="text-ink-muted text-[clamp(1rem,1.8vw,1.35rem)] mt-[clamp(0.6rem,1.6vw,1.2rem)] max-w-[28ch]">Enam bab, dari dasar sampai praktik langsung.</p></Item>
+        <Item i={1}><p className="text-ink-muted text-[clamp(1rem,1.8vw,1.35rem)] mt-[clamp(0.6rem,1.6vw,1.2rem)] max-w-[28ch]">Enam bab dalam tiga jam, termasuk 85 menit praktik dan istirahat 10 menit.</p></Item>
       </div>
       <ol className="lg:col-span-8 grid gap-1.5">
         {chapters.map((c, i) => (
@@ -110,10 +165,86 @@ const SlideBody = ({ slide, goChapter }) => {
                 <span className="block text-ink font-display font-medium text-[clamp(1.05rem,min(2.5vw,4vh),2rem)] leading-snug">{c.title}</span>
                 <span className="hidden lg:block [@media(max-height:850px)]:!hidden text-ink-muted text-[clamp(0.8rem,1.15vw,1rem)] mt-0.5 max-w-[60ch]">{c.summary}</span>
               </span>
+                          <span className="ml-auto num text-ink-muted text-[clamp(0.8rem,1.3vw,1.05rem)] shrink-0">{window.seminarClock(window.SEMINAR_SCHEDULE.blocks.find(b => b.key === "talk:" + c.id).start)}</span>
             </button>
           </Item>
         ))}
       </ol>
+    </div>
+  );
+
+  /* ── Hook 1: angkat tangan ── */
+  if (slide.type === "hook-poll") return (
+    <div className="w-full max-w-[1200px] mx-auto">
+      <Item i={0}><div className="text-gold-300 text-[clamp(0.8rem,1.3vw,1.05rem)] mb-[clamp(0.4rem,1.2vh,0.9rem)]">Sebelum mulai</div></Item>
+      <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.08] text-[clamp(1.8rem,min(5vw,8vh),4.4rem)]">Siapa yang pernah memakai AI untuk belajar?</h2></Item>
+      <div className="mt-[clamp(1rem,3.4vh,2.4rem)] grid sm:grid-cols-3 gap-[clamp(0.6rem,1.6vw,1.4rem)]">
+        {["Hampir tiap hari", "Kadang-kadang", "Belum pernah"].map((t, i) => (
+          <Item i={i + 2} key={t}>
+            <div className="rounded-2xl border border-white/15 bg-white/[0.03] px-[clamp(1rem,2vw,1.8rem)] py-[clamp(0.7rem,2.2vh,1.5rem)] text-ink font-display font-medium text-[clamp(1.05rem,min(2.2vw,3.8vh),1.8rem)]">{t}</div>
+          </Item>
+        ))}
+      </div>
+      <Item i={6}>
+        <p className="mt-[clamp(1.2rem,4.4vh,3.2rem)] pl-[clamp(1rem,2vw,1.6rem)] border-l-2 border-gold-500 text-gold-200 leading-snug text-[clamp(1.1rem,min(2.4vw,4vh),2rem)]">
+          Dan siapa yang pernah dapat jawaban AI yang salah, tapi terdengar sangat meyakinkan?
+        </p>
+      </Item>
+    </div>
+  );
+
+  /* ── Hook 2: demo percaya atau cek ── */
+  if (slide.type === "hook-demo") return (
+    <div className="w-full max-w-[1300px] mx-auto grid lg:grid-cols-12 gap-5 lg:gap-14 items-center">
+      <div className="lg:col-span-5">
+        <Item i={0}><div className="text-gold-300 text-[clamp(0.8rem,1.3vw,1.05rem)] mb-[clamp(0.4rem,1.2vh,0.9rem)]">Demo 3 menit</div></Item>
+        <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.06] text-[clamp(1.8rem,min(4.6vw,7.4vh),3.8rem)]">Percaya atau cek?</h2></Item>
+        <ol className="mt-[clamp(0.8rem,2.6vh,1.8rem)] grid gap-[clamp(0.5rem,1.6vh,1.1rem)]">
+          {["Kita tanyakan ini ke AI.", "Kita cek bersama: nama kitab, halaman, dan matan.", "Hitung: berapa yang benar-benar lolos?"].map((t, i) => (
+            <Item i={i + 2} key={i}>
+              <li className="flex gap-3 items-baseline list-none text-ink-muted leading-snug text-[clamp(1rem,min(1.9vw,3.3vh),1.5rem)]">
+                <span className="num text-gold-400 w-5 shrink-0 text-[0.8em]">{i + 1}</span>{t}
+              </li>
+            </Item>
+          ))}
+        </ol>
+      </div>
+      <Item i={3} className="lg:col-span-7">
+        <div className="rounded-2xl border border-gold-500/50 bg-gold-500/[0.06] p-[clamp(1rem,2.4vw,2.2rem)]">
+          <div className="text-gold-300 font-medium text-[clamp(0.8rem,1.3vw,1.05rem)] mb-[clamp(0.5rem,1.4vh,1rem)]">Prompt</div>
+          <p className="text-ink leading-[1.4] text-[clamp(1.05rem,min(2.2vw,3.8vh),1.8rem)]">
+            Sebutkan tiga kitab tafsir ayat ahkam yang membahas ayat riba. Cantumkan nama pengarang, nomor jilid dan halaman, serta kutipan matannya.
+          </p>
+        </div>
+      </Item>
+    </div>
+  );
+
+  /* ── Hook 3: tujuan dan persiapan ── */
+  if (slide.type === "hook-goals") return (
+    <div className="w-full max-w-[1300px] mx-auto">
+      <Item i={0}><div className="text-gold-300 text-[clamp(0.8rem,1.3vw,1.05rem)] mb-[clamp(0.4rem,1.2vh,0.9rem)]">Tujuan hari ini</div></Item>
+      <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.06] text-[clamp(1.8rem,min(4.8vw,7.6vh),4rem)]">Yang kamu bawa pulang</h2></Item>
+      <ol className="mt-[clamp(0.9rem,3vh,2.2rem)] grid gap-[clamp(0.6rem,2vh,1.4rem)]">
+        {["Tahu kapan AI bisa dipercaya dan kapan harus dicek.", "Mampu menulis prompt yang tepat sasaran.", "Punya cara belajar aktif dengan AI: ringkas, uji, ulang."].map((t, i) => (
+          <Item i={i + 2} key={i}>
+            <li className="flex gap-[clamp(0.8rem,1.8vw,1.5rem)] items-baseline list-none">
+              <span className="num text-gold-400 text-[clamp(0.9rem,1.5vw,1.2rem)] w-7 shrink-0">{pad2(i + 1)}</span>
+              <span className="text-ink leading-snug text-[clamp(1.1rem,min(2.3vw,4vh),1.9rem)]">{t}</span>
+            </li>
+          </Item>
+        ))}
+      </ol>
+      <Item i={5}>
+        <div className="mt-[clamp(1rem,3.4vh,2.4rem)] rounded-2xl border border-gold-500/50 bg-gold-500/[0.07] px-[clamp(1rem,2.2vw,1.8rem)] py-[clamp(0.7rem,2vh,1.3rem)] text-ink leading-snug text-[clamp(1rem,min(1.9vw,3.2vh),1.5rem)]">
+          Dan satu <span className="text-gold-300 font-semibold">Paket Belajar AI Pribadi</span>: enam output yang kamu buat sendiri di tempat.
+        </div>
+      </Item>
+      <Item i={6}>
+        <p className="mt-[clamp(0.8rem,2.6vh,1.8rem)] text-ink-muted leading-snug text-[clamp(0.9rem,min(1.6vw,2.8vh),1.3rem)]">
+          <span className="text-ink font-medium">Siapkan sekarang:</span> HP atau laptop, satu bab diktat atau catatan, dan akun salah satu alat AI (ChatGPT, Claude, Gemini, atau NotebookLM).
+        </p>
+      </Item>
     </div>
   );
 
@@ -255,6 +386,7 @@ const SlideBody = ({ slide, goChapter }) => {
             </Item>
             <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.08] text-[clamp(1.7rem,min(4.2vw,6.8vh),3.6rem)]">{t.title}</h2></Item>
             <Item i={2}><div className="text-ink-muted text-[clamp(0.8rem,1.2vw,1rem)] mt-[clamp(0.4rem,1.2vh,0.9rem)]">Bab {slide.ci + 1}, {slide.ch.title}</div></Item>
+            {!clean && <Item i={3}><TaskTimer minutes={t.minutes}/></Item>}
           </div>
           <ol className="lg:col-span-7 grid gap-[clamp(0.55rem,1.8vh,1.2rem)]">
             {t.steps.map((st, i) => (
@@ -396,6 +528,7 @@ const SeminarSlidesPage = () => {
     try { const v = parseInt(sessionStorage.getItem(SLIDES_KEY) || "0", 10); return v >= 0 && v < total ? v : 0; } catch { return 0; }
   });
   const [menuOpen, setMenuOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
   const touch = useRef(null);
   const prevIdx = useRef(idx);
   const dir = idx >= prevIdx.current ? 1 : -1;
@@ -428,6 +561,8 @@ const SeminarSlidesPage = () => {
       else if (e.key === "End") go(total - 1);
       else if (e.key === "Escape") { if (menuOpen) setMenuOpen(false); else if (!document.fullscreenElement) exit(); }
       else if (e.key === "f" || e.key === "F") toggleFull();
+      else if (e.key === "p" || e.key === "P") setNotesOpen(o => !o);
+      else if (e.key === "t" || e.key === "T") window.dispatchEvent(new Event("seminar-timer"));
     };
     window.addEventListener("keydown", onKey);
     const prevOverflow = document.body.style.overflow;
@@ -448,6 +583,14 @@ const SeminarSlidesPage = () => {
   const clean = useMemo(() => /[?&]clean=1/.test(window.location.hash), []);
   const slide = slides[idx];
   const label =slide.ch ? "Bab " + (slide.ci + 1) + " " + slide.ch.title : "Materi Seminar AI";
+  const blockOf = (sl) => {
+    const B = window.SEMINAR_SCHEDULE.blocks;
+    if (sl.seg === 0) return B.find(b => b.key === "open");
+    if (sl.seg > chapters.length) return B.find(b => b.key === "close");
+    return B.find(b => b.key === (sl.type === "practice" ? "task:" : "talk:") + sl.ch.id);
+  };
+  const block = blockOf(slide);
+  const note = (window.SEMINAR_NOTES || {})[slide.key];
   const iconBtn = "w-10 h-10 rounded-xl flex items-center justify-center text-ink-muted hover:text-ink hover:bg-white/[0.07] transition-colors";
 
   return (
@@ -501,7 +644,7 @@ const SeminarSlidesPage = () => {
                     <span className="num text-gold-400 w-5 shrink-0">{pad2(i + 1)}</span>{c.title}
                   </button>
                 ))}
-                <div className="hidden md:block px-3 pt-2.5 mt-1 border-t border-white/10 text-xs text-ink-muted">Panah atau spasi pindah slide, F layar penuh, Esc keluar</div>
+                <div className="hidden md:block px-3 pt-2.5 mt-1 border-t border-white/10 text-xs text-ink-muted">Panah atau spasi pindah slide, F layar penuh, P catatan pemateri, T timer tugas, Esc keluar</div>
               </div>
             </>
           )}
@@ -513,12 +656,23 @@ const SeminarSlidesPage = () => {
 
       {/* panggung */}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className={"min-h-full flex items-center px-5 md:px-14 lg:px-20 " + (clean ? "py-10" : "pt-2 pb-20")}>
+        <div className={"min-h-full flex items-center px-5 md:px-14 lg:px-20 " + (clean ? "py-10" : "pt-2 pb-20")} style={notesOpen && !clean ? { paddingBottom: "42vh" } : undefined}>
           <div key={idx} className="sl-stage w-full" style={{ "--dx": dir * 28 + "px" }}>
             <SlideBody slide={slide} goChapter={goChapter}/>
           </div>
         </div>
       </div>
+
+      {notesOpen && !clean && (
+        <div className="absolute inset-x-0 bottom-0 z-30 max-h-[44%] overflow-y-auto border-t border-gold-500/40 bg-[#0f0f0e] px-5 md:px-10 py-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 mb-2">
+            <span className="text-gold-300 text-xs uppercase tracking-[0.2em]">Catatan pemateri</span>
+            {block && <span className="text-ink-muted text-sm num">{block.label}, {window.seminarClock(block.start)} sampai {window.seminarClock(block.end)} ({block.min} menit)</span>}
+          </div>
+          <p className="text-ink leading-relaxed text-[clamp(0.95rem,1.4vw,1.15rem)]">{note ? note.say : "Belum ada catatan untuk slide ini."}</p>
+          {note && note.cue && <p className="mt-2 text-gold-200 text-sm"><span className="font-semibold">Isyarat:</span> {note.cue}</p>}
+        </div>
+      )}
 
       {clean && <div className="absolute left-6 bottom-4 num text-sm text-ink-muted">{idx + 1} / {total}</div>}
 
@@ -537,4 +691,4 @@ const SeminarSlidesPage = () => {
   );
 };
 
-Object.assign(window, { SeminarSlidesPage });
+Object.assign(window, { SeminarSlidesPage, buildSeminarSlides, seminarSlideTitle });

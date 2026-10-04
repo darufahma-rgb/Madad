@@ -257,35 +257,7 @@ const VizSpectrum = () => {
   );
 };
 
-/* ── 7. Alokasi waktu workshop (data nyata dari materi) ──────── */
-const VizWorkshop = () => {
-  const parts = [
-    { t: "Prompt buruk vs baik", m: 15, c: "#B3904D" },
-    { t: "Ringkas lalu kuis", m: 20, c: "#C9A86A" },
-    { t: "Uji halusinasi", m: 15, c: "#D9BD85" },
-    { t: "Tutor yang menguji", m: 15, c: "#E8D0A0" },
-  ];
-  const total = parts.reduce((n, p) => n + p.m, 0);
-  return (
-    <div className="max-w-[1100px]" role="img" aria-label={"Empat sesi workshop, total " + total + " menit: " + parts.map(p => p.t + " " + p.m + " menit").join(", ")}>
-      <div className="flex items-baseline justify-between mb-3">
-        <span className="text-ink-muted text-sm">Menit per sesi</span>
-        <span className="text-gold-300 font-medium num">Total {total} menit</span>
-      </div>
-      <div className="flex gap-[2px]">
-        {parts.map((p, i) => (
-          <div key={p.t} style={{ width: (p.m / total * 100) + "%" }} className="min-w-0">
-            <div className="sv-growx h-[clamp(2.6rem,9vh,4.4rem)] flex items-center justify-center text-[#0b0b0a] font-semibold num text-[clamp(1rem,min(2vw,3.6vh),1.6rem)]"
-                 style={{ background: p.c, borderRadius: i === 0 ? "10px 3px 3px 10px" : i === parts.length - 1 ? "3px 10px 10px 3px" : 3, ...dl(i, 200, 260) }}>{p.m}</div>
-            <div className="sv-fade pt-3 pr-2 text-ink text-[clamp(0.78rem,min(1.3vw,2.4vh),1.1rem)] leading-snug" style={dl(i, 700, 260)}>{p.t}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-/* ── 8. Rencana 7 hari ───────────────────────────────────────── */
+/* ── 7. Rencana 7 hari ───────────────────────────────────────── */
 const VizSevenDays = () => {
   const days = [
     "Ringkas materi", "Buat kuis dan kerjakan", "Perbaiki bagian yang salah", "Tutor penguji",
@@ -319,7 +291,6 @@ const SEMINAR_VIZ = {
   forgetting: { C: VizForgetting,  title: "Mengulang berjarak melawan lupa", sub: "Tiap pengulangan membuat ingatan bertahan lebih lama.", note: "Ilustrasi konsep kurva lupa, bukan hasil pengukuran." },
   threechecks:{ C: VizThreeChecks, title: "Tiga cek sebelum dipakai", sub: "Referensi dari AI baru boleh masuk makalah setelah lolos semuanya." },
   spectrum:   { C: VizSpectrum,    title: "Siapa mengerjakan apa", sub: "Makin ke kanan, makin harus dipegang manusia, guru, dan kitab.", note: "Ilustrasi pembagian peran, bukan hasil pengukuran." },
-  workshop:   { C: VizWorkshop,    title: "Alokasi waktu workshop", sub: "Empat sesi, total 65 menit." },
   sevenday:   { C: VizSevenDays,   title: "Rencana belajar 7 hari", sub: "Dari ringkasan sampai simulasi ujian." },
 };
 
@@ -329,8 +300,8 @@ const SEMINAR_VIZ_AFTER = {
   prompting: { "Rumus lima bagian": "formula" },
   belajar: { "Flashcard, kuis, dan pengulangan": "forgetting" },
   adab: { "Protokol tiga cek": "threechecks" },
-  pendidikan: { "Untuk pengajar": "spectrum" },
-  praktik: { "Sesi 4: tutor yang menguji (15 menit)": "workshop", "Rencana belajar 7 hari": "sevenday" },
+  pendidikan: { "Siapa mengerjakan apa": "spectrum" },
+  praktik: { "Rencana belajar 7 hari": "sevenday" },
 };
 
 Object.assign(window, { SEMINAR_VIZ, SEMINAR_VIZ_AFTER, SEMINAR_VIZ_CSS });

@@ -290,7 +290,7 @@ const SEMINAR_CHAPTERS = [
     id: "pendidikan",
     icon: "compass",
     title: "AI untuk pendidikan",
-    summary: "Gambaran lebih luas: bagaimana AI mengubah belajar, mengajar, dan menilai.",
+    summary: "Cara memaksimalkan AI untuk belajar, di mana Talqeeh masuk, dan batas peran AI.",
     sections: [
       {
         h: "Belajar yang dipersonalisasi",
@@ -318,10 +318,10 @@ const SEMINAR_CHAPTERS = [
         ],
       },
       {
-        h: "Untuk pengajar",
+        h: "Siapa mengerjakan apa",
         points: [
-          "Menyusun soal bertingkat, rubrik penilaian, ringkasan materi, dan draf umpan balik.",
-          "Semuanya tetap perlu ditinjau manusia. AI mempercepat persiapan, bukan menggantikan penilaian.",
+          "AI membantu menyiapkan, merangkum, dan melatih. Guru membimbing, menilai, dan memberi sanad.",
+          "Kamu yang memahami, mengamalkan, dan bertanggung jawab atas jawabanmu sendiri.",
         ],
       },
       {
@@ -329,6 +329,7 @@ const SEMINAR_CHAPTERS = [
         points: [
           "Pendeteksi tulisan AI tidak andal dan bisa menuduh orang yang salah.",
           "Pendekatan yang lebih sehat: ujian lisan, tugas berproses, portofolio, dan penjelasan langsung atas karya sendiri.",
+          "Aturan tiap dosen dan kampus bisa berbeda. Tanyakan, ikuti, dan sebutkan penggunaan AI bila diminta.",
         ],
       },
       {
@@ -337,12 +338,6 @@ const SEMINAR_CHAPTERS = [
           "Memahami cara kerja dan batas AI kini menjadi kemampuan dasar, setara literasi digital.",
           "Akses tidak merata: koneksi, biaya langganan, dan bahasa. Banyak alat lebih kuat di bahasa Inggris dibanding Arab klasik.",
           "Konteks keilmuan Islam bisa kurang terwakili dalam data latih, jadi verifikasi lebih penting lagi.",
-        ],
-      },
-      {
-        h: "Kebijakan kampus",
-        points: [
-          "Institusi perlu panduan yang jelas: apa yang boleh, apa yang harus disebutkan, dan bagaimana menilainya.",
         ],
       },
       {
@@ -374,45 +369,24 @@ const SEMINAR_CHAPTERS = [
   },
   {
     id: "praktik",
-    icon: "flask",
-    title: "Praktik langsung (workshop)",
-    summary: "Rangkaian latihan singkat yang bisa dikerjakan peserta di tempat dengan materinya sendiri.",
+    icon: "target",
+    title: "Rencana dan tindak lanjut",
+    summary: "Mengubah hasil seminar menjadi kebiasaan belajar selama seminggu ke depan.",
     sections: [
-      {
-        h: "Persiapan",
-        points: [
-          "Bawa HP atau laptop, satu diktat atau catatan, dan akun salah satu alat AI.",
-        ],
-      },
-      {
-        h: "Sesi 1: prompt buruk vs baik (15 menit)",
-        points: [
-          "Pakai satu materi yang sama. Bandingkan hasil prompt singkat dengan prompt berstruktur.",
-        ],
-      },
-      {
-        h: "Sesi 2: ringkas lalu kuis (20 menit)",
-        points: [
-          "Minta ringkasan berlevel dari diktat sendiri, lalu minta lima soal latihan beserta kunci jawabannya.",
-        ],
-      },
-      {
-        h: "Sesi 3: uji halusinasi (15 menit)",
-        points: [
-          "Minta referensi kitab untuk satu topik. Verifikasi bersama dengan tiga cek: nama, halaman, matan.",
-        ],
-      },
-      {
-        h: "Sesi 4: tutor yang menguji (15 menit)",
-        points: [
-          "Berpasangan: satu orang dites oleh AI, satu orang mengamati apakah AI benar-benar menguji atau malah memberi jawaban.",
-        ],
-      },
       {
         h: "Rencana belajar 7 hari",
         points: [
           "Hari 1: ringkas materi. Hari 2: buat kuis dan kerjakan. Hari 3: perbaiki bagian yang salah.",
           "Hari 4 dan 5: tutor penguji. Hari 6: ulang dengan flashcard. Hari 7: simulasi ujian tanpa membuka catatan.",
+        ],
+      },
+      {
+        h: "Menjaga kebiasaan",
+        points: [
+          "**Mulai kecil.** Dua puluh menit tiap hari lebih ringan dijaga daripada maraton satu malam.",
+          "**Pakai Paket Belajarmu.** Jadikan Set Belajar dan Prompt Andalan sebagai bahan, jangan mulai dari nol.",
+          "**Tetap verifikasi.** Referensi baru dipakai setelah lolos tiga cek.",
+          "**Cari teman belajar.** Saling menguji membuat belajar lebih aktif.",
         ],
       },
     ],
@@ -433,6 +407,24 @@ const SEMINAR_CHAPTERS = [
     },
   },
 ];
+
+/* Jadwal seminar 3 jam (180 menit). Menit materi per bab + menit tugas (task.minutes) + blok tetap. */
+const SEMINAR_TALK = { fundamental: 12, prompting: 12, belajar: 12, adab: 8, pendidikan: 20, praktik: 5 };
+SEMINAR_CHAPTERS.forEach(c => { c.talk = SEMINAR_TALK[c.id]; });
+
+const SEMINAR_SCHEDULE = (() => {
+  let t = 0; const blocks = [];
+  const add = (key, label, min, kind, ch) => { blocks.push({ key, label, min, kind, ch, start: t, end: t + min }); t += min; };
+  add("open", "Pembuka dan hook", 8, "open");
+  SEMINAR_CHAPTERS.forEach((c, i) => {
+    add("talk:" + c.id, "Bab " + (i + 1) + ": materi", c.talk, "talk", c);
+    add("task:" + c.id, "Bab " + (i + 1) + ": tugas", c.task.minutes, "task", c);
+    if (i === 1) add("break", "Istirahat", 10, "break");
+  });
+  add("close", "Penutup, ajakan, tanya jawab", 8, "close");
+  return { blocks, total: t };
+})();
+const seminarClock = (min) => Math.floor(min / 60) + ":" + String(min % 60).padStart(2, "0");
 
 /* Screenshot Talqeeh untuk bahasan "Di sinilah Talqeeh masuk". `hl` = kotak sorot dalam persen.
    `pending: true` = gambar belum tersedia, slide-nya dilewati sampai file ada di /public/seminar. */
@@ -809,6 +801,7 @@ const SeminarAiPage = () => {
 Object.assign(window, {
   SeminarAiPage, SEMINAR_AI_PATH,
   SEMINAR_AI_SLIDES_PATH: SEMINAR_AI_PATH + "/slides",
+  SEMINAR_AI_GUIDE_PATH: SEMINAR_AI_PATH + "/pemateri",
   SEMINAR_CHAPTERS, seminarRenderInline: renderInline,
-  SEMINAR_SHOTS, SEMINAR_SHOT_AFTER, seminarOutputName, seminarCompile,
+  SEMINAR_SHOTS, SEMINAR_SHOT_AFTER, seminarOutputName, seminarCompile, SEMINAR_SCHEDULE, seminarClock,
 });
