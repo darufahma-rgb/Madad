@@ -131,7 +131,10 @@ const SeminarGate = ({ view = "baca" }) => {
               <div className="mt-6 pt-5 border-t border-white/10 text-sm text-ink-muted leading-relaxed">
                 <p className="mb-3">Tanpa PIN: login dengan akun Google yang emailnya didaftarkan panitia. Member Talqeeh berbayar juga langsung masuk.</p>
                 {signedEmail && (
-                  <p className="mb-3 text-gold-300" role="status">Anda login sebagai {signedEmail}, tetapi email ini belum terdaftar untuk seminar. Gunakan email yang didaftarkan panitia, atau masukkan PIN.</p>
+                  <div className="mb-3" role="status">
+                    <p className="text-gold-300">Anda login sebagai {signedEmail}. Akun ini belum diaktifkan untuk seminar. Mohon tunggu panitia mengaktifkannya, lalu tekan Periksa lagi. Atau masukkan PIN.</p>
+                    <button type="button" onClick={load} className="btn btn-ghost text-sm py-2.5 mt-3"><Icon name="refresh" className="w-4 h-4"/> Periksa lagi</button>
+                  </div>
                 )}
                 {!signedEmail && (
                   <button type="button" onClick={loginForSeminar} className="btn btn-ghost text-sm py-2.5">

@@ -65,6 +65,12 @@ const AdminSeminar = () => {
   const [issued, setIssued] = useState([]);   // PIN yang baru dibuat (tampil sekali)
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState("");
+  const [cand, setCand] = useState({ rows: null, loading: false, err: "" });
+  const [pick, setPick] = useState(() => new Set());
+  const [cq, setCq] = useState("");
+  const [cfilter, setCfilter] = useState("todo");   // todo | google | all
+  const [pdays, setPdays] = useState("");
+  const [pickRes, setPickRes] = useState(null);
 
   const flash = (m) => { setToast(m); setTimeout(() => setToast(""), 2600); };
   const load = useCallback(async () => {
@@ -73,7 +79,12 @@ const AdminSeminar = () => {
     catch (e) { setErr(e.message); }
     setLoading(false);
   }, []);
-  useEffect(() => { load(); }, [load]);
+  const loadCand = useCallback(async () => {
+    setCand(c => ({ ...c, loading: true, err: "" }));
+    try { const d = await seminarAdminCall("admin-candidates"); setCand({ rows: d.rows || [], loading: false, err: "" }); setInfo(i => ({ ...i, emailReady: d.emailReady })); }
+    catch (e) { setCand(c => ({ ...c, loading: false, err: e.message })); }
+  }, []);
+  useEffect(() => { load(); loadCand(); }, [load, loadCand]);
 
   const run = async (fn) => { setBusy(true); setErr(""); try { await fn(); } catch (e) { setErr(e.message); } setBusy(false); };
 
@@ -102,6 +113,32 @@ const AdminSeminar = () => {
   }); };
   const toggleRevoke = (row) => run(async () => { await seminarAdminCall("admin-revoke", { id: row.id, revoke: !row.revoked_at }); flash(row.revoked_at ? "Akses dipulihkan" : "Akses dicabut"); await load(); });
   const remove = (row) => { if (!window.confirm("Hapus akses " + row.label + " secara permanen?")) return; run(async () => { await seminarAdminCall("admin-delete", { id: row.id }); flash("Akses dihapus"); await load(); }); };
+
+  const candState = (c) => c.paid ? "paid" : c.seminar;   // paid | granted | revoked | none
+  const selectable = (c) => c.seminar === "none" && !c.paid;
+  const candShown = (cand.rows || []).filter(c => {
+    if (cfilter === "todo" && !selectable(c)) return false;
+    if (cfilter === "google" && !c.google) return false;
+    const t = cq.trim().toLowerCase();
+    return !t || (c.name + " " + c.email).toLowerCase().includes(t);
+  });
+  const shownSel = candShown.filter(selectable);
+  const allChecked = shownSel.length > 0 && shownSel.every(c => pick.has(c.code));
+  const someChecked = shownSel.some(c => pick.has(c.code));
+  const toggleOne = (code) => setPick(p => { const n = new Set(p); n.has(code) ? n.delete(code) : n.add(code); return n; });
+  const toggleAll = () => setPick(p => { const n = new Set(p); if (allChecked) shownSel.forEach(c => n.delete(c.code)); else shownSel.forEach(c => n.add(c.code)); return n; });
+  const grantPicked = () => run(async () => {
+    const codes = [...pick];
+    if (!codes.length) return;
+    const d = await seminarAdminCall("admin-grant-members", { codes, days: pdays });
+    setPickRes(d); setPick(new Set()); await Promise.all([load(), loadCand()]);
+  });
+  const CAND_BADGE = {
+    none: { label: "Belum", cls: "text-ink-muted border-white/15" },
+    granted: { label: "Sudah (email)", cls: "text-emerald-300 border-emerald-400/40 bg-emerald-500/10" },
+    paid: { label: "Otomatis (member berbayar)", cls: "text-emerald-300 border-emerald-400/40 bg-emerald-500/10" },
+    revoked: { label: "Dicabut", cls: "text-rose-600 border-rose-600/40 bg-rose-600/10" },
+  };
 
   const shown = rows.filter(r => !q.trim() || (r.label + " " + (r.email || "")).toLowerCase().includes(q.trim().toLowerCase()));
   const active = rows.filter(r => statusOf(r).key === "active").length;
@@ -155,7 +192,64 @@ const AdminSeminar = () => {
         </div>
       )}
 
-      <form onSubmit={addEmails} className="card-glass-strong p-5 space-y-3">
+      <section className="card-glass-strong p-5 space-y-4" aria-labelledby="sa-pick-h">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h3 id="sa-pick-h" className="font-display text-lg font-semibold text-ink">Pilih dari akun yang sudah login</h3>
+            <p className="text-sm text-ink-muted mt-1 max-w-2xl">Minta peserta membuka <span className="text-ink">{SEMINAR_URL}</span> dan login dengan Google. Akun mereka muncul di sini, tinggal dicentang lalu diberi akses. Tidak perlu mengetik email.</p>
+          </div>
+          <button type="button" onClick={loadCand} disabled={cand.loading} className="btn btn-ghost !min-h-0 !py-2 !px-3 text-sm"><Icon name="refresh" className="w-4 h-4"/> Muat ulang</button>
+        </div>
+        {cand.err && <div className="rounded-lg border border-rose-600/40 bg-rose-600/10 p-3 text-sm text-ink" role="alert">{cand.err}</div>}
+        <div className="flex flex-wrap items-center gap-2">
+          <label htmlFor="sa-cq" className="sr-only">Cari akun</label>
+          <input id="sa-cq" value={cq} onChange={e => setCq(e.target.value)} placeholder="Cari nama atau email" className={field + " !w-60"} style={{ fontSize: 16 }}/>
+          {[["todo", "Belum punya akses"], ["google", "Login Google"], ["all", "Semua"]].map(([k, l]) => (
+            <button key={k} type="button" aria-pressed={cfilter === k} onClick={() => setCfilter(k)} className={"rounded-full border px-3 py-1.5 text-xs " + (cfilter === k ? "border-gold-500 text-gold-300 bg-gold-500/10" : "border-white/15 text-ink-muted hover:text-ink")}>{l}</button>
+          ))}
+        </div>
+        {cand.rows === null ? <div className="text-sm text-ink-muted" role="status">Memuat akun...</div> : candShown.length === 0 ? (
+          <div className="text-sm text-ink-muted rounded-lg bg-black/20 border border-white/10 p-4">{cand.rows.length ? "Tidak ada akun yang cocok dengan filter ini." : "Belum ada akun. Minta peserta login dulu, lalu muat ulang."}</div>
+        ) : (
+          <div className="rounded-lg border border-white/10 overflow-hidden">
+            <div className="max-h-96 overflow-auto">
+              <table className="w-full text-sm">
+                <thead className="sticky top-0 bg-night-900"><tr className="text-left text-ink-muted border-b border-line">
+                  <th className="pl-4 pr-2 py-2.5 w-10"><input type="checkbox" aria-label="Pilih semua yang tampil" checked={allChecked} ref={el => { if (el) el.indeterminate = !allChecked && someChecked; }} onChange={toggleAll} disabled={!shownSel.length} className="h-4 w-4 accent-[#d4a853]"/></th>
+                  <th className="px-3 py-2.5 font-medium">Nama</th><th className="px-3 py-2.5 font-medium">Email</th><th className="px-3 py-2.5 font-medium">Seminar</th><th className="px-3 py-2.5 font-medium whitespace-nowrap">Login terakhir</th>
+                </tr></thead>
+                <tbody>
+                  {candShown.map(c => { const ok = selectable(c); const b = CAND_BADGE[candState(c)]; return (
+                    <tr key={c.code} className={"border-b border-line last:border-0 " + (ok && pick.has(c.code) ? "bg-gold-500/5" : "")}>
+                      <td className="pl-4 pr-2 py-2"><input type="checkbox" aria-label={"Pilih " + (c.name || c.email)} checked={pick.has(c.code)} disabled={!ok} onChange={() => toggleOne(c.code)} className="h-4 w-4 accent-[#d4a853] disabled:opacity-30"/></td>
+                      <td className="px-3 py-2 text-ink">{c.name || "-"}</td>
+                      <td className="px-3 py-2 text-ink-muted break-all">{c.email}</td>
+                      <td className="px-3 py-2 whitespace-nowrap"><span className={"inline-block rounded-md border px-2 py-0.5 text-xs " + b.cls}>{b.label}</span></td>
+                      <td className="px-3 py-2 text-ink-muted whitespace-nowrap">{fmt(c.lastLogin || c.createdAt)}</td>
+                    </tr>); })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="max-w-[11rem]"><label htmlFor="sa-pdays" className="block text-sm text-ink mb-1">Berlaku (hari)</label><input id="sa-pdays" inputMode="numeric" placeholder="kosong = tanpa batas" className={field} value={pdays} onChange={e => setPdays(e.target.value.replace(/\D/g, ""))} style={{ fontSize: 16 }}/></div>
+          <button type="button" onClick={grantPicked} disabled={busy || pick.size === 0 || info.emailReady === false} className="btn btn-gold text-sm py-2.5 disabled:opacity-60">Beri akses ({pick.size})</button>
+          {pick.size > 0 && <button type="button" onClick={() => setPick(new Set())} className="text-xs text-ink-muted hover:text-ink underline pb-3">Kosongkan pilihan</button>}
+          <button type="button" onClick={async () => flash((await copyText(emailAnnouncement())) ? "Pesan pengumuman disalin" : "Gagal menyalin")} className="btn btn-ghost text-sm py-2.5">Salin pesan pengumuman</button>
+        </div>
+        {pickRes && (
+          <div className="rounded-lg bg-black/25 border border-white/10 p-3 text-sm" role="status">
+            <div className="text-ink">{["created", "exists", "revoked", "invalid", "missing", "error"].filter(k => pickRes.some(x => x.status === k)).map(k => ({ created: "Diberi akses", exists: "Sudah punya", revoked: "Pernah dicabut", invalid: "Email tidak valid", missing: "Akun tidak ditemukan", error: "Gagal" }[k]) + ": " + pickRes.filter(x => x.status === k).length).join(" | ")}</div>
+            <button type="button" onClick={() => setPickRes(null)} className="mt-2 text-xs text-ink-muted hover:text-ink underline">Tutup</button>
+          </div>
+        )}
+      </section>
+
+      <details className="card-glass p-5">
+        <summary className="cursor-pointer font-display text-lg font-semibold text-ink">Atau ketik email manual (untuk yang belum login)</summary>
+        <div className="mt-4">
+      <form onSubmit={addEmails} className="space-y-3">
         <div>
           <h3 className="font-display text-lg font-semibold text-ink">Beri akses lewat email</h3>
           <p className="text-sm text-ink-muted mt-1">Pemilik email login dengan Google dan langsung masuk tanpa PIN. Email harus sama dengan akun Google yang dipakai. Untuk Gmail, titik dan +tag diabaikan.</p>
@@ -183,6 +277,8 @@ const AdminSeminar = () => {
           </div>
         )}
       </form>
+        </div>
+      </details>
 
       <div className="grid lg:grid-cols-2 gap-4">
         <form onSubmit={createOne} className="card-glass p-5 space-y-3">

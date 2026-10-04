@@ -242,7 +242,7 @@ const SlideBody = ({ slide, goChapter }) => {
       </Item>
       <Item i={6}>
         <p className="mt-[clamp(0.8rem,2.6vh,1.8rem)] text-ink-muted leading-snug text-[clamp(0.9rem,min(1.6vw,2.8vh),1.3rem)]">
-          <span className="text-ink font-medium">Siapkan sekarang:</span> HP atau laptop, satu bab diktat atau catatan, dan akun salah satu alat AI (ChatGPT, Claude, Gemini, atau NotebookLM).
+          <span className="text-ink font-medium">Siapkan sekarang:</span> HP atau laptop, satu bab diktat atau catatan, dan akun salah satu alat AI (ChatGPT, Claude, Gemini, atau NotebookLM). Login ke Talqeeh dengan Google di talqeeh.vercel.app/#/seminar sekarang, supaya akun Anda bisa diaktifkan panitia.
         </p>
       </Item>
     </div>
@@ -445,7 +445,7 @@ const SlideBody = ({ slide, goChapter }) => {
         <ol className="mt-[clamp(0.9rem,3vh,2.2rem)] grid gap-[clamp(0.6rem,2vh,1.4rem)]">
           {[
             "Scan QR di samping dengan kamera HP.",
-            "Login dengan Google memakai email yang kamu daftarkan ke panitia, atau masukkan PIN pribadimu.",
+            "Login dengan Google (sudah dilakukan di awal), lalu tekan Periksa lagi bila belum terbuka. Atau masukkan PIN pribadimu.",
             "Isi lembar kerja di tiap bab. Isianmu tersimpan otomatis di HP.",
             "Salin, unduh, atau kirim ke WhatsApp sebagai Paket Belajar AI Pribadi.",
           ].map((t, i) => (
