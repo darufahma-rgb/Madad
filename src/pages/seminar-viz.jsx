@@ -294,14 +294,6 @@ const SEMINAR_VIZ = {
   sevenday:   { C: VizSevenDays,   title: "Rencana belajar 7 hari", sub: "Dari ringkasan sampai simulasi ujian." },
 };
 
-/* Visual disisipkan SETELAH subtopik ini: { idBab: { judulSubtopik: idVisual } } */
-const SEMINAR_VIZ_AFTER = {
-  fundamental: { "Peta istilah": "nesting", "Cara kerja LLM, versi sederhana": "nexttoken" },
-  prompting: { "Rumus lima bagian": "formula" },
-  belajar: { "Flashcard, kuis, dan pengulangan": "forgetting" },
-  adab: { "Protokol tiga cek": "threechecks" },
-  pendidikan: { "Siapa mengerjakan apa": "spectrum" },
-  praktik: { "Rencana belajar 7 hari": "sevenday" },
-};
+/* Peta 'visual disisipkan setelah subtopik mana' (vizAfter) datang dari server bersama isi materi. */
 
-Object.assign(window, { SEMINAR_VIZ, SEMINAR_VIZ_AFTER, SEMINAR_VIZ_CSS });
+Object.assign(window, { SEMINAR_VIZ, SEMINAR_VIZ_CSS });

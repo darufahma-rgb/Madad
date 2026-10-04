@@ -445,6 +445,7 @@ const SlideBody = ({ slide, goChapter }) => {
         <ol className="mt-[clamp(0.9rem,3vh,2.2rem)] grid gap-[clamp(0.6rem,2vh,1.4rem)]">
           {[
             "Scan QR di samping dengan kamera HP.",
+            "Masukkan PIN pribadimu dari panitia (member Talqeeh cukup login).",
             "Isi lembar kerja di tiap bab. Isianmu tersimpan otomatis di HP.",
             "Salin, unduh, atau kirim ke WhatsApp sebagai Paket Belajar AI Pribadi.",
           ].map((t, i) => (
@@ -458,8 +459,8 @@ const SlideBody = ({ slide, goChapter }) => {
         </ol>
       </div>
       <Item i={2} className="lg:col-span-5 flex flex-col items-center">
-        <QrCode id="materi" className="p-3" />
-        <div className="text-ink-muted text-[clamp(0.75rem,1.1vw,0.95rem)] mt-3 text-center break-all max-w-[22rem]">talqeeh.vercel.app/#/seminar/ai-m1583hmvaq</div>
+        <QrCode id="materi" className="p-3 w-[clamp(8rem,34vw,13rem)] lg:w-full" />
+        <div className="text-ink-muted text-[clamp(0.75rem,1.1vw,0.95rem)] mt-3 text-center break-all max-w-[22rem]">talqeeh.vercel.app/#/seminar</div>
       </Item>
     </div>
   );

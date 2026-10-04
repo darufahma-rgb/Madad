@@ -1,17 +1,6 @@
 import React, { useEffect } from 'react';
 /* Talqeeh — Panduan Pemateri seminar AI (tidak ditautkan; hanya lewat URL). Ramah cetak: tema terang saat dicetak. */
 
-const GUIDE_CHECKLIST = [
-  "Coba demo hook di rumah dengan alat AI yang sama. Siapkan kitab aslinya (Maktabah Syamilah atau cetak) agar pengecekan cepat.",
-  "Simpan PDF slide di flashdisk dan HP sebagai cadangan kalau internet atau proyektor bermasalah.",
-  "Buka mode slide di laptop, tekan F untuk layar penuh, uji tombol P (catatan) dan T (timer tugas).",
-  "Scan QR di slide 'Ambil lembar kerjamu' dan 'Lanjutkan bersama Talqeeh' dari jarak belakang ruangan.",
-  "Siapkan hotspot cadangan. Peserta butuh internet untuk memakai alat AI saat tugas.",
-  "Jika ada penawaran khusus peserta, isi SEMINAR_CTA_OFFER di seminar-qr.jsx sebelum acara.",
-  "Minta panitia mengingatkan peserta membawa HP atau laptop, satu bab diktat, dan akun salah satu alat AI.",
-];
-
-
 const SeminarGuidePage = () => {
   useEffect(() => {
     const m = document.createElement("meta");
@@ -20,7 +9,7 @@ const SeminarGuidePage = () => {
     const st = document.createElement("style");
     st.textContent = `@media print {
       html, body { background: #fff !important; }
-      header, footer, nav, .pg-hide, .fixed { display: none !important; }
+      header, footer, nav, .pg-hide, .fixed.bottom-0, .fixed[class*="bottom-"], .fixed[class*="top-"] { display: none !important; }
       .pg-root, .pg-root * { color: #111 !important; background: transparent !important; box-shadow: none !important; border-color: #bbb !important; }
       .pg-root { padding: 0 !important; }
       .pg-slide { break-inside: avoid; }
@@ -85,7 +74,7 @@ const SeminarGuidePage = () => {
 
           <h2 className="pg-h font-display text-2xl font-semibold text-ink mb-3">Persiapan sebelum acara</h2>
           <ul className="space-y-2 mb-10">
-            {GUIDE_CHECKLIST.map((t, i) => (
+            {(window.SEMINAR_GUIDE_CHECKLIST || []).map((t, i) => (
               <li key={i} className="flex gap-3 text-ink-muted leading-relaxed">
                 <span className="mt-1 w-4 h-4 rounded border border-white/30 shrink-0"/><span className="min-w-0">{t}</span>
               </li>
