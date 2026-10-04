@@ -284,6 +284,15 @@ html.app-shell { --app-header-h: calc(57px + var(--safe-top)); }
   .container-x { padding: 0 16px; }
   .card-glass        { border-radius: 14px; }
   .card-glass-strong { border-radius: 16px; }
+  /* Perf HP: backdrop-filter di puluhan kartu + blur raksasa bikin scroll ngelag.
+     Ganti dengan latar sedikit lebih pekat dan glow berbasis mask (tanpa filter blur). */
+  .card-glass        { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(255,255,255,0.045); }
+  .card-glass-strong { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(255,255,255,0.07); }
+  body .blob, body .blur-3xl.rounded-full {
+    filter: none;
+    -webkit-mask-image: radial-gradient(closest-side, #000 0%, transparent 100%);
+    mask-image: radial-gradient(closest-side, #000 0%, transparent 100%);
+  }
   .btn          { padding: 10px 16px; font-size: 14px; border-radius: 10px; min-height: 44px; }
   .btn-primary  { box-shadow: 0 4px 14px rgba(62,207,142,0.30); }
   .btn-primary:hover { transform: none; }
