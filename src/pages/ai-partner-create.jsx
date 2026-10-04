@@ -72,8 +72,70 @@ const FileRow = ({ item, onContinue, busy }) => {
 const PDF_MAX_PAGES = 120;   // maksimal halaman per sekali simpan (±200rb karakter batas materi)
 const PDF_ASK_PAGES = 40;    // di atas ini pengguna diminta memilih bagian
 
+/* "Pecah per bab": satu PDF berdaftar isi → beberapa materi sekaligus, satu per bab (memakai 1 kuota). */
+const SPLIT_MAX = 12;          // sama dengan BATCH_MAX di server
+const SPLIT_MAX_PAGES = 400;   // total halaman yang dibaca sekali pecah (waktu baca & memori HP)
+
+const ChapterSplitPicker = ({ info, onPick, onSkip }) => {
+  const { outline } = info;
+  const hasSub = outline.some(c => c.depth === 1);
+  const topCount = outline.filter(c => c.depth === 0).length;
+  const [level, setLevel] = useState(topCount >= 2 || !hasSub ? 0 : 1);
+  const list = outline.filter(c => c.depth === level);
+  const fits = (c) => c.end - c.page + 1 <= PDF_MAX_PAGES;
+  const defaultPick = (lv) => new Set(outline.map((c, k) => k).filter(k => outline[k].depth === lv && fits(outline[k])).slice(0, SPLIT_MAX));
+  const [picked, setPicked] = useState(() => defaultPick(level));
+  const changeLevel = (lv) => { setLevel(lv); setPicked(defaultPick(lv)); };
+  const toggle = (k) => setPicked(p => { const n = new Set(p); n.has(k) ? n.delete(k) : n.add(k); return n; });
+  const sel = [...picked].sort((x, y) => x - y).map(k => outline[k]);
+  const pages = sel.reduce((n, c) => n + c.end - c.page + 1, 0);
+  const err = sel.length < 2 ? 'Pilih minimal 2 bab.'
+    : sel.length > SPLIT_MAX ? `Maksimal ${SPLIT_MAX} bab sekali pecah (terpilih ${sel.length}).`
+    : pages > SPLIT_MAX_PAGES ? `Total maksimal ${SPLIT_MAX_PAGES} halaman sekali pecah (terpilih ${pages}).`
+    : '';
+
+  return (
+    <>
+      {hasSub && topCount > 0 && (
+        <div className="flex gap-1.5 mt-3" role="group" aria-label="Tingkat bab">
+          {[[0, 'Bab'], [1, 'Sub-bab']].map(([lv, l]) => (
+            <button key={lv} type="button" aria-pressed={level === lv} onClick={() => changeLevel(lv)}
+              className={`text-xs px-3 py-1.5 rounded-lg border ${level === lv ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200' : 'border-white/10 text-ink-muted hover:text-ink'}`}>{l}</button>
+          ))}
+        </div>
+      )}
+      <div className="mt-3 max-h-72 overflow-y-auto rounded-lg border border-white/8 divide-y divide-white/6">
+        {outline.map((c, k) => {
+          if (c.depth !== level) return null;
+          const n = c.end - c.page + 1;
+          const tooLong = !fits(c);
+          return (
+            <label key={k} className={`flex items-center gap-3 px-3 py-2.5 min-h-[44px] ${tooLong ? 'opacity-50' : 'cursor-pointer hover:bg-white/4'}`}>
+              <input type="checkbox" checked={picked.has(k)} disabled={tooLong} onChange={() => toggle(k)} className="h-4 w-4 accent-emerald-500 flex-shrink-0"/>
+              <span dir="auto" className="flex-1 min-w-0 truncate text-sm text-ink">{c.title}</span>
+              <span className={`text-[11px] whitespace-nowrap ${tooLong ? 'text-amber-300' : 'text-ink-soft'}`}>{tooLong ? `${n} hlm, terlalu panjang` : `hlm. ${c.page}–${c.end} · ${n}`}</span>
+            </label>
+          );
+        })}
+      </div>
+      <div className={`text-xs mt-2 min-h-[1rem] ${err ? 'text-amber-300' : 'text-ink-soft'}`} role="status">
+        {err || `${sel.length} bab, ${pages} halaman → ${sel.length} materi terpisah. Memakai 1 kuota tambah materi.`}
+      </div>
+      <div className="flex gap-2 mt-3 flex-wrap">
+        <button type="button" disabled={!!err} onClick={() => onPick({ split: sel.map(c => ({ from: c.page, to: c.end, title: c.title })) })}
+          className="btn btn-primary text-sm px-4 py-2 disabled:opacity-50">
+          Pecah jadi {sel.length} materi
+        </button>
+        <button type="button" onClick={onSkip} className="text-xs text-ink-muted hover:text-ink underline px-2">Lewati file ini</button>
+      </div>
+      {list.length === 0 && <div className="text-xs text-ink-soft mt-2">Tidak ada bab di tingkat ini.</div>}
+    </>
+  );
+};
+
 const PdfRangePicker = ({ info, onPick, onSkip }) => {
-  const { name, numPages, outline } = info;
+  const { name, numPages, outline, canSplit } = info;
+  const [mode, setMode] = useState('one');   // one | split
   const [from, setFrom] = useState('1');
   const [to, setTo] = useState(String(Math.min(numPages, PDF_MAX_PAGES)));
   const [chosen, setChosen] = useState(null);   // indeks bab dari daftar isi
@@ -95,6 +157,16 @@ const PdfRangePicker = ({ info, onPick, onSkip }) => {
         Satu bab per materi biasanya paling pas: ringkasan, kuis, dan flashcard-nya lebih lengkap.
       </p>
 
+      {canSplit && (
+        <div className="grid grid-cols-2 gap-1.5 mt-3 p-1 rounded-xl bg-black/20 border border-white/8" role="tablist">
+          {[['one', 'Satu materi'], ['split', 'Pecah per bab']].map(([m, l]) => (
+            <button key={m} type="button" role="tab" aria-selected={mode === m} onClick={() => setMode(m)}
+              className={`text-sm py-2 rounded-lg transition ${mode === m ? 'bg-emerald-500/20 text-emerald-100' : 'text-ink-muted hover:text-ink'}`}>{l}</button>
+          ))}
+        </div>
+      )}
+
+      {mode === 'split' ? <ChapterSplitPicker info={info} onPick={onPick} onSkip={onSkip}/> : <>
       {outline.length > 0 && (
         <div className="mt-3">
           <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1.5">Daftar isi PDF</div>
@@ -139,11 +211,12 @@ const PdfRangePicker = ({ info, onPick, onSkip }) => {
         )}
         <button type="button" onClick={onSkip} className="text-xs text-ink-muted hover:text-ink underline px-2">Lewati file ini</button>
       </div>
+      </>}
     </div>
   );
 };
 
-const CreateWizard = ({ tier, onCancel }) => {
+const CreateWizard = ({ tier, onCancel, onCreated }) => {
   const toast = useToast();
   const { profile } = useAuth();
   const [step, setStep]       = useState('pick'); // pick → process → review
@@ -157,6 +230,7 @@ const CreateWizard = ({ tier, onCancel }) => {
   const [dragOver, setDragOver] = useState(false);
   const [sourceKinds, setSourceKinds] = useState([]);
   const [rangeAsk, setRangeAsk] = useState(null);   // PDF tebal yang menunggu pilihan halaman
+  const [chapters, setChapters] = useState(null);   // hasil "pecah per bab": [{ title, from, to, text, keep }]
   const cancelRef = useRef(false);
   // Jeda pemrosesan sampai pengguna memilih halaman; null = file dilewati.
   const askRange = (info) => new Promise(resolve => setRangeAsk({ ...info, resolve: (v) => { setRangeAsk(null); resolve(v); } }));
@@ -252,8 +326,30 @@ const CreateWizard = ({ tier, onCancel }) => {
     });
   };
 
+  /* Pecah per bab: baca teks tiap bab. Halaman scan TIDAK dibaca AI di sini (bisa puluhan halaman sekaligus dan
+     menguras jatah baca) — jumlahnya dilaporkan; bab yang isinya scan bisa ditambahkan lewat "Satu materi". */
+  const readChapters = async (pdf, split, i, numPages) => {
+    const totalPages = split.reduce((n, c) => n + c.to - c.from + 1, 0);
+    let done = 0;
+    const chapters = [];
+    let scanned = 0;
+    for (const c of split) {
+      if (cancelRef.current) throw new Error('Dihentikan');
+      const pages = await window.readPdfRange(pdf, c.from, c.to, () => {
+        done++;
+        if (done % 10 === 0 || done === totalPages) patchItem(i, { note: `Membaca ${split.length} bab… ${done}/${totalPages} halaman`, progress: done / totalPages });
+      });
+      scanned += pages.filter(p => p.status === 'empty' || p.status === 'garbled').length;
+      const text = pages.filter(p => p.status === 'ok' || p.status === 'fixed').map(p => p.text).join('\n\n').trim();
+      chapters.push({ title: c.title.slice(0, 120), from: c.from, to: c.to, text });
+    }
+    const notes = [`${split.length} bab dari ${numPages} halaman`];
+    if (scanned) notes.push(`${scanned} halaman scan dilewati`);
+    return { text: chapters.map(c => c.text).join('\n\n'), chapters, notes };
+  };
+
   // Mengembalikan teks (atau { text, notes, pending } untuk PDF), atau melempar error dengan .upgrade bila butuh langganan.
-  const processFile = async (item, i) => {
+  const processFile = async (item, i, fileCount = 1) => {
     const fail = (msg, upgrade) => { const e = new Error(msg); e.upgrade = upgrade; throw e; };
     const { file, kind } = item;
 
@@ -266,8 +362,11 @@ const CreateWizard = ({ tier, onCancel }) => {
       if (numPages > PDF_ASK_PAGES) {
         patchItem(i, { note: `${numPages} halaman — pilih bagian yang mau dipelajari` });
         const outline = await window.readPdfOutline(pdf);
-        const choice = await askRange({ name: file.name, numPages, outline });
+        // Pecah per bab: khusus pelanggan, PDF berdaftar isi, dan diunggah sendirian (hasilnya beberapa materi).
+        const canSplit = !isTrial && fileCount === 1 && outline.length >= 2;
+        const choice = await askRange({ name: file.name, numPages, outline, canSplit });
         if (!choice) fail('Dilewati, tidak ada halaman yang dipilih.');
+        if (choice.split) return readChapters(pdf, choice.split, i, numPages);
         ({ from, to, label } = choice);
       }
       const ranged = from > 1 || to < numPages;
@@ -354,10 +453,19 @@ const CreateWizard = ({ tier, onCancel }) => {
       if (cancelRef.current) break;
       patchItem(i, { status: 'working', note: 'Memproses…', progress: null });
       try {
-        const out = await processFile(list[i], i);
+        const out = await processFile(list[i], i, list.filter(x => x.status !== 'skipped').length);
         const res = typeof out === 'string' || !out ? { text: out || '' } : out;
         const text = (res.text || '').trim();
         if (!text) throw new Error('Tidak ada teks yang bisa dibaca dari file ini.');
+        if (res.chapters) {
+          // Hasil pecah per bab tidak digabung ke kotak teks: langsung ke langkah cek per bab.
+          const note = [`${res.chapters.filter(c => c.text.length >= 50).length} bab terbaca`, ...(res.notes || [])].join(' · ');
+          patchItem(i, { status: 'done', note, progress: null });
+          setChapters(res.chapters.map(c => ({ ...c, keep: c.text.length >= 50 })));
+          setSourceKinds(['pdf']);
+          setStep('split');
+          return;
+        }
         results.push({ name: list[i].file.name, kind: list[i].kind, text, title: res.title || '' });
         const note = [`${text.length.toLocaleString('id-ID')} karakter`, ...(res.notes || [])].join(' · ');
         patchItem(i, { status: res.pending ? 'partial' : 'done', note, progress: null, pending: res.pending || null });
@@ -399,6 +507,24 @@ const CreateWizard = ({ tier, onCancel }) => {
     if (data.truncated) toast.push(`Materi dipotong ke ${(data.limit || MAX_CONTENT).toLocaleString('id-ID')} karakter pertama.`);
     navigate(`/ai-partner/${data.id}`);
   };
+
+  const keptChapters = (chapters || []).filter(c => c.keep);
+  const handleSaveBatch = async () => {
+    const items = keptChapters.map(c => ({ title: c.title.trim() || `Bab hlm. ${c.from}–${c.to}`, content: c.text }));
+    if (items.length < 2) { setError('Pilih minimal 2 bab untuk disimpan.'); return; }
+    setSaving(true);
+    setError('');
+    const data = await aiCall('create-batch', { items, maddah_id: maddahId || null, source_type: 'pdf' });
+    setSaving(false);
+    if (!data.ok) {
+      if (data.upgrade) setUpgradeMsg(data.message || data.error);
+      else setError(data.message || data.error || 'Gagal menyimpan');
+      return;
+    }
+    toast?.push(`${data.ids.length} materi dibuat, satu per bab.${data.truncated?.length ? ` ${data.truncated.length} bab dipotong karena terlalu panjang.` : ''}`);
+    if (onCreated) onCreated(data.ids); else navigate('/ai-partner');
+  };
+  const patchChapter = (k, patch) => setChapters(list => list.map((c, j) => (j === k ? { ...c, ...patch } : c)));
 
   const Header = ({ n, label }) => (
     <div className="flex items-center justify-between mb-5">
@@ -492,6 +618,45 @@ const CreateWizard = ({ tier, onCancel }) => {
                 </button>
               </>
             )}
+          </div>
+        </>
+      )}
+
+      {step === 'split' && chapters && (
+        <>
+          <Header n={3} label="Cek bab & simpan"/>
+          <p className="text-xs text-ink-muted mb-3 leading-relaxed">
+            Tiap bab jadi materi sendiri dengan ringkasan, kuis, dan flashcard masing-masing. Ubah judul bila perlu, atau hapus centang bab yang tidak mau disimpan.
+          </p>
+          <select value={maddahId} onChange={e => setMaddahId(e.target.value)} className={`${aiInputClass} mb-3`}>
+            <option value="">Maddah untuk semua bab (opsional)</option>
+            {maddahOptions.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+          </select>
+          <div className="rounded-xl border border-white/8 divide-y divide-white/6 mb-3">
+            {chapters.map((c, k) => {
+              const empty = c.text.length < 50;
+              return (
+                <div key={k} className={`flex items-start gap-3 p-3 ${c.keep ? '' : 'opacity-50'}`}>
+                  <input type="checkbox" checked={c.keep} disabled={empty} onChange={() => patchChapter(k, { keep: !c.keep })}
+                    aria-label={`Simpan ${c.title}`} className="h-4 w-4 mt-3 accent-emerald-500 flex-shrink-0"/>
+                  <div className="flex-1 min-w-0">
+                    <input value={c.title} onChange={e => patchChapter(k, { title: e.target.value })} maxLength={120} dir="auto"
+                      aria-label={`Judul bab ${k + 1}`} className={aiInputClass} style={{ fontSize: 16 }}/>
+                    <div className={`text-[11px] mt-1 ${empty ? 'text-amber-300' : 'text-ink-soft'}`}>
+                      hlm. {c.from}–{c.to} · {empty ? 'tidak ada teks terbaca (halaman scan?) — tambahkan lewat "Satu materi"' : `${c.text.length.toLocaleString('id-ID')} karakter`}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          {error && <div className="text-sm text-rose-400 mt-2">{error}</div>}
+          {upgradeMsg && <div className="mt-3"><UpgradeCard compact title="Butuh langganan AI Partner" message={upgradeMsg}/></div>}
+          <div className="flex justify-between items-center gap-2 mt-4 flex-wrap">
+            <span className="text-xs text-ink-soft">{keptChapters.length} materi · memakai 1 kuota tambah materi</span>
+            <button onClick={handleSaveBatch} disabled={saving || keptChapters.length < 2} className="btn btn-primary text-sm px-6 py-2.5 disabled:opacity-50">
+              {saving ? 'Menyimpan…' : `Simpan ${keptChapters.length} materi`}
+            </button>
           </div>
         </>
       )}

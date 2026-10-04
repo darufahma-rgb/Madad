@@ -28,7 +28,7 @@ const trialGateOpen = () => consumeQuota('TRIAL-GLOBAL', 'trial_all', TRIAL_DAIL
 const trialGateClosed = (res) => upgradeRequired(res, 'trial_busy',
   'Kuota coba gratis untuk hari ini sudah penuh. Coba lagi besok, atau berlangganan AI Partner untuk memakai AI kapan saja.');
 const TRIAL_KINDS      = ['summary', 'flashcards', 'quiz', 'glossary'];
-const PRO_ONLY_ACTIONS = ['transcribe', 'analyze', 'grade', 'chat'];
+const PRO_ONLY_ACTIONS = ['transcribe', 'analyze', 'grade', 'chat', 'create-batch'];
 // Tanya AI untuk pengguna coba gratis: satu percakapan, maksimal sekian pesan seumur akun.
 const TRIAL_PROMPT_MESSAGES = 2;
 
@@ -391,6 +391,50 @@ async function handleCreate(ctx, body, res) {
     throw new Error(`Gagal menyimpan materi (${r.status})`);
   }
   return res.status(200).json({ ok: true, id, truncated: content.length > limit, limit });
+}
+
+/* "Pecah per bab": satu kitab → beberapa materi sekaligus (satu per bab), memakai SATU kuota "buat materi".
+   Membuat materi tidak memanggil AI; biaya AI tetap dibatasi kuota generate/chat masing-masing materi.
+   Total isi dibatasi supaya permintaan tetap di bawah batas body Vercel (teks Arab ±2 byte per karakter). */
+const BATCH_MIN = 2;
+const BATCH_MAX = 12;
+const BATCH_MAX_TOTAL = 1_200_000;
+
+async function handleCreateBatch(ctx, body, res) {
+  const raw = Array.isArray(body.items) ? body.items : [];
+  if (raw.length < BATCH_MIN || raw.length > BATCH_MAX) {
+    return res.status(400).json({ ok: false, error: `Pecah per bab butuh ${BATCH_MIN}–${BATCH_MAX} bab` });
+  }
+  const items = raw.map(it => ({
+    title: (isStr(it?.title) ? it.title.trim() : 'Bab tanpa judul').slice(0, 120),
+    content: typeof it?.content === 'string' ? it.content.trim() : '',
+  }));
+  const short = items.findIndex(it => it.content.length < MIN_CONTENT);
+  if (short >= 0) return res.status(400).json({ ok: false, error: `Bab "${items[short].title}" terlalu pendek (min ${MIN_CONTENT} karakter)` });
+  if (items.reduce((n, it) => n + it.content.length, 0) > BATCH_MAX_TOTAL) {
+    return res.status(400).json({ ok: false, error: 'Isi semua bab terlalu panjang untuk sekali simpan. Pilih lebih sedikit bab.' });
+  }
+
+  const over = await takeQuota(ctx, 'create');
+  if (over) return quotaExceeded(res, 'create', over, ctx);
+
+  const sourceType = SOURCE_TYPES.includes(body.source_type) ? body.source_type : 'pdf';
+  const maddahId = isStr(body.maddah_id) ? body.maddah_id.slice(0, 80) : null;
+  const rows = items.map(it => ({
+    id: crypto.randomUUID(), member_code: ctx.code, title: it.title, maddah_id: maddahId,
+    source_type: sourceType, content: it.content.slice(0, MAX_CONTENT),
+  }));
+  const { url, key } = sbConfig();
+  const r = await fetch(`${url}/rest/v1/study_sets`, {
+    method: 'POST',
+    headers: sbHeaders(key, { Prefer: 'return=minimal' }),
+    body: JSON.stringify(rows),
+  });
+  if (!r.ok) throw new Error(`Gagal menyimpan materi (${r.status})`);
+  return res.status(200).json({
+    ok: true, ids: rows.map(x => x.id),
+    truncated: items.map((it, k) => (it.content.length > MAX_CONTENT ? k : -1)).filter(k => k >= 0),
+  });
 }
 
 async function handleList(ctx, res) {
@@ -1121,6 +1165,7 @@ export default async function handler(req, res) {
       case 'ocr-quota':     return await handleOcrQuota(ctx, res);
       case 'transcribe':    return await handleTranscribe(ctx, body, res);
       case 'create':        return await handleCreate(ctx, body, res);
+      case 'create-batch':  return await handleCreateBatch(ctx, body, res);
       case 'list':          return await handleList(ctx, res);
       case 'get':           return await handleGet(ctx, body, res);
       case 'delete':        return await handleDelete(ctx, body, res);

@@ -169,7 +169,8 @@ const AiPartnerList = ({ status, creating, setCreating }) => {
           ? <div className="mb-8"><UpgradeCard title="Tambah materi baru" message="Jatah coba gratis (1 materi) sudah terpakai. Berlangganan AI Partner untuk menambah materi tanpa batas, termasuk rekaman audio & video."/></div>
           : <>
               {empty && <HowItWorksStrip/>}
-              <CreateWizard tier={status.tier} onCancel={() => setCreating(false)}/>
+              <CreateWizard tier={status.tier} onCancel={() => setCreating(false)}
+                onCreated={() => { setCreating(false); aiCall('list').then(d => d.ok ? setSets(d.data) : setError(d.error || 'Gagal memuat materi')); }}/>
             </>
       )}
 
