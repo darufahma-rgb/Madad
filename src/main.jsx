@@ -48,6 +48,7 @@ import './pages/privacy.jsx';
 import './pages/developer.jsx';
 import './pages/seminar-ai.jsx';
 import './pages/seminar-viz.jsx';
+import './pages/seminar-qr.jsx';
 import './pages/seminar-slides.jsx';
 import './pages/admin.jsx';
 import './pages/admin-eval.jsx';

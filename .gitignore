@@ -31,3 +31,6 @@ zipFile.zip
 # Replit specific
 .replit
 replit.nix
+
+# Ekspor lokal (PDF cadangan seminar), tidak untuk repo
+exports/

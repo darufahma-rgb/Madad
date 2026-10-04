@@ -27,12 +27,33 @@ const buildSeminarSlides = () => {
     slides.push({ type: "practice", ch, ci, seg });
   });
   slides.push({ type: "outputs", seg: chapters.length + 1 });
+  slides.push({ type: "worksheet", seg: chapters.length + 1 });
+  slides.push({ type: "cta", seg: chapters.length + 1 });
   slides.push({ type: "closing", seg: chapters.length + 1 });
   return slides;
 };
 
 const pad2 = (n) => String(n).padStart(2, "0");
 const goldStroke = { WebkitTextStroke: "1.5px rgba(201,168,106,0.55)", color: "transparent" };
+
+/* QR dari matriks 0/1 (seminar-qr.jsx). Selalu gelap di atas terang supaya terbaca kamera. */
+const QrCode = ({ id, className = "" }) => {
+  const q = window.SEMINAR_QR[id];
+  const n = q.size;
+  let d = "";
+  q.rows.forEach((row, y) => {
+    let x = 0;
+    while (x < n) {
+      if (row[x] === "1") { let w = 1; while (x + w < n && row[x + w] === "1") w++; d += "M" + x + " " + y + "h" + w + "v1h-" + w + "z"; x += w; }
+      else x++;
+    }
+  });
+  return (
+    <svg viewBox={"-3 -3 " + (n + 6) + " " + (n + 6)} className={"bg-white rounded-xl " + className} role="img" aria-label={"QR code untuk " + q.url} shapeRendering="crispEdges">
+      <path d={d} fill="#0b0b0a"/>
+    </svg>
+  );
+};
 
 const Item = ({ i = 0, className = "", children, ...rest }) => (
   <div className={"sl-item " + className} style={{ animationDelay: (110 + i * 75) + "ms" }} {...rest}>{children}</div>
@@ -283,6 +304,62 @@ const SlideBody = ({ slide, goChapter }) => {
     );
   }
 
+  /* ── Ambil lembar kerja: QR ke halaman materi ── */
+  if (slide.type === "worksheet") return (
+    <div className="w-full max-w-[1300px] mx-auto grid lg:grid-cols-12 gap-5 lg:gap-16 items-center">
+      <div className="lg:col-span-7">
+        <Item i={0}><div className="text-gold-300 text-[clamp(0.8rem,1.3vw,1.05rem)] mb-[clamp(0.4rem,1.2vh,0.9rem)]">Untuk peserta</div></Item>
+        <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.06] text-[clamp(1.8rem,min(4.8vw,7.6vh),4rem)]">Ambil lembar kerjamu</h2></Item>
+        <ol className="mt-[clamp(0.9rem,3vh,2.2rem)] grid gap-[clamp(0.6rem,2vh,1.4rem)]">
+          {[
+            "Scan QR di samping dengan kamera HP.",
+            "Isi lembar kerja di tiap bab. Isianmu tersimpan otomatis di HP.",
+            "Salin, unduh, atau kirim ke WhatsApp sebagai Paket Belajar AI Pribadi.",
+          ].map((t, i) => (
+            <Item i={i + 2} key={i}>
+              <li className="flex gap-4 items-baseline list-none">
+                <span className="num text-gold-400 text-[clamp(0.9rem,1.5vw,1.2rem)] w-6 shrink-0">{i + 1}</span>
+                <span className="text-ink leading-snug text-[clamp(1.05rem,min(2vw,3.6vh),1.7rem)]">{t}</span>
+              </li>
+            </Item>
+          ))}
+        </ol>
+      </div>
+      <Item i={2} className="lg:col-span-5 flex flex-col items-center">
+        <QrCode id="materi" className="p-3" />
+        <div className="text-ink-muted text-[clamp(0.75rem,1.1vw,0.95rem)] mt-3 text-center break-all max-w-[22rem]">talqeeh.vercel.app/#/seminar/ai-m1583hmvaq</div>
+      </Item>
+    </div>
+  );
+
+  /* ── Ajakan setelah Talqeeh dibahas ── */
+  if (slide.type === "cta") {
+    const offer = window.SEMINAR_CTA_OFFER;
+    const cards = [
+      { id: "sample", t: "Coba gratis, tanpa login", d: "Template prompt Sample Maddah Nahwu" },
+      { id: "gabung", t: "Gabung dan mulai", d: "Library lengkap dan AI Study Partner" },
+    ];
+    return (
+      <div className="w-full max-w-[1300px] mx-auto">
+        <Item i={0}><div className="text-gold-300 text-[clamp(0.8rem,1.3vw,1.05rem)] mb-[clamp(0.4rem,1.2vh,0.9rem)]">Setelah seminar</div></Item>
+        <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.06] text-[clamp(1.8rem,min(4.8vw,7.6vh),4rem)]">Lanjutkan belajar bersama Talqeeh</h2></Item>
+        {offer && <Item i={2}><p className="mt-[clamp(0.5rem,1.6vh,1rem)] inline-block rounded-xl border border-gold-500/50 bg-gold-500/[0.08] px-4 py-2 text-ink text-[clamp(0.95rem,1.7vw,1.35rem)]">{offer}</p></Item>}
+        <div className="mt-[clamp(1rem,3.4vh,2.4rem)] grid sm:grid-cols-2 gap-[clamp(1rem,2.6vw,2.6rem)] max-w-[1150px]">
+          {cards.map((c, i) => (
+            <Item i={i + 3} key={c.id} className="flex items-center gap-[clamp(0.8rem,1.8vw,1.6rem)]">
+              <QrCode id={c.id} className="p-2.5 w-[clamp(7rem,min(19vw,33vh),17rem)] shrink-0" />
+              <div className="min-w-0">
+                <div className="font-display font-semibold text-ink leading-snug text-[clamp(1.05rem,min(1.9vw,3.4vh),1.6rem)]">{c.t}</div>
+                <div className="text-ink-muted leading-snug mt-1 text-[clamp(0.85rem,1.3vw,1.1rem)]">{c.d}</div>
+              </div>
+            </Item>
+          ))}
+        </div>
+        <Item i={6}><p className="text-ink-muted mt-[clamp(1rem,3vh,2rem)] text-[clamp(0.9rem,1.5vw,1.2rem)]">Ikuti komunitas AIGYPT di Instagram <span className="text-ink font-medium">@ai.gypt</span></p></Item>
+      </div>
+    );
+  }
+
   /* ── Penutup ── */
   return (
     <div className="w-full max-w-[1100px] mx-auto text-center">
@@ -367,12 +444,14 @@ const SeminarSlidesPage = () => {
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) go(i => i + (dx < 0 ? 1 : -1));
   };
 
+  // Mode bersih (?clean=1): tanpa kontrol dan animasi, untuk ekspor PDF atau cetak.
+  const clean = useMemo(() => /[?&]clean=1/.test(window.location.hash), []);
   const slide = slides[idx];
-  const label = slide.ch ? "Bab " + (slide.ci + 1) + " " + slide.ch.title : "Materi Seminar AI";
+  const label =slide.ch ? "Bab " + (slide.ci + 1) + " " + slide.ch.title : "Materi Seminar AI";
   const iconBtn = "w-10 h-10 rounded-xl flex items-center justify-center text-ink-muted hover:text-ink hover:bg-white/[0.07] transition-colors";
 
   return (
-    <div className="fixed inset-0 z-[200] flex flex-col"
+    <div className={"fixed inset-0 z-[200] flex flex-col" + (clean ? " sl-clean" : "")}
          style={{ background: "radial-gradient(ellipse 70% 50% at 8% -5%, rgba(201,168,106,0.11), transparent 60%), #0b0b0a" }}
          onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
       <style>{(window.SEMINAR_VIZ_CSS || "") + `
@@ -386,8 +465,10 @@ const SeminarSlidesPage = () => {
         .sl-stage { animation: slIn .38s cubic-bezier(.16,1,.3,1) both; }
         .sl-item { animation: slItem .55s cubic-bezier(.16,1,.3,1) both; }
         @media (prefers-reduced-motion: reduce) { .sl-stage, .sl-item { animation: none !important; } }
+        .sl-clean *, .sl-clean *::before, .sl-clean *::after { animation: none !important; transition: none !important; }
       `}</style>
 
+      {!clean && (<>
       {/* progress per bab (bisa diklik) */}
       <div className="flex gap-1 px-3 md:px-6 pt-3 shrink-0" style={{ paddingTop: "max(0.75rem, var(--safe-top, 0px))" }}>
         {segments.map((sg, si) => {
@@ -428,18 +509,21 @@ const SeminarSlidesPage = () => {
         <button onClick={toggleFull} className={iconBtn + " hidden md:flex"} aria-label="Layar penuh" title="Layar penuh (F)"><Icon name="maximize" className="w-5 h-5"/></button>
         <div className="num tabular-nums text-xs md:text-sm text-ink-muted pl-1 pr-1 min-w-[3.2rem] text-right">{idx + 1}/{total}</div>
       </div>
+      </>)}
 
       {/* panggung */}
       <div className="flex-1 min-h-0 overflow-y-auto">
-        <div className="min-h-full flex items-center px-5 md:px-14 lg:px-20 pt-2 pb-20">
+        <div className={"min-h-full flex items-center px-5 md:px-14 lg:px-20 " + (clean ? "py-10" : "pt-2 pb-20")}>
           <div key={idx} className="sl-stage w-full" style={{ "--dx": dir * 28 + "px" }}>
             <SlideBody slide={slide} goChapter={goChapter}/>
           </div>
         </div>
       </div>
 
+      {clean && <div className="absolute left-6 bottom-4 num text-sm text-ink-muted">{idx + 1} / {total}</div>}
+
       {/* navigasi */}
-      <div className="absolute right-3 md:right-6 flex gap-2" style={{ bottom: "max(1rem, var(--safe-bottom, 0px))" }}>
+      {!clean && <div className="absolute right-3 md:right-6 flex gap-2" style={{ bottom: "max(1rem, var(--safe-bottom, 0px))" }}>
         <button onClick={() => go(i => i - 1)} disabled={idx === 0} aria-label="Slide sebelumnya"
                 className="w-12 h-12 rounded-xl border border-white/12 bg-white/[0.04] text-ink flex items-center justify-center hover:bg-white/[0.09] transition-colors disabled:opacity-25 disabled:pointer-events-none">
           <Icon name="chevronLeft" className="w-5 h-5"/>
@@ -448,7 +532,7 @@ const SeminarSlidesPage = () => {
                 className="w-12 h-12 rounded-xl bg-gold-500 text-night-950 flex items-center justify-center hover:bg-gold-400 transition-colors disabled:opacity-25 disabled:pointer-events-none">
           <Icon name="chevronRight" className="w-5 h-5" strokeWidth={2.2}/>
         </button>
-      </div>
+      </div>}
     </div>
   );
 };

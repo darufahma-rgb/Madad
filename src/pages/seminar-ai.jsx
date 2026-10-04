@@ -68,6 +68,12 @@ const SEMINAR_CHAPTERS = [
         "Tandai: benar, meleset, atau terdengar benar tapi tidak ada di kitab.",
       ],
       output: "Catatan Uji AI: tiga pertanyaan, hasil cek, dan satu kesimpulan tentang kapan AI bisa dipercaya.",
+      fields: [
+        { label: "Pertanyaan 1 (definisi)", hint: "Tulis pertanyaanmu, jawaban AI secara singkat, lalu hasil cek: benar, meleset, atau terdengar benar tapi tidak ada di kitab.", rows: 3 },
+        { label: "Pertanyaan 2 (detail)", hint: "Misalnya halaman, nama tokoh, atau nomor hadis. Tulis dengan format yang sama.", rows: 3 },
+        { label: "Pertanyaan 3 (contoh)", hint: "Minta satu contoh dari kitab, lalu cek kebenarannya.", rows: 3 },
+        { label: "Kesimpulan: kapan AI bisa dipercaya?", hint: "Satu atau dua kalimat dari temuanmu sendiri.", rows: 2 },
+      ],
     },
   },
   {
@@ -137,6 +143,11 @@ const SEMINAR_CHAPTERS = [
         "Perbaiki sekali lagi sesuai kekurangan hasilnya.",
       ],
       output: "Prompt Andalan: satu prompt lima bagian yang siap dipakai ulang, plus catatan apa yang kamu perbaiki.",
+      fields: [
+        { label: "Mata kuliah", hint: "Mata kuliah atau maddah yang kamu pakai.", rows: 1 },
+        { label: "Prompt final", hint: "Tulis lengkap: peran, konteks, tugas, format, dan batasan.", rows: 7 },
+        { label: "Apa yang kamu perbaiki dari versi pertama?", hint: "Dua atau tiga hal yang membuat hasilnya lebih baik.", rows: 3 },
+      ],
     },
   },
   {
@@ -204,6 +215,13 @@ const SEMINAR_CHAPTERS = [
         "Minta AI menguji kamu satu pertanyaan sekali jalan, lalu catat skormu.",
       ],
       output: "Set Belajar: ringkasan, lima flashcard, lima soal berikut kunci, dan skor ujianmu.",
+      fields: [
+        { label: "Bab yang dipakai", hint: "Nama kitab atau diktat dan babnya.", rows: 1 },
+        { label: "Ringkasan", hint: "Satu kalimat, satu paragraf, lalu poin penting.", rows: 5 },
+        { label: "Lima flashcard", hint: "Format: pertanyaan | jawaban.", rows: 6 },
+        { label: "Lima soal beserta kunci jawaban", hint: "Tulis soal, pilihan, lalu kunci.", rows: 6 },
+        { label: "Skor ujianmu", hint: "Berapa dari berapa, dan bagian mana yang masih lemah.", rows: 2 },
+      ],
     },
   },
   {
@@ -260,6 +278,12 @@ const SEMINAR_CHAPTERS = [
         "Tulis satu aturan pribadi dari hasilnya.",
       ],
       output: "Tabel Verifikasi: tiga referensi dengan hasil tiga cek, plus satu aturan pribadi.",
+      fields: [
+        { label: "Referensi 1", hint: "Nama kitab dan pengarang | halaman | matan. Lolos atau tidak, dan alasannya.", rows: 3 },
+        { label: "Referensi 2", hint: "Format yang sama.", rows: 3 },
+        { label: "Referensi 3", hint: "Format yang sama.", rows: 3 },
+        { label: "Aturan pribadimu", hint: "Satu aturan yang kamu pegang mulai sekarang.", rows: 2 },
+      ],
     },
   },
   {
@@ -339,6 +363,13 @@ const SEMINAR_CHAPTERS = [
         "Tulis tiga aturan pemakaian AI untuk dirimu sendiri.",
       ],
       output: "Peta Peran dan Aturan Pribadi: satu kesulitan, pembagian peran AI dan guru, dan tiga aturan pemakaian.",
+      fields: [
+        { label: "Kesulitan belajar yang paling sering", hint: "Satu masalah yang nyata di kegiatan belajarmu.", rows: 2 },
+        { label: "Yang kuserahkan ke AI", hint: "Bagian yang aman dibantu AI.", rows: 3 },
+        { label: "Yang tetap ke guru dan kitab", hint: "Bagian yang tidak boleh diserahkan.", rows: 3 },
+        { label: "Fitur Talqeeh yang kucoba", hint: "Fitur apa dan hasilnya bagaimana.", rows: 2 },
+        { label: "Tiga aturan pemakaian AI untukku", hint: "Tulis sebagai kalimat tegas.", rows: 4 },
+      ],
     },
   },
   {
@@ -394,6 +425,11 @@ const SEMINAR_CHAPTERS = [
         "Tetapkan tanggal mulai dan satu hal yang akan selalu kamu verifikasi.",
       ],
       output: "Rencana 7 Hari: jadwal siap jalan dengan tanggal mulai.",
+      fields: [
+        { label: "Tanggal mulai", hint: "Hari dan tanggal kamu mulai.", rows: 1 },
+        { label: "Hari 1 sampai 7", hint: "Satu baris per hari: kegiatan dan jamnya.", rows: 7 },
+        { label: "Satu hal yang selalu kuverifikasi", hint: "Misalnya referensi kitab atau hukum syar'i.", rows: 2 },
+      ],
     },
   },
 ];
@@ -481,7 +517,7 @@ const SeminarPromptBox = ({ label, text }) => {
   );
 };
 
-const SeminarChapter = ({ ch, index, open, onToggle, done, onDone }) => (
+const SeminarChapter = ({ ch, index, open, onToggle, done, onDone, sheet, onField }) => (
   <article id={"bab-" + ch.id} className="card-glass overflow-hidden scroll-mt-24">
     <button onClick={onToggle} aria-expanded={open}
             className="w-full flex items-center gap-4 p-4 md:p-6 text-left">
@@ -551,6 +587,27 @@ const SeminarChapter = ({ ch, index, open, onToggle, done, onDone }) => (
               <div className="rounded-lg bg-black/25 border border-white/10 p-3 text-sm md:text-base">
                 <span className="text-gold-300 font-medium">Output: </span><span className="text-ink">{ch.task.output}</span>
               </div>
+              <details className="mt-4 rounded-lg border border-white/10 bg-black/20 open:bg-black/30">
+                <summary className="cursor-pointer select-none list-none px-3.5 py-3 flex items-center justify-between gap-3 text-sm md:text-base text-gold-300 font-medium">
+                  <span>Isi lembar kerja <span className="text-ink-muted font-normal">({ch.task.fields.filter((_, k) => (sheet.f[ch.id + "." + k] || "").trim()).length} dari {ch.task.fields.length} terisi)</span></span>
+                  <Icon name="chevronDown" className="w-4 h-4 shrink-0"/>
+                </summary>
+                <div className="px-3.5 pb-4 pt-1 grid gap-4">
+                  {ch.task.fields.map((f, k) => {
+                    const id = "ws-" + ch.id + "-" + k;
+                    return (
+                      <div key={id}>
+                        <label htmlFor={id} className="block text-sm font-medium text-ink mb-0.5">{f.label}</label>
+                        <p className="text-xs text-ink-muted mb-1.5 leading-snug">{f.hint}</p>
+                        <textarea id={id} rows={f.rows} value={sheet.f[ch.id + "." + k] || ""}
+                                  onChange={(e) => onField(ch.id + "." + k, e.target.value)}
+                                  className="w-full rounded-lg bg-black/30 border border-white/15 focus:border-gold-500 focus:outline-none px-3 py-2 text-ink leading-relaxed resize-y"
+                                  style={{ fontSize: 16 }}/>
+                      </div>
+                    );
+                  })}
+                </div>
+              </details>
               <label className="mt-3 inline-flex items-center gap-2.5 cursor-pointer select-none text-sm text-ink-muted">
                 <input type="checkbox" checked={!!done} onChange={() => onDone(ch.id)} className="w-4 h-4 accent-[#C9A86A]"/>
                 Tugas ini sudah selesai
@@ -564,10 +621,64 @@ const SeminarChapter = ({ ch, index, open, onToggle, done, onDone }) => (
 );
 
 const TASKS_KEY = "talqeeh_seminar_tasks";
+const SHEET_KEY = "talqeeh_seminar_sheet";
 const seminarOutputName = (ch) => ch.task.output.split(":")[0];
+
+/* Gabungkan semua isian jadi satu teks yang rapi untuk disalin, diunduh, atau dikirim. */
+const seminarCompile = (sheet) => {
+  const L = [];
+  L.push("PAKET BELAJAR AI PRIBADI");
+  L.push("Seminar AIGYPT x Talqeeh");
+  L.push("Nama: " + (sheet.name.trim() || "-"));
+  L.push("Tanggal: " + new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }));
+  SEMINAR_CHAPTERS.forEach((ch, i) => {
+    L.push("", "== " + (i + 1) + ". " + seminarOutputName(ch).toUpperCase() + " ==");
+    ch.task.fields.forEach((f, k) => {
+      const v = (sheet.f[ch.id + "." + k] || "").trim();
+      L.push("", f.label + (/[?:.]$/.test(f.label) ? "" : ":"), v || "(belum diisi)");
+    });
+  });
+  L.push("", "Dibuat dengan materi seminar Talqeeh. Instagram @ai.gypt");
+  return L.join("\n");
+};
 
 const SeminarAiPage = () => {
   const [openSet, setOpenSet] = useState(() => new Set([SEMINAR_CHAPTERS[0].id]));
+  const [sheet, setSheet] = useState(() => {
+    try { const s = JSON.parse(localStorage.getItem(SHEET_KEY) || "null"); if (s && s.f) return { name: s.name || "", f: s.f }; } catch {}
+    return { name: "", f: {} };
+  });
+  const [exportMsg, setExportMsg] = useState("");
+  const saveSheet = (n) => { setSheet(n); try { localStorage.setItem(SHEET_KEY, JSON.stringify(n)); } catch {} };
+  const setField = (key, v) => saveSheet({ ...sheet, f: { ...sheet.f, [key]: v } });
+  const setName = (v) => saveSheet({ ...sheet, name: v });
+  const flash = (m) => { setExportMsg(m); setTimeout(() => setExportMsg(""), 3200); };
+  const copyAll = async () => {
+    try { await navigator.clipboard.writeText(seminarCompile(sheet)); flash("Tersalin. Tempel di catatan atau WhatsApp."); }
+    catch { flash("Gagal menyalin. Coba tombol Unduh."); }
+  };
+  const downloadAll = () => {
+    try {
+      const blob = new Blob([seminarCompile(sheet)], { type: "text/plain;charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "paket-belajar-ai-" + ((sheet.name.trim() || "peserta").toLowerCase().replace(/[^a-z0-9]+/g, "-")) + ".txt";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      flash("File diunduh.");
+    } catch { flash("Gagal mengunduh. Coba tombol Salin."); }
+  };
+  const shareWa = async () => {
+    const text = seminarCompile(sheet);
+    if (text.length > 3500) {
+      try { await navigator.clipboard.writeText(text); flash("Teks panjang, sudah disalin. Tempel di WhatsApp."); } catch { flash("Teks terlalu panjang. Pakai tombol Unduh."); }
+      window.open("https://wa.me/", "_blank", "noopener");
+    } else {
+      window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank", "noopener");
+    }
+  };
+  const filledCount = SEMINAR_CHAPTERS.reduce((n, c) => n + c.task.fields.filter((_, k) => (sheet.f[c.id + "." + k] || "").trim()).length, 0);
+  const fieldTotal = SEMINAR_CHAPTERS.reduce((n, c) => n + c.task.fields.length, 0);
   const [doneMap, setDoneMap] = useState(() => {
     try { return JSON.parse(localStorage.getItem(TASKS_KEY) || "{}") || {}; } catch { return {}; }
   });
@@ -640,7 +751,7 @@ const SeminarAiPage = () => {
             <div className="lg:col-span-8 space-y-3 md:space-y-4 min-w-0">
               {SEMINAR_CHAPTERS.map((ch, i) => (
                 <SeminarChapter key={ch.id} ch={ch} index={i} open={openSet.has(ch.id)} onToggle={() => toggle(ch.id)}
-                                done={!!doneMap[ch.id]} onDone={toggleDone}/>
+                                done={!!doneMap[ch.id]} onDone={toggleDone} sheet={sheet} onField={setField}/>
               ))}
               <section className="card-glass-strong p-5 md:p-8">
                 <div className="flex flex-wrap items-baseline justify-between gap-2 mb-1">
@@ -664,12 +775,29 @@ const SeminarAiPage = () => {
                     </li>
                   ))}
                 </ol>
+                <div className="mt-6 pt-5 border-t border-white/10">
+                  <label htmlFor="ws-name" className="block text-sm font-medium text-ink mb-1.5">Namamu</label>
+                  <input id="ws-name" value={sheet.name} onChange={(e) => setName(e.target.value)} autoComplete="name"
+                         className="w-full sm:max-w-sm rounded-lg bg-black/30 border border-white/15 focus:border-gold-500 focus:outline-none px-3 py-2 text-ink"
+                         style={{ fontSize: 16 }}/>
+                  <p className="text-xs text-ink-muted mt-2">Lembar kerja tersimpan otomatis di perangkat ini, {filledCount} dari {fieldTotal} kolom terisi.</p>
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    <button onClick={copyAll} className="btn btn-gold text-sm py-2.5"><Icon name="copy" className="w-4 h-4"/> Salin semua</button>
+                    <button onClick={downloadAll} className="btn btn-ghost text-sm py-2.5"><Icon name="download" className="w-4 h-4"/> Unduh .txt</button>
+                    <button onClick={shareWa} className="btn btn-ghost text-sm py-2.5"><Icon name="messageSquare" className="w-4 h-4"/> Kirim ke WhatsApp</button>
+                  </div>
+                  <p role="status" className="text-sm text-gold-300 mt-3 min-h-[1.25rem]">{exportMsg}</p>
+                </div>
               </section>
-              <div className="card-glass p-5 md:p-6 text-center">
-                <p className="text-ink-muted leading-relaxed">
-                  Materi ini hanya untuk peserta seminar. Ada pertanyaan atau masukan? Kabari kami lewat Instagram <strong className="text-ink">@ai.gypt</strong>.
-                </p>
-              </div>
+              <section className="card-glass p-5 md:p-8">
+                <h2 className="font-display text-2xl font-semibold text-ink mb-2">Lanjutkan belajar bersama Talqeeh</h2>
+                <p className="text-ink-muted leading-relaxed mb-5">Coba template prompt untuk satu maddah tanpa login, atau gabung untuk memakai library lengkap dan AI Study Partner.</p>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => navigate("/sample/nahwu")} className="btn btn-gold text-sm py-2.5">Coba sample gratis</button>
+                  <button onClick={() => navigate("/gabung")} className="btn btn-ghost text-sm py-2.5">Lihat pilihan paket</button>
+                </div>
+                <p className="text-sm text-ink-muted mt-5">Pertanyaan atau masukan? Kabari kami lewat Instagram <strong className="text-ink">@ai.gypt</strong>.</p>
+              </section>
             </div>
           </div>
         </div>
@@ -682,5 +810,5 @@ Object.assign(window, {
   SeminarAiPage, SEMINAR_AI_PATH,
   SEMINAR_AI_SLIDES_PATH: SEMINAR_AI_PATH + "/slides",
   SEMINAR_CHAPTERS, seminarRenderInline: renderInline,
-  SEMINAR_SHOTS, SEMINAR_SHOT_AFTER, seminarOutputName,
+  SEMINAR_SHOTS, SEMINAR_SHOT_AFTER, seminarOutputName, seminarCompile,
 });
