@@ -831,7 +831,7 @@ const LANDING_FAQ = [
 
 const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
   const settings = useAppSettings();
-  const bundle = aiBundle(settings);
+  const imtihan = imtihanBundle(settings);
   return (
   <section id="paket" className="section pt-0 pb-32">
     <div className="container-x">
@@ -840,7 +840,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
           <span className="w-6 h-px bg-gold-500/70"/>PILIH PAKET
         </div>
         <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
-          Bayar sekali untuk Library.<br className="hidden md:block"/> Tambah AI kalau butuh.
+          Library sekali bayar.<br className="hidden md:block"/> Paket Imtihan untuk satu termin penuh.
         </h2>
         <p className="text-ink-muted text-base md:text-lg mt-4 max-w-2xl mx-auto leading-relaxed">
           Login pakai Google, pilih paket, bayar di Mayar — akses langsung aktif otomatis.
@@ -857,7 +857,6 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
               <div className="inline-flex self-start items-center gap-2 px-3 py-1 rounded-full bg-gold-500/10 border border-gold-500/20 text-xs text-gold-300 mb-5">
                 <span className="w-1.5 h-1.5 rounded-full bg-gold-400"/>Library
               </div>
-              <span className="text-sm text-ink-soft line-through block mb-1">{LIBRARY_PRICE_ORIGINAL}</span>
               <span className="font-display text-5xl font-semibold bg-gradient-to-br from-gold-300 to-gold-500 bg-clip-text text-transparent block leading-tight">
                 {LIBRARY_PRICE}
               </span>
@@ -871,33 +870,30 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
             </div>
           </div>
 
-          {/* Paket Library + AI Partner */}
+          {/* Paket Imtihan: Library + AI Partner 1 termin */}
           <div className="card-glass-strong p-8 relative overflow-hidden flex flex-col"
             style={{ border:"1px solid rgba(62,207,142,.35)" }}>
             <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full blur-3xl pointer-events-none" style={{background:"rgba(62,207,142,0.14)"}}/>
-            <span className="absolute top-5 right-5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500 text-black">Paling lengkap</span>
+            <span className="absolute top-5 right-5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500 text-black">Paling hemat</span>
             <div className="relative flex flex-col flex-1">
               <div className="inline-flex self-start items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 mb-5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>Library + AI Partner
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>Paket Imtihan
               </div>
-              <span className="text-sm text-ink-soft block mb-1">{bundle ? "Satu kali bayar" : `${LIBRARY_PRICE} sekali`}</span>
               <span className="font-display text-4xl md:text-5xl font-semibold bg-gradient-to-br from-emerald-300 to-gold-400 bg-clip-text text-transparent block leading-tight">
-                {bundle ? formatRupiah(bundle.total) : "+ AI Partner"}
+                {formatRupiah(imtihan.total)}
               </span>
               <div className="text-xs text-ink-soft uppercase tracking-wider mt-2 mb-4">
-                {bundle ? "Library selamanya + AI Study Partner 30 hari" : "Harga AI Partner segera diumumkan"}
+                Library selamanya + AI Study Partner {IMTIHAN_AI_DAYS} hari
               </div>
-              {bundle && <AiBundleBreakdown bundle={bundle} className="mb-6"/>}
+              <ImtihanBreakdown bundle={imtihan} className="mb-6"/>
               <div className="flex-1 mb-6">
-                <div className="text-sm text-ink font-medium mb-3">Semua isi paket Library, ditambah:</div>
+                <div className="text-sm text-ink font-medium mb-3">Semua isi paket Library, ditambah belajar langsung dari diktatmu:</div>
                 <FeatureList items={AI_BUNDLE_FEATURES} color="text-emerald-400"/>
               </div>
-              {bundle && (
-                <p className="text-xs text-emerald-300 mb-3">AI Partner cuma sekitar {formatRupiah(bundle.perDay)}/hari.</p>
-              )}
-              <button onClick={() => onOpenJoin("library_ai")}
+              <p className="text-xs text-emerald-300 mb-3">Cukup satu kali bayar untuk satu termin penuh sampai imtihan.</p>
+              <button onClick={() => onOpenJoin("imtihan")}
                 className="btn btn-primary w-full py-4 text-base font-medium">
-                {bundle ? `Ambil paket lengkap · ${formatRupiah(bundle.total)}` : "Pilih Library + AI"}
+                Ambil Paket Imtihan · {formatRupiah(imtihan.total)}
               </button>
             </div>
           </div>

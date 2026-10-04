@@ -8,7 +8,11 @@ import { readSettings } from './settings.js';
 export const LIBRARY_PRICE_IDR = 63000;
 export const AI_PERIOD_DAYS = 30;
 export const AI_PRODUCT_ID = 'talqeeh-ai-30hari';
-export const CHECKOUT_PLANS = ['library', 'library_ai', 'ai'];
+export const CHECKOUT_PLANS = ['library', 'library_ai', 'ai', 'imtihan'];
+// Paket Imtihan: Library selamanya + AI Partner 1 termin (120 hari) dengan satu harga hemat.
+// Samakan dengan IMTIHAN_PRICE_IDR di src/layout.jsx.
+export const IMTIHAN_PRICE_IDR = 199000;
+export const IMTIHAN_AI_DAYS = 120;
 
 const LIFETIME_EXPIRY = '2099-12-31';
 const CHECKOUT_TTL_MS = 24 * 3600 * 1000;
@@ -21,6 +25,7 @@ const PLAN_TITLES = {
   library:    'Talqeeh Library',
   library_ai: `Talqeeh Library + AI Partner ${AI_PERIOD_DAYS} hari`,
   ai:         `Talqeeh AI Partner ${AI_PERIOD_DAYS} hari`,
+  imtihan:    `Talqeeh Paket Imtihan (Library + AI Partner ${IMTIHAN_AI_DAYS} hari)`,
 };
 
 /* ── Mayar API ── */
@@ -78,10 +83,12 @@ export async function getPrices() {
   return { library: LIBRARY_PRICE_IDR, ai: parseAiPrice(aiPriceMonthly) };
 }
 
-const splitAmount = (plan, prices) => ({
-  library_amount: plan === 'ai' ? 0 : prices.library,
-  ai_amount: plan === 'library' ? 0 : prices.ai,
-});
+const splitAmount = (plan, prices) => (plan === 'imtihan'
+  ? { library_amount: prices.library, ai_amount: IMTIHAN_PRICE_IDR - prices.library }
+  : {
+    library_amount: plan === 'ai' ? 0 : prices.library,
+    ai_amount: plan === 'library' ? 0 : prices.ai,
+  });
 
 /* ── Supabase ── */
 
@@ -127,7 +134,8 @@ export function checkoutBlockReason(plan, member) {
 
 export async function createCheckout({ user, member, plan, appOrigin }) {
   const prices = await getPrices();
-  if (plan !== 'library' && !prices.ai) return { ok: false, status: 'ai_price_unset' };
+  // Paket Imtihan berharga tetap, jadi tidak bergantung pada harga AI bulanan di Settings.
+  if (plan !== 'library' && plan !== 'imtihan' && !prices.ai) return { ok: false, status: 'ai_price_unset' };
   const parts = splitAmount(plan, prices);
   const amount = parts.library_amount + parts.ai_amount;
 
@@ -284,7 +292,9 @@ export async function fulfillCheckout(checkout, { via, mobile } = {}) {
     }
     if (!code) throw new Error('Member pembeli tidak ditemukan');
     let aiExpiresAt = null;
-    if (checkout.plan !== 'library') aiExpiresAt = await extendAi(code, { email: checkout.email });
+    if (checkout.plan !== 'library') {
+      aiExpiresAt = await extendAi(code, { email: checkout.email, days: checkout.plan === 'imtihan' ? IMTIHAN_AI_DAYS : AI_PERIOD_DAYS });
+    }
     await patchCheckout(checkout.id, { member_code: code });
     return { ok: true, memberCode: code, aiExpiresAt };
   } catch (err) {

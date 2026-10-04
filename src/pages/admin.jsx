@@ -2844,7 +2844,7 @@ const AdminSubscriptions = () => {
               {checkouts.data.map(c => (
                 <tr key={c.id} className="border-b border-line/50">
                   <td className="px-4 py-3 text-ink-muted whitespace-nowrap">{new Date(c.created_at).toLocaleString('id-ID')}</td>
-                  <td className="px-4 py-3 text-ink">{{ library: 'Library', library_ai: 'Library + AI', ai: 'AI 30 hari' }[c.plan] || c.plan}</td>
+                  <td className="px-4 py-3 text-ink">{{ library: 'Library', library_ai: 'Library + AI', ai: 'AI 30 hari', imtihan: 'Paket Imtihan' }[c.plan] || c.plan}</td>
                   <td className="px-4 py-3 text-ink-muted">
                     <div className="text-ink">{c.name || '-'}</div>
                     <div className="text-[11px]">{c.email}</div>

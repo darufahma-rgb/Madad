@@ -109,7 +109,7 @@ const App = () => {
     if (authStatus === "needs_activation") {
       setLoginOpen(false);
       const plan = readJoinPlan();
-      const wantsPaid = plan === "library" || plan === "library_ai";
+      const wantsPaid = plan === "library" || plan === "library_ai" || plan === "imtihan";
       if (wantsPaid || authInfo?.likelyLegacyMember) {
         if (!path.startsWith("/gabung")) navigate(gabungPath(plan));
         return;
@@ -163,7 +163,7 @@ const App = () => {
     const saved = plan || readJoinPlan();
     saveJoinPlan(null);
     // Akun gratis yang tadinya memilih paket berbayar → lanjut ke halaman Gabung untuk upgrade.
-    if (isFreeTier() && (saved === "library" || saved === "library_ai")) {
+    if (isFreeTier() && (saved === "library" || saved === "library_ai" || saved === "imtihan")) {
       setTimeout(() => navigate(gabungPath(saved)), 50);
       return;
     }
@@ -177,7 +177,7 @@ const App = () => {
     if (session) {
       setLoginOpen(false);
       if (isFree) navigate(gabungPath(plan));
-      else if (plan === "library_ai") setAiPaymentOpen(true);
+      else if (plan === "library_ai" || plan === "imtihan") setAiPaymentOpen(true);
       else navigate("/dashboard");
       return;
     }

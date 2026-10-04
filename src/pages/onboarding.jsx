@@ -562,21 +562,20 @@ const clearUpgradeOffer = () => { try { localStorage.removeItem(UPGRADE_OFFER_KE
 
 const UpgradeOfferModal = ({ onClose }) => {
   const settings = useAppSettings();
-  const bundle = aiBundle(settings);
+  const imtihan = imtihanBundle(settings);
   const go = (plan) => { clearUpgradeOffer(); onClose(); navigate(`/gabung?plan=${plan}`); };
   const later = () => { clearUpgradeOffer(); onClose(); };
   const plans = [
     { plan: "library", title: "Library", price: LIBRARY_PRICE, note: "sekali bayar · selamanya", color: "#c9a86a",
       items: LIBRARY_FEATURES.slice(0, 4), cta: "Pilih Library" },
-    { plan: "library_ai", title: "Library + AI Study Partner", color: "#3ecf8e", recommended: true,
-      price: bundle ? formatRupiah(bundle.total) : LIBRARY_PRICE,
-      note: bundle ? "sekali bayar" : "+ AI Partner bulanan",
-      tagline: bundle ? "Library selamanya + AI Study Partner 30 hari" : null,
-      breakdown: bundle,
+    { plan: "imtihan", title: "Paket Imtihan", color: "#3ecf8e", recommended: true,
+      price: formatRupiah(imtihan.total), note: "sekali bayar",
+      tagline: `Library selamanya + AI Study Partner ${IMTIHAN_AI_DAYS} hari (1 termin)`,
+      imtihan,
       itemsTitle: "Semua isi Library, ditambah:",
       items: AI_BUNDLE_FEATURES,
-      footnote: bundle ? `AI Partner cuma sekitar ${formatRupiah(bundle.perDay)}/hari.` : null,
-      cta: bundle ? `Ambil paket lengkap · ${formatRupiah(bundle.total)}` : "Pilih Library + AI Study Partner" },
+      footnote: "Satu kali bayar untuk satu termin penuh sampai imtihan.",
+      cta: `Ambil Paket Imtihan · ${formatRupiah(imtihan.total)}` },
   ];
   return (
     <Modal>
@@ -595,7 +594,7 @@ const UpgradeOfferModal = ({ onClose }) => {
                 style={{ background: `${p.color}0f`, border: `1px solid ${p.color}${p.recommended ? "66" : "40"}` }}>
                 {p.recommended && (
                   <span className="absolute -top-2.5 right-4 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                    style={{ background: p.color, color: "#0b0b0b" }}>Paling lengkap</span>
+                    style={{ background: p.color, color: "#0b0b0b" }}>Paling hemat</span>
                 )}
                 <div className="font-display text-lg font-semibold text-ink">{p.title}</div>
                 <div className="mt-1">
@@ -603,7 +602,7 @@ const UpgradeOfferModal = ({ onClose }) => {
                   <span className="text-xs text-ink-muted ml-1.5">{p.note}</span>
                 </div>
                 {p.tagline && <div className="text-xs text-ink mt-0.5">{p.tagline}</div>}
-                {p.breakdown && <AiBundleBreakdown bundle={p.breakdown} className="mt-3"/>}
+                {p.imtihan && <ImtihanBreakdown bundle={p.imtihan} className="mt-3"/>}
                 {p.itemsTitle && <div className="text-xs text-ink font-medium mt-3 mb-1.5">{p.itemsTitle}</div>}
                 <ul className={`space-y-1.5 text-[13px] text-ink-muted flex-1 ${p.itemsTitle ? "" : "mt-3"}`}>
                   {p.items.map(it => (

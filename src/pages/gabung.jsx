@@ -12,7 +12,7 @@ const SKY = '#60a5fa';
 const FREE_ITEMS = [
   ['Maddah Nahwu + 1 maddah pilihanmu', true],
   ['3 soal bank soal imtihan', true],
-  ['Coba AI Partner untuk 1 materi', true],
+  ["Coba AI Partner: 1 materi + 3× i'rab + 5× tanya tutor", true],
   ['Kurasah, Statistik & Profil Belajar', true],
   [`${CATALOG.maddah - 2} maddah lainnya`, false],
   ['Siap Imtihan & Muqaranah 4 madzhab', false],
@@ -55,8 +55,9 @@ const COMPARE_ROWS = [
   ['Muqaranah 4 madzhab', false, true, true],
   ['Kurasah, Statistik & Profil Belajar', true, true, true],
   ['AI Partner: ringkasan, flashcard, kuis, mufradat', '1 materi', '1 materi', true],
-  ["AI Partner: i'rab, harakat, tahriri dinilai AI", false, false, true],
-  ['AI Partner: tutor & simulasi syafawi', false, false, true],
+  ["AI Partner: terjemah & i'rab", '3× coba', '3× coba', true],
+  ['AI Partner: tanya tutor dari materimu', '5× coba', '5× coba', true],
+  ['AI Partner: harakat, tahriri dinilai AI, simulasi syafawi', false, false, true],
   ['Unggah rekaman kuliah (audio/video)', false, false, true],
 ];
 
@@ -69,14 +70,16 @@ const TESTIMONIALS = [
 const FAQS = [
   ['Apa bedanya dengan pakai ChatGPT langsung?',
     'Kamu tidak mulai dari nol. Talqeeh sudah menyiapkan prompt untuk tiap maddah muqarrar Azhar, rekomendasi AI yang paling cocok, dan bank soal imtihan. AI Partner juga dibuat khusus untuk teks Arab: i\'rab, harakat, dan ringkasan gaya kitab.'],
+  ['Apa itu Paket Imtihan?',
+    `Library selamanya + AI Study Partner ${IMTIHAN_AI_DAYS} hari (satu termin penuh) dalam sekali bayar ${formatRupiah(IMTIHAN_PRICE_IDR)}. Lebih hemat daripada beli Library lalu memperpanjang AI tiap 30 hari, dan cukup untuk menemani dari awal kuliah sampai imtihan.`],
   ['Library bayar sekali atau bulanan?',
-    `Sekali bayar ${LIBRARY_PRICE}, aksesnya berlaku selamanya — termasuk semua update fitur Library ke depan. Hanya AI Partner yang dibayar per 30 hari, dan itu opsional.`],
+    `Sekali bayar ${LIBRARY_PRICE}, aksesnya berlaku selamanya — termasuk semua update fitur Library ke depan. AI Partner opsional: ambil Paket Imtihan untuk satu termin, atau per 30 hari.`],
   ['Boleh coba gratis dulu?',
-    'Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 3 soal bank soal, dan 1 materi AI Partner. Kalau cocok, upgrade kapan saja — progresmu tetap tersimpan.'],
+    "Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 3 soal bank soal, dan AI Partner untuk 1 materi — termasuk 3× terjemah & i'rab dan 5× tanya tutor. Kalau cocok, upgrade kapan saja — progresmu tetap tersimpan."],
   ['Bayarnya pakai apa? Berapa lama aktifnya?',
     'Lewat Mayar: QRIS, virtual account, atau e-wallet. Tagihannya dibuat langsung untuk akun Google-mu, jadi akses aktif otomatis begitu pembayaran masuk — biasanya kurang dari 1 menit.'],
   ['AI Partner diperpanjang otomatis?',
-    'Tidak. AI Partner dibayar per 30 hari tanpa potongan otomatis. Kalau mau lanjut, perpanjang kapan saja — sisa harimu tidak hangus.'],
+    'Tidak. Tidak ada potongan otomatis, baik Paket Imtihan maupun per 30 hari. Kalau mau lanjut, perpanjang kapan saja — sisa harimu tidak hangus.'],
   ['Saya member lama, harus bayar lagi?',
     'Tidak. Minta PIN aktivasi ke admin, lalu masukkan lewat tautan "Member lama? Masukkan PIN" di halaman ini.'],
 ];
@@ -84,17 +87,17 @@ const FAQS = [
 const planFromHash = () => {
   const q = (window.location.hash.split('?')[1] || '');
   const plan = new URLSearchParams(q).get('plan');
-  return ['free', 'library', 'library_ai'].includes(plan) ? plan : null;
+  return ['free', 'library', 'library_ai', 'imtihan'].includes(plan) ? plan : null;
 };
 
 const Mark = ({ ok, color, className = 'w-4 h-4' }) => ok
   ? <Icon name="check" strokeWidth={2.2} className={`${className} flex-shrink-0`} style={{ stroke: color }}/>
   : <Icon name="x" strokeWidth={2} className={`${className} flex-shrink-0`} style={{ stroke: 'rgba(255,255,255,0.28)' }}/>;
 
-const PlanCard = ({ color, icon, badge, title, tagline, price, priceNote, strike, saving, sub, extra, items, cta, ctaClass, onClick, current, selected, recommended }) => {
+const PlanCard = ({ color, icon, badge, title, tagline, price, priceNote, strike, saving, sub, extra, items, cta, ctaClass, onClick, current, selected, recommended, secondary, className = '' }) => {
   const accent = recommended || selected;
   return (
-    <div className={`card-glass-strong p-6 md:p-7 relative overflow-hidden flex flex-col transition-transform ${recommended ? 'md:-translate-y-3' : ''}`}
+    <div className={`card-glass-strong p-6 md:p-7 relative overflow-hidden flex flex-col transition-transform ${recommended ? 'md:-translate-y-3' : ''} ${className}`}
       style={{
         border: `1px solid ${accent ? `${color}99` : 'rgba(255,255,255,0.08)'}`,
         boxShadow: accent ? `0 0 0 1px ${color}55, 0 24px 60px -30px ${color}88` : undefined,
@@ -137,6 +140,7 @@ const PlanCard = ({ color, icon, badge, title, tagline, price, priceNote, strike
         ) : (
           <button onClick={onClick} className={`${ctaClass} w-full py-3.5 text-sm font-semibold justify-center`}>{cta}</button>
         )}
+        {secondary}
       </div>
     </div>
   );
@@ -189,14 +193,16 @@ const GabungPage = () => {
   const payOnline    = !!settings.payOnline;
   const aiPrice      = settings.aiPriceMonthly || null;
   const bundle       = aiBundle(settings);
+  const imtihan      = imtihanBundle(settings);
   const adminWa      = (settings.whatsapp || '').replace(/\D/g, '') || DEFAULT_ADMIN_WA;
   // Library + AI tanpa harga AI → hanya Library yang bisa dibayar sekarang.
-  const payPlan      = plan === 'library_ai' && !aiPrice ? 'library' : (plan === 'library_ai' ? 'library_ai' : 'library');
-  const payTotal     = LIBRARY_PRICE_IDR + (payPlan === 'library_ai' ? aiPrice : 0);
+  // Paket Imtihan berharga tetap (tidak bergantung harga AI bulanan).
+  const payPlan      = plan === 'imtihan' ? 'imtihan' : (plan === 'library_ai' && aiPrice ? 'library_ai' : 'library');
+  const payTotal     = payPlan === 'imtihan' ? IMTIHAN_PRICE_IDR : LIBRARY_PRICE_IDR + (payPlan === 'library_ai' ? aiPrice : 0);
 
   // Tagihan Library/Library+AI yang sedang ditunggu (juga dilanjutkan setelah kembali dari Mayar).
   const checkout = useCheckout({
-    plans: ['library', 'library_ai', 'ai'],
+    plans: ['library', 'library_ai', 'ai', 'imtihan'],
     enabled: !signedOut,
     onPaid: async (c) => {
       saveJoinPlanLocal(null);
@@ -216,7 +222,7 @@ const GabungPage = () => {
 
   // Plan dari tautan (?plan=library) langsung membuka panel bayar untuk yang sudah login.
   useEffect(() => {
-    if ((noAccount || isFree) && (plan === 'library' || plan === 'library_ai') && step === null && !waiting) setStep('pay');
+    if ((noAccount || isFree) && ['library', 'library_ai', 'imtihan'].includes(plan) && step === null && !waiting) setStep('pay');
   }, [noAccount, isFree]);
 
   useEffect(() => {
@@ -229,8 +235,9 @@ const GabungPage = () => {
     if (!paidMember || (!step && !paidPlan)) return;
     saveJoinPlanLocal(null);
     if (paidPlan === 'ai') return;
-    toast.push(paidPlan === 'library_ai' ? 'Selamat, Library & AI Partner-mu sudah aktif!' : 'Selamat, akses Library-mu sudah aktif!');
-    navigate(paidPlan === 'library_ai' ? '/ai-partner' : '/dashboard');
+    const withAi = paidPlan === 'library_ai' || paidPlan === 'imtihan';
+    toast.push(withAi ? 'Selamat, Library & AI Partner-mu sudah aktif!' : 'Selamat, akses Library-mu sudah aktif!');
+    navigate(withAi ? '/ai-partner' : '/dashboard');
   }, [paidMember, paidPlan]);
 
   const requireLogin = (nextPlan) => {
@@ -242,7 +249,7 @@ const GabungPage = () => {
   const choosePaid = (nextPlan) => {
     if (signedOut) { requireLogin(nextPlan); return; }
     if (paidMember) {
-      if (nextPlan === 'library_ai') window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library_ai' } }));
+      if (nextPlan === 'library_ai' || nextPlan === 'imtihan') window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library_ai' } }));
       else navigate('/dashboard');
       return;
     }
@@ -342,34 +349,43 @@ const GabungPage = () => {
             current={isFree} selected={plan === 'free'} ctaClass="btn btn-ghost"
             cta={startingFree ? 'Menyiapkan akun…' : paidMember ? 'Sudah termasuk di Library' : 'Mulai gratis'}
             onClick={paidMember ? () => navigate('/dashboard') : chooseFree}/>
-          <PlanCard color={GOLD} icon="bookOpen" recommended={!bundle} badge={bundle ? undefined : 'Paling populer'} title="Library" tagline="Semua bekal belajar & imtihan"
-            price={LIBRARY_PRICE} strike={LIBRARY_PRICE_ORIGINAL} saving="Hemat 29%" sub="Sekali bayar · akses selamanya"
-            items={LIBRARY_ITEMS} current={paidMember} selected={plan === 'library'} ctaClass="btn btn-gold"
-            cta={isFree ? 'Upgrade ke Library' : 'Pilih Library'} onClick={() => choosePaid('library')}/>
           {paidMember ? (
-            // Sudah punya Library: cukup bayar AI Partner (server menagih paket 'ai' saja).
-            <PlanCard color={EMERALD} icon="sparkles" recommended={!!bundle} badge={bundle ? 'Untuk member Library' : undefined} title="AI Study Partner" tagline="Tambahan untuk Library-mu"
-              price={aiPrice ? formatRupiah(aiPrice) : 'Segera'} priceNote={aiPrice ? '/ 30 hari' : ''}
-              sub={aiPrice ? 'Library-mu sudah aktif — cukup bayar AI' : 'Harga AI Partner segera diumumkan'}
-              extra={bundle && (
-                <p className="text-[11.5px] mb-5 -mt-2" style={{ color: EMERALD }}>
-                  Cuma sekitar {formatRupiah(bundle.perDay)}/hari · tanpa potongan otomatis, perpanjang kapan saja.
-                </p>
-              )}
-              items={AI_BUNDLE_FEATURES.map(f => [f, true])} ctaClass="btn btn-primary"
-              cta={aiPrice ? `Tambah AI Partner · ${formatRupiah(aiPrice)}` : 'Hubungi admin'} onClick={() => choosePaid('library_ai')}/>
+            <>
+              <PlanCard color={GOLD} icon="bookOpen" title="Library" tagline="Semua bekal belajar & imtihan"
+                price={LIBRARY_PRICE} sub="Sekali bayar · akses selamanya"
+                items={LIBRARY_ITEMS} current selected={plan === 'library'} ctaClass="btn btn-gold"
+                cta="Pilih Library" onClick={() => choosePaid('library')}/>
+              {/* Sudah punya Library: cukup bayar AI Partner (server menagih paket 'ai' saja). */}
+              <PlanCard color={EMERALD} icon="sparkles" recommended={!!bundle} badge={bundle ? 'Untuk member Library' : undefined} title="AI Study Partner" tagline="Tambahan untuk Library-mu"
+                price={aiPrice ? formatRupiah(aiPrice) : 'Segera'} priceNote={aiPrice ? '/ 30 hari' : ''}
+                sub={aiPrice ? 'Library-mu sudah aktif — cukup bayar AI' : 'Harga AI Partner segera diumumkan'}
+                extra={bundle && (
+                  <p className="text-[11.5px] mb-5 -mt-2" style={{ color: EMERALD }}>
+                    Cuma sekitar {formatRupiah(bundle.perDay)}/hari · tanpa potongan otomatis, perpanjang kapan saja.
+                  </p>
+                )}
+                items={AI_BUNDLE_FEATURES.map(f => [f, true])} ctaClass="btn btn-primary"
+                cta={aiPrice ? `Tambah AI Partner · ${formatRupiah(aiPrice)}` : 'Hubungi admin'} onClick={() => choosePaid('library_ai')}/>
+            </>
           ) : (
-            <PlanCard color={EMERALD} icon="sparkles" recommended={!!bundle} badge={bundle ? 'Paling lengkap' : undefined} title="Library + AI Study Partner" tagline="Belajar langsung dari diktatmu"
-              price={bundle ? formatRupiah(bundle.total) : LIBRARY_PRICE} priceNote={bundle ? 'sekali bayar' : '+ AI Partner bulanan'}
-              sub={bundle ? 'Library selamanya + AI 30 hari' : 'Harga AI Partner segera diumumkan'}
-              extra={bundle && (
-                <div className="mb-5 -mt-2">
-                  <AiBundleBreakdown bundle={bundle}/>
-                  <p className="text-[11.5px] mt-2" style={{ color: EMERALD }}>AI Partner cuma sekitar {formatRupiah(bundle.perDay)}/hari.</p>
-                </div>
-              )}
-              items={AI_ITEMS} selected={plan === 'library_ai'} ctaClass="btn btn-primary"
-              cta="Pilih Library + AI" onClick={() => choosePaid('library_ai')}/>
+            <>
+              {/* Paket utama di tengah: satu termin penuh sampai imtihan, sekali bayar. */}
+              <PlanCard className="order-first md:order-none" color={EMERALD} icon="sparkles" recommended badge="Paling hemat untuk imtihan" title="Paket Imtihan" tagline="Library + AI, satu termin penuh"
+                price={formatRupiah(imtihan.total)} priceNote="sekali bayar"
+                sub={`Library selamanya + AI ${IMTIHAN_AI_DAYS} hari`}
+                extra={<div className="mb-5 -mt-2"><ImtihanBreakdown bundle={imtihan}/></div>}
+                items={AI_ITEMS} selected={plan === 'imtihan'} ctaClass="btn btn-primary"
+                cta={`Ambil Paket Imtihan · ${formatRupiah(imtihan.total)}`} onClick={() => choosePaid('imtihan')}
+                secondary={bundle && (
+                  <button onClick={() => choosePaid('library_ai')} className="mt-3 text-xs text-ink-muted hover:text-ink underline underline-offset-2">
+                    Atau coba AI 30 hari dulu · Library + AI {formatRupiah(bundle.total)}
+                  </button>
+                )}/>
+              <PlanCard color={GOLD} icon="bookOpen" title="Library" tagline="Semua bekal belajar & imtihan"
+                price={LIBRARY_PRICE} sub="Sekali bayar · akses selamanya"
+                items={LIBRARY_ITEMS} selected={plan === 'library'} ctaClass="btn btn-gold"
+                cta={isFree ? 'Upgrade ke Library' : 'Pilih Library'} onClick={() => choosePaid('library')}/>
+            </>
           )}
         </div>
         {freeError && <div className="text-sm text-rose-400 text-center mt-4">{freeError}</div>}
@@ -399,12 +415,18 @@ const GabungPage = () => {
               {payPlan === 'library_ai' && (
                 <div className="flex justify-between gap-3"><span className="text-ink-muted">AI Partner · 30 hari pertama</span><span className="text-ink">{formatRupiah(aiPrice)}</span></div>
               )}
+              {payPlan === 'imtihan' && (
+                <div className="flex justify-between gap-3"><span className="text-ink-muted">AI Partner · {IMTIHAN_AI_DAYS} hari (1 termin)</span><span className="text-ink">{formatRupiah(imtihan.aiPart)}</span></div>
+              )}
               <div className="flex justify-between gap-3 border-t border-white/10 pt-2 font-semibold"><span className="text-ink">Total</span><span className="text-ink">{formatRupiah(payTotal)}</span></div>
               {plan === 'library_ai' && !aiPrice && (
                 <p className="text-[11px] text-amber-300/90 pt-1">Harga AI Partner belum dibuka. Bayar Library dulu — AI Partner bisa ditambahkan nanti dari akunmu.</p>
               )}
-              {payPlan === 'library_ai' && (
+              {(payPlan === 'library_ai' || payPlan === 'imtihan') && (
                 <p className="text-[11px] text-ink-soft pt-1">AI Partner tidak diperpanjang otomatis. Perpanjang kapan saja dari akunmu.</p>
+              )}
+              {payPlan === 'imtihan' && imtihan.saving && (
+                <p className="text-[11px] pt-1" style={{ color: EMERALD }}>Hemat {formatRupiah(imtihan.saving)} dibanding beli terpisah.</p>
               )}
             </div>
             {payOnline ? (
@@ -519,7 +541,7 @@ const GabungPage = () => {
             <thead>
               <tr className="border-b border-white/10">
                 <th className="text-left font-medium text-ink-muted text-xs px-3 md:px-5 py-4 w-[34%] md:w-[40%]">Fitur</th>
-                {[['Gratis', SKY], ['Library', GOLD], ['Library + AI', EMERALD]].map(([label, c]) => (
+                {[['Gratis', SKY], ['Library', GOLD], ['Paket Imtihan', EMERALD]].map(([label, c]) => (
                   <th key={label} className="px-1.5 md:px-3 py-4 text-center font-display font-semibold text-xs md:text-sm leading-tight" style={{ color: c }}>{label}</th>
                 ))}
               </tr>
@@ -539,7 +561,7 @@ const GabungPage = () => {
                 <td className="px-3 md:px-5 py-4 text-ink-muted text-xs">Harga</td>
                 <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm">Rp 0</td>
                 <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm" style={{ background: 'rgba(201,168,106,0.05)' }}>{LIBRARY_PRICE}<div className="text-[10px] text-ink-soft font-normal">sekali bayar</div></td>
-                <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm">{bundle ? formatRupiah(bundle.total) : LIBRARY_PRICE}<div className="text-[10px] text-ink-soft font-normal">{bundle ? 'Library selamanya + AI 30 hari' : '+ AI bulanan'}</div></td>
+                <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm">{formatRupiah(imtihan.total)}<div className="text-[10px] text-ink-soft font-normal">Library selamanya + AI {IMTIHAN_AI_DAYS} hari</div></td>
               </tr>
             </tbody>
           </table>

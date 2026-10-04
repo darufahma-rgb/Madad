@@ -367,7 +367,7 @@ Untuk setiap bait:
             {" "}{CATALOG.maddah - 1} maddah lain + prompt yang disesuaikan tingkatmu ada di paket Library.
           </div>
           <button onClick={() => window.dispatchEvent(new CustomEvent("talqeeh:open-join", { detail: { plan: "library" } }))} className="btn btn-gold text-sm px-4 py-2 flex-shrink-0">
-            Ambil Library · <span style={{textDecoration:"line-through",opacity:.6}}>{LIBRARY_PRICE_ORIGINAL}</span> {LIBRARY_PRICE} →
+            Ambil Library · {LIBRARY_PRICE} →
           </button>
         </div>
       </div>
@@ -491,7 +491,7 @@ Untuk setiap bait:
               </p>
               <button onClick={() => window.dispatchEvent(new CustomEvent("talqeeh:open-join", { detail: { plan: "library" } }))} className="btn btn-gold px-7 py-3.5 text-base font-medium"
                 style={{ boxShadow:"0 0 40px rgba(201,168,106,.35), 0 1px 0 rgba(255,255,255,.3) inset" }}>
-                Ambil Library · <span style={{textDecoration:"line-through",opacity:.6}}>{LIBRARY_PRICE_ORIGINAL}</span> {LIBRARY_PRICE} →
+                Ambil Library · {LIBRARY_PRICE} →
               </button>
               <p className="text-xs text-ink-soft mt-4 max-w-md mx-auto">
                 Mau AI langsung bikin ringkasan, flashcard, dan kuis dari diktatmu?{" "}

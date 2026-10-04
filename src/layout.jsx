@@ -574,7 +574,11 @@ const LoginModal = ({ open, onClose, onSuccess, joinPlan }) => {
 const LIBRARY_PRICE_IDR      = 63000; // sama dengan LIBRARY_PRICE_IDR di api/_lib/payments.js
 const LIBRARY_PRICE          = "Rp 63.000";
 const formatRupiah = (n) => `Rp ${Number(n || 0).toLocaleString("id-ID")}`;
-const LIBRARY_PRICE_ORIGINAL = "Rp 89.000";
+// Harga coret Library dihapus (Okt 2026): coretan permanen terkesan diskon palsu. null = tidak ditampilkan.
+const LIBRARY_PRICE_ORIGINAL = null;
+// Paket Imtihan: Library selamanya + AI Partner 1 termin (120 hari). Sama dengan api/_lib/payments.js.
+const IMTIHAN_PRICE_IDR = 199000;
+const IMTIHAN_AI_DAYS = 120;
 // Angka katalog yang dipakai di semua copy. Sesuaikan kalau data maddah/prompt bertambah
 // (61 maddah S1 di maddah-data + 27 maddah Ma'had di mahad-data; 1.201 prompt per September 2026).
 const CATALOG = { maddah: 88, maddahS1: 61, maddahMahad: 27, prompts: "1.200+" };
@@ -594,7 +598,7 @@ const AI_PARTNER_FEATURES = [
   "Flashcard pengulangan berjarak, kuis, dan latihan tahriri dinilai AI",
   "Tutor dari materimu + simulasi ujian syafawi",
 ];
-const PLAN_LABELS = { library: "Library", library_ai: "Library + AI Partner", ai: "AI Partner 30 hari" };
+const PLAN_LABELS = { library: "Library", library_ai: "Library + AI Partner 30 hari", ai: "AI Partner 30 hari", imtihan: "Paket Imtihan" };
 
 /* Paket Library + AI Study Partner: satu kali bayar di awal = Library selamanya + AI 30 hari pertama.
    Harga AI dari Admin → Settings (aiPriceMonthly); null kalau belum diisi. */
@@ -603,6 +607,19 @@ const aiBundle = (settings) => {
   if (!ai) return null;
   return { ai, total: LIBRARY_PRICE_IDR + ai, perDay: Math.ceil(ai / 30 / 100) * 100 };
 };
+/* Paket Imtihan dibanding beli terpisah (Library + 4 × AI 30 hari). Harga AI bulanan dari Settings dipakai untuk
+   perbandingan; kalau belum diisi, paket tetap bisa dibeli tanpa angka hemat. */
+const imtihanBundle = (settings) => {
+  const ai = settings?.aiPriceMonthly || null;
+  const separate = ai ? LIBRARY_PRICE_IDR + ai * Math.ceil(IMTIHAN_AI_DAYS / 30) : null;
+  const saving = separate && separate > IMTIHAN_PRICE_IDR ? separate - IMTIHAN_PRICE_IDR : null;
+  return {
+    total: IMTIHAN_PRICE_IDR, aiPart: IMTIHAN_PRICE_IDR - LIBRARY_PRICE_IDR, ai, separate, saving,
+    savingPct: saving ? Math.round((saving / separate) * 100) : null,
+    perDay: Math.ceil((IMTIHAN_PRICE_IDR - LIBRARY_PRICE_IDR) / IMTIHAN_AI_DAYS / 100) * 100,
+  };
+};
+
 // Manfaat AI Study Partner — hanya fitur yang memang ada di aplikasi.
 const AI_BUNDLE_FEATURES = [
   "Tanya AI langsung di Talqeeh — tanpa salin-tempel ke ChatGPT, dijawab sesuai muqarrar & jurusanmu",
@@ -630,6 +647,32 @@ const AiBundleBreakdown = ({ bundle, className = "" }) => bundle ? (
     <p className="text-[11.5px] text-ink-soft leading-relaxed mt-2.5">
       Setelah 30 hari, Library tetap milikmu selamanya. AI Partner bisa diperpanjang {formatRupiah(bundle.ai)}/30 hari
       kapan saja — tanpa potongan otomatis, sisa hari tidak hangus.
+    </p>
+  </div>
+) : null;
+
+// Rincian Paket Imtihan: isi paket, perbandingan dengan beli terpisah, dan yang terjadi setelah 120 hari.
+const ImtihanBreakdown = ({ bundle, className = "" }) => bundle ? (
+  <div className={`rounded-xl border border-white/10 bg-black/20 p-3.5 text-[13px] ${className}`}>
+    <div className="flex items-start justify-between gap-3">
+      <span className="text-ink-muted"><span className="text-ink">Library</span> · akses selamanya</span>
+      <span className="text-ink tabular-nums flex-shrink-0">{formatRupiah(LIBRARY_PRICE_IDR)}</span>
+    </div>
+    <div className="flex items-start justify-between gap-3 mt-1.5">
+      <span className="text-ink-muted"><span className="text-ink">AI Study Partner</span> · {IMTIHAN_AI_DAYS} hari (1 termin)</span>
+      <span className="text-ink tabular-nums flex-shrink-0">{formatRupiah(bundle.aiPart)}</span>
+    </div>
+    <div className="flex items-start justify-between gap-3 mt-2 pt-2 border-t border-white/10 font-semibold">
+      <span className="text-ink">Total sekali bayar</span>
+      <span className="text-emerald-300 tabular-nums flex-shrink-0">{formatRupiah(bundle.total)}</span>
+    </div>
+    {bundle.saving && (
+      <div className="text-[12px] text-emerald-300/90 mt-1.5">
+        Beli terpisah {formatRupiah(bundle.separate)} → hemat {formatRupiah(bundle.saving)} ({bundle.savingPct}%)
+      </div>
+    )}
+    <p className="text-[11.5px] text-ink-soft leading-relaxed mt-2.5">
+      Setelah {IMTIHAN_AI_DAYS} hari, Library tetap milikmu selamanya. AI Partner bisa diperpanjang kapan saja — tanpa potongan otomatis.
     </p>
   </div>
 ) : null;
@@ -906,6 +949,7 @@ const CheckoutWatcher = ({ paused }) => {
       await refreshMemberSession();
       toast.push(c.plan === "ai" ? "Pembayaran diterima — AI Partner aktif 30 hari!"
         : c.plan === "library_ai" ? "Pembayaran diterima — Library & AI Partner aktif!"
+        : c.plan === "imtihan" ? `Pembayaran diterima — Library & AI Partner ${IMTIHAN_AI_DAYS} hari aktif!`
         : "Pembayaran diterima — Library-mu sudah aktif!");
     },
   });
@@ -1293,6 +1337,7 @@ Object.assign(window, {
   FreeMaddahGate, isMaddahLocked, canOpenMaddahFree, FREE_SAMPLE_MADDAH,
   GoogleButton, ErrorBox, useGoogleSignIn, formatPinInput, ACTIVATION_ERRORS, StepList,
   PLAN_LABELS, DEFAULT_ADMIN_WA, PAYMENT_WAIT_LIMIT_MS, aiBundle, AI_BUNDLE_FEATURES, AiBundleBreakdown,
+  imtihanBundle, ImtihanBreakdown, IMTIHAN_PRICE_IDR, IMTIHAN_AI_DAYS,
   useCheckout, CheckoutWaiting, CheckoutWatcher, CheckoutPayModal, readPendingCheckout, savePendingCheckout, formatRupiah,
   LIBRARY_PRICE, LIBRARY_PRICE_IDR, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
   scrollToLandingSection, scrollToPaket,

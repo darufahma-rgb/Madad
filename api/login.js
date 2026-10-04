@@ -1,5 +1,6 @@
 import { sbConfig, sbHeaders, getAuthUser, resolveMember, newMemberCode, consumeQuota } from './_lib/member.js';
 import { normalizePin } from './_lib/pin.js';
+import { verifyUnsubToken, addOptout } from './_lib/email.js';
 import {
   CHECKOUT_PLANS, mayarConfigured, checkoutBlockReason, createCheckout, getOwnedCheckout, refreshCheckout,
 } from './_lib/payments.js';
@@ -225,6 +226,17 @@ async function handleCheckoutStatus(req, user, res) {
   return res.status(200).json({ ok: true, status, plan: checkout.plan });
 }
 
+async function handleUnsubscribe(req, res) {
+  const email = String(req.query?.e || '').trim().toLowerCase();
+  const ok = email.includes('@') && verifyUnsubToken(email, req.query?.t) && await addOptout(email).catch(() => false);
+  if (req.method === 'POST') return res.status(ok ? 200 : 400).json({ ok });
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  const msg = ok
+    ? 'Kamu tidak akan menerima email dari Talqeeh lagi. Akunmu tetap aktif seperti biasa.'
+    : 'Link ini tidak valid atau sudah kedaluwarsa. Balas email dari Talqeeh bila ingin berhenti menerima email.';
+  return res.status(ok ? 200 : 400).send(`<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Talqeeh</title></head><body style="font-family:system-ui,sans-serif;background:#0c0c0c;color:#eee;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0;padding:16px"><div style="max-width:420px;text-align:center"><h1 style="font-size:20px">${ok ? 'Berhasil berhenti berlangganan' : 'Gagal memproses'}</h1><p style="color:#aaa;line-height:1.6">${msg}</p><a href="/" style="color:#3ecf8e">Kembali ke Talqeeh</a></div></body></html>`);
+}
+
 /* ── Corong konversi (migrations/funnel_events.sql) ──
    Boleh tanpa login: kunjungan pertama belum punya akun. Hanya event & detail dari daftar tetap, ID pengunjung acak,
    dan satu baris per pengunjung/event/hari (unique + ignore-duplicates), jadi tabel tidak bisa dibanjiri isian bebas. */
@@ -277,9 +289,10 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
-  if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
-
   const action = req.query?.action || 'session';
+  // Link "berhenti menerima email" (GET dari email, POST satu-klik dari Gmail/Outlook) — tanpa login.
+  if (action === 'unsubscribe') return await handleUnsubscribe(req, res);
+  if (req.method !== 'POST') { res.status(405).json({ error: 'Method not allowed' }); return; }
 
   try {
     if (action === 'track') return await handleTrack(req, res);

@@ -7,6 +7,7 @@ import { buildAdminAnalytics } from './_lib/analytics.js';
 import { parseAiPrice, extendAi } from './_lib/payments.js';
 import { newMemberCode } from './_lib/member.js';
 import { QUOTA_KINDS } from './_lib/ai-partner/limits.js';
+import { handleEmailAdmin } from './_lib/email.js';
 
 const sbRequest = (supabaseUrl, serviceKey, method, path, body, prefer = 'return=representation') => {
   const url = new URL(`${supabaseUrl}/rest/v1/${path}`);
@@ -259,6 +260,10 @@ export default async function handler(req, res) {
       const results = [];
       for (const l of list) results.push(await linkLegacyEmail(supabaseUrl, serviceKey, l?.code, l?.email));
       result = { status: 200, data: results };
+    } else if (typeof action === 'string' && action.startsWith('email-')) {
+      const out = await handleEmailAdmin(action, JSON.parse(body || '{}'));
+      if (!out.ok) { res.status(400).json({ ok: false, error: out.error }); return; }
+      result = { status: 200, data: out.data };
     } else if (action === 'analytics') {
       result = { status: 200, data: await buildAdminAnalytics(Number(days)) };
     } else if (action === 'get-settings') {
