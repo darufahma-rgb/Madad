@@ -58,7 +58,17 @@ const SEMINAR_CHAPTERS = [
         ],
       },
     ],
-    practice: "Tanyakan sesuatu yang kamu sudah pasti tahu jawabannya (misalnya isi satu bab kitab yang sedang kamu pegang). Nilai: mana yang benar, mana yang meleset, dan mana yang terdengar benar tapi tidak ada di kitab.",
+    task: {
+      title: "Uji AI dengan materi yang kamu kuasai",
+      minutes: 10,
+      steps: [
+        "Pilih satu bab kitab yang sedang kamu pegang.",
+        "Ajukan tiga pertanyaan ke AI: satu definisi, satu detail (misalnya halaman atau nama tokoh), satu contoh.",
+        "Cocokkan tiap jawaban dengan kitabmu.",
+        "Tandai: benar, meleset, atau terdengar benar tapi tidak ada di kitab.",
+      ],
+      output: "Catatan Uji AI: tiga pertanyaan, hasil cek, dan satu kesimpulan tentang kapan AI bisa dipercaya.",
+    },
   },
   {
     id: "prompting",
@@ -117,7 +127,17 @@ const SEMINAR_CHAPTERS = [
         text: "Kamu adalah tutor nahwu untuk mahasiswa Al-Azhar tingkat 2. Jelaskan isim mamnu' minas sharf dengan bahasa Indonesia sederhana, tulis istilah dan contoh dalam Arab berharakat. Beri 3 sebab terlarang tanwin beserta satu contoh tiap sebab, dalam bentuk tabel. Jangan mengarang kutipan kitab; kalau tidak yakin, katakan.",
       },
     ],
-    practice: "Ambil satu materi yang sedang kamu pelajari. Tulis prompt versi \"kurang baik\" dan \"lebih baik\", bandingkan hasilnya, lalu perbaiki sekali lagi.",
+    task: {
+      title: "Tulis prompt andalanmu",
+      minutes: 15,
+      steps: [
+        "Pilih satu mata kuliah yang sedang kamu pelajari.",
+        "Tulis prompt singkat, lalu jalankan.",
+        "Tulis ulang dengan rumus lima bagian (peran, konteks, tugas, format, batasan), lalu jalankan lagi.",
+        "Perbaiki sekali lagi sesuai kekurangan hasilnya.",
+      ],
+      output: "Prompt Andalan: satu prompt lima bagian yang siap dipakai ulang, plus catatan apa yang kamu perbaiki.",
+    },
   },
   {
     id: "belajar",
@@ -174,7 +194,17 @@ const SEMINAR_CHAPTERS = [
         text: "Kamu adalah penguji. Berdasarkan ringkasan di bawah, ajukan satu pertanyaan saja, tunggu jawabanku, lalu koreksi dan jelaskan. Naikkan tingkat kesulitan kalau jawabanku benar. Jangan beri jawaban sebelum aku menjawab.\n\n[tempel ringkasan]",
       },
     ],
-    practice: "Setelah AI menjelaskan sebuah bab, tutup layarnya dan tulis ulang penjelasan itu dengan kata-katamu sendiri. Bagian yang tidak bisa kamu tulis adalah bagian yang belum kamu pahami.",
+    task: {
+      title: "Bikin set belajar satu bab",
+      minutes: 20,
+      steps: [
+        "Tempel satu bab diktatmu per bagian, lalu minta ringkasan tiga level.",
+        "Minta lima flashcard dan lima soal beserta kunci jawabannya.",
+        "Tutup layar, tulis ulang isi bab dengan kata-katamu sendiri.",
+        "Minta AI menguji kamu satu pertanyaan sekali jalan, lalu catat skormu.",
+      ],
+      output: "Set Belajar: ringkasan, lima flashcard, lima soal berikut kunci, dan skor ujianmu.",
+    },
   },
   {
     id: "adab",
@@ -220,7 +250,17 @@ const SEMINAR_CHAPTERS = [
         ],
       },
     ],
-    practice: "Minta AI menyebut tiga referensi kitab untuk satu masalah fiqh. Lakukan tiga cek di atas pada masing-masing. Berapa yang benar-benar lolos?",
+    task: {
+      title: "Verifikasi tiga referensi",
+      minutes: 15,
+      steps: [
+        "Minta AI menyebut tiga referensi kitab untuk satu masalah fiqh.",
+        "Lakukan cek nama, halaman, dan matan pada tiap referensi.",
+        "Isi tabel: lolos atau tidak, beserta alasannya.",
+        "Tulis satu aturan pribadi dari hasilnya.",
+      ],
+      output: "Tabel Verifikasi: tiga referensi dengan hasil tiga cek, plus satu aturan pribadi.",
+    },
   },
   {
     id: "pendidikan",
@@ -233,6 +273,24 @@ const SEMINAR_CHAPTERS = [
         points: [
           "AI bisa menyesuaikan kecepatan, tingkat kesulitan, dan gaya penjelasan untuk tiap pelajar.",
           "Umpan balik instan: pelajar tidak harus menunggu sampai pertemuan berikutnya untuk tahu kesalahannya.",
+        ],
+      },
+      {
+        h: "Memaksimalkan AI untuk memudahkan belajar",
+        points: [
+          "**Pakai sumbermu sendiri.** Beri AI diktat dan kitab yang kamu pegang, supaya jawabannya berpijak pada materi yang benar, bukan ingatan model.",
+          "**Belajar aktif.** Minta AI menguji dan mengoreksimu, bukan hanya menjelaskan.",
+          "**Sesuaikan level dan gaya.** Sebut tingkat, fakultas, dan cara belajarmu agar penjelasannya pas.",
+          "**Putar siklusnya.** Pahami, uji, ulang berjarak, lalu verifikasi. Alat umum jarang menyediakan semuanya sekaligus.",
+          "**Kenali konteks Azhar.** Muqarrar, istilah, dan cara ujian Al-Azhar punya kekhasan yang tidak dikenal alat umum.",
+        ],
+      },
+      {
+        h: "Di sinilah Talqeeh masuk",
+        points: [
+          "Masalah: diktat tebal, istilah sulit, waktu ujian terbatas, dan alat AI yang terlalu umum.",
+          "Jawaban: Talqeeh merangkai kelima cara tadi dalam satu tempat. Ada library maddah, prompt yang sudah disesuaikan, bank soal, bantuan mufradat dan i'rab, serta AI Study Partner.",
+          "Prinsip: AI menyuburkan pemahaman, bukan menggantikan guru, kitab, atau proses belajar.",
         ],
       },
       {
@@ -264,14 +322,6 @@ const SEMINAR_CHAPTERS = [
         ],
       },
       {
-        h: "Studi kasus: Talqeeh",
-        points: [
-          "Masalah: diktat tebal, istilah sulit, waktu ujian terbatas, dan alat AI yang terlalu umum.",
-          "Jawaban: library maddah, prompt yang sudah disesuaikan, bank soal, bantuan mufradat dan i'rab, serta AI Study Partner.",
-          "Prinsip: AI menyuburkan pemahaman, bukan menggantikan guru, kitab, atau proses belajar.",
-        ],
-      },
-      {
         h: "Arah ke depan",
         points: [
           "Agen AI yang mengerjakan tugas bertahap, interaksi suara dan gambar, serta model yang makin baik di bahasa Arab.",
@@ -279,7 +329,17 @@ const SEMINAR_CHAPTERS = [
         ],
       },
     ],
-    practice: "Diskusikan berpasangan: kalau kamu dosen, aturan apa yang akan kamu buat soal AI untuk mata kuliahmu, dan bagaimana kamu menilainya?",
+    task: {
+      title: "Rancang cara belajarmu dengan AI",
+      minutes: 15,
+      steps: [
+        "Tulis satu kesulitan belajar yang paling sering kamu alami.",
+        "Tentukan bagian yang kamu serahkan ke AI dan yang tetap ke guru dan kitab.",
+        "Coba satu fitur Talqeeh untuk kesulitan itu (template prompt maddahmu atau AI Study Partner).",
+        "Tulis tiga aturan pemakaian AI untuk dirimu sendiri.",
+      ],
+      output: "Peta Peran dan Aturan Pribadi: satu kesulitan, pembagian peran AI dan guru, dan tiga aturan pemakaian.",
+    },
   },
   {
     id: "praktik",
@@ -325,9 +385,73 @@ const SEMINAR_CHAPTERS = [
         ],
       },
     ],
-    practice: "Sebelum pulang, tulis satu kebiasaan baru yang akan kamu pakai minggu ini, dan satu hal yang akan selalu kamu verifikasi.",
+    task: {
+      title: "Susun rencana 7 hari",
+      minutes: 10,
+      steps: [
+        "Ambil Set Belajar dari Bab 3 sebagai bahan.",
+        "Isi hari 1 sampai 7 dengan kegiatan dari rencana, lengkap dengan jam yang realistis.",
+        "Tetapkan tanggal mulai dan satu hal yang akan selalu kamu verifikasi.",
+      ],
+      output: "Rencana 7 Hari: jadwal siap jalan dengan tanggal mulai.",
+    },
   },
 ];
+
+/* Screenshot Talqeeh untuk bahasan "Di sinilah Talqeeh masuk". `hl` = kotak sorot dalam persen.
+   `pending: true` = gambar belum tersedia, slide-nya dilewati sampai file ada di /public/seminar. */
+const SEMINAR_SHOTS = {
+  landing: {
+    src: "/seminar/talqeeh-landing.webp", ar: 1440 / 828, vh: 66, title: "Satu tempat untuk belajar muqarrar",
+    tie: "Menjawab: kenali konteks Azhar",
+    points: ["Library untuk 88 maddah Al-Azhar", "AI Partner yang mengolah diktat, slide, dan rekamanmu"],
+    hl: { x: 29.9, y: 51.3, w: 40.3, h: 15.5, label: "Library dan AI Partner" },
+  },
+  katalog: {
+    src: "/seminar/talqeeh-katalog.webp", ar: 1440 / 1028, vh: 66, title: "Library maddah",
+    tie: "Menjawab: sesuaikan level dan gaya",
+    points: ["61 maddah S1 dan 27 maddah Ma'had", "Lebih dari 1.200 template prompt, dipilah per maddah"],
+    hl: { x: 8.6, y: 9.5, w: 41.2, h: 25.7, label: "88 maddah, 1.200+ prompt" },
+  },
+  sample: {
+    src: "/seminar/talqeeh-sample.webp", ar: 1440 / 1028, vh: 66, title: "Template prompt per maddah",
+    tie: "Menjawab: pakai sumbermu sendiri",
+    points: ["Kitab utama tiap maddah", "AI yang paling cocok untuk tiap jenis tugas", "Cara pakai empat langkah"],
+    hl: { x: 8.6, y: 78.6, w: 82.8, h: 19.5, label: "AI yang paling cocok per maddah" },
+  },
+  "aipartner-beranda": {
+    imgs: [{ src: "/seminar/aipartner-beranda.webp", hl: { x: 4.4, y: 61.6, w: 93, h: 11.2, label: "Disesuaikan untukmu" } }],
+    ar: 704 / 1624, vh: 70, title: "AI Partner: mulai dari satu kotak",
+    tie: "Menjawab: sesuaikan level dan gaya",
+    points: ["Tanya, unggah materi, atau pilih aksi cepat", "Jawabannya disesuaikan dengan profil belajarmu"],
+  },
+  "aipartner-ringkasan": {
+    imgs: [{ src: "/seminar/aipartner-ringkasan.webp", hl: { x: 4.4, y: 26.1, w: 94, h: 4.8, label: "Ringkasan, peta konsep, i'rab" } }],
+    ar: 704 / 1624, vh: 70, title: "AI Partner: olah diktatmu",
+    tie: "Menjawab: pakai sumbermu sendiri",
+    points: ["Unggah PDF atau foto diktatmu", "Hasil: ringkasan, peta konsep, materi dan i'rab", "Pilih bahasa: Indonesia, Arab, atau dwibahasa"],
+  },
+  "aipartner-latihan": {
+    imgs: [
+      { src: "/seminar/aipartner-flashcard.webp", hl: { x: 4.4, y: 60, w: 93, h: 28.1, label: "Flashcard dari materimu" } },
+      { src: "/seminar/aipartner-kuis.webp", hl: { x: 4.4, y: 56.2, w: 93, h: 32.5, label: "Kuis dari materimu" } },
+    ],
+    ar: 704 / 1624, vh: 70, title: "AI Partner: flashcard dan kuis",
+    tie: "Menjawab: putar siklusnya",
+    points: ["Flashcard otomatis dari materimu", "Kuis pilihan ganda dan latihan tahriri", "Kemajuan hafalan tercatat"],
+  },
+  "aipartner-tutor": {
+    imgs: [{ src: "/seminar/aipartner-tutor.webp", hl: { x: 4.4, y: 32, w: 93, h: 40.7, label: "Tutor menjawab dari isi materimu" } }],
+    ar: 704 / 1624, vh: 70, title: "AI Partner: tutor dari materimu",
+    tie: "Menjawab: belajar aktif",
+    points: ["Tanya apa saja, dijawab berdasarkan isi materimu", "Ada simulasi syafawi untuk latihan ujian lisan"],
+  },
+};
+
+/* Slide screenshot disisipkan SETELAH subtopik ini, berurutan. */
+const SEMINAR_SHOT_AFTER = {
+  pendidikan: { "Di sinilah Talqeeh masuk": ["landing", "katalog", "sample", "aipartner-beranda", "aipartner-ringkasan", "aipartner-latihan", "aipartner-tutor"] },
+};
 
 /* **tebal** dan *miring* sederhana, tanpa library */
 const renderInline = (text) => {
@@ -357,7 +481,7 @@ const SeminarPromptBox = ({ label, text }) => {
   );
 };
 
-const SeminarChapter = ({ ch, index, open, onToggle }) => (
+const SeminarChapter = ({ ch, index, open, onToggle, done, onDone }) => (
   <article id={"bab-" + ch.id} className="card-glass overflow-hidden scroll-mt-24">
     <button onClick={onToggle} aria-expanded={open}
             className="w-full flex items-center gap-4 p-4 md:p-6 text-left">
@@ -395,11 +519,43 @@ const SeminarChapter = ({ ch, index, open, onToggle }) => (
             {ch.prompts.map(p => <SeminarPromptBox key={p.label} {...p}/>)}
           </div>
         )}
-        <div className="mt-6 rounded-xl bg-emerald-500/8 border border-emerald-500/25 p-4 flex gap-3">
-          <Icon name="lightbulb" className="w-5 h-5 text-emerald-300 shrink-0 mt-0.5" strokeWidth={1.6}/>
-          <div className="min-w-0">
-            <div className="text-xs uppercase tracking-[0.18em] text-emerald-300 mb-1">Latihan</div>
-            <p className="text-sm text-ink-muted leading-relaxed">{ch.practice}</p>
+        {ch.id === "pendidikan" && (
+          <div className="mt-6">
+            <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3">Tampilan Talqeeh</div>
+            <div className="grid sm:grid-cols-3 gap-3">
+              {Object.values(SEMINAR_SHOTS).filter(s => !s.pending).map(s => (
+                <figure key={s.title} className="rounded-xl overflow-hidden border border-white/10 bg-white/[0.02]">
+                  <img src={s.imgs ? s.imgs[0].src : s.src} alt={s.title} loading="lazy" className="w-full aspect-[16/10] object-cover object-top"/>
+                  <figcaption className="p-3 text-sm text-ink-muted"><span className="block text-ink font-medium">{s.title}</span>{s.tie}</figcaption>
+                </figure>
+              ))}
+            </div>
+          </div>
+        )}
+        <div className={"mt-6 rounded-xl border p-4 md:p-5 " + (done ? "border-gold-500/50 bg-gold-500/[0.07]" : "border-gold-500/25 bg-gold-500/[0.04]")}>
+          <div className="flex items-start gap-3">
+            <Icon name="lightbulb" className="w-5 h-5 text-gold-300 shrink-0 mt-1" strokeWidth={1.6}/>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-baseline gap-x-3">
+                <span className="text-xs uppercase tracking-[0.18em] text-gold-300">Tugas</span>
+                <span className="text-xs text-ink-muted">{ch.task.minutes} menit</span>
+              </div>
+              <div className="font-display text-lg md:text-xl font-semibold text-ink mt-1 mb-3">{ch.task.title}</div>
+              <ol className="space-y-1.5 mb-4">
+                {ch.task.steps.map((st, i) => (
+                  <li key={i} className="flex gap-3 text-sm md:text-base text-ink-muted leading-relaxed">
+                    <span className="num text-gold-400 w-5 shrink-0">{i + 1}</span><span className="min-w-0">{st}</span>
+                  </li>
+                ))}
+              </ol>
+              <div className="rounded-lg bg-black/25 border border-white/10 p-3 text-sm md:text-base">
+                <span className="text-gold-300 font-medium">Output: </span><span className="text-ink">{ch.task.output}</span>
+              </div>
+              <label className="mt-3 inline-flex items-center gap-2.5 cursor-pointer select-none text-sm text-ink-muted">
+                <input type="checkbox" checked={!!done} onChange={() => onDone(ch.id)} className="w-4 h-4 accent-[#C9A86A]"/>
+                Tugas ini sudah selesai
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -407,8 +563,20 @@ const SeminarChapter = ({ ch, index, open, onToggle }) => (
   </article>
 );
 
+const TASKS_KEY = "talqeeh_seminar_tasks";
+const seminarOutputName = (ch) => ch.task.output.split(":")[0];
+
 const SeminarAiPage = () => {
   const [openSet, setOpenSet] = useState(() => new Set([SEMINAR_CHAPTERS[0].id]));
+  const [doneMap, setDoneMap] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(TASKS_KEY) || "{}") || {}; } catch { return {}; }
+  });
+  const toggleDone = (id) => setDoneMap(prev => {
+    const n = { ...prev, [id]: !prev[id] };
+    try { localStorage.setItem(TASKS_KEY, JSON.stringify(n)); } catch {}
+    return n;
+  });
+  const doneCount = SEMINAR_CHAPTERS.filter(c => doneMap[c.id]).length;
 
   // Halaman ini tidak untuk diindeks mesin pencari.
   useEffect(() => {
@@ -471,8 +639,32 @@ const SeminarAiPage = () => {
             {/* Bab */}
             <div className="lg:col-span-8 space-y-3 md:space-y-4 min-w-0">
               {SEMINAR_CHAPTERS.map((ch, i) => (
-                <SeminarChapter key={ch.id} ch={ch} index={i} open={openSet.has(ch.id)} onToggle={() => toggle(ch.id)}/>
+                <SeminarChapter key={ch.id} ch={ch} index={i} open={openSet.has(ch.id)} onToggle={() => toggle(ch.id)}
+                                done={!!doneMap[ch.id]} onDone={toggleDone}/>
               ))}
+              <section className="card-glass-strong p-5 md:p-8">
+                <div className="flex flex-wrap items-baseline justify-between gap-2 mb-1">
+                  <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">Paket Belajar AI Pribadi</h2>
+                  <span className="num text-gold-300 text-sm">{doneCount} dari {SEMINAR_CHAPTERS.length} output selesai</span>
+                </div>
+                <p className="text-ink-muted mb-5">Enam tugas di atas menghasilkan satu paket yang kamu bawa pulang dan langsung bisa dipakai.</p>
+                <div className="h-[3px] rounded-full bg-white/10 overflow-hidden mb-5">
+                  <div className="h-full bg-gold-500 transition-[width] duration-500" style={{ width: (doneCount / SEMINAR_CHAPTERS.length * 100) + "%" }}/>
+                </div>
+                <ol className="grid sm:grid-cols-2 gap-x-6 gap-y-3">
+                  {SEMINAR_CHAPTERS.map((ch, i) => (
+                    <li key={ch.id} className="flex items-start gap-3">
+                      <span className={"mt-0.5 w-6 h-6 rounded-full shrink-0 flex items-center justify-center border " + (doneMap[ch.id] ? "bg-gold-500 border-gold-500 text-night-950" : "border-white/25 text-transparent")}>
+                        <Icon name="check" className="w-3.5 h-3.5" strokeWidth={2.6}/>
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-ink font-medium leading-snug">{seminarOutputName(ch)}</span>
+                        <span className="block text-xs text-ink-muted">Bab {i + 1}, {ch.task.minutes} menit</span>
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
               <div className="card-glass p-5 md:p-6 text-center">
                 <p className="text-ink-muted leading-relaxed">
                   Materi ini hanya untuk peserta seminar. Ada pertanyaan atau masukan? Kabari kami lewat Instagram <strong className="text-ink">@ai.gypt</strong>.
@@ -490,4 +682,5 @@ Object.assign(window, {
   SeminarAiPage, SEMINAR_AI_PATH,
   SEMINAR_AI_SLIDES_PATH: SEMINAR_AI_PATH + "/slides",
   SEMINAR_CHAPTERS, seminarRenderInline: renderInline,
+  SEMINAR_SHOTS, SEMINAR_SHOT_AFTER, seminarOutputName,
 });

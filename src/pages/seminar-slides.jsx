@@ -14,13 +14,19 @@ const buildSeminarSlides = () => {
     const seg = ci + 1;
     slides.push({ type: "chapter", ch, ci, seg });
     const vizAfter = (window.SEMINAR_VIZ_AFTER || {})[ch.id] || {};
+    const shotAfter = (window.SEMINAR_SHOT_AFTER || {})[ch.id] || {};
     ch.sections.forEach(s => {
       slides.push({ type: "section", ch, ci, s, seg });
       if (vizAfter[s.h]) slides.push({ type: "viz", viz: vizAfter[s.h], ch, ci, seg });
+      (shotAfter[s.h] || []).forEach(id => {
+        const shot = window.SEMINAR_SHOTS[id];
+        if (shot && !shot.pending) slides.push({ type: "shot", shot, ch, ci, seg });
+      });
     });
     if (ch.prompts) slides.push({ type: "prompts", ch, ci, seg });
     slides.push({ type: "practice", ch, ci, seg });
   });
+  slides.push({ type: "outputs", seg: chapters.length + 1 });
   slides.push({ type: "closing", seg: chapters.length + 1 });
   return slides;
 };
@@ -176,21 +182,106 @@ const SlideBody = ({ slide, goChapter }) => {
     );
   }
 
-  /* ── Latihan: bingkai tunggal ── */
-  if (slide.type === "practice") return (
-    <div className="w-full max-w-[1100px] mx-auto">
-      <Item i={0}>
-        <div className="rounded-2xl border border-gold-500/40 bg-gold-500/[0.05] p-[clamp(1.2rem,3.6vw,3.4rem)]">
-          <div className="flex items-center gap-3 mb-[clamp(0.8rem,2.2vw,1.8rem)] text-gold-300">
-            <Icon name="lightbulb" className="w-[clamp(1.4rem,2.6vw,2.2rem)] h-[clamp(1.4rem,2.6vw,2.2rem)]" strokeWidth={1.5}/>
-            <span className="font-display font-semibold text-[clamp(1.2rem,2.4vw,2rem)]">Latihan</span>
-          </div>
-          <p className="text-ink leading-[1.35]" style={{ fontSize: "clamp(1.2rem,2.9vw,2.4rem)" }}>{slide.ch.practice}</p>
-          <div className="text-ink-muted text-[clamp(0.8rem,1.2vw,1rem)] mt-[clamp(1rem,2.4vw,2rem)]">{slide.ch.title}</div>
+  /* ── Screenshot Talqeeh dengan sorotan ── */
+  if (slide.type === "shot") {
+    const sh = slide.shot;
+    const imgs = sh.imgs || [{ src: sh.src, hl: sh.hl }];
+    const portrait = sh.ar < 1;
+    return (
+      <div className="w-full max-w-[1400px] mx-auto grid lg:grid-cols-12 gap-4 lg:gap-12 items-center">
+        <div className="lg:col-span-4">
+          <Item i={0}><div className="text-gold-300 text-[clamp(0.8rem,1.3vw,1.05rem)] mb-[clamp(0.4rem,1.2vh,0.9rem)]">{sh.tie}</div></Item>
+          <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.08] text-[clamp(1.5rem,min(3.6vw,6vh),3.1rem)]">{sh.title}</h2></Item>
+          <ul className="mt-[clamp(0.6rem,2vh,1.4rem)] grid gap-[clamp(0.35rem,1.1vh,0.8rem)]">
+            {sh.points.map((p, i) => (
+              <Item i={i + 2} key={i}>
+                <li className="flex gap-3 text-ink-muted leading-snug list-none text-[clamp(0.92rem,min(1.5vw,2.8vh),1.3rem)]">
+                  <span className="num text-gold-400 w-5 shrink-0 pt-[0.12em] text-[0.75em]">{pad2(i + 1)}</span>{p}
+                </li>
+              </Item>
+            ))}
+          </ul>
         </div>
-      </Item>
-    </div>
-  );
+        <Item i={1} className={"lg:col-span-8 flex justify-center items-start " + (portrait ? "gap-3 md:gap-5" : "lg:justify-end")}>
+          {imgs.map((im, k) => (
+            <div key={im.src} className={"sl-shotbox relative overflow-hidden border border-gold-500/30 bg-night-900 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9)] " + (portrait ? "rounded-[22px] md:rounded-[28px]" : "rounded-2xl")}
+                 style={{ "--w-lg": "min(100%, " + (sh.vh * sh.ar).toFixed(1) + "vh)", "--w-sm": portrait ? "min(100%, " + (34 * sh.ar).toFixed(1) + "vh)" : "100%", aspectRatio: sh.ar }}>
+              <img src={im.src} alt={sh.title} className="sv-zoom absolute inset-0 w-full h-full object-cover"/>
+              {im.hl && (
+                <div className="sv-fade absolute rounded-lg" style={{ left: im.hl.x + "%", top: im.hl.y + "%", width: im.hl.w + "%", height: im.hl.h + "%", border: "2px solid #C9A86A", background: "rgba(201,168,106,0.09)", boxShadow: "0 0 0 9999px rgba(0,0,0,0.38)", animationDelay: (1200 + k * 300) + "ms", animationDuration: ".8s" }}>
+                  <span className="absolute left-0 bottom-full mb-1.5 w-max max-w-full rounded-md bg-gold-500 text-night-950 font-semibold px-2 py-1 leading-tight text-[clamp(0.6rem,1.05vw,0.88rem)]">{im.hl.label}</span>
+                </div>
+              )}
+            </div>
+          ))}
+        </Item>
+      </div>
+    );
+  }
+
+  /* ── Tugas: langkah di kiri, output di bawah ── */
+  if (slide.type === "practice") {
+    const t = slide.ch.task;
+    return (
+      <div className="w-full max-w-[1300px] mx-auto">
+        <div className="grid lg:grid-cols-12 gap-4 lg:gap-14 items-start">
+          <div className="lg:col-span-5">
+            <Item i={0}>
+              <div className="flex items-center gap-3 text-gold-300 mb-[clamp(0.5rem,1.6vh,1rem)]">
+                <Icon name="lightbulb" className="w-[clamp(1.2rem,2.2vw,1.8rem)] h-[clamp(1.2rem,2.2vw,1.8rem)]" strokeWidth={1.5}/>
+                <span className="font-medium text-[clamp(0.9rem,1.5vw,1.2rem)]">Tugas, {t.minutes} menit</span>
+              </div>
+            </Item>
+            <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.08] text-[clamp(1.7rem,min(4.2vw,6.8vh),3.6rem)]">{t.title}</h2></Item>
+            <Item i={2}><div className="text-ink-muted text-[clamp(0.8rem,1.2vw,1rem)] mt-[clamp(0.4rem,1.2vh,0.9rem)]">Bab {slide.ci + 1}, {slide.ch.title}</div></Item>
+          </div>
+          <ol className="lg:col-span-7 grid gap-[clamp(0.55rem,1.8vh,1.2rem)]">
+            {t.steps.map((st, i) => (
+              <Item i={i + 2} key={i}>
+                <li className="flex gap-[clamp(0.8rem,1.6vw,1.4rem)] items-baseline list-none">
+                  <span className="num text-gold-400 text-[clamp(0.85rem,1.4vw,1.15rem)] w-6 shrink-0">{i + 1}</span>
+                  <span className="text-ink leading-snug text-[clamp(1rem,min(1.9vw,3.3vh),1.55rem)]">{st}</span>
+                </li>
+              </Item>
+            ))}
+          </ol>
+        </div>
+        <Item i={t.steps.length + 3}>
+          <div className="mt-[clamp(0.9rem,3vh,2rem)] rounded-2xl border border-gold-500/50 bg-gold-500/[0.07] px-[clamp(1rem,2.2vw,1.8rem)] py-[clamp(0.7rem,2vh,1.3rem)] flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <span className="text-gold-300 font-semibold text-[clamp(0.9rem,1.5vw,1.2rem)]">Output</span>
+            <span className="text-ink leading-snug text-[clamp(0.95rem,min(1.8vw,3vh),1.45rem)] min-w-0 flex-1">{t.output}</span>
+          </div>
+        </Item>
+      </div>
+    );
+  }
+
+  /* ── Output akhir: apa yang dibawa pulang ── */
+  if (slide.type === "outputs") {
+    const total = chapters.reduce((n, c) => n + c.task.minutes, 0);
+    return (
+      <div className="w-full max-w-[1300px] mx-auto">
+        <Item i={0}><div className="text-gold-300 text-[clamp(0.8rem,1.3vw,1.05rem)] mb-[clamp(0.4rem,1.2vh,0.9rem)]">Hasil seminar</div></Item>
+        <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.06] text-[clamp(1.8rem,min(4.8vw,7.6vh),4rem)]">Paket Belajar AI Pribadi</h2></Item>
+        <Item i={2}><p className="text-ink-muted text-[clamp(0.95rem,min(1.7vw,3vh),1.35rem)] mt-[clamp(0.3rem,1vh,0.7rem)]">Enam output dari enam tugas, total {total} menit praktik. Semuanya milikmu dan siap dipakai.</p></Item>
+        <ol className="mt-[clamp(0.9rem,3vh,2.2rem)] grid sm:grid-cols-2 lg:grid-cols-3 gap-x-[clamp(1rem,2.4vw,2.4rem)] gap-y-[clamp(0.6rem,2.2vh,1.6rem)]">
+          {chapters.map((c, i) => (
+            <Item i={i + 3} key={c.id}>
+              <li className="flex items-start gap-3 list-none">
+                <span className="mt-[0.15em] w-[clamp(1.5rem,2.4vw,2rem)] h-[clamp(1.5rem,2.4vw,2rem)] rounded-full shrink-0 bg-gold-500 text-night-950 flex items-center justify-center">
+                  <Icon name="check" className="w-1/2 h-1/2" strokeWidth={3}/>
+                </span>
+                <span className="min-w-0">
+                  <span className="block text-ink font-display font-medium leading-snug text-[clamp(1rem,min(1.9vw,3.4vh),1.6rem)]">{window.seminarOutputName(c)}</span>
+                  <span className="block text-ink-muted text-[clamp(0.78rem,1.15vw,0.95rem)] mt-0.5">Bab {i + 1}, {c.task.minutes} menit</span>
+                </span>
+              </li>
+            </Item>
+          ))}
+        </ol>
+      </div>
+    );
+  }
 
   /* ── Penutup ── */
   return (
@@ -222,6 +313,9 @@ const SeminarSlidesPage = () => {
   }, [slides]);
 
   const [idx, setIdx] = useState(() => {
+    // Tautan langsung ke satu slide: ...slides?s=44 (nomor mulai dari 1)
+    const m = /[?&]s=(\d+)/.exec(window.location.hash);
+    if (m) { const v = parseInt(m[1], 10) - 1; if (v >= 0 && v < total) return v; }
     try { const v = parseInt(sessionStorage.getItem(SLIDES_KEY) || "0", 10); return v >= 0 && v < total ? v : 0; } catch { return 0; }
   });
   const [menuOpen, setMenuOpen] = useState(false);
@@ -284,6 +378,11 @@ const SeminarSlidesPage = () => {
       <style>{(window.SEMINAR_VIZ_CSS || "") + `
         @keyframes slIn { from { opacity: 0; transform: translateX(var(--dx, 24px)); } to { opacity: 1; transform: none; } }
         @keyframes slItem { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+        @keyframes svZoom { from { transform: scale(1.045); } to { transform: none; } }
+        .sv-zoom { animation: svZoom 1.6s cubic-bezier(.16,1,.3,1) both; }
+        .sl-shotbox { width: var(--w-sm); }
+        @media (min-width: 1024px) { .sl-shotbox { width: var(--w-lg); } }
+        @media (prefers-reduced-motion: reduce) { .sv-zoom { animation: none !important; } }
         .sl-stage { animation: slIn .38s cubic-bezier(.16,1,.3,1) both; }
         .sl-item { animation: slItem .55s cubic-bezier(.16,1,.3,1) both; }
         @media (prefers-reduced-motion: reduce) { .sl-stage, .sl-item { animation: none !important; } }

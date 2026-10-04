@@ -26,7 +26,7 @@ const NavLink = ({ to, children, className = "", onClick }) => {
     || (to !== "/" && (path.startsWith(to + "/") || path.startsWith(to + "?")));
   const handle = (e) => { e.preventDefault(); onClick && onClick(); navigate(to); };
   return (
-    <a href={"#" + to} onClick={handle} className={`nav-link px-3.5 py-2 text-[14.5px] rounded-lg transition-colors ${active ? "text-ink font-medium active" : "text-ink-muted hover:text-ink"} ${className}`}>
+    <a href={"#" + to} onClick={handle} className={`nav-link whitespace-nowrap px-3.5 py-2 text-[14.5px] rounded-lg transition-colors ${active ? "text-ink font-medium active" : "text-ink-muted hover:text-ink"} ${className}`}>
       {children}
     </a>
   );
@@ -216,7 +216,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     { to: "/framework",     label: "Framework" },
     { to: "/tutorial",      label: "Cara Pakai" },
     { to: "/checklist-soal", label: "Status Soal" },
-    { to: "/developer",     label: "Developer", wideOnly: true },
+    { to: "/developer",     label: "Developer", xxlOnly: true },
     { to: "/submit-soal",   label: "Submit Soal", highlight: true },
   ];
   const links = session ? memberLinks : publicLinks;
@@ -230,7 +230,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
             ? <a key={l.to} href={l.to.slice(1)} onClick={(e) => { e.preventDefault(); scrollToLandingSection(l.to.split("#")[1]); }} className="nav-link px-3.5 py-2 text-[14.5px] text-ink-muted hover:text-ink rounded-lg">{l.label}</a>
             : l.highlight
               ? <NavLink key={l.to} to={l.to} className="!text-emerald-400 hover:!text-emerald-300 font-semibold">{l.label}</NavLink>
-              : <NavLink key={l.to} to={l.to} className={l.wideOnly ? "hidden xl:inline-block" : ""}>{l.label}</NavLink>
+              : <NavLink key={l.to} to={l.to} className={l.xxlOnly ? "hidden 2xl:inline-block" : l.wideOnly ? "hidden xl:inline-block" : ""}>{l.label}</NavLink>
           )}
           {session && (
             <button
@@ -268,7 +268,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
               <button onClick={onOpenLogin} className="btn btn-ghost text-sm py-2 px-4">
                 <Icon name="user" className="w-4 h-4"/> Masuk
               </button>
-              <button onClick={onOpenPayment} className="btn btn-primary text-sm py-2.5 px-4">
+              <button onClick={onOpenPayment} className="btn btn-primary whitespace-nowrap text-sm py-2.5 px-4">
                 <Icon name="sparkles" className="w-4 h-4"/> Gabung Member
               </button>
             </>
