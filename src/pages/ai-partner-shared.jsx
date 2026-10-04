@@ -115,6 +115,19 @@ const useAiStatus = () => {
 const openAiUpgrade = () =>
   window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library_ai' } }));
 
+// Muat ulang status akses (mis. sisa jatah cicip) di semua komponen yang memakai useAiStatus.
+const refreshAiStatus = () => window.dispatchEvent(new Event('talqeeh:ai-status-changed'));
+
+/* Jatah cicip fitur pelanggan di materi coba gratis (server: TRIAL_TASTE). which = 'irab' | 'tutor'.
+   can = boleh dipakai sekarang; left/limit untuk ditampilkan. Pelanggan: selalu boleh. */
+const trialTaste = (access, which) => {
+  if (access?.tier === 'pro') return { can: true, pro: true, left: null, limit: null };
+  const t = access?.trial || {};
+  const left = Number.isFinite(t[`${which}_left`]) ? t[`${which}_left`] : 0;
+  const limit = Number.isFinite(t[`${which}_limit`]) ? t[`${which}_limit`] : 0;
+  return { can: !!access?.isTrialSet && left > 0, pro: false, left, limit, onTrialSet: !!access?.isTrialSet };
+};
+
 const maddahName = (id) => {
   if (!id) return null;
   const m = window.getMaddahById?.(id) || window.getMahadMaddahById?.(id);
@@ -577,7 +590,7 @@ const FeedbackBar = ({ setId, kind, refId, content, model, label = 'Hasil ini me
 };
 
 Object.assign(window, {
-  aiCall, aiStream, useAiStatus, FeedbackBar, openAiUpgrade, learnerPayload, learnerSummary, maddahName, hasArabic, isMostlyArabic, speakArabic, saveToKurasah,
+  aiCall, aiStream, useAiStatus, FeedbackBar, openAiUpgrade, refreshAiStatus, trialTaste, learnerPayload, learnerSummary, maddahName, hasArabic, isMostlyArabic, speakArabic, saveToKurasah,
   TTS, useTts, SpeechPlayer, segmentForSpeech,
   SOURCE_META, STUDY_STEPS, stepDone, studyPercent,
   ProgressRing, Skeleton, GeneratePanel, UpgradeCard, Pill, ArabicText, SpeakButton, aiInputClass,

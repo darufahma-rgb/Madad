@@ -403,6 +403,7 @@ const RecentChats = () => {
 const AiPartnerPage = () => {
   const status = useAiStatus();
   const [creating, setCreating] = useState(false);
+  useEffect(() => { window.logFunnel?.('view_ai_partner'); }, []);
   const listRef = React.useRef(null);
 
   const startUpload = () => {
@@ -463,7 +464,7 @@ const AiPartnerDetail = ({ setId, status }) => {
   if (!set) return <GateLoading/>;
 
   const isPro = status.tier === 'pro';
-  const access = { tier: status.tier, isTrialSet: !isPro && status.trial?.set_id === set.id };
+  const access = { tier: status.tier, isTrialSet: !isPro && status.trial?.set_id === set.id, trial: status.trial };
   const extra = { quiz_done: set.quiz_best_score != null, chatted: (set.chat || []).length > 0 };
   const meta = SOURCE_META[set.source_type] || SOURCE_META.teks;
   const current = SUB_TABS[step].find(t => t.id === sub[step]) || SUB_TABS[step][0];
@@ -479,7 +480,8 @@ const AiPartnerDetail = ({ setId, status }) => {
   const goStep = (id) => { setStep(id); showContent(); };
   const goSub = (id) => { setSub(p => ({ ...p, [step]: id })); showContent(); };
   // "Tanya tutor" dari kuis, flashcard, peta konsep, atau tahriri: buka tab Tanya dan kirim pertanyaannya.
-  const askTutor = isPro ? (text) => {
+  // Pengguna coba gratis juga boleh, di materi coba gratisnya selama jatah cicip tutor masih ada.
+  const askTutor = (isPro || trialTaste(access, 'tutor').can) ? (text) => {
     setPendingAsk(text);
     setSub(p => ({ ...p, tanya: 'tutor' }));
     setStep('tanya');

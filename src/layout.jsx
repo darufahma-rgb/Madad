@@ -828,6 +828,7 @@ const useCheckout = ({ plans, enabled = true, onPaid } = {}) => {
   // Buat tagihan, tampilkan layar checkout Talqeeh, lalu pindah ke halaman bayar Mayar (Mayar mengarahkan
   // kembali ke /?checkout=… setelah bayar). Halaman Mayar tidak bisa dipakai di dalam iframe situs lain.
   const start = async (plan) => {
+    window.logFunnel?.('click_pay', plan);
     setState({ status: "creating", checkout: null });
     const r = await createCheckout(plan);
     if (!r.ok) {

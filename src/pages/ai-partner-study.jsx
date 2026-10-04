@@ -842,6 +842,7 @@ const IrabModal = ({ set, setSet, text, onClose }) => {
   const [model, setModel] = useState(null);
   const [error, setError] = useState('');
   const [cached, setCached] = useState(false);
+  const [needUpgrade, setNeedUpgrade] = useState(false);
   const [run, setRun] = useState(0);   // > 0: analisis ulang (melewati hasil tersimpan)
 
   useEffect(() => {
@@ -849,10 +850,14 @@ const IrabModal = ({ set, setSet, text, onClose }) => {
     setResult(null); setError('');
     aiCall('analyze', { set_id: set.id, mode: 'irab', text, ...(run > 0 ? { refresh: true } : {}) }).then(d => {
       if (!alive) return;
-      if (!d.ok) { setError(d.error || 'Gagal menganalisis'); return; }
+      if (!d.ok) { setError(d.error || 'Gagal menganalisis'); setNeedUpgrade(!!d.upgrade); if (d.upgrade) logFunnel('paywall', 'irab'); return; }
       setResult(d.data);
       setModel(d.model || null);
       setCached(!!d.cached);
+      if (d.trial_left != null) {
+        refreshAiStatus();
+        toast.push(d.trial_left > 0 ? `Coba gratis: sisa ${d.trial_left} kali i'rab.` : "Ini jatah coba i'rab gratis terakhirmu.");
+      }
       if (!d.cached) setSet(s => ({ ...s, analyses: [...(s.analyses || []).filter(a => !(a.mode === 'irab' && a.input === text)), { mode: 'irab', input: text, output: d.data, model: d.model }] }));
     });
     return () => { alive = false; };
@@ -876,7 +881,9 @@ const IrabModal = ({ set, setSet, text, onClose }) => {
           </button>
         </div>
         {error ? (
-          <div className="text-sm text-rose-400">{error}</div>
+          needUpgrade
+            ? <UpgradeCard compact title="Jatah coba i'rab habis" message={error}/>
+            : <div className="text-sm text-rose-400">{error}</div>
         ) : !result ? (
           <div>
             <ArabicText size={22} className="mb-4 opacity-70">{text}</ArabicText>
@@ -913,6 +920,8 @@ const MaterialTab = ({ set, setSet, access, askTutor }) => {
   const [busyPara, setBusyPara] = useState(null);
   const [showHarakat, setShowHarakat] = useState(true);
   const isPro = access.tier === 'pro';
+  const taste = trialTaste(access, 'irab');   // coba gratis: beberapa kali i'rab di materi coba gratis
+  const canIrab = isPro || taste.can;
   const paragraphs = useMemo(() => splitParagraphs(set.content), [set.content]);
   const analyses = set.analyses || [];
   const harakatOf = (p) => analyses.find(a => a.mode === 'tasykil' && a.input === p)?.output;
@@ -932,7 +941,7 @@ const MaterialTab = ({ set, setSet, access, askTutor }) => {
   };
 
   const irabParagraph = (p) => {
-    if (!isPro) { openAiUpgrade(); return; }
+    if (!canIrab) { openAiUpgrade(); return; }
     if (p.length > 400) { toast.push('Paragraf ini terlalu panjang. Blok satu kalimat saja (maks 400 huruf), lalu tekan "Terjemah & I\'rab".'); return; }
     setIrabText(p);
   };
@@ -946,7 +955,11 @@ const MaterialTab = ({ set, setSet, access, askTutor }) => {
         <p className="text-xs text-ink-muted">
           {isPro
             ? 'Tekan tombol "I\'rab" di bawah paragraf Arab, atau blok/tekan-tahan satu kalimat untuk terjemah & i\'rab (maks 400 huruf) atau minta penjelasan tutor. Tombol "Harakat" memberi harakat per paragraf.'
-            : 'Terjemah, i\'rab, dan harakat otomatis khusus pelanggan AI Partner.'}
+            : taste.onTrialSet && taste.limit
+              ? (taste.left > 0
+                ? `Coba gratis: ${taste.left} dari ${taste.limit} kali terjemah & i'rab tersisa. Tekan "I'rab" di bawah paragraf Arab, atau blok satu kalimat (maks 400 huruf).`
+                : `Jatah coba i'rab gratis (${taste.limit}x) sudah terpakai. Berlangganan untuk terjemah, i'rab, dan harakat tanpa batas di semua materimu.`)
+              : 'Terjemah, i\'rab, dan harakat otomatis khusus pelanggan AI Partner.'}
         </p>
         {analyses.some(a => a.mode === 'tasykil') && (
           <ToolbarButton icon="type" onClick={() => setShowHarakat(v => !v)}>{showHarakat ? 'Teks asli' : 'Tampilkan harakat'}</ToolbarButton>
@@ -970,7 +983,7 @@ const MaterialTab = ({ set, setSet, access, askTutor }) => {
                   {vowelled && <FeedbackBar compact setId={set.id} kind="tasykil" model={harakatModel(p)} content={vowelled} className="flex flex-col items-end"/>}
                   <button onClick={() => irabParagraph(p)}
                     className="text-[11px] px-2.5 py-1 rounded-lg border border-white/10 text-ink-muted hover:text-emerald-300 hover:border-emerald-500/30 inline-flex items-center gap-1">
-                    {!isPro && <Icon name="crown" className="w-3 h-3 text-gold-300"/>}
+                    {!canIrab && <Icon name="crown" className="w-3 h-3 text-gold-300"/>}
                     I'rab
                   </button>
                   {!harakatOf(p) && p.length <= 6000 && (
@@ -1007,8 +1020,8 @@ const MaterialTab = ({ set, setSet, access, askTutor }) => {
           {selectedArabic && (tooLong ? (
             <span className="text-xs text-ink-muted px-3 py-2">Pilih maks 400 huruf untuk i'rab</span>
           ) : (
-            <button onClick={() => isPro ? setIrabText(selected) : openAiUpgrade()} className="btn btn-primary text-xs px-4 py-2">
-              {!isPro && <Icon name="crown" className="w-3.5 h-3.5"/>} Terjemah & I'rab
+            <button onClick={() => canIrab ? setIrabText(selected) : openAiUpgrade()} className="btn btn-primary text-xs px-4 py-2">
+              {!canIrab && <Icon name="crown" className="w-3.5 h-3.5"/>} Terjemah & I'rab
             </button>
           ))}
           {askTutor && (
@@ -1748,13 +1761,18 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
     onAsked?.();
   }, [initialAsk]);
 
-  if (access.tier !== 'pro') {
+  const isPro = access.tier === 'pro';
+  // Coba gratis: beberapa pesan tutor di materi coba gratis; simulasi syafawi tetap khusus pelanggan.
+  const taste = trialTaste(access, 'tutor');
+  if (!isPro && !access.isTrialSet) {
     return <UpgradeCard title="Tutor & simulasi syafawi khusus pelanggan" message="Tanya apa saja tentang materimu, atau latihan ujian lisan dengan duktur AI yang bertanya satu per satu lalu menilai jawabanmu."/>;
   }
+  const tasteOut = !isPro && !taste.can;
 
   const send = async (text) => {
     const message = (text ?? input).trim();
     if (!message || sending) return;
+    if (!isPro && (mode === 'syafawi' || tasteOut)) { logFunnel('paywall', mode === 'syafawi' ? 'syafawi' : 'tutor'); openAiUpgrade(); return; }
     if (mode === 'syafawi' && voiceOn) { speech.stop(); speech.unlock(); }
     setInput('');
     setError('');
@@ -1768,9 +1786,11 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
       setError(data.error || 'Gagal mengirim pesan');
       setSet(s => ({ ...s, chat: (s.chat || []).slice(0, -1) }));
       setInput(message);
+      if (data.upgrade) { logFunnel('paywall', 'tutor'); refreshAiStatus(); }
       return;
     }
     setSet(s => ({ ...s, chat: [...(s.chat || []), { role: 'assistant', content: data.reply, mode, model: data.model }] }));
+    if (data.trial_left != null) refreshAiStatus();
     if (mode === 'syafawi' && voiceOn) speech.speak(arabicQuestionOf(data.reply));
   };
 
@@ -1787,8 +1807,10 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
       <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
         <div className="inline-flex rounded-xl border border-white/10 bg-white/4 p-1 gap-1">
           {[['tutor', 'Tanya Tutor'], ['syafawi', 'Simulasi Syafawi']].map(([id, label]) => (
-            <button key={id} onClick={() => { setMode(id); setError(''); }}
-              className={`text-xs px-3 py-1.5 rounded-lg ${mode === id ? 'bg-emerald-500/20 text-emerald-200' : 'text-ink-muted hover:text-ink'}`}>{label}</button>
+            <button key={id} onClick={() => { if (id === 'syafawi' && !isPro) { logFunnel('paywall', 'syafawi'); openAiUpgrade(); return; } setMode(id); setError(''); }}
+              className={`text-xs px-3 py-1.5 rounded-lg inline-flex items-center gap-1 ${mode === id ? 'bg-emerald-500/20 text-emerald-200' : 'text-ink-muted hover:text-ink'}`}>
+              {id === 'syafawi' && !isPro && <Icon name="crown" className="w-3 h-3 text-gold-300"/>}{label}
+            </button>
           ))}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
@@ -1802,6 +1824,15 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
         <p className="text-[11px] text-amber-300/90 mb-3">
           Perangkatmu belum punya suara bahasa Arab, jadi pertanyaan hanya tampil sebagai teks. Tambahkan lewat pengaturan Text-to-speech (Android) atau Pengaturan → Waktu & bahasa → Ucapan (Windows).
         </p>
+      )}
+
+      {!isPro && (
+        <div className={`mb-3 flex items-center justify-between gap-3 flex-wrap rounded-xl px-3.5 py-2.5 text-xs border ${tasteOut ? 'border-gold-500/40 bg-gold-500/10 text-gold-200' : 'border-white/10 bg-white/4 text-ink-muted'}`}>
+          <span>{tasteOut
+            ? `Jatah coba tutor gratis (${taste.limit} pesan) sudah terpakai. Berlangganan untuk bertanya tanpa batas di semua materimu.`
+            : `Coba gratis: sisa ${taste.left} dari ${taste.limit} pesan tutor di materi ini.`}</span>
+          <button onClick={() => { logFunnel('paywall', 'tutor_banner'); openAiUpgrade(); }} className="text-gold-300 hover:text-gold-200 underline underline-offset-2">Berlangganan</button>
+        </div>
       )}
 
       <div className="card-glass p-4 md:p-6 flex flex-col md:min-h-[440px]">

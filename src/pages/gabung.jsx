@@ -172,6 +172,7 @@ const GabungPage = () => {
   const settings = useAppSettings();
   const toast    = useToast();
   const panelRef = useRef(null);
+  useEffect(() => { window.logFunnel?.('view_gabung'); }, []);
 
   const [plan, setPlan]         = useState(planFromHash());
   const [step, setStep]         = useState(null); // null | pay | redeem  (menunggu bayar diatur useCheckout)

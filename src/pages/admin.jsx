@@ -571,6 +571,70 @@ const AiQualitySection = ({ quality }) => {
   );
 };
 
+/* Corong konversi: orang unik per tahap dalam periode ini, dari pengunjung sampai bayar. Kebocoran terbesar =
+   tahap dengan persentase lanjut terendah (dari tahap sebelumnya yang tidak nol). */
+const PAYWALL_LABELS = { irab: "I'rab", tutor: 'Tutor', tutor_banner: 'Banner tutor', syafawi: 'Syafawi' };
+const FunnelSection = ({ funnel }) => {
+  if (!funnel) return null;
+  const steps = funnel.steps;
+  const max = Math.max(1, ...steps.map(s => s.n));
+  const rates = steps.map((s, i) => {
+    const prev = steps.slice(0, i).reverse().find(p => p.n > 0);
+    return i === 0 || !prev ? null : s.n / prev.n;
+  });
+  let worst = -1;
+  rates.forEach((r, i) => { if (r != null && i > 1 && (worst < 0 || r < rates[worst])) worst = i; });
+  return (
+    <Section title="Corong konversi">
+      {!funnel.ready && (
+        <div className="mb-4 rounded-xl border border-amber-500/30 bg-amber-500/8 px-4 py-3 text-xs text-amber-200 leading-relaxed">
+          Tahap pengunjung, kena batas gratis, dan lihat paket belum tercatat. Jalankan <code>migrations/funnel_events.sql</code> di Supabase; angkanya mulai terisi sejak itu.
+        </div>
+      )}
+      <div className="grid lg:grid-cols-3 gap-4">
+        <Panel title="Dari pengunjung sampai bayar" className="lg:col-span-2">
+          <div className="space-y-2.5">
+            {steps.map((s, i) => (
+              <div key={s.id} className="grid grid-cols-[minmax(110px,9rem)_1fr_auto] items-center gap-3">
+                <span className="text-xs text-ink-muted">{s.label}</span>
+                <div className="h-6 rounded-md bg-white/4 overflow-hidden" title={`${s.label}: ${s.n}`}>
+                  <div className="h-full rounded-md" style={{ width: `${Math.max(s.n ? 2 : 0, (s.n / max) * 100)}%`, background: i === worst ? '#f59e0b' : '#3ecf8e' }}/>
+                </div>
+                <span className="text-xs text-right min-w-[5.5rem]">
+                  <span className="text-ink font-semibold">{s.n.toLocaleString('id-ID')}</span>
+                  {rates[i] != null && <span className={i === worst ? 'text-amber-300' : 'text-ink-soft'}> · {Math.round(rates[i] * 100)}%</span>}
+                </span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-ink-soft mt-3 leading-relaxed">
+            Orang unik per tahap dalam periode ini; persentase = dibanding tahap sebelumnya. Daftar, profil, dan coba AI dihitung dari akun yang dibuat di periode ini.
+          </p>
+        </Panel>
+        <Panel title="Bacaan">
+          <div className="space-y-3 text-sm">
+            {worst >= 0 ? (
+              <div className="rounded-lg bg-amber-500/8 border border-amber-500/25 p-3 text-xs text-ink leading-relaxed">
+                <span className="text-amber-300 font-medium">Kebocoran terbesar: </span>
+                {steps[worst - 1]?.label} → {steps[worst].label} ({Math.round(rates[worst] * 100)}% lanjut).
+              </div>
+            ) : <div className="text-xs text-ink-muted">Belum cukup data.</div>}
+            <div className="flex justify-between text-xs"><span className="text-ink-muted">Klik tombol bayar</span><span className="text-ink">{funnel.clickPay}</span></div>
+            {Object.keys(funnel.paywallBy || {}).length > 0 && (
+              <div className="pt-3 border-t border-white/8">
+                <div className="text-[11px] uppercase tracking-wider text-ink-soft mb-2">Batas gratis yang dikenai</div>
+                {Object.entries(funnel.paywallBy).sort((a, b) => b[1] - a[1]).map(([k, n]) => (
+                  <div key={k} className="flex justify-between text-xs py-0.5"><span className="text-ink-muted">{PAYWALL_LABELS[k] || k}</span><span className="text-ink">{n}</span></div>
+                ))}
+              </div>
+            )}
+          </div>
+        </Panel>
+      </div>
+    </Section>
+  );
+};
+
 const AdminAnalytics = () => {
   const [days, setDays] = useState(30);
   const [data, setData] = useState(null);
@@ -627,6 +691,8 @@ const AdminAnalytics = () => {
           sub={ai.conversionRate == null ? null : `${Math.round(ai.conversionRate * 100)}% pencoba AI berlangganan`}/>
         <KpiCard label="Biaya AI (perkiraan)" value={usd(ai.estCostUsd)} delta={<Delta now={ai.estCostUsd} prev={ai.estCostPrevUsd} invert/>}/>
       </div>
+
+      <FunnelSection funnel={data.funnel}/>
 
       {/* Pemasukan */}
       <Section title="Pemasukan & penjualan">

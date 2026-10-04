@@ -28,9 +28,34 @@ const trialGateOpen = () => consumeQuota('TRIAL-GLOBAL', 'trial_all', TRIAL_DAIL
 const trialGateClosed = (res) => upgradeRequired(res, 'trial_busy',
   'Kuota coba gratis untuk hari ini sudah penuh. Coba lagi besok, atau berlangganan AI Partner untuk memakai AI kapan saja.');
 const TRIAL_KINDS      = ['summary', 'flashcards', 'quiz', 'glossary'];
-const PRO_ONLY_ACTIONS = ['transcribe', 'analyze', 'grade', 'chat', 'create-batch'];
+// analyze & chat dibuka sedikit untuk coba gratis (lihat TRIAL_TASTE); sisanya khusus pelanggan.
+const PRO_ONLY_ACTIONS = ['transcribe', 'grade', 'create-batch'];
 // Tanya AI untuk pengguna coba gratis: satu percakapan, maksimal sekian pesan seumur akun.
 const TRIAL_PROMPT_MESSAGES = 2;
+/* Cicip fitur andalan di materi coba gratis: tanpa ini pengguna gratis tidak pernah merasakan i'rab dan tutor —
+   nilai jual utama AI Partner. Jatah seumur akun, dihitung di ai_usage (seperti prompt_trial). Biaya ±$0,02 per
+   i'rab (Sonnet) dan ±$0,01 per pesan tutor (Haiku); tetap dibatasi gerbang harian trialGateOpen. */
+const TRIAL_TASTE = {
+  irab:  { kind: 'irab_trial',  limit: 3, label: "i'rab" },
+  tutor: { kind: 'tutor_trial', limit: 5, label: 'pesan tutor' },
+};
+
+// Jatah cicip untuk akun coba gratis. null = boleh lanjut (left = sisa sesudah ini), selain itu respons sudah dikirim.
+const takeTrialTaste = async (ctx, res, setId, which) => {
+  const t = TRIAL_TASTE[which];
+  const trial = await getTrialSetId(ctx.code);
+  if (trial.setId !== setId) {
+    upgradeRequired(res, 'trial_set', 'Coba gratis hanya berlaku untuk materi pertamamu. Berlangganan untuk memakai AI di materi ini.');
+    return { done: true };
+  }
+  const used = await lifetimeUsage(ctx.code, t.kind);
+  const out = () => upgradeRequired(res, `${which}_trial_used`,
+    `Jatah coba ${t.label} gratis (${t.limit}x) sudah terpakai. Berlangganan AI Partner untuk ${which === 'irab' ? "i'rab, harakat, dan terjemah" : 'tanya tutor'} tanpa batas di semua materimu.`);
+  if (used >= t.limit) { out(); return { done: true }; }
+  if (!(await trialGateOpen())) { trialGateClosed(res); return { done: true }; }
+  if (!(await consumeQuota(ctx.code, t.kind, t.limit))) { out(); return { done: true }; }
+  return { done: false, left: t.limit - used - 1 };
+};
 
 // Materi panjang (±100 halaman) disimpan utuh; tiap permintaan AI hanya menerima potongan yang muat.
 const MAX_CONTENT       = 200000;
@@ -742,8 +767,16 @@ async function handleAnalyze(ctx, body, res) {
   const cached = analyses.find(a => a.mode === mode && a.input === text);
   if (cached && !refresh) return res.status(200).json({ ok: true, data: cached.output, cached: true, model: cached.model || null });
 
-  const over = await takeQuota(ctx, 'analyze');
-  if (over) return quotaExceeded(res, 'analyze', over, ctx);
+  let trialLeft = null;
+  if (ctx.tier === 'trial') {
+    if (mode !== 'irab') return upgradeRequired(res, 'tasykil', 'Harakat otomatis khusus pelanggan AI Partner.');
+    const taste = await takeTrialTaste(ctx, res, set.id, 'irab');
+    if (taste.done) return;
+    trialLeft = taste.left;
+  } else {
+    const over = await takeQuota(ctx, 'analyze');
+    if (over) return quotaExceeded(res, 'analyze', over, ctx);
+  }
 
   const model = (await resolveModels()).arabic;
   let output;
@@ -757,7 +790,7 @@ async function handleAnalyze(ctx, body, res) {
   const kept = refresh ? analyses.filter(a => !(a.mode === mode && a.input === text)) : analyses;
   const next = [...kept, { mode, input: text, output, model, at: new Date().toISOString() }].slice(-MAX_ANALYSES);
   await updateSet(ctx.code, set.id, { analyses: next });
-  return res.status(200).json({ ok: true, data: output, model });
+  return res.status(200).json({ ok: true, data: output, model, ...(trialLeft != null ? { trial_left: trialLeft } : {}) });
 }
 
 async function handleGrade(ctx, body, res) {
@@ -789,8 +822,16 @@ async function handleChat(ctx, body, res) {
   const mode = body.mode === 'syafawi' ? 'syafawi' : 'tutor';
   const set = await getOwnedSet(ctx.code, body.set_id, 'id,title,content,chat,quiz,flashcards,essays,essay_attempts,progress');
   if (!set) return res.status(404).json({ ok: false, error: 'Materi tidak ditemukan' });
-  const over = await takeQuota(ctx, 'chat');
-  if (over) return quotaExceeded(res, 'chat', over, ctx);
+  let trialLeft = null;
+  if (ctx.tier === 'trial') {
+    if (mode === 'syafawi') return upgradeRequired(res, 'syafawi', 'Simulasi syafawi khusus pelanggan AI Partner.');
+    const taste = await takeTrialTaste(ctx, res, set.id, 'tutor');
+    if (taste.done) return;
+    trialLeft = taste.left;
+  } else {
+    const over = await takeQuota(ctx, 'chat');
+    if (over) return quotaExceeded(res, 'chat', over, ctx);
+  }
 
   const all = Array.isArray(set.chat) ? set.chat : [];
   // Riwayat per mode supaya simulasi syafawi tidak tercampur tanya-jawab biasa.
@@ -831,7 +872,7 @@ async function handleChat(ctx, body, res) {
     { role: 'assistant', content: reply, at: now, mode, model: out.model, ...(tutorCtx ? { ctx: tutorCtx } : {}) },
   ].slice(-CHAT_MAX_STORED);
   await updateSet(ctx.code, set.id, { chat });
-  return sendResult(res, stream, { reply, model: out.model });
+  return sendResult(res, stream, { reply, model: out.model, ...(trialLeft != null ? { trial_left: trialLeft } : {}) });
 }
 
 /* ── Jalankan prompt Talqeeh langsung (tanpa materi) ──
@@ -1134,13 +1175,19 @@ export default async function handler(req, res) {
       const access = await requireAiTier(req);
       if (!access.ok) return res.status(200).json({ ok: true, active: false, tier: 'none' });
       if (access.tier === 'pro') return res.status(200).json({ ok: true, active: true, tier: 'pro', expires_at: access.aiExpiresAt || null });
-      const [trial, promptUsed] = await Promise.all([getTrialSetId(access.code), lifetimeUsage(access.code, 'prompt_trial')]);
+      const [trial, promptUsed, irabUsed, tutorUsed] = await Promise.all([
+        getTrialSetId(access.code), lifetimeUsage(access.code, 'prompt_trial'),
+        lifetimeUsage(access.code, TRIAL_TASTE.irab.kind), lifetimeUsage(access.code, TRIAL_TASTE.tutor.kind),
+      ]);
+      const left = (limit, used) => Math.max(0, limit - (Number.isFinite(used) ? used : limit));
       return res.status(200).json({
         ok: true, active: false, tier: 'trial',
         trial: {
           available: trial.available, used: !!trial.setId, set_id: trial.setId,
           prompt_left: Math.max(0, TRIAL_PROMPT_MESSAGES - (Number.isFinite(promptUsed) ? promptUsed : TRIAL_PROMPT_MESSAGES)),
           prompt_limit: TRIAL_PROMPT_MESSAGES,
+          irab_left: left(TRIAL_TASTE.irab.limit, irabUsed), irab_limit: TRIAL_TASTE.irab.limit,
+          tutor_left: left(TRIAL_TASTE.tutor.limit, tutorUsed), tutor_limit: TRIAL_TASTE.tutor.limit,
         },
       });
     }

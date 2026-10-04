@@ -323,5 +323,41 @@ export async function buildAdminAnalytics(days) {
     })),
   };
 
-  return { range: { days: span, from, to }, revenue, members: membersOut, ai: aiOut, library: libraryOut, quality: qualityOut, costTable: AI_COST_USD };
+  /* ── Corong konversi ──
+     Jumlah orang unik per tahap dalam periode ini. Kunjungan, buka Gabung, dan kena batas gratis dari funnel_events
+     (ID pengunjung acak); daftar, profil, coba AI dari members & user_profiles (pendaftar periode ini); mulai bayar &
+     bayar dari payment_checkouts. Tiap tahap bisa berasal dari sumber berbeda, jadi ini corong per periode, bukan
+     kohort yang dilacak orang per orang. */
+  const [fev, chk, prof] = await Promise.all([
+    fetchAll(`funnel_events?select=event,detail,visitor&day=gte.${from}&day=lte.${to}`),
+    fetchAll(`payment_checkouts?select=created_at,email,member_code,status&created_at=gte.${from}T00:00:00Z`),
+    fetchAll('user_profiles?select=member_code,profile'),
+  ]);
+  const uniqVisitors = (events) => new Set(fev.rows.filter(r => events.includes(r.event)).map(r => r.visitor)).size;
+  const signups = m.filter(x => x.created_at && inRange(x.created_at, from, to));
+  const onboardedCodes = new Set(prof.rows.filter(p => p.profile?.onboarded).map(p => p.member_code));
+  const buyerKey = (c) => c.member_code || String(c.email || '').toLowerCase();
+  const chkRows = chk.rows.filter(c => inRange(c.created_at, from, to));
+  const paywallBy = {};
+  for (const r of fev.rows) {
+    if (r.event !== 'paywall') continue;
+    (paywallBy[r.detail || 'lainnya'] ||= new Set()).add(r.visitor);
+  }
+  const funnel = {
+    ready: !fev.missing,
+    steps: [
+      { id: 'visit',     label: 'Pengunjung',            n: uniqVisitors(['visit']),                         src: 'events' },
+      { id: 'signup',    label: 'Daftar akun',           n: signups.length,                                 src: 'members' },
+      { id: 'onboarded', label: 'Isi profil belajar',    n: signups.filter(x => onboardedCodes.has(x.code)).length, src: 'members' },
+      { id: 'tried_ai',  label: 'Coba AI Partner',       n: signups.filter(x => x.ai_trial_set_id).length,  src: 'members' },
+      { id: 'paywall',   label: 'Kena batas gratis',     n: uniqVisitors(['paywall']),                       src: 'events' },
+      { id: 'view_join', label: 'Lihat paket',           n: uniqVisitors(['view_gabung', 'view_join']),      src: 'events' },
+      { id: 'checkout',  label: 'Mulai bayar',           n: new Set(chkRows.map(buyerKey)).size,             src: 'checkouts' },
+      { id: 'paid',      label: 'Bayar',                 n: new Set(chkRows.filter(c => c.status === 'paid').map(buyerKey)).size, src: 'checkouts' },
+    ],
+    clickPay: uniqVisitors(['click_pay']),
+    paywallBy: Object.fromEntries(Object.entries(paywallBy).map(([k, v]) => [k, v.size])),
+  };
+
+  return { range: { days: span, from, to }, revenue, members: membersOut, ai: aiOut, library: libraryOut, quality: qualityOut, costTable: AI_COST_USD, funnel };
 }

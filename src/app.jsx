@@ -80,6 +80,8 @@ const App = () => {
   const { session, profile, authStatus, authInfo, isFree, startFreeAccount } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
   const autoFreeStarted = useRef(false);
+  // Corong konversi: satu "kunjungan" per pengunjung per hari (src/funnel.jsx).
+  useEffect(() => { window.logFunnel?.('visit'); }, []);
   const [joinPlan, setJoinPlan] = useState(null);
   const [aiPaymentOpen, setAiPaymentOpen] = useState(false);
 
@@ -194,7 +196,7 @@ const App = () => {
 
   // Halaman tanpa props (bank soal publik, sample) memicu alur gabung lewat event.
   useEffect(() => {
-    const onOpenJoin = (e) => openJoin(e.detail?.plan || "library");
+    const onOpenJoin = (e) => { window.logFunnel?.('view_join', e.detail?.plan || 'library'); openJoin(e.detail?.plan || "library"); };
     const onOpenLogin = (e) => openLogin(!!e.detail?.keepPlan);
     window.addEventListener("talqeeh:open-join", onOpenJoin);
     window.addEventListener("talqeeh:open-login", onOpenLogin);

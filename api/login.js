@@ -225,6 +225,52 @@ async function handleCheckoutStatus(req, user, res) {
   return res.status(200).json({ ok: true, status, plan: checkout.plan });
 }
 
+/* ── Corong konversi (migrations/funnel_events.sql) ──
+   Boleh tanpa login: kunjungan pertama belum punya akun. Hanya event & detail dari daftar tetap, ID pengunjung acak,
+   dan satu baris per pengunjung/event/hari (unique + ignore-duplicates), jadi tabel tidak bisa dibanjiri isian bebas. */
+const FUNNEL_EVENTS = ['visit', 'view_gabung', 'view_join', 'view_ai_partner', 'paywall', 'click_pay'];
+const trackAttempts = new Map();
+const checkTrackLimit = (key) => {
+  const now = Date.now();
+  const recent = (trackAttempts.get(key) || []).filter(t => now - t < 15 * 60 * 1000);
+  if (recent.length >= 60) return false;
+  recent.push(now);
+  trackAttempts.set(key, recent);
+  return true;
+};
+
+async function handleTrack(req, res) {
+  const body = req.body || {};
+  const event = String(body.event || '');
+  const visitor = String(body.visitor || '');
+  const detail = String(body.detail || '');
+  if (!FUNNEL_EVENTS.includes(event) || !/^[a-z0-9]{12,40}$/.test(visitor) || !/^[a-z_]{0,30}$/.test(detail)) {
+    return res.status(400).json({ ok: false });
+  }
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+  if (!checkTrackLimit(ip)) return res.status(429).json({ ok: false });
+  // Pengunjung yang sudah login dikaitkan ke kode membernya (untuk melihat siapa yang macet di tahap mana).
+  const { url, key } = sbConfig();
+  let memberCode = null;
+  if (req.headers.authorization) {
+    try {
+      const user = await getAuthUser(req);
+      if (user) {
+        // Baca saja (resolveMember bisa menautkan email — efek samping yang tidak pantas untuk pencatatan).
+        const m = await fetch(`${url}/rest/v1/members?auth_user_id=eq.${encodeURIComponent(user.id)}&select=code&limit=1`, { headers: sbHeaders(key) });
+        if (m.ok) memberCode = (await m.json())?.[0]?.code || null;
+      }
+    } catch {}
+  }
+  const r = await fetch(`${url}/rest/v1/funnel_events?on_conflict=day,event,detail,visitor`, {
+    method: 'POST',
+    headers: sbHeaders(key, { Prefer: 'resolution=ignore-duplicates,return=minimal' }),
+    body: JSON.stringify({ event, detail, visitor, member_code: memberCode }),
+  });
+  // Tabel belum dibuat → diam saja; pencatatan tidak boleh mengganggu pengguna.
+  return res.status(200).json({ ok: r.ok });
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
@@ -236,6 +282,7 @@ export default async function handler(req, res) {
   const action = req.query?.action || 'session';
 
   try {
+    if (action === 'track') return await handleTrack(req, res);
     const user = await getAuthUser(req);
     if (!user) return res.status(401).json({ ok: false, status: 'unauthenticated' });
 

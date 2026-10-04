@@ -7,6 +7,7 @@ import './icons.jsx';
 import './ui.jsx';
 import './data.jsx';
 import './supabase.jsx';
+import './funnel.jsx';
 import './auth.jsx';
 import './layout.jsx';
 import './app-shell.jsx';
