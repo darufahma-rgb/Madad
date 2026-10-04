@@ -35,10 +35,10 @@ const pad2 = (n) => String(n).padStart(2, "0");
 /* ── 1. AI ⊃ ML ⊃ DL ⊃ LLM ───────────────────────────────────── */
 const VizNesting = () => {
   const rows = [
-    { r: 190, short: "AI", t: "Kecerdasan Buatan (AI)", d: "Sistem yang meniru kemampuan kognitif manusia.", fill: 0.03 },
-    { r: 146, short: "Machine learning", t: "Machine learning", d: "Belajar pola dari data, bukan dari aturan yang ditulis manual.", fill: 0.05 },
-    { r: 102, short: "Deep learning", t: "Deep learning", d: "Jaringan saraf berlapis-lapis, dasar AI modern.", fill: 0.075 },
-    { r: 58, short: "LLM", t: "LLM (model bahasa besar)", d: "Dilatih pada teks sangat banyak. ChatGPT, Claude, dan Gemini termasuk di sini.", fill: 0.12 },
+    { r: 190, short: "AI", t: "Kecerdasan Buatan (AI)", d: "Mesin yang meniru kemampuan berpikir manusia.", fill: 0.03 },
+    { r: 146, short: "Machine learning", t: "Machine learning", d: "Belajar pola dari data, bukan dari aturan tulisan tangan.", fill: 0.05 },
+    { r: 102, short: "Deep learning", t: "Deep learning", d: "Jaringan saraf berlapis-lapis, mesin AI zaman sekarang.", fill: 0.075 },
+    { r: 58, short: "LLM", t: "LLM (model bahasa besar)", d: "Dilatih dengan teks super banyak. ChatGPT, Claude, dan Gemini masuk di sini.", fill: 0.12 },
   ];
   const cx = 200, bottom = 394;
   return (
@@ -107,11 +107,11 @@ const VizNextToken = () => {
 /* ── 3. Rumus prompt lima bagian ─────────────────────────────── */
 const VizFormula = () => {
   const rows = [
-    { k: "Peran", v: "Kamu tutor nahwu untuk mahasiswa Al-Azhar" },
-    { k: "Konteks", v: "Tingkat 2, ujian minggu depan" },
+    { k: "Peran", v: "Kamu tutor nahwu buat mahasiswa Al-Azhar" },
+    { k: "Konteks", v: "Tingkat 2, imtihan minggu depan" },
     { k: "Tugas", v: "Jelaskan isim mamnu' minas sharf" },
     { k: "Format", v: "Tabel, istilah Arab berharakat" },
-    { k: "Batasan", v: "Jangan mengarang kutipan kitab" },
+    { k: "Batasan", v: "Jangan ngarang kutipan kitab" },
   ];
   return (
     <div className="max-w-[1000px]">
@@ -187,9 +187,9 @@ const VizForgetting = () => {
 /* ── 5. Tiga cek ─────────────────────────────────────────────── */
 const VizThreeChecks = () => {
   const items = [
-    { t: "Cek nama", d: "Kitab dan pengarangnya benar-benar ada? Cari di Maktabah Syamilah atau katalog perpustakaan." },
-    { t: "Cek halaman", d: "Buka kitabnya langsung. Teks itu memang ada di halaman yang disebut?" },
-    { t: "Cek matan", d: "Bandingkan kata per kata. AI sering memparafrase tanpa memberi tahu." },
+    { t: "Cek nama", d: "Kitab dan pengarangnya beneran ada? Cari di Maktabah Syamilah atau katalog perpustakaan." },
+    { t: "Cek halaman", d: "Buka kitabnya langsung. Teks itu betul ada di halaman yang disebut?" },
+    { t: "Cek matan", d: "Bandingkan kata per kata. AI sering memparafrase tanpa bilang-bilang." },
   ];
   return (
     <div>
@@ -285,13 +285,13 @@ const VizSevenDays = () => {
 };
 
 const SEMINAR_VIZ = {
-  nesting:    { C: VizNesting,     title: "AI, ML, deep learning, dan LLM", sub: "Satu di dalam yang lain, dari yang paling luas ke yang paling spesifik." },
-  nexttoken:  { C: VizNextToken,   title: "LLM memprediksi kata berikutnya", sub: "Tiap kata dipilih dari peluang, bukan dicari di database.", note: "Ilustrasi konsep. Angka adalah contoh, bukan keluaran model tertentu." },
-  formula:    { C: VizFormula,     title: "Rumus lima bagian", sub: "Susun prompt dari lima potongan, lalu perbaiki berulang." },
+  nesting:    { C: VizNesting,     title: "AI, ML, deep learning, dan LLM", sub: "Satu di dalam yang lain, dari yang paling luas sampai yang paling spesifik." },
+  nexttoken:  { C: VizNextToken,   title: "LLM menebak kata berikutnya", sub: "Tiap kata dipilih dari peluang, bukan dicari di database.", note: "Ilustrasi konsep. Angka adalah contoh, bukan keluaran model tertentu." },
+  formula:    { C: VizFormula,     title: "Rumus lima bagian", sub: "Susun prompt dari lima potongan, lalu perbaiki terus." },
   forgetting: { C: VizForgetting,  title: "Mengulang berjarak melawan lupa", sub: "Tiap pengulangan membuat ingatan bertahan lebih lama.", note: "Ilustrasi konsep kurva lupa, bukan hasil pengukuran." },
-  threechecks:{ C: VizThreeChecks, title: "Tiga cek sebelum dipakai", sub: "Referensi dari AI baru boleh masuk makalah setelah lolos semuanya." },
+  threechecks:{ C: VizThreeChecks, title: "Tiga cek sebelum dipakai", sub: "Referensi dari AI baru boleh masuk makalah kalau lolos semuanya." },
   spectrum:   { C: VizSpectrum,    title: "Siapa mengerjakan apa", sub: "Makin ke kanan, makin harus dipegang manusia, guru, dan kitab.", note: "Ilustrasi pembagian peran, bukan hasil pengukuran." },
-  sevenday:   { C: VizSevenDays,   title: "Rencana belajar 7 hari", sub: "Dari ringkasan sampai simulasi ujian." },
+  sevenday:   { C: VizSevenDays,   title: "Rencana belajar 7 hari", sub: "Dari ringkasan sampai simulasi imtihan." },
 };
 
 /* Peta 'visual disisipkan setelah subtopik mana' (vizAfter) datang dari server bersama isi materi. */

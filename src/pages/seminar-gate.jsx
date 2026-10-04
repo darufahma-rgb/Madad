@@ -21,10 +21,10 @@ const seminarCall = async (action, extra = {}) => {
 };
 
 const PIN_ERRORS = {
-  invalid: "PIN tidak dikenal. Periksa kembali, lalu coba lagi.",
-  revoked: "PIN ini sudah dicabut. Hubungi panitia.",
-  expired: "PIN ini sudah kedaluwarsa. Hubungi panitia.",
-  rate_limited: "Terlalu banyak percobaan hari ini. Coba lagi besok atau hubungi panitia.",
+  invalid: "PIN-nya tidak dikenal. Cek lagi ya, lalu coba sekali lagi.",
+  revoked: "PIN ini sudah dicabut. Hubungi panitia ya.",
+  expired: "PIN ini sudah kedaluwarsa. Hubungi panitia ya.",
+  rate_limited: "Kebanyakan percobaan hari ini. Coba lagi besok atau hubungi panitia.",
 };
 
 const seminarLogout = () => {
@@ -60,13 +60,13 @@ const SeminarGate = ({ view = "baca" }) => {
       window.SEMINAR_SESSION = { via: data.via, label: data.label };
       setPhase("ready");
     } else if (status === 403) {
-      if (readSeminarToken()) { saveSeminarToken(""); if (hadToken.current) setMsg("Akses Anda sudah tidak berlaku. Masukkan PIN yang baru."); }
+      if (readSeminarToken()) { saveSeminarToken(""); if (hadToken.current) setMsg("Aksesmu sudah tidak berlaku. Masukkan PIN yang baru."); }
       setPhase("pin");
     } else if (status === 404) {
-      setMsg("Materi belum dipasang di server. Hubungi panitia.");
+      setMsg("Materi belum dipasang di server. Hubungi panitia ya.");
       setPhase("error");
     } else {
-      setMsg("Layanan sedang tidak bisa dijangkau. Periksa koneksi, lalu coba lagi.");
+      setMsg("Layanan lagi tidak bisa dijangkau. Cek koneksimu, lalu coba lagi.");
       setPhase("error");
     }
   };
@@ -78,12 +78,12 @@ const SeminarGate = ({ view = "baca" }) => {
   const submit = async (e) => {
     e.preventDefault();
     if (busy) return;
-    if (pin.replace("-", "").length !== 8) { setMsg("PIN terdiri dari 8 karakter, contoh ABCD-EFGH."); return; }
+    if (pin.replace("-", "").length !== 8) { setMsg("PIN itu 8 karakter, contohnya ABCD-EFGH."); return; }
     setBusy(true); setMsg("");
     const { status, data } = await seminarCall("verify", { pin });
     setBusy(false);
     if (data && data.ok) { saveSeminarToken(data.token); hadToken.current = false; await load(); return; }
-    setMsg(status === 429 ? PIN_ERRORS.rate_limited : (data && PIN_ERRORS[data.error]) || "Layanan sedang bermasalah. Coba lagi sebentar.");
+    setMsg(status === 429 ? PIN_ERRORS.rate_limited : (data && PIN_ERRORS[data.error]) || "Layanan lagi bermasalah. Coba lagi sebentar.");
   };
 
   if (phase === "ready") {
@@ -98,7 +98,7 @@ const SeminarGate = ({ view = "baca" }) => {
         kicker="Materi Seminar"
         arabic="الذكاء الاصطناعي في التعليم"
         title="Materi khusus peserta."
-        subtitle="Login dengan akun Google yang emailnya didaftarkan panitia, atau masukkan PIN pribadi."
+        subtitle="Login pakai akun Google, atau masukkan PIN pribadimu."
       />
       <section className="pb-24">
         <div className="container-x max-w-xl">
@@ -116,7 +116,7 @@ const SeminarGate = ({ view = "baca" }) => {
           {phase === "pin" && (
             <form onSubmit={submit} className="card-glass-strong p-6 md:p-8" noValidate>
               <label htmlFor="seminar-pin" className="block text-sm font-medium text-ink mb-1.5">PIN akses</label>
-              <p className="text-xs text-ink-muted mb-3 leading-snug">PIN bersifat pribadi dan terdiri dari 8 karakter, contoh ABCD-EFGH.</p>
+              <p className="text-xs text-ink-muted mb-3 leading-snug">PIN ini pribadi, 8 karakter, contohnya ABCD-EFGH.</p>
               <input
                 id="seminar-pin" value={pin} onChange={(e) => setPin(formatPin(e.target.value))}
                 inputMode="text" autoCapitalize="characters" autoComplete="off" autoCorrect="off" spellCheck={false} maxLength={9}
@@ -129,10 +129,10 @@ const SeminarGate = ({ view = "baca" }) => {
               </button>
 
               <div className="mt-6 pt-5 border-t border-white/10 text-sm text-ink-muted leading-relaxed">
-                <p className="mb-3">Tanpa PIN: login dengan akun Google yang emailnya didaftarkan panitia. Member Talqeeh berbayar juga langsung masuk.</p>
+                <p className="mb-3">Tanpa PIN: login pakai akun Google, lalu panitia akan mengaktifkan akunmu. Member Talqeeh berbayar langsung bisa masuk.</p>
                 {signedEmail && (
                   <div className="mb-3" role="status">
-                    <p className="text-gold-300">Anda login sebagai {signedEmail}. Akun ini belum diaktifkan untuk seminar. Mohon tunggu panitia mengaktifkannya, lalu tekan Periksa lagi. Atau masukkan PIN.</p>
+                    <p className="text-gold-300">Kamu login sebagai {signedEmail}. Akun ini belum diaktifkan untuk seminar. Tunggu panitia mengaktifkannya, lalu tekan Periksa lagi. Atau masukkan PIN.</p>
                     <button type="button" onClick={load} className="btn btn-ghost text-sm py-2.5 mt-3"><Icon name="refresh" className="w-4 h-4"/> Periksa lagi</button>
                   </div>
                 )}

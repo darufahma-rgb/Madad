@@ -197,8 +197,8 @@ const SeminarAiPage = () => {
   const setName = (v) => saveSheet({ ...sheet, name: v });
   const flash = (m) => { setExportMsg(m); setTimeout(() => setExportMsg(""), 3200); };
   const copyAll = async () => {
-    try { await navigator.clipboard.writeText(seminarCompile(sheet)); flash("Tersalin. Tempel di catatan atau WhatsApp."); }
-    catch { flash("Gagal menyalin. Coba tombol Unduh."); }
+    try { await navigator.clipboard.writeText(seminarCompile(sheet)); flash("Tersalin. Tinggal tempel di catatan atau WhatsApp."); }
+    catch { flash("Gagal menyalin. Coba tombol Unduh aja."); }
   };
   const downloadAll = () => {
     try {
@@ -209,12 +209,12 @@ const SeminarAiPage = () => {
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);
       flash("File diunduh.");
-    } catch { flash("Gagal mengunduh. Coba tombol Salin."); }
+    } catch { flash("Gagal mengunduh. Coba tombol Salin aja."); }
   };
   const shareWa = async () => {
     const text = seminarCompile(sheet);
     if (text.length > 3500) {
-      try { await navigator.clipboard.writeText(text); flash("Teks panjang, sudah disalin. Tempel di WhatsApp."); } catch { flash("Teks terlalu panjang. Pakai tombol Unduh."); }
+      try { await navigator.clipboard.writeText(text); flash("Teksnya panjang, sudah disalin. Tempel di WhatsApp ya."); } catch { flash("Teksnya kepanjangan. Pakai tombol Unduh aja."); }
       window.open("https://wa.me/", "_blank", "noopener");
     } else {
       window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank", "noopener");
@@ -301,7 +301,7 @@ const SeminarAiPage = () => {
                   <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">Paket Belajar AI Pribadi</h2>
                   <span className="num text-gold-300 text-sm">{doneCount} dari {SEMINAR_CHAPTERS.length} output selesai</span>
                 </div>
-                <p className="text-ink-muted mb-5">Enam tugas di atas menghasilkan satu paket yang kamu bawa pulang dan langsung bisa dipakai.</p>
+                <p className="text-ink-muted mb-5">Enam tugas di atas jadi satu paket yang kamu bawa pulang dan langsung bisa dipakai.</p>
                 <div className="h-[3px] rounded-full bg-white/10 overflow-hidden mb-5">
                   <div className="h-full bg-gold-500 transition-[width] duration-500" style={{ width: (doneCount / SEMINAR_CHAPTERS.length * 100) + "%" }}/>
                 </div>
@@ -334,12 +334,12 @@ const SeminarAiPage = () => {
               </section>
               <section className="card-glass p-5 md:p-8">
                 <h2 className="font-display text-2xl font-semibold text-ink mb-2">Lanjutkan belajar bersama Talqeeh</h2>
-                <p className="text-ink-muted leading-relaxed mb-5">Coba template prompt untuk satu maddah tanpa login, atau gabung untuk memakai library lengkap dan AI Study Partner.</p>
+                <p className="text-ink-muted leading-relaxed mb-5">Coba template prompt satu maddah tanpa login, atau gabung biar bisa pakai library lengkap dan AI Study Partner.</p>
                 <div className="flex flex-wrap gap-2">
                   <button onClick={() => navigate("/sample/nahwu")} className="btn btn-gold text-sm py-2.5">Coba sample gratis</button>
                   <button onClick={() => navigate("/gabung")} className="btn btn-ghost text-sm py-2.5">Lihat pilihan paket</button>
                 </div>
-                <p className="text-sm text-ink-muted mt-5">Pertanyaan atau masukan? Kabari kami lewat Instagram <strong className="text-ink">@ai.gypt</strong>.</p>
+                <p className="text-sm text-ink-muted mt-5">Ada pertanyaan atau masukan? Kabari kami lewat Instagram <strong className="text-ink">@ai.gypt</strong>.</p>
                 {window.SEMINAR_SESSION && window.SEMINAR_SESSION.via === "pin" && (
                   <button onClick={() => window.seminarLogout()} className="mt-4 text-sm text-ink-muted hover:text-ink underline underline-offset-2">Keluar dari materi seminar di perangkat ini</button>
                 )}

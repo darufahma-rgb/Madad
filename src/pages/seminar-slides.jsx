@@ -151,7 +151,7 @@ const SlideBody = ({ slide, goChapter }) => {
     <div className="w-full max-w-[1400px] mx-auto grid lg:grid-cols-12 gap-6 lg:gap-16 items-center">
       <div className="lg:col-span-4">
         <Item i={0}><h2 className="font-display font-semibold text-ink tracking-tight leading-none text-[clamp(2.4rem,min(6.5vw,11vh),5.5rem)]">Agenda</h2></Item>
-        <Item i={1}><p className="text-ink-muted text-[clamp(1rem,1.8vw,1.35rem)] mt-[clamp(0.6rem,1.6vw,1.2rem)] max-w-[28ch]">Enam bab dalam tiga jam, termasuk 85 menit praktik dan istirahat 10 menit.</p></Item>
+        <Item i={1}><p className="text-ink-muted text-[clamp(1rem,1.8vw,1.35rem)] mt-[clamp(0.6rem,1.6vw,1.2rem)] max-w-[28ch]">Enam bab dalam tiga jam: 85 menit praktik, plus istirahat 10 menit.</p></Item>
       </div>
       <ol className="lg:col-span-8 grid gap-1.5">
         {chapters.map((c, i) => (
@@ -175,7 +175,7 @@ const SlideBody = ({ slide, goChapter }) => {
   if (slide.type === "hook-poll") return (
     <div className="w-full max-w-[1200px] mx-auto">
       <Item i={0}><div className="text-gold-300 text-[clamp(0.8rem,1.3vw,1.05rem)] mb-[clamp(0.4rem,1.2vh,0.9rem)]">Sebelum mulai</div></Item>
-      <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.08] text-[clamp(1.8rem,min(5vw,8vh),4.4rem)]">Siapa yang pernah memakai AI untuk belajar?</h2></Item>
+      <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.08] text-[clamp(1.8rem,min(5vw,8vh),4.4rem)]">Siapa di sini yang pernah pakai AI buat belajar?</h2></Item>
       <div className="mt-[clamp(1rem,3.4vh,2.4rem)] grid sm:grid-cols-3 gap-[clamp(0.6rem,1.6vw,1.4rem)]">
         {["Hampir tiap hari", "Kadang-kadang", "Belum pernah"].map((t, i) => (
           <Item i={i + 2} key={t}>
@@ -198,7 +198,7 @@ const SlideBody = ({ slide, goChapter }) => {
         <Item i={0}><div className="text-gold-300 text-[clamp(0.8rem,1.3vw,1.05rem)] mb-[clamp(0.4rem,1.2vh,0.9rem)]">Demo 3 menit</div></Item>
         <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.06] text-[clamp(1.8rem,min(4.6vw,7.4vh),3.8rem)]">Percaya atau cek?</h2></Item>
         <ol className="mt-[clamp(0.8rem,2.6vh,1.8rem)] grid gap-[clamp(0.5rem,1.6vh,1.1rem)]">
-          {["Kita tanyakan ini ke AI.", "Kita cek bersama: nama kitab, halaman, dan matan.", "Hitung: berapa yang benar-benar lolos?"].map((t, i) => (
+          {["Kita tanya AI dulu.", "Kita cek bareng: nama kitab, halaman, dan matan.", "Hitung: berapa yang beneran lolos?"].map((t, i) => (
             <Item i={i + 2} key={i}>
               <li className="flex gap-3 items-baseline list-none text-ink-muted leading-snug text-[clamp(1rem,min(1.9vw,3.3vh),1.5rem)]">
                 <span className="num text-gold-400 w-5 shrink-0 text-[0.8em]">{i + 1}</span>{t}
@@ -224,7 +224,7 @@ const SlideBody = ({ slide, goChapter }) => {
       <Item i={0}><div className="text-gold-300 text-[clamp(0.8rem,1.3vw,1.05rem)] mb-[clamp(0.4rem,1.2vh,0.9rem)]">Tujuan hari ini</div></Item>
       <Item i={1}><h2 className="font-display font-semibold text-ink tracking-tight leading-[1.06] text-[clamp(1.8rem,min(4.8vw,7.6vh),4rem)]">Yang kamu bawa pulang</h2></Item>
       <ol className="mt-[clamp(0.9rem,3vh,2.2rem)] grid gap-[clamp(0.6rem,2vh,1.4rem)]">
-        {["Tahu kapan AI bisa dipercaya dan kapan harus dicek.", "Mampu menulis prompt yang tepat sasaran.", "Punya cara belajar aktif dengan AI: ringkas, uji, ulang."].map((t, i) => (
+        {["Tahu kapan AI boleh dipercaya dan kapan harus dicek.", "Bisa nulis prompt yang tepat sasaran.", "Punya cara belajar aktif bareng AI: ringkas, uji, ulang."].map((t, i) => (
           <Item i={i + 2} key={i}>
             <li className="flex gap-[clamp(0.8rem,1.8vw,1.5rem)] items-baseline list-none">
               <span className="num text-gold-400 text-[clamp(0.9rem,1.5vw,1.2rem)] w-7 shrink-0">{pad2(i + 1)}</span>
@@ -240,7 +240,7 @@ const SlideBody = ({ slide, goChapter }) => {
       </Item>
       <Item i={6}>
         <p className="mt-[clamp(0.8rem,2.6vh,1.8rem)] text-ink-muted leading-snug text-[clamp(0.9rem,min(1.6vw,2.8vh),1.3rem)]">
-          <span className="text-ink font-medium">Siapkan sekarang:</span> HP atau laptop, satu bab diktat atau catatan, dan akun salah satu alat AI (ChatGPT, Claude, Gemini, atau NotebookLM). Login ke Talqeeh dengan Google di talqeeh.vercel.app/#/seminar sekarang, supaya akun Anda bisa diaktifkan panitia.
+          <span className="text-ink font-medium">Siapkan sekarang:</span> HP atau laptop, satu bab diktat atau catatan, dan akun salah satu alat AI (ChatGPT, Claude, Gemini, atau NotebookLM). Sekalian login Google di talqeeh.vercel.app/#/seminar sekarang, biar akunmu bisa diaktifkan panitia.
         </p>
       </Item>
     </div>
@@ -443,9 +443,9 @@ const SlideBody = ({ slide, goChapter }) => {
         <ol className="mt-[clamp(0.9rem,3vh,2.2rem)] grid gap-[clamp(0.6rem,2vh,1.4rem)]">
           {[
             "Scan QR di samping dengan kamera HP.",
-            "Login dengan Google (sudah dilakukan di awal), lalu tekan Periksa lagi bila belum terbuka. Atau masukkan PIN pribadimu.",
+            "Login Google (tadi sudah), lalu tekan Periksa lagi kalau belum kebuka. Atau masukkan PIN pribadimu.",
             "Isi lembar kerja di tiap bab. Isianmu tersimpan otomatis di HP.",
-            "Salin, unduh, atau kirim ke WhatsApp sebagai Paket Belajar AI Pribadi.",
+            "Salin, unduh, atau kirim ke WhatsApp sebagai Paket Belajar AI Pribadimu.",
           ].map((t, i) => (
             <Item i={i + 2} key={i}>
               <li className="flex gap-4 items-baseline list-none">
@@ -486,7 +486,7 @@ const SlideBody = ({ slide, goChapter }) => {
             </Item>
           ))}
         </div>
-        <Item i={6}><p className="text-ink-muted mt-[clamp(1rem,3vh,2rem)] text-[clamp(0.9rem,1.5vw,1.2rem)]">Ikuti komunitas AIGYPT di Instagram <span className="text-ink font-medium">@ai.gypt</span></p></Item>
+        <Item i={6}><p className="text-ink-muted mt-[clamp(1rem,3vh,2rem)] text-[clamp(0.9rem,1.5vw,1.2rem)]">Gabung komunitas AIGYPT di Instagram <span className="text-ink font-medium">@ai.gypt</span></p></Item>
       </div>
     );
   }
@@ -500,7 +500,7 @@ const SlideBody = ({ slide, goChapter }) => {
           Teknologi terbaik membuat manusia belajar lebih baik.
         </h2>
       </Item>
-      <Item i={2}><p className="text-ink-muted text-[clamp(1rem,1.9vw,1.5rem)] mt-[clamp(1rem,2.4vw,2rem)]">Terima kasih. Pertanyaan dan masukan: Instagram @ai.gypt</p></Item>
+      <Item i={2}><p className="text-ink-muted text-[clamp(1rem,1.9vw,1.5rem)] mt-[clamp(1rem,2.4vw,2rem)]">Syukran, teman-teman. Tanya atau kasih masukan: Instagram @ai.gypt</p></Item>
     </div>
   );
 };
@@ -668,7 +668,7 @@ const SeminarSlidesPage = () => {
             <span className="text-gold-300 text-xs uppercase tracking-[0.2em]">Catatan pemateri</span>
             {block && <span className="text-ink-muted text-sm num">{block.label}, {window.seminarClock(block.start)} sampai {window.seminarClock(block.end)} ({block.min} menit)</span>}
           </div>
-          <p className="text-ink leading-relaxed text-[clamp(0.95rem,1.4vw,1.15rem)]">{note ? note.say : "Belum ada catatan untuk slide ini."}</p>
+          <p className="text-ink leading-relaxed text-[clamp(0.95rem,1.4vw,1.15rem)]">{note ? note.say : "Belum ada catatan buat slide ini."}</p>
           {note && note.cue && <p className="mt-2 text-gold-200 text-sm"><span className="font-semibold">Isyarat:</span> {note.cue}</p>}
         </div>
       )}
