@@ -260,18 +260,18 @@ const AdminLogin = ({ onLogin }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pin }),
       });
-      const j = await r.json();
+      const j = await r.json().catch(() => ({}));
       if (j.ok) {
         sessionStorage.setItem('talqee_admin_token', j.token);
         setAdminLoggedIn(true);
         onLogin();
       } else {
-        setError(true);
-        setTimeout(() => setError(false), 1500);
+        // Alasan sebenarnya: PIN salah (401) berbeda dengan terkunci karena terlalu banyak percobaan (429) atau
+        // server bermasalah — dulu semuanya tampil sebagai "PIN salah".
+        setError(r.status === 401 ? 'PIN salah.' : (j.error || `Gagal masuk (status ${r.status}).`));
       }
     } catch {
-      setError(true);
-      setTimeout(() => setError(false), 1500);
+      setError('Tidak bisa terhubung ke server. Cek koneksi lalu coba lagi.');
     } finally {
       setLoading(false);
     }
@@ -289,13 +289,13 @@ const AdminLogin = ({ onLogin }) => {
               ref={inputRef}
               type="password"
               value={pin}
-              onChange={(e) => setPin(e.target.value)}
+              onChange={(e) => { setPin(e.target.value); setError(false); }}
               placeholder="PIN"
               className={`code-input w-full bg-white/5 border rounded-xl px-5 py-4 text-2xl text-ink outline-none ${error ? "border-rose-600 ring-2 ring-rose-600/30" : "border-white/10"}`}
               onFocus={e => { if (!error) e.target.style.borderColor="rgba(62,207,142,0.50)"; }}
               onBlur={e => e.target.style.borderColor= error ? "" : "rgba(255,255,255,0.10)"}
             />
-            {error && <div className="mt-3 text-sm text-rose-600">PIN salah.</div>}
+            {error && <div className="mt-3 text-sm text-rose-600" role="alert">{error}</div>}
             <button type="submit" disabled={loading} className="btn btn-primary w-full mt-5">
               {loading ? "Memverifikasi..." : "Masuk"}
             </button>
