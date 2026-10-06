@@ -1,4 +1,41 @@
 import { verifyToken } from './admin-auth.js';
+import { consumeQuota } from './_lib/member.js';
+
+/* ── Anti-spam kiriman publik ──
+   Batas per IP & total per hari disimpan di database (ai_usage lewat consume_ai_quota), jadi tidak hilang saat
+   server berganti instance dan tidak bisa diakali dengan mengganti nomor WA. Fail closed: kalau penghitung tidak
+   bisa dibaca, kiriman ditolak. */
+const SUBMIT_PER_IP_DAY = 15;
+const SUBMIT_ALL_DAY    = 150;
+const UPLOAD_PER_IP_DAY = 20;
+const UPLOAD_ALL_DAY    = 300;
+
+const clientIpOf = (req) =>
+  ((req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.headers['x-real-ip'] || 'unknown').slice(0, 60);
+
+const isBlacklistedIp = async (supabaseUrl, serviceKey, ip) => {
+  if (ip === 'unknown') return false;
+  const r = await fetch(
+    `${supabaseUrl}/rest/v1/submission_blacklist?type=eq.ip&value=eq.${encodeURIComponent(ip)}&select=id`,
+    { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } }
+  );
+  const rows = await r.json().catch(() => []);
+  return Array.isArray(rows) && rows.length > 0;
+};
+
+// Kuota harian per IP lalu total; false = ditolak.
+const takeDailySlot = async (prefix, kind, ip, perIp, total) =>
+  (await consumeQuota(`${prefix}-IP-${ip}`, kind, perIp)) && (await consumeQuota(`${prefix}-ALL`, kind, total));
+
+// Cek isi file benar-benar gambar (tanda tangan byte), bukan hanya Content-Type yang bisa dipalsukan.
+const imageKind = (buf) => {
+  if (buf.length >= 3 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'jpg';
+  if (buf.length >= 8 && buf.slice(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))) return 'png';
+  if (buf.length >= 12 && buf.slice(0, 4).toString('ascii') === 'RIFF' && buf.slice(8, 12).toString('ascii') === 'WEBP') return 'webp';
+  return null;
+};
+
+const clip = (v, n) => (typeof v === 'string' ? v.trim().slice(0, n) : '');
 
 // Rate limit upload foto — in-memory per instance
 const uploadAttempts = new Map();
@@ -75,6 +112,25 @@ async function handleSubmit(req, res) {
   if (!fakultas || !maddah_id || !tahun || !fashl || !submitter_name || !submitter_wa || !foto_url) {
     return res.status(400).json({ ok: false, error: 'Field tidak lengkap' });
   }
+  // Foto harus hasil upload-foto Talqeeh sendiri (bukan tautan bebas), nomor WA wajar, isian tidak kepanjangan.
+  const fotoPrefix = `${supabaseUrl}/storage/v1/object/soal-foto/`;
+  const waDigits = String(submitter_wa).replace(/\D/g, '');
+  if (typeof foto_url !== 'string' || !foto_url.startsWith(fotoPrefix) || /[^\w./-]/.test(foto_url.slice(fotoPrefix.length))) {
+    return res.status(400).json({ ok: false, error: 'Foto tidak valid. Unggah ulang fotonya.' });
+  }
+  if (waDigits.length < 8 || waDigits.length > 15) {
+    return res.status(400).json({ ok: false, error: 'Nomor WhatsApp tidak valid' });
+  }
+  if ([fakultas, maddah_id, tahun, fashl].some(v => typeof v !== 'string' || v.length > 80) || String(submitter_name).length > 100) {
+    return res.status(400).json({ ok: false, error: 'Isian tidak valid' });
+  }
+  const ip = clientIpOf(req);
+  if (await isBlacklistedIp(supabaseUrl, serviceKey, ip)) {
+    return res.status(403).json({ ok: false, error: 'Kiriman tidak diizinkan.' });
+  }
+  if (!(await takeDailySlot('SUBMIT', 'soal_submit', ip, SUBMIT_PER_IP_DAY, SUBMIT_ALL_DAY))) {
+    return res.status(429).json({ ok: false, error: 'Batas kiriman soal hari ini tercapai. Coba lagi besok.' });
+  }
 
   const oneHourAgo = new Date(Date.now() - 3600000).toISOString();
   const rateRes = await fetch(
@@ -95,9 +151,9 @@ async function handleSubmit(req, res) {
       Prefer: 'return=representation'
     },
     body: JSON.stringify({
-      fakultas, maddah_id, maddah_nama, tingkat,
-      tahun, fashl, foto_url, submitted_by,
-      submitter_name, submitter_wa, submitter_info,
+      fakultas, maddah_id, maddah_nama: clip(maddah_nama, 160), tingkat: clip(tingkat, 40),
+      tahun, fashl, foto_url, submitted_by: clip(submitted_by, 100),
+      submitter_name: clip(submitter_name, 100), submitter_wa: waDigits, submitter_info: clip(submitter_info, 300),
       status: 'pending'
     })
   });
@@ -266,9 +322,7 @@ async function handleUploadFoto(req, res) {
   }
 
   try {
-    const clientIP =
-      (req.headers['x-forwarded-for'] || '').split(',')[0].trim() ||
-      req.headers['x-real-ip'] || 'unknown';
+    const clientIP = clientIpOf(req);
 
     // Cek rate limit
     if (clientIP !== 'unknown' && !checkUploadRateLimit(clientIP)) {
@@ -280,16 +334,12 @@ async function handleUploadFoto(req, res) {
     }
 
     // Cek blacklist IP
-    if (clientIP !== 'unknown') {
-      const blRes = await fetch(
-        `${supabaseUrl}/rest/v1/submission_blacklist?type=eq.ip&value=eq.${encodeURIComponent(clientIP)}&select=id`,
-        { headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` } }
-      );
-      const bl = await blRes.json();
-      if (Array.isArray(bl) && bl.length > 0) {
-        console.warn(`[upload-foto] Blacklisted IP: ${clientIP}`);
-        return res.status(403).json({ ok: false, error: 'Upload tidak diizinkan.' });
-      }
+    if (await isBlacklistedIp(supabaseUrl, serviceKey, clientIP)) {
+      console.warn(`[upload-foto] Blacklisted IP: ${clientIP}`);
+      return res.status(403).json({ ok: false, error: 'Upload tidak diizinkan.' });
+    }
+    if (!(await takeDailySlot('UPLOAD', 'soal_upload', clientIP, UPLOAD_PER_IP_DAY, UPLOAD_ALL_DAY))) {
+      return res.status(429).json({ ok: false, error: 'Batas upload foto hari ini tercapai. Coba lagi besok.' });
     }
 
     const chunks = [];
@@ -304,17 +354,16 @@ async function handleUploadFoto(req, res) {
       return res.status(400).json({ ok: false, error: 'Foto terlalu besar. Maksimal 5MB.' });
     }
 
-    const contentType = req.headers['content-type'] || 'image/jpeg';
-    if (!contentType.startsWith('image/')) {
-      return res.status(400).json({ ok: false, error: 'Hanya file gambar yang diizinkan.' });
-    }
-
     if (buffer.length < 1024) {
       return res.status(400).json({ ok: false, error: 'File tidak valid.' });
     }
 
-    const ext = contentType.includes('png') ? 'png' :
-                contentType.includes('webp') ? 'webp' : 'jpg';
+    // Jenis file ditentukan dari isinya, bukan dari header yang bisa dipalsukan.
+    const ext = imageKind(buffer);
+    if (!ext) {
+      return res.status(400).json({ ok: false, error: 'Hanya file gambar (JPG, PNG, WebP) yang diizinkan.' });
+    }
+    const contentType = { jpg: 'image/jpeg', png: 'image/png', webp: 'image/webp' }[ext];
     const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
 
     const uploadRes = await fetch(

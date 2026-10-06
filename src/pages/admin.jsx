@@ -161,10 +161,33 @@ const PinModal = ({ member, onClose, onGenerated }) => {
   );
 };
 
+const ADMIN_TABS = [
+  { id: "dashboard",  label: "Overview",          icon: "grid" },
+  { id: "analytics",  label: "Analitik",          icon: "target" },
+  { id: "members",    label: "Members",           icon: "users" },
+  { id: "ai-subs",    label: "Langganan & Bayar", icon: "sparkles" },
+  { id: "email",      label: "Email & Event",     icon: "messageSquare" },
+  { id: "bank-soal",  label: "Bank Soal",         icon: "fileText" },
+  { id: "seminar",    label: "Akses Seminar",     icon: "book" },
+  { id: "maddah",     label: "Maddah Analytics",  icon: "layers" },
+  { id: "muqaranah",  label: "Muqaranah",         icon: "scale" },
+  { id: "onboarding", label: "Onboarding Data",   icon: "list" },
+  { id: "guides",     label: "Guide Manager",     icon: "sparkles" },
+  { id: "ai-eval",    label: "Evaluasi AI",       icon: "target" },
+  { id: "prompt-quality", label: "Mutu Prompt",   icon: "check" },
+  { id: "settings",   label: "Settings",          icon: "shield" },
+];
+
 const AdminPage = () => {
   const [loggedIn, setLoggedIn] = useState(isAdminLoggedIn());
   const [tab, setTab] = useState("dashboard");
   const [sbStatus, setSbStatus] = useState("checking");
+  const tabsRef = useRef(null);
+  // Tab aktif digeser ke tengah supaya terlihat di layar sempit.
+  useEffect(() => {
+    tabsRef.current?.querySelector(`[data-tab="${tab}"]`)?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  }, [tab, loggedIn]);
+
 
   useEffect(() => {
     if (loggedIn) {
@@ -178,49 +201,37 @@ const AdminPage = () => {
 
   return (
     <div className="page-enter min-h-screen">
-      <section className="border-b border-line bg-night-900/40 backdrop-blur-xl sticky top-0 z-20">
-        <div className="container-x py-4 flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-3">
-            <span className="chip chip-gold text-[10px]">ADMIN</span>
-            <span className="font-display text-lg font-semibold text-ink">Talqeeh Control Center</span>
-            <div className="flex items-center gap-1.5 text-xs ml-1">
+      {/* Header admin: latar solid (konten tidak menembus), tab satu baris yang bisa digeser — tidak terlipat dua baris. */}
+      <section className="border-b border-line sticky top-0 z-20" style={{ background: "#0c0c0c" }}>
+        <div className="container-x pt-3 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="chip chip-gold text-[10px] flex-shrink-0">ADMIN</span>
+            <span className="font-display text-base md:text-lg font-semibold text-ink truncate">Talqeeh Control Center</span>
+            <div className="flex items-center gap-1.5 text-xs flex-shrink-0">
               <span className={`w-2 h-2 rounded-full ${sbStatus === "online" ? "bg-gold-400" : sbStatus === "offline" ? "bg-rose-600" : "bg-ink-soft animate-pulse"}`}/>
               <span className="text-ink-soft hidden sm:inline">
                 {sbStatus === "online" ? "Supabase terhubung" : sbStatus === "offline" ? "Supabase offline" : "Mengecek..."}
               </span>
             </div>
           </div>
-          <div className="flex gap-1 flex-wrap overflow-x-auto">
-            {[
-              { id: "dashboard",  label: "Overview",          icon: "grid" },
-              { id: "analytics",  label: "Analitik",          icon: "target" },
-              { id: "members",    label: "Members",           icon: "users" },
-              { id: "maddah",     label: "Maddah Analytics",  icon: "layers" },
-              { id: "muqaranah",  label: "Muqaranah",         icon: "scale" },
-              { id: "onboarding", label: "Onboarding Data",   icon: "list" },
-              { id: "guides",     label: "Guide Manager",     icon: "sparkles" },
-              { id: "bank-soal",  label: "Bank Soal",         icon: "fileText" },
-              { id: "ai-subs",    label: "Langganan & Bayar", icon: "sparkles" },
-              { id: "seminar",    label: "Akses Seminar",     icon: "book" },
-              { id: "email",      label: "Email & Event",     icon: "messageSquare" },
-              { id: "ai-eval",    label: "Evaluasi AI",       icon: "target" },
-              { id: "prompt-quality", label: "Mutu Prompt",   icon: "check" },
-              { id: "settings",   label: "Settings",          icon: "shield" },
-            ].map(t => (
-              <button key={t.id} onClick={() => setTab(t.id)}
-                className={`px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition flex-shrink-0 ${tab === t.id ? "bg-emerald-500/15 text-emerald-200 border border-emerald-400/30" : "text-ink-muted hover:text-ink hover:bg-white/5"}`}>
+          <button onClick={() => { setAdminLoggedIn(false); setLoggedIn(false); }} className="px-3 py-1.5 rounded-lg text-sm text-ink-muted hover:text-rose-600 hover:bg-white/5 flex-shrink-0">
+            Logout
+          </button>
+        </div>
+        <nav className="container-x mt-2" aria-label="Menu admin">
+          <div ref={tabsRef} className="flex gap-1 overflow-x-auto no-scrollbar pb-2 -mx-1 px-1" style={{ scrollbarWidth: "none" }}>
+            {ADMIN_TABS.map(t => (
+              <button key={t.id} data-tab={t.id} onClick={() => setTab(t.id)} aria-current={tab === t.id ? "page" : undefined}
+                className={`px-3 py-1.5 rounded-lg text-[13px] md:text-sm flex items-center gap-1.5 transition flex-shrink-0 whitespace-nowrap border ${tab === t.id ? "bg-emerald-500/15 text-emerald-200 border-emerald-400/30" : "text-ink-muted border-transparent hover:text-ink hover:bg-white/5"}`}>
                 <Icon name={t.icon} className="w-4 h-4"/>
-                <span className="hidden md:inline">{t.label}</span>
+                {t.label}
               </button>
             ))}
-            <button onClick={() => { setAdminLoggedIn(false); setLoggedIn(false); }} className="px-3 py-2 rounded-lg text-sm text-ink-muted hover:text-rose-600 ml-2 flex-shrink-0">
-              Logout
-            </button>
           </div>
-        </div>
+        </nav>
       </section>
 
-      <div className="container-x pt-16 pb-10">
+      <div className="container-x pt-8 pb-10">
         {tab === "dashboard"  && <AdminDashboard/>}
         {tab === "analytics"  && <AdminAnalytics/>}
         {tab === "members"    && <AdminMembers/>}
