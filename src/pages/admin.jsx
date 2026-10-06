@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
+import { createPortal } from 'react-dom';
 import { marked } from 'marked';
 /* Talqih, Admin Panel
    /admin, PIN gate, then tabbed control center
@@ -183,6 +184,7 @@ const AdminPage = () => {
   const [tab, setTab] = useState("dashboard");
   const [sbStatus, setSbStatus] = useState("checking");
   const tabsRef = useRef(null);
+  const contentRef = useRef(null);
   // Tab aktif digeser ke tengah supaya terlihat di layar sempit.
   useEffect(() => {
     tabsRef.current?.querySelector(`[data-tab="${tab}"]`)?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
@@ -193,6 +195,38 @@ const AdminPage = () => {
     if (loggedIn) {
       checkSupabase().then(ok => setSbStatus(ok ? "online" : "offline"));
     }
+  }, [loggedIn]);
+
+  /* Tabel admin di HP tampil sebagai kartu (lihat .admin-cards di index.css): tiap sel diberi data-label dari judul
+     kolomnya. Diperbarui setiap isi tabel berubah (memuat data, filter, ganti tab). */
+  useEffect(() => {
+    const root = contentRef.current;
+    if (!root) return;
+    let raf = 0;
+    const label = () => {
+      raf = 0;
+      root.querySelectorAll('table').forEach(table => {
+        const heads = [];
+        table.querySelectorAll('thead tr:last-child th, thead tr:last-child td').forEach(th => {
+          const text = (th.innerText || '').replace(/\s+/g, ' ').trim();
+          for (let k = 0; k < (th.colSpan || 1); k++) heads.push(text);
+        });
+        if (!heads.length) return;
+        table.querySelectorAll('tbody tr, tfoot tr').forEach(tr => {
+          let col = 0;
+          for (const td of tr.children) {
+            const text = heads[col] || '';
+            if (td.getAttribute('data-label') !== text) td.setAttribute('data-label', text);
+            col += td.colSpan || 1;
+          }
+        });
+      });
+    };
+    const schedule = () => { if (!raf) raf = requestAnimationFrame(label); };
+    label();
+    const mo = new MutationObserver(schedule);
+    mo.observe(root, { childList: true, subtree: true });
+    return () => { mo.disconnect(); if (raf) cancelAnimationFrame(raf); };
   }, [loggedIn]);
 
   if (!loggedIn) {
@@ -231,7 +265,7 @@ const AdminPage = () => {
         </nav>
       </section>
 
-      <div className="container-x pt-8 pb-10">
+      <div ref={contentRef} className="container-x pt-8 pb-10 admin-cards">
         {tab === "dashboard"  && <AdminDashboard/>}
         {tab === "analytics"  && <AdminAnalytics/>}
         {tab === "members"    && <AdminMembers/>}
@@ -1201,7 +1235,7 @@ const AdminMembers = () => {
           <h1 className="font-display text-4xl font-semibold text-ink mb-1">Member Access</h1>
           <p className="text-ink-muted">Kelola member, akun Google yang terhubung, PIN aktivasi, dan status.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button onClick={loadFromSupabase} className="btn btn-ghost text-xs px-3 py-2 flex items-center gap-1.5">
             <Icon name="refresh" className="w-3.5 h-3.5"/> Refresh
           </button>
@@ -1814,38 +1848,70 @@ const MemberActions = ({ member, updateMember, onDelete, onReload, members }) =>
   const [showPin, setShowPin] = useState(false);
   const [showGrant, setShowGrant] = useState(false);
   const toast = useToast();
+  const btnRef = useRef(null);
+  const [pos, setPos] = useState(null);
   const close = () => setOpen(false);
+  /* Menu digambar di luar tabel (portal) supaya tidak terpotong pembungkus tabel/kartu. HP: panel dari bawah layar
+     dengan tombol besar. Desktop: melayang di bawah tombol (naik ke atas kalau dekat tepi bawah). */
+  const toggle = () => {
+    if (open) { close(); return; }
+    const r = btnRef.current?.getBoundingClientRect();
+    const mobile = window.innerWidth < 768;
+    setPos(mobile || !r ? { mobile: true } : (r.bottom + 360 > window.innerHeight
+      ? { bottom: window.innerHeight - r.top + 4, right: document.documentElement.clientWidth - r.right }
+      : { top: r.bottom + 4, right: document.documentElement.clientWidth - r.right }));
+    setOpen(true);
+  };
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === "Escape") close(); };
+    const onScroll = () => { if (!pos?.mobile) close(); };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("scroll", onScroll, true);
+    return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("scroll", onScroll, true); };
+  }, [open, pos]);
+  const item = pos?.mobile ? "w-full text-left px-5 py-3.5 text-[15px] flex items-center gap-3 hover:bg-white/5" : "w-full text-left px-4 py-2 flex items-center gap-2 hover:bg-white/5";
   return (
     <div className="relative inline-block">
-      <button onClick={() => setOpen(o => !o)} className="w-8 h-8 rounded-lg hover:bg-white/8 flex items-center justify-center text-ink-muted">
+      <button ref={btnRef} onClick={toggle} aria-haspopup="menu" aria-expanded={open} aria-label={`Menu ${member.name || member.code}`}
+        className="w-9 h-9 rounded-lg hover:bg-white/8 flex items-center justify-center text-ink-muted border border-white/10 md:border-transparent">
         <Icon name="list" className="w-4 h-4"/>
       </button>
-      {open && (
+      {open && createPortal(
         <>
-          <div className="fixed inset-0 z-30" onClick={close}/>
-          <div className="absolute right-0 top-full mt-1 z-40 rounded-xl border border-white/10 shadow-2xl shadow-black/60 w-52 py-1.5 text-sm text-left"
-            style={{ background: "#161616" }}>
-            <button onClick={() => { setShowProfile(true); close(); }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5 flex items-center gap-2">
+          <div className={`fixed inset-0 z-[95] ${pos?.mobile ? "bg-black/60" : ""}`} onClick={close}/>
+          <div role="menu" className={`fixed z-[96] border border-white/10 shadow-2xl shadow-black/60 text-sm text-left ${pos?.mobile
+              ? "left-0 right-0 bottom-0 rounded-t-2xl pt-2 pb-[calc(12px+env(safe-area-inset-bottom))] max-h-[80vh] overflow-y-auto"
+              : "rounded-xl w-52 py-1.5"}`}
+            style={{ background: "#161616", ...(pos?.mobile ? {} : { top: pos?.top, bottom: pos?.bottom, right: pos?.right }) }}>
+            {pos?.mobile && (
+              <div className="px-5 pt-1 pb-3 border-b border-white/8 mb-1">
+                <div className="w-10 h-1 rounded-full bg-white/15 mx-auto mb-3"/>
+                <div className="text-ink font-medium truncate">{member.name || member.code}</div>
+                <div className="text-xs text-ink-soft truncate">{member.email || member.code}</div>
+              </div>
+            )}
+            <button onClick={() => { setShowProfile(true); close(); }} className={`${item} text-ink`}>
               <Icon name="user" className="w-3.5 h-3.5 text-ink-soft"/> Lihat Profil
             </button>
-            <button onClick={() => { setShowEdit(true); close(); }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5 flex items-center gap-2">
+            <button onClick={() => { setShowEdit(true); close(); }} className={`${item} text-ink`}>
               <Icon name="edit" className="w-3.5 h-3.5 text-ink-soft"/> Edit Member
             </button>
-            <button onClick={() => { setShowGrant(true); close(); }} className="w-full text-left px-4 py-2 text-emerald-300 hover:bg-white/5 flex items-center gap-2">
+            <button onClick={() => { setShowGrant(true); close(); }} className={`${item} text-emerald-300`}>
               <Icon name="crown" className="w-3.5 h-3.5"/> Beri akses…
             </button>
             <div className="my-1 h-px bg-line"/>
             {member.status !== "disabled" && (
-              <button onClick={() => { updateMember(member.code, { status: "disabled" }); toast.push("Member disabled"); close(); }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5">Disable</button>
+              <button onClick={() => { updateMember(member.code, { status: "disabled" }); toast.push("Member disabled"); close(); }} className={`${item} text-ink`}>Disable</button>
             )}
             {member.status === "disabled" && (
-              <button onClick={() => { updateMember(member.code, { status: "active" }); toast.push("Re-enabled"); close(); }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5">Re-enable</button>
+              <button onClick={() => { updateMember(member.code, { status: "active" }); toast.push("Re-enabled"); close(); }} className={`${item} text-ink`}>Re-enable</button>
             )}
             {member.status === "expired" && (
-              <button onClick={() => { const d = new Date(); d.setDate(d.getDate() + 30); updateMember(member.code, { status: "active", expiresAt: d.toISOString().split("T")[0] }); toast.push("Renewed 30 days"); close(); }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5">Renew 30 hari</button>
+              <button onClick={() => { const d = new Date(); d.setDate(d.getDate() + 30); updateMember(member.code, { status: "active", expiresAt: d.toISOString().split("T")[0] }); toast.push("Renewed 30 days"); close(); }} className={`${item} text-ink`}>Renew 30 hari</button>
             )}
             {!member.googleLinked && (
-              <button onClick={() => { setShowPin(true); close(); }} className="w-full text-left px-4 py-2 text-emerald-300 hover:bg-white/5">
+              <button onClick={() => { setShowPin(true); close(); }} className={`${item} text-emerald-300`}>
                 {member.pinExpiresAt ? "Buat PIN baru" : "Buat PIN aktivasi"}
               </button>
             )}
@@ -1853,18 +1919,25 @@ const MemberActions = ({ member, updateMember, onDelete, onReload, members }) =>
               <button onClick={() => {
                 if (!confirm(`Lepas akun Google dari ${member.code}? Member harus aktivasi ulang pakai PIN baru.`)) return;
                 updateMember(member.code, { unlinkGoogle: true }); toast.push("Akun Google dilepas"); close();
-              }} className="w-full text-left px-4 py-2 text-ink hover:bg-white/5">Lepas akun Google</button>
+              }} className={`${item} text-ink`}>Lepas akun Google</button>
             )}
             <div className="my-1 h-px bg-line"/>
-            <button onClick={() => { if (confirm("Hapus member ini? Data belajarnya (catatan, progres, profil, materi AI) ikut terhapus.")) { onDelete(); close(); } }} className="w-full text-left px-4 py-2 text-rose-600 hover:bg-white/5">Delete</button>
+            <button onClick={() => { if (confirm("Hapus member ini? Data belajarnya (catatan, progres, profil, materi AI) ikut terhapus.")) { onDelete(); close(); } }} className={`${item} text-rose-600`}>Delete</button>
           </div>
-        </>
+        </>,
+        document.body
       )}
-      {showProfile && <MemberProfileModal member={member} onClose={() => setShowProfile(false)}/>}
-      {showEdit && <EditMemberModal member={member} onClose={() => setShowEdit(false)} onSave={updateMember}/>}
-      {showPin && <PinModal member={member} onClose={() => setShowPin(false)}/>}
-      <GrantAccessModal open={showGrant} onClose={() => setShowGrant(false)} members={members || []}
-        initialTarget={member.email || member.code} onDone={onReload}/>
+      {/* Jendela dari menu juga di luar tabel: di HP tabel jadi kartu, dan jendela di dalamnya ikut terkurung/terpotong. */}
+      {createPortal(
+        <>
+          {showProfile && <MemberProfileModal member={member} onClose={() => setShowProfile(false)}/>}
+          {showEdit && <EditMemberModal member={member} onClose={() => setShowEdit(false)} onSave={updateMember}/>}
+          {showPin && <PinModal member={member} onClose={() => setShowPin(false)}/>}
+          <GrantAccessModal open={showGrant} onClose={() => setShowGrant(false)} members={members || []}
+            initialTarget={member.email || member.code} onDone={onReload}/>
+        </>,
+        document.body
+      )}
     </div>
   );
 };

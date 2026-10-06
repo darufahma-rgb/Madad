@@ -648,3 +648,23 @@ html.app-shell { --app-header-h: calc(57px + var(--safe-top)); }
   .mm-canvas-inline { height: 440px; }
   .mm-detail-float { top: auto; left: 8px; right: 8px; bottom: calc(8px + var(--safe-bottom)); width: auto; max-height: 55%; }
 }
+
+/* ── Admin di HP: tabel jadi kartu bertumpuk (label kolom di kiri, nilai di kanan) supaya semua kolom terlihat
+   tanpa menggeser. Label diisi otomatis dari <th> oleh AdminPage (data-label). Desktop tidak berubah. ── */
+@media (max-width: 767px) {
+  .admin-cards { overflow-wrap: break-word; }
+  .admin-cards .grid > * { min-width: 0; }
+  .admin-cards table { display: block; width: 100%; min-width: 0 !important; }
+  .admin-cards thead { display: none; }
+  .admin-cards tbody, .admin-cards tfoot { display: block; }
+  .admin-cards tr { display: block; margin: 0 0 10px; padding: 6px 12px; border: 1px solid rgba(255,255,255,0.08) !important; border-radius: 12px; background: rgba(255,255,255,0.02); }
+  .admin-cards td { display: grid; grid-template-columns: 34% minmax(0, 1fr); column-gap: 12px !important; row-gap: 4px !important; align-items: start; padding: 6px 0 !important; border: 0 !important; text-align: right !important; white-space: normal !important; min-width: 0; }
+  .admin-cards td > * { grid-column: 2; justify-self: end; max-width: 100%; }
+  .admin-cards td > div { flex-wrap: wrap; justify-content: flex-end; }
+  .admin-cards td + td { border-top: 1px solid rgba(255,255,255,0.05) !important; }
+  .admin-cards td::before { content: attr(data-label); grid-column: 1; grid-row: 1; text-align: left; color: #8a857c; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; padding-top: 2px; }
+  .admin-cards td[data-label=""]::before, .admin-cards td:not([data-label])::before { display: none; }
+  .admin-cards td[data-label=""], .admin-cards td:not([data-label]) { grid-template-columns: minmax(0, 1fr); text-align: left !important; }
+  .admin-cards td[data-label=""] > *, .admin-cards td:not([data-label]) > * { grid-column: 1; justify-self: start; }
+  .admin-cards .overflow-x-auto { overflow-x: visible; }
+}
