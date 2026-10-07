@@ -434,6 +434,7 @@ const AiPartnerPage = () => {
 
 const SUB_TABS = {
   pahami:   [{ id: 'summary', label: 'Ringkasan', icon: 'bookOpen', C: 'SummaryTab' },
+             { id: 'talkhis', label: 'Talkhis', icon: 'list', C: 'TalkhisTab' },
              { id: 'mindmap', label: 'Peta Konsep', icon: 'network', C: 'MindmapTab', pro: true },
              { id: 'material', label: 'Materi & I\'rab', icon: 'type', C: 'MaterialTab' }],
   hafalkan: [{ id: 'cards', label: 'Flashcard', icon: 'layers', C: 'FlashcardTab' },

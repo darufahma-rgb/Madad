@@ -479,6 +479,7 @@ const AI_KIND_LABELS = {
   grade:      { label: 'Nilai tahriri',    sub: 'jawaban', color: '#f97316' },
   ocr:        { label: 'Baca foto/scan',   sub: 'halaman', color: '#a78bfa' },
   transcribe: { label: 'Transkrip',        sub: 'menit', color: '#f472b6' },
+  talkhis:    { label: 'Talkhis',          sub: 'muqarrar', color: '#f59e0b' },
 };
 const SOURCE_LABELS = { pdf: 'PDF', foto: 'Foto', teks: 'Teks', docx: 'Word', pptx: 'PowerPoint', xlsx: 'Excel', txt: 'TXT', audio: 'Audio', video: 'Video', campuran: 'Campuran' };
 
@@ -2736,6 +2737,7 @@ const AdminSettings = () => {
               ['generate', 'Pembuatan AI', 'kali', 40], ['create', 'Materi baru', 'materi', 15],
               ['analyze', "I'rab & harakat", 'kali', 150], ['grade', 'Nilai tahriri', 'jawaban', 60],
               ['ocr', 'Baca foto', 'halaman', 60], ['transcribe', 'Transkrip', 'menit', 300],
+              ['talkhis', 'Talkhis', 'muqarrar', 6],
             ].map(([k, label, unit, def]) => (
               <div key={k}>
                 <label className="text-[11px] text-ink-muted block mb-1">{label} <span className="text-ink-soft">({unit})</span></label>

@@ -3,11 +3,12 @@
 // Tujuannya menahan biaya pemakai paling berat supaya tetap sebanding dengan harga langganan.
 import { readSettings } from '../settings.js';
 
-export const QUOTA_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', 'grade', 'ocr', 'transcribe'];
+export const QUOTA_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', 'grade', 'ocr', 'transcribe', 'talkhis'];
 
 // Bawaan kalau admin belum mengatur. transcribe dalam menit, lainnya jumlah pemakaian.
 export const DEFAULT_MONTHLY_LIMITS = {
   prompt: 150, chat: 150, generate: 40, create: 15, analyze: 150, grade: 60, ocr: 60, transcribe: 300,
+  talkhis: 6, // muqarrar yang di-talkhis per periode (pemegang Paket Imtihan: tanpa batas bulanan)
 };
 const MAX_LIMIT = 5000;
 

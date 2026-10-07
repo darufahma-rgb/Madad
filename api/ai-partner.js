@@ -9,6 +9,7 @@ import {
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
+import { handleTalkhis } from './_lib/ai-partner/talkhis.js';
 import { handlePromptFeedback, handlePromptQualityAdmin } from './_lib/prompt-quality.js';
 import { getMonthlyLimits, cachedMonthlyLimits } from './_lib/ai-partner/limits.js';
 import { splitChunks, spreadSample, stickyExcerpt } from './_lib/ai-partner/chunks.js';
@@ -18,7 +19,8 @@ import {
 } from './_lib/ai-partner/sanitize.js';
 
 // Kuota harian pelanggan. Pengguna coba gratis dibatasi per materi (lihat TRIAL_*), bukan per hari.
-const LIMITS = { create: 10, ocr: 20, transcribe: 60, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40 };
+// talkhis = jumlah muqarrar yang dipetakan per hari (tiap muqarrar berisi puluhan pemanggilan AI).
+const LIMITS = { create: 10, ocr: 20, transcribe: 60, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40, talkhis: 2 };
 const TRIAL_OCR_LIMIT  = 3;
 // Pengaman biaya: total pemanggilan AI oleh SEMUA pengguna coba gratis per hari. Akun gratis bisa dibuat siapa saja
 // yang punya akun Google, jadi tanpa batas bersama ini satu orang dengan banyak akun bisa menguras saldo AI.
@@ -298,6 +300,8 @@ const sendResult = (res, stream, data) => (stream ? stream.done({ ok: true, ...d
 
 // Catat model yang membuat tiap hasil (untuk membandingkan kualitas antar model).
 const withModel = (set, kind, model) => ({ ...(set.progress?.models && typeof set.progress.models === 'object' ? set.progress.models : {}), [kind]: model });
+
+const saveTalkhis = (code, setId, talkhis) => updateSet(code, setId, { talkhis });
 
 const mergeProgress = (set, patch) => ({ ...(set.progress && typeof set.progress === 'object' ? set.progress : {}), ...patch });
 
@@ -1245,6 +1249,10 @@ export default async function handler(req, res) {
       case 'prompt-chat':   return await handlePromptChat(ctx, body, res);
       case 'stats':         return await handleStats(ctx, res);
       case 'feedback':      return await handleFeedback(ctx, body, res);
+      case 'talkhis':       return await handleTalkhis(ctx, body, res, {
+        getOwnedSet, saveTalkhis, takeQuota, quotaExceeded, upgradeRequired, getTrialSetId, trialGateOpen, trialGateClosed,
+        consumeQuota, resolveModels, requestAI, callAIJson, runAI, sendResult,
+      });
       default:              return res.status(400).json({ ok: false, error: 'Action tidak valid' });
     }
   } catch (err) {
