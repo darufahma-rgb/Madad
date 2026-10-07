@@ -45,8 +45,16 @@ const talkhisHtml = (md, sourceNorm) => {
     const quote = line.match(/^\s*>\s?(.*)$/);
     if (quote) { closeSub(); if (quote[1].trim()) nass.push(quote[1].trim()); continue; }
     flushNass();
-    const head = line.match(/^#{1,6}\s+(.*)$/);
-    if (head) { closeList(); html += `<h4 class="tk-h4">${inline(head[1])}</h4>`; continue; }
+    // "## " = bab (﴿ … ﴾), "### " = judul mabhats, "#### " = sub-bagian (hasil AI hanya memakai "#### ").
+    const head = line.match(/^(#{1,6})\s+(.*)$/);
+    if (head) {
+      closeList();
+      const level = head[1].length;
+      html += level <= 2 ? `<h2 class="tk-bab">﴿ ${inline(head[2].replace(/^﴿\s*|\s*﴾$/g, ''))} ﴾</h2>`
+        : level === 3 ? `<h3 class="tk-title">${inline(head[2])}</h3>`
+        : `<h4 class="tk-h4">${inline(head[2])}</h4>`;
+      continue;
+    }
     const indented = /^\s{2,}/.test(line);
     const item = line.match(/^\s*(?:([-*•])|(\d+|[٠-٩]+)[.)\-])\s+(.*)$/);
     if (item) {
@@ -113,7 +121,8 @@ body { margin: 0; font-family: "Noto Naskh Arabic", "Amiri", serif; direction: r
 .toc .tb { font-weight: 700; margin-top: 10px; }
 .bab { margin-top: 18px; }
 .topic { margin: 0 0 14px; }
-.topic h3 { font-size: 18px; margin: 14px 0 6px; padding-bottom: 3px; border-bottom: 1.5px solid #c9a86a; }
+.topic h3, .tk-title { font-size: 18px; margin: 14px 0 6px; padding-bottom: 3px; border-bottom: 1.5px solid #c9a86a; break-after: avoid; }
+.tk-bab { text-align: center; font-size: 22px; margin: 18px 0 10px; break-after: avoid; }
 .tk-h4 { font-size: 15.5px; margin: 10px 0 4px; text-decoration: underline; text-underline-offset: 5px; }
 .tk-nass { border: 1px solid #b33; color: #a11; padding: 6px 12px; margin: 6px 0 8px; font-size: 16px; break-inside: avoid; }
 .tk-nass-warn { border-style: dashed; }
@@ -130,24 +139,29 @@ p { margin: 4px 0; }
 .foot { margin-top: 24px; text-align: center; font-family: system-ui, sans-serif; direction: ltr; font-size: 10px; color: #999; }
 `;
 
-const printTalkhis = (set, t) => {
-  const topics = t.topics.filter(x => !x.skip && x.text);
-  if (!topics.length) return false;
+/* PDF dari markdown talkhisan (dipakai tab Talkhis dan Kurasah). فهرس disusun dari "## " (bab) dan "### " (judul);
+   tanpa judul "### " halaman فهرس dilewati. */
+const printTalkhisDoc = (title, md) => {
+  if (!String(md || '').trim()) return false;
   const w = window.open('', '_blank');
   if (!w) return null;
-  const groups = groupByBab(topics);
-  const src = set.content || '';
-  const body = groups.map(g => `${g.bab ? `<h2 class="bab">﴿ ${esc(g.bab)} ﴾</h2>` : ''}${g.items.map(({ x }) =>
-    `<section class="topic"><h3>${esc(x.title)}</h3>${talkhisHtml(x.text, norm(src.slice(x.start, x.end)))}</section>`).join('')}`).join('');
+  const groups = [];
+  for (const line of String(md).replace(/\r/g, '').split('\n')) {
+    const h = line.match(/^(#{2,3})\s+(.*)$/);
+    if (!h) continue;
+    if (h[1] === '##') groups.push({ bab: h[2].replace(/^﴿\s*|\s*﴾$/g, ''), items: [] });
+    else { if (!groups.length) groups.push({ bab: '', items: [] }); groups[groups.length - 1].items.push(h[2]); }
+  }
   let n = 0;
-  const toc = groups.map(g => `${g.bab ? `<div class="tb">${esc(g.bab)}</div>` : ''}<ol start="${n + 1}">${g.items.map(({ x }) => { n++; return `<li>${esc(x.title)}</li>`; }).join('')}</ol>`).join('');
-  w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تلخيص — ${esc(set.title)}</title>
+  const hasToc = groups.some(g => g.items.length);
+  const toc = groups.map(g => `${g.bab ? `<div class="tb">${esc(g.bab)}</div>` : ''}${g.items.length ? `<ol start="${n + 1}">${g.items.map(x => { n++; return `<li>${esc(x)}</li>`; }).join('')}</ol>` : ''}`).join('');
+  w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تلخيص — ${esc(title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
 <style>${PRINT_CSS}</style></head><body>
-<div class="cover"><h1>تَلْخِيصُ</h1><div class="sub">${esc(set.title)}</div><div class="brand">Dibuat dengan Talqeeh AI Partner · talqeeh.vercel.app — cocokkan dengan muqarrar sebelum dihafal</div></div>
-<div class="toc"><h2>فِهْرِسُ الْمَبَاحِثِ</h2>${toc}</div>
-${body}
+<div class="cover"><h1>تَلْخِيصُ</h1><div class="sub">${esc(title)}</div><div class="brand">Disusun dengan Talqeeh · talqeeh.vercel.app — cocokkan dengan muqarrar sebelum dihafal</div></div>
+${hasToc ? `<div class="toc"><h2>فِهْرِسُ الْمَبَاحِثِ</h2>${toc}</div>` : ''}
+${talkhisHtml(md)}
 <div class="foot">Talqeeh — talkhis dari muqarrarmu sendiri</div>
 <script>(document.fonts ? document.fonts.ready : Promise.resolve()).then(function(){ setTimeout(function(){ window.print(); }, 300); });</script>
 </body></html>`);
@@ -155,11 +169,18 @@ ${body}
   return true;
 };
 
+const printTalkhis = (set, t) => {
+  if (!t.topics.some(x => !x.skip && x.text)) return false;
+  return printTalkhisDoc(set.title, allMarkdown(t));
+};
+
 /* ── Salin & simpan ──
    Clipboard diisi dua versi: HTML bergaya inline (ditempel ke Word/Google Docs tetap kanan-ke-kiri, nash berkotak,
    label tebal) dan teks biasa yang rapi (WhatsApp, Notes). Kurasah menyimpan markdown aslinya. */
 const INLINE = {
   'tk-h4': 'font-weight:bold;text-decoration:underline;margin:10px 0 4px;font-size:15pt',
+  'tk-bab': 'text-align:center;font-size:16pt;margin:14px 0 6px',
+  'tk-title': 'font-size:15pt;margin:12px 0 4px;border-bottom:1px solid #c9a86a',
   'tk-nass': 'border:1px solid #b33;color:#a11;padding:4px 10px;margin:6px 0;font-size:15pt',
   'tk-nass tk-nass-warn': 'border:1px dashed #b33;color:#a11;padding:4px 10px;margin:6px 0;font-size:15pt',
   'tk-nl-warn': '',
@@ -214,6 +235,12 @@ const copyAll = (set, t) => {
     (g.bab ? `﴿ ${g.bab} ﴾\n\n` : '') + g.items.map(({ x }) => `${x.title}\n${'─'.repeat(12)}\n${plainText(x.text)}`).join('\n\n')).join('\n\n');
   return copyRich(html, plain);
 };
+// Satu dokumen markdown utuh (Kurasah) → clipboard berformat & teks biasa.
+const copyTalkhisDoc = (title, md) => copyRich(
+  htmlDoc(`<h2 style="text-align:center;font-size:18pt">${esc(title)}</h2>${withInlineStyles(talkhisHtml(md))}`),
+  `${title}\n\n${plainText(String(md).replace(/^##\s+(.*)$/gm, (m, b) => `﴿ ${b.replace(/^﴿\s*|\s*﴾$/g, '')} ﴾`).replace(/^###\s+(.*)$/gm, '$1\n' + '─'.repeat(12)))}`,
+);
+
 const allMarkdown = (t) => writtenGroups(t).map(g =>
   (g.bab ? `## ﴿ ${g.bab} ﴾\n\n` : '') + g.items.map(({ x }) => `### ${x.title}\n\n${x.text}`).join('\n\n')).join('\n\n');
 
@@ -575,4 +602,4 @@ const TalkhisTab = ({ set, setSet, access }) => {
   );
 };
 
-Object.assign(window, { TalkhisTab });
+Object.assign(window, { TalkhisTab, talkhisHtml, printTalkhisDoc, copyTalkhisDoc });

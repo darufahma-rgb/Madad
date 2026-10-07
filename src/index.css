@@ -687,3 +687,6 @@ html.app-shell { --app-header-h: calc(57px + var(--safe-top)); }
 .tk-mini { font-family: "Noto Naskh Arabic", Amiri, serif; font-size: 15px; line-height: 1.85; color: #e7e0d2; text-align: right; padding-inline-start: 18px; list-style: disc; }
 @media (max-width: 767px) { .tk-body { font-size: 17px; } .tk-body .tk-nass { font-size: 18px; padding: 6px 10px; } }
 .tk-body .tk-nl-warn { text-decoration: underline dashed rgba(251,191,36,.7); text-underline-offset: 7px; }
+.tk-body .tk-bab { text-align: center; font-size: 22px; color: #e3c88d; margin: 22px 0 10px; }
+.tk-body .tk-bab:first-child { margin-top: 4px; }
+.tk-body .tk-title { font-size: 19px; color: #fff; margin: 18px 0 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(201,168,106,.45); }

@@ -36,6 +36,7 @@ const KurasahEditorPage = () => {
   const [tab, setTab] = React.useState("edit"); // "edit" | "preview"
   const [showDelete, setShowDelete] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
+  const [showPicker, setShowPicker] = React.useState(false);
   const saveTimer = React.useRef(null);
   const bodyRef = React.useRef(null);
 
@@ -53,13 +54,15 @@ const KurasahEditorPage = () => {
   React.useEffect(() => {
     if (isNew) {
       const now = new Date().toISOString();
+      // /kurasah/new?talkhis=1 → catatan baru langsung dalam Mode Talkhisan.
+      const talkhisNew = path.includes("talkhis=1");
       const newNote = {
         id: "note_" + Date.now(),
-        title: "", body: "", tags: [], source: null,
+        title: "", body: "", tags: talkhisNew ? ["talkhis"] : [], source: null,
         createdAt: now, updatedAt: now,
       };
       setNote(newNote);
-      setTitle(""); setBody(""); setTags([]); setSource(null);
+      setTitle(""); setBody(""); setTags(newNote.tags); setSource(null);
     } else if (noteId) {
       const found = loadNotes().find(n => n.id === noteId);
       if (found) {
@@ -120,6 +123,53 @@ const KurasahEditorPage = () => {
     scheduleAutoSave(title, body, newTags, source, note);
   };
 
+  /* ── Mode Talkhisan: catatan bertanda "talkhis" disusun sebagai talkhisan Arab (kanan-ke-kiri), dipratinjau dengan
+     gaya talkhisan, bisa digabung dari catatan talkhis lain, dan diunduh sebagai PDF (renderer dari tab Talkhis). */
+  const isTalkhis = tags.includes("talkhis");
+  const toggleTalkhis = () => {
+    const newTags = isTalkhis ? tags.filter(t => t !== "talkhis") : [...tags, "talkhis"];
+    setTags(newTags);
+    scheduleAutoSave(title, body, newTags, source, note);
+  };
+  // Sisipkan satu baris berawalan tertentu di posisi kursor (di baris baru), lalu pilih teks contohnya.
+  const insertLine = (prefix, sample, suffix = "") => {
+    const ta = bodyRef.current;
+    const pos = ta ? ta.selectionStart : body.length;
+    const before = body.slice(0, pos);
+    const lead = before && !before.endsWith("\n") ? "\n" : "";
+    const text = lead + prefix + sample + suffix + "\n";
+    handleBodyChange(before + text + body.slice(pos));
+    setTimeout(() => {
+      if (!ta) return;
+      const s = pos + lead.length + prefix.length;
+      ta.focus();
+      ta.setSelectionRange(s, s + sample.length);
+    }, 10);
+  };
+  const otherTalkhis = isTalkhis ? loadNotes().filter(n => n.id !== note?.id && n.tags?.includes("talkhis") && n.body?.trim()) : [];
+  // Catatan lain ditambahkan di akhir. Judul catatannya jadi judul mabhats (### ) bila isinya belum punya judul
+  // sendiri — diletakkan sesudah baris bab (## ) kalau catatannya diawali bab.
+  const appendNote = (n) => {
+    const name = (n.title || "").replace(/^Talkhis\s*—\s*/, "").trim();
+    let piece = n.body.trim();
+    if (name && !/^###\s/m.test(piece)) {
+      const bab = piece.match(/^##\s.*(\n+|$)/);
+      piece = bab ? `${bab[0].trimEnd()}\n\n### ${name}\n\n${piece.slice(bab[0].length)}` : `### ${name}\n\n${piece}`;
+    }
+    handleBodyChange((body.trim() ? body.trimEnd() + "\n\n" : "") + piece + "\n");
+    setShowPicker(false);
+    toast.push("Ditambahkan di akhir talkhisan.");
+  };
+  const downloadPdf = () => {
+    const r = window.printTalkhisDoc?.(title || "تلخيص", body);
+    if (r === false) toast.push("Talkhisan masih kosong.");
+    if (r === null) toast.push("Jendela unduhan diblokir browser. Izinkan pop-up untuk Talqeeh lalu coba lagi.");
+  };
+  const copyDoc = async () => {
+    const ok = await window.copyTalkhisDoc?.(title || "تلخيص", body);
+    toast.push(ok ? "Tersalin. Tempel di Word/Docs untuk format lengkap." : "Gagal menyalin.");
+  };
+
   const insertBismillah = () => {
     const ins = "\n:bismillah:\n";
     handleBodyChange(body + ins);
@@ -175,13 +225,27 @@ const KurasahEditorPage = () => {
     </div>
   );
 
-  const previewHtml = renderMarkdown(body);
+  const previewHtml = isTalkhis && window.talkhisHtml ? window.talkhisHtml(body) : renderMarkdown(body);
 
   const EditorPane = () => (
     <div className="flex flex-col h-full">
       {/* Toolbar */}
       <div className="flex items-center gap-1 p-2 border-b border-line bg-white/2 flex-wrap">
-        {[
+        {isTalkhis ? [
+          { label: "Bab", action: () => insertLine("## ", "باب"), title: "Bab (judul besar, di tengah)" },
+          { label: "Judul", action: () => insertLine("### ", "عنوان المبحث"), title: "Judul mabhats" },
+          { label: "Sub", action: () => insertLine("#### ", "التعريف"), title: "Sub-bagian (garis bawah)" },
+          { label: "Nash", action: () => insertLine("> ", "نص الحديث أو الآية"), title: "Nash dalam kotak merah" },
+          { label: "• Poin", action: () => insertLine("- ", "نقطة"), title: "Poin" },
+          { label: "Label:", action: () => insertLine("- **", "العنوان", ":** "), title: "Poin berlabel tebal" },
+          { label: "(Gharib)", action: () => insertLine("- (", "اللفظ", "): معناه"), title: "Kata gharib & maknanya" },
+          { label: "١. Khilaf", action: () => insertLine("  1. ", "المذهب: القول"), title: "Pendapat bernomor (di bawah poin)" },
+        ].map((btn, i) => (
+          <button key={i} type="button" onClick={btn.action} title={btn.title}
+            className="px-2.5 py-1 rounded text-xs text-ink-muted hover:text-ink hover:bg-white/6 transition-colors">
+            {btn.label}
+          </button>
+        )) : [
           { label:"B", action:() => wrapSelection("**"), title:"Bold" },
           { label:"I", action:() => wrapSelection("*"), title:"Italic", cls:"italic" },
           { label:"H1", action:() => handleBodyChange(body + "\n# "), title:"Heading 1" },
@@ -210,8 +274,11 @@ const KurasahEditorPage = () => {
         ref={bodyRef}
         value={body}
         onChange={e => handleBodyChange(e.target.value)}
-        placeholder="Tulis catatanmu... Gunakan # untuk heading, **teks** untuk bold, > untuk quote, :bismillah: untuk ornamen."
-        className="flex-1 bg-transparent p-5 text-sm text-ink-muted leading-relaxed resize-none outline-none placeholder-ink-soft font-sans"
+        placeholder={isTalkhis
+          ? "اكتب التلخيص هنا… Pakai tombol di atas: ﴿ Bab ﴾, Judul, Nash, Poin. Gabungkan talkhis lain lewat Tambah dari catatan."
+          : "Tulis catatanmu... Gunakan # untuk heading, **teks** untuk bold, > untuk quote, :bismillah: untuk ornamen."}
+        dir={isTalkhis ? "rtl" : undefined}
+        className={`flex-1 bg-transparent p-5 text-ink-muted leading-relaxed resize-none outline-none placeholder-ink-soft ${isTalkhis ? "arabic text-[17px]" : "text-sm font-sans"}`}
         style={{minHeight:320}}
       />
     </div>
@@ -220,7 +287,9 @@ const KurasahEditorPage = () => {
   const PreviewPane = () => (
     <div className="flex-1 overflow-y-auto p-6 card-glass rounded-xl min-h-0" style={{minHeight:320}}>
       {previewHtml
-        ? <div dangerouslySetInnerHTML={{__html: previewHtml}}/>
+        ? isTalkhis
+          ? <div dir="rtl" lang="ar" className="tk-body" dangerouslySetInnerHTML={{__html: previewHtml}}/>
+          : <div dangerouslySetInnerHTML={{__html: previewHtml}}/>
         : <p className="text-ink-soft text-sm italic">Preview akan muncul di sini...</p>
       }
     </div>
@@ -278,6 +347,27 @@ const KurasahEditorPage = () => {
               </div>
             )}
           </div>
+        </div>
+
+        {/* Mode Talkhisan */}
+        <div className="flex flex-wrap items-center gap-2 mb-4">
+          <button type="button" onClick={toggleTalkhis}
+            className={`text-xs px-3 py-1.5 rounded-xl border font-medium transition-all ${isTalkhis ? "text-emerald-200 border-emerald-600/35 bg-emerald-500/15" : "text-ink-muted border-white/10 bg-white/4 hover:bg-white/7"}`}>
+            Mode Talkhisan {isTalkhis ? "aktif" : "mati"}
+          </button>
+          {isTalkhis && (
+            <>
+              <button type="button" onClick={() => setShowPicker(true)} className="text-xs px-3 py-1.5 rounded-xl border border-white/10 bg-white/4 text-ink-muted hover:text-ink">
+                <Icon name="layers" className="w-3.5 h-3.5 inline -mt-0.5 me-1"/>Tambah dari catatan
+              </button>
+              <button type="button" onClick={copyDoc} disabled={!body.trim()} className="text-xs px-3 py-1.5 rounded-xl border border-white/10 bg-white/4 text-ink-muted hover:text-ink disabled:opacity-40">
+                <Icon name="copy" className="w-3.5 h-3.5 inline -mt-0.5 me-1"/>Salin
+              </button>
+              <button type="button" onClick={downloadPdf} disabled={!body.trim()} className="text-xs px-3 py-1.5 rounded-xl border border-emerald-600/35 bg-emerald-500/15 text-emerald-200 disabled:opacity-40">
+                <Icon name="download" className="w-3.5 h-3.5 inline -mt-0.5 me-1"/>Unduh PDF
+              </button>
+            </>
+          )}
         </div>
 
         {/* Source linker */}
@@ -351,6 +441,32 @@ const KurasahEditorPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Pilih catatan talkhis lain untuk digabung */}
+      {showPicker && (
+        <div className="fixed inset-0 z-[80] flex items-end md:items-center justify-center md:px-4">
+          <div className="absolute inset-0 bg-night-950/70 backdrop-blur-sm" onClick={() => setShowPicker(false)}/>
+          <div className="relative card-glass-strong rounded-t-2xl md:rounded-2xl p-5 w-full md:max-w-lg max-h-[80vh] overflow-y-auto page-enter">
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="font-display text-lg font-semibold text-ink">Tambah dari catatan talkhis</h3>
+              <button onClick={() => setShowPicker(false)} className="w-8 h-8 rounded-lg hover:bg-white/6 flex items-center justify-center text-ink-muted"><Icon name="x" className="w-4 h-4"/></button>
+            </div>
+            <p className="text-xs text-ink-soft mb-4">Isinya ditambahkan di akhir talkhisan ini. Pilih satu per satu sesuai urutan yang kamu mau.</p>
+            {otherTalkhis.length === 0 ? (
+              <p className="text-sm text-ink-muted py-6 text-center">Belum ada catatan talkhis lain. Simpan dari tab Talkhis di AI Partner dengan tombol "Ke Kurasah".</p>
+            ) : (
+              <div className="space-y-2">
+                {otherTalkhis.map(n => (
+                  <button key={n.id} onClick={() => appendNote(n)} className="w-full text-left p-3 rounded-xl border border-white/8 bg-white/3 hover:border-emerald-500/40 hover:bg-emerald-500/5">
+                    <div className="text-sm text-ink">{n.title || "Tanpa judul"}</div>
+                    <div dir="rtl" className="arabic text-ink-soft text-sm truncate mt-0.5">{n.body.replace(/[#*>]/g, "").trim().slice(0, 90)}</div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Delete confirm */}
       {showDelete && (

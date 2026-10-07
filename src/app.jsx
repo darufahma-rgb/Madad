@@ -245,7 +245,7 @@ const App = () => {
   else if (path === "/paths/muqaranah/new" || path.startsWith("/paths/muqaranah/new?")) { page = <MuqaranahFormPage/>; routeLabel = "Susun Muqaranah"; }
   else if (path === "/kurasah" && !path.includes("?id=")) { page = <KurasahPage/>; routeLabel = "Kurasah"; }
   else if (path.startsWith("/kurasah?id="))               { page = <KurasahEditorPage/>; routeLabel = "Kurasah Editor"; }
-  else if (path === "/kurasah/new")                        { page = <KurasahEditorPage/>; routeLabel = "Catatan Baru"; }
+  else if (path === "/kurasah/new" || path.startsWith("/kurasah/new?")) { page = <KurasahEditorPage/>; routeLabel = "Catatan Baru"; }
   else if (path.startsWith("/mapel"))                       { const subPath = path.replace(/^\/mapel/, ''); navigate("/maddah" + subPath); page = null; routeLabel = "Maddah"; }
   else if (path === "/maddah" || path === "/maddah/")      { page = <MaddahHubPage/>; routeLabel = "Maddah"; }
   else if (path.startsWith("/maddah/"))                    { page = <MaddahDetailErrorBoundary><MaddahDetailPage/></MaddahDetailErrorBoundary>; routeLabel = "Maddah"; }

@@ -182,6 +182,9 @@ const KurasahPage = () => {
                   <button onClick={() => fileRef.current?.click()} className="btn btn-ghost text-sm py-2 px-3" style={{ minHeight: 44 }}>
                     <Icon name="upload" className="w-4 h-4"/> Import
                   </button>
+                  <button onClick={() => navigate("/kurasah/new?talkhis=1")} className="btn btn-ghost text-sm py-2 px-3" style={{ minHeight: 44 }} title="Susun talkhisan berbahasa Arab, bisa langsung jadi PDF">
+                    <Icon name="list" className="w-4 h-4"/> Talkhisan Baru
+                  </button>
                   <button onClick={() => navigate("/kurasah/new")} className="btn btn-primary text-sm py-2 px-4" style={{ minHeight: 44 }}>
                     <Icon name="pen" className="w-4 h-4"/> Tulis Baru
                   </button>
