@@ -20,7 +20,7 @@ import {
 
 // Kuota harian pelanggan. Pengguna coba gratis dibatasi per materi (lihat TRIAL_*), bukan per hari.
 // talkhis = jumlah muqarrar yang dipetakan per hari (tiap muqarrar berisi puluhan pemanggilan AI).
-const LIMITS = { create: 10, ocr: 20, transcribe: 60, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40, talkhis: 2 };
+const LIMITS = { create: 10, ocr: 20, transcribe: 60, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40, talkhis: 1 };
 const TRIAL_OCR_LIMIT  = 3;
 // Pengaman biaya: total pemanggilan AI oleh SEMUA pengguna coba gratis per hari. Akun gratis bisa dibuat siapa saja
 // yang punya akun Google, jadi tanpa batas bersama ini satu orang dengan banyak akun bisa menguras saldo AI.

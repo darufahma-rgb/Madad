@@ -70,7 +70,8 @@ const cleanPdfText = (raw) => {
   let fixed = false;
   if (/[ﭐ-﷿ﹰ-﻿]/.test(text)) { text = fixPresentationForms(text); fixed = true; }
   const letters = (text.match(/\p{L}/gu) || []).length || 1;
-  const junk = (text.match(/[-�]/g) || []).length;
+  // Karakter privat, pengganti, dan karakter kontrol (\u0000 dari font tanpa peta Unicode) = teks tak terbaca.
+  const junk = (text.match(/[\u0000-\u0008\u000E-\u001F\uE000-\uF8FF\uFFFD]/g) || []).length;
   const arabic = (text.match(/[؀-ۿ]/g) || []).length;
   const latin1 = (text.match(/[À-ÿ]/g) || []).length;
   // Font tanpa peta Unicode: huruf Arab keluar sebagai karakter privat/acak atau huruf Latin beraksen (mis. "ÇáÍãÏ").
@@ -123,10 +124,133 @@ const joinPdfItems = (items) => {
   return out.replace(/[ \t]+\n/g, '\n');
 };
 
+/* ── Ligatur Arab yang terbalik ──
+   PDF dari Word dengan font Arab tradisional menyimpan huruf dalam urutan tampilan (kiri ke kanan) dan memakai satu
+   bentuk untuk beberapa huruf (لم، كا، نما، الله). Peta Unicode tiap bentuk itu benar ("لم"), tapi pdf.js membalik
+   teks kanan-ke-kiri per KARAKTER, sehingga isi tiap bentuk ikut terbalik: الزكاة → الزاكة، على → عىل، الجمهور → امجلهور.
+   Perbaikannya: ambil urutan bentuk huruf dari operator list halaman, cocokkan dengan potongan teks pdf.js, lalu
+   balik per BENTUK. Kalau pencocokan gagal, halaman ditandai rusak (dibaca AI) — bukan diam-diam memakai teks salah. */
+const ARABIC_RE = /[؀-ۿ]/;
+const ARABIC_LETTER = /[ء-ي]/g;
+const multiLetterArabic = (u) => (u.match(ARABIC_LETTER) || []).length > 1;
+
+/* Bentuk "kalimat" (ﷺ ﷻ ﷽) diurai NFKC menjadi beberapa kata berspasi, lalu urutannya ikut dibalik pdf.js.
+   Selama pencocokan, bentuk ini dipertahankan sebagai satu karakter dan baru diurai di akhir. */
+const PHRASE_GLYPH = /[\uFDFA\uFDFB\uFDFD]/;
+const normGlyph = (u) => (PHRASE_GLYPH.test(u) ? u.replace(/\uFEFF/g, '') : fixPresentationForms(u));
+
+const pageGlyphs = async (page) => {
+  const pdfjs = window.pdfjsLib;
+  const ops = await page.getOperatorList();
+  const out = [];
+  ops.fnArray.forEach((fn, i) => {
+    if (fn !== pdfjs.OPS.showText && fn !== pdfjs.OPS.showSpacedText) return;
+    for (const g of ops.argsArray[i][0] || []) {
+      if (g && typeof g === 'object' && typeof g.unicode === 'string') out.push(normGlyph(g.unicode));
+    }
+  });
+  return out;
+};
+
+// Angka beserta pemisah di antaranya (٧،٥ · 12.5 · 1/2) tetap kiri-ke-kanan saat urutan bentuk dibalik.
+const NUMBER_RUN = /[0-9٠-٩A-Za-z](?:[0-9٠-٩A-Za-z]|[.,:/%\-،٫٬](?=[0-9٠-٩A-Za-z]))*/g;
+const keepNumbers = (t) => t.replace(NUMBER_RUN, run => [...run].reverse().join(''));
+const sortedChars = (t) => [...t.replace(/\s+/g, '')].sort().join('');
+const IS_MARK = new RegExp(`[${AR_MARKS}]`, 'u');
+
+// Teks pdf.js dengan bentuk "kalimat" yang sudah diurai (dan mungkin terbalik) diganti kembali jadi satu karakter.
+const collapsePhrases = (s, phrases) => {
+  let out = s;
+  for (const ch of phrases) {
+    const full = ch.normalize('NFKC');
+    out = out.split([...full].reverse().join('')).join(ch).split(full).join(ch);
+  }
+  return out;
+};
+
+/* Tiap potongan teks pdf.js dipasangkan dengan bentuk-bentuk huruf berikutnya di operator list (isinya harus sama,
+   urutannya boleh beda). Potongan kanan-ke-kiri yang memuat ligatur disusun ulang: urutan bentuk dibalik, isi tiap
+   bentuk tetap. Spasi dikembalikan sesudah huruf (bukan harakat) ke-n yang sama seperti di teks pdf.js, supaya
+   harakat tetap menempel pada hurufnya. null = tidak bisa dipasangkan. */
+const fixLigatureItems = (items, glyphs) => {
+  const phrases = [...new Set(glyphs.filter(g => PHRASE_GLYPH.test(g)))];
+  let p = 0;
+  const out = [];
+  for (const it of items) {
+    if (typeof it?.str !== 'string' || !it.str.trim()) { out.push(it); continue; }
+    const s = collapsePhrases(fixPresentationForms(it.str), phrases);
+    const want = s.replace(/\s+/g, '').length;
+    const segs = [];
+    let have = 0;
+    while (have < want && p < glyphs.length) {
+      const g = glyphs[p++].replace(/\s+/g, '');
+      if (!g) continue;
+      segs.push(g); have += g.length;
+    }
+    if (have !== want || sortedChars(segs.join('')) !== sortedChars(s)) return null;
+    const rtl = it.dir === 'rtl' || (it.dir !== 'ltr' && ARABIC_RE.test(s));
+    const expand = (t) => phrases.reduce((acc, ch) => acc.split(ch).join(ch.normalize('NFKC')), t);
+    if (!rtl || !segs.some(g => multiLetterArabic(g) || PHRASE_GLYPH.test(g))) { out.push({ ...it, str: expand(s) }); continue; }
+    // Hanya huruf dasar yang diganti dengan urutan per bentuk; harakat & spasi tetap di posisi yang diberikan pdf.js
+    // (penempatan harakatnya sudah benar, sedangkan urutan harakat di operator list tidak mengikuti hurufnya).
+    const bases = [...keepNumbers(segs.reverse().join(''))].filter(c => !IS_MARK.test(c));
+    let k = 0, str = '';
+    for (const c of s) str += /\s/.test(c) || IS_MARK.test(c) ? c : (bases[k++] ?? '');
+    out.push({ ...it, str: expand(str) });
+  }
+  return out;
+};
+
+/* Dokumen Word kadang menulis satu baris kanan-ke-kiri dalam beberapa potongan yang urutannya tidak sesuai posisi,
+   dan menyisipkan karakter spasi yang sangat sempit di tengah kata ("س نة"). Untuk halaman yang diperbaiki
+   ligaturnya, potongan sebaris diurutkan dari kanan ke kiri dan spasi selebar < 1/5 tinggi huruf dibuang
+   (spasi antarkata yang asli ditambahkan lagi oleh joinPdfItems dari jarak antarpotongan). */
+const sortRtlLines = (items) => {
+  const lines = [];
+  for (const it of items) {
+    if (typeof it?.str !== 'string' || !it.str) continue;
+    const [, , c, d, x, y] = it.transform;
+    const h = Math.hypot(c, d) || it.height || 10;
+    if (!it.str.trim() && (it.width || 0) < h * 0.2) continue;
+    let line = lines.find(l => Math.abs(l.y - y) <= Math.max(l.h, h) * 0.5);
+    if (!line) { line = { y, h, items: [] }; lines.push(line); }
+    line.items.push({ it, x });
+  }
+  return lines.flatMap(l => {
+    const arabic = l.items.filter(o => ARABIC_RE.test(o.it.str)).length;
+    const sorted = arabic * 2 >= l.items.length ? [...l.items].sort((a, b) => b.x - a.x) : l.items;
+    return sorted.map((o, i) => ({ ...o.it, hasEOL: i === sorted.length - 1 }));
+  });
+};
+
 const pdfPageText = async (pdf, n) => {
   const page = await pdf.getPage(n);
   const textContent = await page.getTextContent();
-  return cleanPdfText(joinPdfItems(textContent.items));
+  const plain = () => cleanPdfText(joinPdfItems(textContent.items));
+  // Operator list hanya dibaca untuk halaman Arab, dan berhenti dicek kalau 3 halaman Arab pertama tanpa ligatur.
+  const state = pdf.__ligature || (pdf.__ligature = { checked: 0, found: false });
+  const hasArabic = textContent.items.some(it => typeof it?.str === 'string' && ARABIC_RE.test(it.str));
+  if (!hasArabic || (!state.found && state.checked >= 3)) return plain();
+  let glyphs;
+  try { glyphs = await pageGlyphs(page); } catch { return plain(); }
+  state.checked++;
+  if (!glyphs.some(multiLetterArabic)) return plain();
+  // Perbaikan ini hanya untuk PDF berurutan tampilan. PDF berurutan baca keluar terbalik dari pdf.js dan sudah
+  // ditangani cleanPdfText (dibalik per baris) — jangan disentuh.
+  const rawText = joinPdfItems(textContent.items);
+  const before = arabicOrderScore(rawText);
+  if (looksReversed(before)) return plain();
+  state.found = true;
+  const fixedItems = fixLigatureItems(textContent.items, glyphs);
+  if (!fixedItems) return { ...plain(), status: 'garbled' };
+  // Pengaman: hasil perbaikan harus tidak lebih buruk (kata berawalan "ال" tidak berkurang).
+  if (arabicOrderScore(joinPdfItems(fixedItems)).al < before.al) return plain();
+  // Harakat akhir kata yang terpisah spasi dari hurufnya ("عَن ِ", "أَنَّه ُ") ditempelkan kembali SEBELUM cleanPdfText,
+  // supaya tidak dikira harakat yang urutannya terbalik (fixMarkOrder).
+  const joined = joinPdfItems(sortRtlLines(fixedItems))
+    .replace(new RegExp(`[ 	]+([${AR_MARKS}]+)(?=[\\s.,،؛:!?؟)\\]»]|$)`, 'gmu'), '$1').replace(/ {2,}/g, ' ');
+  const res = cleanPdfText(joined);
+  return { ...res, status: res.status === 'ok' ? 'fixed' : res.status };
 };
 
 // Halaman from..to (1-based, inklusif) beserta statusnya.
