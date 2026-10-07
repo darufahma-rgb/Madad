@@ -1,3 +1,5 @@
+import { recordAiCost } from './ai-cost.js';
+
 // Sonnet 5: lebih baru dan lebih murah dari Sonnet 4.6 di OpenRouter ($2/$10 vs $3/$15 per 1 juta token).
 const DEFAULT_MODEL = 'anthropic/claude-sonnet-5';
 // Transkripsi audio butuh model yang menerima input audio; Gemini Flash murah dan kuat untuk Arab.
@@ -83,6 +85,8 @@ const buildBody = async ({ modelId, maxTokens, temperature, messages, stream, th
     // Gemini yang sedang berpikir: temperature tidak dikirim (Claude cadangan menolak temperature bersama mode berpikir).
     ...(!geminiThinking && (await acceptsTemperature(modelId)) ? { temperature } : {}),
     ...(stream ? { stream: true } : {}),
+    // Biaya pasti (USD) & jumlah token ikut dikirim balik di respons → dicatat per pemakai (lihat ai-cost.js).
+    usage: { include: true },
     messages,
   };
 };
@@ -140,6 +144,7 @@ export const requestAI = async ({ system, messages, maxTokens = 2000, temperatur
   const truncated = choice.finish_reason === 'length' || choice.native_finish_reason === 'max_tokens';
   // data.model = model yang benar-benar menjawab (bisa model cadangan).
   logFallback(modelId, data.model);
+  await recordAiCost(data.model || modelId, data.usage);
   return { text, truncated, model: data.model || modelId };
 };
 
@@ -189,7 +194,7 @@ export const streamAI = async ({ system, messages, maxTokens = 2000, temperature
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
-    let buffer = '', text = '', truncated = false, usedModel = modelId;
+    let buffer = '', text = '', truncated = false, usedModel = modelId, usage = null;
     const handleLine = (line) => {
       if (!line.startsWith('data:')) return; // baris komentar ": OPENROUTER PROCESSING"
       const payload = line.slice(5).trim();
@@ -198,6 +203,7 @@ export const streamAI = async ({ system, messages, maxTokens = 2000, temperature
       try { chunk = JSON.parse(payload); } catch { return; }
       if (chunk.error) throw new Error(chunk.error.message || 'OpenRouter error');
       if (chunk.model) usedModel = chunk.model;
+      if (chunk.usage) usage = chunk.usage;
       const choice = chunk.choices?.[0];
       const piece = choice?.delta?.content || '';
       if (piece) { text += piece; onDelta?.(piece); }
@@ -218,6 +224,11 @@ export const streamAI = async ({ system, messages, maxTokens = 2000, temperature
     } catch (err) {
       if (!timedOut) throw err;
     }
+    // Stream yang dihentikan karena batas waktu tidak membawa usage: catat taksiran token (teks Arab ±1 token per karakter),
+    // biayanya dihitung analitik dari harga model.
+    await recordAiCost(usedModel, usage, usage ? null : {
+      tokensIn: Math.round(((system || '').length + JSON.stringify(messages).length) / 2), tokensOut: text.length,
+    });
     if (!text) throw new Error(timedOut ? 'AI terlalu lama merespons' : 'AI tidak mengembalikan hasil');
     logFallback(modelId, usedModel);
     return { text, truncated: truncated || timedOut, timedOut, model: usedModel };

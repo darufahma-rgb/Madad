@@ -480,7 +480,16 @@ const AI_KIND_LABELS = {
   ocr:        { label: 'Baca foto/scan',   sub: 'halaman', color: '#a78bfa' },
   transcribe: { label: 'Transkrip',        sub: 'menit', color: '#f472b6' },
   talkhis:    { label: 'Talkhis',          sub: 'muqarrar', color: '#f59e0b' },
+  admin:      { label: 'Admin & uji',      sub: 'tes model, evaluasi, draf bank soal', color: '#9ca3af', costOnly: true },
+  other:      { label: 'Lainnya',          sub: 'tanpa kategori', color: '#6b7280', costOnly: true },
 };
+// Keterangan asal angka biaya AI (lihat costSource di api/_lib/analytics.js).
+const costNote = (ai) => ai.costSource === 'real'
+  ? 'Biaya real per panggilan dari OpenRouter.'
+  : ai.costSource === 'partial'
+    ? `Biaya real dari OpenRouter sejak ${new Date(ai.costRealFrom).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}; hari sebelumnya masih perkiraan.`
+    : 'Biaya masih perkiraan kasar (rata-rata ukuran permintaan × harga model). Biaya real mulai tercatat setelah tabel ai_cost_log dibuat.';
+const costLabel = (ai) => (ai.costSource === 'real' ? 'Biaya AI (real)' : ai.costSource === 'partial' ? 'Biaya AI (sebagian real)' : 'Biaya AI (perkiraan)');
 const SOURCE_LABELS = { pdf: 'PDF', foto: 'Foto', teks: 'Teks', docx: 'Word', pptx: 'PowerPoint', xlsx: 'Excel', txt: 'TXT', audio: 'Audio', video: 'Video', campuran: 'Campuran' };
 
 const KpiCard = ({ label, value, sub, delta }) => (
@@ -737,7 +746,7 @@ const AdminAnalytics = () => {
           sub={`${members.freeConverted} dari ${members.freeStarted} akun gratis`}/>
         <KpiCard label="Pelanggan AI aktif" value={ai.activeSubscribers}
           sub={ai.conversionRate == null ? null : `${Math.round(ai.conversionRate * 100)}% pencoba AI berlangganan`}/>
-        <KpiCard label="Biaya AI (perkiraan)" value={usd(ai.estCostUsd)} delta={<Delta now={ai.estCostUsd} prev={ai.estCostPrevUsd} invert/>}/>
+        <KpiCard label={costLabel(ai)} value={usd(ai.estCostUsd)} delta={<Delta now={ai.estCostUsd} prev={ai.estCostPrevUsd} invert/>}/>
       </div>
 
       <FunnelSection funnel={data.funnel}/>
@@ -808,7 +817,7 @@ const AdminAnalytics = () => {
         <div className="grid lg:grid-cols-3 gap-4 mb-4">
           <Panel title="Pemakaian AI per hari" className="lg:col-span-2">
             <BarChart data={ai.usageByDay} height={160}
-              series={Object.entries(AI_KIND_LABELS).map(([key, v]) => ({ key, label: v.label, color: v.color }))}/>
+              series={Object.entries(AI_KIND_LABELS).filter(([, v]) => !v.costOnly).map(([key, v]) => ({ key, label: v.label, color: v.color }))}/>
           </Panel>
           <Panel title="Coba gratis → berlangganan">
             <div className="space-y-3">
@@ -829,17 +838,17 @@ const AdminAnalytics = () => {
           </Panel>
         </div>
         <div className="grid lg:grid-cols-3 gap-4">
-          <Panel title="Pemakaian & perkiraan biaya per fitur" className="lg:col-span-2">
+          <Panel title={ai.costSource === 'real' ? 'Pemakaian & biaya per fitur' : 'Pemakaian & perkiraan biaya per fitur'} className="lg:col-span-2">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead><tr className="text-[11px] uppercase tracking-wider text-ink-soft text-left">
                   <th className="pb-2 font-medium">Fitur</th><th className="pb-2 font-medium text-right">Jumlah</th><th className="pb-2 font-medium text-right">Biaya</th>
                 </tr></thead>
                 <tbody>
-                  {Object.entries(AI_KIND_LABELS).map(([k, v]) => (
+                  {Object.entries(AI_KIND_LABELS).filter(([k, v]) => !v.costOnly || ai.costByKind[k] > 0).map(([k, v]) => (
                     <tr key={k} className="border-t border-white/6">
                       <td className="py-2"><span className="inline-block w-2 h-2 rounded-sm mr-2" style={{ background: v.color }}/>{v.label} <span className="text-[11px] text-ink-soft">({v.sub})</span></td>
-                      <td className="py-2 text-right text-ink">{(ai.usageByKind[k] || 0).toLocaleString('id-ID')}</td>
+                      <td className="py-2 text-right text-ink">{v.costOnly ? '—' : (ai.usageByKind[k] || 0).toLocaleString('id-ID')}</td>
                       <td className="py-2 text-right text-ink-muted">{usd(ai.costByKind[k])}</td>
                     </tr>
                   ))}
@@ -852,7 +861,7 @@ const AdminAnalytics = () => {
               </table>
             </div>
             <p className="text-[11px] text-ink-soft mt-3 leading-relaxed">
-              Biaya adalah perkiraan kasar dari rata-rata ukuran permintaan × harga model. Cek angka pastinya di dashboard OpenRouter.
+              {costNote(ai)}
             </p>
           </Panel>
           <Panel title="Format materi">
@@ -863,6 +872,7 @@ const AdminAnalytics = () => {
         </div>
         {ai.topUsers.length > 0 && (
           <Panel title="Pengguna AI terbanyak (periode ini)" className="mt-4">
+            <p className="text-[11px] text-ink-soft -mt-1 mb-3">Urut dari biaya terbesar. "x" = jumlah pemakaian fitur. {costNote(ai)}</p>
             <div className="space-y-2">
               {ai.topUsers.map(u => (
                 <div key={u.code} className="flex items-center justify-between gap-3 text-sm p-2.5 rounded-lg bg-white/3">

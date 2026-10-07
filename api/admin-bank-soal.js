@@ -1,5 +1,6 @@
 import { verifyToken } from './admin-auth.js';
 import { callAIJson, friendlyAiError } from './_lib/ai.js';
+import { withAiContext } from './_lib/ai-cost.js';
 import { resolveModels } from './_lib/models.js';
 
 /* ── Draf jawaban AI (diperiksa asatidz sebelum tampil) ──
@@ -224,12 +225,12 @@ export default async function handler(req, res) {
     const model = (await resolveModels()).grade;
     let out;
     try {
-      out = await callAIJson({
+      out = await withAiContext({ code: 'ADMIN', kind: 'admin', detail: 'bank-soal-draft' }, () => callAIJson({
         system: DRAFT_SYSTEM,
         messages: [{ role: 'user', content: `${ctx}\nBlok soal ${i + 1} dari ${blocks.length}.\n\nSOAL (Arab):\n${b.arab}\n\n${b.arti ? `TERJEMAH:\n${b.arti}\n` : ''}` }],
         // Arab ±1 token/karakter + terjemah Indonesia; tetap jauh di bawah batas 60 detik.
         maxTokens: 3200, temperature: 0.2, model,
-      });
+      }));
     } catch (err) {
       return res.status(502).json({ ok: false, error: friendlyAiError(err) });
     }

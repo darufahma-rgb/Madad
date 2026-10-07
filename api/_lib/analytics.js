@@ -17,6 +17,7 @@ const TOKEN_PROFILE = {
   ocr:      { in: 2000,  out: 1000, tasks: ['vision'] },  // satu foto/halaman
   analyze:  { in: 1500,  out: 500,  tasks: ['arabic'] },  // terjemah & i'rab / harakat
   grade:    { in: 2000,  out: 1000, tasks: ['grade'] },   // nilai satu jawaban tahriri
+  talkhis:  { in: 300000, out: 60000, tasks: ['arabic'] }, // satu muqarrar ±100 halaman: peta + ±25 judul + cek
 };
 const TRANSCRIBE_PER_MINUTE_USD = 0.004; // input audio dihargai berbeda dari teks — taksiran tetap per menit
 const FALLBACK_PRICE = { in: 3, out: 15 }; // $ per 1 juta token (Sonnet 4.6) bila harga model tidak ditemukan
@@ -58,7 +59,7 @@ export const aiCostTable = async () => {
   }
   table.transcribe = TRANSCRIBE_PER_MINUTE_USD;
   table.create = 0;
-  return { table, models, pricesMissing: estimated || !Object.keys(prices).length };
+  return { table, models, prices, pricesMissing: estimated || !Object.keys(prices).length };
 };
 
 const fetchAll = async (path) => {
@@ -73,6 +74,16 @@ const fetchAll = async (path) => {
     if (page.length < 1000) break;
   }
   return { rows, missing: false };
+};
+
+// Hari pertama biaya AI real tercatat (tabel ai_cost_log). null = belum ada / tabel belum dibuat.
+const firstCostDay = async () => {
+  const { url, key } = sbConfig();
+  try {
+    const r = await fetch(`${url}/rest/v1/ai_cost_log?select=day&order=day.asc&limit=1`, { headers: sbHeaders(key) });
+    if (!r.ok) return null;
+    return (await r.json())?.[0]?.day || null;
+  } catch { return null; }
 };
 
 // Jumlah baris tanpa mengunduhnya (Content-Range: 0-0/123).
@@ -113,7 +124,7 @@ export async function buildAdminAnalytics(days) {
 
   const [
     members, payments, subs, usage, sets, presence, activity, profiles, settings,
-    notesCount, muqaranahCount, soalPaham, soalBelum, feedback, checkouts, costInfo,
+    notesCount, muqaranahCount, soalPaham, soalBelum, feedback, checkouts, costInfo, costLog, realFrom,
   ] = await Promise.all([
     fetchMembers(),
     fetchAll(`payment_events?select=created_at,event,product_id,product_name,amount,handled_as&created_at=gte.${since}&order=created_at.asc`),
@@ -131,6 +142,8 @@ export async function buildAdminAnalytics(days) {
     fetchAll(`ai_feedback?select=member_code,kind,rating,category,note,snippet,model,updated_at&updated_at=gte.${since}&order=updated_at.desc`),
     fetchAll(`payment_checkouts?select=paid_at,library_amount,ai_amount&status=eq.paid&paid_at=gte.${since}&order=paid_at.asc`),
     aiCostTable(),
+    fetchAll(`ai_cost_log?select=member_code,day,kind,model,cost_usd,tokens_in,tokens_out&day=gte.${prevFrom}`),
+    firstCostDay(),
   ]);
   const AI_COST_USD = costInfo.table;
 
@@ -233,22 +246,44 @@ export async function buildAdminAnalytics(days) {
   const kinds = Object.keys(AI_COST_USD).filter(k => k !== 'create');
   const usageByDay = Object.fromEntries(dayList.map(d => [d, Object.fromEntries(kinds.map(k => [k, 0]))]));
   const usageByKind = Object.fromEntries([...kinds, 'create'].map(k => [k, 0]));
+  /* Biaya: hari sejak ai_cost_log mulai mencatat memakai biaya real per panggilan dari OpenRouter; hari sebelumnya
+     memakai perkiraan (jumlah pemakaian × rata-rata biaya per fitur). Jumlah pemakaian ("x") selalu dari ai_usage. */
+  const realDay = (day) => !!realFrom && day >= realFrom;
   const perMember = {};
+  const member = (code) => (perMember[code] ||= { code, count: 0, cost: 0 });
+  const costAcc = Object.fromEntries(kinds.map(k => [k, 0]));
   let costPrev = 0;
   for (const raw of usage.rows) {
     // Tanya AI akun coba gratis tercatat terpisah, tapi biayanya sama dengan Tanya AI biasa.
     const u = raw.kind === 'prompt_trial' ? { ...raw, kind: 'prompt' } : raw;
     if (!(u.kind in AI_COST_USD)) continue; // hanya pemakaian model AI
-    const cost = AI_COST_USD[u.kind] * u.count;
+    const cost = realDay(u.day) ? 0 : AI_COST_USD[u.kind] * u.count;
     if (u.day >= prevFrom && u.day <= prevTo) { costPrev += cost; continue; }
     if (!(u.day in usageByDay)) continue;
     if (u.kind in usageByKind) usageByKind[u.kind] += u.count;
     if (u.kind in usageByDay[u.day]) usageByDay[u.day][u.kind] += u.count;
-    const pm = perMember[u.member_code] ||= { code: u.member_code, count: 0, cost: 0 };
+    if (u.kind in costAcc) costAcc[u.kind] += cost;
+    const pm = member(u.member_code);
     pm.count += u.count;
     pm.cost += cost;
   }
-  const costByKind = Object.fromEntries(kinds.map(k => [k, +(usageByKind[k] * AI_COST_USD[k]).toFixed(2)]));
+  // Baris yang biayanya tidak terkirim (stream terputus) dihitung dari token × harga model.
+  const rowCost = (r) => {
+    if (r.cost_usd != null && Number.isFinite(Number(r.cost_usd))) return Number(r.cost_usd);
+    const p = priceOf(costInfo.prices || {}, r.model) || FALLBACK_PRICE;
+    return ((Number(r.tokens_in) || 0) * p.in + (Number(r.tokens_out) || 0) * p.out) / 1e6;
+  };
+  let realCost = 0;
+  for (const r of costLog.missing ? [] : costLog.rows) {
+    const cost = rowCost(r);
+    if (r.day >= prevFrom && r.day <= prevTo) { costPrev += cost; continue; }
+    if (r.day < from || r.day > to) continue;
+    realCost += cost;
+    costAcc[r.kind] = (costAcc[r.kind] || 0) + cost;
+    // ADMIN/system bukan member: masuk total & per fitur, tidak masuk daftar pengguna.
+    if (r.member_code !== 'ADMIN' && r.member_code !== 'system') member(r.member_code).cost += cost;
+  }
+  const costByKind = Object.fromEntries(Object.entries(costAcc).map(([k, v]) => [k, +v.toFixed(2)]));
   const setsInRange = sets.rows.filter(s => inRange(s.created_at, from, to));
   const bySource = {};
   for (const s of setsInRange) bySource[s.source_type] = (bySource[s.source_type] || 0) + 1;
@@ -263,6 +298,10 @@ export async function buildAdminAnalytics(days) {
     costByKind,
     estCostUsd: +Object.values(costByKind).reduce((a, b) => a + b, 0).toFixed(2),
     estCostPrevUsd: +costPrev.toFixed(2),
+    // 'real' = seluruh periode memakai biaya real; 'partial' = sebagian; 'estimate' = belum ada catatan real.
+    costSource: !realFrom ? 'estimate' : realFrom <= from ? 'real' : 'partial',
+    costRealFrom: realFrom,
+    costRealUsd: +realCost.toFixed(2),
     costModels: costInfo.models,
     costPricesMissing: costInfo.pricesMissing,
     transcribeMinutes: usageByKind.transcribe,

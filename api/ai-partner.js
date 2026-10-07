@@ -10,6 +10,13 @@ import {
 } from './_lib/ai-partner/prompts.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { handleTalkhis } from './_lib/ai-partner/talkhis.js';
+import { withAiContext } from './_lib/ai-cost.js';
+
+// Kategori biaya AI per action (cocok dengan kolom "Fitur" di analitik admin).
+const COST_KIND = {
+  ocr: 'ocr', transcribe: 'transcribe', generate: 'generate', analyze: 'analyze', grade: 'grade',
+  chat: 'chat', 'prompt-chat': 'prompt', talkhis: 'talkhis',
+};
 import { handlePromptFeedback, handlePromptQualityAdmin } from './_lib/prompt-quality.js';
 import { getMonthlyLimits, cachedMonthlyLimits } from './_lib/ai-partner/limits.js';
 import { splitChunks, spreadSample, stickyExcerpt } from './_lib/ai-partner/chunks.js';
@@ -1188,7 +1195,7 @@ export default async function handler(req, res) {
   if (!body) { res.status(400).json({ ok: false, error: 'Invalid JSON' }); return; }
 
   try {
-    if (action.startsWith('admin-')) return await handleAdmin(action, req, res, body);
+    if (action.startsWith('admin-')) return await withAiContext({ code: 'ADMIN', kind: 'admin', detail: action }, () => handleAdmin(action, req, res, body));
 
     if (action === 'status') {
       const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.headers['x-real-ip'] || 'unknown';
@@ -1230,7 +1237,8 @@ export default async function handler(req, res) {
       return upgradeRequired(res, action);
     }
 
-    switch (action) {
+    const costCtx = { code: ctx.code, kind: COST_KIND[action] || 'other', detail: body.kind || body.mode || body.op || null };
+    return await withAiContext(costCtx, async () => { switch (action) {
       case 'ocr':           return await handleOcr(ctx, body, res);
       case 'ocr-quota':     return await handleOcrQuota(ctx, res);
       case 'transcribe':    return await handleTranscribe(ctx, body, res);
@@ -1254,7 +1262,7 @@ export default async function handler(req, res) {
         consumeQuota, resolveModels, requestAI, callAIJson, runAI, sendResult,
       });
       default:              return res.status(400).json({ ok: false, error: 'Action tidak valid' });
-    }
+    } });
   } catch (err) {
     console.error(`[ai-partner:${action}]`, err.message);
     const message = /openrouter|credit|limit|auth|AI /i.test(err.message) ? friendlyAiError(err) : 'Terjadi kesalahan. Coba lagi sebentar.';
