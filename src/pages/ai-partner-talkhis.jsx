@@ -155,6 +155,68 @@ ${body}
   return true;
 };
 
+/* ── Salin & simpan ──
+   Clipboard diisi dua versi: HTML bergaya inline (ditempel ke Word/Google Docs tetap kanan-ke-kiri, nash berkotak,
+   label tebal) dan teks biasa yang rapi (WhatsApp, Notes). Kurasah menyimpan markdown aslinya. */
+const INLINE = {
+  'tk-h4': 'font-weight:bold;text-decoration:underline;margin:10px 0 4px;font-size:15pt',
+  'tk-nass': 'border:1px solid #b33;color:#a11;padding:4px 10px;margin:6px 0;font-size:15pt',
+  'tk-nass tk-nass-warn': 'border:1px dashed #b33;color:#a11;padding:4px 10px;margin:6px 0;font-size:15pt',
+  'tk-nl-warn': '',
+  'tk-warn-note': 'display:none',
+  'tk-list': 'margin:2px 0 6px;padding-right:22px',
+  'tk-sub': 'margin:2px 0 4px;padding-right:24px',
+  'tk-gh': 'color:#c22',
+  'tk-cont': '',
+};
+const withInlineStyles = (html) => html
+  .replace(/ class="([^"]+)"/g, (m, c) => (INLINE[c] != null ? (INLINE[c] ? ` style="${INLINE[c]}"` : '') : ''))
+  .replace(/<b>/g, '<b style="text-decoration:underline">');
+const htmlDoc = (inner) => `<div dir="rtl" lang="ar" style="direction:rtl;text-align:right;font-family:'Traditional Arabic','Noto Naskh Arabic',serif;font-size:14pt;line-height:1.8">${inner}</div>`;
+
+// Markdown talkhis → teks biasa yang enak dibaca (tanpa tanda markdown).
+const plainText = (md) => String(md || '').replace(/\r/g, '').split('\n').map(l => l
+  .replace(/^#{1,6}\s+(.*)$/, '【$1】')
+  .replace(/^\s*>\s?/, '    ')
+  .replace(/^(\s*)[-*•]\s+/, (m, sp) => `${sp}• `)
+  .replace(/\*\*(.+?)\*\*/g, '$1')).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+
+const copyRich = async (html, plain) => {
+  try {
+    if (window.ClipboardItem && navigator.clipboard?.write) {
+      await navigator.clipboard.write([new ClipboardItem({
+        'text/html': new Blob([html], { type: 'text/html' }),
+        'text/plain': new Blob([plain], { type: 'text/plain' }),
+      })]);
+      return true;
+    }
+    await navigator.clipboard.writeText(plain);
+    return true;
+  } catch {
+    try { await navigator.clipboard.writeText(plain); return true; } catch { return false; }
+  }
+};
+
+const topicHtml = (x) => withInlineStyles(talkhisHtml(x.text));
+const copyTopic = (x) => copyRich(
+  htmlDoc(`<h3 style="font-size:16pt;margin:0 0 6px">${esc(x.title)}</h3>${topicHtml(x)}`),
+  `${x.title}\n\n${plainText(x.text)}`,
+);
+
+// Semua judul yang sudah ditulis (tanpa yang dilewati), berurutan per bab.
+const writtenGroups = (t) => groupByBab(t.topics.filter(x => !x.skip && x.text));
+const copyAll = (set, t) => {
+  const groups = writtenGroups(t);
+  const html = htmlDoc(`<h2 style="text-align:center;font-size:18pt">تلخيص ${esc(set.title)}</h2>` + groups.map(g =>
+    (g.bab ? `<h2 style="text-align:center;font-size:16pt;margin:14px 0 6px">﴿ ${esc(g.bab)} ﴾</h2>` : '') +
+    g.items.map(({ x }) => `<h3 style="font-size:15pt;margin:12px 0 4px;border-bottom:1px solid #c9a86a">${esc(x.title)}</h3>${topicHtml(x)}`).join('')).join(''));
+  const plain = `تلخيص ${set.title}\n\n` + groups.map(g =>
+    (g.bab ? `﴿ ${g.bab} ﴾\n\n` : '') + g.items.map(({ x }) => `${x.title}\n${'─'.repeat(12)}\n${plainText(x.text)}`).join('\n\n')).join('\n\n');
+  return copyRich(html, plain);
+};
+const allMarkdown = (t) => writtenGroups(t).map(g =>
+  (g.bab ? `## ﴿ ${g.bab} ﴾\n\n` : '') + g.items.map(({ x }) => `### ${x.title}\n\n${x.text}`).join('\n\n')).join('\n\n');
+
 /* ── Teks AI bertahap (diperbarui maks ±20x/detik) ── */
 const useLive = () => {
   const [live, setLive] = useState(null);   // { id, text }
@@ -201,7 +263,7 @@ const CoverageBox = ({ cov }) => {
   );
 };
 
-const TopicRow = ({ x, i, open, onToggle, live, busy, running, canWrite, sourceNorm, onWrite, onCheck, onEdit }) => {
+const TopicRow = ({ x, i, open, onToggle, live, busy, running, canWrite, sourceNorm, onWrite, onCheck, onEdit, onCopy, onKurasah }) => {
   const st = live ? 'writing' : stateOf(x);
   const meta = STATE_META[st] || { label: 'Sedang ditulis…', dot: 'bg-emerald-400 animate-pulse', text: 'text-emerald-300' };
   const [renaming, setRenaming] = useState(false);
@@ -237,6 +299,8 @@ const TopicRow = ({ x, i, open, onToggle, live, busy, running, canWrite, sourceN
               <button disabled={disabled} onClick={() => onCheck(x)} className={btn}><Icon name="search" className="w-3.5 h-3.5"/> {x.coverage ? 'Cek ulang' : 'Cek kelengkapan'}</button>
             )}
             {!x.skip && x.text && st === 'complete' && writesLeft > 0 && <button disabled={disabled} onClick={() => onWrite(x, 'new')} className={btn}><Icon name="refresh" className="w-3.5 h-3.5"/> Tulis ulang</button>}
+            {x.text && !live && <button onClick={() => onCopy(x)} className={btn}><Icon name="copy" className="w-3.5 h-3.5"/> Salin</button>}
+            {x.text && !live && <button onClick={() => onKurasah(x)} className={btn}><Icon name="bookmark" className="w-3.5 h-3.5"/> Ke Kurasah</button>}
             <button disabled={disabled} onClick={() => setRenaming(r => !r)} className={btn}><Icon name="pen" className="w-3.5 h-3.5"/> Ganti judul</button>
             {i > 0 && <button disabled={disabled} onClick={() => onEdit(x, 'merge-prev')} className={btn} title="Gabungkan judul ini ke judul di atasnya"><Icon name="chevronUp" className="w-3.5 h-3.5"/> Gabung ke atas</button>}
             <button disabled={disabled} onClick={() => onEdit(x, 'skip')} className={btn}>{x.skip ? 'Pakai lagi' : 'Lewati'}</button>
@@ -353,6 +417,16 @@ const TalkhisTab = ({ set, setSet, access }) => {
     apply(d);
   };
 
+  const kurasah = (title, body) => {
+    try { window.saveToKurasah(title, body, ['talkhis']); toast.push('Tersimpan di Kurasah'); }
+    catch { toast.push('Gagal menyimpan ke Kurasah'); }
+  };
+  const copied = (ok) => toast.push(ok ? 'Tersalin. Tempel di Word/Docs untuk format lengkap.' : 'Gagal menyalin. Coba lagi.');
+  const onCopy = async (x) => copied(await copyTopic(x));
+  const onKurasah = (x) => kurasah(`Talkhis — ${x.title}`, `${x.bab ? `﴿ ${x.bab} ﴾\n\n` : ''}${x.text}`);
+  const onCopyAll = async () => copied(await copyAll(set, t));
+  const onKurasahAll = () => kurasah(`Talkhis — ${set.title}`, allMarkdown(t));
+
   const download = () => {
     const r = printTalkhis(set, t);
     if (r === false) toast.push('Belum ada judul yang ditulis.');
@@ -459,6 +533,12 @@ const TalkhisTab = ({ set, setSet, access }) => {
           <button disabled={!written.length || running} onClick={download} className="btn btn-ghost text-xs px-4 py-2.5 disabled:opacity-40">
             <Icon name="download" className="w-3.5 h-3.5"/> Unduh PDF
           </button>
+          <button disabled={!written.length || running} onClick={onCopyAll} className="btn btn-ghost text-xs px-4 py-2.5 disabled:opacity-40">
+            <Icon name="copy" className="w-3.5 h-3.5"/> Salin semua
+          </button>
+          <button disabled={!written.length || running} onClick={onKurasahAll} className="btn btn-ghost text-xs px-4 py-2.5 disabled:opacity-40">
+            <Icon name="bookmark" className="w-3.5 h-3.5"/> Simpan semua ke Kurasah
+          </button>
           {!isTrial && <button disabled={!!busy || running} onClick={reset} className="text-xs text-ink-soft hover:text-ink px-2 py-2.5 disabled:opacity-40">Petakan ulang</button>}
         </div>
         {written.length === 0 && (
@@ -481,7 +561,7 @@ const TalkhisTab = ({ set, setSet, access }) => {
                 <TopicRow key={x.id} x={x} i={i} open={openId === x.id} onToggle={() => setOpenId(id => (id === x.id ? null : x.id))}
                   live={live && live.id === x.id ? live.text : null} busy={!!busy} running={running}
                   canWrite={!isTrial || x.writes > 0 || trialLeft > 0} sourceNorm={srcNorms[x.id]}
-                  onWrite={write} onCheck={check} onEdit={edit}/>
+                  onWrite={write} onCheck={check} onEdit={edit} onCopy={onCopy} onKurasah={onKurasah}/>
               ))}
             </div>
           </div>
