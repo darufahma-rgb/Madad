@@ -116,42 +116,53 @@ const campaignPresets = () => {
   return [
     {
       id: 'h5', label: 'Email 1 · H-5: Talkhis otomatis',
-      subject: 'Muqarrarmu bisa jadi talkhisan rapi dalam 10 menit',
-      cta_label: `Ambil promo ${price} sekarang`,
+      subject: '🚀 Muqarrarmu bisa jadi talkhisan rapi dalam 10 menit!',
+      cta_label: `AMBIL PROMO ${price.toUpperCase()} SEKARANG!`,
       body: `Assalamu'alaikum {nama},
+
+## 🚀 MUQARRARMU BISA JADI TALKHISAN RAPI DALAM 10 MENIT!
 
 Imtihan memang masih beberapa bulan lagi. Tapi coba bayangkan kalau nanti waktu muraja'ah tiba, kamu masih sibuk mencari talkhisan, merangkum muqarrar, dan mengumpulkan soal-soal tahun lalu.
 
-Padahal, waktu itu seharusnya sudah bisa kamu gunakan untuk *memahami dan menghafal materi*.
+*Padahal, waktu itu seharusnya sudah bisa kamu gunakan untuk memahami dan menghafal materi.*
 
-## 🚀 Talkhis Otomatis: dari muqarrar jadi materi siap muraja'ah
+Karena itu, Talqeeh menghadirkan fitur terbaru:
+
+## 🚀 TALKHIS OTOMATIS — Dari Muqarrar Jadi Materi Siap Muraja'ah!
 
 Cukup upload PDF muqarrarmu, lalu Talqeeh membantu:
-- Menyusun fihris dari seluruh mabahits
-- Membuat talkhis berbahasa Arab dengan gaya talkhisan Masisir
-- Mengecek kembali setiap pembahasan ke muqarrar, supaya bagian yang kurang bisa dilengkapi
-- Menyiapkan PDF berwarna yang nyaman dibaca, lengkap dengan latihan soal dan kunci jawaban
+✅ Menyusun fihris dari seluruh mabahits.
+✅ Membuat talkhis berbahasa Arab dengan gaya talkhisan Masisir.
+✅ Mengecek kembali setiap pembahasan ke muqarrar agar bagian yang kurang bisa dilengkapi.
+✅ Menyiapkan PDF berwarna, tulisan nyaman dibaca, lengkap dengan latihan soal dan kunci jawaban.
 
-Bukan cuma meringkas, tapi membantumu mempersiapkan materi belajar dari jauh-jauh hari.
+*Bukan cuma meringkas. Tapi membantu kamu mempersiapkan materi belajar dari jauh-jauh hari.*
 
-## 🎁 Paket Imtihan, promo terbatas
+## 🎁 PAKET IMTIHAN — PROMO TERBATAS!
 
-> Harga normal ~~${fmt(normal)}~~, sekarang cuma *${price}*, sekali bayar.
-> Promo ${P?.name || 'Paket Imtihan'} berakhir *${end}*.
+> ~~${fmt(normal)}~~
+> *SEKARANG CUMA ${price}!*
 
 Sekali bayar, kamu mendapatkan:
-- *Library selamanya:* ${maddah} maddah, ${prompts} template prompt, dan bank soal imtihan
-- *AI Study Partner ${days} hari:* talkhis otomatis, i'rab, tutor AI, kuis, dan latihan tahriri. Tanpa kuota bulanan, dengan batas penggunaan wajar harian.
 
-*Jangan tunggu sampai harganya kembali normal.* Setelah periode promo selesai, harga kembali ke ${fmt(normal)}.
+📚 *Library Selamanya*
+${maddah} maddah, ${prompts} template prompt, dan bank soal imtihan.
 
-Mulai siapkan talkhisanmu hari ini, supaya nanti waktumu lebih banyak untuk muraja'ah.
+🤖 *AI Study Partner ${days} Hari*
+Talkhis otomatis, i'rab, tutor AI, kuis, dan latihan tahriri. Tanpa kuota bulanan, dengan batas penggunaan wajar harian.
+
+## ⏳ JANGAN TUNGGU SAMPAI HARGANYA KEMBALI NORMAL!
+
+Promo ${P?.name || 'Paket Imtihan'} *berakhir ${end}.*
+
+Setelah periode promo selesai, harga kembali ${fmt(normal)}.
+
+💚 *Mulai siapkan talkhisanmu hari ini, supaya nanti waktumu lebih banyak untuk muraja'ah.*
 
 [[tombol]]
 
 Semoga Allah mudahkan perjuangan imtihan kita semua.
 
-Salam,
 *Tim Talqeeh*`,
     },
     {

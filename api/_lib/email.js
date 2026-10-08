@@ -127,7 +127,7 @@ const blockHtml = (para, cta) => {
     if (k === 'h') return `<h2 style="margin:30px 0 12px;font-size:18px;line-height:1.4;color:#0f5132">${inlineHtml(lines[0].replace(/^\s*#{1,3}\s+/, ''))}</h2>`;
     if (k === 'quote') return `<div style="margin:4px 0 18px;padding:16px 18px;background:#eef6f0;border-left:4px solid #0f5132;border-radius:10px;font-size:15px;line-height:1.75">${lines.map(l => inlineHtml(l.replace(/^\s*>\s?/, ''))).join('<br>')}</div>`;
     if (k === 'list') return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:10px 0 18px">${lines.map(l =>
-      `<tr><td valign="top" style="padding:0 10px 10px 0;color:#0f5132;font-weight:700;font-size:15px;line-height:1.65">✓</td><td style="padding:0 0 10px;font-size:15px;line-height:1.65">${inlineHtml(l.replace(LIST_LINE, ''))}</td></tr>`).join('')}</table>`;
+      `<tr><td valign="top" style="padding:0 10px 10px 0;color:#0f5132;font-weight:700;font-size:15px;line-height:1.65">${/^\s*✅/.test(l) ? '✅' : '✓'}</td><td style="padding:0 0 10px;font-size:15px;line-height:1.65">${inlineHtml(l.replace(LIST_LINE, ''))}</td></tr>`).join('')}</table>`;
     return `<p style="margin:0 0 18px">${lines.map(inlineHtml).join('<br>')}</p>`;
   }).join('\n');
 };
