@@ -3,7 +3,7 @@
 import crypto from 'crypto';
 import { sbConfig, sbHeaders } from './member.js';
 
-const SITE_URL = () => (process.env.SITE_URL || 'https://talqeeh.vercel.app').replace(/\/+$/, '');
+const SITE_URL = () => (process.env.SITE_URL || 'https://talqeeh.id').replace(/\/+$/, '');
 const BATCH_SIZE = 50;          // penerima per klik "kirim" (satu panggilan batch Resend, maks 100)
 const MAX_RECIPIENTS = 5000;
 const EMAIL_RE = /^[^\s@<>"]+@[^\s@<>"]+\.[^\s@<>"]+$/;

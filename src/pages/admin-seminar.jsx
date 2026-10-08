@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 /* Talqeeh — Admin: Akses Seminar. PIN unik per orang untuk materi seminar (/seminar).
    PIN hanya tampil sekali saat dibuat atau diganti; server hanya menyimpan hash-nya. */
 
-const SEMINAR_URL = "https://talqeeh.vercel.app/#/seminar";
+const SEMINAR_URL = "https://talqeeh.id/#/seminar";
 
 const seminarAdminCall = async (action, extra = {}) => {
   const r = await fetch("/api/seminar", {

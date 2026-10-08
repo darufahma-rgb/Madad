@@ -79,7 +79,7 @@ async function handleParseSoal(req, res) {
       headers: {
         Authorization: `Bearer ${openrouterKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://talqeeh.vercel.app',
+        'HTTP-Referer': 'https://talqeeh.id',
         'X-Title': 'Talqeeh Bank Soal',
       },
       body: JSON.stringify({
@@ -274,7 +274,7 @@ async function handleParseTalkhisan(req, res) {
         headers: {
           Authorization: `Bearer ${openrouterKey}`,
           'Content-Type': 'application/json',
-          'HTTP-Referer': 'https://talqeeh.vercel.app',
+          'HTTP-Referer': 'https://talqeeh.id',
           'X-Title': 'Talqeeh Talkhisan',
         },
         body: JSON.stringify({
@@ -320,7 +320,7 @@ async function handleParseTalkhisan(req, res) {
           headers: {
             Authorization: `Bearer ${openrouterKey}`,
             'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://talqeeh.vercel.app',
+            'HTTP-Referer': 'https://talqeeh.id',
           },
           body: JSON.stringify({
             model: (await resolveModels()).arabic,

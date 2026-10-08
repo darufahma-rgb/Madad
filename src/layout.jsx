@@ -586,8 +586,8 @@ const IMTIHAN_PROMO = {
 };
 const imtihanPromoActive = (now = Date.now()) => now >= Date.parse(IMTIHAN_PROMO.startsAt) && now <= Date.parse(IMTIHAN_PROMO.endsAt);
 // Angka katalog yang dipakai di semua copy. Sesuaikan kalau data maddah/prompt bertambah
-// (61 maddah S1 di maddah-data + 27 maddah Ma'had di mahad-data; 1.201 prompt per September 2026).
-const CATALOG = { maddah: 88, maddahS1: 61, maddahMahad: 27, prompts: "1.200+" };
+// (66 maddah S1 di maddah-data + 27 maddah Ma'had di mahad-data; ±1.256 prompt per Oktober 2026).
+const CATALOG = { maddah: 93, maddahS1: 66, maddahMahad: 27, prompts: "1.250+" };
 const LIBRARY_FEATURES = [
   `${CATALOG.maddah} maddah (S1 + Ma'had) dengan ${CATALOG.prompts} template prompt`,
   "Rekomendasi AI yang cocok per maddah, tingkat, dan gaya belajarmu",

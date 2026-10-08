@@ -98,7 +98,7 @@ const formatPinExpiry = (iso) => iso ? new Date(iso).toLocaleDateString("id-ID",
 
 const pinSteps = (pin, expiresAt) =>
   "Cara masuk (cukup sekali):\n" +
-  "1️⃣ Buka https://talqeeh.vercel.app → tombol *Masuk* (pojok kanan atas) → *Masuk dengan Google*\n" +
+  "1️⃣ Buka https://talqeeh.id → tombol *Masuk* (pojok kanan atas) → *Masuk dengan Google*\n" +
   "2️⃣ Pilih *Punya PIN aktivasi dari admin?*\n" +
   "3️⃣ Masukkan PIN aktivasi kamu:\n\n```" + pin + "```\n\n" +
   "PIN berlaku sampai " + formatPinExpiry(expiresAt) + " dan hanya bisa dipakai sekali. Jangan bagikan PIN ini ke siapa pun.";
@@ -1113,7 +1113,7 @@ const LegacyLinkPanel = ({ members, onDone, onClose }) => {
             })}
           </div>
           <p className="text-[11px] text-ink-soft mt-3">
-            Kirim ke member: "Buka talqeeh.vercel.app → Masuk dengan Google pakai email yang kamu daftarkan. Akses Library langsung aktif."
+            Kirim ke member: "Buka talqeeh.id → Masuk dengan Google pakai email yang kamu daftarkan. Akses Library langsung aktif."
             Catatan & progres dari akun gratis mereka (kalau ada) tidak ikut pindah.
           </p>
         </>
@@ -1761,7 +1761,7 @@ const GrantAccessModal = ({ open, onClose, members = [], initialTarget = "", onD
     : `AI Study Partner sampai ${new Date(r.aiUntil).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}`;
   const waText = (r) => {
     const parts = [r.library && "Library selamanya", aiText(r)].filter(Boolean).join(" + ");
-    return `Assalamu'alaikum ${r.name || ""}, akses Talqeeh kamu sudah aktif: ${parts}.\n\nMasuk di https://talqeeh.vercel.app dengan akun Google *${r.email || "-"}* — langsung aktif, tanpa kode. Selamat belajar! 🌙`;
+    return `Assalamu'alaikum ${r.name || ""}, akses Talqeeh kamu sudah aktif: ${parts}.\n\nMasuk di https://talqeeh.id dengan akun Google *${r.email || "-"}* — langsung aktif, tanpa kode. Selamat belajar! 🌙`;
   };
 
   return (
@@ -1996,7 +1996,7 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
   const buildMessage = () => {
     const loginSteps = created.pin
       ? pinSteps(created.pin, created.pinExpiresAt)
-      : "Cara masuk:\n1️⃣ Buka https://talqeeh.vercel.app → tombol *Masuk* (pojok kanan atas) → *Masuk dengan Google*\n2️⃣ Pilih akun Google *" + email.trim().toLowerCase() + "* — akses langsung aktif, tanpa PIN.";
+      : "Cara masuk:\n1️⃣ Buka https://talqeeh.id → tombol *Masuk* (pojok kanan atas) → *Masuk dengan Google*\n2️⃣ Pilih akun Google *" + email.trim().toLowerCase() + "* — akses langsung aktif, tanpa PIN.";
     return "Assalamu'alaikum, " + name + "! 👋\n\nSelamat datang di Talqeeh — Panduan belajar efektif Materi Al-Azhar dengan AI.\n\nKeanggotaan kamu sudah aktif.\n\n" +
       loginSteps +
       "\n\n📖 Panduan Lengkap\nhttps://app.notion.com/p/Talqeeh-Guide-36fb668bda20804294c9d29c6c4ca050" +

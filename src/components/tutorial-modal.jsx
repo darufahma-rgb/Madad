@@ -187,7 +187,7 @@ const buildSteps = () => [
     illus:<IllusLogin/>,
     intro:"Langkah paling awal — masuk ke Talqeeh pakai akun Google. Tanpa password, tanpa kode.",
     steps:[
-      "Buka talqeeh.vercel.app di browser HP atau laptop.",
+      "Buka talqeeh.id di browser HP atau laptop.",
       "Klik \"Masuk\" di pojok kanan atas, lalu \"Masuk dengan Google\".",
       "Belum member? Pilih paket (Library, atau Library + AI Partner) lalu bayar di Mayar — akses aktif otomatis.",
       "Akses aktif otomatis — kamu langsung diarahkan ke setup profil.",

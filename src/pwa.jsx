@@ -122,7 +122,7 @@ const PwaGuideModal = ({ open, onClose }) => {
           <ol className="space-y-3">
             <GuideStep n="1">Buka Talqeeh di Chrome atau Edge.</GuideStep>
             <GuideStep n="2">Klik ikon install <span className="text-ink">⊕</span> di ujung kanan kolom alamat, atau menu browser → <span className="text-ink">Install Talqeeh</span>.</GuideStep>
-            <GuideStep n="3">Di HP: buka talqeeh.vercel.app lalu pilih <span className="text-ink">Tambahkan ke layar utama</span>.</GuideStep>
+            <GuideStep n="3">Di HP: buka talqeeh.id lalu pilih <span className="text-ink">Tambahkan ke layar utama</span>.</GuideStep>
           </ol>
         )}
 

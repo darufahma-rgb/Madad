@@ -207,7 +207,7 @@ const printTalkhisDoc = (title, md, opts = {}, w = null) => {
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
 <style>${printCss(opts)}</style></head><body>
-<div class="cover"><h1>تَلْخِيصُ</h1><div class="orn"></div><div class="sub">${esc(title)}</div><div class="brand">Disusun dengan Talqeeh · talqeeh.vercel.app — cocokkan dengan muqarrar sebelum dihafal</div></div>
+<div class="cover"><h1>تَلْخِيصُ</h1><div class="orn"></div><div class="sub">${esc(title)}</div><div class="brand">Disusun dengan Talqeeh · talqeeh.id — cocokkan dengan muqarrar sebelum dihafal</div></div>
 ${hasToc ? `<div class="toc"><h2>فِهْرِسُ الْمَبَاحِثِ</h2>${toc}</div>` : ''}
 ${talkhisHtml(md)}
 <div class="foot">Talqeeh — talkhis dari muqarrarmu sendiri</div>

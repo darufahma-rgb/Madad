@@ -21,7 +21,7 @@ const AUDIENCE_OPTIONS = [
   ['trial_ai', 'Pernah coba AI, belum berlangganan'],
 ];
 
-const SITE = 'https://talqeeh.vercel.app';
+const SITE = 'https://talqeeh.id';
 const fmt = (n) => `Rp ${Number(n).toLocaleString('id-ID')}`;
 
 // Teks pengumuman event. {nama} diganti sendiri saat mengirim (atau hapus kalau kirim massal lewat BCC).

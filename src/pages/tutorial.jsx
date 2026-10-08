@@ -316,7 +316,7 @@ const STEPS = [
     illus: <IllusLogin/>,
     intro: "Langkah paling awal — masuk ke Talqeeh pakai akun Google. Tanpa password, tanpa kode.",
     steps: [
-      "Buka talqeeh.vercel.app di browser HP atau laptop.",
+      "Buka talqeeh.id di browser HP atau laptop.",
       "Klik \"Masuk\" di pojok kanan atas, lalu \"Masuk dengan Google\".",
       "Pilih akun Google yang mau kamu pakai untuk Talqeeh.",
       "Belum member? Kamu langsung diarahkan ke pilihan paket: Library, atau Library + AI Partner.",

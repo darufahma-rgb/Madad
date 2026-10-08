@@ -240,7 +240,7 @@ const SlideBody = ({ slide, goChapter }) => {
       </Item>
       <Item i={6}>
         <p className="mt-[clamp(0.8rem,2.6vh,1.8rem)] text-ink-muted leading-snug text-[clamp(0.9rem,min(1.6vw,2.8vh),1.3rem)]">
-          <span className="text-ink font-medium">Siapkan sekarang:</span> HP atau laptop, satu bab diktat atau catatan, dan akun salah satu alat AI (ChatGPT, Claude, Gemini, atau NotebookLM). Sekalian login Google di talqeeh.vercel.app/#/seminar sekarang, biar akunmu bisa diaktifkan panitia.
+          <span className="text-ink font-medium">Siapkan sekarang:</span> HP atau laptop, satu bab diktat atau catatan, dan akun salah satu alat AI (ChatGPT, Claude, Gemini, atau NotebookLM). Sekalian login Google di talqeeh.id/#/seminar sekarang, biar akunmu bisa diaktifkan panitia.
         </p>
       </Item>
     </div>
@@ -458,7 +458,7 @@ const SlideBody = ({ slide, goChapter }) => {
       </div>
       <Item i={2} className="lg:col-span-5 flex flex-col items-center">
         <QrCode id="materi" className="p-3 w-[clamp(8rem,34vw,13rem)] lg:w-full" />
-        <div className="text-ink-muted text-[clamp(0.75rem,1.1vw,0.95rem)] mt-3 text-center break-all max-w-[22rem]">talqeeh.vercel.app/#/seminar</div>
+        <div className="text-ink-muted text-[clamp(0.75rem,1.1vw,0.95rem)] mt-3 text-center break-all max-w-[22rem]">talqeeh.id/#/seminar</div>
       </Item>
     </div>
   );

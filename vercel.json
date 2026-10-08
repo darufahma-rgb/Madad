@@ -26,6 +26,14 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/:path((?!api/).*)",
+      "has": [{ "type": "host", "value": "talqeeh.vercel.app" }],
+      "destination": "https://talqeeh.id/:path",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/api/config",         "destination": "/api/config.js" },
     { "source": "/api/health",         "destination": "/api/health.js" },

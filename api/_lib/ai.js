@@ -124,7 +124,7 @@ export const requestAI = async ({ system, messages, maxTokens = 2000, temperatur
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://talqeeh.vercel.app',
+      'HTTP-Referer': 'https://talqeeh.id',
       'X-Title': 'Talqeeh AI Partner',
     },
     body: JSON.stringify(await buildBody({
@@ -179,7 +179,7 @@ export const streamAI = async ({ system, messages, maxTokens = 2000, temperature
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://talqeeh.vercel.app',
+        'HTTP-Referer': 'https://talqeeh.id',
         'X-Title': 'Talqeeh AI Partner',
       },
       body: JSON.stringify(await buildBody({
