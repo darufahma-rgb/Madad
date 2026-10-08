@@ -116,27 +116,41 @@ const campaignPresets = () => {
   return [
     {
       id: 'h5', label: 'Email 1 · H-5: Talkhis otomatis',
-      subject: 'Muqarrarmu bisa jadi talkhisan rapi dalam 10 menit',
+      subject: 'Muqarrar tebal, waktu terbatas. Mau nunggu mepet baru mulai talkhis?',
+      cta_label: `Ambil promo ${price}`,
       body: `Assalamu'alaikum {nama},
 
-Imtihan memang masih beberapa bulan lagi, tapi kita semua tahu rasanya: muqarrar tebal, waktu muraja'ah mepet, talkhisan teman belum tentu lengkap.
+Imtihan memang masih beberapa bulan lagi. Tapi coba bayangkan: waktu muraja'ah tiba, kamu masih sibuk mencari talkhisan, merangkum muqarrar, dan mengumpulkan soal-soal tahun lalu.
 
-Sekarang Talqeeh punya fitur baru: TALKHIS OTOMATIS. Upload PDF muqarrarmu, lalu Talqeeh:
-• memetakan semua mabahits-nya jadi fihris
-• menulis talkhis berbahasa Arab, gaya talkhisan Masisir
-• mengecek tiap judul ke teks muqarrar, yang kurang langsung dilengkapi
-• menyiapkan PDF berwarna, huruf besar, plus latihan soal dan kunci jawaban
+Padahal waktu itu seharusnya sudah bisa kamu pakai untuk *memahami dan menghafal materi*.
 
-Fitur ini ada di Paket Imtihan, dan selama ${P?.name || 'event'} harganya turun dari ${fmt(normal)} jadi ${price}.
+## Talkhis Otomatis: dari muqarrar jadi materi siap muraja'ah
 
-Sekali bayar, kamu dapat:
-• Library selamanya: ${maddah} maddah, ${prompts} template prompt, dan bank soal imtihan
-• AI Partner ${days} hari: talkhis, i'rab, tutor, kuis, dan latihan tahriri (tanpa kuota bulanan, ada batas wajar harian)
+Cukup upload PDF muqarrarmu, lalu Talqeeh membantu:
+- Menyusun fihris dari seluruh mabahits
+- Menulis talkhis berbahasa Arab dengan gaya talkhisan Masisir
+- Mengecek setiap pembahasan ke teks muqarrar, lalu melengkapi bagian yang kurang
+- Menyiapkan PDF berwarna yang nyaman dibaca, lengkap dengan latihan soal dan kunci jawaban
 
-Promo berakhir ${end}.
+Bukan cuma meringkas, tapi membantumu menyiapkan bahan belajar dari jauh-jauh hari.
 
-Semoga Allah mudahkan muraja'ah kita semua.
-Tim Talqeeh`,
+## Paket Imtihan, harga promo
+
+> ~~${fmt(normal)}~~  *${price}*, sekali bayar
+> Promo ${P?.name || 'Paket Imtihan'} berakhir *${end}*.
+
+Yang kamu dapat:
+- *Library selamanya:* ${maddah} maddah, ${prompts} template prompt, dan bank soal imtihan
+- *AI Study Partner ${days} hari:* talkhis otomatis, i'rab, tutor AI, kuis, dan latihan tahriri. Tanpa kuota bulanan, dengan batas wajar harian.
+
+Setelah promo selesai, harga kembali ke ${fmt(normal)}. Mulai siapkan talkhisanmu dari sekarang, supaya nanti waktumu lebih banyak untuk muraja'ah.
+
+[[tombol]]
+
+Semoga Allah mudahkan perjuangan imtihan kita semua.
+
+Salam,
+*Tim Talqeeh*`,
     },
     {
       id: 'h2', label: 'Email 2 · H-2: Bank soal + talkhis',
@@ -197,7 +211,7 @@ const fieldClass = 'w-full bg-white/5 border border-white/10 rounded-xl px-3 py-
 const EmailSender = () => {
   const toast = useToast();
   const [status, setStatus] = useState(null);
-  const [form, setForm] = useState(() => ({ ...campaignPresets()[0], audience: 'free', cta_label: 'Ambil promo Paket Imtihan', cta_url: CAMPAIGN_LINK }));
+  const [form, setForm] = useState(() => ({ cta_label: 'Ambil promo Paket Imtihan', ...campaignPresets()[0], audience: 'free', cta_url: CAMPAIGN_LINK }));
   const [count, setCount] = useState(null);
   const [testTo, setTestTo] = useState('');
   const [busy, setBusy] = useState('');
@@ -286,7 +300,7 @@ const EmailSender = () => {
 
       <div className="flex flex-wrap gap-2">
         {campaignPresets().map(p => (
-          <button key={p.id} type="button" onClick={() => setForm(f => ({ ...f, subject: p.subject, body: p.body }))}
+          <button key={p.id} type="button" onClick={() => setForm(f => ({ ...f, subject: p.subject, body: p.body, ...(p.cta_label ? { cta_label: p.cta_label } : {}) }))}
             className={`rounded-full border px-3 py-1.5 text-xs ${form.subject === p.subject ? 'border-emerald-500 text-emerald-200 bg-emerald-500/10' : 'border-white/15 text-ink-muted hover:text-ink'}`}>{p.label}</button>
         ))}
       </div>
@@ -383,6 +397,7 @@ const EmailSender = () => {
         </div>
       )}
       <p className="text-[11px] text-ink-soft leading-relaxed">
+        Format isi email: baris "## Judul" jadi judul bagian, "- poin" jadi daftar bercentang, "> teks" jadi kotak sorotan, "[[tombol]]" menaruh tombol di situ (tanpa itu tombol ada di akhir). Di dalam teks: *tebal*, _miring_, ~~coret~~; link https otomatis bisa diklik.
         Paket gratis Resend: 100 email per hari, 3.000 per bulan. Kalau batasnya tercapai, pengiriman berhenti dengan aman dan sisanya bisa dilanjutkan besok lewat tombol "Lanjutkan kirim".
       </p>
     </section>

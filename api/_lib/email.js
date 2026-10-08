@@ -104,11 +104,44 @@ export const buildAudience = async (audience, { optoutsOptional = false } = {}) 
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const firstName = (name) => (String(name || '').trim().split(/\s+/)[0] || 'teman').slice(0, 40);
 const fill = (text, name) => String(text).replace(/\{nama\}/gi, firstName(name));
+// Format ala WhatsApp di isi email: *tebal*, _miring_, ~coret~ / ~~coret~~, dan link https yang bisa diklik.
+const LINK_RE = /https?:\/\/[^\s<]+[^\s<.,;:!?)\]'"]/g;
+const inlineHtml = (s) => esc(s)
+  .replace(LINK_RE, u => `<a href="${u}" style="color:#0f5132;font-weight:600">${u}</a>`)
+  .replace(/(^|[\s(>])\*(?=\S)([^*\n]*?\S)\*(?=$|[\s.,!?:;)<])/gm, '$1<b>$2</b>')
+  .replace(/(^|[\s(>])~~?(?=\S)([^~\n]*?\S)~~?(?=$|[\s.,!?:;)<])/gm, '$1<s style="color:#8a8f88">$2</s>')
+  .replace(/(^|[\s(>])_(?=\S)([^_\n]*?\S)_(?=$|[\s.,!?:;)<])/gm, '$1<i>$2</i>');
+// Tata letak isi email per baris: "## judul", "- daftar" (juga • dan ✅), "> kotak sorotan", dan "[[tombol]]" untuk posisi tombol.
+const LIST_LINE = /^\s*(?:[-•✅]|\d+[.)])\s+/;
+const lineKind = (l) => /^\s*\[\[tombol\]\]\s*$/i.test(l) ? 'cta' : /^\s*#{1,3}\s+/.test(l) ? 'h' : /^\s*>/.test(l) ? 'quote' : LIST_LINE.test(l) ? 'list' : 'text';
+const ctaButton = (cta) => `<a href="${esc(cta.url)}" style="display:inline-block;background:#0f5132;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:13px 24px;border-radius:10px">${esc(cta.label)}</a>`;
+const blockHtml = (para, cta) => {
+  const groups = [];
+  for (const l of para.split('\n')) {
+    const k = lineKind(l);
+    const last = groups[groups.length - 1];
+    if (last && last.k === k && k !== 'h' && k !== 'cta') last.lines.push(l); else groups.push({ k, lines: [l] });
+  }
+  return groups.map(({ k, lines }) => {
+    if (k === 'cta') return cta ? `<div style="margin:18px 0 22px;text-align:center">${ctaButton(cta)}</div>` : '';
+    if (k === 'h') return `<h2 style="margin:24px 0 10px;font-size:18px;line-height:1.35;color:#0f5132">${inlineHtml(lines[0].replace(/^\s*#{1,3}\s+/, ''))}</h2>`;
+    if (k === 'quote') return `<div style="margin:6px 0 16px;padding:14px 18px;background:#eef6f0;border-left:4px solid #0f5132;border-radius:10px;font-size:15px;line-height:1.6">${lines.map(l => inlineHtml(l.replace(/^\s*>\s?/, ''))).join('<br>')}</div>`;
+    if (k === 'list') return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 14px">${lines.map(l =>
+      `<tr><td valign="top" style="padding:0 10px 8px 0;color:#0f5132;font-weight:700;font-size:15px;line-height:1.6">✓</td><td style="padding:0 0 8px;font-size:15px;line-height:1.6">${inlineHtml(l.replace(LIST_LINE, ''))}</td></tr>`).join('')}</table>`;
+    return `<p style="margin:0 0 14px">${lines.map(inlineHtml).join('<br>')}</p>`;
+  }).join('\n');
+};
+const plainText = (s) => String(s)
+  .replace(/^\s*#{1,3}\s+/gm, '').replace(/^\s*>\s?/gm, '').replace(LIST_LINE, '• ')
+  .replace(/(^|[\s(])\*(?=\S)([^*\n]*?\S)\*/gm, '$1$2')
+  .replace(/(^|[\s(])~~?(?=\S)([^~\n]*?\S)~~?/gm, '$1$2')
+  .replace(/(^|[\s(])_(?=\S)([^_\n]*?\S)_/gm, '$1$2');
 const safeUrl = (u) => (/^https:\/\/[^\s"<>]+$/i.test(String(u || '').trim()) ? String(u).trim() : '');
 
 export const renderEmail = ({ subject, body, cta_label, cta_url, image_url }, { email, name }) => {
   const paras = fill(body, name).split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
   const cta = safeUrl(cta_url) && String(cta_label || '').trim() ? { label: String(cta_label).trim().slice(0, 60), url: safeUrl(cta_url) } : null;
+  const hasCtaSlot = paras.some(p => p.split('\n').some(l => lineKind(l) === 'cta'));
   const img = safeUrl(image_url);
   const imgTag = img ? `<img src="${esc(img)}" alt="${esc(fill(subject, name))}" width="504" style="display:block;width:100%;max-width:504px;height:auto;border:0;border-radius:10px">` : '';
   const imgLink = img && safeUrl(cta_url) ? `<a href="${esc(safeUrl(cta_url))}">${imgTag}</a>` : imgTag;
@@ -120,13 +153,14 @@ export const renderEmail = ({ subject, body, cta_label, cta_url, image_url }, { 
 <tr><td style="padding:22px 28px 6px;font-size:18px;font-weight:700;color:#0f5132">Talqeeh</td></tr>
 ${img ? `<tr><td style="padding:8px 28px 10px">${imgLink}</td></tr>` : ''}
 <tr><td style="padding:6px 28px 4px;font-size:15px;line-height:1.65">
-${paras.map(p => `<p style="margin:0 0 14px">${esc(p).replace(/\n/g, '<br>')}</p>`).join('\n')}
+${paras.map(p => blockHtml(p, cta)).join('\n')}
 </td></tr>
-${cta ? `<tr><td style="padding:4px 28px 22px"><a href="${esc(cta.url)}" style="display:inline-block;background:#0f5132;color:#ffffff;text-decoration:none;font-weight:600;font-size:15px;padding:12px 22px;border-radius:10px">${esc(cta.label)}</a></td></tr>` : ''}
+${cta && !hasCtaSlot ? `<tr><td style="padding:4px 28px 22px">${ctaButton(cta)}</td></tr>` : ''}
 <tr><td style="padding:14px 28px 22px;border-top:1px solid #eee7d8;font-size:12px;line-height:1.6;color:#6b6f68">
 Kamu menerima email ini karena terdaftar di Talqeeh. <a href="${esc(unsub)}" style="color:#6b6f68">Berhenti menerima email</a>.
 </td></tr></table></td></tr></table></body></html>`;
-  const text = [...paras, ...(cta ? [`${cta.label}: ${cta.url}`] : []), '', `Berhenti menerima email: ${unsub}`].join('\n\n');
+  const ctaText = cta ? `${cta.label}: ${cta.url}` : '';
+  const text = [...paras.map(p => p.split('\n').map(l => lineKind(l) === 'cta' ? ctaText : plainText(l)).join('\n')).filter(Boolean), ...(cta && !hasCtaSlot ? [ctaText] : []), '', `Berhenti menerima email: ${unsub}`].join('\n\n');
   return { subject: fill(subject, name).slice(0, 200), html, text, unsub };
 };
 
