@@ -245,6 +245,67 @@ const copyTalkhisDoc = (title, md) => copyRich(
   `${title}\n\n${plainText(String(md).replace(/^##\s+(.*)$/gm, (m, b) => `﴿ ${b.replace(/^﴿\s*|\s*﴾$/g, '')} ﴾`).replace(/^###\s+(.*)$/gm, '$1\n' + '─'.repeat(12)))}`,
 );
 
+/* ── Satu catatan Kurasah per materi ──
+   Semua judul dari satu muqarrar masuk ke SATU catatan "Talkhis — [materi]" (dikenali dari source.id = id materi),
+   tersusun seperti فهرس: "## ﴿ bab ﴾" lalu "### judul". Judul baru disisipkan di posisinya menurut urutan فهرس. */
+const findTalkhisNote = (setId) => (window.loadNotes?.() || [])
+  .find(n => n.source?.type === 'ai-partner' && n.source?.kind === 'talkhis' && n.source?.id === setId) || null;
+const babName = (line) => line.replace(/^##\s+/, '').replace(/^﴿\s*|\s*﴾$/g, '').trim();
+
+// Sisipkan (atau perbarui bila replace) satu judul di body catatan. ordered = judul urut فهرس (tanpa yang dilewati).
+const mergeTopic = (body, x, ordered, replace) => {
+  const lines = String(body || '').replace(/\r/g, '').split('\n');
+  const headAt = (title) => lines.findIndex(l => /^###\s/.test(l) && l.replace(/^###\s+/, '').trim() === title.trim());
+  const block = [`### ${x.title}`, '', x.text.trim(), ''];
+  const at = headAt(x.title);
+  if (at >= 0) {
+    if (!replace) return { body, status: 'kept' };
+    let end = at + 1;
+    while (end < lines.length && !/^#{2,3}\s/.test(lines[end])) end++;
+    lines.splice(at, end - at, ...block);
+    return { body: lines.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n', status: 'updated' };
+  }
+  // Posisi: sebelum judul berikutnya (urut فهرس) yang sudah ada di catatan; kalau judul itu diawali bab lain, sebelum bab-nya.
+  const idx = ordered.findIndex(y => y.id === x.id);
+  let ins = lines.length;
+  for (const y of ordered.slice(idx + 1)) {
+    const h = headAt(y.title);
+    if (h < 0) continue;
+    ins = h;
+    let k = h - 1;
+    while (k >= 0 && !lines[k].trim()) k--;
+    if (k >= 0 && /^##\s/.test(lines[k]) && babName(lines[k]) !== (x.bab || '').trim()) ins = k;
+    break;
+  }
+  let prevBab = null;
+  for (let k = ins - 1; k >= 0; k--) if (/^##\s/.test(lines[k])) { prevBab = babName(lines[k]); break; }
+  const needBab = x.bab && prevBab !== x.bab.trim();
+  lines.splice(ins, 0, ...(needBab ? [`## ﴿ ${x.bab} ﴾`, ''] : []), ...block);
+  return { body: lines.join('\n').replace(/\n{3,}/g, '\n\n').trim() + '\n', status: 'added' };
+};
+
+// Simpan beberapa judul ke catatan talkhis materi ini (dibuat bila belum ada). Mengembalikan ringkasan + id catatan.
+const upsertTalkhisNote = (set, t, list, replace) => {
+  const notes = window.loadNotes?.() || [];
+  const now = new Date().toISOString();
+  const existing = findTalkhisNote(set.id);
+  const note = existing || {
+    id: 'note_' + Date.now(), title: `Talkhis — ${set.title}`, body: '', tags: ['ai-partner', 'talkhis'],
+    source: { type: 'ai-partner', kind: 'talkhis', id: set.id, label: 'AI Partner' }, createdAt: now, updatedAt: now,
+  };
+  const ordered = t.topics.filter(x => !x.skip);
+  const count = { added: 0, updated: 0, kept: 0 };
+  let body = note.body || '';
+  for (const x of list) {
+    const r = mergeTopic(body, x, ordered, replace);
+    body = r.body;
+    count[r.status]++;
+  }
+  const next = { ...note, body, updatedAt: now };
+  window.saveNotes(existing ? notes.map(n => (n.id === note.id ? next : n)) : [next, ...notes], note.id);
+  return { id: note.id, ...count };
+};
+
 const allMarkdown = (t) => writtenGroups(t).map(g =>
   (g.bab ? `## ﴿ ${g.bab} ﴾\n\n` : '') + g.items.map(({ x }) => `### ${x.title}\n\n${x.text}`).join('\n\n')).join('\n\n');
 
@@ -428,11 +489,21 @@ const TalkhisTab = ({ set, setSet, access }) => {
     setBusy('');
     if (!d.ok) return fail(d);
     apply(d);
-    return true;
+    return d.talkhis; // hasil terbaru (dipakai write untuk memutuskan perlu dilengkapi atau tidak)
   };
 
-  /* Tulis (atau lengkapi) satu judul, lanjutkan otomatis bila terpotong, lalu cek kelengkapannya. */
+  /* Tulis (atau lengkapi) satu judul, lanjutkan otomatis bila terpotong, lalu cek kelengkapannya. Draf ditulis model
+     hemat; kalau hasil ceknya masih kurang, langsung dilengkapi Sonnet (sekali, sesuai jatah tulis per judul). */
   const write = async (x, mode) => {
+    const latest = await writeOnce(x, mode);
+    if (!latest) return false;
+    const now = latest.topics?.find(y => y.id === x.id);
+    if (mode === 'new' && now && stateOf(now) === 'incomplete' && (now.writes || 0) < MAX_WRITES && !isTrial) {
+      return writeOnce(x, 'complete');
+    }
+    return true;
+  };
+  const writeOnce = async (x, mode) => {
     setOpenId(x.id);
     setBusy('write');
     let m = mode;
@@ -478,15 +549,27 @@ const TalkhisTab = ({ set, setSet, access }) => {
     apply(d);
   };
 
-  const kurasah = (title, body) => {
-    try { window.saveToKurasah(title, body, ['talkhis']); toast.push('Tersimpan di Kurasah'); }
-    catch { toast.push('Gagal menyimpan ke Kurasah'); }
+  // Catatan Kurasah materi ini (satu catatan untuk semua judul).
+  const [noteId, setNoteId] = useState(() => findTalkhisNote(set.id)?.id || null);
+  const toKurasah = (list, replace) => {
+    try {
+      const r = upsertTalkhisNote(set, t, list, replace);
+      setNoteId(r.id);
+      return r;
+    } catch { toast.push('Gagal menyimpan ke Kurasah'); return null; }
   };
   const copied = (ok) => toast.push(ok ? 'Tersalin. Tempel di Word/Docs untuk format lengkap.' : 'Gagal menyalin. Coba lagi.');
   const onCopy = async (x) => copied(await copyTopic(x));
-  const onKurasah = (x) => kurasah(`Talkhis — ${x.title}`, `${x.bab ? `﴿ ${x.bab} ﴾\n\n` : ''}${x.text}`);
+  const onKurasah = (x) => {
+    const r = toKurasah([x], true);
+    if (r) toast.push(r.updated ? 'Diperbarui di catatan talkhis Kurasah.' : 'Masuk ke catatan talkhis Kurasah.');
+  };
   const onCopyAll = async () => copied(await copyAll(set, t));
-  const onKurasahAll = () => kurasah(`Talkhis — ${set.title}`, allMarkdown(t));
+  // Judul yang sudah ada di catatan (mungkin sudah diedit) tidak ditimpa.
+  const onKurasahAll = () => {
+    const r = toKurasah(t.topics.filter(x => !x.skip && x.text), false);
+    if (r) toast.push(r.added ? `${r.added} judul masuk ke catatan Kurasah${r.kept ? ` (${r.kept} sudah ada, tidak ditimpa)` : ''}.` : 'Semua judul sudah ada di catatan Kurasah.');
+  };
 
   const download = () => {
     const r = printTalkhis(set, t);
@@ -600,6 +683,11 @@ const TalkhisTab = ({ set, setSet, access }) => {
           <button disabled={!written.length || running} onClick={onKurasahAll} className="btn btn-ghost text-xs px-4 py-2.5 disabled:opacity-40">
             <Icon name="bookmark" className="w-3.5 h-3.5"/> Simpan semua ke Kurasah
           </button>
+          {noteId && (
+            <button onClick={() => navigate('/kurasah?id=' + noteId)} className="btn btn-ghost text-xs px-4 py-2.5 border-emerald-600/35 text-emerald-200">
+              <Icon name="bookOpen" className="w-3.5 h-3.5"/> Buka di Kurasah
+            </button>
+          )}
           {!isTrial && <button disabled={!!busy || running} onClick={reset} className="text-xs text-ink-soft hover:text-ink px-2 py-2.5 disabled:opacity-40">Petakan ulang</button>}
         </div>
         {written.length === 0 && (

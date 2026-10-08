@@ -5,11 +5,13 @@
                server mencari anchor itu di teks asli, jadi tiap judul punya potongan sumber yang pasti
                (dari anchor-nya sampai anchor judul berikutnya). Seluruh teks muqarrar terbagi habis ke judul.
    2. edit   — pengguna merapikan daftar: ganti judul, gabung ke judul sebelumnya, lewati.
-   3. write  — talkhis Arab satu judul (Sonnet), HANYA dari potongan sumbernya. Terpotong batas waktu →
+   3. write  — talkhis Arab satu judul (Gemini Flash, model hemat), HANYA dari potongan sumbernya. Terpotong batas waktu →
                disimpan sebagian, browser meminta lanjutan (mode continue, tidak dihitung sebagai tulis baru).
    4. check  — AI pemeriksa (Gemini) membandingkan talkhis dengan sumbernya: skor cakupan, poin yang terlewat,
                dan klaim yang tidak didukung sumber.
-   5. write mode complete — menulis ulang talkhis dengan menambahkan poin yang terlewat & membetulkan yang salah.
+   5. write mode complete — Sonnet menulis ulang talkhis dengan menambahkan poin yang terlewat & membetulkan yang salah.
+   Pembagian model ini menekan biaya ±40–70% (tergantung berapa judul yang perlu dilengkapi): draf di model murah, Sonnet hanya untuk judul
+   yang hasil ceknya kurang. Lanjutan (continue) memakai model yang sama dengan tulisan yang dilanjutkan.
 
    Biaya dijaga dengan: 1 kuota "talkhis" per muqarrar (saat pemetaan mulai), jumlah judul maksimal, dan batas
    tulis/cek per judul. Data disimpan di kolom study_sets.talkhis (jsonb). */
@@ -22,6 +24,8 @@ const TOPIC_MIN_CHARS = 500;               // judul yang lebih pendek digabung k
 const TOPIC_MAX_CHARS = 14000;             // ±7 halaman; lebih panjang → dipecah (١)، (٢) supaya talkhisnya muat
 const WRITE_TOKENS = 4000;
 const WRITE_TIME_MS = 52000;
+// Draf oleh Gemini Flash diberi jatah berpikir supaya memeriksa dulu semua poin sumber sebelum menulis (±$0,003/judul).
+const DRAFT_THINKING = 1536;
 export const MAX_WRITES = 2;               // tulis + 1× lengkapi/tulis ulang per judul
 export const MAX_CHECKS = 3;
 const MAX_CONTINUES = 3;
@@ -374,8 +378,11 @@ export async function handleTalkhis(ctx, body, res, deps) {
     const messages = mode === 'new' ? base
       : mode === 'complete' ? [...base, { role: 'assistant', content: topic.text }, { role: 'user', content: completeAsk(topic.coverage) }]
       : [...base, { role: 'assistant', content: topic.text }, { role: 'user', content: CONTINUE_ASK }];
+    const role = mode === 'complete' ? 'arabic' : mode === 'continue' ? (topic.write_role || 'arabic') : 'default';
+    const writeModel = models[role] || models.default;
     const { out, stream, failed } = await runAI(body, res, {
-      system: WRITE_RULES, messages, maxTokens: WRITE_TOKENS, model: models.arabic, timeLimitMs: WRITE_TIME_MS,
+      system: WRITE_RULES, messages, maxTokens: WRITE_TOKENS, model: writeModel, timeLimitMs: WRITE_TIME_MS,
+      thinking: role === 'default' ? DRAFT_THINKING : 0,
     });
     if (failed) return;
     let text;
@@ -388,6 +395,7 @@ export async function handleTalkhis(ctx, body, res, deps) {
     } else {
       text = out.text.trim();
       topic.writes += 1;
+      topic.write_role = role;
       topic.continues = 0;
       topic.partial = !!out.truncated;
       topic.coverage = null;

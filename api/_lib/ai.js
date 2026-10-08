@@ -160,7 +160,7 @@ export const callAI = async (opts) => (await requestAI(opts)).text;
 /* Versi streaming: onDelta(potongan) dipanggil tiap token datang; hasil akhirnya sama dengan requestAI. */
 /* timeLimitMs: hentikan dengan rapi sebelum batas waktu fungsi (Vercel 60 dtk) — teks yang sudah ada
    dikembalikan dengan truncated = true, jadi pengguna bisa minta "lanjutkan". */
-export const streamAI = async ({ system, messages, maxTokens = 2000, temperature = 0.3, model, cacheSystem = false, timeLimitMs = 0 }, onDelta) => {
+export const streamAI = async ({ system, messages, maxTokens = 2000, temperature = 0.3, model, cacheSystem = false, timeLimitMs = 0, thinking = 0 }, onDelta) => {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY belum diset');
   const modelId = model || activeModel();
@@ -183,7 +183,7 @@ export const streamAI = async ({ system, messages, maxTokens = 2000, temperature
         'X-Title': 'Talqeeh AI Partner',
       },
       body: JSON.stringify(await buildBody({
-        modelId, maxTokens, temperature, stream: true,
+        modelId, maxTokens, temperature, stream: true, thinking,
         messages: systemMessage ? [systemMessage, ...messages] : messages,
       })),
     });
