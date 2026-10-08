@@ -151,6 +151,13 @@ ${cov.wrong.map(m => `  • ${m}`).join('\n')}` : ''}
 - لا تضف شيئًا من خارج المصدر.
 اكتب التلخيص الكامل المعدَّل فقط.`;
 
+/* Latihan per judul (untuk PDF & dibaca di tab Talkhis): soal tahriri + benar/salah, HANYA dari isi talkhis judul itu. */
+export const EXERCISE_PROMPT = `Kamu pembuat soal latihan imtihan Al-Azhar. Dari TALKHIS satu mabhats berikut, buat latihan berbahasa Arab fushah.
+- "tahriri": 2–3 soal tulis gaya imtihan Azhar, diawali kata kerja soal (عَرِّفْ، اذْكُرْ، بَيِّنْ، عَلِّلْ، قَارِنْ بَيْنَ، مَا الدَّلِيلُ عَلَى). Tiap soal punya "a": 2–5 poin jawaban singkat yang wajib ada.
+- "tf": 4–5 pernyataan untuk dijawab صح أو خطأ, kira-kira separuh benar dan separuh salah. Pernyataan yang salah dibuat masuk akal (mis. pendapat ditukar pemiliknya, angka diubah, syarat dibalik) dan "fix" berisi pembetulannya dalam satu kalimat; untuk pernyataan benar "fix" kosong.
+Semua soal dan jawaban HANYA dari isi talkhis; jangan menambah informasi dari luar. Beri harakat pada istilah kunci.
+Balas HANYA JSON: {"tahriri":[{"q":"...","a":["...","..."]}],"tf":[{"s":"...","ok":true,"fix":""}]}`;
+
 const CONTINUE_ASK = 'تَوَقَّفَ تلخيصك قبل أن يكتمل. أكمِل مباشرةً من بعد السطر الأخير بالتنسيق نفسه، دون تكرار ما كُتب. إن كان التلخيص قد اكتمل فاكتب فقط: [تم]';
 
 /* ── Data ── */
@@ -399,6 +406,7 @@ export async function handleTalkhis(ctx, body, res, deps) {
       topic.continues = 0;
       topic.partial = !!out.truncated;
       topic.coverage = null;
+      topic.exercises = null; // isi berubah → latihan lama tidak berlaku
     }
     // Baris terakhir yang terpotong dibuang supaya lanjutan mulai dari baris utuh.
     if (topic.partial) { const cut = text.lastIndexOf('\n'); if (cut > text.length * 0.5) text = text.slice(0, cut).trimEnd(); }
@@ -407,6 +415,29 @@ export async function handleTalkhis(ctx, body, res, deps) {
     topic.model = out.model;
     await saveTalkhis(ctx.code, set.id, t);
     return sendResult(res, stream, { talkhis: publicTalkhis(t), topic_id: topic.id });
+  }
+
+  /* Latihan (tahriri + benar/salah) dari isi talkhis judul ini. Model hemat; dibatasi per judul & per hari. */
+  if (op === 'exercise') {
+    if (!topic.text) return res.status(400).json({ ok: false, error: 'Tulis talkhisnya dulu.' });
+    if ((topic.ex_count || 0) >= 3) return res.status(429).json({ ok: false, error: 'Latihan judul ini sudah dibuat ulang beberapa kali.' });
+    if (!(await consumeQuota(ctx.code, 'talkhis_ex', 300))) return res.status(429).json({ ok: false, error: 'Batas wajar pembuatan latihan hari ini tercapai.' });
+    const r = await callAIJson({
+      system: EXERCISE_PROMPT,
+      messages: [{ role: 'user', content: `المبحث: ${topic.title}\n\nالتلخيص:\n${topic.text}` }],
+      maxTokens: 2200, model: models.default, temperature: 0.3,
+    });
+    const tahriri = (Array.isArray(r?.tahriri) ? r.tahriri : [])
+      .map(q => ({ q: clip(q?.q, 300), a: (Array.isArray(q?.a) ? q.a : []).map(s => clip(s, 240)).filter(Boolean).slice(0, 6) }))
+      .filter(q => q.q && q.a.length).slice(0, 4);
+    const tf = (Array.isArray(r?.tf) ? r.tf : [])
+      .map(s => ({ s: clip(s?.s, 300), ok: s?.ok === true || s?.ok === 'true', fix: clip(s?.fix, 240) }))
+      .filter(s => s.s).slice(0, 6);
+    if (!tahriri.length && !tf.length) throw new Error('AI gagal membuat latihan yang valid');
+    topic.exercises = { tahriri, tf, at: new Date().toISOString() };
+    topic.ex_count = (topic.ex_count || 0) + 1;
+    await saveTalkhis(ctx.code, set.id, t);
+    return done({ topic_id: topic.id });
   }
 
   /* Cek kelengkapan terhadap sumber. */

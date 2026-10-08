@@ -37,6 +37,7 @@ const KurasahEditorPage = () => {
   const [showDelete, setShowDelete] = React.useState(false);
   const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
   const [showPicker, setShowPicker] = React.useState(false);
+  const [showPdf, setShowPdf] = React.useState(false);
   const saveTimer = React.useRef(null);
   const bodyRef = React.useRef(null);
 
@@ -160,8 +161,9 @@ const KurasahEditorPage = () => {
     setShowPicker(false);
     toast.push("Ditambahkan di akhir talkhisan.");
   };
-  const downloadPdf = () => {
-    const r = window.printTalkhisDoc?.(title || "تلخيص", body);
+  const downloadPdf = (prefs) => {
+    setShowPdf(false);
+    const r = window.printTalkhisDoc?.(title || "تلخيص", body, prefs);
     if (r === false) toast.push("Talkhisan masih kosong.");
     if (r === null) toast.push("Jendela unduhan diblokir browser. Izinkan pop-up untuk Talqeeh lalu coba lagi.");
   };
@@ -363,7 +365,7 @@ const KurasahEditorPage = () => {
               <button type="button" onClick={copyDoc} disabled={!body.trim()} className="text-xs px-3 py-1.5 rounded-xl border border-white/10 bg-white/4 text-ink-muted hover:text-ink disabled:opacity-40">
                 <Icon name="copy" className="w-3.5 h-3.5 inline -mt-0.5 me-1"/>Salin
               </button>
-              <button type="button" onClick={downloadPdf} disabled={!body.trim()} className="text-xs px-3 py-1.5 rounded-xl border border-emerald-600/35 bg-emerald-500/15 text-emerald-200 disabled:opacity-40">
+              <button type="button" onClick={() => setShowPdf(true)} disabled={!body.trim()} className="text-xs px-3 py-1.5 rounded-xl border border-emerald-600/35 bg-emerald-500/15 text-emerald-200 disabled:opacity-40">
                 <Icon name="download" className="w-3.5 h-3.5 inline -mt-0.5 me-1"/>Unduh PDF
               </button>
             </>
@@ -441,6 +443,10 @@ const KurasahEditorPage = () => {
           </div>
         </div>
       </div>
+
+      {showPdf && window.TalkhisPdfDialog && (
+        <window.TalkhisPdfDialog onClose={() => setShowPdf(false)} onDownload={downloadPdf}/>
+      )}
 
       {/* Pilih catatan talkhis lain untuk digabung */}
       {showPicker && (

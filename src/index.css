@@ -690,3 +690,17 @@ html.app-shell { --app-header-h: calc(57px + var(--safe-top)); }
 .tk-body .tk-bab { text-align: center; font-size: 22px; color: #e3c88d; margin: 22px 0 10px; }
 .tk-body .tk-bab:first-child { margin-top: 4px; }
 .tk-body .tk-title { font-size: 19px; color: #fff; margin: 18px 0 6px; padding-bottom: 4px; border-bottom: 1px solid rgba(201,168,106,.45); }
+/* Bagian talkhis berwarna (sama dengan PDF berwarna, versi gelap) */
+.tk-body .tk-sec { padding: 2px 12px 4px; margin: 10px 0; border-right: 3px solid transparent; border-radius: 6px; }
+.tk-body .tk-sec-def    { border-right-color: rgba(46,158,107,.7);  background: rgba(46,158,107,.06); }
+.tk-body .tk-sec-masail { border-right-color: rgba(59,116,196,.75); background: rgba(59,116,196,.07); }
+.tk-body .tk-sec-gharib { border-right-color: rgba(201,69,69,.7);   background: rgba(201,69,69,.06); }
+.tk-body .tk-sec-fawaid { border-right-color: rgba(122,76,194,.75); background: rgba(122,76,194,.07); }
+.tk-body .tk-sec-exam   { border-right-color: rgba(201,150,43,.8);  background: rgba(201,150,43,.07); }
+.tk-body .tk-sec-ex     { border-right-color: rgba(129,129,214,.8); background: rgba(129,129,214,.07); }
+.tk-body .tk-sec-def > .tk-h4    { color: #6fd3a3; }
+.tk-body .tk-sec-masail > .tk-h4 { color: #8db4ee; }
+.tk-body .tk-sec-gharib > .tk-h4 { color: #f19a92; }
+.tk-body .tk-sec-fawaid > .tk-h4 { color: #c3a5f0; }
+.tk-body .tk-sec-exam > .tk-h4   { color: #e3c88d; }
+.tk-body .tk-sec-ex > .tk-h4     { color: #b3b3f0; }

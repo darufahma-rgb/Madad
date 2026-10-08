@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 /* Talqeeh — AI Partner: Talkhis otomatis.
    Muqarrar dipetakan jadi daftar mabahits, tiap judul ditalkhis dalam bahasa Arab dari potongan sumbernya sendiri,
    lalu dicek kelengkapannya terhadap sumber itu. Logika & batasnya ada di api/_lib/ai-partner/talkhis.js. */
@@ -20,9 +21,17 @@ const inline = (s) => esc(s)
   .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
   .replace(/^\(([^()]{1,80})\)/, '<span class="tk-gh">($1)</span>');
 
+// Jenis bagian dari judul "#### " (dicocokkan tanpa harakat) → warna sendiri di PDF berwarna & di layar.
+const SEC_KINDS = [
+  ['ex', /تدريب|تمارين|اسيله/], ['exam', /يتوقع|امتحان/], ['def', /تعريف/], ['nass', /^النص|نص الحديث|الايه/],
+  ['gharib', /غريب|مفردات|الفاظ/], ['masail', /مسايل|خلاف|احكام|اقسام|شروط|اركان|حكم/], ['fawaid', /فوايد|يستفاد/],
+];
+const secKind = (title) => { const n = norm(title); return (SEC_KINDS.find(([, re]) => re.test(n)) || ['other'])[0]; };
+
 const talkhisHtml = (md, sourceNorm) => {
   const lines = String(md || '').replace(/\r/g, '').split('\n');
-  let html = '', list = null, sub = null, nass = [];
+  let html = '', list = null, sub = null, nass = [], sec = false;
+  const closeSec = () => { if (sec) { html += '</div>'; sec = false; } };
   const closeSub = () => { if (sub) { html += `</${sub}>`; sub = null; } };
   const closeList = () => { closeSub(); if (list) { html += `</li></${list}>`; list = null; } };
   // Tiap baris nash dicocokkan dengan teks muqarrar; baris yang tidak ditemukan ditandai.
@@ -49,10 +58,13 @@ const talkhisHtml = (md, sourceNorm) => {
     const head = line.match(/^(#{1,6})\s+(.*)$/);
     if (head) {
       closeList();
+      closeSec();
       const level = head[1].length;
-      html += level <= 2 ? `<h2 class="tk-bab">﴿ ${inline(head[2].replace(/^﴿\s*|\s*﴾$/g, ''))} ﴾</h2>`
-        : level === 3 ? `<h3 class="tk-title">${inline(head[2])}</h3>`
-        : `<h4 class="tk-h4">${inline(head[2])}</h4>`;
+      if (level <= 2) {
+        const name = head[2].replace(/^﴿\s*|\s*﴾$/g, '');
+        html += `<h2 class="tk-bab${norm(name).includes('مفتاح') ? ' tk-key' : ''}">﴿ ${inline(name)} ﴾</h2>`;
+      } else if (level === 3) html += `<h3 class="tk-title">${inline(head[2])}</h3>`;
+      else { html += `<div class="tk-sec tk-sec-${secKind(head[2])}"><h4 class="tk-h4">${inline(head[2])}</h4>`; sec = true; }
       continue;
     }
     const indented = /^\s{2,}/.test(line);
@@ -76,6 +88,7 @@ const talkhisHtml = (md, sourceNorm) => {
   }
   flushNass();
   closeList();
+  closeSec();
   return html;
 };
 
@@ -110,60 +123,91 @@ const groupByBab = (topics) => topics.reduce((acc, x, i) => {
   return acc;
 }, []);
 
-/* ── Unduh PDF: jendela cetak bergaya talkhisan (A4, Naskh, nash dalam kotak) ── */
-const PRINT_CSS = `
-@page { size: A4; margin: 16mm 15mm 18mm; }
-* { box-sizing: border-box; }
-body { margin: 0; font-family: "Noto Naskh Arabic", "Amiri", serif; direction: rtl; color: #111; font-size: 15px; line-height: 1.95; }
-.cover { text-align: center; padding-top: 32vh; page-break-after: always; }
-.cover h1 { font-size: 34px; margin: 0 0 8px; }
-.cover .sub { font-size: 20px; color: #444; }
-.cover .brand { margin-top: 40px; font-family: system-ui, sans-serif; direction: ltr; font-size: 11px; color: #888; }
+/* ── Unduh PDF ──
+   Pilihan sebelum unduh: berwarna / hitam-putih, ukuran huruf, kertas A4 / A5, dan latihan. Tiap bagian "#### "
+   sudah dibungkus menurut jenisnya (talkhisHtml), jadi warnanya diatur di sini. */
+const PDF_FONT = { normal: 15, large: 18, xlarge: 21 };
+const PDF_PREF_KEY = 'talqeeh_talkhis_pdf';
+const PDF_DEFAULTS = { color: true, size: 'large', paper: 'A4', exercises: true };
+const loadPdfPrefs = () => { try { return { ...PDF_DEFAULTS, ...JSON.parse(localStorage.getItem(PDF_PREF_KEY) || '{}') }; } catch { return { ...PDF_DEFAULTS }; } };
+const savePdfPrefs = (p) => { try { localStorage.setItem(PDF_PREF_KEY, JSON.stringify(p)); } catch {} };
+
+// Warna per jenis bagian: [latar, garis, judul]. Hitam-putih memakai garis abu-abu tanpa latar.
+const SEC_COLORS = {
+  def: ['#eef8f2', '#2e9e6b', '#1f7a52'], masail: ['#eef4fb', '#3b74c4', '#2a5ea8'], gharib: ['#fdf1f1', '#c94545', '#b03030'],
+  fawaid: ['#f5f0fb', '#7a4cc2', '#62399f'], exam: ['#fdf6e7', '#c9962b', '#9a6d12'], ex: ['#f3f3fa', '#6b6bb3', '#4b4b99'],
+  nass: ['transparent', 'transparent', '#a11'], other: ['transparent', 'transparent', '#222'],
+};
+
+const printCss = ({ color = true, size = 'large', paper = 'A4' } = {}) => {
+  const fs = PDF_FONT[size] || 15;
+  const a5 = paper === 'A5';
+  const secs = Object.entries(SEC_COLORS).map(([k, [bg, line, head]]) => color
+    ? `.tk-sec-${k} { background: ${bg}; border-right: 4px solid ${line}; } .tk-sec-${k} > .tk-h4 { color: ${head}; }`
+    : `.tk-sec-${k} { border-right: ${k === 'nass' || k === 'other' ? '0' : '2px solid #999'}; }`).join('\n');
+  return `
+@page { size: ${a5 ? 'A5' : 'A4'}; margin: ${a5 ? '11mm 10mm 13mm' : '16mm 15mm 18mm'}; }
+* { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { margin: 0; font-family: "Noto Naskh Arabic", "Amiri", serif; direction: rtl; color: #111; font-size: ${fs}px; line-height: 1.95; }
+.cover { text-align: center; padding-top: 30vh; page-break-after: always; }
+.cover h1 { font-size: ${fs + 22}px; margin: 0 0 8px; color: ${color ? '#0f5f46' : '#111'}; }
+.cover .sub { font-size: ${fs + 6}px; color: #444; }
+.cover .orn { width: 120px; height: 3px; margin: 14px auto; background: ${color ? 'linear-gradient(90deg,#c9a86a,#0f5f46,#c9a86a)' : '#999'}; border-radius: 2px; }
+.cover .brand { margin-top: 36px; font-family: system-ui, sans-serif; direction: ltr; font-size: 11px; color: #888; }
 .toc { page-break-after: always; }
-.toc h2, .bab { text-align: center; font-size: 22px; margin: 6px 0 14px; }
+.toc h2 { text-align: center; font-size: ${fs + 7}px; margin: 6px 0 14px; color: ${color ? '#0f5f46' : '#111'}; }
 .toc ol { margin: 0; padding-inline-start: 22px; list-style: arabic-indic; }
-.toc .tb { font-weight: 700; margin-top: 10px; }
-.bab { margin-top: 18px; }
-.topic { margin: 0 0 14px; }
-.topic h3, .tk-title { font-size: 18px; margin: 14px 0 6px; padding-bottom: 3px; border-bottom: 1.5px solid #c9a86a; break-after: avoid; }
-.tk-bab { text-align: center; font-size: 22px; margin: 18px 0 10px; break-after: avoid; }
-.tk-h4 { font-size: 15.5px; margin: 10px 0 4px; text-decoration: underline; text-underline-offset: 5px; }
-.tk-nass { border: 1px solid #b33; color: #a11; padding: 6px 12px; margin: 6px 0 8px; font-size: 16px; break-inside: avoid; }
+.toc .tb { font-weight: 700; margin-top: 10px; color: ${color ? '#0f5f46' : '#111'}; }
+.tk-bab { text-align: center; font-size: ${fs + 7}px; margin: 20px 0 12px; padding: 6px 10px; border-radius: 8px; break-after: avoid;
+  ${color ? 'background: #0f5f46; color: #fff;' : 'border-top: 2px solid #111; border-bottom: 2px solid #111;'} }
+.tk-bab.tk-key { page-break-before: always; }
+.tk-title { font-size: ${fs + 3}px; margin: 16px 0 6px; padding-bottom: 3px; border-bottom: 2px solid ${color ? '#c9a86a' : '#555'}; color: ${color ? '#0f5f46' : '#111'}; break-after: avoid; }
+.tk-sec { padding: 4px 12px 6px; margin: 8px 0; border-radius: 6px; }
+.tk-h4 { font-size: ${fs + 0.5}px; margin: 4px 0 4px; text-decoration: underline; text-underline-offset: 5px; break-after: avoid; }
+${secs}
+.tk-nass { border: 1px solid ${color ? '#c94545' : '#555'}; ${color ? 'background: #fff6f5; color: #a11;' : 'color: #000;'} padding: 6px 12px; margin: 6px 0 8px; font-size: ${fs + 1}px; border-radius: 4px; break-inside: avoid; }
 .tk-nass-warn { border-style: dashed; }
 .tk-nl-warn { text-decoration: underline dashed #c90; text-underline-offset: 6px; }
 .tk-warn-note { display: none; }
 .tk-list { margin: 2px 0 6px; padding-inline-start: 20px; }
 .tk-list > li { margin: 3px 0; }
+${color ? '.tk-list > li::marker { color: #c9a86a; } .tk-sub > li::marker { color: #3b74c4; font-weight: 700; }' : ''}
 ol.tk-list, ol.tk-sub { list-style: arabic-indic; }
 .tk-sub { margin: 2px 0 4px; padding-inline-start: 22px; }
 .tk-list b { text-decoration: underline; text-underline-offset: 4px; }
-.tk-gh { color: #c22; }
+.tk-gh { color: ${color ? '#c22' : '#000'}; ${color ? '' : 'font-weight: 700;'} }
 .tk-cont { margin-inline-start: 4px; }
 p { margin: 4px 0; }
 .foot { margin-top: 24px; text-align: center; font-family: system-ui, sans-serif; direction: ltr; font-size: 10px; color: #999; }
 `;
+};
 
-/* PDF dari markdown talkhisan (dipakai tab Talkhis dan Kurasah). فهرس disusun dari "## " (bab) dan "### " (judul);
-   tanpa judul "### " halaman فهرس dilewati. */
-const printTalkhisDoc = (title, md) => {
-  if (!String(md || '').trim()) return false;
-  const w = window.open('', '_blank');
+/* PDF dari markdown talkhisan (tab Talkhis & Kurasah). فهرس dari "## " (bab) dan "### " (judul); bab kunci jawaban
+   hanya disebut namanya. w = jendela yang sudah dibuka (supaya tidak diblokir browser saat ada proses async dulu). */
+const printTalkhisDoc = (title, md, opts = {}, w = null) => {
+  if (!String(md || '').trim()) { w?.close(); return false; }
+  w = w || window.open('', '_blank');
   if (!w) return null;
   const groups = [];
   for (const line of String(md).replace(/\r/g, '').split('\n')) {
     const h = line.match(/^(#{2,3})\s+(.*)$/);
     if (!h) continue;
     if (h[1] === '##') groups.push({ bab: h[2].replace(/^﴿\s*|\s*﴾$/g, ''), items: [] });
-    else { if (!groups.length) groups.push({ bab: '', items: [] }); groups[groups.length - 1].items.push(h[2]); }
+    else {
+      if (!groups.length) groups.push({ bab: '', items: [] });
+      const g = groups[groups.length - 1];
+      if (!norm(g.bab).includes('مفتاح')) g.items.push(h[2]);
+    }
   }
   let n = 0;
   const hasToc = groups.some(g => g.items.length);
   const toc = groups.map(g => `${g.bab ? `<div class="tb">${esc(g.bab)}</div>` : ''}${g.items.length ? `<ol start="${n + 1}">${g.items.map(x => { n++; return `<li>${esc(x)}</li>`; }).join('')}</ol>` : ''}`).join('');
+  w.document.open();
   w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>تلخيص — ${esc(title)}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
-<style>${PRINT_CSS}</style></head><body>
-<div class="cover"><h1>تَلْخِيصُ</h1><div class="sub">${esc(title)}</div><div class="brand">Disusun dengan Talqeeh · talqeeh.vercel.app — cocokkan dengan muqarrar sebelum dihafal</div></div>
+<style>${printCss(opts)}</style></head><body>
+<div class="cover"><h1>تَلْخِيصُ</h1><div class="orn"></div><div class="sub">${esc(title)}</div><div class="brand">Disusun dengan Talqeeh · talqeeh.vercel.app — cocokkan dengan muqarrar sebelum dihafal</div></div>
 ${hasToc ? `<div class="toc"><h2>فِهْرِسُ الْمَبَاحِثِ</h2>${toc}</div>` : ''}
 ${talkhisHtml(md)}
 <div class="foot">Talqeeh — talkhis dari muqarrarmu sendiri</div>
@@ -173,9 +217,83 @@ ${talkhisHtml(md)}
   return true;
 };
 
-const printTalkhis = (set, t) => {
-  if (!t.topics.some(x => !x.skip && x.text)) return false;
-  return printTalkhisDoc(set.title, allMarkdown(t));
+/* ── Latihan per judul → markdown ──
+   Soal ditaruh di akhir tiap judul ("#### تَدْرِيبَاتٌ"); kunci jawabannya dikumpulkan di bab terakhir. */
+const exerciseMd = (x) => {
+  const e = x.exercises;
+  if (!e || (!e.tahriri?.length && !e.tf?.length)) return '';
+  const out = ['#### تَدْرِيبَاتٌ'];
+  if (e.tahriri?.length) { out.push('- **أَجِبْ عَمَّا يَأْتِي:**'); e.tahriri.forEach((q, i) => out.push(`  ${i + 1}. ${q.q}`)); }
+  if (e.tf?.length) { out.push('- **ضَعْ عَلَامَةَ (✓) أَوْ (✗):**'); e.tf.forEach((s, i) => out.push(`  ${i + 1}. [      ] ${s.s}`)); }
+  return out.join('\n');
+};
+const answerMd = (x) => {
+  const e = x.exercises;
+  if (!e) return '';
+  const out = [];
+  if (e.tahriri?.length) { out.push('- **أَجِبْ عَمَّا يَأْتِي:**'); e.tahriri.forEach((q, i) => out.push(`  ${i + 1}. ${q.a.join('، ')}`)); }
+  if (e.tf?.length) { out.push('- **ضَعْ عَلَامَةَ (✓) أَوْ (✗):**'); e.tf.forEach((s, i) => out.push(`  ${i + 1}. ${s.ok ? '✓' : `✗ ← ${s.fix || ''}`}`)); }
+  return out.join('\n');
+};
+
+const printTalkhis = (set, t, opts = {}, w = null) => {
+  if (!t.topics.some(x => !x.skip && x.text)) { w?.close(); return false; }
+  return printTalkhisDoc(set.title, allMarkdown(t, { exercises: !!opts.exercises }), opts, w);
+};
+
+/* Kotak pilihan sebelum unduh PDF (tab Talkhis & Kurasah). exercises: null = tanpa pilihan latihan. */
+const TalkhisPdfDialog = ({ onClose, onDownload, exercises = null, busy = '' }) => {
+  const [p, setP] = useState(loadPdfPrefs);
+  const opt = (key, val, label) => (
+    <button type="button" onClick={() => setP(x => ({ ...x, [key]: val }))}
+      className={`text-xs px-3 py-2 rounded-lg border transition ${p[key] === val ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200' : 'border-white/10 text-ink-muted hover:text-ink'}`}>{label}</button>
+  );
+  return createPortal(
+    <div className="fixed inset-0 z-[90] flex items-end md:items-center justify-center md:px-4">
+      <div className="absolute inset-0 bg-black/70" onClick={busy ? undefined : onClose}/>
+      <div className="relative w-full md:max-w-md rounded-t-2xl md:rounded-2xl border border-white/10 p-5" style={{ background: '#141414' }}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-display text-lg font-semibold text-ink">Unduh PDF talkhisan</h3>
+          {!busy && <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-white/6 flex items-center justify-center text-ink-muted"><Icon name="x" className="w-4 h-4"/></button>}
+        </div>
+        <div className="space-y-4">
+          <div><div className="text-[11px] text-ink-soft mb-1.5">Warna</div><div className="flex gap-2 flex-wrap">{opt('color', true, 'Berwarna')}{opt('color', false, 'Hitam-putih (fotokopi)')}</div></div>
+          <div><div className="text-[11px] text-ink-soft mb-1.5">Ukuran huruf</div><div className="flex gap-2 flex-wrap">{opt('size', 'normal', 'Normal')}{opt('size', 'large', 'Besar')}{opt('size', 'xlarge', 'Sangat besar')}</div></div>
+          <div><div className="text-[11px] text-ink-soft mb-1.5">Kertas</div><div className="flex gap-2 flex-wrap">{opt('paper', 'A4', 'A4')}{opt('paper', 'A5', 'A5 (buku saku)')}</div></div>
+          {exercises && (
+            <label className="flex items-start gap-2.5 text-sm text-ink cursor-pointer">
+              <input type="checkbox" checked={!!p.exercises} onChange={e => setP(x => ({ ...x, exercises: e.target.checked }))} className="accent-emerald-500 mt-1"/>
+              <span>Sertakan latihan di akhir tiap judul
+                <span className="block text-[11px] text-ink-soft">Soal tahriri + benar/salah, kunci jawaban di halaman belakang.{exercises.missing > 0 ? ` ${exercises.missing} judul belum punya latihan — dibuat otomatis dulu.` : ''}</span>
+              </span>
+            </label>
+          )}
+        </div>
+        <button disabled={!!busy} onClick={() => { savePdfPrefs(p); onDownload(p); }} className="btn btn-primary w-full mt-5 py-3 text-sm disabled:opacity-60">
+          {busy ? <><span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin"/> {busy}</> : <><Icon name="download" className="w-4 h-4"/> Unduh PDF</>}
+        </button>
+        <p className="text-[11px] text-ink-soft mt-2 text-center">Di jendela cetak, pilih "Simpan sebagai PDF". Aktifkan "Grafis latar" supaya warnanya ikut.</p>
+      </div>
+    </div>,
+    document.body
+  );
+};
+
+/* Latihan satu judul di tab Talkhis (kunci jawaban disembunyikan dulu). */
+const ExercisesBox = ({ x }) => {
+  const [showKey, setShowKey] = useState(false);
+  const qs = useMemo(() => talkhisHtml(exerciseMd(x)), [x.exercises]);
+  const keys = useMemo(() => talkhisHtml(answerMd(x)), [x.exercises]);
+  if (!x.exercises) return null;
+  return (
+    <div className="mt-4">
+      <div dir="rtl" lang="ar" className="tk-body" dangerouslySetInnerHTML={{ __html: qs }}/>
+      <button onClick={() => setShowKey(v => !v)} className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2 mt-1">
+        {showKey ? 'Sembunyikan kunci jawaban' : 'Lihat kunci jawaban'}
+      </button>
+      {showKey && <div dir="rtl" lang="ar" className="tk-body mt-2 opacity-90" dangerouslySetInnerHTML={{ __html: keys }}/>}
+    </div>
+  );
 };
 
 /* ── Salin & simpan ──
@@ -306,8 +424,17 @@ const upsertTalkhisNote = (set, t, list, replace) => {
   return { id: note.id, ...count };
 };
 
-const allMarkdown = (t) => writtenGroups(t).map(g =>
-  (g.bab ? `## ﴿ ${g.bab} ﴾\n\n` : '') + g.items.map(({ x }) => `### ${x.title}\n\n${x.text}`).join('\n\n')).join('\n\n');
+const allMarkdown = (t, opts = {}) => {
+  const body = allMarkdownBase(t, opts);
+  if (!opts.exercises) return body;
+  const keys = t.topics.filter(x => !x.skip && x.text && x.exercises).map(x => `### ${x.title}\n\n${answerMd(x)}`);
+  return keys.length ? `${body}\n\n## ﴿ مِفْتَاحُ الْإِجَابَاتِ ﴾\n\n${keys.join('\n\n')}` : body;
+};
+const allMarkdownBase = (t, opts = {}) => writtenGroups(t).map(g =>
+  (g.bab ? `## ﴿ ${g.bab} ﴾\n\n` : '') + g.items.map(({ x }) => {
+    const ex = opts.exercises ? exerciseMd(x) : '';
+    return `### ${x.title}\n\n${x.text}${ex ? `\n\n${ex}` : ''}`;
+  }).join('\n\n')).join('\n\n');
 
 /* ── Teks AI bertahap (diperbarui maks ±20x/detik) ── */
 const useLive = () => {
@@ -383,7 +510,7 @@ const BabHeader = ({ bab, disabled, onRename }) => {
   );
 };
 
-const TopicRow = ({ x, i, open, onToggle, live, busy, running, canWrite, sourceNorm, onWrite, onCheck, onEdit, onCopy, onKurasah }) => {
+const TopicRow = ({ x, i, open, onToggle, live, busy, running, canWrite, sourceNorm, onWrite, onCheck, onEdit, onCopy, onKurasah, onExercise }) => {
   const st = live ? 'writing' : stateOf(x);
   const meta = STATE_META[st] || { label: 'Sedang ditulis…', dot: 'bg-emerald-400 animate-pulse', text: 'text-emerald-300' };
   const [renaming, setRenaming] = useState(false);
@@ -421,6 +548,7 @@ const TopicRow = ({ x, i, open, onToggle, live, busy, running, canWrite, sourceN
             {!x.skip && x.text && st === 'complete' && writesLeft > 0 && <button disabled={disabled} onClick={() => onWrite(x, 'new')} className={btn}><Icon name="refresh" className="w-3.5 h-3.5"/> Tulis ulang</button>}
             {x.text && !live && <button onClick={() => onCopy(x)} className={btn}><Icon name="copy" className="w-3.5 h-3.5"/> Salin</button>}
             {x.text && !live && <button onClick={() => onKurasah(x)} className={btn}><Icon name="bookmark" className="w-3.5 h-3.5"/> Ke Kurasah</button>}
+            {x.text && !live && !x.partial && !x.exercises && <button disabled={disabled} onClick={() => onExercise(x)} className={btn}><Icon name="target" className="w-3.5 h-3.5"/> Buat latihan</button>}
             <button disabled={disabled} onClick={() => setRenaming(r => !r)} className={btn}><Icon name="pen" className="w-3.5 h-3.5"/> Ganti judul</button>
             {i > 0 && <button disabled={disabled} onClick={() => onEdit(x, 'merge-prev')} className={btn} title="Gabungkan judul ini ke judul di atasnya"><Icon name="chevronUp" className="w-3.5 h-3.5"/> Gabung ke atas</button>}
             <button disabled={disabled} onClick={() => onEdit(x, 'skip')} className={btn}>{x.skip ? 'Pakai lagi' : 'Lewati'}</button>
@@ -436,6 +564,7 @@ const TopicRow = ({ x, i, open, onToggle, live, busy, running, canWrite, sourceN
             ? <TalkhisBody md={shown} sourceNorm={live ? null : sourceNorm}/>
             : !x.skip && <p className="text-xs text-ink-soft">Belum ditulis. AI hanya memakai teks muqarrar bagian ini (± {pages(x)} halaman).</p>}
           {!live && <CoverageBox cov={x.coverage}/>}
+          {!live && <ExercisesBox x={x}/>}
           {!live && x.text && writesLeft <= 0 && stateOf(x) === 'incomplete' && (
             <p className="text-[11px] text-ink-soft mt-2">Jatah tulis judul ini sudah habis. Poin yang kurang di atas bisa kamu tambahkan sendiri saat menyalin.</p>
           )}
@@ -507,11 +636,16 @@ const TalkhisLocked = () => {
   );
 };
 
+// Data talkhis untuk ditampilkan: nama bab & judul lama dibetulkan (lam-alif terbalik).
+const viewTalkhis = (raw) => (raw && Array.isArray(raw.topics)
+  ? { ...raw, topics: raw.topics.map(x => ({ ...x, bab: fixLamAlef(x.bab), title: fixLamAlef(x.title) })) }
+  : null);
+
 const TalkhisTab = ({ set, setSet, access }) => {
   const toast = useToast();
-  const t = set.talkhis && Array.isArray(set.talkhis.topics)
-    ? { ...set.talkhis, topics: set.talkhis.topics.map(x => ({ ...x, bab: fixLamAlef(x.bab), title: fixLamAlef(x.title) })) }
-    : null;
+  const t = viewTalkhis(set.talkhis);
+  const [pdfOpen, setPdfOpen] = useState(false);
+  const [pdfBusy, setPdfBusy] = useState('');
   const tRef = useRef(t);
   tRef.current = t;
   const [busy, setBusy] = useState('');          // 'map' | 'write' | 'check' | 'edit' | 'reset'
@@ -633,10 +767,38 @@ const TalkhisTab = ({ set, setSet, access }) => {
     if (r) toast.push(r.added ? `${r.added} judul masuk ke catatan Kurasah${r.kept ? ` (${r.kept} sudah ada, tidak ditimpa)` : ''}.` : 'Semua judul sudah ada di catatan Kurasah.');
   };
 
-  const download = () => {
-    const r = printTalkhis(set, t);
+  /* Latihan dibuat per judul secara berurutan; mengembalikan data talkhis terbaru (atau null bila gagal di tengah). */
+  const makeExercises = async (list, onStep) => {
+    let latest = null;
+    setBusy('exercise');
+    for (let k = 0; k < list.length; k++) {
+      onStep?.(k, list.length);
+      const d = await aiCall('talkhis', { op: 'exercise', set_id: set.id, topic_id: list[k].id });
+      if (!d.ok) { setBusy(''); fail(d); return latest; }
+      apply(d);
+      latest = d.talkhis;
+    }
+    setBusy('');
+    if (list.length === 1 && latest) setOpenId(list[0].id);
+    return latest;
+  };
+
+  const missingExercises = (tt) => (tt?.topics || []).filter(x => !x.skip && x.text && !x.partial && !x.exercises);
+  const download = async (prefs) => {
+    // Jendela dibuka langsung saat diklik (kalau menunggu proses dulu, browser memblokirnya sebagai pop-up).
+    const w = window.open('', '_blank');
+    if (!w) { toast.push('Jendela unduhan diblokir browser. Izinkan pop-up untuk Talqeeh lalu coba lagi.'); return; }
+    w.document.write('<p style="font-family:system-ui;padding:24px;color:#555">Menyiapkan PDF talkhisan…</p>');
+    let cur = t;
+    const missing = prefs.exercises ? missingExercises(t) : [];
+    if (missing.length) {
+      const latest = await makeExercises(missing, (k, n) => setPdfBusy(`Membuat latihan ${k + 1}/${n}…`));
+      if (latest) cur = viewTalkhis(latest);
+      setPdfBusy('');
+    }
+    const r = printTalkhis(set, cur, prefs, w);
     if (r === false) toast.push('Belum ada judul yang ditulis.');
-    if (r === null) toast.push('Jendela unduhan diblokir browser. Izinkan pop-up untuk Talqeeh lalu coba lagi.');
+    setPdfOpen(false);
   };
 
   if (!canUse) return <TalkhisLocked/>;
@@ -736,7 +898,7 @@ const TalkhisTab = ({ set, setSet, access }) => {
               <Icon name="sparkles" className="w-3.5 h-3.5"/> Tulis semua yang belum ({isTrial ? Math.min(todo.length, trialLeft) : todo.length})
             </button>
           )}
-          <button disabled={!written.length || running} onClick={download} className="btn btn-ghost text-xs px-4 py-2.5 disabled:opacity-40">
+          <button disabled={!written.length || running || !!busy} onClick={() => setPdfOpen(true)} className="btn btn-ghost text-xs px-4 py-2.5 disabled:opacity-40">
             <Icon name="download" className="w-3.5 h-3.5"/> Unduh PDF
           </button>
           <button disabled={!written.length || running} onClick={onCopyAll} className="btn btn-ghost text-xs px-4 py-2.5 disabled:opacity-40">
@@ -772,12 +934,16 @@ const TalkhisTab = ({ set, setSet, access }) => {
                 <TopicRow key={x.id} x={x} i={i} open={openId === x.id} onToggle={() => setOpenId(id => (id === x.id ? null : x.id))}
                   live={live && live.id === x.id ? live.text : null} busy={!!busy} running={running}
                   canWrite={!isTrial || x.writes > 0 || trialLeft > 0} sourceNorm={srcNorms[x.id]}
-                  onWrite={write} onCheck={check} onEdit={edit} onCopy={onCopy} onKurasah={onKurasah}/>
+                  onWrite={write} onCheck={check} onEdit={edit} onCopy={onCopy} onKurasah={onKurasah} onExercise={(x) => makeExercises([x])}/>
               ))}
             </div>
           </div>
         ))}
       </div>
+      {pdfOpen && (
+        <TalkhisPdfDialog busy={pdfBusy} onClose={() => setPdfOpen(false)} onDownload={download}
+          exercises={{ missing: missingExercises(t).length }}/>
+      )}
       <p className="text-[11px] text-ink-soft mt-5 leading-relaxed">
         Talkhis ditulis AI dari teks muqarrarmu dan dicek otomatis, tapi tetap cocokkan dengan muqarrar dan catatan duktur sebelum dihafal.
         Nash bergaris putus-putus artinya tidak ditemukan persis di muqarrar.
@@ -786,4 +952,4 @@ const TalkhisTab = ({ set, setSet, access }) => {
   );
 };
 
-Object.assign(window, { TalkhisTab, talkhisHtml, printTalkhisDoc, copyTalkhisDoc });
+Object.assign(window, { TalkhisTab, talkhisHtml, printTalkhisDoc, copyTalkhisDoc, TalkhisPdfDialog });
