@@ -106,15 +106,19 @@ const firstName = (name) => (String(name || '').trim().split(/\s+/)[0] || 'teman
 const fill = (text, name) => String(text).replace(/\{nama\}/gi, firstName(name));
 const safeUrl = (u) => (/^https:\/\/[^\s"<>]+$/i.test(String(u || '').trim()) ? String(u).trim() : '');
 
-export const renderEmail = ({ subject, body, cta_label, cta_url }, { email, name }) => {
+export const renderEmail = ({ subject, body, cta_label, cta_url, image_url }, { email, name }) => {
   const paras = fill(body, name).split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
   const cta = safeUrl(cta_url) && String(cta_label || '').trim() ? { label: String(cta_label).trim().slice(0, 60), url: safeUrl(cta_url) } : null;
+  const img = safeUrl(image_url);
+  const imgTag = img ? `<img src="${esc(img)}" alt="${esc(fill(subject, name))}" width="504" style="display:block;width:100%;max-width:504px;height:auto;border:0;border-radius:10px">` : '';
+  const imgLink = img && safeUrl(cta_url) ? `<a href="${esc(safeUrl(cta_url))}">${imgTag}</a>` : imgTag;
   const unsub = unsubUrl(email);
   const html = `<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(fill(subject, name))}</title></head>
 <body style="margin:0;padding:0;background:#f4f1ea;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1f2420">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f1ea;padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:14px;border:1px solid #e6dfd0">
 <tr><td style="padding:22px 28px 6px;font-size:18px;font-weight:700;color:#0f5132">Talqeeh</td></tr>
+${img ? `<tr><td style="padding:8px 28px 10px">${imgLink}</td></tr>` : ''}
 <tr><td style="padding:6px 28px 4px;font-size:15px;line-height:1.65">
 ${paras.map(p => `<p style="margin:0 0 14px">${esc(p).replace(/\n/g, '<br>')}</p>`).join('\n')}
 </td></tr>
@@ -163,7 +167,34 @@ const validCampaign = (c) => {
   if (body.length < 10 || body.length > 8000) return { error: 'Isi email 10–8.000 karakter' };
   const cta_url = String(c?.cta_url || '').trim();
   if (cta_url && !safeUrl(cta_url)) return { error: 'Link tombol harus diawali https://' };
-  return { subject, body, cta_label: String(c?.cta_label || '').trim().slice(0, 60) || null, cta_url: cta_url || null };
+  const image_url = String(c?.image_url || '').trim();
+  if (image_url && !safeUrl(image_url)) return { error: 'Link gambar harus diawali https://' };
+  // image_url hanya ikut disimpan kalau ada, supaya kampanye tanpa gambar tetap jalan sebelum kolomnya dibuat.
+  return { subject, body, cta_label: String(c?.cta_label || '').trim().slice(0, 60) || null, cta_url: cta_url || null, ...(image_url ? { image_url } : {}) };
+};
+
+/* Gambar email (poster) disimpan di bucket publik Supabase Storage, karena email butuh link gambar yang bisa dibuka siapa saja. */
+const IMAGE_BUCKET = 'email-assets';
+const IMAGE_TYPES = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' };
+const uploadEmailImage = async (p) => {
+  const ext = IMAGE_TYPES[p.type];
+  if (!ext) return { ok: false, error: 'Format gambar harus JPG, PNG, WebP, atau GIF' };
+  const buf = Buffer.from(String(p.data || ''), 'base64');
+  if (buf.length < 100) return { ok: false, error: 'Gambar kosong' };
+  if (buf.length > 3 * 1024 * 1024) return { ok: false, error: 'Gambar maksimal 3 MB' };
+  const { url, key } = sbConfig();
+  const auth = { Authorization: `Bearer ${key}`, apikey: key };
+  // Buat bucket sekali (kalau sudah ada, Supabase membalas error "already exists" dan kita abaikan).
+  await fetch(`${url}/storage/v1/bucket`, {
+    method: 'POST', headers: { ...auth, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: IMAGE_BUCKET, name: IMAGE_BUCKET, public: true, file_size_limit: 3 * 1024 * 1024 }),
+  }).catch(() => {});
+  const path = `poster-${Date.now()}-${crypto.randomBytes(4).toString('hex')}.${ext}`;
+  const r = await fetch(`${url}/storage/v1/object/${IMAGE_BUCKET}/${path}`, {
+    method: 'POST', headers: { ...auth, 'Content-Type': p.type, 'Cache-Control': 'public, max-age=31536000' }, body: buf,
+  });
+  if (!r.ok) return { ok: false, error: `Gagal mengunggah gambar (${r.status})` };
+  return { ok: true, data: { url: `${url}/storage/v1/object/public/${IMAGE_BUCKET}/${path}` } };
 };
 
 export async function handleEmailAdmin(action, p) {
@@ -181,6 +212,7 @@ export async function handleEmailAdmin(action, p) {
     if (a.error) return { ok: false, error: a.error };
     return { ok: true, data: { count: a.list.length, optedOut: a.optedOut, capped: a.capped, sample: a.list.slice(0, 5).map(r => r.email) } };
   }
+  if (action === 'email-upload-image') return uploadEmailImage(p);
   if (action === 'email-campaigns') {
     const camps = await sb('GET', 'email_campaigns?select=id,subject,audience,total,created_at&order=created_at.desc&limit=20');
     if (!camps.ok) return { ok: false, error: 'Tabel email belum ada. Jalankan migrations/email_broadcast.sql di Supabase.' };
@@ -213,7 +245,7 @@ export async function handleEmailAdmin(action, p) {
     if (a.error) return { ok: false, error: a.error };
     if (!a.list.length) return { ok: false, error: 'Tidak ada penerima untuk pilihan ini' };
     const camp = await sb('POST', 'email_campaigns', { ...c, audience: p.audience, total: a.list.length }, 'return=representation');
-    if (!camp.ok || !camp.data?.[0]) return { ok: false, error: 'Gagal membuat kampanye. Sudahkah migrations/email_broadcast.sql dijalankan?' };
+    if (!camp.ok || !camp.data?.[0]) return { ok: false, error: c.image_url && /image_url/.test(JSON.stringify(camp.data || '')) ? 'Kolom gambar belum ada. Jalankan: alter table email_campaigns add column if not exists image_url text;' : 'Gagal membuat kampanye. Sudahkah migrations/email_broadcast.sql dijalankan?' };
     const id = camp.data[0].id;
     for (let i = 0; i < a.list.length; i += 1000) {
       const rows = a.list.slice(i, i + 1000).map(r => ({ campaign_id: id, ...r }));
@@ -226,7 +258,7 @@ export async function handleEmailAdmin(action, p) {
   if (action === 'email-send-batch') {
     const id = String(p.id || '');
     if (!/^[0-9a-f-]{36}$/i.test(id)) return { ok: false, error: 'Kampanye tidak valid' };
-    const camp = await sb('GET', `email_campaigns?id=eq.${id}&select=id,subject,body,cta_label,cta_url&limit=1`);
+    const camp = await sb('GET', `email_campaigns?id=eq.${id}&select=*&limit=1`);
     const campaign = camp.data?.[0];
     if (!campaign) return { ok: false, error: 'Kampanye tidak ditemukan' };
     const pending = await sb('GET', `email_sends?campaign_id=eq.${id}&status=eq.pending&select=id,email,name&order=id.asc&limit=${BATCH_SIZE}`);

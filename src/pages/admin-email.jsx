@@ -175,6 +175,23 @@ Tim Talqeeh`,
   ];
 };
 
+// Kecilkan poster jadi JPEG lebar maks 1200px sebelum diunggah: email jadi ringan dan tampil di semua aplikasi email.
+const shrinkImage = (file) => new Promise((resolve, reject) => {
+  const img = new Image();
+  img.onload = () => {
+    const scale = Math.min(1, 1200 / img.naturalWidth);
+    const c = document.createElement('canvas');
+    c.width = Math.round(img.naturalWidth * scale); c.height = Math.round(img.naturalHeight * scale);
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    URL.revokeObjectURL(img.src);
+    resolve(c.toDataURL('image/jpeg', 0.86).split(',')[1]);
+  };
+  img.onerror = () => reject(new Error('Gambar tidak bisa dibaca'));
+  img.src = URL.createObjectURL(file);
+});
+
 const fieldClass = 'w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink outline-none focus:border-emerald-500/45';
 
 const EmailSender = () => {
@@ -201,7 +218,20 @@ const EmailSender = () => {
     return () => { alive = false; };
   }, [form.audience]);
 
-  const payload = () => ({ subject: form.subject, body: form.body, cta_label: form.cta_label, cta_url: form.cta_url });
+  const payload = () => ({ subject: form.subject, body: form.body, cta_label: form.cta_label, cta_url: form.cta_url, image_url: form.image_url || '' });
+
+  const pickImage = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setBusy('image');
+    try {
+      const data = await shrinkImage(file);
+      const d = await emailAdminCall('email-upload-image', { data, type: 'image/jpeg' });
+      set('image_url', d.url);
+    } catch (err) { toast.push(err.message); }
+    setBusy('');
+  };
 
   const sendTest = async () => {
     setBusy('test');
@@ -276,6 +306,23 @@ const EmailSender = () => {
           <span className="text-[11px] text-ink-muted block mb-1">Subjek</span>
           <input value={form.subject} onChange={e => set('subject', e.target.value)} maxLength={150} className={fieldClass}/>
         </label>
+        <div className="md:col-span-2">
+          <span className="text-[11px] text-ink-muted block mb-1">Gambar / poster (opsional, tampil di atas isi email; diklik membuka link tombol)</span>
+          {form.image_url ? (
+            <div className="flex items-start gap-3">
+              <img src={form.image_url} alt="Poster email" className="w-40 rounded-lg border border-white/10"/>
+              <div className="flex flex-col gap-2">
+                <label className="btn btn-ghost !min-h-0 !py-1.5 !px-3 text-xs cursor-pointer">Ganti<input type="file" accept="image/*" onChange={pickImage} className="hidden"/></label>
+                <button type="button" onClick={() => set('image_url', '')} className="btn btn-ghost !min-h-0 !py-1.5 !px-3 text-xs">Hapus</button>
+              </div>
+            </div>
+          ) : (
+            <label className={`btn btn-ghost text-sm px-4 py-2 cursor-pointer ${busy === 'image' ? 'opacity-60 pointer-events-none' : ''}`}>
+              {busy === 'image' ? 'Mengunggah…' : 'Pilih gambar'}
+              <input type="file" accept="image/*" onChange={pickImage} className="hidden"/>
+            </label>
+          )}
+        </div>
         <label className="block md:col-span-2">
           <span className="text-[11px] text-ink-muted block mb-1">Isi email ({'{nama}'} diganti nama depan penerima; pisahkan paragraf dengan baris kosong)</span>
           <textarea value={form.body} onChange={e => set('body', e.target.value)} rows={14} maxLength={8000} className={`${fieldClass} leading-relaxed`}/>

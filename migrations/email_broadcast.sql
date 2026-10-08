@@ -26,6 +26,9 @@ create table if not exists public.email_sends (
   sent_at     timestamptz,
   unique (campaign_id, email)
 );
+-- 1b. Gambar/poster opsional di atas isi email (file-nya di bucket publik Storage "email-assets", dibuat otomatis).
+alter table public.email_campaigns add column if not exists image_url text;
+
 create index if not exists email_sends_pending_idx on public.email_sends (campaign_id, status, id);
 
 -- 3. Yang memilih berhenti menerima email (lewat link di tiap email). Tidak pernah dikirimi lagi.
