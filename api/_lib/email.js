@@ -123,12 +123,12 @@ const blockHtml = (para, cta) => {
     if (last && last.k === k && k !== 'h' && k !== 'cta') last.lines.push(l); else groups.push({ k, lines: [l] });
   }
   return groups.map(({ k, lines }) => {
-    if (k === 'cta') return cta ? `<div style="margin:18px 0 22px;text-align:center">${ctaButton(cta)}</div>` : '';
-    if (k === 'h') return `<h2 style="margin:24px 0 10px;font-size:18px;line-height:1.35;color:#0f5132">${inlineHtml(lines[0].replace(/^\s*#{1,3}\s+/, ''))}</h2>`;
-    if (k === 'quote') return `<div style="margin:6px 0 16px;padding:14px 18px;background:#eef6f0;border-left:4px solid #0f5132;border-radius:10px;font-size:15px;line-height:1.6">${lines.map(l => inlineHtml(l.replace(/^\s*>\s?/, ''))).join('<br>')}</div>`;
-    if (k === 'list') return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 14px">${lines.map(l =>
-      `<tr><td valign="top" style="padding:0 10px 8px 0;color:#0f5132;font-weight:700;font-size:15px;line-height:1.6">✓</td><td style="padding:0 0 8px;font-size:15px;line-height:1.6">${inlineHtml(l.replace(LIST_LINE, ''))}</td></tr>`).join('')}</table>`;
-    return `<p style="margin:0 0 14px">${lines.map(inlineHtml).join('<br>')}</p>`;
+    if (k === 'cta') return cta ? `<div style="margin:24px 0 26px;text-align:center">${ctaButton(cta)}</div>` : '';
+    if (k === 'h') return `<h2 style="margin:30px 0 12px;font-size:18px;line-height:1.4;color:#0f5132">${inlineHtml(lines[0].replace(/^\s*#{1,3}\s+/, ''))}</h2>`;
+    if (k === 'quote') return `<div style="margin:4px 0 18px;padding:16px 18px;background:#eef6f0;border-left:4px solid #0f5132;border-radius:10px;font-size:15px;line-height:1.75">${lines.map(l => inlineHtml(l.replace(/^\s*>\s?/, ''))).join('<br>')}</div>`;
+    if (k === 'list') return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:10px 0 18px">${lines.map(l =>
+      `<tr><td valign="top" style="padding:0 10px 10px 0;color:#0f5132;font-weight:700;font-size:15px;line-height:1.65">✓</td><td style="padding:0 0 10px;font-size:15px;line-height:1.65">${inlineHtml(l.replace(LIST_LINE, ''))}</td></tr>`).join('')}</table>`;
+    return `<p style="margin:0 0 18px">${lines.map(inlineHtml).join('<br>')}</p>`;
   }).join('\n');
 };
 const plainText = (s) => String(s)
@@ -150,9 +150,9 @@ export const renderEmail = ({ subject, body, cta_label, cta_url, image_url }, { 
 <body style="margin:0;padding:0;background:#f4f1ea;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1f2420">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f1ea;padding:24px 12px"><tr><td align="center">
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border-radius:14px;border:1px solid #e6dfd0">
-<tr><td style="padding:22px 28px 6px;font-size:18px;font-weight:700;color:#0f5132">Talqeeh</td></tr>
-${img ? `<tr><td style="padding:8px 28px 10px">${imgLink}</td></tr>` : ''}
-<tr><td style="padding:6px 28px 4px;font-size:15px;line-height:1.65">
+<tr><td style="padding:24px 28px 14px;font-size:18px;font-weight:700;color:#0f5132">Talqeeh</td></tr>
+${img ? `<tr><td style="padding:4px 28px 18px">${imgLink}</td></tr>` : ''}
+<tr><td style="padding:8px 28px 8px;font-size:15px;line-height:1.75">
 ${paras.map(p => blockHtml(p, cta)).join('\n')}
 </td></tr>
 ${cta && !hasCtaSlot ? `<tr><td style="padding:4px 28px 22px">${ctaButton(cta)}</td></tr>` : ''}

@@ -110,40 +110,42 @@ const downloadCsv = (rows, audience) => {
 const CAMPAIGN_LINK = `${SITE}/#/gabung?plan=imtihan`;
 const campaignPresets = () => {
   const P = window.IMTIHAN_PROMO, normal = window.IMTIHAN_PRICE_IDR, days = window.IMTIHAN_AI_DAYS;
-  const end = P ? `${P.endLabel} pukul 23.59 waktu Kairo` : 'akhir promo';
+  const end = P ? `${P.endLabel}, pukul 23.59 waktu Kairo` : 'akhir promo';
   const price = P ? fmt(P.price) : '';
   const maddah = window.CATALOG?.maddah || 93, prompts = window.CATALOG?.prompts || '1.250+';
   return [
     {
       id: 'h5', label: 'Email 1 · H-5: Talkhis otomatis',
-      subject: 'Muqarrar tebal, waktu terbatas. Mau nunggu mepet baru mulai talkhis?',
-      cta_label: `Ambil promo ${price}`,
+      subject: 'Muqarrarmu bisa jadi talkhisan rapi dalam 10 menit',
+      cta_label: `Ambil promo ${price} sekarang`,
       body: `Assalamu'alaikum {nama},
 
-Imtihan memang masih beberapa bulan lagi. Tapi coba bayangkan: waktu muraja'ah tiba, kamu masih sibuk mencari talkhisan, merangkum muqarrar, dan mengumpulkan soal-soal tahun lalu.
+Imtihan memang masih beberapa bulan lagi. Tapi coba bayangkan kalau nanti waktu muraja'ah tiba, kamu masih sibuk mencari talkhisan, merangkum muqarrar, dan mengumpulkan soal-soal tahun lalu.
 
-Padahal waktu itu seharusnya sudah bisa kamu pakai untuk *memahami dan menghafal materi*.
+Padahal, waktu itu seharusnya sudah bisa kamu gunakan untuk *memahami dan menghafal materi*.
 
-## Talkhis Otomatis: dari muqarrar jadi materi siap muraja'ah
+## 🚀 Talkhis Otomatis: dari muqarrar jadi materi siap muraja'ah
 
 Cukup upload PDF muqarrarmu, lalu Talqeeh membantu:
 - Menyusun fihris dari seluruh mabahits
-- Menulis talkhis berbahasa Arab dengan gaya talkhisan Masisir
-- Mengecek setiap pembahasan ke teks muqarrar, lalu melengkapi bagian yang kurang
+- Membuat talkhis berbahasa Arab dengan gaya talkhisan Masisir
+- Mengecek kembali setiap pembahasan ke muqarrar, supaya bagian yang kurang bisa dilengkapi
 - Menyiapkan PDF berwarna yang nyaman dibaca, lengkap dengan latihan soal dan kunci jawaban
 
-Bukan cuma meringkas, tapi membantumu menyiapkan bahan belajar dari jauh-jauh hari.
+Bukan cuma meringkas, tapi membantumu mempersiapkan materi belajar dari jauh-jauh hari.
 
-## Paket Imtihan, harga promo
+## 🎁 Paket Imtihan, promo terbatas
 
-> ~~${fmt(normal)}~~  *${price}*, sekali bayar
+> Harga normal ~~${fmt(normal)}~~, sekarang cuma *${price}*, sekali bayar.
 > Promo ${P?.name || 'Paket Imtihan'} berakhir *${end}*.
 
-Yang kamu dapat:
+Sekali bayar, kamu mendapatkan:
 - *Library selamanya:* ${maddah} maddah, ${prompts} template prompt, dan bank soal imtihan
-- *AI Study Partner ${days} hari:* talkhis otomatis, i'rab, tutor AI, kuis, dan latihan tahriri. Tanpa kuota bulanan, dengan batas wajar harian.
+- *AI Study Partner ${days} hari:* talkhis otomatis, i'rab, tutor AI, kuis, dan latihan tahriri. Tanpa kuota bulanan, dengan batas penggunaan wajar harian.
 
-Setelah promo selesai, harga kembali ke ${fmt(normal)}. Mulai siapkan talkhisanmu dari sekarang, supaya nanti waktumu lebih banyak untuk muraja'ah.
+*Jangan tunggu sampai harganya kembali normal.* Setelah periode promo selesai, harga kembali ke ${fmt(normal)}.
+
+Mulai siapkan talkhisanmu hari ini, supaya nanti waktumu lebih banyak untuk muraja'ah.
 
 [[tombol]]
 
