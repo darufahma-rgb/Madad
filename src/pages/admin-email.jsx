@@ -249,6 +249,21 @@ const EmailSender = () => {
     setBusy('');
   };
 
+  // Pratinjau langsung: render ulang di server 0,6 detik setelah berhenti mengetik.
+  const [showPreview, setShowPreview] = useState(true);
+  const [preview, setPreview] = useState({ html: '', error: '' });
+  useEffect(() => {
+    if (!showPreview) return;
+    let alive = true;
+    const t = setTimeout(() => {
+      emailAdminCall('email-preview', payload())
+        .then(d => { if (alive) setPreview({ html: d.html, error: '' }); })
+        .catch(e => { if (alive) setPreview(p => ({ ...p, error: e.message })); });
+    }, 600);
+    return () => { alive = false; clearTimeout(t); };
+  }, [showPreview, form.subject, form.body, form.cta_label, form.cta_url, form.image_url]);
+  const fitFrame = (e) => { try { e.target.style.height = `${e.target.contentDocument.documentElement.scrollHeight + 4}px`; } catch {} };
+
   const sendTest = async () => {
     setBusy('test');
     try { await emailAdminCall('email-test', { ...payload(), to: testTo, name: 'teman' }); toast.push(`Email tes terkirim ke ${testTo}`); }
@@ -351,6 +366,21 @@ const EmailSender = () => {
           <span className="text-[11px] text-ink-muted block mb-1">Link tombol (https://)</span>
           <input value={form.cta_url} onChange={e => set('cta_url', e.target.value)} className={`${fieldClass} font-mono text-xs`}/>
         </label>
+      </div>
+
+      <div>
+        <button type="button" onClick={() => setShowPreview(v => !v)} className="text-xs text-emerald-300 hover:text-emerald-200">
+          {showPreview ? '▾ Sembunyikan pratinjau email' : '▸ Lihat pratinjau email'}
+        </button>
+        {showPreview && (
+          <div className="mt-2 rounded-xl overflow-hidden border border-white/10 bg-[#f4f1ea]">
+            {preview.error && <p className="text-xs text-rose-600 px-3 pt-2">{preview.error}</p>}
+            {preview.html
+              ? <iframe title="Pratinjau email" srcDoc={preview.html} sandbox="allow-same-origin" onLoad={fitFrame} className="block w-full border-0" style={{ height: 600 }}/>
+              : <p className="text-sm text-[#6b6f68] p-4">Menyiapkan pratinjau…</p>}
+          </div>
+        )}
+        <p className="text-[11px] text-ink-soft mt-1">Begini tampilan email di kotak masuk penerima (contoh nama: Ahmad). Warna dan huruf bisa sedikit beda di tiap aplikasi email.</p>
       </div>
 
       <div className="flex flex-wrap items-end gap-2 pt-1">

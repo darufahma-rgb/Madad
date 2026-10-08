@@ -247,6 +247,12 @@ export async function handleEmailAdmin(action, p) {
     return { ok: true, data: { count: a.list.length, optedOut: a.optedOut, capped: a.capped, sample: a.list.slice(0, 5).map(r => r.email) } };
   }
   if (action === 'email-upload-image') return uploadEmailImage(p);
+  // Pratinjau di admin: HTML yang sama persis dengan yang dikirim, dengan contoh nama penerima.
+  if (action === 'email-preview') {
+    const c = validCampaign(p);
+    if (c.error) return { ok: false, error: c.error };
+    return { ok: true, data: { html: renderEmail(c, { email: 'contoh@talqeeh.id', name: 'Ahmad' }).html } };
+  }
   if (action === 'email-campaigns') {
     const camps = await sb('GET', 'email_campaigns?select=id,subject,audience,total,created_at&order=created_at.desc&limit=20');
     if (!camps.ok) return { ok: false, error: 'Tabel email belum ada. Jalankan migrations/email_broadcast.sql di Supabase.' };
