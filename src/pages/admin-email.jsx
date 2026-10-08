@@ -102,6 +102,246 @@ const downloadCsv = (rows, audience) => {
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 };
 
+
+/* ── Kirim lewat Talqeeh (Resend) ──
+   Email dikirim satu per penerima dari alamat EMAIL_FROM, dengan nama penerima ({nama}) dan link berhenti
+   berlangganan otomatis. Server: action email-test / email-create / email-send-batch di api/_lib/email.js.
+   Dikirim per 50 penerima; kalau kena batas harian Resend, sisanya tetap "pending" dan bisa dilanjutkan. */
+const CAMPAIGN_LINK = `${SITE}/#/gabung?plan=imtihan`;
+const campaignPresets = () => {
+  const P = window.IMTIHAN_PROMO, normal = window.IMTIHAN_PRICE_IDR, days = window.IMTIHAN_AI_DAYS;
+  const end = P ? `${P.endLabel} pukul 23.59 waktu Kairo` : 'akhir promo';
+  const price = P ? fmt(P.price) : '';
+  const maddah = window.CATALOG?.maddah || 93, prompts = window.CATALOG?.prompts || '1.250+';
+  return [
+    {
+      id: 'h5', label: 'Email 1 · H-5: Talkhis otomatis',
+      subject: 'Muqarrarmu bisa jadi talkhisan rapi dalam 10 menit',
+      body: `Assalamu'alaikum {nama},
+
+Imtihan memang masih beberapa bulan lagi, tapi kita semua tahu rasanya: muqarrar tebal, waktu muraja'ah mepet, talkhisan teman belum tentu lengkap.
+
+Sekarang Talqeeh punya fitur baru: TALKHIS OTOMATIS. Upload PDF muqarrarmu, lalu Talqeeh:
+• memetakan semua mabahits-nya jadi fihris
+• menulis talkhis berbahasa Arab, gaya talkhisan Masisir
+• mengecek tiap judul ke teks muqarrar, yang kurang langsung dilengkapi
+• menyiapkan PDF berwarna, huruf besar, plus latihan soal dan kunci jawaban
+
+Fitur ini ada di Paket Imtihan, dan selama ${P?.name || 'event'} harganya turun dari ${fmt(normal)} jadi ${price}.
+
+Sekali bayar, kamu dapat:
+• Library selamanya: ${maddah} maddah, ${prompts} template prompt, dan bank soal imtihan
+• AI Partner ${days} hari: talkhis, i'rab, tutor, kuis, dan latihan tahriri (tanpa kuota bulanan, ada batas wajar harian)
+
+Promo berakhir ${end}.
+
+Semoga Allah mudahkan muraja'ah kita semua.
+Tim Talqeeh`,
+    },
+    {
+      id: 'h2', label: 'Email 2 · H-2: Bank soal + talkhis',
+      subject: 'Soal imtihan tahun lalu + talkhis otomatis, tinggal 2 hari',
+      body: `Assalamu'alaikum {nama},
+
+Cara paling aman menghadapi imtihan: tahu pola soalnya, lalu muraja'ah dari ringkasan yang lengkap. Di Talqeeh, dua-duanya ada.
+
+Bank soal imtihan asli
+Soal tahun-tahun sebelumnya dari Syariah, Ushuluddin, Lughah, dan Dirasat Banat, lengkap dengan terjemah per soal. Baru masuk: 32 soal Banat Ushuluddin tingkat 1–2 (2024–2026).
+
+Talkhis otomatis dari muqarrarmu sendiri
+Bukan ringkasan umum: talkhis dibuat dari teks muqarrar yang kamu upload, dicek kelengkapannya per judul, lalu bisa kamu unduh jadi PDF siap cetak lengkap dengan latihan soal.
+
+Paket Imtihan ${price} (normal ${fmt(normal)}) hanya sampai ${end}.
+
+Kalau ada pertanyaan, balas email ini saja.
+Tim Talqeeh`,
+    },
+    {
+      id: 'h1', label: 'Email 3 · H-1: Hari terakhir',
+      subject: `Besok terakhir: Paket Imtihan ${price}`,
+      body: `Assalamu'alaikum {nama},
+
+Singkat saja: promo Paket Imtihan berakhir besok, ${end}. Setelah itu harganya kembali ke ${fmt(normal)}.
+
+${price} untuk:
+• Talkhis otomatis muqarrar + PDF berwarna dan latihan soal
+• Bank soal imtihan asli (banin dan banat)
+• AI Partner ${days} hari: i'rab, tutor, kuis, latihan tahriri
+• Library ${maddah} maddah, akses selamanya
+
+Bismillah, semoga jadi ikhtiar terbaik untuk imtihan nanti.
+Tim Talqeeh`,
+    },
+  ];
+};
+
+const fieldClass = 'w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink outline-none focus:border-emerald-500/45';
+
+const EmailSender = () => {
+  const toast = useToast();
+  const [status, setStatus] = useState(null);
+  const [form, setForm] = useState(() => ({ ...campaignPresets()[0], audience: 'free', cta_label: 'Ambil promo Paket Imtihan', cta_url: CAMPAIGN_LINK }));
+  const [count, setCount] = useState(null);
+  const [testTo, setTestTo] = useState('');
+  const [busy, setBusy] = useState('');
+  const [progress, setProgress] = useState(null);
+  const [campaigns, setCampaigns] = useState([]);
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const loadCampaigns = () => emailAdminCall('email-campaigns').then(setCampaigns).catch(() => setCampaigns([]));
+  useEffect(() => {
+    emailAdminCall('email-status').then(setStatus).catch(e => setStatus({ error: e.message }));
+    loadCampaigns();
+  }, []);
+  useEffect(() => {
+    let alive = true;
+    setCount(null);
+    emailAdminCall('email-audience', { audience: form.audience })
+      .then(d => { if (alive) setCount(d); }).catch(e => { if (alive) setCount({ error: e.message }); });
+    return () => { alive = false; };
+  }, [form.audience]);
+
+  const payload = () => ({ subject: form.subject, body: form.body, cta_label: form.cta_label, cta_url: form.cta_url });
+
+  const sendTest = async () => {
+    setBusy('test');
+    try { await emailAdminCall('email-test', { ...payload(), to: testTo, name: 'teman' }); toast.push(`Email tes terkirim ke ${testTo}`); }
+    catch (e) { toast.push(e.message); }
+    setBusy('');
+  };
+
+  // Kirim per batch sampai selesai, atau berhenti saat kena batas Resend (sisanya bisa dilanjutkan nanti).
+  const runBatches = async (id, total) => {
+    let sent = 0, failed = 0, skipped = 0;
+    setProgress({ id, total, sent, failed, skipped });
+    for (let guard = 0; guard < 300; guard++) {
+      const d = await emailAdminCall('email-send-batch', { id });
+      if (d.stopped === 'quota') { toast.push('Batas kirim Resend tercapai. Sisanya bisa dilanjutkan nanti dari daftar kampanye.'); break; }
+      sent += d.sent || 0; failed += d.failed || 0; skipped += d.skipped || 0;
+      setProgress({ id, total, sent, failed, skipped });
+      if (d.done) { toast.push(`Selesai: ${sent} terkirim${failed ? `, ${failed} gagal` : ''}.`); break; }
+    }
+    loadCampaigns();
+  };
+
+  const createAndSend = async () => {
+    if (!count?.count) return;
+    if (!window.confirm(`Kirim "${form.subject}" ke ${count.count} penerima sekarang? Ini tidak bisa dibatalkan.`)) return;
+    setBusy('send');
+    try {
+      const c = await emailAdminCall('email-create', { ...payload(), audience: form.audience });
+      await runBatches(c.id, c.total);
+    } catch (e) { toast.push(e.message); }
+    setBusy('');
+  };
+
+  const resume = async (c) => {
+    setBusy('send');
+    try { await runBatches(c.id, c.total); } catch (e) { toast.push(e.message); }
+    setBusy('');
+  };
+
+  const audiences = status?.audiences ? Object.entries(status.audiences) : AUDIENCE_OPTIONS;
+
+  return (
+    <section className="card-glass-strong p-5 space-y-4">
+      <div>
+        <h3 className="font-display text-lg font-semibold text-ink">Kirim lewat Talqeeh</h3>
+        {!status ? <p className="text-sm text-ink-muted" role="status">Memeriksa pengaturan email…</p>
+          : status.error ? <p className="text-sm text-rose-400">{status.error}</p>
+          : status.configured
+            ? <p className="text-sm text-emerald-300">✓ Siap kirim dari <b className="text-ink">{status.from}</b>. Tiap penerima dapat email sendiri dengan namanya dan link berhenti berlangganan.</p>
+            : <p className="text-sm text-amber-300">Belum siap: isi RESEND_API_KEY dan EMAIL_FROM di Vercel, lalu deploy ulang. Sementara itu kamu tetap bisa menyiapkan dan mengecek isinya.</p>}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {campaignPresets().map(p => (
+          <button key={p.id} type="button" onClick={() => setForm(f => ({ ...f, subject: p.subject, body: p.body }))}
+            className={`rounded-full border px-3 py-1.5 text-xs ${form.subject === p.subject ? 'border-emerald-500 text-emerald-200 bg-emerald-500/10' : 'border-white/15 text-ink-muted hover:text-ink'}`}>{p.label}</button>
+        ))}
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-3">
+        <label className="block md:col-span-2">
+          <span className="text-[11px] text-ink-muted block mb-1">Penerima</span>
+          <select value={form.audience} onChange={e => set('audience', e.target.value)} className={fieldClass}>
+            {audiences.map(([id, label]) => <option key={id} value={id}>{label}</option>)}
+          </select>
+          <span className="text-[11px] text-ink-soft block mt-1">
+            {!count ? 'Menghitung…' : count.error ? count.error : `${count.count} penerima${count.optedOut ? ` · ${count.optedOut} sudah berhenti berlangganan, tidak ikut` : ''}`}
+            {form.audience !== 'free' && ' · Catatan: Paket Imtihan hanya bisa dibeli akun gratis.'}
+          </span>
+        </label>
+        <label className="block md:col-span-2">
+          <span className="text-[11px] text-ink-muted block mb-1">Subjek</span>
+          <input value={form.subject} onChange={e => set('subject', e.target.value)} maxLength={150} className={fieldClass}/>
+        </label>
+        <label className="block md:col-span-2">
+          <span className="text-[11px] text-ink-muted block mb-1">Isi email ({'{nama}'} diganti nama depan penerima; pisahkan paragraf dengan baris kosong)</span>
+          <textarea value={form.body} onChange={e => set('body', e.target.value)} rows={14} maxLength={8000} className={`${fieldClass} leading-relaxed`}/>
+        </label>
+        <label className="block">
+          <span className="text-[11px] text-ink-muted block mb-1">Tulisan tombol</span>
+          <input value={form.cta_label} onChange={e => set('cta_label', e.target.value)} maxLength={60} className={fieldClass}/>
+        </label>
+        <label className="block">
+          <span className="text-[11px] text-ink-muted block mb-1">Link tombol (https://)</span>
+          <input value={form.cta_url} onChange={e => set('cta_url', e.target.value)} className={`${fieldClass} font-mono text-xs`}/>
+        </label>
+      </div>
+
+      <div className="flex flex-wrap items-end gap-2 pt-1">
+        <label className="block flex-1 min-w-[200px]">
+          <span className="text-[11px] text-ink-muted block mb-1">Kirim tes ke</span>
+          <input value={testTo} onChange={e => setTestTo(e.target.value)} placeholder="emailmu@gmail.com" className={fieldClass}/>
+        </label>
+        <button onClick={sendTest} disabled={!status?.configured || !testTo || !!busy} className="btn btn-ghost text-sm px-4 py-2 disabled:opacity-50">
+          {busy === 'test' ? 'Mengirim…' : 'Kirim tes'}
+        </button>
+        <button onClick={createAndSend} disabled={!status?.configured || !count?.count || !!busy} className="btn btn-primary text-sm px-4 py-2 disabled:opacity-50">
+          {busy === 'send' ? 'Mengirim…' : `Kirim ke ${count?.count ?? '…'} penerima`}
+        </button>
+      </div>
+
+      {progress && (
+        <div className="rounded-xl border border-white/10 bg-white/4 p-3 text-sm text-ink">
+          Terkirim <b>{progress.sent}</b> dari {progress.total}
+          {progress.failed > 0 && <span className="text-rose-300"> · {progress.failed} gagal</span>}
+          {progress.skipped > 0 && <span className="text-ink-soft"> · {progress.skipped} dilewati (berhenti berlangganan)</span>}
+          <div className="h-1.5 rounded-full bg-white/10 mt-2 overflow-hidden">
+            <div className="h-full bg-emerald-400" style={{ width: `${Math.min(100, ((progress.sent + progress.failed + progress.skipped) / Math.max(1, progress.total)) * 100)}%` }}/>
+          </div>
+        </div>
+      )}
+
+      {campaigns.length > 0 && (
+        <div>
+          <div className="text-[11px] uppercase tracking-wider text-ink-soft mb-2">Kampanye terakhir</div>
+          <div className="space-y-2">
+            {campaigns.slice(0, 6).map(c => (
+              <div key={c.id} className="flex items-center justify-between gap-3 text-sm rounded-lg bg-white/3 px-3 py-2 flex-wrap">
+                <div className="min-w-0">
+                  <div className="text-ink truncate">{c.subject}</div>
+                  <div className="text-[11px] text-ink-soft">
+                    {new Date(c.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })} · {c.counts.sent}/{c.total} terkirim
+                    {c.counts.failed ? ` · ${c.counts.failed} gagal` : ''}{c.counts.pending ? ` · ${c.counts.pending} menunggu` : ''}
+                  </div>
+                </div>
+                {c.counts.pending > 0 && (
+                  <button onClick={() => resume(c)} disabled={!!busy} className="btn btn-ghost !min-h-0 !py-1.5 !px-3 text-xs disabled:opacity-50">Lanjutkan kirim</button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      <p className="text-[11px] text-ink-soft leading-relaxed">
+        Paket gratis Resend: 100 email per hari, 3.000 per bulan. Kalau batasnya tercapai, pengiriman berhenti dengan aman dan sisanya bisa dilanjutkan besok lewat tombol "Lanjutkan kirim".
+      </p>
+    </section>
+  );
+};
+
 const AdminEmail = () => {
   const toast = useToast();
   const [audience, setAudience] = useState('no_ai');
@@ -128,7 +368,7 @@ const AdminEmail = () => {
     <div className="space-y-6">
       <div>
         <h2 className="font-display text-2xl font-semibold text-ink">Email & Event</h2>
-        <p className="text-sm text-ink-muted mt-1">Unduh daftar email member untuk dikirim sendiri, lengkap dengan teks pengumuman event.</p>
+        <p className="text-sm text-ink-muted mt-1">Kirim email kampanye langsung dari Talqeeh, atau unduh daftar email untuk dikirim sendiri.</p>
       </div>
 
       {P && (
@@ -138,6 +378,8 @@ const AdminEmail = () => {
           <div className="text-xs text-ink-soft mt-1">Banner + hitung mundur tampil otomatis untuk pengunjung & akun gratis selama event. Tanggal & harga diatur di IMTIHAN_PROMO (src/layout.jsx dan api/_lib/payments.js).</div>
         </div>
       )}
+
+      <EmailSender/>
 
       <section className="card-glass-strong p-5 space-y-4">
         <h3 className="font-display text-lg font-semibold text-ink">Daftar email</h3>
