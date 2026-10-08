@@ -12,7 +12,13 @@ const DIALECTS = [
   { id: 'indonesia', label: 'Bahasa Indonesia' },
 ];
 const readDialect = () => { try { return DIALECTS.some(d => d.id === localStorage.getItem(DIALECT_KEY)) ? localStorage.getItem(DIALECT_KEY) : 'campur'; } catch { return 'campur'; } };
-const PRO_ONLY_KINDS = ['audio', 'video'];
+// Khusus pelanggan AI Partner: rekaman & PDF (muqarrar utuh). Coba gratis memakai foto halaman, Word, atau teks.
+const PRO_ONLY_KINDS = ['audio', 'video', 'pdf'];
+const PRO_ONLY_NOTE = {
+  pdf: 'Upload PDF khusus pelanggan AI Partner. Coba gratis tetap bisa pakai foto halaman, Word, atau tempel teks.',
+  audio: 'Transkrip rekaman khusus pelanggan AI Partner.',
+  video: 'Transkrip rekaman khusus pelanggan AI Partner.',
+};
 const FORMAT_CHIPS = [
   { kinds: ['pdf'],           label: 'PDF (termasuk scan)' },
   { kinds: ['docx'],          label: 'Word' },
@@ -443,6 +449,11 @@ const CreateWizard = ({ tier, onCancel, onCreated }) => {
       if (isTrial && PRO_ONLY_KINDS.includes(kind)) return { file, kind, status: 'skipped', note: 'Khusus pelanggan AI Partner' };
       return { file, kind, status: 'waiting', note: 'Menunggu' };
     });
+    const locked = isTrial ? list.find(x => x.status === 'skipped' && PRO_ONLY_KINDS.includes(x.kind)) : null;
+    if (locked) {
+      window.logFunnel?.('paywall', locked.kind);
+      setUpgradeMsg(PRO_ONLY_NOTE[locked.kind]);
+    }
     setItems(list);
     setStep('process');
     cancelRef.current = false;

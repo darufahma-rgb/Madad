@@ -435,6 +435,13 @@ const TalkhisanSection = ({ profile }) => {
         setUploadError('Kamu sudah menggunakan fitur ini 3x hari ini. Coba lagi besok.');
         return;
       }
+      // PDF khusus pelanggan AI Partner → arahkan ke langganan.
+      if (data.error === 'upgrade') {
+        setUploadError(data.message || 'Upload PDF khusus pelanggan AI Partner.');
+        window.logFunnel?.('paywall', 'pdf_talkhisan');
+        window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library_ai' } }));
+        return;
+      }
 
       if (data.ok) {
         setTeksInput(data.teks);

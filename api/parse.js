@@ -1,5 +1,5 @@
 import { verifyToken } from './admin-auth.js';
-import { requireMember } from './_lib/member.js';
+import { requireMember, hasAiAccess } from './_lib/member.js';
 import { resolveModels } from './_lib/models.js';
 import { acceptsTemperature } from './_lib/ai.js';
 
@@ -195,6 +195,10 @@ async function handleParseTalkhisan(req, res) {
   // supaya akun gratis buatan massal tidak bisa memakai model AI mahal lewat endpoint ini.
   if (access.member?.tier === 'free') {
     return res.status(403).json({ ok: false, error: 'upgrade', message: 'Bedah Talkhisan khusus member Library.' });
+  }
+  // Upload PDF khusus pelanggan AI Partner; member Library tetap bisa memakai foto halaman.
+  if (pdf_pages && !(await hasAiAccess(member_code))) {
+    return res.status(403).json({ ok: false, error: 'upgrade', feature: 'pdf', message: 'Upload PDF khusus pelanggan AI Partner. Kamu tetap bisa upload foto halaman talkhisan.' });
   }
 
   // ── GUARDRAIL 2: Rate limit 3x per hari per member ──

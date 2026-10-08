@@ -38,7 +38,10 @@ const trialGateClosed = (res) => upgradeRequired(res, 'trial_busy',
   'Kuota coba gratis untuk hari ini sudah penuh. Coba lagi besok, atau berlangganan AI Partner untuk memakai AI kapan saja.');
 const TRIAL_KINDS      = ['summary', 'flashcards', 'quiz', 'glossary'];
 // analyze & chat dibuka sedikit untuk coba gratis (lihat TRIAL_TASTE); sisanya khusus pelanggan.
-const PRO_ONLY_ACTIONS = ['transcribe', 'grade', 'create-batch'];
+const PRO_ONLY_ACTIONS = ['transcribe', 'grade', 'create-batch', 'talkhis'];
+const PRO_ONLY_MESSAGES = {
+  talkhis: 'Talkhis otomatis khusus pelanggan AI Partner. Berlangganan untuk men-talkhis seluruh muqarrarmu dalam bahasa Arab, lengkap dengan cek kelengkapan dan PDF siap cetak.',
+};
 // Tanya AI untuk pengguna coba gratis: satu percakapan, maksimal sekian pesan seumur akun.
 const TRIAL_PROMPT_MESSAGES = 2;
 /* Cicip fitur andalan di materi coba gratis: tanpa ini pengguna gratis tidak pernah merasakan i'rab dan tutor —
@@ -428,6 +431,8 @@ async function handleCreate(ctx, body, res) {
   const id = crypto.randomUUID();
   if (ctx.tier === 'trial') {
     if (['audio', 'video'].includes(sourceType)) return upgradeRequired(res, 'audio');
+    // PDF (muqarrar utuh) jadi alasan berlangganan: akun gratis & member Library tanpa langganan memakai foto/teks.
+    if (sourceType === 'pdf') return upgradeRequired(res, 'pdf', 'Upload PDF khusus pelanggan AI Partner. Coba gratis tetap bisa pakai foto halaman, Word, atau tempel teks.');
     if (!(await claimTrial(ctx.code, id))) {
       return upgradeRequired(res, 'trial_used', 'Jatah coba gratis (1 materi) sudah terpakai. Berlangganan AI Partner untuk menambah materi baru.');
     }
@@ -1247,7 +1252,7 @@ export default async function handler(req, res) {
     };
 
     if (ctx.tier === 'trial' && PRO_ONLY_ACTIONS.includes(action)) {
-      return upgradeRequired(res, action);
+      return upgradeRequired(res, action, PRO_ONLY_MESSAGES[action]);
     }
 
     const costCtx = { code: ctx.code, kind: COST_KIND[action] || 'other', detail: body.kind || body.mode || body.op || null };

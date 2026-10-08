@@ -445,6 +445,68 @@ const TopicRow = ({ x, i, open, onToggle, live, busy, running, canWrite, sourceN
   );
 };
 
+/* ── Bukan pelanggan: contoh hasil + ajakan berlangganan ──
+   Talkhis khusus pelanggan AI Partner (biaya AI-nya besar). Yang belum berlangganan melihat contoh talkhis
+   sungguhan supaya tahu hasilnya, lalu diarahkan ke langganan. */
+const SAMPLE_TALKHIS = `## ﴿ كتاب الزكاة ﴾
+### تعريف الزكاة وحكمها
+#### التَّعْرِيفُ
+- **تَعْرِيفُ الزَّكَاةِ لُغَةً:** النَّمَاءُ وَالتَّطْهِيرُ.
+- **وَاصْطِلَاحًا:**
+> اسْمٌ لِمَا يُخْرَجُ عَنْ مَالٍ أَوْ بَدَنٍ عَلَى وَجْهٍ مَخْصُوصٍ
+#### الْمَسَائِلُ
+- **أَجْمَعُوا عَلَى** وُجُوبِ الزَّكَاةِ فِي الْعَيْنِ وَالزَّرْعِ وَالْمَاشِيَةِ.
+- **اخْتَلَفُوا فِي زَكَاةِ الْعُرُوضِ:**
+  1. الْجُمْهُورُ: وَاجِبَةٌ.
+  2. دَاوُدُ: غَيْرُ وَاجِبَةٍ ← وَدَلِيلُهُ:
+> لَيْسَ عَلَى الْمُسْلِمِ فِي عَبْدِهِ وَلَا فَرَسِهِ صَدَقَةٌ
+- (الْأَوَاقُ): جَمْعُ أُوقِيَّةٍ، وَهِيَ أَرْبَعُونَ دِرْهَمًا.
+#### مَا يُتَوَقَّعُ فِي الِامْتِحَانِ
+- **عَرِّفِ الزَّكَاةَ لُغَةً وَاصْطِلَاحًا** ← اذْكُرِ الْمَعْنَيَيْنِ.
+- **اذْكُرِ الْخِلَافَ فِي زَكَاةِ الْعُرُوضِ مَعَ الدَّلِيلِ.**`;
+
+const TalkhisLocked = () => {
+  useEffect(() => { window.logFunnel?.('paywall', 'talkhis'); }, []);
+  const subscribe = () => { window.logFunnel?.('click_pay', 'talkhis'); openAiUpgrade(); };
+  const html = useMemo(() => talkhisHtml(SAMPLE_TALKHIS), []);
+  return (
+    <div className="card-glass p-5 md:p-8" style={{ border: '1px solid rgba(201,168,106,0.28)' }}>
+      <div className="grid md:grid-cols-2 gap-6 md:gap-8 items-start">
+        <div>
+          <div className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-full border border-gold-500/25 bg-gold-500/10 text-gold-300 mb-3">
+            <Icon name="crown" className="w-3 h-3"/> Khusus pelanggan AI Partner
+          </div>
+          <h3 className="font-display text-xl md:text-2xl font-semibold text-ink mb-1">Talkhis otomatis seluruh muqarrar</h3>
+          <div dir="rtl" className="arabic text-gold-300/80 text-lg mb-3 text-left md:text-left">تَلْخِيصُ الْمُقَرَّرِ</div>
+          <p className="text-sm text-ink-muted leading-relaxed mb-4">
+            Upload muqarrarmu, Talqeeh memetakan semua mabahits-nya lalu menulis talkhis berbahasa Arab gaya talkhisan Masisir.
+            Tiap judul dicek ke teks muqarrar: yang kurang langsung dilengkapi.
+          </p>
+          <ul className="text-[13px] text-ink-muted space-y-2 mb-5">
+            {[
+              'فهرس المباحث otomatis dari seluruh muqarrar',
+              'Ta\'rif, nash, khilaf + dalil, dan perkiraan soal imtihan per judul',
+              'Indikator lengkap/kurang, dicek ke teks muqarrar',
+              'Satu catatan rapi di Kurasah + PDF siap cetak',
+            ].map(s => (
+              <li key={s} className="flex gap-2"><Icon name="check" className="w-4 h-4 text-emerald-300 flex-shrink-0 mt-0.5"/><span>{s}</span></li>
+            ))}
+          </ul>
+          <button onClick={subscribe} className="btn btn-gold text-sm px-6 py-3 w-full md:w-auto">
+            Berlangganan AI Partner <Icon name="arrowRight" className="w-4 h-4"/>
+          </button>
+          <p className="text-[11px] text-ink-soft mt-2">Sekalian buka i'rab, tutor, latihan tahriri, dan semua fitur AI Partner.</p>
+        </div>
+        <div className="relative rounded-xl border border-white/10 bg-black/20 p-4 max-h-[420px] overflow-hidden">
+          <div className="text-[10px] uppercase tracking-wider text-ink-soft mb-2">Contoh hasil</div>
+          <div dir="rtl" lang="ar" className="tk-body" style={{ fontSize: 16 }} dangerouslySetInnerHTML={{ __html: html }}/>
+          <div className="absolute inset-x-0 bottom-0 h-28 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(12,12,12,0), #0c0c0c)' }}/>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const TalkhisTab = ({ set, setSet, access }) => {
   const toast = useToast();
   const t = set.talkhis && Array.isArray(set.talkhis.topics)
@@ -460,7 +522,7 @@ const TalkhisTab = ({ set, setSet, access }) => {
   const [mapErr, setMapErr] = useState('');
   const [live, pushLive, resetLive] = useLive();
   const isTrial = access.tier !== 'pro';
-  const canUse = access.tier === 'pro' || access.isTrialSet;
+  const canUse = access.tier === 'pro';
 
   const apply = (d) => setSet(s => ({ ...s, talkhis: d.talkhis }));
   const fail = (d) => { if (d.upgrade) setUpgrade(d.error); else toast.push(d.error || 'Gagal'); return false; };
@@ -577,7 +639,7 @@ const TalkhisTab = ({ set, setSet, access }) => {
     if (r === null) toast.push('Jendela unduhan diblokir browser. Izinkan pop-up untuk Talqeeh lalu coba lagi.');
   };
 
-  if (!canUse) return <UpgradeCard message="Talkhis otomatis khusus pelanggan AI Partner. Muqarrarmu dipetakan per mabhats, ditalkhis dalam bahasa Arab, lalu dicek kelengkapannya satu per satu."/>;
+  if (!canUse) return <TalkhisLocked/>;
 
   /* Belum ada talkhis / pemetaan terputus */
   if (!t || t.stage === 'map') {
