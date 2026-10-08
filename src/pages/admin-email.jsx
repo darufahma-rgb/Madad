@@ -167,37 +167,90 @@ Semoga Allah mudahkan perjuangan imtihan kita semua.
     },
     {
       id: 'h2', label: 'Email 2 · H-2: Bank soal + talkhis',
-      subject: 'Soal imtihan tahun lalu + talkhis otomatis, tinggal 2 hari',
+      subject: '⏰ Tinggal 2 hari: soal imtihan tahun lalu + talkhis otomatis',
+      cta_label: 'AMBIL PROMO SEBELUM HABIS!',
       body: `Assalamu'alaikum {nama},
 
-Cara paling aman menghadapi imtihan: tahu pola soalnya, lalu muraja'ah dari ringkasan yang lengkap. Di Talqeeh, dua-duanya ada.
+## 📝 TAHU POLA SOALNYA, MURAJA'AH DARI TALKHISAN YANG LENGKAP!
 
-Bank soal imtihan asli
-Soal tahun-tahun sebelumnya dari Syariah, Ushuluddin, Lughah, dan Dirasat Banat, lengkap dengan terjemah per soal. Baru masuk: 32 soal Banat Ushuluddin tingkat 1–2 (2024–2026).
+Cara paling aman menghadapi imtihan itu sederhana: tahu soal seperti apa yang biasa keluar, lalu muraja'ah dari ringkasan yang lengkap.
 
-Talkhis otomatis dari muqarrarmu sendiri
-Bukan ringkasan umum: talkhis dibuat dari teks muqarrar yang kamu upload, dicek kelengkapannya per judul, lalu bisa kamu unduh jadi PDF siap cetak lengkap dengan latihan soal.
+*Di Talqeeh, dua-duanya sudah siap untukmu.*
 
-Paket Imtihan ${price} (normal ${fmt(normal)}) hanya sampai ${end}.
+## 📚 BANK SOAL IMTIHAN ASLI
 
-Kalau ada pertanyaan, balas email ini saja.
-Tim Talqeeh`,
+✅ Soal tahun-tahun sebelumnya dari Syariah, Ushuluddin, Lughah, dan Dirasat Banat.
+✅ Lengkap dengan terjemah per soal, jadi lebih mudah dipahami.
+✅ Baru masuk: 32 soal Banat Ushuluddin tingkat 1–2 (2024–2026).
+
+## 🚀 TALKHIS OTOMATIS DARI MUQARRARMU SENDIRI
+
+✅ Dibuat dari teks muqarrar yang kamu upload, bukan ringkasan umum.
+✅ Dicek kelengkapannya per judul, bagian yang kurang langsung dilengkapi.
+✅ Bisa diunduh jadi PDF berwarna, lengkap dengan latihan soal dan kunci jawaban.
+
+*Latihan dari soal asli, muraja'ah dari talkhisan yang rapi. Persiapan imtihan jadi jauh lebih tenang.*
+
+## 🎁 PAKET IMTIHAN — TINGGAL 2 HARI!
+
+> ~~${fmt(normal)}~~
+> *SEKARANG CUMA ${price}!*
+
+Sekali bayar, kamu mendapatkan:
+
+📚 *Library Selamanya*
+${maddah} maddah, ${prompts} template prompt, dan bank soal imtihan.
+
+🤖 *AI Study Partner ${days} Hari*
+Talkhis otomatis, i'rab, tutor AI, kuis, dan latihan tahriri. Tanpa kuota bulanan, dengan batas penggunaan wajar harian.
+
+## ⏳ PROMO BERAKHIR ${(P?.endLabel || '').toUpperCase()}!
+
+Promo ${P?.name || 'Paket Imtihan'} *berakhir ${end}.* Setelah itu, harga kembali ${fmt(normal)}.
+
+💚 *Ambil sekarang selagi masih ${price}, lalu mulai persiapan imtihanmu hari ini juga.*
+
+[[tombol]]
+
+Kalau ada pertanyaan, cukup balas email ini.
+
+Semoga Allah mudahkan perjuangan imtihan kita semua.
+
+*Tim Talqeeh*`,
     },
     {
       id: 'h1', label: 'Email 3 · H-1: Hari terakhir',
-      subject: `Besok terakhir: Paket Imtihan ${price}`,
+      subject: `⏳ Besok terakhir: Paket Imtihan cuma ${price}`,
+      cta_label: `AMBIL PROMO ${price.toUpperCase()} SEKARANG!`,
       body: `Assalamu'alaikum {nama},
 
-Singkat saja: promo Paket Imtihan berakhir besok, ${end}. Setelah itu harganya kembali ke ${fmt(normal)}.
+## ⏳ BESOK HARI TERAKHIR PROMO PAKET IMTIHAN!
 
-${price} untuk:
-• Talkhis otomatis muqarrar + PDF berwarna dan latihan soal
-• Bank soal imtihan asli (banin dan banat)
-• AI Partner ${days} hari: i'rab, tutor, kuis, latihan tahriri
-• Library ${maddah} maddah, akses selamanya
+Singkat saja: promo ${P?.name || 'Paket Imtihan'} *berakhir besok, ${end}.*
 
-Bismillah, semoga jadi ikhtiar terbaik untuk imtihan nanti.
-Tim Talqeeh`,
+Setelah itu, harga Paket Imtihan kembali ke ${fmt(normal)}.
+
+> ~~${fmt(normal)}~~
+> *CUMA ${price}, SEKALI BAYAR!*
+
+## 🎁 YANG KAMU DAPAT
+
+✅ *Talkhis otomatis* dari PDF muqarrarmu, lengkap dengan PDF berwarna, latihan soal, dan kunci jawaban.
+✅ *Bank soal imtihan asli* banin dan banat, lengkap dengan terjemah.
+✅ *AI Study Partner ${days} hari:* i'rab, tutor AI, kuis, dan latihan tahriri.
+✅ *Library selamanya:* ${maddah} maddah dan ${prompts} template prompt.
+
+*Sekali bayar, kepakai sampai imtihan selesai, dan Library-nya tetap milikmu selamanya.*
+
+## 🔥 JANGAN SAMPAI KELEWATAN!
+
+💚 *Bismillah, semoga jadi ikhtiar terbaik untuk imtihan nanti.*
+
+[[tombol]]
+
+Semoga Allah mudahkan perjuangan imtihan kita semua.
+
+*Tim Talqeeh*`,
     },
   ];
 };
