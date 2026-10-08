@@ -95,6 +95,10 @@ const STATE_META = {
   empty:      { label: 'Belum ditulis',  dot: 'bg-white/20',    text: 'text-ink-soft' },
   skip:       { label: 'Dilewati',       dot: 'bg-white/10',    text: 'text-ink-soft' },
 };
+// Nama bab & judul yang tersimpan dari pemetaan lama (sebelum perbaikan PDF) dibetulkan saat ditampilkan:
+// "ال" + lam-alif terbalik → األعراف, اإلمام, اآلن, االستدالل (lihat fixReversedLamAlef di server).
+const fixLamAlef = (s) => String(s || '').replace(/ا([أإآ])([\u064B-\u0652]*)ل/g, 'ال$1$2').replace(/اال/g, 'الا');
+
 const pages = (x) => Math.max(1, Math.round((x.end - x.start) / CHARS_PER_PAGE));
 const arNum = (n) => Number(n).toLocaleString('ar-EG');
 
@@ -382,7 +386,9 @@ const TopicRow = ({ x, i, open, onToggle, live, busy, running, canWrite, sourceN
 
 const TalkhisTab = ({ set, setSet, access }) => {
   const toast = useToast();
-  const t = set.talkhis && Array.isArray(set.talkhis.topics) ? set.talkhis : null;
+  const t = set.talkhis && Array.isArray(set.talkhis.topics)
+    ? { ...set.talkhis, topics: set.talkhis.topics.map(x => ({ ...x, bab: fixLamAlef(x.bab), title: fixLamAlef(x.title) })) }
+    : null;
   const tRef = useRef(t);
   tRef.current = t;
   const [busy, setBusy] = useState('');          // 'map' | 'write' | 'check' | 'edit' | 'reset'

@@ -75,7 +75,15 @@ const lineStart = (text, at) => {
   return start;
 };
 
+/* Lam-alif yang terbalik: "ال" + ligatur "لأ/لإ/لآ/لا" yang isinya terbalik menghasilkan urutan yang tidak pernah ada
+   dalam ejaan Arab — األعراف (الأعراف)، اإلمام (الإمام)، اآلن (الآن)، االستدالل (الاستدلال). Dua alif berturut-turut
+   sebelum lam selalu salah baca, jadi aman dibetulkan otomatis. */
+const fixReversedLamAlef = (t) => String(t || '')
+  .replace(/ا([أإآ])([\u064B-\u0652]*)ل/g, 'ال$1$2')
+  .replace(/اال/g, 'الا');
 const clip = (s, n) => String(s || '').replace(/\s+/g, ' ').trim().slice(0, n);
+// Nama bab & judul dari AI (yang kadang menyalin teks PDF apa adanya) dibetulkan dulu.
+const clipName = (s, n) => fixReversedLamAlef(clip(s, n));
 const newId = () => crypto.randomBytes(5).toString('hex');
 
 /* ── Prompt ── */
@@ -88,7 +96,7 @@ Tugas: sebut setiap mabhats (pembahasan) di bagian ini SESUAI URUTAN, dari awal 
 - "bab": nama كتاب/باب/فصل induknya dalam bahasa Arab (sama persis untuk judul-judul di bawah induk yang sama). Kosongkan kalau tidak ada.
 - "title": judul mabhats dalam bahasa Arab, ringkas (2–8 kata), memakai istilah muqarrar. Kalau muqarrar punya judul sendiri, pakai judul itu.
 - "anchor": 6–12 kata PERTAMA dari mabhats itu, disalin PERSIS dari teks (huruf yang sama, boleh tanpa harakat). Biasanya baris judulnya atau kalimat pertamanya. Ini dipakai untuk menemukan posisinya, jadi jangan diparafrase.
-Teks berasal dari PDF dan bisa berisi salah baca: pasangan huruf terbalik (الزاكة = الزكاة، عىل = على، ابب = باب، امجلهور = الجمهور، يف = في) atau spasi di tengah kata (س نة = سنة). "bab" dan "title" WAJIB ditulis dengan ejaan Arab yang benar, bukan disalin dengan kesalahannya. Hanya "anchor" yang disalin persis seperti di teks.
+Teks berasal dari PDF dan bisa berisi salah baca: pasangan huruf terbalik (الزاكة = الزكاة، عىل = على، ابب = باب، امجلهور = الجمهور، يف = في، األعراف = الأعراف، اإلمام = الإمام) atau spasi di tengah kata (س نة = سنة). "bab" dan "title" WAJIB ditulis dengan ejaan Arab yang benar, bukan disalin dengan kesalahannya. Hanya "anchor" yang disalin persis seperti di teks.
 Ukuran mabhats: satu pokok bahasan yang utuh, kira-kira 1–6 halaman. Jangan memecah tiap paragraf jadi judul; jangan pula menggabung beberapa bab jadi satu judul.
 Pengantar, daftar isi, dan muqaddimah umum boleh dijadikan satu judul "مقدمة" kalau ada isinya; lewati halaman sampul/daftar isi yang tanpa isi ilmu.
 Balas HANYA JSON: {"items":[{"bab":"...","title":"...","anchor":"..."}]}`;
@@ -97,7 +105,7 @@ const WRITE_RULES = `Kamu penulis talkhis (تلخيص) muqarrar Al-Azhar untuk m
 
 Prinsip:
 - LENGKAP: setiap ta'rif, pembagian, syarat, rukun, hukum, masalah ijma' dan khilaf, pendapat beserta pemiliknya, dalil, angka/ukuran, pengecualian, dan faidah yang ada di sumber HARUS masuk. Yang diringkas adalah redaksinya, bukan isinya.
-- Teks sumber berasal dari PDF dan bisa berisi salah baca: pasangan huruf terbalik (الزاكة = الزكاة، عىل = على، ابب = باب، امجلهور = الجمهور، يف = في، هللا = الله) atau spasi di tengah kata (س نة = سنة). Tulis selalu dengan ejaan yang benar, termasuk di dalam kutipan nash.
+- Teks sumber berasal dari PDF dan bisa berisi salah baca: pasangan huruf terbalik (الزاكة = الزكاة، عىل = على، ابب = باب، امجلهور = الجمهور، يف = في، هللا = الله، األعراف = الأعراف، اإلمام = الإمام) atau spasi di tengah kata (س نة = سنة). Tulis selalu dengan ejaan yang benar, termasuk di dalam kutipan nash.
 - SETIA SUMBER: gunakan HANYA isi sumber yang diberikan. Jangan menambah pendapat, dalil, nama ulama, atau hukum dari luar. Kalau sumber tidak menyebut yang rajih, jangan mengarang tarjih.
 - PADAT: kalimat pendek, buang pengulangan dan uraian panjang; kira-kira 25–40% panjang sumber.
 - Harakat lengkap pada nash (ayat, hadits, matan, ta'rif istilahi) dan pada istilah kunci.
@@ -275,7 +283,7 @@ export async function handleTalkhis(ctx, body, res, deps) {
       maxTokens: 3000, model: models.default, temperature: 0,
     });
     const items = (Array.isArray(out?.items) ? out.items : []).slice(0, 60)
-      .map(it => ({ bab: clip(it?.bab, 80), title: clip(it?.title, 80), anchor: clip(it?.anchor, 160) }))
+      .map(it => ({ bab: clipName(it?.bab, 80), title: clipName(it?.title, 80), anchor: clip(it?.anchor, 160) }))
       .filter(it => it.title);
     t.raw.push({ ...spans[step], items });
     t.map_step = step + 1;

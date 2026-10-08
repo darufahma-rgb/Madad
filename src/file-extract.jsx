@@ -63,8 +63,21 @@ const fixMarkOrder = (text) => {
   return strayMarks(swapped) < stray ? swapped : null;
 };
 
+/* Lam-alif yang terbalik: "ال" + ligatur "لأ/لإ/لآ/لا" yang isinya terbalik menghasilkan urutan yang tidak pernah ada
+   dalam ejaan Arab — األعراف (الأعراف)، اإلمام (الإمام)، اآلن (الآن)، االستدالل (الاستدلال). Dua alif berturut-turut
+   sebelum lam selalu salah baca, jadi aman dibetulkan otomatis. */
+const fixReversedLamAlef = (t) => String(t || '')
+  .replace(/ا([أإآ])([\u064B-\u0652]*)ل/g, 'ال$1$2')
+  .replace(/اال/g, 'الا');
+
 // Hasil: { text, status } — status 'ok' | 'fixed' (dirapikan) | 'empty' (hasil scan) | 'garbled' (tidak bisa dipakai).
 const cleanPdfText = (raw) => {
+  const res = cleanPdfTextRaw(raw);
+  if (!res.text) return res;
+  const text = fixReversedLamAlef(res.text);
+  return text === res.text ? res : { ...res, text, status: res.status === 'ok' ? 'fixed' : res.status };
+};
+const cleanPdfTextRaw = (raw) => {
   let text = String(raw || '').trim();
   if (text.replace(/\s/g, '').length < 20) return { text: '', status: 'empty' };
   let fixed = false;
