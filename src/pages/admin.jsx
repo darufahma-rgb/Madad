@@ -2625,6 +2625,9 @@ const AdminSettings = () => {
   }));
   // Kuota bulanan AI per pelanggan; kosong = bawaan server (DEFAULT_MONTHLY_LIMITS).
   const [limits, setLimits] = useState({});
+  // Limit khusus per email: [{ email, daily: { talkhis: 5, … }, noMonthly }] — lihat parseQuotaOverrides di server.
+  const [overrides, setOverrides] = useState([]);
+  const [newOverrideEmail, setNewOverrideEmail] = useState("");
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeModels, setActiveModels] = useState(null);
@@ -2636,6 +2639,7 @@ const AdminSettings = () => {
         if (!server || typeof server !== 'object') return;
         setSettings(s => ({ ...s, ...server }));
         try { setLimits(JSON.parse(server.aiMonthlyLimits || '{}') || {}); } catch { setLimits({}); }
+        try { const o = JSON.parse(server.aiQuotaOverrides || '[]'); setOverrides(Array.isArray(o) ? o : []); } catch { setOverrides([]); }
       })
       .catch(err => toast.push("Gagal memuat settings: " + err.message));
     aiPartnerAdmin('admin-models').then(d => { if (d.ok) setActiveModels(d.data); }).catch(() => {});
@@ -2644,7 +2648,7 @@ const AdminSettings = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await adminMembersAPI('save-settings', null, { ...settings, aiMonthlyLimits: limits });
+      await adminMembersAPI('save-settings', null, { ...settings, aiMonthlyLimits: limits, aiQuotaOverrides: overrides });
       localStorage.removeItem("talqee_admin_settings");
       setSaved(true);
       toast.push("Settings tersimpan & langsung berlaku untuk semua pengunjung.");
@@ -2758,6 +2762,59 @@ const AdminSettings = () => {
             ))}
           </div>
           <p className="text-[11px] text-ink-soft">Angka abu-abu = bawaan. Perkiraan biaya per fitur (mengikuti model di atas) ada di Analitik → AI Partner.</p>
+        </div>
+
+        <div className="card-glass p-6 space-y-4">
+          <div>
+            <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Limit khusus per email</div>
+            <p className="text-[11px] text-ink-soft leading-relaxed">
+              Untuk akun tertentu (misalnya akun admin, penguji, atau mitra): batas harian sendiri per fitur, dan bisa bebas dari kuota
+              bulanan. Kolom kosong = batas harian bawaan. Email lain tidak terpengaruh. Klik "Simpan Settings" setelah mengubah.
+            </p>
+          </div>
+          {overrides.map((o, idx) => {
+            const setO = (patchO) => setOverrides(list => list.map((x, i) => (i === idx ? { ...x, ...patchO } : x)));
+            const setDaily = (k, v) => setO({ daily: (() => { const d = { ...(o.daily || {}) }; if (v === "") delete d[k]; else d[k] = Number(v); return d; })() });
+            return (
+              <div key={o.email + idx} className="rounded-xl border border-white/10 bg-white/[0.02] p-4">
+                <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+                  <div className="font-mono text-sm text-ink break-all">{o.email}</div>
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 text-xs text-ink-muted cursor-pointer">
+                      <input type="checkbox" checked={!!o.noMonthly} onChange={e => setO({ noMonthly: e.target.checked })} className="accent-emerald-500"/>
+                      Bebas kuota bulanan
+                    </label>
+                    <button onClick={() => setOverrides(list => list.filter((_, i) => i !== idx))} className="text-xs text-ink-soft hover:text-rose-500 px-2 py-1">Hapus</button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 md:grid-cols-5 gap-2.5">
+                  {[
+                    ['talkhis', 'Talkhis', 1], ['generate', 'Pembuatan AI', 25], ['analyze', "I'rab", 30], ['chat', 'Tutor', 40], ['prompt', 'Tanya AI', 40],
+                    ['create', 'Materi baru', 10], ['grade', 'Nilai tahriri', 20], ['ocr', 'Baca foto', 20], ['transcribe', 'Transkrip', 60],
+                  ].map(([k, label, def]) => (
+                    <div key={k}>
+                      <label className="text-[10px] text-ink-muted block mb-1">{label} / hari</label>
+                      <input inputMode="numeric" value={o.daily?.[k] ?? ""} placeholder={String(def)}
+                        onChange={e => setDaily(k, e.target.value.replace(/[^\d]/g, "").slice(0, 4))}
+                        className="w-full bg-white/5 border border-white/10 rounded-lg px-2.5 py-1.5 text-sm text-ink outline-none font-mono focus:border-emerald-500/45"/>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+          <form className="flex gap-2" onSubmit={e => {
+            e.preventDefault();
+            const email = newOverrideEmail.trim().toLowerCase();
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast.push("Email tidak valid."); return; }
+            if (overrides.some(o => o.email === email)) { toast.push("Email ini sudah ada di daftar."); return; }
+            setOverrides(list => [...list, { email, daily: {}, noMonthly: false }]);
+            setNewOverrideEmail("");
+          }}>
+            <input value={newOverrideEmail} onChange={e => setNewOverrideEmail(e.target.value)} placeholder="email@gmail.com (email login Google)"
+              className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink outline-none focus:border-emerald-500/45"/>
+            <button className="btn btn-ghost text-sm px-4">+ Tambah email</button>
+          </form>
         </div>
 
         <div className="flex justify-between items-center">

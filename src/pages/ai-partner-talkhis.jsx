@@ -290,6 +290,34 @@ const CoverageBox = ({ cov }) => {
   );
 };
 
+// Judul bab ﴿ … ﴾ dengan tombol ganti nama (berlaku untuk semua judul di bab itu).
+const BabHeader = ({ bab, disabled, onRename }) => {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(bab);
+  useEffect(() => { if (!editing) setVal(bab); }, [bab, editing]);
+  if (editing) {
+    return (
+      <form className="flex gap-2 mb-2 max-w-lg mx-auto" onSubmit={(e) => { e.preventDefault(); if (val.trim()) onRename(val.trim()); setEditing(false); }}>
+        <input dir="rtl" autoFocus value={val} onChange={e => setVal(e.target.value)} maxLength={80} placeholder="اسم الباب"
+          className="flex-1 min-w-0 arabic text-base px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-ink focus:outline-none focus:border-emerald-500/50"/>
+        <button className="btn btn-primary text-xs px-4">Simpan</button>
+        <button type="button" onClick={() => setEditing(false)} className="btn btn-ghost text-xs px-3">Batal</button>
+      </form>
+    );
+  }
+  return (
+    <div className="flex items-center justify-center gap-2 mb-2">
+      {bab
+        ? <div dir="rtl" className="arabic text-center text-gold-300 text-lg">﴿ {bab} ﴾</div>
+        : <div className="text-xs text-ink-soft">Tanpa bab</div>}
+      <button type="button" disabled={disabled} onClick={() => setEditing(true)} title={bab ? 'Ganti nama bab' : 'Beri nama bab'}
+        className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-soft hover:text-ink hover:bg-white/6 disabled:opacity-40">
+        <Icon name="pen" className="w-3.5 h-3.5"/>
+      </button>
+    </div>
+  );
+};
+
 const TopicRow = ({ x, i, open, onToggle, live, busy, running, canWrite, sourceNorm, onWrite, onCheck, onEdit, onCopy, onKurasah }) => {
   const st = live ? 'writing' : stateOf(x);
   const meta = STATE_META[st] || { label: 'Sedang ditulis…', dot: 'bg-emerald-400 animate-pulse', text: 'text-emerald-300' };
@@ -582,7 +610,7 @@ const TalkhisTab = ({ set, setSet, access }) => {
       <div className="space-y-5">
         {groups.map((g, gi) => (
           <div key={gi}>
-            {g.bab && <div dir="rtl" className="arabic text-center text-gold-300 text-lg mb-2">﴿ {g.bab} ﴾</div>}
+            {(g.bab || groups.length > 1) && <BabHeader bab={g.bab} disabled={!!busy || running} onRename={(name) => edit(g.items[0].x, 'rename-bab', name)}/>}
             <div className="space-y-2">
               {g.items.map(({ x, i }) => (
                 <TopicRow key={x.id} x={x} i={i} open={openId === x.id} onToggle={() => setOpenId(id => (id === x.id ? null : x.id))}

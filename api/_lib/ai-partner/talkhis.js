@@ -299,6 +299,15 @@ export async function handleTalkhis(ctx, body, res, deps) {
       const title = clip(body.title, 120);
       if (!title) return res.status(400).json({ ok: false, error: 'Judul kosong' });
       topic.title = title;
+    } else if (body.edit === 'rename-bab') {
+      // Semua judul berurutan yang ada di bab yang sama dengan judul ini ikut diganti.
+      const bab = clip(body.title, 80).replace(/^﴿\s*|\s*﴾$/g, '');
+      if (!bab) return res.status(400).json({ ok: false, error: 'Nama bab kosong' });
+      const old = topic.bab || '';
+      let a = i, b = i;
+      while (a > 0 && (t.topics[a - 1].bab || '') === old) a--;
+      while (b < t.topics.length - 1 && (t.topics[b + 1].bab || '') === old) b++;
+      for (let k = a; k <= b; k++) t.topics[k].bab = bab;
     } else if (body.edit === 'skip') {
       topic.skip = !topic.skip;
     } else if (body.edit === 'merge-prev') {

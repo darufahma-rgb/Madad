@@ -33,5 +33,38 @@ export const getMonthlyLimits = async () => {
   return cache.value;
 };
 
+/* ── Limit khusus per email (diatur admin) ──
+   Disimpan sebagai JSON [{ email, daily: { talkhis: 5, … }, noMonthly: true }]. daily menggantikan batas harian
+   bawaan untuk jenis yang diisi; noMonthly = kuota bulanan tidak berlaku untuk email itu. */
+export const DAILY_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', 'grade', 'ocr', 'transcribe', 'talkhis'];
+const MAX_DAILY = 1000;
+export const normEmail = (e) => String(e || '').trim().toLowerCase();
+
+export const parseQuotaOverrides = (raw) => {
+  let list = [];
+  try { list = typeof raw === 'string' ? JSON.parse(raw || '[]') : (raw || []); } catch {}
+  return (Array.isArray(list) ? list : []).map(o => {
+    const email = normEmail(o?.email);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null;
+    const daily = {};
+    for (const k of DAILY_KINDS) {
+      const n = Number(o?.daily?.[k]);
+      if (o?.daily?.[k] !== '' && o?.daily?.[k] != null && Number.isInteger(n) && n >= 0 && n <= MAX_DAILY) daily[k] = n;
+    }
+    return { email, daily, noMonthly: !!o?.noMonthly };
+  }).filter(Boolean).slice(0, 50);
+};
+
+let overrideCache = { at: 0, value: null };
+export const getQuotaOverride = async (emails) => {
+  if (!overrideCache.value || Date.now() - overrideCache.at > CACHE_MS) {
+    let raw = null;
+    try { raw = (await readSettings(['aiQuotaOverrides'])).aiQuotaOverrides; } catch {}
+    overrideCache = { at: Date.now(), value: parseQuotaOverrides(raw) };
+  }
+  const mine = new Set((emails || []).map(normEmail).filter(Boolean));
+  return overrideCache.value.find(o => mine.has(o.email)) || null;
+};
+
 // Untuk pesan "kuota habis" setelah getMonthlyLimits() dipanggil di permintaan yang sama.
 export const cachedMonthlyLimits = () => cache.value || DEFAULT_MONTHLY_LIMITS;

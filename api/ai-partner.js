@@ -18,7 +18,7 @@ const COST_KIND = {
   chat: 'chat', 'prompt-chat': 'prompt', talkhis: 'talkhis',
 };
 import { handlePromptFeedback, handlePromptQualityAdmin } from './_lib/prompt-quality.js';
-import { getMonthlyLimits, cachedMonthlyLimits } from './_lib/ai-partner/limits.js';
+import { getMonthlyLimits, cachedMonthlyLimits, getQuotaOverride } from './_lib/ai-partner/limits.js';
 import { splitChunks, spreadSample, stickyExcerpt } from './_lib/ai-partner/chunks.js';
 import {
   isStr, cleanFlashcards, cleanQuiz, shuffleQuizOptions, cleanGlossary, cleanMindmap, cleanEssays,
@@ -212,7 +212,7 @@ const quotaExceeded = (res, kind, scope = 'daily', ctx = null) => scope === 'una
     ok: false, error: 'quota', scope,
     message: scope === 'monthly'
       ? `Jatah ${cachedMonthlyLimits()[kind]}x untuk fitur ini di periode langgananmu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx?.quotaResetAt || quotaPeriod(null).resetAt)}.`
-      : `Batas harian (${LIMITS[kind]}x) untuk fitur ini tercapai. Coba lagi besok.`,
+      : `Batas harian (${dailyLimitCache(ctx, kind)}x) untuk fitur ini tercapai. Coba lagi besok.`,
   });
 
 // Pemakaian sejak tanggal `since` per jenis: { chat: 12, … }. Gagal membaca → null (pemanggil memutuskan).
@@ -245,8 +245,18 @@ const isImtihanHolder = async (ctx) => {
   return ctx.imtihan;
 };
 
+/* Limit khusus per email dari Admin → Settings: batas harian sendiri per fitur, dan/atau tanpa kuota bulanan.
+   Dibaca sekali per permintaan. */
+const quotaOverride = async (ctx) => {
+  if (ctx.override === undefined) ctx.override = await getQuotaOverride(ctx.emails).catch(() => null);
+  return ctx.override;
+};
+const dailyLimit = async (ctx, kind) => (await quotaOverride(ctx))?.daily?.[kind] ?? LIMITS[kind];
+const dailyLimitCache = (ctx, kind) => ctx?.override?.daily?.[kind] ?? LIMITS[kind];
+
 const takeQuota = async (ctx, kind) => {
-  const monthly = (await isImtihanHolder(ctx)) ? null : (await getMonthlyLimits())[kind];
+  const skipMonthly = (await isImtihanHolder(ctx)) || (await quotaOverride(ctx))?.noMonthly;
+  const monthly = skipMonthly ? null : (await getMonthlyLimits())[kind];
   if (monthly != null) {
     const period = quotaPeriod(ctx.aiExpiresAt);
     ctx.quotaResetAt = period.resetAt;
@@ -254,7 +264,7 @@ const takeQuota = async (ctx, kind) => {
     if (!used) return 'unavailable';
     if ((used[kind] || 0) >= monthly) return 'monthly';
   }
-  return (await consumeQuota(ctx.code, kind, LIMITS[kind])) ? null : 'daily';
+  return (await consumeQuota(ctx.code, kind, await dailyLimit(ctx, kind))) ? null : 'daily';
 };
 
 const upgradeRequired = (res, feature, message) =>
@@ -360,9 +370,9 @@ async function handleOcrQuota(ctx, res) {
   if (ctx.tier !== 'pro') {
     return res.status(200).json({ ok: true, remaining: Math.max(0, TRIAL_OCR_LIMIT - usedToday), scope: 'trial' });
   }
-  let remaining = Math.max(0, LIMITS.ocr - usedToday);
+  let remaining = Math.max(0, (await dailyLimit(ctx, 'ocr')) - usedToday);
   let scope = 'daily';
-  const monthly = (await isImtihanHolder(ctx)) ? null : (await getMonthlyLimits()).ocr;
+  const monthly = ((await isImtihanHolder(ctx)) || (await quotaOverride(ctx))?.noMonthly) ? null : (await getMonthlyLimits()).ocr;
   if (monthly != null) {
     const used = await monthlyUsage(ctx.code, quotaPeriod(ctx.aiExpiresAt).start);
     if (used) {
@@ -1231,7 +1241,10 @@ export default async function handler(req, res) {
 
     const access = await requireAiTier(req);
     if (!access.ok) return res.status(access.status).json({ ok: false, error: access.reason });
-    const ctx = { code: access.code, tier: access.tier, aiExpiresAt: access.aiExpiresAt || null, memberTier: access.member?.tier || 'library' };
+    const ctx = {
+      code: access.code, tier: access.tier, aiExpiresAt: access.aiExpiresAt || null, memberTier: access.member?.tier || 'library',
+      emails: [access.member?.email, access.user?.email],
+    };
 
     if (ctx.tier === 'trial' && PRO_ONLY_ACTIONS.includes(action)) {
       return upgradeRequired(res, action);

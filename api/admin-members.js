@@ -6,7 +6,7 @@ import { newActivationPin, PIN_TTL_DAYS } from './_lib/pin.js';
 import { buildAdminAnalytics } from './_lib/analytics.js';
 import { parseAiPrice, extendAi } from './_lib/payments.js';
 import { newMemberCode } from './_lib/member.js';
-import { QUOTA_KINDS } from './_lib/ai-partner/limits.js';
+import { QUOTA_KINDS, parseQuotaOverrides } from './_lib/ai-partner/limits.js';
 import { handleEmailAdmin } from './_lib/email.js';
 
 const sbRequest = (supabaseUrl, serviceKey, method, path, body, prefer = 'return=representation') => {
@@ -284,10 +284,14 @@ export default async function handler(req, res) {
         if (bad) { res.status(400).json({ ok: false, error: `Kuota bulanan "${bad}" harus angka 0–5000` }); return; }
         row.aiMonthlyLimits = JSON.stringify(Object.fromEntries(QUOTA_KINDS.filter(k => src[k] !== '' && src[k] != null).map(k => [k, Number(src[k])])));
       }
+      // Limit khusus per email: dirapikan & divalidasi di server, disimpan sebagai JSON (boleh lebih panjang dari 500).
+      if (row && row.aiQuotaOverrides != null && typeof row.aiQuotaOverrides !== 'string') {
+        row.aiQuotaOverrides = JSON.stringify(parseQuotaOverrides(row.aiQuotaOverrides));
+      }
       const now = new Date().toISOString();
       const rows = ADMIN_SETTING_KEYS
         .filter(k => typeof row?.[k] === 'string')
-        .map(k => ({ key: k, value: row[k].trim().slice(0, 500), updated_at: now }));
+        .map(k => ({ key: k, value: row[k].trim().slice(0, k === 'aiQuotaOverrides' ? 20000 : 500), updated_at: now }));
       result = rows.length
         ? await sbRequest(supabaseUrl, serviceKey, 'POST', 'app_settings?on_conflict=key', rows, 'resolution=merge-duplicates,return=minimal')
         : { status: 200, data: null };
