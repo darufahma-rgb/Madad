@@ -196,7 +196,8 @@ const GabungPage = () => {
   const payOnline    = !!settings.payOnline;
   const aiPrice      = settings.aiPriceMonthly || null;
   const bundle       = aiBundle(settings);
-  const imtihan      = imtihanBundle(settings);
+  const offer        = useWelcomeOffer();
+  const imtihan      = imtihanBundle(settings, offer);
   const adminWa      = (settings.whatsapp || '').replace(/\D/g, '') || DEFAULT_ADMIN_WA;
   // Library + AI tanpa harga AI → hanya Library yang bisa dibayar sekarang.
   // Paket Imtihan berharga tetap (tidak bergantung harga AI bulanan).
@@ -373,8 +374,8 @@ const GabungPage = () => {
           ) : (
             <>
               {/* Paket utama di tengah: satu termin penuh sampai imtihan, sekali bayar. */}
-              <PlanCard className="order-first md:order-none" color={EMERALD} icon="sparkles" recommended badge={imtihan.promo ? `Promo ${imtihan.promo.name}` : "Paling hemat untuk imtihan"} title="Paket Imtihan" tagline="Library + AI, satu termin penuh"
-                strike={imtihan.promo ? formatRupiah(imtihan.promo.normal) : undefined} saving={imtihan.promo ? `Sampai ${imtihan.promo.endLabel}` : undefined}
+              <PlanCard className="order-first md:order-none" color={EMERALD} icon="sparkles" recommended badge={imtihan.promo ? (imtihan.promo.personal ? "🎁 Khusus untukmu" : `Promo ${imtihan.promo.name}`) : "Paling hemat untuk imtihan"} title="Paket Imtihan" tagline="Library + AI, satu termin penuh"
+                strike={imtihan.promo ? formatRupiah(imtihan.promo.normal) : undefined} saving={imtihan.promo ? (imtihan.promo.personal ? <>Hangus dalam <OfferClock endsAt={imtihan.promo.endsAt}/></> : `Sampai ${imtihan.promo.endLabel}`) : undefined}
                 price={formatRupiah(imtihan.total)} priceNote="sekali bayar"
                 sub={`Library selamanya + AI ${IMTIHAN_AI_DAYS} hari`}
                 extra={<div className="mb-5 -mt-2"><ImtihanBreakdown bundle={imtihan}/></div>}

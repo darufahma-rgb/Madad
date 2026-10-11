@@ -615,7 +615,20 @@ const aiBundle = (settings) => {
 };
 /* Paket Imtihan dibanding beli terpisah (Library + 4 × AI 30 hari). Harga AI bulanan dari Settings dipakai untuk
    perbandingan; kalau belum diisi, paket tetap bisa dibeli tanpa angka hemat. */
-const imtihanBundle = (settings) => {
+const imtihanBundle = (settings, offer = null) => {
+  // offer: penawaran 48 jam pribadi (useWelcomeOffer); dipakai kalau lebih murah dari harga event.
+  if (offer && offer.price < (imtihanPromoActive() ? IMTIHAN_PROMO.price : IMTIHAN_PRICE_IDR)) {
+    const total = offer.price;
+    const ai = settings?.aiPriceMonthly || null;
+    const separate = ai ? LIBRARY_PRICE_IDR + ai * Math.ceil(IMTIHAN_AI_DAYS / 30) : null;
+    const saving = separate && separate > total ? separate - total : null;
+    return {
+      total, aiPart: total - LIBRARY_PRICE_IDR, ai, separate, saving,
+      savingPct: saving ? Math.round((saving / separate) * 100) : null,
+      perDay: Math.ceil((total - LIBRARY_PRICE_IDR) / IMTIHAN_AI_DAYS / 100) * 100,
+      promo: { normal: IMTIHAN_PRICE_IDR, name: 'Hadiah 48 jam', endLabel: offerEndLabel(offer.endsAt), personal: true, endsAt: offer.endsAt },
+    };
+  }
   const promo = imtihanPromoActive();
   const total = promo ? IMTIHAN_PROMO.price : IMTIHAN_PRICE_IDR;
   const ai = settings?.aiPriceMonthly || null;
@@ -639,12 +652,124 @@ const usePromoCountdown = () => {
   return d > 0 ? `${d} hari ${h} jam` : `${h} jam ${m} menit`;
 };
 
-/* Banner event untuk pengunjung & akun gratis (member Library tidak bisa membeli Paket Imtihan). */
+/* ── Penawaran 48 jam untuk akun gratis (server: api/_lib/offer.js) ──
+   Dimuat sekali per akun lalu dibagikan ke semua komponen. Hitung mundur dimulai server saat pertama dimuat. */
+const offerEndLabel = (iso) => new Date(iso).toLocaleString("id-ID", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+const offerStore = { code: null, offer: null, promise: null, listeners: new Set() };
+const loadWelcomeOffer = (code) => {
+  if (offerStore.code === code && offerStore.promise) return offerStore.promise;
+  offerStore.code = code;
+  offerStore.offer = null;
+  offerStore.promise = Promise.resolve(window.authFetch?.("/api/login?action=offer", { method: "POST", body: "{}" }))
+    .then(r => r?.json()).then(d => { offerStore.offer = d?.ok && d.offer ? d.offer : null; })
+    .catch(() => {}).finally(() => offerStore.listeners.forEach(f => f()));
+  return offerStore.promise;
+};
+const useWelcomeOffer = () => {
+  const { session, isFree } = useAuth();
+  const [, rerender] = useState(0);
+  useEffect(() => {
+    if (!session?.code || !isFree) return;
+    const f = () => rerender(x => x + 1);
+    offerStore.listeners.add(f);
+    loadWelcomeOffer(session.code);
+    // Saat penawaran habis, semua tampilan kembali ke harga biasa tanpa perlu muat ulang.
+    const end = offerStore.offer ? Date.parse(offerStore.offer.endsAt) - Date.now() : 0;
+    const t = end > 0 && end < 3 * 86400e3 ? setTimeout(f, end + 500) : null;
+    return () => { offerStore.listeners.delete(f); if (t) clearTimeout(t); };
+  }, [session?.code, isFree, offerStore.offer?.endsAt]);
+  const o = session?.code && isFree && offerStore.code === session.code ? offerStore.offer : null;
+  return o && Date.parse(o.endsAt) > Date.now() ? o : null;
+};
+// Sisa waktu "47:59:12", diperbarui tiap detik.
+const useClock = (endsAt) => {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (!endsAt) return;
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [endsAt]);
+  if (!endsAt) return null;
+  const left = Math.max(0, Date.parse(endsAt) - now);
+  const h = Math.floor(left / 3600e3), m = Math.floor((left % 3600e3) / 60e3), s = Math.floor((left % 60e3) / 1000);
+  return [h, m, s].map(n => String(n).padStart(2, "0")).join(":");
+};
+
+const OfferClock = ({ endsAt, className = "" }) => {
+  const clock = useClock(endsAt);
+  return <span className={`font-mono tabular-nums ${className}`}>{clock}</span>;
+};
+
+/* Popup sekali per penawaran: muncul saat akun gratis membuka app selama penawaran berjalan. */
+const WelcomeOfferPopup = () => {
+  const offer = useWelcomeOffer();
+  const { profile } = useAuth();
+  const path = useRoute();
+  const key = offer ? `talqeeh_offer_seen_${offer.endsAt}` : null;
+  const [seen, setSeen] = useState(false);
+  useEffect(() => { if (key) { try { setSeen(localStorage.getItem(key) === "1"); } catch {} } }, [key]);
+  // Pengguna baru: tunggu sampai onboarding selesai; tawaran paket setelah onboarding sudah memuat harga ini.
+  const blocked = !profile || /^\/(admin|seminar|gabung|onboarding)/.test(path) || !!window.readUpgradeOffer?.();
+  if (!offer || seen || blocked) return null;
+  const close = () => { setSeen(true); try { localStorage.setItem(key, "1"); } catch {} };
+  const take = () => { window.logFunnel?.("click_pay", "offer_popup"); close(); navigate("/gabung?plan=imtihan"); };
+  const saving = IMTIHAN_PRICE_IDR - offer.price;
+  return (
+    <div className="fixed inset-0 z-[135] flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="offer-title">
+      <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={close}/>
+      <div className="relative w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border border-gold-500/30 p-6 text-center shadow-2xl"
+        style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(201,168,106,0.20), transparent 60%), #121614" }}>
+        <button onClick={close} aria-label="Tutup" className="absolute top-3 right-3 w-9 h-9 rounded-xl text-ink-muted hover:text-ink hover:bg-white/5 flex items-center justify-center">
+          <Icon name="x" className="w-4 h-4"/>
+        </button>
+        <div className="text-4xl mb-2" aria-hidden="true">🎁</div>
+        <div className="text-[11px] uppercase tracking-[0.2em] text-gold-300">Hadiah khusus akunmu</div>
+        <h2 id="offer-title" className="font-display text-2xl font-semibold text-ink mt-1 leading-tight">Paket Imtihan cuma {formatRupiah(offer.price)}</h2>
+        <p className="text-sm text-ink-muted mt-2">
+          Hemat <b className="text-ink">{formatRupiah(saving)}</b> dari harga normal <span className="line-through">{formatRupiah(IMTIHAN_PRICE_IDR)}</span>.
+          Harga ini hanya untukmu dan <b className="text-ink">hangus otomatis</b> saat waktunya habis.
+        </p>
+        <div className="mt-5 rounded-2xl border border-white/10 bg-black/30 py-4">
+          <div className="text-[10px] uppercase tracking-wider text-ink-soft mb-1">Berakhir dalam</div>
+          <OfferClock endsAt={offer.endsAt} className="text-4xl font-semibold text-gold-200"/>
+          <div className="text-[10px] text-ink-soft mt-1">jam : menit : detik</div>
+        </div>
+        <ul className="mt-4 space-y-1.5 text-left text-sm text-ink">
+          {["Talkhis otomatis muqarrar + PDF siap cetak", `AI Study Partner ${IMTIHAN_AI_DAYS} hari`, `Library ${CATALOG.maddah} maddah + bank soal, selamanya`].map(t => (
+            <li key={t} className="flex gap-2"><Icon name="check" className="w-4 h-4 text-emerald-300 flex-shrink-0 mt-0.5"/>{t}</li>
+          ))}
+        </ul>
+        <button onClick={take} className="btn btn-gold w-full justify-center text-sm py-3 mt-5">Ambil harga {formatRupiah(offer.price)} sekarang</button>
+        <button onClick={close} className="text-xs text-ink-soft hover:text-ink-muted mt-3">Nanti saja</button>
+      </div>
+    </div>
+  );
+};
+
+/* Banner event untuk pengunjung & akun gratis (member Library tidak bisa membeli Paket Imtihan).
+   Selama penawaran 48 jam berjalan, banner ini berganti menjadi hitung mundur pribadi. */
 const EventBanner = () => {
   const { session, isFree } = useAuth();
   const path = useRoute();
   const left = usePromoCountdown();
+  const offer = useWelcomeOffer();
   const [hidden, setHidden] = useState(() => { try { return sessionStorage.getItem("talqeeh_event_hide") === IMTIHAN_PROMO.endsAt; } catch { return false; } });
+  if (offer && !/^\/(admin|seminar|gabung)/.test(path)) {
+    return (
+      <div className="relative z-[5] border-b border-gold-500/30" style={{ background: "linear-gradient(90deg, rgba(201,168,106,0.22), rgba(62,207,142,0.12))" }}>
+        <div className="container-x py-2.5 flex items-center gap-2.5 md:gap-3 text-[12.5px] md:text-[13px]">
+          <span className="hidden sm:inline px-2 py-0.5 rounded-full bg-gold-400 text-black text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Hadiah</span>
+          <span className="text-ink flex-1 min-w-0 leading-snug">
+            Paket Imtihan <span className="line-through text-ink-soft whitespace-nowrap">{formatRupiah(IMTIHAN_PRICE_IDR)}</span>{" "}
+            <b className="text-gold-200 whitespace-nowrap">{formatRupiah(offer.price)}</b> khusus untukmu · hangus dalam{" "}
+            <b className="whitespace-nowrap"><OfferClock endsAt={offer.endsAt}/></b>
+          </span>
+          <button onClick={() => { window.logFunnel?.("view_join", "offer_banner"); navigate("/gabung?plan=imtihan"); }}
+            className="btn btn-gold text-xs px-3 py-1.5 flex-shrink-0 whitespace-nowrap">Ambil</button>
+        </div>
+      </div>
+    );
+  }
   if (!left || hidden || (session && !isFree) || /^\/(admin|seminar|gabung)/.test(path)) return null;
   const close = () => { setHidden(true); try { sessionStorage.setItem("talqeeh_event_hide", IMTIHAN_PROMO.endsAt); } catch {} };
   return (
@@ -1389,6 +1514,7 @@ Object.assign(window, {
   GoogleButton, ErrorBox, useGoogleSignIn, formatPinInput, ACTIVATION_ERRORS, StepList,
   PLAN_LABELS, DEFAULT_ADMIN_WA, PAYMENT_WAIT_LIMIT_MS, aiBundle, AI_BUNDLE_FEATURES, AiBundleBreakdown,
   imtihanBundle, ImtihanBreakdown, IMTIHAN_PRICE_IDR, IMTIHAN_AI_DAYS, IMTIHAN_PROMO, imtihanPromoActive, EventBanner, usePromoCountdown,
+  useWelcomeOffer, OfferClock, WelcomeOfferPopup,
   useCheckout, CheckoutWaiting, CheckoutWatcher, CheckoutPayModal, readPendingCheckout, savePendingCheckout, formatRupiah,
   LIBRARY_PRICE, LIBRARY_PRICE_IDR, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
   scrollToLandingSection, scrollToPaket,

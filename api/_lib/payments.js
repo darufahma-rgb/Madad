@@ -91,8 +91,9 @@ export async function getPrices() {
   return { library: LIBRARY_PRICE_IDR, ai: parseAiPrice(aiPriceMonthly) };
 }
 
-const splitAmount = (plan, prices) => (plan === 'imtihan'
-  ? { library_amount: prices.library, ai_amount: imtihanPrice() - prices.library }
+// imtihanAmount: harga khusus Paket Imtihan (penawaran 48 jam, api/_lib/offer.js); dipakai hanya kalau lebih murah.
+const splitAmount = (plan, prices, imtihanAmount) => (plan === 'imtihan'
+  ? { library_amount: prices.library, ai_amount: Math.min(imtihanPrice(), imtihanAmount || Infinity) - prices.library }
   : {
     library_amount: plan === 'ai' ? 0 : prices.library,
     ai_amount: plan === 'library' ? 0 : prices.ai,
@@ -140,11 +141,11 @@ export function checkoutBlockReason(plan, member) {
   return paidLibrary ? 'already_library' : null;
 }
 
-export async function createCheckout({ user, member, plan, appOrigin }) {
+export async function createCheckout({ user, member, plan, appOrigin, imtihanAmount }) {
   const prices = await getPrices();
   // Paket Imtihan berharga tetap, jadi tidak bergantung pada harga AI bulanan di Settings.
   if (plan !== 'library' && plan !== 'imtihan' && !prices.ai) return { ok: false, status: 'ai_price_unset' };
-  const parts = splitAmount(plan, prices);
+  const parts = splitAmount(plan, prices, imtihanAmount);
   const amount = parts.library_amount + parts.ai_amount;
 
   // Pembeli yang menekan "Bayar" berkali-kali dapat link yang sama.

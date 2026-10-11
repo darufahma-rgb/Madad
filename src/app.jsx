@@ -295,6 +295,7 @@ const App = () => {
       <AiSubscriptionModal open={aiPaymentOpen} onClose={() => setAiPaymentOpen(false)} onNeedMembership={() => openJoin("library_ai")}/>
       <CheckoutWatcher paused={aiPaymentOpen}/>
       {session && <UpgradeWall/>}
+      {session && <WelcomeOfferPopup/>}
       {showQuickNote && <QuickNoteButton/>}
       {isMember && <SupportButton/>}
       {isMember && !useShell && <MobileTabBar/>}

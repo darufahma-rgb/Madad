@@ -28,6 +28,7 @@ const UpgradeWall = () => {
   const { isFree } = useAuth();
   const [reason, setReason] = useState(null);
   const left = window.usePromoCountdown ? window.usePromoCountdown() : null;
+  const offer = useWelcomeOffer();
 
   useEffect(() => {
     const open = (e) => {
@@ -49,6 +50,7 @@ const UpgradeWall = () => {
   const copy = REASONS[reason] || REASONS.default;
   const P = window.IMTIHAN_PROMO;
   const promo = isFree && left && P;
+  const price = offer ? offer.price : promo ? P.price : window.IMTIHAN_PRICE_IDR;
   const close = () => setReason(null);
   const pay = () => {
     window.logFunnel?.('click_pay', `wall_${reason}`);
@@ -84,11 +86,16 @@ const UpgradeWall = () => {
         {isFree && P && (
           <div className="mt-4 flex items-end justify-between gap-3">
             <div>
-              {promo && <div className="text-xs text-ink-soft line-through">{formatRupiah(window.IMTIHAN_PRICE_IDR)}</div>}
-              <div className="font-display text-2xl font-semibold text-ink">{formatRupiah(promo ? P.price : window.IMTIHAN_PRICE_IDR)}</div>
+              {(offer || promo) && <div className="text-xs text-ink-soft line-through">{formatRupiah(window.IMTIHAN_PRICE_IDR)}</div>}
+              <div className="font-display text-2xl font-semibold text-ink">{formatRupiah(price)}</div>
               <div className="text-[11px] text-ink-soft">sekali bayar · AI {window.IMTIHAN_AI_DAYS || 120} hari + Library selamanya</div>
             </div>
-            {promo && (
+            {offer ? (
+              <div className="text-right">
+                <div className="text-[10px] uppercase tracking-wider text-gold-300">Harga khususmu hangus</div>
+                <OfferClock endsAt={offer.endsAt} className="text-base font-semibold text-gold-200"/>
+              </div>
+            ) : promo && (
               <div className="text-right">
                 <div className="text-[10px] uppercase tracking-wider text-emerald-300">Promo berakhir</div>
                 <div className="text-sm font-semibold text-ink whitespace-nowrap">{left}</div>
@@ -98,7 +105,7 @@ const UpgradeWall = () => {
         )}
 
         <button onClick={pay} className="btn btn-gold w-full justify-center text-sm py-3 mt-4">
-          {isFree ? (promo ? `Ambil Paket Imtihan ${formatRupiah(P.price)}` : 'Ambil Paket Imtihan') : 'Berlangganan AI Partner'}
+          {isFree ? `Ambil Paket Imtihan ${formatRupiah(price)}` : 'Berlangganan AI Partner'}
           <Icon name="arrowRight" className="w-4 h-4"/>
         </button>
         <div className="flex items-center justify-between mt-3 text-xs">
