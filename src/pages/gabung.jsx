@@ -48,6 +48,8 @@ const ADVANTAGES = [
 ];
 
 // [fitur, gratis, library, library+ai] — true = termasuk, false = tidak, string = keterangan.
+// Angka jatah mengikuti api/ai-partner.js (TRIAL_TASTE, TRIAL_MAX_CONTENT, FREE_OCR_LIFETIME, LIMITS, IMTIHAN_TALKHIS_CAP).
+const IMTIHAN_TALKHIS_CAP = 10;
 const COMPARE_ROWS = [
   ['Maddah S1 + Ma\'had', 'Nahwu + 1', `Semua ${CATALOG.maddah}`, `Semua ${CATALOG.maddah}`],
   ['Template prompt per maddah', 'Maddah terbuka', CATALOG.prompts, CATALOG.prompts],
@@ -55,10 +57,14 @@ const COMPARE_ROWS = [
   ['Siap Imtihan (tahriri & syafawi)', false, true, true],
   ['Muqaranah 4 madzhab', false, true, true],
   ['Kurasah, Statistik & Profil Belajar', true, true, true],
-  ['AI Partner: ringkasan, flashcard, kuis, mufradat', '1 materi', '1 materi', true],
-  ["AI Partner: terjemah & i'rab", '3× coba', '10× coba', 'Sepuasnya*'],
-  ['AI Partner: tanya tutor dari materimu', '5× coba', '15× coba', 'Sepuasnya*'],
-  ['AI Partner: harakat, tahriri dinilai AI, simulasi syafawi', false, false, true],
+  ['AI Partner: ringkasan, flashcard, kuis, mufradat', '1 materi pendek', '1 materi', '10 materi/hari*'],
+  ["AI Partner: terjemah & i'rab", '2× coba', '10× coba', 'Sepuasnya*'],
+  ['AI Partner: tanya tutor dari materimu', '3× coba', '15× coba', 'Sepuasnya*'],
+  ['Tanya AI langsung di Talqeeh', '1 pesan', '2 pesan', 'Sepuasnya*'],
+  ['Baca foto halaman kitab', '3 foto', '3 per hari', 'Sepuasnya*'],
+  ['Upload PDF muqarrar utuh', false, false, true],
+  ['Talkhis otomatis bahasa Arab + PDF siap cetak & latihan soal', false, false, `${IMTIHAN_TALKHIS_CAP} muqarrar`],
+  ['Peta konsep, harakat, tahriri dinilai AI, simulasi syafawi', false, false, true],
   ['Unggah rekaman kuliah (audio/video)', false, false, true],
 ];
 
@@ -572,7 +578,7 @@ const GabungPage = () => {
           </table>
         </div>
         <p className="text-[11px] text-ink-soft text-center mt-3 max-w-2xl mx-auto">
-          *Paket Imtihan: tanpa kuota bulanan selama {IMTIHAN_AI_DAYS} hari, dengan batas wajar harian (30× i'rab, 40 pesan tutor per hari).
+          *Paket Imtihan: tanpa kuota bulanan selama {IMTIHAN_AI_DAYS} hari, dengan batas wajar harian (10 materi baru, 30× i'rab, 40 pesan tutor, 40 pesan Tanya AI, 20 foto per hari). Talkhis: {IMTIHAN_TALKHIS_CAP} muqarrar per paket, maksimal 1 per hari. Materi gratis maksimal ±10–15 halaman.
         </p>
       </Section>
 
