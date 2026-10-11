@@ -35,6 +35,7 @@ const who = (u) => u.code === 'ADMIN' ? 'Admin (tes & evaluasi)' : u.code === 's
 const Badge = ({ u }) => {
   if (u.code === 'ADMIN' || u.code === 'system') return null;
   const [label, cls] = u.imtihan ? ['Paket Imtihan', 'bg-amber-500/15 text-amber-200 border-amber-400/30']
+    : u.trial ? ['Trial', 'bg-orange-500/15 text-orange-200 border-orange-400/30']
     : u.ai ? ['AI Partner', 'bg-emerald-500/15 text-emerald-200 border-emerald-400/30']
     : u.tier === 'free' ? ['Gratis', 'bg-white/5 text-ink-muted border-white/10']
     : ['Library', 'bg-sky-500/10 text-sky-200 border-sky-400/25'];

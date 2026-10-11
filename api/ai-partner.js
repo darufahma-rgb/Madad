@@ -29,6 +29,11 @@ import {
 // talkhis = jumlah muqarrar yang dipetakan per hari (tiap muqarrar berisi puluhan pemanggilan AI).
 const LIMITS = { create: 10, ocr: 20, transcribe: 60, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40, talkhis: 1 };
 const TRIAL_OCR_LIMIT  = 3;
+/* Member bertipe "Trial — akses sementara" (Admin → Members, kolom member_type) yang diberi akses AI: semua fitur tetap
+   terbuka, tapi jatahnya lebih kecil daripada pelanggan berbayar. Tidak berlaku kalau mereka membeli Paket Imtihan,
+   dan "Limit khusus per email" di Settings tetap menang. */
+const TRIAL_MEMBER_DAILY = { create: 3, ocr: 5, transcribe: 15, generate: 8, analyze: 10, grade: 5, chat: 15, prompt: 15, talkhis: 1 };
+const TRIAL_MEMBER_MONTHLY = { prompt: 60, chat: 60, generate: 15, create: 5, analyze: 60, grade: 20, ocr: 20, transcribe: 60, talkhis: 1 };
 // Pengaman biaya: total pemanggilan AI oleh SEMUA pengguna coba gratis per hari. Akun gratis bisa dibuat siapa saja
 // yang punya akun Google, jadi tanpa batas bersama ini satu orang dengan banyak akun bisa menguras saldo AI.
 // ±200 × ±$0.03 ≈ $6/hari paling banyak. Atur lewat env TRIAL_DAILY_LIMIT.
@@ -214,7 +219,7 @@ const quotaExceeded = (res, kind, scope = 'daily', ctx = null) => scope === 'una
   : res.status(429).json({
     ok: false, error: 'quota', scope,
     message: scope === 'monthly'
-      ? `Jatah ${cachedMonthlyLimits()[kind]}x untuk fitur ini di periode langgananmu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx?.quotaResetAt || quotaPeriod(null).resetAt)}.`
+      ? `Jatah ${monthlyLimitCache(ctx)[kind]}x untuk fitur ini di periode ${ctx?.trialMember ? 'trial' : 'langganan'}mu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx?.quotaResetAt || quotaPeriod(null).resetAt)}.`
       : `Batas harian (${dailyLimitCache(ctx, kind)}x) untuk fitur ini tercapai. Coba lagi besok.`,
   });
 
@@ -254,12 +259,32 @@ const quotaOverride = async (ctx) => {
   if (ctx.override === undefined) ctx.override = await getQuotaOverride(ctx.emails).catch(() => null);
   return ctx.override;
 };
-const dailyLimit = async (ctx, kind) => (await quotaOverride(ctx))?.daily?.[kind] ?? LIMITS[kind];
-const dailyLimitCache = (ctx, kind) => ctx?.override?.daily?.[kind] ?? LIMITS[kind];
+// Member bertipe trial (lihat TRIAL_MEMBER_*). Dibaca sekali per permintaan; gagal membaca → dianggap bukan trial.
+const isTrialMember = async (ctx) => {
+  if (ctx.trialMember !== undefined) return ctx.trialMember;
+  ctx.trialMember = false;
+  if (ctx.tier !== 'pro') return false;
+  try {
+    const { url, key } = sbConfig();
+    const r = await fetch(`${url}/rest/v1/members?code=eq.${encodeURIComponent(ctx.code)}&select=member_type&limit=1`, { headers: sbHeaders(key) });
+    const rows = r.ok ? await r.json() : [];
+    ctx.trialMember = rows?.[0]?.member_type === 'trial' && !(await isImtihanHolder(ctx));
+  } catch {}
+  return ctx.trialMember;
+};
+const baseDaily = (ctx) => (ctx?.trialMember ? TRIAL_MEMBER_DAILY : LIMITS);
+const dailyLimit = async (ctx, kind) => (await quotaOverride(ctx))?.daily?.[kind] ?? ((await isTrialMember(ctx)) ? TRIAL_MEMBER_DAILY : LIMITS)[kind];
+const dailyLimitCache = (ctx, kind) => ctx?.override?.daily?.[kind] ?? baseDaily(ctx)[kind];
+// Jatah per periode 30 hari: null = tanpa kuota bulanan (Paket Imtihan atau limit khusus noMonthly).
+const monthlyLimitsFor = async (ctx) => {
+  if ((await quotaOverride(ctx))?.noMonthly) return null;
+  if (await isTrialMember(ctx)) return TRIAL_MEMBER_MONTHLY;
+  return (await isImtihanHolder(ctx)) ? null : await getMonthlyLimits();
+};
+const monthlyLimitCache = (ctx) => (ctx?.trialMember ? TRIAL_MEMBER_MONTHLY : cachedMonthlyLimits());
 
 const takeQuota = async (ctx, kind) => {
-  const skipMonthly = (await isImtihanHolder(ctx)) || (await quotaOverride(ctx))?.noMonthly;
-  const monthly = skipMonthly ? null : (await getMonthlyLimits())[kind];
+  const monthly = (await monthlyLimitsFor(ctx))?.[kind] ?? null;
   if (monthly != null) {
     const period = quotaPeriod(ctx.aiExpiresAt);
     ctx.quotaResetAt = period.resetAt;
@@ -375,7 +400,7 @@ async function handleOcrQuota(ctx, res) {
   }
   let remaining = Math.max(0, (await dailyLimit(ctx, 'ocr')) - usedToday);
   let scope = 'daily';
-  const monthly = ((await isImtihanHolder(ctx)) || (await quotaOverride(ctx))?.noMonthly) ? null : (await getMonthlyLimits()).ocr;
+  const monthly = (await monthlyLimitsFor(ctx))?.ocr ?? null;
   if (monthly != null) {
     const used = await monthlyUsage(ctx.code, quotaPeriod(ctx.aiExpiresAt).start);
     if (used) {
@@ -393,11 +418,11 @@ async function handleTranscribe(ctx, body, res) {
   if (audio.length > MAX_AUDIO_B64) return res.status(400).json({ ok: false, error: 'Potongan audio terlalu besar' });
   const overAudio = await takeQuota(ctx, 'transcribe');
   if (overAudio === 'daily') {
-    return res.status(429).json({ ok: false, error: 'quota', message: `Batas transkripsi harian (${LIMITS.transcribe} menit) tercapai. Coba lagi besok.` });
+    return res.status(429).json({ ok: false, error: 'quota', message: `Batas transkripsi harian (${dailyLimitCache(ctx, 'transcribe')} menit) tercapai. Coba lagi besok.` });
   }
   if (overAudio === 'unavailable') return quotaExceeded(res, 'transcribe', overAudio, ctx);
   if (overAudio) {
-    return res.status(429).json({ ok: false, error: 'quota', message: `Jatah transkripsi ${cachedMonthlyLimits().transcribe} menit di periode langgananmu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx.quotaResetAt || quotaPeriod(null).resetAt)}.` });
+    return res.status(429).json({ ok: false, error: 'quota', message: `Jatah transkripsi ${monthlyLimitCache(ctx).transcribe} menit di periode langgananmu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx.quotaResetAt || quotaPeriod(null).resetAt)}.` });
   }
 
   const dialect = TRANSCRIBE_DIALECTS.includes(body.dialect) ? body.dialect : 'campur';
@@ -1076,10 +1101,11 @@ async function handleStats(ctx, res) {
       usage30,
       usageToday,
       usageMonth,
-      limits: ctx.tier === 'pro' ? LIMITS : null,
+      limits: ctx.tier === 'pro' ? ((await isTrialMember(ctx)) ? TRIAL_MEMBER_DAILY : LIMITS) : null,
       // Paket Imtihan: tanpa kuota bulanan (hanya batas harian), jadi kotak jatah bulanan tidak ditampilkan.
-      monthlyLimits: ctx.tier === 'pro' && !(await isImtihanHolder(ctx)) ? await getMonthlyLimits() : null,
-      unlimitedMonthly: ctx.tier === 'pro' && (await isImtihanHolder(ctx)),
+      monthlyLimits: ctx.tier === 'pro' ? await monthlyLimitsFor(ctx) : null,
+      unlimitedMonthly: ctx.tier === 'pro' && !(await isTrialMember(ctx)) && (await isImtihanHolder(ctx)),
+      trialMember: ctx.tier === 'pro' && (await isTrialMember(ctx)),
       quotaPeriodStart: ctx.tier === 'pro' ? period.start : null,
       quotaResetAt: ctx.tier === 'pro' ? period.resetAt : null,
       quotaPerSubscription: !!ctx.aiExpiresAt,

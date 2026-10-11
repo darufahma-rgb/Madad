@@ -70,11 +70,11 @@ export async function buildAiUsage(range, code) {
   for (let i = 0; i < codes.length; i += 80) {
     const list = codes.slice(i, i + 80).map(c => `"${String(c).replace(/"/g, '')}"`).join(',');
     const [members, subs, imtihan] = await Promise.all([
-      get(`members?select=code,name,email,tier&code=in.(${list})`),
+      get(`members?select=code,name,email,tier,member_type&code=in.(${list})`),
       get(`ai_subscriptions?select=member_code,expires_at,status&member_code=in.(${list})&status=eq.active`),
       get(`payment_checkouts?select=member_code&plan=eq.imtihan&status=eq.paid&member_code=in.(${list})&paid_at=gte.${new Date(Date.now() - 120 * 86400e3).toISOString()}`),
     ]);
-    for (const m of members || []) info[m.code] = { name: m.name || '', email: m.email || '', tier: m.tier || 'library' };
+    for (const m of members || []) info[m.code] = { name: m.name || '', email: m.email || '', tier: m.tier || 'library', trial: m.member_type === 'trial' };
     for (const s of subs || []) if (!s.expires_at || s.expires_at > nowIso) (info[s.member_code] ||= {}).ai = true;
     for (const p of imtihan || []) (info[p.member_code] ||= {}).imtihan = true;
   }
