@@ -4,6 +4,7 @@ import { ADMIN_SETTING_KEYS, readSettings } from './_lib/settings.js';
 import { MODEL_SETTING_KEYS, isValidModelId } from './_lib/models.js';
 import { newActivationPin, PIN_TTL_DAYS } from './_lib/pin.js';
 import { buildAdminAnalytics } from './_lib/analytics.js';
+import { buildAiUsage } from './_lib/ai-usage.js';
 import { parseAiPrice, extendAi } from './_lib/payments.js';
 import { newMemberCode } from './_lib/member.js';
 import { QUOTA_KINDS, parseQuotaOverrides } from './_lib/ai-partner/limits.js';
@@ -264,6 +265,11 @@ export default async function handler(req, res) {
       const out = await handleEmailAdmin(action, JSON.parse(body || '{}'));
       if (!out.ok) { res.status(400).json({ ok: false, error: out.error }); return; }
       result = { status: 200, data: out.data };
+    } else if (action === 'ai-usage') {
+      const p = JSON.parse(body || '{}');
+      const out = await buildAiUsage(p.range, p.code);
+      if (out.error) { res.status(400).json({ ok: false, error: out.error }); return; }
+      result = { status: 200, data: out };
     } else if (action === 'analytics') {
       result = { status: 200, data: await buildAdminAnalytics(Number(days)) };
     } else if (action === 'get-settings') {

@@ -165,6 +165,7 @@ const PinModal = ({ member, onClose, onGenerated }) => {
 const ADMIN_TABS = [
   { id: "dashboard",  label: "Overview",          icon: "grid" },
   { id: "analytics",  label: "Analitik",          icon: "target" },
+  { id: "ai-usage",   label: "Pemakaian AI",      icon: "brain" },
   { id: "members",    label: "Members",           icon: "users" },
   { id: "ai-subs",    label: "Langganan & Bayar", icon: "sparkles" },
   { id: "email",      label: "Email & Event",     icon: "messageSquare" },
@@ -268,6 +269,7 @@ const AdminPage = () => {
       <div ref={contentRef} className="container-x pt-8 pb-10 admin-cards">
         {tab === "dashboard"  && <AdminDashboard/>}
         {tab === "analytics"  && <AdminAnalytics/>}
+        {tab === "ai-usage"   && <AdminAiUsage/>}
         {tab === "members"    && <AdminMembers/>}
         {tab === "maddah"     && <AdminMaddahAnalytics/>}
         {tab === "muqaranah"  && <AdminMuqaranahPanel/>}
@@ -483,6 +485,7 @@ const AI_KIND_LABELS = {
   admin:      { label: 'Admin & uji',      sub: 'tes model, evaluasi, draf bank soal', color: '#9ca3af', costOnly: true },
   other:      { label: 'Lainnya',          sub: 'tanpa kategori', color: '#6b7280', costOnly: true },
 };
+window.AI_KIND_LABELS = AI_KIND_LABELS; // dipakai juga oleh tab Pemakaian AI (admin-ai-usage.jsx)
 // Keterangan asal angka biaya AI (lihat costSource di api/_lib/analytics.js).
 const costNote = (ai) => ai.costSource === 'real'
   ? 'Biaya real per panggilan dari OpenRouter.'

@@ -24,7 +24,7 @@ const FALLBACK_PRICE = { in: 3, out: 15 }; // $ per 1 juta token (Sonnet 4.6) bi
 
 let priceCache = { at: 0, map: null };
 const PRICE_CACHE_MS = 6 * 3600 * 1000;
-const modelPrices = async () => {
+export const modelPrices = async () => {
   if (priceCache.map && Date.now() - priceCache.at < PRICE_CACHE_MS) return priceCache.map;
   try {
     const controller = new AbortController();
@@ -42,7 +42,7 @@ const modelPrices = async () => {
   return priceCache.map || {};
 };
 // OpenRouter menerima "claude-sonnet-4-6" maupun "claude-sonnet-4.6"; daftar harganya memakai titik.
-const priceOf = (prices, id) => prices[id] || prices[String(id).replace(/(\d)-(\d)/g, '$1.$2')] || null;
+export const priceOf = (prices, id) => prices[id] || prices[String(id).replace(/(\d)-(\d)/g, '$1.$2')] || null;
 
 export const aiCostTable = async () => {
   const [models, prices] = await Promise.all([resolveModels(), modelPrices()]);
