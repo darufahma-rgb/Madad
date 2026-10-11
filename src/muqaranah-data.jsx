@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } from 'react';
-/* Talqih, Muqaranah Library Seed Data (6 entries) */
+/* Talqih, Muqaranah Library Seed Data (22 entries) */
 
 const MUQARANAH_LIBRARY = [
   {
@@ -716,7 +716,544 @@ const MUQARANAH_LIBRARY = [
     ],
     notes: "Ini masalah yang sangat relevan untuk Masisir di Mesir — di mana satu masjid bisa diimami oleh ulama berbagai madzhab. Jumhur ulama menyatakan sah bermakmum kepada imam madzhab lain. Yang menjadi khilaf lebih detail adalah apakah makmum perlu 'mengulang' shalatnya jika tertentu bahwa imam melakukan hal yang membatalkan menurut madzhabnya. Al-Azhar dan ulama Mesir pada umumnya berpandangan sah dan tidak perlu diulang.",
     rangkuman: "Sahkah shalat di belakang imam yang berbeda madzhab? Misalnya, makmum Syafi'i shalat di belakang imam Hanafi yang tidak baca Fatihah sendiri, atau imam Maliki yang tidak qunut. Jawaban jumhur: sah. Perbedaan madzhab dalam fiqh shalat tidak membatalkan shalat berjamaah — ini sudah menjadi kesepakatan ulama sejak lama. Di Masjidil Haram, imam bermazhab Hanbali tapi jutaan jamaah dari semua madzhab — itu sudah jadi bukti nyata.",
+  },
+
+  {
+    id: "lams-marah",
+    title: "Menyentuh Lawan Jenis: Membatalkan Wudhu atau Tidak?",
+    titleArabic: "نَقْضُ الْوُضُوءِ بِلَمْسِ الْمَرْأَةِ",
+    category: "fiqh",
+    question: "Apakah bersentuhan kulit antara laki-laki dan perempuan membatalkan wudhu? Apakah ada bedanya antara sentuhan biasa dan sentuhan dengan syahwat, serta antara mahram dan bukan mahram?",
+    views: [
+      {
+        scholar: "Imam Asy-Syafi'i",
+        scholarArabic: "الإمامُ الشَّافِعِيُّ",
+        school: "Syafi'iyah",
+        position: "Batal secara mutlak, dengan atau tanpa syahwat, bila kulit laki-laki dan perempuan yang bukan mahram bersentuhan langsung tanpa penghalang dan keduanya sudah mencapai usia yang lazimnya menimbulkan syahwat. Menyentuh mahram tidak membatalkan menurut pendapat yang azhar.",
+        evidence: {
+          arabic: "أَوْ لَامَسْتُمُ النِّسَاءَ فَلَمْ تَجِدُوا مَاءً فَتَيَمَّمُوا صَعِيدًا طَيِّبًا",
+          translation: "Atau kamu telah menyentuh perempuan, lalu kamu tidak mendapatkan air, maka bertayammumlah dengan tanah yang baik. (An-Nisa': 43)",
+          notes: "Dalam qira'ah Hamzah dan Al-Kisa'i dibaca 'lamastum' (kamu menyentuh), yang lebih jelas menunjuk sentuhan fisik."
+        },
+        reasoning: "Lafazh lams secara hakikat bermakna sentuhan dengan kulit. Asalnya, lafazh dibawa ke makna hakiki dan tidak dialihkan ke makna kiasan (jima') kecuali ada dalil. Ayat ini menyebut lams berdampingan dengan buang hajat sebagai sebab wajibnya bersuci, maka sentuhan itu sendiri adalah hadats, tanpa disyaratkan syahwat. Diperkuat atsar Ibnu Umar dan Ibnu Mas'ud yang menafsirkan lams dengan sentuhan tangan.",
+        source: "Al-Umm · Al-Majmu' · Mughni Al-Muhtaj"
+      },
+      {
+        scholar: "Imam Abu Hanifah",
+        scholarArabic: "الإمامُ أبو حنيفةَ",
+        school: "Hanafiyah",
+        position: "Menyentuh perempuan tidak membatalkan wudhu sama sekali, baik dengan syahwat maupun tidak. Yang membatalkan hanyalah mubasyarah fahisyah (bersentuhan kemaluan tanpa penghalang) menurut Abu Hanifah dan Abu Yusuf.",
+        evidence: {
+          arabic: "عَنْ عَائِشَةَ قَالَتْ: فَقَدْتُ رَسُولَ اللَّهِ ﷺ لَيْلَةً مِنَ الْفِرَاشِ فَالْتَمَسْتُهُ، فَوَقَعَتْ يَدِي عَلَى بَطْنِ قَدَمَيْهِ وَهُوَ فِي الْمَسْجِدِ وَهُمَا مَنْصُوبَتَانِ",
+          translation: "Dari Aisyah: 'Suatu malam aku kehilangan Rasulullah ﷺ dari tempat tidur, lalu aku mencarinya. Tanganku menyentuh telapak kakinya ketika beliau sedang sujud dengan kedua kaki tegak.' (HR. Muslim)",
+          notes: "Nabi ﷺ tetap melanjutkan sujudnya setelah disentuh, tanpa memperbarui wudhu."
+        },
+        reasoning: "Ibnu Abbas, penafsir Al-Qur'an dari kalangan sahabat, menafsirkan mulamasah dalam ayat sebagai kinayah dari jima', sebagaimana Al-Qur'an memakai bahasa sopan untuk hubungan suami istri. Hadits-hadits sahih menunjukkan Nabi ﷺ bersentuhan dengan istrinya saat shalat tanpa batal. Selain itu, sentuhan sangat sering terjadi (umum al-balwa); kalau membatalkan, tentu Nabi ﷺ menjelaskannya secara tegas.",
+        source: "Al-Mabsuth · Bada'i' Ash-Shana'i' · Radd Al-Muhtar"
+      },
+      {
+        scholar: "Imam Malik",
+        scholarArabic: "الإمامُ مالكٌ",
+        school: "Malikiyah",
+        position: "Batal bila menyentuh dengan maksud mencari kenikmatan (qashd al-ladzdzah) atau ia mendapatkan kenikmatan itu, meskipun ada penghalang yang tipis. Sentuhan tanpa maksud dan tanpa rasa nikmat tidak membatalkan.",
+        evidence: {
+          arabic: "عَنْ عَبْدِ اللَّهِ بْنِ عُمَرَ أَنَّهُ كَانَ يَقُولُ: قُبْلَةُ الرَّجُلِ امْرَأَتَهُ وَجَسُّهَا بِيَدِهِ مِنَ الْمُلَامَسَةِ، فَمَنْ قَبَّلَ امْرَأَتَهُ أَوْ جَسَّهَا بِيَدِهِ فَعَلَيْهِ الْوُضُوءُ",
+          translation: "Dari Abdullah bin Umar, ia berkata: 'Ciuman seorang laki-laki kepada istrinya dan sentuhan tangannya termasuk mulamasah. Siapa yang mencium istrinya atau menyentuhnya dengan tangan, wajib berwudhu.' (Al-Muwaththa')",
+          notes: "Imam Malik menggabungkan atsar ini dengan hadits-hadits Aisyah."
+        },
+        reasoning: "Ayat menunjukkan lams sebagai pembatal, sementara hadits Aisyah menunjukkan sentuhan Nabi ﷺ tidak membatalkan. Keduanya dikompromikan: yang membatalkan adalah sentuhan yang disertai syahwat, karena itulah yang menjadi dugaan kuat (mazhinnah) keluarnya madzi. Sentuhan biasa seperti dalam hadits Aisyah tidak membatalkan.",
+        source: "Al-Mudawwanah · Asy-Syarh Al-Kabir (Ad-Dardir) · Hasyiyah Ad-Dasuqi"
+      },
+      {
+        scholar: "Imam Ahmad bin Hanbal",
+        scholarArabic: "الإمامُ أحمدُ بنُ حنبلٍ",
+        school: "Hanabilah",
+        position: "Menurut pendapat yang mu'tamad, batal bila sentuhan kulit tanpa penghalang disertai syahwat. Tanpa syahwat tidak membatalkan.",
+        evidence: {
+          arabic: "عَنْ عَائِشَةَ قَالَتْ: كُنْتُ أَنَامُ بَيْنَ يَدَيْ رَسُولِ اللَّهِ ﷺ وَرِجْلَايَ فِي قِبْلَتِهِ، فَإِذَا سَجَدَ غَمَزَنِي فَقَبَضْتُ رِجْلَيَّ",
+          translation: "Dari Aisyah: 'Aku pernah tidur di depan Rasulullah ﷺ dengan kedua kakiku di arah kiblatnya. Bila beliau sujud, beliau menyentuhku, lalu aku menarik kedua kakiku.' (Muttafaqun 'alaih)",
+          notes: "Sentuhan Nabi ﷺ di tengah shalat ini tanpa syahwat, dan shalat beliau tidak batal."
+        },
+        reasoning: "Hadits ini menunjukkan sentuhan tanpa syahwat tidak membatalkan. Adapun ayat lams dibawa ke sentuhan yang disertai syahwat, sehingga semua dalil dapat diamalkan. Ini sejalan dengan kaidah bahwa mengamalkan dua dalil lebih utama daripada meninggalkan salah satunya.",
+        source: "Al-Mughni · Al-Inshaf · Kasysyaf Al-Qina'"
+      }
+    ],
+    notes: "Akar khilafnya ada pada makna lams dalam ayat: hakikat sentuhan (Syafi'iyah) atau kinayah dari jima' (Hanafiyah), lalu bagaimana mengompromikannya dengan hadits Aisyah (Malikiyah dan Hanabilah). Masalah ini sangat terasa bagi Masisir: di bus, metro, dan antrean, sentuhan sulit dihindari. Sebagian ulama Syafi'iyah membolehkan bertaqlid kepada madzhab lain dalam kondisi sulit, dengan memperhatikan syarat-syarat taqlid yang dibahas dalam ushul fiqh.",
+    rangkuman: "Bersentuhan kulit dengan lawan jenis, batal wudhu atau tidak? Syafi'i: batal, walau tidak sengaja dan tanpa syahwat (kecuali mahram). Hanafi: tidak batal sama sekali. Maliki dan Hanbali: batal hanya kalau disertai syahwat. Jadi kalau kamu bermadzhab Syafi'i, hati-hati di tempat ramai. Kalau sulit dihindari, sebagian ulama membolehkan mengikuti pendapat madzhab lain dengan syarat-syaratnya.",
+  },
+
+  {
+    id: "mass-dzakar",
+    title: "Menyentuh Kemaluan: Membatalkan Wudhu atau Tidak?",
+    titleArabic: "نَقْضُ الْوُضُوءِ بِمَسِّ الذَّكَرِ",
+    category: "fiqh",
+    question: "Apakah menyentuh kemaluan sendiri atau orang lain membatalkan wudhu? Apakah ada perbedaan antara menyentuh dengan telapak tangan dan punggung tangan, atau dengan dan tanpa penghalang?",
+    views: [
+      {
+        scholar: "Imam Asy-Syafi'i",
+        scholarArabic: "الإمامُ الشَّافِعِيُّ",
+        school: "Syafi'iyah",
+        position: "Batal bila menyentuh kemaluan manusia (qubul atau dubur, milik sendiri atau orang lain) dengan bagian dalam telapak tangan atau jari, tanpa penghalang. Menyentuh dengan punggung tangan tidak membatalkan.",
+        evidence: {
+          arabic: "عَنْ بُسْرَةَ بِنْتِ صَفْوَانَ أَنَّ النَّبِيَّ ﷺ قَالَ: مَنْ مَسَّ ذَكَرَهُ فَلْيَتَوَضَّأْ",
+          translation: "Dari Busrah binti Shafwan, Nabi ﷺ bersabda: 'Siapa yang menyentuh kemaluannya, hendaklah ia berwudhu.' (HR. Abu Dawud, At-Tirmidzi, An-Nasa'i, Ibnu Majah; At-Tirmidzi menilainya hasan shahih)",
+          notes: "Dalam riwayat Abu Hurairah disebutkan 'ifdha' bil yad' (menyentuhkan tangan) tanpa penghalang."
+        },
+        reasoning: "Perintah berwudhu dalam hadits menunjukkan wajib. Lafazh ifdha' dalam riwayat Abu Hurairah bermakna menyentuh dengan bagian dalam telapak tangan, sehingga punggung tangan tidak termasuk. Hadits Thalq bin Ali yang menyatakan tidak batal dinilai mansukh, karena Thalq datang di awal hijrah saat masjid Nabawi dibangun, sedangkan Abu Hurairah masuk Islam belakangan.",
+        source: "Al-Umm · Al-Majmu' · Nihayah Al-Muhtaj"
+      },
+      {
+        scholar: "Imam Abu Hanifah",
+        scholarArabic: "الإمامُ أبو حنيفةَ",
+        school: "Hanafiyah",
+        position: "Menyentuh kemaluan tidak membatalkan wudhu sama sekali, baik dengan telapak maupun punggung tangan, dengan atau tanpa syahwat.",
+        evidence: {
+          arabic: "عَنْ طَلْقِ بْنِ عَلِيٍّ أَنَّ النَّبِيَّ ﷺ سُئِلَ عَنِ الرَّجُلِ يَمَسُّ ذَكَرَهُ فِي الصَّلَاةِ فَقَالَ: هَلْ هُوَ إِلَّا مُضْغَةٌ مِنْهُ أَوْ بَضْعَةٌ مِنْهُ",
+          translation: "Dari Thalq bin Ali, Nabi ﷺ ditanya tentang seseorang yang menyentuh kemaluannya dalam shalat. Beliau menjawab: 'Bukankah itu hanya sepotong daging darinya?' (HR. Abu Dawud, At-Tirmidzi, An-Nasa'i)",
+          notes: "Kemaluan disamakan dengan anggota tubuh lain yang tidak membatalkan bila disentuh."
+        },
+        reasoning: "Hadits Thalq menjelaskan illat-nya secara langsung: kemaluan adalah bagian tubuh seperti anggota lain. Hanafiyah mendha'ifkan hadits Busrah, dan menilai bahwa perkara yang sering terjadi (umum al-balwa) seperti ini mestinya diriwayatkan banyak sahabat laki-laki, bukan hanya seorang perempuan. Sebagian sahabat seperti Ali, Ibnu Mas'ud, dan Ammar juga tidak memandangnya sebagai pembatal.",
+        source: "Al-Mabsuth · Al-Hidayah · Fath Al-Qadir"
+      },
+      {
+        scholar: "Imam Malik",
+        scholarArabic: "الإمامُ مالكٌ",
+        school: "Malikiyah",
+        position: "Menurut pendapat masyhur, batal bila seseorang menyentuh kemaluannya sendiri (dzakar) dengan bagian dalam telapak tangan, sisi tangan, atau jari, tanpa penghalang. Menyentuh dubur tidak membatalkan.",
+        evidence: {
+          arabic: "مَنْ مَسَّ ذَكَرَهُ فَلْيَتَوَضَّأْ",
+          translation: "Siapa yang menyentuh kemaluannya, hendaklah ia berwudhu. (Diriwayatkan Imam Malik dalam Al-Muwaththa' dari Busrah binti Shafwan)",
+          notes: "Imam Malik meriwayatkan hadits Busrah di Al-Muwaththa' dan mengamalkannya."
+        },
+        reasoning: "Hadits Busrah sahih dan diamalkan ahlul Madinah. Lafazh hadits menyebut dzakar secara khusus, sehingga dubur tidak termasuk. Riwayat yang menyebut sentuhan dengan tangan menunjukkan alat sentuhnya adalah telapak dan jari, bukan anggota lain.",
+        source: "Al-Muwaththa' · Al-Mudawwanah · Mukhtashar Khalil"
+      },
+      {
+        scholar: "Imam Ahmad bin Hanbal",
+        scholarArabic: "الإمامُ أحمدُ بنُ حنبلٍ",
+        school: "Hanabilah",
+        position: "Batal bila menyentuh kemaluan dengan tangan tanpa penghalang, baik dengan bagian dalam maupun punggung telapak tangan.",
+        evidence: {
+          arabic: "عَنْ أُمِّ حَبِيبَةَ قَالَتْ: سَمِعْتُ رَسُولَ اللَّهِ ﷺ يَقُولُ: مَنْ مَسَّ فَرْجَهُ فَلْيَتَوَضَّأْ",
+          translation: "Dari Ummu Habibah: 'Aku mendengar Rasulullah ﷺ bersabda: Siapa yang menyentuh kemaluannya, hendaklah ia berwudhu.' (HR. Ibnu Majah)",
+          notes: "Lafazh farj mencakup qubul dan dubur."
+        },
+        reasoning: "Hadits-hadits tentang wudhu karena menyentuh kemaluan diriwayatkan oleh banyak sahabat, sehingga lebih kuat daripada hadits Thalq. Lafazh mass (menyentuh) dalam hadits bersifat umum dan mencakup seluruh bagian telapak tangan, tidak hanya bagian dalamnya.",
+        source: "Al-Mughni · Al-Inshaf · Kasysyaf Al-Qina'"
+      }
+    ],
+    notes: "Ini contoh klasik ta'arudh al-adillah (pertentangan dalil): hadits Busrah dan Abu Hurairah berhadapan dengan hadits Thalq bin Ali. Jumhur menempuh jalan tarjih atau naskh, sedangkan Hanafiyah mendahulukan hadits Thalq. Perbedaan detail (telapak atau punggung tangan, qubul atau dubur) lahir dari cara memahami lafazh mass, ifdha', dzakar, dan farj.",
+    rangkuman: "Menyentuh kemaluan, batal wudhu atau tidak? Syafi'i: batal kalau pakai telapak tangan bagian dalam tanpa penghalang. Hanbali: batal, baik telapak maupun punggung tangan. Maliki: batal kalau menyentuh kemaluan sendiri dengan telapak atau jari. Hanafi: tidak batal sama sekali. Untuk bermadzhab Syafi'i: yang membatalkan adalah sentuhan langsung dengan telapak tangan, misalnya saat istinja tanpa sarung tangan.",
+  },
+
+  {
+    id: "zakat-fitrah-uang",
+    title: "Membayar Zakat Fitrah dengan Uang",
+    titleArabic: "إِخْرَاجُ زَكَاةِ الْفِطْرِ بِالْقِيمَةِ",
+    category: "fiqh",
+    question: "Bolehkah zakat fitrah dibayarkan dalam bentuk uang seharga makanan pokok, atau harus berupa makanan pokok itu sendiri?",
+    views: [
+      {
+        scholar: "Imam Abu Hanifah",
+        scholarArabic: "الإمامُ أبو حنيفةَ",
+        school: "Hanafiyah",
+        position: "Boleh membayar zakat fitrah dengan nilai (qimah) berupa uang, bahkan bisa lebih utama bila lebih bermanfaat bagi fakir.",
+        evidence: {
+          arabic: "قَالَ مُعَاذٌ لِأَهْلِ الْيَمَنِ: ائْتُونِي بِعَرْضٍ ثِيَابٍ خَمِيصٍ أَوْ لَبِيسٍ فِي الصَّدَقَةِ مَكَانَ الشَّعِيرِ وَالذُّرَةِ، أَهْوَنُ عَلَيْكُمْ وَخَيْرٌ لِأَصْحَابِ النَّبِيِّ ﷺ بِالْمَدِينَةِ",
+          translation: "Mu'adz berkata kepada penduduk Yaman: 'Berikan kepadaku barang berupa pakaian sebagai zakat, sebagai ganti gandum dan jagung. Itu lebih ringan bagi kalian dan lebih baik bagi para sahabat Nabi ﷺ di Madinah.' (Diriwayatkan Al-Bukhari secara mu'allaq)",
+          notes: "Mu'adz, sahabat yang paling mengetahui halal dan haram, menerima nilai sebagai pengganti jenis yang ditentukan."
+        },
+        reasoning: "Tujuan zakat fitrah adalah mencukupi kebutuhan fakir di hari raya (ighna'). Penyebutan kurma dan gandum dalam hadits menjelaskan ukuran dan nilai yang wajib, bukan membatasi bentuknya, karena itulah alat tukar yang umum di masa Nabi ﷺ. Bila uang lebih memenuhi kebutuhan fakir, maka uang lebih sesuai dengan maksud syariat.",
+        source: "Al-Mabsuth · Bada'i' Ash-Shana'i' · Radd Al-Muhtar"
+      },
+      {
+        scholar: "Imam Asy-Syafi'i",
+        scholarArabic: "الإمامُ الشَّافِعِيُّ",
+        school: "Syafi'iyah",
+        position: "Tidak sah membayar zakat fitrah dengan uang. Wajib berupa makanan pokok yang paling umum di negeri itu (ghalib quut al-balad) sebanyak satu sha'.",
+        evidence: {
+          arabic: "عَنِ ابْنِ عُمَرَ قَالَ: فَرَضَ رَسُولُ اللَّهِ ﷺ زَكَاةَ الْفِطْرِ صَاعًا مِنْ تَمْرٍ أَوْ صَاعًا مِنْ شَعِيرٍ عَلَى الْعَبْدِ وَالْحُرِّ وَالذَّكَرِ وَالْأُنْثَى وَالصَّغِيرِ وَالْكَبِيرِ مِنَ الْمُسْلِمِينَ",
+          translation: "Dari Ibnu Umar: 'Rasulullah ﷺ mewajibkan zakat fitrah satu sha' kurma atau satu sha' gandum atas budak dan orang merdeka, laki-laki dan perempuan, anak kecil dan orang dewasa dari kaum Muslimin.' (Muttafaqun 'alaih)",
+          notes: "Kata 'faradha' (mewajibkan) menunjukkan bentuk yang ditetapkan itulah yang wajib dikeluarkan."
+        },
+        reasoning: "Zakat fitrah adalah ibadah yang jenisnya ditentukan oleh nash. Dinar dan dirham sudah ada di masa Nabi ﷺ, namun beliau tetap menetapkan makanan. Seandainya nilai mencukupi, tentu beliau menjelaskannya. Mengganti jenis yang ditetapkan nash berarti keluar dari ketentuan ibadah.",
+        source: "Al-Umm · Al-Majmu' · Mughni Al-Muhtaj"
+      },
+      {
+        scholar: "Imam Malik",
+        scholarArabic: "الإمامُ مالكٌ",
+        school: "Malikiyah",
+        position: "Menurut pendapat masyhur, zakat fitrah dengan uang tidak mencukupi. Wajib dikeluarkan dari jenis makanan pokok yang disebut dalam hadits atau makanan pokok penduduk negeri.",
+        evidence: {
+          arabic: "عَنْ أَبِي سَعِيدٍ الْخُدْرِيِّ قَالَ: كُنَّا نُخْرِجُ زَكَاةَ الْفِطْرِ صَاعًا مِنْ طَعَامٍ، أَوْ صَاعًا مِنْ شَعِيرٍ، أَوْ صَاعًا مِنْ تَمْرٍ، أَوْ صَاعًا مِنْ أَقِطٍ، أَوْ صَاعًا مِنْ زَبِيبٍ",
+          translation: "Dari Abu Sa'id Al-Khudri: 'Kami dahulu mengeluarkan zakat fitrah satu sha' makanan, atau satu sha' gandum, atau satu sha' kurma, atau satu sha' keju, atau satu sha' kismis.' (Muttafaqun 'alaih)",
+          notes: "Praktik para sahabat selalu berupa makanan, tidak pernah dinukil mereka mengeluarkan dirham."
+        },
+        reasoning: "Amal para sahabat menunjukkan zakat fitrah dikeluarkan dalam bentuk makanan. Mengikuti praktik yang jelas dari generasi sahabat lebih selamat dalam ibadah. Sebagian ulama Malikiyah membolehkan nilai dengan karahah, namun pendapat masyhur tetap mengharuskan makanan.",
+        source: "Al-Mudawwanah · Mawahib Al-Jalil · Hasyiyah Ad-Dasuqi"
+      },
+      {
+        scholar: "Imam Ahmad bin Hanbal",
+        scholarArabic: "الإمامُ أحمدُ بنُ حنبلٍ",
+        school: "Hanabilah",
+        position: "Tidak sah membayar zakat fitrah dengan uang. Wajib dengan jenis makanan yang disebut dalam nash.",
+        evidence: {
+          arabic: "يَدَعُونَ قَوْلَ رَسُولِ اللَّهِ ﷺ وَيَقُولُونَ: قَالَ فُلَانٌ",
+          translation: "'Mereka meninggalkan sabda Rasulullah ﷺ lalu berkata: si fulan berkata begini.' (Ucapan Imam Ahmad ketika disampaikan kepadanya bahwa Umar bin Abdul Aziz menerima zakat fitrah dalam bentuk nilai)",
+          notes: "Dinukil Ibnu Qudamah dalam Al-Mughni sebagai sikap tegas Imam Ahmad."
+        },
+        reasoning: "Selama ada nash yang menentukan jenis, pendapat siapa pun tidak boleh mendahuluinya. Membayar nilai berarti menyelisihi ketentuan yang sudah jelas dalam hadits Ibnu Umar dan Abu Sa'id.",
+        source: "Al-Mughni · Al-Inshaf · Kasysyaf Al-Qina'"
+      }
+    ],
+    notes: "Khilaf ini berangkat dari pertanyaan ushul: apakah zakat fitrah ibadah yang bentuknya ta'abbudi (jumhur), atau ibadah yang bisa ditelusuri tujuannya, yaitu mencukupi fakir (Hanafiyah)? Dar Al-Ifta' Al-Mishriyyah memfatwakan bolehnya zakat fitrah dengan uang dengan mengambil pendapat Hanafiyah, karena lebih bermanfaat bagi fakir di kota. Di Indonesia, banyak lembaga zakat juga menerima uang dengan alasan yang sama.",
+    rangkuman: "Zakat fitrah boleh pakai uang? Hanafi: boleh, bahkan bisa lebih utama kalau lebih bermanfaat bagi fakir. Syafi'i, Maliki, dan Hanbali: tidak sah, harus makanan pokok (di Indonesia beras, sekitar 2,5–3 kg). Di Mesir, Dar Al-Ifta membolehkan uang. Kalau kamu ingin keluar dari khilaf, bayar dengan beras atau makanan pokok.",
+  },
+
+  {
+    id: "niat-puasa-ramadhan",
+    title: "Niat Puasa Ramadhan: Tiap Malam atau Sekali Sebulan?",
+    titleArabic: "تَبْيِيتُ نِيَّةِ صَوْمِ رَمَضَانَ وَتَجْدِيدُهَا",
+    category: "fiqh",
+    question: "Apakah niat puasa Ramadhan wajib dilakukan setiap malam sebelum fajar, atau cukup sekali untuk satu bulan? Dan bolehkah niat puasa wajib dilakukan setelah terbit fajar?",
+    views: [
+      {
+        scholar: "Imam Asy-Syafi'i",
+        scholarArabic: "الإمامُ الشَّافِعِيُّ",
+        school: "Syafi'iyah",
+        position: "Wajib berniat setiap malam (tabyit) untuk setiap hari puasa Ramadhan, antara terbenam matahari sampai sebelum terbit fajar. Niat sebulan sekaligus hanya sah untuk hari pertama.",
+        evidence: {
+          arabic: "عَنْ حَفْصَةَ أَنَّ النَّبِيَّ ﷺ قَالَ: مَنْ لَمْ يُبَيِّتِ الصِّيَامَ قَبْلَ الْفَجْرِ فَلَا صِيَامَ لَهُ",
+          translation: "Dari Hafshah, Nabi ﷺ bersabda: 'Siapa yang tidak berniat puasa di malam hari sebelum fajar, maka tidak ada puasa baginya.' (HR. An-Nasa'i; diriwayatkan pula oleh Abu Dawud dan At-Tirmidzi dengan lafazh yang berdekatan)",
+          notes: "Penafian 'tidak ada puasa' dibawa ke tidak sahnya puasa wajib."
+        },
+        reasoning: "Setiap hari Ramadhan adalah ibadah yang berdiri sendiri: batalnya puasa satu hari tidak membatalkan hari yang lain, dan di antara dua hari dipisahkan malam yang bukan waktu puasa. Karena tiap hari ibadah tersendiri, maka tiap hari membutuhkan niat tersendiri yang dilakukan di malam harinya, sesuai hadits Hafshah.",
+        source: "Al-Umm · Al-Majmu' · Mughni Al-Muhtaj"
+      },
+      {
+        scholar: "Imam Abu Hanifah",
+        scholarArabic: "الإمامُ أبو حنيفةَ",
+        school: "Hanafiyah",
+        position: "Niat puasa Ramadhan sah dilakukan dari malam hari sampai sebelum pertengahan siang syar'i (sebelum dhahwah kubra), selama belum makan atau minum. Niat wajib diperbarui setiap hari.",
+        evidence: {
+          arabic: "عَنْ سَلَمَةَ بْنِ الْأَكْوَعِ أَنَّ النَّبِيَّ ﷺ بَعَثَ رَجُلًا يُنَادِي فِي النَّاسِ يَوْمَ عَاشُورَاءَ: إِنَّ مَنْ أَكَلَ فَلْيُتِمَّ أَوْ فَلْيَصُمْ، وَمَنْ لَمْ يَأْكُلْ فَلَا يَأْكُلْ",
+          translation: "Dari Salamah bin Al-Akwa', Nabi ﷺ mengutus seseorang untuk mengumumkan kepada orang-orang pada hari Asyura: 'Siapa yang sudah makan, hendaklah ia menahan diri sampai sore; siapa yang belum makan, janganlah makan.' (Muttafaqun 'alaih)",
+          notes: "Saat itu puasa Asyura hukumnya wajib, dan Nabi ﷺ memerintahkan berpuasa dengan niat di siang hari."
+        },
+        reasoning: "Bila puasa wajib Asyura sah dengan niat di siang hari, maka puasa Ramadhan yang waktunya sudah tertentu lebih layak sah dengan niat seperti itu. Hadits Hafshah dibawa ke puasa yang waktunya tidak tertentu, seperti qadha dan kafarat, atau dimaknai penafian kesempurnaan.",
+        source: "Al-Mabsuth · Bada'i' Ash-Shana'i' · Al-Hidayah"
+      },
+      {
+        scholar: "Imam Malik",
+        scholarArabic: "الإمامُ مالكٌ",
+        school: "Malikiyah",
+        position: "Cukup satu kali niat di malam pertama untuk seluruh bulan Ramadhan, selama puasanya tidak terputus oleh uzur seperti sakit, safar, atau haid. Bila terputus, niat harus diperbarui.",
+        evidence: {
+          arabic: "فَمَن شَهِدَ مِنكُمُ الشَّهْرَ فَلْيَصُمْهُ",
+          translation: "Maka barangsiapa di antara kamu hadir (di negeri tempat tinggalnya) di bulan itu, hendaklah ia berpuasa. (Al-Baqarah: 185)",
+          notes: "Perintah berpuasa diarahkan kepada 'asy-syahr' (bulan) sebagai satu kesatuan."
+        },
+        reasoning: "Puasa Ramadhan adalah satu ibadah yang wajib dilakukan berturut-turut (tatabu'), seperti puasa kafarat dua bulan berturut-turut. Ibadah yang satu cukup dengan satu niat di awalnya, sebagaimana shalat cukup dengan satu niat di awal meski terdiri dari banyak rakaat.",
+        source: "Al-Mudawwanah · Asy-Syarh Ash-Shaghir · Hasyiyah Ad-Dasuqi"
+      },
+      {
+        scholar: "Imam Ahmad bin Hanbal",
+        scholarArabic: "الإمامُ أحمدُ بنُ حنبلٍ",
+        school: "Hanabilah",
+        position: "Menurut pendapat madzhab, wajib berniat setiap malam untuk setiap hari. Ada riwayat lain dari Imam Ahmad bahwa satu niat di awal bulan sudah mencukupi.",
+        evidence: {
+          arabic: "إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ، وَإِنَّمَا لِكُلِّ امْرِئٍ مَا نَوَى",
+          translation: "Sesungguhnya setiap amal tergantung niatnya, dan setiap orang hanya mendapatkan apa yang ia niatkan. (Muttafaqun 'alaih)",
+          notes: "Setiap hari puasa adalah amal tersendiri, sehingga membutuhkan niat tersendiri."
+        },
+        reasoning: "Puasa setiap hari adalah amal yang terpisah: rusaknya satu hari tidak merusak hari lainnya. Maka hadits niat dan hadits Hafshah berlaku untuk setiap hari. Riwayat kedua dari Imam Ahmad mengikuti pandangan Malikiyah bahwa Ramadhan satu kesatuan ibadah.",
+        source: "Al-Mughni · Al-Inshaf · Kasysyaf Al-Qina'"
+      }
+    ],
+    notes: "Inti perbedaannya: apakah puasa Ramadhan satu ibadah utuh (Malikiyah) atau tiga puluh ibadah terpisah (jumhur), dan apakah hadits Hafshah berlaku untuk semua puasa wajib atau hanya yang waktunya tidak tertentu (Hanafiyah). Banyak ulama Syafi'iyah menganjurkan berniat puasa sebulan di malam pertama Ramadhan dengan bertaqlid kepada Imam Malik, sebagai jaga-jaga bila suatu malam lupa berniat.",
+    rangkuman: "Niat puasa Ramadhan harus tiap malam? Syafi'i dan Hanbali: ya, wajib tiap malam sebelum subuh. Maliki: cukup sekali di malam pertama untuk sebulan penuh. Hanafi: boleh niat sampai sebelum tengah hari selama belum makan. Tips: tetap niat tiap malam, tapi di malam pertama tambahkan niat untuk sebulan penuh, jadi kalau suatu malam lupa, puasamu tetap aman menurut madzhab Maliki.",
+  },
+
+  {
+    id: "wali-nikah",
+    title: "Syarat Wali dalam Akad Nikah",
+    titleArabic: "اشْتِرَاطُ الْوَلِيِّ فِي عَقْدِ النِّكَاحِ",
+    category: "fiqh",
+    question: "Apakah wali merupakan syarat sah nikah? Bolehkah perempuan yang sudah baligh dan berakal menikahkan dirinya sendiri tanpa wali?",
+    views: [
+      {
+        scholar: "Imam Abu Hanifah",
+        scholarArabic: "الإمامُ أبو حنيفةَ",
+        school: "Hanafiyah",
+        position: "Perempuan baligh dan berakal sah menikahkan dirinya sendiri tanpa wali. Namun bila ia menikah dengan laki-laki yang tidak sekufu atau dengan mahar di bawah mahar mitsl, wali berhak mengajukan pembatalan ke hakim.",
+        evidence: {
+          arabic: "الْأَيِّمُ أَحَقُّ بِنَفْسِهَا مِنْ وَلِيِّهَا، وَالْبِكْرُ تُسْتَأْذَنُ فِي نَفْسِهَا، وَإِذْنُهَا صُمَاتُهَا",
+          translation: "Perempuan yang tidak bersuami lebih berhak atas dirinya daripada walinya, dan gadis dimintai izin tentang dirinya, dan izinnya adalah diamnya. (HR. Muslim)",
+          notes: "Hadits ini menegaskan hak perempuan atas dirinya sendiri dalam urusan nikah."
+        },
+        reasoning: "Al-Qur'an menyandarkan akad nikah kepada perempuan sendiri, seperti dalam 'hatta tankiha zaujan ghairahu' (Al-Baqarah: 230) dan 'fala junaha 'alaikum fima fa'alna fi anfusihinna bil ma'ruf' (Al-Baqarah: 234). Perempuan baligh yang berakal sah mengelola hartanya sendiri, maka ia juga sah melakukan akad atas dirinya. Hak wali tetap dijaga melalui syarat kafa'ah.",
+        source: "Al-Mabsuth · Bada'i' Ash-Shana'i' · Fath Al-Qadir"
+      },
+      {
+        scholar: "Imam Asy-Syafi'i",
+        scholarArabic: "الإمامُ الشَّافِعِيُّ",
+        school: "Syafi'iyah",
+        position: "Wali adalah syarat sah nikah. Perempuan tidak sah menikahkan dirinya sendiri maupun orang lain, meskipun dengan izin walinya.",
+        evidence: {
+          arabic: "عَنْ أَبِي مُوسَى أَنَّ النَّبِيَّ ﷺ قَالَ: لَا نِكَاحَ إِلَّا بِوَلِيٍّ",
+          translation: "Dari Abu Musa, Nabi ﷺ bersabda: 'Tidak ada nikah kecuali dengan wali.' (HR. Abu Dawud, At-Tirmidzi, Ibnu Majah)",
+          notes: "Penafian 'tidak ada nikah' dibawa ke tidak sahnya nikah, karena itulah makna terdekat dari penafian hakikat."
+        },
+        reasoning: "Hadits ini menafikan keabsahan nikah tanpa wali secara tegas. Hadits 'al-ayyim ahaqqu binafsiha' dimaknai bahwa perempuan lebih berhak dalam memilih dan memberi persetujuan, bukan dalam melakukan akad. Nikah menyangkut kehormatan keluarga, sehingga syariat menyerahkan akadnya kepada wali sebagai penjaga.",
+        source: "Al-Umm · Al-Majmu' · Mughni Al-Muhtaj"
+      },
+      {
+        scholar: "Imam Malik",
+        scholarArabic: "الإمامُ مالكٌ",
+        school: "Malikiyah",
+        position: "Wali adalah rukun nikah. Untuk perempuan yang memiliki kedudukan (syarifah), wajib wali dari kerabat (wali khas). Untuk perempuan biasa yang tidak memiliki kerabat yang mengurusnya, sebagian riwayat membolehkan wali umum dari kalangan Muslimin.",
+        evidence: {
+          arabic: "عَنْ عَائِشَةَ أَنَّ النَّبِيَّ ﷺ قَالَ: أَيُّمَا امْرَأَةٍ نَكَحَتْ بِغَيْرِ إِذْنِ وَلِيِّهَا فَنِكَاحُهَا بَاطِلٌ، فَنِكَاحُهَا بَاطِلٌ، فَنِكَاحُهَا بَاطِلٌ",
+          translation: "Dari Aisyah, Nabi ﷺ bersabda: 'Perempuan mana pun yang menikah tanpa izin walinya, maka nikahnya batal, nikahnya batal, nikahnya batal.' (HR. Abu Dawud, At-Tirmidzi, Ibnu Majah)",
+          notes: "Pengulangan tiga kali menunjukkan penegasan yang sangat kuat."
+        },
+        reasoning: "Hadits Aisyah menegaskan batalnya nikah tanpa wali. Pembedaan antara syarifah dan perempuan biasa didasarkan pada fungsi wali, yaitu menjaga kehormatan dan kesetaraan keluarga, yang lebih dibutuhkan pada keluarga yang memiliki kedudukan.",
+        source: "Al-Mudawwanah · Mukhtashar Khalil · Asy-Syarh Al-Kabir"
+      },
+      {
+        scholar: "Imam Ahmad bin Hanbal",
+        scholarArabic: "الإمامُ أحمدُ بنُ حنبلٍ",
+        school: "Hanabilah",
+        position: "Wali adalah syarat sah nikah. Nikah tanpa wali tidak sah.",
+        evidence: {
+          arabic: "فَلَا تَعْضُلُوهُنَّ أَن يَنكِحْنَ أَزْوَاجَهُنَّ إِذَا تَرَاضَوْا بَيْنَهُم بِالْمَعْرُوفِ",
+          translation: "Maka janganlah kamu (para wali) menghalangi mereka menikah dengan calon suaminya, apabila telah terjalin kecocokan di antara mereka dengan cara yang baik. (Al-Baqarah: 232)",
+          notes: "Ayat ini turun tentang Ma'qil bin Yasar yang menolak menikahkan saudarinya (HR. Al-Bukhari)."
+        },
+        reasoning: "Larangan kepada wali agar tidak menghalangi (adhl) menunjukkan bahwa nikah bergantung pada wali. Seandainya perempuan bisa menikahkan dirinya sendiri, penghalangan wali tidak berarti apa-apa dan larangan itu tidak diperlukan. Imam Asy-Syafi'i juga berdalil dengan ayat ini.",
+        source: "Al-Mughni · Al-Inshaf · Kasysyaf Al-Qina'"
+      }
+    ],
+    notes: "Jumhur (Syafi'iyah, Malikiyah, Hanabilah) mewajibkan wali, sedangkan Hanafiyah tidak. Kompilasi Hukum Islam di Indonesia menjadikan wali sebagai rukun nikah, mengikuti jumhur. Di Mesir, hukum keluarga merujuk ke pendapat rajih madzhab Hanafi untuk perkara yang tidak diatur undang-undang. Bagi Masisir yang menikah di Mesir, pastikan akadnya juga sah menurut hukum Indonesia agar pencatatan di KBRI tidak bermasalah.",
+    rangkuman: "Perempuan boleh menikahkan dirinya sendiri tanpa wali? Hanafi: boleh, asal sudah baligh dan berakal, tapi wali bisa membatalkan kalau calonnya tidak sekufu. Syafi'i, Maliki, dan Hanbali: tidak sah, wali wajib. Di Indonesia, hukum yang berlaku mewajibkan wali. Jadi bagi Masisir yang menikah, ikuti jumhur: harus ada wali.",
+  },
+
+  {
+    id: "jumlah-jamaah-jumat",
+    title: "Jumlah Minimal Jamaah Shalat Jumat",
+    titleArabic: "الْعَدَدُ الَّذِي تَنْعَقِدُ بِهِ الْجُمُعَةُ",
+    category: "fiqh",
+    question: "Berapa jumlah minimal jamaah agar shalat Jumat sah? Apakah sah Jumat yang diadakan di mushalla kecil, asrama, atau perkumpulan dengan jamaah sedikit?",
+    views: [
+      {
+        scholar: "Imam Asy-Syafi'i dan Imam Ahmad",
+        scholarArabic: "الإمامُ الشَّافِعِيُّ وَالإمامُ أحمدُ",
+        school: "Syafi'iyah · Hanabilah",
+        position: "Shalat Jumat hanya sah dengan minimal empat puluh laki-laki mukallaf, merdeka, dan penduduk tetap (mustauthin) di tempat itu, termasuk imam. Ini pendapat yang masyhur dalam kedua madzhab.",
+        evidence: {
+          arabic: "عَنْ عَبْدِ الرَّحْمَنِ بْنِ كَعْبِ بْنِ مَالِكٍ عَنْ أَبِيهِ أَنَّ أَوَّلَ مَنْ جَمَّعَ بِهِمْ أَسْعَدُ بْنُ زُرَارَةَ ... قُلْتُ: كَمْ كُنْتُمْ يَوْمَئِذٍ؟ قَالَ: أَرْبَعُونَ",
+          translation: "Dari Abdurrahman bin Ka'b bin Malik dari ayahnya, bahwa orang pertama yang mengadakan shalat Jumat bersama mereka adalah As'ad bin Zurarah. 'Aku bertanya: Berapa jumlah kalian saat itu?' Ia menjawab: 'Empat puluh orang.' (HR. Abu Dawud, Ibnu Majah)",
+          notes: "Jumat pertama di Madinah diadakan dengan empat puluh orang."
+        },
+        reasoning: "Shalat Jumat adalah ibadah yang tata caranya diambil dari praktik Nabi ﷺ dan para sahabat. Tidak ada riwayat sahih tentang Jumat yang diadakan dengan jumlah kurang dari empat puluh, maka jumlah inilah batas yang pasti. Ibadah yang bersifat tauqifi tidak boleh dikurangi dari yang ditetapkan riwayat.",
+        source: "Al-Umm · Al-Majmu' · Al-Mughni · Kasysyaf Al-Qina'"
+      },
+      {
+        scholar: "Imam Abu Hanifah",
+        scholarArabic: "الإمامُ أبو حنيفةَ",
+        school: "Hanafiyah",
+        position: "Shalat Jumat sah dengan tiga laki-laki selain imam. Abu Yusuf berpendapat cukup dua orang selain imam.",
+        evidence: {
+          arabic: "يَا أَيُّهَا الَّذِينَ آمَنُوا إِذَا نُودِيَ لِلصَّلَاةِ مِن يَوْمِ الْجُمُعَةِ فَاسْعَوْا إِلَىٰ ذِكْرِ اللَّهِ",
+          translation: "Wahai orang-orang yang beriman, apabila diseru untuk shalat pada hari Jumat, maka bersegeralah kamu mengingat Allah. (Al-Jumu'ah: 9)",
+          notes: "Kata 'fas'au' berbentuk jamak, dan bentuk jamak minimal tiga orang."
+        },
+        reasoning: "Ayat memerintahkan sekelompok orang (minimal tiga, bentuk jamak) untuk bersegera menuju dzikrullah, yaitu khutbah yang disampaikan oleh khatib. Maka jamaah Jumat terdiri dari tiga orang yang mendengar ditambah satu imam yang berkhutbah. Tidak ada nash sahih yang menetapkan empat puluh sebagai syarat.",
+        source: "Al-Mabsuth · Bada'i' Ash-Shana'i' · Al-Hidayah"
+      },
+      {
+        scholar: "Imam Malik",
+        scholarArabic: "الإمامُ مالكٌ",
+        school: "Malikiyah",
+        position: "Shalat Jumat sah dengan minimal dua belas laki-laki selain imam, yang hadir dari awal khutbah sampai salam, di tempat yang merupakan pemukiman tetap.",
+        evidence: {
+          arabic: "عَنْ جَابِرٍ أَنَّ النَّبِيَّ ﷺ كَانَ يَخْطُبُ قَائِمًا يَوْمَ الْجُمُعَةِ، فَجَاءَتْ عِيرٌ مِنَ الشَّامِ، فَانْفَتَلَ النَّاسُ إِلَيْهَا حَتَّى لَمْ يَبْقَ إِلَّا اثْنَا عَشَرَ رَجُلًا",
+          translation: "Dari Jabir, Nabi ﷺ sedang berkhutbah berdiri pada hari Jumat, lalu datang kafilah dagang dari Syam. Orang-orang pun beranjak menuju kafilah itu hingga tidak tersisa kecuali dua belas orang. (HR. Muslim)",
+          notes: "Peristiwa ini menjadi sebab turunnya ayat 'wa idza ra'au tijaratan au lahwan' (Al-Jumu'ah: 11)."
+        },
+        reasoning: "Nabi ﷺ tetap melanjutkan shalat Jumat bersama dua belas orang yang tersisa. Ini menunjukkan Jumat sah dengan jumlah tersebut. Jumlah yang sudah terbukti sah dalam praktik Nabi ﷺ menjadi batas minimal.",
+        source: "Al-Mudawwanah · Mukhtashar Khalil · Hasyiyah Ad-Dasuqi"
+      }
+    ],
+    notes: "Perbedaan ini sangat praktis. Menurut Syafi'iyah, Jumat di asrama, flat, atau mushalla dengan jamaah kurang dari empat puluh tidak sah, sehingga jamaah wajib shalat Zhuhur. Menurut Hanafiyah cukup empat orang termasuk imam, dan menurut Malikiyah tiga belas orang termasuk imam. Di Kairo, masjid besar sangat mudah dijangkau, sehingga keluar dari khilaf dengan shalat Jumat di masjid jami' lebih utama.",
+    rangkuman: "Shalat Jumat minimal berapa orang? Syafi'i dan Hanbali: 40 orang (termasuk imam). Maliki: 12 orang selain imam. Hanafi: 3 orang selain imam. Jadi kalau di asrama atau flat jamaahnya kurang dari 40, menurut Syafi'i Jumatnya tidak sah dan harus Zhuhur. Paling aman: shalat Jumat di masjid jami' terdekat.",
+  },
+
+  {
+    id: "qadha-shalat-sengaja",
+    title: "Qadha Shalat yang Sengaja Ditinggalkan",
+    titleArabic: "قَضَاءُ الصَّلَاةِ الْمَتْرُوكَةِ عَمْدًا",
+    category: "fiqh",
+    question: "Orang yang meninggalkan shalat fardhu dengan sengaja tanpa uzur, apakah wajib mengqadhanya? Atau qadha hanya disyariatkan bagi orang yang tertidur dan lupa?",
+    views: [
+      {
+        scholar: "Jumhur Fuqaha",
+        scholarArabic: "جُمْهُورُ الْفُقَهَاءِ",
+        school: "Hanafiyah · Malikiyah · Syafi'iyah · Hanabilah",
+        position: "Wajib mengqadha shalat yang ditinggalkan dengan sengaja, disertai taubat dari dosa meninggalkannya. Menurut Syafi'iyah, qadha shalat yang ditinggalkan tanpa uzur wajib segera (fauran).",
+        evidence: {
+          arabic: "عَنْ أَنَسٍ أَنَّ النَّبِيَّ ﷺ قَالَ: مَنْ نَسِيَ صَلَاةً فَلْيُصَلِّ إِذَا ذَكَرَهَا، لَا كَفَّارَةَ لَهَا إِلَّا ذَلِكَ",
+          translation: "Dari Anas, Nabi ﷺ bersabda: 'Siapa yang lupa mengerjakan shalat, hendaklah ia mengerjakannya ketika ingat. Tidak ada tebusan baginya selain itu.' (Muttafaqun 'alaih)",
+          notes: "Bila orang yang lupa, yang tidak berdosa, wajib mengqadha, maka orang yang sengaja lebih wajib lagi."
+        },
+        reasoning: "Ini qiyas aulawi: kewajiban qadha bagi orang yang lupa dan tertidur, padahal mereka dimaafkan, menunjukkan bahwa kewajiban shalat tidak gugur dengan habisnya waktu. Orang yang sengaja lebih pantas dibebani qadha. Diperkuat sabda Nabi ﷺ 'fadainullahi ahaqqu an yuqdha' (utang kepada Allah lebih berhak untuk dibayar), HR. Al-Bukhari dan Muslim.",
+        source: "Bada'i' Ash-Shana'i' · Mawahib Al-Jalil · Al-Majmu' · Al-Mughni"
+      },
+      {
+        scholar: "Ibnu Hazm Az-Zhahiri",
+        scholarArabic: "ابنُ حزمٍ الظَّاهِرِيُّ",
+        school: "Zhahiriyah (juga dipilih Ibnu Taimiyah)",
+        position: "Shalat yang sengaja ditinggalkan sampai habis waktunya tidak bisa diqadha dan tidak sah bila dikerjakan di luar waktunya. Yang wajib adalah taubat yang sungguh-sungguh dan memperbanyak shalat sunnah.",
+        evidence: {
+          arabic: "فَخَلَفَ مِن بَعْدِهِمْ خَلْفٌ أَضَاعُوا الصَّلَاةَ وَاتَّبَعُوا الشَّهَوَاتِ ۖ فَسَوْفَ يَلْقَوْنَ غَيًّا ۝ إِلَّا مَن تَابَ",
+          translation: "Kemudian datanglah sesudah mereka pengganti yang menyia-nyiakan shalat dan memperturutkan hawa nafsu, maka mereka kelak akan menemui kesesatan, kecuali orang yang bertaubat. (Maryam: 59-60)",
+          notes: "Jalan keluar yang disebut ayat adalah taubat, bukan qadha."
+        },
+        reasoning: "Shalat adalah ibadah yang terikat waktu. Mengerjakannya di luar waktu membutuhkan nash, dan nash hanya datang untuk orang yang tertidur dan lupa. Orang yang sengaja tidak termasuk, maka tidak boleh diqiyaskan, karena keduanya berbeda: yang satu dimaafkan, yang lain berdosa.",
+        source: "Al-Muhalla (Ibnu Hazm) · Al-Ikhtiyarat Al-Fiqhiyyah (Ibnu Taimiyah)"
+      }
+    ],
+    notes: "An-Nawawi dalam Al-Majmu' menyebut wajibnya qadha bagi yang sengaja sebagai pendapat ulama yang diperhitungkan, dan menilai pendapat yang berbeda sebagai syadz. Pendapat Ibnu Hazm sering dikutip di media sosial, padahal ia menyelisihi empat madzhab. Al-Azhar dan Dar Al-Ifta' Al-Mishriyyah berpegang pada pendapat jumhur: shalat yang ditinggalkan tetap utang yang wajib dibayar.",
+    rangkuman: "Shalat yang sengaja ditinggalkan, wajib diqadha? Empat madzhab sepakat: wajib diqadha, plus taubat. Ibnu Hazm (dan Ibnu Taimiyah) berpendapat tidak bisa diqadha, cukup taubat dan perbanyak sunnah, tapi ini pendapat minoritas. Jadi kalau punya utang shalat, cicil qadhanya, misalnya satu shalat qadha setelah setiap shalat fardhu, sambil bertaubat.",
+  },
+
+  {
+    id: "mafhum-mukhalafah",
+    title: "Kehujjahan Mafhum Mukhalafah",
+    titleArabic: "حُجِّيَّةُ مَفْهُومِ الْمُخَالَفَةِ",
+    category: "ushul",
+    question: "Bila sebuah nash menyebut hukum dengan sifat, syarat, atau bilangan tertentu, apakah kebalikan hukumnya berlaku untuk keadaan yang tidak memiliki sifat itu? Misalnya, bila zakat disebut untuk kambing yang digembalakan, apakah kambing yang diberi pakan tidak wajib dizakati?",
+    views: [
+      {
+        scholar: "Jumhur Ushuliyyin",
+        scholarArabic: "جُمْهُورُ الأُصُولِيِّينَ",
+        school: "Syafi'iyah · Malikiyah · Hanabilah",
+        position: "Mafhum mukhalafah adalah hujjah, dengan syarat qayd (sifat, syarat, bilangan, ghayah) tidak disebut karena alasan lain, seperti mengikuti kebiasaan (kharaja makhraj al-ghalib), menjawab pertanyaan tertentu, atau untuk menyebut karunia (imtinan). Mafhum laqab (nama benda) tidak dijadikan hujjah.",
+        evidence: {
+          arabic: "عَنْ يَعْلَى بْنِ أُمَيَّةَ قَالَ: قُلْتُ لِعُمَرَ: لَيْسَ عَلَيْكُمْ جُنَاحٌ أَنْ تَقْصُرُوا مِنَ الصَّلَاةِ إِنْ خِفْتُمْ، فَقَدْ أَمِنَ النَّاسُ! فَقَالَ: عَجِبْتُ مِمَّا عَجِبْتَ مِنْهُ، فَسَأَلْتُ رَسُولَ اللَّهِ ﷺ عَنْ ذَلِكَ فَقَالَ: صَدَقَةٌ تَصَدَّقَ اللَّهُ بِهَا عَلَيْكُمْ فَاقْبَلُوا صَدَقَتَهُ",
+          translation: "Dari Ya'la bin Umayyah: 'Aku berkata kepada Umar: (Allah berfirman) tidak mengapa kamu mengqashar shalat jika kamu takut, padahal sekarang orang-orang sudah aman! Umar menjawab: Aku pun heran seperti kamu, lalu aku bertanya kepada Rasulullah ﷺ, dan beliau bersabda: Itu sedekah yang Allah berikan kepada kalian, maka terimalah sedekah-Nya.' (HR. Muslim)",
+          notes: "Ya'la dan Umar, dua orang Arab yang fasih, memahami syarat 'in khiftum' sebagai pembatas: tanpa rasa takut, qashar tidak berlaku."
+        },
+        reasoning: "Para sahabat yang memahami bahasa Arab secara alami menangkap mafhum mukhalafah dari syarat dalam ayat, dan Nabi ﷺ tidak mengingkari cara memahami itu, beliau hanya menjelaskan adanya dalil lain. Selain itu, menyebut sifat tertentu tanpa tujuan pembatasan dianggap sia-sia, dan kalam syar'i terhindar dari kesia-siaan.",
+        source: "Al-Mustashfa · Al-Ihkam (Al-Amidi) · Syarh Tanqih Al-Fushul · Raudhah An-Nazhir"
+      },
+      {
+        scholar: "Hanafiyah",
+        scholarArabic: "الْحَنَفِيَّةُ",
+        school: "Hanafiyah",
+        position: "Mafhum mukhalafah tidak menjadi hujjah dalam nash-nash syar'i. Penyebutan sifat atau syarat hanya menetapkan hukum untuk yang disebut, dan tidak menafikan hukum dari yang tidak disebut. Hukum yang tidak disebut dicari dari dalil lain atau dikembalikan ke hukum asal.",
+        evidence: {
+          arabic: "وَرَبَائِبُكُمُ اللَّاتِي فِي حُجُورِكُم مِّن نِّسَائِكُمُ اللَّاتِي دَخَلْتُم بِهِنَّ",
+          translation: "Dan (diharamkan atasmu) anak-anak tiri yang dalam pemeliharaanmu dari istri yang telah kamu campuri. (An-Nisa': 23)",
+          notes: "Anak tiri tetap haram dinikahi meski tidak berada dalam pemeliharaan, menurut kesepakatan ulama."
+        },
+        reasoning: "Banyak qayd dalam Al-Qur'an yang jelas tidak bermafhum, seperti 'fi hujurikum' dalam ayat ini dan 'adh'afan mudha'afah' dalam larangan riba (Ali Imran: 130). Ini menunjukkan penyebutan sifat tidak otomatis menafikan hukum dari selainnya. Karena itu, hukum yang tidak disebut harus ditetapkan dengan dalil tersendiri, tidak cukup dengan mafhum.",
+        source: "Ushul As-Sarakhsi · Kasyf Al-Asrar (Abdul Aziz Al-Bukhari) · At-Taudhih wa At-Talwih"
+      }
+    ],
+    notes: "Khilaf ini berdampak luas pada fiqh. Contoh: hadits 'fi sha'imatil ghanam az-zakah' (zakat pada kambing yang digembalakan). Jumhur memahami kambing yang diberi pakan tidak wajib dizakati berdasarkan mafhum. Hanafiyah sampai pada hasil yang sama, tetapi berdalil dengan bara'ah ashliyyah (hukum asal tidak wajib), bukan dengan mafhum. Di imtihan ushul fiqh Al-Azhar, syarat-syarat mafhum mukhalafah dan pembagiannya (mafhum shifat, syarth, ghayah, 'adad, laqab) sering keluar.",
+    rangkuman: "Kalau dalil menyebut syarat atau sifat tertentu, apakah kebalikannya otomatis berlaku? Jumhur (Syafi'i, Maliki, Hanbali): ya, ini disebut mafhum mukhalafah, asal sifat itu memang disebut untuk membatasi. Hanafi: tidak, yang tidak disebut harus dicari dalilnya sendiri. Hafalkan juga lima jenis mafhum (shifat, syarth, ghayah, 'adad, laqab), karena sering ditanyakan di imtihan.",
+  },
+
+  {
+    id: "ruyatullah-akhirat",
+    title: "Melihat Allah di Akhirat",
+    titleArabic: "رُؤْيَةُ اللَّهِ تَعَالَى فِي الْآخِرَةِ",
+    category: "aqidah",
+    question: "Apakah orang-orang beriman akan melihat Allah di akhirat? Bila ya, bagaimana memahaminya tanpa menyerupakan Allah dengan makhluk, dan bagaimana menjawab ayat 'la tudrikuhul abshar'?",
+    views: [
+      {
+        scholar: "Al-Asy'ariyah",
+        scholarArabic: "الأَشَاعِرَةُ",
+        school: "Ahlus Sunnah · Asy'ariyah",
+        position: "Melihat Allah boleh menurut akal (ja'iz 'aqlan) dan pasti terjadi menurut nash (waqi' sam'an) bagi orang-orang beriman di akhirat, tanpa kaifiyah, tanpa arah, tanpa berhadapan, dan tanpa liputan.",
+        evidence: {
+          arabic: "وُجُوهٌ يَوْمَئِذٍ نَّاضِرَةٌ ۝ إِلَىٰ رَبِّهَا نَاظِرَةٌ",
+          translation: "Wajah-wajah (orang mukmin) pada hari itu berseri-seri, kepada Tuhannya mereka melihat. (Al-Qiyamah: 22-23)",
+          notes: "Kata 'nazhar' yang dihubungkan dengan huruf 'ila' dan disandarkan pada wajah bermakna melihat dengan mata."
+        },
+        reasoning: "Secara akal, setiap yang wujud sah untuk dilihat (dalil al-wujud), dan Allah Maha Wujud, maka melihat-Nya tidak mustahil. Secara nash, ayat dan hadits mutawatir menegaskannya. Penglihatan ini adalah penyingkapan sempurna yang Allah ciptakan pada mata orang beriman, tanpa mengharuskan arah dan jarak sebagaimana penglihatan di dunia.",
+        source: "Al-Ibanah · Al-Luma' (Al-Asy'ari) · Syarh Al-Mawaqif"
+      },
+      {
+        scholar: "Al-Maturidiyah",
+        scholarArabic: "الْمَاتُرِيدِيَّةُ",
+        school: "Ahlus Sunnah · Maturidiyah",
+        position: "Melihat Allah di akhirat adalah haq bagi orang beriman, tanpa idrak (meliputi), tanpa batas, dan tanpa kaifiyah. Penglihatan itu diimani sebagaimana datangnya nash.",
+        evidence: {
+          arabic: "عَنْ جَرِيرِ بْنِ عَبْدِ اللَّهِ قَالَ: قَالَ النَّبِيُّ ﷺ: إِنَّكُمْ سَتَرَوْنَ رَبَّكُمْ كَمَا تَرَوْنَ هَذَا الْقَمَرَ، لَا تُضَامُّونَ فِي رُؤْيَتِهِ",
+          translation: "Dari Jarir bin Abdillah, Nabi ﷺ bersabda: 'Sesungguhnya kalian akan melihat Tuhan kalian sebagaimana kalian melihat bulan ini, kalian tidak berdesak-desakan dalam melihatnya.' (Muttafaqun 'alaih)",
+          notes: "Yang diserupakan adalah kejelasan penglihatan, bukan Dzat yang dilihat dengan bulan."
+        },
+        reasoning: "Ayat 'la tudrikuhul abshar' menafikan idrak, yaitu meliputi dan menjangkau batas, bukan menafikan penglihatan. Melihat sesuatu tidak mengharuskan meliputinya. Maka ayat itu tidak bertentangan dengan ayat dan hadits rukyah, justru menegaskan bahwa Allah dilihat tanpa diliputi.",
+        source: "Kitab At-Tauhid (Al-Maturidi) · Syarh Al-'Aqa'id An-Nasafiyyah (At-Taftazani)"
+      },
+      {
+        scholar: "Al-Mu'tazilah",
+        scholarArabic: "الْمُعْتَزِلَةُ",
+        school: "Mu'tazilah",
+        position: "Melihat Allah mustahil, baik di dunia maupun di akhirat, karena penglihatan mengharuskan arah, warna, dan bentuk, yang semuanya sifat jisim.",
+        evidence: {
+          arabic: "لَّا تُدْرِكُهُ الْأَبْصَارُ وَهُوَ يُدْرِكُ الْأَبْصَارَ ۖ وَهُوَ اللَّطِيفُ الْخَبِيرُ",
+          translation: "Dia tidak dapat dicapai oleh penglihatan mata, sedang Dia dapat melihat segala penglihatan itu, dan Dialah Yang Mahahalus lagi Maha Mengetahui. (Al-An'am: 103)",
+          notes: "Mu'tazilah juga berdalil dengan jawaban Allah kepada Nabi Musa: 'lan tarani' (Al-A'raf: 143)."
+        },
+        reasoning: "Mu'tazilah memandang ayat ini sebagai pujian Allah atas Diri-Nya, sehingga kebalikannya (dapat dilihat) adalah kekurangan. Ayat Al-Qiyamah mereka takwilkan: 'nazhirah' bermakna 'muntazhirah', yaitu menunggu pahala dari Tuhannya. Ahlus Sunnah menjawab: permintaan Nabi Musa menunjukkan rukyah mungkin, sebab seorang nabi tidak meminta yang mustahil, dan Allah menggantungkannya pada tetapnya gunung, sesuatu yang mungkin.",
+        source: "Syarh Al-Ushul Al-Khamsah (Al-Qadhi Abdul Jabbar) · Al-Mughni fi Abwab At-Tauhid"
+      }
+    ],
+    notes: "Masalah ini termasuk pembeda utama antara Ahlus Sunnah dan Mu'tazilah. Al-Azhar mengajarkan aqidah dengan manhaj Asy'ari dan Maturidi, yang sepakat menetapkan rukyah tanpa tasybih. Di imtihan tauhid, pertanyaan yang sering muncul adalah dalil aqli rukyah (dalil al-wujud) dan jawaban atas dua ayat yang dipakai Mu'tazilah.",
+    rangkuman: "Apakah orang beriman akan melihat Allah di akhirat? Ahlus Sunnah (Asy'ariyah dan Maturidiyah): ya, pasti, tapi tanpa bisa digambarkan bagaimana, tanpa arah, dan tanpa meliputi-Nya. Mu'tazilah: mustahil. Untuk imtihan, kuasai jawaban Ahlus Sunnah atas ayat 'la tudrikuhul abshar' (yang dinafikan adalah meliputi, bukan melihat) dan 'lan tarani' (Musa meminta sesuatu yang mungkin).",
+  },
+
+  {
+    id: "riwayat-bil-makna",
+    title: "Meriwayatkan Hadits dengan Makna",
+    titleArabic: "رِوَايَةُ الْحَدِيثِ بِالْمَعْنَى",
+    category: "hadits",
+    question: "Bolehkah seorang perawi menyampaikan hadits dengan kata-katanya sendiri selama maknanya sama, atau wajib menyampaikan lafazh persis seperti yang ia dengar?",
+    views: [
+      {
+        scholar: "Jumhur Muhadditsin, Fuqaha, dan Ushuliyyin",
+        scholarArabic: "جُمْهُورُ الْمُحَدِّثِينَ وَالْفُقَهَاءِ وَالأُصُولِيِّينَ",
+        school: "Mayoritas ulama",
+        position: "Boleh meriwayatkan hadits dengan makna bagi orang yang menguasai bahasa Arab, memahami makna lafazh, dan mengetahui apa yang dapat mengubah makna. Tidak boleh pada lafazh yang bersifat ta'abbudi seperti dzikir dan bacaan tasyahhud.",
+        evidence: {
+          arabic: "أَوْ مِثْلَهُ، أَوْ نَحْوَهُ، أَوْ شَبِيهًا بِهِ",
+          translation: "'Atau yang semisal itu, atau yang mirip dengannya, atau yang serupa dengannya.' (Ucapan Abdullah bin Mas'ud setelah meriwayatkan hadits dari Nabi ﷺ, diriwayatkan Ibnu Majah dalam Muqaddimah Sunan-nya)",
+          notes: "Sahabat sekelas Ibnu Mas'ud menyadari bahwa yang ia sampaikan bisa jadi bukan lafazh persis Nabi ﷺ."
+        },
+        reasoning: "Para sahabat meriwayatkan satu kejadian dengan lafazh yang berbeda-beda, dan tidak ada yang mengingkarinya. Ini menunjukkan ijma' sahabat atas bolehnya riwayat bil makna. Tujuan syariat adalah sampainya makna, dan menjaga lafazh persis untuk semua hadits akan sangat memberatkan. Bila hadits boleh dijelaskan dalam bahasa lain, tentu lebih boleh disampaikan dengan lafazh Arab yang semakna.",
+        source: "Al-Kifayah fi 'Ilm Ar-Riwayah (Al-Khathib Al-Baghdadi) · Muqaddimah Ibnu Ash-Shalah · Tadrib Ar-Rawi"
+      },
+      {
+        scholar: "Muhammad bin Sirin dan sebagian ahli hadits",
+        scholarArabic: "مُحَمَّدُ بْنُ سِيرِينَ وَطَائِفَةٌ مِنَ الْمُحَدِّثِينَ",
+        school: "Sebagian Muhadditsin",
+        position: "Tidak boleh meriwayatkan hadits kecuali dengan lafazh persis sebagaimana didengar. Perawi wajib menjaga lafazh Nabi ﷺ.",
+        evidence: {
+          arabic: "نَضَّرَ اللَّهُ امْرَأً سَمِعَ مِنَّا شَيْئًا فَبَلَّغَهُ كَمَا سَمِعَهُ، فَرُبَّ مُبَلَّغٍ أَوْعَى مِنْ سَامِعٍ",
+          translation: "Semoga Allah memberi cahaya pada wajah orang yang mendengar sesuatu dari kami, lalu menyampaikannya sebagaimana ia mendengarnya. Betapa banyak orang yang disampaikan kepadanya lebih memahami daripada yang mendengar langsung. (HR. At-Tirmidzi, ia menilainya hasan shahih)",
+          notes: "Frasa 'kama sami'ahu' (sebagaimana ia mendengarnya) dipahami sebagai perintah menjaga lafazh."
+        },
+        reasoning: "Lafazh Nabi ﷺ mengandung jawami' al-kalim, kalimat ringkas yang padat makna. Perawi bisa saja mengira dua lafazh semakna padahal tidak, sehingga mengganti lafazh berisiko mengubah hukum. Karena itu, menjaga lafazh adalah sikap paling hati-hati dalam menyampaikan agama.",
+        source: "Al-Kifayah fi 'Ilm Ar-Riwayah · Al-Muhaddits Al-Fashil (Ar-Ramahurmuzi)"
+      }
+    ],
+    notes: "Jumhur menjawab dalil kelompok kedua: 'kama sami'ahu' mencakup menyampaikan makna sebagaimana didengar, dan hadits itu sendiri diriwayatkan dengan beberapa lafazh berbeda. Ibnu Ash-Shalah menambahkan catatan penting: khilaf ini berlaku pada masa periwayatan lisan. Setelah hadits dibukukan, tidak seorang pun boleh mengubah lafazh yang ada dalam kitab-kitab hadits. Ini juga alasan para muhaddits memakai ungkapan 'au kama qal' setelah meriwayatkan hadits.",
+    rangkuman: "Bolehkah meriwayatkan hadits dengan kata-kata sendiri? Mayoritas ulama: boleh, asal paham betul bahasa Arab dan maknanya, dan bukan lafazh dzikir atau bacaan ibadah. Ibnu Sirin dan sebagian ahli hadits: tidak boleh, harus lafazh persis. Sekarang hadits sudah dibukukan, jadi saat mengutip hadits, kutip lafazh dari kitabnya, dan kalau ragu tambahkan 'au kama qal'.",
   }
+
 ];
 
 /* Storage helpers */
