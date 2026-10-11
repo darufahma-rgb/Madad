@@ -596,7 +596,7 @@ const SAMPLE_TALKHIS = `## ﴿ كتاب الزكاة ﴾
 
 const TalkhisLocked = () => {
   useEffect(() => { window.logFunnel?.('paywall', 'talkhis'); }, []);
-  const subscribe = () => { window.logFunnel?.('click_pay', 'talkhis'); openAiUpgrade(); };
+  const subscribe = () => { window.logFunnel?.('click_pay', 'talkhis'); openAiUpgrade('talkhis'); };
   const html = useMemo(() => talkhisHtml(SAMPLE_TALKHIS), []);
   return (
     <div className="card-glass p-5 md:p-8" style={{ border: '1px solid rgba(201,168,106,0.28)' }}>

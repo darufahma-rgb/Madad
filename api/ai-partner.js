@@ -28,7 +28,8 @@ import {
 // Kuota harian pelanggan. Pengguna coba gratis dibatasi per materi (lihat TRIAL_*), bukan per hari.
 // talkhis = jumlah muqarrar yang dipetakan per hari (tiap muqarrar berisi puluhan pemanggilan AI).
 const LIMITS = { create: 10, ocr: 20, transcribe: 60, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40, talkhis: 1 };
-const TRIAL_OCR_LIMIT  = 3;
+const TRIAL_OCR_LIMIT  = 3;  // per hari untuk member Library tanpa langganan; akun gratis: 3 seumur akun
+const FREE_OCR_LIFETIME = 3;
 /* Member bertipe "Trial — akses sementara" (Admin → Members, kolom member_type) yang diberi akses AI: semua fitur tetap
    terbuka, tapi jatahnya lebih kecil daripada pelanggan berbayar. Tidak berlaku kalau mereka membeli Paket Imtihan,
    dan "Limit khusus per email" di Settings tetap menang. */
@@ -48,14 +49,15 @@ const PRO_ONLY_MESSAGES = {
   talkhis: 'Talkhis otomatis khusus pelanggan AI Partner. Berlangganan untuk men-talkhis seluruh muqarrarmu dalam bahasa Arab, lengkap dengan cek kelengkapan dan PDF siap cetak.',
 };
 // Tanya AI untuk pengguna coba gratis: satu percakapan, maksimal sekian pesan seumur akun.
-const TRIAL_PROMPT_MESSAGES = 2;
+const TRIAL_PROMPT_LIMITS = { free: 1, library: 2 };
+const promptTrialLimit = (memberTier) => TRIAL_PROMPT_LIMITS[memberTier === 'free' ? 'free' : 'library'];
 /* Cicip fitur andalan di materi coba gratis: tanpa ini pengguna gratis tidak pernah merasakan i'rab dan tutor —
    nilai jual utama AI Partner. Jatah seumur akun, dihitung di ai_usage (seperti prompt_trial). Biaya ±$0,02 per
    i'rab (Sonnet) dan ±$0,01 per pesan tutor (Haiku); tetap dibatasi gerbang harian trialGateOpen.
    Member Library (sudah membayar) mendapat jatah lebih besar daripada akun gratis. */
 const TRIAL_TASTE = {
-  irab:  { kind: 'irab_trial',  limits: { free: 3, library: 10 }, label: "i'rab" },
-  tutor: { kind: 'tutor_trial', limits: { free: 5, library: 15 }, label: 'pesan tutor' },
+  irab:  { kind: 'irab_trial',  limits: { free: 2, library: 10 }, label: "i'rab" },
+  tutor: { kind: 'tutor_trial', limits: { free: 3, library: 15 }, label: 'pesan tutor' },
 };
 const tasteLimit = (which, memberTier) => TRIAL_TASTE[which].limits[memberTier === 'free' ? 'free' : 'library'];
 
@@ -78,7 +80,8 @@ const takeTrialTaste = async (ctx, res, setId, which) => {
 
 // Materi panjang (±100 halaman) disimpan utuh; tiap permintaan AI hanya menerima potongan yang muat.
 const MAX_CONTENT       = 200000;
-const TRIAL_MAX_CONTENT = 60000;   // coba gratis tetap dibatasi supaya biaya terkendali
+// Panjang materi coba gratis: akun gratis ±25 ribu karakter (±10–15 halaman), member Library tanpa langganan 60 ribu.
+const TRIAL_MAX_CONTENT = { free: 25000, library: 60000 };
 const SINGLE_PASS_CHARS = 60000;   // muat dalam satu permintaan
 const STUDY_SAMPLE_CHARS = 30000;  // flashcard/kuis/mufradat: contoh materi secukupnya
 const MAP_CHUNK_CHARS   = 40000;   // ringkasan materi panjang: dibaca per bagian sebesar ini
@@ -216,6 +219,8 @@ const formatQuotaDate = (iso) => new Date(iso).toLocaleDateString('id-ID', { day
 
 const quotaExceeded = (res, kind, scope = 'daily', ctx = null) => scope === 'unavailable'
   ? res.status(503).json({ ok: false, error: 'Tidak bisa memeriksa kuota sekarang. Coba lagi sebentar.' })
+  : scope === 'package'
+  ? res.status(429).json({ ok: false, error: 'quota', scope, message: `Jatah talkhis Paket Imtihan (${IMTIHAN_TALKHIS_CAP} muqarrar) sudah terpakai semua. Fitur AI lainnya tetap bisa kamu pakai seperti biasa.` })
   : res.status(429).json({
     ok: false, error: 'quota', scope,
     message: scope === 'monthly'
@@ -241,14 +246,18 @@ const monthlyUsage = async (code, since) => {
 /* Pemegang Paket Imtihan (tagihan 'imtihan' lunas dalam 120 hari terakhir): tanpa kuota bulanan, hanya batas wajar
    harian (LIMITS) sebagai pengaman biaya. Dihitung sekali per permintaan. */
 const IMTIHAN_WINDOW_DAYS = 120;
+// Talkhis paling mahal (±$1–2 per muqarrar), jadi Paket Imtihan dibatasi total sekian muqarrar selama masa paketnya.
+const IMTIHAN_TALKHIS_CAP = 10;
 const isImtihanHolder = async (ctx) => {
   if (ctx.imtihan !== undefined) return ctx.imtihan;
   ctx.imtihan = false;
   try {
     const { url, key } = sbConfig();
     const since = new Date(Date.now() - IMTIHAN_WINDOW_DAYS * 86400000).toISOString();
-    const r = await fetch(`${url}/rest/v1/payment_checkouts?member_code=eq.${encodeURIComponent(ctx.code)}&plan=eq.imtihan&status=eq.paid&paid_at=gte.${since}&select=id&limit=1`, { headers: sbHeaders(key) });
-    ctx.imtihan = r.ok && ((await r.json()) || []).length > 0;
+    const r = await fetch(`${url}/rest/v1/payment_checkouts?member_code=eq.${encodeURIComponent(ctx.code)}&plan=eq.imtihan&status=eq.paid&paid_at=gte.${since}&select=paid_at&order=paid_at.asc&limit=1`, { headers: sbHeaders(key) });
+    const rows = r.ok ? (await r.json()) || [] : [];
+    ctx.imtihan = rows.length > 0;
+    if (ctx.imtihan) ctx.imtihanSince = String(rows[0].paid_at || '').slice(0, 10);
   } catch {}
   return ctx.imtihan;
 };
@@ -284,6 +293,11 @@ const monthlyLimitsFor = async (ctx) => {
 const monthlyLimitCache = (ctx) => (ctx?.trialMember ? TRIAL_MEMBER_MONTHLY : cachedMonthlyLimits());
 
 const takeQuota = async (ctx, kind) => {
+  if (kind === 'talkhis' && !(await quotaOverride(ctx))?.noMonthly && !(await isTrialMember(ctx)) && (await isImtihanHolder(ctx)) && ctx.imtihanSince) {
+    const used = await monthlyUsage(ctx.code, ctx.imtihanSince);
+    if (!used) return 'unavailable';
+    if ((used.talkhis || 0) >= IMTIHAN_TALKHIS_CAP) return 'package';
+  }
   const monthly = (await monthlyLimitsFor(ctx))?.[kind] ?? null;
   if (monthly != null) {
     const period = quotaPeriod(ctx.aiExpiresAt);
@@ -361,6 +375,8 @@ async function handleOcr(ctx, body, res) {
   if (ctx.tier === 'pro') {
     const over = await takeQuota(ctx, 'ocr');
     if (over) return quotaExceeded(res, 'ocr', over, ctx);
+  } else if (ctx.memberTier === 'free' && (await lifetimeUsage(ctx.code, 'ocr')) >= FREE_OCR_LIFETIME) {
+    return upgradeRequired(res, 'ocr', `Jatah baca foto akun gratis (${FREE_OCR_LIFETIME} foto) sudah terpakai. Berlangganan untuk membaca foto & PDF muqarrar tanpa repot.`);
   } else if (!(await consumeQuota(ctx.code, 'ocr', TRIAL_OCR_LIMIT))) {
     return upgradeRequired(res, 'ocr', `Coba gratis bisa membaca ${TRIAL_OCR_LIMIT} foto per hari. Berlangganan untuk membaca lebih banyak.`);
   } else if (!(await trialGateOpen())) {
@@ -396,7 +412,9 @@ async function handleOcrQuota(ctx, res) {
   const rows = await r.json();
   const usedToday = Number(rows?.[0]?.count) || 0;
   if (ctx.tier !== 'pro') {
-    return res.status(200).json({ ok: true, remaining: Math.max(0, TRIAL_OCR_LIMIT - usedToday), scope: 'trial' });
+    let left = TRIAL_OCR_LIMIT - usedToday;
+    if (ctx.memberTier === 'free') left = Math.min(left, FREE_OCR_LIFETIME - (await lifetimeUsage(ctx.code, 'ocr')));
+    return res.status(200).json({ ok: true, remaining: Math.max(0, left), scope: 'trial' });
   }
   let remaining = Math.max(0, (await dailyLimit(ctx, 'ocr')) - usedToday);
   let scope = 'daily';
@@ -451,7 +469,7 @@ async function handleCreate(ctx, body, res) {
     return res.status(400).json({ ok: false, error: `Materi terlalu pendek (min ${MIN_CONTENT} karakter)` });
   }
   const sourceType = SOURCE_TYPES.includes(body.source_type) ? body.source_type : 'teks';
-  const limit = ctx.tier === 'trial' ? TRIAL_MAX_CONTENT : MAX_CONTENT;
+  const limit = ctx.tier === 'trial' ? TRIAL_MAX_CONTENT[ctx.memberTier === 'free' ? 'free' : 'library'] : MAX_CONTENT;
 
   const id = crypto.randomUUID();
   if (ctx.tier === 'trial') {
@@ -966,11 +984,11 @@ async function handlePromptChat(ctx, body, res) {
   if (ctx.tier === 'trial') {
     const used = await lifetimeUsage(ctx.code, 'prompt_trial');
     const outOfTrial = () => upgradeRequired(res, 'prompt_trial_used',
-      `Percakapan gratismu (${TRIAL_PROMPT_MESSAGES} pesan) sudah terpakai. Berlangganan AI Partner untuk bertanya tanpa batas.`);
-    if (used >= TRIAL_PROMPT_MESSAGES) return outOfTrial();
+      `Percakapan gratismu (${promptTrialLimit(ctx.memberTier)} pesan) sudah terpakai. Berlangganan AI Partner untuk bertanya tanpa batas.`);
+    if (used >= promptTrialLimit(ctx.memberTier)) return outOfTrial();
     if (!(await trialGateOpen())) return trialGateClosed(res);
-    if (!(await consumeQuota(ctx.code, 'prompt_trial', TRIAL_PROMPT_MESSAGES))) return outOfTrial();
-    trialLeft = TRIAL_PROMPT_MESSAGES - used - 1;
+    if (!(await consumeQuota(ctx.code, 'prompt_trial', promptTrialLimit(ctx.memberTier)))) return outOfTrial();
+    trialLeft = promptTrialLimit(ctx.memberTier) - used - 1;
   } else {
     const over = await takeQuota(ctx, 'prompt');
     if (over) return quotaExceeded(res, 'prompt', over, ctx);
@@ -1255,8 +1273,9 @@ export default async function handler(req, res) {
         ok: true, active: false, tier: 'trial',
         trial: {
           available: trial.available, used: !!trial.setId, set_id: trial.setId,
-          prompt_left: Math.max(0, TRIAL_PROMPT_MESSAGES - (Number.isFinite(promptUsed) ? promptUsed : TRIAL_PROMPT_MESSAGES)),
-          prompt_limit: TRIAL_PROMPT_MESSAGES,
+          prompt_left: left(promptTrialLimit(access.member?.tier), promptUsed),
+          prompt_limit: promptTrialLimit(access.member?.tier),
+          member_tier: access.member?.tier || 'library',
           irab_left: left(tasteLimit('irab', access.member?.tier), irabUsed), irab_limit: tasteLimit('irab', access.member?.tier),
           tutor_left: left(tasteLimit('tutor', access.member?.tier), tutorUsed), tutor_limit: tasteLimit('tutor', access.member?.tier),
         },

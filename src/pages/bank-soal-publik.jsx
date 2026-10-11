@@ -438,7 +438,7 @@ export default function BankSoalPublikPage() {
           maxWidth: 480, lineHeight: 1.7,
         }}>
           Koleksi soal tahriri dari Masisir untuk Masisir.<br/>
-          3 soal pertama bisa dilihat gratis — sisanya untuk member Talqeeh.
+          2 soal pertama bisa dilihat gratis — sisanya untuk member Talqeeh.
         </p>
 
         {/* Filter */}
@@ -530,13 +530,13 @@ export default function BankSoalPublikPage() {
         ) : (
           <>
             {(() => {
-              const MAX_FREE = 3;
+              const MAX_FREE = 2;
               const visibleGroups = groups.slice(0, MAX_FREE);
               const lockedGroups  = groups.slice(MAX_FREE);
               return (
                 <>
                   <div className="bank-soal-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
-                    {/* 3 soal pertama — bisa diklik normal */}
+                    {/* 2 soal pertama — bisa diklik normal */}
                     {visibleGroups.map(group => (
                       <div
                         key={group.key}
@@ -635,7 +635,7 @@ export default function BankSoalPublikPage() {
                     ))}
                   </div>
 
-                  {/* Banner lock — muncul setelah 3 soal */}
+                  {/* Banner lock — muncul setelah 2 soal */}
                   {lockedGroups.length > 0 && (
                     <div id="cta-login" style={{
                       marginTop: 24, padding: '24px 28px',
@@ -648,7 +648,7 @@ export default function BankSoalPublikPage() {
                         {lockedGroups.length} soal lainnya hanya untuk member
                       </div>
                       <div style={{ fontSize: 13, color: '#888', marginBottom: 20, lineHeight: 1.6 }}>
-                        Kamu sudah lihat 3 soal gratis. Semua soal lengkap dengan prompt jawabannya
+                        Kamu sudah lihat 2 soal gratis. Semua soal lengkap dengan prompt jawabannya
                         ada di paket Library — sekali bayar, berlaku selamanya.
                       </div>
                       <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>

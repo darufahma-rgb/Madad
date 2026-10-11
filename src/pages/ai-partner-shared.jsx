@@ -112,8 +112,9 @@ const useAiStatus = () => {
   return state;
 };
 
-const openAiUpgrade = () =>
-  window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library_ai' } }));
+// Layar upgrade (upgrade-wall.jsx). reason menentukan judulnya: irab, tutor, syafawi, prompt, materi, ocr, pdf, talkhis, preview.
+const openAiUpgrade = (reason) =>
+  window.dispatchEvent(new CustomEvent('talqeeh:upgrade-wall', { detail: { reason: typeof reason === 'string' ? reason : 'default' } }));
 
 // Muat ulang status akses (mis. sisa jatah cicip) di semua komponen yang memakai useAiStatus.
 const refreshAiStatus = () => window.dispatchEvent(new Event('talqeeh:ai-status-changed'));

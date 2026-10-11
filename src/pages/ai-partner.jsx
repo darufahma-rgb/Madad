@@ -158,7 +158,7 @@ const AiPartnerList = ({ status, creating, setCreating }) => {
             <div className="text-sm font-medium text-ink">Belajar dari materimu sendiri</div>
             <div className="text-xs text-ink-muted leading-relaxed mt-0.5">Unggah diktat, slide, foto kitab, atau rekaman kuliah — dapat ringkasan, peta konsep, flashcard, kuis, dan tutor yang menjawab dari materimu.</div>
           </div>
-          <button onClick={() => trialUsed ? openAiUpgrade() : setCreating(true)} className="btn btn-primary text-sm px-5 py-2.5 flex-shrink-0">
+          <button onClick={() => trialUsed ? openAiUpgrade('materi') : setCreating(true)} className="btn btn-primary text-sm px-5 py-2.5 flex-shrink-0">
             <Icon name="upload" className="w-4 h-4"/> Unggah materi
           </button>
         </div>
@@ -177,7 +177,7 @@ const AiPartnerList = ({ status, creating, setCreating }) => {
       {sets?.length > 0 && !creating && (
         <div className="flex items-center justify-between mb-4 gap-3">
           <h2 className="font-display text-xl font-semibold text-ink">Materimu</h2>
-          <button onClick={() => trialUsed ? openAiUpgrade() : setCreating(true)} className="btn btn-primary text-sm px-5 py-2.5">
+          <button onClick={() => trialUsed ? openAiUpgrade('materi') : setCreating(true)} className="btn btn-primary text-sm px-5 py-2.5">
             <Icon name="upload" className="w-4 h-4"/> Tambah materi
           </button>
         </div>
@@ -278,7 +278,7 @@ const Composer = ({ tier, trial, onUpload }) => {
     const msg = text.trim();
     if (!msg) return;
     // Coba gratis: satu percakapan; kalau jatahnya habis, tawarkan berlangganan.
-    if (tier !== 'pro' && !(trial?.prompt_left > 0)) { toast.push('Percakapan gratismu sudah terpakai.'); openAiUpgrade(); return; }
+    if (tier !== 'pro' && !(trial?.prompt_left > 0)) { toast.push('Percakapan gratismu sudah terpakai.'); openAiUpgrade('prompt'); return; }
     runPromptInTalqeeh(msg, { autoSend: true, source: 'AI Partner' });
   };
 
@@ -407,7 +407,7 @@ const AiPartnerPage = () => {
   const listRef = React.useRef(null);
 
   const startUpload = () => {
-    if (status.tier === 'trial' && status.trial?.used) { openAiUpgrade(); return; }
+    if (status.tier === 'trial' && status.trial?.used) { openAiUpgrade('materi'); return; }
     setCreating(true);
     setTimeout(() => listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
   };

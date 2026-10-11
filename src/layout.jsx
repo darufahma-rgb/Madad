@@ -1388,7 +1388,7 @@ Object.assign(window, {
   FreeMaddahGate, isMaddahLocked, canOpenMaddahFree, FREE_SAMPLE_MADDAH,
   GoogleButton, ErrorBox, useGoogleSignIn, formatPinInput, ACTIVATION_ERRORS, StepList,
   PLAN_LABELS, DEFAULT_ADMIN_WA, PAYMENT_WAIT_LIMIT_MS, aiBundle, AI_BUNDLE_FEATURES, AiBundleBreakdown,
-  imtihanBundle, ImtihanBreakdown, IMTIHAN_PRICE_IDR, IMTIHAN_AI_DAYS, IMTIHAN_PROMO, imtihanPromoActive, EventBanner,
+  imtihanBundle, ImtihanBreakdown, IMTIHAN_PRICE_IDR, IMTIHAN_AI_DAYS, IMTIHAN_PROMO, imtihanPromoActive, EventBanner, usePromoCountdown,
   useCheckout, CheckoutWaiting, CheckoutWatcher, CheckoutPayModal, readPendingCheckout, savePendingCheckout, formatRupiah,
   LIBRARY_PRICE, LIBRARY_PRICE_IDR, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
   scrollToLandingSection, scrollToPaket,

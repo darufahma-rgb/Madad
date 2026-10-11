@@ -816,7 +816,7 @@ const LANDING_FAQ = [
   { q: "Apa beda paket Library dan Library + AI Partner?",
     a: `Library berisi ${CATALOG.maddah} maddah, ${CATALOG.prompts} template prompt, bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Prompt-nya kamu salin ke AI pilihanmu (Claude, ChatGPT, NotebookLM, dll). Library + AI Partner menambahkan tempat unggah materi kuliahmu sendiri (PDF, Word, slide, foto diktat, rekaman kuliah): AI langsung bikin ringkasan gaya kitab, peta konsep, mufradat, flashcard, kuis, dan soal tahriri, menerjemahkan & meng-i'rab kalimat Arab, serta bisa diajak simulasi syafawi — tanpa pindah aplikasi. AI Partner dibayar bulanan.` },
   { q: "Bisa coba dulu sebelum bayar?",
-    a: "Bisa. Masuk dengan Google lalu pilih \"Mulai gratis\": kamu dapat akun gratis dengan maddah Nahwu + 1 maddah pilihanmu, 3 soal bank soal, dan jatah coba AI Partner 1 materi (ringkasan, flashcard, kuis, mufradat). Upgrade ke Library kapan saja — akunnya sama, progresmu tetap aman." },
+    a: "Bisa. Masuk dengan Google lalu pilih \"Mulai gratis\": kamu dapat akun gratis dengan maddah Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan jatah coba AI Partner 1 materi (ringkasan, flashcard, kuis, mufradat). Upgrade ke Library kapan saja — akunnya sama, progresmu tetap aman." },
   { q: "Library-nya berlaku sampai kapan?",
     a: "Selamanya. Sekali bayar, dan maddah, prompt, atau fitur Library yang ditambahkan nanti ikut terbuka tanpa biaya tambahan." },
   { q: "Bayarnya pakai apa?",
@@ -906,7 +906,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
           <div className="flex-1 min-w-[240px]">
             <div className="text-ink font-medium">Belum yakin? Coba gratis dulu.</div>
             <div className="text-sm text-ink-muted leading-relaxed">
-              Masuk dengan Google → dapat akses Nahwu + 1 maddah pilihan, 3 soal bank soal, dan coba AI Partner 1 materi. Tanpa bayar.
+              Masuk dengan Google → dapat akses Nahwu + 1 maddah pilihan, 2 soal bank soal, dan coba AI Partner 1 materi. Tanpa bayar.
             </div>
           </div>
           <button onClick={() => onOpenJoin("free")} className="btn btn-ghost text-sm px-5 py-2.5">Mulai gratis</button>

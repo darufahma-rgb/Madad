@@ -3,7 +3,7 @@ import React, { useState, useRef, useMemo } from 'react';
 
 // Batas panjang materi: pelanggan ±100 halaman, coba gratis lebih pendek (sama dengan server).
 const MAX_CONTENT_PRO = 200000;
-const MAX_CONTENT_TRIAL = 60000;
+const MAX_CONTENT_TRIAL = { free: 25000, library: 60000 }; // sama dengan TRIAL_MAX_CONTENT di api/ai-partner.js
 const DIALECT_KEY = 'talqeeh_transcribe_dialect';
 const DIALECTS = [
   { id: 'campur', label: "Campur fushah & 'ammiyah" },
@@ -224,7 +224,7 @@ const PdfRangePicker = ({ info, onPick, onSkip }) => {
 
 const CreateWizard = ({ tier, onCancel, onCreated }) => {
   const toast = useToast();
-  const { profile } = useAuth();
+  const { profile, isFree } = useAuth();
   const [step, setStep]       = useState('pick'); // pick → process → review
   const [items, setItems]     = useState([]);
   const [content, setContent] = useState('');
@@ -242,7 +242,7 @@ const CreateWizard = ({ tier, onCancel, onCreated }) => {
   const askRange = (info) => new Promise(resolve => setRangeAsk({ ...info, resolve: (v) => { setRangeAsk(null); resolve(v); } }));
   const fileRef = useRef(null);
   const isTrial = tier !== 'pro';
-  const MAX_CONTENT = isTrial ? MAX_CONTENT_TRIAL : MAX_CONTENT_PRO;
+  const MAX_CONTENT = isTrial ? MAX_CONTENT_TRIAL[isFree ? 'free' : 'library'] : MAX_CONTENT_PRO;
   const [dialect, setDialect] = useState(readDialect);
   const chooseDialect = (d) => { setDialect(d); try { localStorage.setItem(DIALECT_KEY, d); } catch {} };
 

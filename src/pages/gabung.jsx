@@ -11,8 +11,8 @@ const SKY = '#60a5fa';
 // Isi tiap paket: [teks, termasuk?]. Yang tidak termasuk ditampilkan redup + ikon silang.
 const FREE_ITEMS = [
   ['Maddah Nahwu + 1 maddah pilihanmu', true],
-  ['3 soal bank soal imtihan', true],
-  ["Coba AI Partner: 1 materi + 3× i'rab + 5× tanya tutor", true],
+  ['2 soal bank soal imtihan', true],
+  ["Coba AI Partner: 1 materi pendek + 2× i'rab + 3× tanya tutor", true],
   ['Kurasah, Statistik & Profil Belajar', true],
   [`${CATALOG.maddah - 2} maddah lainnya`, false],
   ['Siap Imtihan & Muqaranah 4 madzhab', false],
@@ -51,7 +51,7 @@ const ADVANTAGES = [
 const COMPARE_ROWS = [
   ['Maddah S1 + Ma\'had', 'Nahwu + 1', `Semua ${CATALOG.maddah}`, `Semua ${CATALOG.maddah}`],
   ['Template prompt per maddah', 'Maddah terbuka', CATALOG.prompts, CATALOG.prompts],
-  ['Bank soal imtihan tahriri', '3 soal', 'Semua', 'Semua'],
+  ['Bank soal imtihan tahriri', '2 soal', 'Semua', 'Semua'],
   ['Siap Imtihan (tahriri & syafawi)', false, true, true],
   ['Muqaranah 4 madzhab', false, true, true],
   ['Kurasah, Statistik & Profil Belajar', true, true, true],
@@ -76,7 +76,7 @@ const FAQS = [
   ['Library bayar sekali atau bulanan?',
     `Sekali bayar ${LIBRARY_PRICE}, aksesnya berlaku selamanya — termasuk semua update fitur Library ke depan. AI Partner opsional: ambil Paket Imtihan untuk satu termin, atau per 30 hari.`],
   ['Boleh coba gratis dulu?',
-    "Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 3 soal bank soal, dan AI Partner untuk 1 materi — termasuk 3× terjemah & i'rab dan 5× tanya tutor (member Library: 10× dan 15×). Kalau cocok, upgrade kapan saja — progresmu tetap tersimpan."],
+    "Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan AI Partner untuk 1 materi pendek (±10–15 halaman) — termasuk 2× terjemah & i'rab dan 3× tanya tutor (member Library: 10× dan 15×). Kalau cocok, upgrade kapan saja — progresmu tetap tersimpan."],
   ['Bayarnya pakai apa? Berapa lama aktifnya?',
     'Lewat Mayar: QRIS, virtual account, atau e-wallet. Tagihannya dibuat langsung untuk akun Google-mu, jadi akses aktif otomatis begitu pembayaran masuk — biasanya kurang dari 1 menit.'],
   ['Paket Imtihan benar-benar sepuasnya?',

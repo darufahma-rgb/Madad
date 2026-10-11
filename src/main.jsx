@@ -82,6 +82,7 @@ import './pages/ai-partner.jsx';
 import './pages/ai-partner-prompt.jsx';
 import './pages/statistik.jsx';
 import './pages/gabung.jsx';
+import './pages/upgrade-wall.jsx';
 import './pages/profil-belajar.jsx';
 
 // App shell — terakhir

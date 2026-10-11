@@ -479,7 +479,7 @@ const FreeTierBanner = ({ compact }) => (
     <div className="flex-1 min-w-[220px]">
       <div className="text-sm text-ink font-medium">Kamu memakai akun gratis</div>
       <div className="text-xs text-ink-muted leading-relaxed">
-        Terbuka: Nahwu + 1 maddah pilihan, 3 soal bank soal, dan coba AI Partner 1 materi.
+        Terbuka: Nahwu + 1 maddah pilihan, 2 soal bank soal, dan coba AI Partner 1 materi.
         Upgrade ke Library untuk membuka {CATALOG.maddah} maddah, bank soal lengkap, Siap Imtihan, dan Muqaranah.
       </div>
     </div>

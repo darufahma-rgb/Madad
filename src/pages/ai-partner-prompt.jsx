@@ -153,7 +153,7 @@ const PromptChat = ({ trial = null }) => {
     if (!message || sending) return;
     const base = startThread || thread || newThread({ title: message.slice(0, 60) });
     if (isTrial) {
-      if (trialLeft <= 0) { openAiUpgrade(); return; }
+      if (trialLeft <= 0) { openAiUpgrade('prompt'); return; }
       const trialId = readTrialThread();
       if (trialId && trialId !== base.id && readThreads().some(t => t.id === trialId)) {
         toast.push('Percakapan gratismu cuma satu — lanjutkan di percakapan itu, atau berlangganan.');
