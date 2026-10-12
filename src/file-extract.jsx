@@ -70,6 +70,31 @@ const fixReversedLamAlef = (t) => String(t || '')
   .replace(/ا([أإآ])([\u064B-\u0652]*)ل/g, 'ال$1$2')
   .replace(/اال/g, 'الا');
 
+/* Font dengan peta Unicode yang SALAH: hurufnya keluar sebagai huruf Arab sungguhan tapi acak
+   ("للهمكككة فللهالمكصكككة…"), jadi lolos dari pemeriksaan karakter rusak. Cirinya tidak pernah ada di teks Arab
+   asli: huruf yang sama berderet 3+, kata sangat panjang (spasi ikut hilang), satu huruf selain alif mendominasi,
+   dan hampir tidak ada kata berawalan "ال". Dua ciri sekaligus (atau deretan huruf kembar yang banyak) = rusak. */
+const looksScrambledArabic = (text) => {
+  const bare = text.replace(new RegExp(`[${AR_MARKS}ـ]`, 'g'), '');
+  const words = bare.match(/[ء-ي]{2,}/g) || [];
+  const letters = words.join('');
+  if (words.length < 12 || letters.length < 80) return false;
+  const tripleRuns = (bare.match(/([ء-ي])\1\1/g) || []).length;
+  const longWords = words.filter(w => w.length >= 13).length;
+  const real = words.filter(w => w.length >= 3);
+  const al = real.filter(w => w.startsWith('ال')).length;
+  const freq = {};
+  for (const ch of letters) freq[ch] = (freq[ch] || 0) + 1;
+  const [topChar, topCount] = Object.entries(freq).sort((a, b) => b[1] - a[1])[0];
+  const signals = [
+    tripleRuns / words.length > 0.04,
+    longWords / words.length > 0.2,
+    !'اأإآ'.includes(topChar) && topCount / letters.length > 0.2,
+    real.length >= 20 && al / real.length < 0.03,
+  ].filter(Boolean).length;
+  return tripleRuns / words.length > 0.15 || signals >= 2;
+};
+
 // Hasil: { text, status } — status 'ok' | 'fixed' (dirapikan) | 'empty' (hasil scan) | 'garbled' (tidak bisa dipakai).
 const cleanPdfText = (raw) => {
   const res = cleanPdfTextRaw(raw);
@@ -89,6 +114,7 @@ const cleanPdfTextRaw = (raw) => {
   const latin1 = (text.match(/[À-ÿ]/g) || []).length;
   // Font tanpa peta Unicode: huruf Arab keluar sebagai karakter privat/acak atau huruf Latin beraksen (mis. "ÇáÍãÏ").
   if (junk / letters > 0.05 || (arabic / letters < 0.1 && latin1 / letters > 0.3)) return { text, status: 'garbled' };
+  if (looksScrambledArabic(text)) return { text, status: 'garbled' };
   const score = arabicOrderScore(text);
   if (looksReversed(score)) {
     const flipped = text.split('\n').map(l => (/[؀-ۿ]/.test(l) ? reverseLine(l) : l)).join('\n');
