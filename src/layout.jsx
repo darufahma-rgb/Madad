@@ -795,8 +795,10 @@ const AI_BUNDLE_FEATURES = [
   "Tanya AI langsung di Talqeeh — tanpa salin-tempel ke ChatGPT, dijawab sesuai muqarrar & jurusanmu",
   "Unggah diktat, PDF scan, slide, foto, atau rekaman kuliah duktur",
   "Ringkasan gaya kitab, peta konsep taqsimat, flashcard, dan kuis dari materimu sendiri",
+  "Talkhis otomatis muqarrar dalam bahasa Arab + PDF siap cetak",
   "Terjemah & i'rab kalimat Arab, harakat otomatis, mufradat lengkap dengan wazan",
-  "Latihan tahriri dinilai AI + simulasi ujian syafawi",
+  "Tutor yang mengajar dari materimu dan memperkuat bagian yang masih sering salah",
+  "Latihan tahriri dinilai AI + simulasi ujian syafawi dengan suara",
 ];
 
 // Rincian harga paket: total besar, lalu apa yang didapat dan apa yang terjadi setelah 30 hari.

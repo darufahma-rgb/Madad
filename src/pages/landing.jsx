@@ -324,7 +324,7 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
         {/* Trust row */}
         <Reveal delay={340}>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-16">
-            {[`${CATALOG.maddah} maddah (S1 + Ma'had)`, `${CATALOG.prompts} template prompt`, "Library sekali bayar, selamanya", "AI Partner bulanan, opsional"].map((t, i) => (
+            {[`${CATALOG.maddah} maddah (S1 + Ma'had)`, `${CATALOG.prompts} template prompt`, "Library sekali bayar, selamanya", `AI Partner ${IMTIHAN_AI_DAYS} hari di Paket Imtihan`].map((t, i) => (
               <span key={i} className="flex items-center gap-2 text-xs" style={{ color:"rgba(255,255,255,0.42)" }}>
                 <Icon name="check" className="w-3.5 h-3.5 text-gold-400 flex-shrink-0"/>{t}
               </span>
@@ -412,11 +412,11 @@ const TwoWaysSection = () => {
       extras: "Termasuk bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian.",
     },
     {
-      badge: "AI Partner", tone: "emerald", when: "Tambahan · langganan bulanan",
+      badge: "AI Partner", tone: "emerald", when: `Tambahan · ${IMTIHAN_AI_DAYS} hari di Paket Imtihan`,
       title: "Belajar langsung dari diktatmu sendiri",
       desc: "Unggah diktat, slide, foto kitab, atau rekaman kuliah. AI Partner membaca isinya — termasuk teks Arab — lalu menyiapkan bahan belajar di Talqeeh, tanpa perlu menyusun prompt.",
-      steps: ["Unggah PDF, Word, slide, foto, atau rekaman", "Dapat ringkasan, peta konsep, mufradat, flashcard, soal", "Blok kalimat Arab → terjemah & i'rab; latihan syafawi"],
-      extras: "Bisa dicoba gratis 1 materi — cukup masuk dengan Google dan buat akun gratis.",
+      steps: ["Unggah PDF, Word, slide, foto, atau rekaman", "Dapat ringkasan berpenjelasan, peta konsep, mufradat, flashcard, kuis, soal tahriri", "Tutor yang mengajar dari materimu, terjemah & i'rab, simulasi syafawi dengan suara"],
+      extras: "Termasuk talkhis otomatis muqarrar (PDF siap cetak) dan Tanya AI. Bisa dicoba gratis 1 materi pendek — cukup masuk dengan Google.",
     },
   ];
   const toneClass = {
@@ -476,8 +476,8 @@ const HowItWorks = () => {
   const steps = [
     { num:"01", title:"Login pakai Google", sub:"Tanpa bikin password",
       desc:"Akun Google jadi identitas keanggotaanmu. Bisa dipakai di HP dan laptop sekaligus." },
-    { num:"02", title:"Pilih paket", sub:"Library atau Library + AI",
-      desc:`Library: ${CATALOG.prompts} prompt, sekali bayar selamanya. Tambah AI Partner kalau mau belajar langsung dari materimu.` },
+    { num:"02", title:"Pilih paket", sub:"Library atau Paket Imtihan",
+      desc:`Library: ${CATALOG.prompts} prompt, sekali bayar selamanya. Paket Imtihan: Library + AI Partner ${IMTIHAN_AI_DAYS} hari untuk belajar langsung dari materimu.` },
     { num:"03", title:"Bayar di Mayar", sub:"Aktif otomatis",
       desc:"QRIS, virtual account, atau e-wallet. Tagihan langsung atas akunmu — akses terbuka tanpa nunggu admin." },
     { num:"04", title:"Mulai belajar", sub:"Isi profil 5 pertanyaan",
@@ -813,16 +813,18 @@ const FeatureList = ({ items, color }) => (
 const LANDING_FAQ = [
   { q: "Kenapa harus login pakai Google dulu?",
     a: "Akun Google jadi identitas keanggotaanmu. Pembayaran otomatis tercatat ke akun itu, jadi nggak ada kode yang perlu ditunggu atau diketik, dan kamu bisa belajar di HP maupun laptop dengan akun yang sama." },
-  { q: "Apa beda paket Library dan Library + AI Partner?",
-    a: `Library berisi ${CATALOG.maddah} maddah, ${CATALOG.prompts} template prompt, bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Prompt-nya kamu salin ke AI pilihanmu (Claude, ChatGPT, NotebookLM, dll). Library + AI Partner menambahkan tempat unggah materi kuliahmu sendiri (PDF, Word, slide, foto diktat, rekaman kuliah): AI langsung bikin ringkasan gaya kitab, peta konsep, mufradat, flashcard, kuis, dan soal tahriri, menerjemahkan & meng-i'rab kalimat Arab, serta bisa diajak simulasi syafawi — tanpa pindah aplikasi. AI Partner dibayar bulanan.` },
+  { q: "Apa beda paket Library dan Paket Imtihan?",
+    a: `Library berisi ${CATALOG.maddah} maddah, ${CATALOG.prompts} template prompt, bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Prompt-nya kamu salin ke AI pilihanmu (Claude, ChatGPT, NotebookLM, dll). Paket Imtihan = Library selamanya + AI Partner ${IMTIHAN_AI_DAYS} hari (satu termin): unggah materi kuliahmu sendiri (PDF, Word, slide, foto diktat, rekaman kuliah), lalu AI membuat ringkasan berpenjelasan, peta konsep, mufradat, flashcard, kuis, dan soal tahriri, menerjemahkan & meng-i'rab kalimat Arab, men-talkhis muqarrar jadi PDF siap cetak, dan menemani lewat tutor serta simulasi syafawi — tanpa pindah aplikasi.` },
+  { q: "AI Partner di Paket Imtihan ada batasnya?",
+    a: `Tidak ada kuota bulanan selama ${IMTIHAN_AI_DAYS} hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, dan 25 kali membuat ringkasan/kuis/flashcard per hari — jauh di atas pemakaian belajar normal. Talkhis otomatis: 10 muqarrar per paket.` },
   { q: "Bisa coba dulu sebelum bayar?",
-    a: "Bisa. Masuk dengan Google lalu pilih \"Mulai gratis\": kamu dapat akun gratis dengan maddah Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan jatah coba AI Partner 1 materi (ringkasan, flashcard, kuis, mufradat). Upgrade ke Library kapan saja — akunnya sama, progresmu tetap aman." },
+    a: "Bisa. Masuk dengan Google lalu pilih \"Mulai gratis\": kamu dapat akun gratis dengan maddah Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan coba AI Partner untuk 1 materi pendek (±10–15 halaman): ringkasan, flashcard, kuis, mufradat, plus 2× terjemah & i'rab, 3 pesan tutor, 1 kali Tanya AI, dan 3 foto dibaca AI. Upgrade kapan saja — akunnya sama, progresmu tetap aman." },
   { q: "Library-nya berlaku sampai kapan?",
     a: "Selamanya. Sekali bayar, dan maddah, prompt, atau fitur Library yang ditambahkan nanti ikut terbuka tanpa biaya tambahan." },
   { q: "Bayarnya pakai apa?",
     a: "Lewat Mayar: QRIS, virtual account bank, atau e-wallet. Tagihannya dibuat langsung untuk akun Google-mu, jadi akses aktif otomatis begitu pembayaran masuk." },
-  { q: "Kalau berhenti langganan AI Partner, Library-nya hilang?",
-    a: "Nggak. Library tetap milikmu selamanya. Yang berhenti cuma fitur AI Partner, dan bisa diaktifkan lagi kapan saja." },
+  { q: "Kalau masa AI Partner habis, Library-nya hilang?",
+    a: "Nggak. Library tetap milikmu selamanya. Yang berhenti cuma fitur AI Partner — tidak ada potongan otomatis, dan bisa diperpanjang kapan saja (per 30 hari atau Paket Imtihan lagi)." },
   { q: "Aku member lama yang dulu login pakai kode. Gimana?",
     a: "Admin akan mengirim PIN aktivasi khusus lewat WhatsApp. Login pakai Google, pilih \"Punya PIN aktivasi dari admin?\", lalu masukkan PIN itu sekali. Keanggotaan, catatan, dan progressmu pindah ke akun Google — setelah itu cukup login pakai Google. Belum dapat PIN? Ada tombol untuk minta ke admin di layar yang sama." },
   { q: "Sudah bayar tapi akses belum aktif?",
@@ -906,7 +908,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
           <div className="flex-1 min-w-[240px]">
             <div className="text-ink font-medium">Belum yakin? Coba gratis dulu.</div>
             <div className="text-sm text-ink-muted leading-relaxed">
-              Masuk dengan Google → dapat akses Nahwu + 1 maddah pilihan, 2 soal bank soal, dan coba AI Partner 1 materi. Tanpa bayar.
+              Masuk dengan Google → dapat akses Nahwu + 1 maddah pilihan, 2 soal bank soal, dan coba AI Partner untuk 1 materi pendek (termasuk 2× i'rab dan 3 pesan tutor). Tanpa bayar.
             </div>
           </div>
           <button onClick={() => onOpenJoin("free")} className="btn btn-ghost text-sm px-5 py-2.5">Mulai gratis</button>
@@ -919,9 +921,9 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 text-sm">
             {[
               ["Login Google", "Tombol paket langsung minta login dulu."],
-              ["Pilih paket", "Library, atau Library + AI Partner."],
+              ["Pilih paket", "Library, atau Paket Imtihan (Library + AI Partner)."],
               ["Bayar di Mayar", "QRIS, VA, e-wallet. Tagihan langsung atas akunmu."],
-              ["Aktif otomatis", "Tanpa kode, tanpa nunggu admin. Paket AI langsung aktif 30 hari."],
+              ["Aktif otomatis", `Tanpa kode, tanpa nunggu admin. AI Partner di Paket Imtihan langsung aktif ${IMTIHAN_AI_DAYS} hari.`],
             ].map(([title, desc], i) => (
               <div key={title} className="flex flex-col md:flex-row gap-2 md:gap-3">
                 <span className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-semibold text-emerald-200"
