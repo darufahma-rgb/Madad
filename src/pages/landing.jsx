@@ -324,7 +324,7 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
         {/* Trust row */}
         <Reveal delay={340}>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-16">
-            {[`${CATALOG.maddah} maddah (S1 + Ma'had)`, `${CATALOG.prompts} template prompt`, "Library sekali bayar, selamanya", `AI Partner ${IMTIHAN_AI_DAYS} hari di Paket Imtihan`].map((t, i) => (
+            {[`${CATALOG.maddah} maddah (S1 + Ma'had)`, `${CATALOG.prompts} template prompt`, "Library sekali bayar, selamanya", `AI Partner: paket 1 bulan atau Paket Imtihan ${IMTIHAN_AI_DAYS} hari`].map((t, i) => (
               <span key={i} className="flex items-center gap-2 text-xs" style={{ color:"rgba(255,255,255,0.42)" }}>
                 <Icon name="check" className="w-3.5 h-3.5 text-gold-400 flex-shrink-0"/>{t}
               </span>
@@ -412,7 +412,7 @@ const TwoWaysSection = () => {
       extras: "Termasuk bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian.",
     },
     {
-      badge: "AI Partner", tone: "emerald", when: `Tambahan · ${IMTIHAN_AI_DAYS} hari di Paket Imtihan`,
+      badge: "AI Partner", tone: "emerald", when: `Tambahan · 1 bulan atau ${IMTIHAN_AI_DAYS} hari (Paket Imtihan)`,
       title: "Belajar langsung dari diktatmu sendiri",
       desc: "Unggah diktat, slide, foto kitab, atau rekaman kuliah. AI Partner membaca isinya — termasuk teks Arab — lalu menyiapkan bahan belajar di Talqeeh, tanpa perlu menyusun prompt.",
       steps: ["Unggah PDF, Word, slide, foto, atau rekaman", "Dapat ringkasan berpenjelasan, peta konsep, mufradat, flashcard, kuis, soal tahriri", "Tutor yang mengajar dari materimu, terjemah & i'rab, simulasi syafawi dengan suara"],
@@ -476,8 +476,8 @@ const HowItWorks = () => {
   const steps = [
     { num:"01", title:"Login pakai Google", sub:"Tanpa bikin password",
       desc:"Akun Google jadi identitas keanggotaanmu. Bisa dipakai di HP dan laptop sekaligus." },
-    { num:"02", title:"Pilih paket", sub:"Library atau Paket Imtihan",
-      desc:`Library: ${CATALOG.prompts} prompt, sekali bayar selamanya. Paket Imtihan: Library + AI Partner ${IMTIHAN_AI_DAYS} hari untuk belajar langsung dari materimu.` },
+    { num:"02", title:"Pilih paket", sub:"Paket Imtihan paling hemat",
+      desc:`Library: ${CATALOG.prompts} prompt, sekali bayar selamanya. Mau AI Partner? Ada paket 1 bulan, atau Paket Imtihan (${IMTIHAN_AI_DAYS} hari) yang jauh lebih hemat.` },
     { num:"03", title:"Bayar di Mayar", sub:"Aktif otomatis",
       desc:"QRIS, virtual account, atau e-wallet. Tagihan langsung atas akunmu — akses terbuka tanpa nunggu admin." },
     { num:"04", title:"Mulai belajar", sub:"Isi profil 5 pertanyaan",
@@ -815,6 +815,8 @@ const LANDING_FAQ = [
     a: "Akun Google jadi identitas keanggotaanmu. Pembayaran otomatis tercatat ke akun itu, jadi nggak ada kode yang perlu ditunggu atau diketik, dan kamu bisa belajar di HP maupun laptop dengan akun yang sama." },
   { q: "Apa beda paket Library dan Paket Imtihan?",
     a: `Library berisi ${CATALOG.maddah} maddah, ${CATALOG.prompts} template prompt, bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Prompt-nya kamu salin ke AI pilihanmu (Claude, ChatGPT, NotebookLM, dll). Paket Imtihan = Library selamanya + AI Partner ${IMTIHAN_AI_DAYS} hari (satu termin): unggah materi kuliahmu sendiri (PDF, Word, slide, foto diktat, rekaman kuliah), lalu AI membuat ringkasan berpenjelasan, peta konsep, mufradat, flashcard, kuis, dan soal tahriri, menerjemahkan & meng-i'rab kalimat Arab, men-talkhis muqarrar jadi PDF siap cetak, dan menemani lewat tutor serta simulasi syafawi — tanpa pindah aplikasi.` },
+  { q: "Ada paket AI Partner 1 bulan? Mana yang lebih baik?",
+    a: `Ada. Paket 1 bulan = Library selamanya + AI Partner 30 hari, bisa diperpanjang per 30 hari. Tapi satu termin kuliah sampai imtihan butuh sekitar 4 bulan, jadi Paket Imtihan (Library + AI Partner ${IMTIHAN_AI_DAYS} hari, sekali bayar) jauh lebih hemat daripada memperpanjang 4 kali — dan selama ${IMTIHAN_AI_DAYS} hari itu tidak ada kuota bulanan. Selama event ${IMTIHAN_PROMO.name}, harganya lebih murah lagi. Kalau ragu, ambil Paket Imtihan.` },
   { q: "AI Partner di Paket Imtihan ada batasnya?",
     a: `Tidak ada kuota bulanan selama ${IMTIHAN_AI_DAYS} hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, dan 25 kali membuat ringkasan/kuis/flashcard per hari — jauh di atas pemakaian belajar normal. Talkhis otomatis: 10 muqarrar per paket.` },
   { q: "Bisa coba dulu sebelum bayar?",
@@ -834,6 +836,8 @@ const LANDING_FAQ = [
 const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
   const settings = useAppSettings();
   const imtihan = imtihanBundle(settings);
+  const monthly = aiBundle(settings);
+  const promoLeft = usePromoCountdown();
   return (
   <section id="paket" className="section pt-0 pb-32">
     <div className="container-x">
@@ -848,6 +852,21 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
           Login pakai Google, pilih paket, bayar di Mayar — akses langsung aktif otomatis.
         </p>
       </Reveal>
+
+      {imtihan.promo && !imtihan.promo.personal && (
+        <Reveal>
+          <button onClick={() => onOpenJoin("imtihan")}
+            className="w-full max-w-5xl mx-auto mb-5 rounded-2xl px-5 py-4 flex items-center gap-4 flex-wrap text-left"
+            style={{ border: "1px solid rgba(201,168,106,.45)", background: "linear-gradient(135deg, rgba(201,168,106,.14), rgba(62,207,142,.08))" }}>
+            <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-gold-400 text-black uppercase tracking-wider flex-shrink-0">Event</span>
+            <span className="flex-1 min-w-[220px]">
+              <span className="block text-ink font-semibold">{imtihan.promo.name}: Paket Imtihan {formatRupiah(imtihan.total)} <span className="line-through text-ink-soft font-normal">{formatRupiah(imtihan.promo.normal)}</span></span>
+              <span className="block text-sm text-ink-muted">Library selamanya + AI Partner {IMTIHAN_AI_DAYS} hari. Berlaku sampai {imtihan.promo.endLabel}{promoLeft ? ` — sisa ${promoLeft}` : ''}.</span>
+            </span>
+            <span className="text-sm text-emerald-300 font-medium flex-shrink-0">Ambil sekarang →</span>
+          </button>
+        </Reveal>
+      )}
 
       <Reveal>
         <div className="grid md:grid-cols-2 gap-5 max-w-5xl mx-auto items-stretch">
@@ -902,6 +921,27 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
         </div>
       </Reveal>
 
+      {/* Paket 1 bulan: tersedia, tapi diarahkan ke Paket Imtihan yang lebih hemat */}
+      <Reveal>
+        <div className="max-w-5xl mx-auto mt-5 card-glass p-5 flex items-center gap-4 flex-wrap" style={{ border: "1px solid rgba(62,207,142,0.22)" }}>
+          <div className="flex-1 min-w-[240px]">
+            <div className="text-ink font-medium">
+              Mau coba AI Partner 1 bulan dulu?{monthly ? ` Paket 1 bulan ${formatRupiah(monthly.total)}` : ''}
+            </div>
+            <div className="text-sm text-ink-muted leading-relaxed">
+              Library selamanya + AI Partner 30 hari{monthly ? ` (perpanjang ${formatRupiah(monthly.ai)} per 30 hari)` : ''}.{' '}
+              {imtihan.saving
+                ? <>Satu termin butuh ±4 bulan: beli terpisah {formatRupiah(imtihan.separate)}, <span className="text-emerald-300">Paket Imtihan cuma {formatRupiah(imtihan.total)} — hemat {formatRupiah(imtihan.saving)}</span>.</>
+                : <span className="text-emerald-300">Untuk satu termin penuh, Paket Imtihan ({IMTIHAN_AI_DAYS} hari) lebih hemat.</span>}
+            </div>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={() => onOpenJoin("imtihan")} className="btn btn-primary text-sm px-5 py-2.5">Ambil Paket Imtihan</button>
+            <button onClick={() => onOpenJoin("library_ai")} className="btn btn-ghost text-sm px-4 py-2.5">Pilih 1 bulan</button>
+          </div>
+        </div>
+      </Reveal>
+
       {/* Coba gratis */}
       <Reveal>
         <div className="max-w-5xl mx-auto mt-5 card-glass p-5 flex items-center gap-4 flex-wrap" style={{ border: "1px solid rgba(96,165,250,0.3)" }}>
@@ -921,9 +961,9 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 text-sm">
             {[
               ["Login Google", "Tombol paket langsung minta login dulu."],
-              ["Pilih paket", "Library, atau Paket Imtihan (Library + AI Partner)."],
+              ["Pilih paket", "Library, paket 1 bulan, atau Paket Imtihan (paling hemat)."],
               ["Bayar di Mayar", "QRIS, VA, e-wallet. Tagihan langsung atas akunmu."],
-              ["Aktif otomatis", `Tanpa kode, tanpa nunggu admin. AI Partner di Paket Imtihan langsung aktif ${IMTIHAN_AI_DAYS} hari.`],
+              ["Aktif otomatis", `Tanpa kode, tanpa nunggu admin. AI Partner langsung aktif: 30 hari (paket 1 bulan) atau ${IMTIHAN_AI_DAYS} hari (Paket Imtihan).`],
             ].map(([title, desc], i) => (
               <div key={title} className="flex flex-col md:flex-row gap-2 md:gap-3">
                 <span className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-semibold text-emerald-200"
