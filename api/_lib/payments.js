@@ -135,8 +135,9 @@ export async function getOwnedCheckout(id, authUserId) {
 /* ── Buat tagihan ── */
 
 // Member yang sudah Library tidak boleh beli Library lagi; AI saja hanya untuk member Library.
+// Member bertipe 'trial' (akses sementara dari admin) belum membeli apa pun → boleh membeli seperti akun gratis.
 export function checkoutBlockReason(plan, member) {
-  const paidLibrary = member && member.status === 'active' && member.tier !== 'free';
+  const paidLibrary = member && member.status === 'active' && member.tier !== 'free' && member.member_type !== 'trial';
   if (plan === 'ai') return paidLibrary ? null : 'needs_library';
   return paidLibrary ? 'already_library' : null;
 }
@@ -197,7 +198,7 @@ export async function createCheckout({ user, member, plan, appOrigin, imtihanAmo
 async function findMember({ authUserId, email }) {
   const { url, h } = sb();
   const lookup = async (filter) => {
-    for (const fields of ['code,status,tier,email', 'code,status,email']) {
+    for (const fields of ['code,status,tier,email,member_type', 'code,status,tier,email', 'code,status,email']) {
       const r = await fetch(`${url}/rest/v1/members?${filter}&select=${fields}&limit=1`, { headers: h() });
       if (r.status === 400) continue; // kolom tier belum ada (migrasi free_tier belum dijalankan)
       const rows = await r.json();
@@ -218,13 +219,16 @@ export async function activateLibrary({ authUserId, email, name, mobile, note })
   const existing = await findMember({ authUserId, email });
   if (existing) {
     const isFree = existing.tier === 'free';
-    if (existing.status !== 'active' || isFree) {
+    const isTrial = existing.member_type === 'trial';
+    if (existing.status !== 'active' || isFree || isTrial) {
       const r = await fetch(`${url}/rest/v1/members?code=eq.${encodeURIComponent(existing.code)}`, {
         method: 'PATCH',
         headers: h({ Prefer: 'return=minimal' }),
         body: JSON.stringify({
           status: 'active', expires_at: LIFETIME_EXPIRY,
           ...(isFree ? { tier: 'library', notes: `Upgrade dari akun gratis · ${note}`.slice(0, 300) } : {}),
+          // Trial yang membayar menjadi member berbayar biasa: akses selamanya, jatah trial tidak berlaku lagi.
+          ...(isTrial ? { tier: 'library', member_type: 'berbayar', notes: `Upgrade dari trial · ${note}`.slice(0, 300) } : {}),
         }),
       });
       if (!r.ok) throw new Error(`Gagal mengaktifkan member (${r.status})`);

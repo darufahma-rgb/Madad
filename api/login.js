@@ -38,6 +38,8 @@ const toPublicMember = (m, user) => ({
   status:    m.status,
   expiresAt: m.expires_at,
   tier:      m.tier || 'library',
+  // 'trial' = akses sementara dari admin: di aplikasi tetap ditawari upgrade ke Paket Imtihan.
+  memberType: m.member_type || null,
 });
 
 const touchLastLogin = (code) => {

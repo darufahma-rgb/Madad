@@ -77,7 +77,7 @@ const gabungPath = (plan) => `/gabung${plan ? `?plan=${plan}` : ""}`;
 
 const App = () => {
   const path = useRoute();
-  const { session, profile, authStatus, authInfo, isFree, startFreeAccount } = useAuth();
+  const { session, profile, authStatus, authInfo, isFree, canUpgrade, startFreeAccount } = useAuth();
   const [loginOpen, setLoginOpen] = useState(false);
   const autoFreeStarted = useRef(false);
   // Corong konversi: satu "kunjungan" per pengunjung per hari (src/funnel.jsx).
@@ -176,7 +176,7 @@ const App = () => {
     setAiPaymentOpen(false);
     if (session) {
       setLoginOpen(false);
-      if (isFree) navigate(gabungPath(plan));
+      if (canUpgrade) navigate(gabungPath(plan));
       else if (plan === "library_ai" || plan === "imtihan") setAiPaymentOpen(true);
       else navigate("/dashboard");
       return;
@@ -204,7 +204,7 @@ const App = () => {
       window.removeEventListener("talqeeh:open-join", onOpenJoin);
       window.removeEventListener("talqeeh:open-login", onOpenLogin);
     };
-  }, [session, authStatus, profile, isFree]);
+  }, [session, authStatus, profile, isFree, canUpgrade]);
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
   const isPublic = path === "/" || path.startsWith("/gabung") || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/developer" || path === "/seminar" || path.startsWith("/seminar/") || path.startsWith("/seminar?") || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal";

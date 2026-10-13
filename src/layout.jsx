@@ -746,10 +746,10 @@ const WelcomeOfferPopup = () => {
   );
 };
 
-/* Banner event untuk pengunjung & akun gratis (member Library tidak bisa membeli Paket Imtihan).
+/* Banner event untuk pengunjung, akun gratis, dan member trial (member Library berbayar tidak bisa membeli Paket Imtihan).
    Selama penawaran 48 jam berjalan, banner ini berganti menjadi hitung mundur pribadi. */
 const EventBanner = () => {
-  const { session, isFree } = useAuth();
+  const { session, canUpgrade } = useAuth();
   const path = useRoute();
   const left = usePromoCountdown();
   const offer = useWelcomeOffer();
@@ -770,7 +770,7 @@ const EventBanner = () => {
       </div>
     );
   }
-  if (!left || hidden || (session && !isFree) || /^\/(admin|seminar|gabung)/.test(path)) return null;
+  if (!left || hidden || (session && !canUpgrade) || /^\/(admin|seminar|gabung)/.test(path)) return null;
   const close = () => { setHidden(true); try { sessionStorage.setItem("talqeeh_event_hide", IMTIHAN_PROMO.endsAt); } catch {} };
   return (
     <div className="relative z-[5] border-b border-emerald-500/25" style={{ background: "linear-gradient(90deg, rgba(62,207,142,0.16), rgba(201,168,106,0.14))" }}>

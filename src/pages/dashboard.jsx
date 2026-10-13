@@ -471,23 +471,33 @@ const HomeBadge = ({ children, tone }) => (
 );
 
 // Banner ajakan upgrade untuk akun gratis (Beranda & Library).
-const FreeTierBanner = ({ compact }) => (
-  <div className={`card-glass ${compact ? 'p-4' : 'p-5'} flex items-center gap-4 flex-wrap`} style={{ border: '1px solid rgba(201,168,106,0.3)' }}>
-    <span className="w-10 h-10 rounded-xl bg-gold-500/12 border border-gold-500/25 flex items-center justify-center flex-shrink-0">
-      <Icon name="crown" className="w-5 h-5 text-gold-300"/>
-    </span>
-    <div className="flex-1 min-w-[220px]">
-      <div className="text-sm text-ink font-medium">Kamu memakai akun gratis</div>
-      <div className="text-xs text-ink-muted leading-relaxed">
-        Terbuka: Nahwu + 1 maddah pilihan, 2 soal bank soal, dan coba AI Partner 1 materi.
-        Upgrade ke Library untuk membuka {CATALOG.maddah} maddah, bank soal lengkap, Siap Imtihan, dan Muqaranah.
+// Ajakan upgrade untuk akun gratis dan member trial: keduanya diarahkan ke Paket Imtihan (harga mengikuti event/penawaran).
+const FreeTierBanner = ({ compact }) => {
+  const { isTrial } = useAuth();
+  const offer = useWelcomeOffer();
+  const imtihan = imtihanBundle(useAppSettings(), offer);
+  const go = () => { window.logFunnel?.('view_join', isTrial ? 'trial_banner' : 'free_banner'); navigate('/gabung?plan=imtihan'); };
+  return (
+    <div className={`card-glass ${compact ? 'p-4' : 'p-5'} flex items-center gap-4 flex-wrap`} style={{ border: '1px solid rgba(201,168,106,0.3)' }}>
+      <span className="w-10 h-10 rounded-xl bg-gold-500/12 border border-gold-500/25 flex items-center justify-center flex-shrink-0">
+        <Icon name="crown" className="w-5 h-5 text-gold-300"/>
+      </span>
+      <div className="flex-1 min-w-[220px]">
+        <div className="text-sm text-ink font-medium">{isTrial ? 'Aksesmu masih trial (sementara)' : 'Kamu memakai akun gratis'}</div>
+        <div className="text-xs text-ink-muted leading-relaxed">
+          {isTrial
+            ? `Akses trial bisa berakhir dan jatah AI-nya lebih kecil. Paket Imtihan mengamankan Library selamanya + AI Partner ${IMTIHAN_AI_DAYS} hari tanpa kuota bulanan.`
+            : `Terbuka: Nahwu + 1 maddah pilihan, 2 soal bank soal, dan coba AI Partner 1 materi. Paket Imtihan membuka ${CATALOG.maddah} maddah selamanya + AI Partner ${IMTIHAN_AI_DAYS} hari.`}
+          {imtihan.promo && <span className="text-gold-300"> Harga {imtihan.promo.name}: {formatRupiah(imtihan.total)} (normal {formatRupiah(imtihan.promo.normal)}), sampai {imtihan.promo.endLabel}.</span>}
+        </div>
+      </div>
+      <div className="flex flex-col items-stretch gap-1.5">
+        <button onClick={go} className="btn btn-gold text-xs px-4 py-2 justify-center">Ambil Paket Imtihan · {formatRupiah(imtihan.total)}</button>
+        <button onClick={() => navigate('/gabung')} className="text-[11px] text-ink-soft hover:text-ink underline underline-offset-2">Lihat semua paket</button>
       </div>
     </div>
-    <button onClick={() => navigate('/gabung?plan=library')} className="btn btn-gold text-xs px-4 py-2">
-      Upgrade · {LIBRARY_PRICE}
-    </button>
-  </div>
-);
+  );
+};
 
 // Member yang onboarding sebelum ada pertanyaan personalisasi: tanya 3 hal singkat sekali di Beranda.
 const PERSONALIZE_DISMISS_KEY = 'talqeeh_personalize_later';
@@ -607,7 +617,7 @@ const DashboardOnboarding = ({ name }) => (
 );
 
 const DashboardHomePage = () => {
-  const { session, profile, isFree } = useAuth();
+  const { session, profile, isFree, canUpgrade } = useAuth();
   const [aiAccess, setAiAccess] = useState("checking");
   const [showOffer, setShowOffer] = useState(() => !!window.readUpgradeOffer?.());
 
@@ -654,7 +664,7 @@ const DashboardHomePage = () => {
             <p className="text-base md:text-lg text-ink-muted">Mau belajar pakai apa hari ini?</p>
           </Reveal>
 
-          {isFree && <div className="max-w-5xl mb-5"><FreeTierBanner/></div>}
+          {canUpgrade && <div className="max-w-5xl mb-5"><FreeTierBanner/></div>}
           <PersonalizeCard/>
           <DailyAdviceCard/>
 
@@ -717,7 +727,7 @@ const DashboardHomePage = () => {
    LIBRARY — isi dashboard belajar berbasis prompt
    ══════════════════════════════════════════════════════════════ */
 const LibraryPage = () => {
-  const { session, profile, progress, clearProfile, isFree } = useAuth();
+  const { session, profile, progress, clearProfile, isFree, canUpgrade } = useAuth();
 
   const recs = useMemo(() => profile ? recommend(profile) : [], [profile]);
   const stage = useMemo(() => computeStage(), [progress]);
@@ -885,7 +895,7 @@ const LibraryPage = () => {
         />
       </section>
 
-      {isFree && <div className="container-x mb-6"><FreeTierBanner compact/></div>}
+      {canUpgrade && <div className="container-x mb-6"><FreeTierBanner compact/></div>}
 
       {/* 2. STARTER PACK */}
       <StarterPackCard profile={profile} session={session}/>

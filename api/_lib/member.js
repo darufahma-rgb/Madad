@@ -19,7 +19,7 @@ export const normalizeCode = (code) =>
   typeof code === 'string' ? code.trim().toUpperCase() : '';
 
 const BASE_MEMBER_FIELDS = 'code,name,email,status,expires_at,auth_user_id';
-const MEMBER_FIELDS = `${BASE_MEMBER_FIELDS},tier`;
+const MEMBER_FIELDS = `${BASE_MEMBER_FIELDS},tier,member_type`;
 
 // Kode member internal: tanpa huruf/angka yang mirip (I, O, 0, 1). Sama dengan generateCode di src/auth.jsx.
 const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -32,6 +32,8 @@ const fetchMembers = async (query, init) => {
   const { url, key } = sbConfig();
   const run = (fields) => fetch(`${url}/rest/v1/members?${query}&select=${fields}`, init(key));
   let r = await run(MEMBER_FIELDS);
+  // Bertahap: tanpa member_type dulu (tier tetap terbaca — akun gratis jangan sampai dianggap Library), baru tanpa tier.
+  if (r.status === 400) r = await run(`${BASE_MEMBER_FIELDS},tier`);
   if (r.status === 400) r = await run(BASE_MEMBER_FIELDS);
   const rows = await r.json();
   return (Array.isArray(rows) ? rows : []).map(m => ({ ...m, tier: m.tier || 'library' }));

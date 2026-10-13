@@ -180,7 +180,7 @@ const FaqItem = ({ q, a }) => {
 };
 
 const GabungPage = () => {
-  const { authStatus, authInfo, session, profile, isFree, redeemPin, refreshMemberSession, startFreeAccount } = useAuth();
+  const { authStatus, authInfo, session, profile, isFree, isTrial, canUpgrade, redeemPin, refreshMemberSession, startFreeAccount } = useAuth();
   const google   = useGoogleSignIn();
   const settings = useAppSettings();
   const toast    = useToast();
@@ -197,7 +197,8 @@ const GabungPage = () => {
 
   const signedOut    = authStatus === 'signed_out' || (authStatus === 'member' && !session);
   const noAccount    = authStatus === 'needs_activation';
-  const paidMember   = authStatus === 'member' && !!session && !isFree;
+  // Member trial belum membeli apa pun → halaman ini memperlakukannya sebagai calon pembeli, bukan member Library.
+  const paidMember   = authStatus === 'member' && !!session && !canUpgrade;
   const email        = authInfo?.email || session?.email || '';
   const payOnline    = !!settings.payOnline;
   const aiPrice      = settings.aiPriceMonthly || null;
@@ -232,8 +233,8 @@ const GabungPage = () => {
 
   // Plan dari tautan (?plan=library) langsung membuka panel bayar untuk yang sudah login.
   useEffect(() => {
-    if ((noAccount || isFree) && ['library', 'library_ai', 'imtihan'].includes(plan) && step === null && !waiting) setStep('pay');
-  }, [noAccount, isFree]);
+    if ((noAccount || canUpgrade) && ['library', 'library_ai', 'imtihan'].includes(plan) && step === null && !waiting) setStep('pay');
+  }, [noAccount, canUpgrade]);
 
   useEffect(() => {
     if (step || waiting) setTimeout(() => panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
@@ -311,13 +312,15 @@ const GabungPage = () => {
             <Icon name="mosque" className="w-3.5 h-3.5" style={{ stroke: GOLD }}/> Gabung Talqeeh
           </div>
           <h1 className="font-display text-3xl md:text-5xl font-semibold text-ink leading-tight mb-3 max-w-3xl mx-auto">
-            {isFree
+            {canUpgrade
               ? <>Buka semua yang kamu butuhkan untuk <span style={{ color: GOLD }}>lulus imtihan</span></>
               : <>Belajar muqarrar Azhar jadi <span style={{ color: GOLD }}>lebih terarah</span> dengan AI</>}
           </h1>
           <p className="text-ink-muted max-w-2xl mx-auto">
-            {isFree
-              ? 'Kamu sedang memakai akun gratis. Upgrade ke Library untuk membuka semua maddah, bank soal, dan persiapan imtihan — sekali bayar, selamanya.'
+            {isTrial
+              ? `Aksesmu sekarang masih trial (sementara). Ambil Paket Imtihan supaya Library jadi milikmu selamanya, plus AI Partner ${IMTIHAN_AI_DAYS} hari tanpa kuota bulanan.`
+              : isFree
+              ? `Kamu sedang memakai akun gratis. Paket Imtihan membuka semua maddah, bank soal, dan persiapan imtihan selamanya, plus AI Partner ${IMTIHAN_AI_DAYS} hari — sekali bayar.`
               : `${CATALOG.maddah} maddah, ${CATALOG.prompts} prompt siap pakai, bank soal imtihan, dan AI Partner yang paham teks Arab. Mulai gratis, upgrade kapan saja.`}
           </p>
 
@@ -357,8 +360,8 @@ const GabungPage = () => {
           <PlanCard color={SKY} icon="leaf" title="Gratis" tagline="Coba dulu, rasakan bedanya"
             price="Rp 0" sub="Tanpa kartu · tanpa pembayaran" items={FREE_ITEMS}
             current={isFree} selected={plan === 'free'} ctaClass="btn btn-ghost"
-            cta={startingFree ? 'Menyiapkan akun…' : paidMember ? 'Sudah termasuk di Library' : 'Mulai gratis'}
-            onClick={paidMember ? () => navigate('/dashboard') : chooseFree}/>
+            cta={startingFree ? 'Menyiapkan akun…' : paidMember ? 'Sudah termasuk di Library' : isTrial ? 'Kamu sedang trial' : 'Mulai gratis'}
+            onClick={paidMember || isTrial ? () => navigate('/dashboard') : chooseFree}/>
           {paidMember ? (
             <>
               <PlanCard color={GOLD} icon="bookOpen" title="Library" tagline="Semua bekal belajar & imtihan"
@@ -446,7 +449,7 @@ const GabungPage = () => {
                   className={`btn btn-gold w-full text-base py-3.5 font-semibold ${checkout.status === 'creating' ? 'opacity-60 cursor-wait' : ''}`}>
                   {checkout.status === 'creating' ? 'Menyiapkan pembayaran…' : `Bayar ${formatRupiah(payTotal)}`}
                 </button>
-                <p className="text-center text-[11px] text-ink-soft mt-2">QRIS · virtual account · e-wallet. {isFree ? 'Akun gratismu naik ke Library, progresmu tetap aman.' : 'Akses aktif otomatis setelah pembayaran masuk.'}</p>
+                <p className="text-center text-[11px] text-ink-soft mt-2">QRIS · virtual account · e-wallet. {isFree ? 'Akun gratismu naik ke Library, progresmu tetap aman.' : isTrial ? 'Akses trial-mu jadi permanen, progresmu tetap aman.' : 'Akses aktif otomatis setelah pembayaran masuk.'}</p>
               </>
             ) : (
               <div className="card-glass p-4 text-sm text-ink-muted text-center">
@@ -497,7 +500,7 @@ const GabungPage = () => {
           </form>
         )}
 
-        {(noAccount || isFree) && step !== 'redeem' && !waiting && (
+        {(noAccount || canUpgrade) && step !== 'redeem' && !waiting && (
           <div className="text-center mt-6 text-sm">
             <button onClick={() => setStep('redeem')} className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
               Member lama? Masukkan PIN aktivasi dari admin

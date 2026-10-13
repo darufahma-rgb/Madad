@@ -70,6 +70,7 @@ const applyMember = async (member) => {
     name:              member.name,
     email:             member.email,
     tier:              member.tier || "library",
+    memberType:        member.memberType || null,
     loggedInAt:        firstSignIn ? new Date().toISOString() : prev.loggedInAt,
     authVersion:       2,
     supabaseValidated: true,
@@ -320,6 +321,9 @@ const useAuth = () => {
     authInfo:   auth,
     tier:       session?.tier || "library",
     isFree:     session?.tier === "free",
+    // Trial = akses sementara dari admin. canUpgrade: akun yang masih ditawari Paket Imtihan (gratis & trial).
+    isTrial:    session?.tier !== "free" && session?.memberType === "trial",
+    canUpgrade: session?.tier === "free" || session?.memberType === "trial",
     signInWithGoogle,
     redeemPin: redeemActivationPin,
     startFreeAccount,

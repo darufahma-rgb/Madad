@@ -98,7 +98,8 @@ const SidebarItem = ({ item, active, collapsed, locked, onNavigate }) => {
 };
 
 const SidebarContent = ({ collapsed, onToggle, onNavigate, onClose, mobile }) => {
-  const { session, profile, logout, isFree } = useAuth();
+  const { session, profile, logout, isFree, isTrial, canUpgrade } = useAuth();
+  const imtihanTotal = imtihanBundle(useAppSettings()).total;
   const pwa = usePwaInstall();
   const path = useRoute();
   const [confirmLogout, setConfirmLogout] = useState(false);
@@ -106,7 +107,7 @@ const SidebarContent = ({ collapsed, onToggle, onNavigate, onClose, mobile }) =>
   useEffect(() => setConfirmLogout(false), [path]);
   const toggleMore = () => { const next = !moreOpen; setMoreOpen(next); saveMoreOpen(next); };
 
-  const tierLabel = isFree ? 'Akun gratis' : 'Member Library';
+  const tierLabel = isFree ? 'Akun gratis' : isTrial ? 'Akses trial' : 'Member Library';
   const groups = navGroups(profile);
   if (!pwa.installed) {
     groups[groups.length - 1].items.push({ action: pwa.install, label: 'Pasang aplikasi', icon: 'download' });
@@ -174,19 +175,21 @@ const SidebarContent = ({ collapsed, onToggle, onNavigate, onClose, mobile }) =>
 
       {/* Upgrade + akun */}
       <div className={`flex-shrink-0 border-t border-white/[0.06] ${collapsed ? 'p-2' : 'p-3'}`}>
-        {isFree && (collapsed ? (
-          <button onClick={() => { navigate('/gabung?plan=library'); onNavigate && onNavigate(); }} title="Upgrade ke Library"
+        {canUpgrade && (collapsed ? (
+          <button onClick={() => { navigate('/gabung?plan=imtihan'); onNavigate && onNavigate(); }} title="Upgrade ke Paket Imtihan"
             className="w-11 h-11 mx-auto mb-2 rounded-xl flex items-center justify-center" style={{ background: 'rgba(201,168,106,0.14)', border: '1px solid rgba(201,168,106,0.35)' }}>
             <Icon name="crown" className="w-4 h-4" style={{ stroke: '#c9a86a' }}/>
           </button>
         ) : (
           <div className="rounded-xl p-3.5 mb-3 relative overflow-hidden" style={{ background: 'linear-gradient(160deg, rgba(201,168,106,0.16), rgba(201,168,106,0.04))', border: '1px solid rgba(201,168,106,0.3)' }}>
             <div className="flex items-center gap-2 text-sm font-semibold text-ink mb-1">
-              <Icon name="crown" className="w-4 h-4" style={{ stroke: '#c9a86a' }}/> Buka semua fitur
+              <Icon name="crown" className="w-4 h-4" style={{ stroke: '#c9a86a' }}/> {isTrial ? 'Amankan aksesmu' : 'Buka semua fitur'}
             </div>
-            <p className="text-[11px] text-ink-muted leading-relaxed mb-3">Semua {CATALOG.maddah} maddah, bank soal, dan Siap Imtihan. Sekali bayar.</p>
-            <button onClick={() => { navigate('/gabung?plan=library'); onNavigate && onNavigate(); }} className="btn btn-gold w-full text-xs py-2 justify-center">
-              Upgrade · {LIBRARY_PRICE}
+            <p className="text-[11px] text-ink-muted leading-relaxed mb-3">
+              {isTrial ? 'Aksesmu masih trial (sementara).' : `Semua ${CATALOG.maddah} maddah, bank soal, dan Siap Imtihan.`} Paket Imtihan: Library selamanya + AI Partner {IMTIHAN_AI_DAYS} hari.
+            </p>
+            <button onClick={() => { navigate('/gabung?plan=imtihan'); onNavigate && onNavigate(); }} className="btn btn-gold w-full text-xs py-2 justify-center">
+              Paket Imtihan · {formatRupiah(imtihanTotal)}
             </button>
           </div>
         ))}
@@ -254,7 +257,7 @@ const ShellTabBar = ({ onMenu, menuOpen }) => {
 };
 
 const AppShell = ({ title, children }) => {
-  const { session, isFree } = useAuth();
+  const { session, isFree, canUpgrade } = useAuth();
   const path = useRoute();
   const isDesktop = useMedia('(min-width: 768px)');
   const isWide = useMedia('(min-width: 1180px)');
@@ -320,8 +323,8 @@ const AppShell = ({ title, children }) => {
                 <Icon name="search" className="w-5 h-5"/>
               </button>
             )}
-            {isDesktop && isFree && (
-              <button onClick={() => navigate('/gabung?plan=library')} className="btn btn-gold text-xs py-2 px-3.5">
+            {isDesktop && canUpgrade && (
+              <button onClick={() => navigate('/gabung?plan=imtihan')} className="btn btn-gold text-xs py-2 px-3.5">
                 <Icon name="crown" className="w-3.5 h-3.5"/> Upgrade
               </button>
             )}

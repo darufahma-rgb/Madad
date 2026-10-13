@@ -25,7 +25,8 @@ const UNLOCKS = [
 ];
 
 const UpgradeWall = () => {
-  const { isFree } = useAuth();
+  // Member trial diperlakukan seperti akun gratis di sini: ditawari Paket Imtihan, bukan AI per 30 hari.
+  const { canUpgrade: isFree } = useAuth();
   const [reason, setReason] = useState(null);
   const left = window.usePromoCountdown ? window.usePromoCountdown() : null;
   const offer = useWelcomeOffer();
