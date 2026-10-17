@@ -38,6 +38,7 @@ const navGroups = (profile) => [
     { to: '/kurasah',    label: 'Kurasah',    icon: 'pen' },
   ]},
   { label: 'Latihan', items: [
+    { to: '/battle',          label: 'Pokémon Battle', icon: 'swords' },
     { to: '/siap-imtihan',    label: 'Siap Imtihan',   icon: 'target',  locked: true },
     { to: '/paths/muqaranah', label: 'Muqaranah',      icon: 'scale',   locked: true },
     { to: '/paths',           label: 'Learning Path',  icon: 'compass', locked: true, exact: true },

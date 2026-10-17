@@ -7,10 +7,10 @@ import TutorialModal, { openTutorial } from './components/tutorial-modal.jsx';
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, error: null };
   }
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
   }
   componentDidCatch(error, info) {
     console.error("Talqeeh ErrorBoundary:", error, info?.componentStack);
@@ -29,9 +29,14 @@ class ErrorBoundary extends React.Component {
           <h2 style={{fontFamily:"DM Sans,sans-serif",color:"#F5F0FF",fontSize:"1.25rem",marginBottom:"8px"}}>
             Ada yang tidak beres
           </h2>
-          <p style={{color:"#6ee7b7",fontSize:"0.9rem",marginBottom:"24px",maxWidth:"320px",lineHeight:"1.6"}}>
-            Coba refresh halaman. Kalau masalah berlanjut, hubungi admin Talqeeh.
+          <p style={{color:"#6ee7b7",fontSize:"0.9rem",marginBottom:"16px",maxWidth:"520px",lineHeight:"1.6"}}>
+            {this.state.error?.message || "Coba refresh halaman. Kalau masalah berlanjut, hubungi admin Talqeeh."}
           </p>
+          {this.state.error && (
+            <pre style={{color:"#f87171",fontSize:"0.75rem",textAlign:"left",background:"rgba(255,255,255,0.05)",padding:"12px",borderRadius:"8px",maxWidth:"90vw",overflowX:"auto",marginBottom:"20px",maxHeight:"200px"}}>
+              {this.state.error.stack}
+            </pre>
+          )}
           <button
             onClick={() => window.location.reload()}
             style={{
@@ -207,7 +212,7 @@ const App = () => {
   }, [session, authStatus, profile, isFree, canUpgrade]);
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
-  const isPublic = path === "/" || path.startsWith("/gabung") || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/developer" || path === "/seminar" || path.startsWith("/seminar/") || path.startsWith("/seminar?") || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal";
+  const isPublic = path === "/" || path.startsWith("/gabung") || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/developer" || path === "/seminar" || path.startsWith("/seminar/") || path.startsWith("/seminar?") || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal" || path === "/battle" || path.startsWith("/battle") || path === "/game";
 
   // Admin gets its own layout (no public nav/footer)
   if (isAdmin) {
@@ -264,6 +269,7 @@ const App = () => {
   else if (path === "/ai-partner" || path === "/ai-partner/") { page = <AiPartnerPage/>; routeLabel = "AI Partner"; }
   else if (path === "/ai-partner/prompt" || path.startsWith("/ai-partner/prompt?")) { page = <AiPromptPage/>; routeLabel = "AI Partner"; }
   else if (path.startsWith("/ai-partner/")) { page = <AiPartnerDetailPage key={path} setId={path.split("/")[2].split("?")[0]}/>; routeLabel = "AI Partner"; }
+  else if (path === "/battle" || path.startsWith("/battle") || path === "/game") { page = <BattlePage/>; routeLabel = "Pokémon Battle"; }
 
   // QuickNote muncul di semua halaman member yang sudah onboarded, kecuali admin & public
   const showQuickNote = session && profile?.onboarded && !isAdmin && !isPublic;

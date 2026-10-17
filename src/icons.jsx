@@ -3,6 +3,8 @@ import React, { useState, useEffect, useRef, useCallback, useMemo, createContext
 const Icon = ({ name, className = "w-5 h-5", strokeWidth = 1.6, ...rest }) => {
   const paths = {
     sparkles: <><path d="M12 3l1.8 4.6L18 9l-4.2 1.4L12 15l-1.8-4.6L6 9l4.2-1.4z"/><path d="M19 14l.9 2.1.2.8.9.2L23 18l-2.1.9-.8.2-.2.9L19 22l-.9-2.1-.2-.8-.9-.2L15 18l2.1-.9.8-.2.2-.9z"/></>,
+    swords: <><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/><path d="M9.5 17.5L21 6V3h-3L6.5 14.5"/><path d="M5 19l-2 2"/><path d="M4 16l4 4"/></>,
+    gamepad: <><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><circle cx="15" cy="13" r="1" fill="currentColor"/><circle cx="18" cy="11" r="1" fill="currentColor"/><rect x="2" y="6" width="20" height="12" rx="3"/></>,
     book: <><path d="M4 5a2 2 0 0 1 2-2h12v18H6a2 2 0 0 1-2-2z"/><path d="M4 5v14"/><path d="M8 7h7M8 11h7"/></>,
     bookOpen: <><path d="M2 5h7a3 3 0 0 1 3 3v12a3 3 0 0 0-3-3H2z"/><path d="M22 5h-7a3 3 0 0 0-3 3v12a3 3 0 0 1 3-3h7z"/></>,
     brain: <><path d="M9 4a3 3 0 0 0-3 3v1a3 3 0 0 0-2 5 3 3 0 0 0 2 5v1a3 3 0 0 0 6 0V4a3 3 0 0 0-3 0z"/><path d="M15 4a3 3 0 0 1 3 3v1a3 3 0 0 1 2 5 3 3 0 0 1-2 5v1a3 3 0 0 1-6 0"/></>,
@@ -63,6 +65,7 @@ const Icon = ({ name, className = "w-5 h-5", strokeWidth = 1.6, ...rest }) => {
     logout: <><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3"/><path d="M10 17l-5-5 5-5"/><path d="M5 12h11"/></>,
     moreHorizontal: <><circle cx="5" cy="12" r="1.4" fill="currentColor"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/><circle cx="19" cy="12" r="1.4" fill="currentColor"/></>,
     maximize: <><path d="M4 9V4h5"/><path d="M20 9V4h-5"/><path d="M4 15v5h5"/><path d="M20 15v5h-5"/></>,
+    minimize: <><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></>,
     thumbUp:<><path d="M7 11v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1z"/><path d="M7 11l4-7a2 2 0 0 1 3 2l-1 4h5a2 2 0 0 1 2 2.3l-1.2 6A2 2 0 0 1 16.8 20H7"/></>,
     thumbDown: <><path d="M17 13V4h3a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1z"/><path d="M17 13l-4 7a2 2 0 0 1-3-2l1-4H6a2 2 0 0 1-2-2.3l1.2-6A2 2 0 0 1 7.2 4H17"/></>,
     flag: <><path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/></>,

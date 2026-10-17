@@ -532,6 +532,7 @@ const SummaryTab = ({ set, setSet, access, askTutor }) => {
         <FeedbackBar setId={set.id} kind="summary" content={set.summary} model={set.progress?.models?.summary} className="mt-4" label="Ringkasan ini akurat & membantu?"/>
       )}
       {access.tier !== 'pro' && <LockedPreview set={set}/>}
+      <BattleStudyBanner set={set} />
     </div>
   );
 };
@@ -1397,6 +1398,13 @@ const QuizTab = ({ set, setSet, access, askTutor }) => {
           <div className="flex gap-2 justify-center flex-wrap mt-4">
             {wrong.length > 0 && <button onClick={() => reset(wrong.map(w => w.i))} className="btn btn-primary text-sm px-5 py-2">Ulangi yang salah ({wrong.length})</button>}
             <button onClick={() => reset()} className={`btn ${wrong.length ? 'btn-ghost' : 'btn-primary'} text-sm px-5 py-2`}>Ulangi semua</button>
+            <button
+              onClick={() => launchBattleFromSet(set)}
+              className="btn bg-gradient-to-r from-amber-500 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-black font-bold text-sm px-5 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95"
+            >
+              <span>⚔️ Uji di Pokémon Battle</span>
+              <span className="text-[10px] bg-black/20 text-black font-mono px-1 py-0.5 rounded">VS Al-'Allamah</span>
+            </button>
             {access.tier === 'pro' && <button onClick={() => generate()} disabled={busy} className="btn btn-ghost text-sm px-5 py-2">Buat soal baru</button>}
           </div>
           {access.tier === 'pro' && weakList(set).length > 0 && (
@@ -1406,6 +1414,8 @@ const QuizTab = ({ set, setSet, access, askTutor }) => {
             </button>
           )}
         </div>
+
+        <BattleStudyBanner set={set} />
 
         {wrong.length > 0 && (
           <div className="card-glass p-5 md:p-6">
@@ -2015,6 +2025,187 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
   );
 };
 
+/* ── 3c. Pokémon Battle Arena Launchers & Components ── */
+export const launchBattleFromSet = (set) => {
+  try {
+    const payload = {
+      title: set.title || 'Materi Diktat Azhar',
+      text: set.content || set.summary || '',
+      maddah: set.maddah_id || 'Diktat Muqarrar',
+      quiz: Array.isArray(set.quiz) ? set.quiz : []
+    };
+    sessionStorage.setItem('talqeeh_battle_custom_import', JSON.stringify(payload));
+    window.location.hash = '#/battle';
+  } catch (err) {
+    console.error('Gagal mentransfer materi ke Pokémon Battle:', err);
+    window.location.hash = '#/battle';
+  }
+};
+
+export const BattleStudyBanner = ({ set }) => {
+  if (!set) return null;
+  return (
+    <div className="mt-5 p-4 sm:p-5 rounded-2xl border-2 border-emerald-500/40 bg-gradient-to-r from-[#0d1f17] via-[#10241b] to-[#12281e] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+      <div className="flex items-center gap-3.5 min-w-0">
+        <div className="w-12 h-12 rounded-xl bg-black/60 border border-amber-400/50 p-1 flex items-center justify-center shrink-0 shadow">
+          <img src="/assets/boss-syaikh-kabir-voxel.png" alt="Grand Master Scholar" className="w-full h-full object-contain filter drop-shadow" />
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 uppercase tracking-wider">
+              POKÉMON BATTLE ARENA
+            </span>
+            <span className="text-xs text-emerald-300/80 font-mono">4 Level Imtihan</span>
+          </div>
+          <h4 className="text-sm sm:text-base font-semibold text-white leading-tight">
+            Sudah selesai membaca? Buktikan penguasaanmu di Pokémon Battle!
+          </h4>
+          <p className="text-xs text-white/60 mt-0.5">
+            Tantang 4 penguji Azhar: Khadim ➔ Musa'id ➔ Muhaqqiq ➔ Al-'Allamah Al-Kabir.
+          </p>
+        </div>
+      </div>
+      <button
+        onClick={() => launchBattleFromSet(set)}
+        className="w-full sm:w-auto shrink-0 btn bg-gradient-to-r from-amber-500 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-black font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-lg flex items-center justify-center gap-2 transition active:scale-95"
+      >
+        <span>⚔️ Uji di Pokémon Battle</span>
+        <Icon name="arrowRight" className="w-4 h-4" />
+      </button>
+    </div>
+  );
+};
+
+export const BattleTab = ({ set }) => {
+  return (
+    <div className="space-y-6 animate-fadeIn">
+      {/* Hero Card */}
+      <div className="relative rounded-2xl border-2 border-amber-400/50 bg-gradient-to-b from-[#18231c] via-[#101813] to-[#0a0f0c] p-6 sm:p-8 overflow-hidden shadow-2xl">
+        <div className="absolute -top-12 -right-12 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-12 -left-12 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="flex flex-col md:flex-row items-center gap-6 relative z-10">
+          <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl bg-black/60 border-2 border-amber-400/60 p-2 flex items-center justify-center shrink-0 shadow-[0_8px_24px_rgba(0,0,0,0.8)] relative group">
+            <img
+              src="/assets/boss-syaikh-kabir-voxel.png"
+              alt="Grand Master Scholar"
+              className="w-full h-full object-contain filter drop-shadow-[0_4px_12px_rgba(251,191,36,0.4)] group-hover:scale-105 transition duration-300"
+            />
+            <span className="absolute -bottom-2 font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500 text-black border border-amber-300 uppercase tracking-wider">
+              RANK S (FINAL BOSS)
+            </span>
+          </div>
+
+          <div className="flex-1 text-center md:text-left">
+            <div className="flex items-center justify-center md:justify-start gap-2 mb-2 flex-wrap">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40">
+                🎮 ARENA POKÉMON BATTLE
+              </span>
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                4 Tingkat Imtihan
+              </span>
+            </div>
+            <h2 className="font-display text-xl sm:text-2xl font-bold text-white mb-2 leading-tight">
+              Uji Pemahaman Materi: "{set.title}"
+            </h2>
+            <p className="text-sm text-white/70 max-w-xl leading-relaxed mb-4">
+              Diktat yang telah kamu pelajari kini siap diuji secara interaktif! Bertarunglah melawan para penguji resmi Al-Azhar, kumpulkan poin EXP, raih Taqdir Mumtaz, dan tundukkan Al-'Allamah Al-Kabir untuk memperoleh Syahadah Kelulusan Resmi!
+            </p>
+
+            <div className="flex items-center justify-center md:justify-start gap-3 flex-wrap">
+              <button
+                onClick={() => launchBattleFromSet(set)}
+                className="btn bg-gradient-to-r from-amber-500 via-emerald-500 to-teal-500 hover:from-amber-400 hover:to-emerald-400 text-black font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/25 flex items-center gap-2 transform active:scale-95 transition"
+              >
+                <span>⚔️ Masuk ke Arena Pokémon Battle</span>
+                <Icon name="arrowRight" className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 4 Stages Preview Grid */}
+      <div>
+        <h3 className="font-display text-lg font-semibold text-white mb-3 flex items-center gap-2">
+          <span>🗺️</span>
+          <span>4 Tahapan Imtihan yang Akan Dihadapi</span>
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex flex-col justify-between">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-lg bg-black/50 border border-white/15 p-1 flex items-center justify-center shrink-0">
+                <img src="/assets/npc-khadim-voxel.png" alt="Khadim" className="w-full h-full object-contain" />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono font-bold text-emerald-400 px-1.5 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30">LEVEL 1</span>
+                <h4 className="text-sm font-semibold text-white mt-1">Khadim Al-Bab</h4>
+              </div>
+            </div>
+            <p className="text-xs text-white/60 mb-2">Menguji pengenalan dasar & istilah pembuka materi diktat.</p>
+            <div className="text-[11px] font-mono text-amber-300/80 pt-2 border-t border-white/10 flex justify-between">
+              <span>HP: 60</span>
+              <span>+35 EXP</span>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex flex-col justify-between">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-lg bg-black/50 border border-white/15 p-1 flex items-center justify-center shrink-0">
+                <img src="/assets/npc-musaid-voxel.png" alt="Musa'id" className="w-full h-full object-contain" />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono font-bold text-sky-400 px-1.5 py-0.5 rounded bg-sky-500/20 border border-sky-500/30">LEVEL 2</span>
+                <h4 className="text-sm font-semibold text-white mt-1">Musa'id Al-Mudarris</h4>
+              </div>
+            </div>
+            <p className="text-xs text-white/60 mb-2">Membedah kaidah matan, ta'rif, dan syarat-syarat pokok.</p>
+            <div className="text-[11px] font-mono text-amber-300/80 pt-2 border-t border-white/10 flex justify-between">
+              <span>HP: 80</span>
+              <span>+50 EXP</span>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-white/10 bg-white/5 p-4 flex flex-col justify-between">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-lg bg-black/50 border border-white/15 p-1 flex items-center justify-center shrink-0">
+                <img src="/assets/npc-muhaqqiq-voxel.png" alt="Muhaqqiq" className="w-full h-full object-contain" />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono font-bold text-purple-400 px-1.5 py-0.5 rounded bg-purple-500/20 border border-purple-500/30">LEVEL 3</span>
+                <h4 className="text-sm font-semibold text-white mt-1">Al-Muhaqqiq</h4>
+              </div>
+            </div>
+            <p className="text-xs text-white/60 mb-2">Analisis mendalam, furu' masalah, dan penalaran hukum.</p>
+            <div className="text-[11px] font-mono text-amber-300/80 pt-2 border-t border-white/10 flex justify-between">
+              <span>HP: 90</span>
+              <span>+65 EXP</span>
+            </div>
+          </div>
+
+          <div className="rounded-xl border-2 border-amber-400/40 bg-amber-500/10 p-4 flex flex-col justify-between">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-12 h-12 rounded-lg bg-black/60 border border-amber-400/60 p-1 flex items-center justify-center shrink-0">
+                <img src="/assets/boss-syaikh-kabir-voxel.png" alt="Final Boss" className="w-full h-full object-contain" />
+              </div>
+              <div>
+                <span className="text-[10px] font-mono font-bold text-amber-300 px-1.5 py-0.5 rounded bg-amber-500/20 border border-amber-400/40">FINAL BOSS</span>
+                <h4 className="text-sm font-semibold text-amber-200 mt-1">Al-'Allamah Al-Kabir</h4>
+              </div>
+            </div>
+            <p className="text-xs text-white/70 mb-2">Puncak ujian seluruh materi & penganugerahan Syahadah!</p>
+            <div className="text-[11px] font-mono text-amber-300 font-bold pt-2 border-t border-amber-400/20 flex justify-between">
+              <span>HP: 100</span>
+              <span>📜 SYAHADAH</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 Object.assign(window, {
   MasteryCard, SummaryTab, MindmapTab, MaterialTab, FlashcardTab, GlossaryTab, QuizTab, EssayTab, TutorTab,
+  BattleTab, BattleStudyBanner, launchBattleFromSet,
 });

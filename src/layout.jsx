@@ -6,6 +6,13 @@ import { openTutorial } from './components/tutorial-modal.jsx';
 
 const useRoute = () => {
   const parse = () => {
+    if (typeof window === "undefined") return "/";
+    // Jika user mengakses URL path langsung (misal /battle atau /game) tanpa hash:
+    if (window.location.pathname && window.location.pathname !== "/" && (!window.location.hash || window.location.hash === "" || window.location.hash === "#/")) {
+      const p = window.location.pathname;
+      window.location.hash = "#" + p;
+      return p;
+    }
     const h = window.location.hash || "#/";
     return h.startsWith("#") ? h.slice(1) : h;
   };
@@ -13,7 +20,11 @@ const useRoute = () => {
   useEffect(() => {
     const onHash = () => { setPath(parse()); window.scrollTo({ top: 0, behavior: "instant" }); };
     window.addEventListener("hashchange", onHash);
-    return () => window.removeEventListener("hashchange", onHash);
+    window.addEventListener("popstate", onHash);
+    return () => {
+      window.removeEventListener("hashchange", onHash);
+      window.removeEventListener("popstate", onHash);
+    };
   }, []);
   return path;
 };
@@ -193,6 +204,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   // 5 nav utama member — Maddah-first
   const memberLinks = [
     { to: "/dashboard",        label: "Beranda" },
+    { to: "/battle",           label: "⚔️ Game Battle" },
     { to: "/library",          label: "Library" },
     { to: "/ai-partner",       label: "AI Partner" },
     { to: "/maddah",           label: "Maddah" },
@@ -202,6 +214,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   ];
   // Link tambahan untuk mobile menu
   const memberLinksExtra = [
+    { to: "/battle",           label: "⚔️ Pokémon Battle" },
     { to: "/ai-partner",       label: "AI Partner" },
     { to: "/paths",            label: "Learning Path" },
     { to: "/framework",        label: "Framework" },
@@ -210,6 +223,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     { to: "/developer",        label: "Tentang Developer" },
   ];
   const publicLinks = [
+    { to: "/battle",        label: "⚔️ Game Battle", highlight: true },
     { to: "/sample/nahwu", label: "Preview" },
     { to: "/maddah-publik", label: "Maddah" },
     { to: "/#paket",        label: "Paket" },

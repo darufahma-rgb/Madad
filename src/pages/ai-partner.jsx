@@ -440,7 +440,8 @@ const SUB_TABS = {
   hafalkan: [{ id: 'cards', label: 'Flashcard', icon: 'layers', C: 'FlashcardTab' },
              { id: 'glossary', label: 'Mufradat', icon: 'type', C: 'GlossaryTab' }],
   uji:      [{ id: 'quiz', label: 'Kuis', icon: 'target', C: 'QuizTab' },
-             { id: 'essay', label: 'Latihan Tahriri', icon: 'pen', C: 'EssayTab', pro: true }],
+             { id: 'essay', label: 'Latihan Tahriri', icon: 'pen', C: 'EssayTab', pro: true },
+             { id: 'battle', label: '⚔️ Pokémon Battle', icon: 'zap', C: 'BattleTab' }],
   tanya:    [{ id: 'tutor', label: 'Tutor & Syafawi', icon: 'messageSquare', C: 'TutorTab', pro: true }],
 };
 
@@ -500,10 +501,19 @@ const AiPartnerDetail = ({ setId, status }) => {
             {access.isTrialSet && <Pill tone="gold"><Icon name="crown" className="w-3 h-3"/>Coba gratis</Pill>}
           </div>
           <h1 className="font-display text-lg md:text-4xl font-semibold text-ink leading-tight" style={narrow ? { fontSize: 21 } : undefined}>{set.title}</h1>
-          <button onClick={() => setConfirmDelete(true)}
-            className="mt-1.5 md:mt-3 inline-flex items-center gap-1.5 text-xs text-ink-soft hover:text-rose-400 px-2.5 py-1.5 -ml-2.5 rounded-lg hover:bg-rose-500/10 transition">
-            <Icon name="trash" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Hapus materi
-          </button>
+          <div className="flex items-center gap-2 mt-2 flex-wrap">
+            <button
+              onClick={() => window.launchBattleFromSet?.(set)}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-amber-400/40 bg-gradient-to-r from-amber-500/20 to-emerald-500/20 text-amber-200 hover:border-amber-400 hover:text-white transition shadow-sm active:scale-95"
+            >
+              <span>⚔️ Uji di Pokémon Battle</span>
+              <span className="text-[10px] bg-amber-500/30 px-1 py-0.2 rounded text-amber-300 font-mono">VS Al-'Allamah</span>
+            </button>
+            <button onClick={() => setConfirmDelete(true)}
+              className="inline-flex items-center gap-1.5 text-xs text-ink-soft hover:text-rose-400 px-2.5 py-1.5 rounded-lg hover:bg-rose-500/10 transition">
+              <Icon name="trash" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Hapus materi
+            </button>
+          </div>
         </div>
         <ProgressRing percent={studyPercent(set)} size={narrow ? 46 : 56}/>
       </div>

@@ -84,6 +84,7 @@ import './pages/statistik.jsx';
 import './pages/gabung.jsx';
 import './pages/upgrade-wall.jsx';
 import './pages/profil-belajar.jsx';
+import './pages/battle-page.jsx';
 
 // App shell — terakhir
 import App from './app.jsx';

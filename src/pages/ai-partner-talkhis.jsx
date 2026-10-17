@@ -907,6 +907,12 @@ const TalkhisTab = ({ set, setSet, access }) => {
           <button disabled={!written.length || running} onClick={onKurasahAll} className="btn btn-ghost text-xs px-4 py-2.5 disabled:opacity-40">
             <Icon name="bookmark" className="w-3.5 h-3.5"/> Simpan semua ke Kurasah
           </button>
+          <button
+            onClick={() => window.launchBattleFromSet?.(set)}
+            className="btn bg-gradient-to-r from-amber-500/20 to-emerald-500/20 hover:from-amber-500/30 hover:to-emerald-500/30 border border-amber-400/40 text-amber-200 text-xs px-4 py-2.5 rounded-lg flex items-center gap-1.5 transition active:scale-95"
+          >
+            <span>⚔️ Uji di Pokémon Battle</span>
+          </button>
           {noteId && (
             <button onClick={() => navigate('/kurasah?id=' + noteId)} className="btn btn-ghost text-xs px-4 py-2.5 border-emerald-600/35 text-emerald-200">
               <Icon name="bookOpen" className="w-3.5 h-3.5"/> Buka di Kurasah
@@ -944,6 +950,7 @@ const TalkhisTab = ({ set, setSet, access }) => {
         <TalkhisPdfDialog busy={pdfBusy} onClose={() => setPdfOpen(false)} onDownload={download}
           exercises={{ missing: missingExercises(t).length }}/>
       )}
+      {window.BattleStudyBanner && <window.BattleStudyBanner set={set} />}
       <p className="text-[11px] text-ink-soft mt-5 leading-relaxed">
         Talkhis ditulis AI dari teks muqarrarmu dan dicek otomatis, tapi tetap cocokkan dengan muqarrar dan catatan duktur sebelum dihafal.
         Nash bergaris putus-putus artinya tidak ditemukan persis di muqarrar.

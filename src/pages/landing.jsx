@@ -296,11 +296,22 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
         <Reveal delay={240}>
           <div className="flex flex-col sm:flex-row gap-3 items-center justify-center mb-5 w-full sm:w-auto px-4 sm:px-0">
             <button
-              onClick={() => navigate("/sample/nahwu")}
-              className="btn-hero-gold w-full sm:w-auto"
-              style={{ boxShadow:"0 0 40px rgba(212,160,23,.35), 0 1px 0 rgba(255,255,255,.25) inset", justifyContent:"center" }}
+              onClick={() => navigate("/battle")}
+              className="btn-hero-gold w-full sm:w-auto flex items-center gap-2"
+              style={{
+                background: "linear-gradient(135deg, #10b981 0%, #059669 50%, #f59e0b 100%)",
+                boxShadow: "0 0 40px rgba(16,185,129,.4), 0 1px 0 rgba(255,255,255,.25) inset",
+                justifyContent: "center"
+              }}
             >
-              Cobain Sample Gratis →
+              <span>⚔️ Coba Pokémon Battle</span>
+            </button>
+            <button
+              onClick={() => navigate("/sample/nahwu")}
+              className="btn-hero-dark w-full sm:w-auto"
+              style={{ justifyContent: "center" }}
+            >
+              Sample Prompt Nahwu →
             </button>
             <button onClick={() => { document.getElementById("paket")?.scrollIntoView({ behavior: "smooth" }); }} className="btn-hero-dark w-full sm:w-auto" style={{justifyContent:"center"}}>
               Lihat Paket
