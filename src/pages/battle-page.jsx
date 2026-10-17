@@ -1746,6 +1746,20 @@ function ArenaPortal({ active, speed = 1, children }) {
   );
 }
 
+function GameFullscreenLayer({ active, children }) {
+  useEffect(() => {
+    if (!active) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [active]);
+  if (!active || typeof document === 'undefined') return children;
+  return createPortal(
+    <div className="fixed inset-0 z-[9990] overflow-y-auto overscroll-contain bg-[#080808]">{children}</div>,
+    document.body
+  );
+}
+
 /* ── HELPER: ACAK URUTAN OPSI (Kunci jawaban ikut dipetakan ulang) ── */
 function shuffleQuizOptions(quiz) {
   return quiz.map(q => {
@@ -3712,7 +3726,7 @@ export default function BattlePage() {
     return { title: 'Maqbul', stars: '✓', color: 'text-zinc-300' };
   };
 
-  return (
+  const pageContent = (
     <div className="battle-root min-h-screen bg-[#080808] text-white font-sans antialiased selection:bg-emerald-500/30" style={{ "--bs": battleSpeed === 2 ? 0.5 : 1 }}>
       
       {/* ── HEADER GAME / BAR ── */}
@@ -7356,6 +7370,11 @@ export default function BattlePage() {
       `}</style>
     </div>
   );
+
+  // Full layar berlaku untuk seluruh game (pilih muqarrar, peta, prolog, hasil), bukan hanya arena:
+  // halaman dipindah ke lapisan fixed di <body> sehingga navbar & footer situs tersembunyi.
+  // Arena battle punya portal sendiri (z lebih tinggi) di dalamnya.
+  return <GameFullscreenLayer active={isFullscreen}>{pageContent}</GameFullscreenLayer>;
 }
 
 window.BattlePage = BattlePage;
