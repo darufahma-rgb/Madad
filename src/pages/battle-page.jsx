@@ -1739,6 +1739,38 @@ function shuffleQuizOptions(quiz) {
   });
 }
 
+/* ── HELPER: TERAPKAN CERITA AI KE SET ──
+   AI hanya mengganti narasi (prolog, judul/lokasi/nama penjaga/lore level). Soal, HP, rank, dan EXP tetap milik set. */
+const STORY_AVATAR = { narrator: '🏛️', thalib: '🎓', syaikh: '👳‍♂️' };
+function applyAiStory(set, story) {
+  if (!set || !story?.dialogues?.length) return set;
+  const prologue = {
+    ...(set.prologue || {}),
+    chapter: story.chapter || set.prologue?.chapter || 'HIKAYAT',
+    title: story.title || set.prologue?.title || set.title,
+    titleArabic: story.titleArabic || set.prologue?.titleArabic || set.titleArabic,
+    location: story.location || set.prologue?.location,
+    epigraph: story.epigraph || set.prologue?.epigraph,
+    epigraphMeaning: story.epigraphMeaning || set.prologue?.epigraphMeaning,
+    dialogues: story.dialogues.map(d => ({ ...d, avatar: STORY_AVATAR[d.speakerType] || '🏛️' })),
+    aiGenerated: true,
+  };
+  const stages = (set.stages || []).map((stage, i) => {
+    const s = story.stages?.[i];
+    if (!s) return stage;
+    return {
+      ...stage,
+      title: s.title || stage.title,
+      titleArabic: s.titleArabic || stage.titleArabic,
+      location: s.location || stage.location,
+      guardianName: s.guardianName || stage.guardianName,
+      lore: s.lore || stage.lore,
+    };
+  });
+  const finalGuardian = stages.find(s => s.isFinal)?.guardianName;
+  return { ...set, prologue, stages, bossName: finalGuardian || set.bossName };
+}
+
 /* ── HELPER: ATURAN DUEL PER LEVEL ──
    Boss tumbang tepat saat thalib mengumpulkan jawaban benar sebanyak batas lulus (60%, dibulatkan ke atas);
    combo mempercepatnya. Kalau soal habis dan boss masih berdiri, duel kalah. Serangan balik makin keras
@@ -2182,15 +2214,82 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
 
 export default function BattlePage() {
   const auth = typeof window.useAuth === 'function' ? window.useAuth() : {};
-  const { session, profile } = auth;
+  const { session, profile, isFree } = auth;
+  // Game terbuka untuk umum; upload/paste diktat sendiri dan cerita AI khusus member paket Library ke atas.
+  const isLibraryMember = !!session && !isFree;
+  const requireLibraryMember = () => {
+    if (isLibraryMember) return true;
+    // Belum login → modal login; akun gratis → halaman Gabung (alur yang sama dengan tombol "Gabung Member").
+    window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library' } }));
+    return false;
+  };
   const navigate = window.navigate || ((to) => { window.location.hash = to; });
   const [phase, setPhase] = useState('select'); // 'select' | 'map' | 'study' | 'battle' | 'victory' | 'defeat'
-  const [activeSet, setActiveSet] = useState(PRESETS[0]);
+  const [baseSet, setActiveSet] = useState(PRESETS[0]);
+
+  // Cerita AI per set (prolog + nama/lore level), disimpan lokal supaya tidak perlu dibuat ulang tiap kunjungan.
+  const AI_STORY_KEY = 'talqeeh_battle_ai_stories';
+  const [aiStories, setAiStories] = useState(() => {
+    try { return JSON.parse(localStorage.getItem(AI_STORY_KEY) || '{}') || {}; } catch { return {}; }
+  });
+  const [storyBusy, setStoryBusy] = useState(false);
+  const [storyNotice, setStoryNotice] = useState('');
+  const activeSet = useMemo(() => applyAiStory(baseSet, aiStories[baseSet?.id]), [baseSet, aiStories]);
   const [audioMuted, setAudioMuted] = useState(false);
 
   // Stage & World Map progression states
   const [selectedStageId, setSelectedStageId] = useState(1);
   const [activeStage, setActiveStage] = useState(() => PRESETS[0]?.stages?.[0] || null);
+
+  // activeStage adalah salinan objek stage; saat cerita AI masuk/dihapus, ganti dengan versi terbaru (id sama).
+  useEffect(() => {
+    setActiveStage(prev => activeSet?.stages?.find(s => s.id === prev?.id) || prev);
+  }, [activeSet]);
+
+  // Pakai updater: generateAiStory selesai beberapa detik kemudian, state di closure-nya sudah basi.
+  const saveAiStories = (update) => {
+    setAiStories(prev => {
+      const next = update(prev);
+      try {
+        // Simpan paling banyak 12 cerita (set unggahan punya id unik per unggahan).
+        const keys = Object.keys(next).slice(-12);
+        localStorage.setItem(AI_STORY_KEY, JSON.stringify(Object.fromEntries(keys.map(k => [k, next[k]]))));
+      } catch {}
+      return next;
+    });
+  };
+
+  const generateAiStory = async (set = baseSet, { silent = false } = {}) => {
+    if (!isLibraryMember) { if (!silent) requireLibraryMember(); return; }
+    if (storyBusy || !set || typeof window.aiCall !== 'function') return;
+    setStoryBusy(true);
+    setStoryNotice(silent ? 'Syaikh AI sedang menulis cerita sesuai materimu...' : '');
+    const res = await window.aiCall('battle-story', {
+      title: set.title,
+      maddah: set.maddah,
+      summary: (set.summary || []).map(s => ({ heading: s.heading, body: s.body })),
+      terms: set.terms || [],
+      text: set.sourceText || '',
+    });
+    setStoryBusy(false);
+    if (!res.ok) {
+      setStoryNotice(res.error || 'Cerita AI belum bisa dibuat. Cerita bawaan tetap bisa dimainkan.');
+      return;
+    }
+    saveAiStories(prev => ({ ...prev, [set.id]: res.data }));
+    setStoryNotice('✨ Cerita baru dari AI sudah siap — sesuai materi yang sedang kamu pelajari.');
+    sfx.playStoryBip?.();
+  };
+
+  const resetAiStory = () => {
+    const id = baseSet?.id;
+    saveAiStories(prev => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    setStoryNotice('Cerita dikembalikan ke versi bawaan.');
+  };
 
   // Upload state
   const [customText, setCustomText] = useState('');
@@ -2556,6 +2655,7 @@ export default function BattlePage() {
           const title = imported.title || 'Diktat Hasil Muthola\'ah';
           const text = imported.text || '';
           const quiz = Array.isArray(imported.quiz) ? imported.quiz : [];
+          if (!requireLibraryMember()) return;
           setCustomTitle(title);
           setCustomText(text);
           processCustomText(title, text, quiz);
@@ -2804,6 +2904,10 @@ export default function BattlePage() {
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!requireLibraryMember()) {
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
     setUploadBusy(true);
     setUploadError('');
     try {
@@ -2858,6 +2962,8 @@ export default function BattlePage() {
 
   /* ── Proses Teks Diktat Custom menjadi Dataset Battle ── */
   function processCustomText(title, text, existingQuiz = []) {
+    // Semua jalur materi sendiri (upload, paste, impor dari AI Partner) lewat sini — kunci di satu tempat.
+    if (!requireLibraryMember()) return;
     const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 5);
     const paragraphs = text.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 20);
 
@@ -3033,7 +3139,8 @@ export default function BattlePage() {
       summary: summaryItems.length ? summaryItems : PRESETS[0].summary,
       terms: terms.length ? terms : PRESETS[0].terms,
       flashcards: flashcards.length ? flashcards : PRESETS[0].flashcards,
-      quiz: finalQuiz
+      quiz: finalQuiz,
+      sourceText: text.slice(0, 5000)
     };
 
     setActiveSet(newSet);
@@ -3041,6 +3148,8 @@ export default function BattlePage() {
     setActiveStage(customStages[0]);
     setPhase('map');
     sfx.playBip(580);
+    // Cerita bawaan untuk diktat unggahan generik; minta AI menulis cerita yang sesuai isi materi.
+    generateAiStory(newSet, { silent: true });
   }
 
   /* ── Masuk ke Prolog Cerita (Sebelum Bertanding) ── */
@@ -3582,7 +3691,7 @@ export default function BattlePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#080808] text-white font-sans antialiased selection:bg-emerald-500/30">
+    <div className="battle-root min-h-screen bg-[#080808] text-white font-sans antialiased selection:bg-emerald-500/30" style={{ "--bs": battleSpeed === 2 ? 0.5 : 1 }}>
       
       {/* ── HEADER GAME / BAR ── */}
       <header className="border-b border-white/10 bg-[#0f0f10]/80 backdrop-blur-md sticky top-0 z-30 px-4 py-3">
@@ -4018,11 +4127,13 @@ export default function BattlePage() {
                     <span>{isFullscreen ? 'Keluar Fullscreen (ESC)' : '🎮 Mainkan Layar Penuh (F)'}</span>
                   </button>
                   <button
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={() => { if (requireLibraryMember()) fileInputRef.current?.click(); }}
                     className="btn bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95 transition"
+                    title={isLibraryMember ? 'Upload PDF, Word, atau teks diktatmu' : 'Khusus member paket Library — masuk atau gabung dulu'}
                   >
-                    <Icon name="upload" className="w-4 h-4" />
+                    <Icon name={isLibraryMember ? 'upload' : 'crown'} className="w-4 h-4" />
                     <span>Upload Diktat / Catatan</span>
+                    {!isLibraryMember && <span className="text-[10px] font-mono font-bold bg-black/20 px-1.5 py-0.5 rounded">MEMBER</span>}
                   </button>
                   <input
                     type="file"
@@ -4128,7 +4239,21 @@ export default function BattlePage() {
             {/* Input Manual Teks */}
             <div className="rounded-xl border border-white/10 bg-[#121214] p-5">
               <h3 className="text-sm font-semibold text-white mb-1">Atau Paste Catatan / Ibarat Muqarrar</h3>
-              <p className="text-xs text-white/50 mb-3">Punya catatan materi sendiri? Paste di sini untuk diubah jadi arena battle.</p>
+              <p className="text-xs text-white/50 mb-3">Punya catatan materi sendiri? Paste di sini untuk diubah jadi arena battle{isLibraryMember ? ', lengkap dengan cerita AI sesuai materinya' : ''}.</p>
+              {!isLibraryMember ? (
+                <div className="rounded-lg border border-amber-500/25 bg-amber-500/5 p-4 text-center">
+                  <div className="text-sm font-semibold text-amber-200 mb-1">🔒 Khusus member paket Library</div>
+                  <p className="text-xs text-white/60 mb-3">
+                    Tiga diktat contoh di atas bebas dimainkan siapa saja. Untuk memakai diktat atau catatanmu sendiri (beserta cerita yang ditulis AI sesuai materinya), masuk dengan akun member Library ke atas.
+                  </p>
+                  <button
+                    onClick={requireLibraryMember}
+                    className="btn bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs px-4 py-2 rounded-lg transition"
+                  >
+                    {session ? 'Upgrade ke Library' : 'Masuk / Gabung Member'}
+                  </button>
+                </div>
+              ) : (<>
               <textarea
                 value={customText}
                 onChange={(e) => setCustomText(e.target.value)}
@@ -4145,6 +4270,7 @@ export default function BattlePage() {
                   Proses & Buka Ruang Muthola'ah
                 </button>
               </div>
+              </>)}
             </div>
           </div>
         )}
@@ -4584,8 +4710,8 @@ export default function BattlePage() {
                           }}
                           className={`group relative transition-all duration-300 flex items-center justify-center ${
                             isFinal
-                              ? 'w-18 h-18 sm:w-24 sm:h-24'
-                              : 'w-15 h-15 sm:w-20 sm:h-20'
+                              ? 'w-[4.5rem] h-[4.5rem] sm:w-24 sm:h-24'
+                              : 'w-[3.75rem] h-[3.75rem] sm:w-20 sm:h-20'
                           } ${
                             isSelected
                               ? 'scale-115 ring-4 ring-amber-300 shadow-[0_0_35px_rgba(251,191,36,0.85)] z-20'
@@ -4779,6 +4905,26 @@ export default function BattlePage() {
                             <span>📜</span>
                             <span>Baca Kisah Prolog</span>
                           </button>
+                          <button
+                            onClick={() => generateAiStory(baseSet)}
+                            disabled={storyBusy}
+                            title={isLibraryMember ? 'AI menulis ulang prolog & cerita tiap level sesuai materi ini' : 'Khusus member paket Library'}
+                            className="border-t-2 border-l-2 border-[#7c6bd6] border-b-4 border-r-4 border-[#221a4d] bg-[#3b2f80] hover:bg-[#45389a] disabled:opacity-60 active:border-b-2 active:border-r-2 active:translate-y-0.5 text-violet-100 font-mono font-bold text-xs px-4 py-2 shadow-[2px_2px_0_#000] transition flex items-center justify-center gap-1.5"
+                          >
+                            <span>{storyBusy ? '⏳' : isLibraryMember ? '✨' : '🔒'}</span>
+                            <span>{storyBusy ? 'AI menulis cerita...' : activeSet?.prologue?.aiGenerated ? 'Cerita AI Baru' : 'Buat Cerita AI'}</span>
+                          </button>
+                          {activeSet?.prologue?.aiGenerated && !storyBusy && (
+                            <button
+                              onClick={resetAiStory}
+                              className="text-[10px] font-mono text-white/45 hover:text-white/80 underline underline-offset-2"
+                            >
+                              Kembalikan cerita bawaan
+                            </button>
+                          )}
+                          {storyNotice && (
+                            <p className="max-w-[16rem] text-[10px] font-mono text-violet-200/80 leading-snug">{storyNotice}</p>
+                          )}
                         </>
                       ) : (
                         <div className="px-5 py-3 border-2 border-t-[#000] border-l-[#000] border-b-[#3f3f46] border-r-[#3f3f46] bg-[#141418] text-white/40 text-xs font-mono text-center flex items-center justify-center gap-2 shadow-inner">
@@ -5032,8 +5178,10 @@ export default function BattlePage() {
 
           const dialogues = prologue.dialogues || [];
           const currentDialogue = dialogues[storyStep] || dialogues[0];
-          const isThalibSpeaking = currentDialogue?.speaker?.toLowerCase()?.includes('thalib');
-          const isNarratorSpeaking = currentDialogue?.speaker?.toLowerCase()?.includes('narator') || currentDialogue?.speaker?.toLowerCase()?.includes('narrator');
+          // Cerita AI membawa speakerType; cerita bawaan dikenali dari nama pembicaranya.
+          const speakerLower = currentDialogue?.speaker?.toLowerCase() || '';
+          const isThalibSpeaking = currentDialogue?.speakerType ? currentDialogue.speakerType === 'thalib' : speakerLower.includes('thalib');
+          const isNarratorSpeaking = currentDialogue?.speakerType ? currentDialogue.speakerType === 'narrator' : (speakerLower.includes('narator') || speakerLower.includes('narrator'));
           const isBossSpeaking = !isThalibSpeaking && !isNarratorSpeaking;
           const opponentName = activeStage?.guardianName || activeSet?.bossName;
           const opponentRank = activeStage?.guardianRankCode || activeStage?.guardianRank || activeSet?.bossRankCode || 'Rank A';
@@ -6314,7 +6462,7 @@ export default function BattlePage() {
                 {/* 1. Home / Peta Button */}
                 <button
                   onClick={() => setPhase('map')}
-                  className="w-13 h-13 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-b from-cyan-400 via-sky-500 to-cyan-600 border-b-4 border-cyan-800 text-white flex items-center justify-center text-2xl sm:text-3xl shadow-lg active:translate-y-1 transition hover:brightness-110"
+                  className="w-[3.25rem] h-[3.25rem] sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-b from-cyan-400 via-sky-500 to-cyan-600 border-b-4 border-cyan-800 text-white flex items-center justify-center text-2xl sm:text-3xl shadow-lg active:translate-y-1 transition hover:brightness-110"
                   title="Kembali ke Peta Ruwaq (Home)"
                 >
                   🏠
@@ -6323,7 +6471,7 @@ export default function BattlePage() {
                 {/* 2. Retry / Ulangi Button */}
                 <button
                   onClick={() => startBattle(activeStage)}
-                  className="w-13 h-13 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-b from-emerald-400 via-green-500 to-emerald-600 border-b-4 border-emerald-800 text-white flex items-center justify-center text-2xl sm:text-3xl shadow-lg active:translate-y-1 transition hover:brightness-110"
+                  className="w-[3.25rem] h-[3.25rem] sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-b from-emerald-400 via-green-500 to-emerald-600 border-b-4 border-emerald-800 text-white flex items-center justify-center text-2xl sm:text-3xl shadow-lg active:translate-y-1 transition hover:brightness-110"
                   title={`Ulangi Level Ini (${stageStarsStr})`}
                 >
                   🔄
@@ -6338,7 +6486,7 @@ export default function BattlePage() {
                       if (nextStageObj) setActiveStage(nextStageObj);
                       setPhase('map');
                     }}
-                    className="flex-1 max-w-xs h-13 sm:h-16 rounded-full bg-gradient-to-b from-amber-300 via-orange-400 to-amber-500 border-b-4 border-amber-800 text-white font-mono font-black text-base sm:text-xl tracking-widest shadow-[0_0_25px_rgba(245,158,11,0.7)] active:translate-y-1 transition hover:brightness-110 flex items-center justify-center gap-2"
+                    className="flex-1 max-w-xs h-[3.25rem] sm:h-16 rounded-full bg-gradient-to-b from-amber-300 via-orange-400 to-amber-500 border-b-4 border-amber-800 text-white font-mono font-black text-base sm:text-xl tracking-widest shadow-[0_0_25px_rgba(245,158,11,0.7)] active:translate-y-1 transition hover:brightness-110 flex items-center justify-center gap-2"
                   >
                     <span>NEXT</span>
                     <span className="text-xl sm:text-2xl">▶</span>
@@ -6346,7 +6494,7 @@ export default function BattlePage() {
                 ) : (
                   <button
                     onClick={() => setShowSyahadahModal(true)}
-                    className="flex-1 max-w-xs h-13 sm:h-16 rounded-full bg-gradient-to-b from-amber-300 via-yellow-400 to-amber-500 border-b-4 border-amber-800 text-black font-mono font-black text-sm sm:text-lg tracking-wider shadow-[0_0_25px_rgba(251,191,36,0.8)] active:translate-y-1 transition hover:brightness-110 flex items-center justify-center gap-2 animate-bounce"
+                    className="flex-1 max-w-xs h-[3.25rem] sm:h-16 rounded-full bg-gradient-to-b from-amber-300 via-yellow-400 to-amber-500 border-b-4 border-amber-800 text-black font-mono font-black text-sm sm:text-lg tracking-wider shadow-[0_0_25px_rgba(251,191,36,0.8)] active:translate-y-1 transition hover:brightness-110 flex items-center justify-center gap-2 animate-bounce"
                   >
                     <span>KLAIM SYAHADAH</span>
                     <span className="text-xl">📜</span>
@@ -7006,12 +7154,12 @@ export default function BattlePage() {
         @keyframes playerProjectile {
           0% { transform: translate(0, 0) scale(0.6); opacity: 0; }
           20% { opacity: 1; }
-          100% { transform: translate(320px, -160px) scale(1.35); opacity: 0.9; }
+          100% { transform: translate(min(320px, 46vw), max(-160px, -23vw)) scale(1.35); opacity: 0.9; }
         }
         @keyframes bossProjectile {
           0% { transform: translate(0, 0) scale(0.6); opacity: 0; }
           20% { opacity: 1; }
-          100% { transform: translate(-320px, 160px) scale(1.35); opacity: 0.9; }
+          100% { transform: translate(max(-320px, -46vw), min(160px, 23vw)) scale(1.35); opacity: 0.9; }
         }
         @keyframes floatDamage {
           0% { transform: translateY(0) scale(0.8); opacity: 0; }
@@ -7120,35 +7268,61 @@ export default function BattlePage() {
           80% { transform: translate(2px, 1px); }
         }
 
-        .animate-hurtBoxPop { animation: hurtBoxPop 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        /* Hanya opacity: transform di sini akan membuat layar battle fullscreen (position: fixed) ikut terkurung. */
+        @keyframes battleFadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        /* Animasi sekali-jalan ikut kecepatan battle: --bs = 0.5 di mode 2x (diset di .battle-root), sama seperti
+           timer JS di handleSelectAnswer. Tanpa ini, di 2x efek serangan terpotong sebelum selesai. */
+        .animate-fadeIn { animation: battleFadeIn 0.35s ease-out both; }
+        .animate-hurtBoxPop { animation: hurtBoxPop calc(0.38s * var(--bs, 1)) cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-hurtTremble { animation: hurtTremble 0.22s ease-in-out infinite; }
         .animate-playerIdle { animation: playerIdle 3s ease-in-out infinite; }
         .animate-bossFloat { animation: bossFloat 3.5s ease-in-out infinite; }
         .animate-shadowPulse { animation: shadowPulse 3.5s ease-in-out infinite; }
-        .animate-bossHurt { animation: bossHurt 0.45s ease-out; }
-        .animate-playerHurt { animation: playerHurt 0.5s ease-out; }
+        .animate-bossHurt { animation: bossHurt calc(0.45s * var(--bs, 1)) ease-out; }
+        .animate-playerHurt { animation: playerHurt calc(0.5s * var(--bs, 1)) ease-out; }
         .animate-wingHoverLeft { animation: wingHoverLeft 2.5s ease-in-out infinite; transform-origin: 60px 85px; }
         .animate-wingHoverRight { animation: wingHoverRight 2.5s ease-in-out infinite; transform-origin: 120px 85px; }
-        .animate-wingFlap { animation: wingFlap 0.3s ease-in-out infinite; transform-origin: center; }
-        .animate-playerProjectile { animation: playerProjectile 0.65s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-        .animate-bossProjectile { animation: bossProjectile 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-        .animate-floatDamage { animation: floatDamage 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-        .animate-spin-slow { animation: spinSlow 16s linear infinite; transform-origin: center; }
+        .animate-wingFlap { animation: wingFlap 0.3s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+        .animate-playerProjectile { animation: playerProjectile calc(0.5s * var(--bs, 1)) cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        .animate-bossProjectile { animation: bossProjectile calc(0.5s * var(--bs, 1)) cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        .animate-floatDamage { animation: floatDamage calc(1.5s * var(--bs, 1)) cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+        .animate-spin-slow { animation: spinSlow 16s linear infinite; transform-origin: center; transform-box: fill-box; }
         .animate-balanceTilt { animation: balanceTilt 2s ease-in-out infinite; transform-origin: 90px 48px; }
         .animate-bookLevitate { animation: bookLevitate 2.2s ease-in-out infinite; }
         .animate-tasselFlick { animation: tasselFlick 0.4s ease-in-out infinite; transform-origin: 80px 20px; }
-        .animate-screenShake { animation: screenShake 0.5s ease-out; }
-        .animate-slashX1 { animation: slashX1 0.55s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; }
-        .animate-slashX2 { animation: slashX2 0.55s cubic-bezier(0.1, 0.9, 0.2, 1) 0.08s forwards; }
-        .animate-impactRing { animation: impactRing 0.6s ease-out forwards; }
-        .animate-sparkBurst { animation: sparkBurst 0.65s ease-out forwards; }
-        .animate-lightningStrike { animation: lightningStrike 0.75s ease-out forwards; }
-        .animate-pillarCrash { animation: pillarCrash 0.8s ease-out forwards; }
-        .animate-attackBannerSlide { animation: attackBannerSlide 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .animate-chargeHero { animation: chargeHero 0.48s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-screenShake { animation: screenShake calc(0.45s * var(--bs, 1)) ease-out; }
+        .animate-slashX1 { animation: slashX1 calc(0.55s * var(--bs, 1)) cubic-bezier(0.1, 0.9, 0.2, 1) both; }
+        .animate-slashX2 { animation: slashX2 calc(0.55s * var(--bs, 1)) cubic-bezier(0.1, 0.9, 0.2, 1) calc(0.08s * var(--bs, 1)) both; }
+        .animate-impactRing { animation: impactRing calc(0.6s * var(--bs, 1)) ease-out forwards; }
+        .animate-sparkBurst { animation: sparkBurst calc(0.65s * var(--bs, 1)) ease-out forwards; }
+        .animate-lightningStrike { animation: lightningStrike calc(0.75s * var(--bs, 1)) ease-out forwards; }
+        .animate-pillarCrash { animation: pillarCrash calc(0.8s * var(--bs, 1)) ease-out forwards; }
+        .animate-attackBannerSlide { animation: attackBannerSlide calc(0.42s * var(--bs, 1)) cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-chargeHero { animation: chargeHero calc(0.48s * var(--bs, 1)) cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-speedlineRun { animation: speedlineRun 0.35s linear infinite; }
-        .animate-critNumberBounce { animation: critNumberBounce 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        .animate-strikeFlash { animation: strikeFlash 0.35s ease-out forwards; }
+        .animate-critNumberBounce { animation: critNumberBounce calc(0.45s * var(--bs, 1)) cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-strikeFlash { animation: strikeFlash calc(0.35s * var(--bs, 1)) ease-out forwards; }
+
+        /* Hormati setelan "kurangi gerakan" di OS: tanpa guncangan layar, kilatan, dan gerak melayang terus-menerus. */
+        @media (prefers-reduced-motion: reduce) {
+          .battle-root .animate-screenShake,
+          .battle-root .animate-hurtTremble,
+          .battle-root .animate-playerIdle,
+          .battle-root .animate-bossFloat,
+          .battle-root .animate-shadowPulse,
+          .battle-root .animate-speedlineRun,
+          .battle-root .animate-wingFlap,
+          .battle-root .animate-spin-slow,
+          .battle-root .animate-bookLevitate { animation: none !important; }
+          .battle-root .animate-strikeFlash,
+          .battle-root .animate-lightningStrike { animation-duration: 0.01s !important; opacity: 0 !important; }
+          .battle-root .animate-ping,
+          .battle-root .animate-bounce { animation: none !important; }
+        }
       `}</style>
     </div>
   );

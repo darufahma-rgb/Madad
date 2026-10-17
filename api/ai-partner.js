@@ -10,12 +10,13 @@ import {
 } from './_lib/ai-partner/prompts.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { handleTalkhis } from './_lib/ai-partner/talkhis.js';
+import { handleBattleStory } from './_lib/ai-partner/battle-story.js';
 import { withAiContext } from './_lib/ai-cost.js';
 
 // Kategori biaya AI per action (cocok dengan kolom "Fitur" di analitik admin).
 const COST_KIND = {
   ocr: 'ocr', transcribe: 'transcribe', generate: 'generate', analyze: 'analyze', grade: 'grade',
-  chat: 'chat', 'prompt-chat': 'prompt', talkhis: 'talkhis',
+  chat: 'chat', 'prompt-chat': 'prompt', talkhis: 'talkhis', 'battle-story': 'battle_story',
 };
 import { handlePromptFeedback, handlePromptQualityAdmin } from './_lib/prompt-quality.js';
 import { getMonthlyLimits, cachedMonthlyLimits, getQuotaOverride } from './_lib/ai-partner/limits.js';
@@ -1320,6 +1321,7 @@ export default async function handler(req, res) {
       case 'prompt-chat':   return await handlePromptChat(ctx, body, res);
       case 'stats':         return await handleStats(ctx, res);
       case 'feedback':      return await handleFeedback(ctx, body, res);
+      case 'battle-story':  return await handleBattleStory(ctx, body, res, { upgradeRequired });
       case 'talkhis':       return await handleTalkhis(ctx, body, res, {
         getOwnedSet, saveTalkhis, takeQuota, quotaExceeded, upgradeRequired, getTrialSetId, trialGateOpen, trialGateClosed,
         consumeQuota, resolveModels, requestAI, callAIJson, runAI, sendResult,

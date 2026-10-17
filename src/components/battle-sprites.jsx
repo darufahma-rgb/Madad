@@ -198,7 +198,7 @@ export function PixelPlatform({ type = 'boss', bossType = 'balaghah-majaz', clas
     <div className={`relative select-none pointer-events-none flex flex-col items-center ${className}`}>
       <svg
         viewBox="0 0 190 64"
-        className="w-44 sm:w-56 h-14 sm:h-18 drop-shadow-[0_12px_24px_rgba(0,0,0,0.85)]"
+        className="w-44 sm:w-56 h-14 sm:h-[4.5rem] drop-shadow-[0_12px_24px_rgba(0,0,0,0.85)]"
         shapeRendering="crispEdges"
       >
         {/* Drop Shadow */}
@@ -253,16 +253,17 @@ export function PlayerSprite({ state = 'idle', className = '' }) {
 
       {/* Main Character SVG */}
       <div
-        className={`relative transition-all duration-300 ${
+        className={`relative transition-all duration-300 ease-out ${
           isAttack
             ? 'translate-x-6 -translate-y-2 scale-105'
             : isHit
-            ? '-translate-x-4 translate-y-1 rotate-[-6deg] brightness-150'
+            ? '-translate-x-4 translate-y-1 brightness-150'
             : isDefeat
             ? 'translate-y-6 opacity-60 grayscale'
-            : 'animate-playerIdle'
+            : ''
         }`}
       >
+      <div className={isHit ? 'animate-playerHurt' : isAttack || isDefeat ? '' : 'animate-playerIdle'}>
         <svg
           viewBox="0 0 160 180"
           className="w-32 h-36 sm:w-40 sm:h-44 drop-shadow-[0_10px_20px_rgba(0,0,0,0.6)]"
@@ -403,6 +404,7 @@ export function PlayerSprite({ state = 'idle', className = '' }) {
           )}
         </svg>
       </div>
+      </div>
     </div>
   );
 }
@@ -428,14 +430,11 @@ export function BossSprite({
 
       {/* Creature Container */}
       <div
-        className={`relative transition-all duration-300 ${
-          isAttack
-            ? '-translate-x-6 translate-y-2 scale-110'
-            : isHit
-            ? 'translate-x-4 -translate-y-1 rotate-[6deg] brightness-150 animate-bossHurt'
-            : 'animate-bossFloat'
+        className={`relative transition-transform duration-300 ease-out ${
+          isAttack ? '-translate-x-6 translate-y-2 scale-110' : isHit ? 'translate-x-4 -translate-y-1' : ''
         }`}
       >
+      <div className={isHit ? 'animate-bossHurt' : isAttack ? '' : 'animate-bossFloat'}>
         {stageId === 1 ? (
           <KhadimSprite isAttack={isAttack} isHit={isHit} bossType={bossType} />
         ) : stageId === 2 ? (
@@ -449,6 +448,7 @@ export function BossSprite({
         ) : (
           <BalaghahWingedTome isAttack={isAttack} isHit={isHit} />
         )}
+      </div>
       </div>
     </div>
   );
@@ -1066,18 +1066,19 @@ export function MinecraftPlayerSprite({ state = 'idle' }) {
   const isAttack = state === 'attack';
   const isHit = state === 'hit';
 
+  // Dua lapis: lapis luar menggeser (transition), lapis dalam menjalankan keyframe idle/hurt.
+  // Kalau keduanya di satu elemen, keyframe menimpa `transform` milik translate Tailwind dan sprite meloncat.
   return (
     <div
-      className={`relative select-none flex flex-col items-center transition-all duration-300 ${
-        isAttack
-          ? 'translate-x-6 -translate-y-3 scale-105'
-          : isHit
-          ? '-translate-x-4 translate-y-1 rotate-[-6deg] animate-playerHurt'
-          : 'animate-playerIdle'
+      className={`relative select-none transition-transform duration-300 ease-out ${
+        isAttack ? 'translate-x-6 -translate-y-3 scale-105' : isHit ? '-translate-x-4 translate-y-1' : ''
       }`}
     >
+    <div
+      className={`relative flex flex-col items-center ${isHit ? 'animate-playerHurt' : isAttack ? '' : 'animate-playerIdle'}`}
+    >
       {/* Dynamic 3D Ground Contact Shadow (Perspective oval matching courtyard tiles) */}
-      <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-32 sm:w-44 h-8 bg-black/85 rounded-[100%] blur-[5px] transform scale-y-40 pointer-events-none" />
+      <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 w-32 sm:w-44 h-8 bg-black/85 rounded-[100%] blur-[5px] transform scale-y-[0.4] pointer-events-none" />
       {/* Warm Ambient Lantern Light Reflection on Floor */}
       <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-28 sm:w-36 h-5 bg-amber-500/25 rounded-full blur-[4px] pointer-events-none animate-pulse" />
 
@@ -1100,6 +1101,7 @@ export function MinecraftPlayerSprite({ state = 'idle' }) {
           <div className="absolute top-1/4 right-0 w-20 h-20 rounded-full border-2 border-amber-300 bg-amber-400/25 blur-[2px] animate-ping pointer-events-none" />
         )}
       </div>
+    </div>
     </div>
   );
 }
@@ -1155,7 +1157,7 @@ export function MinecraftHudPlate({
       <div className="flex items-center gap-0">
         
         {/* Left Ornate Diamond/Star Medallion */}
-        <div className="relative shrink-0 w-11 h-14 sm:w-13 sm:h-16 bg-[#0c100e] border-2 border-[#1c2920] rounded-l-lg flex items-center justify-center shadow-inner overflow-hidden">
+        <div className="relative shrink-0 w-11 h-14 sm:w-[3.25rem] sm:h-16 bg-[#0c100e] border-2 border-[#1c2920] rounded-l-lg flex items-center justify-center shadow-inner overflow-hidden">
           <div className="absolute inset-1.5 border border-amber-500/60 rotate-45 bg-[#141a16]" />
           {resolvedAvatarSrc ? (
             <div className="relative z-10 w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center overflow-hidden">
@@ -1259,24 +1261,24 @@ export function MinecraftBossSprite({
   const spriteSrc = isHit ? getVoxelHurtSprite(stageId, bossType) : getVoxelSprite(stageId, bossType);
   const isFinalBoss = Number(stageId) === 4;
 
+  // Dua lapis seperti MinecraftPlayerSprite: geser di luar, keyframe float/hurt di dalam.
   return (
     <div
-      className={`relative select-none flex flex-col items-center transition-all duration-300 ${className} ${
-        isAttack
-          ? '-translate-x-6 translate-y-1 scale-105'
-          : isHit
-          ? 'translate-x-5 -translate-y-1 rotate-[4deg] animate-bossHurt'
-          : 'animate-bossFloat'
+      className={`relative select-none transition-transform duration-300 ease-out ${className} ${
+        isAttack ? '-translate-x-6 translate-y-1 scale-105' : isHit ? 'translate-x-5 -translate-y-1' : ''
       }`}
     >
+    <div
+      className={`relative flex flex-col items-center ${isHit ? 'animate-bossHurt' : isAttack ? '' : 'animate-bossFloat'}`}
+    >
       {/* 3D Contact Shadow */}
-      <div className={`absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-black/85 rounded-[100%] blur-[4px] transform scale-y-40 pointer-events-none ${
-        isFinalBoss ? 'w-28 sm:w-36 h-6' : 'w-20 sm:w-26 h-5'
+      <div className={`absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-black/85 rounded-[100%] blur-[4px] transform scale-y-[0.4] pointer-events-none ${
+        isFinalBoss ? 'w-28 sm:w-36 h-6' : 'w-20 sm:w-[6.5rem] h-5'
       }`} />
       {/* Warm Ambient Floor Reflection */}
       <div
         className={`absolute -bottom-1 left-1/2 -translate-x-1/2 rounded-full blur-[3px] pointer-events-none animate-pulse ${
-          isFinalBoss ? 'w-24 sm:w-32 h-4' : 'w-16 sm:w-22 h-3.5'
+          isFinalBoss ? 'w-24 sm:w-32 h-4' : 'w-16 sm:w-[5.5rem] h-3.5'
         }`}
         style={{ backgroundColor: `${themeAura}33` }}
       />
@@ -1289,7 +1291,7 @@ export function MinecraftBossSprite({
           className={`h-auto object-contain transition-all duration-200 ${
             isFinalBoss
               ? 'w-28 sm:w-36 md:w-44 max-h-48 sm:max-h-56 md:max-h-60'
-              : 'w-20 sm:w-26 md:w-30 max-h-36 sm:max-h-44 md:max-h-48'
+              : 'w-20 sm:w-[6.5rem] md:w-[7.5rem] max-h-36 sm:max-h-44 md:max-h-48'
           } ${
             isHit
               ? 'filter brightness-[1.3] contrast-[1.1] drop-shadow-[0_0_25px_rgba(244,63,94,0.95)]'
@@ -1307,6 +1309,7 @@ export function MinecraftBossSprite({
           />
         )}
       </div>
+    </div>
     </div>
   );
 }
