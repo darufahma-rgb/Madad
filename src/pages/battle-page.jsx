@@ -1374,10 +1374,12 @@ function SmartText({ text, className = '', isArabicLarge = true }) {
   }
 
   // Jika mayoritas teks adalah huruf Arab
-  const arabicCount = (str.match(/[\u0600-\u06FF]/g) || []).length;
+  // Hitung huruf saja: harakat (U+064B\u2013U+065F, U+0670) membuat kutipan pendek yang berharakat tampak
+  // "mayoritas Arab", lalu seluruh paragraf Indonesia ikut dirender RTL dan tanda bacanya pindah ke depan.
+  const arabicCount = (str.match(/[\u0621-\u064A\u0671-\u06D3]/g) || []).length;
   const latinCount = (str.match(/[a-zA-Z]/g) || []).length;
 
-  if (arabicCount > 0 && arabicCount >= latinCount) {
+  if (arabicCount > 0 && arabicCount >= latinCount * 2) {
     return (
       <span
         dir="rtl"
@@ -1727,6 +1729,22 @@ function BattleOptionContent({ opt, className = '' }) {
   );
 }
 
+/* Kunci scroll halaman dengan penghitung: lapisan game, arena, dan modal bisa aktif bersamaan dan dilepas dalam
+   urutan apa pun. Kalau tiap lapisan menyimpan-lalu-memulihkan nilai overflow sendiri, urutan pembersihan yang
+   berbeda meninggalkan body tetap "hidden" dan halaman tidak bisa di-scroll lagi. */
+let pageScrollLocks = 0;
+let pageScrollPrev = '';
+function lockPageScroll() {
+  if (pageScrollLocks++ === 0) {
+    pageScrollPrev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+  }
+}
+function unlockPageScroll() {
+  pageScrollLocks = Math.max(0, pageScrollLocks - 1);
+  if (pageScrollLocks === 0) document.body.style.overflow = pageScrollPrev;
+}
+
 /* ── LAYAR PENUH CADANGAN (CSS) ──
    Kalau browser menolak fullscreen asli, arena memakai position: fixed. Halaman ini dibungkus .page-enter yang
    animasinya menyisakan transform, sehingga elemen fixed di dalamnya terkurung: navbar & footer menimpa arena
@@ -1734,9 +1752,8 @@ function BattleOptionContent({ opt, className = '' }) {
 function ArenaPortal({ active, speed = 1, children }) {
   useEffect(() => {
     if (!active) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
+    lockPageScroll();
+    return unlockPageScroll;
   }, [active]);
   if (!active || typeof document === 'undefined') return children;
   // .battle-root + --bs ikut dibawa supaya kecepatan animasi & aturan reduced-motion tetap berlaku di portal.
@@ -1749,9 +1766,8 @@ function ArenaPortal({ active, speed = 1, children }) {
 function GameFullscreenLayer({ active, children }) {
   useEffect(() => {
     if (!active) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
+    lockPageScroll();
+    return unlockPageScroll;
   }, [active]);
   if (!active || typeof document === 'undefined') return children;
   return createPortal(
@@ -2549,6 +2565,27 @@ export default function BattlePage() {
 
   const [defeatReason, setDefeatReason] = useState('hp'); // 'hp' | 'boss-survived'
 
+  const autoFullscreenRef = useRef(false);
+  useEffect(() => {
+    if (phase === 'battle' || !autoFullscreenRef.current) return;
+    autoFullscreenRef.current = false;
+    if (!(document.fullscreenElement || document.webkitFullscreenElement)) setIsFullscreen(false);
+  }, [phase]);
+
+  // Peta di HP bisa digeser: pusatkan pada avatar thalib (level terpilih) saat peta dibuka / level diganti.
+  const mapScrollRef = useRef(null);
+  useEffect(() => {
+    if (phase !== 'map') return;
+    const id = requestAnimationFrame(() => {
+      const box = mapScrollRef.current;
+      const focus = box?.querySelector('[data-map-focus]');
+      if (!box || !focus || box.scrollWidth <= box.clientWidth) return;
+      const target = focus.offsetLeft - box.clientWidth / 2;
+      box.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+    });
+    return () => cancelAnimationFrame(id);
+  }, [phase, selectedStageId]);
+
   const handleSkipCutscene = () => {
     setAttackCutscene(null);
   };
@@ -2575,6 +2612,8 @@ export default function BattlePage() {
       document.msFullscreenElement
     );
 
+    // Pemain memilih sendiri: jangan dikembalikan otomatis saat duel selesai.
+    autoFullscreenRef.current = false;
     // Mode cadangan CSS tidak tercatat di document.fullscreenElement; tanpa cek state ini tombol "Keluar"
     // malah meminta fullscreen lagi dan pemain terjebak di layar penuh.
     if (!isCurrentlyFs && !isFullscreen) {
@@ -3209,6 +3248,12 @@ export default function BattlePage() {
     }
     clearBattleTimers();
     setShuffleSeed(s => s + 1);
+    // Di HP arena + menu jawaban hanya muat utuh dalam layar penuh; tanpa itu pemain bolak-balik scroll tiap soal.
+    // Pakai layar penuh aplikasi (lapisan CSS), bukan fullscreen browser, dan kembalikan saat duel berakhir.
+    if (!isFullscreen && typeof window !== 'undefined' && window.matchMedia?.('(max-width: 639px)').matches) {
+      autoFullscreenRef.current = true;
+      setIsFullscreen(true);
+    }
     sfx.init();
     setPhase('battle');
     setCurrentQ(0);
@@ -3465,6 +3510,7 @@ export default function BattlePage() {
           exp: currentQuestion.explanation,
           examTip: currentQuestion.examTip || "Formula lembar ujian (Kurrasah Ijabah): Tuliskan kaidah/nash pokok, jelaskan ta'rif serta 'illat hukumnya, lalu simpulkan fatwa/hukum sesuai qoul mu'tamad.",
           examTipTranslation: currentQuestion.examTipTranslation || null,
+          damage: damageTaken,
           isFatal: nextPlayerHp <= 0,
           isFinalQ: currentQ + 1 >= activeQuiz.length
         };
@@ -3730,9 +3776,9 @@ export default function BattlePage() {
     <div className="battle-root min-h-screen bg-[#080808] text-white font-sans antialiased selection:bg-emerald-500/30" style={{ "--bs": battleSpeed === 2 ? 0.5 : 1 }}>
       
       {/* ── HEADER GAME / BAR ── */}
-      <header className="border-b border-white/10 bg-[#0f0f10]/80 backdrop-blur-md sticky top-0 z-30 px-4 py-3">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      <header className="border-b border-white/10 bg-[#0f0f10]/80 backdrop-blur-md sticky top-0 z-30 px-3 sm:px-4 py-3">
+        <div className="max-w-5xl mx-auto flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
             <button
               onClick={() => {
                 if (phase === 'battle') {
@@ -3751,26 +3797,26 @@ export default function BattlePage() {
                   navigate('/dashboard');
                 }
               }}
-              className="p-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition"
+              className="shrink-0 p-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition"
               title="Kembali"
             >
               <Icon name="chevronLeft" className="w-5 h-5" />
             </button>
-            <div>
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="font-mono text-xs px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 uppercase tracking-wider font-semibold">
+                <span className="font-mono text-[10px] sm:text-xs whitespace-nowrap px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 uppercase tracking-wider font-semibold">
                   {phase === 'select' ? 'PILIH MUQARRAR' : phase === 'map' ? 'PETA LEVEL' : phase === 'study' ? 'RUANG MUTHOLA\'AH' : phase === 'story' ? 'PROLOG KISAH' : 'POKÉMON ARENA'}
                 </span>
                 <span className="text-white/40 text-xs hidden sm:inline">•</span>
                 <span className="text-white/80 text-xs font-medium hidden sm:inline">{activeSet.maddah}</span>
               </div>
-              <h1 className="text-sm sm:text-base font-semibold text-white truncate max-w-[240px] sm:max-w-md">
+              <h1 className="text-sm sm:text-base font-semibold text-white truncate sm:max-w-md">
                 {activeSet.title}
               </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Fullscreen Toggle — SELALU TERSEDIA DARI AWAL */}
             <button
               onClick={toggleFullscreen}
@@ -3801,7 +3847,7 @@ export default function BattlePage() {
             {phase === 'map' && (
               <button
                 onClick={() => setPhase('study')}
-                className="btn border border-emerald-500/30 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 font-semibold text-xs px-3.5 py-2 rounded-lg transition flex items-center gap-1.5"
+                className="btn border border-emerald-500/30 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 font-semibold text-xs p-2 sm:px-3.5 rounded-lg transition flex items-center gap-1.5"
                 title="Buka Ruang Muthola'ah"
               >
                 <Icon name="book" className="w-3.5 h-3.5" />
@@ -3814,7 +3860,7 @@ export default function BattlePage() {
                 className="btn bg-gradient-to-r from-amber-500 to-emerald-500 text-black font-semibold text-xs px-3.5 py-2 rounded-lg shadow-lg shadow-emerald-500/20 hover:brightness-110 active:scale-95 transition flex items-center gap-1.5"
               >
                 <span>🗺️</span>
-                <span>Peta Level ➔</span>
+                <span><span className="hidden sm:inline">Peta Level </span>➔</span>
               </button>
             )}
             {phase === 'story' && (
@@ -3823,7 +3869,7 @@ export default function BattlePage() {
                 className="btn bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-semibold text-xs px-3.5 py-2 rounded-lg shadow-lg shadow-emerald-500/20 hover:brightness-110 active:scale-95 transition flex items-center gap-1.5"
               >
                 <Icon name="swords" className="w-4 h-4" />
-                <span>Mulai Battle</span>
+                <span>Mulai<span className="hidden sm:inline"> Battle</span></span>
               </button>
             )}
           </div>
@@ -3866,9 +3912,9 @@ export default function BattlePage() {
             FASE 0: PILIH MATERI / UPLOAD DIKTAT
             ========================================================================= */}
         {phase === 'select' && (
-          <div className="space-y-6 animate-fadeIn">
+          <div className="flex flex-col gap-6 animate-fadeIn">
             {/* ── THALIB AZHAR ACADEMIC PROFILE & WISAM BADGE SHOWCASE ── */}
-            <div className="rounded-2xl border-2 border-amber-500/30 bg-gradient-to-r from-[#17140e] via-[#101311] to-[#0c0f0d] p-5 sm:p-6 shadow-2xl relative overflow-hidden">
+            <div className="order-3 md:order-none rounded-2xl border-2 border-amber-500/30 bg-gradient-to-r from-[#17140e] via-[#101311] to-[#0c0f0d] p-5 sm:p-6 shadow-2xl relative overflow-hidden">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
                 {/* User Info & Academic Rank */}
                 <div className="flex items-center gap-4">
@@ -3970,7 +4016,7 @@ export default function BattlePage() {
             </div>
 
             {/* ── PAPAN TARGET & MISI THALIB AL-AZHAR (RETENTION & PROGRESSION) ── */}
-            <div className="rounded-2xl border-2 border-emerald-500/30 bg-gradient-to-br from-[#0e1712] via-[#09100c] to-[#070b08] p-5 sm:p-6 shadow-2xl relative overflow-hidden space-y-4">
+            <div className="order-4 md:order-none rounded-2xl border-2 border-emerald-500/30 bg-gradient-to-br from-[#0e1712] via-[#09100c] to-[#070b08] p-5 sm:p-6 shadow-2xl relative overflow-hidden space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
                 <div>
                   <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
@@ -4135,7 +4181,7 @@ export default function BattlePage() {
             </div>
 
             {/* Banner Utama */}
-            <div className="rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-950/40 via-[#101512] to-[#0d0d0f] p-6 sm:p-8 relative overflow-hidden">
+            <div className="order-1 md:order-none rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-950/40 via-[#101512] to-[#0d0d0f] p-6 sm:p-8 relative overflow-hidden">
               <div className="absolute right-0 top-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
               <div className="relative z-10 max-w-2xl">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-medium mb-3">
@@ -4200,7 +4246,7 @@ export default function BattlePage() {
             </div>
 
             {/* Diktat Contoh Siap Pakai */}
-            <div id="preset-section" className="space-y-4">
+            <div id="preset-section" className="order-2 md:order-none space-y-4">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-white">Diktat Preset Resmi Al-Azhar</h3>
@@ -4273,7 +4319,7 @@ export default function BattlePage() {
             </div>
 
             {/* Input Manual Teks */}
-            <div className="rounded-xl border border-white/10 bg-[#121214] p-5">
+            <div className="order-5 md:order-none rounded-xl border border-white/10 bg-[#121214] p-5">
               <h3 className="text-sm font-semibold text-white mb-1">Atau Paste Catatan / Ibarat Muqarrar</h3>
               <p className="text-xs text-white/50 mb-3">Punya catatan materi sendiri? Paste di sini untuk diubah jadi arena battle{isLibraryMember ? ', lengkap dengan cerita AI sesuai materinya' : ''}.</p>
               {!isLibraryMember ? (
@@ -4295,7 +4341,7 @@ export default function BattlePage() {
                 onChange={(e) => setCustomText(e.target.value)}
                 placeholder="Paste teks diktat di sini (minimal 1-2 paragraf)..."
                 rows={4}
-                className="w-full bg-[#0a0a0c] border border-white/10 rounded-lg p-3 text-xs text-white placeholder-white/30 focus:outline-none focus:border-emerald-500/50 font-mono"
+                className="w-full bg-[#0a0a0c] border border-white/10 rounded-lg p-3 text-base sm:text-xs text-white placeholder-white/30 focus:outline-none focus:border-emerald-500/50 font-mono"
               />
               <div className="mt-3 flex justify-end">
                 <button
@@ -4363,7 +4409,7 @@ export default function BattlePage() {
                   </p>
                 </div>
 
-                <div className="relative z-10 flex flex-row lg:flex-col items-center lg:items-end justify-between lg:justify-center gap-3 border-t lg:border-t-0 lg:border-l-2 border-stone-700/80 pt-3 lg:pt-0 lg:pl-6 shrink-0">
+                <div className="relative z-10 flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end justify-between lg:justify-center gap-3 border-t lg:border-t-0 lg:border-l-2 border-stone-700/80 pt-3 lg:pt-0 lg:pl-6 shrink-0">
                   <div className="text-left lg:text-right">
                     <div className="text-[10px] font-mono uppercase tracking-wider text-white/50 mb-1">
                       BINTANG & PROGRES JELAJAH
@@ -4378,7 +4424,7 @@ export default function BattlePage() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <button
                       onClick={toggleFullscreen}
                       className={`border-t-2 border-l-2 border-b-4 border-r-4 active:border-b-2 active:border-r-2 active:translate-y-0.5 font-mono font-bold text-xs px-3 py-2 shadow-[2px_2px_0_#000] transition flex items-center gap-1.5 ${
@@ -4419,7 +4465,7 @@ export default function BattlePage() {
                 <div className="absolute bottom-1.5 right-1.5 w-3 h-3 bg-amber-400 border border-black z-30" />
 
                 {/* Minecraft Oak Wood Hanging Signs (Plaques) */}
-                <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 text-xs font-mono font-bold text-[#fef08a] bg-[#3a2614] px-3 py-1.5 border-2 border-t-[#6b4725] border-l-[#6b4725] border-b-[#1f1308] border-r-[#1f1308] shadow-[2px_2px_0_#000]">
+                <div className="absolute top-3 left-3 z-20 hidden sm:flex items-center gap-1.5 text-xs font-mono font-bold text-[#fef08a] bg-[#3a2614] px-3 py-1.5 border-2 border-t-[#6b4725] border-l-[#6b4725] border-b-[#1f1308] border-r-[#1f1308] shadow-[2px_2px_0_#000]">
                   <span className="text-amber-400">🚪</span>
                   <span className="text-[10px] tracking-wider uppercase drop-shadow-[1px_1px_0_#000]">BAB AL-GHAWRI • TAHAP 1</span>
                 </div>
@@ -4429,40 +4475,40 @@ export default function BattlePage() {
                   <span className="text-[9px] font-mono font-bold text-amber-300 px-1.5 uppercase hidden sm:inline">Cuaca:</span>
                   <button
                     onClick={() => { setWeatherMode('night'); sfx.playBip(520); }}
-                    className={`px-2 py-0.5 text-[9px] font-mono font-bold transition flex items-center gap-1 ${
+                    className={`px-3 py-1.5 sm:px-2 sm:py-0.5 text-sm sm:text-[9px] font-mono font-bold transition flex items-center gap-1 ${
                       weatherMode === 'night'
                         ? 'bg-[#3a2614] text-amber-300 border border-amber-400/60 shadow-[1px_1px_0_#000]'
                         : 'text-stone-400 hover:text-white'
                     }`}
                   >
                     <span>🌙</span>
-                    <span>Malam Hening</span>
+                    <span className="hidden sm:inline">Malam Hening</span>
                   </button>
                   <button
                     onClick={() => { setWeatherMode('rain'); sfx.playBip(440); }}
-                    className={`px-2 py-0.5 text-[9px] font-mono font-bold transition flex items-center gap-1 ${
+                    className={`px-3 py-1.5 sm:px-2 sm:py-0.5 text-sm sm:text-[9px] font-mono font-bold transition flex items-center gap-1 ${
                       weatherMode === 'rain'
                         ? 'bg-[#122838] text-cyan-300 border border-cyan-400/60 shadow-[1px_1px_0_#000]'
                         : 'text-stone-400 hover:text-white'
                     }`}
                   >
                     <span>🌧️</span>
-                    <span>Hujan Kairo</span>
+                    <span className="hidden sm:inline">Hujan Kairo</span>
                   </button>
                   <button
                     onClick={() => { setWeatherMode('aurora'); sfx.playBip(660); }}
-                    className={`px-2 py-0.5 text-[9px] font-mono font-bold transition flex items-center gap-1 ${
+                    className={`px-3 py-1.5 sm:px-2 sm:py-0.5 text-sm sm:text-[9px] font-mono font-bold transition flex items-center gap-1 ${
                       weatherMode === 'aurora'
                         ? 'bg-[#1b3a28] text-emerald-300 border border-emerald-400/60 shadow-[1px_1px_0_#000]'
                         : 'text-stone-400 hover:text-white'
                     }`}
                   >
                     <span>✨</span>
-                    <span>Aurora Ruwaq</span>
+                    <span className="hidden sm:inline">Aurora Ruwaq</span>
                   </button>
                 </div>
 
-                <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5 text-xs font-mono font-bold text-amber-300 bg-[#3a2614] px-3 py-1.5 border-2 border-t-[#6b4725] border-l-[#6b4725] border-b-[#1f1308] border-r-[#1f1308] shadow-[2px_2px_0_#000]">
+                <div className="absolute top-3 right-3 z-20 hidden sm:flex items-center gap-1.5 text-xs font-mono font-bold text-amber-300 bg-[#3a2614] px-3 py-1.5 border-2 border-t-[#6b4725] border-l-[#6b4725] border-b-[#1f1308] border-r-[#1f1308] shadow-[2px_2px_0_#000]">
                   <span className="animate-bounce">👑</span>
                   <span className="text-[10px] tracking-wider uppercase drop-shadow-[1px_1px_0_#000]">KUBAH ULAMA • FINAL BOSS</span>
                 </div>
@@ -4485,7 +4531,9 @@ export default function BattlePage() {
                 )}
 
                 {/* Map Interactive Canvas */}
-                <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] min-h-[420px] sm:min-h-[520px] my-1 rounded-xl overflow-hidden border-2 border-black">
+                {/* Di HP peta tetap selebar 640px (16:9) dan digeser ke samping: kalau dipaksa sempit, gambar ter-crop dan node level saling tabrakan. */}
+                <div ref={mapScrollRef} className="overflow-x-auto overscroll-x-contain sm:overflow-visible [scrollbar-width:none]">
+                <div className="relative w-[640px] sm:w-full aspect-[16/9] sm:min-h-[520px] my-1 rounded-xl overflow-hidden border-2 border-black">
                   
                   {/* 3D Minecraft Voxel Overworld Map Render */}
                   <img
@@ -4684,6 +4732,7 @@ export default function BattlePage() {
                   {/* ── SMOOTH GLIDING THALIB AZHAR AVATAR ON THE OVERWORLD MAP ── */}
                   {selectedStage && (
                     <div
+                      data-map-focus
                       style={{
                         left: `${nodeCoords[selectedStage.id - 1]?.x || 21.5}%`,
                         top: `${nodeCoords[selectedStage.id - 1]?.y || 78}%`,
@@ -4828,6 +4877,8 @@ export default function BattlePage() {
                     );
                   })}
                 </div>
+                </div>
+                <p className="sm:hidden text-center text-[11px] font-mono text-stone-400 pt-1 pb-7">← geser peta untuk melihat semua level →</p>
               </div>
 
               {/* ── STAGE DETAIL INSPECTOR CARD (TACTILE RPG QUEST BRIEFING / MINECRAFT OBSIDIAN CODEX) ── */}
@@ -5047,10 +5098,10 @@ export default function BattlePage() {
             </div>
 
             {/* Sub-tabs Muthola'ah */}
-            <div className="flex border-b border-white/10 gap-2">
+            <div className="flex border-b border-white/10 gap-1 sm:gap-2">
               <button
                 onClick={() => setStudyTab('summary')}
-                className={`pb-3 px-3 text-sm font-medium border-b-2 transition flex items-center gap-2 ${
+                className={`flex-1 sm:flex-none min-w-0 pb-3 px-1.5 sm:px-3 text-xs sm:text-sm font-medium border-b-2 transition flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 ${
                   studyTab === 'summary' ? 'border-emerald-400 text-emerald-300' : 'border-transparent text-white/50 hover:text-white'
                 }`}
               >
@@ -5059,7 +5110,7 @@ export default function BattlePage() {
               </button>
               <button
                 onClick={() => setStudyTab('terms')}
-                className={`pb-3 px-3 text-sm font-medium border-b-2 transition flex items-center gap-2 ${
+                className={`flex-1 sm:flex-none min-w-0 pb-3 px-1.5 sm:px-3 text-xs sm:text-sm font-medium border-b-2 transition flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 ${
                   studyTab === 'terms' ? 'border-emerald-400 text-emerald-300' : 'border-transparent text-white/50 hover:text-white'
                 }`}
               >
@@ -5068,7 +5119,7 @@ export default function BattlePage() {
               </button>
               <button
                 onClick={() => setStudyTab('cards')}
-                className={`pb-3 px-3 text-sm font-medium border-b-2 transition flex items-center gap-2 ${
+                className={`flex-1 sm:flex-none min-w-0 pb-3 px-1.5 sm:px-3 text-xs sm:text-sm font-medium border-b-2 transition flex items-center justify-center sm:justify-start gap-1.5 sm:gap-2 ${
                   studyTab === 'cards' ? 'border-emerald-400 text-emerald-300' : 'border-transparent text-white/50 hover:text-white'
                 }`}
               >
@@ -5445,15 +5496,26 @@ export default function BattlePage() {
                     </div>
                   </div>
 
-                  {/* Dialogue Text Balloon */}
-                  <div className="min-h-[82px] sm:min-h-[96px] flex items-center bg-[#070b09]/85 rounded-xl border border-white/15 p-4 sm:p-5 shadow-inner">
+                  {/* Dialogue Text Balloon — ketuk untuk lanjut (di HP tombolnya ada di bawah layar) */}
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      if (storyStep < dialogues.length - 1) { setStoryStep(s => s + 1); sfx.playStoryBip(); }
+                      else startBattle();
+                    }}
+                    className="relative cursor-pointer min-h-[82px] sm:min-h-[96px] flex items-center bg-[#070b09]/85 rounded-xl border border-white/15 p-4 sm:p-5 pb-6 sm:pb-5 shadow-inner active:bg-[#0c130f]"
+                  >
                     <p className="text-sm sm:text-base md:text-lg text-white/95 font-medium leading-relaxed font-sans">
                       <SmartText text={currentDialogue.text} />
                     </p>
+                    <span className="sm:hidden absolute bottom-1.5 right-3 text-[10px] font-mono text-amber-300/80 animate-pulse">
+                      {storyStep < dialogues.length - 1 ? 'ketuk untuk lanjut ▸' : 'ketuk untuk mulai duel ⚔️'}
+                    </span>
                   </div>
 
-                  {/* Dialogue Navigation Controls */}
-                  <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-white/10">
+                  {/* Dialogue Navigation Controls — di HP tombol lanjut di atas, "Sebelumnya" di bawah */}
+                  <div className="mt-4 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-2 border-t border-white/10">
                     {/* Left: Previous Button */}
                     <button
                       disabled={storyStep === 0}
@@ -5581,7 +5643,7 @@ export default function BattlePage() {
                   {/* Style Switcher */}
                   <button
                     onClick={() => { setBattleStyle('minecraft'); sfx.playBip(580); }}
-                    className={`px-2 py-1 rounded-lg text-[10px] sm:text-xs font-mono font-bold transition flex items-center gap-1 ${
+                    className={`min-h-[34px] sm:min-h-0 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1 ${
                       battleStyle === 'minecraft'
                         ? 'bg-amber-500 text-black shadow-md'
                         : 'text-white/60 hover:text-white'
@@ -5592,7 +5654,7 @@ export default function BattlePage() {
                   </button>
                   <button
                     onClick={() => { setBattleStyle('retro'); sfx.playBip(480); }}
-                    className={`px-2 py-1 rounded-lg text-[10px] sm:text-xs font-mono font-bold transition flex items-center gap-1 ${
+                    className={`min-h-[34px] sm:min-h-0 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1 ${
                       battleStyle === 'retro'
                         ? 'bg-emerald-500 text-black shadow-md'
                         : 'text-white/60 hover:text-white'
@@ -5608,7 +5670,7 @@ export default function BattlePage() {
                       sfx.playStoryBip();
                       enterStoryPrologue();
                     }}
-                    className="px-2 py-1 rounded-lg text-[10px] sm:text-xs font-mono font-bold transition flex items-center gap-1 text-amber-300 bg-amber-500/15 border border-amber-400/30 hover:bg-amber-500/25"
+                    className="min-h-[34px] sm:min-h-0 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1 text-amber-300 bg-amber-500/15 border border-amber-400/30 hover:bg-amber-500/25"
                     title="Buka Prolog Cerita / Kisah Pertarungan Ini"
                   >
                     <span>📜</span>
@@ -5621,7 +5683,7 @@ export default function BattlePage() {
                       setEnableCutscene(v => !v);
                       sfx.playBip(480);
                     }}
-                    className={`px-2 py-1 rounded-lg text-[10px] sm:text-xs font-mono font-bold transition flex items-center gap-1 ${
+                    className={`min-h-[34px] sm:min-h-0 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1 ${
                       enableCutscene
                         ? 'text-amber-300 bg-amber-500/20 border border-amber-400/40 shadow-sm'
                         : 'text-white/40 hover:text-white border border-white/10 bg-white/5'
@@ -5636,7 +5698,7 @@ export default function BattlePage() {
                   {/* Battle Speed Quick Toggle (1x Normal / 2x Turbo) */}
                   <button
                     onClick={toggleBattleSpeed}
-                    className={`px-2 py-1 rounded-lg text-[10px] sm:text-xs font-mono font-bold transition flex items-center gap-1 ${
+                    className={`min-h-[34px] sm:min-h-0 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1 ${
                       battleSpeed === 2
                         ? 'text-amber-200 bg-gradient-to-r from-amber-500/30 to-orange-500/30 border border-amber-400/60 shadow-sm animate-pulse'
                         : 'text-white/60 hover:text-white border border-white/10 bg-white/5'
@@ -5650,7 +5712,7 @@ export default function BattlePage() {
                   {/* SFX Quick Toggle */}
                   <button
                     onClick={toggleAudio}
-                    className={`px-2 py-1 rounded-lg text-[10px] sm:text-xs font-mono font-bold transition flex items-center gap-1 ${
+                    className={`min-h-[34px] sm:min-h-0 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1 ${
                       audioMuted ? 'text-white/40 hover:text-white' : 'text-emerald-300 bg-emerald-500/20'
                     }`}
                     title={audioMuted ? 'Aktifkan Suara (M)' : 'Bisukan Suara (M)'}
@@ -5661,7 +5723,7 @@ export default function BattlePage() {
                   {/* Fullscreen Toggle Button */}
                   <button
                     onClick={toggleFullscreen}
-                    className={`sticky right-0 px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-mono font-bold transition flex items-center gap-1.5 ${
+                    className={`sticky right-0 min-h-[34px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 ${
                       isFullscreen
                         ? 'bg-rose-500 text-white ring-4 ring-black/85 shadow-md hover:bg-rose-600'
                         : 'bg-[#0f2a1d] text-emerald-300 hover:bg-emerald-500/40 border border-emerald-400/40'
@@ -5707,7 +5769,7 @@ export default function BattlePage() {
               )}
 
               {/* ── BATTLE UPPER HALF: COMBATANTS ARENA ── */}
-              <div className={`${isFullscreen ? 'flex-1 min-h-0 px-4 pb-4 pt-20 sm:px-6 sm:pb-6 sm:pt-20' : 'min-h-[340px] sm:min-h-[400px] p-4 sm:p-6'} flex flex-col justify-between relative overflow-hidden transition-all duration-300`}>
+              <div className={`${isFullscreen ? 'flex-1 min-h-0 px-4 pb-4 pt-20 sm:px-6 sm:pb-6 sm:pt-20' : 'min-h-[360px] sm:min-h-[400px] px-4 pb-4 pt-14 sm:px-6 sm:pb-6 sm:pt-16'} flex flex-col justify-between relative overflow-hidden transition-all duration-300`}>
                 
                 {/* ── IN-BATTLE LIVE OBJECTIVE HUD ── */}
                 <div className={`absolute ${isFullscreen ? "top-[4.25rem]" : "top-2"} left-1/2 -translate-x-1/2 z-20 hidden sm:flex items-center gap-2 pointer-events-none max-w-[95%]`}>
@@ -5732,9 +5794,9 @@ export default function BattlePage() {
                 <BattleProjectile type={projectile} effect={attackEffect} bossType={activeSet.id} />
 
                 {/* 1. TOP ROW: OPPONENT STATUS CARD (LEFT) & OPPONENT SPRITE (RIGHT) */}
-                <div className="flex items-start justify-between gap-2 sm:gap-6 w-full relative z-10 pt-7 sm:pt-4 px-1 sm:px-4">
+                <div className="flex items-start justify-between gap-2 sm:gap-6 w-full relative z-10 px-1 sm:px-4">
                   {/* Left: Opponent Status HUD Plate */}
-                  <div className="shrink-0 max-w-[55%] sm:max-w-none">
+                  <div className="min-w-0 max-w-[64%] sm:max-w-none sm:shrink-0">
                     {battleStyle === 'minecraft' ? (
                       <MinecraftHudPlate
                         type="boss"
@@ -5906,7 +5968,7 @@ export default function BattlePage() {
                   </div>
 
                   {/* Right: Player Status Card */}
-                  <div className="shrink-0 max-w-[55%] sm:max-w-none">
+                  <div className="min-w-0 max-w-[64%] sm:max-w-none sm:shrink-0">
                     {battleStyle === 'minecraft' ? (
                       <MinecraftHudPlate
                         type="player"
@@ -5965,7 +6027,7 @@ export default function BattlePage() {
               </div>
 
               {/* ── BATTLE LOWER HALF: DIALOG & 4-COMMAND BOX ── */}
-              <div className={`border-t-4 border-[#1f2422] bg-[#0c120e] p-3 sm:p-5 ${isFullscreen ? 'max-h-[44vh] overflow-y-auto shrink-0 shadow-[0_-12px_30px_rgba(0,0,0,0.8)]' : ''}`}>
+              <div className={`border-t-4 border-[#1f2422] bg-[#0c120e] p-3 sm:p-5 ${isFullscreen ? `${battleMenu !== 'main' || wrongReview ? 'max-h-[68vh] sm:max-h-[44vh]' : 'max-h-[44vh]'} overflow-y-auto shrink-0 shadow-[0_-12px_30px_rgba(0,0,0,0.8)]` : ''}`}>
                 
                 {/* ── JIKA JAWABAN SALAH: KARTU MUZAKARAH & CARA JAWAB DI LEMBAR UJIAN ── */}
                 {wrongReview ? (
@@ -5974,7 +6036,7 @@ export default function BattlePage() {
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
                         <span className="font-mono text-xs font-bold text-rose-400 uppercase tracking-wide">
-                          ⚠️ Hujjah Kurang Tepat (-22 HP)
+                          ⚠️ Hujjah Kurang Tepat (-{wrongReview.damage ?? 22} HP)
                         </span>
                       </div>
                       <span className="text-[10px] font-mono text-white/50 bg-white/5 px-2 py-0.5 rounded border border-white/10">
@@ -6019,7 +6081,7 @@ export default function BattlePage() {
                     <ExamTipBlock tip={wrongReview.examTip} translation={wrongReview.examTipTranslation} compact={false} />
 
                     {/* Tombol Lanjut Pertarungan & Putar Ulang */}
-                    <div className="pt-1 flex flex-wrap items-center justify-between gap-2">
+                    <div className="sticky -bottom-3.5 sm:static -mx-3.5 sm:mx-0 px-3.5 sm:px-0 py-2.5 sm:py-0 sm:pt-1 bg-[#0c0809]/95 sm:bg-transparent border-t border-rose-500/20 sm:border-0 flex flex-wrap items-center justify-between gap-2">
                       <button
                         onClick={handleReplayWrongAnim}
                         disabled={isActionBusy}
@@ -6042,7 +6104,7 @@ export default function BattlePage() {
                 ) : (
                   <>
                     {/* Dialog Box Display */}
-                    <div className="rounded-xl border-2 border-[#243329] bg-[#080d0a] p-3 sm:p-4 mb-3 min-h-[70px] flex items-center">
+                    <div className={`rounded-xl border-2 border-[#243329] bg-[#080d0a] p-3 sm:p-4 mb-3 min-h-[70px] items-center ${battleMenu !== 'main' ? 'hidden sm:flex' : 'flex'}`}>
                       <p className="text-xs sm:text-sm text-white/90 leading-relaxed font-mono whitespace-pre-line">
                         {dialogText}
                       </p>
@@ -6918,7 +6980,7 @@ export default function BattlePage() {
                     value={aiCustomInput}
                     onChange={(e) => setAiCustomInput(e.target.value)}
                     placeholder="Ajukan kemusykilanmu kepada Syaikh..."
-                    className="flex-1 bg-black/60 border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-white/30 focus:outline-none focus:border-emerald-400 font-mono"
+                    className="flex-1 min-w-0 bg-black/60 border border-white/15 rounded-xl px-3 py-2 text-base sm:text-xs text-white placeholder-white/30 focus:outline-none focus:border-emerald-400 font-mono"
                   />
                   <button
                     type="submit"

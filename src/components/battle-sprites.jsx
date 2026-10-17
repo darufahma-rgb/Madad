@@ -1145,7 +1145,7 @@ export function MinecraftHudPlate({
   const resolvedAvatarSrc = avatarSrc || (isPlayer ? '/assets/thalib-voxel-facing-right.png' : null);
 
   return (
-    <div className="relative select-none font-mono filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.85)]">
+    <div className="relative min-w-0 select-none font-mono filter drop-shadow-[0_12px_24px_rgba(0,0,0,0.85)]">
       {/* Floating Damage inside HUD if targeted */}
       {floatingText && (
         <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-40">
@@ -1154,7 +1154,7 @@ export function MinecraftHudPlate({
       )}
 
       {/* Main HUD Frame with Minecraft Gold Filigree Bevels */}
-      <div className="flex items-center gap-0">
+      <div className="flex items-center gap-0 min-w-0">
         
         {/* Left Ornate Diamond/Star Medallion */}
         <div className="relative shrink-0 w-11 h-14 sm:w-[3.25rem] sm:h-16 bg-[#0c100e] border-2 border-[#1c2920] rounded-l-lg flex items-center justify-center shadow-inner overflow-hidden">
@@ -1177,7 +1177,7 @@ export function MinecraftHudPlate({
         </div>
 
         {/* Content Box */}
-        <div className="min-w-[150px] sm:min-w-[260px] bg-[#0c100e]/95 backdrop-blur-md border-y-2 border-r-2 border-[#1c2920] rounded-r-lg p-2 sm:p-2.5 relative">
+        <div className="min-w-0 flex-1 sm:flex-none sm:min-w-[260px] bg-[#0c100e]/95 backdrop-blur-md border-y-2 border-r-2 border-[#1c2920] rounded-r-lg p-2 sm:p-2.5 relative">
           
           {/* Outer Gold Corner Brackets (Minecraft Style) */}
           <div className="absolute -top-[2px] right-0 w-2.5 h-2.5 border-t-2 border-r-2 border-amber-400" />
@@ -1185,10 +1185,10 @@ export function MinecraftHudPlate({
 
           {/* Top Line: Name + Level */}
           <div className="flex items-center justify-between gap-2 mb-1.5">
-            <span className="text-xs sm:text-sm font-bold text-white tracking-wide truncate max-w-[90px] sm:max-w-[180px] drop-shadow-[1px_1px_0_#000]">
+            <span className="text-xs sm:text-sm font-bold text-white tracking-wide truncate min-w-0 sm:max-w-[180px] drop-shadow-[1px_1px_0_#000]">
               {name}
             </span>
-            <span className="shrink-0 text-[10px] sm:text-[11px] font-mono font-black text-amber-300 bg-black/70 px-2 py-0.5 rounded border border-amber-400/50 shadow-sm">
+            <span className="hidden sm:inline shrink-0 text-[10px] sm:text-[11px] font-mono font-black text-amber-300 bg-black/70 px-2 py-0.5 rounded border border-amber-400/50 shadow-sm">
               {String(level).startsWith('Rank') ? level : `Rank ${level}`}
             </span>
           </div>
