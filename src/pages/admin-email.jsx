@@ -493,7 +493,7 @@ const EmailSender = () => {
         </div>
       )}
       <p className="text-[11px] text-ink-soft leading-relaxed">
-        Format isi email: baris "## Judul" jadi judul bagian, "- poin" jadi daftar bercentang, "> teks" jadi kotak sorotan, "[[tombol]]" menaruh tombol di situ (tanpa itu tombol ada di akhir). Di dalam teks: *tebal*, _miring_, ~~coret~~; link https otomatis bisa diklik.
+        Format isi email: baris "## Judul" jadi judul bagian, "- poin" jadi daftar bercentang, "&gt; teks" jadi kotak sorotan, "[[tombol]]" menaruh tombol di situ (tanpa itu tombol ada di akhir). Di dalam teks: *tebal*, _miring_, ~~coret~~; link https otomatis bisa diklik.
         Paket gratis Resend: 100 email per hari, 3.000 per bulan. Kalau batasnya tercapai, pengiriman berhenti dengan aman dan sisanya bisa dilanjutkan besok lewat tombol "Lanjutkan kirim".
       </p>
     </section>

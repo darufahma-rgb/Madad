@@ -73,6 +73,25 @@ async function deleteMembers(url, key, codes) {
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LIBRARY_EXPIRY = '2099-12-31';
+const MAX_GRANT_TARGETS = 200;
+
+const normalizeGrantTargets = (input) => {
+  const source = Array.isArray(input)
+    ? input.flatMap(item => String(item || '').split(/[\s,;]+/))
+    : String(input || '').split(/[\s,;]+/);
+  const seen = new Set();
+  const targets = [];
+  for (const item of source) {
+    const raw = String(item || '').trim();
+    if (!raw) continue;
+    const key = EMAIL_RE.test(raw.toLowerCase()) ? raw.toLowerCase() : raw.toUpperCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    targets.push(raw);
+    if (targets.length >= MAX_GRANT_TARGETS) break;
+  }
+  return targets;
+};
 
 /* Admin memberi akses: Library selamanya dan/atau AI Study Partner (sekian hari atau tanpa batas).
    target = email Google atau kode member. Email yang belum terdaftar dibuatkan akun — aktif saat pemiliknya
@@ -256,6 +275,16 @@ export default async function handler(req, res) {
       const out = await grantAccess(supabaseUrl, serviceKey, { target: g.target, library: !!g.library, aiDays: g.aiDays, note: g.note });
       if (!out.ok) { res.status(400).json({ ok: false, error: out.error }); return; }
       result = { status: 200, data: out };
+    } else if (action === 'grant-access-bulk') {
+      const g = JSON.parse(body || '{}');
+      const targets = normalizeGrantTargets(g.targets || g.target);
+      if (!targets.length) { res.status(400).json({ ok: false, error: 'Isi minimal satu email atau kode member' }); return; }
+      const results = [];
+      for (const target of targets) {
+        const out = await grantAccess(supabaseUrl, serviceKey, { target, library: !!g.library, aiDays: g.aiDays, note: g.note });
+        results.push(out.ok ? { target, ok: true, ...out } : { target, ok: false, error: out.error });
+      }
+      result = { status: 200, data: { results, total: results.length, success: results.filter(r => r.ok).length } };
     } else if (action === 'link-emails') {
       const list = Array.isArray(links) ? links.slice(0, 200) : [];
       const results = [];

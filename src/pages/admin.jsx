@@ -1723,6 +1723,20 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
 /* ── Beri akses: Library selamanya dan/atau AI Study Partner, lewat email Google atau kode member ── */
 const AI_GRANT_DURATIONS = [[30, "30 hari"], [60, "60 hari"], [90, "90 hari"], [180, "6 bulan"], [365, "1 tahun"], [0, "Tanpa batas"]];
 const GRANT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const parseGrantTargets = (value) => {
+  const seen = new Set();
+  return String(value || "")
+    .split(/[\s,;]+/)
+    .map(v => v.trim())
+    .filter(Boolean)
+    .filter(v => {
+      const key = GRANT_EMAIL_RE.test(v.toLowerCase()) ? v.toLowerCase() : v.toUpperCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .slice(0, 200);
+};
 
 const GrantAccessModal = ({ open, onClose, members = [], initialTarget = "", onDone }) => {
   const toast = useToast();
@@ -1740,18 +1754,29 @@ const GrantAccessModal = ({ open, onClose, members = [], initialTarget = "", onD
     setTarget(initialTarget); setLibrary(true); setAi(true); setDays(30); setNote(""); setError(""); setResult(null);
   }, [open, initialTarget]);
 
-  const t = target.trim();
-  const match = members.find(m => m.code === t.toUpperCase() || (m.email && m.email.toLowerCase() === t.toLowerCase()));
-  const isEmail = GRANT_EMAIL_RE.test(t);
+  const targets = useMemo(() => parseGrantTargets(target), [target]);
+  const singleTarget = targets.length === 1 ? targets[0] : "";
+  const match = singleTarget
+    ? members.find(m => m.code === singleTarget.toUpperCase() || (m.email && m.email.toLowerCase() === singleTarget.toLowerCase()))
+    : null;
+  const isEmail = GRANT_EMAIL_RE.test(singleTarget);
 
   const submit = async (e) => {
     e?.preventDefault();
-    if (!t || busy) return;
+    if (!targets.length || busy) return;
     setBusy(true); setError("");
     try {
-      const data = await adminMembersAPI("grant-access", null, null, { target: t, library, aiDays: ai ? days : null, note });
-      setResult({ ...data, whatsapp: match?.whatsapp || "" });
-      toast.push(`Akses diberikan ke ${data.name || data.email || data.code}.`);
+      const payload = { library, aiDays: ai ? days : null, note };
+      const data = targets.length === 1
+        ? await adminMembersAPI("grant-access", null, null, { ...payload, target: targets[0] })
+        : await adminMembersAPI("grant-access-bulk", null, null, { ...payload, targets });
+      const rows = (data.results || [data]).map(r => {
+        const member = members.find(m => m.code === r.code || (r.email && m.email && m.email.toLowerCase() === r.email.toLowerCase()));
+        return { ...r, whatsapp: member?.whatsapp || "" };
+      });
+      setResult({ rows });
+      const ok = rows.filter(r => r.ok !== false).length;
+      toast.push(targets.length === 1 ? `Akses diberikan ke ${rows[0].name || rows[0].email || rows[0].code}.` : `${ok}/${rows.length} akses berhasil diberikan.`);
       onDone && onDone();
     } catch (err) {
       setError(err.message);
@@ -1764,7 +1789,7 @@ const GrantAccessModal = ({ open, onClose, members = [], initialTarget = "", onD
     : `AI Study Partner sampai ${new Date(r.aiUntil).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}`;
   const waText = (r) => {
     const parts = [r.library && "Library selamanya", aiText(r)].filter(Boolean).join(" + ");
-    return `Assalamu'alaikum ${r.name || ""}, akses Talqeeh kamu sudah aktif: ${parts}.\n\nMasuk di https://talqeeh.id dengan akun Google *${r.email || "-"}* — langsung aktif, tanpa kode. Selamat belajar! 🌙`;
+    return `Assalamu'alaikum ${r.name || ""}, akses Talqeeh kamu sudah aktif: ${parts}.\n\nMasuk di https://talqeeh.id dengan akun Google *${r.email || "-"}*, langsung aktif tanpa kode. Selamat belajar! 🌙`;
   };
 
   return (
@@ -1778,43 +1803,78 @@ const GrantAccessModal = ({ open, onClose, members = [], initialTarget = "", onD
         {result ? (
           <div>
             <div className="card-glass p-4 mb-4" style={{ border: "1px solid rgba(62,207,142,0.3)" }}>
-              <div className="text-sm text-ink font-medium">{result.name || result.email} <span className="font-mono text-xs text-gold-300 ml-1">{result.code}</span></div>
-              <ul className="text-xs text-ink-muted mt-2 space-y-1">
-                {result.library && <li>✓ Library selamanya</li>}
-                {aiText(result) && <li>✓ {aiText(result)}</li>}
-                {result.created && <li className="text-amber-300">Akun baru dibuat — aktif saat dia login Google dengan {result.email}.</li>}
-              </ul>
+              <div className="flex items-center justify-between gap-3 mb-3">
+                <div>
+                  <div className="text-sm text-ink font-medium">Hasil pemberian akses</div>
+                  <div className="text-[11px] text-ink-soft">{result.rows.filter(r => r.ok !== false).length} berhasil dari {result.rows.length} target</div>
+                </div>
+                {result.rows.some(r => r.ok !== false) && (
+                  <button onClick={() => {
+                    navigator.clipboard.writeText(result.rows.filter(r => r.ok !== false).map(waText).join("\n\n---\n\n"));
+                    toast.push("Semua pesan sukses tersalin");
+                  }} className="btn btn-ghost text-xs px-3 py-1.5">Salin semua pesan</button>
+                )}
+              </div>
+              <div className="max-h-72 overflow-y-auto space-y-2">
+                {result.rows.map((r, idx) => (
+                  <div key={`${r.target || r.code || idx}`} className="rounded-xl border border-white/8 bg-white/[0.03] px-3 py-2.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-sm text-ink truncate">
+                          {r.ok === false ? (r.target || "Target") : (r.name || r.email || r.code)}
+                          {r.ok !== false && <span className="font-mono text-xs text-gold-300 ml-1">{r.code}</span>}
+                        </div>
+                        {r.ok === false ? (
+                          <div className="text-xs text-rose-400 mt-1">{r.error}</div>
+                        ) : (
+                          <ul className="text-xs text-ink-muted mt-1 space-y-0.5">
+                            {r.library && <li>✓ Library selamanya</li>}
+                            {aiText(r) && <li>✓ {aiText(r)}</li>}
+                            {r.created && <li className="text-amber-300">Akun baru dibuat, aktif saat login Google dengan {r.email}.</li>}
+                          </ul>
+                        )}
+                      </div>
+                      {r.ok !== false && result.rows.length === 1 && r.whatsapp && (
+                        <button onClick={() => sendAdminWa(r.whatsapp, waText(r), toast)} className="btn btn-primary text-xs px-3 py-1.5 flex-shrink-0">Kirim WA</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <label className="text-xs text-ink-soft block mb-1">Pesan untuk dikirim</label>
-            <textarea readOnly value={waText(result)} rows={5} className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-ink outline-none"/>
-            <div className="flex gap-2 mt-3">
-              <button onClick={() => { navigator.clipboard.writeText(waText(result)); toast.push("Pesan tersalin"); }} className="btn btn-ghost flex-1 text-sm">Salin pesan</button>
-              {result.whatsapp && (
-                <button onClick={() => sendAdminWa(result.whatsapp, waText(result), toast)} className="btn btn-primary flex-1 text-sm">Kirim WA</button>
-              )}
-            </div>
+            {result.rows.length === 1 && result.rows[0].ok !== false && (
+              <>
+                <label className="text-xs text-ink-soft block mb-1">Pesan untuk dikirim</label>
+                <textarea readOnly value={waText(result.rows[0])} rows={5} className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-ink outline-none"/>
+                <div className="flex gap-2 mt-3">
+                  <button onClick={() => { navigator.clipboard.writeText(waText(result.rows[0])); toast.push("Pesan tersalin"); }} className="btn btn-ghost flex-1 text-sm">Salin pesan</button>
+                </div>
+              </>
+            )}
             <button onClick={onClose} className="w-full text-center text-xs text-ink-soft hover:text-ink mt-4">Selesai</button>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-4">
             <div>
               <label className="text-xs text-ink-muted block mb-1">Email Google atau kode member</label>
-              <input value={target} onChange={e => { setTarget(e.target.value); setError(""); }} list="grant-targets" autoFocus
-                placeholder="nama@gmail.com / MSR-XXXX-XXXX"
-                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-ink outline-none font-mono focus:border-emerald-500/45"/>
+              <textarea value={target} onChange={e => { setTarget(e.target.value); setError(""); }} autoFocus rows={targets.length > 1 ? 5 : 3}
+                placeholder={"satu atau banyak target, pisahkan dengan baris baru\nnama@gmail.com\nsantri@email.com\nMSR-XXXX-XXXX"}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-ink outline-none font-mono resize-y focus:border-emerald-500/45"/>
               <datalist id="grant-targets">
                 {members.slice(0, 400).map(m => <option key={m.code} value={m.email || m.code} label={`${m.name} · ${m.code}`}/>)}
               </datalist>
               <div className="text-[11px] mt-1.5 min-h-[16px]">
-                {match ? (
+                {targets.length > 1 ? (
+                  <span className="text-emerald-300">{targets.length} target akan diproses. Maksimal 200 target per submit.</span>
+                ) : match ? (
                   <span className="text-ink-muted">
                     <span className="text-ink">{match.name}</span> · {match.tier === "free" ? "Akun gratis" : "Member Library"} · {match.googleLinked ? "sudah login Google" : "belum login Google"}
                   </span>
                 ) : isEmail ? (
-                  <span className="text-amber-300">Belum terdaftar — akun dibuat, aktif saat dia login Google dengan email ini.</span>
-                ) : t ? (
+                  <span className="text-amber-300">Belum terdaftar, akun dibuat dan aktif saat dia login Google dengan email ini.</span>
+                ) : singleTarget ? (
                   <span className="text-ink-soft">Ketik email lengkap atau kode member yang ada.</span>
-                ) : <span className="text-ink-soft">Pilih dari daftar atau ketik email/kode.</span>}
+                ) : <span className="text-ink-soft">Isi satu email/kode, atau banyak email/kode sekaligus.</span>}
               </div>
             </div>
 
@@ -1845,8 +1905,8 @@ const GrantAccessModal = ({ open, onClose, members = [], initialTarget = "", onD
             </div>
 
             {error && <div className="text-xs text-rose-400">{error}</div>}
-            <button type="submit" disabled={busy || !t || (!library && !ai)} className="btn btn-primary w-full text-sm py-3">
-              {busy ? "Memproses…" : "Beri akses"}
+            <button type="submit" disabled={busy || !targets.length || (!library && !ai)} className="btn btn-primary w-full text-sm py-3">
+              {busy ? "Memproses…" : targets.length > 1 ? `Beri akses ke ${targets.length} target` : "Beri akses"}
             </button>
           </form>
         )}
@@ -2869,6 +2929,7 @@ const AdminSubscriptions = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState(null);
   const [grantCode, setGrantCode] = useState('');
+  const [grantOpen, setGrantOpen] = useState(false);
   const [busy, setBusy]       = useState(false);
   const [payments, setPayments] = useState([]);
   const [checkouts, setCheckouts] = useState({ data: [], missing: false });
@@ -2914,10 +2975,17 @@ const AdminSubscriptions = () => {
           <h1 className="font-display text-4xl font-semibold text-ink mb-1">Langganan & Pembayaran</h1>
           <p className="text-ink-muted">Akses AI Partner Belajar (dari webhook Mayar atau manual) dan riwayat pembayaran Mayar.</p>
         </div>
-        <button onClick={fetchData} className="btn btn-ghost text-sm px-4 py-2">
-          <Icon name="refresh" className="w-4 h-4"/> Refresh
-        </button>
+        <div className="flex flex-wrap gap-2 justify-end">
+          <button onClick={() => setGrantOpen(true)} className="btn btn-primary text-sm px-4 py-2">
+            <Icon name="crown" className="w-4 h-4"/> Beri Bonus
+          </button>
+          <button onClick={fetchData} className="btn btn-ghost text-sm px-4 py-2">
+            <Icon name="refresh" className="w-4 h-4"/> Refresh
+          </button>
+        </div>
       </div>
+
+      <GrantAccessModal open={grantOpen} onClose={() => setGrantOpen(false)} members={[]} onDone={fetchData}/>
 
       <div className="card-glass p-5 mb-6 flex gap-3 flex-wrap items-end">
         <div className="flex-1 min-w-[220px]">
