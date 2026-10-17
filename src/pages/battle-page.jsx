@@ -1776,6 +1776,16 @@ function GameFullscreenLayer({ active, children }) {
   );
 }
 
+/* ── GAYA MENU GAME (layar pilih & peta) ──
+   Tombol balok ala Minecraft dan kotak dialog yang sama dengan arena & prolog. */
+const PX_BTN = 'border-t-2 border-l-2 border-b-4 border-r-4 active:border-b-2 active:border-r-2 active:translate-y-0.5 font-mono font-bold shadow-[2px_2px_0_#000] transition flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:pointer-events-none';
+const PX_GREEN = 'border-t-[#5fd481] border-l-[#5fd481] border-b-[#134221] border-r-[#134221] bg-[#2e8a4a] hover:bg-[#349e54] text-white';
+const PX_WOOD = 'border-t-[#9a7049] border-l-[#9a7049] border-b-[#2b1c0e] border-r-[#2b1c0e] bg-[#543b22] hover:bg-[#634628] text-amber-200';
+const PX_STONE = 'border-t-[#4a5568] border-l-[#4a5568] border-b-[#141821] border-r-[#141821] bg-[#2d3748] hover:bg-[#3b475a] text-stone-200';
+const PX_VIOLET = 'border-t-[#7c6bd6] border-l-[#7c6bd6] border-b-[#221a4d] border-r-[#221a4d] bg-[#3b2f80] hover:bg-[#45389a] text-violet-100';
+const PX_AMBER = 'border-t-[#f59e0b] border-l-[#f59e0b] border-b-[#4a2504] border-r-[#4a2504] bg-[#b45309] hover:bg-[#c2610f] text-white';
+const GAME_BOX = 'border-4 border-[#3d3221] bg-[#080d0a]/85 backdrop-blur-md shadow-[0_0_0_2px_#000,0_16px_40px_rgba(0,0,0,0.85)]';
+
 /* ── HELPER: ACAK URUTAN OPSI (Kunci jawaban ikut dipetakan ulang) ── */
 function shuffleQuizOptions(quiz) {
   return quiz.map(q => {
@@ -2569,19 +2579,75 @@ export default function BattlePage() {
 
   const [defeatReason, setDefeatReason] = useState('hp'); // 'hp' | 'boss-survived'
 
-  // Peta di HP bisa digeser: pusatkan pada avatar thalib (level terpilih) saat peta dibuka / level diganti.
+  // Menu game: panel profil/misi/paste di layar pilih, dan bottom sheet detail level di HP.
+  const [menuPanel, setMenuPanel] = useState(null); // null | 'profile' | 'quests' | 'paste'
+  const [sheetOpen, setSheetOpen] = useState(false);
+  useEffect(() => { setMenuPanel(null); setSheetOpen(false); }, [phase]);
+  useEffect(() => {
+    if (!menuPanel) return;
+    const onKey = (e) => { if (e.key === 'Escape') setMenuPanel(null); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [menuPanel]);
+
+  // Peta mengisi seluruh area (seperti background-size: cover) dengan rasio 16:9 tetap supaya node level
+  // tetap pas di atas gambar; bagian yang lebih lebar/tinggi dari layar digeser (sentuh di HP, seret di desktop).
   const mapScrollRef = useRef(null);
+  const [mapViewport, setMapViewport] = useState(null);
+  useEffect(() => {
+    if (phase !== 'map') return;
+    const box = mapScrollRef.current;
+    if (!box || typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(() => setMapViewport({ w: box.clientWidth, h: box.clientHeight }));
+    ro.observe(box);
+    return () => ro.disconnect();
+  }, [phase]);
+
+  // Pusatkan pada avatar thalib (level terpilih) saat peta dibuka, level diganti, atau ukuran layar berubah.
   useEffect(() => {
     if (phase !== 'map') return;
     const id = requestAnimationFrame(() => {
       const box = mapScrollRef.current;
       const focus = box?.querySelector('[data-map-focus]');
-      if (!box || !focus || box.scrollWidth <= box.clientWidth) return;
-      const target = focus.offsetLeft - box.clientWidth / 2;
-      box.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
+      if (!box || !focus) return;
+      box.scrollTo({
+        left: Math.max(0, focus.offsetLeft - box.clientWidth / 2),
+        top: Math.max(0, focus.offsetTop - box.clientHeight / 2),
+        behavior: 'smooth'
+      });
     });
     return () => cancelAnimationFrame(id);
-  }, [phase, selectedStageId]);
+  }, [phase, selectedStageId, mapViewport]);
+
+  // Seret peta dengan mouse; sentuhan memakai scroll bawaan. Klik setelah menyeret tidak memilih level.
+  const mapDragRef = useRef(null);
+  const onMapPointerDown = (e) => {
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    const box = mapScrollRef.current;
+    if (!box) return;
+    mapDragRef.current = { x: e.clientX, y: e.clientY, left: box.scrollLeft, top: box.scrollTop, moved: false };
+  };
+  const onMapPointerMove = (e) => {
+    const d = mapDragRef.current;
+    const box = mapScrollRef.current;
+    if (!d || !box) return;
+    const dx = e.clientX - d.x;
+    const dy = e.clientY - d.y;
+    if (!d.moved && Math.abs(dx) + Math.abs(dy) < 6) return;
+    d.moved = true;
+    box.scrollLeft = d.left - dx;
+    box.scrollTop = d.top - dy;
+  };
+  const onMapPointerUp = () => {
+    const d = mapDragRef.current;
+    mapDragRef.current = null;
+    if (d?.moved) {
+      // Telan klik yang menyusul pointerup supaya level di bawah kursor tidak ikut terpilih.
+      const swallow = (ev) => { ev.stopPropagation(); ev.preventDefault(); };
+      window.addEventListener('click', swallow, { capture: true, once: true });
+      setTimeout(() => window.removeEventListener('click', swallow, { capture: true }), 0);
+    }
+  };
 
   const handleSkipCutscene = () => {
     setAttackCutscene(null);
@@ -3725,10 +3791,14 @@ export default function BattlePage() {
     return { title: 'Maqbul', stars: '✓', color: 'text-zinc-300' };
   };
 
+  // Layar pilih & peta adalah adegan game satu layar dengan HUD sendiri, jadi header & wadah halaman tidak dipakai.
+  const isMenuScene = phase === 'select' || phase === 'map';
+
   const pageContent = (
-    <div className="battle-root min-h-screen bg-[#080808] text-white font-sans antialiased selection:bg-emerald-500/30" style={{ "--bs": battleSpeed === 2 ? 0.5 : 1 }}>
+    <div className={`battle-root ${isMenuScene ? "h-[100dvh] overflow-hidden" : "min-h-screen"} bg-[#080808] text-white font-sans antialiased selection:bg-emerald-500/30`} style={{ "--bs": battleSpeed === 2 ? 0.5 : 1 }}>
       
       {/* ── HEADER GAME / BAR ── */}
+      {!isMenuScene && (
       <header className="border-b border-white/10 bg-[#0f0f10]/80 backdrop-blur-md sticky top-0 z-30 px-3 sm:px-4 py-3">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
@@ -3829,12 +3899,13 @@ export default function BattlePage() {
           </div>
         </div>
       </header>
+      )}
 
       {/* ── KONTEN UTAMA BERDASARKAN FASE ── */}
-      <main className="max-w-5xl mx-auto p-4 sm:p-6 pb-24">
+      <main className={isMenuScene ? "" : "max-w-5xl mx-auto p-4 sm:p-6 pb-24"}>
         {/* Banner Notifikasi Auto-Import Materi */}
         {importToast && (
-          <div className="mb-6 rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-[#211709] via-[#1c221a] to-[#12281c] p-4 sm:p-5 shadow-[0_10px_30px_rgba(251,191,36,0.25)] relative overflow-hidden animate-fadeIn">
+          <div className={`${isMenuScene ? "fixed top-3 left-1/2 -translate-x-1/2 z-[60] w-[min(36rem,calc(100%-1.5rem))]" : "mb-6 relative"} rounded-2xl border-2 border-amber-400 bg-gradient-to-r from-[#211709] via-[#1c221a] to-[#12281c] p-4 sm:p-5 shadow-[0_10px_30px_rgba(251,191,36,0.25)] overflow-hidden animate-fadeIn`}>
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-xl bg-black/70 border border-amber-400 flex items-center justify-center text-2xl shadow shrink-0">
@@ -3863,314 +3934,211 @@ export default function BattlePage() {
         )}
 
         {/* =========================================================================
-            FASE 0: PILIH MATERI / UPLOAD DIKTAT
+            FASE 0: PILIH MUQARRAR — menu utama game, satu layar penuh.
+            Tiga diktat preset tampil sebagai "dunia"; profil, misi, dan paste catatan dibuka sebagai panel di dalam layar.
             ========================================================================= */}
-        {phase === 'select' && (
-          <div className="flex flex-col gap-6 animate-fadeIn">
-            {/* ── THALIB AZHAR ACADEMIC PROFILE & WISAM BADGE SHOWCASE ── */}
-            <div className="order-3 md:order-none rounded-2xl border-2 border-amber-500/30 bg-gradient-to-r from-[#17140e] via-[#101311] to-[#0c0f0d] p-5 sm:p-6 shadow-2xl relative overflow-hidden">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 relative z-10">
-                {/* User Info & Academic Rank */}
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-amber-500/20 to-emerald-500/20 border-2 border-amber-400/50 flex items-center justify-center text-3xl shadow-lg">
-                      {getThalibRank(userProgress?.totalExp || 0).badge}
-                    </div>
-                    <span className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-black/90 border border-amber-400/60 text-[9px] font-mono font-black text-amber-300 shadow">
-                      {getThalibRank(userProgress?.totalExp || 0).rankCode}
+        {phase === 'select' && (() => {
+          const exp = userProgress?.totalExp || 0;
+          const rank = getThalibRank(exp);
+          const rankPct = rank.nextExp
+            ? Math.min(100, Math.max(8, Math.round(((exp - rank.minExp) / (rank.nextExp - rank.minExp)) * 100)))
+            : 100;
+          const bossesWon = Object.keys(userProgress?.completedBosses || {}).length;
+          const hasMumtaz = Object.values(userProgress?.completedBosses || {}).some(b => b.taqdir?.includes('Mumtaz') || (b.stars && b.stars.length >= 3));
+          const streakRec = userProgress?.streakRecord || 0;
+          const hasMutholaah = !!userProgress?.studyCompleted;
+          const quests = [
+            { icon: '🏛️', title: 'Penakluk 3 Muqarrar', desc: 'Kalahkan seluruh Boss Diktat resmi (Balaghah, Nahwu, dan Ushul Fiqh).', done: bossesWon >= 3, status: `${bossesWon}/3 TUNTAS`, exp: 150, reward: 'Gelar Mutafawwiq', tone: 'emerald' },
+            { icon: '🌟', title: 'Predikat Mumtaz Syaraf', desc: 'Menangkan pertarungan dengan sisa HP ≥ 80% untuk predikat kehormatan tertinggi.', done: hasMumtaz, status: 'TARGET: HP ≥ 80%', exp: 100, reward: 'Wisam Mumtaz', tone: 'amber' },
+            { icon: '🔥', title: 'Hujjah Mutawatirah x4', desc: 'Bangun rantai serangan combo 4 jawaban benar berurutan tanpa salah.', done: streakRec >= 4, status: `REKOR: x${streakRec}/4`, exp: 75, reward: 'Fashih Lisan', tone: 'rose' },
+            { icon: '📖', title: "Muthola'ah Terverifikasi", desc: "Khatamkan telaah ringkasan materi & kartu hafalan di Ruang Muthola'ah (Fase 1).", done: hasMutholaah, status: '0/1 KHATAM', exp: 50, reward: 'Perisai Ijtihad', tone: 'blue' },
+          ];
+          const questTone = {
+            emerald: 'bg-emerald-950/40 border-emerald-400/50 text-emerald-300',
+            amber: 'bg-amber-950/40 border-amber-400/50 text-amber-300',
+            rose: 'bg-rose-950/40 border-rose-400/50 text-rose-300',
+            blue: 'bg-blue-950/40 border-blue-400/50 text-blue-300',
+          };
+          const questsDone = quests.filter(q => q.done).length;
+          const openPreset = (preset) => {
+            const stageProg = getStageProgress(preset.id);
+            const totalStages = preset.stages?.length || 4;
+            setActiveSet(preset);
+            const curStageId = Math.min(totalStages, stageProg.highestUnlocked || 1);
+            setSelectedStageId(curStageId);
+            setActiveStage(preset.stages?.find(s => s.id === curStageId) || preset.stages?.[0]);
+            setPhase('map');
+            sfx.playBip(520);
+          };
+          const panelTitle = { profile: '🎓 PROFIL THALIB', quests: '🎯 PAPAN MISI', paste: '📝 PASTE CATATAN' }[menuPanel];
+
+          return (
+            <div className="relative h-[100dvh] w-full overflow-hidden flex flex-col select-none animate-fadeIn">
+              {/* Latar: dunia Al-Azhar yang diredupkan */}
+              <div className="absolute inset-0 pointer-events-none">
+                <img src="/assets/minecraft-world-map.jpg" alt="" className="w-full h-full object-cover object-center scale-110 blur-[2px] brightness-[0.45] saturate-[0.9]" />
+                <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/20 to-black/85" />
+              </div>
+
+              {/* HUD atas */}
+              <div className="relative z-10 flex items-center justify-between gap-2 px-2 sm:px-4 pt-[max(0.5rem,env(safe-area-inset-top))] sm:pt-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  <button
+                    onClick={() => navigate(session ? '/dashboard' : '/')}
+                    className={`${PX_BTN} ${PX_STONE} w-9 h-9 shrink-0`}
+                    title="Keluar dari game"
+                    aria-label="Keluar dari game"
+                  >
+                    <Icon name="chevronLeft" className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setMenuPanel('profile')}
+                    className={`${GAME_BOX} min-w-0 flex items-center gap-2 pl-1 pr-2.5 py-1 hover:border-[#5c4a2f] transition text-left`}
+                    title="Lihat profil & koleksi wisam"
+                  >
+                    <span className="relative w-8 h-8 shrink-0 bg-black/60 border border-amber-400/50 flex items-center justify-center text-lg">
+                      {rank.badge}
                     </span>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 uppercase tracking-wider">
-                        MAJLIS THALIB AL-AZHAR
-                      </span>
-                      <span className="text-white/40 text-xs hidden sm:inline">•</span>
-                      <span className="text-emerald-400 font-mono text-xs font-semibold">
-                        {userProgress?.totalExp || 0} EXP
-                      </span>
-                    </div>
-                    <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                      <span>{profile?.name || 'Thalib Azhar'}</span>
-                      <span className="text-xs font-serif font-normal text-amber-200/80">({getThalibRank(userProgress?.totalExp || 0).title})</span>
-                    </h3>
-                    <div className="flex items-center gap-4 text-xs text-white/60 mt-1 font-mono">
-                      <span>🔥 Rekor Hujjah: <strong className="text-amber-300">x{userProgress?.streakRecord || 0}</strong></span>
-                      <span>🏆 Boss Takluk: <strong className="text-emerald-300">{Object.keys(userProgress?.completedBosses || {}).length}/3</strong></span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Wisam Badges Shelf */}
-                <div className="border-t md:border-t-0 md:border-l border-white/10 pt-3 md:pt-0 md:pl-5">
-                  <div className="text-[10px] font-mono uppercase tracking-wider text-amber-400/80 mb-2 font-bold flex items-center gap-1.5">
-                    <span>🎖️</span> KOLEKSI WISAM MUQARRAR
-                  </div>
-                  <div className="flex items-center gap-2.5">
-                    {PRESETS.map((p) => {
-                      const completed = userProgress?.completedBosses?.[p.id];
-                      return (
-                        <div
-                          key={p.id}
-                          className={`group relative p-2 rounded-xl border transition flex flex-col items-center justify-center w-20 sm:w-24 text-center ${
-                            completed
-                              ? 'border-amber-400/60 bg-gradient-to-b from-amber-500/20 to-black/60 shadow-[0_0_12px_rgba(251,191,36,0.25)]'
-                              : 'border-white/10 bg-black/40 opacity-45'
-                          }`}
-                          title={completed ? `${p.title} (${completed.taqdir})` : `${p.title} (Belum ditaklukkan)`}
-                        >
-                          <span className="text-xl sm:text-2xl mb-1 group-hover:scale-110 transition">
-                            {completed ? '🎖️' : '🔒'}
-                          </span>
-                          <span className="text-[9px] font-mono font-bold text-white truncate max-w-full">
-                            {p.id.split('-')[0].toUpperCase()}
-                          </span>
-                          <span className="text-[8px] text-amber-300/80 font-mono">
-                            {completed ? completed.stars : 'TERKUNCI'}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Next Rank Goal Progression Bar */}
-              {(() => {
-                const currentRank = getThalibRank(userProgress?.totalExp || 0);
-                const exp = userProgress?.totalExp || 0;
-                const needed = currentRank.nextExp ? Math.max(0, currentRank.nextExp - exp) : 0;
-                const pct = currentRank.nextExp
-                  ? Math.min(100, Math.max(8, Math.round(((exp - currentRank.minExp) / (currentRank.nextExp - currentRank.minExp)) * 100)))
-                  : 100;
-                return (
-                  <div className="mt-4 pt-3.5 border-t border-white/10 relative z-10 space-y-1.5">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs font-mono gap-1">
-                      <span className="text-amber-300 font-semibold flex items-center gap-1.5">
-                        <span>🎯</span>
-                        <span>
-                          {currentRank.nextExp
-                            ? `Target: Butuh ${needed} EXP lagi menuju ${currentRank.nextTitle}!`
-                            : `🏆 Maqam Puncak: 'Alim Kabir / Faqih Azhari (Mumtaz)`}
+                    <span className="min-w-0">
+                      <span className="block text-[11px] sm:text-xs font-bold text-white truncate max-w-[7.5rem] sm:max-w-[12rem]">{profile?.name || 'Thalib Azhar'}</span>
+                      <span className="flex items-center gap-1.5">
+                        <span className="text-[9px] font-mono font-black text-amber-300">{rank.rankCode}</span>
+                        <span className="w-12 sm:w-20 h-1.5 bg-black/80 border border-amber-400/30">
+                          <span className="block h-full bg-gradient-to-r from-amber-500 to-emerald-400" style={{ width: `${rankPct}%` }} />
                         </span>
+                        <span className="hidden sm:inline text-[9px] font-mono text-emerald-300">{exp} EXP</span>
                       </span>
-                      <span className="text-white/60 text-[11px]">
-                        {exp} {currentRank.nextExp ? `/ ${currentRank.nextExp} EXP (${pct}%)` : 'EXP (Maksimal)'}
-                      </span>
-                    </div>
-                    <div className="w-full h-2.5 bg-black/80 rounded-full overflow-hidden border border-amber-400/30 p-[1px]">
-                      <div
-                        className="h-full rounded-full bg-gradient-to-r from-amber-500 via-emerald-400 to-emerald-300 transition-all duration-700 shadow-[0_0_10px_rgba(251,191,36,0.6)]"
-                        style={{ width: `${pct}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })()}
-            </div>
-
-            {/* ── PAPAN TARGET & MISI THALIB AL-AZHAR (RETENTION & PROGRESSION) ── */}
-            <div className="order-4 md:order-none rounded-2xl border-2 border-emerald-500/30 bg-gradient-to-br from-[#0e1712] via-[#09100c] to-[#070b08] p-5 sm:p-6 shadow-2xl relative overflow-hidden space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/10 pb-3">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 text-[10px] font-mono font-bold uppercase tracking-wider mb-1">
-                    <span>🎯</span> TARGET & MISI THALIB AZHAR
-                  </div>
-                  <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                    <span>Papan Target & Misi Keilmuan</span>
-                    <span className="font-arabic text-sm text-emerald-400" dir="rtl">مَهَامُّ التَّحْصِيلِ</span>
-                  </h3>
-                  <p className="text-xs text-white/60">Tuntaskan seluruh misi imtihan untuk percepatan kenaikan Rank dan gelar kehormatan.</p>
+                    </span>
+                  </button>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs font-mono text-amber-300 bg-amber-500/10 border border-amber-400/30 px-3 py-1 rounded-xl inline-block">
-                    {(() => {
-                      const bossesWon = Object.keys(userProgress?.completedBosses || {}).length;
-                      const hasMumtaz = Object.values(userProgress?.completedBosses || {}).some(b => b.taqdir?.includes('Mumtaz') || (b.stars && b.stars.length >= 3));
-                      const hasStreak4 = (userProgress?.streakRecord || 0) >= 4;
-                      const hasMutholaah = !!userProgress?.studyCompleted;
-                      const doneCount = (bossesWon >= 3 ? 1 : 0) + (hasMumtaz ? 1 : 0) + (hasStreak4 ? 1 : 0) + (hasMutholaah ? 1 : 0);
-                      return `Progres: ${doneCount} / 4 Selesai`;
-                    })()}
-                  </span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={() => setMenuPanel('quests')}
+                    className={`${PX_BTN} ${PX_WOOD} relative h-9 px-2.5 text-xs`}
+                    title="Papan target & misi"
+                  >
+                    <span>🎯</span>
+                    <span className="hidden sm:inline">Misi</span>
+                    <span className="text-[10px] text-amber-300">{questsDone}/4</span>
+                  </button>
+                  {canNativeFs && (
+                    <button
+                      onClick={toggleFullscreen}
+                      className={`${PX_BTN} ${isFullscreen ? PX_AMBER : PX_STONE} w-9 h-9`}
+                      title={isFullscreen ? 'Keluar Layar Penuh (F)' : 'Layar Penuh (F)'}
+                      aria-label="Layar penuh"
+                    >
+                      <Icon name={isFullscreen ? 'minimize' : 'maximize'} className="w-4 h-4" />
+                    </button>
+                  )}
+                  <button
+                    onClick={toggleAudio}
+                    className={`${PX_BTN} ${audioMuted ? PX_STONE : PX_GREEN} w-9 h-9`}
+                    title={audioMuted ? 'Aktifkan Suara' : 'Bisukan Suara'}
+                    aria-label="Suara"
+                  >
+                    <Icon name={audioMuted ? 'volumeOff' : 'volume'} className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
 
-              {/* 4 Quest Cards Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                {/* Quest 1 */}
-                {(() => {
-                  const count = Object.keys(userProgress?.completedBosses || {}).length;
-                  const isDone = count >= 3;
-                  return (
-                    <div className={`p-4 rounded-xl border flex flex-col justify-between transition relative overflow-hidden ${
-                      isDone
-                        ? 'bg-emerald-950/40 border-emerald-400/50 shadow-[0_0_15px_rgba(52,211,153,0.15)]'
-                        : 'bg-black/50 border-white/10 hover:border-white/20'
-                    }`}>
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-2xl">🏛️</span>
-                          <span className={`px-2 py-0.5 rounded-full font-mono text-[9px] font-bold uppercase ${
-                            isDone ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-400/40' : 'bg-white/10 text-white/50'
-                          }`}>
-                            {isDone ? '✅ SELESAI' : `${count}/3 TUNTAS`}
-                          </span>
-                        </div>
-                        <h4 className="font-bold text-xs sm:text-sm text-white mb-1">
-                          Penakluk 3 Muqarrar
-                        </h4>
-                        <p className="text-[11px] text-white/60 leading-relaxed mb-3">
-                          Kalahkan seluruh Boss Diktat resmi (Balaghah, Nahwu, dan Ushul Fiqh).
-                        </p>
-                      </div>
-                      <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-[10px] font-mono">
-                        <span className="text-amber-300 font-semibold">+150 EXP</span>
-                        <span className="text-white/40">Gelar Mutafawwiq</span>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* Quest 2 */}
-                {(() => {
-                  const hasMumtaz = Object.values(userProgress?.completedBosses || {}).some(b => b.taqdir?.includes('Mumtaz') || (b.stars && b.stars.length >= 3));
-                  return (
-                    <div className={`p-4 rounded-xl border flex flex-col justify-between transition relative overflow-hidden ${
-                      hasMumtaz
-                        ? 'bg-amber-950/40 border-amber-400/50 shadow-[0_0_15px_rgba(251,191,36,0.15)]'
-                        : 'bg-black/50 border-white/10 hover:border-white/20'
-                    }`}>
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-2xl">🌟</span>
-                          <span className={`px-2 py-0.5 rounded-full font-mono text-[9px] font-bold uppercase ${
-                            hasMumtaz ? 'bg-amber-500/20 text-amber-300 border border-amber-400/40' : 'bg-white/10 text-white/50'
-                          }`}>
-                            {hasMumtaz ? '✅ SELESAI' : 'TARGET: HP ≥ 80%'}
-                          </span>
-                        </div>
-                        <h4 className="font-bold text-xs sm:text-sm text-white mb-1">
-                          Predikat Mumtaz Syaraf
-                        </h4>
-                        <p className="text-[11px] text-white/60 leading-relaxed mb-3">
-                          Menangkan pertarungan dengan sisa HP ≥ 80% untuk predikat kehormatan tertinggi.
-                        </p>
-                      </div>
-                      <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-[10px] font-mono">
-                        <span className="text-amber-300 font-semibold">+100 EXP</span>
-                        <span className="text-white/40">Wisam Mumtaz</span>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* Quest 3 */}
-                {(() => {
-                  const streakRec = userProgress?.streakRecord || 0;
-                  const isDone = streakRec >= 4;
-                  return (
-                    <div className={`p-4 rounded-xl border flex flex-col justify-between transition relative overflow-hidden ${
-                      isDone
-                        ? 'bg-rose-950/40 border-rose-400/50 shadow-[0_0_15px_rgba(244,63,94,0.15)]'
-                        : 'bg-black/50 border-white/10 hover:border-white/20'
-                    }`}>
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-2xl">🔥</span>
-                          <span className={`px-2 py-0.5 rounded-full font-mono text-[9px] font-bold uppercase ${
-                            isDone ? 'bg-rose-500/20 text-rose-300 border border-rose-400/40' : 'bg-white/10 text-white/50'
-                          }`}>
-                            {isDone ? '✅ SELESAI' : `REKOR: x${streakRec}/4`}
-                          </span>
-                        </div>
-                        <h4 className="font-bold text-xs sm:text-sm text-white mb-1">
-                          Hujjah Mutawatirah x4
-                        </h4>
-                        <p className="text-[11px] text-white/60 leading-relaxed mb-3">
-                          Bangun rantai serangan combo 4 jawaban benar berurutan tanpa salah.
-                        </p>
-                      </div>
-                      <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-[10px] font-mono">
-                        <span className="text-amber-300 font-semibold">+75 EXP</span>
-                        <span className="text-white/40">Fashih Lisan</span>
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* Quest 4 */}
-                {(() => {
-                  const isDone = !!userProgress?.studyCompleted;
-                  return (
-                    <div className={`p-4 rounded-xl border flex flex-col justify-between transition relative overflow-hidden ${
-                      isDone
-                        ? 'bg-blue-950/40 border-blue-400/50 shadow-[0_0_15px_rgba(96,165,250,0.15)]'
-                        : 'bg-black/50 border-white/10 hover:border-white/20'
-                    }`}>
-                      <div>
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-2xl">📖</span>
-                          <span className={`px-2 py-0.5 rounded-full font-mono text-[9px] font-bold uppercase ${
-                            isDone ? 'bg-blue-500/20 text-blue-300 border border-blue-400/40' : 'bg-white/10 text-white/50'
-                          }`}>
-                            {isDone ? '✅ SELESAI' : '0/1 KHATAM'}
-                          </span>
-                        </div>
-                        <h4 className="font-bold text-xs sm:text-sm text-white mb-1">
-                          Muthola'ah Terverifikasi
-                        </h4>
-                        <p className="text-[11px] text-white/60 leading-relaxed mb-3">
-                          Khatamkan telaah ringkasan materi & kartu hafalan di Ruang Muthola'ah (Fase 1).
-                        </p>
-                      </div>
-                      <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-[10px] font-mono">
-                        <span className="text-amber-300 font-semibold">+50 EXP</span>
-                        <span className="text-white/40">Perisai Ijtihad</span>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
-
-            {/* Banner Utama */}
-            <div className="order-1 md:order-none rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-950/40 via-[#101512] to-[#0d0d0f] p-6 sm:p-8 relative overflow-hidden">
-              <div className="absolute right-0 top-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-              <div className="relative z-10 max-w-2xl">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs font-medium mb-3">
-                  <Icon name="sparkles" className="w-3.5 h-3.5" />
-                  <span>Gamifikasi Muqarrar Al-Azhar</span>
+              {/* Judul game */}
+              <div className="relative z-10 text-center px-4 pt-3 sm:pt-6 shrink-0">
+                <div className="inline-block px-2.5 py-0.5 bg-[#3a2614] text-amber-300 border-2 border-t-[#6b4725] border-l-[#6b4725] border-b-[#1f1308] border-r-[#1f1308] shadow-[1px_1px_0_#000] font-mono text-[10px] font-bold uppercase tracking-wider">
+                  ⚔️ Pokémon Arena • Muqarrar Al-Azhar
                 </div>
-                <h2 className="text-2xl sm:text-3xl font-display font-bold text-white mb-3">
-                  Uji Diktatmu ala Pokémon Battle ⚔️
+                <h2 className="mt-2 text-xl sm:text-3xl font-mono font-black text-white drop-shadow-[2px_2px_0_#000] leading-tight">
+                  PILIH MUQARRAR
                 </h2>
-                <p className="text-white/70 text-sm leading-relaxed mb-6">
-                  Pelajari intisari bab di <strong>Ruang Muthola'ah</strong> (Fase 1), lalu buktikan pemahamanmu dengan menantang <strong>Boss Diktat di Arena Pertarungan</strong> (Fase 2).
-                </p>
+                <p className="hidden sm:block text-xs text-stone-300 font-mono mt-1">Pilih dunia diktat, jelajahi petanya, dan taklukkan Boss di Kubah Ulama.</p>
+              </div>
 
-                <div className="flex flex-wrap gap-3">
-                  <button
-                    onClick={toggleFullscreen}
-                    className={`${canNativeFs ? '' : '!hidden '}btn border px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 font-mono font-bold transition shadow-lg ${
-                      isFullscreen
-                        ? 'border-amber-500/60 bg-amber-500/25 text-amber-300 shadow-amber-500/20'
-                        : 'border-amber-500/40 bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-teal-500/20 hover:from-amber-500/30 hover:to-emerald-500/30 text-amber-200'
-                    }`}
-                    title="Mainkan dalam mode layar penuh (F)"
-                  >
-                    <Icon name={isFullscreen ? 'minimize' : 'maximize'} className="w-4 h-4 text-amber-300" />
-                    <span>{isFullscreen ? 'Keluar Fullscreen (ESC)' : '🎮 Mainkan Layar Penuh (F)'}</span>
-                  </button>
-                  <button
-                    onClick={() => { if (requireLibraryMember()) fileInputRef.current?.click(); }}
-                    className="btn bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 shadow-lg shadow-emerald-500/20 active:scale-95 transition"
-                    title={isLibraryMember ? 'Upload PDF, Word, atau teks diktatmu' : 'Khusus member paket Library — masuk atau gabung dulu'}
-                  >
-                    <Icon name={isLibraryMember ? 'upload' : 'crown'} className="w-4 h-4" />
-                    <span>Upload Diktat / Catatan</span>
-                    {!isLibraryMember && <span className="text-[10px] font-mono font-bold bg-black/20 px-1.5 py-0.5 rounded">MEMBER</span>}
-                  </button>
+              {/* Slot dunia: 3 diktat preset. Di HP digeser ke samping. */}
+              <div className="relative z-10 flex-1 min-h-0 flex items-center">
+                <div className="w-full max-h-full flex gap-3 sm:gap-5 overflow-x-auto sm:overflow-visible snap-x snap-mandatory px-[9vw] sm:px-6 py-3 sm:justify-center [scrollbar-width:none]">
+                  {PRESETS.map((preset, i) => {
+                    const stageProg = getStageProgress(preset.id);
+                    const totalStars = getTotalMuqarrarStars(preset.id);
+                    const totalStages = preset.stages?.length || 4;
+                    const highest = Math.min(totalStages, stageProg.highestUnlocked || 1);
+                    const isAllCleared = stageProg.highestUnlocked >= totalStages && (userProgress?.completedBosses?.[preset.id]);
+                    return (
+                      <button
+                        key={preset.id}
+                        onClick={() => openPreset(preset)}
+                        className="group snap-center shrink-0 w-[82vw] max-w-[19rem] sm:w-[min(19rem,calc((100vw-5rem)/3))] text-left border-4 border-[#3d3221] bg-[#080d0a]/85 backdrop-blur-md shadow-[0_0_0_2px_#000,0_16px_40px_rgba(0,0,0,0.85)] hover:border-amber-500/70 hover:-translate-y-1 focus-visible:border-amber-400 outline-none transition flex flex-col"
+                      >
+                        {/* Penjaga dunia */}
+                        <div className="relative h-[clamp(7rem,24dvh,12rem)] overflow-hidden border-b-4 border-[#3d3221] bg-gradient-to-b from-[#1b2a20] to-[#0a100c] flex items-end justify-center">
+                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_70%,rgba(251,191,36,0.18),transparent_65%)]" />
+                          <img
+                            src={getVoxelSprite(4, preset.id)}
+                            alt={preset.bossName}
+                            className="relative h-[88%] object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.9)] group-hover:scale-105 transition"
+                          />
+                          <span className="absolute top-2 left-2 font-mono text-[10px] font-black px-2 py-0.5 bg-black/80 border-2 border-amber-400/60 text-amber-300">
+                            DUNIA {i + 1}
+                          </span>
+                          <span className="absolute top-2 right-2 font-mono text-[10px] font-bold px-2 py-0.5 bg-[#2b2413] border-2 border-amber-400 text-amber-300">
+                            {preset.bossRank || preset.bossRankCode || `Rank ${preset.bossLv}`}
+                          </span>
+                        </div>
+                        <div className="p-3 sm:p-4 flex-1 flex flex-col gap-1">
+                          <div className="font-arabic text-sm text-emerald-300/90 truncate" dir="rtl">{preset.titleArabic}</div>
+                          <h3 className="font-mono font-bold text-sm sm:text-base text-white leading-snug line-clamp-2 group-hover:text-amber-200 transition">{preset.title}</h3>
+                          <p className="text-[11px] text-white/50 font-mono truncate">{preset.maddah}</p>
+                          {/* Progres tahap */}
+                          <div className="mt-1.5 flex items-center gap-1">
+                            {Array.from({ length: totalStages }).map((_, s) => (
+                              <span
+                                key={s}
+                                className={`flex-1 h-2 border border-black ${s + 1 < highest || isAllCleared ? 'bg-emerald-500' : s + 1 === highest ? 'bg-cyan-400 animate-pulse' : 'bg-white/10'}`}
+                              />
+                            ))}
+                          </div>
+                          <div className="mt-1 flex items-center justify-between text-[10px] font-mono">
+                            <span className="text-amber-300/90">{isAllCleared ? '🏆 KHATAM' : `Tahap ${stageProg.highestUnlocked}/${totalStages}`}</span>
+                            <span className="text-amber-400">⭐ {totalStars}/{totalStages * 3}</span>
+                          </div>
+                          <span className={`${PX_BTN} ${PX_GREEN} mt-2 py-2 text-xs`}>
+                            {stageProg.highestUnlocked > 1 || totalStars > 0 ? 'LANJUTKAN ▸' : 'MULAI PETUALANGAN ▸'}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Kotak dialog bawah: diktat sendiri (member Library ke atas) */}
+              <div className={`relative z-10 mx-2 mb-[max(0.5rem,env(safe-area-inset-bottom))] sm:mx-auto sm:mb-4 sm:w-[min(52rem,calc(100%-2rem))] p-2.5 sm:p-4 ${GAME_BOX}`}>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-4">
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className="hidden sm:flex w-11 h-11 shrink-0 border border-amber-400/50 bg-amber-500/15 items-center justify-center text-2xl">👳‍♂️</div>
+                    <p className="text-[11px] sm:text-sm text-white/85 leading-snug">
+                      <span className="font-bold text-amber-300">Syaikh: </span>
+                      Punya diktat sendiri? Unggah atau tempel catatanmu, akan kuubah jadi dunia battle{isLibraryMember ? ' lengkap dengan cerita AI.' : '.'}
+                      {!isLibraryMember && <span className="text-amber-200/80"> (khusus member Library)</span>}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 sm:flex gap-2 shrink-0">
+                    <button
+                      onClick={() => { if (requireLibraryMember()) fileInputRef.current?.click(); }}
+                      disabled={uploadBusy}
+                      className={`${PX_BTN} ${PX_GREEN} px-3 py-2 text-xs`}
+                      title={isLibraryMember ? 'Upload PDF, Word, atau teks diktatmu' : 'Khusus member paket Library — masuk atau gabung dulu'}
+                    >
+                      <Icon name={isLibraryMember ? 'upload' : 'crown'} className="w-3.5 h-3.5" />
+                      <span>{uploadBusy ? 'Membaca...' : 'Upload Diktat'}</span>
+                    </button>
+                    <button
+                      onClick={() => setMenuPanel('paste')}
+                      className={`${PX_BTN} ${PX_WOOD} px-3 py-2 text-xs`}
+                    >
+                      <span>📝</span>
+                      <span>Paste Catatan</span>
+                    </button>
+                  </div>
                   <input
                     type="file"
                     ref={fileInputRef}
@@ -4178,141 +4146,163 @@ export default function BattlePage() {
                     accept=".pdf,.docx,.txt,.md"
                     className="hidden"
                   />
-                  <a
-                    href="#preset-section"
-                    className="btn border border-white/15 bg-white/5 hover:bg-white/10 text-white font-medium px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 transition"
-                  >
-                    <Icon name="bookOpen" className="w-4 h-4" />
-                    <span>Pilih Diktat Contoh Azhar</span>
-                  </a>
                 </div>
                 {uploadBusy && (
-                  <p className="text-xs text-amber-300 mt-3 animate-pulse">
-                    Sedang membaca dan mengekstrak materi diktat... mohon tunggu sebentar.
-                  </p>
+                  <p className="text-[11px] font-mono text-amber-300 mt-2 animate-pulse">Sedang membaca dan mengekstrak materi diktat... mohon tunggu sebentar.</p>
                 )}
                 {uploadError && (
-                  <p className="text-xs text-rose-400 mt-3">
-                    {uploadError}
-                  </p>
+                  <p className="text-[11px] font-mono text-rose-400 mt-2">{uploadError}</p>
                 )}
               </div>
-            </div>
 
-            {/* Diktat Contoh Siap Pakai */}
-            <div id="preset-section" className="order-2 md:order-none space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Diktat Preset Resmi Al-Azhar</h3>
-                  <p className="text-xs text-white/50">Materi siap pakai lengkap dengan ringkasan & monster imtihan</p>
-                </div>
-                <span className="text-xs text-emerald-400 font-mono">3 Bab Tersedia</span>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {PRESETS.map((preset) => {
-                  const stageProg = getStageProgress(preset.id);
-                  const totalStars = getTotalMuqarrarStars(preset.id);
-                  const totalStages = preset.stages?.length || 4;
-                  const isAllCleared = stageProg.highestUnlocked >= totalStages && (userProgress?.completedBosses?.[preset.id]);
-                  return (
-                    <div
-                      key={preset.id}
-                      onClick={() => {
-                        setActiveSet(preset);
-                        const curStageId = Math.min(totalStages, stageProg.highestUnlocked || 1);
-                        setSelectedStageId(curStageId);
-                        const targetStage = preset.stages?.find(s => s.id === curStageId) || preset.stages?.[0];
-                        setActiveStage(targetStage);
-                        setPhase('map');
-                        sfx.playBip(520);
-                      }}
-                      className="group cursor-pointer rounded-xl border border-white/10 bg-[#121214] hover:border-emerald-500/40 hover:bg-[#151a17] p-5 transition flex flex-col justify-between"
-                    >
-                      <div>
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="w-12 h-12 rounded-xl bg-black/60 border border-amber-400/30 flex items-center justify-center p-1 overflow-hidden shadow-md group-hover:border-amber-400 transition">
-                            <img
-                              src={getVoxelSprite(4, preset.id)}
-                              alt={preset.bossName}
-                              className="w-full h-full object-contain filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] group-hover:scale-110 transition"
-                            />
-                          </div>
-                          <div className="flex flex-col items-end gap-1">
-                            <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-400/40 text-amber-300 group-hover:bg-amber-500/25 transition font-bold">
-                              {preset.bossRank || preset.bossRankCode || `Rank ${preset.bossLv}`}
-                            </span>
-                            {totalStars > 0 && (
-                              <span className="text-[10px] font-mono font-bold text-amber-400 flex items-center gap-0.5">
-                                ⭐ {totalStars}/{totalStages * 3}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="font-arabic text-sm text-emerald-300/80 mb-1" dir="rtl">
-                          {preset.titleArabic}
-                        </div>
-                        <h4 className="font-semibold text-white text-base group-hover:text-emerald-200 transition mb-1">
-                          {preset.title}
-                        </h4>
-                        <p className="text-xs text-white/50 mb-3">{preset.maddah}</p>
-                      </div>
-
-                      <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs text-white/60">
-                        <span className="font-mono text-[11px] text-amber-300/90">
-                          {isAllCleared ? '🏆 KHATAM (Final Boss Takluk)' : `Tahap ${stageProg.highestUnlocked}/${totalStages} Aktif`}
-                        </span>
-                        <span className="text-emerald-400 group-hover:translate-x-1 transition font-medium flex items-center gap-1">
-                          Buka Peta 🗺️ <Icon name="chevronRight" className="w-3.5 h-3.5" />
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Input Manual Teks */}
-            <div className="order-5 md:order-none rounded-xl border border-white/10 bg-[#121214] p-5">
-              <h3 className="text-sm font-semibold text-white mb-1">Atau Paste Catatan / Ibarat Muqarrar</h3>
-              <p className="text-xs text-white/50 mb-3">Punya catatan materi sendiri? Paste di sini untuk diubah jadi arena battle{isLibraryMember ? ', lengkap dengan cerita AI sesuai materinya' : ''}.</p>
-              {!isLibraryMember ? (
-                <div className="rounded-lg border border-amber-500/25 bg-amber-500/5 p-4 text-center">
-                  <div className="text-sm font-semibold text-amber-200 mb-1">🔒 Khusus member paket Library</div>
-                  <p className="text-xs text-white/60 mb-3">
-                    Tiga diktat contoh di atas bebas dimainkan siapa saja. Untuk memakai diktat atau catatanmu sendiri (beserta cerita yang ditulis AI sesuai materinya), masuk dengan akun member Library ke atas.
-                  </p>
-                  <button
-                    onClick={requireLibraryMember}
-                    className="btn bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs px-4 py-2 rounded-lg transition"
+              {/* Panel dalam layar: profil, misi, paste catatan */}
+              {menuPanel && (
+                <div className="absolute inset-0 z-30 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-0 sm:p-6 animate-fadeIn" onClick={() => setMenuPanel(null)}>
+                  <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label={panelTitle}
+                    onClick={(e) => e.stopPropagation()}
+                    className={`${GAME_BOX} bg-[#080d0a]/95 w-full sm:w-[min(44rem,100%)] max-h-[85dvh] flex flex-col pb-[env(safe-area-inset-bottom)]`}
                   >
-                    {session ? 'Upgrade ke Library' : 'Masuk / Gabung Member'}
-                  </button>
+                    <div className="flex items-center justify-between gap-2 px-3 sm:px-4 py-2.5 border-b-2 border-[#3d3221]">
+                      <span className="font-mono text-xs sm:text-sm font-black text-amber-300 tracking-wider">{panelTitle}</span>
+                      <button
+                        onClick={() => setMenuPanel(null)}
+                        className={`${PX_BTN} ${PX_STONE} w-8 h-8`}
+                        aria-label="Tutup panel"
+                      >
+                        <Icon name="x" className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="overflow-y-auto overscroll-contain p-3 sm:p-4 select-text">
+                      {menuPanel === 'profile' && (
+                        <div className="space-y-4">
+                          <div className="flex items-center gap-3.5">
+                            <div className="relative shrink-0">
+                              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-amber-500/20 to-emerald-500/20 border-2 border-amber-400/50 flex items-center justify-center text-3xl">
+                                {rank.badge}
+                              </div>
+                              <span className="absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-black/90 border border-amber-400/60 text-[9px] font-mono font-black text-amber-300">
+                                {rank.rankCode}
+                              </span>
+                            </div>
+                            <div className="min-w-0">
+                              <div className="text-[10px] font-mono font-bold text-amber-300/90 uppercase tracking-wider">Majlis Thalib Al-Azhar</div>
+                              <h3 className="text-base sm:text-lg font-bold text-white truncate">{profile?.name || 'Thalib Azhar'}</h3>
+                              <div className="text-xs font-serif text-amber-200/80">{rank.title}</div>
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 text-[11px] text-white/60 mt-1 font-mono">
+                                <span>🔥 Rekor Hujjah: <strong className="text-amber-300">x{streakRec}</strong></span>
+                                <span>🏆 Boss Takluk: <strong className="text-emerald-300">{bossesWon}/3</strong></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="space-y-1.5">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] font-mono gap-0.5">
+                              <span className="text-amber-300 font-semibold">
+                                🎯 {rank.nextExp ? `Butuh ${Math.max(0, rank.nextExp - exp)} EXP lagi menuju ${rank.nextTitle}` : "Maqam Puncak: 'Alim Kabir / Faqih Azhari (Mumtaz)"}
+                              </span>
+                              <span className="text-white/60">{exp} {rank.nextExp ? `/ ${rank.nextExp} EXP (${rankPct}%)` : 'EXP (Maksimal)'}</span>
+                            </div>
+                            <div className="w-full h-2.5 bg-black/80 overflow-hidden border border-amber-400/30 p-[1px]">
+                              <div className="h-full bg-gradient-to-r from-amber-500 via-emerald-400 to-emerald-300 transition-all duration-700" style={{ width: `${rankPct}%` }} />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-[10px] font-mono uppercase tracking-wider text-amber-400/80 mb-2 font-bold">🎖️ Koleksi Wisam Muqarrar</div>
+                            <div className="grid grid-cols-3 gap-2">
+                              {PRESETS.map((p) => {
+                                const completed = userProgress?.completedBosses?.[p.id];
+                                return (
+                                  <div
+                                    key={p.id}
+                                    className={`p-2 border-2 flex flex-col items-center text-center ${completed ? 'border-amber-400/60 bg-gradient-to-b from-amber-500/20 to-black/60' : 'border-white/10 bg-black/40 opacity-50'}`}
+                                    title={completed ? `${p.title} (${completed.taqdir})` : `${p.title} (Belum ditaklukkan)`}
+                                  >
+                                    <span className="text-2xl mb-0.5">{completed ? '🎖️' : '🔒'}</span>
+                                    <span className="text-[10px] font-mono font-bold text-white truncate max-w-full">{p.id.split('-')[0].toUpperCase()}</span>
+                                    <span className="text-[9px] text-amber-300/80 font-mono">{completed ? completed.stars : 'TERKUNCI'}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {menuPanel === 'quests' && (
+                        <div className="space-y-3">
+                          <p className="text-[11px] text-white/60 font-mono">Tuntaskan seluruh misi imtihan untuk percepatan kenaikan Rank dan gelar kehormatan. Progres: <strong className="text-amber-300">{questsDone}/4 selesai</strong>.</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            {quests.map((q) => (
+                              <div key={q.title} className={`p-3 border-2 flex flex-col justify-between ${q.done ? questTone[q.tone] : 'bg-black/50 border-white/10'}`}>
+                                <div>
+                                  <div className="flex items-center justify-between mb-1.5">
+                                    <span className="text-xl">{q.icon}</span>
+                                    <span className={`px-2 py-0.5 font-mono text-[9px] font-bold uppercase ${q.done ? 'bg-black/40 border border-current' : 'bg-white/10 text-white/50'}`}>
+                                      {q.done ? '✅ SELESAI' : q.status}
+                                    </span>
+                                  </div>
+                                  <h4 className="font-bold text-xs sm:text-sm text-white mb-0.5">{q.title}</h4>
+                                  <p className="text-[11px] text-white/60 leading-relaxed mb-2">{q.desc}</p>
+                                </div>
+                                <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[10px] font-mono">
+                                  <span className="text-amber-300 font-semibold">+{q.exp} EXP</span>
+                                  <span className="text-white/40">{q.reward}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {menuPanel === 'paste' && (
+                        !isLibraryMember ? (
+                          <div className="border-2 border-amber-500/25 bg-amber-500/5 p-4 text-center">
+                            <div className="text-sm font-semibold text-amber-200 mb-1">🔒 Khusus member paket Library</div>
+                            <p className="text-xs text-white/60 mb-3">
+                              Tiga diktat contoh bebas dimainkan siapa saja. Untuk memakai diktat atau catatanmu sendiri (beserta cerita yang ditulis AI sesuai materinya), masuk dengan akun member Library ke atas.
+                            </p>
+                            <button
+                              onClick={requireLibraryMember}
+                              className={`${PX_BTN} ${PX_GREEN} mx-auto px-4 py-2 text-xs`}
+                            >
+                              {session ? 'Upgrade ke Library' : 'Masuk / Gabung Member'}
+                            </button>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="text-xs text-white/60 mb-2">Paste catatan materi sendiri untuk diubah jadi arena battle, lengkap dengan cerita AI sesuai materinya.</p>
+                            <textarea
+                              value={customText}
+                              onChange={(e) => setCustomText(e.target.value)}
+                              placeholder="Paste teks diktat di sini (minimal 1-2 paragraf)..."
+                              rows={7}
+                              className="w-full bg-[#0a0a0c] border-2 border-white/10 p-3 text-base sm:text-xs text-white placeholder-white/30 focus:outline-none focus:border-emerald-500/50 font-mono"
+                            />
+                            <div className="mt-3 flex justify-end">
+                              <button
+                                disabled={customText.trim().length < 50}
+                                onClick={() => processCustomText('Diktat Catatan Mandiri', customText)}
+                                className={`${PX_BTN} ${PX_GREEN} px-4 py-2 text-xs`}
+                              >
+                                Proses & Buka Ruang Muthola'ah ▸
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  </div>
                 </div>
-              ) : (<>
-              <textarea
-                value={customText}
-                onChange={(e) => setCustomText(e.target.value)}
-                placeholder="Paste teks diktat di sini (minimal 1-2 paragraf)..."
-                rows={4}
-                className="w-full bg-[#0a0a0c] border border-white/10 rounded-lg p-3 text-base sm:text-xs text-white placeholder-white/30 focus:outline-none focus:border-emerald-500/50 font-mono"
-              />
-              <div className="mt-3 flex justify-end">
-                <button
-                  disabled={customText.trim().length < 50}
-                  onClick={() => processCustomText('Diktat Catatan Mandiri', customText)}
-                  className="btn bg-white/10 hover:bg-white/20 disabled:opacity-40 text-white text-xs px-4 py-2 rounded-lg font-medium transition"
-                >
-                  Proses & Buka Ruang Muthola'ah
-                </button>
-              </div>
-              </>)}
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* =========================================================================
-            FASE PETA: PETA TAHAPAN LEVEL & PERJALANAN MENUJU FINAL BOSS
+            FASE PETA: PETA LEVEL — gambar peta jadi latar penuh layar.
+            Detail level terpilih tampil sebagai panel samping (desktop) atau bottom sheet (HP), bukan kartu di bawah peta.
             ========================================================================= */}
         {phase === 'map' && (() => {
           const stages = activeSet.stages || [];
@@ -4322,6 +4312,7 @@ export default function BattlePage() {
           const selectedStage = stages.find(s => s.id === selectedStageId) || stages[0] || {};
           const isSelectedUnlocked = selectedStage.id <= highestUnlocked;
           const selectedStars = getStageStars(activeSet.id, selectedStage.id);
+          const tactics = getStageTactics(activeSet.id, selectedStage.id);
 
           // Percentage coordinates aligned with the 3D Minecraft Voxel Overworld Map
           const nodeCoords = [
@@ -4331,151 +4322,457 @@ export default function BattlePage() {
             { x: 82.5, y: 26 }  // Stage 4 (Kubah Ulama - Final Boss Kubah Emas Voxel)
           ];
 
+          // Ukuran kanvas 16:9 yang menutupi seluruh area peta (seperti object-cover).
+          const canvasW = mapViewport ? Math.max(mapViewport.w, Math.ceil(mapViewport.h * 16 / 9)) : null;
+          const canvasStyle = canvasW ? { width: canvasW, height: Math.max(mapViewport.h, Math.round(canvasW * 9 / 16)) } : { width: '100%', aspectRatio: '16 / 9' };
+
+          const selectStage = (stage) => {
+            setSelectedStageId(stage.id);
+            if (stage.id <= highestUnlocked) setActiveStage(stage);
+            sfx.playStep();
+          };
+          const weatherOptions = [
+            { id: 'night', icon: '🌙', label: 'Malam Hening', tone: 'bg-[#3a2614] text-amber-300 border-amber-400/60', freq: 520 },
+            { id: 'rain', icon: '🌧️', label: 'Hujan Kairo', tone: 'bg-[#122838] text-cyan-300 border-cyan-400/60', freq: 440 },
+            { id: 'aurora', icon: '✨', label: 'Aurora Ruwaq', tone: 'bg-[#1b3a28] text-emerald-300 border-emerald-400/60', freq: 660 },
+          ];
+          const nextWeather = weatherOptions[(weatherOptions.findIndex(w => w.id === weatherMode) + 1) % weatherOptions.length];
+          const currentWeather = weatherOptions.find(w => w.id === weatherMode) || weatherOptions[0];
+
           return (
-            <div className="space-y-6 animate-fadeIn">
-              {/* ── TOP HEADER PETA MUQARRAR (MINECRAFT GUI PANEL) ── */}
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 p-5 sm:p-6 border-4 border-t-[#4a4a52] border-l-[#4a4a52] border-b-[#141416] border-r-[#141416] bg-[#1a1a20] shadow-[4px_4px_0_#000] relative">
-                {/* Gold Stud Corner Accents */}
-                <div className="absolute top-1 left-1 w-2 h-2 bg-amber-400 border border-black z-20" />
-                <div className="absolute top-1 right-1 w-2 h-2 bg-amber-400 border border-black z-20" />
-                <div className="absolute bottom-1 left-1 w-2 h-2 bg-amber-400 border border-black z-20" />
-                <div className="absolute bottom-1 right-1 w-2 h-2 bg-amber-400 border border-black z-20" />
+            <div className="relative h-[100dvh] w-full overflow-hidden flex flex-col lg:flex-row bg-[#0c100e] select-none animate-fadeIn">
+              {/* ── AREA PETA (latar penuh, bisa digeser) ── */}
+              <div className="relative flex-1 min-h-0 min-w-0">
+                <div
+                  ref={mapScrollRef}
+                  onPointerDown={onMapPointerDown}
+                  onPointerMove={onMapPointerMove}
+                  onPointerUp={onMapPointerUp}
+                  onPointerLeave={onMapPointerUp}
+                  className="absolute inset-0 overflow-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden cursor-grab active:cursor-grabbing"
+                >
+                  <div className="relative overflow-hidden" style={canvasStyle}>
+                    {/* 3D Minecraft Voxel Overworld Map Render */}
+                    <img
+                      src="/assets/minecraft-world-map.jpg"
+                      alt="Minecraft World Map Al-Azhar"
+                      className="absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.93] contrast-[1.08] select-none pointer-events-none"
+                    />
+                    {/* Atmospheric Night Vignette & Soft Tint */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/35 pointer-events-none" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30 pointer-events-none" />
 
-                <div className="relative z-10">
-                  <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                    <span className="px-2.5 py-0.5 bg-[#3a2614] text-amber-300 border-2 border-t-[#6b4725] border-l-[#6b4725] border-b-[#1f1308] border-r-[#1f1308] shadow-[1px_1px_0_#000] font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-                      <span>🗺️</span>
-                      <span>KHARIThAT AL-AZHAR • PETA LEVEL IMTIHAN</span>
-                    </span>
-                    <span className="text-white/40 text-xs hidden sm:inline">•</span>
-                    <span className="text-emerald-400 font-mono text-xs font-bold drop-shadow-[1px_1px_0_#000]">
-                      {activeSet.maddah}
-                    </span>
-                  </div>
-                  <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2 font-mono">
-                    <span>{activeSet.title}</span>
-                  </h2>
-                  <div className="font-arabic text-amber-200 text-sm mt-0.5" dir="rtl">
-                    {activeSet.titleArabic}
-                  </div>
-                  <p className="text-xs text-stone-300 font-mono mt-2 max-w-xl">
-                    Jelajahi setiap penjuru Al-Azhar, kalahkan penjaga gerbang & pakar matan untuk membuka <strong>Kubah Final Boss</strong> demi meraih Syahadah Resmi.
-                  </p>
-                </div>
-
-                <div className="relative z-10 flex flex-col sm:flex-row lg:flex-col items-start sm:items-center lg:items-end justify-between lg:justify-center gap-3 border-t lg:border-t-0 lg:border-l-2 border-stone-700/80 pt-3 lg:pt-0 lg:pl-6 shrink-0">
-                  <div className="text-left lg:text-right">
-                    <div className="text-[10px] font-mono uppercase tracking-wider text-white/50 mb-1">
-                      BINTANG & PROGRES JELAJAH
-                    </div>
-                    <div className="flex items-center lg:justify-end gap-2">
-                      <div className="text-lg sm:text-xl font-mono font-black text-amber-300 flex items-center gap-1.5 bg-[#0e0e12] border-2 border-t-[#000] border-l-[#000] border-b-[#3f3f46] border-r-[#3f3f46] px-3 py-0.5 shadow-inner">
-                        <span>⭐</span>
-                        <span>{totalStars} / {stages.length * 3}</span>
+                    {/* Weather & Ambient Particles Effect Layer */}
+                    {weatherMode === 'night' && (
+                      <div className="absolute inset-0 pointer-events-none z-15 overflow-hidden">
+                        {/* Floating Golden Lantern Embers & Fireflies */}
+                        {[
+                          { left: '22%', top: '75%', delay: '0s', dur: '4s' },
+                          { left: '30%', top: '65%', delay: '1.2s', dur: '5s' },
+                          { left: '42%', top: '48%', delay: '0.5s', dur: '4.5s' },
+                          { left: '55%', top: '58%', delay: '2.1s', dur: '3.8s' },
+                          { left: '68%', top: '54%', delay: '1.8s', dur: '4.2s' },
+                          { left: '76%', top: '40%', delay: '0.8s', dur: '5.2s' },
+                          { left: '83%', top: '28%', delay: '2.5s', dur: '3.5s' },
+                          { left: '50%', top: '35%', delay: '1.5s', dur: '4.8s' },
+                          { left: '15%', top: '45%', delay: '0.3s', dur: '4.1s' },
+                          { left: '60%', top: '20%', delay: '2.7s', dur: '5.5s' }
+                        ].map((p, i) => (
+                          <div
+                            key={i}
+                            style={{
+                              left: p.left,
+                              top: p.top,
+                              animationDelay: p.delay,
+                              animationDuration: p.dur
+                            }}
+                            className="absolute w-1.5 h-1.5 bg-amber-300 border border-black/40 shadow-[0_0_8px_#f59e0b] animate-bounce opacity-80"
+                          />
+                        ))}
                       </div>
-                      <span className="text-xs font-mono text-emerald-300 font-bold bg-[#142318] border-2 border-t-[#22442c] border-l-[#22442c] border-b-[#0a140d] border-r-[#0a140d] px-2.5 py-1 shadow-[1px_1px_0_#000]">
-                        {Math.round((highestUnlocked / stages.length) * 100)}% Lulus
-                      </span>
+                    )}
+
+                    {weatherMode === 'rain' && (
+                      <div className="absolute inset-0 pointer-events-none z-15 overflow-hidden">
+                        {/* Minecraft Rain Streaks */}
+                        <div className="absolute inset-0 bg-blue-950/20 backdrop-contrast-125" />
+                        <div
+                          className="absolute inset-0 opacity-40 animate-pulse"
+                          style={{
+                            backgroundImage: 'repeating-linear-gradient(105deg, rgba(147,197,253,0.4) 0px, rgba(147,197,253,0.4) 1px, transparent 1px, transparent 14px)',
+                            backgroundSize: '100% 100%'
+                          }}
+                        />
+                        {/* Subtle Lightning Flash */}
+                        <div className="absolute inset-0 bg-cyan-100/10 pointer-events-none animate-ping opacity-20" />
+                      </div>
+                    )}
+
+                    {weatherMode === 'aurora' && (
+                      <div className="absolute inset-0 pointer-events-none z-15 overflow-hidden">
+                        {/* Ethereal Al-Azhar Emerald Aurora */}
+                        <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-emerald-500/25 via-teal-400/20 to-transparent blur-xl animate-pulse" />
+                        <div className="absolute top-4 right-1/4 w-96 h-32 bg-purple-500/15 blur-2xl animate-pulse" />
+                        {/* Starlight Twinkles */}
+                        {[
+                          { left: '35%', top: '15%' },
+                          { left: '65%', top: '12%' },
+                          { left: '50%', top: '8%' },
+                          { left: '80%', top: '18%' },
+                          { left: '20%', top: '22%' }
+                        ].map((s, idx) => (
+                          <div
+                            key={idx}
+                            style={{ left: s.left, top: s.top }}
+                            className="absolute w-1 h-1 bg-white shadow-[0_0_6px_#fff] animate-ping opacity-75"
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Minecraft Redstone & Emerald Energy Trail (SVG Overlay) */}
+                    <svg
+                      className="absolute inset-0 w-full h-full pointer-events-none z-10"
+                      viewBox="0 0 1000 580"
+                      preserveAspectRatio="none"
+                    >
+                      <defs>
+                        <filter id="trailGlow" x="-20%" y="-20%" width="140%" height="140%">
+                          <feGaussianBlur stdDeviation="4" result="blur" />
+                          <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                          </feMerge>
+                        </filter>
+                      </defs>
+
+                      {/* Dark stone road conduit backing */}
+                      <path
+                        d="M 215 452 C 275 385, 315 320, 385 267 C 465 210, 565 365, 690 325 C 750 305, 785 220, 825 151"
+                        fill="none"
+                        stroke="#050a07"
+                        strokeWidth="16"
+                        strokeLinecap="round"
+                        opacity="0.75"
+                      />
+                      <path
+                        d="M 215 452 C 275 385, 315 320, 385 267 C 465 210, 565 365, 690 325 C 750 305, 785 220, 825 151"
+                        fill="none"
+                        stroke="#14261b"
+                        strokeWidth="10"
+                        strokeDasharray="14 10"
+                        strokeLinecap="round"
+                      />
+
+                      {/* UNLOCKED SEGMENT 1 -> 2 (Gerbang to Ruwaq) */}
+                      {highestUnlocked >= 2 && (
+                        <path
+                          d="M 215 452 C 275 385, 315 320, 385 267"
+                          fill="none"
+                          stroke="#10b981"
+                          strokeWidth="5"
+                          strokeLinecap="round"
+                          filter="url(#trailGlow)"
+                        />
+                      )}
+                      {/* UNLOCKED SEGMENT 2 -> 3 (Ruwaq to Shahn) */}
+                      {highestUnlocked >= 3 && (
+                        <path
+                          d="M 385 267 C 465 210, 565 365, 690 325"
+                          fill="none"
+                          stroke="#34d399"
+                          strokeWidth="5"
+                          strokeLinecap="round"
+                          filter="url(#trailGlow)"
+                        />
+                      )}
+                      {/* UNLOCKED SEGMENT 3 -> 4 (Shahn to Kubah Final Boss) */}
+                      {highestUnlocked >= 4 && (
+                        <path
+                          d="M 690 325 C 750 305, 785 220, 825 151"
+                          fill="none"
+                          stroke="#fbbf24"
+                          strokeWidth="6"
+                          strokeLinecap="round"
+                          filter="url(#trailGlow)"
+                        />
+                      )}
+
+                      {/* Active Waypoint Beacon Radiations */}
+                      <circle cx="215" cy="452" r="22" fill="#10b981" opacity="0.2" className="animate-ping" />
+                      {highestUnlocked >= 2 && <circle cx="385" cy="267" r="22" fill="#34d399" opacity="0.2" className="animate-ping" />}
+                      {highestUnlocked >= 3 && <circle cx="690" cy="325" r="24" fill="#34d399" opacity="0.2" className="animate-ping" />}
+                      {highestUnlocked >= 4 && <circle cx="825" cy="151" r="28" fill="#fbbf24" opacity="0.25" className="animate-ping" />}
+                    </svg>
+
+                    {/* ── INTERACTIVE MINECRAFT MYSTERY CHEST (PETI HIKMAH AL-AZHAR) ── */}
+                    <div
+                      style={{ left: '53.5%', top: '70%', transform: 'translate(-50%, -50%)' }}
+                      className="absolute z-25 flex flex-col items-center"
+                    >
+                      <button
+                        onClick={handleOpenLootChest}
+                        className="group relative flex flex-col items-center focus:outline-none transition active:scale-95"
+                        title={chestClaimed ? 'Peti Hikmah sudah dibuka hari ini' : 'Buka Peti Hikmah & Hadiah Harian!'}
+                      >
+                        {/* Floating Chest Banner */}
+                        <div className={`mb-1 px-2.5 py-1 border-2 text-[9px] sm:text-[10px] font-mono font-bold shadow-[2px_2px_0_#000] flex items-center gap-1.5 whitespace-nowrap transition-all ${
+                          chestClaimed
+                            ? 'bg-[#1c1c22] border-stone-600 text-stone-400'
+                            : 'bg-[#2b2413] border-amber-400 text-amber-300 animate-bounce'
+                        }`}>
+                          <span>{chestClaimed ? '📦' : '✨ 🎁'}</span>
+                          <span className="drop-shadow-[1px_1px_0_#000]">{chestClaimed ? 'Peti Terbuka' : 'Peti Hikmah Azhar!'}</span>
+                        </div>
+
+                        {/* 3D Minecraft Chest Block */}
+                        <div className={`w-10 h-10 sm:w-12 sm:h-12 border-2 border-t-[#c68940] border-l-[#c68940] border-b-[#4a2e12] border-r-[#4a2e12] bg-[#875525] shadow-[3px_3px_0_#000] relative flex items-center justify-center transition-all ${
+                          chestClaimed ? 'brightness-75' : 'group-hover:brightness-120 group-hover:scale-105'
+                        }`}>
+                          {/* Chest Latch (Iron / Gold Lock) */}
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3.5 bg-[#e2e8f0] border border-black shadow-[1px_1px_0_#000] flex items-center justify-center z-10">
+                            <div className="w-1.5 h-1.5 bg-black" />
+                          </div>
+                          {/* Top lid rim */}
+                          <div className="absolute top-2 inset-x-0 h-0.5 bg-[#3a200e]" />
+                          {/* Side borders */}
+                          <div className="absolute inset-0 border border-black/30 pointer-events-none" />
+
+                          {/* Sparkling Ping Glow if Unclaimed */}
+                          {!chestClaimed && (
+                            <div className="absolute -inset-2 bg-amber-400/30 blur-sm rounded-full animate-ping pointer-events-none opacity-80" />
+                          )}
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* ── SMOOTH GLIDING THALIB AZHAR AVATAR ON THE OVERWORLD MAP ── */}
+                    {selectedStage && (
+                      <div
+                        data-map-focus
+                        style={{
+                          left: `${nodeCoords[selectedStage.id - 1]?.x || 21.5}%`,
+                          top: `${nodeCoords[selectedStage.id - 1]?.y || 78}%`,
+                          transform: 'translate(-50%, -130%)',
+                          transition: 'all 0.65s cubic-bezier(0.34, 1.56, 0.64, 1)'
+                        }}
+                        className="absolute z-35 pointer-events-none flex flex-col items-center"
+                      >
+                        {/* Dual Iron Chains */}
+                        <div className="flex gap-4 -mb-1">
+                          <div className="w-1 h-2.5 bg-stone-400 border border-black shadow" />
+                          <div className="w-1 h-2.5 bg-stone-400 border border-black shadow" />
+                        </div>
+                        {/* Oak Wood Hanging Sign */}
+                        <div className="px-2.5 py-1 bg-[#784d28] text-[#fff7d6] text-[9px] sm:text-[10px] font-mono font-black uppercase tracking-wider shadow-[3px_3px_0_#000] flex items-center gap-1.5 border-2 border-t-[#ba7e44] border-l-[#ba7e44] border-b-[#3d2411] border-r-[#3d2411] animate-bounce">
+                          <span className="text-sm">🎓</span>
+                          <span className="drop-shadow-[1px_1px_0_#000]">KAMU DI SINI</span>
+                        </div>
+                        {/* Wooden Arrow Tip */}
+                        <div className="w-3 h-3 bg-[#784d28] border-r-2 border-b-2 border-[#3d2411] rotate-45 -mt-1.5 shadow mb-1" />
+
+                        {/* 3D Voxel Mini Character Sprite Walking */}
+                        <div className="relative">
+                          <img
+                            src="/assets/thalib-voxel-facing-right.png"
+                            alt="Thalib Voxel Pin"
+                            className="w-11 sm:w-14 h-auto object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] animate-pulse"
+                          />
+                          <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-2 bg-black/75 rounded-full blur-[2px]" />
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ── 4 TACTILE STAGE WAYPOINT NODE BUTTONS (REACT OVERLAY) ── */}
+                    {stages.map((stage, idx) => {
+                      const coords = nodeCoords[idx] || { x: 20 + idx * 22, y: 50 };
+                      const isUnlocked = stage.id <= highestUnlocked;
+                      const stars = getStageStars(activeSet.id, stage.id);
+                      const isCleared = stars > 0;
+                      const isCurrent = stage.id === highestUnlocked;
+                      const isSelected = selectedStage.id === stage.id;
+                      const isFinal = stage.isFinal;
+
+                      return (
+                        <div
+                          key={stage.id}
+                          style={{
+                            left: `${coords.x}%`,
+                            top: `${coords.y}%`,
+                            transform: 'translate(-50%, -50%)'
+                          }}
+                          className="absolute z-20 flex flex-col items-center"
+                        >
+                          {/* Minecraft Block Pedestal / Shrine Button */}
+                          <button
+                            onClick={() => {
+                              setSelectedStageId(stage.id);
+                              if (isUnlocked) setActiveStage(stage);
+                              sfx.playStep();
+                            }}
+                            className={`group relative transition-all duration-300 flex items-center justify-center ${
+                              isFinal
+                                ? 'w-[4.5rem] h-[4.5rem] sm:w-24 sm:h-24'
+                                : 'w-[3.75rem] h-[3.75rem] sm:w-20 sm:h-20'
+                            } ${
+                              isSelected
+                                ? 'scale-115 ring-4 ring-amber-300 shadow-[0_0_35px_rgba(251,191,36,0.85)] z-20'
+                                : 'hover:scale-105'
+                            } ${
+                              !isUnlocked
+                                ? 'bg-[#151518] border-t-2 border-l-2 border-[#3c3c42] border-b-4 border-r-4 border-black opacity-75 shadow-inner'
+                                : isFinal
+                                ? 'bg-gradient-to-b from-[#eab308] via-[#ca8a04] to-[#713f12] border-t-2 border-l-2 border-[#fef08a] border-b-4 border-r-4 border-[#3f2005] shadow-[0_0_30px_rgba(234,179,8,0.7)]'
+                                : isCleared
+                                ? 'bg-gradient-to-b from-[#15803d] via-[#166534] to-[#052e16] border-t-2 border-l-2 border-[#4ade80] border-b-4 border-r-4 border-[#021b0b] shadow-[0_0_25px_rgba(34,197,94,0.5)]'
+                                : 'bg-gradient-to-b from-[#1d4ed8] via-[#1e40af] to-[#0f172a] border-t-2 border-l-2 border-[#60a5fa] border-b-4 border-r-4 border-[#080d1a] shadow-[0_0_25px_rgba(59,130,246,0.6)] animate-pulse'
+                            }`}
+                            style={{
+                              boxShadow: isSelected
+                                ? '0 0 35px rgba(251,191,36,0.85), inset 2px 2px 0 rgba(255,255,255,0.4), inset -2px -2px 0 rgba(0,0,0,0.5)'
+                                : 'inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.5)'
+                            }}
+                          >
+                            {/* Inner Voxel Character or Lock */}
+                            <div className="flex flex-col items-center justify-center w-full h-full p-1 sm:p-1.5 overflow-hidden">
+                              {!isUnlocked ? (
+                                <span className="text-xl sm:text-2xl filter grayscale opacity-75">🔒</span>
+                              ) : isFinal ? (
+                                <div className="relative w-full h-full flex flex-col items-center justify-center">
+                                  <span className="absolute -top-3 sm:-top-4 text-xs sm:text-base animate-bounce z-10 filter drop-shadow">👑</span>
+                                  <img
+                                    src={getVoxelSprite(stage.id, activeSet.id)}
+                                    alt={stage.guardianName || 'Final Boss'}
+                                    className="w-11 h-11 sm:w-16 sm:h-16 object-contain filter drop-shadow-[0_6px_12px_rgba(0,0,0,0.9)] scale-110"
+                                  />
+                                </div>
+                              ) : (
+                                <img
+                                  src={getVoxelSprite(stage.id, activeSet.id)}
+                                  alt={stage.guardianName || `Level ${stage.levelNumber}`}
+                                  className="w-10 h-10 sm:w-14 sm:h-14 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]"
+                                />
+                              )}
+                            </div>
+
+                            {/* Star Badges for Cleared Stages */}
+                            {isCleared && (
+                              <div className="absolute -bottom-2.5 px-2 py-0.5 bg-[#121214] border-2 border-t-stone-600 border-l-stone-600 border-b-black border-r-black text-[8px] sm:text-[10px] font-mono text-amber-300 shadow-[2px_2px_0_#000] flex items-center gap-0.5 z-10">
+                                {stars === 3 ? '⭐⭐⭐' : stars === 2 ? '⭐⭐' : '⭐'}
+                              </div>
+                            )}
+
+                            {/* Cleared Checkmark Ribbon */}
+                            {isCleared && (
+                              <span className="absolute -top-1.5 -right-1.5 w-5 h-5 sm:w-6 sm:h-6 bg-emerald-500 text-black border-2 border-black font-black text-[10px] sm:text-xs flex items-center justify-center shadow-[1px_1px_0_#000] z-10">
+                                ✓
+                              </span>
+                            )}
+
+                            {/* Pulsing Beacon Ring for Current Stage */}
+                            {isCurrent && !isCleared && (
+                              <div className="absolute -inset-1.5 border-2 border-cyan-400 animate-ping pointer-events-none opacity-60" />
+                            )}
+                          </button>
+
+                          {/* Minecraft Plaque Nameplate */}
+                          <div className="mt-2 text-center pointer-events-none">
+                            <div className={`text-[10px] sm:text-xs font-mono font-bold tracking-tight whitespace-nowrap px-2.5 py-1 border-2 shadow-[2px_2px_0_#000] ${
+                              isSelected
+                                ? 'bg-[#2b2413] border-amber-400 text-amber-300 font-black'
+                                : isUnlocked
+                                ? 'bg-[#18181c] border-stone-600 text-white'
+                                : 'bg-[#101012] border-stone-800 text-white/40'
+                            }`}>
+                              {isFinal ? '👑 FINAL BOSS' : `LEVEL ${stage.levelNumber}`}
+                            </div>
+                            <div className="text-[9px] font-mono font-bold text-amber-300 drop-shadow-[1px_1px_0_#000] mt-0.5 hidden sm:block truncate max-w-[120px]">
+                              {stage.guardianRankCode || `Rank ${stage.guardianRank}`}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* HUD atas peta */}
+                <div className="absolute inset-x-0 top-0 z-40 pointer-events-none bg-gradient-to-b from-black/70 to-transparent px-2 sm:px-3 pt-[max(0.5rem,env(safe-area-inset-top))] sm:pt-3 pb-6">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0 pointer-events-auto">
+                      <button
+                        onClick={() => setPhase('select')}
+                        className={`${PX_BTN} ${PX_WOOD} h-9 px-2.5 text-xs shrink-0`}
+                        title="Ganti Muqarrar / Kembali ke Menu Diktat"
+                      >
+                        <Icon name="chevronLeft" className="w-4 h-4" />
+                        <span className="hidden sm:inline">Ganti Muqarrar</span>
+                      </button>
+                      <div className={`${GAME_BOX} min-w-0 px-2.5 py-1`}>
+                        <div className="text-[9px] sm:text-[10px] font-mono font-bold text-emerald-400 truncate">🗺️ {activeSet.maddah}</div>
+                        <div className="text-[11px] sm:text-sm font-mono font-bold text-white truncate max-w-[9rem] sm:max-w-[18rem]">{activeSet.title}</div>
+                      </div>
+                      <div className={`${GAME_BOX} hidden sm:flex lg:hidden xl:flex flex-col items-center px-2.5 py-1 shrink-0`}>
+                        <span className="text-[11px] font-mono font-black text-amber-300">⭐ {totalStars}/{stages.length * 3}</span>
+                        <span className="text-[9px] font-mono text-emerald-300">TAHAP {highestUnlocked}/{stages.length}</span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 shrink-0 pointer-events-auto">
+                      {/* Cuaca: satu tombol putar di HP, tiga pilihan di layar lebar */}
+                      <button
+                        onClick={() => { setWeatherMode(nextWeather.id); sfx.playBip(nextWeather.freq); }}
+                        className={`${PX_BTN} ${PX_STONE} sm:!hidden w-9 h-9 text-base`}
+                        title={`Cuaca: ${currentWeather.label} (ketuk untuk ganti)`}
+                        aria-label="Ganti cuaca"
+                      >
+                        {currentWeather.icon}
+                      </button>
+                      <div className="hidden sm:flex items-center gap-1 bg-[#141418]/90 border-2 border-t-[#3f3f46] border-l-[#3f3f46] border-b-[#000] border-r-[#000] p-1 shadow-[2px_2px_0_#000]">
+                        {weatherOptions.map(w => (
+                          <button
+                            key={w.id}
+                            onClick={() => { setWeatherMode(w.id); sfx.playBip(w.freq); }}
+                            className={`px-2 py-1 text-[10px] font-mono font-bold border transition flex items-center gap-1 ${weatherMode === w.id ? `${w.tone} shadow-[1px_1px_0_#000]` : 'border-transparent text-stone-400 hover:text-white'}`}
+                            title={w.label}
+                          >
+                            <span>{w.icon}</span>
+                            <span className="hidden xl:inline">{w.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => setPhase('study')}
+                        className={`${PX_BTN} ${PX_GREEN} h-9 px-2.5 text-xs`}
+                        title="Buka Ruang Muthola'ah untuk membaca ringkasan materi & flashcard"
+                      >
+                        <Icon name="book" className="w-4 h-4" />
+                        <span className="hidden md:inline lg:hidden xl:inline">Muthola'ah</span>
+                      </button>
+                      {canNativeFs && (
+                        <button
+                          onClick={toggleFullscreen}
+                          className={`${PX_BTN} ${isFullscreen ? PX_AMBER : PX_STONE} w-9 h-9`}
+                          title={isFullscreen ? 'Keluar Layar Penuh (F)' : 'Layar Penuh (F)'}
+                          aria-label="Layar penuh"
+                        >
+                          <Icon name={isFullscreen ? 'minimize' : 'maximize'} className="w-4 h-4" />
+                        </button>
+                      )}
+                      <button
+                        onClick={toggleAudio}
+                        className={`${PX_BTN} ${audioMuted ? PX_STONE : PX_GREEN} w-9 h-9`}
+                        title={audioMuted ? 'Aktifkan Suara' : 'Bisukan Suara'}
+                        aria-label="Suara"
+                      >
+                        <Icon name={audioMuted ? 'volumeOff' : 'volume'} className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <button
-                      onClick={toggleFullscreen}
-                      className={`${canNativeFs ? '' : 'hidden '}border-t-2 border-l-2 border-b-4 border-r-4 active:border-b-2 active:border-r-2 active:translate-y-0.5 font-mono font-bold text-xs px-3 py-2 shadow-[2px_2px_0_#000] transition flex items-center gap-1.5 ${
-                        isFullscreen
-                          ? 'border-[#f59e0b] bg-[#b45309] text-white'
-                          : 'border-[#4a5568] bg-[#2d3748] hover:bg-[#3b475a] text-stone-200'
-                      }`}
-                      title={isFullscreen ? 'Keluar Layar Penuh (ESC / F)' : 'Buka Layar Penuh (F)'}
-                    >
-                      <Icon name={isFullscreen ? 'minimize' : 'maximize'} className="w-3.5 h-3.5 text-amber-300" />
-                      <span className="hidden sm:inline">{isFullscreen ? 'Kecilkan' : 'Full Screen (F)'}</span>
-                    </button>
-                    <button
-                      onClick={() => setPhase('study')}
-                      className="border-t-2 border-l-2 border-[#5fd481] border-b-4 border-r-4 border-[#134221] bg-[#2e8a4a] hover:bg-[#349e54] active:border-b-2 active:border-r-2 active:translate-y-0.5 text-white font-mono font-bold text-xs px-3.5 py-2 shadow-[2px_2px_0_#000] transition flex items-center gap-1.5"
-                      title="Buka Ruang Muthola'ah untuk membaca ringkasan materi & flashcard"
-                    >
-                      <Icon name="book" className="w-3.5 h-3.5 text-white" />
-                      <span>Ruang Muthola'ah</span>
-                    </button>
-                    <button
-                      onClick={() => setPhase('select')}
-                      className="border-t-2 border-l-2 border-[#8c643b] border-b-4 border-r-4 border-[#2b1c0e] bg-[#4a321f] hover:bg-[#593d26] active:border-b-2 active:border-r-2 active:translate-y-0.5 text-stone-200 font-mono font-bold text-xs px-3 py-2 shadow-[2px_2px_0_#000] transition"
-                      title="Ganti Muqarrar / Kembali ke Menu Diktat"
-                    >
-                      <span>Ganti Muqarrar</span>
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* ── INTERACTIVE MINECRAFT 3D OVERWORLD MAP BOARD ── */}
-              <div className="rounded-2xl border-4 border-[#2b2b2e] bg-[#0c100e] p-2.5 sm:p-5 shadow-[0_25px_60px_rgba(0,0,0,0.95)] relative overflow-hidden select-none">
-                {/* Authentic Minecraft Gold Corner Rivets */}
-                <div className="absolute top-1.5 left-1.5 w-3 h-3 bg-amber-400 border border-black z-30" />
-                <div className="absolute top-1.5 right-1.5 w-3 h-3 bg-amber-400 border border-black z-30" />
-                <div className="absolute bottom-1.5 left-1.5 w-3 h-3 bg-amber-400 border border-black z-30" />
-                <div className="absolute bottom-1.5 right-1.5 w-3 h-3 bg-amber-400 border border-black z-30" />
-
-                {/* Minecraft Oak Wood Hanging Signs (Plaques) */}
-                <div className="absolute top-3 left-3 z-20 hidden sm:flex items-center gap-1.5 text-xs font-mono font-bold text-[#fef08a] bg-[#3a2614] px-3 py-1.5 border-2 border-t-[#6b4725] border-l-[#6b4725] border-b-[#1f1308] border-r-[#1f1308] shadow-[2px_2px_0_#000]">
-                  <span className="text-amber-400">🚪</span>
-                  <span className="text-[10px] tracking-wider uppercase drop-shadow-[1px_1px_0_#000]">BAB AL-GHAWRI • TAHAP 1</span>
-                </div>
-
-                {/* Weather & Atmosphere Switcher Bar */}
-                <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-[#141418]/90 border-2 border-t-[#3f3f46] border-l-[#3f3f46] border-b-[#000] border-r-[#000] p-1 shadow-[2px_2px_0_#000]">
-                  <span className="text-[9px] font-mono font-bold text-amber-300 px-1.5 uppercase hidden sm:inline">Cuaca:</span>
-                  <button
-                    onClick={() => { setWeatherMode('night'); sfx.playBip(520); }}
-                    className={`px-3 py-1.5 sm:px-2 sm:py-0.5 text-sm sm:text-[9px] font-mono font-bold transition flex items-center gap-1 ${
-                      weatherMode === 'night'
-                        ? 'bg-[#3a2614] text-amber-300 border border-amber-400/60 shadow-[1px_1px_0_#000]'
-                        : 'text-stone-400 hover:text-white'
-                    }`}
-                  >
-                    <span>🌙</span>
-                    <span className="hidden sm:inline">Malam Hening</span>
-                  </button>
-                  <button
-                    onClick={() => { setWeatherMode('rain'); sfx.playBip(440); }}
-                    className={`px-3 py-1.5 sm:px-2 sm:py-0.5 text-sm sm:text-[9px] font-mono font-bold transition flex items-center gap-1 ${
-                      weatherMode === 'rain'
-                        ? 'bg-[#122838] text-cyan-300 border border-cyan-400/60 shadow-[1px_1px_0_#000]'
-                        : 'text-stone-400 hover:text-white'
-                    }`}
-                  >
-                    <span>🌧️</span>
-                    <span className="hidden sm:inline">Hujan Kairo</span>
-                  </button>
-                  <button
-                    onClick={() => { setWeatherMode('aurora'); sfx.playBip(660); }}
-                    className={`px-3 py-1.5 sm:px-2 sm:py-0.5 text-sm sm:text-[9px] font-mono font-bold transition flex items-center gap-1 ${
-                      weatherMode === 'aurora'
-                        ? 'bg-[#1b3a28] text-emerald-300 border border-emerald-400/60 shadow-[1px_1px_0_#000]'
-                        : 'text-stone-400 hover:text-white'
-                    }`}
-                  >
-                    <span>✨</span>
-                    <span className="hidden sm:inline">Aurora Ruwaq</span>
-                  </button>
-                </div>
-
-                <div className="absolute top-3 right-3 z-20 hidden sm:flex items-center gap-1.5 text-xs font-mono font-bold text-amber-300 bg-[#3a2614] px-3 py-1.5 border-2 border-t-[#6b4725] border-l-[#6b4725] border-b-[#1f1308] border-r-[#1f1308] shadow-[2px_2px_0_#000]">
-                  <span className="animate-bounce">👑</span>
-                  <span className="text-[10px] tracking-wider uppercase drop-shadow-[1px_1px_0_#000]">KUBAH ULAMA • FINAL BOSS</span>
-                </div>
-                <div className="absolute bottom-3 left-3 z-20 text-[10px] font-mono font-bold text-emerald-300 bg-[#142318] px-2.5 py-1 border-2 border-t-[#22442c] border-l-[#22442c] border-b-[#0a140d] border-r-[#0a140d] shadow-[2px_2px_0_#000]">
-                  [ 🗺️ TAHAP {highestUnlocked}/{stages.length} TERBUKA ]
-                </div>
-                <div className="absolute bottom-3 right-3 z-20 text-[10px] font-mono font-bold text-white/80 bg-[#1c1c1f] px-2.5 py-1 border-2 border-t-[#3a3a3e] border-l-[#3a3a3e] border-b-[#0d0d0e] border-r-[#0d0d0e] shadow-[2px_2px_0_#000] hidden sm:block">
-                  [ ⚔️ KLIK SIMPUL LEVEL UNTUK INSPEKSI & TANDING ]
                 </div>
 
                 {/* Chest Notification Toast */}
                 {chestToast && (
-                  <div className="absolute top-14 left-1/2 -translate-x-1/2 z-40 max-w-md w-[92%] bg-[#1a140c] border-2 border-amber-400 p-2.5 shadow-[4px_4px_0_#000] text-amber-200 font-mono text-xs text-center animate-fadeIn">
+                  <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 max-w-md w-[92%] bg-[#1a140c] border-2 border-amber-400 p-2.5 shadow-[4px_4px_0_#000] text-amber-200 font-mono text-xs text-center animate-fadeIn">
                     <div className="flex items-center justify-center gap-1.5 font-bold mb-0.5 text-amber-300">
                       <span>📦</span>
                       <span>PETI HIKMAH AL-AZHAR</span>
@@ -4484,540 +4781,194 @@ export default function BattlePage() {
                   </div>
                 )}
 
-                {/* Map Interactive Canvas */}
-                {/* Di HP peta tetap selebar 640px (16:9) dan digeser ke samping: kalau dipaksa sempit, gambar ter-crop dan node level saling tabrakan. */}
-                <div ref={mapScrollRef} className="overflow-x-auto overscroll-x-contain sm:overflow-visible [scrollbar-width:none]">
-                <div className="relative w-[640px] sm:w-full aspect-[16/9] sm:min-h-[520px] my-1 rounded-xl overflow-hidden border-2 border-black">
-                  
-                  {/* 3D Minecraft Voxel Overworld Map Render */}
-                  <img
-                    src="/assets/minecraft-world-map.jpg"
-                    alt="Minecraft World Map Al-Azhar"
-                    className="absolute inset-0 w-full h-full object-cover object-center filter brightness-[0.93] contrast-[1.08] select-none pointer-events-none"
-                  />
-                  {/* Atmospheric Night Vignette & Soft Tint */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/35 pointer-events-none" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/30 via-transparent to-black/30 pointer-events-none" />
+                <div className="hidden lg:block absolute bottom-3 left-3 z-30 pointer-events-none text-[10px] font-mono font-bold text-white/80 bg-[#1c1c1f]/90 px-2.5 py-1 border-2 border-t-[#3a3a3e] border-l-[#3a3a3e] border-b-[#0d0d0e] border-r-[#0d0d0e] shadow-[2px_2px_0_#000]">
+                  [ ⚔️ KLIK SIMPUL LEVEL • SERET UNTUK MENGGESER PETA ]
+                </div>
+              </div>
 
-                  {/* Weather & Ambient Particles Effect Layer */}
-                  {weatherMode === 'night' && (
-                    <div className="absolute inset-0 pointer-events-none z-15 overflow-hidden">
-                      {/* Floating Golden Lantern Embers & Fireflies */}
-                      {[
-                        { left: '22%', top: '75%', delay: '0s', dur: '4s' },
-                        { left: '30%', top: '65%', delay: '1.2s', dur: '5s' },
-                        { left: '42%', top: '48%', delay: '0.5s', dur: '4.5s' },
-                        { left: '55%', top: '58%', delay: '2.1s', dur: '3.8s' },
-                        { left: '68%', top: '54%', delay: '1.8s', dur: '4.2s' },
-                        { left: '76%', top: '40%', delay: '0.8s', dur: '5.2s' },
-                        { left: '83%', top: '28%', delay: '2.5s', dur: '3.5s' },
-                        { left: '50%', top: '35%', delay: '1.5s', dur: '4.8s' },
-                        { left: '15%', top: '45%', delay: '0.3s', dur: '4.1s' },
-                        { left: '60%', top: '20%', delay: '2.7s', dur: '5.5s' }
-                      ].map((p, i) => (
-                        <div
-                          key={i}
-                          style={{
-                            left: p.left,
-                            top: p.top,
-                            animationDelay: p.delay,
-                            animationDuration: p.dur
-                          }}
-                          className="absolute w-1.5 h-1.5 bg-amber-300 border border-black/40 shadow-[0_0_8px_#f59e0b] animate-bounce opacity-80"
-                        />
-                      ))}
-                    </div>
-                  )}
+              {/* ── INSPEKTUR LEVEL: panel samping (desktop) / bottom sheet (HP) ── */}
+              <div className={`relative z-40 shrink-0 flex flex-col lg:w-[22rem] lg:h-full max-h-[62dvh] lg:max-h-none -mt-3 lg:mt-0 lg:border-l-4 border-t-4 lg:border-t-0 border-[#3d3221] bg-[#080d0a]/95 backdrop-blur-md shadow-[0_-12px_30px_rgba(0,0,0,0.7)] lg:shadow-[-12px_0_30px_rgba(0,0,0,0.7)] pb-[env(safe-area-inset-bottom)]`}>
+                {/* Pegangan sheet (HP) */}
+                <button
+                  onClick={() => setSheetOpen(o => !o)}
+                  className="lg:hidden w-full pt-1.5 pb-1 flex flex-col items-center gap-0.5 text-[9px] font-mono text-white/50"
+                  aria-expanded={sheetOpen}
+                  aria-label={sheetOpen ? 'Ciutkan detail level' : 'Lihat detail level'}
+                >
+                  <span className="w-10 h-1 bg-white/30" />
+                </button>
 
-                  {weatherMode === 'rain' && (
-                    <div className="absolute inset-0 pointer-events-none z-15 overflow-hidden">
-                      {/* Minecraft Rain Streaks */}
-                      <div className="absolute inset-0 bg-blue-950/20 backdrop-contrast-125" />
-                      <div
-                        className="absolute inset-0 opacity-40 animate-pulse"
-                        style={{
-                          backgroundImage: 'repeating-linear-gradient(105deg, rgba(147,197,253,0.4) 0px, rgba(147,197,253,0.4) 1px, transparent 1px, transparent 14px)',
-                          backgroundSize: '100% 100%'
-                        }}
-                      />
-                      {/* Subtle Lightning Flash */}
-                      <div className="absolute inset-0 bg-cyan-100/10 pointer-events-none animate-ping opacity-20" />
-                    </div>
-                  )}
-
-                  {weatherMode === 'aurora' && (
-                    <div className="absolute inset-0 pointer-events-none z-15 overflow-hidden">
-                      {/* Ethereal Al-Azhar Emerald Aurora */}
-                      <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-emerald-500/25 via-teal-400/20 to-transparent blur-xl animate-pulse" />
-                      <div className="absolute top-4 right-1/4 w-96 h-32 bg-purple-500/15 blur-2xl animate-pulse" />
-                      {/* Starlight Twinkles */}
-                      {[
-                        { left: '35%', top: '15%' },
-                        { left: '65%', top: '12%' },
-                        { left: '50%', top: '8%' },
-                        { left: '80%', top: '18%' },
-                        { left: '20%', top: '22%' }
-                      ].map((s, idx) => (
-                        <div
-                          key={idx}
-                          style={{ left: s.left, top: s.top }}
-                          className="absolute w-1 h-1 bg-white shadow-[0_0_6px_#fff] animate-ping opacity-75"
-                        />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Minecraft Redstone & Emerald Energy Trail (SVG Overlay) */}
-                  <svg
-                    className="absolute inset-0 w-full h-full pointer-events-none z-10"
-                    viewBox="0 0 1000 580"
-                    preserveAspectRatio="none"
-                  >
-                    <defs>
-                      <filter id="trailGlow" x="-20%" y="-20%" width="140%" height="140%">
-                        <feGaussianBlur stdDeviation="4" result="blur" />
-                        <feMerge>
-                          <feMergeNode in="blur" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
-                    </defs>
-
-                    {/* Dark stone road conduit backing */}
-                    <path
-                      d="M 215 452 C 275 385, 315 320, 385 267 C 465 210, 565 365, 690 325 C 750 305, 785 220, 825 151"
-                      fill="none"
-                      stroke="#050a07"
-                      strokeWidth="16"
-                      strokeLinecap="round"
-                      opacity="0.75"
-                    />
-                    <path
-                      d="M 215 452 C 275 385, 315 320, 385 267 C 465 210, 565 365, 690 325 C 750 305, 785 220, 825 151"
-                      fill="none"
-                      stroke="#14261b"
-                      strokeWidth="10"
-                      strokeDasharray="14 10"
-                      strokeLinecap="round"
-                    />
-
-                    {/* UNLOCKED SEGMENT 1 -> 2 (Gerbang to Ruwaq) */}
-                    {highestUnlocked >= 2 && (
-                      <path
-                        d="M 215 452 C 275 385, 315 320, 385 267"
-                        fill="none"
-                        stroke="#10b981"
-                        strokeWidth="5"
-                        strokeLinecap="round"
-                        filter="url(#trailGlow)"
-                      />
-                    )}
-                    {/* UNLOCKED SEGMENT 2 -> 3 (Ruwaq to Shahn) */}
-                    {highestUnlocked >= 3 && (
-                      <path
-                        d="M 385 267 C 465 210, 565 365, 690 325"
-                        fill="none"
-                        stroke="#34d399"
-                        strokeWidth="5"
-                        strokeLinecap="round"
-                        filter="url(#trailGlow)"
-                      />
-                    )}
-                    {/* UNLOCKED SEGMENT 3 -> 4 (Shahn to Kubah Final Boss) */}
-                    {highestUnlocked >= 4 && (
-                      <path
-                        d="M 690 325 C 750 305, 785 220, 825 151"
-                        fill="none"
-                        stroke="#fbbf24"
-                        strokeWidth="6"
-                        strokeLinecap="round"
-                        filter="url(#trailGlow)"
-                      />
-                    )}
-
-                    {/* Active Waypoint Beacon Radiations */}
-                    <circle cx="215" cy="452" r="22" fill="#10b981" opacity="0.2" className="animate-ping" />
-                    {highestUnlocked >= 2 && <circle cx="385" cy="267" r="22" fill="#34d399" opacity="0.2" className="animate-ping" />}
-                    {highestUnlocked >= 3 && <circle cx="690" cy="325" r="24" fill="#34d399" opacity="0.2" className="animate-ping" />}
-                    {highestUnlocked >= 4 && <circle cx="825" cy="151" r="28" fill="#fbbf24" opacity="0.25" className="animate-ping" />}
-                  </svg>
-
-                  {/* ── INTERACTIVE MINECRAFT MYSTERY CHEST (PETI HIKMAH AL-AZHAR) ── */}
-                  <div
-                    style={{ left: '53.5%', top: '70%', transform: 'translate(-50%, -50%)' }}
-                    className="absolute z-25 flex flex-col items-center"
-                  >
-                    <button
-                      onClick={handleOpenLootChest}
-                      className="group relative flex flex-col items-center focus:outline-none transition active:scale-95"
-                      title={chestClaimed ? 'Peti Hikmah sudah dibuka hari ini' : 'Buka Peti Hikmah & Hadiah Harian!'}
-                    >
-                      {/* Floating Chest Banner */}
-                      <div className={`mb-1 px-2.5 py-1 border-2 text-[9px] sm:text-[10px] font-mono font-bold shadow-[2px_2px_0_#000] flex items-center gap-1.5 whitespace-nowrap transition-all ${
-                        chestClaimed
-                          ? 'bg-[#1c1c22] border-stone-600 text-stone-400'
-                          : 'bg-[#2b2413] border-amber-400 text-amber-300 animate-bounce'
-                      }`}>
-                        <span>{chestClaimed ? '📦' : '✨ 🎁'}</span>
-                        <span className="drop-shadow-[1px_1px_0_#000]">{chestClaimed ? 'Peti Terbuka' : 'Peti Hikmah Azhar!'}</span>
-                      </div>
-
-                      {/* 3D Minecraft Chest Block */}
-                      <div className={`w-10 h-10 sm:w-12 sm:h-12 border-2 border-t-[#c68940] border-l-[#c68940] border-b-[#4a2e12] border-r-[#4a2e12] bg-[#875525] shadow-[3px_3px_0_#000] relative flex items-center justify-center transition-all ${
-                        chestClaimed ? 'brightness-75' : 'group-hover:brightness-120 group-hover:scale-105'
-                      }`}>
-                        {/* Chest Latch (Iron / Gold Lock) */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-3 h-3.5 bg-[#e2e8f0] border border-black shadow-[1px_1px_0_#000] flex items-center justify-center z-10">
-                          <div className="w-1.5 h-1.5 bg-black" />
-                        </div>
-                        {/* Top lid rim */}
-                        <div className="absolute top-2 inset-x-0 h-0.5 bg-[#3a200e]" />
-                        {/* Side borders */}
-                        <div className="absolute inset-0 border border-black/30 pointer-events-none" />
-
-                        {/* Sparkling Ping Glow if Unclaimed */}
-                        {!chestClaimed && (
-                          <div className="absolute -inset-2 bg-amber-400/30 blur-sm rounded-full animate-ping pointer-events-none opacity-80" />
-                        )}
-                      </div>
-                    </button>
-                  </div>
-
-                  {/* ── SMOOTH GLIDING THALIB AZHAR AVATAR ON THE OVERWORLD MAP ── */}
-                  {selectedStage && (
-                    <div
-                      data-map-focus
-                      style={{
-                        left: `${nodeCoords[selectedStage.id - 1]?.x || 21.5}%`,
-                        top: `${nodeCoords[selectedStage.id - 1]?.y || 78}%`,
-                        transform: 'translate(-50%, -130%)',
-                        transition: 'all 0.65s cubic-bezier(0.34, 1.56, 0.64, 1)'
-                      }}
-                      className="absolute z-35 pointer-events-none flex flex-col items-center"
-                    >
-                      {/* Dual Iron Chains */}
-                      <div className="flex gap-4 -mb-1">
-                        <div className="w-1 h-2.5 bg-stone-400 border border-black shadow" />
-                        <div className="w-1 h-2.5 bg-stone-400 border border-black shadow" />
-                      </div>
-                      {/* Oak Wood Hanging Sign */}
-                      <div className="px-2.5 py-1 bg-[#784d28] text-[#fff7d6] text-[9px] sm:text-[10px] font-mono font-black uppercase tracking-wider shadow-[3px_3px_0_#000] flex items-center gap-1.5 border-2 border-t-[#ba7e44] border-l-[#ba7e44] border-b-[#3d2411] border-r-[#3d2411] animate-bounce">
-                        <span className="text-sm">🎓</span>
-                        <span className="drop-shadow-[1px_1px_0_#000]">KAMU DI SINI</span>
-                      </div>
-                      {/* Wooden Arrow Tip */}
-                      <div className="w-3 h-3 bg-[#784d28] border-r-2 border-b-2 border-[#3d2411] rotate-45 -mt-1.5 shadow mb-1" />
-
-                      {/* 3D Voxel Mini Character Sprite Walking */}
-                      <div className="relative">
-                        <img
-                          src="/assets/thalib-voxel-facing-right.png"
-                          alt="Thalib Voxel Pin"
-                          className="w-11 sm:w-14 h-auto object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] animate-pulse"
-                        />
-                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-2 bg-black/75 rounded-full blur-[2px]" />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* ── 4 TACTILE STAGE WAYPOINT NODE BUTTONS (REACT OVERLAY) ── */}
-                  {stages.map((stage, idx) => {
-                    const coords = nodeCoords[idx] || { x: 20 + idx * 22, y: 50 };
-                    const isUnlocked = stage.id <= highestUnlocked;
+                {/* Pilihan level — semua level bisa dijangkau tanpa menggeser peta */}
+                <div className="px-3 lg:pt-3 grid grid-cols-4 gap-1.5 shrink-0">
+                  {stages.map((stage) => {
+                    const unlocked = stage.id <= highestUnlocked;
                     const stars = getStageStars(activeSet.id, stage.id);
-                    const isCleared = stars > 0;
-                    const isCurrent = stage.id === highestUnlocked;
-                    const isSelected = selectedStage.id === stage.id;
-                    const isFinal = stage.isFinal;
-
+                    const active = stage.id === selectedStage.id;
                     return (
-                      <div
+                      <button
                         key={stage.id}
-                        style={{
-                          left: `${coords.x}%`,
-                          top: `${coords.y}%`,
-                          transform: 'translate(-50%, -50%)'
-                        }}
-                        className="absolute z-20 flex flex-col items-center"
+                        onClick={() => selectStage(stage)}
+                        className={`py-1 border-2 font-mono text-[10px] font-bold flex flex-col items-center leading-tight transition ${
+                          active
+                            ? 'bg-[#2b2413] border-amber-400 text-amber-300'
+                            : unlocked
+                            ? 'bg-[#18181c] border-stone-600 text-white hover:border-stone-400'
+                            : 'bg-[#101012] border-stone-800 text-white/40'
+                        }`}
                       >
-                        {/* Minecraft Block Pedestal / Shrine Button */}
-                        <button
-                          onClick={() => {
-                            setSelectedStageId(stage.id);
-                            if (isUnlocked) setActiveStage(stage);
-                            sfx.playStep();
-                          }}
-                          className={`group relative transition-all duration-300 flex items-center justify-center ${
-                            isFinal
-                              ? 'w-[4.5rem] h-[4.5rem] sm:w-24 sm:h-24'
-                              : 'w-[3.75rem] h-[3.75rem] sm:w-20 sm:h-20'
-                          } ${
-                            isSelected
-                              ? 'scale-115 ring-4 ring-amber-300 shadow-[0_0_35px_rgba(251,191,36,0.85)] z-20'
-                              : 'hover:scale-105'
-                          } ${
-                            !isUnlocked
-                              ? 'bg-[#151518] border-t-2 border-l-2 border-[#3c3c42] border-b-4 border-r-4 border-black opacity-75 shadow-inner'
-                              : isFinal
-                              ? 'bg-gradient-to-b from-[#eab308] via-[#ca8a04] to-[#713f12] border-t-2 border-l-2 border-[#fef08a] border-b-4 border-r-4 border-[#3f2005] shadow-[0_0_30px_rgba(234,179,8,0.7)]'
-                              : isCleared
-                              ? 'bg-gradient-to-b from-[#15803d] via-[#166534] to-[#052e16] border-t-2 border-l-2 border-[#4ade80] border-b-4 border-r-4 border-[#021b0b] shadow-[0_0_25px_rgba(34,197,94,0.5)]'
-                              : 'bg-gradient-to-b from-[#1d4ed8] via-[#1e40af] to-[#0f172a] border-t-2 border-l-2 border-[#60a5fa] border-b-4 border-r-4 border-[#080d1a] shadow-[0_0_25px_rgba(59,130,246,0.6)] animate-pulse'
-                          }`}
-                          style={{
-                            boxShadow: isSelected
-                              ? '0 0 35px rgba(251,191,36,0.85), inset 2px 2px 0 rgba(255,255,255,0.4), inset -2px -2px 0 rgba(0,0,0,0.5)'
-                              : 'inset 2px 2px 0 rgba(255,255,255,0.25), inset -2px -2px 0 rgba(0,0,0,0.5)'
-                          }}
-                        >
-                          {/* Inner Voxel Character or Lock */}
-                          <div className="flex flex-col items-center justify-center w-full h-full p-1 sm:p-1.5 overflow-hidden">
-                            {!isUnlocked ? (
-                              <span className="text-xl sm:text-2xl filter grayscale opacity-75">🔒</span>
-                            ) : isFinal ? (
-                              <div className="relative w-full h-full flex flex-col items-center justify-center">
-                                <span className="absolute -top-3 sm:-top-4 text-xs sm:text-base animate-bounce z-10 filter drop-shadow">👑</span>
-                                <img
-                                  src={getVoxelSprite(stage.id, activeSet.id)}
-                                  alt={stage.guardianName || 'Final Boss'}
-                                  className="w-11 h-11 sm:w-16 sm:h-16 object-contain filter drop-shadow-[0_6px_12px_rgba(0,0,0,0.9)] scale-110"
-                                />
-                              </div>
-                            ) : (
-                              <img
-                                src={getVoxelSprite(stage.id, activeSet.id)}
-                                alt={stage.guardianName || `Level ${stage.levelNumber}`}
-                                className="w-10 h-10 sm:w-14 sm:h-14 object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]"
-                              />
-                            )}
-                          </div>
-
-                          {/* Star Badges for Cleared Stages */}
-                          {isCleared && (
-                            <div className="absolute -bottom-2.5 px-2 py-0.5 bg-[#121214] border-2 border-t-stone-600 border-l-stone-600 border-b-black border-r-black text-[8px] sm:text-[10px] font-mono text-amber-300 shadow-[2px_2px_0_#000] flex items-center gap-0.5 z-10">
-                              {stars === 3 ? '⭐⭐⭐' : stars === 2 ? '⭐⭐' : '⭐'}
-                            </div>
-                          )}
-
-                          {/* Cleared Checkmark Ribbon */}
-                          {isCleared && (
-                            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 sm:w-6 sm:h-6 bg-emerald-500 text-black border-2 border-black font-black text-[10px] sm:text-xs flex items-center justify-center shadow-[1px_1px_0_#000] z-10">
-                              ✓
-                            </span>
-                          )}
-
-                          {/* Pulsing Beacon Ring for Current Stage */}
-                          {isCurrent && !isCleared && (
-                            <div className="absolute -inset-1.5 border-2 border-cyan-400 animate-ping pointer-events-none opacity-60" />
-                          )}
-                        </button>
-
-                        {/* Minecraft Plaque Nameplate */}
-                        <div className="mt-2 text-center pointer-events-none">
-                          <div className={`text-[10px] sm:text-xs font-mono font-bold tracking-tight whitespace-nowrap px-2.5 py-1 border-2 shadow-[2px_2px_0_#000] ${
-                            isSelected
-                              ? 'bg-[#2b2413] border-amber-400 text-amber-300 font-black'
-                              : isUnlocked
-                              ? 'bg-[#18181c] border-stone-600 text-white'
-                              : 'bg-[#101012] border-stone-800 text-white/40'
-                          }`}>
-                            {isFinal ? '👑 FINAL BOSS' : `LEVEL ${stage.levelNumber}`}
-                          </div>
-                          <div className="text-[9px] font-mono font-bold text-amber-300 drop-shadow-[1px_1px_0_#000] mt-0.5 hidden sm:block truncate max-w-[120px]">
-                            {stage.guardianRankCode || `Rank ${stage.guardianRank}`}
-                          </div>
-                        </div>
-                      </div>
+                        <span>{!unlocked ? '🔒' : stage.isFinal ? '👑' : `LV ${stage.levelNumber}`}</span>
+                        <span className="text-[8px] text-amber-300/90">{stars > 0 ? '⭐'.repeat(stars) : stage.isFinal ? 'BOSS' : '—'}</span>
+                      </button>
                     );
                   })}
                 </div>
+
+                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-3 pt-2.5">
+                  {/* Profil penjaga */}
+                  <div className="flex items-start gap-3">
+                    <div className={`w-16 h-16 lg:w-20 lg:h-20 shrink-0 p-1 shadow-[2px_2px_0_#000] ${
+                      selectedStage.isFinal
+                        ? 'border-4 border-t-[#d97706] border-l-[#d97706] border-b-[#451a03] border-r-[#451a03] bg-[#2e1d0e]'
+                        : isSelectedUnlocked
+                        ? 'border-4 border-t-[#8c643b] border-l-[#8c643b] border-b-[#2b1c0e] border-r-[#2b1c0e] bg-[#22170c]'
+                        : 'border-4 border-t-[#3f3f46] border-l-[#3f3f46] border-b-[#18181b] border-r-[#18181b] bg-[#141416] grayscale opacity-60'
+                    }`}>
+                      <div className="w-full h-full bg-[#181008]/80 flex items-center justify-center">
+                        {isSelectedUnlocked ? (
+                          <img
+                            src={getVoxelSprite(selectedStage.id, activeSet.id)}
+                            alt={selectedStage.guardianName || 'Guardian Voxel'}
+                            className="w-full h-full object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]"
+                          />
+                        ) : (
+                          <span className="text-2xl grayscale opacity-60">🔒</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className={`px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase border-2 ${
+                          selectedStage.isFinal
+                            ? 'bg-[#451a03] text-amber-300 border-[#d97706]'
+                            : isSelectedUnlocked
+                            ? 'bg-[#0f2e1b] text-emerald-300 border-[#22c55e]'
+                            : 'bg-[#18181b] text-white/40 border-stone-700'
+                        }`}>
+                          {selectedStage.isFinal ? '👑 FINAL BOSS' : `LEVEL ${selectedStage.levelNumber}`}
+                        </span>
+                        <span className="font-mono text-[9px] px-1.5 py-0.5 bg-[#2b2413] border-2 border-amber-400 text-amber-300 font-bold truncate max-w-[9rem]">
+                          {selectedStage.guardianRankCode || selectedStage.guardianRank}
+                        </span>
+                        {selectedStars > 0 && (
+                          <span className="text-[9px] font-mono font-bold text-amber-300">⭐ {selectedStars}/3</span>
+                        )}
+                      </div>
+                      <h3 className="mt-1 text-sm lg:text-base font-bold text-white font-mono leading-snug line-clamp-2">{selectedStage.title}</h3>
+                      {selectedStage.guardianName && (
+                        <div className="text-[11px] font-mono text-emerald-300/90 truncate">Penjaga: {selectedStage.guardianName}</div>
+                      )}
+                      <div className="text-[10px] text-white/60 font-mono truncate">📍 {selectedStage.location}</div>
+                    </div>
+                  </div>
+
+                  {/* Parameter battle */}
+                  <div className="mt-2.5 grid grid-cols-3 gap-1.5 font-mono text-center">
+                    <div className="py-1 bg-[#141418] border-2 border-[#2b2b32]">
+                      <div className="text-[8px] text-white/50 uppercase">Boss HP</div>
+                      <div className="text-xs font-bold text-rose-400">{selectedStage.bossHp} HP</div>
+                    </div>
+                    <div className="py-1 bg-[#141418] border-2 border-[#2b2b32]">
+                      <div className="text-[8px] text-white/50 uppercase">Soal Uji</div>
+                      <div className="text-xs font-bold text-white">{selectedStage.quizIndices?.length || 2} Soal</div>
+                    </div>
+                    <div className="py-1 bg-[#141418] border-2 border-[#2b2b32]">
+                      <div className="text-[8px] text-white/50 uppercase">Hadiah</div>
+                      <div className="text-xs font-bold text-amber-300">+{selectedStage.expReward} EXP</div>
+                    </div>
+                  </div>
+
+                  {/* Detail tambahan: selalu tampil di desktop, di HP saat sheet dibuka */}
+                  <div className={`${sheetOpen ? '' : 'max-lg:!hidden'} mt-2.5 space-y-2 font-mono text-[11px]`}>
+                    {selectedStage.titleArabic && (
+                      <div className="font-arabic text-sm text-emerald-300/90" dir="rtl">{selectedStage.titleArabic}</div>
+                    )}
+                    <div className="p-2.5 bg-[#121216] border-2 border-[#2b2b34]">
+                      <div className="text-[10px] text-amber-400 font-bold uppercase mb-0.5">🎯 Kelemahan Kunci</div>
+                      <p className="text-stone-300 leading-relaxed">{tactics.weakness}</p>
+                    </div>
+                    <div className="p-2.5 bg-[#121216] border-2 border-[#2b2b34]">
+                      <div className="text-[10px] text-rose-400 font-bold uppercase mb-0.5">⚠️ Tingkat Bahaya Syubhat</div>
+                      <p className="text-stone-300 leading-relaxed">{tactics.danger}</p>
+                      <div className="mt-1.5 pt-1.5 border-t border-stone-800 text-[10px] text-emerald-400 flex items-center justify-between gap-2">
+                        <span>💡 Saran Item:</span>
+                        <span className="font-bold text-white bg-black/60 px-1.5 py-0.5 border border-stone-700 truncate">{tactics.recItem}</span>
+                      </div>
+                    </div>
+                    {selectedStage.lore && (
+                      <p className="text-stone-400 leading-relaxed">
+                        <span className="font-bold text-amber-300 mr-1.5">Misi Imtihan:</span>
+                        {selectedStage.lore}
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setSheetOpen(o => !o)}
+                    className="lg:hidden mt-1.5 w-full text-center text-[10px] font-mono text-amber-300/80 py-1"
+                  >
+                    {sheetOpen ? '▾ Ciutkan detail' : '▴ Intel taktik & misi'}
+                  </button>
                 </div>
-                <p className="sm:hidden text-center text-[11px] font-mono text-stone-400 pt-1 pb-7">← geser peta untuk melihat semua level →</p>
-              </div>
 
-              {/* ── STAGE DETAIL INSPECTOR CARD (TACTILE RPG QUEST BRIEFING / MINECRAFT OBSIDIAN CODEX) ── */}
-              {selectedStage && (
-                <div className={`p-5 sm:p-6 transition-all duration-300 relative shadow-[4px_4px_0_#000] ${
-                  selectedStage.isFinal
-                    ? 'border-4 border-t-[#d97706] border-l-[#d97706] border-b-[#451a03] border-r-[#451a03] bg-[#1a120b]'
-                    : isSelectedUnlocked
-                    ? 'border-4 border-t-[#4a4a52] border-l-[#4a4a52] border-b-[#141416] border-r-[#141416] bg-[#1e1e24]'
-                    : 'border-4 border-t-[#3f3f46] border-l-[#3f3f46] border-b-[#18181b] border-r-[#18181b] bg-[#121215]'
-                }`}>
-                  {/* Minecraft Corner Rivets */}
-                  <div className="absolute top-1 left-1 w-2 h-2 bg-amber-400 border border-black z-20" />
-                  <div className="absolute top-1 right-1 w-2 h-2 bg-amber-400 border border-black z-20" />
-                  <div className="absolute bottom-1 left-1 w-2 h-2 bg-amber-400 border border-black z-20" />
-                  <div className="absolute bottom-1 right-1 w-2 h-2 bg-amber-400 border border-black z-20" />
-
-                  <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-                    {/* Left: Stage Title & Guardian Profile */}
-                    <div className="flex items-start gap-4 flex-1">
-                      {/* Minecraft Wooden Item Frame for Guardian Avatar */}
-                      <div className={`w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center p-1.5 shrink-0 overflow-hidden relative shadow-[2px_2px_0_#000] ${
-                        selectedStage.isFinal
-                          ? 'border-4 border-t-[#d97706] border-l-[#d97706] border-b-[#451a03] border-r-[#451a03] bg-[#2e1d0e]'
-                          : isSelectedUnlocked
-                          ? 'border-4 border-t-[#8c643b] border-l-[#8c643b] border-b-[#2b1c0e] border-r-[#2b1c0e] bg-[#22170c]'
-                          : 'border-4 border-t-[#3f3f46] border-l-[#3f3f46] border-b-[#18181b] border-r-[#18181b] bg-[#141416] grayscale opacity-60'
-                      }`}>
-                        {/* Inner Inset Leather Bed */}
-                        <div className="w-full h-full bg-[#181008]/80 border border-t-[#0d0804] border-l-[#0d0804] border-b-[#3a2512] border-r-[#3a2512] flex items-center justify-center p-1">
-                          {isSelectedUnlocked ? (
-                            <img
-                              src={getVoxelSprite(selectedStage.id, activeSet.id)}
-                              alt={selectedStage.guardianName || 'Guardian Voxel'}
-                              className="w-full h-full object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]"
-                            />
-                          ) : (
-                            <div className="flex flex-col items-center justify-center">
-                              <span className="text-2xl filter grayscale opacity-60">🔒</span>
-                              <span className="text-[9px] font-mono text-white/40 mt-1">TERKUNCI</span>
-                            </div>
-                          )}
-                        </div>
+                {/* Aksi */}
+                <div className="shrink-0 px-3 pt-2 pb-2.5 border-t-2 border-[#3d3221] space-y-1.5">
+                  {isSelectedUnlocked ? (
+                    <>
+                      <button
+                        onClick={() => launchStage(selectedStage, false)}
+                        className={`${PX_BTN} ${PX_GREEN} w-full py-2.5 text-xs sm:text-sm font-black`}
+                      >
+                        <Icon name="swords" className="w-4 h-4" />
+                        <span>MULAI LEVEL INI ⚔️</span>
+                      </button>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        <button
+                          onClick={() => launchStage(selectedStage, true)}
+                          className={`${PX_BTN} ${PX_WOOD} py-2 text-[11px]`}
+                        >
+                          <span>📜</span>
+                          <span>Prolog</span>
+                        </button>
+                        <button
+                          onClick={() => generateAiStory(baseSet)}
+                          disabled={storyBusy}
+                          title={isLibraryMember ? 'AI menulis ulang prolog & cerita tiap level sesuai materi ini' : 'Khusus member paket Library'}
+                          className={`${PX_BTN} ${PX_VIOLET} py-2 text-[11px]`}
+                        >
+                          <span>{storyBusy ? '⏳' : isLibraryMember ? '✨' : '🔒'}</span>
+                          <span className="truncate">{storyBusy ? 'Menulis...' : activeSet?.prologue?.aiGenerated ? 'Cerita AI Baru' : 'Cerita AI'}</span>
+                        </button>
                       </div>
-
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider border-2 shadow-[1px_1px_0_#000] ${
-                            selectedStage.isFinal
-                              ? 'bg-[#451a03] text-amber-300 border-[#d97706]'
-                              : isSelectedUnlocked
-                              ? 'bg-[#0f2e1b] text-emerald-300 border-[#22c55e]'
-                              : 'bg-[#18181b] text-white/40 border-stone-700'
-                          }`}>
-                            {selectedStage.isFinal ? '👑 PERTARUNGAN PUNCAK' : `TAHAP LEVEL ${selectedStage.levelNumber}`}
-                          </span>
-                          <span className="font-mono text-xs px-2 py-0.5 bg-[#2b2413] border-2 border-amber-400 text-amber-300 font-bold shadow-[1px_1px_0_#000]">
-                            {selectedStage.guardianRankCode || selectedStage.guardianRank}
-                          </span>
-                          {selectedStars > 0 && (
-                            <span className="text-xs font-mono font-bold text-amber-300 bg-[#141418] px-2 py-0.5 border-2 border-amber-500/60 shadow-[1px_1px_0_#000]">
-                              ⭐ {selectedStars}/3 Bintang
-                            </span>
-                          )}
-                        </div>
-
-                        <h3 className="text-base sm:text-lg font-bold text-white font-mono">
-                          {selectedStage.title}
-                        </h3>
-                        <div className="font-arabic text-xs sm:text-sm text-emerald-300/90" dir="rtl">
-                          {selectedStage.titleArabic}
-                        </div>
-                        <div className="text-xs text-white/70 flex items-center gap-1 font-mono pt-0.5">
-                          <span>📍</span>
-                          <span>{selectedStage.location}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Middle: Battle Parameters (HP, Soal, EXP) - Minecraft Slot Inset */}
-                    <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full lg:w-auto shrink-0 bg-[#0c0c10] p-2.5 border-2 border-t-[#000] border-l-[#000] border-b-[#3f3f46] border-r-[#3f3f46] font-mono text-center shadow-inner">
-                      <div className="px-3 py-1 bg-[#141418] border border-[#2b2b32]">
-                        <div className="text-[9px] text-white/50 uppercase font-mono">Boss HP</div>
-                        <div className="text-xs sm:text-sm font-bold text-rose-400 drop-shadow-[1px_1px_0_#000]">{selectedStage.bossHp} HP</div>
-                      </div>
-                      <div className="px-3 py-1 bg-[#141418] border border-[#2b2b32]">
-                        <div className="text-[9px] text-white/50 uppercase font-mono">Soal Uji</div>
-                        <div className="text-xs sm:text-sm font-bold text-white drop-shadow-[1px_1px_0_#000]">{selectedStage.quizIndices?.length || 2} Soal</div>
-                      </div>
-                      <div className="px-3 py-1 bg-[#141418] border border-[#2b2b32]">
-                        <div className="text-[9px] text-white/50 uppercase font-mono">Hadiah</div>
-                        <div className="text-xs sm:text-sm font-bold text-amber-300 drop-shadow-[1px_1px_0_#000]">+{selectedStage.expReward} EXP</div>
-                      </div>
-                    </div>
-
-                    {/* Right: Action Buttons - Minecraft Raised Blocks */}
-                    <div className="w-full lg:w-auto flex flex-col sm:flex-row lg:flex-col gap-2.5 shrink-0">
-                      {isSelectedUnlocked ? (
-                        <>
-                          <button
-                            onClick={() => launchStage(selectedStage, false)}
-                            className="border-t-2 border-l-2 border-[#5fd481] border-b-4 border-r-4 border-[#134221] bg-[#2e8a4a] hover:bg-[#349e54] active:border-b-2 active:border-r-2 active:translate-y-0.5 text-white font-mono font-black text-xs sm:text-sm px-6 py-3 shadow-[2px_2px_0_#000] flex items-center justify-center gap-2 transition"
-                          >
-                            <Icon name="swords" className="w-4 h-4 text-white" />
-                            <span>MULAI LEVEL INI ⚔️</span>
-                          </button>
-                          <button
-                            onClick={() => launchStage(selectedStage, true)}
-                            className="border-t-2 border-l-2 border-[#9a7049] border-b-4 border-r-4 border-[#2b1c0e] bg-[#543b22] hover:bg-[#634628] active:border-b-2 active:border-r-2 active:translate-y-0.5 text-amber-200 font-mono font-bold text-xs px-4 py-2 shadow-[2px_2px_0_#000] transition flex items-center justify-center gap-1.5"
-                          >
-                            <span>📜</span>
-                            <span>Baca Kisah Prolog</span>
-                          </button>
-                          <button
-                            onClick={() => generateAiStory(baseSet)}
-                            disabled={storyBusy}
-                            title={isLibraryMember ? 'AI menulis ulang prolog & cerita tiap level sesuai materi ini' : 'Khusus member paket Library'}
-                            className="border-t-2 border-l-2 border-[#7c6bd6] border-b-4 border-r-4 border-[#221a4d] bg-[#3b2f80] hover:bg-[#45389a] disabled:opacity-60 active:border-b-2 active:border-r-2 active:translate-y-0.5 text-violet-100 font-mono font-bold text-xs px-4 py-2 shadow-[2px_2px_0_#000] transition flex items-center justify-center gap-1.5"
-                          >
-                            <span>{storyBusy ? '⏳' : isLibraryMember ? '✨' : '🔒'}</span>
-                            <span>{storyBusy ? 'AI menulis cerita...' : activeSet?.prologue?.aiGenerated ? 'Cerita AI Baru' : 'Buat Cerita AI'}</span>
-                          </button>
+                      {(storyNotice || (activeSet?.prologue?.aiGenerated && !storyBusy)) && (
+                        <div className="flex items-start justify-between gap-2">
+                          {storyNotice ? <p className="text-[10px] font-mono text-violet-200/80 leading-snug">{storyNotice}</p> : <span />}
                           {activeSet?.prologue?.aiGenerated && !storyBusy && (
                             <button
                               onClick={resetAiStory}
-                              className="text-[10px] font-mono text-white/45 hover:text-white/80 underline underline-offset-2"
+                              className="shrink-0 text-[10px] font-mono text-white/45 hover:text-white/80 underline underline-offset-2"
                             >
                               Kembalikan cerita bawaan
                             </button>
                           )}
-                          {storyNotice && (
-                            <p className="max-w-[16rem] text-[10px] font-mono text-violet-200/80 leading-snug">{storyNotice}</p>
-                          )}
-                        </>
-                      ) : (
-                        <div className="px-5 py-3 border-2 border-t-[#000] border-l-[#000] border-b-[#3f3f46] border-r-[#3f3f46] bg-[#141418] text-white/40 text-xs font-mono text-center flex items-center justify-center gap-2 shadow-inner">
-                          <span>🔒</span>
-                          <span>Terkunci — Selesaikan Level {selectedStage.id - 1}</span>
                         </div>
                       )}
-                    </div>
-                  </div>
-
-                  {/* Intel Taktik & Kelemahan Penjaga (Minecraft Tactical Dossier) */}
-                  {(() => {
-                    const tactics = getStageTactics(activeSet.id, selectedStage.id);
-                    return (
-                      <div className="mt-4 pt-3.5 border-t-2 border-stone-700/60 grid grid-cols-1 md:grid-cols-2 gap-3 font-mono text-xs">
-                        <div className="p-3 bg-[#121216] border-2 border-[#2b2b34] shadow-inner">
-                          <div className="text-[10px] text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1 mb-1">
-                            <span>🎯</span>
-                            <span>Kelemahan Kunci:</span>
-                          </div>
-                          <p className="text-stone-300 leading-relaxed text-[11px] sm:text-xs">
-                            {tactics.weakness}
-                          </p>
-                        </div>
-                        <div className="p-3 bg-[#121216] border-2 border-[#2b2b34] shadow-inner flex flex-col justify-between">
-                          <div>
-                            <div className="text-[10px] text-rose-400 font-bold uppercase tracking-wider flex items-center gap-1 mb-1">
-                              <span>⚠️</span>
-                              <span>Tingkat Bahaya Syubhat:</span>
-                            </div>
-                            <p className="text-stone-300 leading-relaxed text-[11px] sm:text-xs">
-                              {tactics.danger}
-                            </p>
-                          </div>
-                          <div className="mt-2 pt-2 border-t border-stone-800 text-[10px] text-emerald-400 flex items-center justify-between">
-                            <span>💡 Saran Item Masisir:</span>
-                            <span className="font-bold text-white bg-black/60 px-2 py-0.5 border border-stone-700">{tactics.recItem}</span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })()}
-
-                  {/* Lore / Challenge Narrative - Minecraft Parchment Note */}
-                  {selectedStage.lore && (
-                    <div className="mt-3 pt-3 border-t border-stone-800 text-xs text-stone-400 leading-relaxed font-mono">
-                      <span className="font-bold text-amber-300 mr-2 drop-shadow-[1px_1px_0_#000]">Misi Imtihan:</span>
-                      <span>{selectedStage.lore}</span>
+                    </>
+                  ) : (
+                    <div className="px-3 py-2.5 border-2 border-t-[#000] border-l-[#000] border-b-[#3f3f46] border-r-[#3f3f46] bg-[#141418] text-white/50 text-xs font-mono text-center">
+                      🔒 Terkunci — Selesaikan Level {selectedStage.id - 1}
                     </div>
                   )}
                 </div>
-              )}
+              </div>
             </div>
           );
         })()}
