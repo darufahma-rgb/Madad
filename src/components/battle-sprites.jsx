@@ -1177,7 +1177,7 @@ export function MinecraftHudPlate({
         </div>
 
         {/* Content Box */}
-        <div className="min-w-[190px] sm:min-w-[260px] bg-[#0c100e]/95 backdrop-blur-md border-y-2 border-r-2 border-[#1c2920] rounded-r-lg p-2 sm:p-2.5 relative">
+        <div className="min-w-[150px] sm:min-w-[260px] bg-[#0c100e]/95 backdrop-blur-md border-y-2 border-r-2 border-[#1c2920] rounded-r-lg p-2 sm:p-2.5 relative">
           
           {/* Outer Gold Corner Brackets (Minecraft Style) */}
           <div className="absolute -top-[2px] right-0 w-2.5 h-2.5 border-t-2 border-r-2 border-amber-400" />
@@ -1185,7 +1185,7 @@ export function MinecraftHudPlate({
 
           {/* Top Line: Name + Level */}
           <div className="flex items-center justify-between gap-2 mb-1.5">
-            <span className="text-xs sm:text-sm font-bold text-white tracking-wide truncate max-w-[140px] sm:max-w-[180px] drop-shadow-[1px_1px_0_#000]">
+            <span className="text-xs sm:text-sm font-bold text-white tracking-wide truncate max-w-[90px] sm:max-w-[180px] drop-shadow-[1px_1px_0_#000]">
               {name}
             </span>
             <span className="shrink-0 text-[10px] sm:text-[11px] font-mono font-black text-amber-300 bg-black/70 px-2 py-0.5 rounded border border-amber-400/50 shadow-sm">

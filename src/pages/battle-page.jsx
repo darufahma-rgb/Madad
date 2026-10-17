@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import {
   PlayerSprite,
   BossSprite,
@@ -1726,6 +1727,25 @@ function BattleOptionContent({ opt, className = '' }) {
   );
 }
 
+/* ── LAYAR PENUH CADANGAN (CSS) ──
+   Kalau browser menolak fullscreen asli, arena memakai position: fixed. Halaman ini dibungkus .page-enter yang
+   animasinya menyisakan transform, sehingga elemen fixed di dalamnya terkurung: navbar & footer menimpa arena
+   dan halaman tetap bisa di-scroll. Saat aktif, arena dipindah ke <body> dan scroll halaman dikunci. */
+function ArenaPortal({ active, speed = 1, children }) {
+  useEffect(() => {
+    if (!active) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [active]);
+  if (!active || typeof document === 'undefined') return children;
+  // .battle-root + --bs ikut dibawa supaya kecepatan animasi & aturan reduced-motion tetap berlaku di portal.
+  return createPortal(
+    <div className="battle-root" style={{ '--bs': speed === 2 ? 0.5 : 1 }}>{children}</div>,
+    document.body
+  );
+}
+
 /* ── HELPER: ACAK URUTAN OPSI (Kunci jawaban ikut dipetakan ulang) ── */
 function shuffleQuizOptions(quiz) {
   return quiz.map(q => {
@@ -2541,7 +2561,9 @@ export default function BattlePage() {
       document.msFullscreenElement
     );
 
-    if (!isCurrentlyFs) {
+    // Mode cadangan CSS tidak tercatat di document.fullscreenElement; tanpa cek state ini tombol "Keluar"
+    // malah meminta fullscreen lagi dan pemain terjebak di layar penuh.
+    if (!isCurrentlyFs && !isFullscreen) {
       // Prioritaskan document.documentElement agar transisi antar fase (Select -> Map -> Story -> Battle -> Victory) tetap mulus tanpa terputus
       const el = document.documentElement;
       const requestFs =
@@ -2567,8 +2589,8 @@ export default function BattlePage() {
         document.mozCancelFullScreen ||
         document.msExitFullscreen;
 
-      if (exitFs) {
-        exitFs.call(document).catch(() => {});
+      if (exitFs && isCurrentlyFs) {
+        Promise.resolve(exitFs.call(document)).catch(() => {});
       }
       setIsFullscreen(false);
     }
@@ -5487,6 +5509,7 @@ export default function BattlePage() {
         {phase === 'battle' && (
           <div className="space-y-4 animate-fadeIn">
             {/* ── GAME SCREEN CONTAINER ── */}
+            <ArenaPortal active={isFullscreen} speed={battleSpeed}>
             <div
               ref={gameContainerRef}
               className={`font-mono transition-all duration-200 select-none ${
@@ -5502,11 +5525,11 @@ export default function BattlePage() {
               )}
               
               {/* Top Navigation & Status Bar inside Container */}
-              <div className="absolute top-3 inset-x-3 z-30 flex items-center justify-between pointer-events-auto">
+              <div className="absolute top-3 inset-x-3 z-30 flex items-center justify-between gap-2 pointer-events-auto">
                 {/* Left: Quest Badge & Combo Streak */}
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-2 bg-black/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-white/15 shadow-xl">
-                    <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono text-[10px] sm:text-xs font-bold">
+                    <span className="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-mono text-[10px] sm:text-xs font-bold whitespace-nowrap">
                       {activeStage ? `LV ${activeStage.levelNumber} • ` : ''}SOAL {currentQ + 1}/{activeQuiz.length}
                     </span>
                     <span className="hidden md:inline text-xs text-white/80 font-bold truncate max-w-[200px]">
@@ -5539,8 +5562,8 @@ export default function BattlePage() {
                   )}
                 </div>
 
-                {/* Right: Controls Cluster */}
-                <div className="flex items-center gap-1.5 bg-black/85 backdrop-blur-md p-1 rounded-xl border border-white/15 shadow-xl">
+                {/* Right: Controls Cluster — di layar sempit bisa digeser ke samping, bukan terpotong */}
+                <div className="flex items-center gap-1.5 bg-black/85 backdrop-blur-md p-1 rounded-xl border border-white/15 shadow-xl min-w-0 overflow-x-auto [scrollbar-width:none] [&>*]:shrink-0">
                   {/* Style Switcher */}
                   <button
                     onClick={() => { setBattleStyle('minecraft'); sfx.playBip(580); }}
@@ -5624,15 +5647,15 @@ export default function BattlePage() {
                   {/* Fullscreen Toggle Button */}
                   <button
                     onClick={toggleFullscreen}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-mono font-bold transition flex items-center gap-1.5 ${
+                    className={`sticky right-0 px-2.5 py-1 rounded-lg text-[10px] sm:text-xs font-mono font-bold transition flex items-center gap-1.5 ${
                       isFullscreen
-                        ? 'bg-rose-500 text-white shadow-md hover:bg-rose-600'
-                        : 'bg-emerald-500/30 text-emerald-300 hover:bg-emerald-500/40 border border-emerald-400/40'
+                        ? 'bg-rose-500 text-white ring-4 ring-black/85 shadow-md hover:bg-rose-600'
+                        : 'bg-[#0f2a1d] text-emerald-300 hover:bg-emerald-500/40 border border-emerald-400/40'
                     }`}
                     title={isFullscreen ? 'Keluar Fullscreen (Esc / F)' : 'Masuk Full Layar (F)'}
                   >
                     <Icon name={isFullscreen ? 'minimize' : 'maximize'} className="w-3.5 h-3.5" />
-                    <span>{isFullscreen ? 'Keluar (ESC)' : 'Full Layar (F)'}</span>
+                    <span className="hidden sm:inline">{isFullscreen ? 'Keluar (ESC)' : 'Full Layar (F)'}</span>
                   </button>
                 </div>
               </div>
@@ -5670,10 +5693,10 @@ export default function BattlePage() {
               )}
 
               {/* ── BATTLE UPPER HALF: COMBATANTS ARENA ── */}
-              <div className={`${isFullscreen ? 'flex-1 min-h-0' : 'min-h-[340px] sm:min-h-[400px]'} p-4 sm:p-6 flex flex-col justify-between relative overflow-hidden transition-all duration-300`}>
+              <div className={`${isFullscreen ? 'flex-1 min-h-0 px-4 pb-4 pt-20 sm:px-6 sm:pb-6 sm:pt-20' : 'min-h-[340px] sm:min-h-[400px] p-4 sm:p-6'} flex flex-col justify-between relative overflow-hidden transition-all duration-300`}>
                 
                 {/* ── IN-BATTLE LIVE OBJECTIVE HUD ── */}
-                <div className="absolute top-2 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 pointer-events-none max-w-[95%]">
+                <div className={`absolute ${isFullscreen ? "top-[4.25rem]" : "top-2"} left-1/2 -translate-x-1/2 z-20 hidden sm:flex items-center gap-2 pointer-events-none max-w-[95%]`}>
                   <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/85 border border-amber-400/50 backdrop-blur-md shadow-lg text-[10px] sm:text-xs font-mono font-bold text-amber-200">
                     <span className="text-amber-400">🎯</span>
                     <span className="hidden sm:inline">Target Imtihan: Pertahankan HP ≥ 80% untuk Predikat Mumtaz (⭐⭐⭐)</span>
@@ -6261,6 +6284,7 @@ export default function BattlePage() {
 
               </div>
             </div>
+            </ArenaPortal>
           </div>
         )}
 
@@ -6764,6 +6788,7 @@ export default function BattlePage() {
             MODAL 1: INTERACTIVE HALAQAH TALQEEH AI SYAIKH
             ========================================================================= */}
         {showAiModal && (
+          <ArenaPortal active speed={battleSpeed}>
           <div className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-fadeIn">
             <div className="w-full max-w-2xl bg-[#0e120f] border-2 border-emerald-500/50 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
               {/* Header Halaqah */}
@@ -6905,12 +6930,14 @@ export default function BattlePage() {
               </div>
             </div>
           </div>
+          </ArenaPortal>
         )}
 
         {/* =========================================================================
             MODAL 2: SYAHADAH AL-AZHAR DIGITAL PREVIEW & DOWNLOAD
             ========================================================================= */}
         {showSyahadahModal && (
+          <ArenaPortal active speed={battleSpeed}>
           <div className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-5 bg-black/90 backdrop-blur-md animate-fadeIn">
             <div className="w-full max-w-3xl bg-[#0a120d] border-4 border-amber-500/50 rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
               {/* Header */}
@@ -7003,12 +7030,14 @@ export default function BattlePage() {
               </div>
             </div>
           </div>
+          </ArenaPortal>
         )}
 
         {/* =========================================================================
             MODAL 3: PETI HIKMAH AL-AZHAR (HADIAH HARIAN & KALAM ULAMA)
             ========================================================================= */}
         {showLootChestModal && claimedLoot && (
+          <ArenaPortal active speed={battleSpeed}>
           <div className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-5 bg-black/90 backdrop-blur-md animate-fadeIn">
             <div className="w-full max-w-xl bg-[#141418] border-4 border-t-[#d97706] border-l-[#d97706] border-b-[#451a03] border-r-[#451a03] shadow-[8px_8px_0_#000] relative flex flex-col overflow-hidden font-mono">
               {/* Gold Stud Corner Accents */}
@@ -7103,6 +7132,7 @@ export default function BattlePage() {
               </div>
             </div>
           </div>
+          </ArenaPortal>
         )}
 
       </main>
@@ -7276,7 +7306,7 @@ export default function BattlePage() {
 
         /* Animasi sekali-jalan ikut kecepatan battle: --bs = 0.5 di mode 2x (diset di .battle-root), sama seperti
            timer JS di handleSelectAnswer. Tanpa ini, di 2x efek serangan terpotong sebelum selesai. */
-        .animate-fadeIn { animation: battleFadeIn 0.35s ease-out both; }
+        .animate-fadeIn { animation: battleFadeIn 0.35s ease-out; }
         .animate-hurtBoxPop { animation: hurtBoxPop calc(0.38s * var(--bs, 1)) cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-hurtTremble { animation: hurtTremble 0.22s ease-in-out infinite; }
         .animate-playerIdle { animation: playerIdle 3s ease-in-out infinite; }
