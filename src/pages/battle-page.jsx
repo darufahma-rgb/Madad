@@ -1007,10 +1007,10 @@ const PRESETS = [
       {
         question: 'Ubah kalimat "كَتَبَ التِّلْمِيذُ الدَّرْسَ" menjadi kalimat mabni majhul yang benar!',
         options: [
-          'كُتِبَ التِّلْمِيذُ (murid itu ditulis/dicatat - keliru sasaran)',
-          'كُتِبَ الدَّرْسُ (pelajaran itu telah ditulis - marfu\' na\'ibul fa\'il benar)',
-          'كُتِبَ الدَّرْسَ (pelajaran itu telah ditulis - manshub harakat salah)',
-          'يُكْتَبُ التِّلْمِيذَ (sedang ditulis sang murid - harakat salah)'
+          'كُتِبَ التِّلْمِيذُ (murid itu ditulis/dicatat)',
+          'كُتِبَ الدَّرْسُ (pelajaran itu telah ditulis)',
+          'كُتِبَ الدَّرْسَ (pelajaran itu telah ditulis)',
+          'يُكْتَبُ التِّلْمِيذَ (sedang ditulis sang murid)'
         ],
         answer: 1,
         explanation: 'Fa\'il (at-tilmidz) dibuang, fi\'il madhi dijadikan "كُتِبَ", dan maf\'ul bih (ad-darsa) naik pangkat jadi na\'ibul fa\'il marfu\' ("الدَّرْسُ").',
@@ -2374,6 +2374,10 @@ export default function BattlePage() {
   // Fullscreen & Cinematic Action states
   const gameContainerRef = useRef(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  // Safari iPhone tidak punya Fullscreen API untuk halaman; tombolnya disembunyikan (tampilan game tetap penuh).
+  const canNativeFs = typeof document !== 'undefined' && !!(
+    document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen
+  );
   const [isActionBusy, setIsActionBusy] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null); // { optionIdx, isCorrect }
 
@@ -2565,13 +2569,6 @@ export default function BattlePage() {
 
   const [defeatReason, setDefeatReason] = useState('hp'); // 'hp' | 'boss-survived'
 
-  const autoFullscreenRef = useRef(false);
-  useEffect(() => {
-    if (phase === 'battle' || !autoFullscreenRef.current) return;
-    autoFullscreenRef.current = false;
-    if (!(document.fullscreenElement || document.webkitFullscreenElement)) setIsFullscreen(false);
-  }, [phase]);
-
   // Peta di HP bisa digeser: pusatkan pada avatar thalib (level terpilih) saat peta dibuka / level diganti.
   const mapScrollRef = useRef(null);
   useEffect(() => {
@@ -2604,48 +2601,18 @@ export default function BattlePage() {
   };
 
   // Fullscreen Toggle (Native HTML5 API + CSS Fallback)
+  // Tata letak game sudah selalu penuh; tombol ini hanya meminta/menutup fullscreen browser (sembunyikan bar browser).
+  // Browser yang menolak (mis. Safari iPhone) tetap memakai tampilan penuh aplikasi.
   const toggleFullscreen = () => {
-    const isCurrentlyFs = !!(
-      document.fullscreenElement ||
-      document.webkitFullscreenElement ||
-      document.mozFullScreenElement ||
-      document.msFullscreenElement
-    );
-
-    // Pemain memilih sendiri: jangan dikembalikan otomatis saat duel selesai.
-    autoFullscreenRef.current = false;
-    // Mode cadangan CSS tidak tercatat di document.fullscreenElement; tanpa cek state ini tombol "Keluar"
-    // malah meminta fullscreen lagi dan pemain terjebak di layar penuh.
-    if (!isCurrentlyFs && !isFullscreen) {
-      // Prioritaskan document.documentElement agar transisi antar fase (Select -> Map -> Story -> Battle -> Victory) tetap mulus tanpa terputus
-      const el = document.documentElement;
-      const requestFs =
-        el?.requestFullscreen ||
-        el?.webkitRequestFullscreen ||
-        el?.mozRequestFullScreen ||
-        el?.msRequestFullscreen;
-
-      if (requestFs) {
-        requestFs.call(el).then(() => {
-          setIsFullscreen(true);
-        }).catch((err) => {
-          console.warn('Native fullscreen request rejected/fallback to CSS:', err);
-          setIsFullscreen(true);
-        });
-      } else {
-        setIsFullscreen(true);
-      }
+    const doc = document;
+    const isCurrentlyFs = !!(doc.fullscreenElement || doc.webkitFullscreenElement || doc.mozFullScreenElement || doc.msFullscreenElement);
+    if (!isCurrentlyFs) {
+      const el = doc.documentElement;
+      const requestFs = el?.requestFullscreen || el?.webkitRequestFullscreen || el?.mozRequestFullScreen || el?.msRequestFullscreen;
+      if (requestFs) Promise.resolve(requestFs.call(el)).catch(() => {});
     } else {
-      const exitFs =
-        document.exitFullscreen ||
-        document.webkitExitFullscreen ||
-        document.mozCancelFullScreen ||
-        document.msExitFullscreen;
-
-      if (exitFs && isCurrentlyFs) {
-        Promise.resolve(exitFs.call(document)).catch(() => {});
-      }
-      setIsFullscreen(false);
+      const exitFs = doc.exitFullscreen || doc.webkitExitFullscreen || doc.mozCancelFullScreen || doc.msExitFullscreen;
+      if (exitFs) Promise.resolve(exitFs.call(doc)).catch(() => {});
     }
   };
 
@@ -2753,11 +2720,6 @@ export default function BattlePage() {
     return () => sfx.stopBgm();
   }, [phase, audioMuted]);
 
-  const scrollToBattle = () => {
-    if (!isFullscreen && gameContainerRef.current) {
-      gameContainerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  };
 
   // Save Victory & Rank Progress
   const saveVictoryProgress = (expGained = 75, starsCount = 3, finalStreak = streak) => {
@@ -3248,12 +3210,6 @@ export default function BattlePage() {
     }
     clearBattleTimers();
     setShuffleSeed(s => s + 1);
-    // Di HP arena + menu jawaban hanya muat utuh dalam layar penuh; tanpa itu pemain bolak-balik scroll tiap soal.
-    // Pakai layar penuh aplikasi (lapisan CSS), bukan fullscreen browser, dan kembalikan saat duel berakhir.
-    if (!isFullscreen && typeof window !== 'undefined' && window.matchMedia?.('(max-width: 639px)').matches) {
-      autoFullscreenRef.current = true;
-      setIsFullscreen(true);
-    }
     sfx.init();
     setPhase('battle');
     setCurrentQ(0);
@@ -3294,7 +3250,6 @@ export default function BattlePage() {
     const { requiredCorrect } = getBattleRules(currentStage, questionCount);
     setDialogText(`⚔️ ${guardianTitle} menghadangmu di ${currentStage?.location || 'Ruwaq Al-Azhar'}! Jawab benar minimal ${requiredCorrect} dari ${questionCount} soal untuk menumbangkannya!`);
     sfx.playCrit();
-    setTimeout(scrollToBattle, 200);
   };
 
   /* ── Turn Pemain: Memilih Jawaban (Dengan Combo Streak & Defense Shield) ── */
@@ -3311,7 +3266,6 @@ export default function BattlePage() {
     setActiveHint(null);
     setAnsweredCount(c => c + 1);
 
-    scrollToBattle();
 
     const guardianName = activeStage?.guardianName || activeSet.bossName;
     const guardianAvatar = activeStage?.guardianAvatar || activeSet.bossAvatar;
@@ -3624,7 +3578,6 @@ export default function BattlePage() {
     setBattleMenu('main');
     setDialogText(`Soal ${nextQ + 1} dari ${activeQuiz.length}: Apa yang akan kamu lakukan, Thalib?`);
     sfx.playBip(480);
-    scrollToBattle();
   };
 
   /* ── Menggunakan Item dari Bag (5 Koleksi Masisir) ── */
@@ -3794,7 +3747,8 @@ export default function BattlePage() {
                 } else if (phase === 'victory' || phase === 'defeat') {
                   setPhase('map');
                 } else {
-                  navigate('/dashboard');
+                  // Tamu ke beranda; /dashboard untuk tamu langsung membuka modal login.
+                  navigate(session ? '/dashboard' : '/');
                 }
               }}
               className="shrink-0 p-1.5 rounded-lg border border-white/10 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white transition"
@@ -3820,7 +3774,7 @@ export default function BattlePage() {
             {/* Fullscreen Toggle — SELALU TERSEDIA DARI AWAL */}
             <button
               onClick={toggleFullscreen}
-              className={`p-2 rounded-lg border text-xs flex items-center gap-1.5 transition ${
+              className={`${canNativeFs ? '' : 'hidden '}p-2 rounded-lg border text-xs flex items-center gap-1.5 transition ${
                 isFullscreen
                   ? 'border-amber-500/60 bg-amber-500/25 text-amber-300 shadow-[0_0_12px_rgba(245,158,11,0.35)]'
                   : 'border-white/10 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white'
@@ -4198,7 +4152,7 @@ export default function BattlePage() {
                 <div className="flex flex-wrap gap-3">
                   <button
                     onClick={toggleFullscreen}
-                    className={`btn border px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 font-mono font-bold transition shadow-lg ${
+                    className={`${canNativeFs ? '' : '!hidden '}btn border px-5 py-2.5 rounded-xl text-sm flex items-center gap-2 font-mono font-bold transition shadow-lg ${
                       isFullscreen
                         ? 'border-amber-500/60 bg-amber-500/25 text-amber-300 shadow-amber-500/20'
                         : 'border-amber-500/40 bg-gradient-to-r from-amber-500/20 via-emerald-500/20 to-teal-500/20 hover:from-amber-500/30 hover:to-emerald-500/30 text-amber-200'
@@ -4427,7 +4381,7 @@ export default function BattlePage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       onClick={toggleFullscreen}
-                      className={`border-t-2 border-l-2 border-b-4 border-r-4 active:border-b-2 active:border-r-2 active:translate-y-0.5 font-mono font-bold text-xs px-3 py-2 shadow-[2px_2px_0_#000] transition flex items-center gap-1.5 ${
+                      className={`${canNativeFs ? '' : 'hidden '}border-t-2 border-l-2 border-b-4 border-r-4 active:border-b-2 active:border-r-2 active:translate-y-0.5 font-mono font-bold text-xs px-3 py-2 shadow-[2px_2px_0_#000] transition flex items-center gap-1.5 ${
                         isFullscreen
                           ? 'border-[#f59e0b] bg-[#b45309] text-white'
                           : 'border-[#4a5568] bg-[#2d3748] hover:bg-[#3b475a] text-stone-200'
@@ -5284,7 +5238,8 @@ export default function BattlePage() {
           return (
             <div className="space-y-4 animate-fadeIn select-none font-sans">
               {/* ── VISUAL NOVEL CUTSCENE STAGE ── */}
-              <div className="rounded-2xl border-2 border-amber-500/40 bg-[#070b09] shadow-[0_20px_50px_rgba(0,0,0,0.85)] overflow-hidden relative min-h-[580px] sm:min-h-[640px] flex flex-col justify-between">
+              <ArenaPortal active speed={battleSpeed}>
+              <div className="fixed inset-0 z-[9999] w-screen h-[100dvh] bg-[#070b09] overflow-hidden flex flex-col justify-between select-none font-sans">
                 
                 {/* 1. Cinematic Background Layer */}
                 <div className="absolute inset-0 pointer-events-none select-none z-0">
@@ -5301,7 +5256,7 @@ export default function BattlePage() {
                 </div>
 
                 {/* 2. Top Banner: Chapter Lore & Location */}
-                <div className="relative z-10 p-4 sm:p-5 flex flex-col md:flex-row md:items-start justify-between gap-4 border-b border-white/10 bg-black/60 backdrop-blur-md">
+                <div className="relative z-10 m-2 sm:m-4 p-3 sm:p-4 flex flex-row md:items-start justify-between gap-3 rounded-2xl border-2 border-amber-500/30 bg-black/65 backdrop-blur-md">
                   <div>
                     <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                       <span className="px-2.5 py-0.5 rounded-full bg-amber-500/25 border border-amber-400/50 text-amber-300 font-mono text-xs font-black tracking-wider uppercase flex items-center gap-1 shadow-md">
@@ -5309,16 +5264,16 @@ export default function BattlePage() {
                         <span>{prologue.chapter}</span>
                       </span>
                       <span className="text-white/40 text-xs hidden sm:inline">•</span>
-                      <span className="text-xs text-white/70 font-medium flex items-center gap-1">
+                      <span className="text-xs text-white/70 font-medium hidden sm:flex items-center gap-1">
                         <span>📍</span>
                         <span>{prologue.location}</span>
                       </span>
                     </div>
 
-                    <div className="font-arabic text-xl sm:text-2xl text-amber-300 font-bold leading-normal mb-1 drop-shadow-[0_2px_8px_rgba(251,191,36,0.35)]" dir="rtl">
+                    <div className="hidden sm:block font-arabic text-xl sm:text-2xl text-amber-300 font-bold leading-normal mb-1 drop-shadow-[0_2px_8px_rgba(251,191,36,0.35)]" dir="rtl">
                       {prologue.titleArabic}
                     </div>
-                    <h2 className="text-base sm:text-lg font-bold text-white tracking-wide">
+                    <h2 className="text-sm sm:text-lg font-bold text-white tracking-wide leading-snug">
                       {prologue.title}
                     </h2>
                   </div>
@@ -5333,15 +5288,23 @@ export default function BattlePage() {
                       className="btn border border-white/20 bg-white/10 hover:bg-white/20 text-white font-mono text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 shadow-md active:scale-95"
                       title="Lewati cerita dan langsung mulai ujian imtihan (Esc / S)"
                     >
-                      <span>Lewati Cerita [Skip]</span>
+                      <span><span className="hidden sm:inline">Lewati Cerita </span>Skip</span>
                       <span className="text-amber-300">⏭️</span>
+                    </button>
+                    <button
+                      onClick={() => setPhase('map')}
+                      className="w-9 h-9 rounded-xl border border-white/20 bg-white/10 hover:bg-rose-500/80 text-white flex items-center justify-center transition active:scale-95"
+                      title="Keluar ke peta level"
+                      aria-label="Keluar ke peta level"
+                    >
+                      <Icon name="x" className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
 
                 {/* 3. Epigraph / Syi'ir Al-Azhar Parchment Ribbon */}
                 {prologue.epigraph && (
-                  <div className="relative z-10 mx-4 sm:mx-6 mt-3 px-4 py-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 backdrop-blur-md text-center max-w-2xl self-center shadow-lg">
+                  <div className="hidden sm:block relative z-10 mx-4 sm:mx-6 mt-3 px-4 py-2.5 rounded-xl bg-amber-950/40 border border-amber-500/30 backdrop-blur-md text-center max-w-2xl self-center shadow-lg">
                     <div className="font-arabic text-sm sm:text-base text-amber-200/95 font-semibold" dir="rtl">
                       {prologue.epigraph}
                     </div>
@@ -5354,7 +5317,7 @@ export default function BattlePage() {
                 )}
 
                 {/* 4. Center Stage: Dual Character Encounter Arena */}
-                <div className="relative z-10 flex-1 flex items-end justify-between px-6 sm:px-14 md:px-20 pb-4 pt-6">
+                <div className="relative z-10 flex-1 min-h-0 flex items-end justify-between px-6 sm:px-14 md:px-20 pb-2 pt-2">
                   
                   {/* Left: Thalib Azhar Sprite */}
                   <div className={`transition-all duration-300 flex flex-col items-center select-none ${
@@ -5373,7 +5336,7 @@ export default function BattlePage() {
                       <img
                         src="/assets/thalib-voxel-facing-right.png"
                         alt="Thalib Azhar Voxel"
-                        className={`w-32 sm:w-44 md:w-52 h-auto object-contain transition-all duration-300 ${
+                        className={`w-32 sm:w-44 md:w-52 h-auto max-h-[30dvh] sm:max-h-[36dvh] object-contain transition-all duration-300 ${
                           isThalibSpeaking
                             ? 'filter drop-shadow-[0_0_30px_rgba(251,191,36,0.65)] brightness-110'
                             : 'filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.85)] brightness-90 grayscale-[15%]'
@@ -5420,7 +5383,7 @@ export default function BattlePage() {
                       <img
                         src={opponentVoxelSprite}
                         alt={opponentName}
-                        className={`w-32 sm:w-44 md:w-52 h-auto object-contain transition-all duration-300 ${
+                        className={`w-32 sm:w-44 md:w-52 h-auto max-h-[30dvh] sm:max-h-[36dvh] object-contain transition-all duration-300 ${
                           isBossSpeaking
                             ? 'filter drop-shadow-[0_0_35px_rgba(52,211,153,0.7)] brightness-110'
                             : 'filter drop-shadow-[0_10px_20px_rgba(0,0,0,0.85)] brightness-90 grayscale-[15%]'
@@ -5443,7 +5406,7 @@ export default function BattlePage() {
                 </div>
 
                 {/* 5. Bottom Dialogue Balloon System */}
-                <div className="relative z-20 p-4 sm:p-6 bg-gradient-to-t from-black via-[#0a100d]/95 to-[#0e1613]/90 border-t-2 border-amber-500/40 backdrop-blur-xl">
+                <div className="relative z-20 mx-2 mb-[max(0.5rem,env(safe-area-inset-bottom))] sm:mx-auto sm:mb-4 sm:w-[min(60rem,calc(100%-2rem))] p-3 sm:p-5 rounded-2xl border-4 border-[#3d3221] bg-[#080d0a]/85 backdrop-blur-md shadow-[0_0_0_2px_#000,0_16px_40px_rgba(0,0,0,0.85)] max-h-[55vh] overflow-y-auto">
                   
                   {/* Speaker Info Header & Scene Step Indicator */}
                   <div className="flex items-center justify-between gap-3 mb-3">
@@ -5543,7 +5506,7 @@ export default function BattlePage() {
                           sfx.playBip(520);
                           startBattle();
                         }}
-                        className="flex-1 sm:flex-none btn border border-white/15 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs px-3.5 py-2.5 rounded-xl transition"
+                        className="max-sm:!hidden sm:flex-none btn border border-white/15 bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs px-3.5 py-2.5 rounded-xl transition"
                         title="Lewati cerita dan langsung mulai duel"
                       >
                         Lewati Cerita ⏭️
@@ -5575,6 +5538,7 @@ export default function BattlePage() {
                 </div>
 
               </div>
+              </ArenaPortal>
             </div>
           );
         })()}
@@ -5585,15 +5549,17 @@ export default function BattlePage() {
         {phase === 'battle' && (
           <div className="space-y-4 animate-fadeIn">
             {/* ── GAME SCREEN CONTAINER ── */}
-            <ArenaPortal active={isFullscreen} speed={battleSpeed}>
+            <ArenaPortal active speed={battleSpeed}>
             <div
               ref={gameContainerRef}
-              className={`font-mono transition-all duration-200 select-none ${
-                isFullscreen
-                  ? 'fixed inset-0 z-[9999] w-screen h-screen max-h-screen bg-[#070b09] flex flex-col justify-between overflow-hidden m-0 p-0 rounded-none border-0 shadow-none'
-                  : `rounded-2xl border-4 ${battleStyle === 'minecraft' ? 'border-[#382d1c] shadow-[0_20px_50px_rgba(0,0,0,0.9)]' : 'border-[#1f2422]'} bg-[#0b0f0d] shadow-2xl overflow-hidden relative`
-              } ${screenShake ? 'animate-screenShake' : ''}`}
+              className={`fixed inset-0 z-[9999] w-screen h-[100dvh] bg-[#070b09] flex flex-col justify-between overflow-hidden font-mono select-none ${screenShake ? 'animate-screenShake' : ''}`}
             >
+              {/* ── LATAR ADEGAN: menutup seluruh layar, termasuk di balik kotak dialog ── */}
+              {battleStyle === 'minecraft' ? (
+                <MinecraftBattlefield bossType={activeSet.id} />
+              ) : (
+                <PixelBattlefield bossType={activeSet.id} />
+              )}
               
               {/* Minecraft Red Hurt Screen Flash Vignette */}
               {animPlayer === 'hit' && (
@@ -5611,11 +5577,6 @@ export default function BattlePage() {
                     <span className="hidden md:inline text-xs text-white/80 font-bold truncate max-w-[200px]">
                       {activeStage?.guardianName || activeSet.title}
                     </span>
-                    {isFullscreen && (
-                      <span className="hidden sm:inline-flex items-center gap-1 text-[9px] text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-400/30 font-mono font-bold">
-                        <span>⛶</span> FULLSCREEN
-                      </span>
-                    )}
                   </div>
 
                   {/* COMBO STREAK BADGE */}
@@ -5650,7 +5611,7 @@ export default function BattlePage() {
                     }`}
                   >
                     <span>⛏️</span>
-                    <span className="hidden sm:inline">Minecraft 3D</span>
+                    <span className="hidden xl:inline">Minecraft 3D</span>
                   </button>
                   <button
                     onClick={() => { setBattleStyle('retro'); sfx.playBip(480); }}
@@ -5661,7 +5622,7 @@ export default function BattlePage() {
                     }`}
                   >
                     <span>👾</span>
-                    <span className="hidden sm:inline">16-Bit Retro</span>
+                    <span className="hidden xl:inline">16-Bit Retro</span>
                   </button>
 
                   {/* Prolog Story Button */}
@@ -5674,7 +5635,7 @@ export default function BattlePage() {
                     title="Buka Prolog Cerita / Kisah Pertarungan Ini"
                   >
                     <span>📜</span>
-                    <span className="hidden sm:inline">Cerita</span>
+                    <span className="hidden xl:inline">Cerita</span>
                   </button>
 
                   {/* Attack Cutscene Toggle */}
@@ -5691,7 +5652,7 @@ export default function BattlePage() {
                     title={enableCutscene ? 'Scene Serangan Aktif (Klik untuk nonaktifkan)' : 'Scene Serangan Nonaktif (Klik untuk aktifkan)'}
                   >
                     <span>🎬</span>
-                    <span className="hidden md:inline">Scene:</span>
+                    <span className="hidden xl:inline">Scene:</span>
                     <span>{enableCutscene ? 'ON' : 'OFF'}</span>
                   </button>
 
@@ -5720,18 +5681,29 @@ export default function BattlePage() {
                     <span>{audioMuted ? '🔇' : '🔊'}</span>
                   </button>
 
-                  {/* Fullscreen Toggle Button */}
+                  {/* Fullscreen browser (sembunyikan bar browser) — hanya di perangkat yang mendukung */}
+                  {canNativeFs && (
+                    <button
+                      onClick={toggleFullscreen}
+                      className={`min-h-[34px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 ${
+                        isFullscreen ? 'bg-amber-500/25 text-amber-200 border border-amber-400/50' : 'bg-[#0f2a1d] text-emerald-300 hover:bg-emerald-500/40 border border-emerald-400/40'
+                      }`}
+                      title={isFullscreen ? 'Tampilkan bar browser (Esc / F)' : 'Sembunyikan bar browser (F)'}
+                    >
+                      <Icon name={isFullscreen ? 'minimize' : 'maximize'} className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+
+                  {/* Keluar duel → kembali ke peta level (selalu terlihat di ujung kanan) */}
                   <button
-                    onClick={toggleFullscreen}
-                    className={`sticky right-0 min-h-[34px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 ${
-                      isFullscreen
-                        ? 'bg-rose-500 text-white ring-4 ring-black/85 shadow-md hover:bg-rose-600'
-                        : 'bg-[#0f2a1d] text-emerald-300 hover:bg-emerald-500/40 border border-emerald-400/40'
-                    }`}
-                    title={isFullscreen ? 'Keluar Fullscreen (Esc / F)' : 'Masuk Full Layar (F)'}
+                    onClick={() => {
+                      if (confirm('Keluar dari duel ini? Progres duel saat ini akan di-reset.')) setPhase('map');
+                    }}
+                    className="sticky right-0 min-h-[34px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 bg-rose-500 text-white ring-4 ring-black/85 shadow-md hover:bg-rose-600"
+                    title="Keluar duel (kembali ke peta)"
                   >
-                    <Icon name={isFullscreen ? 'minimize' : 'maximize'} className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">{isFullscreen ? 'Keluar (ESC)' : 'Full Layar (F)'}</span>
+                    <Icon name="x" className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Keluar</span>
                   </button>
                 </div>
               </div>
@@ -5769,10 +5741,10 @@ export default function BattlePage() {
               )}
 
               {/* ── BATTLE UPPER HALF: COMBATANTS ARENA ── */}
-              <div className={`${isFullscreen ? 'flex-1 min-h-0 px-4 pb-4 pt-20 sm:px-6 sm:pb-6 sm:pt-20' : 'min-h-[360px] sm:min-h-[400px] px-4 pb-4 pt-14 sm:px-6 sm:pb-6 sm:pt-16'} flex flex-col justify-between relative overflow-hidden transition-all duration-300`}>
+              <div className="flex-1 min-h-0 px-4 pb-2 pt-20 sm:px-6 sm:pt-20 flex flex-col justify-between relative overflow-hidden">
                 
                 {/* ── IN-BATTLE LIVE OBJECTIVE HUD ── */}
-                <div className={`absolute ${isFullscreen ? "top-[4.25rem]" : "top-2"} left-1/2 -translate-x-1/2 z-20 hidden sm:flex items-center gap-2 pointer-events-none max-w-[95%]`}>
+                <div className={`absolute top-[4.25rem] left-1/2 -translate-x-1/2 z-20 hidden 2xl:flex items-center gap-2 pointer-events-none max-w-[95%]`}>
                   <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/85 border border-amber-400/50 backdrop-blur-md shadow-lg text-[10px] sm:text-xs font-mono font-bold text-amber-200">
                     <span className="text-amber-400">🎯</span>
                     <span className="hidden sm:inline">Target Imtihan: Pertahankan HP ≥ 80% untuk Predikat Mumtaz (⭐⭐⭐)</span>
@@ -5782,13 +5754,6 @@ export default function BattlePage() {
                     Soal {currentQ + 1}/{activeQuiz.length}
                   </div>
                 </div>
-
-                {/* ── BATTLEFIELD BACKDROP: MINECRAFT 3D OR 16-BIT RETRO ── */}
-                {battleStyle === 'minecraft' ? (
-                  <MinecraftBattlefield bossType={activeSet.id} />
-                ) : (
-                  <PixelBattlefield bossType={activeSet.id} />
-                )}
 
                 {/* Battle Projectiles (Energy waves / elemental spells) */}
                 <BattleProjectile type={projectile} effect={attackEffect} bossType={activeSet.id} />
@@ -6027,7 +5992,8 @@ export default function BattlePage() {
               </div>
 
               {/* ── BATTLE LOWER HALF: DIALOG & 4-COMMAND BOX ── */}
-              <div className={`border-t-4 border-[#1f2422] bg-[#0c120e] p-3 sm:p-5 ${isFullscreen ? `${battleMenu !== 'main' || wrongReview ? 'max-h-[68vh] sm:max-h-[44vh]' : 'max-h-[44vh]'} overflow-y-auto shrink-0 shadow-[0_-12px_30px_rgba(0,0,0,0.8)]` : ''}`}>
+              {/* Kotak dialog game (gaya Pokémon): melayang di atas adegan, bukan panel halaman web. */}
+              <div className={`relative z-20 shrink-0 mx-2 mb-[max(0.5rem,env(safe-area-inset-bottom))] sm:mx-auto sm:mb-4 sm:w-[min(60rem,calc(100%-2rem))] rounded-2xl border-4 border-[#3d3221] bg-[#080d0a]/85 backdrop-blur-md shadow-[0_0_0_2px_#000,0_16px_40px_rgba(0,0,0,0.85)] p-3 sm:p-4 overflow-y-auto overscroll-contain ${battleMenu !== 'main' || wrongReview ? 'max-h-[68vh] sm:max-h-[60vh]' : 'max-h-[44vh]'}`}>
                 
                 {/* ── JIKA JAWABAN SALAH: KARTU MUZAKARAH & CARA JAWAB DI LEMBAR UJIAN ── */}
                 {wrongReview ? (
@@ -7433,10 +7399,10 @@ export default function BattlePage() {
     </div>
   );
 
-  // Full layar berlaku untuk seluruh game (pilih muqarrar, peta, prolog, hasil), bukan hanya arena:
-  // halaman dipindah ke lapisan fixed di <body> sehingga navbar & footer situs tersembunyi.
-  // Arena battle punya portal sendiri (z lebih tinggi) di dalamnya.
-  return <GameFullscreenLayer active={isFullscreen}>{pageContent}</GameFullscreenLayer>;
+  // Game selalu tampil penuh seperti aplikasi native (desktop & HP): halaman dipindah ke lapisan fixed di <body>
+  // sehingga navbar & footer situs tidak pernah muncul. Arena battle punya portal sendiri (z lebih tinggi).
+  // Tombol layar penuh hanya menyembunyikan bar browser (Fullscreen API).
+  return <GameFullscreenLayer active>{pageContent}</GameFullscreenLayer>;
 }
 
 window.BattlePage = BattlePage;
