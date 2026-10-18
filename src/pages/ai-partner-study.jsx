@@ -2109,7 +2109,7 @@ export const BattleTab = ({ set }) => {
               Uji Pemahaman Materi: "{set.title}"
             </h2>
             <p className="text-sm text-white/70 max-w-xl leading-relaxed mb-4">
-              Diktat yang telah kamu pelajari kini siap diuji secara interaktif! Bertarunglah melawan para penguji resmi Al-Azhar, kumpulkan poin EXP, raih Taqdir Mumtaz, dan tundukkan Al-'Allamah Al-Kabir untuk memperoleh Syahadah Kelulusan Resmi!
+              Diktat yang telah kamu pelajari kini siap diuji secara interaktif! Hadapi para penguji di Arena Imtihan, kumpulkan poin EXP, raih Taqdir Mumtaz, dan lulus di hadapan Al-'Allamah Al-Kabir untuk memperoleh Syahadah Arena Imtihan!
             </p>
 
             <div className="flex items-center justify-center md:justify-start gap-3 flex-wrap">

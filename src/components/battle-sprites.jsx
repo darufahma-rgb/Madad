@@ -1028,8 +1028,77 @@ export function FloatingDamage({ text = null, type = 'damage' }) {
   );
 }
 
-/* ── 5. MINECRAFT 3D VOXEL BATTLEFIELD BACKDROP ── */
-export function MinecraftBattlefield({ bossType = 'balaghah-majaz' }) {
+/* ── 5. TEMA ARENA PER LEVEL ──
+   Tiga gambar latar maddah dipadu empat suasana level (warna, sudut kamera, partikel, cuaca) → 12 arena berbeda.
+   Partikel memakai keyframe global di battle-page.jsx (arena*), yang dimatikan saat prefers-reduced-motion. */
+export const ARENA_THEMES = {
+  1: {
+    id: 'dusk', spriteGrade: 'sepia(0.22) saturate(1.15) brightness(1.03)', name: 'Senja di Gerbang', icon: '🌇',
+    grade: 'sepia(0.35) saturate(1.35) hue-rotate(-14deg) brightness(1.05) contrast(1.05)',
+    tint: 'linear-gradient(to top, rgba(0,0,0,0.75), rgba(251,146,60,0.12) 45%, rgba(251,146,60,0.28))',
+    position: '20% 50%', pan: 'arenaPanA', particles: 'dust',
+  },
+  2: {
+    id: 'lantern', spriteGrade: 'brightness(0.86) saturate(1.05) hue-rotate(6deg)', name: 'Malam Berlentera', icon: '🏮',
+    grade: 'brightness(0.82) saturate(1.15) hue-rotate(12deg)',
+    tint: 'linear-gradient(to top, rgba(0,0,0,0.8), rgba(30,27,75,0.25) 50%, rgba(15,23,42,0.55))',
+    position: '80% 50%', pan: 'arenaPanB', particles: 'lantern',
+  },
+  3: {
+    id: 'storm', spriteGrade: 'brightness(0.8) saturate(0.85) contrast(1.05)', name: 'Badai di Shahn', icon: '⛈️',
+    grade: 'brightness(0.72) contrast(1.2) saturate(0.75)',
+    tint: 'linear-gradient(to top, rgba(0,0,0,0.8), rgba(30,41,59,0.35) 50%, rgba(15,23,42,0.6))',
+    position: '50% 40%', pan: 'arenaPanA', particles: 'rain', lightning: true,
+  },
+  4: {
+    id: 'eclipse', spriteGrade: 'brightness(0.84) saturate(1.15) hue-rotate(-12deg)', name: 'Gerhana Kubah Ulama', icon: '🌘',
+    grade: 'brightness(0.7) saturate(1.5) hue-rotate(-28deg) contrast(1.1)',
+    tint: 'radial-gradient(ellipse at 70% 30%, rgba(168,85,247,0.25), transparent 60%), linear-gradient(to top, rgba(0,0,0,0.85), rgba(76,5,25,0.35) 55%, rgba(30,8,50,0.6))',
+    position: '50% 30%', pan: 'arenaPanB', particles: 'runes', pulse: true,
+  },
+};
+export const getArenaTheme = (level = 1) => ARENA_THEMES[Math.min(4, Math.max(1, Number(level) || 1))];
+
+const RUNE_LETTERS = ['ب', 'ي', 'ا', 'ن', 'ح', 'ك', 'م', 'ع', 'ل', 'ق', 'ف', 'س'];
+// Posisi partikel tetap (bukan Math.random) supaya tidak berubah tiap render.
+const particleSpots = (n, seed) => Array.from({ length: n }, (_, i) => {
+  const r = (k) => ((Math.sin((i + 1) * (seed + k) * 12.9898) * 43758.5453) % 1 + 1) % 1;
+  return { left: r(1) * 100, top: r(2) * 100, delay: r(3) * 8, dur: 6 + r(4) * 8, size: r(5) };
+});
+
+function ArenaParticles({ kind }) {
+  if (kind === 'dust') {
+    return particleSpots(22, 3).map((p, i) => (
+      <span key={i} className="absolute rounded-full bg-amber-200/70 arena-dust"
+        style={{ left: `${p.left}%`, top: `${30 + p.top * 0.7}%`, width: 2 + p.size * 3, height: 2 + p.size * 3, animationDelay: `${p.delay}s`, animationDuration: `${p.dur}s` }} />
+    ));
+  }
+  if (kind === 'lantern') {
+    return particleSpots(12, 7).map((p, i) => (
+      <span key={i} className="absolute bottom-0 rounded-[3px] arena-lantern"
+        style={{ left: `${p.left}%`, width: 8 + p.size * 8, height: 11 + p.size * 10, animationDelay: `${p.delay * 1.5}s`, animationDuration: `${14 + p.dur}s`,
+          background: 'radial-gradient(circle at 50% 40%, #fff7cc, #f59e0b 55%, #9a3412)', boxShadow: '0 0 18px 6px rgba(251,191,36,0.45)' }} />
+    ));
+  }
+  if (kind === 'rain') {
+    return particleSpots(55, 11).map((p, i) => (
+      <span key={i} className="absolute -top-[10%] w-px bg-gradient-to-b from-transparent to-sky-200/60 arena-rain"
+        style={{ left: `${p.left * 1.2 - 10}%`, height: 40 + p.size * 50, animationDelay: `${p.delay / 8}s`, animationDuration: `${0.55 + p.size * 0.4}s` }} />
+    ));
+  }
+  if (kind === 'runes') {
+    return particleSpots(14, 17).map((p, i) => (
+      <span key={i} className="absolute bottom-0 font-arabic font-bold text-fuchsia-200/80 arena-rune"
+        style={{ left: `${p.left}%`, fontSize: 16 + p.size * 22, animationDelay: `${p.delay}s`, animationDuration: `${9 + p.dur}s`, textShadow: '0 0 12px rgba(217,70,239,0.9)' }}>
+        {RUNE_LETTERS[i % RUNE_LETTERS.length]}
+      </span>
+    ));
+  }
+  return null;
+}
+
+/* ── 5b. MINECRAFT 3D VOXEL BATTLEFIELD BACKDROP ── */
+export function MinecraftBattlefield({ bossType = 'balaghah-majaz', level = 1 }) {
   const bgMap = {
     'ushul-amr': '/assets/mc-bg-ushul.jpg',
     'nahwu-fail': '/assets/mc-bg-nahwu.jpg',
@@ -1037,26 +1106,26 @@ export function MinecraftBattlefield({ bossType = 'balaghah-majaz' }) {
   };
 
   const currentBg = bgMap[bossType] || '/assets/mc-bg-ushul.jpg';
+  const theme = getArenaTheme(level);
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
-      {/* Background 3D Minecraft Scene Image */}
+      {/* Latar maddah, diwarnai & digeser pelan sesuai suasana level */}
       <img
         src={currentBg}
-        alt="Minecraft Al-Azhar Battlefield"
-        className="w-full h-full object-cover object-center filter brightness-95 contrast-105"
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover arena-pan"
+        style={{ objectPosition: theme.position, filter: theme.grade, animationName: theme.pan }}
       />
+      <div className="absolute inset-0" style={{ background: theme.tint }} />
 
-      {/* Atmospheric Vignette & Night Shadow */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
+      {theme.pulse && <div className="absolute inset-0 arena-eclipse-pulse" />}
+      {theme.lightning && <div className="absolute inset-0 bg-sky-100 arena-lightning" />}
 
-      {/* Warm Torchlight Pulse Effect at bottom */}
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-amber-500/15 via-amber-500/5 to-transparent animate-pulse pointer-events-none" />
+      <ArenaParticles kind={theme.particles} />
 
-      {/* Subtle Voxel Star Glimmer */}
-      <div className="absolute top-6 left-12 text-amber-200 text-xs animate-ping opacity-60">✦</div>
-      <div className="absolute top-10 right-28 text-white text-[10px] animate-pulse opacity-75">✧</div>
-      <div className="absolute top-16 left-1/3 text-emerald-200 text-[10px] animate-pulse opacity-50">✦</div>
+      {/* Cahaya obor di lantai arena */}
+      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-amber-500/15 via-amber-500/5 to-transparent animate-pulse" />
     </div>
   );
 }
@@ -1087,7 +1156,7 @@ export function MinecraftPlayerSprite({ state = 'idle' }) {
         <img
           src={isHit ? '/assets/thalib-hurt-voxel.png' : '/assets/thalib-voxel-facing-right.png'}
           alt="Thalib Azhar Voxel 3D"
-          className={`w-28 sm:w-36 md:w-44 max-h-40 sm:max-h-52 md:max-h-60 h-auto object-contain transition-all duration-200 ${
+          className={`w-28 sm:w-36 md:w-44 max-h-[min(15rem,24dvh)] h-auto object-contain transition-all duration-200 ${
             isHit
               ? 'filter brightness-[1.3] contrast-[1.1] drop-shadow-[0_0_20px_rgba(244,63,94,0.9)]'
               : isAttack
@@ -1102,6 +1171,42 @@ export function MinecraftPlayerSprite({ state = 'idle' }) {
         )}
       </div>
     </div>
+    </div>
+  );
+}
+
+/* ── IDENTITAS FINAL BOSS PER MADDAH ──
+   Keempat PNG boss di /assets saat ini berisi gambar yang sama (Syaikh Kabir). Sampai ada sprite voxel khusus,
+   tiap final boss dibedakan lewat "pendamping" (makhluk SVG khas maddah), warna aura, dan gelarnya.
+   Kalau nanti ada PNG berbeda, cukup ubah getVoxelSprite — pendamping tetap bisa dipakai. */
+export const FINAL_BOSS_LOOKS = {
+  'balaghah-majaz': { aura: '#10b981', glow: 'rgba(16,185,129,0.55)', title: 'Penjaga Kitab Al-Bayan', Familiar: BalaghahWingedTome },
+  'nahwu-fail': { aura: '#38bdf8', glow: 'rgba(56,189,248,0.55)', title: "Pemanggil Ra'du Al-Alfiyah", Familiar: NahwuGolem },
+  'ushul-amr': { aura: '#f59e0b', glow: 'rgba(245,158,11,0.6)', title: 'Pemegang Mizan Al-Qadhi', Familiar: UshulSphinx },
+};
+const CUSTOM_FINAL_BOSS_LOOK = { aura: '#c084fc', glow: 'rgba(192,132,252,0.55)', title: 'Penguji Diktat Mandiri', Familiar: BalaghahWingedTome };
+export const getFinalBossLook = (bossType) => FINAL_BOSS_LOOKS[bossType] || CUSTOM_FINAL_BOSS_LOOK;
+
+export function FinalBossFamiliar({ bossType, isAttack = false, isHit = false, className = '' }) {
+  const { Familiar } = getFinalBossLook(bossType);
+  return (
+    <div className={`pointer-events-none animate-bookLevitate [&_svg]:!w-full [&_svg]:!h-full ${className}`}>
+      <Familiar isAttack={isAttack} isHit={isHit} />
+    </div>
+  );
+}
+
+/* Potret final boss untuk kartu, peta, dan prolog: sprite voxel + pendamping + cahaya aura khas maddah. */
+export function FinalBossPortrait({ bossType, src, alt = '', className = '', imgClassName = '', familiarClassName = '' }) {
+  const look = getFinalBossLook(bossType);
+  return (
+    <div className={`relative flex items-end justify-center ${className}`}>
+      <div
+        className="absolute -inset-[12%] rounded-full blur-2xl animate-pulse pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${look.glow}, transparent 70%)` }}
+      />
+      <img src={src} alt={alt} className={`relative z-10 ${imgClassName}`} style={{ filter: `drop-shadow(0 0 12px ${look.glow}) drop-shadow(0 8px 12px rgba(0,0,0,0.85))` }} />
+      <FinalBossFamiliar bossType={bossType} className={`absolute z-20 ${familiarClassName || '-left-[18%] top-0 w-[48%] aspect-square'}`} />
     </div>
   );
 }
@@ -1255,11 +1360,11 @@ export function MinecraftBossSprite({
   const isNahwu = bossType === 'nahwu-fail';
   const isUshul = bossType === 'ushul-amr';
 
-  const themeAura = isNahwu ? '#38bdf8' : isUshul ? '#fbbf24' : '#10b981';
-
   // Map stage & bossType to rendered 3D Minecraft Voxel PNG Sprites (Hurt version on hit)
   const spriteSrc = isHit ? getVoxelHurtSprite(stageId, bossType) : getVoxelSprite(stageId, bossType);
   const isFinalBoss = Number(stageId) === 4;
+  const finalLook = isFinalBoss ? getFinalBossLook(bossType) : null;
+  const themeAura = finalLook ? finalLook.aura : isNahwu ? '#38bdf8' : isUshul ? '#fbbf24' : '#10b981';
 
   // Dua lapis seperti MinecraftPlayerSprite: geser di luar, keyframe float/hurt di dalam.
   return (
@@ -1283,6 +1388,22 @@ export function MinecraftBossSprite({
         style={{ backgroundColor: `${themeAura}33` }}
       />
 
+      {/* Final boss: aura warna maddah + pendamping khasnya melayang di sisi kiri */}
+      {finalLook && (
+        <>
+          <div
+            className="absolute inset-[-10%] rounded-full blur-2xl opacity-80 animate-pulse pointer-events-none"
+            style={{ background: `radial-gradient(circle, ${finalLook.glow}, transparent 68%)` }}
+          />
+          <FinalBossFamiliar
+            bossType={bossType}
+            isAttack={isAttack}
+            isHit={isHit}
+            className="absolute z-20 -left-[42%] top-[4%] w-[58%] aspect-square"
+          />
+        </>
+      )}
+
       {/* Dynamic Rendered 3D Voxel Guardian Model */}
       <div className="relative z-10 flex flex-col items-center">
         <img
@@ -1290,8 +1411,8 @@ export function MinecraftBossSprite({
           alt={guardianName || 'Guardian Voxel 3D'}
           className={`h-auto object-contain transition-all duration-200 ${
             isFinalBoss
-              ? 'w-28 sm:w-36 md:w-44 max-h-48 sm:max-h-56 md:max-h-60'
-              : 'w-20 sm:w-[6.5rem] md:w-[7.5rem] max-h-36 sm:max-h-44 md:max-h-48'
+              ? 'w-28 sm:w-36 md:w-44 max-h-[min(15rem,24dvh)]'
+              : 'w-20 sm:w-[6.5rem] md:w-[7.5rem] max-h-[min(12rem,21dvh)]'
           } ${
             isHit
               ? 'filter brightness-[1.3] contrast-[1.1] drop-shadow-[0_0_25px_rgba(244,63,94,0.95)]'

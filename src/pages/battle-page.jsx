@@ -12,7 +12,11 @@ import {
   MinecraftBossSprite,
   MinecraftHudPlate,
   getVoxelSprite,
-  getVoxelHurtSprite
+  getVoxelHurtSprite,
+  FinalBossPortrait,
+  FinalBossFamiliar,
+  getFinalBossLook,
+  getArenaTheme
 } from '../components/battle-sprites.jsx';
 
 /* =========================================================================
@@ -462,22 +466,24 @@ const AZHAR_WISDOM_LOOT = [
     role: "Penulis Matan Alfiyah Ibnu Malik",
     arabic: "كَلاَمُنَا لَفْظٌ مُفِيدٌ كَاسْتَقِمْ • وَاسْمٌ وَفِعْلٌ ثُمَّ حَرْفٌ الْكَلِمْ",
     meaning: "Kalam dalam tatabahasa Arab adalah lafadz yang memberi faedah sempurna seperti ucapan 'Istaqim' (Istiqamahlah!). Tersusun atas Isim, Fi'il, dan Huruf.",
-    itemReward: { name: "Ahwah Mazbut (Kopi Kairo)", key: "ahwah", qty: 1, icon: "☕", desc: "Tameng Difa' (-50% Guncangan Syubhat)" }
+    itemReward: { name: "Ahwah Mazbut (Kopi Kairo)", key: "ahwah", qty: 1, icon: "☕", desc: "Tameng Difa' (-50% damage serangan balik)" }
   },
   {
     id: 'ghazali-1',
     author: "Al-Imam Al-Ghazali رحمه الله",
     role: "Hujjatul Islam & Pengarang Al-Mustashfa",
-    arabic: "مَنْ لَمْ يُحِطْ بِعِلْمِ المَنْطِقِ وَالأُصُولِ • فَلَا ثِقَةَ لَهُ بِعُلُومِهِ أَصْلًا",
-    meaning: "Barangsiapa yang tidak menguasai kaidah logika dan Ushul Fiqih, niscaya tidak ada jaminan kemantapan atas cabang-cabang ilmu yang dipahaminya.",
+    // Al-Mustashfa, muqaddimah tentang ilmu mantiq (versi sebelumnya menambahkan "wal-ushul" yang tidak ada di teks).
+    arabic: "هِيَ مُقَدِّمَةُ الْعُلُومِ كُلِّهَا، وَمَنْ لَا يُحِيطُ بِهَا فَلَا ثِقَةَ لَهُ بِعُلُومِهِ أَصْلًا",
+    meaning: "(Tentang ilmu mantiq/logika) Ia adalah pengantar bagi seluruh ilmu; siapa yang tidak menguasainya, ilmunya sama sekali tidak dapat dipercaya kemantapannya.",
     itemReward: { name: "Khulashah Matan (Diktat Ringkas)", key: "summary", qty: 1, icon: "📜", desc: "Singkirkan 2 Pilihan Salah (50:50)" }
   },
   {
     id: 'azhar-kibar-1',
-    author: "Masyayikh Ruwaq Al-Azhar Asy-Syarif",
-    role: "Kibaru Ulama Al-Azhar Al-Ma'mur",
-    arabic: "العِلْمُ فِي الصُّدُورِ لَا فِي السُّطُورِ • وَالتَّحْقِيقُ زِينَةُ كُلِّ فَقِيهٍ",
-    meaning: "Hakikat ilmu bersemayam di dalam dada yang lapang dan faham, bukan sekadar coretan di atas kertas; dan tahqiq (ketelitian menguji dalil) adalah perhiasan sejati para penuntut ilmu.",
+    // Ungkapan masyhur tanpa sumber tunggal yang pasti; jangan disandarkan kepada tokoh atau lembaga tertentu.
+    author: "Ungkapan masyhur para penuntut ilmu",
+    role: "Hikmah populer di majelis ilmu",
+    arabic: "العِلْمُ فِي الصُّدُورِ لَا فِي السُّطُورِ",
+    meaning: "Ilmu yang sejati bersemayam di dalam dada (dipahami dan dihafal), bukan sekadar tertulis di atas kertas.",
     itemReward: { name: "Qamus Ma'ani Azhar", key: "qamus", qty: 1, icon: "📖", desc: "Buka Petunjuk & Hint Kaidah" }
   }
 ];
@@ -648,7 +654,7 @@ const PRESETS = [
         expReward: 100,
         quizIndices: [4, 8, 0, 2],
         isFinal: true,
-        lore: 'Al-\'Allamah Al-Bayani, Guru Besar Balaghah Al-Azhar, menguji langsung pemahamanmu! Tundukkan ujian agung beliau untuk menyandang predikat Mumtaz dan meraih Syahadah Resmi Al-Azhar!'
+        lore: 'Al-\'Allamah Al-Bayani, Guru Besar Balaghah Al-Azhar, menguji langsung pemahamanmu! Tundukkan ujian agung beliau untuk menyandang predikat Mumtaz dan meraih Syahadah Arena Imtihan!'
       }
     ],
     prologue: {
@@ -913,7 +919,7 @@ const PRESETS = [
         expReward: 100,
         quizIndices: [8, 0, 2, 4],
         isFinal: true,
-        lore: 'Al-\'Allamah Syaikhul Nahwu menantangmu dalam ujian puncak I\'rab Alfiyah! Buktikan ketajaman kaidahmu di hadapan beliau untuk meraih Syahadah Resmi Al-Azhar!'
+        lore: 'Al-\'Allamah Syaikhul Nahwu menantangmu dalam ujian puncak I\'rab Alfiyah! Buktikan ketajaman kaidahmu di hadapan beliau untuk meraih Syahadah Arena Imtihan!'
       }
     ],
     prologue: {
@@ -1857,6 +1863,35 @@ function applyAiStory(set, story) {
   return { ...set, prologue, stages, bossName: finalGuardian || set.bossName };
 }
 
+/* ── MISI DUEL ──
+   Tiap level punya 2–3 misi sampingan; tiap misi yang tuntas saat menang memberi bonus EXP dan dicatat di progres.
+   Status dihitung dari statistik duel: salah jawab, item terpakai, bantuan (Qamus/Khulashah/Halaqah), combo, HP. */
+const MISSION_BONUS_EXP = 15;
+const MISSION_DEFS = {
+  flawless: { icon: '💎', label: 'Tanpa Cela', desc: 'Jawab semua soal tanpa salah' },
+  noItems: { icon: '🎒', label: 'Bekal Utuh', desc: 'Menang tanpa memakai item tas' },
+  noHelp: { icon: '🧠', label: 'Mandiri', desc: 'Tanpa Qamus, Khulashah, atau AI Halaqah' },
+  combo2: { icon: '🔥', label: 'Hujjah Beruntun', desc: 'Capai combo x2', combo: 2 },
+  combo3: { icon: '⚡', label: 'Hujjah Mutawatirah', desc: 'Capai combo x3', combo: 3 },
+  hp70: { icon: '❤️', label: 'Tetap Tegar', desc: 'Menang dengan HP minimal 70' },
+};
+function getStageMissions(stage, quizLength) {
+  const level = Number(stage?.levelNumber || stage?.id || 1);
+  const combo = quizLength >= 3 ? 'combo3' : 'combo2';
+  const byLevel = { 1: ['flawless', 'noHelp'], 2: ['combo2', 'noItems'], 3: [combo, 'hp70'], 4: ['flawless', combo, 'noHelp'] };
+  return byLevel[Math.min(4, Math.max(1, level))];
+}
+// 'done' | 'failed' | 'active'. finished = duel sudah dimenangkan (misi yang bergantung pada akhir duel dinilai saat itu).
+function missionStatus(id, stats, { finished = false, playerHp = 100 } = {}) {
+  const def = MISSION_DEFS[id];
+  if (def?.combo) return stats.maxStreak >= def.combo ? 'done' : finished ? 'failed' : 'active';
+  if (id === 'flawless') return stats.wrong > 0 ? 'failed' : finished ? 'done' : 'active';
+  if (id === 'noItems') return stats.items > 0 ? 'failed' : finished ? 'done' : 'active';
+  if (id === 'noHelp') return stats.help > 0 ? 'failed' : finished ? 'done' : 'active';
+  if (id === 'hp70') return finished ? (playerHp >= 70 ? 'done' : 'failed') : 'active';
+  return 'active';
+}
+
 /* ── HELPER: ATURAN DUEL PER LEVEL ──
    Boss tumbang tepat saat thalib mengumpulkan jawaban benar sebanyak batas lulus (60%, dibulatkan ke atas);
    combo mempercepatnya. Kalau soal habis dan boss masih berdiri, duel kalah. Serangan balik makin keras
@@ -2607,6 +2642,48 @@ export default function BattlePage() {
 
   const [defeatReason, setDefeatReason] = useState('hp'); // 'hp' | 'boss-survived'
 
+  // Statistik duel untuk misi. Ref dipakai saat menilai di handler bertimer (state di closure bisa basi).
+  const EMPTY_STATS = { wrong: 0, items: 0, help: 0, maxStreak: 0 };
+  const [battleStats, setBattleStats] = useState(EMPTY_STATS);
+  const battleStatsRef = useRef(EMPTY_STATS);
+  const bumpStats = (patch) => {
+    const next = { ...battleStatsRef.current, ...patch(battleStatsRef.current) };
+    battleStatsRef.current = next;
+    setBattleStats(next);
+  };
+  const [missionToast, setMissionToast] = useState(null); // { icon, text, tone }
+  const [duelIntro, setDuelIntro] = useState(false); // layar "VS" pembuka duel
+  const [koAnim, setKoAnim] = useState(false);       // adegan penjaga tumbang sebelum layar menang
+  const bossEnraged = phase === 'battle' && bossHp > 0 && bossHp <= bossMaxHp * 0.3;
+  const arenaTheme = getArenaTheme(activeStage?.levelNumber || activeStage?.id || 1);
+  const enragedSeenRef = useRef(false);
+  useEffect(() => {
+    if (!bossEnraged || enragedSeenRef.current) return;
+    enragedSeenRef.current = true;
+    setMissionToast({ icon: '😡', text: 'Penguji menaikkan tingkat ujian — tetap fokus!', tone: 'failed' });
+    const t = setTimeout(() => setMissionToast(null), 2600);
+    return () => clearTimeout(t);
+  }, [bossEnraged]);
+  const [missionResult, setMissionResult] = useState(null); // [{ id, status }] hasil duel terakhir
+  const [showMissions, setShowMissions] = useState(false);
+  const stageMissions = getStageMissions(activeStage, activeQuiz.length);
+
+  // Beri tahu pemain saat sebuah misi tuntas/gagal di tengah duel (sekali per misi).
+  const missionSeenRef = useRef({});
+  useEffect(() => {
+    if (phase !== 'battle') return;
+    for (const id of stageMissions) {
+      const st = missionStatus(id, battleStats, { playerHp });
+      if (st === 'active' || missionSeenRef.current[id] === st) continue;
+      missionSeenRef.current[id] = st;
+      const def = MISSION_DEFS[id];
+      setMissionToast({ icon: st === 'done' ? '✅' : '❌', text: `${st === 'done' ? 'Misi tuntas' : 'Misi gagal'}: ${def.icon} ${def.label}`, tone: st });
+      if (st === 'done') sfx.playCombo?.(3); else sfx.playBip?.(220);
+      const t = setTimeout(() => setMissionToast(null), 2600);
+      return () => clearTimeout(t);
+    }
+  }, [battleStats, phase]);
+
   // Menu game: panel profil/misi/paste di layar pilih, dan bottom sheet detail level di HP.
   const [menuPanel, setMenuPanel] = useState(null); // null | 'profile' | 'quests' | 'paste'
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -2816,7 +2893,7 @@ export default function BattlePage() {
 
 
   // Save Victory & Rank Progress
-  const saveVictoryProgress = (expGained = 75, starsCount = 3, finalStreak = streak) => {
+  const saveVictoryProgress = (expGained = 75, starsCount = 3, finalStreak = streak, missionsDone = []) => {
     try {
       const current = userProgress || { totalExp: 0, streakRecord: 0, completedBosses: {}, stageProgress: {}, badges: [] };
       const bossId = activeSet.id;
@@ -2837,10 +2914,16 @@ export default function BattlePage() {
       const updatedStageProgress = {
         ...(current.stageProgress || {}),
         [bossId]: {
+          ...prevMuqarrarProgress,
           highestUnlocked: nextUnlocked,
           stars: {
             ...(prevMuqarrarProgress.stars || {}),
             [stageId]: newStars
+          },
+          // Misi yang pernah tuntas di level ini (gabungan semua percobaan).
+          missions: {
+            ...(prevMuqarrarProgress.missions || {}),
+            [stageId]: [...new Set([...(prevMuqarrarProgress.missions?.[stageId] || []), ...missionsDone])]
           }
         }
       };
@@ -2956,10 +3039,10 @@ export default function BattlePage() {
     // Header Title
     ctx.fillStyle = '#34d399';
     ctx.font = 'bold 34px "DM Sans", sans-serif';
-    ctx.fillText('شَهَادَةُ كَفَاءَةِ الْمُقَرَّرَاتِ الْأَزْهَرِيَّةِ', 600, 160);
+    ctx.fillText('شَهَادَةُ إِتْمَامِ سَاحَةِ الِامْتِحَانِ', 600, 160);
     ctx.font = 'bold 16px "DM Sans", sans-serif';
     ctx.fillStyle = '#9ca3af';
-    ctx.fillText('MARKAZ TALQEEH AL-AZHARI • كُلِّيَّةُ الشَّرِيعَةِ وَاللُّغَةِ بِالْقَاهِرَةِ', 600, 192);
+    ctx.fillText('TALQEEH • ARENA IMTIHAN — SERTIFIKAT LATIHAN', 600, 192);
 
     // Gold Divider Line
     ctx.strokeStyle = '#fbbf24';
@@ -2972,7 +3055,7 @@ export default function BattlePage() {
     // Body text
     ctx.fillStyle = '#e5e7eb';
     ctx.font = '20px "DM Sans", sans-serif';
-    ctx.fillText('Berdasarkan hasil Arena Imtihan Talqeeh, Dewan Masyayikh mengesahkan:', 600, 275);
+    ctx.fillText('Berdasarkan hasil Arena Imtihan, Talqeeh mencatat bahwa:', 600, 275);
 
     // Student Name
     const studentName = profile?.name || 'Thalib Al-Azhar';
@@ -3012,7 +3095,7 @@ export default function BattlePage() {
     ctx.font = 'bold 15px "DM Sans", sans-serif';
     ctx.fillText('مَرْكَز تَلْقِيح', 980, 605);
     ctx.font = 'bold 13px "DM Sans", sans-serif';
-    ctx.fillText('مُعْتَمَدٌ', 980, 625);
+    ctx.fillText('تَدْرِيب', 980, 625);
     ctx.fillText('TALQEEH 2026', 980, 645);
 
     // Date & Footer
@@ -3022,7 +3105,13 @@ export default function BattlePage() {
     ctx.textAlign = 'left';
     ctx.fillText(`Kairo, Mesir • ${today}`, 70, 725);
     ctx.textAlign = 'right';
-    ctx.fillText(`Nomor Ijazah: TLQ-${Date.now().toString().slice(-6)}`, 1130, 725);
+    ctx.fillText(`Kode Sertifikat: TLQ-${Date.now().toString().slice(-6)}`, 1130, 725);
+
+    // Penegasan: ini sertifikat latihan dari game, bukan dokumen resmi Universitas Al-Azhar.
+    ctx.textAlign = 'center';
+    ctx.font = '14px "DM Sans", sans-serif';
+    ctx.fillStyle = '#6b7280';
+    ctx.fillText('Sertifikat latihan dari game Arena Imtihan Talqeeh — bukan ijazah atau sertifikat resmi Universitas Al-Azhar.', 600, 700);
 
     // Trigger Download
     const link = document.createElement('a');
@@ -3216,7 +3305,7 @@ export default function BattlePage() {
         expReward: 100,
         quizIndices: [Math.min(6, finalQuiz.length - 1), 0, 1, 2].slice(0, Math.min(4, finalQuiz.length)),
         isFinal: true,
-        lore: `Al-'Allamah Syaikhul Imtihan hadir menguji seluruh penguasaan naskah "${title}"! Taklukkan untuk memperoleh Syahadah Resmi!`
+        lore: `Al-'Allamah Syaikhul Imtihan hadir menguji seluruh penguasaan naskah "${title}"! Selesaikan untuk memperoleh Syahadah Arena Imtihan!`
       }
     ];
 
@@ -3325,6 +3414,15 @@ export default function BattlePage() {
     setActiveHint(null);
     setDisabledOptions([]);
     setWrongAnswers([]);
+    battleStatsRef.current = EMPTY_STATS;
+    setBattleStats(EMPTY_STATS);
+    missionSeenRef.current = {};
+    setMissionToast(null);
+    setMissionResult(null);
+    enragedSeenRef.current = false;
+    setKoAnim(false);
+    setDuelIntro(true);
+    scheduleBattle(() => setDuelIntro(false), battleSpeed === 2 ? 1500 : 2600);
     setWrongReview(null);
     setSelectedAnswer(null);
     setIsActionBusy(false);
@@ -3368,31 +3466,33 @@ export default function BattlePage() {
       // Hitung Combo Streak (Hujjah Mutawatirah)
       const nextStreak = streak + 1;
       setStreak(nextStreak);
+      bumpStats(s => ({ maxStreak: Math.max(s.maxStreak, nextStreak) }));
 
       const streakMult = nextStreak >= 2 ? (1 + Math.min(nextStreak - 1, 3) * 0.2) : 1;
       const actualDamage = Math.round(baseDamage * streakMult);
       const nextBossHp = Math.max(0, bossHp - actualDamage);
       const isFinisher = nextBossHp <= 0;
 
-      // Nama Jurus & Lafadz Syi'ir/Hikmah Khas Al-Azhar
+      // Nama jurus & ungkapan adab ilmu. Sengaja bukan ayat Al-Qur'an: lawan di game ini adalah penguji (ulama),
+      // jadi ayat tentang al-batil atau tantangan kepada orang kafir tidak pantas diarahkan kepada mereka.
       let moveName = "HUJJAH QATH'IYYAH";
       let moveArabic = "حُجَّةٌ قَاطِعَةٌ";
       let subtitle = "Hantaman Argumen Qath'i Azhari!";
-      let chant = "«قُلْ هَاتُوا بُرْهَانَكُمْ إِن كُنتُمْ صَادِقِينَ»";
-      let chantTranslation = "Tunjukkanlah bukti kebenaranmu jika engkau orang yang benar!";
+      let chant = "«الْحُجَّةُ بِالدَّلِيلِ لَا بِالدَّعْوَى»";
+      let chantTranslation = "Hujjah ditegakkan dengan dalil, bukan sekadar klaim.";
 
       if (isFinisher) {
         moveName = "BURHAN SATHI' (FINISHER)";
         moveArabic = "بُرْهَانٌ سَاطِعٌ";
         subtitle = "Cahaya Pembuktian Pamungkas!";
-        chant = "«وَقُلْ جَاءَ الْحَقُّ وَزَهَقَ الْبَاطِلُ إِنَّ الْبَاطِلَ كَانَ زَهُوقًا»";
-        chantTranslation = "Kebenaran telah datang, dan kepalsuan telah lenyap selamanya!";
+        chant = "«مَنْ حَفِظَ الْمُتُونَ حَازَ الْفُنُونَ»";
+        chantTranslation = "Siapa yang menguasai matan, menguasai ilmunya.";
       } else if (nextStreak >= 2) {
         moveName = `HUJJAH MUTAWATIRAH x${nextStreak}`;
         moveArabic = `حُجَّةٌ مُتَوَاتِرَةٌ x${nextStreak}`;
         subtitle = `Rangkaian Dalil Beruntun (Combo x${nextStreak})!`;
-        chant = "«بَلْ نَقْذِفُ بِالْحَقِّ عَلَى الْبَاطِلِ فَيَدْمَغُهُ»";
-        chantTranslation = "Kami lemparkan kebenaran kepada kebatilan, lalu kebenaran meremukkannya!";
+        chant = "«بِالتَّكْرَارِ يَرْسَخُ الْعِلْمُ»";
+        chantTranslation = "Dengan pengulangan, ilmu makin kokoh tertanam.";
       }
 
       // Step 1: Luncurkan Scene Serangan (Charge Phase)
@@ -3505,11 +3605,11 @@ export default function BattlePage() {
           active: true,
           type: 'boss',
           phase: 'charge',
-          moveName: "SYUBHAT MUSYKILAH",
-          moveArabic: "شُبْهَةٌ مُشْكِلَةٌ",
-          subtitle: shieldAbsorbed ? "Tameng Ahwah Mazbut Menahan 50% Guncangan!" : "Guncangan Keraguan Menembus Pertahanan!",
-          chant: "«وَتِلْكَ شُبْهَةٌ تَرِدُ عَلَى غَيْرِ الْمُحَقِّقِ»",
-          chantTranslation: "Dan syubhat itu menerpa siapa yang belum kokoh tahqiq-nya!",
+          moveName: "MAS'ALAH MUSYKILAH",
+          moveArabic: "مَسْأَلَةٌ مُشْكِلَةٌ",
+          subtitle: shieldAbsorbed ? "Tameng Ahwah Mazbut Menahan 50% Guncangan!" : "Pertanyaan Jebakan Menguji Ketelitianmu!",
+          chant: "«حُسْنُ السُّؤَالِ نِصْفُ الْعِلْمِ»",
+          chantTranslation: "Pertanyaan yang baik adalah separuh ilmu.",
           damage: damageTaken,
           shieldAbsorbed,
           bossName: guardianName,
@@ -3521,7 +3621,7 @@ export default function BattlePage() {
       // Step 1: Boss mulai serangan balik (0ms)
       setAnimBoss('attack');
       setProjectile('hurt');
-      setDialogText(`⚠️ Pilihan kurang tepat! ${guardianName} membalas dengan "Syubhat Musykilah"!`);
+      setDialogText(`⚠️ Pilihan kurang tepat! ${guardianName} mengajukan "Mas'alah Musykilah"!`);
 
       // Step 2: Serangan Boss menghantam Pemain
       scheduleBattle(() => {
@@ -3547,7 +3647,7 @@ export default function BattlePage() {
           setDialogText(`🛡️ Tameng Ahwah Mazbut menahan 50% syubhat! Thalib hanya terkena -${damageTaken} HP!`);
         } else {
           setFloatingText({ text: `-${damageTaken} HP!`, type: 'damage', target: 'player' });
-          setDialogText(`💥 SALAH! ${guardianName} melancarkan "Syubhat Ibarat"! (-${damageTaken} HP)`);
+          setDialogText(`💥 SALAH! ${guardianName} menguji dengan "Mas'alah Musykilah"! (-${damageTaken} HP)`);
         }
 
         const wrongEntry = {
@@ -3563,6 +3663,7 @@ export default function BattlePage() {
         };
 
         setWrongAnswers(w => [...w, wrongEntry]);
+        bumpStats(s => ({ wrong: s.wrong + 1 }));
 
         // Step 3: Selesai hantaman & scene ekspresi kena serangan
         scheduleBattle(() => {
@@ -3601,11 +3702,11 @@ export default function BattlePage() {
         active: true,
         type: 'boss',
         phase: 'charge',
-        moveName: "SYUBHAT MUSYKILAH",
-        moveArabic: "شُبْهَةٌ مُشْكِلَةٌ",
-        subtitle: "Guncangan Keraguan Menembus Pertahanan!",
-        chant: "«وَتِلْكَ شُبْهَةٌ تَرِدُ عَلَى غَيْرِ الْمُحَقِّقِ»",
-        chantTranslation: "Dan syubhat itu menerpa siapa yang belum kokoh tahqiq-nya!",
+        moveName: "MAS'ALAH MUSYKILAH",
+        moveArabic: "مَسْأَلَةٌ مُشْكِلَةٌ",
+        subtitle: "Pertanyaan Jebakan Menguji Ketelitianmu!",
+        chant: "«حُسْنُ السُّؤَالِ نِصْفُ الْعِلْمِ»",
+        chantTranslation: "Pertanyaan yang baik adalah separuh ilmu.",
         damage: getBattleRules(activeStage, activeQuiz.length).counterDamage,
         shieldAbsorbed: false,
         bossName: guardianName,
@@ -3677,6 +3778,8 @@ export default function BattlePage() {
   const handleUseItem = (itemKey) => {
     // Item saat animasi serangan berjalan akan ditimpa nilai HP lama dari timer; tunggu giliran selesai.
     if (phase !== 'battle' || isActionBusy || wrongReview || bag[itemKey] <= 0) return;
+    // Misi "Bekal Utuh" & "Mandiri": Qamus dan Khulashah juga dihitung sebagai bantuan.
+    bumpStats(s => ({ items: s.items + 1, help: s.help + (itemKey === 'qamus' || itemKey === 'summary' ? 1 : 0) }));
 
     if (itemKey === 'tea') {
       sfx.playHeal();
@@ -3747,6 +3850,7 @@ export default function BattlePage() {
 
   /* ── Interactive Halaqah Syaikh AI Handlers ── */
   const openAiHalaqah = () => {
+    if (phase === 'battle') bumpStats(s => ({ help: s.help + 1 }));
     const currentQuestion = activeQuiz[currentQ];
     if (aiChatLog.length === 0) {
       setAiChatLog([
@@ -3830,13 +3934,25 @@ export default function BattlePage() {
   /* ── Menang & Kalah ── */
   // finalStreak dioper eksplisit: handler ini dipanggil dari timer, sehingga state `streak` di closure sudah basi.
   const handleVictory = (finalStreak = streak) => {
-    sfx.playVictory();
+    sfx.playCrit();
     setBossHp(0);
-    setPhase('victory');
+    // Adegan KO (penjaga tumbang + konfeti) dulu, baru pindah ke layar menang. Progres sudah disimpan di bawah.
+    setKoAnim(true);
+    setIsActionBusy(true);
+    scheduleBattle(() => {
+      sfx.playVictory();
+      setKoAnim(false);
+      setIsActionBusy(false);
+      setPhase('victory');
+    }, battleSpeed === 2 ? 900 : 1700);
     const stageExp = activeStage?.expReward || 75;
-    const expGained = stageExp + (finalStreak > 0 ? finalStreak * 10 : 0);
+    const stats = { ...battleStatsRef.current, maxStreak: Math.max(battleStatsRef.current.maxStreak, finalStreak) };
+    const results = stageMissions.map(id => ({ id, status: missionStatus(id, stats, { finished: true, playerHp }) }));
+    const missionsDone = results.filter(r => r.status === 'done').map(r => r.id);
+    setMissionResult(results);
+    const expGained = stageExp + (finalStreak > 0 ? finalStreak * 10 : 0) + missionsDone.length * MISSION_BONUS_EXP;
     const starsAwarded = playerHp >= 80 ? 3 : playerHp >= 50 ? 2 : 1;
-    saveVictoryProgress(expGained, starsAwarded, finalStreak);
+    saveVictoryProgress(expGained, starsAwarded, finalStreak, missionsDone);
   };
 
   const handleDefeat = (reason = 'hp') => {
@@ -4132,11 +4248,14 @@ export default function BattlePage() {
                       >
                         {/* Penjaga dunia */}
                         <div className="relative h-[clamp(7rem,24dvh,12rem)] overflow-hidden border-b-4 border-[#3d3221] bg-gradient-to-b from-[#1b2a20] to-[#0a100c] flex items-end justify-center">
-                          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_70%,rgba(251,191,36,0.18),transparent_65%)]" />
-                          <img
+                          <div className="absolute inset-0" style={{ background: `radial-gradient(circle at 50% 70%, ${getFinalBossLook(preset.id).glow}, transparent 70%)` }} />
+                          <FinalBossPortrait
+                            bossType={preset.id}
                             src={getVoxelSprite(4, preset.id)}
                             alt={preset.bossName}
-                            className="relative h-[88%] object-contain drop-shadow-[0_8px_14px_rgba(0,0,0,0.9)] group-hover:scale-105 transition"
+                            className="relative h-[88%] group-hover:scale-105 transition"
+                            imgClassName="h-full object-contain"
+                            familiarClassName="-left-[52%] -top-[4%] w-[82%] aspect-square"
                           />
                           <span className="absolute top-2 left-2 font-mono text-[10px] font-black px-2 py-0.5 bg-black/80 border-2 border-amber-400/60 text-amber-300">
                             DUNIA {i + 1}
@@ -4702,10 +4821,13 @@ export default function BattlePage() {
                               ) : isFinal ? (
                                 <div className="relative w-full h-full flex flex-col items-center justify-center">
                                   <span className="absolute -top-3 sm:-top-4 text-xs sm:text-base animate-bounce z-10 filter drop-shadow">👑</span>
-                                  <img
+                                  <FinalBossPortrait
+                                    bossType={activeSet.id}
                                     src={getVoxelSprite(stage.id, activeSet.id)}
                                     alt={stage.guardianName || 'Final Boss'}
-                                    className="w-11 h-11 sm:w-16 sm:h-16 object-contain filter drop-shadow-[0_6px_12px_rgba(0,0,0,0.9)] scale-110"
+                                    className="w-11 h-11 sm:w-16 sm:h-16 scale-110"
+                                    imgClassName="w-full h-full object-contain"
+                                    familiarClassName="-left-[40%] -top-[10%] w-[60%] aspect-square"
                                   />
                                 </div>
                               ) : (
@@ -4897,11 +5019,22 @@ export default function BattlePage() {
                     }`}>
                       <div className="w-full h-full bg-[#181008]/80 flex items-center justify-center">
                         {isSelectedUnlocked ? (
-                          <img
-                            src={getVoxelSprite(selectedStage.id, activeSet.id)}
-                            alt={selectedStage.guardianName || 'Guardian Voxel'}
-                            className="w-full h-full object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]"
-                          />
+                          selectedStage.isFinal ? (
+                            <FinalBossPortrait
+                              bossType={activeSet.id}
+                              src={getVoxelSprite(selectedStage.id, activeSet.id)}
+                              alt={selectedStage.guardianName || 'Final Boss'}
+                              className="w-full h-full"
+                              imgClassName="w-full h-full object-contain"
+                              familiarClassName="-left-[10%] top-0 w-[50%] aspect-square"
+                            />
+                          ) : (
+                            <img
+                              src={getVoxelSprite(selectedStage.id, activeSet.id)}
+                              alt={selectedStage.guardianName || 'Guardian Voxel'}
+                              className="w-full h-full object-contain drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)]"
+                            />
+                          )
                         ) : (
                           <span className="text-2xl grayscale opacity-60">🔒</span>
                         )}
@@ -4947,6 +5080,22 @@ export default function BattlePage() {
                       <div className="text-[8px] text-white/50 uppercase">Hadiah</div>
                       <div className="text-xs font-bold text-amber-300">+{selectedStage.expReward} EXP</div>
                     </div>
+                  </div>
+
+                  {/* Misi level ini (✅ = pernah dituntaskan) */}
+                  <div className="mt-2 flex flex-wrap gap-1.5 font-mono">
+                    {getStageMissions(selectedStage, selectedStage.quizIndices?.length || 2).map(id => {
+                      const doneBefore = (userProgress?.stageProgress?.[activeSet.id]?.missions?.[selectedStage.id] || []).includes(id);
+                      return (
+                        <span
+                          key={id}
+                          title={MISSION_DEFS[id].desc}
+                          className={`text-[10px] px-2 py-1 border-2 ${doneBefore ? 'border-emerald-500/60 bg-emerald-500/15 text-emerald-200' : 'border-[#2b2b32] bg-[#141418] text-stone-300'}`}
+                        >
+                          {doneBefore ? '✅' : MISSION_DEFS[id].icon} {MISSION_DEFS[id].label}
+                        </span>
+                      );
+                    })}
                   </div>
 
                   {/* Detail tambahan: selalu tampil di desktop, di HP saat sheet dibuka */}
@@ -5393,6 +5542,9 @@ export default function BattlePage() {
                       </div>
                     )}
                     <div className="relative">
+                      {activeStage?.isFinal && (
+                        <FinalBossFamiliar bossType={activeSet?.id} className="absolute z-20 -left-[45%] top-[0%] w-[60%] aspect-square" />
+                      )}
                       <img
                         src={opponentVoxelSprite}
                         alt={opponentName}
@@ -5569,7 +5721,7 @@ export default function BattlePage() {
             >
               {/* ── LATAR ADEGAN: menutup seluruh layar, termasuk di balik kotak dialog ── */}
               {battleStyle === 'minecraft' ? (
-                <MinecraftBattlefield bossType={activeSet.id} />
+                <MinecraftBattlefield bossType={activeSet.id} level={activeStage?.levelNumber || activeStage?.id || 1} />
               ) : (
                 <PixelBattlefield bossType={activeSet.id} />
               )}
@@ -5590,6 +5742,38 @@ export default function BattlePage() {
                     <span className="hidden md:inline text-xs text-white/80 font-bold truncate max-w-[200px]">
                       {activeStage?.guardianName || activeSet.title}
                     </span>
+                  </div>
+
+                  {/* Misi duel: chip ringkas, ketuk untuk melihat daftar */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowMissions(v => !v)}
+                      className="min-h-[34px] flex items-center gap-1.5 bg-black/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-amber-400/40 text-amber-200 font-mono text-[11px] sm:text-xs font-bold shadow-xl"
+                      title="Misi duel"
+                    >
+                      <span>🎯</span>
+                      <span>{stageMissions.filter(id => missionStatus(id, battleStats, { playerHp }) === 'done').length}/{stageMissions.length}</span>
+                      <span className="hidden sm:inline">Misi</span>
+                    </button>
+                    {showMissions && (
+                      <div className="fixed sm:absolute left-2 right-2 sm:right-auto top-14 sm:top-full sm:left-0 sm:mt-2 sm:w-64 z-50 rounded-xl border-2 border-amber-400/40 bg-[#0b0f0c]/95 backdrop-blur-md p-2.5 shadow-2xl space-y-1.5 animate-fadeIn">
+                        <div className="text-[10px] font-black uppercase tracking-wider text-amber-300 px-1">Misi Duel • +{MISSION_BONUS_EXP} EXP / misi</div>
+                        {stageMissions.map(id => {
+                          const st = missionStatus(id, battleStats, { playerHp });
+                          const def = MISSION_DEFS[id];
+                          return (
+                            <div key={id} className={`flex items-start gap-2 rounded-lg px-2 py-1.5 border ${st === 'done' ? 'border-emerald-400/50 bg-emerald-500/10' : st === 'failed' ? 'border-rose-500/40 bg-rose-500/10 opacity-70' : 'border-white/10 bg-white/5'}`}>
+                              <span className="text-base leading-none mt-0.5">{def.icon}</span>
+                              <div className="min-w-0 flex-1">
+                                <div className={`text-xs font-bold ${st === 'failed' ? 'line-through text-white/50' : 'text-white'}`}>{def.label}</div>
+                                <div className="text-[10px] text-white/55 leading-snug">{def.desc}</div>
+                              </div>
+                              <span className="text-xs">{st === 'done' ? '✅' : st === 'failed' ? '❌' : '⏳'}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {/* COMBO STREAK BADGE */}
@@ -5624,7 +5808,7 @@ export default function BattlePage() {
                     }`}
                   >
                     <span>⛏️</span>
-                    <span className="hidden xl:inline">Minecraft 3D</span>
+                    <span className="hidden xl:inline">Voxel 3D</span>
                   </button>
                   <button
                     onClick={() => { setBattleStyle('retro'); sfx.playBip(480); }}
@@ -5721,6 +5905,77 @@ export default function BattlePage() {
                 </div>
               </div>
 
+              {/* ── INTRO DUEL "VS": nama arena, kedua petarung, dan misi. Ketuk untuk langsung mulai. ── */}
+              {duelIntro && (() => {
+                const theme = getArenaTheme(activeStage?.levelNumber || activeStage?.id || 1);
+                const guardianSrc = getVoxelSprite(activeStage?.id || 4, activeSet.id);
+                return (
+                  <div
+                    className="absolute inset-0 z-[45] duel-intro flex flex-col items-center justify-center gap-4 sm:gap-6 bg-black/75 backdrop-blur-[2px] px-4 cursor-pointer"
+                    onClick={() => setDuelIntro(false)}
+                  >
+                    <div className="vs-banner text-center">
+                      <div className="font-mono text-[11px] sm:text-xs font-black tracking-[0.3em] text-amber-300 uppercase">{theme.icon} {theme.name}</div>
+                      <div className="text-white/70 text-xs sm:text-sm mt-1">{activeStage?.location}</div>
+                    </div>
+                    <div className="w-full max-w-3xl flex items-end justify-between gap-2">
+                      <div className="vs-left flex flex-col items-center gap-2 w-[40%]">
+                        <img src="/assets/thalib-voxel-facing-right.png" alt="Thalib Azhar" className="h-[min(14rem,26dvh)] object-contain drop-shadow-[0_0_20px_rgba(251,191,36,0.6)]" />
+                        <div className="font-mono text-xs sm:text-sm font-black text-amber-200 text-center">Thalib Azhar</div>
+                      </div>
+                      <div className="vs-slam self-center font-black text-5xl sm:text-7xl text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-amber-400 to-rose-500 drop-shadow-[0_4px_0_#000]">VS</div>
+                      <div className="vs-right flex flex-col items-center gap-2 w-[40%]">
+                        {activeStage?.isFinal ? (
+                          <FinalBossPortrait bossType={activeSet.id} src={guardianSrc} alt={activeStage?.guardianName} className="h-[min(14rem,26dvh)]" imgClassName="h-full object-contain" familiarClassName="-left-[40%] top-0 w-[60%] aspect-square" />
+                        ) : (
+                          <img src={guardianSrc} alt={activeStage?.guardianName} className="h-[min(12rem,22dvh)] object-contain drop-shadow-[0_0_20px_rgba(244,63,94,0.55)]" />
+                        )}
+                        <div className="font-mono text-xs sm:text-sm font-black text-rose-200 text-center line-clamp-2">{activeStage?.guardianName}</div>
+                      </div>
+                    </div>
+                    <div className="vs-missions flex flex-wrap justify-center gap-1.5 max-w-xl">
+                      {stageMissions.map(id => (
+                        <span key={id} className="px-2.5 py-1 rounded-lg border border-amber-400/40 bg-black/60 font-mono text-[11px] text-amber-100">
+                          {MISSION_DEFS[id].icon} {MISSION_DEFS[id].label}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="font-mono text-[10px] text-white/50 animate-pulse">ketuk untuk mulai</div>
+                  </div>
+                );
+              })()}
+
+              {/* ── LULUS: penguji mengakui jawabanmu (bercahaya lalu menghilang) + konfeti sebelum layar menang ── */}
+              {koAnim && (
+                <div className="absolute inset-0 z-[45] pointer-events-none overflow-hidden">
+                  {Array.from({ length: 36 }, (_, i) => (
+                    <span
+                      key={i}
+                      className="ko-confetti absolute -top-6 w-2 h-3 rounded-sm"
+                      style={{
+                        left: `${(i * 37) % 100}%`,
+                        background: ['#fbbf24', '#34d399', '#38bdf8', '#f472b6', '#a78bfa', '#ffffff'][i % 6],
+                        animationDelay: `${(i % 12) * 0.06}s`,
+                        animationDuration: `${1.4 + (i % 5) * 0.2}s`,
+                      }}
+                    />
+                  ))}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="ko-slam font-black text-6xl sm:text-8xl tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-white via-amber-300 to-amber-600 drop-shadow-[0_6px_0_#000]">LULUS!</div>
+                  </div>
+                </div>
+              )}
+
+              {missionToast && (
+                <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
+                  <div className={`mission-toast whitespace-nowrap px-4 py-2 rounded-xl border-2 font-mono text-xs sm:text-sm font-black shadow-2xl ${
+                    missionToast.tone === 'done' ? 'bg-emerald-950/90 border-emerald-400 text-emerald-200' : 'bg-rose-950/90 border-rose-500 text-rose-200'
+                  }`}>
+                    {missionToast.icon} {missionToast.text}
+                  </div>
+                </div>
+              )}
+
               {/* Scanlines Effect Overlay (Only in Retro mode) */}
               {battleStyle === 'retro' && (
                 <div
@@ -5772,9 +6027,9 @@ export default function BattlePage() {
                 <BattleProjectile type={projectile} effect={attackEffect} bossType={activeSet.id} />
 
                 {/* 1. TOP ROW: OPPONENT STATUS CARD (LEFT) & OPPONENT SPRITE (RIGHT) */}
-                <div className="flex items-start justify-between gap-2 sm:gap-6 w-full relative z-10 px-1 sm:px-4">
+                <div className={`flex items-start justify-between gap-2 sm:gap-6 w-full px-1 sm:px-4 ${battleStyle === 'retro' ? 'relative z-10' : ''}`}>
                   {/* Left: Opponent Status HUD Plate */}
-                  <div className="min-w-0 max-w-[64%] sm:max-w-none sm:shrink-0">
+                  <div className="relative z-10 min-w-0 max-w-[64%] sm:max-w-none sm:shrink-0">
                     {battleStyle === 'minecraft' ? (
                       <MinecraftHudPlate
                         type="boss"
@@ -5853,8 +6108,9 @@ export default function BattlePage() {
                       </div>
                     </div>
                   ) : (
-                    /* In Minecraft Mode: 3D Voxel Stage Guardian standing grounded on battlefield floor */
-                    <div className="relative flex flex-col items-center justify-center pt-2 sm:pt-6 md:pt-8 mr-1 sm:mr-8 md:mr-16">
+                    /* Mode Minecraft: penjaga berdiri di lantai pelataran (agak ke belakang = sedikit lebih tinggi dari pemain),
+                       bukan di baris atas yang membuatnya tampak melayang di langit. */
+                    <div className="absolute z-[5] right-[4%] sm:right-[12%] bottom-[22%] sm:bottom-[24%] flex flex-col items-center">
                       {floatingText && floatingText.target === 'boss' && (
                         <div className="absolute -top-6 z-40">
                           <FloatingDamage text={floatingText.text} type={floatingText.type} />
@@ -5880,7 +6136,8 @@ export default function BattlePage() {
                           <span className="text-[10px] font-black font-mono text-amber-300 bg-black/85 px-1.5 py-0.5 rounded border border-amber-400 shadow">HUJJAH TELAK!</span>
                         </div>
                       )}
-                      <div className="relative z-10">
+                      <div className={`relative z-10 ${koAnim ? 'boss-ko' : ''} ${bossEnraged && !koAnim ? 'boss-enraged' : ''}`}>
+                        <div style={{ filter: arenaTheme.spriteGrade }}>
                         <MinecraftBossSprite
                           bossType={activeSet.id}
                           stageId={activeStage?.id || 4}
@@ -5888,6 +6145,7 @@ export default function BattlePage() {
                           guardianAvatar={activeStage?.guardianAvatar}
                           guardianName={activeStage?.guardianName}
                         />
+                        </div>
                       </div>
                     </div>
                   )}
@@ -5931,9 +6189,11 @@ export default function BattlePage() {
                     {defenseShield && (
                       <div className="absolute -inset-2 rounded-full border-2 border-cyan-400/60 bg-cyan-400/10 blur-sm animate-pulse pointer-events-none" />
                     )}
-                    <div className="relative z-10">
+                    <div className={`relative z-10 ${streak >= 3 ? 'combo-aura combo-aura-max' : streak >= 2 ? 'combo-aura' : ''}`}>
                       {battleStyle === 'minecraft' ? (
-                        <MinecraftPlayerSprite state={animPlayer} />
+                        <div style={{ filter: arenaTheme.spriteGrade }}>
+                          <MinecraftPlayerSprite state={koAnim ? 'attack' : animPlayer} />
+                        </div>
                       ) : (
                         <PlayerSprite state={animPlayer} />
                       )}
@@ -6359,7 +6619,8 @@ export default function BattlePage() {
           const nextStageId = Math.min(totalStagesCount, (activeStage?.id || 1) + 1);
 
           const accuracyPct = Math.round(((activeQuiz.length - wrongAnswers.length) / Math.max(1, activeQuiz.length)) * 100);
-          const gainedExp = (activeStage?.expReward || 75) + (streak > 0 ? streak * 10 : 0);
+          const missionsWon = (missionResult || []).filter(r => r.status === 'done').length;
+          const gainedExp = (activeStage?.expReward || 75) + (streak > 0 ? streak * 10 : 0) + missionsWon * MISSION_BONUS_EXP;
           const arcadeScore = (accuracyPct * 250) + (playerHp * 50) + ((streak || 1) * 350) + (gainedExp * 10);
 
           return (
@@ -6425,7 +6686,7 @@ export default function BattlePage() {
                         CLEAR!
                       </div>
                       <div className="text-[10px] sm:text-xs font-mono font-black text-amber-100 uppercase tracking-widest mt-0.5">
-                        ★ WINNER WINNER SYAHADAH AZHAR ★
+                        ★ LULUS ARENA IMTIHAN ★
                       </div>
                     </div>
                   </div>
@@ -6534,6 +6795,24 @@ export default function BattlePage() {
                 <div className="text-[11px] font-mono text-teal-200/80">
                   «{stageTaqdirTitle}» • Akurasi: {accuracyPct}% • Combo: x{streak || 1} • +{gainedExp} EXP
                 </div>
+                {missionResult?.length > 0 && (
+                  <div className="max-w-md mx-auto grid gap-1.5 text-left">
+                    <div className="text-[10px] font-mono font-black uppercase tracking-widest text-amber-300 text-center">
+                      🎯 Misi Duel • {missionsWon}/{missionResult.length} tuntas (+{missionsWon * MISSION_BONUS_EXP} EXP)
+                    </div>
+                    {missionResult.map(({ id, status }, i) => (
+                      <div
+                        key={id}
+                        className={`mission-reveal flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono text-xs ${status === 'done' ? 'border-emerald-400/50 bg-emerald-500/10 text-emerald-100' : 'border-white/10 bg-black/40 text-white/45'}`}
+                        style={{ animationDelay: `${0.4 + i * 0.25}s` }}
+                      >
+                        <span>{MISSION_DEFS[id].icon}</span>
+                        <span className="flex-1 font-bold">{MISSION_DEFS[id].label}</span>
+                        <span>{status === 'done' ? `✅ +${MISSION_BONUS_EXP}` : '❌'}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* ── 4. ACTION BUTTONS TRIO (PERSIS GAMBAR REFERENSI: HOME, RETRY, NEXT) ── */}
@@ -7034,16 +7313,16 @@ export default function BattlePage() {
                   بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                 </div>
                 <div className="font-serif text-lg sm:text-xl font-bold text-emerald-300 tracking-wider">
-                  شَهَادَةُ كَفَاءَةِ الْمُقَرَّرَاتِ الْأَزْهَرِيَّةِ
+                  شَهَادَةُ إِتْمَامِ سَاحَةِ الِامْتِحَانِ
                 </div>
                 <div className="text-[11px] font-mono tracking-widest text-white/50">
-                  MARKAZ TALQEEH AL-AZHARI • كُلِّيَّةُ الشَّرِيعَةِ وَاللُّغَةِ بِالْقَاهِرَةِ
+                  TALQEEH • ARENA IMTIHAN — SERTIFIKAT LATIHAN
                 </div>
 
                 <div className="w-32 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto my-3" />
 
                 <p className="text-xs sm:text-sm text-white/80 font-serif">
-                  Berdasarkan hasil Arena Imtihan Talqeeh, Dewan Masyayikh mengesahkan bahwa:
+                  Berdasarkan hasil Arena Imtihan, Talqeeh mencatat bahwa:
                 </p>
 
                 <div className="text-xl sm:text-3xl font-extrabold text-amber-300 font-serif tracking-wide">
@@ -7074,14 +7353,17 @@ export default function BattlePage() {
                   </div>
                   <div className="w-20 h-20 rounded-full border-2 border-rose-500/80 flex flex-col items-center justify-center text-rose-400 font-bold font-mono text-[9px] leading-tight rotate-[-6deg]">
                     <span>مَرْكَز تَلْقِيح</span>
-                    <span>مُعْتَمَدٌ</span>
+                    <span>تَدْرِيب</span>
                     <span>2026</span>
                   </div>
                   <div className="text-right">
-                    <div>Nomor Ijazah:</div>
+                    <div>Kode Sertifikat:</div>
                     <div className="font-mono text-[10px] text-amber-300">TLQ-{Date.now().toString().slice(-6)}</div>
                   </div>
                 </div>
+                <p className="text-[10px] text-white/40 font-mono pt-2">
+                  Sertifikat latihan dari game Arena Imtihan Talqeeh — bukan ijazah atau sertifikat resmi Universitas Al-Azhar.
+                </p>
               </div>
 
               {/* Action Footer */}
@@ -7211,13 +7493,14 @@ export default function BattlePage() {
 
       {/* ── BATTLE SYSTEM CSS KEYFRAME ANIMATIONS ── */}
       <style>{`
+        /* Idle = bernapas: tubuh sedikit memanjang dari pijakan, kaki tidak pernah lepas dari lantai. */
         @keyframes playerIdle {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-4px); }
+          0%, 100% { transform: scale(1, 1); }
+          50% { transform: scale(0.992, 1.018); }
         }
         @keyframes bossFloat {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50% { transform: translateY(-9px) rotate(-1.5deg); }
+          0%, 100% { transform: scale(1, 1); }
+          50% { transform: scale(0.99, 1.022); }
         }
         @keyframes shadowPulse {
           0%, 100% { transform: scale(1); opacity: 0.6; }
@@ -7370,6 +7653,104 @@ export default function BattlePage() {
           80% { transform: translate(2px, 1px); }
         }
 
+        @keyframes missionToast {
+          0% { transform: translateY(-16px) scale(0.9); opacity: 0; }
+          12% { transform: translateY(0) scale(1.06); opacity: 1; }
+          20% { transform: scale(1); }
+          85% { opacity: 1; }
+          100% { transform: translateY(-8px); opacity: 0; }
+        }
+        .mission-toast { animation: missionToast 2.6s ease-out forwards; }
+        @keyframes missionReveal { from { transform: translateX(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
+        .mission-reveal { animation: missionReveal 0.4s ease-out both; }
+
+        @keyframes vsLeft { from { transform: translateX(-120%); opacity: 0; } to { transform: none; opacity: 1; } }
+        @keyframes vsRight { from { transform: translateX(120%); opacity: 0; } to { transform: none; opacity: 1; } }
+        @keyframes vsSlam {
+          0% { transform: scale(3) rotate(-8deg); opacity: 0; }
+          60% { transform: scale(0.9) rotate(2deg); opacity: 1; }
+          80% { transform: scale(1.08); }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes vsUp { from { transform: translateY(14px); opacity: 0; } to { transform: none; opacity: 1; } }
+        .duel-intro { animation: battleFadeIn 0.25s ease-out; }
+        .vs-banner { animation: vsUp 0.4s ease-out both; }
+        .vs-left { animation: vsLeft 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
+        .vs-right { animation: vsRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
+        .vs-slam { animation: vsSlam 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.45s both; }
+        .vs-missions { animation: vsUp 0.4s ease-out 0.8s both; }
+
+        /* Penguji tidak "jatuh": ia bercahaya (mengakui jawaban) lalu memudar dengan hormat. */
+        @keyframes bossKo {
+          0% { transform: none; filter: none; opacity: 1; }
+          35% { transform: translateY(-4px); filter: brightness(1.8) drop-shadow(0 0 24px rgba(251, 191, 36, 0.9)); opacity: 1; }
+          100% { transform: translateY(-10px) scale(0.96); filter: brightness(2.2) drop-shadow(0 0 40px rgba(251, 191, 36, 0.6)); opacity: 0; }
+        }
+        .boss-ko { animation: bossKo 1.1s cubic-bezier(0.5, 0, 0.75, 0) forwards; }
+        @keyframes koSlam {
+          0% { transform: scale(4); opacity: 0; }
+          40% { transform: scale(0.92); opacity: 1; }
+          60% { transform: scale(1.06); }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .ko-slam { animation: koSlam 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.25s both; }
+        @keyframes koConfetti {
+          from { transform: translateY(0) rotate(0deg); }
+          to { transform: translateY(110vh) rotate(720deg); }
+        }
+        .ko-confetti { animation-name: koConfetti; animation-timing-function: cubic-bezier(0.3, 0.6, 0.6, 1); animation-fill-mode: both; }
+
+        @keyframes bossEnraged {
+          0%, 100% { filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.55)); transform: translateX(0); }
+          50% { filter: drop-shadow(0 0 26px rgba(239, 68, 68, 0.95)); transform: translateX(-2px); }
+        }
+        .boss-enraged { animation: bossEnraged 0.9s ease-in-out infinite; }
+
+        @keyframes comboFlame { from { transform: scaleY(0.85); opacity: 0.7; } to { transform: scaleY(1.2); opacity: 1; } }
+        .combo-aura::before {
+          content: ''; position: absolute; left: 5%; right: 5%; bottom: -8px; height: 45%; border-radius: 50%; z-index: -1;
+          background: radial-gradient(ellipse at 50% 100%, rgba(251, 146, 60, 0.85), rgba(239, 68, 68, 0.35) 50%, transparent 72%);
+          filter: blur(6px); transform-origin: 50% 100%; animation: comboFlame 0.6s ease-in-out infinite alternate;
+        }
+        .combo-aura-max::before {
+          height: 65%;
+          background: radial-gradient(ellipse at 50% 100%, rgba(56, 189, 248, 0.9), rgba(168, 85, 247, 0.45) 50%, transparent 72%);
+        }
+
+        /* ── Tema arena per level (lihat ARENA_THEMES di battle-sprites.jsx) ── */
+        @keyframes arenaPanA { from { transform: scale(1.06) translate(0, 0); } to { transform: scale(1.14) translate(-2%, -1%); } }
+        @keyframes arenaPanB { from { transform: scale(1.12) translate(1.5%, 0); } to { transform: scale(1.05) translate(-1.5%, -1%); } }
+        @keyframes arenaDust {
+          0% { transform: translate(0, 0); opacity: 0; }
+          20% { opacity: 0.85; }
+          100% { transform: translate(48px, -90px); opacity: 0; }
+        }
+        @keyframes arenaLantern {
+          0% { transform: translate(0, 12vh); opacity: 0; }
+          10% { opacity: 0.95; }
+          50% { transform: translate(16px, -45vh); }
+          90% { opacity: 0.8; }
+          100% { transform: translate(-10px, -105vh); opacity: 0; }
+        }
+        @keyframes arenaRain { from { transform: translate(0, 0) rotate(14deg); } to { transform: translate(-70px, 125vh) rotate(14deg); } }
+        @keyframes arenaRune {
+          0% { transform: translateY(6vh) rotate(0deg); opacity: 0; }
+          15% { opacity: 0.9; }
+          100% { transform: translateY(-100vh) rotate(200deg); opacity: 0; }
+        }
+        @keyframes arenaLightning { 0%, 90%, 95%, 100% { opacity: 0; } 91% { opacity: 0.55; } 92% { opacity: 0.06; } 93.5% { opacity: 0.4; } }
+        @keyframes arenaEclipse {
+          0%, 100% { box-shadow: inset 0 0 120px 30px rgba(126, 34, 206, 0.35); }
+          50% { box-shadow: inset 0 0 190px 70px rgba(190, 18, 60, 0.45); }
+        }
+        .arena-pan { animation-duration: 38s; animation-timing-function: ease-in-out; animation-iteration-count: infinite; animation-direction: alternate; }
+        .arena-dust { animation-name: arenaDust; animation-timing-function: linear; animation-iteration-count: infinite; }
+        .arena-lantern { animation-name: arenaLantern; animation-timing-function: ease-in-out; animation-iteration-count: infinite; opacity: 0; }
+        .arena-rain { animation-name: arenaRain; animation-timing-function: linear; animation-iteration-count: infinite; }
+        .arena-rune { animation-name: arenaRune; animation-timing-function: linear; animation-iteration-count: infinite; opacity: 0; }
+        .arena-lightning { animation: arenaLightning 7s linear infinite; opacity: 0; }
+        .arena-eclipse-pulse { animation: arenaEclipse 4s ease-in-out infinite; }
+
         body.game-yield .game-layer { z-index: 85 !important; }
 
         /* Hanya opacity: transform di sini akan membuat layar battle fullscreen (position: fixed) ikut terkurung. */
@@ -7383,8 +7764,8 @@ export default function BattlePage() {
         .animate-fadeIn { animation: battleFadeIn 0.35s ease-out; }
         .animate-hurtBoxPop { animation: hurtBoxPop calc(0.38s * var(--bs, 1)) cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .animate-hurtTremble { animation: hurtTremble 0.22s ease-in-out infinite; }
-        .animate-playerIdle { animation: playerIdle 3s ease-in-out infinite; }
-        .animate-bossFloat { animation: bossFloat 3.5s ease-in-out infinite; }
+        .animate-playerIdle { animation: playerIdle 3s ease-in-out infinite; transform-origin: 50% 100%; }
+        .animate-bossFloat { animation: bossFloat 3.4s ease-in-out infinite; transform-origin: 50% 100%; }
         .animate-shadowPulse { animation: shadowPulse 3.5s ease-in-out infinite; }
         .animate-bossHurt { animation: bossHurt calc(0.45s * var(--bs, 1)) ease-out; }
         .animate-playerHurt { animation: playerHurt calc(0.5s * var(--bs, 1)) ease-out; }
@@ -7426,6 +7807,12 @@ export default function BattlePage() {
           .battle-root .animate-lightningStrike { animation-duration: 0.01s !important; opacity: 0 !important; }
           .battle-root .animate-ping,
           .battle-root .animate-bounce { animation: none !important; }
+          .battle-root .arena-pan { animation: none !important; }
+          .battle-root .arena-dust, .battle-root .arena-lantern, .battle-root .arena-rain,
+          .battle-root .arena-rune, .battle-root .arena-lightning { display: none !important; }
+          .battle-root .ko-confetti, .battle-root .combo-aura::before { display: none !important; }
+          .battle-root .boss-enraged, .battle-root .vs-left, .battle-root .vs-right, .battle-root .vs-slam,
+          .battle-root .vs-banner, .battle-root .vs-missions, .battle-root .ko-slam { animation: none !important; }
         }
       `}</style>
     </div>
