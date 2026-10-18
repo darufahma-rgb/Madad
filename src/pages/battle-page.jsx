@@ -2497,6 +2497,7 @@ export default function BattlePage() {
   const [showAiModal, setShowAiModal] = useState(false);
   const [aiChatLog, setAiChatLog] = useState([]);
   const [aiCustomInput, setAiCustomInput] = useState('');
+  const [aiBusy, setAiBusy] = useState(false);
   const [showSyahadahModal, setShowSyahadahModal] = useState(false);
   const [showVictoryDetails, setShowVictoryDetails] = useState(false);
 
@@ -3758,37 +3759,72 @@ export default function BattlePage() {
     setShowAiModal(true);
   };
 
-  const askAiSyaikh = (type, customPrompt = '') => {
+  /* Member Library ke atas: jawaban dari model AI asli (action battle-halaqah). Tamu, atau bila AI gagal: jawaban
+     otomatis dari data soal. Sebelum soal dijawab, jawaban otomatis TIDAK memakai pembahasan (explanation) karena
+     pembahasan selalu menyebut kunci jawabannya. Soal dianggap sudah dijawab bila kartu muzakarah sedang terbuka. */
+  const askAiSyaikh = async (type, customPrompt = '') => {
     const currentQuestion = activeQuiz[currentQ];
-    if (!currentQuestion) return;
-    let userMsg = '';
-    let syaikhReply = '';
-
-    if (type === 'hint') {
-      userMsg = 'Syaikh, berikan petunjuk (isyarah) tanpa langsung membocorkan kunci jawaban.';
-      syaikhReply = `I'lam rahimakallah ya bunayya: Perhatikan dengan cermat bunyi ibarat matan pada soal ini: «${currentQuestion.question.slice(0, 90)}...». ${currentQuestion.hint || "Fokuslah pada ta'rif mu'tamad yang telah kita bahas di Ruang Muthola'ah."} Tafakkur dan renungkanlah sebelum memilih.`;
-    } else if (type === 'exam') {
-      userMsg = 'Bagaimana rumus menyusun jawaban soal ini di lembar ujian (Kurrasah Ijabah) Al-Azhar?';
-      syaikhReply = currentQuestion.examTip || `Formula kurrasah ijabah tahriri: 1) Tuliskan kaidah/nash pokok yang menjadi poros masalah, 2) Uraikan ta'rif serta 'illat hukumnya, 3) Buat kesimpulan fatwa/hukum sesuai qoul mu'tamad.`;
-    } else if (type === 'explanation') {
-      userMsg = 'Bisa terangkan ta\'rif dan kaidah pokok dari masalah ini, ya Syaikh?';
-      syaikhReply = `Kaidah pokok dari mas'alah ini: «${currentQuestion.explanation}». Hafalkanlah dhabith ini, karena sering menjadi poros pertanyaan para masyayikh di imtihan Al-Azhar.`;
-    } else if (type === 'diff') {
-      userMsg = 'Apa perbedaan esensial antara opsi jawaban yang tampak mirip pada soal ini?';
-      syaikhReply = `Di antara jebakan umum imtihan: Jawaban yang tepat harus memenuhi syarat alaqah, qarinah, dan i'rab yang sharih. Pilihan yang keliru biasanya mencampuradukkan antara makna asli (haqiqah) dengan majaz, atau antara mabni ma'lum dengan majhul. Teliti mana yang sesuai dengan kaidah: «${currentQuestion.explanation}».`;
-    } else if (type === 'custom' && customPrompt.trim()) {
-      userMsg = customPrompt.trim();
-      syaikhReply = `Ahsanta ya thalib al-'ilm! Menjawab pertanyaanmu: Pada disiplin ${activeSet.maddah}, poros kajian masalah ini kembali kepada kaidah: «${currentQuestion.explanation}». ${currentQuestion.hint ? 'Petunjuk penting: ' + currentQuestion.hint : ''} Semoga Allah meluaskan pemahamanmu!`;
-    }
-
+    if (!currentQuestion || aiBusy) return;
+    const answered = !!wrongReview;
+    const prompts = {
+      hint: 'Syaikh, berikan petunjuk (isyarah) tanpa langsung membocorkan kunci jawaban.',
+      exam: 'Bagaimana rumus menyusun jawaban soal ini di lembar ujian (Kurrasah Ijabah) Al-Azhar?',
+      explanation: "Bisa terangkan ta'rif dan kaidah pokok dari masalah ini, ya Syaikh?",
+      diff: 'Apa perbedaan esensial antara opsi jawaban yang tampak mirip pada soal ini?',
+      custom: customPrompt.trim(),
+    };
+    const userMsg = prompts[type];
     if (!userMsg) return;
 
-    setAiChatLog(prev => [
-      ...prev,
-      { role: 'thalib', text: userMsg },
-      { role: 'syaikh', text: syaikhReply }
-    ]);
+    const guidance = currentQuestion.hint || "Kembalilah ke ta'rif dan kaidah yang sudah dibahas di Ruang Muthola'ah, lalu uji tiap opsi dengan kaidah itu.";
+    const fallbackReply = () => {
+      if (type === 'exam') {
+        return currentQuestion.examTip || "Formula kurrasah ijabah tahriri: 1) Tuliskan kaidah/nash pokok yang menjadi poros masalah, 2) Uraikan ta'rif serta 'illat hukumnya, 3) Buat kesimpulan hukum sesuai qoul mu'tamad.";
+      }
+      if (answered && (type === 'explanation' || type === 'diff' || type === 'custom')) {
+        return `Kunci jawabannya: «${currentQuestion.options[currentQuestion.answer]}». ${currentQuestion.explanation || ''}`;
+      }
+      if (type === 'diff') {
+        return `Bandingkan tiap opsi dengan syarat kaidahnya satu per satu; opsi pengecoh biasanya hanya memenuhi sebagian syarat. Isyarahnya: ${guidance}`;
+      }
+      return `I'lam rahimakallah ya bunayya: ${guidance} Tafakkur dahulu sebelum memilih.`;
+    };
+
+    // Riwayat percakapan AI sebelumnya (tanpa salam pembuka & jawaban otomatis) supaya pertanyaan lanjutan nyambung.
+    const history = aiChatLog
+      .filter(m => m.role === 'thalib' || m.ai)
+      .map(m => ({ role: m.role === 'thalib' ? 'user' : 'assistant', content: m.text }));
+
     setAiCustomInput('');
+    setAiChatLog(prev => [...prev, { role: 'thalib', text: userMsg }]);
+
+    if (!isLibraryMember || typeof window.aiCall !== 'function') {
+      setAiChatLog(prev => [...prev, {
+        role: 'syaikh',
+        text: fallbackReply(),
+        note: 'Jawaban otomatis dari pembahasan soal. Tanya jawab dengan Syaikh AI tersedia untuk member paket Library.',
+      }]);
+      return;
+    }
+
+    setAiBusy(true);
+    const res = await window.aiCall('battle-halaqah', {
+      mode: type,
+      message: userMsg,
+      question: currentQuestion.question,
+      options: currentQuestion.options,
+      answered,
+      correct: answered ? currentQuestion.options[currentQuestion.answer] : undefined,
+      chosen: answered ? wrongReview?.chosen : undefined,
+      explanation: answered ? currentQuestion.explanation : undefined,
+      maddah: activeSet.maddah,
+      title: activeSet.title,
+      history,
+    });
+    setAiBusy(false);
+    setAiChatLog(prev => [...prev, res.ok && res.data?.reply
+      ? { role: 'syaikh', text: res.data.reply, ai: true }
+      : { role: 'syaikh', text: fallbackReply(), note: `${res.error || 'Syaikh AI sedang tidak bisa dihubungi.'} Ini jawaban otomatis dari pembahasan soal.` }]);
   };
 
   /* ── Menang & Kalah ── */
@@ -6864,10 +6900,15 @@ export default function BattlePage() {
                     >
                       {msg.role === 'syaikh' && (
                         <div className="text-[10px] font-mono font-bold text-emerald-300 uppercase mb-1">
-                          Syaikh AI Talqeeh:
+                          {msg.note ? 'Syaikh Talqeeh (jawaban otomatis):' : 'Syaikh AI Talqeeh:'}
                         </div>
                       )}
-                      <SmartText text={msg.text} isArabicLarge={true} />
+                      <div className="whitespace-pre-line">
+                        <SmartText text={msg.text} isArabicLarge={true} />
+                      </div>
+                      {msg.note && (
+                        <div className="mt-2 pt-2 border-t border-white/10 text-[10px] text-white/50 font-mono leading-snug">{msg.note}</div>
+                      )}
                     </div>
                     {msg.role === 'thalib' && (
                       <div className="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-400/50 flex items-center justify-center text-base shrink-0 mt-0.5">
@@ -6876,6 +6917,14 @@ export default function BattlePage() {
                     )}
                   </div>
                 ))}
+                {aiBusy && (
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center text-base shrink-0">👳‍♂️</div>
+                    <div className="rounded-2xl rounded-tl-none bg-[#152019] border border-emerald-500/30 px-3.5 py-2.5 text-xs font-mono text-emerald-300 animate-pulse">
+                      Syaikh sedang menulis jawaban...
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Quick Pedagogical Chips */}
@@ -6886,24 +6935,28 @@ export default function BattlePage() {
                 <div className="flex flex-wrap gap-1.5">
                   <button
                     onClick={() => askAiSyaikh('hint')}
+                    disabled={aiBusy}
                     className="px-2.5 py-1 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-mono transition"
                   >
                     🔍 Petunjuk / Isyarah Soal
                   </button>
                   <button
                     onClick={() => askAiSyaikh('explanation')}
+                    disabled={aiBusy}
                     className="px-2.5 py-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-mono transition"
                   >
                     📖 Kaidah Pokok Matan
                   </button>
                   <button
                     onClick={() => askAiSyaikh('exam')}
+                    disabled={aiBusy}
                     className="px-2.5 py-1 rounded-lg border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-xs font-mono transition"
                   >
                     ✍️ Rumus Kurrasah Ijabah
                   </button>
                   <button
                     onClick={() => askAiSyaikh('diff')}
+                    disabled={aiBusy}
                     className="px-2.5 py-1 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 text-xs font-mono transition"
                   >
                     ⚖️ Perbedaan Antar Opsi
@@ -6927,7 +6980,7 @@ export default function BattlePage() {
                   />
                   <button
                     type="submit"
-                    disabled={!aiCustomInput.trim()}
+                    disabled={!aiCustomInput.trim() || aiBusy}
                     className="btn bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-black font-bold text-xs px-4 py-2 rounded-xl transition"
                   >
                     Tanya

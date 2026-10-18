@@ -4,7 +4,7 @@
 
    Akses: member aktif yang bukan akun gratis (paket Library ke atas). Kuota harian terpisah ("battle_story")
    supaya tidak memakan jatah fitur belajar. */
-import { callAIJson } from '../ai.js';
+import { callAI, callAIJson } from '../ai.js';
 import { resolveModels } from '../models.js';
 import { consumeQuota } from '../member.js';
 
@@ -54,7 +54,9 @@ const cleanStory = (raw) => {
   if (!raw || typeof raw !== 'object') return null;
   const dialogues = (Array.isArray(raw.dialogues) ? raw.dialogues : [])
     .map(d => ({
-      speakerType: ['narrator', 'thalib', 'syaikh'].includes(d?.speakerType) ? d.speakerType : 'narrator',
+      // Tipe di luar daftar: tebak dari nama pembicara (selain narator/thalib berarti penguji).
+      speakerType: ['narrator', 'thalib', 'syaikh'].includes(d?.speakerType) ? d.speakerType
+        : /narat|narrator/i.test(d?.speaker || '') ? 'narrator' : /thalib/i.test(d?.speaker || '') ? 'thalib' : 'syaikh',
       speaker: str(d?.speaker, 60) || 'Narator',
       role: str(d?.role, 60),
       text: str(d?.text, 320),
@@ -105,4 +107,68 @@ export async function handleBattleStory(ctx, body, res, { upgradeRequired }) {
   }));
   if (!story) throw new Error('AI gagal menulis cerita');
   return res.status(200).json({ ok: true, data: story, model });
+}
+
+/* ── AI Halaqah: tanya Syaikh di tengah duel ──
+   Jawaban singkat (model "chat", ±Haiku) seputar soal yang sedang dikerjakan. Sebelum pemain menjawab, AI tidak
+   diberi kunci jawaban sama sekali — jadi tidak mungkin membocorkannya; setelah menjawab (kartu muzakarah), kunci &
+   pembahasan ikut dikirim supaya AI bisa menjelaskan. Kuota harian sendiri ("battle_halaqah"). */
+const HALAQAH_LIMIT = { pro: 40, trial: 15 };
+const HALAQAH_MODES = {
+  hint: 'Beri isyarah/petunjuk arah berpikir untuk soal ini tanpa menyebut opsi mana yang benar.',
+  explanation: "Terangkan ta'rif dan kaidah pokok yang menjadi poros soal ini.",
+  exam: 'Tunjukkan cara menuliskan jawaban soal semacam ini di lembar ujian Al-Azhar (kurrasah ijabah), ringkas dan berurutan.',
+  diff: 'Jelaskan perbedaan esensial antar opsi yang tampak mirip, tanpa menyebut mana yang benar bila pemain belum menjawab.',
+};
+
+const halaqahSystem = (answered) => `Kamu "Syaikh AI Talqeeh", penguji ramah di game edukasi Arena Imtihan untuk mahasiswa Indonesia di Al-Azhar.
+Jawab dalam bahasa Indonesia santai-sopan, maksimal ±120 kata, boleh menyelipkan istilah/teks Arab berharakat bila perlu.
+Fokus pada soal yang diberikan dan materi maddahnya; jika pertanyaan di luar topik, arahkan kembali ke soal dengan singkat.
+${answered
+  ? 'Pemain SUDAH menjawab soal ini; kamu boleh menyebut kunci jawaban dan menjelaskan mengapa benar/salah.'
+  : 'Pemain BELUM menjawab. JANGAN sebut, isyaratkan, atau tebak opsi mana yang benar (huruf, isi, maupun urutan). Bimbing cara berpikirnya saja.'}
+Jangan mengarang kutipan ayat, hadits, atau perkataan ulama tertentu.`;
+
+export async function handleBattleHalaqah(ctx, body, res, { upgradeRequired }) {
+  if (ctx.memberTier === 'free') {
+    return upgradeRequired(res, 'battle_halaqah', 'Syaikh AI di game Arena Imtihan khusus member paket Library ke atas.');
+  }
+  const question = str(body.question, 600);
+  const options = (Array.isArray(body.options) ? body.options : []).slice(0, 6).map(o => str(o, 200)).filter(Boolean);
+  const mode = HALAQAH_MODES[body.mode] ? body.mode : 'custom';
+  const message = mode === 'custom' ? str(body.message, 500) : HALAQAH_MODES[mode];
+  if (!question || !message) return res.status(400).json({ ok: false, error: 'Soal atau pertanyaan kosong.' });
+  const answered = body.answered === true;
+
+  const limit = HALAQAH_LIMIT[ctx.tier] ?? HALAQAH_LIMIT.trial;
+  if (!(await consumeQuota(ctx.code, 'battle_halaqah', limit))) {
+    return res.status(429).json({ ok: false, error: 'quota', message: `Jatah ${limit} pertanyaan ke Syaikh AI hari ini sudah terpakai. Coba lagi besok.` });
+  }
+
+  const context = [
+    `Maddah: ${str(body.maddah, 120) || '-'} — ${str(body.title, 160) || '-'}`,
+    `Soal: ${question}`,
+    options.length ? 'Opsi:\n' + options.map((o, i) => `${'ABCDEF'[i]}. ${o}`).join('\n') : '',
+    answered && str(body.correct, 200) ? `Kunci jawaban: ${str(body.correct, 200)}` : '',
+    answered && str(body.chosen, 200) ? `Jawaban pemain: ${str(body.chosen, 200)}` : '',
+    answered && str(body.explanation, 800) ? `Pembahasan: ${str(body.explanation, 800)}` : '',
+  ].filter(Boolean).join('\n');
+
+  // Riwayat singkat percakapan halaqah (maks 6 giliran terakhir) supaya pertanyaan lanjutan nyambung.
+  const history = (Array.isArray(body.history) ? body.history : [])
+    .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
+    .slice(-6)
+    .map(m => ({ role: m.role, content: m.content.trim().slice(0, 700) }));
+  while (history.length && history[0].role !== 'user') history.shift();
+
+  const model = (await resolveModels()).chat;
+  const reply = (await callAI({
+    system: `${halaqahSystem(answered)}\n\nKonteks soal:\n${context}`,
+    messages: [...history, { role: 'user', content: message }],
+    maxTokens: 700,
+    temperature: 0.4,
+    model,
+  })).trim();
+  if (!reply) throw new Error('AI tidak memberi jawaban');
+  return res.status(200).json({ ok: true, data: { reply }, model });
 }
