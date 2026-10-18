@@ -297,9 +297,12 @@ const monthlyLimitCache = (ctx) => (ctx?.trialMember ? TRIAL_MEMBER_MONTHLY : ca
 /* Jatah baca halaman scan bisa ditabung: jatah harian yang tidak terpakai menumpuk sampai OCR_BANK_DAYS hari
    (mis. 20/hari → sampai 60 sekali baca setelah dua hari tidak dipakai). Batas bulanan tetap berlaku. */
 const OCR_BANK_DAYS = 3;
+// Cache OCR bersama dan tabungan jatah baca hanya untuk pelanggan AI berbayar (langganan AI Partner atau
+// Paket Imtihan) — bukan member trial, member Library tanpa AI, atau akun gratis.
+const isPayingAi = async (ctx) => ctx.tier === 'pro' && !(await isTrialMember(ctx));
 const bankedDailyLimit = async (ctx, kind) => {
   const base = await dailyLimit(ctx, kind);
-  if (kind !== 'ocr' || !(base > 0)) return base;
+  if (kind !== 'ocr' || !(base > 0) || !(await isPayingAi(ctx))) return base;
   if (ctx.banked?.[kind] !== undefined) return ctx.banked[kind];
   let limit = base;
   try {
@@ -397,7 +400,7 @@ async function handleOcr(ctx, body, res) {
   }
   if (foto_base64.length > 3_500_000) return res.status(400).json({ ok: false, error: 'Foto terlalu besar' });
   // Halaman PDF yang sudah pernah dibaca (oleh member ini, atau terverifikasi dua member) tidak memakai jatah baca.
-  const cacheKey = ocrCacheKey(body);
+  const cacheKey = (await isPayingAi(ctx)) ? ocrCacheKey(body) : null;
   if (cacheKey) {
     const hit = (await lookupOcrPages(ctx.code, cacheKey.hash, [cacheKey.page]))[cacheKey.page];
     if (hit) return res.status(200).json({ ok: true, teks: hit, truncated: false, cached: true });
@@ -1335,7 +1338,7 @@ export default async function handler(req, res) {
     return await withAiContext(costCtx, async () => { switch (action) {
       case 'ocr':           return await handleOcr(ctx, body, res);
       case 'ocr-quota':     return await handleOcrQuota(ctx, res);
-      case 'ocr-cache':     return await handleOcrCache(ctx, body, res);
+      case 'ocr-cache':     return (await isPayingAi(ctx)) ? await handleOcrCache(ctx, body, res) : res.status(200).json({ ok: true, texts: {} });
       case 'transcribe':    return await handleTranscribe(ctx, body, res);
       case 'create':        return await handleCreate(ctx, body, res);
       case 'create-batch':  return await handleCreateBatch(ctx, body, res);
