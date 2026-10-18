@@ -269,7 +269,7 @@ const App = () => {
   else if (path === "/ai-partner" || path === "/ai-partner/") { page = <AiPartnerPage/>; routeLabel = "AI Partner"; }
   else if (path === "/ai-partner/prompt" || path.startsWith("/ai-partner/prompt?")) { page = <AiPromptPage/>; routeLabel = "AI Partner"; }
   else if (path.startsWith("/ai-partner/")) { page = <AiPartnerDetailPage key={path} setId={path.split("/")[2].split("?")[0]}/>; routeLabel = "AI Partner"; }
-  else if (path === "/battle" || path.startsWith("/battle") || path === "/game") { page = <BattlePage/>; routeLabel = "Pokémon Battle"; }
+  else if (path === "/battle" || path.startsWith("/battle") || path === "/game") { page = <BattlePage/>; routeLabel = "Arena Imtihan"; }
 
   // QuickNote muncul di semua halaman member yang sudah onboarded, kecuali admin & public
   const showQuickNote = session && profile?.onboarded && !isAdmin && !isPublic;

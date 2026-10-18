@@ -204,7 +204,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   // 5 nav utama member — Maddah-first
   const memberLinks = [
     { to: "/dashboard",        label: "Beranda" },
-    { to: "/battle",           label: "⚔️ Game Battle" },
+    { to: "/battle",           label: "⚔️ Arena Imtihan" },
     { to: "/library",          label: "Library" },
     { to: "/ai-partner",       label: "AI Partner" },
     { to: "/maddah",           label: "Maddah" },
@@ -214,7 +214,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   ];
   // Link tambahan untuk mobile menu
   const memberLinksExtra = [
-    { to: "/battle",           label: "⚔️ Pokémon Battle" },
+    { to: "/battle",           label: "⚔️ Arena Imtihan" },
     { to: "/ai-partner",       label: "AI Partner" },
     { to: "/paths",            label: "Learning Path" },
     { to: "/framework",        label: "Framework" },
@@ -223,7 +223,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     { to: "/developer",        label: "Tentang Developer" },
   ];
   const publicLinks = [
-    { to: "/battle",        label: "⚔️ Game Battle", highlight: true },
+    { to: "/battle",        label: "⚔️ Arena Imtihan", highlight: true },
     { to: "/sample/nahwu", label: "Preview" },
     { to: "/maddah-publik", label: "Maddah" },
     { to: "/#paket",        label: "Paket" },

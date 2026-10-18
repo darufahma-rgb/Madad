@@ -1,7 +1,7 @@
 import React from 'react';
 
 /* =========================================================================
-   TALQEEH — POKÉMON BATTLE CHARACTER SPRITES & ANIMATIONS
+   TALQEEH — ARENA IMTIHAN CHARACTER SPRITES & ANIMATIONS
    - PixelBattlefield: Retro 16-bit Al-Azhar battlefield arena backdrop
    - PixelPlatform: 2.5D stepped pixel pedestals for Boss & Player
    - PlayerSprite: Thalib Al-Azhar (Back-view with Azhari Tarboush & Kakula)
@@ -127,7 +127,7 @@ export function PixelBattlefield({ bossType = 'balaghah-majaz' }) {
         <rect x="0" y="244" width="640" height="36" fill={groundSecondary} />
         <rect x="0" y="280" width="640" height="40" fill={groundPrimary} />
 
-        {/* Perspective Grid Lines (Authentic Pokémon Battle Ground Perspective) */}
+        {/* Perspective Grid Lines (Authentic Arena Imtihan Ground Perspective) */}
         <line x1="280" y1="158" x2="40" y2="320" stroke={gridLine} strokeWidth="1.2" opacity="0.2" />
         <line x1="300" y1="158" x2="160" y2="320" stroke={gridLine} strokeWidth="1.2" opacity="0.25" />
         <line x1="320" y1="158" x2="320" y2="320" stroke={gridLine} strokeWidth="1.2" opacity="0.3" />

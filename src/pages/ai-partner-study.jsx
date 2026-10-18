@@ -1402,7 +1402,7 @@ const QuizTab = ({ set, setSet, access, askTutor }) => {
               onClick={() => launchBattleFromSet(set)}
               className="btn bg-gradient-to-r from-amber-500 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-black font-bold text-sm px-5 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95"
             >
-              <span>⚔️ Uji di Pokémon Battle</span>
+              <span>⚔️ Uji di Arena Imtihan</span>
               <span className="text-[10px] bg-black/20 text-black font-mono px-1 py-0.5 rounded">VS Al-'Allamah</span>
             </button>
             {access.tier === 'pro' && <button onClick={() => generate()} disabled={busy} className="btn btn-ghost text-sm px-5 py-2">Buat soal baru</button>}
@@ -2025,7 +2025,7 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
   );
 };
 
-/* ── 3c. Pokémon Battle Arena Launchers & Components ── */
+/* ── 3c. Arena Imtihan Launchers & Components ── */
 export const launchBattleFromSet = (set) => {
   try {
     const payload = {
@@ -2037,7 +2037,7 @@ export const launchBattleFromSet = (set) => {
     sessionStorage.setItem('talqeeh_battle_custom_import', JSON.stringify(payload));
     window.location.hash = '#/battle';
   } catch (err) {
-    console.error('Gagal mentransfer materi ke Pokémon Battle:', err);
+    console.error('Gagal mentransfer materi ke Arena Imtihan:', err);
     window.location.hash = '#/battle';
   }
 };
@@ -2053,12 +2053,12 @@ export const BattleStudyBanner = ({ set }) => {
         <div className="min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/30 uppercase tracking-wider">
-              POKÉMON BATTLE ARENA
+              ARENA IMTIHAN
             </span>
             <span className="text-xs text-emerald-300/80 font-mono">4 Level Imtihan</span>
           </div>
           <h4 className="text-sm sm:text-base font-semibold text-white leading-tight">
-            Sudah selesai membaca? Buktikan penguasaanmu di Pokémon Battle!
+            Sudah selesai membaca? Buktikan penguasaanmu di Arena Imtihan!
           </h4>
           <p className="text-xs text-white/60 mt-0.5">
             Tantang 4 penguji Azhar: Khadim ➔ Musa'id ➔ Muhaqqiq ➔ Al-'Allamah Al-Kabir.
@@ -2069,7 +2069,7 @@ export const BattleStudyBanner = ({ set }) => {
         onClick={() => launchBattleFromSet(set)}
         className="w-full sm:w-auto shrink-0 btn bg-gradient-to-r from-amber-500 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-black font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-lg flex items-center justify-center gap-2 transition active:scale-95"
       >
-        <span>⚔️ Uji di Pokémon Battle</span>
+        <span>⚔️ Uji di Arena Imtihan</span>
         <Icon name="arrowRight" className="w-4 h-4" />
       </button>
     </div>
@@ -2099,7 +2099,7 @@ export const BattleTab = ({ set }) => {
           <div className="flex-1 text-center md:text-left">
             <div className="flex items-center justify-center md:justify-start gap-2 mb-2 flex-wrap">
               <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40">
-                🎮 ARENA POKÉMON BATTLE
+                🎮 ARENA IMTIHAN
               </span>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-mono bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
                 4 Tingkat Imtihan
@@ -2117,7 +2117,7 @@ export const BattleTab = ({ set }) => {
                 onClick={() => launchBattleFromSet(set)}
                 className="btn bg-gradient-to-r from-amber-500 via-emerald-500 to-teal-500 hover:from-amber-400 hover:to-emerald-400 text-black font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/25 flex items-center gap-2 transform active:scale-95 transition"
               >
-                <span>⚔️ Masuk ke Arena Pokémon Battle</span>
+                <span>⚔️ Masuk ke Arena Imtihan</span>
                 <Icon name="arrowRight" className="w-4 h-4" />
               </button>
             </div>

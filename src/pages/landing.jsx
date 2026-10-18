@@ -304,7 +304,7 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
                 justifyContent: "center"
               }}
             >
-              <span>⚔️ Coba Pokémon Battle</span>
+              <span>⚔️ Coba Arena Imtihan</span>
             </button>
             <button
               onClick={() => navigate("/sample/nahwu")}

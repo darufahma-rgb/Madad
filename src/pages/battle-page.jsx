@@ -16,10 +16,10 @@ import {
 } from '../components/battle-sprites.jsx';
 
 /* =========================================================================
-   TALQEEH — POKÉMON BATTLE ARENA (تحدي المقررات)
+   TALQEEH — ARENA IMTIHAN (تحدي المقررات)
    Alur 2 Fase:
      Fase 1: Ruang Muthola'ah (Belajar rangkuman materi, mufradat & flashcard)
-     Fase 2: Pokémon Battle Arena (Ujian imtihan turn-based ala Pokémon RPG)
+     Fase 2: Arena Imtihan (Ujian imtihan turn-based ala Pokémon RPG)
    ========================================================================= */
 
 /* ── Web Audio API 8-Bit Retro Sound Synthesizer ── */
@@ -2767,7 +2767,7 @@ export default function BattlePage() {
           setCustomTitle(title);
           setCustomText(text);
           processCustomText(title, text, quiz);
-          setImportToast(`Materi "${title}" berhasil dimuat ke Arena Battle! 4 Tingkat Imtihan telah disiapkan!`);
+          setImportToast(`Materi "${title}" berhasil dimuat ke Arena Imtihan! 4 Tingkat Imtihan telah disiapkan!`);
           setTimeout(() => setImportToast(''), 5500);
         }
       }
@@ -2944,7 +2944,7 @@ export default function BattlePage() {
     // Body text
     ctx.fillStyle = '#e5e7eb';
     ctx.font = '20px "DM Sans", sans-serif';
-    ctx.fillText('Berdasarkan hasil Ujian Imtihan Pokémon Battle, Dewan Masyayikh mengesahkan:', 600, 275);
+    ctx.fillText('Berdasarkan hasil Arena Imtihan Talqeeh, Dewan Masyayikh mengesahkan:', 600, 275);
 
     // Student Name
     const studentName = profile?.name || 'Thalib Al-Azhar';
@@ -3053,7 +3053,7 @@ export default function BattlePage() {
       setCustomTitle(cleanTitle);
       setCustomText(extracted);
       processCustomText(cleanTitle, extracted);
-      setImportToast(`Materi "${cleanTitle}" berhasil dimuat ke Arena Battle! 4 Tingkat Imtihan telah disiapkan!`);
+      setImportToast(`Materi "${cleanTitle}" berhasil dimuat ke Arena Imtihan! 4 Tingkat Imtihan telah disiapkan!`);
       setTimeout(() => setImportToast(''), 5500);
     } catch (err) {
       setUploadError(err.message || 'Gagal memproses file diktat.');
@@ -3829,7 +3829,7 @@ export default function BattlePage() {
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-[10px] sm:text-xs whitespace-nowrap px-2 py-0.5 rounded bg-amber-500/15 border border-amber-500/30 text-amber-300 uppercase tracking-wider font-semibold">
-                  {phase === 'select' ? 'PILIH MUQARRAR' : phase === 'map' ? 'PETA LEVEL' : phase === 'study' ? 'RUANG MUTHOLA\'AH' : phase === 'story' ? 'PROLOG KISAH' : 'POKÉMON ARENA'}
+                  {phase === 'select' ? 'PILIH MUQARRAR' : phase === 'map' ? 'PETA LEVEL' : phase === 'study' ? 'RUANG MUTHOLA\'AH' : phase === 'story' ? 'PROLOG KISAH' : 'ARENA IMTIHAN'}
                 </span>
                 <span className="text-white/40 text-xs hidden sm:inline">•</span>
                 <span className="text-white/80 text-xs font-medium hidden sm:inline">{activeSet.maddah}</span>
@@ -3893,7 +3893,7 @@ export default function BattlePage() {
                 className="btn bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-semibold text-xs px-3.5 py-2 rounded-lg shadow-lg shadow-emerald-500/20 hover:brightness-110 active:scale-95 transition flex items-center gap-1.5"
               >
                 <Icon name="swords" className="w-4 h-4" />
-                <span>Mulai<span className="hidden sm:inline"> Battle</span></span>
+                <span>Mulai<span className="hidden sm:inline"> Duel</span></span>
               </button>
             )}
           </div>
@@ -4045,7 +4045,7 @@ export default function BattlePage() {
               {/* Judul game */}
               <div className="relative z-10 text-center px-4 pt-3 sm:pt-6 shrink-0">
                 <div className="inline-block px-2.5 py-0.5 bg-[#3a2614] text-amber-300 border-2 border-t-[#6b4725] border-l-[#6b4725] border-b-[#1f1308] border-r-[#1f1308] shadow-[1px_1px_0_#000] font-mono text-[10px] font-bold uppercase tracking-wider">
-                  ⚔️ Pokémon Arena • Muqarrar Al-Azhar
+                  ⚔️ Arena Imtihan • Muqarrar Al-Azhar
                 </div>
                 <h2 className="mt-2 text-xl sm:text-3xl font-mono font-black text-white drop-shadow-[2px_2px_0_#000] leading-tight">
                   PILIH MUQARRAR
@@ -5495,7 +5495,7 @@ export default function BattlePage() {
         })()}
 
         {/* =========================================================================
-            FASE 2: POKÉMON BATTLE ARENA (Ujian Imtihan Game)
+            FASE 2: ARENA IMTIHAN (Ujian Imtihan Game)
             ========================================================================= */}
         {phase === 'battle' && (
           <div className="space-y-4 animate-fadeIn">
@@ -6013,7 +6013,7 @@ export default function BattlePage() {
                         onClick={handleDismissWrongReview}
                         className="btn bg-gradient-to-r from-emerald-500 to-teal-400 hover:brightness-110 text-black font-extrabold text-xs px-5 py-2.5 rounded-xl shadow-lg transition flex items-center gap-2 active:scale-95 ml-auto"
                       >
-                        <span>{wrongReview.isFatal ? 'Lihat Evaluasi Akhir' : 'Faham, Lanjutkan Battle!'}</span>
+                        <span>{wrongReview.isFatal ? 'Lihat Evaluasi Akhir' : 'Faham, Lanjutkan Duel!'}</span>
                         <span>➔</span>
                       </button>
                     </div>
@@ -6964,7 +6964,7 @@ export default function BattlePage() {
                 <div className="w-32 h-0.5 bg-gradient-to-r from-transparent via-amber-400 to-transparent mx-auto my-3" />
 
                 <p className="text-xs sm:text-sm text-white/80 font-serif">
-                  Berdasarkan hasil Ujian Imtihan Pokémon Battle, Dewan Masyayikh mengesahkan bahwa:
+                  Berdasarkan hasil Arena Imtihan Talqeeh, Dewan Masyayikh mengesahkan bahwa:
                 </p>
 
                 <div className="text-xl sm:text-3xl font-extrabold text-amber-300 font-serif tracking-wide">

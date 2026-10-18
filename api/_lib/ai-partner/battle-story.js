@@ -1,4 +1,4 @@
-/* Cerita Pokémon Battle (halaman /battle) yang ditulis AI sesuai maddah yang sedang dipelajari:
+/* Cerita Arena Imtihan (halaman /battle) yang ditulis AI sesuai maddah yang sedang dipelajari:
    prolog 4–6 dialog + nama, lokasi, dan lore 4 level penjaga. Mekanik (HP, soal, rank) tetap dari klien;
    AI hanya mengisi narasi, jadi balasannya kecil dan murah (model "study", ±1–2 rb token keluar).
 
@@ -12,7 +12,7 @@ const DAILY_LIMIT = { pro: 15, trial: 6 };
 const MAX_MATERIAL = 5000;
 const STAGE_COUNT = 4;
 
-const SYSTEM = `Kamu penulis cerita game edukasi "Pokémon Battle" di Talqeeh, aplikasi belajar mahasiswa Indonesia di Al-Azhar Kairo.
+const SYSTEM = `Kamu penulis cerita game edukasi "Arena Imtihan" di Talqeeh, aplikasi belajar mahasiswa Indonesia di Al-Azhar Kairo.
 Pemain adalah "Thalib Azhar" yang menempuh 4 level imtihan; tiap level dijaga seorang penguji (guardian), level 4 adalah final boss (seorang 'allamah).
 Tulis cerita yang SESUAI ISI MATERI yang diberikan: istilah, kaidah, dan masalah di dialog harus diambil dari materi itu, bukan dari bab lain.
 

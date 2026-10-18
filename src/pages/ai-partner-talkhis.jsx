@@ -911,7 +911,7 @@ const TalkhisTab = ({ set, setSet, access }) => {
             onClick={() => window.launchBattleFromSet?.(set)}
             className="btn bg-gradient-to-r from-amber-500/20 to-emerald-500/20 hover:from-amber-500/30 hover:to-emerald-500/30 border border-amber-400/40 text-amber-200 text-xs px-4 py-2.5 rounded-lg flex items-center gap-1.5 transition active:scale-95"
           >
-            <span>⚔️ Uji di Pokémon Battle</span>
+            <span>⚔️ Uji di Arena Imtihan</span>
           </button>
           {noteId && (
             <button onClick={() => navigate('/kurasah?id=' + noteId)} className="btn btn-ghost text-xs px-4 py-2.5 border-emerald-600/35 text-emerald-200">
