@@ -4261,7 +4261,7 @@ export default function BattlePage() {
                             DUNIA {i + 1}
                           </span>
                           <span className="absolute top-2 right-2 font-mono text-[10px] font-bold px-2 py-0.5 bg-[#2b2413] border-2 border-amber-400 text-amber-300">
-                            {preset.bossRank || preset.bossRankCode || `Rank ${preset.bossLv}`}
+                            {preset.bossRankCode || preset.bossRank || `Rank ${preset.bossLv}`}
                           </span>
                         </div>
                         <div className="p-3 sm:p-4 flex-1 flex flex-col gap-1">

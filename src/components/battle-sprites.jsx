@@ -1,5 +1,6 @@
 import React from 'react';
 import { IconText } from './pixel-icons.jsx';
+import { renderVoxelFinalBoss, hasVoxelFinalBoss } from './voxel-boss.js';
 
 /* =========================================================================
    TALQEEH — ARENA IMTIHAN CHARACTER SPRITES & ANIMATIONS
@@ -1189,6 +1190,9 @@ const CUSTOM_FINAL_BOSS_LOOK = { aura: '#c084fc', glow: 'rgba(192,132,252,0.55)'
 export const getFinalBossLook = (bossType) => FINAL_BOSS_LOOKS[bossType] || CUSTOM_FINAL_BOSS_LOOK;
 
 export function FinalBossFamiliar({ bossType, isAttack = false, isHit = false, className = '' }) {
+  // Final boss preset sudah punya model voxel sendiri lengkap dengan barang bawaannya; pendamping hanya untuk
+  // diktat unggahan yang masih memakai sprite Syaikh Kabir.
+  if (hasVoxelFinalBoss(bossType)) return null;
   const { Familiar } = getFinalBossLook(bossType);
   return (
     <div className={`pointer-events-none animate-bookLevitate [&_svg]:!w-full [&_svg]:!h-full ${className}`}>
@@ -1218,8 +1222,8 @@ export function getVoxelSprite(stageId = 4, bossType = 'balaghah-majaz') {
   if (sid === 1) return '/assets/npc-khadim-voxel.png';
   if (sid === 2) return '/assets/npc-musaid-voxel.png';
   if (sid === 3) return '/assets/npc-muhaqqiq-voxel.png';
-  // Stage 4 (Final Boss): Al-'Allamah Al-Kabir / Syaikhul Azhar (Grand Master Scholar)
-  return '/assets/boss-syaikh-kabir-voxel.png';
+  // Stage 4: final boss voxel khas tiap maddah (lihat voxel-boss.js); diktat unggahan tetap memakai Syaikh Kabir.
+  return renderVoxelFinalBoss(bossType) || '/assets/boss-syaikh-kabir-voxel.png';
 }
 
 /* ── HELPER: GET 3D MINECRAFT VOXEL HURT SPRITE (DAMAGED / FLUSTERED FACE) ── */
@@ -1228,8 +1232,8 @@ export function getVoxelHurtSprite(stageId = 4, bossType = 'balaghah-majaz') {
   if (sid === 1) return '/assets/npc-khadim-hurt-voxel.png';
   if (sid === 2) return '/assets/npc-musaid-hurt-voxel.png';
   if (sid === 3) return '/assets/npc-muhaqqiq-hurt-voxel.png';
-  // Stage 4 (Final Boss): Al-'Allamah Al-Kabir Hurt / Astonished reaction
-  return '/assets/boss-syaikh-kabir-hurt-voxel.png';
+  // Stage 4: versi kena serang dari final boss voxel yang sama.
+  return renderVoxelFinalBoss(bossType, true) || '/assets/boss-syaikh-kabir-hurt-voxel.png';
 }
 
 /* ── 7. MINECRAFT HUD PLATE (AUTHENTIC GOLD-TRIMMED OBSIDIAN CARD) ── */
