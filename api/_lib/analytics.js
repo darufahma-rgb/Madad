@@ -396,7 +396,7 @@ export async function buildAdminAnalytics(days) {
     ],
     clickPay: uniqVisitors(['click_pay']),
     // Arena Imtihan sebagai corong: pemain, yang membagikan ke WA, dan yang membuka paket dari layar lulus.
-    arena: Object.fromEntries(['play', 'share', 'cta'].map(d => [d, new Set(fev.rows.filter(r => r.event === 'arena' && r.detail === d).map(r => r.visitor)).size])),
+    arena: Object.fromEntries(['play', 'share', 'cta', 'ai_partner'].map(d => [d, new Set(fev.rows.filter(r => r.event === 'arena' && r.detail === d).map(r => r.visitor)).size])),
     paywallBy: Object.fromEntries(Object.entries(paywallBy).map(([k, v]) => [k, v.size])),
   };
 

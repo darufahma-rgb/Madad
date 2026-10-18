@@ -581,6 +581,7 @@ const CreateWizard = ({ tier, onCancel, onCreated }) => {
       return;
     }
     if (data.truncated) toast.push(`Materi dipotong ke ${(data.limit || MAX_CONTENT).toLocaleString('id-ID')} karakter pertama.`);
+    try { sessionStorage.setItem('talqeeh_new_set', String(data.id)); } catch {}
     navigate(`/ai-partner/${data.id}`);
   };
 

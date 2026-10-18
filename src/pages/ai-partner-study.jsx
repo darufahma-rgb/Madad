@@ -2026,9 +2026,15 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
 };
 
 /* ── 3c. Arena Imtihan Launchers & Components ── */
-export const launchBattleFromSet = (set) => {
+// Bisa dipanggil dengan materi lengkap atau hanya { id } (mis. dari daftar materi): isinya diambil dulu.
+export const launchBattleFromSet = async (set) => {
   try {
+    if (set?.id && !set.content) {
+      const d = await aiCall('get', { set_id: set.id });
+      if (d.ok) set = d.data;
+    }
     const payload = {
+      setId: set.id || null,
       title: set.title || 'Materi Muqarrar Azhar',
       text: set.content || set.summary || '',
       maddah: set.maddah_id || 'Muqarrar',
@@ -2061,7 +2067,7 @@ export const BattleStudyBanner = ({ set }) => {
             Sudah selesai membaca? Buktikan penguasaanmu di Arena Imtihan!
           </h4>
           <p className="text-xs text-white/60 mt-0.5">
-            Tantang 4 penguji Azhar: Khadim ➔ Musa'id ➔ Muhaqqiq ➔ Al-'Allamah Al-Kabir.
+            Soal imtihan berbahasa Arab dari materi ini, 4 tingkat ujian sampai ujian akhir di hadapan Al-'Allamah.
           </p>
         </div>
       </div>

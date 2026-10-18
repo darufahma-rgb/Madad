@@ -683,7 +683,7 @@ const FunnelSection = ({ funnel }) => {
             {funnel.arena && (
               <div className="pt-3 border-t border-white/8">
                 <div className="text-[11px] uppercase tracking-wider text-ink-soft mb-2">Arena Imtihan (corong promosi)</div>
-                {[['play', 'Main ujian'], ['share', 'Bagikan ke WA'], ['cta', 'Buka Paket Imtihan dari layar lulus']].map(([k, label]) => (
+                {[['play', 'Main ujian'], ['ai_partner', 'Masuk dari AI Partner'], ['share', 'Bagikan ke WA'], ['cta', 'Buka Paket Imtihan dari layar lulus']].map(([k, label]) => (
                   <div key={k} className="flex justify-between text-xs py-0.5"><span className="text-ink-muted">{label}</span><span className="text-ink">{funnel.arena[k] || 0}</span></div>
                 ))}
               </div>

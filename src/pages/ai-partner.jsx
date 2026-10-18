@@ -122,8 +122,35 @@ const HowItWorksStrip = () => (
   </div>
 );
 
+/* Kartu "materi siap": muncul sekali tepat setelah unggah, mengajak langsung uji kemampuan di Arena Imtihan
+   (soal imtihan berbahasa Arab disusun AI dari materi ini). */
+const NewSetArenaCard = ({ title, count = 1, onArena, onDismiss }) => (
+  <div className="card-glass-strong p-5 md:p-6 mb-5 relative overflow-hidden" style={{ border: '1px solid rgba(201,168,106,0.35)' }}>
+    <div className="flex items-start gap-4 flex-wrap">
+      <div className="w-12 h-12 rounded-xl bg-black/40 border border-gold-500/30 p-1.5 flex-shrink-0">
+        <img src="/assets/boss-syaikh-kabir-voxel.png" alt="" className="w-full h-full object-contain"/>
+      </div>
+      <div className="flex-1 min-w-[220px]">
+        <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1">{count > 1 ? `${count} materi siap` : 'Materi siap'}</div>
+        <div className="font-display text-xl text-ink leading-snug">Langsung uji kemampuanmu di Arena Imtihan?</div>
+        <p className="text-sm text-ink-muted mt-1 leading-relaxed">
+          AI menyusun soal imtihan berbahasa Arab {count > 1 ? 'dari bab pertama' : <>dari <span className="text-ink">{title}</span></>} — 4 tingkat ujian, makin sulit
+          sampai ujian akhir, lengkap dengan pembahasan tiap jawaban yang salah.
+        </p>
+        <div className="flex gap-2 flex-wrap mt-3">
+          <button onClick={onArena} className="btn btn-gold text-sm px-5 py-2.5 flex items-center gap-2">
+            <Icon name="gamepad" className="w-4 h-4"/> Uji di Arena Imtihan
+          </button>
+          <button onClick={onDismiss} className="btn btn-ghost text-sm px-4 py-2.5">{count > 1 ? 'Nanti saja' : 'Baca ringkasan dulu'}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const AiPartnerList = ({ status, creating, setCreating }) => {
   const [sets, setSets]   = useState(null);
+  const [justCreated, setJustCreated] = useState(null); // id materi hasil "pecah per bab" barusan
   const [error, setError] = useState('');
   const [toDelete, setToDelete] = useState(null);
   const toast = useToast();
@@ -170,7 +197,7 @@ const AiPartnerList = ({ status, creating, setCreating }) => {
           : <>
               {empty && <HowItWorksStrip/>}
               <CreateWizard tier={status.tier} onCancel={() => setCreating(false)}
-                onCreated={() => { setCreating(false); aiCall('list').then(d => d.ok ? setSets(d.data) : setError(d.error || 'Gagal memuat materi')); }}/>
+                onCreated={(ids) => { setCreating(false); if (Array.isArray(ids) && ids.length) setJustCreated(ids); aiCall('list').then(d => d.ok ? setSets(d.data) : setError(d.error || 'Gagal memuat materi')); }}/>
             </>
       )}
 
@@ -191,6 +218,11 @@ const AiPartnerList = ({ status, creating, setCreating }) => {
         </div>
       )}
 
+      {justCreated && !creating && (
+        <NewSetArenaCard count={justCreated.length}
+          onArena={() => { window.logFunnel?.('arena', 'ai_partner'); window.launchBattleFromSet?.({ id: justCreated[0] }); }}
+          onDismiss={() => setJustCreated(null)}/>
+      )}
       {error && <div className="text-sm text-rose-400">{error}</div>}
       {sets === null && !error && (
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
@@ -453,6 +485,9 @@ const AiPartnerDetail = ({ setId, status }) => {
   const [sub, setSub]     = useState({ pahami: 'summary', hafalkan: 'cards', uji: 'quiz', tanya: 'tutor' });
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [pendingAsk, setPendingAsk] = useState(null);
+  // Baru saja diunggah (ditandai CreateWizard) → tawarkan langsung uji di Arena Imtihan, sekali saja.
+  const [isNew, setIsNew] = useState(() => { try { return sessionStorage.getItem('talqeeh_new_set') === String(setId); } catch { return false; } });
+  const dismissNew = () => { setIsNew(false); try { sessionStorage.removeItem('talqeeh_new_set'); } catch {} };
   const contentTop = useRef(null);
   const narrow = typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)').matches;
 
@@ -517,6 +552,11 @@ const AiPartnerDetail = ({ setId, status }) => {
         </div>
         <ProgressRing percent={studyPercent(set)} size={narrow ? 46 : 56}/>
       </div>
+      {isNew && (
+        <NewSetArenaCard title={set.title}
+          onArena={() => { dismissNew(); window.logFunnel?.('arena', 'ai_partner'); window.launchBattleFromSet?.(set); }}
+          onDismiss={dismissNew}/>
+      )}
       {confirmDelete && (
         <DeleteSetDialog set={set} isTrialSet={access.isTrialSet} onClose={() => setConfirmDelete(false)} onDeleted={handleDeleted}/>
       )}

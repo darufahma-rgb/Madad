@@ -3127,9 +3127,23 @@ export default function BattlePage() {
           if (!requireLibraryMember()) return;
           setCustomTitle(title);
           setCustomText(text);
-          processCustomText(title, text, quiz);
-          setImportToast(`Materi "${title}" berhasil dimuat ke Arena Imtihan! 4 Tingkat Imtihan telah disiapkan!`);
-          setTimeout(() => setImportToast(''), 5500);
+          // Soal imtihan berbahasa Arab disusun AI dari materi ini; disimpan per materi di browser supaya membuka
+          // Arena lagi dari materi yang sama tidak memakai kuota lagi. Gagal → kuis AI Partner / soal sederhana.
+          const cacheKey = imported.setId ? `talqeeh_arena_quiz:${imported.setId}` : null;
+          const cached = (() => { try { const c = JSON.parse(localStorage.getItem(cacheKey) || 'null'); return c && Date.now() - c.at < 30 * 86400000 ? c.data : null; } catch { return null; } })();
+          (async () => {
+            setUploadBusy(true);
+            setUploadNote('Syaikh sedang membaca materimu dan menyusun soal imtihan… (±30 detik)');
+            const ai = cached ? { data: cached } : await generateAiQuiz(title, text);
+            setUploadBusy(false);
+            setUploadNote('');
+            if (ai.data && cacheKey && !cached) { try { localStorage.setItem(cacheKey, JSON.stringify({ at: Date.now(), data: ai.data })); } catch {} }
+            processCustomText(title, text, quiz, ai.data);
+            setImportToast(ai.data
+              ? `Materi "${title}" siap! ${ai.data.quiz.length} soal imtihan berbahasa Arab sudah disusun.`
+              : `Materi "${title}" dimuat dengan soal dari AI Partner — ${ai.error}`);
+            setTimeout(() => setImportToast(''), 7000);
+          })();
         }
       }
     } catch (e) {
