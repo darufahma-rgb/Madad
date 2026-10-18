@@ -605,7 +605,7 @@ const PRESETS = [
         guardianAvatar: '📜',
         bossHp: 60,
         expReward: 35,
-        quizIndices: [1, 0],
+        quizIndices: [9, 10, 2],
         isFinal: false,
         lore: 'Ujian pertama menguji apakah lisan dan akalmu mampu membedakan hakikat dan majaz secara jernih di gerbang utama Al-Azhar.'
       },
@@ -621,7 +621,7 @@ const PRESETS = [
         guardianAvatar: '🌿',
         bossHp: 80,
         expReward: 50,
-        quizIndices: [2, 5],
+        quizIndices: [0, 4, 11, 13],
         isFinal: false,
         lore: 'Memasuki bilik diskusi para thalib. Uraikan dengan tajam perbedaan antara lafadz Sebab (Sababiyyah) dan Musabbab.'
       },
@@ -637,7 +637,7 @@ const PRESETS = [
         guardianAvatar: '🏛️',
         bossHp: 90,
         expReward: 65,
-        quizIndices: [3, 6, 7],
+        quizIndices: [1, 3, 5, 12],
         isFinal: false,
         lore: 'Di bawah naungan langit Kairo, buktikan kepiawaianmu menembus dimensi waktu (Ma Kana & Ma Yakun) serta hubungan tempat (Mahalliyyah).'
       },
@@ -653,7 +653,7 @@ const PRESETS = [
         guardianAvatar: '👳‍♂️',
         bossHp: 100,
         expReward: 100,
-        quizIndices: [4, 8, 0, 2],
+        quizIndices: [6, 7, 8, 14],
         isFinal: true,
         lore: 'Al-\'Allamah Al-Bayani, Guru Besar Balaghah Al-Azhar, menguji langsung pemahamanmu! Tundukkan ujian agung beliau untuk menyandang predikat Mumtaz dan meraih Syahadah Arena Imtihan!'
       }
@@ -728,12 +728,13 @@ const PRESETS = [
     ],
     quiz: [
       {
-        question: 'Firman Allah Ta\'ala: {يَجْعَلُونَ أَصَابِعَهُمْ فِي آذَانِهِم}. Majaz mursal pada ayat ini memiliki \'alaqah apa?',
+        question: "ما علاقةُ المجازِ المرسلِ في قوله تعالى: {يَجْعَلُونَ أَصَابِعَهُمْ فِي آذَانِهِم}؟",
+        questionTranslation: "Apa 'alaqah majaz mursal dalam firman Allah: «Mereka menyumbat telinga dengan jari-jarinya»?",
         options: [
-          'Juz\'iyyah (menyebut sebagian)',
-          'Kulliyyah (menyebut seluruhnya padahal sebagian)',
-          'Sababiyyah (menyebut sebab)',
-          'Musyabahah (penyerupaan)'
+          "الجزئية (menyebut sebagian)",
+          "الكلية (menyebut keseluruhan)",
+          "السببية (menyebut sebab)",
+          "المشابهة (keserupaan)"
         ],
         answer: 1,
         explanation: 'Disebut ashaabi\' (seluruh jari) padahal yang masuk ke telinga hanya ujung jari (anamil), jadi \'alaqahnya Kulliyyah.',
@@ -741,12 +742,13 @@ const PRESETS = [
         examTip: 'Formula lembar ujian (Kurrasah Ijabah): «المجاز مرسل علاقته الكلية؛ حيث عبّر بالكل وهو (الأصابع) وأراد الجزء وهو (الأنامل/رؤوس الأصابع)، والقرينة حالية مانعة من إرادة المعنى الحقيقي لاستحالة إدخال الأصبع كاملاً في الأذن».'
       },
       {
-        question: 'Apa perbedaan pokok yang membedakan Majaz Mursal dengan Isti\'arah?',
+        question: "ما الفرقُ الجوهريُّ بين المجازِ المرسلِ والاستعارةِ؟",
+        questionTranslation: "Apa perbedaan pokok antara majaz mursal dan isti'arah?",
         options: [
-          'Majaz Mursal tidak butuh qarinah',
-          'Isti\'arah tidak menggunakan bahasa kiasan',
-          'Majaz Mursal alaqahnya BUKAN musyabahah (penyerupaan)',
-          'Majaz Mursal hanya ada pada isim jamak'
+          "المجازُ المرسلُ لا يحتاجُ إلى قرينة (majaz mursal tidak butuh qarinah)",
+          "الاستعارةُ ليست من المجاز (isti'arah bukan termasuk majaz)",
+          "علاقةُ المجازِ المرسلِ غيرُ المشابهة ('alaqah majaz mursal bukan keserupaan)",
+          "المجازُ المرسلُ خاصٌّ بالجموع (majaz mursal hanya pada bentuk jamak)"
         ],
         answer: 2,
         explanation: 'Kaidah dasar Balaghah Azhar: jika alaqahnya musyabahah = Isti\'arah; jika alaqahnya ghairu musyabahah = Majaz Mursal.',
@@ -754,12 +756,13 @@ const PRESETS = [
         examTip: 'Kaidah hafalan imtihan: «الفرق الجوهري: علاقة المجاز المرسل غير المشابهة (كالسببية والكلية والجزئية)، بينما علاقة الاستعارة هي المشابهة دائماً مع وجود قرينة مانعة من إرادة المعنى الأصلي في كليهما».'
       },
       {
-        question: 'Pada kalimat "رَعَيْنَا الْغَيْثَ" (kami menggembalakan hujan), alaqah majaz mursal yang digunakan adalah...',
+        question: "ما علاقةُ المجازِ المرسلِ في قولهم: «رَعَيْنَا الْغَيْثَ»؟",
+        questionTranslation: "Apa 'alaqah majaz mursal pada ucapan «Kami menggembalakan hujan»?",
         options: [
-          'Sababiyyah (hujan adalah sebab tumbuhnya rumput gembalaan)',
-          'Musabbabiyyah (rumput adalah akibat dari hujan)',
-          'I\'tibar Ma Kana (memandang masa lalu)',
-          'Mahalliyyah (menyebut tempat/lokasi)'
+          "السببية (menyebut sebab)",
+          "المسببية (menyebut akibat)",
+          "اعتبار ما كان (memandang keadaan dahulu)",
+          "المحلية (menyebut tempat)"
         ],
         answer: 0,
         explanation: 'Yang digembalakan hewan adalah rumput (tanaman), sedangkan yang disebut al-ghaits (hujan). Hujan adalah SEBAB tumbuhnya rumput, maka alaqahnya Sababiyyah.',
@@ -767,12 +770,13 @@ const PRESETS = [
         examTip: 'Jawaban model imtihan: «أطلق السبب وهو (الغيث / المطر) وأراد المسبَّب وهو (النبات / العشب)؛ لأن المطر هو سبب نبات العشب، فعلاقته السببية، والقرينة لفظية وهي (رعينا)؛ إذ المطر لا يُرعى حقيقة».'
       },
       {
-        question: 'Firman Allah: {وَآتُوا الْيَتَامَى أَمْوَالَهُمْ}. Mengapa disebut anak yatim padahal harta baru diserahkan saat sudah baligh?',
+        question: "ما علاقةُ المجازِ في قوله تعالى: {وَآتُوا الْيَتَامَى أَمْوَالَهُمْ}، مع أنهم لا يُعطَون أموالَهم إلا بعد البلوغ؟",
+        questionTranslation: "Apa 'alaqah majaz dalam «Berikanlah kepada anak-anak yatim harta mereka», padahal harta baru diserahkan setelah baligh?",
         options: [
-          'Alaqah Musabbabiyyah (akibat dari sebab)',
-          'Alaqah I\'tibar Ma Kana (memandang masa lalu saat masih kecil yatim)',
-          'Alaqah I\'tibar Ma Yakun (memandang masa depan saat dewasa)',
-          'Alaqah Haliyyah (keadaan yang menempati)'
+          "المسببية (menyebut akibat)",
+          "اعتبار ما كان (memandang keadaan dahulu)",
+          "اعتبار ما يكون (memandang keadaan yang akan datang)",
+          "الحالية (menyebut keadaan yang menempati)"
         ],
         answer: 1,
         explanation: 'Secara syar\'i orang baligh bukan lagi yatim ("la yutma ba\'dal ihtilam"). Disebut yatim dengan memandang status masa lalunya (I\'tibar Ma Kana).',
@@ -780,12 +784,13 @@ const PRESETS = [
         examTip: 'Ibarat imtihan: «علاقته اعتبار ما كان؛ لأنهم بعد البلوغ ودفع الأموال زال عنهم اسم اليتم شرعاً (لقوله صلى الله عليه وسلم: لا يُتْمَ بعد احتلام)، فسُمُّوا يتامى بالنظر إلى حالتهم السابقة استعطافاً لقلوب الأولياء لحفظ حقوقهم».'
       },
       {
-        question: 'Jika seseorang berkata "أَرْسَلَ الْحَاكِمُ عُيُونًا إِلَى الْعَدُوِّ" (pemimpin mengirim mata-mata), lafadz "عُيُون" adalah Majaz Mursal dengan alaqah...',
+        question: "ما علاقةُ المجازِ المرسلِ في كلمة «عُيُونًا» من قولهم: «أَرْسَلَ الْحَاكِمُ عُيُونًا إِلَى الْعَدُوِّ»؟",
+        questionTranslation: "Apa 'alaqah majaz mursal pada kata «mata-mata» dalam «Pemimpin mengirim mata-mata ke musuh»?",
         options: [
-          'Kulliyyah (menyebut seluruhnya padahal sebagian)',
-          'Juz\'iyyah (menyebut mata untuk mewakili seluruh person pengintai)',
-          'I\'tibar Ma Yakun (memandang masa depan)',
-          'Sababiyyah (menyebut faktor sebab)'
+          "الكلية (menyebut keseluruhan)",
+          "الجزئية (menyebut sebagian)",
+          "اعتبار ما يكون (memandang keadaan yang akan datang)",
+          "السببية (menyebut sebab)"
         ],
         answer: 1,
         explanation: 'Menyebut \'ain (mata - sebagian anggota badan terpenting dalam memata-matai) untuk memaksudkan seluruh sosok pengintai (juz\'iyyah).',
@@ -793,12 +798,13 @@ const PRESETS = [
         examTip: 'Cara jawab di kurrasah: «المجاز مرسل علاقته الجزئية؛ أطلق الجزء وهو (العين) لكونها أهم عضو وأشرفه في استطلاع أخبار العدو، وأراد الكل وهو الجاسوس/المستطلع، والقرينة حالية مفهومة من سياق الإرسال».'
       },
       {
-        question: 'Firman Allah Ta\'ala: {وَيُنَزِّلُ لَكُم مِّنَ السَّمَاءِ رِزْقًا}. Lafadz "رِزْقًا" merupakan Majaz Mursal dengan \'alaqah...',
+        question: "ما علاقةُ المجازِ المرسلِ في كلمة «رِزْقًا» من قوله تعالى: {وَيُنَزِّلُ لَكُم مِّنَ السَّمَاءِ رِزْقًا}؟",
+        questionTranslation: "Apa 'alaqah majaz mursal pada kata «rezeki» dalam «Dia menurunkan rezeki untukmu dari langit»?",
         options: [
-          'Musabbabiyyah (menyebut akibat dari air hujan yang menumbuhkan tanaman)',
-          'Sababiyyah (menyebut sebab air hujan)',
-          'Kulliyyah (menyebut seluruhnya)',
-          'I\'tibar Ma Kana (memandang masa lalu)'
+          "المسببية (menyebut akibat)",
+          "السببية (menyebut sebab)",
+          "الكلية (menyebut keseluruhan)",
+          "اعتبار ما كان (memandang keadaan dahulu)"
         ],
         answer: 0,
         explanation: 'Yang turun dari langit hakikatnya adalah air hujan (al-mathar), sedangkan rizki adalah akibat/dampak (musabbab) yang timbul dari air hujan. Disebut akibat padahal maksudnya sebab = Musabbabiyyah.',
@@ -806,12 +812,13 @@ const PRESETS = [
         examTip: 'Formula imtihan tahriri: «المجاز مرسل علاقته المسبَّبية؛ حيث أطلق المسبَّب وهو (الرزق) وأراد السبب وهو (المطر / الغيث)؛ لأن المطر سبب في إنبات الزرع الذي يحصل به الرزق، والقرينة لفظية وهي (يُنزّل من السماء)؛ لأن الرزق لا ينزل بذاته بل المطر».'
       },
       {
-        question: 'Firman Allah Ta\'ala tentang mimpi pemuda di penjara Nabi Yusuf: {إِنِّي أَرَانِي أَعْصِرُ خَمْرًا}. \'Alaqah majaz pada kata "خَمْرًا" adalah...',
+        question: "ما علاقةُ المجازِ في كلمة «خَمْرًا» من قوله تعالى: {إِنِّي أَرَانِي أَعْصِرُ خَمْرًا}؟",
+        questionTranslation: "Apa 'alaqah majaz pada kata «khamr» dalam «Aku bermimpi memeras khamr»?",
         options: [
-          'I\'tibar Ma Yakun (memandang kondisi anggur yang nantinya akan menjadi khamr)',
-          'I\'tibar Ma Kana (memandang masa lalu)',
-          'Mahalliyyah (menyebut tempat perasan)',
-          'Sababiyyah (menyebut faktor sebab)'
+          "اعتبار ما يكون (memandang keadaan yang akan datang)",
+          "اعتبار ما كان (memandang keadaan dahulu)",
+          "المحلية (menyebut tempat)",
+          "السببية (menyebut sebab)"
         ],
         answer: 0,
         explanation: 'Benda cair khamr tidak bisa diperas lagi, yang diperas hakikatnya adalah buah anggur (\'inab) yang baru akan menjadi khamr di masa mendatang.',
@@ -819,12 +826,13 @@ const PRESETS = [
         examTip: 'Ibarat ujian Azhar: «علاقته اعتبار ما سيكون؛ لأن الخمر مائع لا يُعصر، وإنما يُعصر العنب الذي يؤول ويتحول إلى خمر في المستقبل، فأطلق اسم ما يؤول إليه على أصله تسميةً للشيء بما سيكون عليه، والقرينة عقلية لاستحالة عصر المائع».'
       },
       {
-        question: 'Firman Allah Ta\'ala: {فَلْيَدْعُ نَادِيَهُ} (Maka biarlah ia memanggil golongannya / majelisnya). Lafadz "نَادِي" menggunakan Majaz Mursal dengan \'alaqah...',
+        question: "ما علاقةُ المجازِ المرسلِ في كلمة «نَادِيَهُ» من قوله تعالى: {فَلْيَدْعُ نَادِيَهُ}؟",
+        questionTranslation: "Apa 'alaqah majaz mursal pada kata «majelisnya» dalam «Maka biarlah ia memanggil majelisnya»?",
         options: [
-          'Mahalliyyah (menyebut tempat perkumpulan padahal yang dimaksud orang-orang di dalamnya)',
-          'Haliyyah (menyebut penghuni/orang di dalam tempat)',
-          'Juz\'iyyah (menyebut sebagian kelompok)',
-          'Musyabahah (penyerupaan dengan majelis lain)'
+          "المحلية (menyebut tempat)",
+          "الحالية (menyebut yang menempati)",
+          "الجزئية (menyebut sebagian)",
+          "المشابهة (keserupaan)"
         ],
         answer: 0,
         explanation: 'An-Nadi adalah tempat duduk atau aula perkumpulan kaum (mahall). Yang dipanggil bukan gedungnya, melainkan para tokoh yang berkumpul di dalamnya.',
@@ -832,17 +840,102 @@ const PRESETS = [
         examTip: 'Jawaban kurrasah ijabah: «المجاز مرسل علاقته المحلية؛ حيث أطلق المحل وهو (النادي) وأراد الحالَّ فيه وهم (أهل المجلس وعشيرته وأنصاره)؛ والقرينة حالية واضحة لاستحالة دعوة المكان والجماد لإغاثة الإنسان».'
       },
       {
-        question: 'Firman Allah Ta\'ala: {وَأَمَّا الَّذِينَ ابْيَضَّتْ وُجُوهُهُمْ فَفِي رَحْمَتِ اللَّهِ هُمْ فِيهَا خَالِدُونَ}. Kata "رَحْمَةِ اللَّهِ" di sini bermakna Surga dengan \'alaqah...',
+        question: "ما علاقةُ المجازِ في قوله تعالى: {فَفِي رَحْمَتِ اللَّهِ هُمْ فِيهَا خَالِدُونَ}، والمرادُ بالرحمةِ الجنةُ؟",
+        questionTranslation: "Apa 'alaqah majaz dalam «Mereka berada dalam rahmat Allah, kekal di dalamnya», yang dimaksud rahmat adalah surga?",
         options: [
-          'Haliyyah (menyebut keadaan/sifat yang menempati padahal maksudnya tempatnya yaitu surga)',
-          'Mahalliyyah (menyebut tempat kediaman)',
-          'Sababiyyah (menyebut faktor sebab masuk surga)',
-          'Kulliyyah (menyebut keseluruhan rahmat)'
+          "الحالية (menyebut yang menempati)",
+          "المحلية (menyebut tempat)",
+          "السببية (menyebut sebab)",
+          "الكلية (menyebut keseluruhan)"
         ],
         answer: 0,
         explanation: 'Rahmat adalah sifat atau hal yang bersemayam pada tempat. Yang dimaksud adalah Surga (mahall ar-rahmah) tempat kekal orang-orang beriman.',
         hint: 'Rahmat adalah sesuatu yang meliputi penghuni surga; di sini disebut hal-nya, dimaksudkan tempatnya.',
         examTip: 'Kaidah imtihan balaghah: «المجاز مرسل علاقته الحالية؛ عبّر بالحالّ وهو (رحمة الله) وأراد المحل وهو (الجنة) التي تحل فيها الرحمة؛ لأن الرحمة معنىً لا يُحل فيه ولا يُخلد فيه المكان، والقرينة قوله: {هُمْ فِيهَا خَالِدُونَ} إذ الخلود يستدعي مكاناً».'
+      },
+      {
+        question: "ما اسمُ «اللفظِ المستعملِ فيما وُضِعَ له في اصطلاحِ التخاطب»؟",
+        questionTranslation: "Apa nama «lafadz yang dipakai pada makna asal yang ditetapkan untuknya dalam istilah percakapan»?",
+        options: [
+          "الحقيقة (hakikat)",
+          "المجاز (majaz)",
+          "الكناية (kinayah)",
+          "التشبيه (tasybih)"
+        ],
+        answer: 0,
+        explanation: `Inilah ta'rif hakikat: lafadz dipakai sesuai makna wadh'-nya. Majaz justru dipakai pada selain makna wadh'-nya karena ada 'alaqah dan qarinah.`,
+        hint: `Perhatikan frasa «فيما وُضع له» — dipakai pada makna aslinya.`,
+        examTip: `«الحقيقة: هي اللفظ المستعمل فيما وُضع له في اصطلاح التخاطب، كالأسد للحيوان المفترس».`
+      },
+      {
+        question: "ما الأمرانِ اللذانِ لا يتحقَّقُ المجازُ إلا بهما؟",
+        questionTranslation: "Apa dua hal yang menjadi syarat terwujudnya majaz?",
+        options: [
+          "العلاقة، والقرينة المانعة من إرادة المعنى الحقيقي ('alaqah dan qarinah yang mencegah makna asli)",
+          "المشبَّه والمشبَّه به (musyabbah dan musyabbah bih)",
+          "وجه الشبه وأداة التشبيه (wajh syabah dan alat tasybih)",
+          "اللفظ والمعنى المعجمي (lafadz dan makna kamus)"
+        ],
+        answer: 0,
+        explanation: `Majaz adalah lafadz yang dipakai pada selain makna aslinya karena ada 'alaqah, disertai qarinah yang mencegah dimaksudkannya makna asli.`,
+        hint: `Tanpa dua hal ini, pemakaian lafadz di luar maknanya dianggap keliru (ghalath), bukan majaz.`,
+        examTip: `«المجاز: هو اللفظ المستعمل في غير ما وُضع له لعلاقةٍ مع قرينةٍ مانعةٍ من إرادة المعنى الحقيقي».`
+      },
+      {
+        question: "لِمَ سُمِّيَ المجازُ المرسلُ مرسلًا؟",
+        questionTranslation: "Mengapa majaz mursal dinamakan «mursal»?",
+        options: [
+          "لإطلاقِه عن التقييدِ بعلاقةِ المشابهة (karena tidak terikat 'alaqah keserupaan)",
+          "لأنه يُستعمَلُ بلا قرينة (karena dipakai tanpa qarinah)",
+          "لأنه خاصٌّ بالشعر (karena khusus dalam syair)",
+          "لأنه يُنقَلُ من كلمةٍ إلى جملة (karena dipindah dari kata ke kalimat)"
+        ],
+        answer: 0,
+        explanation: `Disebut mursal karena terlepas dari pembatasan 'alaqah musyabahah yang menjadi ciri isti'arah; 'alaqahnya banyak (sababiyyah, mahalliyyah, juz'iyyah, dsb).`,
+        hint: `Bandingkan dengan isti'arah yang 'alaqahnya selalu satu jenis.`,
+        examTip: `«سُمّي مرسلًا لإطلاقه عن التقييد بعلاقة المشابهة، فعلاقاته كثيرة».`
+      },
+      {
+        question: "ما علاقةُ المجازِ المرسلِ في كلمة «لِسَانَ» من قوله تعالى: {وَاجْعَل لِّي لِسَانَ صِدْقٍ فِي الْآخِرِينَ}؟",
+        questionTranslation: "Apa 'alaqah majaz mursal pada kata «lisan» dalam «Jadikanlah aku buah tutur yang baik bagi generasi kemudian»?",
+        options: [
+          "الآلية (menyebut alat)",
+          "الجزئية (menyebut bagian tubuh)",
+          "المحلية (menyebut tempat)",
+          "المشابهة (keserupaan)"
+        ],
+        answer: 0,
+        explanation: `Lisan adalah alat untuk berbicara dan memuji. Yang dimaksud adalah sebutan baik (adz-dzikr al-hasan), jadi alatnya disebut, maksudnya hasil kerjanya.`,
+        hint: `Lidah itu alat untuk apa?`,
+        examTip: `«مجاز مرسل علاقته الآلية؛ حيث أطلق اللسان وهو آلة الذكر وأراد الذكر الحسن، والقرينة استحالة طلب لسانٍ حقيقي».`
+      },
+      {
+        question: "أيٌّ مما يأتي ليس من علاقاتِ المجازِ المرسلِ؟",
+        questionTranslation: "Manakah yang BUKAN termasuk 'alaqah majaz mursal?",
+        options: [
+          "المشابهة (keserupaan)",
+          "السببية (menyebut sebab)",
+          "المحلية (menyebut tempat)",
+          "اعتبار ما كان (memandang keadaan dahulu)"
+        ],
+        answer: 0,
+        explanation: `Musyabahah adalah 'alaqah isti'arah. Sababiyyah, mahalliyyah, dan i'tibar ma kana semuanya 'alaqah majaz mursal.`,
+        hint: `Mana yang menjadi pembeda isti'arah dari majaz mursal?`,
+        examTip: `«علاقة المشابهة خاصة بالاستعارة، أما المجاز المرسل فعلاقاته غير المشابهة: كالسببية والمسببية والجزئية والكلية والمحلية والحالية واعتبار ما كان وما يكون».`
+      },
+      {
+        question: "بيِّنْ نوعَ المجازِ وعلاقتَه في قولك: «شَرِبْتُ مَاءَ النِّيلِ»، وإنما شربتَ جرعةً منه.",
+        questionTranslation: "Tentukan jenis majaz dan 'alaqahnya pada «Aku minum air Sungai Nil», padahal yang diminum hanya seteguk.",
+        options: [
+          "مجازٌ مرسلٌ علاقتُه الكلية (majaz mursal, 'alaqah kulliyyah)",
+          "مجازٌ مرسلٌ علاقتُه الجزئية (majaz mursal, 'alaqah juz'iyyah)",
+          "استعارةٌ تصريحية (isti'arah tashrihiyyah)",
+          "حقيقةٌ لا مجازَ فيها (hakikat, bukan majaz)"
+        ],
+        answer: 0,
+        explanation: `Yang disebut seluruh air Nil, padahal yang diminum hanya sebagiannya. Menyebut keseluruhan untuk maksud sebagian = 'alaqah kulliyyah. Mustahil meminum seluruh air Nil — itulah qarinahnya.`,
+        hint: `Mungkinkah seseorang meminum seluruh air sungai?`,
+        examTip: `«مجاز مرسل علاقته الكلية؛ إذ أطلق الكل وهو (ماء النيل) وأراد الجزء وهو (جرعة منه)، والقرينة استحالة شرب ماء النيل كله».`
       }
     ]
   },
@@ -870,7 +963,7 @@ const PRESETS = [
         guardianAvatar: '⚡',
         bossHp: 60,
         expReward: 35,
-        quizIndices: [0, 1],
+        quizIndices: [9, 10, 11],
         isFinal: false,
         lore: 'Ujian awal menegakkan hukum dasar Fa\'il: pantang mendahului fi\'il menurut Bashriyyin dan tetap mufradnya fi\'il di hadapan jamak.'
       },
@@ -886,7 +979,7 @@ const PRESETS = [
         guardianAvatar: '📘',
         bossHp: 80,
         expReward: 50,
-        quizIndices: [2, 3, 4],
+        quizIndices: [1, 2, 12, 8],
         isFinal: false,
         lore: 'Uji kemampuan mengubah bentuk kalimat madhi & mudhari\' ke mabni majhul serta hierarki pengganti fa\'il.'
       },
@@ -902,7 +995,7 @@ const PRESETS = [
         guardianAvatar: '⚡',
         bossHp: 90,
         expReward: 65,
-        quizIndices: [5, 6, 7],
+        quizIndices: [0, 3, 5, 13],
         isFinal: false,
         lore: 'Uraikan hukum ja\'iz ta\' ta\'nits pada muannats majazi, pemisah fashil, dan i\'rab fi\'il muta\'addi dua maf\'ul.'
       },
@@ -918,7 +1011,7 @@ const PRESETS = [
         guardianAvatar: '👳‍♂️',
         bossHp: 100,
         expReward: 100,
-        quizIndices: [8, 0, 2, 4],
+        quizIndices: [4, 6, 7, 14],
         isFinal: true,
         lore: 'Al-\'Allamah Syaikhul Nahwu menantangmu dalam ujian puncak I\'rab Alfiyah! Buktikan ketajaman kaidahmu di hadapan beliau untuk meraih Syahadah Arena Imtihan!'
       }
@@ -986,12 +1079,13 @@ const PRESETS = [
     ],
     quiz: [
       {
-        question: 'Pada kalimat "زَيْدٌ نَجَحَ", menurut madzhab Bashriyyin, kedudukan kata "زَيْدٌ" adalah...',
+        question: "ما إعرابُ «زَيْدٌ» في قولك: «زَيْدٌ نَجَحَ» عند البصريين؟",
+        questionTranslation: "Apa i'rab «Zaid» dalam «Zaid berhasil» menurut ulama Bashrah?",
         options: [
-          'Fa\'il muqaddam (pelaku yang didahulukan)',
-          'Mubtada\', dan fa\'ilnya dhamir mustatir takdirnya "huwa" (dia)',
-          'Maf\'ul bih muqaddam (objek yang didahulukan)',
-          'Khabar muqaddam (predikat yang didahulukan)'
+          "فاعلٌ مقدَّم (fa'il yang didahulukan)",
+          "مبتدأ، والفاعلُ ضميرٌ مستترٌ تقديرُه هو (mubtada', fa'ilnya dhamir tersembunyi «huwa»)",
+          "مفعولٌ به مقدَّم (maf'ul bih yang didahulukan)",
+          "خبرٌ مقدَّم (khabar yang didahulukan)"
         ],
         answer: 1,
         explanation: 'Jumhur Bashriyyin menegaskan fa\'il tidak boleh mendahului amilnya. Jika mendahului, statusnya berubah jadi Mubtada\'.',
@@ -999,12 +1093,13 @@ const PRESETS = [
         examTip: 'I\'rab tahriri imtihan: «زيدٌ: مبتدأ مرفوع بالضمة الظاهرة. نجح: فعل ماضٍ مبني على الفتح، والفاعل ضمير مستتر جوازاً تقديره هو يعود على زيد، والجملة الفعلية في محل رفع خبر المبتدأ. ولا يجوز إعراب زيد فاعلاً مقدماً عند البصريين لأن رتبة الفاعل التأخر عن عامله».'
       },
       {
-        question: 'Bila fa\'il berbentuk jamak (seperti: "الطُّلَّابُ"), menurut bahasa fushha jumhur bangsa Arab, fi\'il di depan tetap...',
+        question: "إذا كان الفاعلُ جمعًا ظاهرًا نحو «الطُّلَّابُ»، فكيف يكونُ الفعلُ قبله في اللغةِ الفصحى المشهورة؟",
+        questionTranslation: "Jika fa'il berupa isim zhahir jamak seperti «para pelajar», bagaimana bentuk fi'il sebelumnya menurut bahasa fushha yang masyhur?",
         options: [
-          'Berbentuk mufrad tanpa tanda jamak (misal: "حَضَرَ الطُّلَّابُ" - siswa-siswa telah hadir)',
-          'Wajib diberi wawu jamak (misal: "حَضَرُوا الطُّلَّابُ" - mereka siswa-siswa telah hadir)',
-          'Bebas boleh apa saja (tanpa aturan kaidah)',
-          'Diberi ta\'nits selalu (tanda muannats)'
+          "مفردًا بلا علامةِ جمع: «حَضَرَ الطُّلَّابُ» (tetap mufrad tanpa tanda jamak)",
+          "تلحقُه واوُ الجماعةِ وجوبًا: «حَضَرُوا الطُّلَّابُ» (wajib diberi wawu jamak)",
+          "يجوزُ فيه كلُّ شيءٍ بلا ضابط (bebas tanpa kaidah)",
+          "تلحقُه تاءُ التأنيثِ دائمًا (selalu diberi ta' ta'nits)"
         ],
         answer: 0,
         explanation: 'Kaidah jumhur: fi\'il tetap mufrad bila fa\'ilnya zhahir ("حَضَرَ الطُّلَّابُ"). Pendapat yang memberi tanda jamak adalah lughah "akaluuni al-baraghit" yang langka.',
@@ -1012,12 +1107,13 @@ const PRESETS = [
         examTip: 'Kaidah tahriri imtihan: «يجب تجريد الفعل من علامة التثنية والجمع إذا أسند إلى اسم ظاهر مثنى أو مجموع على لغة جمهور العرب الفصحى (كما في التنزيل: {وَقَالَ نِسْوَةٌ} ولم يقل قُلْنَ)، وما ورد بخلافه كلغة (أكلوني البراغيث) فهو شاذ أو قليل».'
       },
       {
-        question: 'Ubah kalimat "كَتَبَ التِّلْمِيذُ الدَّرْسَ" menjadi kalimat mabni majhul yang benar!',
+        question: "حوِّلِ الجملةَ «كَتَبَ التِّلْمِيذُ الدَّرْسَ» إلى المبنيِّ للمجهول.",
+        questionTranslation: "Ubahlah kalimat «Murid itu menulis pelajaran» menjadi bentuk majhul.",
         options: [
-          'كُتِبَ التِّلْمِيذُ (murid itu ditulis/dicatat)',
-          'كُتِبَ الدَّرْسُ (pelajaran itu telah ditulis)',
-          'كُتِبَ الدَّرْسَ (pelajaran itu telah ditulis)',
-          'يُكْتَبُ التِّلْمِيذَ (sedang ditulis sang murid)'
+          "كُتِبَ التِّلْمِيذُ (murid itu yang ditulis)",
+          "كُتِبَ الدَّرْسُ (pelajaran itu ditulis, dibaca rafa')",
+          "كُتِبَ الدَّرْسَ (pelajaran itu ditulis, dibaca nashab)",
+          "يُكْتَبُ التِّلْمِيذَ (sedang ditulis sang murid, dibaca nashab)"
         ],
         answer: 1,
         explanation: 'Fa\'il (at-tilmidz) dibuang, fi\'il madhi dijadikan "كُتِبَ", dan maf\'ul bih (ad-darsa) naik pangkat jadi na\'ibul fa\'il marfu\' ("الدَّرْسُ").',
@@ -1025,12 +1121,13 @@ const PRESETS = [
         examTip: 'Langkah teknis imtihan: 1) حذف الفاعل (التلميذ), 2) تغيير صيغة الفعل: ضم أوله وكسر ما قبل آخره في الماضي فتصير (كُتِبَ), 3) إقامة المفعول به مقامه وإعطاؤه الرفع: «كُتِبَ الدَّرْسُ»، وإعراب (الدَّرْسُ): نائب فاعل مرفوع بالضمة الظاهرة.'
       },
       {
-        question: 'Manakah di bawah ini yang BUKAN merupakan amil yang dapat merafakkan fa\'il?',
+        question: "أيٌّ مما يأتي لا يرفعُ الفاعلَ؟",
+        questionTranslation: "Manakah yang TIDAK dapat merafa'kan fa'il?",
         options: [
-          'Fi\'il tam (kata kerja sempurna)',
-          'Isim Fa\'il (kata pelaku)',
-          'Sifat Musyabbahah (kata sifat yang menyerupai)',
-          'Huruf Nashab (kata perangkai penashab)'
+          "الفعلُ التامّ (fi'il tam)",
+          "اسمُ الفاعل (isim fa'il)",
+          "الصفةُ المشبَّهة (sifat musyabbahah)",
+          "حرفُ النصب (huruf nashab)"
         ],
         answer: 3,
         explanation: 'Huruf nashab hanya menashabkan fi\'il mudhari\' atau isim inna, bukan amil penentu rafa\' fa\'il.',
@@ -1038,12 +1135,13 @@ const PRESETS = [
         examTip: 'Diktum ujian Alfiyah: «العامل في الفاعل إما فعل تام كـ(قامَ زيدٌ)، أو ما أشبه الفعل وهو: اسم الفاعل، الصفة المشبهة، المصدر، واسم التفضيل. أما حروف النصب والجر فهي عوامل في غير الفاعل ولا ترفعه قط».'
       },
       {
-        question: 'Menurut Ibnu Malik dalam Alfiyah, jika fa\'il dibuang dan dalam kalimat terdapat Maf\'ul Bih serta Zharf / Jar Majrur, manakah yang WAJIB diprioritaskan menjadi Na\'ibul Fa\'il?',
+        question: "إذا حُذِفَ الفاعلُ وفي الكلامِ مفعولٌ به وظرفٌ وجارٌّ ومجرور، فما الذي يتعيَّنُ نيابتُه عن الفاعلِ عند جمهورِ البصريين؟",
+        questionTranslation: "Jika fa'il dibuang dan dalam kalimat ada maf'ul bih, zharf, dan jar majrur, apa yang wajib menjadi na'ibul fa'il menurut jumhur Bashrah?",
         options: [
-          'Maf\'ul Bih sharih wajib didahulukan menjadi Na\'ibul Fa\'il menurut jumhur Bashriyyin',
-          'Zharf atau Jar Majrur bebas dipilih mendahului maf\'ul bih',
-          'Semuanya tidak boleh menjadi pengganti fa\'il',
-          'Kalimatnya dianggap batal / rusak susunannya'
+          "المفعولُ به الصريح (maf'ul bih sharih)",
+          "الظرفُ أو الجارُّ والمجرورُ اختيارًا (zharf atau jar majrur sesuka hati)",
+          "لا يصلحُ شيءٌ منها للنيابة (tidak ada yang boleh menggantikan)",
+          "يفسدُ التركيبُ فلا يصحُّ الكلام (susunannya rusak)"
         ],
         answer: 0,
         explanation: 'Ibnu Malik menegaskan dalam Alfiyah: "وَلَا يَنُوبُ بَعْضُ هَذِي إِنْ وُجِدْ • فِي اللَّفْظِ مَفْعُولٌ بِهِ وَقَدْ يَرِدْ". Jika maf\'ul bih sharih hadir, ia yang wajib menggantikan fa\'il.',
@@ -1051,12 +1149,13 @@ const PRESETS = [
         examTip: 'Bait Alfiyah di lembar imtihan: «القاعدة عند البصريين: إذا وجد المفعول به الصريح تعين أن ينوب عن الفاعل، ولا يجوز إنابة الظرف أو الجار والمجرور أو المصدر مع وجوده، لقول ابن مالك: (ولا ينوب بعض هذي إن وجد * في اللفظ مفعول به وقد يرد). وخالف الكوفيون فأجازوا إنابة غيره مع وجوده».'
       },
       {
-        question: 'Pada kalimat "طَلَعَتِ الشَّمْسُ" atau "طَلَعَ الشَّمْسُ", apakah hukum menyertakan Ta\' Ta\'nits pada fi\'ilnya?',
+        question: "ما حكمُ إلحاقِ تاءِ التأنيثِ بالفعلِ في نحو: «طَلَعَتِ الشَّمْسُ»؟",
+        questionTranslation: "Apa hukum menambahkan ta' ta'nits pada fi'il seperti «Matahari telah terbit»?",
         options: [
-          'Ja\'iz (boleh menyertakan atau membuang ta\') karena fa\'ilnya muannats majazi (matahari)',
-          'Wajib menyertakan ta\' ta\'nits (karena matahari dianggap perempuan)',
-          'Haram menyertakan ta\' ta\'nits (karena kata bukan wanita sejati)',
-          'Tergantung harakat dhommah pada huruf akhir'
+          "الجوازُ؛ لأن الفاعلَ مؤنثٌ مجازيٌّ ظاهر (boleh, karena fa'il muannats majazi zhahir)",
+          "الوجوبُ؛ لأن الشمسَ مؤنثة (wajib, karena matahari muannats)",
+          "الامتناعُ؛ لأنها ليست مؤنثًا حقيقيًّا (terlarang, karena bukan muannats haqiqi)",
+          "يتوقَّفُ على حركةِ آخرِ الفاعل (tergantung harakat akhir fa'il)"
         ],
         answer: 0,
         explanation: 'Matahari (الشمس) adalah isim muannats majazi (tidak melahirkan/bertelur). Kaidah Nahwu: jika fa\'il muannats majazi zhahir, fi\'ilnya ja\'iz diberi ta\' atau tidak.',
@@ -1064,12 +1163,13 @@ const PRESETS = [
         examTip: 'Hukum tahriri imtihan: «حكم تأنيث الفعل هنا جائز؛ لأن الفاعل اسم ظاهر مجازي التأنيث (ليس له فرج يلد أو يبيض)، فيجوز أن يقال: (طلعت الشمس) وهو الأفصح، ويجوز: (طلع الشمس) بحذف التاء، بخلاف مؤنث الحقيقة المتصل بفعله فيجب تأنيثه».'
       },
       {
-        question: 'Pada fi\'il muta\'addi dua maf\'ul seperti: "أُعْطِيَ الْفَقِيرُ دِرْهَمًا", bagaimana kedudukan i\'rab kata "الْفَقِيرُ" dan "دِرْهَمًا"?',
+        question: "أعرِبْ «الْفَقِيرُ» و«دِرْهَمًا» في قولك: «أُعْطِيَ الْفَقِيرُ دِرْهَمًا».",
+        questionTranslation: "I'rablah «orang fakir» dan «dirham» dalam «Orang fakir itu diberi satu dirham».",
         options: [
-          '"الْفَقِيرُ" na\'ibul fa\'il marfu\', dan "دِرْهَمًا" maf\'ul bih kedua tetap manshub (orang fakir diberi dirham)',
-          'Keduanya sama-sama marfu\' sebagai na\'ibul fa\'il',
-          '"الْفَقِيرُ" fa\'il muqaddam, "دِرْهَمًا" khabar',
-          'Keduanya sama-sama manshub'
+          "الفقيرُ نائبُ فاعلٍ مرفوع، ودرهمًا مفعولٌ به ثانٍ منصوب (al-faqir na'ibul fa'il marfu', dirhaman maf'ul bih kedua manshub)",
+          "كلاهما نائبُ فاعلٍ مرفوع (keduanya na'ibul fa'il marfu')",
+          "الفقيرُ فاعلٌ مقدَّم، ودرهمًا خبر (al-faqir fa'il, dirhaman khabar)",
+          "كلاهما منصوب (keduanya manshub)"
         ],
         answer: 0,
         explanation: 'Maf\'ul pertama naik pangkat menjadi na\'ibul fa\'il yang marfu\' ("الْفَقِيرُ"), sedangkan maf\'ul kedua tetap pada status asalnya yaitu manshub ("دِرْهَمًا").',
@@ -1077,12 +1177,13 @@ const PRESETS = [
         examTip: 'I\'rab lengkap ujian: «أُعطي: فعل ماضٍ مبني للمجهول مبني على الفتح. الفقيرُ: نائب فاعل مرفوع بالضمة الظاهرة (وهو المفعول الأول في الأصل). درهماً: مفعول به ثانٍ منصوب بالفتحة الظاهرة؛ فالأصل: (أعطى المحسنُ الفقيرَ درهماً)».'
       },
       {
-        question: 'Bila antara fi\'il dan fa\'il muannats haqiqi terdapat pemisah kata lain, misal: "حَضَرَ الْيَوْمَ فَاطِمَةُ", hukum memberi ta\' ta\'nits pada fi\'il menjadi...',
+        question: "ما حكمُ تاءِ التأنيثِ في نحو: «حَضَرَ الْيَوْمَ فَاطِمَةُ»، إذا فُصِلَ بين الفعلِ والفاعلِ المؤنثِ الحقيقي؟",
+        questionTranslation: "Apa hukum ta' ta'nits pada «Hari ini Fatimah hadir» jika fi'il dan fa'il muannats haqiqi terpisah?",
         options: [
-          'Ja\'iz (boleh diberi ta\' atau tidak: حضر / حضرت) karena terpisah oleh fashil',
-          'Wajib diberi ta\' mutlak (tetap wajib hadharat)',
-          'Terlarang secara mutlak',
-          'Wajib membuang fa\'il dari kalimat'
+          "الجوازُ: حَضَرَ أو حَضَرَتْ (boleh dengan atau tanpa ta')",
+          "الوجوبُ مطلقًا (wajib secara mutlak)",
+          "الامتناعُ مطلقًا (terlarang secara mutlak)",
+          "يجبُ حذفُ الفاعل (fa'il wajib dibuang)"
         ],
         answer: 0,
         explanation: 'Fashil (pemisah) seperti kata "اليوم" melemahkan kelekatan fi\'il dan fa\'il, sehingga hukum ta\' ta\'nits turun dari wajib menjadi JA\'IZ (boleh: حضر اليوم فاطمة / حضرت اليوم فاطمة).',
@@ -1090,17 +1191,102 @@ const PRESETS = [
         examTip: 'Kaidah ujian Alfiyah: «إذا فُصل بين الفعل وفاعله الحقيقي التأنيث بفاصل غير (إلا) جاز إثبات التاء وحذفها، مثل: (حضر اليوم فاطمة) و(حضرت اليوم فاطمة)، والإثبات أحسن وأفصح، والعلة أن الفاصل خفف شدة الاتصال بين العامل ومعموله».'
       },
       {
-        question: 'Pada fi\'il amr untuk satu laki-laki seperti kalimat "اِقْرَأْ كِتَابَكَ", di manakah letak fa\'ilnya dan bagaimana hukum penyembunyiannya?',
+        question: "أين الفاعلُ في قولك: «اِقْرَأْ كِتَابَكَ»؟ وما حكمُ استتارِه؟",
+        questionTranslation: "Di mana fa'il dalam «Bacalah bukumu»? Apa hukum tersembunyinya?",
         options: [
-          'Fa\'ilnya dhamir mustatir WUJUBAN (wajib tersembunyi) takdirnya "أَنْتَ" (kamu laki-laki)',
-          'Fa\'ilnya dhamir mustatir JAWIZAN takdirnya "هُوَ" (dia laki-laki)',
-          'Fa\'ilnya adalah kata "كِتَابَ" (buku)',
-          'Fi\'il amr tidak memiliki fa\'il sama sekali'
+          "ضميرٌ مستترٌ وجوبًا تقديرُه أنت (dhamir tersembunyi wajib, taqdirnya «anta»)",
+          "ضميرٌ مستترٌ جوازًا تقديرُه هو (dhamir tersembunyi jaiz, taqdirnya «huwa»)",
+          "الفاعلُ كلمةُ «كتاب» (fa'ilnya kata «kitab»)",
+          "فعلُ الأمرِ لا فاعلَ له (fi'il amr tidak punya fa'il)"
         ],
         answer: 0,
         explanation: 'Kaidah Alfiyah: fa\'il pada fi\'il amr lil wahid al-mudzakkar wajib disembunyikan (wujuban). Jika muncul kata "أَنْتَ" setelahnya (misal: اسكن أنت), itu adalah taukid, bukan fa\'il.',
         hint: 'Mustatir ada dua: wujuban (tidak bisa diganti isim zhahir) dan jawazan.',
         examTip: 'Dhabith penting imtihan: «الفاعل ضمير مستتر وجوباً تقديره (أنت). ومواضع الاستتار الواجب أربعة: 1) فعل الأمر للواحد المذكر (قم)، 2) الفعل المضارع المبدوء بهمزة المتكلم (أقوم)، 3) المضارع المبدوء بنون العظمة (نقوم)، 4) المضارع المبدوء بتاء خطاب الواحد المذكر (تقوم)».'
+      },
+      {
+        question: "ما حكمُ الفاعلِ من حيثُ الإعراب؟",
+        questionTranslation: "Apa hukum i'rab fa'il?",
+        options: [
+          "الرفعُ دائمًا (selalu marfu')",
+          "النصب (manshub)",
+          "الجرّ (majrur)",
+          "يجوزُ رفعُه ونصبُه (boleh marfu' atau manshub)"
+        ],
+        answer: 0,
+        explanation: `Fa'il selalu marfu'. Ibnu Malik: «الفاعل الذي كمرفوعَي أتى * زيدٌ منيرًا وجهُه نعم الفتى».`,
+        hint: `Fa'il termasuk marfu'atul asma'.`,
+        examTip: `«الفاعل: اسمٌ مرفوعٌ تقدّمه فعلٌ تامٌّ أو شبهُه، وأُسند إليه على جهة قيامه به أو وقوعه منه».`
+      },
+      {
+        question: "ما الفاعلُ في قولك: «قُمْتُ»؟",
+        questionTranslation: "Apa fa'il dalam «Aku berdiri»?",
+        options: [
+          "تاءُ الفاعل (ta' dhamir muttashil)",
+          "ضميرٌ مستترٌ تقديرُه أنا (dhamir tersembunyi taqdirnya «ana»)",
+          "لا فاعلَ في الجملة (kalimat ini tanpa fa'il)",
+          "القافُ لأنها أولُ حرف (huruf qaf karena huruf pertama)"
+        ],
+        answer: 0,
+        explanation: `Ta' mutakallim adalah dhamir bariz muttashil yang menjadi fa'il, mabni atas dhammah dan menempati posisi rafa'.`,
+        hint: `Fa'il bisa berupa isim zhahir atau dhamir. Dhamir apa yang menempel di akhir fi'il?`,
+        examTip: `«قُمْتُ: قام فعل ماضٍ مبني على السكون لاتصاله بتاء الفاعل، والتاء ضمير متصل مبني على الضم في محل رفع فاعل».`
+      },
+      {
+        question: "كيف يُبنى الفعلُ الماضي «ضَرَبَ» للمجهول؟",
+        questionTranslation: "Bagaimana fi'il madhi «dharaba» dibentuk menjadi majhul?",
+        options: [
+          "بضمِّ أولِه وكسرِ ما قبلَ آخرِه: ضُرِبَ (dhammah di awal, kasrah sebelum akhir)",
+          "بفتحِ أولِه وضمِّ ما قبلَ آخرِه: ضَرُبَ (fathah di awal, dhammah sebelum akhir)",
+          "بزيادةِ همزةٍ في أولِه: أَضْرَبَ (ditambah hamzah di awal)",
+          "بتسكينِ آخرِه: ضَرَبْ (huruf akhir disukun)"
+        ],
+        answer: 0,
+        explanation: `Alfiyah: «فأوّلَ الفعلِ اضمُمَنْ والمتصلْ * بالآخرِ اكسِرْ في مُضِيٍّ كوُصِلْ». Madhi majhul: dhammah di awal, kasrah sebelum akhir.`,
+        hint: `Ingat contoh dalam bait Alfiyah: «وُصِلْ».`,
+        examTip: `«يُبنى الماضي للمجهول بضمّ أوله وكسر ما قبل آخره، نحو: ضُرِبَ زيدٌ».`
+      },
+      {
+        question: "ما صيغةُ المضارعِ المبنيِّ للمجهولِ من «يَكْتُبُ»؟",
+        questionTranslation: "Apa bentuk mudhari' majhul dari «yaktubu»?",
+        options: [
+          "يُكْتَبُ: بضمِّ أولِه وفتحِ ما قبلَ آخرِه (dhammah di awal, fathah sebelum akhir)",
+          "يُكْتِبُ: بضمِّ أولِه وكسرِ ما قبلَ آخرِه (dhammah lalu kasrah)",
+          "يَكْتَبُ: بفتحِ أولِه وما قبلَ آخرِه (fathah lalu fathah)",
+          "كُتِبَ: بتحويلِه إلى الماضي (diubah menjadi madhi)"
+        ],
+        answer: 0,
+        explanation: `Mudhari' majhul: huruf mudhara'ah didhammah dan huruf sebelum akhir difathah. Alfiyah: «واجعله من مضارعٍ منفتحا * كيَنتحي المقولِ فيه يُنتحى».`,
+        hint: `Pola mudhari' majhul berbeda dengan madhi majhul pada huruf sebelum akhir.`,
+        examTip: `«يُبنى المضارع للمجهول بضمّ أوله وفتح ما قبل آخره، نحو: يُكْتَبُ الدرسُ».`
+      },
+      {
+        question: "ما حكمُ تاءِ التأنيثِ في «قَامَتْ» من قولك: «هِنْدٌ قَامَتْ»؟",
+        questionTranslation: "Apa hukum ta' ta'nits pada «qamat» dalam «Hindun telah berdiri»?",
+        options: [
+          "الوجوبُ؛ لأن الفاعلَ ضميرٌ يعودُ على مؤنث (wajib, karena fa'ilnya dhamir yang kembali ke muannats)",
+          "الجوازُ؛ لأن التأنيثَ مجازي (boleh, karena muannats majazi)",
+          "الامتناعُ؛ لتقدُّمِ الفاعل (terlarang karena fa'il di depan)",
+          "يجبُ حذفُها للفصل (wajib dibuang karena ada pemisah)"
+        ],
+        answer: 0,
+        explanation: `Jika fa'ilnya dhamir muttashil yang kembali kepada muannats (haqiqi maupun majazi), ta' ta'nits wajib: «هندٌ قامتْ» dan «الشمسُ طلعتْ».`,
+        hint: `Di mana fa'il kalimat ini? Apakah «هندٌ» atau dhamir di dalam «قامت»?`,
+        examTip: `«تجب تاء التأنيث إذا كان الفاعل ضميرًا متصلًا يعود على مؤنث، نحو: هندٌ قامتْ؛ والفاعل ضمير مستتر جوازًا تقديره هي».`
+      },
+      {
+        question: "ما نائبُ الفاعلِ في قولك: «جُلِسَ فِي الدَّارِ»؟",
+        questionTranslation: "Apa na'ibul fa'il dalam «Telah diduduki di rumah itu»?",
+        options: [
+          "الجارُّ والمجرورُ «في الدار» في محلِّ رفع (jar majrur «fid-dar» fi mahalli raf')",
+          "ضميرٌ مستترٌ تقديرُه هو (dhamir tersembunyi «huwa»)",
+          "«الدار» وحدَها مرفوعةٌ لفظًا (kata «ad-dar» saja, marfu' secara lafazh)",
+          "لا نائبَ فاعلٍ لأن الفعلَ لازم (tidak ada karena fi'ilnya lazim)"
+        ],
+        answer: 0,
+        explanation: `Fi'il lazim yang dimajhulkan tidak punya maf'ul bih, maka yang menggantikan fa'il adalah zharf, mashdar, atau jar majrur. Alfiyah: «وقابلٌ من ظرفٍ أو من مصدرِ * أو حرفِ جرٍّ بنيابةٍ حَرِي».`,
+        hint: `Fi'il «جلس» lazim — tidak punya maf'ul bih. Apa yang tersisa untuk menggantikan fa'il?`,
+        examTip: `«جُلِسَ: فعل ماضٍ مبني للمجهول، في الدار: جار ومجرور في محل رفع نائب فاعل».`
       }
     ]
   },
@@ -1128,7 +1314,7 @@ const PRESETS = [
         guardianAvatar: '⚖️',
         bossHp: 60,
         expReward: 35,
-        quizIndices: [2, 0],
+        quizIndices: [9, 10, 0],
         isFinal: false,
         lore: 'Buktikan bahwa engkau menguasai 4 shighat amr serta prinsip pokok bahwa asal perintah mutlak menuntut kewajiban.'
       },
@@ -1144,7 +1330,7 @@ const PRESETS = [
         guardianAvatar: '📜',
         bossHp: 80,
         expReward: 50,
-        quizIndices: [1, 3, 6],
+        quizIndices: [2, 4, 11, 12],
         isFinal: false,
         lore: 'Timbang dalil-dalil pemaling amr dari wujub menuju ibahah, nadb, dan irsyad kemaslahatan duniawi.'
       },
@@ -1160,7 +1346,7 @@ const PRESETS = [
         guardianAvatar: '⚖️',
         bossHp: 90,
         expReward: 65,
-        quizIndices: [4, 5, 7],
+        quizIndices: [1, 3, 5, 13],
         isFinal: false,
         lore: 'Uji ketajaman pemahaman mengenai waktu pelaksanaan perintah (faur/tarakhi) dan pengulangan saat terikat sebab.'
       },
@@ -1176,7 +1362,7 @@ const PRESETS = [
         guardianAvatar: '👳‍♂️',
         bossHp: 100,
         expReward: 100,
-        quizIndices: [8, 0, 1, 4],
+        quizIndices: [6, 7, 8, 14],
         isFinal: true,
         lore: 'Al-\'Allamah Syaikhul Ushul menimbang pemahamanmu terhadap kaidah istinbath syar\'i. Luluslah dalam ujian akhir beliau untuk menyandang gelar Faqih Azhari!'
       }
@@ -1244,12 +1430,13 @@ const PRESETS = [
     ],
     quiz: [
       {
-        question: 'Kaidah ushul fiqh yang disepakati mayoritas ulama terkait amr mutlak adalah...',
+        question: "ما القاعدةُ الأصوليةُ عند الجمهورِ في دلالةِ الأمرِ المطلقِ المجرَّدِ عن القرائن؟",
+        questionTranslation: "Apa kaidah ushul menurut jumhur tentang makna amr mutlak tanpa qarinah?",
         options: [
-          'الْأَصْلُ فِي الْأَمْرِ لِلنَّدْبِ (asal perintah adalah sunnah)',
-          'الْأَصْلُ فِي الْأَمْرِ لِلْوُجُوبِ (asal perintah adalah wajib)',
-          'الْأَصْلُ فِي الْأَمْرِ لِلْإِبَاحَةِ (asal perintah adalah mubah)',
-          'الْأَصْلُ فِي الْأَمْرِ لِلْكَرَاهَةِ (asal perintah adalah makruh)'
+          "الأصلُ في الأمرِ للندب (asal perintah adalah sunnah)",
+          "الأصلُ في الأمرِ للوجوب (asal perintah adalah wajib)",
+          "الأصلُ في الأمرِ للإباحة (asal perintah adalah mubah)",
+          "الأصلُ في الأمرِ للكراهة (asal perintah adalah makruh)"
         ],
         answer: 1,
         explanation: 'Jumhur Ushuliyyin menetapkan "Al-Ashlu fil amri lil wujub" kecuali jika ditemukan qarinah shariqah.',
@@ -1257,12 +1444,13 @@ const PRESETS = [
         examTip: 'Teks jawaban tahriri imtihan: «الأصل في صيغة الأمر المجردة عن القرائن إفادة الوجوب عند جماهير الأصوليين؛ لقوله تعالى: {فَلْيَحْذَرِ الَّذِينَ يُخَالِفُونَ عَنْ أَمْرِهِ أَن تُصِيبَهُمْ فِتْنَةٌ}، ولإجماع الصحابة على وجوب امتثال أوامر الشارع فور ورودها ما لم تصرفها قرينة».'
       },
       {
-        question: 'Firman Allah: {فَإِذَا قُضِيَتِ الصَّلَاةُ فَانتَشِرُوا فِي الْأَرْضِ}. Perintah "انتشروا" jatuh setelah larangan jual beli saat adzan Jum\'at. Menurut jumhur maknanya...',
+        question: "ما دلالةُ الأمرِ في قوله تعالى: {فَإِذَا قُضِيَتِ الصَّلَاةُ فَانتَشِرُوا فِي الْأَرْضِ} بعد النهيِ عن البيعِ وقتَ النداء؟",
+        questionTranslation: "Apa makna perintah «bertebaranlah di muka bumi» yang datang setelah larangan jual beli saat adzan Jum'at?",
         options: [
-          'Wajib menyebar ke pasar (berdosa jika di masjid)',
-          'Mubah (Ibahah) kembali beraktivitas mencari nafkah',
-          'Makruh tinggal di dalam masjid',
-          'Haram berdagang dan bertransaksi'
+          "الوجوب (wajib)",
+          "الإباحة (mubah)",
+          "كراهةُ البقاءِ في المسجد (makruh tinggal di masjid)",
+          "تحريمُ البيع (haram berdagang)"
         ],
         answer: 1,
         explanation: 'Ini adalah contoh kaidah "Al-Amru ba\'dan nahyi yufidul ibahah". Setelah dilarang transaksi saat shalat, kini dibolehkan kembali.',
@@ -1270,12 +1458,13 @@ const PRESETS = [
         examTip: 'Kaidah ushuliyyah imtihan: «الأمر الوارد بعد الحظر يفيد الإباحة عند المحققين من الأصوليين ورجوع الحكم إلى ما كان عليه قبل النهي؛ فالبيع والانتشار كانا مباحين ثم حُرِّما للنداء، فلما انقضت الصلاة زال المانع وعاد الحكم للإباحة».'
       },
       {
-        question: 'Manakah contoh di bawah ini yang BUKAN termasuk shighat (bentuk kata) Al-Amr?',
+        question: "أيٌّ مما يأتي ليس من صيغِ الأمر؟",
+        questionTranslation: "Manakah yang BUKAN shighat amr?",
         options: [
-          'Fi\'il amr seperti: {أَقِيمُوا الصَّلَاةَ} (Dirikanlah shalat)',
-          'Fi\'il mudhari\' dengan Lam Amr: {فَلْيَصُمْهُ} (Maka berpuasalah)',
-          'Isim fi\'il amr seperti: "حَيَّ عَلَى الصَّلَاةِ" (Marilah shalat)',
-          'Fi\'il madhi seperti: "قَامَ زَيْدٌ" (Zaid telah berdiri - kalimat berita)'
+          "فعلُ الأمرِ نحو: {أَقِيمُوا الصَّلَاةَ} (fi'il amr, «dirikanlah shalat»)",
+          "المضارعُ المقرونُ بلامِ الأمرِ نحو: {فَلْيَصُمْهُ} (mudhari' dengan lam amr, «hendaklah ia berpuasa»)",
+          "اسمُ فعلِ الأمرِ نحو: حَيَّ عَلَى الصَّلَاةِ (isim fi'il amr, «marilah shalat»)",
+          "الفعلُ الماضي الخبريُّ نحو: قَامَ زَيْدٌ (fi'il madhi berita, «Zaid telah berdiri»)"
         ],
         answer: 3,
         explanation: 'Fi\'il madhi murni "qaama" adalah kalimat berita (khabariyyah), bukan shighat tuntutan amr.',
@@ -1283,12 +1472,13 @@ const PRESETS = [
         examTip: '4 Shighat wajib hafal di ujian: «صيغ الأمر أربع: 1) فعل الأمر الصريح كـ(أقيموا)، 2) الفعل المضارع المقرون بلام الأمر كـ(لينفق)، 3) اسم فعل الأمر كـ(صه، حيَّ)، 4) المصدر النائب عن فعله كـ(إحساناً). أما الفعل الماضي المجرد فهو خبر لا طلب».'
       },
       {
-        question: 'Firman Allah Ta\'ala: {فَكَاتِبُوهُمْ إِنْ عَلِمْتُمْ فِيهِمْ خَيْرًا}. Menurut jumhur fuqaha & ushuliyyin, shighat amr "كاتبوهم" di sini berfaedah...',
+        question: "ما دلالةُ الأمرِ في قوله تعالى: {فَكَاتِبُوهُمْ إِنْ عَلِمْتُمْ فِيهِمْ خَيْرًا} عند الجمهور؟",
+        questionTranslation: "Apa makna perintah «Buatlah perjanjian kitabah dengan mereka jika kamu mengetahui ada kebaikan pada mereka» menurut jumhur?",
         options: [
-          'An-Nadb (sunnah) karena adanya qarinah kesepakatan pelepasan hak milik',
-          'Al-Wujub (wajib mengikat bagi majikan)',
-          'Al-Ibahah (hanya mubah tanpa pahala)',
-          'At-Tahrim (diharamkan)'
+          "الندب (sunnah)",
+          "الوجوب (wajib)",
+          "الإباحة (mubah)",
+          "التحريم (haram)"
         ],
         answer: 0,
         explanation: 'Jumhur berpendapat akad mukatabah adalah sunnah (nadb) bukan wajib, karena harta budak adalah hak tuannya, dan seseorang tidak dipaksa melepaskan hak miliknya tanpa keridhaan.',
@@ -1296,12 +1486,13 @@ const PRESETS = [
         examTip: 'Formula tahriri imtihan: «الأمر هنا صُرف عن الوجوب إلى الندب بقرينة الإجماع والقواعد الكلية؛ إذ المكاتبة معاوضة على مال السيد، ولا يُجبر أحد على إخراج ماله من ملكه بغير رضاه لقوله صلى الله عليه وسلم: (لا يحل مال امرئ مسلم إلا بطيب نفس منه)».'
       },
       {
-        question: 'Apakah shighat Al-Amr (perintah mutlak) menuntut pelaksanaan seketika itu juga (Al-Faur) atau boleh ditunda (At-Tarakhi) menurut jumhur ushuliyyin?',
+        question: "هل يقتضي الأمرُ المطلقُ الفورَ أو التراخيَ عند جمهورِ الأصوليين؟",
+        questionTranslation: "Apakah amr mutlak menuntut segera atau boleh ditunda menurut jumhur ushuliyyin?",
         options: [
-          'Muthlaqul amri la yaqtadhi fauran wa la tarakhiyan (hanya menuntut esensi perbuatan terwujud tanpa batasan waktu tertentu)',
-          'Wajib langsung seketika itu juga (Al-Faur) mutlak tanpa jeda',
-          'Hanya boleh dikerjakan di akhir hayat (At-Tarakhi)',
-          'Perintah mutlak tidak memiliki kekuatan hukum'
+          "لا يقتضي فورًا ولا تراخيًا (tidak menuntut segera maupun ditunda)",
+          "يقتضي الفورَ مطلقًا (wajib segera secara mutlak)",
+          "يقتضي التأخيرَ إلى آخرِ العمر (harus ditunda sampai akhir hayat)",
+          "لا قوةَ له في الإلزام (tidak punya kekuatan hukum)"
         ],
         answer: 0,
         explanation: 'Pendapat mu\'tamad jumhur ushuliyyin Asy-Syafi\'iyyah: shighat amr hanya menunjukkan tuntutan mewujudkan hakikat perbuatan (ithlaq mahiyyah al-fi\'l), adapun kesegeraan (faur) atau kelonggaran (tarakhi) memerlukan dalil/qarinah luar.',
@@ -1309,12 +1500,13 @@ const PRESETS = [
         examTip: 'Tahrir madzhab imtihan: «المعتمد عند جماهير الشافعية والمحققين: أن مطلق الأمر لا يقتضي فَوْراً ولا تَرَاخِياً لذاته، وإنما يقتضي إيجاد المأمور به في الجملة من غير قيد بالزمن الأول أو الثاني، إلا إذا اقترن بقرينة تدل على أحدهما، مع اتفاقهم على أن المبادرة بالامتثال مستحبة شرعاً».'
       },
       {
-        question: 'Dalil Al-Qur\'an terkuat yang dijadikan hujjah mayoritas ulama bahwa asal perintah adalah menuntut hukum WAJIB adalah...',
+        question: "ما أقوى دليلٍ قرآنيٍّ استدلَّ به الجمهورُ على أن الأمرَ للوجوب؟",
+        questionTranslation: "Apa dalil Al-Qur'an terkuat yang dipakai jumhur bahwa amr menunjukkan wajib?",
         options: [
-          '{فَلْيَحْذَرِ الَّذِينَ يُخَالِفُونَ عَنْ أَمْرِهِ أَن تُصِيبَهُمْ فِتْنَةٌ أَوْ يُصِيبَهُمْ عَذَابٌ أَلِيمٌ} (Hendaklah takut orang yang menyalahi perintah Rasul ditimpa fitnah atau azab pedih)',
-          '{وَإِذَا حَلَلْتُمْ فَاصْطَادُوا} (Dan apabila kamu telah bertahalul, maka berburulah)',
-          '{كُلُوا وَاشْرَبُوا} (Makan dan minumlah kalian)',
-          '{وَأَشْهِدُوا إِذَا تَبَايَعْتُمْ} (Dan adakanlah saksi apabila kamu berjual beli)'
+          "{فَلْيَحْذَرِ الَّذِينَ يُخَالِفُونَ عَنْ أَمْرِهِ أَن تُصِيبَهُمْ فِتْنَةٌ} (hendaklah takut orang yang menyalahi perintahnya ditimpa fitnah)",
+          "{وَإِذَا حَلَلْتُمْ فَاصْطَادُوا} (apabila telah bertahallul, berburulah)",
+          "{كُلُوا وَاشْرَبُوا} (makan dan minumlah)",
+          "{وَأَشْهِدُوا إِذَا تَبَايَعْتُمْ} (adakanlah saksi apabila berjual beli)"
         ],
         answer: 0,
         explanation: 'Ayat An-Nur: 63 ini mengancam orang yang menyalahi amr Nabi dengan fitnah dan siksa pedih. Ancaman siksa hanya terjadi pada pelanggaran kewajiban mutlak.',
@@ -1322,12 +1514,13 @@ const PRESETS = [
         examTip: 'Wajhul istidlal kurrasah: «وجه الاستدلال من الآية: أن الله تعالى حذّر وتوعّد بالعذاب الأليم لمن خالف أمر رسوله صلى الله عليه وسلم، والوعيد لا يترتب شرعاً إلا على ترك الواجب؛ فدل ذلك قطعاً على أن الأمر المجرد يفيد الوجوب حقيقةً».'
       },
       {
-        question: 'Firman Allah Ta\'ala dalam ayat mudayanah: {وَأَشْهِدُوا إِذَا تَبَايَعْتُمْ} (Dan adakanlah saksi apabila kamu berjual beli). Amr di sini berfaedah...',
+        question: "ما دلالةُ الأمرِ في قوله تعالى: {وَأَشْهِدُوا إِذَا تَبَايَعْتُمْ}؟",
+        questionTranslation: "Apa makna perintah «Adakanlah saksi apabila kamu berjual beli»?",
         options: [
-          'Al-Irsyad (bimbingan kemaslahatan duniawi menjaga transaksi, bukan wajib)',
-          'Al-Wujub (wajib berdosa jika tanpa saksi)',
-          'At-Tahdid (ancaman)',
-          'At-Ta\'jiz (melemahkan lawan)'
+          "الإرشاد (bimbingan kemaslahatan)",
+          "الوجوب (wajib)",
+          "التهديد (ancaman)",
+          "التعجيز (menunjukkan ketidakmampuan)"
         ],
         answer: 0,
         explanation: 'Perintah persaksian jual beli bertujuan irsyad (edukasi maslahat menjaga bukti harta). Rasulullah SAW sendiri pernah membeli kuda dari orang Arab dusun tanpa menghadirkan saksi.',
@@ -1335,12 +1528,13 @@ const PRESETS = [
         examTip: 'Jawaban kurrasah imtihan: «الأمر هنا للإرشاد وليس للوجوب؛ والقرينة الصارفة: فعل النبي صلى الله عليه وسلم والصحابة بالتبايع دون إشهاد، كقصة شراء النبي الفرس من الأعرابي، ولأن المقصود حفظ مصالح العباد الدنيوية ودفع النزاع، فهو إرشاد لما هو أصلح للمتعاقدين».'
       },
       {
-        question: 'Apakah kalimat perintah (Al-Amr) menuntut pengulangan perbuatan (Tikrar) jika dikaitkan dengan syarat atau sebab yang berulang?',
+        question: "هل يقتضي الأمرُ التكرارَ إذا عُلِّقَ على شرطٍ أو سببٍ يتكرَّر؟",
+        questionTranslation: "Apakah amr menuntut pengulangan jika dikaitkan dengan syarat atau sebab yang berulang?",
         options: [
-          'Ya, berulang seiring berulangnya sebab/syarat (seperti perintah wudhu tiap hadats atau shalat tiap waktu masuk)',
-          'Tidak akan pernah berulang sama sekali walau sebabnya berulang ribuan kali',
-          'Gugur setelah satu kali selamanya',
-          'Menjadi makruh diulang setelah pelaksanaan pertama'
+          "نعم، يتكرَّرُ بتكرُّرِ سببِه (ya, berulang mengikuti sebabnya)",
+          "لا يتكرَّرُ أبدًا ولو تكرَّرَ السبب (tidak pernah berulang walau sebabnya berulang)",
+          "يسقطُ بعد مرةٍ واحدةٍ أبدًا (gugur selamanya setelah sekali)",
+          "يُكرَهُ تكرارُه بعد المرةِ الأولى (makruh diulang setelah sekali)"
         ],
         answer: 0,
         explanation: 'Meskipun amr mutlak tidak menuntut tikrar, bila amr dikaitkan pada sebab (mu\'allaq \'ala sabab atau syarth), amr berulang seiring terulangnya sebab tersebut ("kullama takarrara as-sabab takarrara al-musabbab").',
@@ -1348,17 +1542,102 @@ const PRESETS = [
         examTip: 'Kaidah ushuliyyah imtihan: «الأمر المعلق على شرط أو سبب يتكرر بتكرره إجماعاً؛ كقوله تعالى: {أَقِمِ الصَّلَاةَ لِدُلُوكِ الشَّمْسِ} وقوله: {وَإِن كُنتُمْ جُنُبًا فَاطَّهَّرُوا}، فالقاعدة: (الحكم يدور مع علته وسببه وجوداً وعدماً، وكلما تكرر السبب تكرر المسبَّب)».'
       },
       {
-        question: 'Kaidah ushul fiqh mashhur yang menetapkan kewajiban sarana perantara bagi terlaksananya perintah pokok adalah...',
+        question: "ما القاعدةُ التي تُوجِبُ الوسيلةَ التي لا يتمُّ الواجبُ إلا بها؟",
+        questionTranslation: "Kaidah apa yang mewajibkan sarana yang tanpanya kewajiban tidak sempurna?",
         options: [
-          'مَا لَا يَتِمُّ الْوَاجِبُ إِلَّا بِهِ فَهُوَ وَاجِبٌ (perkara yang tanpanya kewajiban tak sempurna, hukumnya ikut wajib)',
-          'الْأَصْلُ فِي الْأَشْيَاءِ الْإِبَاحَةُ (hukum asal pada segala sesuatu adalah mubah/boleh)',
-          'الضَّرَرُ يُزَالُ (segala bentuk kemudharatan wajib dihilangkan)',
-          'الْعَادَةُ مُحَكَّمَةٌ (adat kebiasaan masyarakat dapat dijadikan pijakan hukum)'
+          "ما لا يتمُّ الواجبُ إلا به فهو واجب (sarana kewajiban ikut wajib)",
+          "الأصلُ في الأشياءِ الإباحة (hukum asal segala sesuatu adalah mubah)",
+          "الضررُ يُزال (kemudharatan wajib dihilangkan)",
+          "العادةُ محكَّمة (adat dapat dijadikan pijakan hukum)"
         ],
         answer: 0,
         explanation: 'Jika kewajiban mutlak tidak bisa tercapai kecuali melalui perantara (wasa\'il) yang berada dalam kesanggupan mukallaf (seperti berjalan ke masjid untuk Jum\'atan atau membeli air untuk wudhu), wasilah itu hukumnya ikut menjadi wajib.',
         hint: 'Ingat kaidah مقدمة الواجب (Mukaddimah Wajib).',
         examTip: 'Kaidah tahriri di kurrasah: «قاعدة (ما لا يتم الواجب المطلق إلا به وكان بمقدور المكلف فهو واجب): كالطهارة للصلاة، والسعي إلى الجمعة؛ لأن الأمر بالشيء أمر به وبما لا يتم إلا به من لوازمه ووسائله، وللوسائل أحكام المقاصد».'
+      },
+      {
+        question: "عرِّفِ الأمرَ عند جمهورِ الأصوليين.",
+        questionTranslation: "Definisikan amr menurut jumhur ushuliyyin.",
+        options: [
+          "طلبُ الفعلِ على جهةِ الاستعلاء (tuntutan melakukan perbuatan dari pihak yang lebih tinggi)",
+          "طلبُ الكفِّ عن الفعل (tuntutan meninggalkan perbuatan)",
+          "الإخبارُ عن أمرٍ واقع (berita tentang suatu kejadian)",
+          "الطلبُ من الأدنى إلى الأعلى (permohonan dari bawah ke atas)"
+        ],
+        answer: 0,
+        explanation: `Amr adalah «طلب الفعل على جهة الاستعلاء». Tuntutan meninggalkan adalah nahy; permohonan dari bawah ke atas disebut du'a'.`,
+        hint: `Perhatikan arah tuntutannya: dari atas ke bawah, dan yang dituntut adalah mengerjakan.`,
+        examTip: `«الأمر: هو طلب الفعل على جهة الاستعلاء بالقول الدال عليه».`
+      },
+      {
+        question: "عرِّفِ النهيَ.",
+        questionTranslation: "Definisikan nahy.",
+        options: [
+          "طلبُ الكفِّ عن الفعلِ على جهةِ الاستعلاء (tuntutan menahan diri dari perbuatan dari pihak yang lebih tinggi)",
+          "طلبُ الفعلِ على وجهِ الإلزام (tuntutan melakukan secara wajib)",
+          "التخييرُ بين الفعلِ والترك (pilihan antara melakukan dan meninggalkan)",
+          "الإخبارُ بوقوعِ الفعل (pemberitahuan bahwa perbuatan terjadi)"
+        ],
+        answer: 0,
+        explanation: `Nahy adalah «طلب الكفّ عن الفعل على جهة الاستعلاء». Pilihan antara melakukan dan meninggalkan adalah ibahah.`,
+        hint: `Kebalikan dari amr.`,
+        examTip: `«النهي: هو طلب الكفّ عن الفعل على جهة الاستعلاء بصيغة لا تفعل».`
+      },
+      {
+        question: "علامَ يدلُّ النهيُ المطلقُ المجرَّدُ عن القرائنِ عند الجمهور؟",
+        questionTranslation: "Apa yang ditunjukkan larangan mutlak tanpa qarinah menurut jumhur?",
+        options: [
+          "التحريم (haram)",
+          "الكراهة (makruh)",
+          "الإباحة (mubah)",
+          "الإرشاد (sekadar bimbingan)"
+        ],
+        answer: 0,
+        explanation: `Kaidahnya: «الأصل في النهي التحريم». Ia baru dipalingkan ke karahah atau irsyad jika ada qarinah.`,
+        hint: `Sejajar dengan kaidah asal amr menunjukkan wajib.`,
+        examTip: `«الأصل في النهي أنه للتحريم ما لم تصرفه قرينة، لقوله تعالى: {وَمَا نَهَاكُمْ عَنْهُ فَانتَهُوا}».`
+      },
+      {
+        question: "ما صيغةُ النهيِ في قوله تعالى: {وَلَا تَقْرَبُوا الزِّنَا}؟",
+        questionTranslation: "Apa shighat nahy dalam «Janganlah kamu mendekati zina»?",
+        options: [
+          "المضارعُ المقرونُ بلا الناهية (fi'il mudhari' dengan «la» nahiyah)",
+          "فعلُ الأمر (fi'il amr)",
+          "اسمُ فعلِ الأمر (isim fi'il amr)",
+          "الجملةُ الخبرية (kalimat berita)"
+        ],
+        answer: 0,
+        explanation: `Shighat nahy yang asli adalah «لا تفعل»: «لا» nahiyah yang menjazmkan fi'il mudhari'. «تقربوا» majzum dengan dibuangnya nun.`,
+        hint: `Lihat huruf apa yang ada sebelum «تقربوا».`,
+        examTip: `«صيغة النهي الصريحة: المضارع المقرون بلا الناهية، نحو: {وَلَا تَقْرَبُوا الزِّنَا}، وهو للتحريم».`
+      },
+      {
+        question: "ما أثرُ النهيِ إذا رجعَ إلى ذاتِ العبادةِ أو ركنِها عند الجمهور؟",
+        questionTranslation: "Apa akibat larangan yang kembali ke dzat atau rukun ibadah menurut jumhur?",
+        options: [
+          "يقتضي فسادَ العبادة (ibadahnya rusak atau batal)",
+          "تصحُّ مع الإثم (sah tetapi berdosa)",
+          "يقتضي الكراهةَ فقط (hanya makruh)",
+          "لا أثرَ له (tidak berpengaruh)"
+        ],
+        answer: 0,
+        explanation: `Kaidah: «النهي يقتضي الفساد» bila larangannya kembali kepada dzat atau rukun perbuatan, seperti shalat wanita haid. Jika larangannya karena perkara di luar ibadah, ibadahnya tetap sah disertai dosa.`,
+        hint: `Bedakan larangan yang kembali ke dzat perbuatan dengan larangan karena perkara luar.`,
+        examTip: `«النهي إذا رجع إلى ذات المنهي عنه أو ركنه اقتضى الفساد، كصلاة الحائض؛ وإن رجع إلى أمرٍ خارجٍ لم يقتضه».`
+      },
+      {
+        question: "ما حكمُ الصلاةِ في الأرضِ المغصوبةِ عند الجمهور؟",
+        questionTranslation: "Apa hukum shalat di tanah hasil ghashab menurut jumhur?",
+        options: [
+          "صحيحةٌ مع الإثم (sah tetapi berdosa)",
+          "باطلة (batal)",
+          "صحيحةٌ بلا إثم (sah tanpa dosa)",
+          "تجبُ إعادتُها بلا إثم (wajib diulang tanpa dosa)"
+        ],
+        answer: 0,
+        explanation: `Larangan ghashab tidak khusus untuk shalat (amr kharij). Karena itu jumhur menilai shalatnya sah dan menggugurkan kewajiban, tetapi pelakunya berdosa karena ghashab. Madzhab Hanbali dalam riwayat masyhur menilainya tidak sah.`,
+        hint: `Apakah larangan ghashab khusus karena shalat, atau berlaku di luar shalat juga?`,
+        examTip: `«الصلاة في الأرض المغصوبة صحيحة مع الإثم عند الجمهور؛ لأن النهي لأمرٍ خارجٍ عن الصلاة وهو الغصب، خلافًا للحنابلة».`
       }
     ]
   },
@@ -1718,8 +1997,10 @@ function parseOptionTranslation(text) {
  * dan terjemahan bahasa Indonesia ditampilkan di bawahnya dengan tulisan kecil,
  * rapi, dan mudah dipahami user.
  */
-function BattleOptionContent({ opt, className = '' }) {
-  const { main, trans } = parseOptionTranslation(opt);
+// split=false: tampilkan opsi apa adanya. Dipakai bila tidak semua opsi soal punya terjemahan — kalau hanya
+// sebagian yang berlabel "arti", labelnya bisa membocorkan opsi yang benar.
+function BattleOptionContent({ opt, className = '', split = true }) {
+  const { main, trans } = split ? parseOptionTranslation(opt) : { main: String(opt || '').trim(), trans: '' };
   const isMainArabic = containsArabic(main);
 
   return (
@@ -1913,15 +2194,17 @@ function missionStatus(id, stats, { finished = false, playerHp = 100 } = {}) {
    Nilai imtihan (bossHp terbalik) penuh tepat saat thalib mengumpulkan jawaban benar sebanyak batas lulus (60%,
    dibulatkan ke atas); combo mempercepatnya. Kalau soal habis dan nilai belum cukup, belum lulus. Teguran makin terasa
    di level tinggi sehingga HP, Syay, dan Ahwah benar-benar berarti. */
+// Syarat lulus & teguran naik per level supaya kesulitannya terasa: 50% → 60% → 70% → 75% jawaban benar.
+const PASS_RATIO = { 1: 0.5, 2: 0.6, 3: 0.7, 4: 0.75 };
 function getBattleRules(stage, quizLength) {
   const total = Math.max(1, quizLength);
-  const requiredCorrect = Math.max(1, Math.ceil(total * 0.6));
   const bossMaxHp = stage?.bossHp || 100;
-  const levelNumber = Number(stage?.levelNumber || stage?.id || 1);
+  const levelNumber = Math.min(4, Math.max(1, Number(stage?.levelNumber || stage?.id || 1)));
+  const requiredCorrect = Math.min(total, Math.max(1, Math.ceil(total * PASS_RATIO[levelNumber])));
   return {
     requiredCorrect,
     damagePerCorrect: Math.ceil(bossMaxHp / requiredCorrect),
-    counterDamage: 25 + (Math.min(4, Math.max(1, levelNumber)) - 1) * 5
+    counterDamage: 20 + (levelNumber - 1) * 8
   };
 }
 
@@ -2469,6 +2752,8 @@ export default function BattlePage() {
     }
     return shuffleQuizOptions(base);
   }, [activeStage, activeSet, shuffleSeed]);
+  // Label "arti" pada opsi hanya ditampilkan bila keempat opsi soal ini punya terjemahan (lihat BattleOptionContent).
+  const optionsTranslated = (activeQuiz[currentQ]?.options || []).every(o => parseOptionTranslation(o).trans);
 
   // Stage helpers
   const getStageProgress = (muqarrarId) => {
@@ -3293,13 +3578,17 @@ export default function BattlePage() {
       : [];
 
     // Soal AI diurutkan dari level 1 (ta'rif) ke 4 (tathbiq) supaya tingkat kesulitan naik per level arena.
-    const aiQuiz = ai?.quiz?.length >= 6 ? [...ai.quiz].sort((a, b) => (a.level || 2) - (b.level || 2)) : null;
+    const aiQuiz = ai?.quiz?.length >= 8 ? [...ai.quiz].sort((a, b) => (a.level || 2) - (b.level || 2)) : null;
     const finalQuiz = aiQuiz
       || (formattedExistingQuiz.length >= 3
         ? formattedExistingQuiz
         : (generatedQuiz.length >= 3 ? generatedQuiz : PRESETS[0].quiz));
     // Soal dibagi rata ke 4 level (sisa masuk ke final boss); tanpa soal AI tetap memakai pembagian lama.
+    // Tiap level arena memakai soal dengan level yang sama dari AI; kalau ada level yang kurang dari 3 soal,
+    // soal dibagi rata berurutan (sudah diurutkan dari mudah ke sulit).
     const groups = aiQuiz ? (() => {
+      const byLevel = [1, 2, 3, 4].map(l => aiQuiz.map((q, i) => ((q.level || 2) === l ? i : -1)).filter(i => i >= 0));
+      if (byLevel.every(g => g.length >= 3)) return byLevel;
       const per = Math.max(2, Math.floor(aiQuiz.length / 4));
       const idx = aiQuiz.map((_, i) => i);
       return [idx.slice(0, per), idx.slice(per, per * 2), idx.slice(per * 2, per * 3), idx.slice(per * 3)];
@@ -4110,7 +4399,7 @@ export default function BattlePage() {
             {phase === 'study' && (
               <button
                 onClick={() => setPhase('map')}
-                className="btn bg-gradient-to-r from-amber-500 to-emerald-500 text-black font-semibold text-xs px-3.5 py-2 rounded-lg shadow-lg shadow-emerald-500/20 hover:brightness-110 active:scale-95 transition flex items-center gap-1.5"
+                className={`${PX_BTN} ${PX_AMBER} text-xs px-3.5 py-2`}
               >
                 <span><PixelIcon name="map" className="w-[1.15em] h-[1.15em]" /></span>
                 <span><span className="hidden sm:inline">Peta Level </span>➔</span>
@@ -4119,7 +4408,7 @@ export default function BattlePage() {
             {phase === 'story' && (
               <button
                 onClick={() => startBattle(activeStage)}
-                className="btn bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-semibold text-xs px-3.5 py-2 rounded-lg shadow-lg shadow-emerald-500/20 hover:brightness-110 active:scale-95 transition flex items-center gap-1.5"
+                className={`${PX_BTN} ${PX_GREEN} text-xs px-3.5 py-2`}
               >
                 <PixelIcon name="quill" className="w-4 h-4" />
                 <span>Mulai<span className="hidden sm:inline"> Duel</span></span>
@@ -5258,7 +5547,7 @@ export default function BattlePage() {
 
               <button
                 onClick={() => setPhase('map')}
-                className="btn bg-gradient-to-r from-amber-500 to-emerald-500 text-black font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2"
+                className={`${PX_BTN} ${PX_GREEN} text-sm px-6 py-3`}
               >
                 <span><PixelIcon name="map" className="w-[1.15em] h-[1.15em]" /></span>
                 <span>Peta & Pilih Level ➔</span>
@@ -5383,7 +5672,7 @@ export default function BattlePage() {
             <div className="pt-6 text-center">
               <button
                 onClick={() => setPhase('map')}
-                className="btn bg-gradient-to-r from-amber-500 via-emerald-500 to-teal-400 text-black font-extrabold text-base px-8 py-3.5 rounded-xl shadow-xl shadow-emerald-500/25 hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2 mx-auto"
+                className={`${PX_BTN} ${PX_GREEN} text-base px-8 py-3.5 mx-auto`}
               >
                 <span><PixelIcon name="map" className="w-[1.15em] h-[1.15em]" /></span>
                 <span>SAYA SUDAH FAHAM — BUKA PETA & PILIH LEVEL ➔</span>
@@ -5735,7 +6024,7 @@ export default function BattlePage() {
                             setStoryStep(s => s + 1);
                             sfx.playStoryBip();
                           }}
-                          className="flex-1 sm:flex-none btn bg-gradient-to-r from-amber-500 to-emerald-400 hover:brightness-110 text-black font-extrabold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-lg shadow-emerald-500/20 active:scale-95 transition flex items-center justify-center gap-1.5"
+                          className={`${PX_BTN} ${PX_AMBER} flex-1 sm:flex-none text-xs sm:text-sm px-5 py-2.5`}
                         >
                           <span>Lanjut Dialog</span>
                           <Icon name="chevronRight" className="w-4 h-4" />
@@ -5743,7 +6032,7 @@ export default function BattlePage() {
                       ) : (
                         <button
                           onClick={startBattle}
-                          className="flex-1 sm:flex-none btn bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-300 hover:brightness-110 text-black font-black text-xs sm:text-sm px-6 py-2.5 rounded-xl shadow-xl shadow-emerald-500/30 active:scale-95 transition flex items-center justify-center gap-2 animate-pulse"
+                          className={`${PX_BTN} ${PX_GREEN} flex-1 sm:flex-none text-xs sm:text-sm px-6 py-2.5`}
                         >
                           <span><PixelIcon name="quill" className="w-[1.15em] h-[1.15em]" /> BISMILLAH, MULAI UJIAN!</span>
                           <PixelIcon name="quill" className="w-4 h-4" />
@@ -6373,7 +6662,7 @@ export default function BattlePage() {
 
                       <button
                         onClick={handleDismissWrongReview}
-                        className="btn bg-gradient-to-r from-emerald-500 to-teal-400 hover:brightness-110 text-black font-extrabold text-xs px-5 py-2.5 rounded-xl shadow-lg transition flex items-center gap-2 active:scale-95 ml-auto"
+                        className={`${PX_BTN} ${PX_GREEN} text-xs px-5 py-2.5 ml-auto`}
                       >
                         <span>{wrongReview.isFatal ? 'Lihat Evaluasi Akhir' : 'Faham, Lanjutkan Duel!'}</span>
                         <span>➔</span>
@@ -6452,7 +6741,7 @@ export default function BattlePage() {
                                 }`}>
                                   {['A', 'B', 'C', 'D'][optIdx]}
                                 </span>
-                                <BattleOptionContent opt={opt} />
+                                <BattleOptionContent opt={opt} split={optionsTranslated} />
                                 {isSelected && (
                                   <span className="shrink-0 text-[10px] font-bold font-mono px-2 py-0.5 rounded bg-black/60 border border-white/20 mt-0.5">
                                     {selectedAnswer.isCorrect ? '✓ TEPAT!' : '✗ SALAH'}
@@ -6910,7 +7199,7 @@ export default function BattlePage() {
                       <div className="flex flex-col sm:flex-row gap-2 pt-1">
                         <button
                           onClick={downloadSyahadahCanvas}
-                          className="flex-1 btn bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-lg transition flex items-center justify-center gap-2 active:scale-95"
+                          className={`${PX_BTN} ${PX_AMBER} flex-1 text-xs px-4 py-2.5`}
                         >
                           <PixelIcon name="scroll" className="w-4 h-4 text-black" />
                           <span>Unduh Syahadah (PNG)</span>
@@ -6919,7 +7208,7 @@ export default function BattlePage() {
                           onClick={() => setShowSyahadahModal(true)}
                           className="btn border border-amber-400/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5"
                         >
-                          <span><PixelIcon name="eye" className="w-[1.15em] h-[1.15em]" /></span>
+                          <span><PixelIcon name="search" className="w-[1.15em] h-[1.15em]" /></span>
                           <span>Lihat Format Penuh</span>
                         </button>
                       </div>
@@ -7328,7 +7617,7 @@ export default function BattlePage() {
                 </button>
                 <button
                   onClick={downloadSyahadahCanvas}
-                  className="btn bg-gradient-to-r from-amber-500 to-amber-400 hover:brightness-110 text-black font-extrabold text-xs px-5 py-2.5 rounded-xl shadow-lg flex items-center gap-2"
+                  className={`${PX_BTN} ${PX_AMBER} text-xs px-5 py-2.5`}
                 >
                   <PixelIcon name="scroll" className="w-4 h-4 text-black" />
                   <span>Unduh File PNG Resolusi Tinggi (1200x800)</span>

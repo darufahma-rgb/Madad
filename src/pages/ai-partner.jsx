@@ -441,7 +441,7 @@ const SUB_TABS = {
              { id: 'glossary', label: 'Mufradat', icon: 'type', C: 'GlossaryTab' }],
   uji:      [{ id: 'quiz', label: 'Kuis', icon: 'target', C: 'QuizTab' },
              { id: 'essay', label: 'Latihan Tahriri', icon: 'pen', C: 'EssayTab', pro: true },
-             { id: 'battle', label: '⚔️ Arena Imtihan', icon: 'zap', C: 'BattleTab' }],
+             { id: 'battle', label: 'Arena Imtihan', icon: 'gamepad', C: 'BattleTab' }],
   tanya:    [{ id: 'tutor', label: 'Tutor & Syafawi', icon: 'messageSquare', C: 'TutorTab', pro: true }],
 };
 
@@ -504,10 +504,10 @@ const AiPartnerDetail = ({ setId, status }) => {
           <div className="flex items-center gap-2 mt-2 flex-wrap">
             <button
               onClick={() => window.launchBattleFromSet?.(set)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-amber-400/40 bg-gradient-to-r from-amber-500/20 to-emerald-500/20 text-amber-200 hover:border-amber-400 hover:text-white transition shadow-sm active:scale-95"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border border-white/15 bg-white/5 text-ink hover:bg-white/10 transition"
             >
-              <span>⚔️ Uji di Arena Imtihan</span>
-              <span className="text-[10px] bg-amber-500/30 px-1 py-0.2 rounded text-amber-300 font-mono">VS Al-'Allamah</span>
+              <Icon name="gamepad" className="w-3.5 h-3.5"/>
+              <span>Uji di Arena Imtihan</span>
             </button>
             <button onClick={() => setConfirmDelete(true)}
               className="inline-flex items-center gap-1.5 text-xs text-ink-soft hover:text-rose-400 px-2.5 py-1.5 rounded-lg hover:bg-rose-500/10 transition">

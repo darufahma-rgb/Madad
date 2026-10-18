@@ -1400,10 +1400,10 @@ const QuizTab = ({ set, setSet, access, askTutor }) => {
             <button onClick={() => reset()} className={`btn ${wrong.length ? 'btn-ghost' : 'btn-primary'} text-sm px-5 py-2`}>Ulangi semua</button>
             <button
               onClick={() => launchBattleFromSet(set)}
-              className="btn bg-gradient-to-r from-amber-500 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-black font-bold text-sm px-5 py-2 rounded-xl shadow-lg flex items-center gap-1.5 transition active:scale-95"
+              className="btn btn-gold text-sm px-5 py-2 flex items-center gap-1.5"
             >
-              <span>⚔️ Uji di Arena Imtihan</span>
-              <span className="text-[10px] bg-black/20 text-black font-mono px-1 py-0.5 rounded">VS Al-'Allamah</span>
+              <Icon name="gamepad" className="w-4 h-4"/>
+              <span>Uji di Arena Imtihan</span>
             </button>
             {access.tier === 'pro' && <button onClick={() => generate()} disabled={busy} className="btn btn-ghost text-sm px-5 py-2">Buat soal baru</button>}
           </div>
@@ -2067,9 +2067,10 @@ export const BattleStudyBanner = ({ set }) => {
       </div>
       <button
         onClick={() => launchBattleFromSet(set)}
-        className="w-full sm:w-auto shrink-0 btn bg-gradient-to-r from-amber-500 to-emerald-500 hover:from-amber-400 hover:to-emerald-400 text-black font-bold text-xs sm:text-sm px-5 py-2.5 rounded-xl shadow-lg flex items-center justify-center gap-2 transition active:scale-95"
+        className="w-full sm:w-auto shrink-0 btn btn-gold text-xs sm:text-sm px-5 py-2.5 flex items-center justify-center gap-2"
       >
-        <span>⚔️ Uji di Arena Imtihan</span>
+        <Icon name="gamepad" className="w-4 h-4"/>
+        <span>Uji di Arena Imtihan</span>
         <Icon name="arrowRight" className="w-4 h-4" />
       </button>
     </div>
@@ -2115,9 +2116,10 @@ export const BattleTab = ({ set }) => {
             <div className="flex items-center justify-center md:justify-start gap-3 flex-wrap">
               <button
                 onClick={() => launchBattleFromSet(set)}
-                className="btn bg-gradient-to-r from-amber-500 via-emerald-500 to-teal-500 hover:from-amber-400 hover:to-emerald-400 text-black font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/25 flex items-center gap-2 transform active:scale-95 transition"
+                className="btn btn-primary text-sm px-6 py-3 flex items-center gap-2"
               >
-                <span>⚔️ Masuk ke Arena Imtihan</span>
+                <Icon name="gamepad" className="w-4 h-4"/>
+                <span>Masuk ke Arena Imtihan</span>
                 <Icon name="arrowRight" className="w-4 h-4" />
               </button>
             </div>

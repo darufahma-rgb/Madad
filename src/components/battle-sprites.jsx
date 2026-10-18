@@ -7,11 +7,7 @@ import { renderVoxelFinalBoss, hasVoxelFinalBoss } from './voxel-boss.js';
    - PixelBattlefield: Retro 16-bit Al-Azhar battlefield arena backdrop
    - PixelPlatform: 2.5D stepped pixel pedestals for Boss & Player
    - PlayerSprite: Thalib Al-Azhar (Back-view with Azhari Tarboush & Kakula)
-   - BossSprite:
-       * Balaghah: Kitab Al-Bayan (Winged Tome of Metaphors)
-       * Nahwu: Ra'du Al-Alfiyah (Thunder Grammarian Golem)
-       * Ushul: Mizan Al-Qadhi (Celestial Sphinx Balance)
-       * Custom: Enchanted Grand Muqarrar
+   - BossSprite: penguji tingkat 1–3 dan syaikh ujian akhir (model voxel per maddah, lihat voxel-boss.js)
    - BattleProjectiles & FloatingDamage Text
    ========================================================================= */
 
@@ -443,12 +439,9 @@ export function BossSprite({
           <MusaidSprite isAttack={isAttack} isHit={isHit} bossType={bossType} />
         ) : stageId === 3 ? (
           <MuhaqqiqSprite isAttack={isAttack} isHit={isHit} bossType={bossType} />
-        ) : bossType === 'nahwu-fail' ? (
-          <NahwuGolem isAttack={isAttack} isHit={isHit} />
-        ) : bossType === 'ushul-amr' ? (
-          <UshulSphinx isAttack={isAttack} isHit={isHit} />
         ) : (
-          <BalaghahWingedTome isAttack={isAttack} isHit={isHit} />
+          // Ujian akhir: selalu sosok syaikh (model voxel), bukan makhluk/benda bermata yang bisa disalahpahami.
+          <img src={getVoxelSprite(4, bossType)} alt="Penguji ujian akhir" className="w-36 sm:w-44 h-auto object-contain drop-shadow-[0_10px_16px_rgba(0,0,0,0.8)]" />
         )}
       </div>
       </div>
@@ -662,234 +655,6 @@ export function MuhaqqiqSprite({ isAttack = false, isHit = false, bossType = 'ba
         <rect x="-9" y="-23" width="18" height="13" rx="2" fill="#7f1d1d" />
         <circle cx="0" cy="-23" r="2.5" fill="#fbbf24" />
       </g>
-    </svg>
-  );
-}
-
-/* ── BOSS 1: BALAGHAH — KITAB AL-BAYAN (WINGED TOME) ── */
-function BalaghahWingedTome({ isAttack, isHit }) {
-  return (
-    <svg
-      viewBox="0 0 180 180"
-      className="w-36 h-36 sm:w-44 sm:h-44 drop-shadow-[0_10px_25px_rgba(16,185,129,0.3)]"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <defs>
-        <linearGradient id="emeraldTome" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#065f46" />
-          <stop offset="50%" stopColor="#047857" />
-          <stop offset="100%" stopColor="#022c22" />
-        </linearGradient>
-        <linearGradient id="wingGold" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#fef08a" />
-          <stop offset="50%" stopColor="#eab308" />
-          <stop offset="100%" stopColor="#ca8a04" />
-        </linearGradient>
-        <radialGradient id="arcaneEye" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#6ee7b7" />
-          <stop offset="60%" stopColor="#10b981" />
-          <stop offset="100%" stopColor="#064e3b" />
-        </radialGradient>
-      </defs>
-
-      {/* Aura Burst */}
-      <circle cx="90" cy="90" r="60" fill="#10b981" opacity={isAttack ? 0.35 : 0.15} />
-
-      {/* LEFT WING (FEATHERED GOLDEN WING) */}
-      <g className={isAttack ? 'animate-wingFlap' : 'animate-wingHoverLeft'}>
-        <path
-          d="M60 85 C35 70, 10 55, 5 35 C15 50, 30 65, 45 75 Z"
-          fill="url(#wingGold)"
-          stroke="#a16207"
-          strokeWidth="1"
-        />
-        <path
-          d="M62 92 C38 85, 15 75, 12 55 C22 68, 38 78, 50 85 Z"
-          fill="url(#wingGold)"
-          stroke="#a16207"
-          strokeWidth="1"
-        />
-        <path
-          d="M65 100 C45 98, 28 92, 25 78 C35 88, 48 94, 58 97 Z"
-          fill="url(#wingGold)"
-          stroke="#a16207"
-          strokeWidth="1"
-        />
-      </g>
-
-      {/* RIGHT WING (FEATHERED GOLDEN WING) */}
-      <g className={isAttack ? 'animate-wingFlap' : 'animate-wingHoverRight'}>
-        <path
-          d="M120 85 C145 70, 170 55, 175 35 C165 50, 150 65, 135 75 Z"
-          fill="url(#wingGold)"
-          stroke="#a16207"
-          strokeWidth="1"
-        />
-        <path
-          d="M118 92 C142 85, 165 75, 168 55 C158 68, 142 78, 130 85 Z"
-          fill="url(#wingGold)"
-          stroke="#a16207"
-          strokeWidth="1"
-        />
-        <path
-          d="M115 100 C135 98, 152 92, 155 78 C145 88, 132 94, 122 97 Z"
-          fill="url(#wingGold)"
-          stroke="#a16207"
-          strokeWidth="1"
-        />
-      </g>
-
-      {/* MAIN GRIMOIRE BODY */}
-      <g>
-        {/* Shadow/Back Cover */}
-        <rect x="52" y="48" width="76" height="94" rx="8" fill="#022c22" stroke="#059669" strokeWidth="2" />
-        {/* Front Cover Plate */}
-        <rect x="55" y="52" width="70" height="86" rx="6" fill="url(#emeraldTome)" stroke="#34d399" strokeWidth="1.5" />
-        {/* Gold Filigree Borders */}
-        <rect x="60" y="57" width="60" height="76" rx="4" stroke="#facc15" strokeWidth="1.2" strokeDasharray="6 2" fill="none" />
-
-        {/* Central Eye of Rhetoric (Majaz Eye) */}
-        <circle cx="90" cy="85" r="18" fill="url(#arcaneEye)" stroke="#facc15" strokeWidth="2" />
-        {/* Slit Eye Pupil */}
-        <ellipse cx="90" cy="85" rx="3.5" ry="12" fill="#022c22" />
-        <circle cx="88" cy="82" r="2.5" fill="#ffffff" />
-
-        {/* Floating Arabic Letter Runes on the Book Cover */}
-        <text x="70" y="118" fill="#fef08a" fontSize="13" fontWeight="bold" fontFamily="serif">ب</text>
-        <text x="88" y="122" fill="#fef08a" fontSize="13" fontWeight="bold" fontFamily="serif">ي</text>
-        <text x="104" y="118" fill="#fef08a" fontSize="13" fontWeight="bold" fontFamily="serif">ن</text>
-
-        {/* Crown of Arcane Flames atop the Book */}
-        <polygon points="76,48 82,34 88,44 94,30 100,44 106,34 112,48" fill="#fbbf24" opacity="0.9" />
-      </g>
-
-      {/* Orbiting Runestones */}
-      <circle cx="48" cy="42" r="4" fill="#34d399" className="animate-ping" opacity="0.7" />
-      <circle cx="132" cy="138" r="3.5" fill="#f59e0b" className="animate-pulse" />
-    </svg>
-  );
-}
-
-/* ── BOSS 2: NAHWU — RA'DU AL-ALFIYAH (THUNDER GOLEM) ── */
-function NahwuGolem({ isAttack, isHit }) {
-  return (
-    <svg
-      viewBox="0 0 180 180"
-      className="w-36 h-36 sm:w-44 sm:h-44 drop-shadow-[0_10px_25px_rgba(234,179,8,0.35)]"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <defs>
-        <linearGradient id="stoneBody" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#475569" />
-          <stop offset="50%" stopColor="#334155" />
-          <stop offset="100%" stopColor="#1e293b" />
-        </linearGradient>
-        <linearGradient id="lightningGold" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ffffff" />
-          <stop offset="50%" stopColor="#fef08a" />
-          <stop offset="100%" stopColor="#eab308" />
-        </linearGradient>
-      </defs>
-
-      {/* Electric Sparks Background */}
-      <circle cx="90" cy="85" r="55" fill="#f59e0b" opacity={isAttack ? 0.3 : 0.12} />
-
-      {/* Floating Stone Shoulders */}
-      <rect x="25" y="65" width="28" height="28" rx="6" fill="url(#stoneBody)" stroke="#94a3b8" strokeWidth="1.5" />
-      <rect x="127" y="65" width="28" height="28" rx="6" fill="url(#stoneBody)" stroke="#94a3b8" strokeWidth="1.5" />
-
-      {/* Electric Arcs between hands */}
-      <path d="M40 75 Q65 60 90 70 Q115 60 140 75" stroke="#38bdf8" strokeWidth="1.8" strokeDasharray="4 2" fill="none" className="animate-pulse" />
-
-      {/* Main Stone Head / Torso */}
-      <path
-        d="M58 55 C58 40, 70 30, 90 30 C110 30, 122 40, 122 55 L126 110 C126 125, 110 135, 90 135 C70 135, 54 125, 54 110 Z"
-        fill="url(#stoneBody)"
-        stroke="#64748b"
-        strokeWidth="2"
-      />
-
-      {/* Golden Giant Dhommah Crown (Rafa' of Fa'il) */}
-      <g transform="translate(76, 8) scale(1.4)">
-        <path
-          d="M8 8 C11 5, 15 5, 17 8 C19 11, 18 15, 14 17 L10 21"
-          stroke="#fbbf24"
-          strokeWidth="3.2"
-          strokeLinecap="round"
-          fill="none"
-          className="animate-bounce"
-        />
-        <circle cx="12" cy="11" r="3" fill="#fef08a" />
-      </g>
-
-      {/* Glowing Cyan Eyes of I'rab */}
-      <rect x="68" y="60" width="14" height="6" rx="3" fill="#38bdf8" className="animate-pulse" />
-      <rect x="98" y="60" width="14" height="6" rx="3" fill="#38bdf8" className="animate-pulse" />
-
-      {/* Ancient Inscribed Runes on Chest (مَرْفُوعٌ بِالضَّمَّة) */}
-      <rect x="70" y="82" width="40" height="28" rx="4" fill="#0f172a" stroke="#eab308" strokeWidth="1.2" />
-      <text x="75" y="96" fill="#facc15" fontSize="9" fontWeight="bold" fontFamily="monospace">إِعْرَاب</text>
-      <text x="74" y="106" fill="#38bdf8" fontSize="8" fontFamily="monospace">الْفَاعِل</text>
-
-      {/* Electric Quill Staff in Hand */}
-      <g transform="translate(138, 45) rotate(25)">
-        <rect x="0" y="0" width="4" height="65" fill="#ca8a04" />
-        <path d="M-4 0 L2 -14 L8 0 Z" fill="#38bdf8" stroke="#ffffff" strokeWidth="1" />
-        <circle cx="2" cy="65" r="4" fill="#f59e0b" />
-      </g>
-    </svg>
-  );
-}
-
-/* ── BOSS 3: USHUL FIQH — MIZAN AL-QADHI (CELESTIAL SPHINX BALANCE) ── */
-function UshulSphinx({ isAttack, isHit }) {
-  return (
-    <svg
-      viewBox="0 0 180 180"
-      className="w-36 h-36 sm:w-44 sm:h-44 drop-shadow-[0_10px_25px_rgba(245,158,11,0.35)]"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <defs>
-        <linearGradient id="goldSphinx" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#fef08a" />
-          <stop offset="50%" stopColor="#d97706" />
-          <stop offset="100%" stopColor="#78350f" />
-        </linearGradient>
-      </defs>
-
-      {/* Solar Halo */}
-      <circle cx="90" cy="70" r="48" fill="#fbbf24" opacity="0.2" />
-      <circle cx="90" cy="70" r="42" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="6 3" fill="none" className="animate-spin-slow" />
-
-      {/* Celestial Balance Beam (Mizan) */}
-      <g className={isAttack ? 'animate-balanceTilt' : ''}>
-        {/* Main Central Pivot Pillar */}
-        <rect x="87" y="38" width="6" height="75" rx="3" fill="#b45309" stroke="#fde047" strokeWidth="1" />
-        <circle cx="90" cy="38" r="6" fill="#fbbf24" />
-
-        {/* Horizontal Balance Crossbeam */}
-        <line x1="30" y1="48" x2="150" y2="48" stroke="#ca8a04" strokeWidth="3.5" strokeLinecap="round" />
-
-        {/* Left Pan (Al-Amr / Wajib) */}
-        <line x1="38" y1="48" x2="28" y2="82" stroke="#eab308" strokeWidth="1.2" />
-        <line x1="48" y1="48" x2="58" y2="82" stroke="#eab308" strokeWidth="1.2" />
-        <path d="M26 82 Q43 96 60 82 Z" fill="#ca8a04" stroke="#fde047" strokeWidth="1.2" />
-        <text x="35" y="81" fill="#fef08a" fontSize="8" fontWeight="bold">أَمْر</text>
-
-        {/* Right Pan (An-Nahy / Tahrim) */}
-        <line x1="132" y1="48" x2="122" y2="82" stroke="#eab308" strokeWidth="1.2" />
-        <line x1="142" y1="48" x2="152" y2="82" stroke="#eab308" strokeWidth="1.2" />
-        <path d="M120 82 Q137 96 154 82 Z" fill="#ca8a04" stroke="#fde047" strokeWidth="1.2" />
-        <text x="129" y="81" fill="#fef08a" fontSize="8" fontWeight="bold">نَهْي</text>
-      </g>
-
-      {/* Sphinx Pedestal of Books (Muqarrar Syariah) */}
-      <rect x="52" y="115" width="76" height="14" rx="3" fill="#78350f" stroke="#ca8a04" strokeWidth="1.5" />
-      <rect x="44" y="129" width="92" height="16" rx="4" fill="#451a03" stroke="#ca8a04" strokeWidth="1.5" />
-      <text x="64" y="141" fill="#fef08a" fontSize="9" fontWeight="bold" fontFamily="monospace">أُصُولُ الْفِقْه</text>
     </svg>
   );
 }
@@ -1182,23 +947,17 @@ export function MinecraftPlayerSprite({ state = 'idle' }) {
    tiap final boss dibedakan lewat "pendamping" (makhluk SVG khas maddah), warna aura, dan gelarnya.
    Kalau nanti ada PNG berbeda, cukup ubah getVoxelSprite — pendamping tetap bisa dipakai. */
 export const FINAL_BOSS_LOOKS = {
-  'balaghah-majaz': { aura: '#10b981', glow: 'rgba(16,185,129,0.55)', title: 'Penjaga Kitab Al-Bayan', Familiar: BalaghahWingedTome },
-  'nahwu-fail': { aura: '#38bdf8', glow: 'rgba(56,189,248,0.55)', title: "Pemanggil Ra'du Al-Alfiyah", Familiar: NahwuGolem },
-  'ushul-amr': { aura: '#f59e0b', glow: 'rgba(245,158,11,0.6)', title: 'Pemegang Mizan Al-Qadhi', Familiar: UshulSphinx },
+  'balaghah-majaz': { aura: '#10b981', glow: 'rgba(16,185,129,0.55)', title: 'Penjaga Kitab Al-Bayan' },
+  'nahwu-fail': { aura: '#38bdf8', glow: 'rgba(56,189,248,0.55)', title: "Pemanggil Ra'du Al-Alfiyah" },
+  'ushul-amr': { aura: '#f59e0b', glow: 'rgba(245,158,11,0.6)', title: 'Pemegang Mizan Al-Qadhi' },
 };
-const CUSTOM_FINAL_BOSS_LOOK = { aura: '#c084fc', glow: 'rgba(192,132,252,0.55)', title: 'Penguji Muqarrar Mandiri', Familiar: BalaghahWingedTome };
+const CUSTOM_FINAL_BOSS_LOOK = { aura: '#c084fc', glow: 'rgba(192,132,252,0.55)', title: 'Penguji Muqarrar Mandiri' };
 export const getFinalBossLook = (bossType) => FINAL_BOSS_LOOKS[bossType] || CUSTOM_FINAL_BOSS_LOOK;
 
-export function FinalBossFamiliar({ bossType, isAttack = false, isHit = false, className = '' }) {
-  // Final boss preset sudah punya model voxel sendiri lengkap dengan barang bawaannya; pendamping hanya untuk
-  // muqarrar unggahan yang masih memakai sprite Syaikh Kabir.
-  if (hasVoxelFinalBoss(bossType)) return null;
-  const { Familiar } = getFinalBossLook(bossType);
-  return (
-    <div className={`pointer-events-none animate-bookLevitate [&_svg]:!w-full [&_svg]:!h-full ${className}`}>
-      <Familiar isAttack={isAttack} isHit={isHit} />
-    </div>
-  );
+export function FinalBossFamiliar() {
+  // Pendamping (buku bersayap bermata satu, golem, sphinx) dihapus: bentuknya mudah disalahpahami sebagai simbol
+  // yang tidak pantas (mata satu, patung). Penguji tampil sebagai sosok syaikh saja.
+  return null;
 }
 
 /* Potret final boss untuk kartu, peta, dan prolog: sprite voxel + pendamping + cahaya aura khas maddah. */
