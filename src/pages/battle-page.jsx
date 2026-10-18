@@ -18,6 +18,7 @@ import {
   getFinalBossLook,
   getArenaTheme
 } from '../components/battle-sprites.jsx';
+import { PixelIcon, ItemSlot, IconText, EmojiIcon } from '../components/pixel-icons.jsx';
 
 /* =========================================================================
    TALQEEH — ARENA IMTIHAN (تحدي المقررات)
@@ -1577,7 +1578,7 @@ function ExamTipBlock({ tip, translation = null, compact = false }) {
       {/* Header Bar */}
       <div className="flex items-center justify-between border-b border-amber-500/25 pb-2">
         <div className="flex items-center gap-2">
-          <span className="text-base sm:text-lg">✍️</span>
+          <span className="text-base sm:text-lg"><PixelIcon name="quill" className="w-[1.15em] h-[1.15em]" /></span>
           <span className="font-mono text-xs sm:text-[13px] font-bold text-amber-300 tracking-wide uppercase">
             {label}
           </span>
@@ -1629,7 +1630,7 @@ function ExamTipBlock({ tip, translation = null, compact = false }) {
       {/* Footer Hint */}
       <div className="flex items-center justify-between text-[11px] text-amber-300/70 font-mono pt-0.5">
         <span className="flex items-center gap-1">
-          <span>💡</span>
+          <span><PixelIcon name="bulb" className="w-[1.15em] h-[1.15em]" /></span>
           <span>Tuliskan rumus ibarat ini di lembar ujian untuk nilai Mumtaz.</span>
         </span>
         <span className="font-arabic text-xs sm:text-sm text-amber-400 font-medium" dir="rtl">صِيغَةُ الْإِجَابَةِ النَّمُوذَجِيَّة</span>
@@ -1868,12 +1869,12 @@ function applyAiStory(set, story) {
    Status dihitung dari statistik duel: salah jawab, item terpakai, bantuan (Qamus/Khulashah/Halaqah), combo, HP. */
 const MISSION_BONUS_EXP = 15;
 const MISSION_DEFS = {
-  flawless: { icon: '💎', label: 'Tanpa Cela', desc: 'Jawab semua soal tanpa salah' },
-  noItems: { icon: '🎒', label: 'Bekal Utuh', desc: 'Menang tanpa memakai item tas' },
-  noHelp: { icon: '🧠', label: 'Mandiri', desc: 'Tanpa Qamus, Khulashah, atau AI Halaqah' },
-  combo2: { icon: '🔥', label: 'Hujjah Beruntun', desc: 'Capai combo x2', combo: 2 },
-  combo3: { icon: '⚡', label: 'Hujjah Mutawatirah', desc: 'Capai combo x3', combo: 3 },
-  hp70: { icon: '❤️', label: 'Tetap Tegar', desc: 'Menang dengan HP minimal 70' },
+  flawless: { icon: 'diamond', label: 'Tanpa Cela', desc: 'Jawab semua soal tanpa salah' },
+  noItems: { icon: 'chest', label: 'Bekal Utuh', desc: 'Menang tanpa memakai item tas' },
+  noHelp: { icon: 'torch', label: 'Mandiri', desc: 'Tanpa Qamus, Khulashah, atau AI Halaqah' },
+  combo2: { icon: 'fire', label: 'Hujjah Beruntun', desc: 'Capai combo x2', combo: 2 },
+  combo3: { icon: 'bolt', label: 'Hujjah Mutawatirah', desc: 'Capai combo x3', combo: 3 },
+  hp70: { icon: 'heart', label: 'Tetap Tegar', desc: 'Menang dengan HP minimal 70' },
 };
 function getStageMissions(stage, quizLength) {
   const level = Number(stage?.levelNumber || stage?.id || 1);
@@ -2041,7 +2042,7 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
             }`}
             title="Ubah kecepatan scene (1x Normal / 2x Cepat)"
           >
-            <span>⚡</span>
+            <span><PixelIcon name="bolt" className="w-[1.15em] h-[1.15em]" /></span>
             <span>{speed === 2 ? '2x CEPAT' : '1x NORMAL'}</span>
           </button>
 
@@ -2157,19 +2158,19 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
                       ? 'bg-amber-500/25 border-amber-400/60 text-amber-300'
                       : 'bg-rose-500/25 border-rose-400/60 text-rose-300'
                   }`}>
-                    <span>{isPlayer ? '⚔️' : '⚠️'}</span>
+                    <PixelIcon name={isPlayer ? 'sword' : 'warning'} className="w-[1.15em] h-[1.15em]" />
                     <span>{isPlayer ? 'JURUS KELAS ATAS AL-AZHAR' : 'SERANGAN BALIK MUQARRAR'}</span>
                   </span>
 
                   {cutscene.streak >= 2 && isPlayer && (
                     <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-red-600 via-amber-500 to-orange-400 text-black font-mono text-[10px] sm:text-xs font-black animate-pulse shadow-md">
-                      🔥 COMBO x{cutscene.streak} HUJJAH
+                      <PixelIcon name="fire" className="w-[1.15em] h-[1.15em]" /> COMBO x{cutscene.streak} HUJJAH
                     </span>
                   )}
 
                   {cutscene.isFinisher && isPlayer && (
                     <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-200 text-black font-mono text-[10px] sm:text-xs font-black animate-bounce shadow-md">
-                      👑 SERANGAN TERAKHIR
+                      <PixelIcon name="crown" className="w-[1.15em] h-[1.15em]" /> SERANGAN TERAKHIR
                     </span>
                   )}
                 </div>
@@ -2190,7 +2191,7 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
                 <p className={`text-xs sm:text-sm font-mono font-medium flex items-center gap-1.5 ${
                   isPlayer ? 'text-emerald-300' : 'text-rose-200/90'
                 }`}>
-                  <span>✦</span>
+                  <span><PixelIcon name="sparkle" className="w-[1.15em] h-[1.15em]" /></span>
                   <span>{cutscene.subtitle}</span>
                 </p>
               </div>
@@ -2217,7 +2218,7 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
               }`} />
               {/* Spark Runes */}
               <div className="text-4xl animate-sparkBurst">
-                {isPlayer ? '✨ ⚔️ ✦' : '💥 ⚡ ✦'}
+                <span className="inline-flex gap-1">{(isPlayer ? ['sparkle', 'sword', 'sparkle'] : ['boom', 'bolt', 'boom']).map((n, i) => <PixelIcon key={i} name={n} className="w-[1em] h-[1em]" />)}</span>
               </div>
             </div>
 
@@ -2236,13 +2237,11 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
                   ? 'bg-black/90 border-amber-400 text-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.6)] animate-pulse'
                   : 'bg-black/90 border-rose-500 text-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.6)]'
               }`}>
-                <span>{isPlayer ? '⚡' : '💥'}</span>
-                <span>
-                  {isPlayer
+                <PixelIcon name={isPlayer ? 'bolt' : 'boom'} className="w-[1.15em] h-[1.15em]" />
+                <IconText text={isPlayer
                     ? (cutscene.isFinisher ? '💥 FINAL FINISHER HIT — BOSS TAKLUK!' : (cutscene.streak >= 2 ? `🔥 COMBO x${cutscene.streak} HUJJAH MUTAWATIRAH!` : '⚡ CRITICAL HIT — HUJJAH QATH\'IYYAH!'))
-                    : (cutscene.shieldAbsorbed ? '🛡️ TAMENG DIFA\' MENAHAN 50% DAMAGE!' : '💥 GUNCANGAN SYUBHAT IBARAT!')}
-                </span>
-                <span>{isPlayer ? '⚡' : '💥'}</span>
+                    : (cutscene.shieldAbsorbed ? '🛡️ TAMENG DIFA\' MENAHAN 50% DAMAGE!' : '💥 MAS\'ALAH MUSYKILAH!')} />
+                <PixelIcon name={isPlayer ? 'bolt' : 'boom'} className="w-[1.15em] h-[1.15em]" />
               </div>
             </div>
 
@@ -2262,7 +2261,7 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
 
                 {/* Comic Emotion Emote Badge hovering right beside character head */}
                 <div className="absolute -top-3 -right-3 sm:-right-8 px-2.5 py-1 rounded-full bg-rose-600 border-2 border-white text-base sm:text-2xl shadow-[0_0_15px_rgba(244,63,94,0.9)] animate-bounce font-black flex items-center gap-1.5 z-40">
-                  <span>{reaction.emoji || (isPlayer ? '💥⚡' : '😵‍💫💔')}</span>
+                  <EmojiIcon text={reaction.emoji || (isPlayer ? '💥' : '💔')} className="w-[1.2em] h-[1.2em]" />
                   <span className="font-mono text-[10px] sm:text-xs text-white uppercase tracking-wider hidden sm:inline">
                     {isPlayer ? 'KENA HIT!' : 'OUCH!'}
                   </span>
@@ -2279,7 +2278,7 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
                   {/* Badge row: Target Name + Impact Status */}
                   <div className="flex items-center justify-center gap-2 mb-1 flex-wrap">
                     <span className="px-2 py-0.5 rounded bg-rose-500/30 border border-rose-400/80 font-mono text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-rose-300 flex items-center gap-1 animate-pulse">
-                      <span>💢</span>
+                      <span><PixelIcon name="boom" className="w-[1.15em] h-[1.15em]" /></span>
                       <span>{victimName}</span>
                     </span>
                     <span className="px-2 py-0.5 rounded bg-amber-500/25 border border-amber-400/60 font-mono text-[9px] sm:text-[11px] font-bold text-amber-300">
@@ -2298,9 +2297,9 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
 
                   {/* Subtitle Lore */}
                   <p className="mt-0.5 text-[10px] sm:text-xs text-white/70 font-mono truncate">
-                    {isPlayer
+                    <IconText iconClassName="w-3.5 h-3.5" text={isPlayer
                       ? (cutscene.isFinisher ? '💥 Dalil pamungkas melumpuhkan pertahanan lawan secara total!' : (cutscene.streak >= 2 ? `🔥 Rangkaian dalil beruntun (Combo x${cutscene.streak}) mengguncang konsentrasi!` : '⚡ Hujjah qath\'iyyah menembus pertahanan lawan!'))
-                      : (cutscene.shieldAbsorbed ? '🛡️ Tameng Ahwah Mazbut berhasil menyerap 50% guncangan syubhat!' : '💔 Darah Thalib berkurang! Ibârah keliru mengguncang hafalan kaidah!')}
+                      : (cutscene.shieldAbsorbed ? '🛡️ Tameng Ahwah Mazbut berhasil menahan 50% serangan!' : '💔 HP Thalib berkurang — cek lagi ibarat & kaidahnya!')} />
                   </p>
                 </div>
               </div>
@@ -2660,7 +2659,7 @@ export default function BattlePage() {
   useEffect(() => {
     if (!bossEnraged || enragedSeenRef.current) return;
     enragedSeenRef.current = true;
-    setMissionToast({ icon: '😡', text: 'Penguji menaikkan tingkat ujian — tetap fokus!', tone: 'failed' });
+    setMissionToast({ icon: 'warning', text: 'Penguji menaikkan tingkat ujian — tetap fokus!', tone: 'failed' });
     const t = setTimeout(() => setMissionToast(null), 2600);
     return () => clearTimeout(t);
   }, [bossEnraged]);
@@ -2677,7 +2676,7 @@ export default function BattlePage() {
       if (st === 'active' || missionSeenRef.current[id] === st) continue;
       missionSeenRef.current[id] = st;
       const def = MISSION_DEFS[id];
-      setMissionToast({ icon: st === 'done' ? '✅' : '❌', text: `${st === 'done' ? 'Misi tuntas' : 'Misi gagal'}: ${def.icon} ${def.label}`, tone: st });
+      setMissionToast({ icon: st === 'done' ? 'check' : 'cross', text: `${st === 'done' ? 'Misi tuntas' : 'Misi gagal'}: ${def.label}`, tone: st });
       if (st === 'done') sfx.playCombo?.(3); else sfx.playBip?.(220);
       const t = setTimeout(() => setMissionToast(null), 2600);
       return () => clearTimeout(t);
@@ -3963,9 +3962,9 @@ export default function BattlePage() {
 
   // Taqdir kalkulator
   const calculateTaqdir = () => {
-    if (playerHp >= 80) return { title: 'Mumtaz Ma\'a Martabah Asy-Syaraf', stars: '⭐⭐⭐', color: 'text-amber-300' };
-    if (playerHp >= 60) return { title: 'Jayyid Jiddan', stars: '⭐⭐', color: 'text-emerald-400' };
-    if (playerHp >= 40) return { title: 'Jayyid', stars: '⭐', color: 'text-blue-300' };
+    if (playerHp >= 80) return { title: 'Mumtaz Ma\'a Martabah Asy-Syaraf', stars: '★★★', color: 'text-amber-300' };
+    if (playerHp >= 60) return { title: 'Jayyid Jiddan', stars: '★★', color: 'text-emerald-400' };
+    if (playerHp >= 40) return { title: 'Jayyid', stars: '★', color: 'text-blue-300' };
     return { title: 'Maqbul', stars: '✓', color: 'text-zinc-300' };
   };
 
@@ -4041,7 +4040,7 @@ export default function BattlePage() {
               }`}
               title={audioMuted ? 'Aktifkan Suara (M)' : 'Bisukan Suara (M)'}
             >
-              <Icon name={audioMuted ? 'volumeOff' : 'volume'} className="w-4 h-4" />
+              <PixelIcon name={audioMuted ? 'mute' : 'note'} className="w-4 h-4" />
               <span className="hidden sm:inline font-mono">{audioMuted ? 'MUTE' : '8-BIT SFX'}</span>
             </button>
 
@@ -4052,7 +4051,7 @@ export default function BattlePage() {
                 className="btn border border-emerald-500/30 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 font-semibold text-xs p-2 sm:px-3.5 rounded-lg transition flex items-center gap-1.5"
                 title="Buka Ruang Muthola'ah"
               >
-                <Icon name="book" className="w-3.5 h-3.5" />
+                <PixelIcon name="book" className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Ruang Muthola'ah</span>
               </button>
             )}
@@ -4061,7 +4060,7 @@ export default function BattlePage() {
                 onClick={() => setPhase('map')}
                 className="btn bg-gradient-to-r from-amber-500 to-emerald-500 text-black font-semibold text-xs px-3.5 py-2 rounded-lg shadow-lg shadow-emerald-500/20 hover:brightness-110 active:scale-95 transition flex items-center gap-1.5"
               >
-                <span>🗺️</span>
+                <span><PixelIcon name="map" className="w-[1.15em] h-[1.15em]" /></span>
                 <span><span className="hidden sm:inline">Peta Level </span>➔</span>
               </button>
             )}
@@ -4070,7 +4069,7 @@ export default function BattlePage() {
                 onClick={() => startBattle(activeStage)}
                 className="btn bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-semibold text-xs px-3.5 py-2 rounded-lg shadow-lg shadow-emerald-500/20 hover:brightness-110 active:scale-95 transition flex items-center gap-1.5"
               >
-                <Icon name="swords" className="w-4 h-4" />
+                <PixelIcon name="sword" className="w-4 h-4" />
                 <span>Mulai<span className="hidden sm:inline"> Duel</span></span>
               </button>
             )}
@@ -4087,7 +4086,7 @@ export default function BattlePage() {
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-xl bg-black/70 border border-amber-400 flex items-center justify-center text-2xl shadow shrink-0">
-                  ⚔️
+                  <PixelIcon name="sword" className="w-[1.15em] h-[1.15em]" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-0.5">
@@ -4126,10 +4125,10 @@ export default function BattlePage() {
           const streakRec = userProgress?.streakRecord || 0;
           const hasMutholaah = !!userProgress?.studyCompleted;
           const quests = [
-            { icon: '🏛️', title: 'Penakluk 3 Muqarrar', desc: 'Kalahkan seluruh Boss Diktat resmi (Balaghah, Nahwu, dan Ushul Fiqh).', done: bossesWon >= 3, status: `${bossesWon}/3 TUNTAS`, exp: 150, reward: 'Gelar Mutafawwiq', tone: 'emerald' },
-            { icon: '🌟', title: 'Predikat Mumtaz Syaraf', desc: 'Menangkan pertarungan dengan sisa HP ≥ 80% untuk predikat kehormatan tertinggi.', done: hasMumtaz, status: 'TARGET: HP ≥ 80%', exp: 100, reward: 'Wisam Mumtaz', tone: 'amber' },
-            { icon: '🔥', title: 'Hujjah Mutawatirah x4', desc: 'Bangun rantai serangan combo 4 jawaban benar berurutan tanpa salah.', done: streakRec >= 4, status: `REKOR: x${streakRec}/4`, exp: 75, reward: 'Fashih Lisan', tone: 'rose' },
-            { icon: '📖', title: "Muthola'ah Terverifikasi", desc: "Khatamkan telaah ringkasan materi & kartu hafalan di Ruang Muthola'ah (Fase 1).", done: hasMutholaah, status: '0/1 KHATAM', exp: 50, reward: 'Perisai Ijtihad', tone: 'blue' },
+            { icon: 'gate', title: 'Penakluk 3 Muqarrar', desc: 'Kalahkan seluruh Boss Diktat resmi (Balaghah, Nahwu, dan Ushul Fiqh).', done: bossesWon >= 3, status: `${bossesWon}/3 TUNTAS`, exp: 150, reward: 'Gelar Mutafawwiq', tone: 'emerald' },
+            { icon: 'star', title: 'Predikat Mumtaz Syaraf', desc: 'Menangkan pertarungan dengan sisa HP ≥ 80% untuk predikat kehormatan tertinggi.', done: hasMumtaz, status: 'TARGET: HP ≥ 80%', exp: 100, reward: 'Wisam Mumtaz', tone: 'amber' },
+            { icon: 'fire', title: 'Hujjah Mutawatirah x4', desc: 'Bangun rantai serangan combo 4 jawaban benar berurutan tanpa salah.', done: streakRec >= 4, status: `REKOR: x${streakRec}/4`, exp: 75, reward: 'Fashih Lisan', tone: 'rose' },
+            { icon: 'book', title: "Muthola'ah Terverifikasi", desc: "Khatamkan telaah ringkasan materi & kartu hafalan di Ruang Muthola'ah (Fase 1).", done: hasMutholaah, status: '0/1 KHATAM', exp: 50, reward: 'Perisai Ijtihad', tone: 'blue' },
           ];
           const questTone = {
             emerald: 'bg-emerald-950/40 border-emerald-400/50 text-emerald-300',
@@ -4148,7 +4147,8 @@ export default function BattlePage() {
             setPhase('map');
             sfx.playBip(520);
           };
-          const panelTitle = { profile: '🎓 PROFIL THALIB', quests: '🎯 PAPAN MISI', paste: '📝 PASTE CATATAN' }[menuPanel];
+          const panelTitle = { profile: 'PROFIL THALIB', quests: 'PAPAN MISI', paste: 'PASTE CATATAN' }[menuPanel];
+          const panelIcon = { profile: 'scroll', quests: 'target', paste: 'quill' }[menuPanel];
 
           return (
             <div className="relative h-[100dvh] w-full overflow-hidden flex flex-col select-none animate-fadeIn">
@@ -4175,7 +4175,7 @@ export default function BattlePage() {
                     title="Lihat profil & koleksi wisam"
                   >
                     <span className="relative w-8 h-8 shrink-0 bg-black/60 border border-amber-400/50 flex items-center justify-center text-lg">
-                      {rank.badge}
+                      <EmojiIcon text={rank.badge} className="w-5 h-5" />
                     </span>
                     <span className="min-w-0">
                       <span className="block text-[11px] sm:text-xs font-bold text-white truncate max-w-[7.5rem] sm:max-w-[12rem]">{profile?.name || 'Thalib Azhar'}</span>
@@ -4195,7 +4195,7 @@ export default function BattlePage() {
                     className={`${PX_BTN} ${PX_WOOD} relative h-9 px-2.5 text-xs`}
                     title="Papan target & misi"
                   >
-                    <span>🎯</span>
+                    <span><PixelIcon name="target" className="w-[1.15em] h-[1.15em]" /></span>
                     <span className="hidden sm:inline">Misi</span>
                     <span className="text-[10px] text-amber-300">{questsDone}/4</span>
                   </button>
@@ -4215,7 +4215,7 @@ export default function BattlePage() {
                     title={audioMuted ? 'Aktifkan Suara' : 'Bisukan Suara'}
                     aria-label="Suara"
                   >
-                    <Icon name={audioMuted ? 'volumeOff' : 'volume'} className="w-4 h-4" />
+                    <PixelIcon name={audioMuted ? 'mute' : 'note'} className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -4223,7 +4223,7 @@ export default function BattlePage() {
               {/* Judul game */}
               <div className="relative z-10 text-center px-4 pt-3 sm:pt-6 shrink-0">
                 <div className="inline-block px-2.5 py-0.5 bg-[#3a2614] text-amber-300 border-2 border-t-[#6b4725] border-l-[#6b4725] border-b-[#1f1308] border-r-[#1f1308] shadow-[1px_1px_0_#000] font-mono text-[10px] font-bold uppercase tracking-wider">
-                  ⚔️ Arena Imtihan • Muqarrar Al-Azhar
+                  <PixelIcon name="sword" className="w-[1.15em] h-[1.15em]" /> Arena Imtihan • Muqarrar Al-Azhar
                 </div>
                 <h2 className="mt-2 text-xl sm:text-3xl font-mono font-black text-white drop-shadow-[2px_2px_0_#000] leading-tight">
                   PILIH MUQARRAR
@@ -4278,8 +4278,8 @@ export default function BattlePage() {
                             ))}
                           </div>
                           <div className="mt-1 flex items-center justify-between text-[10px] font-mono">
-                            <span className="text-amber-300/90">{isAllCleared ? '🏆 KHATAM' : `Tahap ${stageProg.highestUnlocked}/${totalStages}`}</span>
-                            <span className="text-amber-400">⭐ {totalStars}/{totalStages * 3}</span>
+                            <span className="text-amber-300/90">{isAllCleared ? <span className="inline-flex items-center gap-1"><PixelIcon name="trophy" className="w-3.5 h-3.5" />KHATAM</span> : `Tahap ${stageProg.highestUnlocked}/${totalStages}`}</span>
+                            <span className="text-amber-400"><PixelIcon name="star" className="w-[1.15em] h-[1.15em]" /> {totalStars}/{totalStages * 3}</span>
                           </div>
                           <span className={`${PX_BTN} ${PX_GREEN} mt-2 py-2 text-xs`}>
                             {stageProg.highestUnlocked > 1 || totalStars > 0 ? 'LANJUTKAN ▸' : 'MULAI PETUALANGAN ▸'}
@@ -4295,7 +4295,7 @@ export default function BattlePage() {
               <div className={`relative z-10 mx-2 mb-[max(0.5rem,env(safe-area-inset-bottom))] sm:mx-auto sm:mb-4 sm:w-[min(52rem,calc(100%-2rem))] p-2.5 sm:p-4 ${GAME_BOX}`}>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-4">
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    <div className="hidden sm:flex w-11 h-11 shrink-0 border border-amber-400/50 bg-amber-500/15 items-center justify-center text-2xl">👳‍♂️</div>
+                    <div className="hidden sm:flex w-11 h-11 shrink-0 border border-amber-400/50 bg-amber-500/15 items-center justify-center overflow-hidden"><img src="/assets/npc-musaid-voxel.png" alt="" className="w-full h-full object-contain" /></div>
                     <p className="text-[11px] sm:text-sm text-white/85 leading-snug">
                       <span className="font-bold text-amber-300">Syaikh: </span>
                       Punya diktat sendiri? Unggah atau tempel catatanmu, akan kuubah jadi dunia battle{isLibraryMember ? ' lengkap dengan cerita AI.' : '.'}
@@ -4309,14 +4309,14 @@ export default function BattlePage() {
                       className={`${PX_BTN} ${PX_GREEN} px-3 py-2 text-xs`}
                       title={isLibraryMember ? 'Upload PDF, Word, atau teks diktatmu' : 'Khusus member paket Library — masuk atau gabung dulu'}
                     >
-                      <Icon name={isLibraryMember ? 'upload' : 'crown'} className="w-3.5 h-3.5" />
+                      <PixelIcon name={isLibraryMember ? 'chest' : 'crown'} className="w-3.5 h-3.5" />
                       <span>{uploadBusy ? 'Membaca...' : 'Upload Diktat'}</span>
                     </button>
                     <button
                       onClick={() => setMenuPanel('paste')}
                       className={`${PX_BTN} ${PX_WOOD} px-3 py-2 text-xs`}
                     >
-                      <span>📝</span>
+                      <span><PixelIcon name="quill" className="w-[1.15em] h-[1.15em]" /></span>
                       <span>Paste Catatan</span>
                     </button>
                   </div>
@@ -4347,13 +4347,13 @@ export default function BattlePage() {
                     className={`${GAME_BOX} bg-[#080d0a]/95 w-full sm:w-[min(44rem,100%)] max-h-[85dvh] flex flex-col pb-[env(safe-area-inset-bottom)]`}
                   >
                     <div className="flex items-center justify-between gap-2 px-3 sm:px-4 py-2.5 border-b-2 border-[#3d3221]">
-                      <span className="font-mono text-xs sm:text-sm font-black text-amber-300 tracking-wider">{panelTitle}</span>
+                      <span className="font-mono text-xs sm:text-sm font-black text-amber-300 tracking-wider inline-flex items-center gap-2"><PixelIcon name={panelIcon} className="w-4 h-4" />{panelTitle}</span>
                       <button
                         onClick={() => setMenuPanel(null)}
                         className={`${PX_BTN} ${PX_STONE} w-8 h-8`}
                         aria-label="Tutup panel"
                       >
-                        <Icon name="x" className="w-4 h-4" />
+                        <PixelIcon name="cross" className="w-4 h-4" />
                       </button>
                     </div>
                     <div className="overflow-y-auto overscroll-contain p-3 sm:p-4 select-text">
@@ -4362,7 +4362,7 @@ export default function BattlePage() {
                           <div className="flex items-center gap-3.5">
                             <div className="relative shrink-0">
                               <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-amber-500/20 to-emerald-500/20 border-2 border-amber-400/50 flex items-center justify-center text-3xl">
-                                {rank.badge}
+                                <EmojiIcon text={rank.badge} className="w-7 h-7" />
                               </div>
                               <span className="absolute -bottom-1 -right-1 px-1.5 py-0.5 bg-black/90 border border-amber-400/60 text-[9px] font-mono font-black text-amber-300">
                                 {rank.rankCode}
@@ -4373,15 +4373,15 @@ export default function BattlePage() {
                               <h3 className="text-base sm:text-lg font-bold text-white truncate">{profile?.name || 'Thalib Azhar'}</h3>
                               <div className="text-xs font-serif text-amber-200/80">{rank.title}</div>
                               <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 text-[11px] text-white/60 mt-1 font-mono">
-                                <span>🔥 Rekor Hujjah: <strong className="text-amber-300">x{streakRec}</strong></span>
-                                <span>🏆 Boss Takluk: <strong className="text-emerald-300">{bossesWon}/3</strong></span>
+                                <span><PixelIcon name="fire" className="w-[1.15em] h-[1.15em]" /> Rekor Hujjah: <strong className="text-amber-300">x{streakRec}</strong></span>
+                                <span><PixelIcon name="trophy" className="w-[1.15em] h-[1.15em]" /> Boss Takluk: <strong className="text-emerald-300">{bossesWon}/3</strong></span>
                               </div>
                             </div>
                           </div>
                           <div className="space-y-1.5">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between text-[11px] font-mono gap-0.5">
                               <span className="text-amber-300 font-semibold">
-                                🎯 {rank.nextExp ? `Butuh ${Math.max(0, rank.nextExp - exp)} EXP lagi menuju ${rank.nextTitle}` : "Maqam Puncak: 'Alim Kabir / Faqih Azhari (Mumtaz)"}
+                                <PixelIcon name="target" className="w-[1.15em] h-[1.15em]" /> {rank.nextExp ? `Butuh ${Math.max(0, rank.nextExp - exp)} EXP lagi menuju ${rank.nextTitle}` : "Maqam Puncak: 'Alim Kabir / Faqih Azhari (Mumtaz)"}
                               </span>
                               <span className="text-white/60">{exp} {rank.nextExp ? `/ ${rank.nextExp} EXP (${rankPct}%)` : 'EXP (Maksimal)'}</span>
                             </div>
@@ -4390,7 +4390,7 @@ export default function BattlePage() {
                             </div>
                           </div>
                           <div>
-                            <div className="text-[10px] font-mono uppercase tracking-wider text-amber-400/80 mb-2 font-bold">🎖️ Koleksi Wisam Muqarrar</div>
+                            <div className="text-[10px] font-mono uppercase tracking-wider text-amber-400/80 mb-2 font-bold"><PixelIcon name="medal" className="w-[1.15em] h-[1.15em]" /> Koleksi Wisam Muqarrar</div>
                             <div className="grid grid-cols-3 gap-2">
                               {PRESETS.map((p) => {
                                 const completed = userProgress?.completedBosses?.[p.id];
@@ -4400,7 +4400,7 @@ export default function BattlePage() {
                                     className={`p-2 border-2 flex flex-col items-center text-center ${completed ? 'border-amber-400/60 bg-gradient-to-b from-amber-500/20 to-black/60' : 'border-white/10 bg-black/40 opacity-50'}`}
                                     title={completed ? `${p.title} (${completed.taqdir})` : `${p.title} (Belum ditaklukkan)`}
                                   >
-                                    <span className="text-2xl mb-0.5">{completed ? '🎖️' : '🔒'}</span>
+                                    <PixelIcon name={completed ? 'medal' : 'lock'} className="w-7 h-7 mb-0.5" />
                                     <span className="text-[10px] font-mono font-bold text-white truncate max-w-full">{p.id.split('-')[0].toUpperCase()}</span>
                                     <span className="text-[9px] text-amber-300/80 font-mono">{completed ? completed.stars : 'TERKUNCI'}</span>
                                   </div>
@@ -4419,9 +4419,9 @@ export default function BattlePage() {
                               <div key={q.title} className={`p-3 border-2 flex flex-col justify-between ${q.done ? questTone[q.tone] : 'bg-black/50 border-white/10'}`}>
                                 <div>
                                   <div className="flex items-center justify-between mb-1.5">
-                                    <span className="text-xl">{q.icon}</span>
+                                    <PixelIcon name={q.icon} className="w-7 h-7" />
                                     <span className={`px-2 py-0.5 font-mono text-[9px] font-bold uppercase ${q.done ? 'bg-black/40 border border-current' : 'bg-white/10 text-white/50'}`}>
-                                      {q.done ? '✅ SELESAI' : q.status}
+                                      {q.done ? <IconText text="✅ SELESAI" iconClassName="w-3.5 h-3.5" /> : q.status}
                                     </span>
                                   </div>
                                   <h4 className="font-bold text-xs sm:text-sm text-white mb-0.5">{q.title}</h4>
@@ -4440,7 +4440,7 @@ export default function BattlePage() {
                       {menuPanel === 'paste' && (
                         !isLibraryMember ? (
                           <div className="border-2 border-amber-500/25 bg-amber-500/5 p-4 text-center">
-                            <div className="text-sm font-semibold text-amber-200 mb-1">🔒 Khusus member paket Library</div>
+                            <div className="text-sm font-semibold text-amber-200 mb-1"><PixelIcon name="lock" className="w-[1.15em] h-[1.15em]" /> Khusus member paket Library</div>
                             <p className="text-xs text-white/60 mb-3">
                               Tiga diktat contoh bebas dimainkan siapa saja. Untuk memakai diktat atau catatanmu sendiri (beserta cerita yang ditulis AI sesuai materinya), masuk dengan akun member Library ke atas.
                             </p>
@@ -4513,9 +4513,9 @@ export default function BattlePage() {
             sfx.playStep();
           };
           const weatherOptions = [
-            { id: 'night', icon: '🌙', label: 'Malam Hening', tone: 'bg-[#3a2614] text-amber-300 border-amber-400/60', freq: 520 },
-            { id: 'rain', icon: '🌧️', label: 'Hujan Kairo', tone: 'bg-[#122838] text-cyan-300 border-cyan-400/60', freq: 440 },
-            { id: 'aurora', icon: '✨', label: 'Aurora Ruwaq', tone: 'bg-[#1b3a28] text-emerald-300 border-emerald-400/60', freq: 660 },
+            { id: 'night', icon: 'moon', label: 'Malam Hening', tone: 'bg-[#3a2614] text-amber-300 border-amber-400/60', freq: 520 },
+            { id: 'rain', icon: 'rain', label: 'Hujan Kairo', tone: 'bg-[#122838] text-cyan-300 border-cyan-400/60', freq: 440 },
+            { id: 'aurora', icon: 'sparkle', label: 'Aurora Ruwaq', tone: 'bg-[#1b3a28] text-emerald-300 border-emerald-400/60', freq: 660 },
           ];
           const nextWeather = weatherOptions[(weatherOptions.findIndex(w => w.id === weatherMode) + 1) % weatherOptions.length];
           const currentWeather = weatherOptions.find(w => w.id === weatherMode) || weatherOptions[0];
@@ -4702,7 +4702,7 @@ export default function BattlePage() {
                             ? 'bg-[#1c1c22] border-stone-600 text-stone-400'
                             : 'bg-[#2b2413] border-amber-400 text-amber-300 animate-bounce'
                         }`}>
-                          <span>{chestClaimed ? '📦' : '✨ 🎁'}</span>
+                          <PixelIcon name={chestClaimed ? 'chest' : 'gift'} className="w-[1.15em] h-[1.15em]" />
                           <span className="drop-shadow-[1px_1px_0_#000]">{chestClaimed ? 'Peti Terbuka' : 'Peti Hikmah Azhar!'}</span>
                         </div>
 
@@ -4746,7 +4746,7 @@ export default function BattlePage() {
                         </div>
                         {/* Oak Wood Hanging Sign */}
                         <div className="px-2.5 py-1 bg-[#784d28] text-[#fff7d6] text-[9px] sm:text-[10px] font-mono font-black uppercase tracking-wider shadow-[3px_3px_0_#000] flex items-center gap-1.5 border-2 border-t-[#ba7e44] border-l-[#ba7e44] border-b-[#3d2411] border-r-[#3d2411] animate-bounce">
-                          <span className="text-sm">🎓</span>
+                          <PixelIcon name="scroll" className="w-4 h-4" />
                           <span className="drop-shadow-[1px_1px_0_#000]">KAMU DI SINI</span>
                         </div>
                         {/* Wooden Arrow Tip */}
@@ -4757,7 +4757,7 @@ export default function BattlePage() {
                           <img
                             src="/assets/thalib-voxel-facing-right.png"
                             alt="Thalib Voxel Pin"
-                            className="w-11 sm:w-14 h-auto object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] animate-pulse"
+                            className="w-11 sm:w-14 h-auto object-contain filter drop-shadow-[0_4px_8px_rgba(0,0,0,0.9)] animate-playerIdle"
                           />
                           <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-8 h-2 bg-black/75 rounded-full blur-[2px]" />
                         </div>
@@ -4817,10 +4817,10 @@ export default function BattlePage() {
                             {/* Inner Voxel Character or Lock */}
                             <div className="flex flex-col items-center justify-center w-full h-full p-1 sm:p-1.5 overflow-hidden">
                               {!isUnlocked ? (
-                                <span className="text-xl sm:text-2xl filter grayscale opacity-75">🔒</span>
+                                <span className="text-xl sm:text-2xl filter grayscale opacity-75"><PixelIcon name="lock" className="w-[1.15em] h-[1.15em]" /></span>
                               ) : isFinal ? (
                                 <div className="relative w-full h-full flex flex-col items-center justify-center">
-                                  <span className="absolute -top-3 sm:-top-4 text-xs sm:text-base animate-bounce z-10 filter drop-shadow">👑</span>
+                                  <span className="absolute -top-3 sm:-top-4 text-xs sm:text-base animate-bounce z-10 filter drop-shadow"><PixelIcon name="crown" className="w-[1.15em] h-[1.15em]" /></span>
                                   <FinalBossPortrait
                                     bossType={activeSet.id}
                                     src={getVoxelSprite(stage.id, activeSet.id)}
@@ -4842,7 +4842,7 @@ export default function BattlePage() {
                             {/* Star Badges for Cleared Stages */}
                             {isCleared && (
                               <div className="absolute -bottom-2.5 px-2 py-0.5 bg-[#121214] border-2 border-t-stone-600 border-l-stone-600 border-b-black border-r-black text-[8px] sm:text-[10px] font-mono text-amber-300 shadow-[2px_2px_0_#000] flex items-center gap-0.5 z-10">
-                                {stars === 3 ? '⭐⭐⭐' : stars === 2 ? '⭐⭐' : '⭐'}
+                                <span className="inline-flex gap-px">{Array.from({ length: stars }, (_, i) => <PixelIcon key={i} name="star" className="w-3 h-3" />)}</span>
                               </div>
                             )}
 
@@ -4868,7 +4868,7 @@ export default function BattlePage() {
                                 ? 'bg-[#18181c] border-stone-600 text-white'
                                 : 'bg-[#101012] border-stone-800 text-white/40'
                             }`}>
-                              {isFinal ? '👑 FINAL BOSS' : `LEVEL ${stage.levelNumber}`}
+                              {isFinal ? <span className="inline-flex items-center gap-1"><PixelIcon name="crown" className="w-3.5 h-3.5" />FINAL BOSS</span> : `LEVEL ${stage.levelNumber}`}
                             </div>
                             <div className="text-[9px] font-mono font-bold text-amber-300 drop-shadow-[1px_1px_0_#000] mt-0.5 hidden sm:block truncate max-w-[120px]">
                               {stage.guardianRankCode || `Rank ${stage.guardianRank}`}
@@ -4893,11 +4893,11 @@ export default function BattlePage() {
                         <span className="hidden sm:inline">Ganti Muqarrar</span>
                       </button>
                       <div className={`${GAME_BOX} min-w-0 px-2.5 py-1`}>
-                        <div className="text-[9px] sm:text-[10px] font-mono font-bold text-emerald-400 truncate">🗺️ {activeSet.maddah}</div>
+                        <div className="text-[9px] sm:text-[10px] font-mono font-bold text-emerald-400 truncate"><PixelIcon name="map" className="w-[1.15em] h-[1.15em]" /> {activeSet.maddah}</div>
                         <div className="text-[11px] sm:text-sm font-mono font-bold text-white truncate max-w-[9rem] sm:max-w-[18rem]">{activeSet.title}</div>
                       </div>
                       <div className={`${GAME_BOX} hidden sm:flex lg:hidden xl:flex flex-col items-center px-2.5 py-1 shrink-0`}>
-                        <span className="text-[11px] font-mono font-black text-amber-300">⭐ {totalStars}/{stages.length * 3}</span>
+                        <span className="text-[11px] font-mono font-black text-amber-300"><PixelIcon name="star" className="w-[1.15em] h-[1.15em]" /> {totalStars}/{stages.length * 3}</span>
                         <span className="text-[9px] font-mono text-emerald-300">TAHAP {highestUnlocked}/{stages.length}</span>
                       </div>
                     </div>
@@ -4909,7 +4909,7 @@ export default function BattlePage() {
                         title={`Cuaca: ${currentWeather.label} (ketuk untuk ganti)`}
                         aria-label="Ganti cuaca"
                       >
-                        {currentWeather.icon}
+                        <PixelIcon name={currentWeather.icon} className="w-5 h-5" />
                       </button>
                       <div className="hidden sm:flex items-center gap-1 bg-[#141418]/90 border-2 border-t-[#3f3f46] border-l-[#3f3f46] border-b-[#000] border-r-[#000] p-1 shadow-[2px_2px_0_#000]">
                         {weatherOptions.map(w => (
@@ -4919,7 +4919,7 @@ export default function BattlePage() {
                             className={`px-2 py-1 text-[10px] font-mono font-bold border transition flex items-center gap-1 ${weatherMode === w.id ? `${w.tone} shadow-[1px_1px_0_#000]` : 'border-transparent text-stone-400 hover:text-white'}`}
                             title={w.label}
                           >
-                            <span>{w.icon}</span>
+                            <PixelIcon name={w.icon} className="w-4 h-4" />
                             <span className="hidden xl:inline">{w.label}</span>
                           </button>
                         ))}
@@ -4929,7 +4929,7 @@ export default function BattlePage() {
                         className={`${PX_BTN} ${PX_GREEN} h-9 px-2.5 text-xs`}
                         title="Buka Ruang Muthola'ah untuk membaca ringkasan materi & flashcard"
                       >
-                        <Icon name="book" className="w-4 h-4" />
+                        <PixelIcon name="book" className="w-4 h-4" />
                         <span className="hidden md:inline lg:hidden xl:inline">Muthola'ah</span>
                       </button>
                       {canNativeFs && (
@@ -4948,7 +4948,7 @@ export default function BattlePage() {
                         title={audioMuted ? 'Aktifkan Suara' : 'Bisukan Suara'}
                         aria-label="Suara"
                       >
-                        <Icon name={audioMuted ? 'volumeOff' : 'volume'} className="w-4 h-4" />
+                        <PixelIcon name={audioMuted ? 'mute' : 'note'} className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -4958,7 +4958,7 @@ export default function BattlePage() {
                 {chestToast && (
                   <div className="absolute top-16 left-1/2 -translate-x-1/2 z-40 max-w-md w-[92%] bg-[#1a140c] border-2 border-amber-400 p-2.5 shadow-[4px_4px_0_#000] text-amber-200 font-mono text-xs text-center animate-fadeIn">
                     <div className="flex items-center justify-center gap-1.5 font-bold mb-0.5 text-amber-300">
-                      <span>📦</span>
+                      <span><PixelIcon name="chest" className="w-[1.15em] h-[1.15em]" /></span>
                       <span>PETI HIKMAH AL-AZHAR</span>
                     </div>
                     <p className="text-[11px] leading-relaxed">{chestToast}</p>
@@ -4966,7 +4966,7 @@ export default function BattlePage() {
                 )}
 
                 <div className="hidden lg:block absolute bottom-3 left-3 z-30 pointer-events-none text-[10px] font-mono font-bold text-white/80 bg-[#1c1c1f]/90 px-2.5 py-1 border-2 border-t-[#3a3a3e] border-l-[#3a3a3e] border-b-[#0d0d0e] border-r-[#0d0d0e] shadow-[2px_2px_0_#000]">
-                  [ ⚔️ KLIK SIMPUL LEVEL • SERET UNTUK MENGGESER PETA ]
+                  [ <PixelIcon name="sword" className="w-3.5 h-3.5 inline-block align-[-2px]" /> KLIK SIMPUL LEVEL • SERET UNTUK MENGGESER PETA ]
                 </div>
               </div>
 
@@ -5000,8 +5000,8 @@ export default function BattlePage() {
                             : 'bg-[#101012] border-stone-800 text-white/40'
                         }`}
                       >
-                        <span>{!unlocked ? '🔒' : stage.isFinal ? '👑' : `LV ${stage.levelNumber}`}</span>
-                        <span className="text-[8px] text-amber-300/90">{stars > 0 ? '⭐'.repeat(stars) : stage.isFinal ? 'BOSS' : '—'}</span>
+                        <span className="inline-flex items-center justify-center">{!unlocked ? <PixelIcon name="lock" className="w-3.5 h-3.5" /> : stage.isFinal ? <PixelIcon name="crown" className="w-4 h-4" /> : `LV ${stage.levelNumber}`}</span>
+                        <span className="text-[8px] text-amber-300/90">{stars > 0 ? <span className="inline-flex gap-px">{Array.from({ length: stars }, (_, i) => <PixelIcon key={i} name="star" className="w-2.5 h-2.5" />)}</span> : stage.isFinal ? 'BOSS' : '—'}</span>
                       </button>
                     );
                   })}
@@ -5036,7 +5036,7 @@ export default function BattlePage() {
                             />
                           )
                         ) : (
-                          <span className="text-2xl grayscale opacity-60">🔒</span>
+                          <span className="text-2xl grayscale opacity-60"><PixelIcon name="lock" className="w-[1.15em] h-[1.15em]" /></span>
                         )}
                       </div>
                     </div>
@@ -5049,20 +5049,20 @@ export default function BattlePage() {
                             ? 'bg-[#0f2e1b] text-emerald-300 border-[#22c55e]'
                             : 'bg-[#18181b] text-white/40 border-stone-700'
                         }`}>
-                          {selectedStage.isFinal ? '👑 FINAL BOSS' : `LEVEL ${selectedStage.levelNumber}`}
+                          {selectedStage.isFinal ? <span className="inline-flex items-center gap-1"><PixelIcon name="crown" className="w-3.5 h-3.5" />FINAL BOSS</span> : `LEVEL ${selectedStage.levelNumber}`}
                         </span>
                         <span className="font-mono text-[9px] px-1.5 py-0.5 bg-[#2b2413] border-2 border-amber-400 text-amber-300 font-bold truncate max-w-[9rem]">
                           {selectedStage.guardianRankCode || selectedStage.guardianRank}
                         </span>
                         {selectedStars > 0 && (
-                          <span className="text-[9px] font-mono font-bold text-amber-300">⭐ {selectedStars}/3</span>
+                          <span className="text-[9px] font-mono font-bold text-amber-300"><PixelIcon name="star" className="w-[1.15em] h-[1.15em]" /> {selectedStars}/3</span>
                         )}
                       </div>
                       <h3 className="mt-1 text-sm lg:text-base font-bold text-white font-mono leading-snug line-clamp-2">{selectedStage.title}</h3>
                       {selectedStage.guardianName && (
                         <div className="text-[11px] font-mono text-emerald-300/90 truncate">Penjaga: {selectedStage.guardianName}</div>
                       )}
-                      <div className="text-[10px] text-white/60 font-mono truncate">📍 {selectedStage.location}</div>
+                      <div className="text-[10px] text-white/60 font-mono truncate"><PixelIcon name="pin" className="w-[1.15em] h-[1.15em]" /> {selectedStage.location}</div>
                     </div>
                   </div>
 
@@ -5092,7 +5092,7 @@ export default function BattlePage() {
                           title={MISSION_DEFS[id].desc}
                           className={`text-[10px] px-2 py-1 border-2 ${doneBefore ? 'border-emerald-500/60 bg-emerald-500/15 text-emerald-200' : 'border-[#2b2b32] bg-[#141418] text-stone-300'}`}
                         >
-                          {doneBefore ? '✅' : MISSION_DEFS[id].icon} {MISSION_DEFS[id].label}
+                          <PixelIcon name={doneBefore ? 'check' : MISSION_DEFS[id].icon} className="w-3.5 h-3.5 inline-block align-[-2px] mr-1" />{MISSION_DEFS[id].label}
                         </span>
                       );
                     })}
@@ -5104,14 +5104,14 @@ export default function BattlePage() {
                       <div className="font-arabic text-sm text-emerald-300/90" dir="rtl">{selectedStage.titleArabic}</div>
                     )}
                     <div className="p-2.5 bg-[#121216] border-2 border-[#2b2b34]">
-                      <div className="text-[10px] text-amber-400 font-bold uppercase mb-0.5">🎯 Kelemahan Kunci</div>
+                      <div className="text-[10px] text-amber-400 font-bold uppercase mb-0.5"><PixelIcon name="target" className="w-[1.15em] h-[1.15em]" /> Kelemahan Kunci</div>
                       <p className="text-stone-300 leading-relaxed">{tactics.weakness}</p>
                     </div>
                     <div className="p-2.5 bg-[#121216] border-2 border-[#2b2b34]">
-                      <div className="text-[10px] text-rose-400 font-bold uppercase mb-0.5">⚠️ Tingkat Bahaya Syubhat</div>
+                      <div className="text-[10px] text-rose-400 font-bold uppercase mb-0.5"><PixelIcon name="warning" className="w-[1.15em] h-[1.15em]" /> Tingkat Bahaya Syubhat</div>
                       <p className="text-stone-300 leading-relaxed">{tactics.danger}</p>
                       <div className="mt-1.5 pt-1.5 border-t border-stone-800 text-[10px] text-emerald-400 flex items-center justify-between gap-2">
-                        <span>💡 Saran Item:</span>
+                        <span><PixelIcon name="bulb" className="w-[1.15em] h-[1.15em]" /> Saran Item:</span>
                         <span className="font-bold text-white bg-black/60 px-1.5 py-0.5 border border-stone-700 truncate">{tactics.recItem}</span>
                       </div>
                     </div>
@@ -5138,15 +5138,15 @@ export default function BattlePage() {
                         onClick={() => launchStage(selectedStage, false)}
                         className={`${PX_BTN} ${PX_GREEN} w-full py-2.5 text-xs sm:text-sm font-black`}
                       >
-                        <Icon name="swords" className="w-4 h-4" />
-                        <span>MULAI LEVEL INI ⚔️</span>
+                        <PixelIcon name="sword" className="w-4 h-4" />
+                        <span>MULAI LEVEL INI</span>
                       </button>
                       <div className="grid grid-cols-2 gap-1.5">
                         <button
                           onClick={() => launchStage(selectedStage, true)}
                           className={`${PX_BTN} ${PX_WOOD} py-2 text-[11px]`}
                         >
-                          <span>📜</span>
+                          <span><PixelIcon name="scroll" className="w-[1.15em] h-[1.15em]" /></span>
                           <span>Prolog</span>
                         </button>
                         <button
@@ -5155,7 +5155,7 @@ export default function BattlePage() {
                           title={isLibraryMember ? 'AI menulis ulang prolog & cerita tiap level sesuai materi ini' : 'Khusus member paket Library'}
                           className={`${PX_BTN} ${PX_VIOLET} py-2 text-[11px]`}
                         >
-                          <span>{storyBusy ? '⏳' : isLibraryMember ? '✨' : '🔒'}</span>
+                          <PixelIcon name={storyBusy ? 'hourglass' : isLibraryMember ? 'sparkle' : 'lock'} className="w-[1.15em] h-[1.15em]" />
                           <span className="truncate">{storyBusy ? 'Menulis...' : activeSet?.prologue?.aiGenerated ? 'Cerita AI Baru' : 'Cerita AI'}</span>
                         </button>
                       </div>
@@ -5175,7 +5175,7 @@ export default function BattlePage() {
                     </>
                   ) : (
                     <div className="px-3 py-2.5 border-2 border-t-[#000] border-l-[#000] border-b-[#3f3f46] border-r-[#3f3f46] bg-[#141418] text-white/50 text-xs font-mono text-center">
-                      🔒 Terkunci — Selesaikan Level {selectedStage.id - 1}
+                      <PixelIcon name="lock" className="w-[1.15em] h-[1.15em]" /> Terkunci — Selesaikan Level {selectedStage.id - 1}
                     </div>
                   )}
                 </div>
@@ -5208,7 +5208,7 @@ export default function BattlePage() {
                 onClick={() => setPhase('map')}
                 className="btn bg-gradient-to-r from-amber-500 to-emerald-500 text-black font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition flex items-center justify-center gap-2"
               >
-                <span>🗺️</span>
+                <span><PixelIcon name="map" className="w-[1.15em] h-[1.15em]" /></span>
                 <span>Peta & Pilih Level ➔</span>
               </button>
             </div>
@@ -5221,7 +5221,7 @@ export default function BattlePage() {
                   studyTab === 'summary' ? 'border-emerald-400 text-emerald-300' : 'border-transparent text-white/50 hover:text-white'
                 }`}
               >
-                <Icon name="book" className="w-4 h-4" />
+                <PixelIcon name="book" className="w-4 h-4" />
                 <span>Khulashah Matan (Poin Inti)</span>
               </button>
               <button
@@ -5230,7 +5230,7 @@ export default function BattlePage() {
                   studyTab === 'terms' ? 'border-emerald-400 text-emerald-300' : 'border-transparent text-white/50 hover:text-white'
                 }`}
               >
-                <Icon name="type" className="w-4 h-4" />
+                <PixelIcon name="quill" className="w-4 h-4" />
                 <span>Mufradat & Ta'rif</span>
               </button>
               <button
@@ -5239,7 +5239,7 @@ export default function BattlePage() {
                   studyTab === 'cards' ? 'border-emerald-400 text-emerald-300' : 'border-transparent text-white/50 hover:text-white'
                 }`}
               >
-                <Icon name="layers" className="w-4 h-4" />
+                <PixelIcon name="map" className="w-4 h-4" />
                 <span>Kartu Hafalan (Flashcard)</span>
               </button>
             </div>
@@ -5333,7 +5333,7 @@ export default function BattlePage() {
                 onClick={() => setPhase('map')}
                 className="btn bg-gradient-to-r from-amber-500 via-emerald-500 to-teal-400 text-black font-extrabold text-base px-8 py-3.5 rounded-xl shadow-xl shadow-emerald-500/25 hover:brightness-110 active:scale-95 transition flex items-center justify-center gap-2 mx-auto"
               >
-                <span>🗺️</span>
+                <span><PixelIcon name="map" className="w-[1.15em] h-[1.15em]" /></span>
                 <span>SAYA SUDAH FAHAM — BUKA PETA & PILIH LEVEL ➔</span>
               </button>
             </div>
@@ -5422,12 +5422,12 @@ export default function BattlePage() {
                   <div>
                     <div className="flex items-center gap-2 mb-1.5 flex-wrap">
                       <span className="px-2.5 py-0.5 rounded-full bg-amber-500/25 border border-amber-400/50 text-amber-300 font-mono text-xs font-black tracking-wider uppercase flex items-center gap-1 shadow-md">
-                        <span>📜</span>
+                        <span><PixelIcon name="scroll" className="w-[1.15em] h-[1.15em]" /></span>
                         <span>{prologue.chapter}</span>
                       </span>
                       <span className="text-white/40 text-xs hidden sm:inline">•</span>
                       <span className="text-xs text-white/70 font-medium hidden sm:flex items-center gap-1">
-                        <span>📍</span>
+                        <span><PixelIcon name="pin" className="w-[1.15em] h-[1.15em]" /></span>
                         <span>{prologue.location}</span>
                       </span>
                     </div>
@@ -5459,7 +5459,7 @@ export default function BattlePage() {
                       title="Keluar ke peta level"
                       aria-label="Keluar ke peta level"
                     >
-                      <Icon name="x" className="w-4 h-4" />
+                      <PixelIcon name="cross" className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -5490,7 +5490,7 @@ export default function BattlePage() {
                     {/* Speaking Bubble Pill */}
                     {isThalibSpeaking && (
                       <div className="mb-2 px-3 py-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-400 text-black text-[11px] font-mono font-extrabold animate-bounce flex items-center gap-1 shadow-xl shadow-amber-500/40">
-                        <span>💬</span>
+                        <span><PixelIcon name="speech" className="w-[1.15em] h-[1.15em]" /></span>
                         <span>BERBICARA</span>
                       </div>
                     )}
@@ -5521,7 +5521,7 @@ export default function BattlePage() {
                   {/* Center vs Badge / Encounter Glow */}
                   <div className="hidden lg:flex flex-col items-center justify-center mb-16 text-center">
                     <div className="w-12 h-12 rounded-full bg-black/70 border border-amber-500/30 flex items-center justify-center text-lg shadow-xl animate-pulse">
-                      ⚔️
+                      <PixelIcon name="sword" className="w-[1.15em] h-[1.15em]" />
                     </div>
                     <span className="text-[9px] font-mono text-amber-300/70 tracking-widest uppercase mt-1">
                       IMTIHAN AL-AZHAR
@@ -5537,7 +5537,7 @@ export default function BattlePage() {
                     {/* Speaking Bubble Pill */}
                     {isBossSpeaking && (
                       <div className="mb-2 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-500 to-teal-400 text-black text-[11px] font-mono font-extrabold animate-bounce flex items-center gap-1 shadow-xl shadow-emerald-500/40">
-                        <span>💬</span>
+                        <span><PixelIcon name="speech" className="w-[1.15em] h-[1.15em]" /></span>
                         <span>BERBICARA</span>
                       </div>
                     )}
@@ -5596,7 +5596,7 @@ export default function BattlePage() {
                             className="w-full h-full object-contain p-0.5"
                           />
                         ) : (
-                          <span>{currentDialogue.avatar || '📜'}</span>
+                          <PixelIcon name="scroll" className="w-6 h-6" />
                         )}
                       </div>
                       <div>
@@ -5638,7 +5638,7 @@ export default function BattlePage() {
                       <SmartText text={currentDialogue.text} />
                     </p>
                     <span className="sm:hidden absolute bottom-1.5 right-3 text-[10px] font-mono text-amber-300/80 animate-pulse">
-                      {storyStep < dialogues.length - 1 ? 'ketuk untuk lanjut ▸' : 'ketuk untuk mulai duel ⚔️'}
+                      {storyStep < dialogues.length - 1 ? 'ketuk untuk lanjut ▸' : 'ketuk untuk mulai duel ▸'}
                     </span>
                   </div>
 
@@ -5693,8 +5693,8 @@ export default function BattlePage() {
                           onClick={startBattle}
                           className="flex-1 sm:flex-none btn bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-300 hover:brightness-110 text-black font-black text-xs sm:text-sm px-6 py-2.5 rounded-xl shadow-xl shadow-emerald-500/30 active:scale-95 transition flex items-center justify-center gap-2 animate-pulse"
                         >
-                          <span>⚔️ BISMILLAH, MULAI BATTLE!</span>
-                          <Icon name="swords" className="w-4 h-4" />
+                          <span><PixelIcon name="sword" className="w-[1.15em] h-[1.15em]" /> BISMILLAH, MULAI BATTLE!</span>
+                          <PixelIcon name="sword" className="w-4 h-4" />
                         </button>
                       )}
                     </div>
@@ -5751,7 +5751,7 @@ export default function BattlePage() {
                       className="min-h-[34px] flex items-center gap-1.5 bg-black/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-amber-400/40 text-amber-200 font-mono text-[11px] sm:text-xs font-bold shadow-xl"
                       title="Misi duel"
                     >
-                      <span>🎯</span>
+                      <span><PixelIcon name="target" className="w-[1.15em] h-[1.15em]" /></span>
                       <span>{stageMissions.filter(id => missionStatus(id, battleStats, { playerHp }) === 'done').length}/{stageMissions.length}</span>
                       <span className="hidden sm:inline">Misi</span>
                     </button>
@@ -5763,12 +5763,12 @@ export default function BattlePage() {
                           const def = MISSION_DEFS[id];
                           return (
                             <div key={id} className={`flex items-start gap-2 rounded-lg px-2 py-1.5 border ${st === 'done' ? 'border-emerald-400/50 bg-emerald-500/10' : st === 'failed' ? 'border-rose-500/40 bg-rose-500/10 opacity-70' : 'border-white/10 bg-white/5'}`}>
-                              <span className="text-base leading-none mt-0.5">{def.icon}</span>
+                              <PixelIcon name={def.icon} className="w-5 h-5 mt-0.5" />
                               <div className="min-w-0 flex-1">
                                 <div className={`text-xs font-bold ${st === 'failed' ? 'line-through text-white/50' : 'text-white'}`}>{def.label}</div>
                                 <div className="text-[10px] text-white/55 leading-snug">{def.desc}</div>
                               </div>
-                              <span className="text-xs">{st === 'done' ? '✅' : st === 'failed' ? '❌' : '⏳'}</span>
+                              <PixelIcon name={st === 'done' ? 'check' : st === 'failed' ? 'cross' : 'hourglass'} className="w-4 h-4" />
                             </div>
                           );
                         })}
@@ -5779,7 +5779,7 @@ export default function BattlePage() {
                   {/* COMBO STREAK BADGE */}
                   {streak >= 2 && (
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-500/40 via-orange-500/35 to-amber-500/30 border border-amber-400/70 shadow-[0_0_15px_rgba(245,158,11,0.5)] animate-pulse backdrop-blur-md">
-                      <span className="text-sm">🔥</span>
+                      <span className="text-sm"><PixelIcon name="fire" className="w-[1.15em] h-[1.15em]" /></span>
                       <div className="flex flex-col text-left leading-none">
                         <span className="text-[10px] font-mono font-black text-amber-300 tracking-wider">COMBO x{streak}</span>
                         <span className="text-[8px] font-serif text-amber-100/90 font-medium hidden sm:inline">Hujjah Mutawatirah</span>
@@ -5790,7 +5790,7 @@ export default function BattlePage() {
                   {/* DEFENSE SHIELD INDICATOR */}
                   {defenseShield && (
                     <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-gradient-to-r from-cyan-500/35 to-blue-500/35 border border-cyan-400/70 shadow-[0_0_15px_rgba(6,182,212,0.5)] backdrop-blur-md animate-bounce">
-                      <span className="text-sm">🛡️</span>
+                      <span className="text-sm"><PixelIcon name="shield" className="w-[1.15em] h-[1.15em]" /></span>
                       <span className="text-[10px] font-mono font-bold text-cyan-200">TAMENG -50%</span>
                     </div>
                   )}
@@ -5807,7 +5807,7 @@ export default function BattlePage() {
                         : 'text-white/60 hover:text-white'
                     }`}
                   >
-                    <span>⛏️</span>
+                    <span><PixelIcon name="pickaxe" className="w-[1.15em] h-[1.15em]" /></span>
                     <span className="hidden xl:inline">Voxel 3D</span>
                   </button>
                   <button
@@ -5818,7 +5818,7 @@ export default function BattlePage() {
                         : 'text-white/60 hover:text-white'
                     }`}
                   >
-                    <span>👾</span>
+                    <span><PixelIcon name="gamepad" className="w-[1.15em] h-[1.15em]" /></span>
                     <span className="hidden xl:inline">16-Bit Retro</span>
                   </button>
 
@@ -5831,7 +5831,7 @@ export default function BattlePage() {
                     className="min-h-[34px] sm:min-h-0 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1 text-amber-300 bg-amber-500/15 border border-amber-400/30 hover:bg-amber-500/25"
                     title="Buka Prolog Cerita / Kisah Pertarungan Ini"
                   >
-                    <span>📜</span>
+                    <span><PixelIcon name="scroll" className="w-[1.15em] h-[1.15em]" /></span>
                     <span className="hidden xl:inline">Cerita</span>
                   </button>
 
@@ -5848,7 +5848,7 @@ export default function BattlePage() {
                     }`}
                     title={enableCutscene ? 'Scene Serangan Aktif (Klik untuk nonaktifkan)' : 'Scene Serangan Nonaktif (Klik untuk aktifkan)'}
                   >
-                    <span>🎬</span>
+                    <span><PixelIcon name="film" className="w-[1.15em] h-[1.15em]" /></span>
                     <span className="hidden xl:inline">Scene:</span>
                     <span>{enableCutscene ? 'ON' : 'OFF'}</span>
                   </button>
@@ -5863,7 +5863,7 @@ export default function BattlePage() {
                     }`}
                     title={battleSpeed === 2 ? 'Kecepatan Turbo 2x (Klik atau tekan Z untuk ubah ke 1x)' : 'Kecepatan Normal 1x (Klik atau tekan Z untuk ubah ke 2x)'}
                   >
-                    <span>⚡</span>
+                    <span><PixelIcon name="bolt" className="w-[1.15em] h-[1.15em]" /></span>
                     <span className="font-extrabold">{battleSpeed === 2 ? '2x CEPAT' : '1x'}</span>
                   </button>
 
@@ -5875,7 +5875,7 @@ export default function BattlePage() {
                     }`}
                     title={audioMuted ? 'Aktifkan Suara (M)' : 'Bisukan Suara (M)'}
                   >
-                    <span>{audioMuted ? '🔇' : '🔊'}</span>
+                    <PixelIcon name={audioMuted ? 'mute' : 'note'} className="w-[1.15em] h-[1.15em]" />
                   </button>
 
                   {/* Fullscreen browser (sembunyikan bar browser) — hanya di perangkat yang mendukung */}
@@ -5899,7 +5899,7 @@ export default function BattlePage() {
                     className="sticky right-0 min-h-[34px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 bg-rose-500 text-white ring-4 ring-black/85 shadow-md hover:bg-rose-600"
                     title="Keluar duel (kembali ke peta)"
                   >
-                    <Icon name="x" className="w-3.5 h-3.5" />
+                    <PixelIcon name="cross" className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">Keluar</span>
                   </button>
                 </div>
@@ -5915,7 +5915,7 @@ export default function BattlePage() {
                     onClick={() => setDuelIntro(false)}
                   >
                     <div className="vs-banner text-center">
-                      <div className="font-mono text-[11px] sm:text-xs font-black tracking-[0.3em] text-amber-300 uppercase">{theme.icon} {theme.name}</div>
+                      <div className="font-mono text-[11px] sm:text-xs font-black tracking-[0.3em] text-amber-300 uppercase"><span className="inline-flex items-center gap-2"><PixelIcon name={theme.icon} className="w-4 h-4" />{theme.name}</span></div>
                       <div className="text-white/70 text-xs sm:text-sm mt-1">{activeStage?.location}</div>
                     </div>
                     <div className="w-full max-w-3xl flex items-end justify-between gap-2">
@@ -5936,7 +5936,7 @@ export default function BattlePage() {
                     <div className="vs-missions flex flex-wrap justify-center gap-1.5 max-w-xl">
                       {stageMissions.map(id => (
                         <span key={id} className="px-2.5 py-1 rounded-lg border border-amber-400/40 bg-black/60 font-mono text-[11px] text-amber-100">
-                          {MISSION_DEFS[id].icon} {MISSION_DEFS[id].label}
+                          <PixelIcon name={MISSION_DEFS[id].icon} className="w-4 h-4 inline-block align-[-3px] mr-1" />{MISSION_DEFS[id].label}
                         </span>
                       ))}
                     </div>
@@ -5971,7 +5971,7 @@ export default function BattlePage() {
                   <div className={`mission-toast whitespace-nowrap px-4 py-2 rounded-xl border-2 font-mono text-xs sm:text-sm font-black shadow-2xl ${
                     missionToast.tone === 'done' ? 'bg-emerald-950/90 border-emerald-400 text-emerald-200' : 'bg-rose-950/90 border-rose-500 text-rose-200'
                   }`}>
-                    {missionToast.icon} {missionToast.text}
+                    <span className="inline-flex items-center gap-2"><PixelIcon name={missionToast.icon} className="w-5 h-5" />{missionToast.text}</span>
                   </div>
                 </div>
               )}
@@ -6014,9 +6014,9 @@ export default function BattlePage() {
                 {/* ── IN-BATTLE LIVE OBJECTIVE HUD ── */}
                 <div className={`absolute top-[4.25rem] left-1/2 -translate-x-1/2 z-20 hidden 2xl:flex items-center gap-2 pointer-events-none max-w-[95%]`}>
                   <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/85 border border-amber-400/50 backdrop-blur-md shadow-lg text-[10px] sm:text-xs font-mono font-bold text-amber-200">
-                    <span className="text-amber-400">🎯</span>
-                    <span className="hidden sm:inline">Target Imtihan: Pertahankan HP ≥ 80% untuk Predikat Mumtaz (⭐⭐⭐)</span>
-                    <span className="sm:hidden">Target: HP ≥ 80% (Mumtaz ⭐⭐⭐)</span>
+                    <span className="text-amber-400"><PixelIcon name="target" className="w-[1.15em] h-[1.15em]" /></span>
+                    <span className="hidden sm:inline">Target Imtihan: Pertahankan HP ≥ 80% untuk Predikat Mumtaz (★★★)</span>
+                    <span className="sm:hidden">Target: HP ≥ 80% (Mumtaz ★★★)</span>
                   </div>
                   <div className="px-2.5 py-1 rounded-full bg-black/85 border border-emerald-400/50 backdrop-blur-md shadow-lg text-[10px] sm:text-xs font-mono font-bold text-emerald-300 whitespace-nowrap">
                     Soal {currentQ + 1}/{activeQuiz.length}
@@ -6084,7 +6084,7 @@ export default function BattlePage() {
                       {damageReaction && damageReaction.target === 'boss' && (
                         <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center animate-critNumberBounce">
                           <div className="bg-gradient-to-r from-[#2b1014] via-[#3a141b] to-[#240c10] border-2 border-rose-400 text-white px-3 py-1.5 rounded-xl shadow-[0_6px_25px_rgba(244,63,94,0.85)] flex items-center gap-2 whitespace-nowrap">
-                            <span className="text-lg filter drop-shadow">{damageReaction.emoji}</span>
+                            <EmojiIcon text={damageReaction.emoji} className="w-6 h-6" />
                             <div className="text-left">
                               <div className="text-[9px] font-mono font-black text-amber-300 uppercase tracking-wider">{damageReaction.badge}</div>
                               <div className="text-xs font-bold text-white font-sans drop-shadow">{damageReaction.quote}</div>
@@ -6095,8 +6095,8 @@ export default function BattlePage() {
                       )}
                       {animBoss === 'hit' && (
                         <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 pointer-events-none z-40 animate-bounce">
-                          <span className="text-xl filter drop-shadow">💥</span>
-                          <span className="text-base filter drop-shadow">⚡</span>
+                          <span className="text-xl filter drop-shadow"><PixelIcon name="boom" className="w-[1.15em] h-[1.15em]" /></span>
+                          <span className="text-base filter drop-shadow"><PixelIcon name="bolt" className="w-[1.15em] h-[1.15em]" /></span>
                           <span className="text-[10px] font-black font-mono text-amber-300 bg-black/85 px-1.5 py-0.5 rounded border border-amber-400 shadow">HUJJAH TELAK!</span>
                         </div>
                       )}
@@ -6120,7 +6120,7 @@ export default function BattlePage() {
                       {damageReaction && damageReaction.target === 'boss' && (
                         <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center animate-critNumberBounce">
                           <div className="bg-gradient-to-r from-[#2b1014] via-[#3a141b] to-[#240c10] border-2 border-rose-400 text-white px-3 py-1.5 rounded-xl shadow-[0_6px_25px_rgba(244,63,94,0.85)] flex items-center gap-2 whitespace-nowrap">
-                            <span className="text-lg filter drop-shadow">{damageReaction.emoji}</span>
+                            <EmojiIcon text={damageReaction.emoji} className="w-6 h-6" />
                             <div className="text-left">
                               <div className="text-[9px] font-mono font-black text-amber-300 uppercase tracking-wider">{damageReaction.badge}</div>
                               <div className="text-xs font-bold text-white font-sans drop-shadow">{damageReaction.quote}</div>
@@ -6131,8 +6131,8 @@ export default function BattlePage() {
                       )}
                       {animBoss === 'hit' && (
                         <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 pointer-events-none z-40 animate-bounce">
-                          <span className="text-xl filter drop-shadow">💥</span>
-                          <span className="text-base filter drop-shadow">⚡</span>
+                          <span className="text-xl filter drop-shadow"><PixelIcon name="boom" className="w-[1.15em] h-[1.15em]" /></span>
+                          <span className="text-base filter drop-shadow"><PixelIcon name="bolt" className="w-[1.15em] h-[1.15em]" /></span>
                           <span className="text-[10px] font-black font-mono text-amber-300 bg-black/85 px-1.5 py-0.5 rounded border border-amber-400 shadow">HUJJAH TELAK!</span>
                         </div>
                       )}
@@ -6164,7 +6164,7 @@ export default function BattlePage() {
                     {damageReaction && damageReaction.target === 'player' && (
                       <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center animate-critNumberBounce">
                         <div className="bg-gradient-to-r from-[#2e1216] via-[#1f1013] to-[#2a0e12] border-2 border-amber-400 text-white px-3 py-1.5 rounded-xl shadow-[0_6px_25px_rgba(245,158,11,0.85)] flex items-center gap-2 whitespace-nowrap">
-                          <span className="text-lg filter drop-shadow">{damageReaction.emoji}</span>
+                          <EmojiIcon text={damageReaction.emoji} className="w-6 h-6" />
                           <div className="text-left">
                             <div className="text-[9px] font-mono font-black text-rose-300 uppercase tracking-wider">{damageReaction.badge}</div>
                             <div className="text-xs font-bold text-white font-sans drop-shadow">{damageReaction.quote}</div>
@@ -6176,8 +6176,8 @@ export default function BattlePage() {
                     {/* Player Hurt Particles: Broken Hearts & Sweat Drops */}
                     {animPlayer === 'hit' && (
                       <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 pointer-events-none z-40 animate-bounce">
-                        <span className="text-xl filter drop-shadow">💔</span>
-                        <span className="text-base filter drop-shadow">💦</span>
+                        <span className="text-xl filter drop-shadow"><PixelIcon name="heartBroken" className="w-[1.15em] h-[1.15em]" /></span>
+                        <span className="text-base filter drop-shadow"><PixelIcon name="heartBroken" className="w-[1.15em] h-[1.15em]" /></span>
                         <span className="text-[10px] font-black font-mono text-rose-300 bg-black/85 px-1.5 py-0.5 rounded border border-rose-500 shadow">OUCH!</span>
                       </div>
                     )}
@@ -6275,7 +6275,7 @@ export default function BattlePage() {
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
                         <span className="font-mono text-xs font-bold text-rose-400 uppercase tracking-wide">
-                          ⚠️ Hujjah Kurang Tepat (-{wrongReview.damage ?? 22} HP)
+                          <PixelIcon name="warning" className="w-[1.15em] h-[1.15em]" /> Hujjah Kurang Tepat (-{wrongReview.damage ?? 22} HP)
                         </span>
                       </div>
                       <span className="text-[10px] font-mono text-white/50 bg-white/5 px-2 py-0.5 rounded border border-white/10">
@@ -6308,7 +6308,7 @@ export default function BattlePage() {
                     {/* Penjelasan Kaidah & 'Illat Matan */}
                     <div className="p-3.5 rounded-lg bg-white/5 border border-white/10 text-xs sm:text-sm text-white/85 leading-relaxed">
                       <div className="font-bold text-emerald-300 text-[11px] mb-1.5 flex items-center gap-1.5 font-mono">
-                        <span>📖</span>
+                        <span><PixelIcon name="book" className="w-[1.15em] h-[1.15em]" /></span>
                         <span>TA'LIL & SYARAH KAIDAH:</span>
                       </div>
                       <p className="leading-relaxed">
@@ -6327,7 +6327,7 @@ export default function BattlePage() {
                         className="btn border border-white/15 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-mono text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 active:scale-95"
                         title="Tonton ulang animasi serangan boss"
                       >
-                        <span>🎬</span>
+                        <span><PixelIcon name="film" className="w-[1.15em] h-[1.15em]" /></span>
                         <span>Putar Ulang Animasi</span>
                       </button>
 
@@ -6345,7 +6345,7 @@ export default function BattlePage() {
                     {/* Dialog Box Display */}
                     <div className={`rounded-xl border-2 border-[#243329] bg-[#080d0a] p-3 sm:p-4 mb-3 min-h-[70px] items-center ${battleMenu !== 'main' ? 'hidden sm:flex' : 'flex'}`}>
                       <p className="text-xs sm:text-sm text-white/90 leading-relaxed font-mono whitespace-pre-line">
-                        {dialogText}
+                        <IconText text={dialogText} iconClassName="w-4 h-4 shrink-0" />
                       </p>
                     </div>
 
@@ -6370,7 +6370,7 @@ export default function BattlePage() {
 
                         {activeHint && (
                           <div className="p-2.5 rounded bg-amber-500/10 border border-amber-500/30 text-xs text-amber-300">
-                            💡 <strong>Hint Qamus:</strong> <SmartText text={activeHint} />
+                            <PixelIcon name="bulb" className="w-[1.15em] h-[1.15em]" /> <strong>Hint Qamus:</strong> <SmartText text={activeHint} />
                           </div>
                         )}
 
@@ -6430,7 +6430,7 @@ export default function BattlePage() {
                       <div className="space-y-3">
                         <div className="flex items-center justify-between text-xs text-amber-400 font-bold px-1">
                           <span className="flex items-center gap-1.5">
-                            <span>🎒</span>
+                            <span><PixelIcon name="bag" className="w-[1.15em] h-[1.15em]" /></span>
                             <span>TAS MASISIR (PILIH ITEM BANTUAN KHUSUS):</span>
                           </span>
                           <button
@@ -6450,7 +6450,7 @@ export default function BattlePage() {
                           >
                             <div>
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-xl">☕</span>
+                                <PixelIcon name="potion" className="w-7 h-7" />
                                 <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-emerald-300">x{bag.tea}</span>
                               </div>
                               <div className="text-xs font-bold text-white truncate">Syay bil Na'na'</div>
@@ -6467,7 +6467,7 @@ export default function BattlePage() {
                           >
                             <div>
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-xl">🛡️</span>
+                                <PixelIcon name="mug" className="w-7 h-7" />
                                 <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-cyan-300">x{bag.ahwah}</span>
                               </div>
                               <div className="text-xs font-bold text-white truncate">Ahwah Mazbut</div>
@@ -6484,7 +6484,7 @@ export default function BattlePage() {
                           >
                             <div>
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-xl">📜</span>
+                                <PixelIcon name="scroll" className="w-7 h-7" />
                                 <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-amber-300">x{bag.summary}</span>
                               </div>
                               <div className="text-xs font-bold text-white truncate">Khulashah 50:50</div>
@@ -6501,7 +6501,7 @@ export default function BattlePage() {
                           >
                             <div>
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-xl">📖</span>
+                                <PixelIcon name="book" className="w-7 h-7" />
                                 <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-blue-300">x{bag.qamus}</span>
                               </div>
                               <div className="text-xs font-bold text-white truncate">Qamus Munawwir</div>
@@ -6518,7 +6518,7 @@ export default function BattlePage() {
                           >
                             <div>
                               <div className="flex items-center justify-between mb-1">
-                                <span className="text-xl">📚</span>
+                                <PixelIcon name="quill" className="w-7 h-7" />
                                 <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-rose-300">x{bag.kurrasah}</span>
                               </div>
                               <div className="text-xs font-bold text-white truncate">Kurrasah Duf'ah</div>
@@ -6542,7 +6542,7 @@ export default function BattlePage() {
                               : 'border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-600/30 to-[#122218] hover:border-emerald-400 hover:brightness-110 text-white'
                           }`}
                         >
-                          <Icon name="swords" className="w-4 h-4 text-emerald-400" />
+                          <PixelIcon name="sword" className="w-4 h-4 text-emerald-400" />
                           <span>FIGHT (Jawab)</span>
                         </button>
 
@@ -6555,7 +6555,7 @@ export default function BattlePage() {
                               : 'border-2 border-amber-500/40 bg-gradient-to-br from-amber-600/30 to-[#221c12] hover:border-amber-400 hover:brightness-110 text-white'
                           }`}
                         >
-                          <span>🎒</span>
+                          <span><PixelIcon name="bag" className="w-[1.15em] h-[1.15em]" /></span>
                           <span>BAG (Tas Kitab)</span>
                         </button>
 
@@ -6571,7 +6571,7 @@ export default function BattlePage() {
                               : 'border-2 border-purple-500/40 bg-gradient-to-br from-purple-600/30 to-[#1c1222] hover:border-purple-400 hover:brightness-110 text-white'
                           }`}
                         >
-                          <Icon name="sparkles" className="w-4 h-4 text-purple-400" />
+                          <PixelIcon name="sparkle" className="w-4 h-4 text-purple-400" />
                           <span>AI HALAQAH</span>
                         </button>
 
@@ -6589,7 +6589,7 @@ export default function BattlePage() {
                               : 'border-2 border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10 text-white'
                           }`}
                         >
-                          <span>🏃</span>
+                          <span><PixelIcon name="boots" className="w-[1.15em] h-[1.15em]" /></span>
                           <span>RUN (Muroja'ah)</span>
                         </button>
                       </div>
@@ -6612,7 +6612,7 @@ export default function BattlePage() {
         {phase === 'victory' && (() => {
           const isFinal = activeStage ? activeStage.isFinal : true;
           const stageStars = playerHp >= 80 ? 3 : playerHp >= 50 ? 2 : 1;
-          const stageStarsStr = stageStars === 3 ? '⭐⭐⭐' : stageStars === 2 ? '⭐⭐' : '⭐';
+          const stageStarsStr = '★'.repeat(stageStars);
           const stageTaqdirTitle = stageStars === 3 ? "Mumtaz (Sempurna)" : stageStars === 2 ? "Jayyid Jiddan" : "Jayyid";
           const guardianName = activeStage?.guardianName || activeSet.bossName;
           const totalStagesCount = activeSet.stages?.length || 4;
@@ -6623,219 +6623,123 @@ export default function BattlePage() {
           const gainedExp = (activeStage?.expReward || 75) + (streak > 0 ? streak * 10 : 0) + missionsWon * MISSION_BONUS_EXP;
           const arcadeScore = (accuracyPct * 250) + (playerHp * 50) + ((streak || 1) * 350) + (gainedExp * 10);
 
+          // Tombol batu ala Minecraft (timbul, tanpa animasi berulang).
+          const stoneBtn = 'min-h-[48px] px-4 border-2 border-black font-mono font-black text-sm tracking-wide text-white flex items-center justify-center gap-2 active:translate-y-0.5 transition hover:brightness-110';
+          const stoneGray = `${stoneBtn} bg-[#6f6f73] shadow-[inset_-3px_-4px_0_#3f3f42,inset_3px_3px_0_#a9a9ad]`;
+          const stoneGreen = `${stoneBtn} bg-[#3f8a2e] shadow-[inset_-3px_-4px_0_#245019,inset_3px_3px_0_#7cc964]`;
+          const stoneGold = `${stoneBtn} bg-[#c9930f] text-black shadow-[inset_-3px_-4px_0_#7a5806,inset_3px_3px_0_#fde68a]`;
+
           return (
-            <div className="max-w-xl mx-auto rounded-3xl border-4 border-[#5a4220] bg-gradient-to-b from-[#14100c] via-[#0d0a08] to-[#070605] p-4 sm:p-6 text-center space-y-4 sm:space-y-5 animate-fadeIn shadow-[0_25px_80px_rgba(245,158,11,0.5)] relative overflow-hidden select-none">
-              
-              {/* Rotating Golden Sunburst Rays Background (Arcade Fanfare) */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden flex items-center justify-center opacity-15">
-                <div className="w-[850px] h-[850px] rounded-full bg-[conic-gradient(from_0deg,#fbbf24_0deg_15deg,transparent_15deg_30deg,#fbbf24_30deg_45deg,transparent_45deg_60deg,#fbbf24_60deg_75deg,transparent_75deg_90deg,#fbbf24_90deg_105deg,transparent_105deg_120deg,#fbbf24_120deg_135deg,transparent_135deg_150deg,#fbbf24_150deg_165deg,transparent_165deg_180deg,#fbbf24_180deg_195deg,transparent_195deg_210deg,#fbbf24_210deg_225deg,transparent_225deg_240deg,#fbbf24_240deg_255deg,transparent_255deg_270deg,#fbbf24_270deg_285deg,transparent_285deg_300deg,#fbbf24_300deg_315deg,transparent_315deg_330deg,#fbbf24_330deg_345deg,transparent_345deg_360deg)] animate-spin-slow" />
+            <div className="relative max-w-xl mx-auto overflow-hidden select-none text-center space-y-4 sm:space-y-5 px-4 sm:px-6 pt-5 pb-5 border-4 border-[#111] bg-[#2b2b2e] shadow-[inset_-4px_-4px_0_#1a1a1c,inset_4px_4px_0_#4a4a4e,0_20px_60px_rgba(0,0,0,0.7)] animate-fadeIn">
+              {/* Sinar emas berputar pelan di belakang (tanpa kedip) */}
+              <div
+                className="victory-rays absolute left-1/2 top-[34%] w-[720px] h-[720px] opacity-[0.10] pointer-events-none"
+                style={{ background: 'repeating-conic-gradient(#fbbf24 0deg 9deg, transparent 9deg 18deg)' }}
+              />
+
+              {/* ── 1. JUDUL ── */}
+              <div className="relative">
+                <div className="flex items-center justify-center gap-2 font-mono text-[10px] sm:text-xs font-black tracking-[0.22em] uppercase text-amber-300">
+                  <PixelIcon name={isFinal ? 'crown' : 'gate'} className="w-4 h-4 shrink-0" />
+                  {/* Judul level sudah memuat "Level n:", jadi nomor level tidak ditulis dua kali. */}
+                  <span className="text-white/85 truncate max-w-[70vw] sm:max-w-sm">{activeStage?.title || (isFinal ? 'Final Boss' : 'Gerbang Ilmu')}</span>
+                </div>
+                <h2
+                  className="victory-title mt-2 font-black font-mono text-5xl sm:text-6xl tracking-[0.15em] text-[#fde047]"
+                  style={{ textShadow: '4px 4px 0 #7c2d12, 0 0 28px rgba(250, 204, 21, 0.3)' }}
+                >
+                  {isFinal ? 'KHATAM!' : 'LULUS!'}
+                </h2>
               </div>
 
-              {/* ── 1. TOP HEADER: STAGE PILL + 3 FLOATING STARS + FANFARE TRUMPETS + CLEAR RIBBON ── */}
-              <div className="relative z-10 flex flex-col items-center">
-                {/* Stage Indicator Pill */}
-                <div className="inline-flex items-center gap-2 px-4 py-1 rounded-full bg-black/85 border-2 border-amber-400 text-amber-300 font-mono text-[11px] sm:text-xs font-black uppercase tracking-widest shadow-[0_0_15px_rgba(251,191,36,0.6)] mb-2">
-                  <span>🏰</span>
-                  <span>{isFinal ? 'FINAL BOSS TAKLUK' : `STAGE ${activeStage?.levelNumber || 1}`}</span>
-                  <span className="text-white/30">•</span>
-                  <span className="text-white/90">{activeStage?.title || 'GERBANG ILMU'}</span>
-                </div>
-
-                {/* Banner Ribbon Flanked by 3D Voxel Trumpets */}
-                <div className="relative w-full flex items-center justify-center my-1">
-                  {/* Left Herald Trumpet */}
-                  <div className="absolute -left-2 sm:left-2 top-1/2 -translate-y-1/2 z-20 pointer-events-none animate-pulse">
-                    <img
-                      src="/assets/trumpet-victory-voxel.png"
-                      alt="Fanfare Horn Left"
-                      className="w-16 sm:w-24 md:w-28 h-auto object-contain filter drop-shadow-[0_0_15px_#f59e0b] transform -rotate-12"
-                    />
+              {/* ── 2. BINTANG: muncul satu per satu, sekali saja ── */}
+              <div className="relative flex items-end justify-center gap-2 sm:gap-3 -mt-1">
+                {[1, 2, 3].map(i => (
+                  <div
+                    key={i}
+                    className={`victory-star ${i === 2 ? 'w-16 h-16 sm:w-20 sm:h-20' : 'w-12 h-12 sm:w-14 sm:h-14'}`}
+                    style={{ animationDelay: `${0.25 + i * 0.22}s` }}
+                  >
+                    <PixelIcon name={i <= stageStars ? 'star' : 'starEmpty'} className="w-full h-full drop-shadow-[3px_3px_0_rgba(0,0,0,0.45)]" />
                   </div>
-
-                  {/* Center Ribbon Banner Container */}
-                  <div className="relative z-10 w-full max-w-sm sm:max-w-md mx-6 sm:mx-14">
-                    {/* 3 Floating Stars above the Banner */}
-                    <div className="flex items-center justify-center gap-2 sm:gap-3 -mb-3 relative z-30">
-                      {[1, 2, 3].map((starIdx) => {
-                        const isLit = starIdx <= stageStars;
-                        return (
-                          <div
-                            key={starIdx}
-                            className={`transition-all duration-500 transform ${
-                              starIdx === 2 ? '-translate-y-2 scale-125' : 'translate-y-0 scale-100'
-                            }`}
-                          >
-                            <div
-                              className={`w-9 h-9 sm:w-11 sm:h-11 rounded-2xl flex items-center justify-center text-xl sm:text-2xl font-black border-2 shadow-lg transition-transform hover:scale-110 ${
-                                isLit
-                                  ? 'bg-gradient-to-b from-yellow-100 via-amber-400 to-amber-600 border-white text-white drop-shadow-[0_0_16px_#fbbf24] animate-bounce'
-                                  : 'bg-black/70 border-white/20 text-white/20'
-                              }`}
-                              style={{ animationDelay: `${(starIdx - 1) * 150}ms` }}
-                            >
-                              ★
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Ribbon Shape (Blocky Minecraft Bevel Style in Vibrant Azure & Gold) */}
-                    <div className="relative pt-4 pb-2.5 px-4 sm:px-6 rounded-2xl bg-gradient-to-r from-[#008ba3] via-[#00bcd4] to-[#008ba3] border-4 border-amber-300 shadow-[0_8px_0_#006064,0_12px_25px_rgba(0,0,0,0.8)] text-center">
-                      <div className="text-3xl sm:text-5xl font-black font-mono tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-white via-yellow-200 to-amber-300 drop-shadow-[0_3px_0_#004d40]">
-                        CLEAR!
-                      </div>
-                      <div className="text-[10px] sm:text-xs font-mono font-black text-amber-100 uppercase tracking-widest mt-0.5">
-                        ★ LULUS ARENA IMTIHAN ★
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Herald Trumpet (Flipped horizontally) */}
-                  <div className="absolute -right-2 sm:right-2 top-1/2 -translate-y-1/2 z-20 pointer-events-none animate-pulse">
-                    <img
-                      src="/assets/trumpet-victory-voxel.png"
-                      alt="Fanfare Horn Right"
-                      className="w-16 sm:w-24 md:w-28 h-auto object-contain filter drop-shadow-[0_0_15px_#f59e0b] transform rotate-12 scale-x-[-1]"
-                    />
-                  </div>
-                </div>
+                ))}
               </div>
 
-              {/* ── 2. CELEBRATING THALIB VOXEL HERO (Melompat Bahagia Menghadap Depan) ── */}
-              <div className="relative z-10 flex flex-col items-center justify-center my-1">
-                {/* Speech Bubble Thalib */}
-                <div className="mb-2 px-4 py-1.5 rounded-2xl bg-amber-500/25 border-2 border-amber-400 text-amber-100 text-xs sm:text-sm font-sans font-bold shadow-lg flex items-center gap-2 animate-bounce">
-                  <span className="text-base">💬</span>
-                  <span>
-                    {isFinal
-                      ? "Alhamdulillah! Matan khatam, ujian tuntas, siap santap Dujaj Syawarma di Darrasah!"
-                      : "Tahqiq level ini tuntas! Siap melangkah ke gerbang ilmu berikutnya!"}
-                  </span>
+              {/* ── 3. THALIB DI PODIUM BLOK RUMPUT ── */}
+              <div className="relative flex flex-col items-center">
+                <div className="victory-bubble relative mb-2 max-w-sm px-3 py-2 bg-[#f5f5f4] border-2 border-black text-[#1c1917] text-xs sm:text-sm font-bold leading-snug shadow-[3px_3px_0_rgba(0,0,0,0.5)]">
+                  {isFinal
+                    ? 'Alhamdulillah! Matan khatam, ujian tuntas — saatnya syawarma di Darrasah!'
+                    : 'Tahqiq level ini tuntas! Lanjut ke gerbang ilmu berikutnya!'}
+                  <span className="absolute left-1/2 -bottom-[9px] -translate-x-1/2 w-3 h-3 bg-[#f5f5f4] border-r-2 border-b-2 border-black rotate-45" />
                 </div>
-
-                {/* 3D Thalib Voxel Sprite Celebrating */}
-                <div className="relative flex flex-col items-center">
-                  <img
-                    src="/assets/thalib-victory-voxel.png"
-                    alt="Thalib Azhar Menang"
-                    className="w-40 sm:w-48 md:w-56 max-h-[34vh] h-auto object-contain filter drop-shadow-[0_0_35px_rgba(251,191,36,0.95)] hover:scale-105 transition animate-pulse select-none"
-                  />
-                  {/* Glowing Golden Minecraft Pedestal Base */}
-                  <div className="w-44 sm:w-56 h-6 bg-gradient-to-r from-amber-600 via-amber-400 to-amber-600 rounded-full border-2 border-white shadow-[0_0_25px_rgba(251,191,36,0.8)] mx-auto -mt-3" />
+                <img
+                  src="/assets/thalib-victory-voxel.png"
+                  alt="Thalib Azhar lulus"
+                  className="victory-hero relative z-10 w-36 sm:w-44 max-h-[min(15rem,28dvh)] h-auto object-contain"
+                  style={{ filter: 'drop-shadow(0 8px 0 rgba(0,0,0,0.35))' }}
+                />
+                <div className="relative -mt-3 w-40 sm:w-48">
+                  <div className="h-3 bg-[#5fa83b] border-x-4 border-t-4 border-[#111]" />
+                  <div className="h-7 bg-[#7a5230] border-x-4 border-b-4 border-[#111] shadow-[inset_0_6px_0_#4f9330]" />
                 </div>
-
-                <div className="mt-2">
+                <div className="mt-3">
                   <div className="font-arabic text-amber-200 text-base sm:text-lg font-bold" dir="rtl">
-                    «مُمْتَازٌ مَعَ مَرْتَبَةِ الشَّرَفِ — نَيْلُ الْإِجَازَةِ وَالْبَرَكَةِ»
+                    «مُمْتَازٌ مَعَ مَرْتَبَةِ الشَّرَفِ»
                   </div>
-                  <div className="text-sm sm:text-base font-bold text-amber-300 mt-0.5">
-                    {stageStarsStr} • {stageTaqdirTitle}
-                  </div>
+                  <div className="font-mono text-sm font-black text-amber-300 mt-0.5">{stageTaqdirTitle}</div>
                 </div>
               </div>
 
-              {/* ── 3. REWARD DOME / PEDESTAL (GAYA KELULUSAN CASUAL ARCADE MINECRAFT) ── */}
-              <div className="relative z-10 rounded-3xl border-4 border-teal-400/80 bg-gradient-to-b from-[#0e3b33] via-[#092520] to-[#051512] p-4 sm:p-5 shadow-[0_12px_35px_rgba(20,184,166,0.35)] space-y-3">
-                {/* Section Title: REWARD */}
-                <div className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full bg-teal-500/20 border border-teal-300/40 text-teal-200 font-mono text-xs font-black uppercase tracking-widest shadow-inner">
-                  <span>✨</span>
-                  <span>HADIAH KELULUSAN (REWARD)</span>
-                  <span>✨</span>
+              {/* ── 4. HADIAH (SLOT INVENTORI) ── */}
+              <div className="relative mx-auto max-w-md border-4 border-[#111] bg-[#1f1f22] shadow-[inset_3px_3px_0_#3a3a3e] p-3 sm:p-4">
+                <div className="flex items-center justify-between font-mono text-[11px] font-black uppercase tracking-widest text-white/70 mb-3">
+                  <span>Hadiah</span>
+                  <span className="text-amber-300">Skor {arcadeScore.toLocaleString()}</span>
+                </div>
+                <div className="grid grid-cols-4 gap-2 justify-items-center">
+                  <ItemSlot icon="exp" count={`+${gainedExp}`} label="EXP" className="victory-slot" />
+                  <ItemSlot icon="star" count={stageStars} label="Bintang" className="victory-slot" />
+                  <ItemSlot icon="heart" count={playerHp} label="Sisa HP" className="victory-slot" />
+                  <ItemSlot icon={isFinal ? 'scroll' : 'chicken'} count={1} label={isFinal ? 'Syahadah' : 'Syawarma'} className="victory-slot" />
+                </div>
+                <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 font-mono text-[11px] text-white/65">
+                  <span className="inline-flex items-center gap-1"><PixelIcon name="target" className="w-3.5 h-3.5" />Akurasi {accuracyPct}%</span>
+                  <span className="inline-flex items-center gap-1"><PixelIcon name="fire" className="w-3.5 h-3.5" />Combo x{streak || 1}</span>
                 </div>
 
-                {/* 4 Circular Reward Badges with Quantities */}
-                <div className="grid grid-cols-4 gap-2 sm:gap-4 max-w-md mx-auto">
-                  {/* 1. Chicken Dinner Syawarma */}
-                  <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-amber-400/30 to-amber-600/30 border-2 border-amber-300 flex items-center justify-center text-2xl sm:text-3xl shadow-[0_0_12px_rgba(251,191,36,0.5)] transition hover:scale-110">
-                      🍗
-                    </div>
-                    <span className="font-mono font-black text-xs sm:text-sm text-amber-200 mt-1">1</span>
-                    <span className="font-mono text-[9px] text-white/60 truncate max-w-[70px]">Syawarma</span>
-                  </div>
-
-                  {/* 2. Syahadah / Wisam */}
-                  <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-emerald-400/30 to-emerald-600/30 border-2 border-emerald-300 flex items-center justify-center text-2xl sm:text-3xl shadow-[0_0_12px_rgba(16,185,129,0.5)] transition hover:scale-110">
-                      📜
-                    </div>
-                    <span className="font-mono font-black text-xs sm:text-sm text-emerald-200 mt-1">1</span>
-                    <span className="font-mono text-[9px] text-white/60 truncate max-w-[70px]">Syahadah</span>
-                  </div>
-
-                  {/* 3. Bintang Prestasi */}
-                  <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-yellow-300/30 to-amber-500/30 border-2 border-yellow-200 flex items-center justify-center text-2xl sm:text-3xl shadow-[0_0_12px_rgba(234,179,8,0.5)] transition hover:scale-110">
-                      ⭐
-                    </div>
-                    <span className="font-mono font-black text-xs sm:text-sm text-yellow-200 mt-1">{stageStars}</span>
-                    <span className="font-mono text-[9px] text-white/60 truncate max-w-[70px]">Bintang</span>
-                  </div>
-
-                  {/* 4. Survival HP */}
-                  <div className="flex flex-col items-center">
-                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-b from-rose-400/30 to-rose-600/30 border-2 border-rose-300 flex items-center justify-center text-2xl sm:text-3xl shadow-[0_0_12px_rgba(244,63,94,0.5)] transition hover:scale-110">
-                      ❤️
-                    </div>
-                    <span className="font-mono font-black text-xs sm:text-sm text-rose-200 mt-1">{playerHp}</span>
-                    <span className="font-mono text-[9px] text-white/60 truncate max-w-[70px]">Sisa HP</span>
-                  </div>
-                </div>
-
-                {/* Minecraft High Score Pill */}
-                <div className="w-full max-w-md mx-auto rounded-full bg-black/60 border-2 border-teal-300/50 p-1.5 sm:p-2 flex items-center justify-between px-4 sm:px-6 shadow-inner font-mono">
-                  <span className="text-[11px] sm:text-xs font-black tracking-widest text-teal-300 uppercase">
-                    SCORE
-                  </span>
-                  <span className="text-lg sm:text-2xl font-black text-white tracking-wider drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                    {arcadeScore.toLocaleString()}
-                  </span>
-                </div>
-                <div className="text-[11px] font-mono text-teal-200/80">
-                  «{stageTaqdirTitle}» • Akurasi: {accuracyPct}% • Combo: x{streak || 1} • +{gainedExp} EXP
-                </div>
                 {missionResult?.length > 0 && (
-                  <div className="max-w-md mx-auto grid gap-1.5 text-left">
-                    <div className="text-[10px] font-mono font-black uppercase tracking-widest text-amber-300 text-center">
-                      🎯 Misi Duel • {missionsWon}/{missionResult.length} tuntas (+{missionsWon * MISSION_BONUS_EXP} EXP)
+                  <div className="mt-3 pt-3 border-t-2 border-[#111] grid gap-1.5 text-left">
+                    <div className="font-mono text-[10px] font-black uppercase tracking-widest text-amber-300 text-center">
+                      Misi Duel • {missionsWon}/{missionResult.length} tuntas (+{missionsWon * MISSION_BONUS_EXP} EXP)
                     </div>
                     {missionResult.map(({ id, status }, i) => (
                       <div
                         key={id}
-                        className={`mission-reveal flex items-center gap-2 rounded-lg border px-3 py-1.5 font-mono text-xs ${status === 'done' ? 'border-emerald-400/50 bg-emerald-500/10 text-emerald-100' : 'border-white/10 bg-black/40 text-white/45'}`}
-                        style={{ animationDelay: `${0.4 + i * 0.25}s` }}
+                        className={`mission-reveal flex items-center gap-2 border-2 px-2.5 py-1.5 font-mono text-xs ${status === 'done' ? 'border-[#3f8a2e] bg-[#1d3317] text-emerald-100' : 'border-[#3a3a3e] bg-black/30 text-white/45'}`}
+                        style={{ animationDelay: `${0.6 + i * 0.2}s` }}
                       >
-                        <span>{MISSION_DEFS[id].icon}</span>
+                        <PixelIcon name={MISSION_DEFS[id].icon} className="w-5 h-5" />
                         <span className="flex-1 font-bold">{MISSION_DEFS[id].label}</span>
-                        <span>{status === 'done' ? `✅ +${MISSION_BONUS_EXP}` : '❌'}</span>
+                        {status === 'done'
+                          ? <span className="inline-flex items-center gap-1 text-emerald-300"><PixelIcon name="check" className="w-4 h-4" />+{MISSION_BONUS_EXP}</span>
+                          : <PixelIcon name="cross" className="w-4 h-4" />}
                       </div>
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* ── 4. ACTION BUTTONS TRIO (PERSIS GAMBAR REFERENSI: HOME, RETRY, NEXT) ── */}
-              <div className="relative z-10 flex items-center justify-center gap-3 pt-1">
-                {/* 1. Home / Peta Button */}
-                <button
-                  onClick={() => setPhase('map')}
-                  className="w-[3.25rem] h-[3.25rem] sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-b from-cyan-400 via-sky-500 to-cyan-600 border-b-4 border-cyan-800 text-white flex items-center justify-center text-2xl sm:text-3xl shadow-lg active:translate-y-1 transition hover:brightness-110"
-                  title="Kembali ke Peta Ruwaq (Home)"
-                >
-                  🏠
+              {/* ── 5. TOMBOL: Peta • Ulangi • Lanjut / Klaim Syahadah ── */}
+              <div className="relative grid grid-cols-[auto_auto_1fr] gap-2 sm:gap-3 max-w-md mx-auto">
+                <button onClick={() => setPhase('map')} className={stoneGray} title="Kembali ke peta level">
+                  <PixelIcon name="map" className="w-5 h-5" />
+                  <span className="hidden sm:inline">Peta</span>
                 </button>
-
-                {/* 2. Retry / Ulangi Button */}
-                <button
-                  onClick={() => startBattle(activeStage)}
-                  className="w-[3.25rem] h-[3.25rem] sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-b from-emerald-400 via-green-500 to-emerald-600 border-b-4 border-emerald-800 text-white flex items-center justify-center text-2xl sm:text-3xl shadow-lg active:translate-y-1 transition hover:brightness-110"
-                  title={`Ulangi Level Ini (${stageStarsStr})`}
-                >
-                  🔄
+                <button onClick={() => startBattle(activeStage)} className={stoneGray} title="Ulangi level ini">
+                  <PixelIcon name="retry" className="w-5 h-5" />
+                  <span className="hidden sm:inline">Ulangi</span>
                 </button>
-
-                {/* 3. NEXT Button (Big glowing orange/gold capsule) */}
                 {!isFinal ? (
                   <button
                     onClick={() => {
@@ -6844,18 +6748,15 @@ export default function BattlePage() {
                       if (nextStageObj) setActiveStage(nextStageObj);
                       setPhase('map');
                     }}
-                    className="flex-1 max-w-xs h-[3.25rem] sm:h-16 rounded-full bg-gradient-to-b from-amber-300 via-orange-400 to-amber-500 border-b-4 border-amber-800 text-white font-mono font-black text-base sm:text-xl tracking-widest shadow-[0_0_25px_rgba(245,158,11,0.7)] active:translate-y-1 transition hover:brightness-110 flex items-center justify-center gap-2"
+                    className={stoneGreen}
                   >
-                    <span>NEXT</span>
-                    <span className="text-xl sm:text-2xl">▶</span>
+                    <span>LANJUT</span>
+                    <PixelIcon name="next" className="w-5 h-5" />
                   </button>
                 ) : (
-                  <button
-                    onClick={() => setShowSyahadahModal(true)}
-                    className="flex-1 max-w-xs h-[3.25rem] sm:h-16 rounded-full bg-gradient-to-b from-amber-300 via-yellow-400 to-amber-500 border-b-4 border-amber-800 text-black font-mono font-black text-sm sm:text-lg tracking-wider shadow-[0_0_25px_rgba(251,191,36,0.8)] active:translate-y-1 transition hover:brightness-110 flex items-center justify-center gap-2 animate-bounce"
-                  >
+                  <button onClick={() => setShowSyahadahModal(true)} className={stoneGold}>
+                    <PixelIcon name="scroll" className="w-5 h-5" />
                     <span>KLAIM SYAHADAH</span>
-                    <span className="text-xl">📜</span>
                   </button>
                 )}
               </div>
@@ -6864,7 +6765,7 @@ export default function BattlePage() {
               <div className="relative z-10 pt-1">
                 <button
                   onClick={() => setShowVictoryDetails(v => !v)}
-                  className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/15 text-white/80 font-mono text-xs font-bold transition flex items-center justify-center gap-2 mx-auto"
+                  className="px-4 py-2 border-2 border-black bg-[#3a3a3e] shadow-[inset_-2px_-3px_0_#26262a,inset_2px_2px_0_#5a5a5f] hover:brightness-110 text-white/85 font-mono text-xs font-bold transition flex items-center justify-center gap-2 mx-auto"
                 >
                   <span>{showVictoryDetails ? '▲ Sembunyikan Rincian' : '▼ Buka Rincian Syahadah, EXP & Soal'}</span>
                   {wrongAnswers.length > 0 && (
@@ -6881,11 +6782,11 @@ export default function BattlePage() {
                   {/* Chicken Dinner Lore Box */}
                   <div className="rounded-2xl border-2 border-amber-400/60 bg-gradient-to-r from-[#291b07] via-[#1a1208] to-[#120e06] p-4 shadow-xl flex items-center gap-4">
                     <div className="w-14 h-14 rounded-2xl bg-amber-500/20 border-2 border-amber-400/50 flex items-center justify-center text-3xl shrink-0 shadow-lg animate-pulse">
-                      🍗
+                      <PixelIcon name="chicken" className="w-[1.15em] h-[1.15em]" />
                     </div>
                     <div>
                       <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-amber-500/25 border border-amber-400/40 text-[9px] font-mono font-bold text-amber-300 uppercase tracking-wider mb-1">
-                        <span>🍽️</span> RANSUM HADIAH KELULUSAN MASISIR
+                        <span><PixelIcon name="chicken" className="w-[1.15em] h-[1.15em]" /></span> RANSUM HADIAH KELULUSAN MASISIR
                       </div>
                       <h4 className="text-xs sm:text-sm font-bold text-white">
                         Dujaj Syawarma Darrasah & Syay bil-Na'na' Spesial
@@ -6909,7 +6810,7 @@ export default function BattlePage() {
                       <div className="rounded-xl border border-amber-400/40 bg-gradient-to-r from-amber-950/40 via-[#101512] to-emerald-950/40 p-4 space-y-2 shadow-lg">
                         <div className="flex items-center justify-between text-xs font-mono">
                           <span className="text-amber-300 font-bold flex items-center gap-1.5">
-                            <span>{currentRank.badge}</span>
+                            <EmojiIcon text={currentRank.badge} className="w-6 h-6" />
                             <span>Rank: {currentRank.rankCode} • {currentRank.title}</span>
                           </span>
                           <span className="text-emerald-400 font-bold bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-400/40">
@@ -6923,7 +6824,7 @@ export default function BattlePage() {
                           />
                         </div>
                         <div className="text-[11px] font-mono text-white/60 flex items-center justify-between">
-                          <span>{currentRank.nextExp ? `🎯 Butuh ${needed} EXP lagi menuju ${currentRank.nextTitle}` : `🏆 Maqam Keilmuan Tertinggi Dicapai!`}</span>
+                          <IconText text={currentRank.nextExp ? `🎯 Butuh ${needed} EXP lagi menuju ${currentRank.nextTitle}` : `🏆 Maqam Keilmuan Tertinggi Dicapai!`} iconClassName="w-4 h-4" />
                           <span className="text-amber-300 font-bold">{exp} EXP</span>
                         </div>
                       </div>
@@ -6935,7 +6836,7 @@ export default function BattlePage() {
                     <div className="rounded-2xl border-2 border-amber-400/60 bg-gradient-to-b from-[#1c180e] via-[#14120a] to-[#0d0c07] p-5 shadow-2xl space-y-3">
                       <div className="flex items-center justify-between border-b border-amber-500/30 pb-2.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-2xl">📜</span>
+                          <span className="text-2xl"><PixelIcon name="scroll" className="w-[1.15em] h-[1.15em]" /></span>
                           <div>
                             <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest block">
                               SYAHADAH KELULUSAN RESMI
@@ -6971,14 +6872,14 @@ export default function BattlePage() {
                           onClick={downloadSyahadahCanvas}
                           className="flex-1 btn bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-black font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-lg transition flex items-center justify-center gap-2 active:scale-95"
                         >
-                          <Icon name="download" className="w-4 h-4 text-black" />
+                          <PixelIcon name="scroll" className="w-4 h-4 text-black" />
                           <span>Unduh Syahadah (PNG)</span>
                         </button>
                         <button
                           onClick={() => setShowSyahadahModal(true)}
                           className="btn border border-amber-400/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-semibold text-xs px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5"
                         >
-                          <span>👁️</span>
+                          <span><PixelIcon name="eye" className="w-[1.15em] h-[1.15em]" /></span>
                           <span>Lihat Format Penuh</span>
                         </button>
                       </div>
@@ -7023,23 +6924,33 @@ export default function BattlePage() {
         })()}
 
         {phase === 'defeat' && (
-          <div className="max-w-xl mx-auto rounded-2xl border-2 border-rose-500/30 bg-gradient-to-b from-[#180f10] via-[#120e0f] to-[#0c0c0d] p-6 sm:p-8 text-center space-y-6 animate-fadeIn shadow-2xl">
-            <div className="relative flex flex-col items-center justify-center">
-              <div className="relative">
-                <img
-                  src="/assets/thalib-voxel-facing-right.png"
-                  alt="Thalib Azhar Kalah"
-                  className="w-28 sm:w-36 h-auto object-contain filter grayscale contrast-125 brightness-75 drop-shadow-[0_0_20px_rgba(244,63,94,0.6)]"
-                />
-                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-28 h-5 bg-black/80 rounded-full blur-[4px]" />
+          <div className="relative max-w-xl mx-auto overflow-hidden px-4 sm:px-6 pt-5 pb-5 text-center space-y-5 border-4 border-[#111] bg-[#2b2b2e] shadow-[inset_-4px_-4px_0_#1a1a1c,inset_4px_4px_0_#4a4a4e,0_20px_60px_rgba(0,0,0,0.7)] animate-fadeIn">
+            <h2
+              className="victory-title font-black font-mono text-4xl sm:text-5xl tracking-[0.12em] text-[#fca5a5]"
+              style={{ textShadow: '4px 4px 0 #7f1d1d' }}
+            >
+              BELUM LULUS
+            </h2>
+            {/* Thalib di blok tanah (tanpa kedip), dengan tiga hati: yang kosong = HP habis / soal kurang */}
+            <div className="relative flex flex-col items-center">
+              <div className="flex gap-1.5 mb-2">
+                {[0, 1, 2].map(i => (
+                  <PixelIcon key={i} name={defeatReason === 'hp' || i > 0 ? 'heartBroken' : 'heart'} className="w-7 h-7" />
+                ))}
               </div>
-              <div className="absolute -top-3 -right-2 w-10 h-10 rounded-full bg-rose-600 border-2 border-white flex items-center justify-center text-xl shadow-lg">
-                💤
+              <img
+                src="/assets/thalib-hurt-voxel.png"
+                alt="Thalib Azhar belum lulus"
+                className="victory-hero relative z-10 w-28 sm:w-36 max-h-[min(13rem,24dvh)] h-auto object-contain"
+                style={{ filter: 'saturate(0.6) drop-shadow(0 8px 0 rgba(0,0,0,0.35))' }}
+              />
+              <div className="relative -mt-3 w-36 sm:w-44">
+                <div className="h-8 bg-[#7a5230] border-4 border-[#111] shadow-[inset_0_5px_0_#5c3d22]" />
               </div>
             </div>
 
             <div>
-              <span className="font-mono text-xs text-rose-400 font-bold uppercase tracking-widest block mb-1">
+              <span className="font-mono text-xs text-rose-300 font-black uppercase tracking-widest block mb-1">
                 {defeatReason === 'boss-survived' ? 'SOAL HABIS, GUARDIAN MASIH BERDIRI!' : 'THALIB KEHABISAN HP!'}
               </span>
               {defeatReason === 'boss-survived' && (
@@ -7047,9 +6958,9 @@ export default function BattlePage() {
                   Butuh minimal {getBattleRules(activeStage, activeQuiz.length).requiredCorrect} dari {activeQuiz.length} jawaban benar untuk menumbangkan guardian (sisa HP: {bossHp}/{bossMaxHp}).
                 </p>
               )}
-              <h2 className="text-2xl sm:text-3xl font-display font-bold text-white mb-2">
+              <div className="font-mono text-lg sm:text-xl font-black text-white mb-2">
                 Taqdir: Daur Tsani (Remedial)
-              </h2>
+              </div>
               <p className="text-xs text-white/60">
                 Guardian menguji kembali kefahamanmu pada materi <strong>{activeStage?.title || activeSet.title}</strong>. Muroja'ah lagi sebelum menantang imtihan ulang.
               </p>
@@ -7057,7 +6968,7 @@ export default function BattlePage() {
 
             {/* Review Soal yang Salah & Cara Jawab Ujian */}
             {wrongAnswers.length > 0 && (
-              <div className="text-left rounded-xl border border-white/10 bg-white/5 p-4 max-h-64 overflow-y-auto space-y-3 text-xs">
+              <div className="text-left border-4 border-[#111] bg-[#1f1f22] shadow-[inset_3px_3px_0_#3a3a3e] p-3 sm:p-4 max-h-64 overflow-y-auto space-y-3 text-xs">
                 <div className="font-bold text-white/90 border-b border-white/10 pb-1.5 flex items-center justify-between">
                   <span>Tinjauan Soal & Cara Jawab di Ujian ({wrongAnswers.length} soal):</span>
                   <span className="text-[10px] text-amber-300 font-mono">Kurrasah Ijabah</span>
@@ -7091,28 +7002,29 @@ export default function BattlePage() {
             )}
 
             {/* Tombol Rematch & Belajar */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3 pt-1">
               <button
                 onClick={() => startBattle(activeStage)}
-                className="btn bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-extrabold text-xs px-5 py-2.5 rounded-xl shadow-lg transition flex items-center justify-center gap-2"
+                className="min-h-[48px] px-4 border-2 border-black font-mono font-black text-sm text-white flex items-center justify-center gap-2 bg-[#3f8a2e] shadow-[inset_-3px_-4px_0_#245019,inset_3px_3px_0_#7cc964] active:translate-y-0.5 hover:brightness-110 transition"
               >
-                <span>⚔️</span>
-                <span>Rematch Level Ini</span>
+                <span><PixelIcon name="sword" className="w-[1.15em] h-[1.15em]" /></span>
+                <span>Coba Lagi</span>
               </button>
 
               <button
                 onClick={() => setPhase('map')}
-                className="btn border border-amber-400/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-semibold text-xs px-5 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5"
+                className="min-h-[48px] px-4 border-2 border-black font-mono font-black text-sm text-white flex items-center justify-center gap-2 bg-[#6f6f73] shadow-[inset_-3px_-4px_0_#3f3f42,inset_3px_3px_0_#a9a9ad] active:translate-y-0.5 hover:brightness-110 transition"
               >
-                <span>🗺️</span>
+                <span><PixelIcon name="map" className="w-[1.15em] h-[1.15em]" /></span>
                 <span>Peta Level</span>
               </button>
 
               <button
                 onClick={() => setPhase('study')}
-                className="btn border border-white/15 bg-white/5 hover:bg-white/10 text-white font-medium text-xs px-5 py-2.5 rounded-xl transition"
+                className="min-h-[48px] px-4 border-2 border-black font-mono font-black text-sm text-white flex items-center justify-center gap-2 bg-[#6f6f73] shadow-[inset_-3px_-4px_0_#3f3f42,inset_3px_3px_0_#a9a9ad] active:translate-y-0.5 hover:brightness-110 transition"
               >
-                Ruang Muthola'ah
+                <PixelIcon name="book" className="w-[1.15em] h-[1.15em]" />
+                <span>Muthola'ah</span>
               </button>
             </div>
           </div>
@@ -7128,8 +7040,8 @@ export default function BattlePage() {
               {/* Header Halaqah */}
               <div className="p-4 sm:p-5 border-b border-emerald-500/30 bg-gradient-to-r from-[#142219] to-[#0c1510] flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-emerald-500/20 border-2 border-emerald-400/60 flex items-center justify-center text-2xl shadow-md">
-                    👳‍♂️
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-emerald-500/20 border-2 border-emerald-400/60 flex items-center justify-center overflow-hidden shadow-md">
+                    <img src="/assets/npc-musaid-voxel.png" alt="Syaikh" className="w-full h-full object-contain" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -7146,7 +7058,7 @@ export default function BattlePage() {
                   className="p-1.5 rounded-lg border border-white/10 hover:bg-white/10 text-white/60 hover:text-white transition"
                   title="Tutup"
                 >
-                  <Icon name="x" className="w-5 h-5" />
+                  <PixelIcon name="cross" className="w-5 h-5" />
                 </button>
               </div>
 
@@ -7166,8 +7078,8 @@ export default function BattlePage() {
                     className={`flex items-start gap-2.5 ${msg.role === 'thalib' ? 'justify-end' : 'justify-start'}`}
                   >
                     {msg.role === 'syaikh' && (
-                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center text-base shrink-0 mt-0.5">
-                        👳‍♂️
+                      <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center overflow-hidden shrink-0 mt-0.5">
+                        <img src="/assets/npc-musaid-voxel.png" alt="" className="w-full h-full object-contain" />
                       </div>
                     )}
                     <div
@@ -7190,15 +7102,15 @@ export default function BattlePage() {
                       )}
                     </div>
                     {msg.role === 'thalib' && (
-                      <div className="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-400/50 flex items-center justify-center text-base shrink-0 mt-0.5">
-                        🎓
+                      <div className="w-8 h-8 rounded-full bg-blue-500/20 border border-blue-400/50 flex items-center justify-center overflow-hidden shrink-0 mt-0.5">
+                        <img src="/assets/thalib-voxel-facing-right.png" alt="" className="w-full h-full object-contain" />
                       </div>
                     )}
                   </div>
                 ))}
                 {aiBusy && (
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center text-base shrink-0">👳‍♂️</div>
+                    <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-400/50 flex items-center justify-center overflow-hidden shrink-0"><img src="/assets/npc-musaid-voxel.png" alt="" className="w-full h-full object-contain" /></div>
                     <div className="rounded-2xl rounded-tl-none bg-[#152019] border border-emerald-500/30 px-3.5 py-2.5 text-xs font-mono text-emerald-300 animate-pulse">
                       Syaikh sedang menulis jawaban...
                     </div>
@@ -7217,28 +7129,28 @@ export default function BattlePage() {
                     disabled={aiBusy}
                     className="px-2.5 py-1 rounded-lg border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-xs font-mono transition"
                   >
-                    🔍 Petunjuk / Isyarah Soal
+                    <PixelIcon name="search" className="w-[1.15em] h-[1.15em]" /> Petunjuk / Isyarah Soal
                   </button>
                   <button
                     onClick={() => askAiSyaikh('explanation')}
                     disabled={aiBusy}
                     className="px-2.5 py-1 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 text-xs font-mono transition"
                   >
-                    📖 Kaidah Pokok Matan
+                    <PixelIcon name="book" className="w-[1.15em] h-[1.15em]" /> Kaidah Pokok Matan
                   </button>
                   <button
                     onClick={() => askAiSyaikh('exam')}
                     disabled={aiBusy}
                     className="px-2.5 py-1 rounded-lg border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-xs font-mono transition"
                   >
-                    ✍️ Rumus Kurrasah Ijabah
+                    <PixelIcon name="quill" className="w-[1.15em] h-[1.15em]" /> Rumus Kurrasah Ijabah
                   </button>
                   <button
                     onClick={() => askAiSyaikh('diff')}
                     disabled={aiBusy}
                     className="px-2.5 py-1 rounded-lg border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 text-xs font-mono transition"
                   >
-                    ⚖️ Perbedaan Antar Opsi
+                    <PixelIcon name="scale" className="w-[1.15em] h-[1.15em]" /> Perbedaan Antar Opsi
                   </button>
                 </div>
 
@@ -7276,7 +7188,7 @@ export default function BattlePage() {
                   onClick={() => setShowAiModal(false)}
                   className="btn bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition"
                 >
-                  Kembali Bertarung ⚔️
+                  Kembali Bertarung <PixelIcon name="sword" className="w-4 h-4 inline-block align-[-3px]" />
                 </button>
               </div>
             </div>
@@ -7294,7 +7206,7 @@ export default function BattlePage() {
               {/* Header */}
               <div className="p-4 border-b border-amber-500/30 bg-[#121c15] flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">📜</span>
+                  <PixelIcon name="scroll" className="w-7 h-7" />
                   <h3 className="font-bold text-amber-300 text-sm sm:text-base font-serif">
                     Pratinjau Syahadah Imtihan Al-Azhar
                   </h3>
@@ -7303,7 +7215,7 @@ export default function BattlePage() {
                   onClick={() => setShowSyahadahModal(false)}
                   className="p-1 rounded-lg border border-white/10 hover:bg-white/10 text-white/60 hover:text-white transition"
                 >
-                  <Icon name="x" className="w-5 h-5" />
+                  <PixelIcon name="cross" className="w-5 h-5" />
                 </button>
               </div>
 
@@ -7378,7 +7290,7 @@ export default function BattlePage() {
                   onClick={downloadSyahadahCanvas}
                   className="btn bg-gradient-to-r from-amber-500 to-amber-400 hover:brightness-110 text-black font-extrabold text-xs px-5 py-2.5 rounded-xl shadow-lg flex items-center gap-2"
                 >
-                  <Icon name="download" className="w-4 h-4 text-black" />
+                  <PixelIcon name="scroll" className="w-4 h-4 text-black" />
                   <span>Unduh File PNG Resolusi Tinggi (1200x800)</span>
                 </button>
               </div>
@@ -7403,7 +7315,7 @@ export default function BattlePage() {
               {/* Header Plaque */}
               <div className="p-4 bg-[#2b1b0e] border-b-2 border-[#5a381c] flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-2xl animate-bounce">🎁</span>
+                  <span className="text-2xl animate-bounce"><PixelIcon name="gift" className="w-[1.15em] h-[1.15em]" /></span>
                   <div>
                     <h3 className="font-bold text-amber-300 text-sm sm:text-base tracking-wide drop-shadow-[1px_1px_0_#000]">
                       PETI HIKMAH AL-AZHAR TERBUKA!
@@ -7429,7 +7341,7 @@ export default function BattlePage() {
                   <div className="p-3 bg-[#181820] border-2 border-t-[#000] border-l-[#000] border-b-[#3f3f46] border-r-[#3f3f46] shadow-inner text-center">
                     <span className="text-[10px] text-stone-400 uppercase tracking-wider block">Bonus Pengalaman</span>
                     <div className="text-base sm:text-lg font-black text-amber-300 flex items-center justify-center gap-1.5 mt-0.5 drop-shadow-[1px_1px_0_#000]">
-                      <span>⚡</span>
+                      <span><PixelIcon name="bolt" className="w-[1.15em] h-[1.15em]" /></span>
                       <span>+50 EXP</span>
                     </div>
                   </div>
@@ -7449,7 +7361,7 @@ export default function BattlePage() {
                 <div className="p-4 sm:p-5 bg-[#1e1710] border-2 border-[#5c3a1e] shadow-[2px_2px_0_#000] relative">
                   <div className="flex items-center justify-between border-b border-[#4a2e18] pb-2 mb-3">
                     <span className="text-[10px] text-amber-300 font-bold uppercase tracking-wider flex items-center gap-1">
-                      <span>📜</span>
+                      <span><PixelIcon name="scroll" className="w-[1.15em] h-[1.15em]" /></span>
                       <span>MUTIARA KALAM ULAMA AZHAR</span>
                     </span>
                     <span className="text-[9px] text-amber-200/60 font-sans">Tahqiq & Barakah</span>
@@ -7664,6 +7576,22 @@ export default function BattlePage() {
         @keyframes missionReveal { from { transform: translateX(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
         .mission-reveal { animation: missionReveal 0.4s ease-out both; }
 
+        /* ── Layar menang: semua animasi sekali jalan (tidak ada kedip/pulse berulang) ── */
+        @keyframes victoryRays { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+        .victory-rays { transform: translate(-50%, -50%); animation: victoryRays 60s linear infinite; }
+        @keyframes victoryTitle { 0% { transform: scale(2.4); opacity: 0; } 55% { transform: scale(0.94); opacity: 1; } 75% { transform: scale(1.04); } 100% { transform: scale(1); opacity: 1; } }
+        .victory-title { animation: victoryTitle 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s both; }
+        @keyframes victoryStar { 0% { transform: scale(0) rotate(-30deg); opacity: 0; } 60% { transform: scale(1.25) rotate(6deg); opacity: 1; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+        .victory-star { animation: victoryStar 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+        @keyframes victoryHero { 0% { transform: translateY(40px); opacity: 0; } 60% { transform: translateY(-10px); opacity: 1; } 100% { transform: translateY(0); opacity: 1; } }
+        .victory-hero { animation: victoryHero 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both; }
+        .victory-bubble { animation: vsUp 0.4s ease-out 0.7s both; }
+        .victory-slot { animation: missionReveal 0.35s ease-out both; }
+        .victory-slot:nth-child(1) { animation-delay: 0.9s; }
+        .victory-slot:nth-child(2) { animation-delay: 1.0s; }
+        .victory-slot:nth-child(3) { animation-delay: 1.1s; }
+        .victory-slot:nth-child(4) { animation-delay: 1.2s; }
+
         @keyframes vsLeft { from { transform: translateX(-120%); opacity: 0; } to { transform: none; opacity: 1; } }
         @keyframes vsRight { from { transform: translateX(120%); opacity: 0; } to { transform: none; opacity: 1; } }
         @keyframes vsSlam {
@@ -7813,6 +7741,8 @@ export default function BattlePage() {
           .battle-root .ko-confetti, .battle-root .combo-aura::before { display: none !important; }
           .battle-root .boss-enraged, .battle-root .vs-left, .battle-root .vs-right, .battle-root .vs-slam,
           .battle-root .vs-banner, .battle-root .vs-missions, .battle-root .ko-slam { animation: none !important; }
+          .battle-root .victory-rays, .battle-root .victory-title, .battle-root .victory-star, .battle-root .victory-hero,
+          .battle-root .victory-bubble, .battle-root .victory-slot { animation: none !important; }
         }
       `}</style>
     </div>

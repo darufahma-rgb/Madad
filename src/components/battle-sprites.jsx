@@ -1,4 +1,5 @@
 import React from 'react';
+import { IconText } from './pixel-icons.jsx';
 
 /* =========================================================================
    TALQEEH — ARENA IMTIHAN CHARACTER SPRITES & ANIMATIONS
@@ -1023,7 +1024,7 @@ export function FloatingDamage({ text = null, type = 'damage' }) {
           : 'text-rose-400 bg-rose-950/80 border border-rose-500/50'
       }`}
     >
-      {text}
+      <IconText text={text} iconClassName="w-4 h-4" />
     </div>
   );
 }
@@ -1033,25 +1034,25 @@ export function FloatingDamage({ text = null, type = 'damage' }) {
    Partikel memakai keyframe global di battle-page.jsx (arena*), yang dimatikan saat prefers-reduced-motion. */
 export const ARENA_THEMES = {
   1: {
-    id: 'dusk', spriteGrade: 'sepia(0.22) saturate(1.15) brightness(1.03)', name: 'Senja di Gerbang', icon: '🌇',
+    id: 'dusk', spriteGrade: 'sepia(0.22) saturate(1.15) brightness(1.03)', name: 'Senja di Gerbang', icon: 'gate',
     grade: 'sepia(0.35) saturate(1.35) hue-rotate(-14deg) brightness(1.05) contrast(1.05)',
     tint: 'linear-gradient(to top, rgba(0,0,0,0.75), rgba(251,146,60,0.12) 45%, rgba(251,146,60,0.28))',
     position: '20% 50%', pan: 'arenaPanA', particles: 'dust',
   },
   2: {
-    id: 'lantern', spriteGrade: 'brightness(0.86) saturate(1.05) hue-rotate(6deg)', name: 'Malam Berlentera', icon: '🏮',
+    id: 'lantern', spriteGrade: 'brightness(0.86) saturate(1.05) hue-rotate(6deg)', name: 'Malam Berlentera', icon: 'torch',
     grade: 'brightness(0.82) saturate(1.15) hue-rotate(12deg)',
     tint: 'linear-gradient(to top, rgba(0,0,0,0.8), rgba(30,27,75,0.25) 50%, rgba(15,23,42,0.55))',
     position: '80% 50%', pan: 'arenaPanB', particles: 'lantern',
   },
   3: {
-    id: 'storm', spriteGrade: 'brightness(0.8) saturate(0.85) contrast(1.05)', name: 'Badai di Shahn', icon: '⛈️',
+    id: 'storm', spriteGrade: 'brightness(0.8) saturate(0.85) contrast(1.05)', name: 'Badai di Shahn', icon: 'rain',
     grade: 'brightness(0.72) contrast(1.2) saturate(0.75)',
     tint: 'linear-gradient(to top, rgba(0,0,0,0.8), rgba(30,41,59,0.35) 50%, rgba(15,23,42,0.6))',
     position: '50% 40%', pan: 'arenaPanA', particles: 'rain', lightning: true,
   },
   4: {
-    id: 'eclipse', spriteGrade: 'brightness(0.84) saturate(1.15) hue-rotate(-12deg)', name: 'Gerhana Kubah Ulama', icon: '🌘',
+    id: 'eclipse', spriteGrade: 'brightness(0.84) saturate(1.15) hue-rotate(-12deg)', name: 'Gerhana Kubah Ulama', icon: 'moon',
     grade: 'brightness(0.7) saturate(1.5) hue-rotate(-28deg) contrast(1.1)',
     tint: 'radial-gradient(ellipse at 70% 30%, rgba(168,85,247,0.25), transparent 60%), linear-gradient(to top, rgba(0,0,0,0.85), rgba(76,5,25,0.35) 55%, rgba(30,8,50,0.6))',
     position: '50% 30%', pan: 'arenaPanB', particles: 'runes', pulse: true,
