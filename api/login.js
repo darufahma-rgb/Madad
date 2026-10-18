@@ -3,6 +3,7 @@ import { normalizePin } from './_lib/pin.js';
 import { verifyUnsubToken, addOptout } from './_lib/email.js';
 import {
   CHECKOUT_PLANS, mayarConfigured, checkoutBlockReason, createCheckout, getOwnedCheckout, refreshCheckout,
+  listGroupCodes, redeemGroupCode,
 } from './_lib/payments.js';
 import { getWelcomeOffer } from './_lib/offer.js';
 
@@ -201,7 +202,7 @@ const publicCheckout = (c) => ({ id: c.id, plan: c.plan, amount: c.amount, link:
 // Buat tagihan Mayar untuk paket yang dipilih (harga ditentukan server, bukan browser).
 async function handleCheckout(req, user, res) {
   if (!mayarConfigured()) return res.status(200).json({ ok: false, status: 'payments_disabled' });
-  const { plan } = await parseBody(req);
+  const { plan, seats } = await parseBody(req);
   if (!CHECKOUT_PLANS.includes(plan)) return res.status(400).json({ ok: false, status: 'invalid_plan' });
   if (!checkCheckoutLimit(user.id)) return res.status(429).json({ ok: false, status: 'rate_limited' });
 
@@ -211,7 +212,7 @@ async function handleCheckout(req, user, res) {
   if (blocked) return res.status(200).json({ ok: false, status: blocked });
 
   const offer = plan === 'imtihan' ? await getWelcomeOffer(member) : null;
-  const result = await createCheckout({ user, member, plan, appOrigin: appOrigin(req), imtihanAmount: offer?.price });
+  const result = await createCheckout({ user, member, plan, appOrigin: appOrigin(req), imtihanAmount: offer?.price, seats });
   if (!result.ok) return res.status(200).json(result);
   return res.status(200).json({ ok: true, checkout: publicCheckout(result.checkout) });
 }
@@ -228,6 +229,21 @@ async function handleCheckoutStatus(req, user, res) {
     console.warn('[login:checkout-status]', err.message);
   }
   return res.status(200).json({ ok: true, status, plan: checkout.plan });
+}
+
+/* Paket Rombongan: pembeli melihat kode untuk teman-temannya; teman menukar kode setelah login Google.
+   Tukar kode dibatasi percobaannya (kode 8 karakter acak, tapi tetap jangan bisa ditebak beruntun). */
+async function handleGroupCodes(user, res) {
+  return res.status(200).json({ ok: true, codes: await listGroupCodes(user.id) });
+}
+
+async function handleGroupRedeem(req, user, res) {
+  if (!checkRedeemLimit(`group:${user.id}`)) return res.status(429).json({ ok: false, status: 'rate_limited' });
+  const { code } = await parseBody(req);
+  const member = await resolveMember(user);
+  if (member && member.status !== 'active' && member.status !== 'expired') return res.status(200).json({ ok: false, status: member.status });
+  const result = await redeemGroupCode({ user, code });
+  return res.status(200).json(result);
 }
 
 async function handleUnsubscribe(req, res) {
@@ -312,6 +328,8 @@ export default async function handler(req, res) {
       return res.status(200).json({ ok: true, offer: await getWelcomeOffer(member, { start: true }) });
     }
     if (action === 'checkout-status') return await handleCheckoutStatus(req, user, res);
+    if (action === 'group-codes') return await handleGroupCodes(user, res);
+    if (action === 'group-redeem') return await handleGroupRedeem(req, user, res);
     return res.status(400).json({ ok: false, error: 'Action tidak valid' });
   } catch (err) {
     console.error(`[login:${action}]`, err.message);

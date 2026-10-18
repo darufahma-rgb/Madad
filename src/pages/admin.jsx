@@ -2631,6 +2631,118 @@ const SettingsField = ({ label, value, onChange, mono = false, hint }) => (
   </div>
 );
 
+/* ── Event penjualan (api/_lib/events.js) ──
+   Tanggal diisi dalam waktu perangkat admin (datetime-local) lalu dikirim sebagai ISO; server memvalidasi harga & rentang. */
+const toLocalInput = (iso) => {
+  const t = Date.parse(iso || '');
+  if (!Number.isFinite(t)) return '';
+  const d = new Date(t - new Date(t).getTimezoneOffset() * 60000);
+  return d.toISOString().slice(0, 16);
+};
+const fromLocalInput = (v) => (v ? new Date(v).toISOString() : '');
+const parseEventSetting = (raw) => { try { const v = JSON.parse(raw || 'null'); return v && typeof v === 'object' ? v : null; } catch { return null; } };
+const eventStatus = (ev) => {
+  if (!ev?.enabled) return ['Mati', 'text-ink-muted border-white/15'];
+  const now = Date.now(), a = Date.parse(ev.startsAt), b = Date.parse(ev.endsAt);
+  if (!Number.isFinite(a) || !Number.isFinite(b)) return ['Belum lengkap', 'text-amber-300 border-amber-500/30'];
+  if (now < a) return ['Terjadwal', 'text-sky-300 border-sky-500/30'];
+  if (now > b) return ['Sudah lewat', 'text-ink-muted border-white/15'];
+  return ['Berlangsung', 'text-emerald-300 border-emerald-500/30'];
+};
+const DateField = ({ label, value, onChange }) => (
+  <label className="block">
+    <span className="text-xs text-ink-muted block mb-1">{label}</span>
+    <input type="datetime-local" value={toLocalInput(value)} onChange={e => onChange(fromLocalInput(e.target.value))}
+      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink text-sm outline-none [color-scheme:dark]"/>
+  </label>
+);
+const SalesEventsCard = ({ imtihan, setImtihan, rombongan, setRombongan }) => {
+  const [iLabel, iTone] = eventStatus(imtihan);
+  const [rLabel, rTone] = eventStatus(rombongan);
+  const sizes = rombongan.sizes || [];
+  const setSize = (k, patch) => setRombongan({ ...rombongan, sizes: sizes.map((s, j) => (j === k ? { ...s, ...patch } : s)) });
+  const toggle = (ev, set) => (
+    <button type="button" onClick={() => set({ ...ev, enabled: !ev.enabled })} aria-pressed={!!ev.enabled}
+      className={`text-xs px-3 py-1.5 rounded-lg border ${ev.enabled ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200' : 'border-white/15 text-ink-muted'}`}>
+      {ev.enabled ? 'Aktif' : 'Nonaktif'}
+    </button>
+  );
+  return (
+    <div className="card-glass p-6 space-y-5">
+      <div>
+        <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Event penjualan</div>
+        <p className="text-[11px] text-ink-soft leading-relaxed">
+          Atur promo tanpa deploy. Banner, harga di landing/Gabung, dan harga tagihan Mayar berubah otomatis selama
+          rentang waktu event (±30 detik setelah disimpan). Di luar rentang, harga normal berlaku sendiri. Waktu memakai jam perangkatmu.
+        </p>
+      </div>
+
+      <div className="rounded-xl border border-white/10 p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="text-sm text-ink font-medium">Promo Paket Imtihan</div>
+          <div className="flex items-center gap-2">
+            <span className={`text-[11px] px-2 py-0.5 rounded-full border ${iTone}`}>{iLabel}</span>
+            {toggle(imtihan, setImtihan)}
+          </div>
+        </div>
+        <SettingsField label="Nama event (tampil di banner)" value={imtihan.name || ''} onChange={v => setImtihan({ ...imtihan, name: v })}/>
+        <SettingsField label="Harga Paket Imtihan selama event (Rp)" value={String(imtihan.price || '')} mono
+          onChange={v => setImtihan({ ...imtihan, price: v.replace(/[^\d]/g, '') })}
+          hint={`Normal ${formatRupiah(IMTIHAN_PRICE_IDR)}. Harus di bawah harga normal dan minimal Rp 70.000.`}/>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <DateField label="Mulai" value={imtihan.startsAt} onChange={v => setImtihan({ ...imtihan, startsAt: v })}/>
+          <DateField label="Selesai" value={imtihan.endsAt} onChange={v => setImtihan({ ...imtihan, endsAt: v })}/>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-white/10 p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
+          <div className="text-sm text-ink font-medium">Paket Rombongan</div>
+          <div className="flex items-center gap-2">
+            <span className={`text-[11px] px-2 py-0.5 rounded-full border ${rTone}`}>{rLabel}</span>
+            {toggle(rombongan, setRombongan)}
+          </div>
+        </div>
+        <p className="text-[11px] text-ink-soft leading-relaxed">
+          Satu pembeli membayar Paket Imtihan untuk beberapa orang: pembeli langsung aktif, sisanya jadi kode untuk teman
+          (halaman <span className="font-mono">#/rombongan</span>). Jalankan <span className="font-mono">migrations/paket_rombongan.sql</span> sekali sebelum mengaktifkan.
+        </p>
+        <SettingsField label="Nama event" value={rombongan.name || ''} onChange={v => setRombongan({ ...rombongan, name: v })}/>
+        <div className="space-y-2">
+          <div className="text-xs text-ink-muted">Ukuran rombongan (harga TOTAL untuk semua orang)</div>
+          {sizes.map((s, k) => {
+            const seats = Number(s.seats) || 0, price = Number(s.price) || 0;
+            return (
+              <div key={k} className="flex items-center gap-2 flex-wrap">
+                <select value={seats || ''} onChange={e => setSize(k, { seats: Number(e.target.value) })}
+                  className="bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-ink text-sm [color-scheme:dark]" aria-label="Jumlah orang">
+                  {[2, 3, 4, 5, 6, 8, 10].map(n => <option key={n} value={n}>{n} orang</option>)}
+                </select>
+                <input value={String(s.price || '')} onChange={e => setSize(k, { price: e.target.value.replace(/[^\d]/g, '') })}
+                  placeholder="Harga total" inputMode="numeric" aria-label="Harga total"
+                  className="w-36 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-ink text-sm font-mono outline-none"/>
+                <span className="text-[11px] text-ink-soft flex-1 min-w-[120px]">
+                  {seats && price ? `${formatRupiah(Math.round(price / seats))}/orang · hemat ${formatRupiah(seats * IMTIHAN_PRICE_IDR - price)}` : ''}
+                </span>
+                <button type="button" onClick={() => setRombongan({ ...rombongan, sizes: sizes.filter((_, j) => j !== k) })}
+                  className="text-xs text-rose-300 hover:text-rose-200 px-2">Hapus</button>
+              </div>
+            );
+          })}
+          {sizes.length < 3 && (
+            <button type="button" onClick={() => setRombongan({ ...rombongan, sizes: [...sizes, { seats: sizes.length ? 5 : 3, price: '' }] })}
+              className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2">+ Tambah ukuran</button>
+          )}
+        </div>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <DateField label="Mulai" value={rombongan.startsAt} onChange={v => setRombongan({ ...rombongan, startsAt: v })}/>
+          <DateField label="Selesai" value={rombongan.endsAt} onChange={v => setRombongan({ ...rombongan, endsAt: v })}/>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // Satu pilihan model AI + tombol uji (memanggil model sungguhan dengan pertanyaan kecil).
 const ModelField = ({ label, hint, value, active, onChange }) => {
   const [test, setTest] = useState(null);
@@ -2691,6 +2803,9 @@ const AdminSettings = () => {
   // Limit khusus per email: [{ email, daily: { talkhis: 5, … }, noMonthly }] — lihat parseQuotaOverrides di server.
   const [overrides, setOverrides] = useState([]);
   const [newOverrideEmail, setNewOverrideEmail] = useState("");
+  // Event penjualan; contoh awal Paket Rombongan: 3 orang Rp 447.000 (Rp 149rb/orang), 5 orang Rp 695.000 (Rp 139rb/orang).
+  const [imtihanEvent, setImtihanEvent] = useState({ enabled: false, name: '', price: '', startsAt: '', endsAt: '' });
+  const [rombonganEvent, setRombonganEvent] = useState({ enabled: false, name: 'Paket Rombongan', startsAt: '', endsAt: '', sizes: [{ seats: 3, price: 447000 }, { seats: 5, price: 695000 }] });
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeModels, setActiveModels] = useState(null);
@@ -2703,6 +2818,10 @@ const AdminSettings = () => {
         setSettings(s => ({ ...s, ...server }));
         try { setLimits(JSON.parse(server.aiMonthlyLimits || '{}') || {}); } catch { setLimits({}); }
         try { const o = JSON.parse(server.aiQuotaOverrides || '[]'); setOverrides(Array.isArray(o) ? o : []); } catch { setOverrides([]); }
+        const ie = parseEventSetting(server.imtihanEvent);
+        if (ie) setImtihanEvent({ ...ie, enabled: true });
+        const re = parseEventSetting(server.rombonganEvent);
+        if (re) setRombonganEvent({ ...re, enabled: true });
       })
       .catch(err => toast.push("Gagal memuat settings: " + err.message));
     aiPartnerAdmin('admin-models').then(d => { if (d.ok) setActiveModels(d.data); }).catch(() => {});
@@ -2711,7 +2830,11 @@ const AdminSettings = () => {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await adminMembersAPI('save-settings', null, { ...settings, aiMonthlyLimits: limits, aiQuotaOverrides: overrides });
+      await adminMembersAPI('save-settings', null, {
+        ...settings, aiMonthlyLimits: limits, aiQuotaOverrides: overrides,
+        imtihanEvent: imtihanEvent.enabled ? imtihanEvent : { enabled: false },
+        rombonganEvent: rombonganEvent.enabled ? rombonganEvent : { enabled: false },
+      });
       localStorage.removeItem("talqee_admin_settings");
       setSaved(true);
       toast.push("Settings tersimpan & langsung berlaku untuk semua pengunjung.");
@@ -2763,6 +2886,8 @@ const AdminSettings = () => {
             onChange={v => setSettings({...settings, aiPriceMonthly: v.replace(/[^\d]/g, "")})}
             hint="Angka saja, misal 49000. Harga ini yang ditampilkan dan ditagihkan. Kosongkan untuk menutup penjualan AI Partner (akses manual dari tab Langganan & Bayar tetap bisa)."/>
         </div>
+
+        <SalesEventsCard imtihan={imtihanEvent} setImtihan={setImtihanEvent} rombongan={rombonganEvent} setRombongan={setRombonganEvent}/>
 
         <div className="card-glass p-6 space-y-4">
           <div>

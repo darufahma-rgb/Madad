@@ -114,7 +114,7 @@ const App = () => {
     if (authStatus === "needs_activation") {
       setLoginOpen(false);
       const plan = readJoinPlan();
-      const wantsPaid = plan === "library" || plan === "library_ai" || plan === "imtihan";
+      const wantsPaid = plan === "library" || plan === "library_ai" || plan === "imtihan" || plan === "rombongan";
       if (wantsPaid || authInfo?.likelyLegacyMember) {
         if (!path.startsWith("/gabung")) navigate(gabungPath(plan));
         return;
@@ -212,7 +212,7 @@ const App = () => {
   }, [session, authStatus, profile, isFree, canUpgrade]);
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
-  const isPublic = path === "/" || path.startsWith("/gabung") || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/developer" || path === "/seminar" || path.startsWith("/seminar/") || path.startsWith("/seminar?") || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal" || path === "/battle" || path.startsWith("/battle") || path === "/game";
+  const isPublic = path === "/" || path.startsWith("/gabung") || path === "/rombongan" || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/developer" || path === "/seminar" || path.startsWith("/seminar/") || path.startsWith("/seminar?") || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal" || path === "/battle" || path.startsWith("/battle") || path === "/game";
 
   // Admin gets its own layout (no public nav/footer)
   if (isAdmin) {
@@ -229,6 +229,7 @@ const App = () => {
   let page = <LandingPage onOpenLogin={openLogin} onOpenJoin={openJoin}/>;
   if (session && isFree && isFreeLocked(path))      { page = <FreeUpgradeWall path={path}/>; routeLabel = "Khusus Library"; }
   else if (path === "/gabung" || path.startsWith("/gabung?")) { page = <GabungPage key={path}/>; routeLabel = "Gabung"; }
+  else if (path === "/rombongan") { page = <RombonganPage/>; routeLabel = "Paket Rombongan"; }
   else if (path.startsWith("/sample/nahwu"))        { page = <SampleNahwuPage/>; routeLabel = "Sample Nahwu"; }
   else if (path === "/ethics")            { page = <EthicsPage/>; routeLabel = "Etika"; }
   else if (path === "/privacy")           { page = <PrivacyPage/>; routeLabel = "Kebijakan Privasi"; }

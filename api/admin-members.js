@@ -1,6 +1,7 @@
 import https from 'https';
 import { verifyToken } from './admin-auth.js';
 import { ADMIN_SETTING_KEYS, readSettings } from './_lib/settings.js';
+import { validateImtihanEvent, validateRombonganEvent, clearSalesEventsCache } from './_lib/events.js';
 import { MODEL_SETTING_KEYS, isValidModelId } from './_lib/models.js';
 import { newActivationPin, PIN_TTL_DAYS } from './_lib/pin.js';
 import { buildAdminAnalytics } from './_lib/analytics.js';
@@ -319,6 +320,15 @@ export default async function handler(req, res) {
         if (bad) { res.status(400).json({ ok: false, error: `Kuota bulanan "${bad}" harus angka 0–5000` }); return; }
         row.aiMonthlyLimits = JSON.stringify(Object.fromEntries(QUOTA_KINDS.filter(k => src[k] !== '' && src[k] != null).map(k => [k, Number(src[k])])));
       }
+      // Event penjualan: objek dari form admin → divalidasi lalu disimpan sebagai JSON ("" = event dimatikan).
+      for (const [key, validate] of [['imtihanEvent', validateImtihanEvent], ['rombonganEvent', validateRombonganEvent]]) {
+        if (row && row[key] != null && typeof row[key] !== 'string') {
+          const out = validate(row[key]);
+          if (out.error) { res.status(400).json({ ok: false, error: out.error }); return; }
+          row[key] = out.value ? JSON.stringify(out.value) : '';
+        }
+      }
+      clearSalesEventsCache();
       // Limit khusus per email: dirapikan & divalidasi di server, disimpan sebagai JSON (boleh lebih panjang dari 500).
       if (row && row.aiQuotaOverrides != null && typeof row.aiQuotaOverrides !== 'string') {
         row.aiQuotaOverrides = JSON.stringify(parseQuotaOverrides(row.aiQuotaOverrides));

@@ -204,7 +204,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   // 5 nav utama member — Maddah-first
   const memberLinks = [
     { to: "/dashboard",        label: "Beranda" },
-    { to: "/battle",           label: "⚔️ Arena Imtihan" },
+    { to: "/battle",           label: "🎮 Arena Imtihan" },
     { to: "/library",          label: "Library" },
     { to: "/ai-partner",       label: "AI Partner" },
     { to: "/maddah",           label: "Maddah" },
@@ -214,7 +214,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
   ];
   // Link tambahan untuk mobile menu
   const memberLinksExtra = [
-    { to: "/battle",           label: "⚔️ Arena Imtihan" },
+    { to: "/battle",           label: "🎮 Arena Imtihan" },
     { to: "/ai-partner",       label: "AI Partner" },
     { to: "/paths",            label: "Learning Path" },
     { to: "/framework",        label: "Framework" },
@@ -223,7 +223,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     { to: "/developer",        label: "Tentang Developer" },
   ];
   const publicLinks = [
-    { to: "/battle",        label: "⚔️ Arena Imtihan", highlight: true },
+    { to: "/battle",        label: "🎮 Arena Imtihan", highlight: true },
     { to: "/sample/nahwu", label: "Preview" },
     { to: "/maddah-publik", label: "Maddah" },
     { to: "/#paket",        label: "Paket" },
@@ -593,12 +593,30 @@ const LIBRARY_PRICE_ORIGINAL = null;
 // Paket Imtihan: Library selamanya + AI Partner 1 termin (120 hari). Sama dengan api/_lib/payments.js.
 const IMTIHAN_PRICE_IDR = 199000;
 const IMTIHAN_AI_DAYS = 120;
-// Event promo Paket Imtihan (waktu Kairo). Sama dengan IMTIHAN_PROMO di api/_lib/payments.js — server yang menentukan harga tagihan.
-const IMTIHAN_PROMO = {
-  name: "Pekan Persiapan Imtihan", price: 149000,
-  startsAt: "2026-10-05T00:00:00+03:00", endsAt: "2026-10-18T23:59:59+03:00", endLabel: "18 Oktober",
+/* Event penjualan diatur di Admin → Settings → Event penjualan (api/_lib/events.js); /api/config hanya mengirim
+   event yang sedang berlangsung, dan server tetap yang menentukan harga tagihan. IMTIHAN_PROMO diisi ulang setiap
+   settings termuat, jadi pemakai lama (window.IMTIHAN_PROMO, imtihanPromoActive) tidak perlu diubah. */
+const NO_PROMO = { name: "", price: 0, startsAt: "", endsAt: "", endLabel: "" };
+const IMTIHAN_PROMO = { ...NO_PROMO };
+const cairoDateLabel = (iso) => new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "long", timeZone: "Africa/Cairo" });
+const syncSalesEvents = () => {
+  const ev = window.getAppSettings?.()?.imtihanEvent;
+  Object.assign(IMTIHAN_PROMO, ev?.price ? { ...ev, endLabel: cairoDateLabel(ev.endsAt) } : NO_PROMO);
 };
-const imtihanPromoActive = (now = Date.now()) => now >= Date.parse(IMTIHAN_PROMO.startsAt) && now <= Date.parse(IMTIHAN_PROMO.endsAt);
+syncSalesEvents();
+window.addEventListener("talqeeh:settings", syncSalesEvents);
+const imtihanPromoActive = (now = Date.now()) => !!IMTIHAN_PROMO.price && now >= Date.parse(IMTIHAN_PROMO.startsAt) && now <= Date.parse(IMTIHAN_PROMO.endsAt);
+
+/* Paket Rombongan yang sedang berlangsung: { name, endsAt, endLabel, sizes: [{ seats, price, perSeat, saving }] } atau null.
+   Satu pembeli membayar Paket Imtihan untuk beberapa orang; pembeli langsung aktif, teman-temannya dapat kode. */
+const rombonganEvent = (settings, now = Date.now()) => {
+  const ev = settings?.rombonganEvent;
+  if (!ev?.sizes?.length || !(now >= Date.parse(ev.startsAt) && now <= Date.parse(ev.endsAt))) return null;
+  return {
+    ...ev, endLabel: cairoDateLabel(ev.endsAt),
+    sizes: ev.sizes.map(s => ({ ...s, perSeat: Math.round(s.price / s.seats), saving: s.seats * IMTIHAN_PRICE_IDR - s.price })),
+  };
+};
 // Angka katalog yang dipakai di semua copy. Sesuaikan kalau data maddah/prompt bertambah
 // (66 maddah S1 di maddah-data + 27 maddah Ma'had di mahad-data; ±1.256 prompt per Oktober 2026).
 const CATALOG = { maddah: 93, maddahS1: 66, maddahMahad: 27, prompts: "1.250+" };
@@ -618,7 +636,7 @@ const AI_PARTNER_FEATURES = [
   "Flashcard pengulangan berjarak, kuis, dan latihan tahriri dinilai AI",
   "Tutor dari materimu + simulasi ujian syafawi",
 ];
-const PLAN_LABELS = { library: "Library", library_ai: "Library + AI Partner 30 hari", ai: "AI Partner 30 hari", imtihan: "Paket Imtihan" };
+const PLAN_LABELS = { library: "Library", library_ai: "Library + AI Partner 30 hari", ai: "AI Partner 30 hari", imtihan: "Paket Imtihan", rombongan: "Paket Rombongan" };
 
 /* Paket Library + AI Study Partner: satu kali bayar di awal = Library selamanya + AI 30 hari pertama.
    Harga AI dari Admin → Settings (aiPriceMonthly); null kalau belum diisi. */
@@ -658,6 +676,7 @@ const imtihanBundle = (settings, offer = null) => {
 
 // Sisa waktu event, diperbarui tiap menit: "3 hari 4 jam" / "5 jam 12 menit".
 const usePromoCountdown = () => {
+  useAppSettings(); // render ulang saat event dari settings termuat
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 60000); return () => clearInterval(t); }, []);
   const left = Date.parse(IMTIHAN_PROMO.endsAt) - now;
@@ -780,6 +799,25 @@ const EventBanner = () => {
           </span>
           <button onClick={() => { window.logFunnel?.("view_join", "offer_banner"); navigate("/gabung?plan=imtihan"); }}
             className="btn btn-gold text-xs px-3 py-1.5 flex-shrink-0 whitespace-nowrap">Ambil</button>
+        </div>
+      </div>
+    );
+  }
+  const rombongan = rombonganEvent(window.getAppSettings?.());
+  if (!left && rombongan && !hidden && !/^\/(admin|seminar|gabung|rombongan)/.test(path)) {
+    const best = rombongan.sizes[rombongan.sizes.length - 1];
+    return (
+      <div className="relative z-[5] border-b border-sky-500/25" style={{ background: "linear-gradient(90deg, rgba(96,165,250,0.16), rgba(62,207,142,0.12))" }}>
+        <div className="container-x py-2.5 flex items-center gap-2.5 md:gap-3 text-[12.5px] md:text-[13px]">
+          <span className="hidden sm:inline px-2 py-0.5 rounded-full bg-sky-400 text-black text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Rombongan</span>
+          <span className="text-ink flex-1 min-w-0 leading-snug">
+            <b>{rombongan.name}</b> · Paket Imtihan bareng teman, mulai <b className="text-emerald-300 whitespace-nowrap">{formatRupiah(best.perSeat)}/orang</b> · sampai {rombongan.endLabel}
+          </span>
+          <button onClick={() => { window.logFunnel?.("view_join", "rombongan_banner"); navigate("/gabung?plan=rombongan"); }}
+            className="btn btn-primary text-xs px-3 py-1.5 flex-shrink-0 whitespace-nowrap">Lihat</button>
+          <button onClick={() => setHidden(true)} aria-label="Tutup banner event" className="w-7 h-7 -mr-1 rounded-lg text-ink-muted hover:text-ink hover:bg-white/5 flex items-center justify-center flex-shrink-0">
+            <Icon name="x" className="w-3.5 h-3.5"/>
+          </button>
         </div>
       </div>
     );
@@ -998,6 +1036,7 @@ const CHECKOUT_ERRORS = {
   already_library:   "Akunmu sudah member Library.",
   needs_library:     "AI Partner adalah tambahan untuk member Library. Pilih paket Library + AI Partner.",
   rate_limited:      "Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.",
+  rombongan_closed:  "Event Paket Rombongan sudah berakhir atau ukuran rombongan ini tidak tersedia.",
   network:           "Tidak bisa terhubung ke server. Cek koneksi lalu coba lagi.",
   error:             "Gagal membuat tagihan. Coba lagi sebentar, atau hubungi admin.",
 };
@@ -1062,10 +1101,11 @@ const useCheckout = ({ plans, enabled = true, onPaid } = {}) => {
 
   // Buat tagihan, tampilkan layar checkout Talqeeh, lalu pindah ke halaman bayar Mayar (Mayar mengarahkan
   // kembali ke /?checkout=… setelah bayar). Halaman Mayar tidak bisa dipakai di dalam iframe situs lain.
-  const start = async (plan) => {
+  // opts: { seats } untuk Paket Rombongan.
+  const start = async (plan, opts = {}) => {
     window.logFunnel?.('click_pay', plan);
     setState({ status: "creating", checkout: null });
-    const r = await createCheckout(plan);
+    const r = await createCheckout(plan, opts);
     if (!r.ok) {
       setState({ status: "error", checkout: null, code: r.status, error: CHECKOUT_ERRORS[r.status] || CHECKOUT_ERRORS.error });
       return;
@@ -1530,6 +1570,7 @@ Object.assign(window, {
   GoogleButton, ErrorBox, useGoogleSignIn, formatPinInput, ACTIVATION_ERRORS, StepList,
   PLAN_LABELS, DEFAULT_ADMIN_WA, PAYMENT_WAIT_LIMIT_MS, aiBundle, AI_BUNDLE_FEATURES, AiBundleBreakdown,
   imtihanBundle, ImtihanBreakdown, IMTIHAN_PRICE_IDR, IMTIHAN_AI_DAYS, IMTIHAN_PROMO, imtihanPromoActive, EventBanner, usePromoCountdown,
+  rombonganEvent,
   useWelcomeOffer, OfferClock, WelcomeOfferPopup,
   useCheckout, CheckoutWaiting, CheckoutWatcher, CheckoutPayModal, readPendingCheckout, savePendingCheckout, formatRupiah,
   LIBRARY_PRICE, LIBRARY_PRICE_IDR, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,

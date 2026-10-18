@@ -96,7 +96,102 @@ const FAQS = [
 const planFromHash = () => {
   const q = (window.location.hash.split('?')[1] || '');
   const plan = new URLSearchParams(q).get('plan');
-  return ['free', 'library', 'library_ai', 'imtihan'].includes(plan) ? plan : null;
+  return ['free', 'library', 'library_ai', 'imtihan', 'rombongan'].includes(plan) ? plan : null;
+};
+
+const GROUP_ERRORS = {
+  invalid_code:     'Kode tidak dikenal. Cek lagi penulisannya (format RMB-XXXX-XXXX).',
+  code_used:        'Kode ini sudah dipakai. Minta kode lain ke teman yang membeli rombongan.',
+  own_code:         'Ini kode dari rombonganmu sendiri — bagikan ke teman, bukan dipakai sendiri.',
+  already_redeemed: 'Akun ini sudah pernah menukar kode rombongan.',
+  rate_limited:     'Terlalu banyak percobaan. Coba lagi 15 menit lagi.',
+  network:          'Tidak bisa terhubung ke server. Cek koneksi lalu coba lagi.',
+  error:            'Gagal menukar kode. Coba lagi sebentar, atau hubungi admin.',
+};
+const formatGroupCodeInput = (v) => {
+  const raw = String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^RMB/, '').slice(0, 8);
+  return raw ? `RMB-${raw.slice(0, 4)}${raw.length > 4 ? `-${raw.slice(4)}` : ''}` : '';
+};
+
+/* Form tukar kode rombongan (dipakai halaman Gabung & halaman Rombongan). onDone dipanggil setelah berhasil. */
+const GroupRedeemForm = ({ onDone, onClose }) => {
+  const { refreshMemberSession } = useAuth();
+  const toast = useToast();
+  const [code, setCode] = useState('');
+  const [error, setError] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const complete = code.replace(/[^A-Z0-9]/g, '').length === 11;
+  const submit = async (e) => {
+    e?.preventDefault();
+    if (!complete || busy) return;
+    setBusy(true);
+    setError(null);
+    const r = await window.redeemGroupCode(code);
+    setBusy(false);
+    if (!r.ok) { setError(GROUP_ERRORS[r.status] || GROUP_ERRORS.error); return; }
+    window.dispatchEvent(new Event('talqeeh:ai-status-changed'));
+    await refreshMemberSession();
+    toast.push(`Kode diterima — Paket Imtihan (Library + AI Partner ${IMTIHAN_AI_DAYS} hari) aktif!`);
+    onDone?.();
+  };
+  return (
+    <form onSubmit={submit} className="card-glass-strong p-6 md:p-8 max-w-lg mx-auto">
+      <h2 className="font-display text-2xl font-semibold text-ink mb-2">Tukar kode rombongan</h2>
+      <p className="text-sm text-ink-muted mb-5 leading-relaxed">
+        Dapat kode dari teman yang membeli Paket Rombongan? Masukkan di sini — akunmu langsung dapat Paket Imtihan:
+        Library selamanya + AI Partner {IMTIHAN_AI_DAYS} hari. Satu akun satu kode.
+      </p>
+      <input value={code} onChange={e => { setCode(formatGroupCodeInput(e.target.value)); setError(null); }}
+        placeholder="RMB-XXXX-XXXX" maxLength={13} autoComplete="one-time-code" aria-label="Kode rombongan"
+        className="code-input w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-xl text-ink text-center tracking-[0.2em] placeholder:text-ink-soft focus:outline-none"/>
+      <ErrorBox message={error}/>
+      <button type="submit" disabled={!complete || busy}
+        className={`btn btn-primary w-full mt-5 ${!complete || busy ? 'opacity-50 cursor-not-allowed' : ''}`}>
+        {busy ? 'Memeriksa kode...' : 'Tukar kode'}
+      </button>
+      {onClose && <button type="button" onClick={onClose} className="w-full text-center text-xs text-ink-soft hover:text-ink-muted mt-4">Tutup</button>}
+    </form>
+  );
+};
+
+/* Kartu Paket Rombongan — hanya selama event berlangsung (Admin → Settings → Event penjualan). */
+const RombonganCard = ({ event, seats, onSeats, onChoose }) => {
+  const chosen = event.sizes.find(s => s.seats === seats) || event.sizes[event.sizes.length - 1];
+  return (
+    <div className="card-glass-strong p-6 md:p-7 max-w-6xl mx-auto mt-6 relative overflow-hidden" style={{ border: '1px solid rgba(96,165,250,0.35)' }}>
+      <div className="absolute -top-24 -right-16 w-64 h-64 rounded-full blur-3xl pointer-events-none" style={{ background: 'rgba(96,165,250,0.14)' }}/>
+      <div className="relative grid md:grid-cols-[1.2fr_1fr] gap-6 items-center">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider mb-3"
+            style={{ background: 'rgba(96,165,250,0.12)', color: SKY, border: '1px solid rgba(96,165,250,0.3)' }}>
+            <Icon name="users" className="w-3.5 h-3.5" style={{ stroke: SKY }}/> {event.name} · sampai {event.endLabel}
+          </div>
+          <h3 className="font-display text-2xl md:text-3xl font-semibold text-ink leading-tight mb-2">Paket Rombongan: belajar bareng teman serumah</h3>
+          <p className="text-sm text-ink-muted leading-relaxed">
+            Satu orang bayar, semua dapat <span className="text-ink">Paket Imtihan</span> (Library selamanya + AI Partner {IMTIHAN_AI_DAYS} hari).
+            Kamu langsung aktif, dan untuk teman-temanmu dibuatkan kode — mereka tinggal login Google lalu tukar kodenya.
+          </p>
+        </div>
+        <div>
+          <div className="grid gap-2" role="radiogroup" aria-label="Jumlah orang">
+            {event.sizes.map(s => (
+              <button key={s.seats} type="button" role="radio" aria-checked={chosen.seats === s.seats} onClick={() => onSeats(s.seats)}
+                className={`flex items-center justify-between gap-3 px-4 py-3 rounded-xl border text-left transition ${chosen.seats === s.seats ? 'border-sky-400/60 bg-sky-500/10' : 'border-white/10 hover:border-white/20'}`}>
+                <span>
+                  <span className="block text-ink font-medium">{s.seats} orang</span>
+                  <span className="block text-[11px] text-ink-muted">{formatRupiah(s.perSeat)}/orang · hemat {formatRupiah(s.saving)}</span>
+                </span>
+                <span className="text-ink font-semibold tabular-nums">{formatRupiah(s.price)}</span>
+              </button>
+            ))}
+          </div>
+          <button onClick={() => onChoose(chosen.seats)} className="btn btn-primary w-full mt-3 py-3">
+            Bayar untuk {chosen.seats} orang · {formatRupiah(chosen.price)}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 const Mark = ({ ok, color, className = 'w-4 h-4' }) => ok
@@ -194,6 +289,8 @@ const GabungPage = () => {
   const [redeeming, setRedeeming] = useState(false);
   const [startingFree, setStartingFree] = useState(false);
   const [freeError, setFreeError] = useState('');
+  const rombongan    = rombonganEvent(settings);
+  const [seats, setSeats] = useState(null);
 
   const signedOut    = authStatus === 'signed_out' || (authStatus === 'member' && !session);
   const noAccount    = authStatus === 'needs_activation';
@@ -208,12 +305,15 @@ const GabungPage = () => {
   const adminWa      = (settings.whatsapp || '').replace(/\D/g, '') || DEFAULT_ADMIN_WA;
   // Library + AI tanpa harga AI → hanya Library yang bisa dibayar sekarang.
   // Paket Imtihan berharga tetap (tidak bergantung harga AI bulanan).
-  const payPlan      = plan === 'imtihan' ? 'imtihan' : (plan === 'library_ai' && aiPrice ? 'library_ai' : 'library');
-  const payTotal     = payPlan === 'imtihan' ? imtihan.total : LIBRARY_PRICE_IDR + (payPlan === 'library_ai' ? aiPrice : 0);
+  const rombonganSize = rombongan ? (rombongan.sizes.find(s => s.seats === seats) || rombongan.sizes[rombongan.sizes.length - 1]) : null;
+  const payPlan      = plan === 'rombongan' && rombonganSize ? 'rombongan'
+    : plan === 'imtihan' ? 'imtihan' : (plan === 'library_ai' && aiPrice ? 'library_ai' : 'library');
+  const payTotal     = payPlan === 'rombongan' ? rombonganSize.price
+    : payPlan === 'imtihan' ? imtihan.total : LIBRARY_PRICE_IDR + (payPlan === 'library_ai' ? aiPrice : 0);
 
   // Tagihan Library/Library+AI yang sedang ditunggu (juga dilanjutkan setelah kembali dari Mayar).
   const checkout = useCheckout({
-    plans: ['library', 'library_ai', 'ai', 'imtihan'],
+    plans: ['library', 'library_ai', 'ai', 'imtihan', 'rombongan'],
     enabled: !signedOut,
     onPaid: async (c) => {
       saveJoinPlanLocal(null);
@@ -221,6 +321,13 @@ const GabungPage = () => {
         window.dispatchEvent(new Event('talqeeh:ai-status-changed'));
         toast.push('Pembayaran diterima — AI Partner aktif 30 hari!');
         navigate('/ai-partner');
+        return;
+      }
+      if (c.plan === 'rombongan') {
+        window.dispatchEvent(new Event('talqeeh:ai-status-changed'));
+        await refreshMemberSession();
+        toast.push('Pembayaran diterima — Paket Imtihan-mu aktif. Bagikan kode ke teman-temanmu!');
+        navigate('/rombongan');
         return;
       }
       await refreshMemberSession(); // sesi berubah jadi Library → efek di bawah pindah ke Beranda
@@ -234,6 +341,7 @@ const GabungPage = () => {
   // Plan dari tautan (?plan=library) langsung membuka panel bayar untuk yang sudah login.
   useEffect(() => {
     if ((noAccount || canUpgrade) && ['library', 'library_ai', 'imtihan'].includes(plan) && step === null && !waiting) setStep('pay');
+    if (plan === 'rombongan' && !rombongan) setPlan(null);
   }, [noAccount, canUpgrade]);
 
   useEffect(() => {
@@ -245,7 +353,7 @@ const GabungPage = () => {
   useEffect(() => {
     if (!paidMember || (!step && !paidPlan)) return;
     saveJoinPlanLocal(null);
-    if (paidPlan === 'ai') return;
+    if (paidPlan === 'ai' || paidPlan === 'rombongan') return;
     const withAi = paidPlan === 'library_ai' || paidPlan === 'imtihan';
     toast.push(withAi ? 'Selamat, Library & AI Partner-mu sudah aktif!' : 'Selamat, akses Library-mu sudah aktif!');
     navigate(withAi ? '/ai-partner' : '/dashboard');
@@ -280,7 +388,14 @@ const GabungPage = () => {
     navigate('/dashboard');
   };
 
-  const openPayment = () => { setStep(null); checkout.start(payPlan); };
+  const openPayment = () => { setStep(null); checkout.start(payPlan, payPlan === 'rombongan' ? { seats: rombonganSize.seats } : {}); };
+  // Rombongan boleh dibeli member Library juga (bagian pembeli menambah 120 hari AI Partner).
+  const chooseRombongan = (n) => {
+    setSeats(n);
+    if (signedOut) { requireLogin('rombongan'); return; }
+    setPlan('rombongan');
+    setStep('pay');
+  };
 
   const pinComplete = pin.replace(/-/g, '').length === 8;
   const handleRedeem = async (e) => {
@@ -402,6 +517,7 @@ const GabungPage = () => {
             </>
           )}
         </div>
+        {rombongan && <RombonganCard event={rombongan} seats={seats} onSeats={setSeats} onChoose={chooseRombongan}/>}
         {freeError && <div className="text-sm text-rose-400 text-center mt-4">{freeError}</div>}
 
         <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 mt-7 text-xs text-ink-muted">
@@ -422,10 +538,17 @@ const GabungPage = () => {
       <Section sectionRef={panelRef} className="pb-10 scroll-mt-24">
         {step === 'pay' && !waiting && (
           <div className="card-glass-strong p-6 md:p-8 max-w-2xl mx-auto">
-            <h2 className="font-display text-2xl font-semibold text-ink mb-1">Bayar paket {PLAN_LABELS[payPlan]}</h2>
+            <h2 className="font-display text-2xl font-semibold text-ink mb-1">Bayar {payPlan === 'rombongan' ? `Paket Rombongan ${rombonganSize.seats} orang` : `paket ${PLAN_LABELS[payPlan]}`}</h2>
             <p className="text-sm text-ink-muted mb-5">Tagihan dibuat langsung untuk akun <span className="text-ink">{email}</span> — tidak perlu isi data lagi.</p>
             <div className="card-glass p-4 mb-5 text-sm space-y-2">
+              {payPlan === 'rombongan' ? (
+                <>
+                  <div className="flex justify-between gap-3"><span className="text-ink-muted">Paket Imtihan × {rombonganSize.seats} orang</span><span className="text-ink">{formatRupiah(rombonganSize.perSeat)}/orang</span></div>
+                  <p className="text-[11px] text-ink-soft">Kamu langsung aktif. {rombonganSize.seats - 1} kode untuk teman muncul setelah pembayaran — bagikan lewat WhatsApp.</p>
+                </>
+              ) : (
               <div className="flex justify-between gap-3"><span className="text-ink-muted">Library · akses selamanya</span><span className="text-ink">{LIBRARY_PRICE}</span></div>
+              )}
               {payPlan === 'library_ai' && (
                 <div className="flex justify-between gap-3"><span className="text-ink-muted">AI Partner · 30 hari pertama</span><span className="text-ink">{formatRupiah(aiPrice)}</span></div>
               )}
@@ -436,7 +559,7 @@ const GabungPage = () => {
               {plan === 'library_ai' && !aiPrice && (
                 <p className="text-[11px] text-amber-300/90 pt-1">Harga AI Partner belum dibuka. Bayar Library dulu — AI Partner bisa ditambahkan nanti dari akunmu.</p>
               )}
-              {(payPlan === 'library_ai' || payPlan === 'imtihan') && (
+              {(payPlan === 'library_ai' || payPlan === 'imtihan' || payPlan === 'rombongan') && (
                 <p className="text-[11px] text-ink-soft pt-1">AI Partner tidak diperpanjang otomatis. Perpanjang kapan saja dari akunmu.</p>
               )}
               {payPlan === 'imtihan' && imtihan.saving && (
@@ -500,11 +623,20 @@ const GabungPage = () => {
           </form>
         )}
 
-        {(noAccount || canUpgrade) && step !== 'redeem' && !waiting && (
-          <div className="text-center mt-6 text-sm">
-            <button onClick={() => setStep('redeem')} className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
-              Member lama? Masukkan PIN aktivasi dari admin
+        {step === 'group' && !signedOut && (
+          <GroupRedeemForm onDone={() => navigate('/ai-partner')} onClose={() => setStep(null)}/>
+        )}
+
+        {!waiting && step !== 'group' && (
+          <div className="text-center mt-6 text-sm flex flex-col items-center gap-2">
+            <button onClick={() => (signedOut ? navigate('/rombongan') : setStep('group'))} className="text-sky-300 hover:text-sky-200 underline underline-offset-2">
+              Punya kode rombongan dari teman? Tukar di sini
             </button>
+            {(noAccount || canUpgrade) && step !== 'redeem' && (
+              <button onClick={() => setStep('redeem')} className="text-emerald-300 hover:text-emerald-200 underline underline-offset-2">
+                Member lama? Masukkan PIN aktivasi dari admin
+              </button>
+            )}
           </div>
         )}
         {signedOut && (
@@ -652,4 +784,94 @@ const GabungPage = () => {
   );
 };
 
+/* ── Halaman Rombongan: kode untuk teman (pembeli) + tukar kode (teman) ── */
+const RombonganPage = () => {
+  const { authStatus, session, authInfo } = useAuth();
+  const google = useGoogleSignIn();
+  const settings = useAppSettings();
+  const toast = useToast();
+  const [codes, setCodes] = useState(null);
+  const signedOut = authStatus === 'signed_out' || (authStatus === 'member' && !session);
+  const email = authInfo?.email || session?.email || '';
+  useEffect(() => {
+    if (signedOut || authStatus === 'loading') return;
+    let alive = true;
+    window.getGroupCodes().then(c => { if (alive) setCodes(c); });
+    return () => { alive = false; };
+  }, [signedOut, authStatus]);
+  const link = `${window.location.origin}/#/gabung`;
+  const shareText = (code) => encodeURIComponent(
+    `Assalamu'alaikum! Aku sudah bayarin Paket Imtihan Talqeeh buat kamu (Library + AI Partner ${IMTIHAN_AI_DAYS} hari). ` +
+    `Buka ${link}, login pakai Google, lalu pilih "Punya kode rombongan dari teman?" dan masukkan kode: ${code}`);
+  const copy = async (code) => {
+    try { await navigator.clipboard.writeText(code); toast.push(`Kode ${code} disalin`); } catch { toast.push(code); }
+  };
+  const rombongan = rombonganEvent(settings);
+  // Setelah login Google (termasuk akun baru yang otomatis dibuatkan akun gratis), kembali ke halaman ini.
+  const loginHere = () => {
+    try { sessionStorage.setItem('talqeeh_return_to', JSON.stringify({ path: '/rombongan', at: Date.now() })); } catch {}
+    google.start();
+  };
+
+  if (authStatus === 'loading') {
+    return <div className="container-x py-16"><div className="card-glass p-6 max-w-xl mx-auto"><Skeleton lines={3}/></div></div>;
+  }
+  return (
+    <div className="page-enter">
+      <Section className="pt-8 md:pt-14 pb-16">
+        <div className="max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-[0.18em] mb-4"
+            style={{ background: 'rgba(96,165,250,0.12)', color: SKY, border: '1px solid rgba(96,165,250,0.3)' }}>
+            <Icon name="users" className="w-3.5 h-3.5" style={{ stroke: SKY }}/> Paket Rombongan
+          </div>
+          <h1 className="font-display text-3xl md:text-4xl font-semibold text-ink leading-tight mb-2">Belajar bareng teman serumah</h1>
+          <p className="text-ink-muted mb-8">Kode di bawah untuk teman-temanmu. Tiap kode memberi satu akun Paket Imtihan (Library selamanya + AI Partner {IMTIHAN_AI_DAYS} hari).</p>
+
+          {signedOut ? (
+            <div className="card-glass p-6 text-center">
+              <p className="text-sm text-ink-muted mb-4">Login dengan Google untuk melihat kode rombonganmu atau menukar kode dari teman.</p>
+              <div className="max-w-sm mx-auto"><GoogleButton onClick={loginHere} loading={google.loading}/></div>
+              <ErrorBox message={google.error}/>
+            </div>
+          ) : (
+            <>
+              {codes === null ? (
+                <div className="card-glass p-6"><Skeleton lines={3}/></div>
+              ) : codes.length ? (
+                <div className="card-glass-strong p-5 md:p-6 mb-8">
+                  <div className="text-xs uppercase tracking-wider text-sky-300 mb-3">Kode untuk teman · {codes.filter(c => !c.redeemedAt).length} belum dipakai</div>
+                  <ul className="divide-y divide-white/8">
+                    {codes.map(c => (
+                      <li key={c.code} className="py-3 flex items-center gap-3 flex-wrap">
+                        <span className={`font-mono text-base tracking-wider ${c.redeemedAt ? 'text-ink-soft line-through' : 'text-ink'}`}>{c.code}</span>
+                        <span className="text-[11px] text-ink-muted flex-1 min-w-[140px]">{c.redeemedAt ? `Dipakai ${c.redeemedBy || ''}` : 'Belum dipakai'}</span>
+                        {!c.redeemedAt && (
+                          <span className="flex gap-2">
+                            <button onClick={() => copy(c.code)} className="btn btn-ghost text-xs px-3 py-1.5">Salin</button>
+                            <a href={`https://wa.me/?text=${shareText(c.code)}`} target="_blank" rel="noopener noreferrer" className="btn btn-primary text-xs px-3 py-1.5">Kirim via WA</a>
+                          </span>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-[11px] text-ink-soft mt-3">Kode tidak bisa dipakai akunmu sendiri ({email}). Satu akun teman hanya bisa menukar satu kode.</p>
+                </div>
+              ) : (
+                <div className="card-glass p-5 mb-8 text-sm text-ink-muted">
+                  Belum ada kode rombongan di akun ini.{' '}
+                  {rombongan
+                    ? <button onClick={() => navigate('/gabung?plan=rombongan')} className="text-sky-300 underline underline-offset-2">Beli Paket Rombongan</button>
+                    : 'Paket Rombongan hanya dibuka saat event.'}
+                </div>
+              )}
+              <GroupRedeemForm onDone={() => navigate('/ai-partner')}/>
+            </>
+          )}
+        </div>
+      </Section>
+    </div>
+  );
+};
+
 window.GabungPage = GabungPage;
+window.RombonganPage = RombonganPage;

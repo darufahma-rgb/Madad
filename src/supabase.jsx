@@ -140,10 +140,10 @@ const checkAiSubscription = async () => {
 
 /* ── PEMBAYARAN (Mayar API) ── */
 
-// Buat tagihan untuk paket 'library' | 'library_ai' | 'ai'. Harga ditentukan server.
-const createCheckout = async (plan) => {
+// Buat tagihan untuk paket 'library' | 'library_ai' | 'ai' | 'imtihan' | 'rombongan' (opts.seats). Harga ditentukan server.
+const createCheckout = async (plan, opts = {}) => {
   try {
-    const res = await authFetch('/api/login?action=checkout', { method: 'POST', body: JSON.stringify({ plan }) });
+    const res = await authFetch('/api/login?action=checkout', { method: 'POST', body: JSON.stringify({ plan, ...(opts.seats ? { seats: opts.seats } : {}) }) });
     const data = await res.json().catch(() => ({}));
     if (res.status === 429) return { ok: false, status: 'rate_limited' };
     return data.ok ? data : { ok: false, status: data.status || 'error' };
@@ -161,6 +161,31 @@ const checkCheckout = async (id) => {
     return data.ok ? { status: data.status, plan: data.plan } : { status: 'error' };
   } catch {
     return { status: 'error' };
+  }
+};
+
+/* ── PAKET ROMBONGAN ── */
+
+// Kode untuk teman dari tagihan rombongan yang sudah lunas: [{ code, seat, redeemedBy, redeemedAt }].
+const getGroupCodes = async () => {
+  try {
+    const res = await authFetch('/api/login?action=group-codes', { method: 'POST', body: '{}' });
+    const data = await res.json().catch(() => ({}));
+    return data.ok ? data.codes || [] : [];
+  } catch {
+    return [];
+  }
+};
+
+// Tukar kode rombongan → { ok } atau { ok:false, status: invalid_code | code_used | own_code | already_redeemed | rate_limited | … }.
+const redeemGroupCode = async (code) => {
+  try {
+    const res = await authFetch('/api/login?action=group-redeem', { method: 'POST', body: JSON.stringify({ code }) });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 429) return { ok: false, status: 'rate_limited' };
+    return data.ok ? data : { ok: false, status: data.status || 'error' };
+  } catch {
+    return { ok: false, status: 'network' };
   }
 };
 
@@ -454,7 +479,7 @@ const sbPushAllUserData = async () => {
 
 Object.assign(window, {
   getMemberCode, isPaidMember,
-  checkAiSubscription, createCheckout, checkCheckout,
+  checkAiSubscription, createCheckout, checkCheckout, getGroupCodes, redeemGroupCode,
   sbLoadNotes, sbSaveNote, sbDeleteNote,
   sbLoadProgress, sbSaveProgress,
   sbLoadIntentions, sbSaveIntention,

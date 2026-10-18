@@ -4,6 +4,7 @@ export const ADMIN_SETTING_KEYS = [
   'mayarLibraryUrl', 'mayarLibraryProductId', 'mayarUrl', 'mayarAiProductId', 'aiPriceLabel', 'aiPriceMonthly',
   'aiModelDefault', 'aiModelStudy', 'aiModelVision', 'aiModelArabic', 'aiModelGrade', 'aiModelChat', 'aiModelPrompt', 'aiModelTranscribe',
   'aiMonthlyLimits', 'aiQuotaOverrides',
+  'imtihanEvent', 'rombonganEvent', // event penjualan (JSON, lihat api/_lib/events.js)
 ];
 
 // Subset yang dikirim ke semua pengunjung lewat /api/config (product ID sengaja tidak publik).

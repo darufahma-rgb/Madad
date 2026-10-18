@@ -1,5 +1,6 @@
 import { readSettings, PUBLIC_SETTING_KEYS } from './_lib/settings.js';
 import { mayarConfigured, parseAiPrice } from './_lib/payments.js';
+import { getLiveEvents } from './_lib/events.js';
 import { sbConfig, sbHeaders } from './_lib/member.js';
 
 // Jumlah pengguna untuk bukti sosial di landing ("150+ Masisir sudah pakai Talqeeh").
@@ -44,9 +45,10 @@ export default async function handler(req, res) {
     return;
   }
 
-  const [loaded, users] = await Promise.all([
+  const [loaded, users, events] = await Promise.all([
     readSettings(PUBLIC_SETTING_KEYS).catch(err => { console.warn('[config] settings unavailable:', err.message); return {}; }),
     userCount(),
+    getLiveEvents().catch(() => ({ imtihan: null, rombongan: null })),
   ]);
   let settings = loaded || {};
 
@@ -58,6 +60,9 @@ export default async function handler(req, res) {
     aiPriceLabel: aiPrice ? `Rp ${aiPrice.toLocaleString('id-ID')}` : '',
     payOnline: mayarConfigured(),
     userCount: users, // null = sembunyikan
+    // Event penjualan yang sedang berlangsung (Admin → Settings); null = tidak ada. Harga tagihan tetap dari server.
+    imtihanEvent: events.imtihan,
+    rombonganEvent: events.rombongan,
   };
 
   res.status(200).json({

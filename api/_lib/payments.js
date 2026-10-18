@@ -1,26 +1,23 @@
 // Pembayaran lewat Mayar Headless API V2 — tagihan dibuat per pembeli, tanpa produk di dashboard Mayar.
 // Alur: createCheckout → pembeli bayar di link Mayar → webhook payment.received (atau cek status dari
 // halaman Gabung) → fulfillCheckout mengaktifkan Library dan/atau menambah 30 hari AI Partner.
+import crypto from 'crypto';
 import { sbConfig, sbHeaders, newMemberCode } from './member.js';
 import { readSettings } from './settings.js';
+import { getLiveEvents } from './events.js';
 
 // Samakan dengan LIBRARY_PRICE di src/layout.jsx.
 export const LIBRARY_PRICE_IDR = 63000;
 export const AI_PERIOD_DAYS = 30;
 export const AI_PRODUCT_ID = 'talqeeh-ai-30hari';
-export const CHECKOUT_PLANS = ['library', 'library_ai', 'ai', 'imtihan'];
+export const CHECKOUT_PLANS = ['library', 'library_ai', 'ai', 'imtihan', 'rombongan'];
 // Paket Imtihan: Library selamanya + AI Partner 1 termin (120 hari) dengan satu harga hemat.
 // Samakan dengan IMTIHAN_PRICE_IDR di src/layout.jsx.
 export const IMTIHAN_PRICE_IDR = 199000;
 export const IMTIHAN_AI_DAYS = 120;
-/* Event promo: harga Paket Imtihan selama event (waktu Kairo, UTC+3 saat itu). Di luar rentang ini harga
-   normal berlaku otomatis. Samakan dengan IMTIHAN_PROMO di src/layout.jsx. */
-export const IMTIHAN_PROMO = {
-  name: 'Pekan Persiapan Imtihan', price: 149000,
-  startsAt: '2026-10-05T00:00:00+03:00', endsAt: '2026-10-18T23:59:59+03:00',
-};
-export const imtihanPrice = (now = Date.now()) =>
-  now >= Date.parse(IMTIHAN_PROMO.startsAt) && now <= Date.parse(IMTIHAN_PROMO.endsAt) ? IMTIHAN_PROMO.price : IMTIHAN_PRICE_IDR;
+/* Event promo Paket Imtihan & Paket Rombongan diatur di Admin → Settings (api/_lib/events.js). Di luar event,
+   harga normal berlaku otomatis. */
+export const imtihanPrice = async (now = Date.now()) => (await getLiveEvents(now)).imtihan?.price || IMTIHAN_PRICE_IDR;
 
 const LIFETIME_EXPIRY = '2099-12-31';
 const CHECKOUT_TTL_MS = 24 * 3600 * 1000;
@@ -35,6 +32,8 @@ const PLAN_TITLES = {
   ai:         `Talqeeh AI Partner ${AI_PERIOD_DAYS} hari`,
   imtihan:    `Talqeeh Paket Imtihan (Library + AI Partner ${IMTIHAN_AI_DAYS} hari)`,
 };
+const rombonganTitle = (seats) => `Talqeeh Paket Rombongan ${seats} orang (Paket Imtihan)`;
+const planTitle = (plan, seats) => (plan === 'rombongan' ? rombonganTitle(seats) : PLAN_TITLES[plan]);
 
 /* ── Mayar API ── */
 
@@ -92,12 +91,21 @@ export async function getPrices() {
 }
 
 // imtihanAmount: harga khusus Paket Imtihan (penawaran 48 jam, api/_lib/offer.js); dipakai hanya kalau lebih murah.
-const splitAmount = (plan, prices, imtihanAmount) => (plan === 'imtihan'
-  ? { library_amount: prices.library, ai_amount: Math.min(imtihanPrice(), imtihanAmount || Infinity) - prices.library }
-  : {
+// rombongan: { seats, price } dari event Paket Rombongan yang sedang berlangsung.
+const splitAmount = async (plan, prices, imtihanAmount, rombongan) => {
+  if (plan === 'rombongan') return { library_amount: prices.library * rombongan.seats, ai_amount: rombongan.price - prices.library * rombongan.seats };
+  if (plan === 'imtihan') return { library_amount: prices.library, ai_amount: Math.min(await imtihanPrice(), imtihanAmount || Infinity) - prices.library };
+  return {
     library_amount: plan === 'ai' ? 0 : prices.library,
     ai_amount: plan === 'library' ? 0 : prices.ai,
-  });
+  };
+};
+
+// Ukuran rombongan yang dipilih pembeli, hanya selama event Paket Rombongan berlangsung.
+export async function rombonganSize(seats) {
+  const ev = (await getLiveEvents()).rombongan;
+  return ev ? ev.sizes.find(s => s.seats === Number(seats)) || null : null;
+}
 
 /* ── Supabase ── */
 
@@ -137,16 +145,20 @@ export async function getOwnedCheckout(id, authUserId) {
 // Member yang sudah Library tidak boleh beli Library lagi; AI saja hanya untuk member Library.
 // Member bertipe 'trial' (akses sementara dari admin) belum membeli apa pun → boleh membeli seperti akun gratis.
 export function checkoutBlockReason(plan, member) {
+  // Rombongan: pembeli yang sudah Library tetap boleh (bagiannya menambah 120 hari AI Partner).
+  if (plan === 'rombongan') return null;
   const paidLibrary = member && member.status === 'active' && member.tier !== 'free' && member.member_type !== 'trial';
   if (plan === 'ai') return paidLibrary ? null : 'needs_library';
   return paidLibrary ? 'already_library' : null;
 }
 
-export async function createCheckout({ user, member, plan, appOrigin, imtihanAmount }) {
+export async function createCheckout({ user, member, plan, appOrigin, imtihanAmount, seats }) {
   const prices = await getPrices();
-  // Paket Imtihan berharga tetap, jadi tidak bergantung pada harga AI bulanan di Settings.
-  if (plan !== 'library' && plan !== 'imtihan' && !prices.ai) return { ok: false, status: 'ai_price_unset' };
-  const parts = splitAmount(plan, prices, imtihanAmount);
+  // Paket Imtihan & Rombongan berharga tetap, jadi tidak bergantung pada harga AI bulanan di Settings.
+  if (!['library', 'imtihan', 'rombongan'].includes(plan) && !prices.ai) return { ok: false, status: 'ai_price_unset' };
+  const rombongan = plan === 'rombongan' ? await rombonganSize(seats) : null;
+  if (plan === 'rombongan' && !rombongan) return { ok: false, status: 'rombongan_closed' };
+  const parts = await splitAmount(plan, prices, imtihanAmount, rombongan);
   const amount = parts.library_amount + parts.ai_amount;
 
   // Pembeli yang menekan "Bayar" berkali-kali dapat link yang sama.
@@ -162,18 +174,19 @@ export async function createCheckout({ user, member, plan, appOrigin, imtihanAmo
     method: 'POST',
     headers: h({ Prefer: 'return=representation' }),
     body: JSON.stringify({
-      plan, amount, ...parts,
+      plan, amount, ...parts, ...(rombongan ? { seats: rombongan.seats } : {}),
       email: user.email, name, auth_user_id: user.id, member_code: member?.code || null,
     }),
   });
   if (!created.ok) throw new Error(`payment_checkouts insert ${created.status}: ${(await created.text()).slice(0, 200)}`);
   const row = (await created.json())[0];
 
+  const title = planTitle(plan, rombongan?.seats);
   const request = {
-    name: PLAN_TITLES[plan],
+    name: title,
     amount,
     email: user.email,
-    description: `${PLAN_TITLES[plan]} untuk ${user.email}`,
+    description: `${title} untuk ${user.email}`,
     expiredAt: new Date(Date.now() + CHECKOUT_TTL_MS).toISOString(),
     extraData: { checkoutId: row.id, plan },
   };
@@ -306,8 +319,10 @@ export async function fulfillCheckout(checkout, { via, mobile } = {}) {
     if (!code) throw new Error('Member pembeli tidak ditemukan');
     let aiExpiresAt = null;
     if (checkout.plan !== 'library') {
-      aiExpiresAt = await extendAi(code, { email: checkout.email, days: checkout.plan === 'imtihan' ? IMTIHAN_AI_DAYS : AI_PERIOD_DAYS });
+      const longPlan = checkout.plan === 'imtihan' || checkout.plan === 'rombongan';
+      aiExpiresAt = await extendAi(code, { email: checkout.email, days: longPlan ? IMTIHAN_AI_DAYS : AI_PERIOD_DAYS });
     }
+    if (checkout.plan === 'rombongan') await createGroupCodes(checkout);
     await patchCheckout(checkout.id, { member_code: code });
     return { ok: true, memberCode: code, aiExpiresAt };
   } catch (err) {
@@ -353,7 +368,8 @@ export async function matchWebhookCheckout(data) {
   }
 
   const email = (data.customerEmail || '').trim().toLowerCase();
-  const titled = Object.values(PLAN_TITLES).includes((data.productName || '').trim());
+  const product = (data.productName || '').trim();
+  const titled = Object.values(PLAN_TITLES).includes(product) || /^Talqeeh Paket Rombongan \d+ orang/.test(product);
   if (!email || !titled) return null;
   const since = new Date(Date.now() - 2 * CHECKOUT_TTL_MS).toISOString();
   const rows = await selectCheckouts(`email=eq.${encodeURIComponent(email)}&status=eq.pending&created_at=gte.${since}&order=created_at.desc&limit=5`);
@@ -363,4 +379,85 @@ export async function matchWebhookCheckout(data) {
     if (isPaidRequest(detail)) return { checkout: row, verified: true };
   }
   return null;
+}
+
+/* ── Paket Rombongan: kode untuk teman ──
+   Pembeli memakai kursi pertama (langsung aktif). Kursi lain menjadi kode yang dibagikan pembeli; teman yang login
+   Google lalu menukar kode mendapat Paket Imtihan (Library selamanya + AI Partner 120 hari). Satu akun satu kode. */
+const GROUP_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const groupSegment = (n) => Array.from(crypto.randomBytes(n), b => GROUP_CODE_CHARS[b % GROUP_CODE_CHARS.length]).join('');
+export const normalizeGroupCode = (v) => String(v || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^RMB/, '');
+const formatGroupCode = (raw) => `RMB-${raw.slice(0, 4)}-${raw.slice(4, 8)}`;
+
+async function checkoutSeats(checkoutId) {
+  const { url, h } = sb();
+  const r = await fetch(`${url}/rest/v1/payment_checkouts?id=eq.${encodeURIComponent(checkoutId)}&select=seats&limit=1`, { headers: h() });
+  if (!r.ok) throw new Error(`payment_checkouts seats ${r.status} — jalankan migrations/paket_rombongan.sql`);
+  return Number((await r.json())?.[0]?.seats) || 0;
+}
+
+// Idempoten: kursi yang sudah punya kode tidak dibuat ulang.
+async function createGroupCodes(checkout) {
+  const seats = await checkoutSeats(checkout.id);
+  if (seats < 2) throw new Error('Jumlah kursi rombongan tidak ditemukan');
+  const { url, h } = sb();
+  const existing = await fetch(`${url}/rest/v1/group_codes?checkout_id=eq.${checkout.id}&select=seat_no`, { headers: h() })
+    .then(r => (r.ok ? r.json() : Promise.reject(new Error(`group_codes ${r.status}`))));
+  const have = new Set((existing || []).map(r => r.seat_no));
+  const rows = [];
+  for (let seat = 2; seat <= seats; seat++) {
+    if (!have.has(seat)) rows.push({ code: formatGroupCode(groupSegment(8)), checkout_id: checkout.id, seat_no: seat, buyer_email: checkout.email });
+  }
+  if (!rows.length) return;
+  const r = await fetch(`${url}/rest/v1/group_codes`, { method: 'POST', headers: h({ Prefer: 'return=minimal' }), body: JSON.stringify(rows) });
+  if (!r.ok) throw new Error(`Gagal membuat kode rombongan (${r.status}): ${(await r.text()).slice(0, 200)}`);
+}
+
+// Kode rombongan milik pembeli (semua tagihan rombongan yang sudah lunas).
+export async function listGroupCodes(authUserId) {
+  const { url, h } = sb();
+  const checkouts = await selectCheckouts(`auth_user_id=eq.${encodeURIComponent(authUserId)}&plan=eq.rombongan&status=eq.paid&order=created_at.desc&limit=20`);
+  if (!checkouts.length) return [];
+  const ids = checkouts.map(c => c.id).join(',');
+  const r = await fetch(`${url}/rest/v1/group_codes?checkout_id=in.(${ids})&select=code,checkout_id,seat_no,redeemed_email,redeemed_at&order=seat_no.asc`, { headers: h() });
+  if (!r.ok) return [];
+  const mask = (e) => (e ? e.replace(/^(.{2}).*(@.*)$/, '$1•••$2') : null);
+  return (await r.json()).map(c => ({ code: c.code, seat: c.seat_no, checkoutId: c.checkout_id, redeemedBy: mask(c.redeemed_email), redeemedAt: c.redeemed_at }));
+}
+
+/* Tukar kode: klaim atomik (redeemed_at masih kosong), lalu aktifkan Library + 120 hari AI Partner.
+   Kalau aktivasi gagal, klaim dilepas supaya kode bisa dipakai lagi. */
+export async function redeemGroupCode({ user, code }) {
+  const raw = normalizeGroupCode(code);
+  if (raw.length !== 8) return { ok: false, status: 'invalid_code' };
+  const email = String(user.email || '').trim().toLowerCase();
+  const { url, h } = sb();
+  const found = await fetch(`${url}/rest/v1/group_codes?code=eq.${formatGroupCode(raw)}&select=code,buyer_email,redeemed_at&limit=1`, { headers: h() })
+    .then(r => (r.ok ? r.json() : []));
+  const row = found?.[0];
+  if (!row) return { ok: false, status: 'invalid_code' };
+  if (row.redeemed_at) return { ok: false, status: 'code_used' };
+  if (row.buyer_email?.toLowerCase() === email) return { ok: false, status: 'own_code' };
+  const already = await fetch(`${url}/rest/v1/group_codes?redeemed_email=eq.${encodeURIComponent(email)}&select=code&limit=1`, { headers: h() })
+    .then(r => (r.ok ? r.json() : []));
+  if (already?.length) return { ok: false, status: 'already_redeemed' };
+
+  const claim = await fetch(`${url}/rest/v1/group_codes?code=eq.${row.code}&redeemed_at=is.null`, {
+    method: 'PATCH',
+    headers: h({ Prefer: 'return=representation' }),
+    body: JSON.stringify({ redeemed_at: new Date().toISOString(), redeemed_email: email }),
+  });
+  const claimed = claim.ok ? await claim.json() : [];
+  if (!claimed.length) return { ok: false, status: claim.status === 409 ? 'already_redeemed' : 'code_used' };
+  try {
+    const memberCode = await activateLibrary({ authUserId: user.id, email, name: user.name, note: `Paket Rombongan · ${row.code}` });
+    const aiExpiresAt = await extendAi(memberCode, { email, event: 'group.redeem', days: IMTIHAN_AI_DAYS });
+    await fetch(`${url}/rest/v1/group_codes?code=eq.${row.code}`, { method: 'PATCH', headers: h({ Prefer: 'return=minimal' }), body: JSON.stringify({ redeemed_by: memberCode }) });
+    return { ok: true, memberCode, aiExpiresAt };
+  } catch (err) {
+    await fetch(`${url}/rest/v1/group_codes?code=eq.${row.code}`, {
+      method: 'PATCH', headers: h({ Prefer: 'return=minimal' }), body: JSON.stringify({ redeemed_at: null, redeemed_email: null }),
+    }).catch(() => {});
+    throw err;
+  }
 }

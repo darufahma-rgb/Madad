@@ -880,6 +880,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
   const imtihan = imtihanBundle(settings);
   const monthly = aiBundle(settings);
   const promoLeft = usePromoCountdown();
+  const rombongan = rombonganEvent(settings);
   return (
   <section id="paket" className="section pt-0 pb-32">
     <div className="container-x">
@@ -991,6 +992,22 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
           </div>
         </div>
       </Reveal>
+
+      {/* Paket Rombongan — hanya selama event (Admin → Settings → Event penjualan) */}
+      {rombongan && (
+        <Reveal>
+          <div className="max-w-5xl mx-auto mt-5 card-glass p-5 flex items-center gap-4 flex-wrap" style={{ border: "1px solid rgba(96,165,250,0.35)" }}>
+            <div className="flex-1 min-w-[240px]">
+              <div className="text-ink font-medium">{rombongan.name}: Paket Imtihan bareng teman serumah</div>
+              <div className="text-sm text-ink-muted leading-relaxed">
+                Satu orang bayar, semua dapat Paket Imtihan.{" "}
+                {rombongan.sizes.map(s => `${s.seats} orang ${formatRupiah(s.price)} (${formatRupiah(s.perSeat)}/orang)`).join(" · ")}. Sampai {rombongan.endLabel}.
+              </div>
+            </div>
+            <button onClick={() => navigate("/gabung?plan=rombongan")} className="btn btn-primary text-sm px-5 py-2.5">Lihat Paket Rombongan</button>
+          </div>
+        </Reveal>
+      )}
 
       {/* Coba gratis */}
       <Reveal>

@@ -529,11 +529,11 @@ const AdminEmail = () => {
         <p className="text-sm text-ink-muted mt-1">Kirim email kampanye langsung dari Talqeeh, atau unduh daftar email untuk dikirim sendiri.</p>
       </div>
 
-      {P && (
+      {P?.price > 0 && (
         <div className={`rounded-xl border p-4 text-sm ${promoOn ? 'border-emerald-500/30 bg-emerald-500/8 text-ink' : 'border-white/10 bg-white/4 text-ink-muted'}`}>
           <b>{P.name}</b> · Paket Imtihan {fmt(P.price)} (normal {fmt(window.IMTIHAN_PRICE_IDR)}) ·{' '}
           {promoOn ? `berlangsung sampai ${P.endLabel} 23.59 waktu Kairo` : 'sedang tidak berlangsung'}.
-          <div className="text-xs text-ink-soft mt-1">Banner + hitung mundur tampil otomatis untuk pengunjung & akun gratis selama event. Tanggal & harga diatur di IMTIHAN_PROMO (src/layout.jsx dan api/_lib/payments.js).</div>
+          <div className="text-xs text-ink-soft mt-1">Banner + hitung mundur tampil otomatis untuk pengunjung & akun gratis selama event. Tanggal & harga diatur di Admin → Settings → Event penjualan.</div>
         </div>
       )}
 
