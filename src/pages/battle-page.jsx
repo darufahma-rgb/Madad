@@ -1745,11 +1745,36 @@ function unlockPageScroll() {
   if (pageScrollLocks === 0) document.body.style.overflow = pageScrollPrev;
 }
 
+/* Modal situs (login, gabung, upgrade, pembayaran) dirender di luar game dengan z-index 90–160, sedangkan game
+   memakai 9990+. Selama ada modal situs terbuka, semua lapisan game turun ke z-index 85: tetap di atas tab bar &
+   tombol quick-note situs, tapi di bawah modalnya. Tanpa ini, tombol "Upload Diktat" untuk tamu membuka modal login
+   yang tersembunyi di balik game. */
+function useYieldToSiteModals() {
+  useEffect(() => {
+    let frame = 0;
+    const check = () => {
+      frame = 0;
+      const open = [...document.querySelectorAll('.modal-back, [aria-modal="true"]')]
+        .some(el => !el.closest('.game-layer'));
+      document.body.classList.toggle('game-yield', open);
+    };
+    const schedule = () => { if (!frame) frame = setTimeout(check, 0); };
+    const observer = new MutationObserver(schedule);
+    observer.observe(document.body, { childList: true, subtree: true });
+    check();
+    return () => {
+      observer.disconnect();
+      if (frame) clearTimeout(frame);
+      document.body.classList.remove('game-yield');
+    };
+  }, []);
+}
+
 /* ── LAYAR PENUH CADANGAN (CSS) ──
    Kalau browser menolak fullscreen asli, arena memakai position: fixed. Halaman ini dibungkus .page-enter yang
    animasinya menyisakan transform, sehingga elemen fixed di dalamnya terkurung: navbar & footer menimpa arena
    dan halaman tetap bisa di-scroll. Saat aktif, arena dipindah ke <body> dan scroll halaman dikunci. */
-function ArenaPortal({ active, speed = 1, children }) {
+function ArenaPortal({ active, speed = 1, z = 9999, children }) {
   useEffect(() => {
     if (!active) return;
     lockPageScroll();
@@ -1758,7 +1783,8 @@ function ArenaPortal({ active, speed = 1, children }) {
   if (!active || typeof document === 'undefined') return children;
   // .battle-root + --bs ikut dibawa supaya kecepatan animasi & aturan reduced-motion tetap berlaku di portal.
   return createPortal(
-    <div className="battle-root" style={{ '--bs': speed === 2 ? 0.5 : 1 }}>{children}</div>,
+    // Pembungkus ber-z-index membuat lapisan sendiri, supaya bisa "mengalah" ke modal situs (lihat useYieldToSiteModals).
+    <div className="battle-root game-layer relative" style={{ '--bs': speed === 2 ? 0.5 : 1, zIndex: z }}>{children}</div>,
     document.body
   );
 }
@@ -1771,7 +1797,7 @@ function GameFullscreenLayer({ active, children }) {
   }, [active]);
   if (!active || typeof document === 'undefined') return children;
   return createPortal(
-    <div className="fixed inset-0 z-[9990] overflow-y-auto overscroll-contain bg-[#080808]">{children}</div>,
+    <div className="game-layer fixed inset-0 z-[9990] overflow-y-auto overscroll-contain bg-[#080808]">{children}</div>,
     document.body
   );
 }
@@ -2275,6 +2301,7 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
 export default function BattlePage() {
   const auth = typeof window.useAuth === 'function' ? window.useAuth() : {};
   const { session, profile, isFree } = auth;
+  useYieldToSiteModals();
   // Game terbuka untuk umum; upload/paste diktat sendiri dan cerita AI khusus member paket Library ke atas.
   const isLibraryMember = !!session && !isFree;
   const requireLibraryMember = () => {
@@ -3017,36 +3044,34 @@ export default function BattlePage() {
       const ext = (file.name.split('.').pop() || '').toLowerCase();
       let extracted = '';
       if (ext === 'pdf') {
-        if (window.readPdfPages) {
-          const res = await window.readPdfPages(file, 40);
-          if (res?.pages) {
-            extracted = res.pages.map(p => p.text || '').filter(Boolean).join('\n\n');
-          }
-        } else if (window.extractPdfPages) {
-          const res = await window.extractPdfPages(file, 40);
-          if (res?.pages) {
-            extracted = Array.isArray(res.pages)
-              ? res.pages.map(p => typeof p === 'string' ? p : (p.text || '')).filter(Boolean).join('\n\n')
-              : '';
-          }
+        if (typeof window.readPdfPages !== 'function') throw new Error('Pembaca PDF belum siap. Muat ulang halaman lalu coba lagi.');
+        // readPdfPages sengaja mengembalikan pages: null bila PDF melebihi batas; dulu itu dianggap "tidak terbaca"
+        // sehingga muqarrar > 40 halaman selalu gagal. Game hanya butuh cuplikan, jadi baca 60 halaman pertama saja.
+        const MAX_PAGES = 60;
+        const res = await window.readPdfPages(file, MAX_PAGES);
+        const pages = res.pages || await window.readPdfRange(res.pdf, 1, Math.min(MAX_PAGES, res.numPages));
+        // Halaman hasil scan (tanpa teks) atau huruf Arabnya rusak tidak ikut dipakai.
+        const usable = pages.filter(p => (p.status === 'ok' || p.status === 'fixed') && p.text?.trim());
+        extracted = usable.map(p => p.text).join('\n\n');
+        if (extracted.trim().length < 40) {
+          throw new Error(pages.some(p => p.status === 'garbled')
+            ? 'Huruf Arab di PDF ini tidak bisa dibaca (font-nya rusak). Unggah lewat AI Partner supaya dibaca dengan OCR, lalu pilih "Uji di Arena Imtihan".'
+            : 'PDF ini sepertinya hasil scan/foto, jadi tidak ada teks yang bisa dibaca. Unggah lewat AI Partner (bisa membaca foto dengan OCR), lalu pilih "Uji di Arena Imtihan".');
         }
-      } else if ((ext === 'docx' || ext === 'doc') && window.extractDocx) {
+      } else if (ext === 'doc') {
+        throw new Error('Format .doc lama belum didukung. Buka filenya lalu "Save As" .docx, atau unggah PDF-nya.');
+      } else if (ext === 'docx') {
         extracted = await window.extractDocx(file);
-      } else if (ext === 'pptx' && window.extractPptx) {
+      } else if (ext === 'pptx') {
         extracted = await window.extractPptx(file);
       } else if (file.type === 'text/plain' || ext === 'txt' || ext === 'md') {
         extracted = await file.text();
       } else {
-        // Fallback FileReader
-        extracted = await new Promise((res) => {
-          const r = new FileReader();
-          r.onload = () => res(r.result || '');
-          r.readAsText(file);
-        });
+        throw new Error('Format file belum didukung. Gunakan PDF, Word (.docx), PowerPoint (.pptx), atau teks (.txt).');
       }
 
       if (!extracted || extracted.trim().length < 40) {
-        throw new Error('Teks dari dokumen tidak terbaca atau terlalu pendek. Pastikan dokumen berisi teks, bukan hasil foto/scan murni.');
+        throw new Error('Isi dokumen terlalu sedikit untuk dijadikan arena (minimal beberapa paragraf).');
       }
 
       const cleanTitle = file.name.replace(/\.[^/.]+$/, '');
@@ -3056,6 +3081,7 @@ export default function BattlePage() {
       setImportToast(`Materi "${cleanTitle}" berhasil dimuat ke Arena Imtihan! 4 Tingkat Imtihan telah disiapkan!`);
       setTimeout(() => setImportToast(''), 5500);
     } catch (err) {
+      console.warn('Upload diktat Arena Imtihan gagal:', err);
       setUploadError(err.message || 'Gagal memproses file diktat.');
     } finally {
       setUploadBusy(false);
@@ -4143,7 +4169,7 @@ export default function BattlePage() {
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFileUpload}
-                    accept=".pdf,.docx,.txt,.md"
+                    accept=".pdf,.docx,.pptx,.txt,.md,application/pdf"
                     className="hidden"
                   />
                 </div>
@@ -6781,7 +6807,7 @@ export default function BattlePage() {
             MODAL 1: INTERACTIVE HALAQAH TALQEEH AI SYAIKH
             ========================================================================= */}
         {showAiModal && (
-          <ArenaPortal active speed={battleSpeed}>
+          <ArenaPortal active speed={battleSpeed} z={10000}>
           <div className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-5 bg-black/85 backdrop-blur-md animate-fadeIn">
             <div className="w-full max-w-2xl bg-[#0e120f] border-2 border-emerald-500/50 rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
               {/* Header Halaqah */}
@@ -6930,7 +6956,7 @@ export default function BattlePage() {
             MODAL 2: SYAHADAH AL-AZHAR DIGITAL PREVIEW & DOWNLOAD
             ========================================================================= */}
         {showSyahadahModal && (
-          <ArenaPortal active speed={battleSpeed}>
+          <ArenaPortal active speed={battleSpeed} z={10000}>
           <div className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-5 bg-black/90 backdrop-blur-md animate-fadeIn">
             <div className="w-full max-w-3xl bg-[#0a120d] border-4 border-amber-500/50 rounded-2xl shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
               {/* Header */}
@@ -7030,7 +7056,7 @@ export default function BattlePage() {
             MODAL 3: PETI HIKMAH AL-AZHAR (HADIAH HARIAN & KALAM ULAMA)
             ========================================================================= */}
         {showLootChestModal && claimedLoot && (
-          <ArenaPortal active speed={battleSpeed}>
+          <ArenaPortal active speed={battleSpeed} z={10000}>
           <div className="fixed inset-0 z-[10000] flex items-center justify-center p-3 sm:p-5 bg-black/90 backdrop-blur-md animate-fadeIn">
             <div className="w-full max-w-xl bg-[#141418] border-4 border-t-[#d97706] border-l-[#d97706] border-b-[#451a03] border-r-[#451a03] shadow-[8px_8px_0_#000] relative flex flex-col overflow-hidden font-mono">
               {/* Gold Stud Corner Accents */}
@@ -7290,6 +7316,8 @@ export default function BattlePage() {
           60% { transform: translate(-2px, -1px); }
           80% { transform: translate(2px, 1px); }
         }
+
+        body.game-yield .game-layer { z-index: 85 !important; }
 
         /* Hanya opacity: transform di sini akan membuat layar battle fullscreen (position: fixed) ikut terkurung. */
         @keyframes battleFadeIn {
