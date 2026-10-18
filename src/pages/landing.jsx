@@ -821,6 +821,37 @@ const FeatureList = ({ items, color }) => (
   </ul>
 );
 
+/* Jatah AI per paket — angka sama dengan api/ai-partner.js (LIMITS, TRIAL_TASTE, TRIAL_OCR_LIMIT),
+   api/_lib/ai-partner/limits.js (bulanan) dan api/_lib/ai-partner/battle-story.js (Arena Imtihan). */
+const LIBRARY_AI_EXTRAS = [
+  "Arena Imtihan: ubah muqarrarmu sendiri jadi game ujian, plus 6 cerita AI & 15 tanya AI Halaqah per hari",
+  "Coba AI Partner untuk 1 materi: ringkasan, flashcard, kuis, mufradat, 10× i'rab, 15 pesan tutor, 3 halaman scan/foto per hari",
+];
+const QuotaBox = ({ title, rows, note }) => (
+  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05] p-4 mb-6">
+    <div className="text-[11px] uppercase tracking-wider text-emerald-300 mb-2.5">{title}</div>
+    <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 text-[13px]">
+      {rows.map(([label, value]) => (
+        <React.Fragment key={label}>
+          <dt className="text-ink-muted">{label}</dt>
+          <dd className="text-ink text-right tabular-nums whitespace-nowrap">{value}</dd>
+        </React.Fragment>
+      ))}
+    </dl>
+    {note && <p className="text-xs text-ink-soft mt-3 leading-relaxed">{note}</p>}
+  </div>
+);
+const IMTIHAN_QUOTA = [
+  ["Terjemah & i'rab", "30× / hari"],
+  ["Pesan tutor & Tanya AI", "40 / hari"],
+  ["Ringkasan, kuis, flashcard", "25× / hari"],
+  ["Materi baru", "10 / hari"],
+  ["Halaman scan / foto", "20 / hari"],
+  ["Transkrip rekaman kuliah", "60 menit / hari"],
+  ["Talkhis muqarrar", "10 muqarrar / paket"],
+  ["Cerita AI & Halaqah (game)", "15 & 40 / hari"],
+];
+
 const LANDING_FAQ = [
   { q: "Kenapa harus login pakai Google dulu?",
     a: "Akun Google jadi identitas keanggotaanmu. Pembayaran otomatis tercatat ke akun itu, jadi nggak ada kode yang perlu ditunggu atau diketik, dan kamu bisa belajar di HP maupun laptop dengan akun yang sama." },
@@ -829,7 +860,7 @@ const LANDING_FAQ = [
   { q: "Ada paket AI Partner 1 bulan? Mana yang lebih baik?",
     a: `Ada. Paket 1 bulan = Library selamanya + AI Partner 30 hari, bisa diperpanjang per 30 hari. Tapi satu termin kuliah sampai imtihan butuh sekitar 4 bulan, jadi Paket Imtihan (Library + AI Partner ${IMTIHAN_AI_DAYS} hari, sekali bayar) jauh lebih hemat daripada memperpanjang 4 kali — dan selama ${IMTIHAN_AI_DAYS} hari itu tidak ada kuota bulanan. Selama event ${IMTIHAN_PROMO.name}, harganya lebih murah lagi. Kalau ragu, ambil Paket Imtihan.` },
   { q: "AI Partner di Paket Imtihan ada batasnya?",
-    a: `Tidak ada kuota bulanan selama ${IMTIHAN_AI_DAYS} hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, dan 25 kali membuat ringkasan/kuis/flashcard per hari — jauh di atas pemakaian belajar normal. Talkhis otomatis: 10 muqarrar per paket.` },
+    a: `Tidak ada kuota bulanan selama ${IMTIHAN_AI_DAYS} hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, 25 kali membuat ringkasan/kuis/flashcard, dan 20 halaman PDF scan per hari (jatah scan yang tidak terpakai bisa ditabung sampai 60) — jauh di atas pemakaian belajar normal. Halaman muqarrar scan yang sudah pernah dibaca AI di Talqeeh bisa langsung terbuka gratis. Talkhis otomatis: 10 muqarrar per paket.` },
   { q: "Bisa coba dulu sebelum bayar?",
     a: "Bisa. Masuk dengan Google lalu pilih \"Mulai gratis\": kamu dapat akun gratis dengan maddah Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan coba AI Partner untuk 1 materi pendek (±10–15 halaman): ringkasan, flashcard, kuis, mufradat, plus 2× terjemah & i'rab, 3 pesan tutor, 1 kali Tanya AI, dan 3 foto dibaca AI. Upgrade kapan saja — akunnya sama, progresmu tetap aman." },
   { q: "Library-nya berlaku sampai kapan?",
@@ -893,7 +924,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
                 {LIBRARY_PRICE}
               </span>
               <div className="text-xs text-ink-soft uppercase tracking-wider mt-2 mb-6">Sekali bayar · Berlaku selamanya</div>
-              <div className="flex-1 mb-8"><FeatureList items={LIBRARY_FEATURES} color="text-gold-400"/></div>
+              <div className="flex-1 mb-8"><FeatureList items={[...LIBRARY_FEATURES, ...LIBRARY_AI_EXTRAS]} color="text-gold-400"/></div>
               <button onClick={() => onOpenJoin("library")}
                 className="btn btn-gold w-full py-4 text-base font-medium"
                 style={{ boxShadow:"0 0 50px rgba(201,168,106,.35), 0 1px 0 rgba(255,255,255,.3) inset" }}>
@@ -922,6 +953,11 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
                 <div className="text-sm text-ink font-medium mb-3">Semua isi paket Library, ditambah belajar langsung dari diktatmu:</div>
                 <FeatureList items={AI_BUNDLE_FEATURES} color="text-emerald-400"/>
               </div>
+              <QuotaBox
+                title={`Tanpa kuota bulanan selama ${IMTIHAN_AI_DAYS} hari`}
+                rows={IMTIHAN_QUOTA}
+                note="Batas harian hanya pengaman wajar, jauh di atas pemakaian belajar normal. Jatah halaman scan yang tidak terpakai bisa ditabung sampai 60, dan halaman muqarrar scan yang sudah pernah dibaca AI di Talqeeh bisa langsung terbuka gratis, tanpa memakai jatah."
+              />
               <p className="text-xs text-emerald-300 mb-3">Cukup satu kali bayar untuk satu termin penuh sampai imtihan.</p>
               <button onClick={() => onOpenJoin("imtihan")}
                 className="btn btn-primary w-full py-4 text-base font-medium">
@@ -945,6 +981,9 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
                 ? <>Satu termin butuh ±4 bulan: beli terpisah {formatRupiah(imtihan.separate)}, <span className="text-emerald-300">Paket Imtihan cuma {formatRupiah(imtihan.total)} — hemat {formatRupiah(imtihan.saving)}</span>.</>
                 : <span className="text-emerald-300">Untuk satu termin penuh, Paket Imtihan ({IMTIHAN_AI_DAYS} hari) lebih hemat.</span>}
             </div>
+            <div className="text-xs text-ink-soft leading-relaxed mt-1.5">
+              Jatah per 30 hari: 150 pesan tutor/Tanya AI, 150× i'rab, 40× ringkasan/kuis/flashcard, 15 materi baru, 60 halaman scan, 300 menit transkrip, 6 talkhis muqarrar.
+            </div>
           </div>
           <div className="flex gap-2 flex-wrap">
             <button onClick={() => onOpenJoin("imtihan")} className="btn btn-primary text-sm px-5 py-2.5">Ambil Paket Imtihan</button>
@@ -959,7 +998,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
           <div className="flex-1 min-w-[240px]">
             <div className="text-ink font-medium">Belum yakin? Coba gratis dulu.</div>
             <div className="text-sm text-ink-muted leading-relaxed">
-              Masuk dengan Google → dapat akses Nahwu + 1 maddah pilihan, 2 soal bank soal, dan coba AI Partner untuk 1 materi pendek (termasuk 2× i'rab dan 3 pesan tutor). Tanpa bayar.
+              Masuk dengan Google → dapat akses Nahwu + 1 maddah pilihan, 2 soal bank soal, dan coba AI Partner untuk 1 materi pendek (termasuk 2× i'rab, 3 pesan tutor, 1 Tanya AI, dan 3 foto dibaca AI). Arena Imtihan bisa langsung dimainkan. Tanpa bayar.
             </div>
           </div>
           <button onClick={() => onOpenJoin("free")} className="btn btn-ghost text-sm px-5 py-2.5">Mulai gratis</button>
