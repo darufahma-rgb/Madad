@@ -25,9 +25,61 @@ const SITE = 'https://talqeeh.id';
 const fmt = (n) => `Rp ${Number(n).toLocaleString('id-ID')}`;
 
 // Teks pengumuman event. {nama} diganti sendiri saat mengirim (atau hapus kalau kirim massal lewat BCC).
-const eventTemplates = () => {
+// Promosi Arena Imtihan: selalu bisa dipakai (tidak bergantung event harga).
+const arenaTemplates = () => {
+  const arena = `${SITE}/#/battle`, days = window.IMTIHAN_AI_DAYS;
+  return [
+    {
+      id: 'wa_arena_group', title: 'WhatsApp — grup kekeluargaan / angkatan (Arena Imtihan)',
+      body: `Assalamu'alaikum teman-teman 👋
+
+Lagi siap-siap imtihan? Coba *Arena Imtihan* di Talqeeh: latihan soal ala imtihan Al-Azhar dalam bentuk game 🎮
+
+📜 Soal berbahasa Arab + terjemah Indonesia
+🎯 4 tingkat ujian, makin naik makin sulit, sampai ujian akhir
+📖 Tiap jawaban salah langsung ada pembahasan + cara menulis jawabannya di kurrasah
+
+Sudah ada 3 muqarrar: Balaghah (Majaz Mursal), Nahwu (Fa'il & Na'ibul Fa'il), dan Ushul Fiqh (Amr & Nahy).
+Gratis, tanpa daftar 👉 ${arena}
+
+Punya PDF muqarrar sendiri? Member bisa mengunggahnya, lalu AI menyusun 20+ soal imtihan dari isinya.`,
+    },
+    {
+      id: 'wa_arena_personal', title: 'WhatsApp — pribadi (Arena Imtihan)',
+      body: `Assalamu'alaikum {nama} 👋
+
+Aku mau share latihan imtihan yang seru: *Arena Imtihan* Talqeeh. Soalnya bahasa Arab kayak lembar ujian Azhar, ada terjemahnya, dan tiap salah langsung dikasih pembahasan.
+
+Bisa langsung main tanpa daftar: ${arena}
+
+Semoga lancar imtihannya!`,
+    },
+    {
+      id: 'email_arena', title: 'Email — akun gratis (Arena Imtihan)',
+      subject: 'Latihan soal imtihan Al-Azhar dalam bentuk game, gratis di Talqeeh',
+      body: `Assalamu'alaikum {nama},
+
+Menjelang imtihan, coba latihan dengan cara yang lebih ringan: Arena Imtihan di Talqeeh.
+
+• Soal berbahasa Arab seperti lembar ujian Al-Azhar, dengan terjemah Indonesia di bawahnya
+• 4 tingkat ujian yang makin sulit, sampai ujian akhir
+• Tiap jawaban salah langsung dibahas, lengkap dengan cara menuliskan jawabannya di kurrasah
+
+Mulai dari Balaghah, Nahwu, atau Ushul Fiqh: ${arena}
+
+Ingin latihan dari muqarrar kuliahmu sendiri? Dengan Paket Imtihan (Library selamanya + AI Partner ${days} hari), unggah PDF atau foto muqarrar dan AI menyusun soal imtihannya untukmu: ${SITE}/#/gabung?plan=imtihan
+
+Semangat muraja'ahnya,
+Tim Talqeeh`,
+    },
+  ];
+};
+
+// Teks pengumuman event harga — hanya ditampilkan selama event Paket Imtihan berlangsung.
+const promoTemplates = () => {
   const P = window.IMTIHAN_PROMO, normal = window.IMTIHAN_PRICE_IDR, days = window.IMTIHAN_AI_DAYS;
   const link = `${SITE}/#/gabung?plan=imtihan`;
+  if (!(P?.price > 0) || !window.imtihanPromoActive?.()) return [];
   return [
     {
       id: 'email_free', title: 'Email — akun gratis (Paket Imtihan promo)',
@@ -85,6 +137,7 @@ Tim Talqeeh`,
     },
   ];
 };
+const eventTemplates = () => [...arenaTemplates(), ...promoTemplates()];
 
 const copy = async (text, toast, label) => {
   try { await navigator.clipboard.writeText(text); toast?.push(`${label} disalin`); } catch { toast?.push('Gagal menyalin'); }

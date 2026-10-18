@@ -2592,6 +2592,7 @@ export default function BattlePage() {
   const isLibraryMember = !!session && !isFree;
   const requireLibraryMember = () => {
     if (isLibraryMember) return true;
+    window.logFunnel?.('paywall', 'arena_upload');
     // Belum login → modal login; akun gratis → halaman Gabung (alur yang sama dengan tombol "Gabung Member").
     window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library' } }));
     return false;
@@ -3743,6 +3744,7 @@ export default function BattlePage() {
       setSelectedStageId(currentStage.id);
     }
     clearBattleTimers();
+    window.logFunnel?.('arena', 'play');
     setShuffleSeed(s => s + 1);
     sfx.init();
     setPhase('battle');
@@ -7087,6 +7089,38 @@ export default function BattlePage() {
                     <PixelIcon name="scroll" className="w-5 h-5" />
                     <span>KLAIM SYAHADAH</span>
                   </button>
+                )}
+              </div>
+
+              {/* ── 6. AJAK TEMAN + LATIHAN DARI MUQARRAR SENDIRI (corong promosi Arena Imtihan) ── */}
+              <div className="relative max-w-md mx-auto grid gap-2">
+                <a
+                  href={`https://wa.me/?text=${encodeURIComponent(
+                    `${isFinal ? `Alhamdulillah, aku lulus ujian akhir ${activeSet?.maddah || 'muqarrar'}` : `Aku baru lulus ${activeStage?.title || 'satu level'}`} di Arena Imtihan Talqeeh (${stageStars} bintang). ` +
+                    `Latihan soal imtihan Al-Azhar berbahasa Arab dalam bentuk game, gratis tanpa daftar: ${window.location.origin}/#/battle`
+                  )}`}
+                  target="_blank" rel="noopener noreferrer"
+                  onClick={() => window.logFunnel?.('arena', 'share')}
+                  className={stoneGray}
+                >
+                  <PixelIcon name="speech" className="w-5 h-5" />
+                  <span>Ajak teman latihan via WA</span>
+                </a>
+                {!isLibraryMember && !String(activeSet?.id || '').startsWith('custom-') && (
+                  <div className="border-4 border-[#111] bg-[#1d3317] shadow-[inset_3px_3px_0_#2f5a26] p-3 text-left">
+                    <div className="font-mono text-sm font-black text-emerald-200">Mau latihan dari muqarrarmu sendiri?</div>
+                    <p className="text-xs text-white/75 leading-relaxed mt-1">
+                      Unggah PDF atau foto muqarrar kuliahmu — AI menyusun 20+ soal imtihan berbahasa Arab beserta terjemahnya,
+                      makin sulit tiap level seperti ujian sungguhan.
+                    </p>
+                    <button
+                      onClick={() => { window.logFunnel?.('arena', 'cta'); window.logFunnel?.('view_join', 'arena'); navigate('/gabung?plan=imtihan'); }}
+                      className={`${stoneGreen} w-full mt-2`}
+                    >
+                      <span>Lihat Paket Imtihan</span>
+                      <PixelIcon name="next" className="w-5 h-5" />
+                    </button>
+                  </div>
                 )}
               </div>
 

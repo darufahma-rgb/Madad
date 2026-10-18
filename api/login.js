@@ -260,7 +260,8 @@ async function handleUnsubscribe(req, res) {
 /* ── Corong konversi (migrations/funnel_events.sql) ──
    Boleh tanpa login: kunjungan pertama belum punya akun. Hanya event & detail dari daftar tetap, ID pengunjung acak,
    dan satu baris per pengunjung/event/hari (unique + ignore-duplicates), jadi tabel tidak bisa dibanjiri isian bebas. */
-const FUNNEL_EVENTS = ['visit', 'view_gabung', 'view_join', 'view_ai_partner', 'paywall', 'click_pay'];
+// arena: corong promosi Arena Imtihan (detail play | share | cta).
+const FUNNEL_EVENTS = ['visit', 'view_gabung', 'view_join', 'view_ai_partner', 'paywall', 'click_pay', 'arena'];
 const trackAttempts = new Map();
 const checkTrackLimit = (key) => {
   const now = Date.now();

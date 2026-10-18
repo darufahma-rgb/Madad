@@ -633,7 +633,7 @@ const AiQualitySection = ({ quality }) => {
 
 /* Corong konversi: orang unik per tahap dalam periode ini, dari pengunjung sampai bayar. Kebocoran terbesar =
    tahap dengan persentase lanjut terendah (dari tahap sebelumnya yang tidak nol). */
-const PAYWALL_LABELS = { irab: "I'rab", tutor: 'Tutor', tutor_banner: 'Banner tutor', syafawi: 'Syafawi' };
+const PAYWALL_LABELS = { irab: "I'rab", tutor: 'Tutor', tutor_banner: 'Banner tutor', syafawi: 'Syafawi', arena_upload: 'Upload muqarrar di Arena' };
 const FunnelSection = ({ funnel }) => {
   if (!funnel) return null;
   const steps = funnel.steps;
@@ -680,6 +680,14 @@ const FunnelSection = ({ funnel }) => {
               </div>
             ) : <div className="text-xs text-ink-muted">Belum cukup data.</div>}
             <div className="flex justify-between text-xs"><span className="text-ink-muted">Klik tombol bayar</span><span className="text-ink">{funnel.clickPay}</span></div>
+            {funnel.arena && (
+              <div className="pt-3 border-t border-white/8">
+                <div className="text-[11px] uppercase tracking-wider text-ink-soft mb-2">Arena Imtihan (corong promosi)</div>
+                {[['play', 'Main ujian'], ['share', 'Bagikan ke WA'], ['cta', 'Buka Paket Imtihan dari layar lulus']].map(([k, label]) => (
+                  <div key={k} className="flex justify-between text-xs py-0.5"><span className="text-ink-muted">{label}</span><span className="text-ink">{funnel.arena[k] || 0}</span></div>
+                ))}
+              </div>
+            )}
             {Object.keys(funnel.paywallBy || {}).length > 0 && (
               <div className="pt-3 border-t border-white/8">
                 <div className="text-[11px] uppercase tracking-wider text-ink-soft mb-2">Batas gratis yang dikenai</div>
