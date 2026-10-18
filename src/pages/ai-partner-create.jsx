@@ -77,6 +77,11 @@ const FileRow = ({ item, onContinue, busy }) => {
    Hanya halaman terpilih yang dibaca — termasuk jatah baca scan — dan satu materi per bab paling pas untuk muraja'ah. */
 const PDF_MAX_PAGES = 120;   // maksimal halaman per sekali simpan (±200rb karakter batas materi)
 const PDF_ASK_PAGES = 40;    // di atas ini pengguna diminta memilih bagian
+// PDF dibaca di perangkat dan hanya halaman terpilih yang dikirim (sebagai teks/foto), jadi ukuran file bukan beban server.
+// Batasnya hanya menjaga memori HP: muqarrar scan utuh sering 50–100MB.
+const PDF_MAX_MB = 150;
+const PDF_BIG_MB = 40;       // di atas ini tetap dibuka, tapi disarankan dikompres
+const COMPRESS_TIP = 'Kompres dulu (misalnya di iLovePDF atau Smallpdf, pilih "Compress PDF") atau pisahkan per bab, lalu unggah lagi.';
 
 /* "Pecah per bab": satu PDF berdaftar isi → beberapa materi sekaligus, satu per bab (memakai 1 kuota). */
 const SPLIT_MAX = 12;          // sama dengan BATCH_MAX di server
@@ -140,10 +145,10 @@ const ChapterSplitPicker = ({ info, onPick, onSkip }) => {
 };
 
 const PdfRangePicker = ({ info, onPick, onSkip }) => {
-  const { name, numPages, outline, canSplit } = info;
+  const { name, numPages, outline, canSplit, scan } = info;
   const [mode, setMode] = useState('one');   // one | split
   const [from, setFrom] = useState('1');
-  const [to, setTo] = useState(String(Math.min(numPages, PDF_MAX_PAGES)));
+  const [to, setTo] = useState(String(Math.min(numPages, scan ? Math.max(1, scan.cap) : PDF_MAX_PAGES)));
   const [chosen, setChosen] = useState(null);   // indeks bab dari daftar isi
   const a = parseInt(from, 10), b = parseInt(to, 10);
   const count = b - a + 1;
@@ -162,6 +167,14 @@ const PdfRangePicker = ({ info, onPick, onSkip }) => {
         PDF ini {numPages} halaman. Pilih bagian yang mau dipelajari{numPages > PDF_MAX_PAGES ? ` (maksimal ${PDF_MAX_PAGES} halaman sekali simpan)` : ''}.
         Satu bab per materi biasanya paling pas: ringkasan, kuis, dan flashcard-nya lebih lengkap.
       </p>
+      {scan && (
+        <div className="text-xs text-amber-200 mt-2 rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 leading-relaxed">
+          PDF ini hasil scan, jadi tiap halaman dibaca AI dan memakai jatah baca.{' '}
+          {scan.cap > 0
+            ? <>Sekarang AI bisa membaca <b>{scan.cap} halaman</b>{scan.cap < scan.perRead ? ` (sisa jatah ${scan.scope === 'monthly' ? 'periode langgananmu' : 'hari ini'})` : ' sekali baca'}. Pilih satu bab sekitar {scan.cap} halaman; bab berikutnya bisa dibaca {scan.scope === 'monthly' ? 'di periode berikutnya' : 'lagi nanti'}.</>
+            : <>Jatah baca halaman scan {scan.scope === 'monthly' ? 'periode langgananmu' : 'hari ini'} sudah habis. Coba lagi {scan.scope === 'monthly' ? 'di periode berikutnya' : 'besok'}, atau tempel teks materinya.</>}
+        </div>
+      )}
 
       {canSplit && (
         <div className="grid grid-cols-2 gap-1.5 mt-3 p-1 rounded-xl bg-black/20 border border-white/8" role="tablist">
@@ -202,7 +215,9 @@ const PdfRangePicker = ({ info, onPick, onSkip }) => {
         </label>
       </div>
       <div className={`text-xs mt-2 min-h-[1rem] ${err ? 'text-amber-300' : 'text-ink-soft'}`} role="status">
-        {err || `${count} halaman akan dibaca.`}
+        {err || (scan && scan.cap > 0 && count > scan.cap
+          ? `${count} halaman dipilih — AI baru bisa membaca ${scan.cap} halaman pertama sekarang; sisanya ditandai belum terbaca dan bisa dilanjutkan nanti.`
+          : `${count} halaman akan dibaca.`)}
       </div>
 
       <div className="flex gap-2 mt-3 flex-wrap">
@@ -210,7 +225,7 @@ const PdfRangePicker = ({ info, onPick, onSkip }) => {
           className="btn btn-primary text-sm px-4 py-2 disabled:opacity-50">
           Baca hlm. {a || '?'}–{b || '?'}
         </button>
-        {numPages <= PDF_MAX_PAGES && (
+        {numPages <= PDF_MAX_PAGES && !(scan && numPages > scan.cap) && (
           <button type="button" onClick={() => onPick({ from: 1, to: numPages, label: '' })} className="btn btn-ghost text-sm px-4 py-2">
             Semua halaman
           </button>
@@ -332,6 +347,22 @@ const CreateWizard = ({ tier, onCancel, onCreated }) => {
     });
   };
 
+  /* Apakah PDF ini hasil scan? Dicek dari beberapa halaman yang tersebar (halaman awal sering sampul berteks).
+     Kalau ya, kembalikan berapa halaman yang bisa dibaca AI sekarang: { cap, scope } dari sisa jatah baca. */
+  const detectScan = async (pdf, numPages) => {
+    const sample = [...new Set([0.15, 0.4, 0.65, 0.9].map(f => Math.min(numPages, Math.max(1, Math.round(f * numPages)))))];
+    let noText = 0;
+    for (const n of sample) {
+      const [p] = await window.readPdfRange(pdf, n, n);
+      if (p.status === 'empty' || p.status === 'garbled') noText++;
+    }
+    if (noText * 2 < sample.length) return null;
+    const maxScan = isTrial ? 3 : 20;
+    const quota = await aiCall('ocr-quota', {});
+    const remaining = quota?.ok && Number.isFinite(quota.remaining) ? quota.remaining : maxScan;
+    return { cap: Math.min(maxScan, remaining), perRead: maxScan, scope: quota?.scope || (isTrial ? 'trial' : 'daily') };
+  };
+
   /* Pecah per bab: baca teks tiap bab. Halaman scan TIDAK dibaca AI di sini (bisa puluhan halaman sekaligus dan
      menguras jatah baca) — jumlahnya dilaporkan; bab yang isinya scan bisa ditambahkan lewat "Satu materi". */
   const readChapters = async (pdf, split, i, numPages) => {
@@ -360,17 +391,24 @@ const CreateWizard = ({ tier, onCancel, onCreated }) => {
     const { file, kind } = item;
 
     if (kind === 'pdf') {
-      if (file.size > 30 * 1024 * 1024) fail('PDF terlalu besar (maks 30MB).');
-      patchItem(i, { note: 'Membuka PDF…' });
+      const sizeMB = Math.round(file.size / 1024 / 1024);
+      if (sizeMB > PDF_MAX_MB) {
+        fail(`PDF ini ${sizeMB}MB, terlalu besar untuk dibuka (maks ${PDF_MAX_MB}MB). ${COMPRESS_TIP}`);
+      }
+      patchItem(i, { note: sizeMB > PDF_BIG_MB ? `Membuka PDF ${sizeMB}MB… (file besar, bisa agak lama — lain kali kompres dulu supaya lebih cepat)` : 'Membuka PDF…' });
       const pdf = await window.openPdf(file);
       const numPages = pdf.numPages;
       let from = 1, to = numPages, label = '';
-      if (numPages > PDF_ASK_PAGES) {
+      // PDF scan dibaca AI per halaman dan memakai jatah baca, jadi PDF scan yang lebih tebal dari sisa jatah
+      // juga diminta memilih bagian (satu bab) — bukan dibaca dari halaman 1 sampai jatahnya habis di tengah.
+      const scan = await detectScan(pdf, numPages);
+      if (numPages > PDF_ASK_PAGES || (scan && numPages > scan.cap)) {
         patchItem(i, { note: `${numPages} halaman — pilih bagian yang mau dipelajari` });
         const outline = await window.readPdfOutline(pdf);
         // Pecah per bab: khusus pelanggan, PDF berdaftar isi, dan diunggah sendirian (hasilnya beberapa materi).
-        const canSplit = !isTrial && fileCount === 1 && outline.length >= 2;
-        const choice = await askRange({ name: file.name, numPages, outline, canSplit });
+        // PDF scan tidak bisa dipecah (pecah per bab melewati halaman scan).
+        const canSplit = !scan && !isTrial && fileCount === 1 && outline.length >= 2;
+        const choice = await askRange({ name: file.name, numPages, outline, canSplit, scan });
         if (!choice) fail('Dilewati, tidak ada halaman yang dipilih.');
         if (choice.split) return readChapters(pdf, choice.split, i, numPages);
         ({ from, to, label } = choice);

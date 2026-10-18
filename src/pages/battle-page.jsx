@@ -579,7 +579,7 @@ function getStageTactics(muqarrarId, stageId) {
   };
 }
 
-/* ── PRESET DIKTAT RESMI AL-AZHAR (Siap Langsung Dimainkan) ── */
+/* ── PRESET MUQARRAR RESMI AL-AZHAR (Siap Langsung Dimainkan) ── */
 const PRESETS = [
   {
     id: 'balaghah-majaz',
@@ -2417,6 +2417,7 @@ export default function BattlePage() {
   const [customTitle, setCustomTitle] = useState('');
   const [uploadBusy, setUploadBusy] = useState(false);
   const [uploadError, setUploadError] = useState('');
+  const [uploadNote, setUploadNote] = useState('');
   const [importToast, setImportToast] = useState('');
   const fileInputRef = useRef(null);
 
@@ -3119,6 +3120,31 @@ export default function BattlePage() {
     link.click();
   };
 
+  /* Baca halaman PDF scan dengan OCR AI Partner. Halaman awal (sampul, muqaddimah, daftar isi) dilewati dan
+     halaman yang dibaca disebar di sepanjang materi supaya soalnya beragam; jumlahnya dibatasi sisa jatah baca. */
+  const OCR_SCAN_PAGES = 5;
+  const ocrScanPages = async (pdf, pageNums) => {
+    const body = pageNums.length > OCR_SCAN_PAGES * 2 ? pageNums.filter(n => n > 4) : pageNums;
+    const quota = await window.aiCall('ocr-quota', {});
+    const remaining = quota?.ok && Number.isFinite(quota.remaining) ? quota.remaining : OCR_SCAN_PAGES;
+    const count = Math.min(OCR_SCAN_PAGES, remaining, body.length);
+    if (count < 1) {
+      return { text: '', reason: 'PDF ini hasil scan, dan jatah AI membaca halaman scan untuk akunmu sudah habis. Coba lagi nanti, atau tempel teks materinya lewat "Paste Catatan".' };
+    }
+    const picks = [...new Set(Array.from({ length: count }, (_, k) => body[Math.floor((k * body.length) / count)]))];
+    const texts = [];
+    let reason = '';
+    for (let k = 0; k < picks.length; k++) {
+      setUploadNote(`PDF ini hasil scan — AI membaca halaman ${picks[k]} (${k + 1} dari ${picks.length})…`);
+      const img = await window.renderPdfPage(pdf, picks[k]);
+      const compressed = await window.compressImage(img);
+      const d = await window.aiCall('ocr', { foto_base64: await window.fileToBase64(compressed), mime_type: compressed.type || 'image/jpeg' });
+      if (!d.ok) { reason = String(d.error || 'AI gagal membaca halaman scan.'); break; }
+      if (d.teks?.trim()) texts.push(d.teks.trim());
+    }
+    return { text: texts.join('\n\n'), reason: reason || 'Halaman scan di PDF ini tidak berisi teks yang bisa dibaca.' };
+  };
+
   /* ── Handler Upload Dokumen Muqarrar ── */
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -3129,23 +3155,32 @@ export default function BattlePage() {
     }
     setUploadBusy(true);
     setUploadError('');
+    setUploadNote('');
     try {
       const ext = (file.name.split('.').pop() || '').toLowerCase();
       let extracted = '';
       if (ext === 'pdf') {
         if (typeof window.readPdfPages !== 'function') throw new Error('Pembaca PDF belum siap. Muat ulang halaman lalu coba lagi.');
+        const sizeMB = Math.round(file.size / 1024 / 1024);
+        if (sizeMB > 150) {
+          throw new Error(`PDF ini ${sizeMB}MB, terlalu besar untuk dibuka (maks 150MB). Kompres dulu (misalnya di iLovePDF atau Smallpdf, pilih "Compress PDF") atau pisahkan per bab, lalu unggah lagi.`);
+        }
         // readPdfPages sengaja mengembalikan pages: null bila PDF melebihi batas; dulu itu dianggap "tidak terbaca"
         // sehingga muqarrar > 40 halaman selalu gagal. Game hanya butuh cuplikan, jadi baca 60 halaman pertama saja.
         const MAX_PAGES = 60;
         const res = await window.readPdfPages(file, MAX_PAGES);
         const pages = res.pages || await window.readPdfRange(res.pdf, 1, Math.min(MAX_PAGES, res.numPages));
-        // Halaman hasil scan (tanpa teks) atau huruf Arabnya rusak tidak ikut dipakai.
         const usable = pages.filter(p => (p.status === 'ok' || p.status === 'fixed') && p.text?.trim());
         extracted = usable.map(p => p.text).join('\n\n');
-        if (extracted.trim().length < 40) {
-          throw new Error(pages.some(p => p.status === 'garbled')
-            ? 'Huruf Arab di PDF ini tidak bisa dibaca (font-nya rusak). Unggah lewat AI Partner supaya dibaca dengan OCR, lalu pilih "Uji di Arena Imtihan".'
-            : 'PDF ini sepertinya hasil scan/foto, jadi tidak ada teks yang bisa dibaca. Unggah lewat AI Partner (bisa membaca foto dengan OCR), lalu pilih "Uji di Arena Imtihan".');
+        // Muqarrar hasil scan (atau huruf Arabnya rusak): tidak ada teks yang bisa diambil, jadi beberapa halaman
+        // dibaca AI (OCR) memakai jatah baca member. Game hanya butuh beberapa paragraf, jadi secukupnya saja.
+        if (extracted.trim().length < 600) {
+          const needOcr = pages.filter(p => p.status === 'empty' || p.status === 'garbled').map(p => p.n);
+          if (needOcr.length) {
+            const ocr = await ocrScanPages(res.pdf, needOcr);
+            if (ocr.text) extracted = [extracted, ocr.text].filter(t => t.trim()).join('\n\n');
+            else if (extracted.trim().length < 40) throw new Error(ocr.reason);
+          }
         }
       } else if (ext === 'doc') {
         throw new Error('Format .doc lama belum didukung. Buka filenya lalu "Save As" .docx, atau unggah PDF-nya.');
@@ -3174,6 +3209,7 @@ export default function BattlePage() {
       setUploadError(err.message || 'Gagal memproses file muqarrar.');
     } finally {
       setUploadBusy(false);
+      setUploadNote('');
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
@@ -3321,7 +3357,7 @@ export default function BattlePage() {
       bossAvatar: '👳‍♂️',
       stages: customStages,
       prologue: {
-        chapter: 'HIKAYAT DIKTAT PILIHAN',
+        chapter: 'HIKAYAT MUQARRAR PILIHAN',
         title: `Ujian Pengetahuan: ${title}`,
         titleArabic: 'امْتِحَانُ التَّحْصِيلِ وَالْمُطَالَعَةِ',
         location: 'Ruwaq Muthola\'ah Al-Azhar • Waktu Ujian Mandiri',
@@ -4091,7 +4127,7 @@ export default function BattlePage() {
                 <div>
                   <div className="flex items-center gap-2 mb-0.5">
                     <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 uppercase tracking-wider">
-                      MATERI DIKTAT SIAP DITANDINGKAN
+                      MATERI MUQARRAR SIAP DITANDINGKAN
                     </span>
                     <span className="text-xs text-emerald-400 font-mono">4 Level Terbuka</span>
                   </div>
@@ -4329,7 +4365,7 @@ export default function BattlePage() {
                   />
                 </div>
                 {uploadBusy && (
-                  <p className="text-[11px] font-mono text-amber-300 mt-2 animate-pulse">Sedang membaca dan mengekstrak materi muqarrar... mohon tunggu sebentar.</p>
+                  <p className="text-[11px] font-mono text-amber-300 mt-2 animate-pulse">{uploadNote || 'Sedang membaca dan mengekstrak materi muqarrar... mohon tunggu sebentar.'}</p>
                 )}
                 {uploadError && (
                   <p className="text-[11px] font-mono text-rose-400 mt-2">{uploadError}</p>
