@@ -2418,6 +2418,7 @@ export default function BattlePage() {
   const [uploadBusy, setUploadBusy] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadNote, setUploadNote] = useState('');
+  const [pasteBusy, setPasteBusy] = useState(false);
   const [importToast, setImportToast] = useState('');
   const fileInputRef = useRef(null);
 
@@ -3183,8 +3184,8 @@ export default function BattlePage() {
           throw new Error(`PDF ini ${sizeMB}MB, terlalu besar untuk dibuka (maks 150MB). Kompres dulu (misalnya di iLovePDF atau Smallpdf, pilih "Compress PDF") atau pisahkan per bab, lalu unggah lagi.`);
         }
         // readPdfPages sengaja mengembalikan pages: null bila PDF melebihi batas; dulu itu dianggap "tidak terbaca"
-        // sehingga muqarrar > 40 halaman selalu gagal. Game hanya butuh cuplikan, jadi baca 60 halaman pertama saja.
-        const MAX_PAGES = 60;
+        // sehingga muqarrar > 40 halaman selalu gagal. Soal AI dicuplik merata dari seluruh materi, jadi baca sampai 200 halaman.
+        const MAX_PAGES = 200;
         const res = await window.readPdfPages(file, MAX_PAGES);
         const pages = res.pages || await window.readPdfRange(res.pdf, 1, Math.min(MAX_PAGES, res.numPages));
         const usable = pages.filter(p => (p.status === 'ok' || p.status === 'fixed') && p.text?.trim());
@@ -3218,9 +3219,13 @@ export default function BattlePage() {
       const cleanTitle = file.name.replace(/\.[^/.]+$/, '');
       setCustomTitle(cleanTitle);
       setCustomText(extracted);
-      processCustomText(cleanTitle, extracted);
-      setImportToast(`Materi "${cleanTitle}" berhasil dimuat ke Arena Imtihan! 4 Tingkat Imtihan telah disiapkan!`);
-      setTimeout(() => setImportToast(''), 5500);
+      setUploadNote('Syaikh sedang membaca muqarrarmu dan menyusun soal imtihan… (±30 detik)');
+      const ai = await generateAiQuiz(cleanTitle, extracted);
+      processCustomText(cleanTitle, extracted, [], ai.data);
+      setImportToast(ai.data
+        ? `Materi "${cleanTitle}" siap! ${ai.data.quiz.length} soal imtihan disusun AI dari isi muqarrarmu.`
+        : `Materi "${cleanTitle}" dimuat dengan soal sederhana — ${ai.error}`);
+      setTimeout(() => setImportToast(''), 7000);
     } catch (err) {
       console.warn('Upload muqarrar Arena Imtihan gagal:', err);
       setUploadError(err.message || 'Gagal memproses file muqarrar.');
@@ -3231,8 +3236,36 @@ export default function BattlePage() {
     }
   };
 
+  /* Soal imtihan & intisari dari isi muqarrar, disusun AI (aksi 'battle-quiz'). Gagal → { data: null, error }
+     dan game memakai soal sederhana dari teks. */
+  const generateAiQuiz = async (title, text) => {
+    try {
+      const res = await window.aiCall('battle-quiz', { title, text: text.slice(0, 200000) });
+      if (res?.ok && res.data?.quiz?.length) return { data: res.data };
+      return { data: null, error: res?.error || 'AI belum bisa menyusun soal dari materi ini.' };
+    } catch {
+      return { data: null, error: 'AI belum bisa menyusun soal dari materi ini.' };
+    }
+  };
+
+  // Tombol "Paste Catatan": sama seperti upload, soalnya disusun AI dulu.
+  const processPastedText = async () => {
+    if (!requireLibraryMember() || pasteBusy) return;
+    setPasteBusy(true);
+    try {
+      const ai = await generateAiQuiz('Catatan Muqarrar Mandiri', customText);
+      processCustomText('Catatan Muqarrar Mandiri', customText, [], ai.data);
+      if (!ai.data) {
+        setImportToast(`Catatan dimuat dengan soal sederhana — ${ai.error}`);
+        setTimeout(() => setImportToast(''), 7000);
+      }
+    } finally {
+      setPasteBusy(false);
+    }
+  };
+
   /* ── Proses Teks Muqarrar Custom menjadi Dataset Battle ── */
-  function processCustomText(title, text, existingQuiz = []) {
+  function processCustomText(title, text, existingQuiz = [], ai = null) {
     // Semua jalur materi sendiri (upload, paste, impor dari AI Partner) lewat sini — kunci di satu tempat.
     if (!requireLibraryMember()) return;
     const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 5);
@@ -3290,9 +3323,18 @@ export default function BattlePage() {
         }))
       : [];
 
-    const finalQuiz = formattedExistingQuiz.length >= 3
-      ? formattedExistingQuiz
-      : (generatedQuiz.length >= 3 ? generatedQuiz : PRESETS[0].quiz);
+    // Soal AI diurutkan dari level 1 (ta'rif) ke 4 (tathbiq) supaya tingkat kesulitan naik per level arena.
+    const aiQuiz = ai?.quiz?.length >= 6 ? [...ai.quiz].sort((a, b) => (a.level || 2) - (b.level || 2)) : null;
+    const finalQuiz = aiQuiz
+      || (formattedExistingQuiz.length >= 3
+        ? formattedExistingQuiz
+        : (generatedQuiz.length >= 3 ? generatedQuiz : PRESETS[0].quiz));
+    // Soal dibagi rata ke 4 level (sisa masuk ke final boss); tanpa soal AI tetap memakai pembagian lama.
+    const groups = aiQuiz ? (() => {
+      const per = Math.max(2, Math.floor(aiQuiz.length / 4));
+      const idx = aiQuiz.map((_, i) => i);
+      return [idx.slice(0, per), idx.slice(per, per * 2), idx.slice(per * 2, per * 3), idx.slice(per * 3)];
+    })() : null;
 
     const customStages = [
       {
@@ -3307,7 +3349,7 @@ export default function BattlePage() {
         guardianAvatar: '📜',
         bossHp: 60,
         expReward: 35,
-        quizIndices: [0, Math.min(1, finalQuiz.length - 1)],
+        quizIndices: groups ? groups[0] : [0, Math.min(1, finalQuiz.length - 1)],
         isFinal: false,
         lore: `Ujian tingkat awal untuk menguji dasar-dasar pemahaman materi "${title}".`
       },
@@ -3323,7 +3365,7 @@ export default function BattlePage() {
         guardianAvatar: '📘',
         bossHp: 80,
         expReward: 50,
-        quizIndices: [Math.min(2, finalQuiz.length - 1), Math.min(3, finalQuiz.length - 1)],
+        quizIndices: groups ? groups[1] : [Math.min(2, finalQuiz.length - 1), Math.min(3, finalQuiz.length - 1)],
         isFinal: false,
         lore: `Membedah kaidah pokok dan istilah-istilah sentral pada materi "${title}".`
       },
@@ -3339,7 +3381,7 @@ export default function BattlePage() {
         guardianAvatar: '🏛️',
         bossHp: 90,
         expReward: 65,
-        quizIndices: [Math.min(4, finalQuiz.length - 1), Math.min(5, finalQuiz.length - 1)],
+        quizIndices: groups ? groups[2] : [Math.min(4, finalQuiz.length - 1), Math.min(5, finalQuiz.length - 1)],
         isFinal: false,
         lore: `Uji penalaran mendalam atas cabang-cabang hukum dan korelasi kaidah.`
       },
@@ -3355,7 +3397,7 @@ export default function BattlePage() {
         guardianAvatar: '👳‍♂️',
         bossHp: 100,
         expReward: 100,
-        quizIndices: [Math.min(6, finalQuiz.length - 1), 0, 1, 2].slice(0, Math.min(4, finalQuiz.length)),
+        quizIndices: groups ? groups[3] : [Math.min(6, finalQuiz.length - 1), 0, 1, 2].slice(0, Math.min(4, finalQuiz.length)),
         isFinal: true,
         lore: `Al-'Allamah Syaikhul Imtihan hadir menguji seluruh penguasaan naskah "${title}"! Selesaikan untuk memperoleh Syahadah Arena Imtihan!`
       }
@@ -3365,7 +3407,7 @@ export default function BattlePage() {
       id: 'custom-' + Date.now(),
       title: title || 'Muqarrar Pilihan',
       titleArabic: 'مُقَرَّرٌ مُخْتَارٌ',
-      maddah: 'Muqarrar Unggahan Mandiri',
+      maddah: ai?.maddah || 'Muqarrar Unggahan Mandiri',
       bossName: `Syaikhul Imtihan: Al-'Allamah ${title.slice(0, 18)}`,
       bossLv: Math.min(50, 20 + Math.floor(text.length / 300)),
       bossRank: 'Rank S (Kibar Ulama)',
@@ -3407,9 +3449,9 @@ export default function BattlePage() {
           }
         ]
       },
-      summary: summaryItems.length ? summaryItems : PRESETS[0].summary,
-      terms: terms.length ? terms : PRESETS[0].terms,
-      flashcards: flashcards.length ? flashcards : PRESETS[0].flashcards,
+      summary: ai?.summary?.length ? ai.summary : (summaryItems.length ? summaryItems : PRESETS[0].summary),
+      terms: ai?.terms?.length ? ai.terms : (terms.length ? terms : PRESETS[0].terms),
+      flashcards: ai?.flashcards?.length ? ai.flashcards : (flashcards.length ? flashcards : PRESETS[0].flashcards),
       quiz: finalQuiz,
       sourceText: text.slice(0, 5000)
     };
@@ -4516,11 +4558,11 @@ export default function BattlePage() {
                             />
                             <div className="mt-3 flex justify-end">
                               <button
-                                disabled={customText.trim().length < 50}
-                                onClick={() => processCustomText('Catatan Muqarrar Mandiri', customText)}
+                                disabled={customText.trim().length < 50 || pasteBusy}
+                                onClick={processPastedText}
                                 className={`${PX_BTN} ${PX_GREEN} px-4 py-2 text-xs`}
                               >
-                                Proses & Buka Ruang Muthola'ah ▸
+                                {pasteBusy ? 'Syaikh menyusun soal…' : "Proses & Buka Ruang Muthola'ah ▸"}
                               </button>
                             </div>
                           </div>

@@ -11,13 +11,14 @@ import {
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { handleTalkhis } from './_lib/ai-partner/talkhis.js';
 import { handleBattleStory, handleBattleHalaqah } from './_lib/ai-partner/battle-story.js';
+import { handleBattleQuiz } from './_lib/ai-partner/battle-quiz.js';
 import { ocrCacheKey, lookupOcrPages, storeOcrPage, handleOcrCache } from './_lib/ai-partner/ocr-cache.js';
 import { withAiContext } from './_lib/ai-cost.js';
 
 // Kategori biaya AI per action (cocok dengan kolom "Fitur" di analitik admin).
 const COST_KIND = {
   ocr: 'ocr', transcribe: 'transcribe', generate: 'generate', analyze: 'analyze', grade: 'grade',
-  chat: 'chat', 'prompt-chat': 'prompt', talkhis: 'talkhis', 'battle-story': 'battle_story', 'battle-halaqah': 'battle_halaqah',
+  chat: 'chat', 'prompt-chat': 'prompt', talkhis: 'talkhis', 'battle-story': 'battle_story', 'battle-quiz': 'battle_quiz', 'battle-halaqah': 'battle_halaqah',
 };
 import { handlePromptFeedback, handlePromptQualityAdmin } from './_lib/prompt-quality.js';
 import { getMonthlyLimits, cachedMonthlyLimits, getQuotaOverride } from './_lib/ai-partner/limits.js';
@@ -1357,6 +1358,7 @@ export default async function handler(req, res) {
       case 'feedback':      return await handleFeedback(ctx, body, res);
       case 'battle-story':  return await handleBattleStory(ctx, body, res, { upgradeRequired });
       case 'battle-halaqah': return await handleBattleHalaqah(ctx, body, res, { upgradeRequired });
+      case 'battle-quiz':   return await handleBattleQuiz(ctx, body, res, { upgradeRequired });
       case 'talkhis':       return await handleTalkhis(ctx, body, res, {
         getOwnedSet, saveTalkhis, takeQuota, quotaExceeded, upgradeRequired, getTrialSetId, trialGateOpen, trialGateClosed,
         consumeQuota, resolveModels, requestAI, callAIJson, runAI, sendResult,
