@@ -476,7 +476,7 @@ const AZHAR_WISDOM_LOOT = [
     // Al-Mustashfa, muqaddimah tentang ilmu mantiq (versi sebelumnya menambahkan "wal-ushul" yang tidak ada di teks).
     arabic: "هِيَ مُقَدِّمَةُ الْعُلُومِ كُلِّهَا، وَمَنْ لَا يُحِيطُ بِهَا فَلَا ثِقَةَ لَهُ بِعُلُومِهِ أَصْلًا",
     meaning: "(Tentang ilmu mantiq/logika) Ia adalah pengantar bagi seluruh ilmu; siapa yang tidak menguasainya, ilmunya sama sekali tidak dapat dipercaya kemantapannya.",
-    itemReward: { name: "Khulashah Matan (Diktat Ringkas)", key: "summary", qty: 1, icon: "📜", desc: "Singkirkan 2 Pilihan Salah (50:50)" }
+    itemReward: { name: "Khulashah Matan (Muqarrar Ringkas)", key: "summary", qty: 1, icon: "📜", desc: "Singkirkan 2 Pilihan Salah (50:50)" }
   },
   {
     id: 'azhar-kibar-1',
@@ -1754,7 +1754,7 @@ function unlockPageScroll() {
 
 /* Modal situs (login, gabung, upgrade, pembayaran) dirender di luar game dengan z-index 90–160, sedangkan game
    memakai 9990+. Selama ada modal situs terbuka, semua lapisan game turun ke z-index 85: tetap di atas tab bar &
-   tombol quick-note situs, tapi di bawah modalnya. Tanpa ini, tombol "Upload Diktat" untuk tamu membuka modal login
+   tombol quick-note situs, tapi di bawah modalnya. Tanpa ini, tombol "Upload Muqarrar" untuk tamu membuka modal login
    yang tersembunyi di balik game. */
 function useYieldToSiteModals() {
   useEffect(() => {
@@ -1923,7 +1923,7 @@ function getBossHurtReaction(stageId, bossType, combo = 0) {
   if (sid === 2) {
     const quotes = [
       { quote: "Aghh! Catatan matanku runtuh!", emoji: "📜💥", badge: "Koreksi Matan Telak!" },
-      { quote: "Ibaratmu presisi sekali!", emoji: "📝⚡", badge: "Diktat Musa'id Terhantam!" },
+      { quote: "Ibaratmu presisi sekali!", emoji: "📝⚡", badge: "Muqarrar Musa'id Terhantam!" },
       { quote: "Ta'lilmu tak terbantahkan!", emoji: "🧐💥", badge: "Koreksi Sempurna!" }
     ];
     return quotes[Math.floor(Math.random() * quotes.length)];
@@ -1941,7 +1941,7 @@ function getBossHurtReaction(stageId, bossType, combo = 0) {
   if (isCustom) {
     const quotes = [
       { quote: "«مَا شَاءَ اللَّهُ!» Penguasaan naskah dan hujjahmu sungguh mendalam!", emoji: "👳‍♂️✨", badge: "Al-'Allamah Kagum!" },
-      { quote: "Tahqiq dan analisismu atas diktat ini sangat shahih, wahai Thalib!", emoji: "📜⚡", badge: "Sang Syaikh Takzim!" },
+      { quote: "Tahqiq dan analisismu atas muqarrar ini sangat shahih, wahai Thalib!", emoji: "📜⚡", badge: "Sang Syaikh Takzim!" },
       { quote: "Subhanallah! Setiap pertanyaan muqarrar dijawab dengan hujjah qath'i!", emoji: "👓💫", badge: "Kibar Ulama Takjub!" }
     ];
     return quotes[Math.floor(Math.random() * quotes.length)];
@@ -2336,7 +2336,7 @@ export default function BattlePage() {
   const auth = typeof window.useAuth === 'function' ? window.useAuth() : {};
   const { session, profile, isFree } = auth;
   useYieldToSiteModals();
-  // Game terbuka untuk umum; upload/paste diktat sendiri dan cerita AI khusus member paket Library ke atas.
+  // Game terbuka untuk umum; upload/paste muqarrar sendiri dan cerita AI khusus member paket Library ke atas.
   const isLibraryMember = !!session && !isFree;
   const requireLibraryMember = () => {
     if (isLibraryMember) return true;
@@ -2864,7 +2864,7 @@ export default function BattlePage() {
         sessionStorage.removeItem('talqeeh_battle_custom_import');
         const imported = JSON.parse(importedRaw);
         if (imported && (imported.text || imported.title)) {
-          const title = imported.title || 'Diktat Hasil Muthola\'ah';
+          const title = imported.title || 'Muqarrar Hasil Muthola\'ah';
           const text = imported.text || '';
           const quiz = Array.isArray(imported.quiz) ? imported.quiz : [];
           if (!requireLibraryMember()) return;
@@ -3119,7 +3119,7 @@ export default function BattlePage() {
     link.click();
   };
 
-  /* ── Handler Upload Dokumen Diktat ── */
+  /* ── Handler Upload Dokumen Muqarrar ── */
   const handleFileUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -3170,15 +3170,15 @@ export default function BattlePage() {
       setImportToast(`Materi "${cleanTitle}" berhasil dimuat ke Arena Imtihan! 4 Tingkat Imtihan telah disiapkan!`);
       setTimeout(() => setImportToast(''), 5500);
     } catch (err) {
-      console.warn('Upload diktat Arena Imtihan gagal:', err);
-      setUploadError(err.message || 'Gagal memproses file diktat.');
+      console.warn('Upload muqarrar Arena Imtihan gagal:', err);
+      setUploadError(err.message || 'Gagal memproses file muqarrar.');
     } finally {
       setUploadBusy(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  /* ── Proses Teks Diktat Custom menjadi Dataset Battle ── */
+  /* ── Proses Teks Muqarrar Custom menjadi Dataset Battle ── */
   function processCustomText(title, text, existingQuiz = []) {
     // Semua jalur materi sendiri (upload, paste, impor dari AI Partner) lewat sini — kunci di satu tempat.
     if (!requireLibraryMember()) return;
@@ -3211,7 +3211,7 @@ export default function BattlePage() {
     const generatedQuiz = paragraphs.slice(0, 8).map((p, idx) => {
       const sentence = p.split(/[.!?]/)[0] || p;
       return {
-        question: `Berdasarkan teks diktat pada bab ini: "${sentence.slice(0, 110)}..." — Apakah poin utama yang ditegaskan?`,
+        question: `Berdasarkan teks muqarrar pada bab ini: "${sentence.slice(0, 110)}..." — Apakah poin utama yang ditegaskan?`,
         options: [
           sentence.slice(0, 75),
           `Menunjukkan bahwa hukumnya tidak berlaku secara mutlak di luar konteks ini`,
@@ -3219,7 +3219,7 @@ export default function BattlePage() {
           `Merupakan cabang masalah yang tidak disyaratkan dalam rukun`
         ],
         answer: 0,
-        explanation: `Sesuai teks diktat: "${sentence.slice(0, 140)}".`,
+        explanation: `Sesuai teks muqarrar: "${sentence.slice(0, 140)}".`,
         hint: `Fokus pada kalimat awal dari potongan paragraf materi yang sedang diuji.`,
         examTip: `Rumus lembar ujian (Kurrasah Ijabah): 1) Tuliskan kaidah/nash pokok yang menjadi rukun bahasan ini, 2) Uraikan ta'rif serta 'illat hukumnya, 3) Buat kesimpulan fatwa/hukum sesuai qoul mu'tamad.`
       };
@@ -3231,7 +3231,7 @@ export default function BattlePage() {
           question: q.question,
           options: Array.isArray(q.options) ? q.options : [],
           answer: typeof q.answer === 'number' ? q.answer : 0,
-          explanation: q.explanation || `Sesuai pemaparan diktat materi.`,
+          explanation: q.explanation || `Sesuai pemaparan muqarrar.`,
           hint: q.hint || `Perhatikan ta'rif dan kaidah pokok pada teks.`,
           examTip: q.examTip || `Tuliskan kaidah/nash pokok di lembar ujian (kurrasah ijabah).`
         }))
@@ -3245,10 +3245,10 @@ export default function BattlePage() {
       {
         id: 1,
         levelNumber: 1,
-        title: 'Level 1: Gerbang Diktat Mandiri',
+        title: 'Level 1: Gerbang Muqarrar Mandiri',
         titleArabic: 'الْمَرْحَلَةُ الأُولَى: بَابُ التَّحْصِيلِ',
         location: "Ruwaq Muthola'ah Al-Azhar • Gerbang Awal",
-        guardianName: `Khadim Diktat: Murid ${title.slice(0, 16)}`,
+        guardianName: `Khadim Muqarrar: Murid ${title.slice(0, 16)}`,
         guardianRank: "Rank C (Mubtadi')",
         guardianRankCode: "Rank C",
         guardianAvatar: '📜',
@@ -3264,7 +3264,7 @@ export default function BattlePage() {
         title: 'Level 2: Ruwaq Kaidah & Ta\'rif',
         titleArabic: 'الْمَرْحَلَةُ الثَّانِيَةُ: رِوَاقُ التَّعْرِيفِ',
         location: "Ruwaq Al-Magharibah • Koridor Telaah",
-        guardianName: `Musa'id Diktat: ${title.slice(0, 16)}`,
+        guardianName: `Musa'id Muqarrar: ${title.slice(0, 16)}`,
         guardianRank: "Rank B (Mutawassith)",
         guardianRankCode: "Rank B",
         guardianAvatar: '📘',
@@ -3280,7 +3280,7 @@ export default function BattlePage() {
         title: 'Level 3: Shahn Analisis Mendalam',
         titleArabic: 'الْمَرْحَلَةُ الثَّالِثَةُ: صَحْنُ التَّدْقِيقِ',
         location: "Pelataran Shahn Al-Azhar Asy-Syarif",
-        guardianName: `Muhaqqiq Diktat: ${title.slice(0, 16)}`,
+        guardianName: `Muhaqqiq Muqarrar: ${title.slice(0, 16)}`,
         guardianRank: "Rank A (Mutaqaddim)",
         guardianRankCode: "Rank A",
         guardianAvatar: '🏛️',
@@ -3310,9 +3310,9 @@ export default function BattlePage() {
 
     const newSet = {
       id: 'custom-' + Date.now(),
-      title: title || 'Diktat Muqarrar Pilihan',
+      title: title || 'Muqarrar Pilihan',
       titleArabic: 'مُقَرَّرٌ مُخْتَارٌ',
-      maddah: 'Diktat Unggahan Mandiri',
+      maddah: 'Muqarrar Unggahan Mandiri',
       bossName: `Syaikhul Imtihan: Al-'Allamah ${title.slice(0, 18)}`,
       bossLv: Math.min(50, 20 + Math.floor(text.length / 300)),
       bossRank: 'Rank S (Kibar Ulama)',
@@ -3332,7 +3332,7 @@ export default function BattlePage() {
             speaker: 'Narator',
             avatar: '📖',
             role: 'Ruwaq Muthola\'ah',
-            text: `Lembaran naskah "${title}" terbuka di hadapan Thalib. Setiap baris muthola'ah dan diktat berubah menjadi medan ujian akademis!`
+            text: `Lembaran naskah "${title}" terbuka di hadapan Thalib. Setiap baris muthola'ah dan muqarrar berubah menjadi medan ujian akademis!`
           },
           {
             speaker: 'Thalib Azhar',
@@ -3366,7 +3366,7 @@ export default function BattlePage() {
     setActiveStage(customStages[0]);
     setPhase('map');
     sfx.playBip(580);
-    // Cerita bawaan untuk diktat unggahan generik; minta AI menulis cerita yang sesuai isi materi.
+    // Cerita bawaan untuk muqarrar unggahan generik; minta AI menulis cerita yang sesuai isi materi.
     generateAiStory(newSet, { silent: true });
   }
 
@@ -4112,7 +4112,7 @@ export default function BattlePage() {
 
         {/* =========================================================================
             FASE 0: PILIH MUQARRAR — menu utama game, satu layar penuh.
-            Tiga diktat preset tampil sebagai "dunia"; profil, misi, dan paste catatan dibuka sebagai panel di dalam layar.
+            Tiga muqarrar preset tampil sebagai "dunia"; profil, misi, dan paste catatan dibuka sebagai panel di dalam layar.
             ========================================================================= */}
         {phase === 'select' && (() => {
           const exp = userProgress?.totalExp || 0;
@@ -4125,7 +4125,7 @@ export default function BattlePage() {
           const streakRec = userProgress?.streakRecord || 0;
           const hasMutholaah = !!userProgress?.studyCompleted;
           const quests = [
-            { icon: 'gate', title: 'Penakluk 3 Muqarrar', desc: 'Kalahkan seluruh Boss Diktat resmi (Balaghah, Nahwu, dan Ushul Fiqh).', done: bossesWon >= 3, status: `${bossesWon}/3 TUNTAS`, exp: 150, reward: 'Gelar Mutafawwiq', tone: 'emerald' },
+            { icon: 'gate', title: 'Penakluk 3 Muqarrar', desc: 'Kalahkan seluruh Boss Muqarrar resmi (Balaghah, Nahwu, dan Ushul Fiqh).', done: bossesWon >= 3, status: `${bossesWon}/3 TUNTAS`, exp: 150, reward: 'Gelar Mutafawwiq', tone: 'emerald' },
             { icon: 'star', title: 'Predikat Mumtaz Syaraf', desc: 'Menangkan pertarungan dengan sisa HP ≥ 80% untuk predikat kehormatan tertinggi.', done: hasMumtaz, status: 'TARGET: HP ≥ 80%', exp: 100, reward: 'Wisam Mumtaz', tone: 'amber' },
             { icon: 'fire', title: 'Hujjah Mutawatirah x4', desc: 'Bangun rantai serangan combo 4 jawaban benar berurutan tanpa salah.', done: streakRec >= 4, status: `REKOR: x${streakRec}/4`, exp: 75, reward: 'Fashih Lisan', tone: 'rose' },
             { icon: 'book', title: "Muthola'ah Terverifikasi", desc: "Khatamkan telaah ringkasan materi & kartu hafalan di Ruang Muthola'ah (Fase 1).", done: hasMutholaah, status: '0/1 KHATAM', exp: 50, reward: 'Perisai Ijtihad', tone: 'blue' },
@@ -4228,10 +4228,10 @@ export default function BattlePage() {
                 <h2 className="mt-2 text-xl sm:text-3xl font-mono font-black text-white drop-shadow-[2px_2px_0_#000] leading-tight">
                   PILIH MUQARRAR
                 </h2>
-                <p className="hidden sm:block text-xs text-stone-300 font-mono mt-1">Pilih dunia diktat, jelajahi petanya, dan taklukkan Boss di Kubah Ulama.</p>
+                <p className="hidden sm:block text-xs text-stone-300 font-mono mt-1">Pilih dunia muqarrar, jelajahi petanya, dan taklukkan Boss di Kubah Ulama.</p>
               </div>
 
-              {/* Slot dunia: 3 diktat preset. Di HP digeser ke samping. */}
+              {/* Slot dunia: 3 muqarrar preset. Di HP digeser ke samping. */}
               <div className="relative z-10 flex-1 min-h-0 flex items-center">
                 <div className="w-full max-h-full flex gap-3 sm:gap-5 overflow-x-auto sm:overflow-visible snap-x snap-mandatory px-[9vw] sm:px-6 py-3 sm:justify-center [scrollbar-width:none]">
                   {PRESETS.map((preset, i) => {
@@ -4291,14 +4291,14 @@ export default function BattlePage() {
                 </div>
               </div>
 
-              {/* Kotak dialog bawah: diktat sendiri (member Library ke atas) */}
+              {/* Kotak dialog bawah: muqarrar sendiri (member Library ke atas) */}
               <div className={`relative z-10 mx-2 mb-[max(0.5rem,env(safe-area-inset-bottom))] sm:mx-auto sm:mb-4 sm:w-[min(52rem,calc(100%-2rem))] p-2.5 sm:p-4 ${GAME_BOX}`}>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-4">
                   <div className="flex items-center gap-2.5 min-w-0 flex-1">
                     <div className="hidden sm:flex w-11 h-11 shrink-0 border border-amber-400/50 bg-amber-500/15 items-center justify-center overflow-hidden"><img src="/assets/npc-musaid-voxel.png" alt="" className="w-full h-full object-contain" /></div>
                     <p className="text-[11px] sm:text-sm text-white/85 leading-snug">
                       <span className="font-bold text-amber-300">Syaikh: </span>
-                      Punya diktat sendiri? Unggah atau tempel catatanmu, akan kuubah jadi dunia battle{isLibraryMember ? ' lengkap dengan cerita AI.' : '.'}
+                      Punya muqarrar sendiri? Unggah atau tempel catatanmu, akan kuubah jadi dunia battle{isLibraryMember ? ' lengkap dengan cerita AI.' : '.'}
                       {!isLibraryMember && <span className="text-amber-200/80"> (khusus member Library)</span>}
                     </p>
                   </div>
@@ -4307,10 +4307,10 @@ export default function BattlePage() {
                       onClick={() => { if (requireLibraryMember()) fileInputRef.current?.click(); }}
                       disabled={uploadBusy}
                       className={`${PX_BTN} ${PX_GREEN} px-3 py-2 text-xs`}
-                      title={isLibraryMember ? 'Upload PDF, Word, atau teks diktatmu' : 'Khusus member paket Library — masuk atau gabung dulu'}
+                      title={isLibraryMember ? 'Upload PDF, Word, atau teks muqarrarmu' : 'Khusus member paket Library — masuk atau gabung dulu'}
                     >
                       <PixelIcon name={isLibraryMember ? 'chest' : 'crown'} className="w-3.5 h-3.5" />
-                      <span>{uploadBusy ? 'Membaca...' : 'Upload Diktat'}</span>
+                      <span>{uploadBusy ? 'Membaca...' : 'Upload Muqarrar'}</span>
                     </button>
                     <button
                       onClick={() => setMenuPanel('paste')}
@@ -4329,7 +4329,7 @@ export default function BattlePage() {
                   />
                 </div>
                 {uploadBusy && (
-                  <p className="text-[11px] font-mono text-amber-300 mt-2 animate-pulse">Sedang membaca dan mengekstrak materi diktat... mohon tunggu sebentar.</p>
+                  <p className="text-[11px] font-mono text-amber-300 mt-2 animate-pulse">Sedang membaca dan mengekstrak materi muqarrar... mohon tunggu sebentar.</p>
                 )}
                 {uploadError && (
                   <p className="text-[11px] font-mono text-rose-400 mt-2">{uploadError}</p>
@@ -4442,7 +4442,7 @@ export default function BattlePage() {
                           <div className="border-2 border-amber-500/25 bg-amber-500/5 p-4 text-center">
                             <div className="text-sm font-semibold text-amber-200 mb-1"><PixelIcon name="lock" className="w-[1.15em] h-[1.15em]" /> Khusus member paket Library</div>
                             <p className="text-xs text-white/60 mb-3">
-                              Tiga diktat contoh bebas dimainkan siapa saja. Untuk memakai diktat atau catatanmu sendiri (beserta cerita yang ditulis AI sesuai materinya), masuk dengan akun member Library ke atas.
+                              Tiga muqarrar contoh bebas dimainkan siapa saja. Untuk memakai muqarrar atau catatanmu sendiri (beserta cerita yang ditulis AI sesuai materinya), masuk dengan akun member Library ke atas.
                             </p>
                             <button
                               onClick={requireLibraryMember}
@@ -4457,14 +4457,14 @@ export default function BattlePage() {
                             <textarea
                               value={customText}
                               onChange={(e) => setCustomText(e.target.value)}
-                              placeholder="Paste teks diktat di sini (minimal 1-2 paragraf)..."
+                              placeholder="Paste teks muqarrar di sini (minimal 1-2 paragraf)..."
                               rows={7}
                               className="w-full bg-[#0a0a0c] border-2 border-white/10 p-3 text-base sm:text-xs text-white placeholder-white/30 focus:outline-none focus:border-emerald-500/50 font-mono"
                             />
                             <div className="mt-3 flex justify-end">
                               <button
                                 disabled={customText.trim().length < 50}
-                                onClick={() => processCustomText('Diktat Catatan Mandiri', customText)}
+                                onClick={() => processCustomText('Catatan Muqarrar Mandiri', customText)}
                                 className={`${PX_BTN} ${PX_GREEN} px-4 py-2 text-xs`}
                               >
                                 Proses & Buka Ruang Muthola'ah ▸
@@ -4887,7 +4887,7 @@ export default function BattlePage() {
                       <button
                         onClick={() => setPhase('select')}
                         className={`${PX_BTN} ${PX_WOOD} h-9 px-2.5 text-xs shrink-0`}
-                        title="Ganti Muqarrar / Kembali ke Menu Diktat"
+                        title="Ganti Muqarrar / Kembali ke Pilihan Dunia"
                       >
                         <Icon name="chevronLeft" className="w-4 h-4" />
                         <span className="hidden sm:inline">Ganti Muqarrar</span>

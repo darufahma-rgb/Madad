@@ -2029,9 +2029,9 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
 export const launchBattleFromSet = (set) => {
   try {
     const payload = {
-      title: set.title || 'Materi Diktat Azhar',
+      title: set.title || 'Materi Muqarrar Azhar',
       text: set.content || set.summary || '',
-      maddah: set.maddah_id || 'Diktat Muqarrar',
+      maddah: set.maddah_id || 'Muqarrar',
       quiz: Array.isArray(set.quiz) ? set.quiz : []
     };
     sessionStorage.setItem('talqeeh_battle_custom_import', JSON.stringify(payload));
@@ -2109,7 +2109,7 @@ export const BattleTab = ({ set }) => {
               Uji Pemahaman Materi: "{set.title}"
             </h2>
             <p className="text-sm text-white/70 max-w-xl leading-relaxed mb-4">
-              Diktat yang telah kamu pelajari kini siap diuji secara interaktif! Hadapi para penguji di Arena Imtihan, kumpulkan poin EXP, raih Taqdir Mumtaz, dan lulus di hadapan Al-'Allamah Al-Kabir untuk memperoleh Syahadah Arena Imtihan!
+              Muqarrar yang telah kamu pelajari kini siap diuji secara interaktif! Hadapi para penguji di Arena Imtihan, kumpulkan poin EXP, raih Taqdir Mumtaz, dan lulus di hadapan Al-'Allamah Al-Kabir untuk memperoleh Syahadah Arena Imtihan!
             </p>
 
             <div className="flex items-center justify-center md:justify-start gap-3 flex-wrap">
@@ -2142,7 +2142,7 @@ export const BattleTab = ({ set }) => {
                 <h4 className="text-sm font-semibold text-white mt-1">Khadim Al-Bab</h4>
               </div>
             </div>
-            <p className="text-xs text-white/60 mb-2">Menguji pengenalan dasar & istilah pembuka materi diktat.</p>
+            <p className="text-xs text-white/60 mb-2">Menguji pengenalan dasar & istilah pembuka materi muqarrar.</p>
             <div className="text-[11px] font-mono text-amber-300/80 pt-2 border-t border-white/10 flex justify-between">
               <span>HP: 60</span>
               <span>+35 EXP</span>

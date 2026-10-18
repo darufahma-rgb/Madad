@@ -11,7 +11,7 @@ import { renderVoxelFinalBoss, hasVoxelFinalBoss } from './voxel-boss.js';
        * Balaghah: Kitab Al-Bayan (Winged Tome of Metaphors)
        * Nahwu: Ra'du Al-Alfiyah (Thunder Grammarian Golem)
        * Ushul: Mizan Al-Qadhi (Celestial Sphinx Balance)
-       * Custom: Enchanted Grand Diktat
+       * Custom: Enchanted Grand Muqarrar
    - BattleProjectiles & FloatingDamage Text
    ========================================================================= */
 
@@ -886,7 +886,7 @@ function UshulSphinx({ isAttack, isHit }) {
         <text x="129" y="81" fill="#fef08a" fontSize="8" fontWeight="bold">نَهْي</text>
       </g>
 
-      {/* Sphinx Pedestal of Books (Diktat Syariah) */}
+      {/* Sphinx Pedestal of Books (Muqarrar Syariah) */}
       <rect x="52" y="115" width="76" height="14" rx="3" fill="#78350f" stroke="#ca8a04" strokeWidth="1.5" />
       <rect x="44" y="129" width="92" height="16" rx="4" fill="#451a03" stroke="#ca8a04" strokeWidth="1.5" />
       <text x="64" y="141" fill="#fef08a" fontSize="9" fontWeight="bold" fontFamily="monospace">أُصُولُ الْفِقْه</text>
@@ -1186,12 +1186,12 @@ export const FINAL_BOSS_LOOKS = {
   'nahwu-fail': { aura: '#38bdf8', glow: 'rgba(56,189,248,0.55)', title: "Pemanggil Ra'du Al-Alfiyah", Familiar: NahwuGolem },
   'ushul-amr': { aura: '#f59e0b', glow: 'rgba(245,158,11,0.6)', title: 'Pemegang Mizan Al-Qadhi', Familiar: UshulSphinx },
 };
-const CUSTOM_FINAL_BOSS_LOOK = { aura: '#c084fc', glow: 'rgba(192,132,252,0.55)', title: 'Penguji Diktat Mandiri', Familiar: BalaghahWingedTome };
+const CUSTOM_FINAL_BOSS_LOOK = { aura: '#c084fc', glow: 'rgba(192,132,252,0.55)', title: 'Penguji Muqarrar Mandiri', Familiar: BalaghahWingedTome };
 export const getFinalBossLook = (bossType) => FINAL_BOSS_LOOKS[bossType] || CUSTOM_FINAL_BOSS_LOOK;
 
 export function FinalBossFamiliar({ bossType, isAttack = false, isHit = false, className = '' }) {
   // Final boss preset sudah punya model voxel sendiri lengkap dengan barang bawaannya; pendamping hanya untuk
-  // diktat unggahan yang masih memakai sprite Syaikh Kabir.
+  // muqarrar unggahan yang masih memakai sprite Syaikh Kabir.
   if (hasVoxelFinalBoss(bossType)) return null;
   const { Familiar } = getFinalBossLook(bossType);
   return (
@@ -1222,7 +1222,7 @@ export function getVoxelSprite(stageId = 4, bossType = 'balaghah-majaz') {
   if (sid === 1) return '/assets/npc-khadim-voxel.png';
   if (sid === 2) return '/assets/npc-musaid-voxel.png';
   if (sid === 3) return '/assets/npc-muhaqqiq-voxel.png';
-  // Stage 4: final boss voxel khas tiap maddah (lihat voxel-boss.js); diktat unggahan tetap memakai Syaikh Kabir.
+  // Stage 4: final boss voxel khas tiap maddah (lihat voxel-boss.js); muqarrar unggahan tetap memakai Syaikh Kabir.
   return renderVoxelFinalBoss(bossType) || '/assets/boss-syaikh-kabir-voxel.png';
 }
 

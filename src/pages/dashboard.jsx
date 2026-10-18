@@ -1080,7 +1080,7 @@ const LibraryPage = () => {
 
             {/* ── Grid 3 kolom — fitur lainnya ── */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-3">
-              <QuickAction icon="swords"   title="Arena Imtihan" desc="Muthola'ah & kalahkan Boss Diktat di Arena"        to="/battle"          color="gold"/>
+              <QuickAction icon="swords"   title="Arena Imtihan" desc="Muthola'ah & kalahkan Boss Muqarrar di Arena"        to="/battle"          color="gold"/>
               <QuickAction icon="layers"   title="Semua Maddah"  desc={`${totalS1} maddah S1 · ${promptDisplay} prompt template`} to="/maddah"          color="violet"/>
               <QuickAction icon="target"   title="Siap Imtihan"  desc="6 mode persiapan ujian gaya Azhari"                        to="/siap-imtihan"    color="gold"/>
               <QuickAction icon="scale"    title="Muqaranah"     desc="Banding qoul ulama 4 madzhab"                              to="/paths/muqaranah" color="violet"/>
