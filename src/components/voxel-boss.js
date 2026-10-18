@@ -108,7 +108,16 @@ const renderBoxes = (boxes, { hurt = false } = {}) => {
     g.fillRect(0, 0, w, h);
     g.globalCompositeOperation = 'source-over';
   }
-  return canvas.toDataURL('image/png');
+  // Proyeksi di atas memperlihatkan sisi kiri model, jadi badan serong ke kanan layar. Final boss selalu berdiri
+  // di kanan arena menghadap Thalib di kiri, jadi hasilnya dicerminkan supaya menghadap ke kiri.
+  const out = document.createElement('canvas');
+  out.width = w;
+  out.height = h;
+  const o = out.getContext('2d');
+  o.translate(w, 0);
+  o.scale(-1, 1);
+  o.drawImage(canvas, 0, 0);
+  return out.toDataURL('image/png');
 };
 
 /* ── Bagian tubuh bersama ── */
