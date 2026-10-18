@@ -22,22 +22,35 @@ Langkah:
 2. Tulis intisari pembahasan: poin-poin inti yang benar-benar diajarkan (ta'rif, pembagian/taqsimat, syarat & rukun, hukum dan dalilnya, khilaf & tarjih, contoh/tathbiq, kaidah).
 3. Susun soal yang biasa keluar di imtihan Al-Azhar untuk bab-bab itu: ta'rif istilah, menyebut aqsam/syarat, membedakan dua istilah (al-farq), menentukan hukum/kaidah pada contoh, siapa yang berpendapat apa dan alasannya, tathbiq kaidah pada contoh baru, dan (untuk nahwu/sharf/balaghah) menentukan i'rab atau jenis uslub pada contoh.
 
-Aturan soal:
+Aturan soal (format seperti lembar soal imtihan Al-Azhar di bank soal):
+- Soal ditulis dalam bahasa Arab fushah ala lembar ujian (mis. «ما تعريفُ الفاعلِ اصطلاحًا؟»، «بِمَ يُعرَبُ ما تحته خطٌّ في قوله...؟»، «ما الفرقُ بين...؟»), kalimat pendek dan jelas, harakat pada istilah kunci, contoh, ayat, dan kata yang rawan salah baca. "questionTranslation" = terjemah Indonesia yang natural (bukan kata per kata).
+- Tiap pilihan berupa objek {"ar":"...","id":"..."}: "ar" bahasa Arab singkat (maks 120 karakter), "id" artinya dalam bahasa Indonesia singkat TANPA tanda kurung.
 - Setiap soal HARUS bisa dijawab dari isi materi; jangan menanyakan hal di luar materi atau info sampul/halaman.
 - Jangan membuat soal "apa poin utama paragraf ini" atau menyalin kalimat materi mentah-mentah sebagai soal.
 - 4 pilihan, satu benar. Pengecoh harus masuk akal dan diambil dari konsep lain di materi yang sama (bukan pilihan generik yang bisa dipakai di soal mana pun). Hindari "semua benar"/"semua salah".
-- Teks Arab (istilah, contoh, kaidah) tulis dalam huruf Arab, berharakat bila memungkinkan. Bahasa pengantar: Indonesia.
+- "explanation" dan "hint" dalam bahasa Indonesia (istilah Arab boleh huruf Arab).
 - "level" 1–4: 1 = ta'rif & istilah dasar, 2 = pembagian/syarat/kaidah, 3 = analisis, perbandingan, khilaf, 4 = tathbiq/soal tersulit ala ujian akhir. Sebar merata.
-- "explanation": kenapa jawaban itu benar menurut materi (maks 400 karakter). "hint": petunjuk tanpa membocorkan jawaban (maks 160 karakter). "examTip": cara menuliskan jawaban ini di lembar ujian tahriri (maks 220 karakter).
+- "explanation": kenapa jawaban itu benar menurut materi (maks 400 karakter). "hint": petunjuk tanpa membocorkan jawaban (maks 160 karakter).
+- "examTip": jawaban versi lembar ujian tahriri dalam bahasa Arab fushah yang mudah dihafal (1–2 kalimat, maks 220 karakter); "examTipTranslation": terjemah Indonesianya.
 
 Balas HANYA JSON valid:
 {"maddah":"...","summary":[{"heading":"...","arabic":"...","body":"..."}],
  "terms":[{"term":"...","def":"..."}],
  "flashcards":[{"q":"...","a":"..."}],
- "quiz":[{"level":1,"question":"...","options":["...","...","...","..."],"answer":0,"explanation":"...","hint":"...","examTip":"..."}]}
+ "quiz":[{"level":1,"question":"(Arab)","questionTranslation":"...","options":[{"ar":"...","id":"..."},{"ar":"...","id":"..."},{"ar":"...","id":"..."},{"ar":"...","id":"..."}],"answer":0,"explanation":"...","hint":"...","examTip":"(Arab)","examTipTranslation":"..."}]}
 Jumlah: summary 5–6 poin (body maks 450 karakter, arabic boleh kosong), terms 6–8, flashcards 6–8, quiz 12–14.`;
 
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+
+/* Pilihan {ar, id} → "عربي (arti)": game menampilkan bagian dalam kurung terakhir sebagai label "arti" kecil
+   (parseOptionTranslation di battle-page.jsx), jadi kurung di dalam arti dibuang supaya tidak terpotong. */
+const optionText = (o) => {
+  if (typeof o === 'string') return str(o, 300);
+  const ar = str(o?.ar, 200);
+  const id = str(o?.id, 160).replace(/[()]/g, '').replace(/\s+/g, ' ').trim();
+  if (!ar) return id;
+  return id ? `${ar} (${id})` : ar;
+};
 
 const clean = (raw) => {
   if (!raw || typeof raw !== 'object') return null;
@@ -51,17 +64,19 @@ const clean = (raw) => {
     .map(f => ({ q: str(f?.q, 300), a: str(f?.a, 500) }))
     .filter(f => f.q && f.a).slice(0, 10);
   const quiz = (Array.isArray(raw.quiz) ? raw.quiz : [])
-    .filter(q => str(q?.question, 10) && Array.isArray(q.options) && q.options.length === 4
-      && q.options.every(o => str(o, 1)) && new Set(q.options.map(o => str(o, 400))).size === 4
-      && Number.isInteger(q.answer) && q.answer >= 0 && q.answer <= 3)
+    .map(q => ({ ...q, options: Array.isArray(q?.options) ? q.options.map(optionText) : [] }))
+    .filter(q => str(q?.question, 10) && q.options.length === 4 && q.options.every(Boolean)
+      && new Set(q.options).size === 4 && Number.isInteger(q.answer) && q.answer >= 0 && q.answer <= 3)
     .map(q => ({
       level: Math.min(4, Math.max(1, Math.round(Number(q.level)) || 2)),
       question: str(q.question, 700),
-      options: q.options.map(o => str(o, 300)),
+      questionTranslation: str(q.questionTranslation, 700),
+      options: q.options,
       answer: q.answer,
       explanation: str(q.explanation, 600),
       hint: str(q.hint, 220),
       examTip: str(q.examTip, 300),
+      examTipTranslation: str(q.examTipTranslation, 400),
     }))
     .slice(0, 16);
   if (quiz.length < 6) return null;

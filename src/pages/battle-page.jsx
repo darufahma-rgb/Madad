@@ -459,7 +459,7 @@ const AZHAR_WISDOM_LOOT = [
     role: "Mujtahid Mutlaq & Peletak Dasar Ushul Fiqih",
     arabic: "أَخِي لَنْ تَنَالَ العِلْمَ إِلَّا بِسِتَّةٍ • سَأُنْبِيكَ عَنْ تَفْصِيلِهَا بِبَيَانِ: ذَكَاءٌ وَحِرْصٌ وَاجْتِهَادٌ وَبُلْغَةٌ • وَصُحْبَةُ أُسْتَاذٍ وَطُولُ زَمَانِ",
     meaning: "Wahai saudaraku, engkau takkan meraih ilmu kecuali dengan 6 perkara: kecerdasan, ketamakan belajar, kesungguhan, bekal yang cukup, bimbingan seorang guru, dan masa belajar yang panjang.",
-    itemReward: { name: "Syay bil Na'na' (Teh Mint)", key: "tea", qty: 1, icon: "🍵", desc: "+35 HP Pemulihan" }
+    itemReward: { name: "Syay bil Na'na' (Teh Mint)", key: "tea", qty: 1, icon: "🍵", desc: "+35 Fokus" }
   },
   {
     id: 'ibnu-malik-1',
@@ -467,7 +467,7 @@ const AZHAR_WISDOM_LOOT = [
     role: "Penulis Matan Alfiyah Ibnu Malik",
     arabic: "كَلاَمُنَا لَفْظٌ مُفِيدٌ كَاسْتَقِمْ • وَاسْمٌ وَفِعْلٌ ثُمَّ حَرْفٌ الْكَلِمْ",
     meaning: "Kalam dalam tatabahasa Arab adalah lafadz yang memberi faedah sempurna seperti ucapan 'Istaqim' (Istiqamahlah!). Tersusun atas Isim, Fi'il, dan Huruf.",
-    itemReward: { name: "Ahwah Mazbut (Kopi Kairo)", key: "ahwah", qty: 1, icon: "☕", desc: "Tameng Difa' (-50% damage serangan balik)" }
+    itemReward: { name: "Ahwah Mazbut (Kopi Kairo)", key: "ahwah", qty: 1, icon: "☕", desc: "Hati tenang: teguran berikutnya berkurang 50%" }
   },
   {
     id: 'ghazali-1',
@@ -512,7 +512,7 @@ function getStageTactics(muqarrarId, stageId) {
         recItem: "📖 Qamus Ma'ani"
       },
       4: {
-        category: 'Bayan • Final Boss Syaikhul Balaghah (Al-Bayani)',
+        category: 'Bayan • Ujian Akhir Syaikhul Balaghah (Al-Bayani)',
         weakness: "Sangat rentan terhadap Qarinah Lafdziyyah dan formula tahriri lengkap di kurrasah.",
         danger: 'Syubhat gabungan 6 alaqah sekaligus!',
         recItem: '📜 Khulashah Matan'
@@ -538,7 +538,7 @@ function getStageTactics(muqarrarId, stageId) {
         recItem: "📖 Qamus Ma'ani"
       },
       4: {
-        category: "Nahwu • Final Boss Syaikhul Nahwu (Al-Alfiy)",
+        category: "Nahwu • Ujian Akhir Syaikhul Nahwu (Al-Alfiy)",
         weakness: "Rentan terhadap kaidah fashil (pemisah) pada Ta' Ta'nits majazi vs haqiqi.",
         danger: 'Badai amil ganda & mustatir wujuban!',
         recItem: '📜 Khulashah Matan'
@@ -564,7 +564,7 @@ function getStageTactics(muqarrarId, stageId) {
         recItem: "📖 Qamus Ma'ani"
       },
       4: {
-        category: 'Ushul • Final Boss Syaikhul Ushul (Al-Qadhi)',
+        category: 'Ushul • Ujian Akhir Syaikhul Ushul (Al-Qadhi)',
         weakness: "Rentan terhadap dalil qath'i syariah dan ushul mazhab Syafi'i.",
         danger: 'Timbangan syubhat ta\'arudh al-adillah!',
         recItem: '📜 Khulashah Matan'
@@ -644,7 +644,7 @@ const PRESETS = [
       {
         id: 4,
         levelNumber: 4,
-        title: 'FINAL BOSS: Kubah Perpustakaan Kuno',
+        title: 'UJIAN AKHIR: Kubah Perpustakaan Kuno',
         titleArabic: 'الْمَرْحَلَةُ الرَّابِعَةُ: الزَّعِيمُ الأَكْبَرُ',
         location: 'Maktabah Markaziyyah Al-Azhar • Kubah Ulama Kibar',
         guardianName: 'Syaikhul Balaghah: Al-\'Allamah Al-Bayani',
@@ -909,7 +909,7 @@ const PRESETS = [
       {
         id: 4,
         levelNumber: 4,
-        title: 'FINAL BOSS: Puncak Imtihan Majelis Kibar Ulama',
+        title: 'UJIAN AKHIR: Puncak Imtihan Majelis Kibar Ulama',
         titleArabic: 'الْمَرْحَلَةُ الرَّابِعَةُ: الزَّعِيمُ الأَكْبَرُ',
         location: 'Puncak Minaret Al-Azhar • Majelis Kibar Ulama',
         guardianName: 'Syaikhul Nahwu: Al-\'Allamah Al-Alfiy',
@@ -1167,7 +1167,7 @@ const PRESETS = [
       {
         id: 4,
         levelNumber: 4,
-        title: 'FINAL BOSS: Mihrab Majelis Kibar Ulama',
+        title: 'UJIAN AKHIR: Mihrab Majelis Kibar Ulama',
         titleArabic: 'الْمَرْحَلَةُ الرَّابِعَةُ: الزَّعِيمُ الأَكْبَرُ',
         location: 'Mihrab Kabir Al-Azhar • Majelis Kibar Ulama',
         guardianName: 'Syaikhul Ushul: Al-\'Allamah Al-Qadhi',
@@ -1178,7 +1178,7 @@ const PRESETS = [
         expReward: 100,
         quizIndices: [8, 0, 1, 4],
         isFinal: true,
-        lore: 'Al-\'Allamah Syaikhul Ushul menimbang pemahamanmu terhadap kaidah istinbath syar\'i! Taklukkan ujian akhir beliau untuk menyandang gelar Faqih Azhari!'
+        lore: 'Al-\'Allamah Syaikhul Ushul menimbang pemahamanmu terhadap kaidah istinbath syar\'i. Luluslah dalam ujian akhir beliau untuk menyandang gelar Faqih Azhari!'
       }
     ],
     prologue: {
@@ -1373,6 +1373,22 @@ const containsArabic = (str) => /[\u0600-\u06FF]/.test(str || '');
  * Bagian Arab memakai font-arabic (Noto Naskh Arabic) ukuran besar, line-height luas,
  * dan dir="rtl" agar harakat & tanda baca tidak saling bertumpuk.
  */
+/* Soal: teks utama (Arab untuk soal AI, seperti lembar soal di bank soal) + terjemah Indonesia kecil di bawahnya. */
+function QuestionText({ q, isArabicLarge = true, compact = false }) {
+  if (!q) return null;
+  return (
+    <>
+      <SmartText text={q.question} isArabicLarge={isArabicLarge} />
+      {q.questionTranslation && !compact && (
+        <span className="block mt-1.5 text-[11px] sm:text-xs text-white/65 font-sans leading-snug" dir="ltr">
+          <span className="text-[9px] px-1 py-0.5 mr-1 rounded bg-emerald-500/20 border border-emerald-400/30 text-amber-300 font-mono font-bold">arti</span>
+          {q.questionTranslation}
+        </span>
+      )}
+    </>
+  );
+}
+
 function SmartText({ text, className = '', isArabicLarge = true }) {
   if (!text) return null;
   const str = String(text);
@@ -1874,7 +1890,7 @@ const MISSION_DEFS = {
   noHelp: { icon: 'torch', label: 'Mandiri', desc: 'Tanpa Qamus, Khulashah, atau AI Halaqah' },
   combo2: { icon: 'fire', label: 'Hujjah Beruntun', desc: 'Capai combo x2', combo: 2 },
   combo3: { icon: 'bolt', label: 'Hujjah Mutawatirah', desc: 'Capai combo x3', combo: 3 },
-  hp70: { icon: 'heart', label: 'Tetap Tegar', desc: 'Menang dengan HP minimal 70' },
+  hp70: { icon: 'heart', label: 'Tetap Fokus', desc: 'Lulus dengan fokus minimal 70' },
 };
 function getStageMissions(stage, quizLength) {
   const level = Number(stage?.levelNumber || stage?.id || 1);
@@ -1894,8 +1910,8 @@ function missionStatus(id, stats, { finished = false, playerHp = 100 } = {}) {
 }
 
 /* ── HELPER: ATURAN DUEL PER LEVEL ──
-   Boss tumbang tepat saat thalib mengumpulkan jawaban benar sebanyak batas lulus (60%, dibulatkan ke atas);
-   combo mempercepatnya. Kalau soal habis dan boss masih berdiri, duel kalah. Serangan balik makin keras
+   Nilai imtihan (bossHp terbalik) penuh tepat saat thalib mengumpulkan jawaban benar sebanyak batas lulus (60%,
+   dibulatkan ke atas); combo mempercepatnya. Kalau soal habis dan nilai belum cukup, belum lulus. Teguran makin terasa
    di level tinggi sehingga HP, Syay, dan Ahwah benar-benar berarti. */
 function getBattleRules(stage, quizLength) {
   const total = Math.max(1, quizLength);
@@ -1909,83 +1925,58 @@ function getBattleRules(stage, quizLength) {
   };
 }
 
-/* ── HELPER: HURT EXPRESSIONS & REACTIONS FOR DAMAGE MOMENTS ── */
-function getBossHurtReaction(stageId, bossType, combo = 0) {
+/* ── HELPER: REAKSI SAAT MENJAWAB ──
+   Penguji adalah guru yang menguji muridnya, bukan lawan: jawaban benar dibalas apresiasi (anggukan, doa),
+   jawaban salah dibalas teguran lembut yang mengurangi fokus thalib. Tidak ada ekspresi kesakitan pada guru. */
+const pick = (list) => list[Math.floor(Math.random() * list.length)];
+function getTeacherApproval(stageId, bossType) {
   const sid = Number(stageId);
-  if (sid === 1) {
-    const quotes = [
-      { quote: "Aduhh! Dalilmu terlalu kokoh!", emoji: "🗝️💥", badge: "Kunci Gerbang Goyah!" },
-      { quote: "Masya Allah, hujjahmu menembus benteng!", emoji: "🚪⚡", badge: "Khadim Terdesak Mundur!" },
-      { quote: "Kalammu shahih! Pertahananku rontok!", emoji: "🛡️💔", badge: "Pertahanan Goyah!" }
-    ];
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  }
-  if (sid === 2) {
-    const quotes = [
-      { quote: "Aghh! Catatan matanku runtuh!", emoji: "📜💥", badge: "Koreksi Matan Telak!" },
-      { quote: "Ibaratmu presisi sekali!", emoji: "📝⚡", badge: "Muqarrar Musa'id Terhantam!" },
-      { quote: "Ta'lilmu tak terbantahkan!", emoji: "🧐💥", badge: "Koreksi Sempurna!" }
-    ];
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  }
-  if (sid === 3) {
-    const quotes = [
-      { quote: "Luar biasa! Tahqiqmu tajam bagai pedang!", emoji: "📖✨", badge: "Tahqiq Tertembus!" },
-      { quote: "Hujjah Qath'i menaklukkan risalahku!", emoji: "⚡💥", badge: "Al-Muhaqqiq Terpental!" },
-      { quote: "Sanad pemahamanmu muttashil sempurna!", emoji: "📜💫", badge: "Kitab Terhambur!" }
-    ];
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  }
-  // Final Boss: Al-'Allamah Al-Kabir / Syaikhul Azhar
+  if (sid === 1) return pick([
+    { quote: "Ahsanta! Jawabanmu tepat, nak.", emoji: "✨", badge: "Penguji Mengangguk" },
+    { quote: "Baarakallahu fiik, ta'rifmu sudah benar.", emoji: "📜", badge: "Jawaban Diterima" },
+    { quote: "Bagus, dasarnya sudah kokoh.", emoji: "✅", badge: "Lanjutkan, Nak" },
+  ]);
+  if (sid === 2) return pick([
+    { quote: "Ibaratmu rapi sekali, ahsanta!", emoji: "📝", badge: "Ibarat Shahih" },
+    { quote: "Ta'lilmu tepat, teruskan begitu.", emoji: "🧐", badge: "Jawaban Diterima" },
+    { quote: "Na'am, begitulah kaidahnya.", emoji: "✅", badge: "Penguji Ridha" },
+  ]);
+  if (sid === 3) return pick([
+    { quote: "Tahqiqmu bagus, wahai thalib.", emoji: "📖", badge: "Tahqiq Diakui" },
+    { quote: "Masya Allah, pemahamanmu dalam.", emoji: "✨", badge: "Penguji Tersenyum" },
+    { quote: "Sanad pemahamanmu tersambung baik.", emoji: "📜", badge: "Jawaban Diterima" },
+  ]);
   const isCustom = String(bossType || '').startsWith('custom-');
-  if (isCustom) {
-    const quotes = [
-      { quote: "«مَا شَاءَ اللَّهُ!» Penguasaan naskah dan hujjahmu sungguh mendalam!", emoji: "👳‍♂️✨", badge: "Al-'Allamah Kagum!" },
-      { quote: "Tahqiq dan analisismu atas muqarrar ini sangat shahih, wahai Thalib!", emoji: "📜⚡", badge: "Sang Syaikh Takzim!" },
-      { quote: "Subhanallah! Setiap pertanyaan muqarrar dijawab dengan hujjah qath'i!", emoji: "👓💫", badge: "Kibar Ulama Takjub!" }
-    ];
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  }
-  const isNahwu = bossType === 'nahwu-fail';
-  const isUshul = bossType === 'ushul-amr';
-  if (isNahwu) {
-    const quotes = [
-      { quote: "«مَا شَاءَ اللَّهُ!» Dalil Alfiyah-mu begitu kokoh menundukkan ibarahku!", emoji: "👓⚡", badge: "Al-'Allamah Tertegun!" },
-      { quote: "Subhanallah! Pemahaman I'rab-mu sangat mendalam, wahai Thalib!", emoji: "📜✨", badge: "Sang Syaikh Takjub!" }
-    ];
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  }
-  if (isUshul) {
-    const quotes = [
-      { quote: "«أَصَبْتَ الْحَقَّ!» Istinbath-mu laksana para fuqaha mutaqaddimin!", emoji: "⚖️✨", badge: "Kibar Ulama Takzim!" },
-      { quote: "Hujjahmu qath'i, tak menyisakan celah syubhat sedikit pun!", emoji: "📜💥", badge: "Sang Qadhi Terpukau!" }
-    ];
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  }
-  // Balaghah
-  const quotes = [
-    { quote: "«لِلَّهِ دَرُّكَ!» Dzauq balaghah-mu luar biasa halus dan tajam!", emoji: "📖✨", badge: "Syaikhul Balaghah Kagum!" },
-    { quote: "Hakikat dan Majaz terurai sempurna di tanganmu!", emoji: "✨👑", badge: "Maha Guru Tertegun!" }
-  ];
-  return quotes[Math.floor(Math.random() * quotes.length)];
+  if (isCustom) return pick([
+    { quote: "«مَا شَاءَ اللَّهُ!» Penguasaanmu atas muqarrar ini baik sekali.", emoji: "✨", badge: "Al-'Allamah Ridha" },
+    { quote: "Jawabanmu shahih, semoga Allah memberkahi ilmumu.", emoji: "📜", badge: "Doa Sang Syaikh" },
+    { quote: "Ahsanta! Begitulah jawaban yang ditulis di lembar ujian.", emoji: "📝", badge: "Jawaban Mumtaz" },
+  ]);
+  if (bossType === 'nahwu-fail') return pick([
+    { quote: "«مَا شَاءَ اللَّهُ!» I'rabmu tepat sekali.", emoji: "✨", badge: "Al-'Allamah Ridha" },
+    { quote: "Ahsanta, wahai thalib! Faham Alfiyah-mu baik.", emoji: "📜", badge: "Doa Sang Syaikh" },
+  ]);
+  if (bossType === 'ushul-amr') return pick([
+    { quote: "«أَصَبْتَ!» Istinbathmu tertib dan benar.", emoji: "⚖️", badge: "Al-Qadhi Ridha" },
+    { quote: "Baarakallahu fiik, hujjahmu jelas.", emoji: "📜", badge: "Doa Sang Syaikh" },
+  ]);
+  return pick([
+    { quote: "«لِلَّهِ دَرُّكَ!» Dzauq balaghahmu halus.", emoji: "📖", badge: "Syaikhul Balaghah Ridha" },
+    { quote: "Hakikat dan majaz kau bedakan dengan baik.", emoji: "✨", badge: "Doa Sang Syaikh" },
+  ]);
 }
 
-function getPlayerHurtReaction(shieldAbsorbed = false) {
-  if (shieldAbsorbed) {
-    const quotes = [
-      { quote: "Alhamdulillah! Tameng Ahwah Mazbut menahan hantaman!", emoji: "🛡️☕", badge: "Tameng Bertahan (-50%)" },
-      { quote: "Hampir saja! Untung ada benteng ijtihad!", emoji: "🛡️⚡", badge: "Syubhat Diredam!" }
-    ];
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  }
-  const quotes = [
-    { quote: "Aduhh!! Ibârahnya keliru kuhafal!", emoji: "😵‍💫💥", badge: "Tersengat Kaidah!" },
-    { quote: "Aghh! Syubhat melanda pemikiranku!", emoji: "💔⚡", badge: "Tarkiz Goyah!" },
-    { quote: "Mukh-ku nge-blank sejenak!", emoji: "🧠💫", badge: "Syubhat Menembus!" },
-    { quote: "Waduh! Kaidah tahriri-nya meleset!", emoji: "🤦‍♂️💥", badge: "Darah Thalib Berkurang!" },
-    { quote: "Astagfirullah! Kurang teliti baca ibarat!", emoji: "💦💔", badge: "Guncangan Ujian!" }
-  ];
-  return quotes[Math.floor(Math.random() * quotes.length)];
+function getStudentCorrection(calmed = false) {
+  if (calmed) return pick([
+    { quote: "Alhamdulillah, Ahwah Mazbut membuatku tetap tenang.", emoji: "☕", badge: "Hati Tetap Tenang" },
+    { quote: "Hampir saja... aku masih bisa fokus.", emoji: "🛡️", badge: "Fokus Terjaga" },
+  ]);
+  return pick([
+    { quote: "Astaghfirullah, ibaratnya keliru kuhafal.", emoji: "📖", badge: "Perlu Muroja'ah" },
+    { quote: "Afwan, ya Syaikh... aku kurang teliti.", emoji: "💡", badge: "Teguran Syaikh" },
+    { quote: "Hmm, kaidahnya perlu kuulang lagi.", emoji: "📝", badge: "Fokus Berkurang" },
+    { quote: "Na'am ya Syaikh, akan kuperbaiki.", emoji: "📜", badge: "Teguran Syaikh" },
+  ]);
 }
 
 /* ── COMPONENT: ATTACK CUTSCENE OVERLAY ("SCENE PAS NYERANG") ── */
@@ -1996,15 +1987,17 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
   const isStrike = cutscene.phase === 'strike' || cutscene.phase === 'impact';
   const currentStageId = cutscene.stageId || activeStage?.id || 4;
   const currentBossType = cutscene.bossType || activeSet?.id || 'balaghah-majaz';
-  const bossVoxel = isStrike ? getVoxelHurtSprite(currentStageId, currentBossType) : getVoxelSprite(currentStageId, currentBossType);
+  // Penguji selalu tampil dengan sprite biasa (tidak pernah "kesakitan").
+  const bossVoxel = getVoxelSprite(currentStageId, currentBossType);
 
   const defaultReaction = isPlayer
-    ? getBossHurtReaction(currentStageId, currentBossType, cutscene.streak || 0)
-    : getPlayerHurtReaction(cutscene.shieldAbsorbed || false);
+    ? getTeacherApproval(currentStageId, currentBossType)
+    : getStudentCorrection(cutscene.shieldAbsorbed || false);
   const reaction = cutscene.reaction || defaultReaction;
 
-  const victimName = isPlayer ? (cutscene.bossName || activeStage?.guardianName || activeSet?.bossName || 'PENJAGA AZHAR') : 'THALIB AL-AZHAR';
-  const victimAvatar = isPlayer ? getVoxelHurtSprite(currentStageId, currentBossType) : '/assets/thalib-hurt-voxel.png';
+  // Jawaban benar: sorotan ke penguji yang ridha. Jawaban salah: sorotan ke thalib yang sedang ditegur.
+  const victimName = isPlayer ? (cutscene.bossName || activeStage?.guardianName || activeSet?.bossName || 'PENGUJI AZHAR') : 'THALIB AL-AZHAR';
+  const victimAvatar = isPlayer ? getVoxelSprite(currentStageId, currentBossType) : '/assets/thalib-hurt-voxel.png';
 
   return (
     <div
@@ -2016,15 +2009,14 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
       <div className="relative z-50 h-10 sm:h-14 bg-gradient-to-b from-black via-black/95 to-black/85 border-b border-amber-500/30 flex items-center justify-between px-3 sm:px-6 shadow-2xl">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-400"></span>
           </span>
-          <span className="font-mono text-[10px] sm:text-xs font-black tracking-widest text-rose-400 uppercase">
-            REC • SCENE SERANGAN
+          <span className="font-mono text-[10px] sm:text-xs font-black tracking-widest text-amber-300 uppercase">
+            MOMEN JAWABAN
           </span>
           <span className="text-white/20 hidden sm:inline">•</span>
           <span className="font-mono text-[10px] sm:text-xs font-bold text-white/80 hidden sm:inline">
-            {isPlayer ? 'THALIB AL-AZHAR' : (cutscene.bossName || 'BOSS')}
+            {isPlayer ? 'THALIB AL-AZHAR' : (cutscene.bossName || 'PENGUJI')}
           </span>
         </div>
 
@@ -2060,21 +2052,12 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
         {/* Dynamic Vignette / Dim */}
         <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px]" />
 
-        {/* Action Speedlines Stripes */}
-        <div
-          className={`absolute inset-0 pointer-events-none opacity-25 animate-speedlineRun ${
-            isPlayer
-              ? 'bg-[repeating-linear-gradient(115deg,rgba(251,191,36,0.35)_0px,rgba(251,191,36,0.35)_4px,transparent_4px,transparent_20px)]'
-              : 'bg-[repeating-linear-gradient(115deg,rgba(244,63,94,0.35)_0px,rgba(244,63,94,0.35)_4px,transparent_4px,transparent_20px)]'
-          }`}
-        />
-
         {/* Dynamic Energy Radial Bursts */}
         <div
           className={`absolute inset-0 ${
             isPlayer
               ? 'bg-radial-gradient from-amber-500/20 via-emerald-500/10 to-transparent'
-              : 'bg-radial-gradient from-purple-700/25 via-rose-600/15 to-transparent'
+              : 'bg-radial-gradient from-sky-700/20 via-sky-600/10 to-transparent'
           }`}
         />
 
@@ -2082,7 +2065,7 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
         {isStrike && (
           <div
             className={`absolute inset-0 animate-strikeFlash z-40 ${
-              isPlayer ? 'bg-white/50' : 'bg-rose-500/40'
+              isPlayer ? 'bg-amber-100/25' : 'bg-sky-400/15'
             }`}
           />
         )}
@@ -2119,22 +2102,21 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
               </div>
             ) : (
               <div className="relative flex flex-col items-center animate-chargeHero">
-                {/* Sinister Aura for Boss */}
-                <div className="absolute -inset-6 rounded-full border-2 border-rose-500/80 animate-ping opacity-60" />
-                <div className="absolute -inset-10 rounded-full bg-purple-600/30 blur-xl animate-pulse" />
+                {/* Cahaya tenang penguji */}
+                <div className="absolute -inset-10 rounded-full bg-sky-500/20 blur-xl" />
 
                 <div className="relative z-10 flex flex-col items-center">
                   <img
                     src={bossVoxel}
-                    alt={cutscene.bossName || 'Boss Voxel'}
-                    className="w-36 sm:w-48 md:w-64 h-auto object-contain filter drop-shadow-[0_0_35px_rgba(244,63,94,0.95)] brightness-110"
+                    alt={cutscene.bossName || 'Penguji'}
+                    className="w-36 sm:w-48 md:w-64 h-auto object-contain filter drop-shadow-[0_0_30px_rgba(56,189,248,0.6)]"
                   />
                   <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-36 h-6 bg-black/90 rounded-full blur-[6px]" />
                 </div>
 
-                <div className="mt-2 text-center bg-black/80 backdrop-blur-md px-3.5 py-1 rounded-full border border-rose-500/50 shadow-lg">
-                  <span className="font-mono text-[10px] sm:text-xs font-black text-rose-300 uppercase tracking-widest">
-                    {cutscene.bossName} • MELANCARKAN SYUBHAT
+                <div className="mt-2 text-center bg-black/80 backdrop-blur-md px-3.5 py-1 rounded-full border border-sky-400/50 shadow-lg">
+                  <span className="font-mono text-[10px] sm:text-xs font-black text-sky-200 uppercase tracking-widest">
+                    {cutscene.bossName} • MEMBERI TEGURAN
                   </span>
                 </div>
               </div>
@@ -2145,7 +2127,7 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
               <div className={`p-5 sm:p-7 rounded-2xl border-2 backdrop-blur-xl shadow-2xl relative overflow-hidden ${
                 isPlayer
                   ? 'bg-gradient-to-br from-[#121c15]/95 via-[#0b120e]/95 to-black/95 border-amber-400/70 shadow-[0_0_40px_rgba(251,191,36,0.35)]'
-                  : 'bg-gradient-to-br from-[#200b12]/95 via-[#130509]/95 to-black/95 border-rose-500/70 shadow-[0_0_40px_rgba(244,63,94,0.35)]'
+                  : 'bg-gradient-to-br from-[#0b1620]/95 via-[#07101a]/95 to-black/95 border-sky-400/60 shadow-[0_0_40px_rgba(56,189,248,0.25)]'
               }`}>
                 {/* Corner Accents */}
                 <div className={`absolute top-0 right-0 w-12 h-12 border-t-2 border-r-2 ${isPlayer ? 'border-amber-400' : 'border-rose-400'}`} />
@@ -2158,8 +2140,8 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
                       ? 'bg-amber-500/25 border-amber-400/60 text-amber-300'
                       : 'bg-rose-500/25 border-rose-400/60 text-rose-300'
                   }`}>
-                    <PixelIcon name={isPlayer ? 'sword' : 'warning'} className="w-[1.15em] h-[1.15em]" />
-                    <span>{isPlayer ? 'JURUS KELAS ATAS AL-AZHAR' : 'SERANGAN BALIK MUQARRAR'}</span>
+                    <PixelIcon name={isPlayer ? 'quill' : 'speech'} className="w-[1.15em] h-[1.15em]" />
+                    <span>{isPlayer ? 'JAWABAN THALIB' : 'TEGURAN SYAIKH'}</span>
                   </span>
 
                   {cutscene.streak >= 2 && isPlayer && (
@@ -2170,7 +2152,7 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
 
                   {cutscene.isFinisher && isPlayer && (
                     <span className="px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-yellow-200 text-black font-mono text-[10px] sm:text-xs font-black animate-bounce shadow-md">
-                      <PixelIcon name="crown" className="w-[1.15em] h-[1.15em]" /> SERANGAN TERAKHIR
+                      <PixelIcon name="crown" className="w-[1.15em] h-[1.15em]" /> JAWABAN PENENTU
                     </span>
                   )}
                 </div>
@@ -2204,44 +2186,34 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
         {isStrike && (
           <div className="flex flex-col items-center justify-center text-center relative z-40 animate-fadeIn w-full max-w-4xl px-2">
             
-            {/* Calligraphy Energy Slashes & Shockwaves */}
+            {/* Cahaya lembut + ikon apresiasi (benar) atau teguran (salah) */}
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className={`w-80 sm:w-[500px] h-4 bg-gradient-to-r from-transparent via-amber-200 to-transparent shadow-[0_0_35px_#fbbf24] animate-slashX1 ${
-                !isPlayer ? 'via-rose-400 shadow-[0_0_35px_#f43f5e]' : ''
-              }`} />
-              <div className={`w-80 sm:w-[500px] h-4 bg-gradient-to-r from-transparent via-emerald-300 to-transparent shadow-[0_0_35px_#34d399] animate-slashX2 ${
-                !isPlayer ? 'via-purple-400 shadow-[0_0_35px_#a855f7]' : ''
-              }`} />
-              {/* Shockwave Ring */}
-              <div className={`w-48 sm:w-72 h-48 sm:h-72 rounded-full border-4 animate-impactRing ${
-                isPlayer ? 'border-amber-300/90' : 'border-rose-400/90'
-              }`} />
-              {/* Spark Runes */}
-              <div className="text-4xl animate-sparkBurst">
-                <span className="inline-flex gap-1">{(isPlayer ? ['sparkle', 'sword', 'sparkle'] : ['boom', 'bolt', 'boom']).map((n, i) => <PixelIcon key={i} name={n} className="w-[1em] h-[1em]" />)}</span>
+              <div className={`w-56 sm:w-80 h-56 sm:h-80 rounded-full blur-3xl ${isPlayer ? 'bg-amber-300/25' : 'bg-sky-400/20'}`} />
+              <div className="absolute text-4xl animate-sparkBurst">
+                <span className="inline-flex gap-1">{(isPlayer ? ['sparkle', 'star', 'sparkle'] : ['speech', 'bulb', 'speech']).map((n, i) => <PixelIcon key={i} name={n} className="w-[1em] h-[1em]" />)}</span>
               </div>
             </div>
 
             {/* Giant Critical Damage Numerals & Hit Banner */}
             <div className="animate-critNumberBounce mb-2 sm:mb-3 relative z-20">
-              <div className={`text-5xl sm:text-7xl md:text-8xl font-black font-mono tracking-tighter ${
+              <div className={`text-4xl sm:text-6xl font-black font-mono tracking-tight ${
                 isPlayer
                   ? 'text-amber-300 drop-shadow-[0_0_45px_rgba(251,191,36,1)]'
-                  : 'text-rose-400 drop-shadow-[0_0_45px_rgba(244,63,94,1)]'
+                  : 'text-sky-300 drop-shadow-[0_0_45px_rgba(56,189,248,0.9)]'
               }`}>
-                -{cutscene.damage} HP
+                {isPlayer ? `+${cutscene.damage} NILAI` : `-${cutscene.damage} FOKUS`}
               </div>
 
               <div className={`mt-1 px-4 py-1.5 sm:px-5 sm:py-2 rounded-full border-2 font-mono text-[11px] sm:text-sm font-black uppercase tracking-wider shadow-2xl inline-flex items-center gap-2 ${
                 isPlayer
                   ? 'bg-black/90 border-amber-400 text-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.6)] animate-pulse'
-                  : 'bg-black/90 border-rose-500 text-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.6)]'
+                  : 'bg-black/90 border-sky-400 text-sky-200 shadow-[0_0_20px_rgba(56,189,248,0.5)]'
               }`}>
-                <PixelIcon name={isPlayer ? 'bolt' : 'boom'} className="w-[1.15em] h-[1.15em]" />
+                <PixelIcon name={isPlayer ? 'sparkle' : 'speech'} className="w-[1.15em] h-[1.15em]" />
                 <IconText text={isPlayer
-                    ? (cutscene.isFinisher ? '💥 FINAL FINISHER HIT — BOSS TAKLUK!' : (cutscene.streak >= 2 ? `🔥 COMBO x${cutscene.streak} HUJJAH MUTAWATIRAH!` : '⚡ CRITICAL HIT — HUJJAH QATH\'IYYAH!'))
-                    : (cutscene.shieldAbsorbed ? '🛡️ TAMENG DIFA\' MENAHAN 50% DAMAGE!' : '💥 MAS\'ALAH MUSYKILAH!')} />
-                <PixelIcon name={isPlayer ? 'bolt' : 'boom'} className="w-[1.15em] h-[1.15em]" />
+                    ? (cutscene.isFinisher ? '👑 JAWABAN PENENTU — LULUS!' : (cutscene.streak >= 2 ? `🔥 BENAR BERUNTUN x${cutscene.streak}!` : '✨ JAWABAN MUMTAZ!'))
+                    : (cutscene.shieldAbsorbed ? '☕ HATI TENANG — TEGURAN BERKURANG 50%' : '📖 JAWABAN KURANG TEPAT')} />
+                <PixelIcon name={isPlayer ? 'sparkle' : 'speech'} className="w-[1.15em] h-[1.15em]" />
               </div>
             </div>
 
@@ -2249,40 +2221,37 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
             <div className="relative my-1 sm:my-3 flex flex-col items-center justify-center z-30">
               
               {/* Action Glow Burst under character */}
-              <div className="absolute -inset-6 bg-gradient-to-t from-rose-600/35 via-amber-500/15 to-transparent rounded-full blur-2xl pointer-events-none animate-pulse" />
+              <div className={`absolute -inset-6 bg-gradient-to-t ${isPlayer ? 'from-amber-400/30' : 'from-sky-500/25'} via-transparent to-transparent rounded-full blur-2xl pointer-events-none`} />
 
               {/* Large Prominent 3D Voxel Hurt Model (BEBAS, TIDAK DI DALAM KOTAK) */}
               <div className="relative flex items-center justify-center">
                 <img
                   src={victimAvatar}
                   alt={victimName}
-                  className="w-48 sm:w-64 md:w-80 max-h-[38vh] sm:max-h-[48vh] h-auto object-contain filter drop-shadow-[0_0_35px_rgba(244,63,94,0.95)] animate-hurtTremble select-none"
+                  className={`w-48 sm:w-64 md:w-80 max-h-[38vh] sm:max-h-[48vh] h-auto object-contain select-none ${isPlayer ? 'filter drop-shadow-[0_0_30px_rgba(251,191,36,0.7)]' : 'filter drop-shadow-[0_0_24px_rgba(56,189,248,0.5)]'}`}
                 />
 
                 {/* Comic Emotion Emote Badge hovering right beside character head */}
-                <div className="absolute -top-3 -right-3 sm:-right-8 px-2.5 py-1 rounded-full bg-rose-600 border-2 border-white text-base sm:text-2xl shadow-[0_0_15px_rgba(244,63,94,0.9)] animate-bounce font-black flex items-center gap-1.5 z-40">
-                  <EmojiIcon text={reaction.emoji || (isPlayer ? '💥' : '💔')} className="w-[1.2em] h-[1.2em]" />
+                <div className={`absolute -top-3 -right-3 sm:-right-8 px-2.5 py-1 rounded-full border-2 border-white text-base sm:text-2xl font-black flex items-center gap-1.5 z-40 ${isPlayer ? 'bg-emerald-600 shadow-[0_0_15px_rgba(16,185,129,0.8)]' : 'bg-sky-700 shadow-[0_0_15px_rgba(56,189,248,0.7)]'}`}>
+                  <EmojiIcon text={reaction.emoji || (isPlayer ? '✨' : '📖')} className="w-[1.2em] h-[1.2em]" />
                   <span className="font-mono text-[10px] sm:text-xs text-white uppercase tracking-wider hidden sm:inline">
-                    {isPlayer ? 'KENA HIT!' : 'OUCH!'}
+                    {isPlayer ? 'AHSANTA!' : 'AFWAN...'}
                   </span>
                 </div>
-
-                {/* Expanding Shockwave Ring around character */}
-                <div className="absolute -inset-4 border-2 border-rose-500/50 rounded-full animate-ping pointer-events-none" />
               </div>
 
               {/* Floating Anime Speech Ribbon underneath character */}
               <div className="w-full max-w-xl mx-auto mt-2 sm:mt-3 relative z-40 animate-hurtBoxPop">
-                <div className="px-4 py-2 sm:px-6 sm:py-2.5 rounded-2xl bg-black/85 border-2 border-rose-500/80 shadow-[0_0_25px_rgba(244,63,94,0.5)] backdrop-blur-md text-center">
+                <div className={`px-4 py-2 sm:px-6 sm:py-2.5 rounded-2xl bg-black/85 border-2 backdrop-blur-md text-center ${isPlayer ? 'border-emerald-400/80 shadow-[0_0_25px_rgba(16,185,129,0.4)]' : 'border-sky-400/80 shadow-[0_0_25px_rgba(56,189,248,0.4)]'}`}>
                   
                   {/* Badge row: Target Name + Impact Status */}
                   <div className="flex items-center justify-center gap-2 mb-1 flex-wrap">
-                    <span className="px-2 py-0.5 rounded bg-rose-500/30 border border-rose-400/80 font-mono text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-rose-300 flex items-center gap-1 animate-pulse">
-                      <span><PixelIcon name="boom" className="w-[1.15em] h-[1.15em]" /></span>
+                    <span className="px-2 py-0.5 rounded bg-white/10 border border-white/30 font-mono text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-white/90 flex items-center gap-1">
+                      <span><PixelIcon name={isPlayer ? 'book' : 'scroll'} className="w-[1.15em] h-[1.15em]" /></span>
                       <span>{victimName}</span>
                     </span>
                     <span className="px-2 py-0.5 rounded bg-amber-500/25 border border-amber-400/60 font-mono text-[9px] sm:text-[11px] font-bold text-amber-300">
-                      {reaction.badge || (isPlayer ? 'Pertahanan Goyah!' : 'Syubhat Menembus!')}
+                      {reaction.badge || (isPlayer ? 'Penguji Mengangguk' : 'Teguran Syaikh')}
                     </span>
                   </div>
 
@@ -2290,7 +2259,7 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
                   <div className="relative inline-block px-2">
                     <span className="text-amber-400 font-serif text-lg sm:text-2xl mr-1 select-none">“</span>
                     <span className="font-sans text-sm sm:text-lg md:text-xl font-black italic tracking-wide text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-                      {reaction.quote || (isPlayer ? 'Aghhh! Dalilmu terlalu kokoh!' : 'Aduhh!! Ibârahnya keliru kuhafal!')}
+                      {reaction.quote || (isPlayer ? 'Ahsanta, jawabanmu tepat.' : 'Afwan ya Syaikh, akan kuperbaiki.')}
                     </span>
                     <span className="text-amber-400 font-serif text-lg sm:text-2xl ml-1 select-none">”</span>
                   </div>
@@ -2298,8 +2267,8 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
                   {/* Subtitle Lore */}
                   <p className="mt-0.5 text-[10px] sm:text-xs text-white/70 font-mono truncate">
                     <IconText iconClassName="w-3.5 h-3.5" text={isPlayer
-                      ? (cutscene.isFinisher ? '💥 Dalil pamungkas melumpuhkan pertahanan lawan secara total!' : (cutscene.streak >= 2 ? `🔥 Rangkaian dalil beruntun (Combo x${cutscene.streak}) mengguncang konsentrasi!` : '⚡ Hujjah qath\'iyyah menembus pertahanan lawan!'))
-                      : (cutscene.shieldAbsorbed ? '🛡️ Tameng Ahwah Mazbut berhasil menahan 50% serangan!' : '💔 HP Thalib berkurang — cek lagi ibarat & kaidahnya!')} />
+                      ? (cutscene.isFinisher ? '👑 Nilai imtihan terpenuhi — penguji meluluskanmu!' : (cutscene.streak >= 2 ? `🔥 Benar beruntun x${cutscene.streak}, nilaimu bertambah lebih banyak!` : '✨ Jawaban tepat menambah nilai imtihanmu.'))
+                      : (cutscene.shieldAbsorbed ? '☕ Ahwah Mazbut menjaga fokusmu, teguran berkurang separuh.' : '📖 Fokus berkurang — cek lagi ibarat & kaidahnya.')} />
                   </p>
                 </div>
               </div>
@@ -2325,7 +2294,7 @@ function AttackCutsceneOverlay({ cutscene, activeSet, activeStage, battleStyle, 
         </div>
 
         <div className="shrink-0 font-mono text-[10px] sm:text-xs text-white/50 hidden sm:block">
-          TARGET: {isPlayer ? cutscene.bossName : 'THALIB AL-AZHAR'}
+          {isPlayer ? `PENGUJI: ${cutscene.bossName}` : 'DITEGUR: THALIB AL-AZHAR'}
         </div>
       </div>
     </div>
@@ -2653,8 +2622,8 @@ export default function BattlePage() {
     setBattleStats(next);
   };
   const [missionToast, setMissionToast] = useState(null); // { icon, text, tone }
-  const [duelIntro, setDuelIntro] = useState(false); // layar "VS" pembuka duel
-  const [koAnim, setKoAnim] = useState(false);       // adegan penjaga tumbang sebelum layar menang
+  const [duelIntro, setDuelIntro] = useState(false); // layar pembuka ujian ("Bismillah")
+  const [koAnim, setKoAnim] = useState(false);       // adegan penguji meluluskan sebelum layar menang
   const bossEnraged = phase === 'battle' && bossHp > 0 && bossHp <= bossMaxHp * 0.3;
   const arenaTheme = getArenaTheme(activeStage?.levelNumber || activeStage?.id || 1);
   const enragedSeenRef = useRef(false);
@@ -3388,7 +3357,7 @@ export default function BattlePage() {
       {
         id: 4,
         levelNumber: 4,
-        title: `FINAL BOSS: Ujian Akbar Al-'Allamah (${title.slice(0, 18)})`,
+        title: `UJIAN AKHIR: Ujian Akbar Al-'Allamah (${title.slice(0, 18)})`,
         titleArabic: 'الْمَرْحَلَةُ الرَّابِعَةُ: امْتِحَانُ العَلَّامَةِ الكَبِيرِ',
         location: "Puncak Mihrab Markaziyyah Al-Azhar",
         guardianName: `Syaikhul Imtihan: Al-'Allamah ${title.slice(0, 18)}`,
@@ -3533,7 +3502,7 @@ export default function BattlePage() {
     const guardianTitle = currentStage?.guardianName || activeSet.bossName;
     const questionCount = currentStage?.quizIndices?.length || activeSet?.quiz?.length || 1;
     const { requiredCorrect } = getBattleRules(currentStage, questionCount);
-    setDialogText(`⚔️ ${guardianTitle} menghadangmu di ${currentStage?.location || 'Ruwaq Al-Azhar'}! Jawab benar minimal ${requiredCorrect} dari ${questionCount} soal untuk menumbangkannya!`);
+    setDialogText(`📜 ${guardianTitle} siap mengujimu di ${currentStage?.location || 'Ruwaq Al-Azhar'}. Jawab benar minimal ${requiredCorrect} dari ${questionCount} soal untuk lulus. Bismillah!`);
     sfx.playCrit();
   };
 
@@ -3567,29 +3536,29 @@ export default function BattlePage() {
       const nextBossHp = Math.max(0, bossHp - actualDamage);
       const isFinisher = nextBossHp <= 0;
 
-      // Nama jurus & ungkapan adab ilmu. Sengaja bukan ayat Al-Qur'an: lawan di game ini adalah penguji (ulama),
-      // jadi ayat tentang al-batil atau tantangan kepada orang kafir tidak pantas diarahkan kepada mereka.
-      let moveName = "HUJJAH QATH'IYYAH";
-      let moveArabic = "حُجَّةٌ قَاطِعَةٌ";
-      let subtitle = "Hantaman Argumen Qath'i Azhari!";
+      // Nama jawaban & ungkapan adab ilmu. Sengaja bukan ayat Al-Qur'an: penguji di game ini adalah guru (ulama),
+      // dan thalib menjawab ujiannya — bukan melawan.
+      let moveName = "JAWABAN QATH'IYYAH";
+      let moveArabic = "جَوَابٌ سَدِيدٌ";
+      let subtitle = "Jawaban yang tepat dan berdalil!";
       let chant = "«الْحُجَّةُ بِالدَّلِيلِ لَا بِالدَّعْوَى»";
       let chantTranslation = "Hujjah ditegakkan dengan dalil, bukan sekadar klaim.";
 
       if (isFinisher) {
-        moveName = "BURHAN SATHI' (FINISHER)";
+        moveName = "BURHAN SATHI'";
         moveArabic = "بُرْهَانٌ سَاطِعٌ";
-        subtitle = "Cahaya Pembuktian Pamungkas!";
+        subtitle = "Jawaban penentu kelulusan!";
         chant = "«مَنْ حَفِظَ الْمُتُونَ حَازَ الْفُنُونَ»";
         chantTranslation = "Siapa yang menguasai matan, menguasai ilmunya.";
       } else if (nextStreak >= 2) {
-        moveName = `HUJJAH MUTAWATIRAH x${nextStreak}`;
-        moveArabic = `حُجَّةٌ مُتَوَاتِرَةٌ x${nextStreak}`;
-        subtitle = `Rangkaian Dalil Beruntun (Combo x${nextStreak})!`;
+        moveName = `BENAR BERUNTUN x${nextStreak}`;
+        moveArabic = `أَجْوِبَةٌ مُتَتَابِعَةٌ`;
+        subtitle = `Jawaban benar berturut-turut (x${nextStreak})!`;
         chant = "«بِالتَّكْرَارِ يَرْسَخُ الْعِلْمُ»";
         chantTranslation = "Dengan pengulangan, ilmu makin kokoh tertanam.";
       }
 
-      // Step 1: Luncurkan Scene Serangan (Charge Phase)
+      // Step 1: Thalib menyampaikan jawabannya
       if (enableCutscene) {
         setAttackCutscene({
           active: true,
@@ -3615,44 +3584,39 @@ export default function BattlePage() {
       }
 
       setAnimPlayer('attack');
-      setProjectile('crit');
       setDialogText(
         isFinisher
-          ? `✨ FINISHER! Thalib melancarkan Burhan Sathi' pamungkas ke arah ${guardianName}!`
+          ? `✨ Thalib menyampaikan jawaban penentu di hadapan ${guardianName}...`
           : nextStreak >= 2
-          ? `🔥 HUJJAH MUTAWATIRAH (Combo x${nextStreak})! Thalib melancarkan serangan beruntun!`
-          : `⚔️ Thalib melancarkan Hujjah Qath'iyyah ke arah ${guardianName}!`
+          ? `🔥 Benar beruntun x${nextStreak}! Thalib menjawab dengan mantap.`
+          : `📝 Thalib menyampaikan jawabannya kepada ${guardianName}...`
       );
 
-      // Step 2: Hantaman Strike Scene
+      // Step 2: Penguji menilai jawaban
       scheduleBattle(() => {
-        // Pasang ekspresi terkena damage untuk Boss
-        const bossReaction = getBossHurtReaction(activeStage?.id || 4, activeSet.id, nextStreak);
+        // Apresiasi penguji atas jawaban yang benar
+        const bossReaction = getTeacherApproval(activeStage?.id || 4, activeSet.id);
 
         if (enableCutscene) {
           setAttackCutscene(c => c ? { ...c, phase: 'strike', reaction: bossReaction } : null);
         }
 
         sfx.playCrit();
-        sfx.playSuperSlash();
-        setAnimBoss('hit');
         setAttackEffect('crit');
-        setScreenShake(true);
-        scheduleBattle(() => setScreenShake(false), Math.round(450 * speedFactor));
 
         setBossHp(nextBossHp);
 
         setDamageReaction({ target: 'boss', ...bossReaction });
 
         if (nextStreak >= 2) {
-          setFloatingText({ text: `🔥 COMBO x${nextStreak}! -${actualDamage} HP`, type: 'crit', target: 'boss' });
-          setDialogText(`🔥 COMBO x${nextStreak}! Hujjah Mutawatirah meremukkan pertahanan ${guardianName}! (-${actualDamage} HP)`);
+          setFloatingText({ text: `🔥 BERUNTUN x${nextStreak}! +${actualDamage} NILAI`, type: 'crit', target: 'boss' });
+          setDialogText(`🔥 Benar beruntun x${nextStreak}! ${guardianName} mengangguk ridha. (+${actualDamage} nilai)`);
         } else {
-          setFloatingText({ text: `CRITICAL! -${actualDamage} HP`, type: 'damage', target: 'boss' });
-          setDialogText(`✨ CRITICAL HIT! Hujjah Qath'iyyah menghantam ${guardianName}! (-${actualDamage} HP)`);
+          setFloatingText({ text: `+${actualDamage} NILAI`, type: 'heal', target: 'boss' });
+          setDialogText(`✨ Ahsanta! ${guardianName} menerima jawabanmu. (+${actualDamage} nilai)`);
         }
 
-        // Step 3: Selesai hantaman & scene ekspresi kena serangan
+        // Step 3: Selesai momen penilaian
         scheduleBattle(() => {
           if (enableCutscene) {
             setAttackCutscene(null);
@@ -3693,15 +3657,15 @@ export default function BattlePage() {
 
       const nextPlayerHp = Math.max(0, playerHp - damageTaken);
 
-      // Luncurkan Scene Serangan Balik Boss
+      // Penguji menegur jawaban yang kurang tepat
       if (enableCutscene) {
         setAttackCutscene({
           active: true,
           type: 'boss',
           phase: 'charge',
-          moveName: "MAS'ALAH MUSYKILAH",
-          moveArabic: "مَسْأَلَةٌ مُشْكِلَةٌ",
-          subtitle: shieldAbsorbed ? "Tameng Ahwah Mazbut Menahan 50% Guncangan!" : "Pertanyaan Jebakan Menguji Ketelitianmu!",
+          moveName: "TEGURAN SYAIKH",
+          moveArabic: "تَنْبِيهٌ لَطِيفٌ",
+          subtitle: shieldAbsorbed ? "Ahwah Mazbut menjaga fokusmu!" : "Jawabanmu belum tepat — teliti lagi, nak.",
           chant: "«حُسْنُ السُّؤَالِ نِصْفُ الْعِلْمِ»",
           chantTranslation: "Pertanyaan yang baik adalah separuh ilmu.",
           damage: damageTaken,
@@ -3712,15 +3676,13 @@ export default function BattlePage() {
         sfx.playDamage();
       }
 
-      // Step 1: Boss mulai serangan balik (0ms)
-      setAnimBoss('attack');
-      setProjectile('hurt');
-      setDialogText(`⚠️ Pilihan kurang tepat! ${guardianName} mengajukan "Mas'alah Musykilah"!`);
+      // Step 1: Penguji menegur dengan lembut (0ms)
+      setDialogText(`📖 Jawaban kurang tepat. ${guardianName} memberi teguran...`);
 
-      // Step 2: Serangan Boss menghantam Pemain
+      // Step 2: Fokus thalib berkurang
       scheduleBattle(() => {
-        // Pasang ekspresi terkena damage untuk Pemain (Thalib Azhar)
-        const playerReaction = getPlayerHurtReaction(shieldAbsorbed);
+        // Ekspresi thalib yang sedang ditegur
+        const playerReaction = getStudentCorrection(shieldAbsorbed);
 
         if (enableCutscene) {
           setAttackCutscene(c => c ? { ...c, phase: 'strike', reaction: playerReaction } : null);
@@ -3729,23 +3691,22 @@ export default function BattlePage() {
         sfx.playDamage();
         setAnimPlayer('hit');
         setAttackEffect('hurt');
-        setScreenShake(true);
-        scheduleBattle(() => setScreenShake(false), Math.round(450 * speedFactor));
 
         setPlayerHp(nextPlayerHp);
 
         setDamageReaction({ target: 'player', ...playerReaction });
 
         if (shieldAbsorbed) {
-          setFloatingText({ text: `🛡️ -${damageTaken} HP (TAMENG)`, type: 'damage', target: 'player' });
-          setDialogText(`🛡️ Tameng Ahwah Mazbut menahan 50% syubhat! Thalib hanya terkena -${damageTaken} HP!`);
+          setFloatingText({ text: `☕ -${damageTaken} FOKUS`, type: 'damage', target: 'player' });
+          setDialogText(`☕ Ahwah Mazbut menjaga fokusmu, teguran berkurang separuh. (-${damageTaken} fokus)`);
         } else {
-          setFloatingText({ text: `-${damageTaken} HP!`, type: 'damage', target: 'player' });
-          setDialogText(`💥 SALAH! ${guardianName} menguji dengan "Mas'alah Musykilah"! (-${damageTaken} HP)`);
+          setFloatingText({ text: `-${damageTaken} FOKUS`, type: 'damage', target: 'player' });
+          setDialogText(`📖 Kurang tepat. ${guardianName} menegur dengan lembut — teliti lagi, nak. (-${damageTaken} fokus)`);
         }
 
         const wrongEntry = {
           question: currentQuestion.question,
+          questionTranslation: currentQuestion.questionTranslation || '',
           chosen: currentQuestion.options[optionIdx],
           correct: currentQuestion.options[currentQuestion.answer],
           exp: currentQuestion.explanation,
@@ -3759,7 +3720,7 @@ export default function BattlePage() {
         setWrongAnswers(w => [...w, wrongEntry]);
         bumpStats(s => ({ wrong: s.wrong + 1 }));
 
-        // Step 3: Selesai hantaman & scene ekspresi kena serangan
+        // Step 3: Selesai momen teguran
         scheduleBattle(() => {
           if (enableCutscene) {
             setAttackCutscene(null);
@@ -3782,7 +3743,7 @@ export default function BattlePage() {
     }
   };
 
-  /* ── Putar Ulang Animasi Serangan Boss saat Review ── */
+  /* ── Putar ulang momen teguran saat review ── */
   const handleReplayWrongAnim = () => {
     if (isActionBusy) return;
     setIsActionBusy(true);
@@ -3796,34 +3757,30 @@ export default function BattlePage() {
         active: true,
         type: 'boss',
         phase: 'charge',
-        moveName: "MAS'ALAH MUSYKILAH",
-        moveArabic: "مَسْأَلَةٌ مُشْكِلَةٌ",
-        subtitle: "Pertanyaan Jebakan Menguji Ketelitianmu!",
+        moveName: "TEGURAN SYAIKH",
+        moveArabic: "تَنْبِيهٌ لَطِيفٌ",
+        subtitle: "Jawabanmu belum tepat — teliti lagi, nak.",
         chant: "«حُسْنُ السُّؤَالِ نِصْفُ الْعِلْمِ»",
         chantTranslation: "Pertanyaan yang baik adalah separuh ilmu.",
         damage: getBattleRules(activeStage, activeQuiz.length).counterDamage,
         shieldAbsorbed: false,
         bossName: guardianName,
         bossAvatar: guardianAvatar,
-        reaction: getPlayerHurtReaction(false)
+        reaction: getStudentCorrection(false)
       });
       sfx.playDamage();
     }
 
-    setAnimBoss('attack');
-    setProjectile('hurt');
-    setDialogText(`⚠️ Mengulang scene serangan ${guardianName}...`);
+    setDialogText(`📖 Mengulang momen teguran ${guardianName}...`);
 
     scheduleBattle(() => {
-      const replayReaction = getPlayerHurtReaction(false);
+      const replayReaction = getStudentCorrection(false);
       if (enableCutscene) {
         setAttackCutscene(c => c ? { ...c, phase: 'strike', reaction: replayReaction } : null);
       }
       sfx.playDamage();
       setAnimPlayer('hit');
       setAttackEffect('hurt');
-      setScreenShake(true);
-      scheduleBattle(() => setScreenShake(false), Math.round(450 * speedFactor));
 
       setDamageReaction({ target: 'player', ...replayReaction });
 
@@ -3837,7 +3794,7 @@ export default function BattlePage() {
         setAnimPlayer('idle');
         setDamageReaction(null);
         setIsActionBusy(false);
-        setDialogText(`💥 Peninjauan scene serangan selesai. Silakan periksa kunci jawaban di bawah.`);
+        setDialogText(`📖 Silakan pelajari kunci jawaban dan pembahasannya di bawah.`);
       }, Math.round(900 * speedFactor));
     }, Math.round(520 * speedFactor));
   };
@@ -3880,8 +3837,8 @@ export default function BattlePage() {
       const newHp = Math.min(100, playerHp + 35);
       setPlayerHp(newHp);
       setBag(b => ({ ...b, tea: b.tea - 1 }));
-      setFloatingText({ text: `+35 HP (HEAL)`, type: 'heal', target: 'player' });
-      setDialogText(`☕ Minum Syay bil Na'na' panas! HP Thalib pulih +35! (HP: ${newHp}/100)`);
+      setFloatingText({ text: `+35 FOKUS`, type: 'heal', target: 'player' });
+      setDialogText(`🍵 Minum Syay bil Na'na' hangat. Fokus Thalib pulih +35! (Fokus: ${newHp}/100)`);
       setBattleMenu('main');
       scheduleBattle(() => setFloatingText(null), 1400);
 
@@ -3889,8 +3846,8 @@ export default function BattlePage() {
       sfx.playHeal();
       setDefenseShield(true);
       setBag(b => ({ ...b, ahwah: b.ahwah - 1 }));
-      setFloatingText({ text: `TAMENG DIFA' (-50% DMG)`, type: 'heal', target: 'player' });
-      setDialogText(`☕ Menyeruput Ahwah Mazbut pekat! Tameng Difa' aktif! Serangan boss berikutnya berkurang 50%!`);
+      setFloatingText({ text: `HATI TENANG (-50%)`, type: 'heal', target: 'player' });
+      setDialogText(`☕ Menyeruput Ahwah Mazbut. Hati jadi tenang — teguran berikutnya berkurang 50%.`);
       setBattleMenu('main');
       scheduleBattle(() => setFloatingText(null), 1500);
 
@@ -3925,8 +3882,8 @@ export default function BattlePage() {
       sfx.playCrit();
       setBag(b => ({ ...b, kurrasah: b.kurrasah - 1 }));
       setBossHp(nextBossHp);
-      setFloatingText({ text: `RUKHSHAH! -${damagePerCorrect} HP`, type: 'heal', target: 'boss' });
-      setDialogText(`📚 Membuka Kurrasah Ad-Duf'ah! Dosen imtihan memberi rukhshah — soal ini dihitung lulus (-${damagePerCorrect} HP boss).`);
+      setFloatingText({ text: `RUKHSHAH! +${damagePerCorrect} NILAI`, type: 'heal', target: 'boss' });
+      setDialogText(`📚 Membuka Kurrasah Ad-Duf'ah! Penguji memberi rukhshah — soal ini dihitung lulus (+${damagePerCorrect} nilai).`);
       setBattleMenu('main');
       scheduleBattle(() => {
         setFloatingText(null);
@@ -4077,7 +4034,7 @@ export default function BattlePage() {
             <button
               onClick={() => {
                 if (phase === 'battle') {
-                  if (confirm('Yakin ingin keluar dari arena battle? Progres duel saat ini akan di-reset.')) {
+                  if (confirm('Yakin ingin keluar dari Arena Imtihan? Progres ujian saat ini akan di-reset.')) {
                     setPhase('map');
                   }
                 } else if (phase === 'story') {
@@ -4164,7 +4121,7 @@ export default function BattlePage() {
                 onClick={() => startBattle(activeStage)}
                 className="btn bg-gradient-to-r from-emerald-500 to-teal-400 text-black font-semibold text-xs px-3.5 py-2 rounded-lg shadow-lg shadow-emerald-500/20 hover:brightness-110 active:scale-95 transition flex items-center gap-1.5"
               >
-                <PixelIcon name="sword" className="w-4 h-4" />
+                <PixelIcon name="quill" className="w-4 h-4" />
                 <span>Mulai<span className="hidden sm:inline"> Duel</span></span>
               </button>
             )}
@@ -4181,7 +4138,7 @@ export default function BattlePage() {
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3.5">
                 <div className="w-12 h-12 rounded-xl bg-black/70 border border-amber-400 flex items-center justify-center text-2xl shadow shrink-0">
-                  <PixelIcon name="sword" className="w-[1.15em] h-[1.15em]" />
+                  <PixelIcon name="quill" className="w-[1.15em] h-[1.15em]" />
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-0.5">
@@ -4220,9 +4177,9 @@ export default function BattlePage() {
           const streakRec = userProgress?.streakRecord || 0;
           const hasMutholaah = !!userProgress?.studyCompleted;
           const quests = [
-            { icon: 'gate', title: 'Penakluk 3 Muqarrar', desc: 'Kalahkan seluruh Boss Muqarrar resmi (Balaghah, Nahwu, dan Ushul Fiqh).', done: bossesWon >= 3, status: `${bossesWon}/3 TUNTAS`, exp: 150, reward: 'Gelar Mutafawwiq', tone: 'emerald' },
-            { icon: 'star', title: 'Predikat Mumtaz Syaraf', desc: 'Menangkan pertarungan dengan sisa HP ≥ 80% untuk predikat kehormatan tertinggi.', done: hasMumtaz, status: 'TARGET: HP ≥ 80%', exp: 100, reward: 'Wisam Mumtaz', tone: 'amber' },
-            { icon: 'fire', title: 'Hujjah Mutawatirah x4', desc: 'Bangun rantai serangan combo 4 jawaban benar berurutan tanpa salah.', done: streakRec >= 4, status: `REKOR: x${streakRec}/4`, exp: 75, reward: 'Fashih Lisan', tone: 'rose' },
+            { icon: 'gate', title: 'Lulus 3 Muqarrar', desc: 'Lulus ujian akhir ketiga muqarrar resmi (Balaghah, Nahwu, dan Ushul Fiqh).', done: bossesWon >= 3, status: `${bossesWon}/3 TUNTAS`, exp: 150, reward: 'Gelar Mutafawwiq', tone: 'emerald' },
+            { icon: 'star', title: 'Predikat Mumtaz Syaraf', desc: 'Lulus ujian dengan sisa fokus ≥ 80% untuk predikat kehormatan tertinggi.', done: hasMumtaz, status: 'TARGET: HP ≥ 80%', exp: 100, reward: 'Wisam Mumtaz', tone: 'amber' },
+            { icon: 'fire', title: 'Hujjah Mutawatirah x4', desc: 'Jawab 4 soal benar berturut-turut tanpa salah.', done: streakRec >= 4, status: `REKOR: x${streakRec}/4`, exp: 75, reward: 'Fashih Lisan', tone: 'rose' },
             { icon: 'book', title: "Muthola'ah Terverifikasi", desc: "Khatamkan telaah ringkasan materi & kartu hafalan di Ruang Muthola'ah (Fase 1).", done: hasMutholaah, status: '0/1 KHATAM', exp: 50, reward: 'Perisai Ijtihad', tone: 'blue' },
           ];
           const questTone = {
@@ -4318,12 +4275,12 @@ export default function BattlePage() {
               {/* Judul game */}
               <div className="relative z-10 text-center px-4 pt-3 sm:pt-6 shrink-0">
                 <div className="inline-block px-2.5 py-0.5 bg-[#3a2614] text-amber-300 border-2 border-t-[#6b4725] border-l-[#6b4725] border-b-[#1f1308] border-r-[#1f1308] shadow-[1px_1px_0_#000] font-mono text-[10px] font-bold uppercase tracking-wider">
-                  <PixelIcon name="sword" className="w-[1.15em] h-[1.15em]" /> Arena Imtihan • Muqarrar Al-Azhar
+                  <PixelIcon name="quill" className="w-[1.15em] h-[1.15em]" /> Arena Imtihan • Muqarrar Al-Azhar
                 </div>
                 <h2 className="mt-2 text-xl sm:text-3xl font-mono font-black text-white drop-shadow-[2px_2px_0_#000] leading-tight">
                   PILIH MUQARRAR
                 </h2>
-                <p className="hidden sm:block text-xs text-stone-300 font-mono mt-1">Pilih dunia muqarrar, jelajahi petanya, dan taklukkan Boss di Kubah Ulama.</p>
+                <p className="hidden sm:block text-xs text-stone-300 font-mono mt-1">Pilih dunia muqarrar, jelajahi petanya, dan raih syahadah di hadapan Majelis Ulama.</p>
               </div>
 
               {/* Slot dunia: 3 muqarrar preset. Di HP digeser ke samping. */}
@@ -4393,7 +4350,7 @@ export default function BattlePage() {
                     <div className="hidden sm:flex w-11 h-11 shrink-0 border border-amber-400/50 bg-amber-500/15 items-center justify-center overflow-hidden"><img src="/assets/npc-musaid-voxel.png" alt="" className="w-full h-full object-contain" /></div>
                     <p className="text-[11px] sm:text-sm text-white/85 leading-snug">
                       <span className="font-bold text-amber-300">Syaikh: </span>
-                      Punya muqarrar sendiri? Unggah atau tempel catatanmu, akan kuubah jadi dunia battle{isLibraryMember ? ' lengkap dengan cerita AI.' : '.'}
+                      Punya muqarrar sendiri? Unggah atau tempel catatanmu, akan kuubah jadi ruang ujian{isLibraryMember ? ' lengkap dengan cerita AI.' : '.'}
                       {!isLibraryMember && <span className="text-amber-200/80"> (khusus member Library)</span>}
                     </p>
                   </div>
@@ -4469,7 +4426,7 @@ export default function BattlePage() {
                               <div className="text-xs font-serif text-amber-200/80">{rank.title}</div>
                               <div className="flex flex-wrap items-center gap-x-4 gap-y-0.5 text-[11px] text-white/60 mt-1 font-mono">
                                 <span><PixelIcon name="fire" className="w-[1.15em] h-[1.15em]" /> Rekor Hujjah: <strong className="text-amber-300">x{streakRec}</strong></span>
-                                <span><PixelIcon name="trophy" className="w-[1.15em] h-[1.15em]" /> Boss Takluk: <strong className="text-emerald-300">{bossesWon}/3</strong></span>
+                                <span><PixelIcon name="trophy" className="w-[1.15em] h-[1.15em]" /> Ujian Akhir Lulus: <strong className="text-emerald-300">{bossesWon}/3</strong></span>
                               </div>
                             </div>
                           </div>
@@ -4493,7 +4450,7 @@ export default function BattlePage() {
                                   <div
                                     key={p.id}
                                     className={`p-2 border-2 flex flex-col items-center text-center ${completed ? 'border-amber-400/60 bg-gradient-to-b from-amber-500/20 to-black/60' : 'border-white/10 bg-black/40 opacity-50'}`}
-                                    title={completed ? `${p.title} (${completed.taqdir})` : `${p.title} (Belum ditaklukkan)`}
+                                    title={completed ? `${p.title} (${completed.taqdir})` : `${p.title} (Belum lulus)`}
                                   >
                                     <PixelIcon name={completed ? 'medal' : 'lock'} className="w-7 h-7 mb-0.5" />
                                     <span className="text-[10px] font-mono font-bold text-white truncate max-w-full">{p.id.split('-')[0].toUpperCase()}</span>
@@ -4548,7 +4505,7 @@ export default function BattlePage() {
                           </div>
                         ) : (
                           <div>
-                            <p className="text-xs text-white/60 mb-2">Paste catatan materi sendiri untuk diubah jadi arena battle, lengkap dengan cerita AI sesuai materinya.</p>
+                            <p className="text-xs text-white/60 mb-2">Paste catatan materi sendiri untuk diubah jadi ruang ujian, lengkap dengan cerita AI sesuai materinya.</p>
                             <textarea
                               value={customText}
                               onChange={(e) => setCustomText(e.target.value)}
@@ -4963,7 +4920,7 @@ export default function BattlePage() {
                                 ? 'bg-[#18181c] border-stone-600 text-white'
                                 : 'bg-[#101012] border-stone-800 text-white/40'
                             }`}>
-                              {isFinal ? <span className="inline-flex items-center gap-1"><PixelIcon name="crown" className="w-3.5 h-3.5" />FINAL BOSS</span> : `LEVEL ${stage.levelNumber}`}
+                              {isFinal ? <span className="inline-flex items-center gap-1"><PixelIcon name="crown" className="w-3.5 h-3.5" />UJIAN AKHIR</span> : `LEVEL ${stage.levelNumber}`}
                             </div>
                             <div className="text-[9px] font-mono font-bold text-amber-300 drop-shadow-[1px_1px_0_#000] mt-0.5 hidden sm:block truncate max-w-[120px]">
                               {stage.guardianRankCode || `Rank ${stage.guardianRank}`}
@@ -5061,7 +5018,7 @@ export default function BattlePage() {
                 )}
 
                 <div className="hidden lg:block absolute bottom-3 left-3 z-30 pointer-events-none text-[10px] font-mono font-bold text-white/80 bg-[#1c1c1f]/90 px-2.5 py-1 border-2 border-t-[#3a3a3e] border-l-[#3a3a3e] border-b-[#0d0d0e] border-r-[#0d0d0e] shadow-[2px_2px_0_#000]">
-                  [ <PixelIcon name="sword" className="w-3.5 h-3.5 inline-block align-[-2px]" /> KLIK SIMPUL LEVEL • SERET UNTUK MENGGESER PETA ]
+                  [ <PixelIcon name="quill" className="w-3.5 h-3.5 inline-block align-[-2px]" /> KLIK SIMPUL LEVEL • SERET UNTUK MENGGESER PETA ]
                 </div>
               </div>
 
@@ -5096,7 +5053,7 @@ export default function BattlePage() {
                         }`}
                       >
                         <span className="inline-flex items-center justify-center">{!unlocked ? <PixelIcon name="lock" className="w-3.5 h-3.5" /> : stage.isFinal ? <PixelIcon name="crown" className="w-4 h-4" /> : `LV ${stage.levelNumber}`}</span>
-                        <span className="text-[8px] text-amber-300/90">{stars > 0 ? <span className="inline-flex gap-px">{Array.from({ length: stars }, (_, i) => <PixelIcon key={i} name="star" className="w-2.5 h-2.5" />)}</span> : stage.isFinal ? 'BOSS' : '—'}</span>
+                        <span className="text-[8px] text-amber-300/90">{stars > 0 ? <span className="inline-flex gap-px">{Array.from({ length: stars }, (_, i) => <PixelIcon key={i} name="star" className="w-2.5 h-2.5" />)}</span> : stage.isFinal ? 'AKHIR' : '—'}</span>
                       </button>
                     );
                   })}
@@ -5144,7 +5101,7 @@ export default function BattlePage() {
                             ? 'bg-[#0f2e1b] text-emerald-300 border-[#22c55e]'
                             : 'bg-[#18181b] text-white/40 border-stone-700'
                         }`}>
-                          {selectedStage.isFinal ? <span className="inline-flex items-center gap-1"><PixelIcon name="crown" className="w-3.5 h-3.5" />FINAL BOSS</span> : `LEVEL ${selectedStage.levelNumber}`}
+                          {selectedStage.isFinal ? <span className="inline-flex items-center gap-1"><PixelIcon name="crown" className="w-3.5 h-3.5" />UJIAN AKHIR</span> : `LEVEL ${selectedStage.levelNumber}`}
                         </span>
                         <span className="font-mono text-[9px] px-1.5 py-0.5 bg-[#2b2413] border-2 border-amber-400 text-amber-300 font-bold truncate max-w-[9rem]">
                           {selectedStage.guardianRankCode || selectedStage.guardianRank}
@@ -5164,8 +5121,8 @@ export default function BattlePage() {
                   {/* Parameter battle */}
                   <div className="mt-2.5 grid grid-cols-3 gap-1.5 font-mono text-center">
                     <div className="py-1 bg-[#141418] border-2 border-[#2b2b32]">
-                      <div className="text-[8px] text-white/50 uppercase">Boss HP</div>
-                      <div className="text-xs font-bold text-rose-400">{selectedStage.bossHp} HP</div>
+                      <div className="text-[8px] text-white/50 uppercase">Nilai Lulus</div>
+                      <div className="text-xs font-bold text-amber-300">{selectedStage.bossHp}</div>
                     </div>
                     <div className="py-1 bg-[#141418] border-2 border-[#2b2b32]">
                       <div className="text-[8px] text-white/50 uppercase">Soal Uji</div>
@@ -5233,7 +5190,7 @@ export default function BattlePage() {
                         onClick={() => launchStage(selectedStage, false)}
                         className={`${PX_BTN} ${PX_GREEN} w-full py-2.5 text-xs sm:text-sm font-black`}
                       >
-                        <PixelIcon name="sword" className="w-4 h-4" />
+                        <PixelIcon name="quill" className="w-4 h-4" />
                         <span>MULAI LEVEL INI</span>
                       </button>
                       <div className="grid grid-cols-2 gap-1.5">
@@ -5469,7 +5426,7 @@ export default function BattlePage() {
                 speaker: 'Thalib Azhar',
                 avatar: '🎓',
                 role: 'Siap Bertanding',
-                text: 'Bismillah! Mari kita mulai duel imtihan ini!'
+                text: 'Bismillah! Hamba siap diuji, ya Syaikh.'
               }
             ]
           };
@@ -5616,7 +5573,7 @@ export default function BattlePage() {
                   {/* Center vs Badge / Encounter Glow */}
                   <div className="hidden lg:flex flex-col items-center justify-center mb-16 text-center">
                     <div className="w-12 h-12 rounded-full bg-black/70 border border-amber-500/30 flex items-center justify-center text-lg shadow-xl animate-pulse">
-                      <PixelIcon name="sword" className="w-[1.15em] h-[1.15em]" />
+                      <PixelIcon name="quill" className="w-[1.15em] h-[1.15em]" />
                     </div>
                     <span className="text-[9px] font-mono text-amber-300/70 tracking-widest uppercase mt-1">
                       IMTIHAN AL-AZHAR
@@ -5733,7 +5690,7 @@ export default function BattlePage() {
                       <SmartText text={currentDialogue.text} />
                     </p>
                     <span className="sm:hidden absolute bottom-1.5 right-3 text-[10px] font-mono text-amber-300/80 animate-pulse">
-                      {storyStep < dialogues.length - 1 ? 'ketuk untuk lanjut ▸' : 'ketuk untuk mulai duel ▸'}
+                      {storyStep < dialogues.length - 1 ? 'ketuk untuk lanjut ▸' : 'ketuk untuk mulai ujian ▸'}
                     </span>
                   </div>
 
@@ -5788,8 +5745,8 @@ export default function BattlePage() {
                           onClick={startBattle}
                           className="flex-1 sm:flex-none btn bg-gradient-to-r from-amber-400 via-emerald-400 to-teal-300 hover:brightness-110 text-black font-black text-xs sm:text-sm px-6 py-2.5 rounded-xl shadow-xl shadow-emerald-500/30 active:scale-95 transition flex items-center justify-center gap-2 animate-pulse"
                         >
-                          <span><PixelIcon name="sword" className="w-[1.15em] h-[1.15em]" /> BISMILLAH, MULAI BATTLE!</span>
-                          <PixelIcon name="sword" className="w-4 h-4" />
+                          <span><PixelIcon name="quill" className="w-[1.15em] h-[1.15em]" /> BISMILLAH, MULAI UJIAN!</span>
+                          <PixelIcon name="quill" className="w-4 h-4" />
                         </button>
                       )}
                     </div>
@@ -5821,9 +5778,9 @@ export default function BattlePage() {
                 <PixelBattlefield bossType={activeSet.id} />
               )}
               
-              {/* Minecraft Red Hurt Screen Flash Vignette */}
+              {/* Bingkai lembut saat thalib ditegur (bukan kilatan "kena serang") */}
               {animPlayer === 'hit' && (
-                <div className="absolute inset-0 pointer-events-none z-40 bg-rose-600/30 border-4 sm:border-8 border-rose-500/80 shadow-[inset_0_0_100px_rgba(225,29,72,0.7)] animate-pulse" />
+                <div className="absolute inset-0 pointer-events-none z-40 border-4 sm:border-8 border-sky-400/40 shadow-[inset_0_0_80px_rgba(56,189,248,0.25)]" />
               )}
               
               {/* Top Navigation & Status Bar inside Container */}
@@ -5852,7 +5809,7 @@ export default function BattlePage() {
                     </button>
                     {showMissions && (
                       <div className="fixed sm:absolute left-2 right-2 sm:right-auto top-14 sm:top-full sm:left-0 sm:mt-2 sm:w-64 z-50 rounded-xl border-2 border-amber-400/40 bg-[#0b0f0c]/95 backdrop-blur-md p-2.5 shadow-2xl space-y-1.5 animate-fadeIn">
-                        <div className="text-[10px] font-black uppercase tracking-wider text-amber-300 px-1">Misi Duel • +{MISSION_BONUS_EXP} EXP / misi</div>
+                        <div className="text-[10px] font-black uppercase tracking-wider text-amber-300 px-1">Misi Ujian • +{MISSION_BONUS_EXP} EXP / misi</div>
                         {stageMissions.map(id => {
                           const st = missionStatus(id, battleStats, { playerHp });
                           const def = MISSION_DEFS[id];
@@ -5924,7 +5881,7 @@ export default function BattlePage() {
                       enterStoryPrologue();
                     }}
                     className="min-h-[34px] sm:min-h-0 px-2.5 py-1.5 sm:px-2 sm:py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1 text-amber-300 bg-amber-500/15 border border-amber-400/30 hover:bg-amber-500/25"
-                    title="Buka Prolog Cerita / Kisah Pertarungan Ini"
+                    title="Buka Prolog Cerita Ujian Ini"
                   >
                     <span><PixelIcon name="scroll" className="w-[1.15em] h-[1.15em]" /></span>
                     <span className="hidden xl:inline">Cerita</span>
@@ -5941,7 +5898,7 @@ export default function BattlePage() {
                         ? 'text-amber-300 bg-amber-500/20 border border-amber-400/40 shadow-sm'
                         : 'text-white/40 hover:text-white border border-white/10 bg-white/5'
                     }`}
-                    title={enableCutscene ? 'Scene Serangan Aktif (Klik untuk nonaktifkan)' : 'Scene Serangan Nonaktif (Klik untuk aktifkan)'}
+                    title={enableCutscene ? 'Momen Jawaban Aktif (Klik untuk nonaktifkan)' : 'Momen Jawaban Nonaktif (Klik untuk aktifkan)'}
                   >
                     <span><PixelIcon name="film" className="w-[1.15em] h-[1.15em]" /></span>
                     <span className="hidden xl:inline">Scene:</span>
@@ -5989,10 +5946,10 @@ export default function BattlePage() {
                   {/* Keluar duel → kembali ke peta level (selalu terlihat di ujung kanan) */}
                   <button
                     onClick={() => {
-                      if (confirm('Keluar dari duel ini? Progres duel saat ini akan di-reset.')) setPhase('map');
+                      if (confirm('Keluar dari ujian ini? Progres ujian saat ini akan di-reset.')) setPhase('map');
                     }}
                     className="sticky right-0 min-h-[34px] sm:min-h-0 px-2.5 py-1.5 sm:py-1 rounded-lg text-xs font-mono font-bold transition flex items-center gap-1.5 bg-rose-500 text-white ring-4 ring-black/85 shadow-md hover:bg-rose-600"
-                    title="Keluar duel (kembali ke peta)"
+                    title="Keluar ujian (kembali ke peta)"
                   >
                     <PixelIcon name="cross" className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">Keluar</span>
@@ -6000,7 +5957,7 @@ export default function BattlePage() {
                 </div>
               </div>
 
-              {/* ── INTRO DUEL "VS": nama arena, kedua petarung, dan misi. Ketuk untuk langsung mulai. ── */}
+              {/* ── INTRO UJIAN: nama ruang ujian, thalib & penguji, dan misi. Ketuk untuk langsung mulai. ── */}
               {duelIntro && (() => {
                 const theme = getArenaTheme(activeStage?.levelNumber || activeStage?.id || 1);
                 const guardianSrc = getVoxelSprite(activeStage?.id || 4, activeSet.id);
@@ -6018,14 +5975,18 @@ export default function BattlePage() {
                         <img src="/assets/thalib-voxel-facing-right.png" alt="Thalib Azhar" className="h-[min(14rem,26dvh)] object-contain drop-shadow-[0_0_20px_rgba(251,191,36,0.6)]" />
                         <div className="font-mono text-xs sm:text-sm font-black text-amber-200 text-center">Thalib Azhar</div>
                       </div>
-                      <div className="vs-slam self-center font-black text-5xl sm:text-7xl text-transparent bg-clip-text bg-gradient-to-b from-amber-200 via-amber-400 to-rose-500 drop-shadow-[0_4px_0_#000]">VS</div>
+                      <div className="vs-slam self-center text-center">
+                        <div className="font-arabic text-3xl sm:text-5xl text-amber-200 drop-shadow-[0_4px_0_#000]" dir="rtl">بِسْمِ اللَّهِ</div>
+                        <div className="font-mono text-[10px] sm:text-xs font-black tracking-[0.25em] text-amber-300/90 mt-1">IMTIHAN DIMULAI</div>
+                      </div>
                       <div className="vs-right flex flex-col items-center gap-2 w-[40%]">
                         {activeStage?.isFinal ? (
                           <FinalBossPortrait bossType={activeSet.id} src={guardianSrc} alt={activeStage?.guardianName} className="h-[min(14rem,26dvh)]" imgClassName="h-full object-contain" familiarClassName="-left-[40%] top-0 w-[60%] aspect-square" />
                         ) : (
-                          <img src={guardianSrc} alt={activeStage?.guardianName} className="h-[min(12rem,22dvh)] object-contain drop-shadow-[0_0_20px_rgba(244,63,94,0.55)]" />
+                          <img src={guardianSrc} alt={activeStage?.guardianName} className="h-[min(12rem,22dvh)] object-contain drop-shadow-[0_0_20px_rgba(56,189,248,0.45)]" />
                         )}
-                        <div className="font-mono text-xs sm:text-sm font-black text-rose-200 text-center line-clamp-2">{activeStage?.guardianName}</div>
+                        <div className="font-mono text-xs sm:text-sm font-black text-sky-200 text-center line-clamp-2">{activeStage?.guardianName}</div>
+                        <div className="font-mono text-[10px] text-white/50 -mt-1">Penguji</div>
                       </div>
                     </div>
                     <div className="vs-missions flex flex-wrap justify-center gap-1.5 max-w-xl">
@@ -6084,10 +6045,10 @@ export default function BattlePage() {
 
               {/* Attack / Hit Flash Overlays */}
               {attackEffect === 'crit' && (
-                <div className="absolute inset-0 bg-white/30 z-30 animate-pulse pointer-events-none" />
+                <div className="absolute inset-0 bg-amber-200/15 z-30 pointer-events-none" />
               )}
               {attackEffect === 'hurt' && (
-                <div className="absolute inset-0 bg-rose-500/30 z-30 animate-pulse pointer-events-none" />
+                <div className="absolute inset-0 bg-sky-500/10 z-30 pointer-events-none" />
               )}
 
               {/* ── CINEMATIC ATTACK SCENE OVERLAY ("SCENE PAS NYERANG") ── */}
@@ -6110,16 +6071,14 @@ export default function BattlePage() {
                 <div className={`absolute top-[4.25rem] left-1/2 -translate-x-1/2 z-20 hidden 2xl:flex items-center gap-2 pointer-events-none max-w-[95%]`}>
                   <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/85 border border-amber-400/50 backdrop-blur-md shadow-lg text-[10px] sm:text-xs font-mono font-bold text-amber-200">
                     <span className="text-amber-400"><PixelIcon name="target" className="w-[1.15em] h-[1.15em]" /></span>
-                    <span className="hidden sm:inline">Target Imtihan: Pertahankan HP ≥ 80% untuk Predikat Mumtaz (★★★)</span>
-                    <span className="sm:hidden">Target: HP ≥ 80% (Mumtaz ★★★)</span>
+                    <span className="hidden sm:inline">Target Imtihan: Jaga fokus ≥ 80% untuk Predikat Mumtaz (★★★)</span>
+                    <span className="sm:hidden">Target: Fokus ≥ 80% (Mumtaz ★★★)</span>
                   </div>
                   <div className="px-2.5 py-1 rounded-full bg-black/85 border border-emerald-400/50 backdrop-blur-md shadow-lg text-[10px] sm:text-xs font-mono font-bold text-emerald-300 whitespace-nowrap">
                     Soal {currentQ + 1}/{activeQuiz.length}
                   </div>
                 </div>
 
-                {/* Battle Projectiles (Energy waves / elemental spells) */}
-                <BattleProjectile type={projectile} effect={attackEffect} bossType={activeSet.id} />
 
                 {/* 1. TOP ROW: OPPONENT STATUS CARD (LEFT) & OPPONENT SPRITE (RIGHT) */}
                 <div className={`flex items-start justify-between gap-2 sm:gap-6 w-full px-1 sm:px-4 ${battleStyle === 'retro' ? 'relative z-10' : ''}`}>
@@ -6134,7 +6093,7 @@ export default function BattlePage() {
                         maxHp={bossMaxHp}
                         floatingText={floatingText?.target === 'boss' ? floatingText : null}
                         bossAvatar={activeStage?.guardianAvatar || activeSet.bossAvatar || '⚖️'}
-                        avatarSrc={animBoss === 'hit' ? getVoxelHurtSprite(activeStage?.id || 4, activeSet.id) : getVoxelSprite(activeStage?.id || 4, activeSet.id)}
+                        avatarSrc={getVoxelSprite(activeStage?.id || 4, activeSet.id)}
                       />
                     ) : (
                       /* Status Bar Musuh (Retro Pokémon Beveled Pixel Panel) */
@@ -6151,15 +6110,15 @@ export default function BattlePage() {
                         {/* Boss HP Bar */}
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-[9px] sm:text-[10px] text-white/70">
-                            <span className="font-extrabold text-amber-300 px-1 rounded bg-amber-500/20 text-[8px] sm:text-[9px]">HP</span>
-                            <span className="font-mono">{bossHp}/{bossMaxHp}</span>
+                            <span className="font-extrabold text-amber-300 px-1 rounded bg-amber-500/20 text-[8px] sm:text-[9px]">NILAI</span>
+                            <span className="font-mono">{bossMaxHp - bossHp}/{bossMaxHp}</span>
                           </div>
                           <div className="w-full h-2.5 bg-[#050907] rounded-full overflow-hidden border border-white/10 p-[1px]">
                             <div
                               className={`h-full rounded-full transition-all duration-500 ${
-                                bossHp > 50 ? 'bg-gradient-to-r from-emerald-500 to-emerald-400' : bossHp > 20 ? 'bg-gradient-to-r from-amber-500 to-amber-400' : 'bg-gradient-to-r from-rose-600 to-rose-400'
+                                'bg-gradient-to-r from-amber-500 to-yellow-300'
                               }`}
-                              style={{ width: `${Math.max(0, (bossHp / bossMaxHp) * 100)}%` }}
+                              style={{ width: `${Math.max(0, ((bossMaxHp - bossHp) / bossMaxHp) * 100)}%` }}
                             />
                           </div>
                         </div>
@@ -6175,24 +6134,17 @@ export default function BattlePage() {
                           <FloatingDamage text={floatingText.text} type={floatingText.type} />
                         </div>
                       )}
-                      {/* Boss Hurt Reaction Comic Speech Bubble */}
+                      {/* Gelembung apresiasi penguji */}
                       {damageReaction && damageReaction.target === 'boss' && (
                         <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center animate-critNumberBounce">
-                          <div className="bg-gradient-to-r from-[#2b1014] via-[#3a141b] to-[#240c10] border-2 border-rose-400 text-white px-3 py-1.5 rounded-xl shadow-[0_6px_25px_rgba(244,63,94,0.85)] flex items-center gap-2 whitespace-nowrap">
+                          <div className="bg-gradient-to-r from-[#0f2418] via-[#12301f] to-[#0c1f15] border-2 border-emerald-400 text-white px-3 py-1.5 rounded-xl shadow-[0_6px_25px_rgba(16,185,129,0.6)] flex items-center gap-2 whitespace-nowrap">
                             <EmojiIcon text={damageReaction.emoji} className="w-6 h-6" />
                             <div className="text-left">
                               <div className="text-[9px] font-mono font-black text-amber-300 uppercase tracking-wider">{damageReaction.badge}</div>
                               <div className="text-xs font-bold text-white font-sans drop-shadow">{damageReaction.quote}</div>
                             </div>
                           </div>
-                          <div className="w-0 h-0 border-x-6 border-x-transparent border-t-6 border-t-rose-400 -mt-[1px]" />
-                        </div>
-                      )}
-                      {animBoss === 'hit' && (
-                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 pointer-events-none z-40 animate-bounce">
-                          <span className="text-xl filter drop-shadow"><PixelIcon name="boom" className="w-[1.15em] h-[1.15em]" /></span>
-                          <span className="text-base filter drop-shadow"><PixelIcon name="bolt" className="w-[1.15em] h-[1.15em]" /></span>
-                          <span className="text-[10px] font-black font-mono text-amber-300 bg-black/85 px-1.5 py-0.5 rounded border border-amber-400 shadow">HUJJAH TELAK!</span>
+                          <div className="w-0 h-0 border-x-6 border-x-transparent border-t-6 border-t-emerald-400 -mt-[1px]" />
                         </div>
                       )}
                       <div className="relative z-10">
@@ -6211,27 +6163,20 @@ export default function BattlePage() {
                           <FloatingDamage text={floatingText.text} type={floatingText.type} />
                         </div>
                       )}
-                      {/* Boss Hurt Reaction Comic Speech Bubble */}
+                      {/* Gelembung apresiasi penguji */}
                       {damageReaction && damageReaction.target === 'boss' && (
                         <div className="absolute -top-16 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center animate-critNumberBounce">
-                          <div className="bg-gradient-to-r from-[#2b1014] via-[#3a141b] to-[#240c10] border-2 border-rose-400 text-white px-3 py-1.5 rounded-xl shadow-[0_6px_25px_rgba(244,63,94,0.85)] flex items-center gap-2 whitespace-nowrap">
+                          <div className="bg-gradient-to-r from-[#0f2418] via-[#12301f] to-[#0c1f15] border-2 border-emerald-400 text-white px-3 py-1.5 rounded-xl shadow-[0_6px_25px_rgba(16,185,129,0.6)] flex items-center gap-2 whitespace-nowrap">
                             <EmojiIcon text={damageReaction.emoji} className="w-6 h-6" />
                             <div className="text-left">
                               <div className="text-[9px] font-mono font-black text-amber-300 uppercase tracking-wider">{damageReaction.badge}</div>
                               <div className="text-xs font-bold text-white font-sans drop-shadow">{damageReaction.quote}</div>
                             </div>
                           </div>
-                          <div className="w-0 h-0 border-x-6 border-x-transparent border-t-6 border-t-rose-400 -mt-[1px]" />
+                          <div className="w-0 h-0 border-x-6 border-x-transparent border-t-6 border-t-emerald-400 -mt-[1px]" />
                         </div>
                       )}
-                      {animBoss === 'hit' && (
-                        <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 pointer-events-none z-40 animate-bounce">
-                          <span className="text-xl filter drop-shadow"><PixelIcon name="boom" className="w-[1.15em] h-[1.15em]" /></span>
-                          <span className="text-base filter drop-shadow"><PixelIcon name="bolt" className="w-[1.15em] h-[1.15em]" /></span>
-                          <span className="text-[10px] font-black font-mono text-amber-300 bg-black/85 px-1.5 py-0.5 rounded border border-amber-400 shadow">HUJJAH TELAK!</span>
-                        </div>
-                      )}
-                      <div className={`relative z-10 ${koAnim ? 'boss-ko' : ''} ${bossEnraged && !koAnim ? 'boss-enraged' : ''}`}>
+                      <div className={`relative z-10 ${koAnim ? 'boss-ko' : ''}`}>
                         <div style={{ filter: arenaTheme.spriteGrade }}>
                         <MinecraftBossSprite
                           bossType={activeSet.id}
@@ -6273,7 +6218,7 @@ export default function BattlePage() {
                       <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 pointer-events-none z-40 animate-bounce">
                         <span className="text-xl filter drop-shadow"><PixelIcon name="heartBroken" className="w-[1.15em] h-[1.15em]" /></span>
                         <span className="text-base filter drop-shadow"><PixelIcon name="heartBroken" className="w-[1.15em] h-[1.15em]" /></span>
-                        <span className="text-[10px] font-black font-mono text-rose-300 bg-black/85 px-1.5 py-0.5 rounded border border-rose-500 shadow">OUCH!</span>
+                        <span className="text-[10px] font-black font-mono text-sky-200 bg-black/85 px-1.5 py-0.5 rounded border border-sky-400 shadow">AFWAN...</span>
                       </div>
                     )}
                     {/* Streak Combo Golden Aura */}
@@ -6329,7 +6274,7 @@ export default function BattlePage() {
                         {/* Player HP Bar */}
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-[9px] sm:text-[10px] text-white/70">
-                            <span className="font-extrabold text-emerald-400 px-1 rounded bg-emerald-500/20 text-[8px] sm:text-[9px]">HP</span>
+                            <span className="font-extrabold text-emerald-400 px-1 rounded bg-emerald-500/20 text-[8px] sm:text-[9px]">FOKUS</span>
                             <span className="font-mono">{playerHp}/{playerMaxHp}</span>
                           </div>
                           <div className="w-full h-2.5 bg-[#050907] rounded-full overflow-hidden border border-white/10 p-[1px]">
@@ -6370,7 +6315,7 @@ export default function BattlePage() {
                       <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
                         <span className="font-mono text-xs font-bold text-rose-400 uppercase tracking-wide">
-                          <PixelIcon name="warning" className="w-[1.15em] h-[1.15em]" /> Hujjah Kurang Tepat (-{wrongReview.damage ?? 22} HP)
+                          <PixelIcon name="warning" className="w-[1.15em] h-[1.15em]" /> Jawaban Kurang Tepat (-{wrongReview.damage ?? 22} fokus)
                         </span>
                       </div>
                       <span className="text-[10px] font-mono text-white/50 bg-white/5 px-2 py-0.5 rounded border border-white/10">
@@ -6381,7 +6326,7 @@ export default function BattlePage() {
                     {/* Potongan Pertanyaan */}
                     <div className="text-xs sm:text-sm text-white/90 font-medium bg-black/40 p-3 rounded-lg border border-white/10 leading-relaxed">
                       <span className="text-white/40 block text-[9px] font-mono uppercase mb-1">Pertanyaan Muqarrar:</span>
-                      <SmartText text={wrongReview.question} isArabicLarge={true} />
+                      <QuestionText q={wrongReview} isArabicLarge={true} />
                     </div>
 
                     {/* Perbandingan Jawaban: Salah vs Kunci Benar */}
@@ -6420,7 +6365,7 @@ export default function BattlePage() {
                         onClick={handleReplayWrongAnim}
                         disabled={isActionBusy}
                         className="btn border border-white/15 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white font-mono text-xs px-3.5 py-2 rounded-xl transition flex items-center gap-1.5 active:scale-95"
-                        title="Tonton ulang animasi serangan boss"
+                        title="Lihat ulang momen teguran"
                       >
                         <span><PixelIcon name="film" className="w-[1.15em] h-[1.15em]" /></span>
                         <span>Putar Ulang Animasi</span>
@@ -6460,7 +6405,7 @@ export default function BattlePage() {
 
                         {/* Soal yang sedang aktif */}
                         <div className="p-3.5 rounded-lg bg-white/5 border border-white/10 text-xs sm:text-sm text-white leading-relaxed">
-                          <SmartText text={activeQuiz[currentQ]?.question} isArabicLarge={true} />
+                          <QuestionText q={activeQuiz[currentQ]} isArabicLarge={true} />
                         </div>
 
                         {activeHint && (
@@ -6549,7 +6494,7 @@ export default function BattlePage() {
                                 <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-emerald-300">x{bag.tea}</span>
                               </div>
                               <div className="text-xs font-bold text-white truncate">Syay bil Na'na'</div>
-                              <p className="text-[10px] text-white/50 leading-tight mt-0.5">Pulihkan +35 HP seketika.</p>
+                              <p className="text-[10px] text-white/50 leading-tight mt-0.5">Pulihkan +35 fokus seketika.</p>
                             </div>
                             <span className="text-[10px] text-emerald-400 font-semibold mt-2">Gunakan ➔</span>
                           </button>
@@ -6566,7 +6511,7 @@ export default function BattlePage() {
                                 <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/10 text-cyan-300">x{bag.ahwah}</span>
                               </div>
                               <div className="text-xs font-bold text-white truncate">Ahwah Mazbut</div>
-                              <p className="text-[10px] text-white/50 leading-tight mt-0.5">Tameng Difa' (-50% DMG).</p>
+                              <p className="text-[10px] text-white/50 leading-tight mt-0.5">Hati tenang: teguran berikutnya -50%.</p>
                             </div>
                             <span className="text-[10px] text-cyan-400 font-semibold mt-2">{defenseShield ? 'Aktif ✓' : 'Gunakan ➔'}</span>
                           </button>
@@ -6637,8 +6582,8 @@ export default function BattlePage() {
                               : 'border-2 border-emerald-500/40 bg-gradient-to-br from-emerald-600/30 to-[#122218] hover:border-emerald-400 hover:brightness-110 text-white'
                           }`}
                         >
-                          <PixelIcon name="sword" className="w-4 h-4 text-emerald-400" />
-                          <span>FIGHT (Jawab)</span>
+                          <PixelIcon name="quill" className="w-4 h-4 text-emerald-400" />
+                          <span>JAWAB</span>
                         </button>
 
                         {/* 2. BAG */}
@@ -6685,7 +6630,7 @@ export default function BattlePage() {
                           }`}
                         >
                           <span><PixelIcon name="boots" className="w-[1.15em] h-[1.15em]" /></span>
-                          <span>RUN (Muroja'ah)</span>
+                          <span>MUROJA'AH</span>
                         </button>
                       </div>
                     )}
@@ -6737,7 +6682,7 @@ export default function BattlePage() {
                 <div className="flex items-center justify-center gap-2 font-mono text-[10px] sm:text-xs font-black tracking-[0.22em] uppercase text-amber-300">
                   <PixelIcon name={isFinal ? 'crown' : 'gate'} className="w-4 h-4 shrink-0" />
                   {/* Judul level sudah memuat "Level n:", jadi nomor level tidak ditulis dua kali. */}
-                  <span className="text-white/85 truncate max-w-[70vw] sm:max-w-sm">{activeStage?.title || (isFinal ? 'Final Boss' : 'Gerbang Ilmu')}</span>
+                  <span className="text-white/85 truncate max-w-[70vw] sm:max-w-sm">{activeStage?.title || (isFinal ? 'Ujian Akhir' : 'Gerbang Ilmu')}</span>
                 </div>
                 <h2
                   className="victory-title mt-2 font-black font-mono text-5xl sm:text-6xl tracking-[0.15em] text-[#fde047]"
@@ -6795,7 +6740,7 @@ export default function BattlePage() {
                 <div className="grid grid-cols-4 gap-2 justify-items-center">
                   <ItemSlot icon="exp" count={`+${gainedExp}`} label="EXP" className="victory-slot" />
                   <ItemSlot icon="star" count={stageStars} label="Bintang" className="victory-slot" />
-                  <ItemSlot icon="heart" count={playerHp} label="Sisa HP" className="victory-slot" />
+                  <ItemSlot icon="heart" count={playerHp} label="Sisa Fokus" className="victory-slot" />
                   <ItemSlot icon={isFinal ? 'scroll' : 'chicken'} count={1} label={isFinal ? 'Syahadah' : 'Syawarma'} className="victory-slot" />
                 </div>
                 <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 font-mono text-[11px] text-white/65">
@@ -6806,7 +6751,7 @@ export default function BattlePage() {
                 {missionResult?.length > 0 && (
                   <div className="mt-3 pt-3 border-t-2 border-[#111] grid gap-1.5 text-left">
                     <div className="font-mono text-[10px] font-black uppercase tracking-widest text-amber-300 text-center">
-                      Misi Duel • {missionsWon}/{missionResult.length} tuntas (+{missionsWon * MISSION_BONUS_EXP} EXP)
+                      Misi Ujian • {missionsWon}/{missionResult.length} tuntas (+{missionsWon * MISSION_BONUS_EXP} EXP)
                     </div>
                     {missionResult.map(({ id, status }, i) => (
                       <div
@@ -6992,7 +6937,7 @@ export default function BattlePage() {
                         <div key={i} className="space-y-2 p-3 rounded-xl bg-black/50 border border-white/10">
                           <div className="text-white/90 font-medium">
                             <span className="text-emerald-400 font-mono mr-1.5">#{i + 1}</span>
-                            <SmartText text={w.question} />
+                            <QuestionText q={w} isArabicLarge={false} />
                           </div>
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
                             <div className="p-2 rounded bg-rose-950/40 border border-rose-500/20 text-rose-300">
@@ -7046,11 +6991,11 @@ export default function BattlePage() {
 
             <div>
               <span className="font-mono text-xs text-rose-300 font-black uppercase tracking-widest block mb-1">
-                {defeatReason === 'boss-survived' ? 'SOAL HABIS, GUARDIAN MASIH BERDIRI!' : 'THALIB KEHABISAN HP!'}
+                {defeatReason === 'boss-survived' ? 'SOAL HABIS, NILAI BELUM CUKUP' : 'FOKUS THALIB HABIS'}
               </span>
               {defeatReason === 'boss-survived' && (
                 <p className="text-xs text-white/60 mb-2">
-                  Butuh minimal {getBattleRules(activeStage, activeQuiz.length).requiredCorrect} dari {activeQuiz.length} jawaban benar untuk menumbangkan guardian (sisa HP: {bossHp}/{bossMaxHp}).
+                  Butuh minimal {getBattleRules(activeStage, activeQuiz.length).requiredCorrect} dari {activeQuiz.length} jawaban benar untuk lulus (nilai: {bossMaxHp - bossHp}/{bossMaxHp}).
                 </p>
               )}
               <div className="font-mono text-lg sm:text-xl font-black text-white mb-2">
@@ -7072,7 +7017,7 @@ export default function BattlePage() {
                   <div key={i} className="space-y-2 p-3 rounded-xl bg-black/50 border border-white/10">
                     <div className="text-white/90 font-medium">
                       <span className="text-amber-400 font-mono mr-1.5">#{i + 1}</span>
-                      <SmartText text={w.question} />
+                      <QuestionText q={w} isArabicLarge={false} />
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs pt-1">
                       <div className="p-2 rounded bg-rose-950/40 border border-rose-500/20 text-rose-300">
@@ -7102,7 +7047,7 @@ export default function BattlePage() {
                 onClick={() => startBattle(activeStage)}
                 className="min-h-[48px] px-4 border-2 border-black font-mono font-black text-sm text-white flex items-center justify-center gap-2 bg-[#3f8a2e] shadow-[inset_-3px_-4px_0_#245019,inset_3px_3px_0_#7cc964] active:translate-y-0.5 hover:brightness-110 transition"
               >
-                <span><PixelIcon name="sword" className="w-[1.15em] h-[1.15em]" /></span>
+                <span><PixelIcon name="quill" className="w-[1.15em] h-[1.15em]" /></span>
                 <span>Coba Lagi</span>
               </button>
 
@@ -7161,7 +7106,7 @@ export default function BattlePage() {
               <div className="px-4 py-2.5 bg-black/60 border-b border-white/10 flex items-start gap-2.5 text-xs">
                 <span className="font-mono text-emerald-400 font-bold shrink-0">SOAL #{currentQ + 1}:</span>
                 <div className="text-white/80 line-clamp-2">
-                  <SmartText text={activeQuiz[currentQ]?.question} isArabicLarge={false} />
+                  <QuestionText q={activeQuiz[currentQ]} isArabicLarge={false} compact />
                 </div>
               </div>
 
@@ -7283,7 +7228,7 @@ export default function BattlePage() {
                   onClick={() => setShowAiModal(false)}
                   className="btn bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-4 py-1.5 rounded-lg transition"
                 >
-                  Kembali Bertarung <PixelIcon name="sword" className="w-4 h-4 inline-block align-[-3px]" />
+                  Kembali ke Ujian <PixelIcon name="quill" className="w-4 h-4 inline-block align-[-3px]" />
                 </button>
               </div>
             </div>
@@ -7705,11 +7650,11 @@ export default function BattlePage() {
 
         /* Penguji tidak "jatuh": ia bercahaya (mengakui jawaban) lalu memudar dengan hormat. */
         @keyframes bossKo {
-          0% { transform: none; filter: none; opacity: 1; }
-          35% { transform: translateY(-4px); filter: brightness(1.8) drop-shadow(0 0 24px rgba(251, 191, 36, 0.9)); opacity: 1; }
-          100% { transform: translateY(-10px) scale(0.96); filter: brightness(2.2) drop-shadow(0 0 40px rgba(251, 191, 36, 0.6)); opacity: 0; }
+          0% { filter: none; }
+          40% { filter: brightness(1.35) drop-shadow(0 0 28px rgba(251, 191, 36, 0.9)); }
+          100% { filter: brightness(1.15) drop-shadow(0 0 18px rgba(251, 191, 36, 0.7)); }
         }
-        .boss-ko { animation: bossKo 1.1s cubic-bezier(0.5, 0, 0.75, 0) forwards; }
+        .boss-ko { animation: bossKo 1.1s ease-out forwards; }
         @keyframes koSlam {
           0% { transform: scale(4); opacity: 0; }
           40% { transform: scale(0.92); opacity: 1; }

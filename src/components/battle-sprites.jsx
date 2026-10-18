@@ -1251,6 +1251,8 @@ export function MinecraftHudPlate({
 }) {
   const isPlayer = type === 'player';
   const hpPercent = Math.max(0, Math.min(100, (hp / maxHp) * 100));
+  // Penguji bukan lawan: barnya "Nilai imtihan" yang terisi tiap jawaban benar (kebalikan sisa hp).
+  const scorePercent = 100 - hpPercent;
   const expPercent = Math.max(0, Math.min(100, (exp / maxExp) * 100));
   const resolvedAvatarSrc = avatarSrc || (isPlayer ? '/assets/thalib-voxel-facing-right.png' : null);
 
@@ -1303,25 +1305,27 @@ export function MinecraftHudPlate({
             </span>
           </div>
 
-          {/* HP Row */}
+          {/* Fokus (thalib) / Nilai imtihan (penguji) */}
           <div className="flex items-center gap-2 mb-1">
             <span className="text-[10px] sm:text-xs font-black text-amber-400 font-mono tracking-wider drop-shadow-[0_0_6px_rgba(251,191,36,0.6)]">
-              HP
+              {isPlayer ? 'FOKUS' : 'NILAI'}
             </span>
             <div className="flex-1 h-3 sm:h-3.5 bg-[#050806] border border-[#2a382d] p-[1.5px] rounded-[2px] shadow-inner">
               <div
                 className={`h-full transition-all duration-500 rounded-[1px] ${
-                  hpPercent > 50
+                  !isPlayer
+                    ? 'bg-gradient-to-r from-amber-500 via-amber-300 to-yellow-200 shadow-[0_0_8px_rgba(251,191,36,0.5)]'
+                    : hpPercent > 50
                     ? 'bg-gradient-to-r from-emerald-600 via-emerald-400 to-green-300 shadow-[0_0_8px_rgba(34,197,94,0.5)]'
                     : hpPercent > 20
                     ? 'bg-gradient-to-r from-amber-600 to-amber-400'
                     : 'bg-gradient-to-r from-rose-700 to-rose-400 animate-pulse'
                 }`}
-                style={{ width: `${hpPercent}%` }}
+                style={{ width: `${isPlayer ? hpPercent : scorePercent}%` }}
               />
             </div>
             <span className="text-[10px] sm:text-xs font-mono font-bold text-white/90 shrink-0">
-              {hp}/{maxHp}
+              {isPlayer ? hp : maxHp - hp}/{maxHp}
             </span>
           </div>
 

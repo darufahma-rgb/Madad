@@ -13,7 +13,8 @@ const MAX_MATERIAL = 5000;
 const STAGE_COUNT = 4;
 
 const SYSTEM = `Kamu penulis cerita game edukasi "Arena Imtihan" di Talqeeh, aplikasi belajar mahasiswa Indonesia di Al-Azhar Kairo.
-Pemain adalah "Thalib Azhar" yang menempuh 4 level imtihan; tiap level dijaga seorang penguji (guardian), level 4 adalah final boss (seorang 'allamah).
+Pemain adalah "Thalib Azhar", seorang murid yang menempuh 4 tingkat imtihan; tiap tingkat diuji oleh seorang guru/penguji yang dihormati, dan tingkat 4 adalah ujian akhir di hadapan seorang 'allamah.
+Hubungannya guru dan murid yang penuh adab: penguji BUKAN musuh atau lawan. Jangan memakai kata/kesan bertarung (melawan, mengalahkan, menumbangkan, menaklukkan, menyerang, duel, boss). Murid datang untuk diuji, menjawab dengan sopan, dan berharap diluluskan serta didoakan.
 Tulis cerita yang SESUAI ISI MATERI yang diberikan: istilah, kaidah, dan masalah di dialog harus diambil dari materi itu, bukan dari bab lain.
 
 Aturan:
@@ -23,6 +24,7 @@ Aturan:
 - Dialog 4–6 baris; speakerType hanya "narrator", "thalib", atau "syaikh". Tiap baris maksimal 280 karakter.
 - Level naik bertahap dari dasar ke paling sulit sesuai urutan bahasan materi. Lore tiap level maksimal 220 karakter dan menyebut topik yang diuji.
 - Lokasi berupa tempat di sekitar Al-Azhar/Kairo (ruwaq, shahn, maktabah, dsb).
+- "guardianName" adalah nama/gelar penguji yang terhormat (mis. "Syaikh ...", "Ustadz ...", "Al-'Allamah ..."), bukan julukan seram.
 
 Balas HANYA JSON valid dengan bentuk:
 {"chapter":"HIKAYAT ...","title":"...","titleArabic":"...","location":"...","epigraph":"«...»","epigraphMeaning":"...",
@@ -109,7 +111,7 @@ export async function handleBattleStory(ctx, body, res, { upgradeRequired }) {
   return res.status(200).json({ ok: true, data: story, model });
 }
 
-/* ── AI Halaqah: tanya Syaikh di tengah duel ──
+/* ── AI Halaqah: tanya Syaikh di tengah ujian ──
    Jawaban singkat (model "chat", ±Haiku) seputar soal yang sedang dikerjakan. Sebelum pemain menjawab, AI tidak
    diberi kunci jawaban sama sekali — jadi tidak mungkin membocorkannya; setelah menjawab (kartu muzakarah), kunci &
    pembahasan ikut dikirim supaya AI bisa menjelaskan. Kuota harian sendiri ("battle_halaqah"). */
@@ -121,7 +123,7 @@ const HALAQAH_MODES = {
   diff: 'Jelaskan perbedaan esensial antar opsi yang tampak mirip, tanpa menyebut mana yang benar bila pemain belum menjawab.',
 };
 
-const halaqahSystem = (answered) => `Kamu "Syaikh AI Talqeeh", penguji ramah di game edukasi Arena Imtihan untuk mahasiswa Indonesia di Al-Azhar.
+const halaqahSystem = (answered) => `Kamu "Syaikh AI Talqeeh", guru pembimbing yang ramah di game edukasi Arena Imtihan untuk mahasiswa Indonesia di Al-Azhar. Pemain adalah muridmu yang sedang diuji; bimbing dengan hangat seperti guru kepada murid.
 Jawab dalam bahasa Indonesia santai-sopan, maksimal ±120 kata, boleh menyelipkan istilah/teks Arab berharakat bila perlu.
 Fokus pada soal yang diberikan dan materi maddahnya; jika pertanyaan di luar topik, arahkan kembali ke soal dengan singkat.
 ${answered
