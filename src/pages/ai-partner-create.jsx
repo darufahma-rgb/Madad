@@ -148,10 +148,12 @@ const PdfRangePicker = ({ info, onPick, onSkip }) => {
   const { name, numPages, outline, canSplit, scan } = info;
   const [mode, setMode] = useState('one');   // one | split
   const [from, setFrom] = useState('1');
-  const [to, setTo] = useState(String(Math.min(numPages, scan ? Math.max(1, scan.cap) : PDF_MAX_PAGES)));
+  const [to, setTo] = useState(String(Math.min(numPages, scan ? Math.max(1, scan.cap + scan.cached.filter(n => n <= scan.cap).length) : PDF_MAX_PAGES)));
   const [chosen, setChosen] = useState(null);   // indeks bab dari daftar isi
   const a = parseInt(from, 10), b = parseInt(to, 10);
   const count = b - a + 1;
+  // Halaman scan yang perlu dibaca AI (halaman yang sudah ada di cache bersama gratis).
+  const need = scan && a && b ? count - scan.cached.filter(n => n >= a && n <= b).length : count;
   const err = !a || !b ? 'Isi nomor halaman awal dan akhir.'
     : a < 1 || b > numPages ? `Halaman harus antara 1 dan ${numPages}.`
     : a > b ? 'Halaman awal harus sebelum halaman akhir.'
@@ -170,6 +172,7 @@ const PdfRangePicker = ({ info, onPick, onSkip }) => {
       {scan && (
         <div className="text-xs text-amber-200 mt-2 rounded-lg border border-amber-400/30 bg-amber-500/10 px-3 py-2 leading-relaxed">
           PDF ini hasil scan, jadi tiap halaman dibaca AI dan memakai jatah baca.{' '}
+          {scan.cached.length > 0 && <><b>{scan.cached.length} halaman</b> sudah pernah dibaca sebelumnya — gratis, tanpa memakai jatah. </>}
           {scan.cap > 0
             ? <>Sekarang AI bisa membaca <b>{scan.cap} halaman</b>{scan.cap < scan.perRead ? ` (sisa jatah ${scan.scope === 'monthly' ? 'periode langgananmu' : 'hari ini'})` : ' sekali baca'}. Pilih satu bab sekitar {scan.cap} halaman; bab berikutnya bisa dibaca {scan.scope === 'monthly' ? 'di periode berikutnya' : 'lagi nanti'}.</>
             : <>Jatah baca halaman scan {scan.scope === 'monthly' ? 'periode langgananmu' : 'hari ini'} sudah habis. Coba lagi {scan.scope === 'monthly' ? 'di periode berikutnya' : 'besok'}, atau tempel teks materinya.</>}
@@ -215,8 +218,10 @@ const PdfRangePicker = ({ info, onPick, onSkip }) => {
         </label>
       </div>
       <div className={`text-xs mt-2 min-h-[1rem] ${err ? 'text-amber-300' : 'text-ink-soft'}`} role="status">
-        {err || (scan && scan.cap > 0 && count > scan.cap
-          ? `${count} halaman dipilih — AI baru bisa membaca ${scan.cap} halaman pertama sekarang; sisanya ditandai belum terbaca dan bisa dilanjutkan nanti.`
+        {err || (scan && scan.cap > 0 && need > scan.cap
+          ? `${count} halaman dipilih — AI baru bisa membaca ${scan.cap} halaman baru sekarang; sisanya ditandai belum terbaca dan bisa dilanjutkan nanti.`
+          : scan && need < count
+          ? `${count} halaman akan dibaca (${count - need} sudah tersedia, ${need} dibaca AI).`
           : `${count} halaman akan dibaca.`)}
       </div>
 
@@ -225,7 +230,7 @@ const PdfRangePicker = ({ info, onPick, onSkip }) => {
           className="btn btn-primary text-sm px-4 py-2 disabled:opacity-50">
           Baca hlm. {a || '?'}–{b || '?'}
         </button>
-        {numPages <= PDF_MAX_PAGES && !(scan && numPages > scan.cap) && (
+        {numPages <= PDF_MAX_PAGES && !(scan && numPages - scan.cached.length > scan.cap) && (
           <button type="button" onClick={() => onPick({ from: 1, to: numPages, label: '' })} className="btn btn-ghost text-sm px-4 py-2">
             Semua halaman
           </button>
@@ -271,18 +276,32 @@ const CreateWizard = ({ tier, onCancel, onCreated }) => {
 
   const patchItem = (i, patch) => setItems(list => list.map((it, j) => j === i ? { ...it, ...patch } : it));
 
-  const ocrImage = async (file) => {
+  // cacheKey { file_hash, page }: halaman PDF ikut disimpan ke cache OCR bersama (lihat api/_lib/ai-partner/ocr-cache.js).
+  const ocrImage = async (file, cacheKey = null) => {
     const compressed = await window.compressImage(file);
     const base64 = await window.fileToBase64(compressed);
-    return aiCall('ocr', { foto_base64: base64, mime_type: compressed.type || 'image/jpeg' });
+    return aiCall('ocr', { foto_base64: base64, mime_type: compressed.type || 'image/jpeg', ...(cacheKey || {}) });
+  };
+  const scanPerRead = isTrial ? 3 : 40;
+
+  // Halaman PDF yang sudah pernah dibaca AI (cache bersama) → { [n]: teks }. Tidak memakai jatah baca.
+  const cachedPdfPages = async (pdf, pageNums) => {
+    const hash = pageNums.length ? await window.pdfFileHash(pdf) : null;
+    if (!hash) return { hash: null, texts: {} };
+    const d = await aiCall('ocr-cache', { file_hash: hash, pages: pageNums.slice(0, 400) });
+    return { hash, texts: d?.ok && d.texts ? d.texts : {} };
   };
 
   /* Baca halaman PDF hasil scan satu per satu, sebanyak sisa jatah baca saja.
      Kalau jatah habis atau satu halaman gagal, halaman yang sudah terbaca tetap dipakai dan sisanya dicatat
      sebagai "belum terbaca" (bisa dilanjutkan) — bukan membuang semuanya. */
-  const ocrPdfPages = async (i, pdf, pageNums) => {
-    const maxScan = isTrial ? 3 : 20;
-    const quota = await aiCall('ocr-quota', {});
+  const ocrPdfPages = async (i, pdf, allPages) => {
+    const maxScan = scanPerRead;
+    patchItem(i, { note: 'Mengecek halaman yang sudah pernah dibaca…', progress: null });
+    const cache = await cachedPdfPages(pdf, allPages);
+    const pageNums = allPages.filter(n => !(n in cache.texts));
+    const fromCache = allPages.length - pageNums.length;
+    const quota = pageNums.length ? await aiCall('ocr-quota', {}) : { ok: true, remaining: Infinity };
     const remaining = quota?.ok && Number.isFinite(quota.remaining) ? quota.remaining : Infinity;
     const cap = Math.min(maxScan, remaining);
     const todo = pageNums.slice(0, cap);
@@ -299,14 +318,14 @@ const CreateWizard = ({ tier, onCancel, onCreated }) => {
         reason = `sekali baca maksimal ${maxScan} halaman scan${isTrial ? ' saat coba gratis' : ''}`;
       }
     }
-    const texts = {};
+    const texts = { ...cache.texts };
     const truncated = [];
     for (let k = 0; k < todo.length; k++) {
       if (cancelRef.current) { pending = [...todo.slice(k), ...pending]; reason = 'dihentikan'; break; }
       const n = todo[k];
       patchItem(i, { note: `AI membaca halaman ${n} (${k + 1} dari ${todo.length})…`, progress: k / todo.length });
       const img = await window.renderPdfPage(pdf, n);
-      const d = await ocrImage(img);
+      const d = await ocrImage(img, cache.hash ? { file_hash: cache.hash, page: n } : null);
       if (!d.ok) {
         pending = [...todo.slice(k), ...pending];
         reason = String(d.error || 'gagal membaca halaman').replace(/\.$/, '');
@@ -316,7 +335,7 @@ const CreateWizard = ({ tier, onCancel, onCreated }) => {
       texts[n] = d.teks;
       if (d.truncated) truncated.push(n);
     }
-    return { texts, pending, reason, upgrade, truncated };
+    return { texts, pending, reason, upgrade, truncated, fromCache };
   };
 
   // Lanjutkan halaman PDF yang belum terbaca; hasilnya ditambahkan ke materi dengan penanda halaman.
@@ -357,10 +376,16 @@ const CreateWizard = ({ tier, onCancel, onCreated }) => {
       if (p.status === 'empty' || p.status === 'garbled') noText++;
     }
     if (noText * 2 < sample.length) return null;
-    const maxScan = isTrial ? 3 : 20;
-    const quota = await aiCall('ocr-quota', {});
+    const maxScan = scanPerRead;
+    const [quota, cache] = await Promise.all([
+      aiCall('ocr-quota', {}),
+      cachedPdfPages(pdf, Array.from({ length: Math.min(numPages, 400) }, (_, k) => k + 1)),
+    ]);
     const remaining = quota?.ok && Number.isFinite(quota.remaining) ? quota.remaining : maxScan;
-    return { cap: Math.min(maxScan, remaining), perRead: maxScan, scope: quota?.scope || (isTrial ? 'trial' : 'daily') };
+    return {
+      cap: Math.min(maxScan, remaining), perRead: maxScan, scope: quota?.scope || (isTrial ? 'trial' : 'daily'),
+      cached: Object.keys(cache.texts).map(Number),
+    };
   };
 
   /* Pecah per bab: baca teks tiap bab. Halaman scan TIDAK dibaca AI di sini (bisa puluhan halaman sekaligus dan
@@ -402,7 +427,7 @@ const CreateWizard = ({ tier, onCancel, onCreated }) => {
       // PDF scan dibaca AI per halaman dan memakai jatah baca, jadi PDF scan yang lebih tebal dari sisa jatah
       // juga diminta memilih bagian (satu bab) — bukan dibaca dari halaman 1 sampai jatahnya habis di tengah.
       const scan = await detectScan(pdf, numPages);
-      if (numPages > PDF_ASK_PAGES || (scan && numPages > scan.cap)) {
+      if (numPages > PDF_ASK_PAGES || (scan && numPages - scan.cached.length > scan.cap)) {
         patchItem(i, { note: `${numPages} halaman — pilih bagian yang mau dipelajari` });
         const outline = await window.readPdfOutline(pdf);
         // Pecah per bab: khusus pelanggan, PDF berdaftar isi, dan diunggah sendirian (hasilnya beberapa materi).
@@ -429,7 +454,9 @@ const CreateWizard = ({ tier, onCancel, onCreated }) => {
       const notes = [];
       if (ranged) notes.push(`hlm. ${from}–${to} dari ${numPages}`);
       if (fixedCount) notes.push(`teks Arab ${fixedCount} halaman dirapikan`);
-      if (Object.keys(r.texts).length) notes.push(`${Object.keys(r.texts).length} halaman scan dibaca AI`);
+      const ocrRead = Object.keys(r.texts).length - (r.fromCache || 0);
+      if (ocrRead > 0) notes.push(`${ocrRead} halaman scan dibaca AI`);
+      if (r.fromCache) notes.push(`${r.fromCache} halaman sudah pernah dibaca — tanpa memakai jatah`);
       if (r.truncated.length) notes.push(`hal. ${pageRanges(r.truncated)} mungkin terpotong — cek di langkah berikutnya`);
       if (r.upgrade) setUpgradeMsg(r.reason);
       // Judul bawaan: nama bab yang dipilih dari daftar isi, atau nama file + rentang halaman.

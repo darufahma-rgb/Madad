@@ -129,7 +129,22 @@ const cleanPdfTextRaw = (raw) => {
 
 const openPdf = async (file) => {
   const pdfjs = await loadPdfJs();
-  return pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+  const pdf = await pdfjs.getDocument({ data: await file.arrayBuffer() }).promise;
+  pdf.__file = file;
+  return pdf;
+};
+
+/* Sidik jari PDF (SHA-256, hex) untuk cache OCR bersama: mahasiswa yang mengunggah file muqarrar yang sama
+   memakai hasil baca yang sama. Dihitung sekali per PDF, hanya saat ada halaman scan; null kalau tidak bisa. */
+const pdfFileHash = async (pdf) => {
+  if (pdf.__hash !== undefined) return pdf.__hash;
+  try {
+    const digest = await crypto.subtle.digest('SHA-256', await pdf.__file.arrayBuffer());
+    pdf.__hash = [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+  } catch {
+    pdf.__hash = null;
+  }
+  return pdf.__hash;
 };
 
 /* Susun teks halaman dari potongan pdf.js. Banyak PDF Arab tidak menyimpan karakter spasi: jarak antar-kata
@@ -613,7 +628,7 @@ const detectFileKind = (file) => {
 const ACCEPTED_FILE_TYPES = Object.values(FILE_KINDS).flatMap(v => v.exts.map(e => '.' + e)).join(',') + ',image/*,audio/*,video/*';
 
 Object.assign(window, {
-  extractPdfPages, renderPdfPagesAsImages, readPdfPages, readPdfRange, readPdfOutline, openPdf, renderPdfPage, cleanPdfText, compressImage, fileToBase64,
+  extractPdfPages, renderPdfPagesAsImages, readPdfPages, readPdfRange, readPdfOutline, openPdf, pdfFileHash, renderPdfPage, cleanPdfText, compressImage, fileToBase64,
   extractDocx, extractPptx, extractXlsx, prepareMediaChunks, recordingToWavBase64,
   detectFileKind, FILE_KINDS, ACCEPTED_FILE_TYPES, MAX_MEDIA_MINUTES,
 });

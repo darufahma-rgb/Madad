@@ -3125,20 +3125,37 @@ export default function BattlePage() {
   const OCR_SCAN_PAGES = 5;
   const ocrScanPages = async (pdf, pageNums) => {
     const body = pageNums.length > OCR_SCAN_PAGES * 2 ? pageNums.filter(n => n > 4) : pageNums;
+    const spread = (list, count) => [...new Set(Array.from({ length: count }, (_, k) => list[Math.floor((k * list.length) / count)]))];
+    // Halaman yang sudah pernah dibaca AI (cache OCR bersama per muqarrar) dipakai dulu — gratis, tanpa jatah baca.
+    setUploadNote('PDF ini hasil scan — mengecek halaman yang sudah pernah dibaca…');
+    const hash = await window.pdfFileHash?.(pdf);
+    const cached = hash ? await window.aiCall('ocr-cache', { file_hash: hash, pages: body.slice(0, 400) }) : null;
+    const cachedTexts = cached?.ok && cached.texts ? cached.texts : {};
+    const fromCache = spread(body.filter(n => n in cachedTexts), Math.min(OCR_SCAN_PAGES, Object.keys(cachedTexts).length));
+    const texts = fromCache.map(n => String(cachedTexts[n]).trim()).filter(Boolean);
+    const want = OCR_SCAN_PAGES - fromCache.length;
+    if (want < 1) return { text: texts.join('\n\n'), reason: '' };
+
     const quota = await window.aiCall('ocr-quota', {});
-    const remaining = quota?.ok && Number.isFinite(quota.remaining) ? quota.remaining : OCR_SCAN_PAGES;
-    const count = Math.min(OCR_SCAN_PAGES, remaining, body.length);
+    const remaining = quota?.ok && Number.isFinite(quota.remaining) ? quota.remaining : want;
+    const fresh = body.filter(n => !(n in cachedTexts));
+    const count = Math.min(want, remaining, fresh.length);
     if (count < 1) {
-      return { text: '', reason: 'PDF ini hasil scan, dan jatah AI membaca halaman scan untuk akunmu sudah habis. Coba lagi nanti, atau tempel teks materinya lewat "Paste Catatan".' };
+      return {
+        text: texts.join('\n\n'),
+        reason: 'PDF ini hasil scan, dan jatah AI membaca halaman scan untuk akunmu sudah habis. Coba lagi nanti, atau tempel teks materinya lewat "Paste Catatan".',
+      };
     }
-    const picks = [...new Set(Array.from({ length: count }, (_, k) => body[Math.floor((k * body.length) / count)]))];
-    const texts = [];
+    const picks = spread(fresh, count);
     let reason = '';
     for (let k = 0; k < picks.length; k++) {
       setUploadNote(`PDF ini hasil scan — AI membaca halaman ${picks[k]} (${k + 1} dari ${picks.length})…`);
       const img = await window.renderPdfPage(pdf, picks[k]);
       const compressed = await window.compressImage(img);
-      const d = await window.aiCall('ocr', { foto_base64: await window.fileToBase64(compressed), mime_type: compressed.type || 'image/jpeg' });
+      const d = await window.aiCall('ocr', {
+        foto_base64: await window.fileToBase64(compressed), mime_type: compressed.type || 'image/jpeg',
+        ...(hash ? { file_hash: hash, page: picks[k] } : {}),
+      });
       if (!d.ok) { reason = String(d.error || 'AI gagal membaca halaman scan.'); break; }
       if (d.teks?.trim()) texts.push(d.teks.trim());
     }

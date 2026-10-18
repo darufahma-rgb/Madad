@@ -11,6 +11,7 @@ import {
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { handleTalkhis } from './_lib/ai-partner/talkhis.js';
 import { handleBattleStory, handleBattleHalaqah } from './_lib/ai-partner/battle-story.js';
+import { ocrCacheKey, lookupOcrPages, storeOcrPage, handleOcrCache } from './_lib/ai-partner/ocr-cache.js';
 import { withAiContext } from './_lib/ai-cost.js';
 
 // Kategori biaya AI per action (cocok dengan kolom "Fitur" di analitik admin).
@@ -284,7 +285,7 @@ const isTrialMember = async (ctx) => {
 };
 const baseDaily = (ctx) => (ctx?.trialMember ? TRIAL_MEMBER_DAILY : LIMITS);
 const dailyLimit = async (ctx, kind) => (await quotaOverride(ctx))?.daily?.[kind] ?? ((await isTrialMember(ctx)) ? TRIAL_MEMBER_DAILY : LIMITS)[kind];
-const dailyLimitCache = (ctx, kind) => ctx?.override?.daily?.[kind] ?? baseDaily(ctx)[kind];
+const dailyLimitCache = (ctx, kind) => ctx?.banked?.[kind] ?? ctx?.override?.daily?.[kind] ?? baseDaily(ctx)[kind];
 // Jatah per periode 30 hari: null = tanpa kuota bulanan (Paket Imtihan atau limit khusus noMonthly).
 const monthlyLimitsFor = async (ctx) => {
   if ((await quotaOverride(ctx))?.noMonthly) return null;
@@ -292,6 +293,28 @@ const monthlyLimitsFor = async (ctx) => {
   return (await isImtihanHolder(ctx)) ? null : await getMonthlyLimits();
 };
 const monthlyLimitCache = (ctx) => (ctx?.trialMember ? TRIAL_MEMBER_MONTHLY : cachedMonthlyLimits());
+
+/* Jatah baca halaman scan bisa ditabung: jatah harian yang tidak terpakai menumpuk sampai OCR_BANK_DAYS hari
+   (mis. 20/hari → sampai 60 sekali baca setelah dua hari tidak dipakai). Batas bulanan tetap berlaku. */
+const OCR_BANK_DAYS = 3;
+const bankedDailyLimit = async (ctx, kind) => {
+  const base = await dailyLimit(ctx, kind);
+  if (kind !== 'ocr' || !(base > 0)) return base;
+  if (ctx.banked?.[kind] !== undefined) return ctx.banked[kind];
+  let limit = base;
+  try {
+    const { url, key } = sbConfig();
+    const today = new Date().toISOString().slice(0, 10);
+    const since = new Date(Date.now() - (OCR_BANK_DAYS - 1) * 86400000).toISOString().slice(0, 10);
+    const r = await fetch(`${url}/rest/v1/ai_usage?member_code=eq.${encodeURIComponent(ctx.code)}&kind=eq.${kind}&day=gte.${since}&day=lt.${today}&select=count`, { headers: sbHeaders(key) });
+    if (r.ok) {
+      const before = ((await r.json()) || []).reduce((n, row) => n + (Number(row.count) || 0), 0);
+      limit = Math.max(base, base * OCR_BANK_DAYS - before);
+    }
+  } catch {}
+  ctx.banked = { ...(ctx.banked || {}), [kind]: limit };
+  return limit;
+};
 
 const takeQuota = async (ctx, kind) => {
   if (kind === 'talkhis' && !(await quotaOverride(ctx))?.noMonthly && !(await isTrialMember(ctx)) && (await isImtihanHolder(ctx)) && ctx.imtihanSince) {
@@ -307,7 +330,7 @@ const takeQuota = async (ctx, kind) => {
     if (!used) return 'unavailable';
     if ((used[kind] || 0) >= monthly) return 'monthly';
   }
-  return (await consumeQuota(ctx.code, kind, await dailyLimit(ctx, kind))) ? null : 'daily';
+  return (await consumeQuota(ctx.code, kind, await bankedDailyLimit(ctx, kind))) ? null : 'daily';
 };
 
 const upgradeRequired = (res, feature, message) =>
@@ -373,6 +396,12 @@ async function handleOcr(ctx, body, res) {
     return res.status(400).json({ ok: false, error: 'Foto tidak valid' });
   }
   if (foto_base64.length > 3_500_000) return res.status(400).json({ ok: false, error: 'Foto terlalu besar' });
+  // Halaman PDF yang sudah pernah dibaca (oleh member ini, atau terverifikasi dua member) tidak memakai jatah baca.
+  const cacheKey = ocrCacheKey(body);
+  if (cacheKey) {
+    const hit = (await lookupOcrPages(ctx.code, cacheKey.hash, [cacheKey.page]))[cacheKey.page];
+    if (hit) return res.status(200).json({ ok: true, teks: hit, truncated: false, cached: true });
+  }
   if (ctx.tier === 'pro') {
     const over = await takeQuota(ctx, 'ocr');
     if (over) return quotaExceeded(res, 'ocr', over, ctx);
@@ -400,6 +429,7 @@ async function handleOcr(ctx, body, res) {
   if (teks.includes('FOTO_TIDAK_TERBACA')) {
     return res.status(200).json({ ok: false, error: 'Foto tidak memuat teks yang terbaca. Coba foto lebih jelas.' });
   }
+  if (cacheKey && !truncated) await storeOcrPage(ctx.code, cacheKey, teks);
   return res.status(200).json({ ok: true, teks, truncated: !!truncated });
 }
 
@@ -417,7 +447,7 @@ async function handleOcrQuota(ctx, res) {
     if (ctx.memberTier === 'free') left = Math.min(left, FREE_OCR_LIFETIME - (await lifetimeUsage(ctx.code, 'ocr')));
     return res.status(200).json({ ok: true, remaining: Math.max(0, left), scope: 'trial' });
   }
-  let remaining = Math.max(0, (await dailyLimit(ctx, 'ocr')) - usedToday);
+  let remaining = Math.max(0, (await bankedDailyLimit(ctx, 'ocr')) - usedToday);
   let scope = 'daily';
   const monthly = (await monthlyLimitsFor(ctx))?.ocr ?? null;
   if (monthly != null) {
@@ -1305,6 +1335,7 @@ export default async function handler(req, res) {
     return await withAiContext(costCtx, async () => { switch (action) {
       case 'ocr':           return await handleOcr(ctx, body, res);
       case 'ocr-quota':     return await handleOcrQuota(ctx, res);
+      case 'ocr-cache':     return await handleOcrCache(ctx, body, res);
       case 'transcribe':    return await handleTranscribe(ctx, body, res);
       case 'create':        return await handleCreate(ctx, body, res);
       case 'create-batch':  return await handleCreateBatch(ctx, body, res);
