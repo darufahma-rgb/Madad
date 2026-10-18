@@ -3,6 +3,14 @@ import React from 'react';
 
 const FrameworkPage = () => {
   const frameworks = typeof LEARNING_FRAMEWORKS !== "undefined" ? LEARNING_FRAMEWORKS : [];
+  const usage = window.useMethodUsage ? window.useMethodUsage() : { week: [] };
+  const [opening, setOpening] = React.useState(null);
+  // Langsung praktik di fitur Talqeeh (learning-methods.jsx), bukan hanya membaca panduannya.
+  const practice = async (e, id) => {
+    e.stopPropagation();
+    setOpening(id);
+    try { await window.practiceMethod?.(id); } finally { setOpening(null); }
+  };
 
   return (
     <div className="page-enter">
@@ -19,9 +27,14 @@ const FrameworkPage = () => {
               Framework Belajar
             </h1>
             <p className="text-base md:text-lg text-ink-muted max-w-2xl leading-relaxed">
-              6 metode belajar berbasis riset ilmiah — dicontohkan untuk konteks Masisir Al-Azhar.
-              Klik kartu untuk panduan praktik lengkapnya.
+              6 metode belajar berbasis riset ilmiah — dicontohkan untuk konteks Masisir Al-Azhar, dan
+              semuanya bisa langsung dipraktikkan di Talqeeh. Klik kartu untuk panduan lengkapnya.
             </p>
+            {usage.week.length > 0 && (
+              <div className="mt-4 inline-flex items-center gap-2 text-xs px-3 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-200">
+                <Icon name="check" className="w-3.5 h-3.5"/> Minggu ini kamu sudah memakai {usage.week.length} dari 6 metode
+              </div>
+            )}
           </Reveal>
         </div>
       </section>
@@ -42,9 +55,21 @@ const FrameworkPage = () => {
               </div>
               <h3 className="font-display text-sm md:text-lg font-semibold text-ink mb-1.5 md:mb-2 leading-snug break-words">{fw.name}</h3>
               <p className="text-xs md:text-sm text-ink-muted leading-relaxed">{fw.tagline}</p>
-              <div className="mt-auto pt-4 flex items-center gap-1.5 text-xs text-emerald-300 group-hover:text-emerald-200 transition-colors">
-                <span>Pelajari<span className="hidden md:inline"> lengkap</span></span>
-                <Icon name="chevronRight" className="w-3.5 h-3.5"/>
+              {window.METHOD_FEATURE?.[fw.id] && (
+                <div className="mt-2 text-[11px] md:text-xs text-ink-soft">
+                  Di Talqeeh: <span className="text-ink">{window.METHOD_FEATURE[fw.id].feature}</span>
+                  {usage.week.includes(fw.id) && <span className="ml-1.5 text-emerald-300">· dipakai minggu ini</span>}
+                </div>
+              )}
+              <div className="mt-auto pt-4 flex items-center justify-between gap-2 flex-wrap">
+                <span className="flex items-center gap-1.5 text-xs text-emerald-300 group-hover:text-emerald-200 transition-colors">
+                  <span>Pelajari<span className="hidden md:inline"> lengkap</span></span>
+                  <Icon name="chevronRight" className="w-3.5 h-3.5"/>
+                </span>
+                <button onClick={(e) => practice(e, fw.id)} disabled={!!opening}
+                  className="btn btn-primary !min-h-0 text-[11px] md:text-xs px-3 py-1.5 disabled:opacity-60">
+                  {opening === fw.id ? 'Membuka…' : 'Praktikkan'}
+                </button>
               </div>
             </div>
           ))}

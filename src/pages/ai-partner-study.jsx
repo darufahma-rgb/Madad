@@ -710,6 +710,7 @@ const MindmapTab = ({ set, setSet, access, askTutor }) => {
   const { ui, selected, setSelected, select, expandAll, collapseAll } = useMindmapUi(root, showNotes);
   const mapView = useMapView();
   const [full, setFull] = useState(false);
+  useEffect(() => { if (root) window.markMethod?.('dual-coding'); }, [!!root]);
   const detailRef = useRef(null);
   // Di desktop, penjelasan mengambang di atas peta; di HP dan tampilan Daftar, di bawahnya.
   const floatingDetail = view === 'map' && !narrow;
@@ -1136,6 +1137,7 @@ const FlashcardTab = ({ set, setSet, access, askTutor }) => {
   }
 
   const answer = (knew) => {
+    window.markMethod?.('spaced-repetition');
     const idx = queue[0];
     const card = cards[idx];
     const box = knew ? Math.min(5, (card.box || 1) + 1) : 1;
@@ -1370,6 +1372,7 @@ const QuizTab = ({ set, setSet, access, askTutor }) => {
     setIdx(nextIdx);
     setPicked(null);
     if (nextIdx >= order.length) {
+      window.markMethod?.('retrieval-practice');
       // Soal yang masih salah disimpan supaya tutor tahu bagian yang perlu diperkuat.
       const wrongNow = wrong.map(w => w.i);
       const prevWrong = Array.isArray(set.progress?.quiz_wrong) ? set.progress.quiz_wrong : [];
@@ -1599,6 +1602,7 @@ const EssayTab = ({ set, setSet, access, askTutor }) => {
 
   const submit = async () => {
     setGrading(true);
+    window.markMethod?.('retrieval-practice');
     const d = await aiCall('grade', { set_id: set.id, index: active, answer });
     setGrading(false);
     if (!d.ok) { toast.push(d.error || 'Gagal menilai'); return; }
@@ -1840,6 +1844,8 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
     setInput('');
     setError('');
     setSending(true);
+    // Menjelaskan ulang (syafawi / ajakan Feynman) vs bertanya "mengapa" ke tutor.
+    window.markMethod?.(mode === 'syafawi' || message.includes('teknik Feynman') ? 'feynman-technique' : 'elaborative-interrogation');
     setSet(s => ({ ...s, chat: [...(s.chat || []), { role: 'user', content: message, mode }] }));
     resetLive();
     const data = await aiStream('chat', { set_id: set.id, message, mode }, (_, full) => pushLive(full));

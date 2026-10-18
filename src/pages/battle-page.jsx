@@ -3139,6 +3139,8 @@ export default function BattlePage() {
             setUploadNote('');
             if (ai.data && cacheKey && !cached) { try { localStorage.setItem(cacheKey, JSON.stringify({ at: Date.now(), data: ai.data })); } catch {} }
             processCustomText(title, text, quiz, ai.data);
+            // Arena campuran dari beberapa materi (interleaving) — ditandai supaya tercatat sebagai metode itu.
+            if (imported.mixed) setActiveSet(s => (s ? { ...s, mixed: true } : s));
             setImportToast(ai.data
               ? `Materi "${title}" siap! ${ai.data.quiz.length} soal imtihan berbahasa Arab sudah disusun.`
               : `Materi "${title}" dimuat dengan soal dari AI Partner — ${ai.error}`);
@@ -3759,6 +3761,8 @@ export default function BattlePage() {
     }
     clearBattleTimers();
     window.logFunnel?.('arena', 'play');
+    window.markMethod?.('retrieval-practice');
+    if (activeSet?.mixed) window.markMethod?.('interleaving');
     setShuffleSeed(s => s + 1);
     sfx.init();
     setPhase('battle');
@@ -4223,6 +4227,7 @@ export default function BattlePage() {
      otomatis dari data soal. Sebelum soal dijawab, jawaban otomatis TIDAK memakai pembahasan (explanation) karena
      pembahasan selalu menyebut kunci jawabannya. Soal dianggap sudah dijawab bila kartu muzakarah sedang terbuka. */
   const askAiSyaikh = async (type, customPrompt = '') => {
+    window.markMethod?.('elaborative-interrogation');
     const currentQuestion = activeQuiz[currentQ];
     if (!currentQuestion || aiBusy) return;
     const answered = !!wrongReview;

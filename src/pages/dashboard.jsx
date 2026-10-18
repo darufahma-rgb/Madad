@@ -554,6 +554,112 @@ const PersonalizeCard = () => {
 
 // Saran ritme harian dari Profil Belajar, atau ajakan mengisinya.
 const PROFILE_INVITE_KEY = 'talqeeh_profil_invite_later';
+/* ── Sesi hari ini ──
+   Enam metode belajar (halaman Framework) dijalankan lewat fitur Talqeeh, bukan sekadar dibaca: tiap tugas membuka
+   fitur yang tepat di materi pengguna sendiri (learning-methods.jsx). Centang = metodenya sudah dipakai hari ini. */
+const methodName = (id) => (window.LEARNING_FRAMEWORKS || []).find(f => f.id === id)?.nameId || id;
+const ROTATING_METHODS = ['feynman-technique', 'elaborative-interrogation', 'dual-coding'];
+
+const TodaySessionCard = () => {
+  const { profile } = useAuth();
+  const status = window.useAiStatus();
+  const usage = window.useMethodUsage();
+  const [sets, setSets] = useState(null);
+  const [busy, setBusy] = useState(null);
+  const hasAi = status.tier === 'pro' || status.tier === 'trial';
+
+  useEffect(() => {
+    if (status.loading) return;
+    if (!hasAi) { setSets([]); return; }
+    let alive = true;
+    window.aiCall('list').then(d => { if (alive) setSets(d.ok ? d.data : []); });
+    return () => { alive = false; };
+  }, [status.loading, hasAi]);
+
+  if (status.loading || sets === null) return null;
+  const recent = [...sets].sort((a, b) => Date.parse(b.updated_at || b.created_at) - Date.parse(a.updated_at || a.created_at));
+  const latest = recent[0];
+  const dueSet = [...recent].sort((a, b) => (b.cards_due || 0) - (a.cards_due || 0))[0];
+  const totalDue = recent.reduce((n, s) => n + (s.cards_due || 0), 0);
+  const advice = profile ? window.dailyAdvice?.(profile) : null;
+  const rotating = ROTATING_METHODS[new Date().getDay() % ROTATING_METHODS.length];
+  const run = (key, fn) => async () => { setBusy(key); try { await fn(); } finally { setBusy(null); } };
+
+  const tasks = [];
+  if (totalDue > 0) {
+    tasks.push({ method: 'spaced-repetition', title: `Ulang ${Math.min(totalDue, advice?.cards || totalDue)} kartu yang jatuh tempo`, sub: dueSet.title,
+      action: () => window.openSetTab(dueSet.id, 'hafalkan', 'cards') });
+  }
+  tasks.push(latest
+    ? { method: 'retrieval-practice', title: 'Uji diri: 1 level Arena Imtihan', sub: `dari «${latest.title}»`, action: () => window.launchBattleFromSet({ id: latest.id }) }
+    : { method: 'retrieval-practice', title: 'Uji diri: 1 level Arena Imtihan', sub: 'Balaghah, Nahwu, atau Ushul Fiqh — gratis', action: () => navigate('/battle') });
+  tasks.push(recent.length >= 2
+    ? { method: 'interleaving', title: 'Arena campuran', sub: recent.slice(0, 3).map(s => s.title).join(' · '), action: () => window.launchMixedArena(recent.slice(0, 3)) }
+    : { method: 'interleaving', title: 'Selang-seling: coba dunia Arena yang lain', sub: 'Pindah maddah membuat ingatan lebih tahan lama', action: () => navigate('/battle') });
+  if (latest) {
+    const copy = {
+      'feynman-technique': ['Jelaskan ulang satu kaidah ke tutor', 'Tutor menilai penjelasanmu sendiri'],
+      'elaborative-interrogation': ['Jawab 3 pertanyaan "mengapa" dari tutor', 'Paham alasan kaidah, bukan hafal saja'],
+      'dual-coding': ['Baca peta konsep taqsimat', 'Teks + skema lebih kuat diingat'],
+    }[rotating];
+    tasks.push({ method: rotating, title: copy[0], sub: `${copy[1]} · «${latest.title}»`, action: () => window.practiceMethod(rotating, recent) });
+  } else {
+    tasks.push({ method: null, title: hasAi ? 'Unggah materi kuliahmu' : 'Belajar dari muqarrarmu sendiri',
+      sub: 'Flashcard berjadwal, tutor, peta konsep & Arena dari materimu', action: () => navigate(hasAi ? '/ai-partner' : '/gabung?plan=imtihan') });
+  }
+
+  const doneCount = tasks.filter(t => t.method && usage.today.includes(t.method)).length;
+  return (
+    <div className="card-glass p-5 max-w-5xl mb-5" style={{ border: '1px solid rgba(62,207,142,0.28)' }}>
+      <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
+        <div>
+          <div className="text-xs uppercase tracking-[0.18em] text-gold-400">Sesi hari ini</div>
+          <div className="text-sm text-ink-muted mt-1">
+            Disusun dari metode belajar berbasis riset{advice ? ` · ±${advice.count} × ${advice.minutes} menit, istirahat ${advice.rest} menit` : ''}.
+          </div>
+        </div>
+        <span className="text-xs px-3 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-200">{doneCount}/{tasks.filter(t => t.method).length} selesai</span>
+      </div>
+      <div className="grid gap-2">
+        {tasks.map((t, i) => {
+          const done = t.method && usage.today.includes(t.method);
+          return (
+            <div key={i} className={`flex items-center gap-3 rounded-xl border px-3 py-3 ${done ? 'border-emerald-500/25 bg-emerald-500/5' : 'border-white/10 bg-white/[0.03]'}`}>
+              <span className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center border ${done ? 'bg-emerald-500 border-emerald-400' : 'border-white/20'}`}>
+                {done ? <Icon name="check" className="w-3.5 h-3.5" style={{ stroke: '#000' }}/> : <span className="text-[11px] text-ink-soft">{i + 1}</span>}
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className={`text-sm ${done ? 'text-ink-muted line-through' : 'text-ink'}`}>{t.title}</div>
+                <div className="text-xs text-ink-soft truncate">{t.sub}</div>
+                {t.method && (
+                  <button onClick={() => navigate(`/framework/${t.method}`)} className="text-[11px] text-emerald-300/90 hover:text-emerald-200 mt-0.5">
+                    {methodName(t.method)} · kenapa?
+                  </button>
+                )}
+              </div>
+              <button onClick={run(i, t.action)} disabled={busy !== null}
+                className={`btn ${done ? 'btn-ghost' : 'btn-primary'} text-xs px-3.5 py-2 flex-shrink-0 disabled:opacity-60`}>
+                {busy === i ? 'Membuka…' : done ? 'Lagi' : 'Mulai'}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      <div className="mt-4 pt-3 border-t border-white/8 flex items-center gap-3 flex-wrap">
+        <span className="text-xs text-ink-muted">Minggu ini: <span className="text-ink">{usage.week.length}/6 metode</span></span>
+        <div className="flex gap-1.5 flex-wrap">
+          {(window.METHOD_IDS || []).map(id => (
+            <button key={id} onClick={() => navigate(`/framework/${id}`)} title={methodName(id)}
+              className={`text-[10.5px] px-2 py-0.5 rounded-full border ${usage.week.includes(id) ? 'border-emerald-500/40 bg-emerald-500/15 text-emerald-200' : 'border-white/10 text-ink-soft'}`}>
+              {methodName(id)}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const DailyAdviceCard = () => {
   const { profile } = useAuth();
   const [hidden, setHidden] = useState(() => {
@@ -666,6 +772,7 @@ const DashboardHomePage = () => {
 
           {canUpgrade && <div className="max-w-5xl mb-5"><FreeTierBanner/></div>}
           <PersonalizeCard/>
+          <TodaySessionCard/>
           <DailyAdviceCard/>
 
           <div className="grid grid-cols-2 gap-3 md:gap-5 max-w-5xl">

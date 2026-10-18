@@ -204,9 +204,18 @@ const AiPartnerList = ({ status, creating, setCreating }) => {
       {sets?.length > 0 && !creating && (
         <div className="flex items-center justify-between mb-4 gap-3">
           <h2 className="font-display text-xl font-semibold text-ink">Materimu</h2>
-          <button onClick={() => trialUsed ? openAiUpgrade('materi') : setCreating(true)} className="btn btn-primary text-sm px-5 py-2.5">
-            <Icon name="upload" className="w-4 h-4"/> Tambah materi
-          </button>
+          <div className="flex gap-2 flex-wrap justify-end">
+            {sets.length >= 2 && (
+              // Interleaving: soal dari 3 materi terakhir diacak dalam satu Arena Imtihan.
+              <button onClick={() => window.launchMixedArena?.([...sets].sort((a, b) => Date.parse(b.updated_at || b.created_at) - Date.parse(a.updated_at || a.created_at)).slice(0, 3))}
+                className="btn btn-ghost text-sm px-4 py-2.5" title="Soal dari 3 materi terakhir diacak dalam satu ujian">
+                <Icon name="gamepad" className="w-4 h-4"/> Arena campuran
+              </button>
+            )}
+            <button onClick={() => trialUsed ? openAiUpgrade('materi') : setCreating(true)} className="btn btn-primary text-sm px-5 py-2.5">
+              <Icon name="upload" className="w-4 h-4"/> Tambah materi
+            </button>
+          </div>
         </div>
       )}
 
@@ -492,7 +501,17 @@ const AiPartnerDetail = ({ setId, status }) => {
   const narrow = typeof window !== 'undefined' && window.matchMedia?.('(max-width: 767px)').matches;
 
   useEffect(() => {
-    aiCall('get', { set_id: setId }).then(d => d.ok ? setSet(d.data) : setError(d.error || 'Materi tidak ditemukan'));
+    aiCall('get', { set_id: setId }).then(d => {
+      if (!d.ok) { setError(d.error || 'Materi tidak ditemukan'); return; }
+      setSet(d.data);
+      // Dibuka dari "Sesi hari ini" / halaman Framework: langsung ke tab yang dituju (learning-methods.jsx).
+      const open = window.takeOpenTab?.(setId);
+      if (open?.step) {
+        setStep(open.step);
+        if (open.sub) setSub(p => ({ ...p, [open.step]: open.sub }));
+        if (open.ask) setPendingAsk(open.ask);
+      }
+    });
   }, [setId]);
 
   const handleDeleted = () => { toast.push('Materi dihapus.'); navigate('/ai-partner'); };

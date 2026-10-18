@@ -16,7 +16,7 @@ const LEARNING_FRAMEWORKS = [
     ],
     tips: [
       "Jadwalkan muraja'ah matan: ulang H+1, H+3, H+7, lalu mingguan menjelang imtihan.",
-      "Pakai aplikasi seperti Anki untuk hafalan mufradat & matan dengan interval otomatis.",
+      "Pakai flashcard berjadwal di AI Partner Talqeeh: kartu dibuat dari materimu dan muncul lagi tepat saat mulai terlupa.",
       "Hindari menumpuk semua hafalan di malam sebelum ujian — pecah ke beberapa hari.",
     ],
     howItWorks: [
@@ -33,7 +33,7 @@ const LEARNING_FRAMEWORKS = [
     maddahExamples: [
       { maddah: "Nahwu", example: "Hafal satu bait Alfiyyah hari ini, ulang besok tanpa lihat teks, lalu H+3 dan H+7." },
       { maddah: "Fiqh", example: "Setelah paham satu mas'alah, jadwalkan ulang ringkasannya 3 hari lagi sebelum lanjut bab baru." },
-      { maddah: "Mufradat", example: "Masukkan kosakata baru ke Anki, biarkan algoritmanya yang atur interval otomatis." },
+      { maddah: "Mufradat", example: "Buat flashcard mufradat dari materimu di AI Partner — Talqeeh yang mengatur kapan kartu itu diulang." },
     ],
     schedule: [
       { when: "Hari ke-0", what: "Belajar materi baru + ringkas poin inti" },
@@ -45,7 +45,7 @@ const LEARNING_FRAMEWORKS = [
     checklist: [
       "Saya sudah membuat jadwal muraja'ah H+1, H+3, H+7",
       "Saya muraja'ah dari ingatan dulu sebelum buka kitab",
-      "Saya pakai Anki/aplikasi untuk mufradat & matan",
+      "Saya mengulang flashcard yang jatuh tempo setiap hari",
       "Saya tidak menumpuk hafalan di malam sebelum ujian",
     ],
     aiPrompt: "Bantu saya membuat jadwal spaced repetition (muraja'ah berjadwal) untuk materi [SEBUTKAN MADDAH/BAB]. Buatkan jadwal pengulangan dengan interval H+1, H+3, H+7, dan mingguan. Untuk setiap sesi, sebutkan apa yang harus saya uji dari ingatan dan bagian mana yang biasanya paling mudah terlupa. Sajikan dalam bentuk tabel.",

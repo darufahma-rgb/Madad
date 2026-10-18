@@ -22,6 +22,7 @@ import './adaptive-prompt.jsx';
 import './output-format.jsx';
 import './prompt-rubric.jsx';
 import './learning-frameworks-data.jsx';
+import './learning-methods.jsx';
 import './learning-profile.jsx';
 
 // Shared components

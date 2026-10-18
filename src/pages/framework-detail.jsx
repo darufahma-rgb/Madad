@@ -11,6 +11,8 @@ const FrameworkDetailPage = () => {
 
   const storageKey = "madad_framework_check_" + (fwId || "");
   const [checked, setChecked] = useState([]);
+  const usage = window.useMethodUsage ? window.useMethodUsage() : { week: [] };
+  const [opening, setOpening] = useState(false);
 
   useEffect(() => {
     try {
@@ -63,6 +65,28 @@ const FrameworkDetailPage = () => {
           {fw.tagline}
         </p>
       </Reveal>
+
+      {/* PRAKTIKKAN DI TALQEEH — fitur yang menjalankan metode ini pada materimu sendiri */}
+      {window.METHOD_FEATURE?.[fw.id] && (
+        <Reveal delay={40}>
+          <div className="mt-6 card-glass p-4 md:p-5 flex items-center gap-4 flex-wrap" style={{ border: "1px solid rgba(62,207,142,0.3)" }}>
+            <span className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+              <Icon name={window.METHOD_FEATURE[fw.id].icon} className="w-5 h-5 text-emerald-300"/>
+            </span>
+            <div className="flex-1 min-w-[200px]">
+              <div className="text-sm text-ink font-medium">Praktikkan di Talqeeh: {window.METHOD_FEATURE[fw.id].feature}</div>
+              <div className="text-xs text-ink-muted leading-relaxed">
+                Langsung dari materi kuliahmu di AI Partner{fw.id === "retrieval-practice" || fw.id === "interleaving" ? ", atau dari soal Arena Imtihan bawaan" : ""}.
+                {usage.week.includes(fw.id) && <span className="text-emerald-300"> Kamu sudah memakainya minggu ini.</span>}
+              </div>
+            </div>
+            <button onClick={async () => { setOpening(true); try { await window.practiceMethod?.(fw.id); } finally { setOpening(false); } }}
+              disabled={opening} className="btn btn-primary text-sm px-5 py-2.5 disabled:opacity-60">
+              {opening ? "Membuka…" : window.METHOD_FEATURE[fw.id].cta}
+            </button>
+          </div>
+        </Reveal>
+      )}
 
       {/* CARA KERJA */}
       <Reveal delay={80}>
