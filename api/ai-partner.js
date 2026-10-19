@@ -6,6 +6,7 @@ import { resolveModels, isValidModelId, clearModelCache, TASK_THINKING } from '.
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, weakPointsNote, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
   OCR_PROMPT, transcribePrompt, transcribeAnswerPrompt, TRANSCRIBE_DIALECTS, tutorSystem, syafawiSystem, learnerContext,
+  isHighStakesFiqh, FIQH_REMINDER,
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
@@ -973,18 +974,24 @@ async function handleChat(ctx, body, res) {
   const material = long
     ? `(Materi panjang — yang ditampilkan hanya potongan ${mode === 'syafawi' ? 'dari seluruh bab' : 'yang paling berkaitan dengan pertanyaan'}; bagian yang dilewati ditandai […]. Jika jawabannya tidak ada di potongan ini, katakan mungkin dibahas di bagian lain materi.)\n\n${excerpt}`
     : excerpt;
+  // Pertanyaan hukum yang dipakai untuk keputusan nyata (waris, nikah, talak, zakat): model yang lebih teliti
+  // dengan jatah berpikir, dan pengingat untuk memastikan ke duktur/mufti di akhir jawaban.
+  const highStakes = mode !== 'syafawi' && isHighStakesFiqh(`${message}\n${history.filter(m => m.role === 'user').slice(-2).map(m => m.content).join('\n')}`);
+  const models = await resolveModels();
   const { out, stream, failed } = await runAI(body, res, {
     system: (mode === 'syafawi' ? syafawiSystem(set.title, material) + weakPointsNote(set, 'syafawi') : tutorSystem(set.title, material) + weakPointsNote(set)) + learnerContext(body.learner),
     messages: [...history.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: message }],
     maxTokens: 1500,
     timeLimitMs: 48000,
     cacheSystem: true,
-    model: (await resolveModels()).chat,
+    model: highStakes ? models.grade : models.chat,
+    thinking: highStakes ? 1024 : 0,
   });
   if (failed) return;
   const note = '\n\n_(Jawaban terpotong karena terlalu panjang — ketik **lanjutkan** untuk meneruskan.)_';
   if (out.truncated && stream) stream.delta(note);
-  const reply = out.truncated ? `${out.text.trimEnd()}${note}` : out.text;
+  if (highStakes && stream) stream.delta(FIQH_REMINDER);
+  const reply = `${out.truncated ? `${out.text.trimEnd()}${note}` : out.text}${highStakes ? FIQH_REMINDER : ''}`;
 
   const now = new Date().toISOString();
   const chat = [
@@ -1029,6 +1036,9 @@ async function handlePromptChat(ctx, body, res) {
     if (over) return quotaExceeded(res, 'prompt', over, ctx);
   }
 
+  // Waris, nikah, talak, zakat, dll.: model yang lebih teliti (bukan model hemat) + pengingat di akhir jawaban.
+  const highStakes = isHighStakesFiqh(messages.filter(m => m.role === 'user').slice(-3).map(m => m.content).join('\n'));
+  const models = await resolveModels();
   const { out, stream, failed } = await runAI(body, res, {
     system: promptChatSystem() + learnerContext(body.learner, { material: false }),
     messages,
@@ -1037,12 +1047,14 @@ async function handlePromptChat(ctx, body, res) {
     // Sisakan waktu untuk menutup stream sebelum batas 60 detik Vercel.
     timeLimitMs: 48000,
     cacheSystem: true,
-    model: (await resolveModels()).prompt,
+    model: highStakes ? models.grade : models.prompt,
+    thinking: highStakes ? 1024 : 0,
   });
   if (failed) return;
   const note = '\n\n_(Jawaban terpotong karena terlalu panjang — ketik **lanjutkan** untuk meneruskan.)_';
   if (out.truncated && stream) stream.delta(note);
-  const reply = out.truncated ? `${out.text.trimEnd()}${note}` : out.text;
+  if (highStakes && stream) stream.delta(FIQH_REMINDER);
+  const reply = `${out.truncated ? `${out.text.trimEnd()}${note}` : out.text}${highStakes ? FIQH_REMINDER : ''}`;
   return sendResult(res, stream, { reply, model: out.model, ...(trialLeft != null ? { trial_left: trialLeft } : {}) });
 }
 
