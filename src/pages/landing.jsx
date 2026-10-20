@@ -262,6 +262,17 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
           <UserCountBadge/>
         </Reveal>
 
+        {/* Fitur terbaru: lompat ke demo Live Caption tepat di bawah hero */}
+        <Reveal delay={90}>
+          <button onClick={() => document.getElementById("live-caption")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+            className="inline-flex items-center gap-2 rounded-full pl-1.5 pr-3.5 py-1.5 mb-6 text-sm transition hover:bg-white/[0.06]"
+            style={{ border: "1px solid rgba(201,168,106,0.35)", background: "rgba(201,168,106,0.07)", color: "rgba(255,255,255,0.82)" }}>
+            <span className="rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider" style={{ background: "#C9A86A", color: "#141414" }}>Baru</span>
+            <span>Live Caption<span className="hidden sm:inline">: terjemah kuliah duktur secara langsung</span><span className="sm:hidden"> kuliah duktur</span></span>
+            <Icon name="arrowRight" className="w-3.5 h-3.5 text-gold-300 flex-shrink-0"/>
+          </button>
+        </Reveal>
+
         {/* Headline */}
         <Reveal delay={120}>
           <h1 className="hero-headline text-white mb-6" style={{
@@ -287,7 +298,7 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
         <Reveal delay={180}>
           <p className="text-lg md:text-xl mb-10 max-w-xl" style={{ color:"rgba(255,255,255,0.62)", lineHeight:1.65 }}>
             Template prompt siap pakai untuk {CATALOG.maddah} maddah Al-Azhar, plus AI Partner yang
-            mengubah diktat, slide, dan rekaman kuliahmu jadi ringkasan, flashcard, kuis, dan i'rab.
+            menerjemahkan kuliah duktur secara langsung dan mengubah diktat serta slide-mu jadi ringkasan, flashcard, kuis, dan i'rab.
             Untuk Masisir dari Ma'had, Darul Lughoh (DL), sampai S2.
           </p>
         </Reveal>
@@ -1014,7 +1025,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
   const promoLeft = usePromoCountdown();
   const rombongan = rombonganEvent(settings);
   return (
-  <section id="paket" className="section pt-0 pb-32">
+  <section id="paket" className="section pt-0">
     <div className="container-x">
       <Reveal className="text-center mb-10">
         <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
@@ -1537,8 +1548,9 @@ const BankSoalPreview = ({ onOpenLogin }) => {
 };
 
 /* ── Founder teaser ───────────────────────────────────────────── */
+// Section terakhir di landing: ruang bawah ekstra supaya tidak tertutup bottom nav di HP.
 const FounderTeaser = () => (
-  <section className="section pt-0">
+  <section className="section pt-0 pb-32">
     <div className="container-x" style={{ maxWidth: 960 }}>
       <Reveal>
         <a
@@ -1567,12 +1579,8 @@ const FounderTeaser = () => (
 );
 
 /* ── Root ─────────────────────────────────────────────────────── */
-const LandingPage = ({ onOpenLogin, onOpenJoin }) => (
-  <div className="page-enter">
-    <StyleInject/>
-    <LandingHero onOpenLogin={onOpenLogin} onOpenJoin={onOpenJoin}/>
-
-    {/* Banner Campaign Submit Soal */}
+/* Banner kampanye Submit Soal — ditaruh tepat setelah Bank Soal karena topiknya sama. */
+const SubmitSoalBanner = () => (
     <section style={{
       margin: '0 auto',
       maxWidth: 640,
@@ -1635,17 +1643,25 @@ const LandingPage = ({ onOpenLogin, onOpenJoin }) => (
         </div>
       </a>
     </section>
+);
 
-    <SampleMaddahSection/>
+/* Urutan mengikuti alur keputusan pengunjung baru: fitur baru → apa itu Talqeeh → bukti isi (maddah, bank soal)
+   → bukti sosial → cara gabung → paket. Kampanye sampingan (submit soal, hadiah) tidak menghalangi alur utama. */
+const LandingPage = ({ onOpenLogin, onOpenJoin }) => (
+  <div className="page-enter">
+    <StyleInject/>
+    <LandingHero onOpenLogin={onOpenLogin} onOpenJoin={onOpenJoin}/>
+    <LiveCaptionSection onOpenJoin={onOpenJoin}/>
     <TwoWaysSection/>
+    <SampleMaddahSection/>
     <BankSoalPreview onOpenLogin={onOpenLogin}/>
-    <HowItWorks/>
+    <SubmitSoalBanner/>
     <AllMaddahPreview/>
     <TestimoniSection/>
-    <FounderTeaser/>
-    <HadiahPreviewBanner/>
-    <LiveCaptionSection onOpenJoin={onOpenJoin}/>
+    <HowItWorks/>
     <PricingAndCTA onOpenLogin={onOpenLogin} onOpenJoin={onOpenJoin}/>
+    <HadiahPreviewBanner/>
+    <FounderTeaser/>
   </div>
 );
 
