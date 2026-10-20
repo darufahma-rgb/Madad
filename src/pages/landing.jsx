@@ -805,6 +805,136 @@ const HadiahPreviewBanner = () => (
 );
 
 /* ══════════════════════════════════════════════════════════════
+   5c. LIVE CAPTION — fitur unggulan Paket Imtihan
+   Demo di kanan diringkas dari hasil asli Live Caption (uji audio kuliah Ushul Fiqh, bab qiyas),
+   ditampilkan bertahap seperti saat kuliah berlangsung.
+   ══════════════════════════════════════════════════════════════ */
+const LIVE_DEMO = [
+  { t: '0:12', ar: 'القياس في اللغة هو التقدير، يعني تقدير شيء بشيء.',
+    id: 'Qiyas secara bahasa artinya mengukur/memperkirakan sesuatu dengan sesuatu yang lain.',
+    istilah: [['التَّقْدِير', 'mengukur']] },
+  { t: '0:24', ar: 'وفي الاصطلاح: إلحاق فرع بأصل في حكم لعلة جامعة بينهما.',
+    id: "Secara istilah: menyamakan far' (kasus baru) dengan ashl (kasus asal) dalam hukum karena 'illat yang sama.",
+    istilah: [['فَرْع', 'kasus baru'], ['عِلَّة', 'sebab hukum']] },
+  { t: '0:36', ar: 'ركزوا معايا هنا، الأركان الأربعة دي هتيجي في الامتحان أكيد.',
+    id: 'Fokus di sini, empat rukun ini pasti keluar di ujian. Catat ya.', penting: true },
+];
+const LIVE_POINTS = [
+  { icon: 'mic', title: "Fushah & 'ammiyah Mesir", text: 'Duktur ganti logat di tengah kalimat? Tetap tertangkap, ditulis apa adanya lalu diterjemahkan maksudnya.' },
+  { icon: 'bookmark', title: 'Tahu mana yang keluar di imtihan', text: 'Begitu duktur bilang "fokus" atau "ini keluar di imtihan" (dalam fushah maupun \'ammiyah), bagian itu ditandai otomatis.' },
+  { icon: 'type', title: 'Istilah langsung tercatat', text: "Far', 'illat, rajih… muncul dengan artinya di bawah tiap kalimat, lalu dirangkum di akhir kuliah." },
+  { icon: 'layers', title: 'Jadi bahan muraja\'ah', text: 'Selesai kuliah, simpan jadi materi: ringkasan, flashcard, kuis, sampai Arena Imtihan.' },
+];
+
+const LiveCaptionDemo = () => {
+  // step: jumlah kartu yang sudah tampil; kartu berikutnya "sedang didengar" dulu sebelum muncul.
+  // Putaran selalu mulai dari 1 kartu supaya layar HP tidak pernah tampak kosong.
+  const [step, setStep] = useState(() => (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? LIVE_DEMO.length : 1));
+  useEffect(() => {
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    const t = setTimeout(() => setStep(s => (s >= LIVE_DEMO.length + 1 ? 1 : s + 1)), step >= LIVE_DEMO.length ? 4200 : 2600);
+    return () => clearTimeout(t);
+  }, [step]);
+  const shown = LIVE_DEMO.slice(0, Math.min(step, LIVE_DEMO.length));
+  const listening = step < LIVE_DEMO.length;
+  return (
+    <div className="relative mx-auto w-full max-w-[360px]">
+      <div className="absolute -inset-6 rounded-[44px] blur-3xl pointer-events-none" style={{ background: 'radial-gradient(circle, rgba(62,207,142,0.16), transparent 70%)' }}/>
+      <div className="relative rounded-[32px] border border-white/12 bg-[#0d0f0e] p-3 shadow-2xl shadow-black/50">
+        <div className="rounded-[24px] border border-white/[0.06] bg-[#111312] px-3.5 pt-4 pb-3 min-h-[470px] flex flex-col">
+          <div className="flex items-center justify-between mb-3 px-0.5">
+            <span className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-emerald-300"><Icon name="mic" className="w-3 h-3"/>Live Caption</span>
+            <span className="text-[10px] text-ink-soft">Ushul Fiqh · Qiyas</span>
+          </div>
+          <div className="space-y-2.5 flex-1">
+            {shown.map(s => (
+              <div key={s.t} className={`rounded-2xl border p-3 transition-all duration-500 ${s.penting ? 'border-gold-500/45 bg-gold-500/[0.07]' : 'border-white/8 bg-white/[0.03]'}`}
+                style={{ animation: 'card-in .45s ease both' }}>
+                <div className="text-[10px] text-ink-soft mb-1 tabular-nums">{s.t}{s.penting && <span className="text-gold-300 ml-1.5">★ Ditekankan duktur</span>}</div>
+                <p dir="rtl" className="text-ink text-right leading-relaxed" style={{ fontFamily: '"Noto Naskh Arabic", serif', fontSize: 15 }}>{s.ar}</p>
+                <p className="text-[12.5px] leading-snug mt-1.5 text-emerald-200/90">{s.id}</p>
+                {s.istilah && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {s.istilah.map(([ar, arti]) => (
+                      <span key={ar} className="inline-flex items-center gap-1 rounded-md border border-white/10 bg-white/[0.04] px-1.5 py-0.5 text-[10.5px] text-ink-muted">
+                        <span dir="rtl" className="text-ink" style={{ fontFamily: '"Noto Naskh Arabic", serif', fontSize: 12.5 }}>{ar}</span>{arti}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+            {listening && (
+              <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-3 text-[12px] text-ink-soft animate-pulse">Mendengarkan & menerjemahkan…</div>
+            )}
+          </div>
+          <div className="mt-3 rounded-2xl border border-white/10 bg-black/40 px-3 py-2.5 flex items-center gap-2.5">
+            <span className="inline-flex items-end gap-[3px] h-3.5" aria-hidden="true">
+              {[0.5, 0.9, 0.65, 1, 0.45].map((k, i) => (
+                <span key={i} className="w-[3px] rounded-full bg-emerald-400" style={{ height: `${listening ? k * 100 : 25}%`, transition: 'height .3s' }}/>
+              ))}
+            </span>
+            <span className="text-xs font-semibold text-ink tabular-nums">{shown.length ? shown[shown.length - 1].t : '0:00'}</span>
+            <span className="ml-auto inline-flex items-center gap-1 rounded-lg border border-gold-500/30 bg-gold-500/10 px-2 py-1 text-[11px] text-gold-200"><Icon name="bookmark" className="w-3 h-3"/>Tandai</span>
+            <span className="w-9 h-9 rounded-full flex items-center justify-center" style={{ background: '#f0715a', boxShadow: '0 0 0 4px rgba(240,113,90,0.18)' }}>
+              <span className="w-3 h-3 rounded-[3px] bg-white"/>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const LiveCaptionSection = ({ onOpenJoin }) => (
+  <section id="live-caption" className="section pt-0">
+    <style>{`@keyframes card-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }`}</style>
+    <div className="container-x">
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-14 items-center">
+        <Reveal>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-xs text-emerald-300 mb-5">
+            <span className="relative flex w-2 h-2">
+              <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-60 animate-ping"/>
+              <span className="relative inline-flex w-2 h-2 rounded-full bg-emerald-400"/>
+            </span>
+            Baru di Paket Imtihan · Live Caption
+          </div>
+          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08] mb-4">
+            Duktur ngomong 'ammiyah?<br/>
+            <span className="bg-gradient-to-br from-emerald-300 to-gold-400 bg-clip-text text-transparent">Kamu tetap paham.</span>
+          </h2>
+          <p className="text-ink-muted text-base md:text-lg leading-relaxed max-w-xl mb-7">
+            Taruh HP di dekat duktur dan tekan rekam. Tiap kalimat muncul dalam huruf Arab beserta terjemahan Indonesia yang mudah dipahami, kira-kira 10 detik setelah diucapkan.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4 mb-8">
+            {LIVE_POINTS.map(p => (
+              <div key={p.title} className="flex gap-3">
+                <span className="w-9 h-9 rounded-xl flex-shrink-0 flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20">
+                  <Icon name={p.icon} className="w-4 h-4 text-emerald-300"/>
+                </span>
+                <div>
+                  <div className="text-sm font-semibold text-ink mb-0.5">{p.title}</div>
+                  <div className="text-[13px] text-ink-muted leading-relaxed">{p.text}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+            <button onClick={() => onOpenJoin("imtihan")} className="btn btn-primary px-6 py-3.5 text-sm font-medium">
+              Ambil Paket Imtihan <Icon name="arrowRight" className="w-4 h-4"/>
+            </button>
+            <span className="text-xs text-ink-soft">Live Caption 4 jam/hari · {IMTIHAN_AI_DAYS} hari tanpa kuota bulanan</span>
+          </div>
+        </Reveal>
+        <Reveal delay={1}>
+          <LiveCaptionDemo/>
+        </Reveal>
+      </div>
+    </div>
+  </section>
+);
+
+/* ══════════════════════════════════════════════════════════════
    6. PRICING + FINAL CTA
    ══════════════════════════════════════════════════════════════ */
 const FeatureList = ({ items, color }) => (
@@ -949,6 +1079,15 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
                 Library selamanya + AI Study Partner {IMTIHAN_AI_DAYS} hari
               </div>
               <ImtihanBreakdown bundle={imtihan} className="mb-6"/>
+              <a href="#live-caption" onClick={e => { e.preventDefault(); document.getElementById('live-caption')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+                className="flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.08] px-3.5 py-3 mb-6 hover:bg-emerald-500/[0.12] transition">
+                <span className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center bg-emerald-500/15"><Icon name="mic" className="w-4 h-4 text-emerald-300"/></span>
+                <span className="min-w-0">
+                  <span className="block text-sm font-semibold text-ink">Baru: Live Caption kuliah duktur</span>
+                  <span className="block text-xs text-ink-muted">Terjemah langsung fushah & 'ammiyah, 4 jam/hari</span>
+                </span>
+                <Icon name="arrowRight" className="w-4 h-4 text-emerald-300 ml-auto flex-shrink-0"/>
+              </a>
               <div className="flex-1 mb-6">
                 <div className="text-sm text-ink font-medium mb-3">Semua isi paket Library, ditambah belajar langsung dari diktatmu:</div>
                 <FeatureList items={AI_BUNDLE_FEATURES} color="text-emerald-400"/>
@@ -1502,6 +1641,7 @@ const LandingPage = ({ onOpenLogin, onOpenJoin }) => (
     <TestimoniSection/>
     <FounderTeaser/>
     <HadiahPreviewBanner/>
+    <LiveCaptionSection onOpenJoin={onOpenJoin}/>
     <PricingAndCTA onOpenLogin={onOpenLogin} onOpenJoin={onOpenJoin}/>
   </div>
 );
