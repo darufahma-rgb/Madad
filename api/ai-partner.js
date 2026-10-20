@@ -5,12 +5,13 @@ import { callAI, callAIJson, requestAI, streamAI, friendlyAiError, aiErrorDetail
 import { resolveModels, isValidModelId, clearModelCache, TASK_THINKING } from './_lib/models.js';
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, weakPointsNote, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
-  OCR_PROMPT, transcribePrompt, transcribeAnswerPrompt, liveCaptionPrompt, TRANSCRIBE_DIALECTS, tutorSystem, syafawiSystem, learnerContext,
+  OCR_PROMPT, transcribePrompt, transcribeAnswerPrompt, TRANSCRIBE_DIALECTS, tutorSystem, syafawiSystem, learnerContext,
   isHighStakesFiqh, FIQH_REMINDER,
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { handleTalkhis } from './_lib/ai-partner/talkhis.js';
+import { runLiveCaption } from './_lib/ai-partner/live-caption.js';
 import { handleBattleStory, handleBattleHalaqah } from './_lib/ai-partner/battle-story.js';
 import { handleBattleQuiz } from './_lib/ai-partner/battle-quiz.js';
 import { ocrCacheKey, lookupOcrPages, storeOcrPage, handleOcrCache } from './_lib/ai-partner/ocr-cache.js';
@@ -583,37 +584,18 @@ async function handleLiveCaption(ctx, body, res) {
   credit -= seconds * 1000;
 
   // Live caption hanya dua mode: Arab (fushah/'ammiyah dikenali otomatis) atau kuliah berbahasa Indonesia.
-  const dialect = body.dialect === 'indonesia' ? 'indonesia' : 'campur';
-  const out = await callAIJson({
+  // Dua tahap (dengar tanpa konteks → terjemah teks berkonteks), lihat api/_lib/ai-partner/live-caption.js.
+  const result = await runLiveCaption({
+    audio,
+    dialect: body.dialect === 'indonesia' ? 'indonesia' : 'campur',
     model: (await resolveModels()).transcribe,
-    maxTokens: 1500,
-    temperature: 0,
-    messages: [{
-      role: 'user',
-      content: [
-        { type: 'input_audio', input_audio: { data: audio, format: 'wav' } },
-        // Konteks supaya terjemah nyambung & konsisten: 1–2 potongan terakhir, istilah yang sudah dijelaskan, jenjang pelajar.
-        { type: 'text', text: liveCaptionPrompt({
-          dialect, title: body.title, prevTail: body.prev_tail, prevId: body.prev_id,
-          terms: Array.isArray(body.terms) ? body.terms.filter(isStr).slice(-40) : [],
-          learner: body.learner && typeof body.learner === 'object' ? body.learner : null,
-        }) },
-      ],
-    }],
+    context: {
+      title: body.title, prevTail: body.prev_tail, prevId: body.prev_id,
+      terms: Array.isArray(body.terms) ? body.terms.filter(isStr).slice(-40) : [],
+      learner: body.learner && typeof body.learner === 'object' ? body.learner : null,
+    },
   });
-  const clean = (v, n = 4000) => (isStr(v) ? v.trim().slice(0, n) : '');
-  const ar = clean(out?.ar) === '[HENING]' ? '' : clean(out?.ar);
-  // Mode Indonesia: "id" boleh kosong (tidak ada kutipan Arab); jangan tampilkan terjemah yang sekadar mengulang.
-  // Kartu menampilkan teks biasa: buang sisa markdown (*miring*, **tebal**) bila model tetap menuliskannya.
-  const id = ar ? clean(out?.id).replace(/\*+([^*\n]+)\*+/g, '$1') : '';
-  const istilah = !ar || !Array.isArray(out?.istilah) ? [] : out.istilah
-    .map(t => ({ ar: clean(t?.ar, 60), id: clean(t?.id, 80) }))
-    .filter(t => t.ar && t.id)
-    .slice(0, 3);
-  return res.status(200).json({
-    ok: true, ar, id: id === ar ? '' : id, istilah, penting: !!ar && out?.penting === true,
-    credit: liveToken(ctx.code, credit),
-  });
+  return res.status(200).json({ ok: true, ...result, credit: liveToken(ctx.code, credit) });
 }
 
 async function handleCreate(ctx, body, res) {

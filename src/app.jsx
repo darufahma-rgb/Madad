@@ -273,8 +273,9 @@ const App = () => {
   else if (path.startsWith("/ai-partner/")) { page = <AiPartnerDetailPage key={path} setId={path.split("/")[2].split("?")[0]}/>; routeLabel = "AI Partner"; }
   else if (path === "/battle" || path.startsWith("/battle") || path === "/game") { page = <BattlePage/>; routeLabel = "Arena Imtihan"; }
 
-  // QuickNote muncul di semua halaman member yang sudah onboarded, kecuali admin & public
-  const showQuickNote = session && profile?.onboarded && !isAdmin && !isPublic;
+  // QuickNote muncul di semua halaman member yang sudah onboarded, kecuali admin & public — dan Live Caption,
+  // karena tombol melayangnya menutupi tombol rekam (halaman itu punya "Tandai" sendiri).
+  const showQuickNote = session && profile?.onboarded && !isAdmin && !isPublic && !path.startsWith("/ai-partner/live");
   const isMember = session && profile?.onboarded;
   // Member memakai kerangka aplikasi (sidebar); landing & Ubah Profil tetap layout publik. Pengguna baru
   // (belum onboarding) juga sudah memakai kerangka ini di dashboard, dengan onboarding sebagai jendela.

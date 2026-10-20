@@ -208,7 +208,7 @@ const LiveCaptionBody = () => {
     if (msg) setError(msg);
   };
 
-  const send = async (id, base64) => {
+  const send = async (id, base64, retried = false) => {
     // Konteks untuk AI: 2 kalimat terakhir sebelum potongan ini (transkrip & terjemahnya) dan istilah yang sudah
     // dijelaskan di sesi ini — supaya terjemah nyambung, istilahnya konsisten, dan arti istilah tidak diulang-ulang.
     const list = segRef.current;
@@ -229,15 +229,17 @@ const LiveCaptionBody = () => {
       else {
         // Duktur menekankan bagian ini ("ini penting", "keluar di imtihan") → ditandai otomatis + getar singkat di HP.
         setSegments(l => l.map(s => (s.id === id
-          ? { ...s, status: 'done', ar: d.ar, idText: d.id, istilah: d.istilah || [], penting: !!d.penting, marked: s.marked || !!d.penting }
+          ? { ...s, status: 'done', ar: d.ar, idText: d.id, istilah: d.istilah || [], penting: !!d.penting, partial: !!d.partial, marked: s.marked || !!d.penting }
           : s)));
         if (d.penting) try { navigator.vibrate?.(120); } catch {}
       }
       return true;
     }
     if (d.upgrade) { stopAll(); openAiUpgrade('live'); }
-    else if (/batas|jatah|quota/i.test(d.error || '')) stopAll(d.error);
-    patch(id, { status: 'error', err: d.error || 'Gagal memproses potongan ini.' });
+    else if (/batas|jatah|quota|ditutup/i.test(d.error || '')) stopAll(d.error);
+    // Gangguan sesaat (koneksi kelas, server sibuk): coba ulang sekali otomatis sebelum menampilkan error.
+    else if (!retried) { await new Promise(r => setTimeout(r, 1500)); return send(id, base64, true); }
+    patch(id, { status: 'error', err: d.error || 'Kalimat ini gagal diproses.' });
     return false;
   };
 
@@ -447,6 +449,7 @@ const LiveCaptionBody = () => {
                   ? <p dir="auto" className="text-ink text-[15px] leading-relaxed">{s.ar}</p>
                   : <p dir="rtl" className="text-ink leading-loose text-right" style={{ ...ARABIC_FONT, fontSize: 20 }}>{s.ar}</p>}
                 {s.idText && <p className="text-[15px] leading-relaxed mt-2 text-emerald-200/90">{s.idText}</p>}
+                {s.partial && !s.idText && s.lang !== 'indonesia' && <p className="text-xs text-ink-soft mt-2">Terjemah kalimat ini belum tersedia — transkripnya tetap tersimpan.</p>}
                 {!!s.istilah?.length && (
                   <div className="flex flex-wrap gap-1.5 mt-2.5">
                     {s.istilah.map(t => (
@@ -483,14 +486,15 @@ const LiveCaptionBody = () => {
       )}
 
       {!mic.recording && done.length > 0 && (
-        <div className="mt-6 flex flex-wrap gap-2">
-          <button onClick={saveAsMaterial} disabled={saving || pending > 0} className="btn btn-gold text-sm px-4 py-2.5 disabled:opacity-60">
+        // HP: "Simpan jadi materi" selebar layar, Salin & Unduh berdampingan di bawahnya; layar lebar: satu baris.
+        <div className="mt-6 grid grid-cols-2 sm:flex gap-2">
+          <button onClick={saveAsMaterial} disabled={saving || pending > 0} className="btn btn-gold col-span-2 justify-center text-sm px-4 py-3 disabled:opacity-60">
             <Icon name="upload" className="w-4 h-4"/> {saving ? 'Menyimpan…' : 'Simpan jadi materi'}
           </button>
-          <button onClick={copyAll} className="h-10 px-3.5 rounded-xl border border-white/10 text-sm text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5">
+          <button onClick={copyAll} className="h-11 px-3.5 rounded-xl border border-white/10 text-sm text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center justify-center gap-1.5">
             <Icon name="copy" className="w-4 h-4"/> Salin
           </button>
-          <button onClick={download} className="h-10 px-3.5 rounded-xl border border-white/10 text-sm text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5">
+          <button onClick={download} className="h-11 px-3.5 rounded-xl border border-white/10 text-sm text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center justify-center gap-1.5">
             <Icon name="download" className="w-4 h-4"/> Unduh .txt
           </button>
         </div>

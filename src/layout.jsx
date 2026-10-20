@@ -1528,8 +1528,8 @@ const SupportButton = () => {
   const wa = useAppSettings().whatsapp || "";
   const path = useRoute();
   const isPlaceholder = !wa || wa.includes("xxxxxxxxx") || wa === "+201xxxxxxxxx";
-  // Halaman chat AI punya kotak ketik di bawah; tombol melayang akan menutupinya.
-  if (isPlaceholder || path.startsWith("/ai-partner/prompt")) return null;
+  // Halaman chat AI punya kotak ketik di bawah, Live Caption punya bar rekam di bawah; tombol melayang akan menutupinya.
+  if (isPlaceholder || path.startsWith("/ai-partner/prompt") || path.startsWith("/ai-partner/live")) return null;
 
   const handleClick = () => {
     const num = wa.replace(/\D/g, "");

@@ -271,13 +271,24 @@ ${DIALECT_RULES[dialect] || DIALECT_RULES.campur}
 - Jika tidak ada ucapan yang jelas, tulis HANYA: [HENING]`;
 };
 
-/* Live caption: potongan pendek (±5–15 detik) dari mikrofon saat kuliah berlangsung → transkrip + terjemah Indonesia
-   + istilah untuk dicatat + tanda "ditekankan duktur", dalam satu panggilan. Hasilnya dibaca mahasiswa di HP saat itu
-   juga, jadi terjemahnya harus langsung dipahami dalam sekali baca dan konsisten dengan potongan sebelumnya.
-   dialect: 'campur' (Arab — fushah/'ammiyah dikenali otomatis) atau 'indonesia'.
-   prevTail / prevId: transkrip & terjemah 1–2 potongan terakhir; terms: istilah yang sudah dijelaskan di sesi ini;
-   learner: jenjang pelajar (level, faculty, major) dari profil belajar. */
-export const liveCaptionPrompt = ({ dialect = 'campur', title = '', prevTail = '', prevId = '', terms = [], learner = null } = {}) => {
+/* Live caption: potongan pendek (±5–15 detik) dari mikrofon saat kuliah berlangsung. Dua tahap:
+   1. liveTranscribePrompt — audio → transkrip, TANPA topik/konteks kuliah. Diuji: dengan prompt berkonteks kuliah,
+      Gemini "mendengar" kuliah dari derau kelas (mengarang ucapan duktur); dengan instruksi polos ia menjawab [HENING].
+   2. liveTranslatePrompt — teks transkrip (bukan audio) → terjemah + istilah + tanda "ditekankan duktur", memakai
+      konteks penuh. Karena model hanya menerima teks, konteks tidak bisa berubah jadi ucapan karangan.
+   dialect: 'campur' (Arab — fushah/'ammiyah dikenali otomatis) atau 'indonesia'. */
+export const liveTranscribePrompt = ({ dialect = 'campur' } = {}) => `Transkripsikan ucapan manusia di potongan audio ini kata demi kata.
+${dialect === 'indonesia' ? DIALECT_RULES.indonesia : `- Ucapan bisa fushah, 'ammiyah Mesir, atau campuran keduanya — tulis sesuai yang diucapkan.\n${AMMIYAH_RULES}`}
+- Ejaan rapi: bedakan ة dan ه, أ / إ / ا, ى dan ي; beri tanda baca (، . ؟) di batas kalimat.
+- Tulis hanya yang benar-benar terdengar. Bagian yang tidak jelas: lewati, jangan ditebak. Jangan meringkas, menerjemahkan, atau menambah komentar.
+- Jika tidak ada ucapan manusia yang jelas (hanya derau, gumaman, suara benda), balas HANYA: [HENING]`;
+
+/* prevTail / prevId: transkrip & terjemah 1–2 potongan terakhir; terms: istilah yang sudah dijelaskan di sesi ini;
+   learner: jenjang pelajar (level, faculty, major) dari profil belajar. Transkrip tahap 1 dikirim sebagai pesan
+   pengguna (liveTranslateInput). */
+export const liveTranslateInput = (transcript) => `TRANSKRIP POTONGAN INI:\n<<<\n${String(transcript || '').slice(0, 4000)}\n>>>`;
+
+export const liveTranslatePrompt = ({ dialect = 'campur', title = '', prevTail = '', prevId = '', terms = [], learner = null } = {}) => {
   const topic = clipLine(title, 120);
   const tail = clipLine(prevTail, 400);
   const tailId = clipLine(prevId, 300);
@@ -286,21 +297,16 @@ export const liveCaptionPrompt = ({ dialect = 'campur', title = '', prevTail = '
     ? [clipLine(learner.level, 40), clipLine(learner.faculty, 60), clipLine(learner.major, 60)].filter(Boolean).join(', ') : '';
   const indo = dialect === 'indonesia';
   const context = [
-    topic && `- Mata kuliah/topik: "${topic}" — pakai untuk mengenali istilah yang kurang jelas terdengar.`,
+    topic && `- Mata kuliah/topik: "${topic}".`,
     jenjang && `- Pendengar: mahasiswa ${jenjang}.`,
-    tail && `- Ucapan duktur sebelumnya: «${tail}» — potongan ini melanjutkannya; jangan menulis ulang kalimat itu.`,
+    tail && `- Ucapan duktur sebelumnya: «${tail}»`,
     tailId && `- Terjemah sebelumnya: «${tailId}» — lanjutkan alur dan pilihan istilahnya supaya konsisten.`,
     known.length && `- Istilah yang sudah dijelaskan di sesi ini (jangan diberi arti lagi, jangan dimasukkan ke "istilah"): ${known.join('، ')}`,
   ].filter(Boolean);
 
-  return `Kamu juru terjemah langsung untuk mahasiswa Indonesia di Universitas Al-Azhar Kairo (Masisir) yang sedang mengikuti kuliah duktur. Yang kamu terima: potongan rekaman ±10 detik dari kuliah yang sedang berlangsung. Hasilmu langsung dibaca mahasiswa di HP saat itu juga.
+  return `Kamu juru terjemah langsung untuk mahasiswa Indonesia di Universitas Al-Azhar Kairo (Masisir) yang sedang mengikuti kuliah duktur. Yang kamu terima: transkrip potongan ±10 detik dari kuliah yang sedang berlangsung (hasil mesin pendengar, bisa ada salah dengar). Hasilmu langsung dibaca mahasiswa di HP saat itu juga.
 ${context.length ? `\nKONTEKS\n${context.join('\n')}\n` : ''}
-1. "ar" — transkrip kata demi kata.
-${indo ? DIALECT_RULES.indonesia : `- Duktur bisa berbicara dengan fushah, 'ammiyah Mesir, atau mencampur keduanya — kenali sendiri dan tulis sesuai yang diucapkan.\n${AMMIYAH_RULES}`}
-- Ejaan rapi: bedakan ة dan ه, أ / إ / ا, ى dan ي; beri tanda baca (، . ؟) di batas kalimat.
-- Kata yang kurang jelas terdengar: pilih yang paling masuk akal menurut topik, istilah baku ilmunya, dan kalimat sebelumnya.
-- Ayat Al-Qur'an, hadits, matan, dan istilah ilmu: ejaan fushah baku, harakat pada ayat dan istilah kunci.
-- Jangan meringkas, jangan menambah komentar. Potongan bisa mulai/berhenti di tengah kalimat — tulis apa adanya.
+1. "ar" — transkrip yang sama, hanya dirapikan: ejaan (ة/ه, أ/إ/ا, ى/ي), tanda baca, ejaan fushah baku untuk ayat/hadits/istilah ilmu, dan kata yang JELAS salah dengar menurut topik (mis. istilah baku ilmunya). JANGAN menambah kalimat, JANGAN melanjutkan dari konteks, JANGAN menghapus isi.
 
 ${indo
   ? `2. "id" — terjemahkan HANYA kutipan/kalimat berbahasa Arab di dalam transkrip ke bahasa Indonesia. Jangan mengulang bagian yang sudah berbahasa Indonesia. Jika tidak ada kalimat Arab, isi "".`
@@ -319,8 +325,7 @@ ${indo
 
 4. "penting" — true HANYA jika di potongan ini duktur menekankan sesuatu: menyebutnya penting, akan keluar di imtihan, menyuruh mencatat/menghafal/fokus (mis. مهم، ركزوا، ده هييجي في الامتحان، احفظوا، اكتبوا عندكم، "ini penting", "keluar di ujian"). Selain itu false.
 
-Balas HANYA JSON: {"ar":"...","id":"...","istilah":[],"penting":false}
-Jika tidak ada ucapan yang jelas: {"ar":"","id":"","istilah":[],"penting":false}`;
+Balas HANYA JSON: {"ar":"...","id":"...","istilah":[],"penting":false}`;
 };
 
 // Jawaban lisan mahasiswa di simulasi syafawi (satu rekaman pendek).
