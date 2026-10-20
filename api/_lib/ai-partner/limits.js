@@ -8,9 +8,9 @@ export const QUOTA_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', '
 // Bawaan kalau admin belum mengatur. transcribe & live dalam menit, lainnya jumlah pemakaian.
 export const DEFAULT_MONTHLY_LIMITS = {
   prompt: 150, chat: 150, generate: 40, create: 15, analyze: 150, grade: 60, ocr: 60, transcribe: 300,
-  /* Live Caption: 5 jam kuliah per periode, juga untuk pemegang Paket Imtihan (lihat monthlyLimitFor di
-     api/ai-partner.js). Mode Cepat ±$0,0064/menit → ±$1,9 (±Rp33rb) bila habis; mode Akurat dihitung 4× menit. */
-  live: 300,
+  /* Live Caption: 8 jam kuliah per periode, juga untuk pemegang Paket Imtihan (lihat monthlyLimitFor di
+     api/ai-partner.js). Mode Cepat ±$0,0064/menit → ±$3,1 (±Rp53rb) bila habis; mode Akurat dihitung 4× menit. */
+  live: 480,
   talkhis: 6, // muqarrar yang di-talkhis per periode (pemegang Paket Imtihan: tanpa batas bulanan)
 };
 const MAX_LIMIT = 5000;
@@ -75,7 +75,7 @@ export const cachedMonthlyLimits = () => cache.value || DEFAULT_MONTHLY_LIMITS;
 /* ── Batas harian Live Caption (menit), diatur admin lewat setting aiLiveDailyLimit ──
    Batas harian fitur lain tetap di kode (LIMITS di api/ai-partner.js); Live Caption bisa diatur karena lama kuliah
    per hari berbeda-beda. Kosong/tidak valid → bawaan. 0 = Live Caption ditutup. */
-export const DEFAULT_LIVE_DAILY = 120; // 2 jam kuliah
+export const DEFAULT_LIVE_DAILY = 180; // 3 jam kuliah
 export const MAX_LIVE_DAILY = 1440;
 export const parseLiveDaily = (raw) => {
   const n = Number(raw);
