@@ -798,10 +798,10 @@ const LIVE_DEMO = [
     id: 'Fokus di sini, empat rukun ini pasti keluar di ujian. Catat ya.', penting: true },
 ];
 const LIVE_POINTS = [
-  { icon: 'mic', title: "Fushah & 'ammiyah Mesir", text: 'Duktur ganti logat di tengah kalimat? Tetap tertangkap, ditulis apa adanya lalu diterjemahkan maksudnya.' },
-  { icon: 'bookmark', title: 'Tahu mana yang keluar di imtihan', text: 'Begitu duktur bilang "fokus" atau "ini keluar di imtihan" (dalam fushah maupun \'ammiyah), bagian itu ditandai otomatis.' },
-  { icon: 'type', title: 'Istilah langsung tercatat', text: "Far', 'illat, rajih… muncul dengan artinya di bawah tiap kalimat, lalu dirangkum di akhir kuliah." },
-  { icon: 'layers', title: 'Jadi bahan muraja\'ah', text: 'Selesai kuliah, simpan jadi materi: ringkasan, flashcard, kuis, sampai Arena Imtihan.' },
+  { icon: 'mic', title: 'Fokus mendengarkan, bukan menulis', text: "Nggak perlu panik ketinggalan kalimat. Penjelasan duktur tercatat lengkap, baik fushah maupun 'ammiyah Mesir." },
+  { icon: 'bookmark', title: 'Tahu bagian yang penting', text: 'Saat duktur menekankan sesuatu, misalnya "ini keluar di imtihan", bagian itu ditandai otomatis. Kamu juga bisa menandai sendiri.' },
+  { icon: 'type', title: 'Istilah sulit dijelaskan', text: 'Istilah yang jarang didengar muncul dengan artinya di bawah tiap kalimat, lalu dirangkum di akhir kuliah.' },
+  { icon: 'layers', title: 'Jadi talkhisan siap baca', text: 'Selesai kuliah, catatanmu jadi talkhisan yang rapi, lalu bisa dibuat flashcard, kuis, sampai Arena Imtihan.' },
 ];
 
 const LiveCaptionDemo = () => {
@@ -880,11 +880,11 @@ const LiveCaptionSection = ({ onOpenJoin }) => (
             Baru di Paket Imtihan · Live Caption
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.08] mb-4">
-            Duktur ngomong 'ammiyah?<br/>
-            <span className="bg-gradient-to-br from-emerald-300 to-gold-400 bg-clip-text text-transparent">Kamu tetap paham.</span>
+            Nggak keburu nyatet?<br/>
+            <span className="bg-gradient-to-br from-emerald-300 to-gold-400 bg-clip-text text-transparent">Tetap paham isi kuliah.</span>
           </h2>
           <p className="text-ink-muted text-base md:text-lg leading-relaxed max-w-xl lg:mb-7">
-            Taruh HP di dekat duktur dan tekan rekam. Ucapan duktur muncul dalam huruf Arab hanya beberapa detik setelah diucapkan, lalu terjemahan Indonesia yang mudah dipahami menyusul.
+            Cukup taruh HP di dekat duktur dan tekan rekam. Penjelasan duktur langsung tertulis dalam huruf Arab, disusul terjemahan Indonesia yang mudah dipahami. Kamu fokus mendengarkan, catatannya tersusun sendiri.
           </p>
         </Reveal>
         <Reveal className="lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">
