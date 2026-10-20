@@ -2116,6 +2116,60 @@ const PX_VIOLET = 'border-t-[#7c6bd6] border-l-[#7c6bd6] border-b-[#221a4d] bord
 const PX_AMBER = 'border-t-[#f59e0b] border-l-[#f59e0b] border-b-[#4a2504] border-r-[#4a2504] bg-[#b45309] hover:bg-[#c2610f] text-white';
 const GAME_BOX = 'border-4 border-[#3d3221] bg-[#080d0a]/85 backdrop-blur-md shadow-[0_0_0_2px_#000,0_16px_40px_rgba(0,0,0,0.85)]';
 
+/* ── POP UP "SYAIKH SEDANG MEMBACA" ──
+   Muncul di tengah layar selama materi pribadi (upload, paste, impor dari AI Partner) dibaca dan soalnya disusun AI,
+   supaya pengguna tahu prosesnya berjalan dan tidak menekan tombol lain. step: 1 = membaca berkas, 2 = menyusun soal. */
+const READING_STEPS = ['Membaca isi materimu', 'Menyusun soal imtihan', 'Membangun arena'];function ReadingOverlay({ title, note, step }) {
+  const [elapsed, setElapsed] = useState(0);
+  useEffect(() => {
+    const started = Date.now();
+    const t = setInterval(() => setElapsed(Math.floor((Date.now() - started) / 1000)), 1000);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fadeIn" role="alertdialog" aria-modal="true" aria-live="polite" aria-label="Materi sedang diproses">
+      <div className={`w-full max-w-md p-5 sm:p-6 ${GAME_BOX}`}>
+        <div className="flex items-center gap-3.5 mb-4">
+          <div className="w-16 h-16 shrink-0 border-2 border-amber-400/60 bg-amber-500/15 flex items-center justify-center overflow-hidden animate-pulse">
+            <img src="/assets/npc-musaid-voxel.png" alt="" className="w-full h-full object-contain" />
+          </div>
+          <div className="min-w-0">
+            <div className="font-mono text-[10px] font-bold uppercase tracking-wider text-amber-300 mb-1">Materi pribadi · sedang diproses</div>
+            <h3 className="text-base sm:text-lg font-bold text-white leading-tight">Syaikh sedang membaca materimu</h3>
+            {title && <p className="text-xs text-white/60 mt-1 truncate" title={title}>{title}</p>}
+          </div>
+        </div>
+
+        <ol className="space-y-2 mb-4">
+          {READING_STEPS.map((label, i) => {
+            const n = i + 1, done = n < step, active = n === step;
+            return (
+              <li key={label} className={`flex items-center gap-2.5 text-sm font-mono ${done ? 'text-emerald-300' : active ? 'text-amber-200' : 'text-white/35'}`}>
+                <span className={`w-5 h-5 shrink-0 flex items-center justify-center border text-[10px] font-bold ${done ? 'border-emerald-400 bg-emerald-500/20' : active ? 'border-amber-400 bg-amber-500/20 animate-pulse' : 'border-white/20'}`}>
+                  {done ? '✓' : n}
+                </span>
+                <span>{label}{active ? '…' : ''}</span>
+              </li>
+            );
+          })}
+        </ol>
+
+        {/* Bar berjalan: lamanya tidak bisa diketahui pasti, jadi bergerak terus tanpa angka persen. */}
+        <div className="h-2.5 border border-[#3d3221] bg-black/60 overflow-hidden mb-3">
+          <div className="h-full w-1/3 bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-500 animate-[readingBar_1.6s_ease-in-out_infinite]" />
+        </div>
+        <style>{`@keyframes readingBar{0%{transform:translateX(-100%)}100%{transform:translateX(300%)}}`}</style>
+
+        {note && <p className="text-[11px] font-mono text-amber-300/90 leading-snug mb-2">{note}</p>}
+        <p className="text-[11px] text-white/55 leading-snug">
+          Biasanya ±30 detik, materi panjang atau hasil scan bisa lebih lama. Jangan tutup atau pindah halaman dulu, ya.
+          <span className="font-mono text-white/40"> · {elapsed} dtk</span>
+        </p>
+      </div>
+    </div>
+  );
+}
+
 /* ── HELPER: ACAK URUTAN OPSI (Kunci jawaban ikut dipetakan ulang) ── */
 function shuffleQuizOptions(quiz) {
   return quiz.map(q => {
@@ -2671,6 +2725,7 @@ export default function BattlePage() {
   const [uploadBusy, setUploadBusy] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadNote, setUploadNote] = useState('');
+  const [readingTitle, setReadingTitle] = useState(''); // judul materi di pop up "sedang membaca"
   const [pasteBusy, setPasteBusy] = useState(false);
   const [importToast, setImportToast] = useState('');
   const fileInputRef = useRef(null);
@@ -3132,6 +3187,7 @@ export default function BattlePage() {
           const cacheKey = imported.setId ? `talqeeh_arena_quiz:${imported.setId}` : null;
           const cached = (() => { try { const c = JSON.parse(localStorage.getItem(cacheKey) || 'null'); return c && Date.now() - c.at < 30 * 86400000 ? c.data : null; } catch { return null; } })();
           (async () => {
+            setReadingTitle(title);
             setUploadBusy(true);
             setUploadNote('Syaikh sedang membaca materimu dan menyusun soal imtihan… (±30 detik)');
             const ai = cached ? { data: cached } : await generateAiQuiz(title, text);
@@ -3442,6 +3498,7 @@ export default function BattlePage() {
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
+    setReadingTitle(file.name);
     setUploadBusy(true);
     setUploadError('');
     setUploadNote('');
@@ -4335,7 +4392,15 @@ export default function BattlePage() {
 
   const pageContent = (
     <div className={`battle-root ${isMenuScene ? "h-[100dvh] overflow-hidden" : "min-h-screen"} bg-[#080808] text-white font-sans antialiased selection:bg-emerald-500/30`} style={{ "--bs": battleSpeed === 2 ? 0.5 : 1 }}>
-      
+      {/* Pop up tengah selama materi pribadi dibaca & soalnya disusun AI (upload, paste, impor) */}
+      {(uploadBusy || pasteBusy) && (
+        <ReadingOverlay
+          title={pasteBusy ? 'Catatan Muqarrar Mandiri' : readingTitle}
+          note={uploadNote && !/menyusun soal/i.test(uploadNote) ? uploadNote : ''}
+          step={pasteBusy || /menyusun soal/i.test(uploadNote) ? 2 : 1}
+        />
+      )}
+
       {/* ── HEADER GAME / BAR ── */}
       {!isMenuScene && (
       <header className="border-b border-white/10 bg-[#0f0f10]/80 backdrop-blur-md sticky top-0 z-30 px-3 sm:px-4 py-3">
