@@ -63,6 +63,8 @@ const isReasoningModel = async (modelId) => {
 // Gemini 2.5 Flash: bawaannya dimatikan, diaktifkan dengan jatah ini. Model berpikir (Sonnet 5): jatah tetap
 // menggantikan effort "low". Jatahnya ditambahkan ke max_tokens supaya jawaban tetap utuh, dan sengaja berupa
 // angka (bukan effort bebas) supaya waktu respons tetap di bawah batas 60 detik Vercel.
+/* thinking: 'off' = jawab secepat mungkin tanpa berpikir dulu (Live Caption: tiap detik terasa). Model yang menerima
+   parameter reasoning diberi effort "minimal"; Gemini 2.5 Flash dimatikan berpikirnya seperti bawaan di bawah. */
 const buildBody = async ({ modelId, maxTokens, temperature, messages, stream, thinking = 0 }) => {
   const hasAudio = messages.some(m => Array.isArray(m.content) && m.content.some(p => p?.type === 'input_audio'));
   const backup = fallbackFor(modelId);
@@ -72,6 +74,20 @@ const buildBody = async ({ modelId, maxTokens, temperature, messages, stream, th
   // dipakai untuk jawaban. Kalau ditolak, model cadangan tetap menjawab.
   const gemini = /^google\/gemini-2\.5-flash(?!-lite)/.test(modelId);
   const geminiThinking = gemini && thinking > 0;
+  if (thinking === 'off' && !gemini) {
+    const params = await paramsOf(modelId);
+    const canReason = params ? params.includes('reasoning') : reasoning;
+    return {
+      model: modelId,
+      ...(fallback ? { models: [modelId, backup] } : {}),
+      max_tokens: maxTokens,
+      ...(canReason ? { reasoning: { effort: 'minimal', exclude: true } } : {}),
+      ...((await acceptsTemperature(modelId)) ? { temperature } : {}),
+      ...(stream ? { stream: true } : {}),
+      usage: { include: true },
+      messages,
+    };
+  }
   return {
     model: modelId,
     ...(fallback ? { models: [modelId, backup] } : {}),

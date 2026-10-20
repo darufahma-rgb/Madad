@@ -11,7 +11,7 @@ import {
 } from './_lib/ai-partner/prompts.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { handleTalkhis } from './_lib/ai-partner/talkhis.js';
-import { runLiveCaption } from './_lib/ai-partner/live-caption.js';
+import { runLiveCaption, liveHear, liveTranslate } from './_lib/ai-partner/live-caption.js';
 import { handleBattleStory, handleBattleHalaqah } from './_lib/ai-partner/battle-story.js';
 import { handleBattleQuiz } from './_lib/ai-partner/battle-quiz.js';
 import { ocrCacheKey, lookupOcrPages, storeOcrPage, handleOcrCache } from './_lib/ai-partner/ocr-cache.js';
@@ -19,7 +19,7 @@ import { withAiContext } from './_lib/ai-cost.js';
 
 // Kategori biaya AI per action (cocok dengan kolom "Fitur" di analitik admin).
 const COST_KIND = {
-  ocr: 'ocr', transcribe: 'transcribe', 'live-caption': 'live', generate: 'generate', analyze: 'analyze', grade: 'grade',
+  ocr: 'ocr', transcribe: 'transcribe', 'live-caption': 'live', 'live-hear': 'live', 'live-translate': 'live', generate: 'generate', analyze: 'analyze', grade: 'grade',
   chat: 'chat', 'prompt-chat': 'prompt', talkhis: 'talkhis', 'battle-story': 'battle_story', 'battle-quiz': 'battle_quiz', 'battle-halaqah': 'battle_halaqah',
 };
 import { handlePromptFeedback, handlePromptQualityAdmin } from './_lib/prompt-quality.js';
@@ -50,7 +50,7 @@ const trialGateClosed = (res) => upgradeRequired(res, 'trial_busy',
   'Kuota coba gratis untuk hari ini sudah penuh. Coba lagi besok, atau berlangganan AI Partner untuk memakai AI kapan saja.');
 const TRIAL_KINDS      = ['summary', 'flashcards', 'quiz', 'glossary'];
 // analyze & chat dibuka sedikit untuk coba gratis (lihat TRIAL_TASTE); sisanya khusus pelanggan.
-const PRO_ONLY_ACTIONS = ['transcribe', 'live-caption', 'live-quota', 'grade', 'create-batch', 'talkhis'];
+const PRO_ONLY_ACTIONS = ['transcribe', 'live-caption', 'live-hear', 'live-translate', 'live-quota', 'grade', 'create-batch', 'talkhis'];
 const PRO_ONLY_MESSAGES = {
   'live-caption': 'Live Caption khusus pelanggan AI Partner. Berlangganan untuk mendengar terjemahan kuliah duktur secara langsung.',
   talkhis: 'Talkhis otomatis khusus pelanggan AI Partner. Berlangganan untuk men-talkhis seluruh muqarrarmu dalam bahasa Arab, lengkap dengan cek kelengkapan dan PDF siap cetak.',
@@ -559,43 +559,82 @@ async function handleLiveQuota(ctx, res) {
   });
 }
 
-async function handleLiveCaption(ctx, body, res) {
+/* Periksa potongan audio + potong jatah menit. Mengembalikan { audio, credit } (credit = sisa kredit ms setelah
+   potongan ini), atau null bila respons (error/kuota) sudah dikirim. */
+async function chargeLive(ctx, body, res) {
   const audio = body.audio_base64;
-  if (!isStr(audio) || !audio.startsWith('UklGR')) return res.status(400).json({ ok: false, error: 'Potongan audio tidak valid' });
+  if (!isStr(audio) || !audio.startsWith('UklGR')) { res.status(400).json({ ok: false, error: 'Potongan audio tidak valid' }); return null; }
   // WAV 16kHz mono 16-bit = 32.000 byte per detik (+44 byte header).
   const seconds = Math.max(0, (Math.floor(audio.length * 3 / 4) - 44) / 32000);
-  if (seconds > LIVE_MAX_SECONDS + 1) return res.status(400).json({ ok: false, error: 'Potongan audio terlalu panjang' });
+  if (seconds > LIVE_MAX_SECONDS + 1) { res.status(400).json({ ok: false, error: 'Potongan audio terlalu panjang' }); return null; }
 
   let credit = liveCredit(body.credit, ctx.code);
   // Jatah Live Caption terpisah dari transkrip rekaman (jenis kuota "live", menit).
   if (credit < seconds * 1000) {
     const over = await takeQuota(ctx, 'live');
     const closed = (over === 'daily' && dailyLimitCache(ctx, 'live') === 0) || (over === 'monthly' && monthlyLimitCache(ctx).live === 0);
-    if (closed) return res.status(429).json({ ok: false, error: 'quota', message: 'Live Caption sedang ditutup sementara. Kabari admin Talqeeh, ya.' });
-    if (over === 'daily') {
-      return res.status(429).json({ ok: false, error: 'quota', message: `Jatah Live Caption hari ini (${liveHours(dailyLimitCache(ctx, 'live'))}) sudah habis. Coba lagi besok.` });
-    }
-    if (over === 'unavailable') return quotaExceeded(res, 'live', over, ctx);
-    if (over) {
-      return res.status(429).json({ ok: false, error: 'quota', message: `Jatah Live Caption ${liveHours(monthlyLimitCache(ctx).live)} di periode langgananmu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx.quotaResetAt || quotaPeriod(null).resetAt)}.` });
-    }
+    const fail = (message) => { res.status(429).json({ ok: false, error: 'quota', message }); return null; };
+    if (closed) return fail('Live Caption sedang ditutup sementara. Kabari admin Talqeeh, ya.');
+    if (over === 'daily') return fail(`Jatah Live Caption hari ini (${liveHours(dailyLimitCache(ctx, 'live'))}) sudah habis. Coba lagi besok.`);
+    if (over === 'unavailable') { quotaExceeded(res, 'live', over, ctx); return null; }
+    if (over) return fail(`Jatah Live Caption ${liveHours(monthlyLimitCache(ctx).live)} di periode langgananmu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx.quotaResetAt || quotaPeriod(null).resetAt)}.`);
     credit += 60_000;
   }
-  credit -= seconds * 1000;
+  return { audio, credit: credit - seconds * 1000 };
+}
 
-  // Live caption hanya dua mode: Arab (fushah/'ammiyah dikenali otomatis) atau kuliah berbahasa Indonesia.
-  // Dua tahap (dengar tanpa konteks → terjemah teks berkonteks), lihat api/_lib/ai-partner/live-caption.js.
+// Live caption hanya dua mode: Arab (fushah/'ammiyah dikenali otomatis) atau kuliah berbahasa Indonesia.
+const liveDialect = (body) => (body.dialect === 'indonesia' ? 'indonesia' : 'campur');
+const liveContext = (body) => ({
+  title: body.title, prevTail: body.prev_tail, prevId: body.prev_id,
+  terms: Array.isArray(body.terms) ? body.terms.filter(isStr).slice(-40) : [],
+  learner: body.learner && typeof body.learner === 'object' ? body.learner : null,
+});
+
+/* Tanda bahwa teks memang hasil "live-hear" akun ini (berlaku 10 menit), supaya "live-translate" tidak bisa dipakai
+   sebagai penerjemah gratis untuk teks sembarang — jatahnya sudah dipotong di tahap dengar. */
+const HEARD_TTL_MS = 10 * 60 * 1000;
+const heardDigest = (text) => crypto.createHash('sha256').update(String(text)).digest('base64url').slice(0, 22);
+const heardToken = (code, text) => { const p = `${code}.${heardDigest(text)}.${Date.now()}`; return `${p}.${liveSign(p)}`; };
+const heardValid = (token, code, text) => {
+  if (!isStr(token) || !liveSecret()) return false;
+  const at = token.lastIndexOf('.');
+  const payload = token.slice(0, at), sig = token.slice(at + 1), expected = liveSign(payload);
+  if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return false;
+  const [owner, digest, issued] = payload.split('.');
+  return owner === code && digest === heardDigest(text) && Date.now() - Number(issued) <= HEARD_TTL_MS;
+};
+
+// Tahap dengar saja: teks Arab langsung tampil di HP, terjemahnya diminta terpisah lewat "live-translate".
+async function handleLiveHear(ctx, body, res) {
+  const charged = await chargeLive(ctx, body, res);
+  if (!charged) return;
+  const ar = await liveHear({ audio: charged.audio, dialect: liveDialect(body), model: (await resolveModels()).liveHear });
+  return res.status(200).json({ ok: true, ar, heard: ar ? heardToken(ctx.code, ar) : null, credit: liveToken(ctx.code, charged.credit) });
+}
+
+/* Halaman menerjemahkan 2–3 potongan dengar sekaligus (lebih hemat & kalimatnya utuh): parts = [{ ar, heard }],
+   tiap bagian harus bertanda hasil "live-hear". Format lama { ar, heard } tetap diterima. */
+const LIVE_MAX_PARTS = 3;
+async function handleLiveTranslate(ctx, body, res) {
+  const parts = Array.isArray(body.parts) ? body.parts.slice(0, LIVE_MAX_PARTS) : [{ ar: body.ar, heard: body.heard }];
+  const texts = parts.map(p => (isStr(p?.ar) ? p.ar.trim().slice(0, 4000) : ''));
+  if (!texts.length || texts.some((t, i) => !t || !heardValid(parts[i].heard, ctx.code, t))) {
+    return res.status(400).json({ ok: false, error: 'Teks ini tidak berasal dari Live Caption.' });
+  }
+  const result = await liveTranslate({ heard: texts.join(' '), dialect: liveDialect(body), model: (await resolveModels()).liveTranslate, context: liveContext(body) });
+  return res.status(200).json({ ok: true, ...result });
+}
+
+// Satu panggilan untuk kedua tahap (dipakai halaman versi lama yang masih terbuka di HP pengguna).
+async function handleLiveCaption(ctx, body, res) {
+  const charged = await chargeLive(ctx, body, res);
+  if (!charged) return;
+  const models = await resolveModels();
   const result = await runLiveCaption({
-    audio,
-    dialect: body.dialect === 'indonesia' ? 'indonesia' : 'campur',
-    model: (await resolveModels()).transcribe,
-    context: {
-      title: body.title, prevTail: body.prev_tail, prevId: body.prev_id,
-      terms: Array.isArray(body.terms) ? body.terms.filter(isStr).slice(-40) : [],
-      learner: body.learner && typeof body.learner === 'object' ? body.learner : null,
-    },
+    audio: charged.audio, dialect: liveDialect(body), model: models.liveHear, translateModel: models.liveTranslate, context: liveContext(body),
   });
-  return res.status(200).json({ ok: true, ...result, credit: liveToken(ctx.code, credit) });
+  return res.status(200).json({ ok: true, ...result, credit: liveToken(ctx.code, charged.credit) });
 }
 
 async function handleCreate(ctx, body, res) {
@@ -1453,6 +1492,8 @@ export default async function handler(req, res) {
       case 'ocr-cache':     return (await isPayingAi(ctx)) ? await handleOcrCache(ctx, body, res) : res.status(200).json({ ok: true, texts: {} });
       case 'transcribe':    return await handleTranscribe(ctx, body, res);
       case 'live-caption':  return await handleLiveCaption(ctx, body, res);
+      case 'live-hear':     return await handleLiveHear(ctx, body, res);
+      case 'live-translate': return await handleLiveTranslate(ctx, body, res);
       case 'live-quota':    return await handleLiveQuota(ctx, res);
       case 'create':        return await handleCreate(ctx, body, res);
       case 'create-batch':  return await handleCreateBatch(ctx, body, res);

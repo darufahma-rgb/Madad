@@ -8,7 +8,7 @@ export const QUOTA_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', '
 // Bawaan kalau admin belum mengatur. transcribe & live dalam menit, lainnya jumlah pemakaian.
 export const DEFAULT_MONTHLY_LIMITS = {
   prompt: 150, chat: 150, generate: 40, create: 15, analyze: 150, grade: 60, ocr: 60, transcribe: 300,
-  live: 1200, // Live Caption: ±20 jam kuliah per periode (±$0,005/menit → ±$6 bila habis terpakai)
+  live: 1200, // Live Caption: ±20 jam kuliah per periode (±$0,013/menit → ±$16 bila habis terpakai)
   talkhis: 6, // muqarrar yang di-talkhis per periode (pemegang Paket Imtihan: tanpa batas bulanan)
 };
 const MAX_LIMIT = 5000;

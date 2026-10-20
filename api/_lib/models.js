@@ -12,6 +12,8 @@ export const MODEL_SETTING_KEYS = {
   chat:       'aiModelChat',       // tutor & simulasi syafawi
   prompt:     'aiModelPrompt',     // Tanya AI (tanpa materi) — butuh pengetahuan luas, jadi bawaannya model utama
   transcribe: 'aiModelTranscribe', // transkrip rekaman — harus model yang menerima input audio
+  liveHear:   'aiModelLiveHear',   // Live Caption tahap dengar — model audio, utamakan cepat & akurat
+  liveTranslate: 'aiModelLiveTranslate', // Live Caption tahap terjemah — teks saja, utamakan cepat & pintar
 };
 
 // Format ID OpenRouter: "vendor/nama-model" (boleh titik, titik dua untuk varian seperti ":free").
@@ -32,6 +34,12 @@ export const TASK_DEFAULTS = {
   prompt:  'anthropic/claude-haiku-4.5',  // Tanya AI: paling sering dipakai, input pendek
   arabic:  'anthropic/claude-sonnet-5',   // terjemah & i'rab, harakat: ketelitian tertinggi
   grade:   'anthropic/claude-sonnet-5',   // menilai jawaban tahriri & mengoreksi bahasa Arab
+  /* Live Caption, dari benchmark audio kuliah Arab (10 potongan fushah/'ammiyah + derau, Okt 2026):
+     dengar — Gemini 3.1 Flash-Lite: salah dengar 0,9%, median 1,4 dtk, aman di derau (2.5 Flash: 1,4% / 2,9 dtk;
+     Gemini 4 Argon 0,5% tapi 3,8 dtk; Gemini 3 Flash Preview mengarang ucapan dari derau).
+     terjemah — Gemini 3.7 Flash: lolos semua cek (takdir, ayat, penekanan duktur), 3,3 dtk dan stabil. */
+  liveHear:      'google/gemini-3.1-flash-lite',
+  liveTranslate: 'google/gemini-3.7-flash',
 };
 
 /* Jatah token berpikir untuk tugas yang inputnya pendek tapi menuntut ketelitian nahwu-sharaf. Sonnet 5 bawaannya
@@ -59,6 +67,8 @@ export const resolveModels = async () => {
     study: pick('study') || TASK_DEFAULTS.study, vision: pick('vision') || TASK_DEFAULTS.vision,
     // Transkrip tidak ikut model utama: model teks biasa tidak bisa mendengar audio.
     transcribe: pick('transcribe') || transcribeModel(),
+    liveHear: pick('liveHear') || TASK_DEFAULTS.liveHear,
+    liveTranslate: pick('liveTranslate') || TASK_DEFAULTS.liveTranslate,
   };
   cache = { at: Date.now(), value };
   return value;

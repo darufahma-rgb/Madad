@@ -884,7 +884,7 @@ const LiveCaptionSection = ({ onOpenJoin }) => (
             <span className="bg-gradient-to-br from-emerald-300 to-gold-400 bg-clip-text text-transparent">Kamu tetap paham.</span>
           </h2>
           <p className="text-ink-muted text-base md:text-lg leading-relaxed max-w-xl lg:mb-7">
-            Taruh HP di dekat duktur dan tekan rekam. Tiap kalimat muncul dalam huruf Arab beserta terjemahan Indonesia yang mudah dipahami, kira-kira 10 detik setelah diucapkan.
+            Taruh HP di dekat duktur dan tekan rekam. Ucapan duktur muncul dalam huruf Arab hanya beberapa detik setelah diucapkan, lalu terjemahan Indonesia yang mudah dipahami menyusul.
           </p>
         </Reveal>
         <Reveal className="lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">

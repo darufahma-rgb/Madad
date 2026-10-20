@@ -17,9 +17,13 @@ const readDraft = () => { try { return JSON.parse(localStorage.getItem(DRAFT_KEY
 const writeDraft = (d) => { try { d ? localStorage.setItem(DRAFT_KEY, JSON.stringify(d)) : localStorage.removeItem(DRAFT_KEY); } catch {} };
 
 // Potongan dipotong di jeda bicara setelah MIN detik, paling lambat MAX detik (server menerima maks 20 detik).
-const CHUNK_MIN_S = 6;
-const CHUNK_MAX_S = 14;
-const PAUSE_S = 0.35;
+// Pendek supaya teks cepat muncul; kalimat yang terpotong disambung lewat konteks di tahap terjemah ("…").
+const CHUNK_MIN_S = 3;
+const CHUNK_MAX_S = 8;
+const PAUSE_S = 0.3;
+// Terjemah per 2 potongan (digabung jadi satu kartu); potongan yang menunggu lebih dari ini diterjemahkan sendiri.
+const TRANSLATE_BATCH = 2;
+const TRANSLATE_WAIT_MS = 4000;
 const ARABIC_FONT = { fontFamily: '"Noto Naskh Arabic", serif' };
 
 const clock = (s) => {
@@ -208,31 +212,82 @@ const LiveCaptionBody = () => {
     if (msg) setError(msg);
   };
 
-  const send = async (id, base64, retried = false) => {
-    // Konteks untuk AI: 2 kalimat terakhir sebelum potongan ini (transkrip & terjemahnya) dan istilah yang sudah
-    // dijelaskan di sesi ini — supaya terjemah nyambung, istilahnya konsisten, dan arti istilah tidak diulang-ulang.
+  /* Dua tahap supaya teks Arab muncul secepat mungkin:
+     1. send (dengar) — audio → teks Arab; kartu langsung menampilkannya (status "translating"). Antrean audio tidak
+        menunggu terjemah, jadi potongan berikutnya segera didengar.
+     2. translateBatch — 2 potongan diterjemahkan sekaligus lalu digabung jadi satu kartu (kalimat lebih utuh &
+        separuh biaya terjemah). Kalau potongan kedua belum datang dalam TRANSLATE_WAIT_MS, atau rekaman berhenti,
+        yang ada diterjemahkan sendiri. Batch berjalan berurutan (translateChain) supaya tiap batch mendapat konteks
+        (2 kalimat terakhir & istilah sesi) dari batch sebelumnya. */
+  const translateChain = useRef(Promise.resolve());
+  const waiting = useRef([]);      // id kartu yang sudah didengar, menunggu diterjemahkan
+  const waitTimer = useRef(null);
+
+  const translateBatch = async (ids, retried = false) => {
+    // segRef baru terisi setelah React merender kartu "translating"; tunggu sebentar bila belum.
+    const ready = () => ids.every(id => segRef.current.find(s => s.id === id)?.status === 'translating');
+    for (let i = 0; i < 40 && !ready(); i++) await new Promise(r => setTimeout(r, 25));
     const list = segRef.current;
-    const at = list.findIndex(s => s.id === id);
-    const prev = list.slice(0, at < 0 ? list.length : at).filter(s => s.status === 'done' && s.ar).slice(-2);
-    const d = await aiCall('live-caption', {
-      audio_base64: base64, dialect: dialectRef.current, title: titleRef.current,
+    const segs = ids.map(id => list.find(s => s.id === id)).filter(s => s?.status === 'translating');
+    if (!segs.length) return;
+    const at = list.indexOf(segs[0]);
+    const before = list.slice(0, at).filter(s => s.ar && (s.status === 'done' || s.status === 'translating'));
+    const prev = before.slice(-2);
+    const d = await aiCall('live-translate', {
+      parts: segs.map(s => ({ ar: s.ar, heard: s.heard })),
+      dialect: segs[0].lang || dialectRef.current, title: titleRef.current,
       prev_tail: prev.map(s => s.ar).join(' ').slice(-400),
       prev_id: prev.map(s => s.idText).filter(Boolean).join(' ').slice(-300),
-      terms: sessionTerms(list).map(t => t.ar),
+      terms: sessionTerms(before).map(t => t.ar),
       learner: learnerLevel(),
-      credit: credit.current,
     });
+    if (!d.ok && !retried && !d.upgrade) { await new Promise(r => setTimeout(r, 1200)); return translateBatch(ids, true); }
+    const keep = new Set(segs.map(s => s.id));
+    if (!d.ok) {
+      // Gagal menerjemahkan tidak membuang kalimat: teks Arab tetap tersimpan per kartu (partial).
+      setSegments(l => l.map(s => (keep.has(s.id) ? { ...s, status: 'done', idText: '', istilah: [], partial: true, heard: undefined } : s)));
+      return;
+    }
+    // Gabung jadi satu kartu di posisi potongan pertama. Duktur menekankan bagian ini ("ini penting", "keluar di
+    // imtihan") → ditandai otomatis + getar singkat di HP. Tanda yang dibuat pengguna sendiri tetap dipertahankan.
+    const first = segs[0].id;
+    const marked = segs.some(s => s.marked) || !!d.penting;
+    setSegments(l => l
+      .filter(s => s.id === first || !keep.has(s.id))
+      .map(s => (s.id === first
+        ? { ...s, status: 'done', ar: d.ar || segs.map(x => x.ar).join(' '), idText: d.id, istilah: d.istilah || [], penting: !!d.penting, partial: !!d.partial, marked, heard: undefined }
+        : s)));
+    if (d.penting) try { navigator.vibrate?.(120); } catch {}
+  };
+
+  const flushTranslate = () => {
+    clearTimeout(waitTimer.current);
+    waitTimer.current = null;
+    while (waiting.current.length) {
+      const ids = waiting.current.splice(0, TRANSLATE_BATCH);
+      translateChain.current = translateChain.current.then(() => translateBatch(ids)).catch(() => {});
+    }
+  };
+  const scheduleTranslate = (id) => {
+    waiting.current.push(id);
+    // Potongan terakhir sering baru selesai didengar sesudah rekaman berhenti: jangan tunggu pasangannya.
+    if (waiting.current.length >= TRANSLATE_BATCH || !recordingRef.current) flushTranslate();
+    else if (!waitTimer.current) waitTimer.current = setTimeout(flushTranslate, TRANSLATE_WAIT_MS);
+  };
+  // Rekaman berhenti: jangan menunggu potongan kedua yang tidak akan datang.
+  const recordingRef = useRef(false);
+  recordingRef.current = mic.recording;
+  useEffect(() => { if (!mic.recording) flushTranslate(); }, [mic.recording]);
+  useEffect(() => () => clearTimeout(waitTimer.current), []);
+
+  const send = async (id, base64, retried = false) => {
+    const d = await aiCall('live-hear', { audio_base64: base64, dialect: dialectRef.current, credit: credit.current });
     if (d.ok) {
       credit.current = d.credit || null;
       audioById.current.delete(id);
-      if (!d.ar) setSegments(l => l.filter(s => s.id !== id)); // hening: buang kartunya
-      else {
-        // Duktur menekankan bagian ini ("ini penting", "keluar di imtihan") → ditandai otomatis + getar singkat di HP.
-        setSegments(l => l.map(s => (s.id === id
-          ? { ...s, status: 'done', ar: d.ar, idText: d.id, istilah: d.istilah || [], penting: !!d.penting, partial: !!d.partial, marked: s.marked || !!d.penting }
-          : s)));
-        if (d.penting) try { navigator.vibrate?.(120); } catch {}
-      }
+      if (!d.ar) { setSegments(l => l.filter(s => s.id !== id)); return true; } // hening: buang kartunya
+      setSegments(l => l.map(s => (s.id === id ? { ...s, status: 'translating', ar: d.ar, heard: d.heard } : s)));
+      scheduleTranslate(id);
       return true;
     }
     if (d.upgrade) { stopAll(); openAiUpgrade('live'); }
@@ -294,7 +349,7 @@ const LiveCaptionBody = () => {
 
   // Peringatan sebelum menutup halaman saat masih merekam / memproses.
   useEffect(() => {
-    if (!mic.recording && !segments.some(s => s.status === 'pending')) return;
+    if (!mic.recording && !segments.some(s => s.status === 'pending' || s.status === 'translating')) return;
     const warn = (e) => { e.preventDefault(); e.returnValue = ''; };
     window.addEventListener('beforeunload', warn);
     return () => window.removeEventListener('beforeunload', warn);
@@ -319,7 +374,7 @@ const LiveCaptionBody = () => {
   };
 
   const done = segments.filter(s => s.status === 'done' && s.ar);
-  const pending = segments.filter(s => s.status === 'pending').length;
+  const pending = segments.filter(s => s.status === 'pending' || s.status === 'translating').length;
   const marked = segments.filter(s => s.marked).length;
 
   const copyAll = async () => {
@@ -354,6 +409,7 @@ const LiveCaptionBody = () => {
   const reset = () => {
     if (mic.recording) mic.stop();
     queue.current = []; audioById.current.clear(); credit.current = null; baseElapsed.current = 0;
+    waiting.current = []; clearTimeout(waitTimer.current); waitTimer.current = null;
     setSegments([]); setElapsed(0); setTitle(''); setError(''); setConfirmReset(false);
     writeDraft(null);
   };
@@ -414,7 +470,7 @@ const LiveCaptionBody = () => {
             <Icon name="mic" className="w-6 h-6 text-emerald-300"/>
           </div>
           <p className="text-sm text-ink-muted max-w-md mx-auto leading-relaxed">
-            Taruh HP di dekat duktur, lalu tekan tombol rekam. Ucapan duktur muncul per kalimat beserta terjemahan Indonesianya, dengan jeda ±10 detik. Fushah dan 'ammiyah Mesir dikenali otomatis.
+            Taruh HP di dekat duktur, lalu tekan tombol rekam. Ucapan duktur muncul dalam huruf Arab beberapa detik setelah diucapkan, lalu terjemahan Indonesianya menyusul. Fushah dan 'ammiyah Mesir dikenali otomatis.
           </p>
           <ul className="text-xs text-ink-soft mt-4 space-y-1">
             <li>Saat duktur bilang "ini penting" atau "keluar di imtihan", bagian itu ditandai otomatis. Kamu juga bisa menandai sendiri dengan <span className="text-gold-300">Tandai</span>.</li>
@@ -436,7 +492,14 @@ const LiveCaptionBody = () => {
               <div className="text-[11px] text-ink-soft mb-1.5 tabular-nums">
                 {clock(s.t)}{s.marked && <span className="text-gold-300 ml-2">{s.penting ? '★ Ditekankan duktur' : '★ Penting'}</span>}
               </div>
-              {s.status === 'pending' && <div className="text-sm text-ink-soft animate-pulse">Mendengarkan & menerjemahkan…</div>}
+              {s.status === 'pending' && <div className="text-sm text-ink-soft animate-pulse">Mendengarkan…</div>}
+              {/* Teks Arab sudah ada, terjemahnya menyusul. */}
+              {s.status === 'translating' && <>
+                {s.lang === 'indonesia'
+                  ? <p dir="auto" className="text-ink text-[15px] leading-relaxed">{s.ar}</p>
+                  : <p dir="rtl" className="text-ink leading-loose text-right" style={{ ...ARABIC_FONT, fontSize: 20 }}>{s.ar}</p>}
+                <p className="text-sm text-ink-soft animate-pulse mt-2">Menerjemahkan…</p>
+              </>}
               {s.status === 'error' && (
                 <div className="text-sm text-rose-300">
                   {s.err}

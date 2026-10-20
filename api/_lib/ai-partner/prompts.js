@@ -283,19 +283,18 @@ ${dialect === 'indonesia' ? DIALECT_RULES.indonesia : `- Ucapan bisa fushah, 'am
 - Tulis hanya yang benar-benar terdengar. Bagian yang tidak jelas: lewati, jangan ditebak. Jangan meringkas, menerjemahkan, atau menambah komentar.
 - Jika tidak ada ucapan manusia yang jelas (hanya derau, gumaman, suara benda), balas HANYA: [HENING]`;
 
-/* prevTail / prevId: transkrip & terjemah 1–2 potongan terakhir; terms: istilah yang sudah dijelaskan di sesi ini;
-   learner: jenjang pelajar (level, faculty, major) dari profil belajar. Transkrip tahap 1 dikirim sebagai pesan
-   pengguna (liveTranslateInput). */
-export const liveTranslateInput = (transcript) => `TRANSKRIP POTONGAN INI:\n<<<\n${String(transcript || '').slice(0, 4000)}\n>>>`;
-
-export const liveTranslatePrompt = ({ dialect = 'campur', title = '', prevTail = '', prevId = '', terms = [], learner = null } = {}) => {
+/* Pesan pengguna tahap terjemah: KONTEKS (berubah tiap kalimat) + transkrip tahap 1. Sengaja dipisah dari prompt
+   sistem (liveTranslatePrompt, selalu sama per mode) supaya awalan panjangnya kena cache prompt otomatis Gemini —
+   tiap kuliah memanggil ini ratusan kali.
+   prevTail / prevId: transkrip & terjemah 1–2 potongan terakhir; terms: istilah yang sudah dijelaskan di sesi ini;
+   learner: jenjang pelajar (level, faculty, major) dari profil belajar. */
+export const liveTranslateInput = (transcript, { title = '', prevTail = '', prevId = '', terms = [], learner = null } = {}) => {
   const topic = clipLine(title, 120);
   const tail = clipLine(prevTail, 400);
   const tailId = clipLine(prevId, 300);
   const known = (Array.isArray(terms) ? terms : []).map(t => clipLine(t, 40)).filter(Boolean).slice(-40);
   const jenjang = learner && typeof learner === 'object'
     ? [clipLine(learner.level, 40), clipLine(learner.faculty, 60), clipLine(learner.major, 60)].filter(Boolean).join(', ') : '';
-  const indo = dialect === 'indonesia';
   const context = [
     topic && `- Mata kuliah/topik: "${topic}".`,
     jenjang && `- Pendengar: mahasiswa ${jenjang}.`,
@@ -303,9 +302,13 @@ export const liveTranslatePrompt = ({ dialect = 'campur', title = '', prevTail =
     tailId && `- Terjemah sebelumnya: «${tailId}» — lanjutkan alur dan pilihan istilahnya supaya konsisten.`,
     known.length && `- Istilah yang sudah dijelaskan di sesi ini (jangan diberi arti lagi, jangan dimasukkan ke "istilah"): ${known.join('، ')}`,
   ].filter(Boolean);
+  return `${context.length ? `KONTEKS\n${context.join('\n')}\n\n` : ''}TRANSKRIP POTONGAN INI:\n<<<\n${String(transcript || '').slice(0, 4000)}\n>>>`;
+};
 
-  return `Kamu juru terjemah langsung untuk mahasiswa Indonesia di Universitas Al-Azhar Kairo (Masisir) yang sedang mengikuti kuliah duktur. Yang kamu terima: transkrip potongan ±10 detik dari kuliah yang sedang berlangsung (hasil mesin pendengar, bisa ada salah dengar). Hasilmu langsung dibaca mahasiswa di HP saat itu juga.
-${context.length ? `\nKONTEKS\n${context.join('\n')}\n` : ''}
+export const liveTranslatePrompt = ({ dialect = 'campur' } = {}) => {
+  const indo = dialect === 'indonesia';
+  return `Kamu juru terjemah langsung untuk mahasiswa Indonesia di Universitas Al-Azhar Kairo (Masisir) yang sedang mengikuti kuliah duktur. Yang kamu terima: KONTEKS kuliah lalu transkrip potongan pendek dari kuliah yang sedang berlangsung (hasil mesin pendengar, bisa ada salah dengar). Hasilmu langsung dibaca mahasiswa di HP saat itu juga.
+
 1. "ar" — transkrip yang sama, hanya dirapikan: ejaan (ة/ه, أ/إ/ا, ى/ي), tanda baca, ejaan fushah baku untuk ayat/hadits/istilah ilmu, dan kata yang JELAS salah dengar menurut topik (mis. istilah baku ilmunya). JANGAN menambah kalimat, JANGAN melanjutkan dari konteks, JANGAN menghapus isi.
 
 ${indo
