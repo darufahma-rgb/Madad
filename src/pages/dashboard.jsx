@@ -610,7 +610,7 @@ const TodaySessionCard = () => {
 
   const doneCount = tasks.filter(t => t.method && usage.today.includes(t.method)).length;
   return (
-    <div className="card-glass p-5 max-w-5xl mb-5" style={{ border: '1px solid rgba(62,207,142,0.28)' }}>
+    <div className="card-glass p-4 sm:p-5 max-w-5xl mb-5 min-w-0" style={{ border: '1px solid rgba(62,207,142,0.28)' }}>
       <div className="flex items-start justify-between gap-3 mb-4 flex-wrap">
         <div>
           <div className="text-xs uppercase tracking-[0.18em] text-gold-400">Sesi hari ini</div>
@@ -620,17 +620,18 @@ const TodaySessionCard = () => {
         </div>
         <span className="text-xs px-3 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-200">{doneCount}/{tasks.filter(t => t.method).length} selesai</span>
       </div>
-      <div className="grid gap-2">
+      {/* minmax(0,1fr) + min-w-0: subjudul panjang (judul materi Arab) tetap terpotong "…", tidak melebarkan kartu di HP */}
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-2">
         {tasks.map((t, i) => {
           const done = t.method && usage.today.includes(t.method);
           return (
-            <div key={i} className={`flex items-center gap-3 rounded-xl border px-3 py-3 ${done ? 'border-emerald-500/25 bg-emerald-500/5' : 'border-white/10 bg-white/[0.03]'}`}>
+            <div key={i} className={`min-w-0 flex items-center gap-3 rounded-xl border px-3 py-3 ${done ? 'border-emerald-500/25 bg-emerald-500/5' : 'border-white/10 bg-white/[0.03]'}`}>
               <span className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center border ${done ? 'bg-emerald-500 border-emerald-400' : 'border-white/20'}`}>
                 {done ? <Icon name="check" className="w-3.5 h-3.5" style={{ stroke: '#000' }}/> : <span className="text-[11px] text-ink-soft">{i + 1}</span>}
               </span>
               <div className="flex-1 min-w-0">
                 <div className={`text-sm ${done ? 'text-ink-muted line-through' : 'text-ink'}`}>{t.title}</div>
-                <div className="text-xs text-ink-soft truncate">{t.sub}</div>
+                <div className="text-xs text-ink-soft truncate [unicode-bidi:plaintext] text-left" title={t.sub}>{t.sub}</div>
                 {t.method && (
                   <button onClick={() => navigate(`/framework/${t.method}`)} className="text-[11px] text-emerald-300/90 hover:text-emerald-200 mt-0.5">
                     {methodName(t.method)} · kenapa?
