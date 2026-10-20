@@ -151,6 +151,25 @@ const learnerLevel = () => {
   return p ? { level: p.level || '', faculty: p.faculty || '', major: p.major || '' } : null;
 };
 
+/* Maddah kuliah: nama + kitab muqarrar & penulisnya ikut dikirim ke tahap terjemah dan talkhisan, supaya nama kitab
+   yang salah dengar bisa dibetulkan (data dari maddah-data.jsx / mahad-data.jsx). */
+const MADDAH_KEY = 'talqeeh_live_caption_maddah';
+// Mode dengar: Cepat (bawaan) atau Akurat untuk kelas ramai — model audio lebih kuat, teks Arab ±4 dtk.
+const MODE_KEY = 'talqeeh_live_caption_mode';
+const HEAR_MODES = [
+  { id: 'cepat', label: 'Cepat', sub: 'teks Arab ±2 dtk' },
+  { id: 'akurat', label: 'Akurat', sub: 'kelas ramai, ±4 dtk' },
+];
+const maddahById = (id) => (id ? window.getMaddahById?.(id) || window.getMahadMaddahById?.(id) || null : null);
+const maddahContext = (id) => {
+  const m = maddahById(id);
+  if (!m) return null;
+  return {
+    name: m.name || '', nameArabic: m.nameArabic || '',
+    kitab: (m.kitabUtama || []).slice(0, 8).map(k => ({ arabic: k.arabic || '', nama: k.nama || '', penulis: k.penulis || '' })),
+  };
+};
+
 // Transkrip untuk talkhisan kuliah: per kartu waktu + penanda + ucapan duktur (AR) + terjemah langsung (ID).
 const TALKHIS_MAX_ROUNDS = 4;
 const lectureTranscript = (segments) => segments.filter(s => s.ar).map(s => [
@@ -184,6 +203,28 @@ const LiveCaptionBody = () => {
   const [confirmReset, setConfirmReset] = useState(false);
   const restored = useRef(!!draft?.segments?.length);
   const [quota, setQuota] = useState(null); // { left, dailyLeft, monthlyLeft } dalam menit
+  // Maddah kuliah: daftar mengikuti profil (sama dengan wizard tambah materi); pilihan terakhir diingat.
+  const { profile } = useAuth();
+  const maddahOptions = React.useMemo(() => {
+    if (!profile) return [];
+    try {
+      if (window.isMahadLevel?.(profile.level)) return window.getMahadMaddahByJenjang?.(profile.level) || [];
+      return window.getMaddahsForProfile?.(profile) || [];
+    } catch { return []; }
+  }, [profile]);
+  const [maddahId, setMaddahId] = useState(() => {
+    if (draft?.maddahId) return draft.maddahId;
+    try { return localStorage.getItem(MADDAH_KEY) || ''; } catch { return ''; }
+  });
+  const chooseMaddah = (id) => { setMaddahId(id); try { localStorage.setItem(MADDAH_KEY, id); } catch {} };
+  const [hearMode, setHearMode] = useState(() => { try { return localStorage.getItem(MODE_KEY) === 'akurat' ? 'akurat' : 'cepat'; } catch { return 'cepat'; } });
+  const chooseMode = (m) => { setHearMode(m); try { localStorage.setItem(MODE_KEY, m); } catch {} };
+  // Boleh diganti saat merekam: berlaku untuk potongan berikutnya.
+  const modeRef = useRef(hearMode);
+  modeRef.current = hearMode;
+  const maddahRef = useRef(maddahId);
+  maddahRef.current = maddahId;
+
   // Talkhisan kuliah (dibuat setelah rekaman berhenti; ikut tersimpan di draf).
   const [talkhis, setTalkhis] = useState(draft?.talkhis || null); // { md, lang, partial, segCount }
   const [talkhisLang, setTalkhisLang] = useState(draft?.talkhis?.lang || 'id');
@@ -254,6 +295,7 @@ const LiveCaptionBody = () => {
       prev_id: prev.map(s => s.idText).filter(Boolean).join(' ').slice(-300),
       terms: sessionTerms(before).map(t => t.ar),
       learner: learnerLevel(),
+      maddah: maddahContext(maddahRef.current),
     });
     if (!d.ok && !retried && !d.upgrade) { await new Promise(r => setTimeout(r, 1200)); return translateBatch(ids, true); }
     const keep = new Set(segs.map(s => s.id));
@@ -295,7 +337,7 @@ const LiveCaptionBody = () => {
   useEffect(() => () => clearTimeout(waitTimer.current), []);
 
   const send = async (id, base64, retried = false) => {
-    const d = await aiCall('live-hear', { audio_base64: base64, dialect: dialectRef.current, credit: credit.current });
+    const d = await aiCall('live-hear', { audio_base64: base64, dialect: dialectRef.current, mode: modeRef.current, credit: credit.current });
     if (d.ok) {
       credit.current = d.credit || null;
       audioById.current.delete(id);
@@ -350,8 +392,8 @@ const LiveCaptionBody = () => {
   // Simpan draf di perangkat supaya catatan (dan talkhisannya) tidak hilang kalau halaman tertutup.
   useEffect(() => {
     const done = segments.filter(s => s.status === 'done');
-    writeDraft(done.length || title ? { title, segments: done, elapsed, talkhis, savedAt: Date.now() } : null);
-  }, [segments, title, talkhis, Math.floor(elapsed / 10)]);
+    writeDraft(done.length || title ? { title, maddahId, segments: done, elapsed, talkhis, savedAt: Date.now() } : null);
+  }, [segments, title, maddahId, talkhis, Math.floor(elapsed / 10)]);
 
   // Ikuti teks terbaru, kecuali pengguna sedang menggulir ke atas.
   useEffect(() => {
@@ -405,7 +447,7 @@ const LiveCaptionBody = () => {
     let acc = '', truncated = false, failed = '';
     for (let round = 0; round < TALKHIS_MAX_ROUNDS; round++) {
       const d = await aiStream('live-talkhis', {
-        title: title.trim(), lang, transcript, learner: learnerLevel(), ...(acc ? { continue_from: acc } : {}),
+        title: title.trim(), lang, transcript, learner: learnerLevel(), maddah: maddahContext(maddahId), ...(acc ? { continue_from: acc } : {}),
       }, (_, full) => pushLive(acc + full));
       if (!d.ok) {
         if (d.upgrade) openAiUpgrade('live');
@@ -462,7 +504,8 @@ const LiveCaptionBody = () => {
     if (content.length < 50) { toast.push('Transkrip masih terlalu pendek untuk dijadikan materi.'); return; }
     setSaving(true);
     const d = await aiCall('create', {
-      title: title.trim() || `Kuliah ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })}`,
+      title: title.trim() || `Kuliah ${maddahById(maddahId)?.name ? `${maddahById(maddahId).name} — ` : ''}${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })}`,
+      maddah_id: maddahId || null,
       source_type: 'audio', content,
       // Talkhisan kuliah (kalau sudah dibuat) jadi isi tab Ringkasan materi ini.
       ...(talkhis?.md ? { summary: talkhis.md, summary_lang: talkhis.lang } : {}),
@@ -511,13 +554,41 @@ const LiveCaptionBody = () => {
       <input value={title} onChange={e => setTitle(e.target.value)} maxLength={120} placeholder="Judul kuliah (opsional), mis. Ushul Fiqh — Bab Qiyas"
         className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 text-ink placeholder-ink-soft outline-none focus:border-emerald-500/40 mb-3" style={{ fontSize: 16 }}/>
 
+      {/* Maddah: nama kitab muqarrar & penulisnya membantu AI membetulkan nama yang salah dengar. */}
+      {maddahOptions.length > 0 && (
+        <div className="mb-3">
+          <select value={maddahId} onChange={e => chooseMaddah(e.target.value)} disabled={mic.recording}
+            className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 text-ink outline-none focus:border-emerald-500/40 disabled:opacity-60" style={{ fontSize: 16 }}>
+            <option value="">Pilih maddah (supaya nama kitab & istilah lebih tepat)</option>
+            {maddahOptions.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+          </select>
+          {maddahById(maddahId)?.kitabUtama?.length > 0 && (
+            <p className="text-[11px] text-ink-soft mt-1.5">
+              Kitab yang dikenali: {maddahById(maddahId).kitabUtama.slice(0, 4).map(k => k.nama).join(', ')}
+            </p>
+          )}
+        </div>
+      )}
+
       <div className="text-[11px] text-ink-soft mb-1.5">Duktur berbicara dalam</div>
-      <div className="grid grid-cols-2 gap-2 mb-5">
+      <div className="grid grid-cols-2 gap-2 mb-4">
         {DIALECTS.map(d => (
           <button key={d.id} onClick={() => chooseDialect(d.id)} disabled={mic.recording}
             className={`text-left px-3.5 py-2.5 rounded-xl border transition disabled:opacity-60 ${dialect === d.id ? 'bg-emerald-500/15 border-emerald-500/40' : 'border-white/10 hover:bg-white/[0.04]'}`}>
             <div className={`text-sm font-medium ${dialect === d.id ? 'text-emerald-200' : 'text-ink'}`}>{d.label}</div>
             <div className="text-[11px] text-ink-soft mt-0.5">{d.sub}</div>
+          </button>
+        ))}
+      </div>
+
+      {/* Mode dengar — boleh diganti saat merekam (berlaku untuk potongan berikutnya). */}
+      <div className="text-[11px] text-ink-soft mb-1.5">Mode dengar</div>
+      <div className="grid grid-cols-2 gap-2 mb-5">
+        {HEAR_MODES.map(m => (
+          <button key={m.id} onClick={() => chooseMode(m.id)}
+            className={`text-left px-3.5 py-2.5 rounded-xl border transition ${hearMode === m.id ? 'bg-emerald-500/15 border-emerald-500/40' : 'border-white/10 hover:bg-white/[0.04]'}`}>
+            <div className={`text-sm font-medium ${hearMode === m.id ? 'text-emerald-200' : 'text-ink'}`}>{m.label}</div>
+            <div className="text-[11px] text-ink-soft mt-0.5">{m.sub}</div>
           </button>
         ))}
       </div>

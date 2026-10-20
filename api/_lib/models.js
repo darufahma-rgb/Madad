@@ -13,6 +13,7 @@ export const MODEL_SETTING_KEYS = {
   prompt:     'aiModelPrompt',     // Tanya AI (tanpa materi) — butuh pengetahuan luas, jadi bawaannya model utama
   transcribe: 'aiModelTranscribe', // transkrip rekaman — harus model yang menerima input audio
   liveHear:   'aiModelLiveHear',   // Live Caption tahap dengar — model audio, utamakan cepat & akurat
+  liveHearAccurate: 'aiModelLiveHearAccurate', // Live Caption mode "Akurat" (kelas ramai) — model audio terkuat
   liveTranslate: 'aiModelLiveTranslate', // Live Caption tahap terjemah — teks saja, utamakan cepat & pintar
 };
 
@@ -40,6 +41,9 @@ export const TASK_DEFAULTS = {
      terjemah — Gemini 3.7 Flash: lolos semua cek (takdir, ayat, penekanan duktur), 3,3 dtk dan stabil. */
   liveHear:      'google/gemini-3.1-flash-lite',
   liveTranslate: 'google/gemini-3.7-flash',
+  /* Mode "Akurat" untuk kelas ramai — di audio bergema + derau (SNR 8 dB): Gemini 4 Argon salah dengar 7,2% & semua
+     13 nama kitab/ulama benar (Flash-Lite 15,2%, 11/13); hasil akhir setelah terjemah 37/37 vs 35/37. ±3,9 dtk. */
+  liveHearAccurate: 'google/gemini-4-argon',
 };
 
 /* Jatah token berpikir untuk tugas yang inputnya pendek tapi menuntut ketelitian nahwu-sharaf. Sonnet 5 bawaannya
@@ -68,6 +72,7 @@ export const resolveModels = async () => {
     // Transkrip tidak ikut model utama: model teks biasa tidak bisa mendengar audio.
     transcribe: pick('transcribe') || transcribeModel(),
     liveHear: pick('liveHear') || TASK_DEFAULTS.liveHear,
+    liveHearAccurate: pick('liveHearAccurate') || TASK_DEFAULTS.liveHearAccurate,
     liveTranslate: pick('liveTranslate') || TASK_DEFAULTS.liveTranslate,
   };
   cache = { at: Date.now(), value };

@@ -2928,6 +2928,7 @@ const AdminSettings = () => {
             ['aiModelChat', 'Tutor & simulasi syafawi', 'chat', 'Jawaban bersandar pada materi yang diunggah — bawaan Haiku 4.5. Ganti ke Sonnet 5 kalau kualitas tutor kurang.'],
             ['aiModelTranscribe', 'Transkrip rekaman kuliah', 'transcribe', "Harus model yang bisa mendengar audio (Gemini). Coba google/gemini-2.5-pro kalau transkrip 'ammiyah kurang akurat. Tes hanya memeriksa ID-nya, bukan kemampuan audio."],
             ['aiModelLiveHear', 'Live Caption — dengar', 'liveHear', 'Mengubah suara duktur jadi teks Arab, ±setiap 5 detik. Harus model audio yang CEPAT (tiap detik terasa) dan tidak mengarang ucapan dari derau kelas.'],
+            ['aiModelLiveHearAccurate', 'Live Caption — dengar (mode Akurat)', 'liveHearAccurate', 'Dipakai saat mahasiswa memilih mode "Akurat" untuk kelas ramai. Model audio terkuat; lebih lambat (±4 dtk) dan ±4× biaya tahap dengar.'],
             ['aiModelLiveTranslate', 'Live Caption — terjemah', 'liveTranslate', 'Menerjemahkan teks Arab kuliah ke bahasa Indonesia + istilah + tanda "ditekankan duktur". Teks saja, utamakan cepat dan teliti.'],
           ].map(([key, label, task, hint]) => (
             <ModelField key={key} label={label} hint={hint} value={settings[key] || ''}

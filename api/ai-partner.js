@@ -590,6 +590,8 @@ const liveContext = (body) => ({
   title: body.title, prevTail: body.prev_tail, prevId: body.prev_id,
   terms: Array.isArray(body.terms) ? body.terms.filter(isStr).slice(-40) : [],
   learner: body.learner && typeof body.learner === 'object' ? body.learner : null,
+  // Maddah pilihan pengguna (nama + kitab muqarrar) untuk membetulkan nama kitab/penulis yang salah dengar.
+  maddah: body.maddah && typeof body.maddah === 'object' ? body.maddah : null,
 });
 
 /* Tanda bahwa teks memang hasil "live-hear" akun ini (berlaku 10 menit), supaya "live-translate" tidak bisa dipakai
@@ -606,11 +608,14 @@ const heardValid = (token, code, text) => {
   return owner === code && digest === heardDigest(text) && Date.now() - Number(issued) <= HEARD_TTL_MS;
 };
 
+// Mode dengar: "cepat" (bawaan) atau "akurat" untuk kelas ramai (model lebih kuat, lebih lambat & mahal).
+const liveHearModel = (models, body) => (body.mode === 'akurat' ? models.liveHearAccurate : models.liveHear);
+
 // Tahap dengar saja: teks Arab langsung tampil di HP, terjemahnya diminta terpisah lewat "live-translate".
 async function handleLiveHear(ctx, body, res) {
   const charged = await chargeLive(ctx, body, res);
   if (!charged) return;
-  const ar = await liveHear({ audio: charged.audio, dialect: liveDialect(body), model: (await resolveModels()).liveHear });
+  const ar = await liveHear({ audio: charged.audio, dialect: liveDialect(body), model: liveHearModel(await resolveModels(), body) });
   return res.status(200).json({ ok: true, ar, heard: ar ? heardToken(ctx.code, ar) : null, credit: liveToken(ctx.code, charged.credit) });
 }
 
@@ -644,7 +649,7 @@ async function handleLiveTalkhis(ctx, body, res) {
     const over = await takeQuota(ctx, 'generate');
     if (over) return quotaExceeded(res, 'generate', over, ctx);
   }
-  const input = lectureTalkhisInput({ title: body.title, learner: body.learner, transcript });
+  const input = lectureTalkhisInput({ title: body.title, learner: body.learner, transcript, maddah: liveContext(body).maddah });
   const messages = before
     ? [{ role: 'user', content: input }, { role: 'assistant', content: before }, { role: 'user', content: LECTURE_TALKHIS_CONTINUE }]
     : [{ role: 'user', content: input }];
@@ -662,7 +667,7 @@ async function handleLiveCaption(ctx, body, res) {
   if (!charged) return;
   const models = await resolveModels();
   const result = await runLiveCaption({
-    audio: charged.audio, dialect: liveDialect(body), model: models.liveHear, translateModel: models.liveTranslate, context: liveContext(body),
+    audio: charged.audio, dialect: liveDialect(body), model: liveHearModel(models, body), translateModel: models.liveTranslate, context: liveContext(body),
   });
   return res.status(200).json({ ok: true, ...result, credit: liveToken(ctx.code, charged.credit) });
 }

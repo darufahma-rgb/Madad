@@ -287,8 +287,20 @@ ${dialect === 'indonesia' ? DIALECT_RULES.indonesia : `- Ucapan bisa fushah, 'am
    sistem (liveTranslatePrompt, selalu sama per mode) supaya awalan panjangnya kena cache prompt otomatis Gemini —
    tiap kuliah memanggil ini ratusan kali.
    prevTail / prevId: transkrip & terjemah 1–2 potongan terakhir; terms: istilah yang sudah dijelaskan di sesi ini;
-   learner: jenjang pelajar (level, faculty, major) dari profil belajar. */
-export const liveTranslateInput = (transcript, { title = '', prevTail = '', prevId = '', terms = [], learner = null } = {}) => {
+   learner: jenjang pelajar (level, faculty, major) dari profil belajar;
+   maddah: maddah yang dipilih di halaman { name, nameArabic, kitab: [{ arabic, nama, penulis }] } — supaya nama kitab
+   muqarrar & penulisnya yang salah dengar bisa dibetulkan (nama kitab terkenal sudah dikenali model tanpa ini). */
+const maddahLine = (m) => {
+  if (!m || typeof m !== 'object') return '';
+  const name = [clipLine(m.name, 60), clipLine(m.nameArabic, 60)].filter(Boolean).join(' / ');
+  const kitab = (Array.isArray(m.kitab) ? m.kitab : []).slice(0, 8)
+    .map(k => [clipLine(k?.arabic, 60), clipLine(k?.nama, 60) && `(${clipLine(k.nama, 60)}${clipLine(k?.penulis, 50) ? ` — ${clipLine(k.penulis, 50)}` : ''})`].filter(Boolean).join(' '))
+    .filter(Boolean);
+  if (!name && !kitab.length) return '';
+  return `- Maddah: ${name || '-'}${kitab.length ? `. Kitab muqarrar & rujukannya: ${kitab.join('؛ ')} — pakai untuk membetulkan nama kitab/penulis yang salah dengar.` : '.'}`;
+};
+
+export const liveTranslateInput = (transcript, { title = '', prevTail = '', prevId = '', terms = [], learner = null, maddah = null } = {}) => {
   const topic = clipLine(title, 120);
   const tail = clipLine(prevTail, 400);
   const tailId = clipLine(prevId, 300);
@@ -296,6 +308,7 @@ export const liveTranslateInput = (transcript, { title = '', prevTail = '', prev
   const jenjang = learner && typeof learner === 'object'
     ? [clipLine(learner.level, 40), clipLine(learner.faculty, 60), clipLine(learner.major, 60)].filter(Boolean).join(', ') : '';
   const context = [
+    maddahLine(maddah),
     topic && `- Mata kuliah/topik: "${topic}".`,
     jenjang && `- Pendengar: mahasiswa ${jenjang}.`,
     tail && `- Ucapan duktur sebelumnya: «${tail}»`,
@@ -310,14 +323,24 @@ export const liveTranslatePrompt = ({ dialect = 'campur' } = {}) => {
   return `Kamu juru terjemah langsung untuk mahasiswa Indonesia di Universitas Al-Azhar Kairo (Masisir) yang sedang mengikuti kuliah duktur. Yang kamu terima: KONTEKS kuliah lalu transkrip potongan pendek dari kuliah yang sedang berlangsung (hasil mesin pendengar, bisa ada salah dengar). Hasilmu langsung dibaca mahasiswa di HP saat itu juga.
 
 1. "ar" — transkrip yang sama, hanya dirapikan: ejaan (ة/ه, أ/إ/ا, ى/ي), tanda baca, ejaan fushah baku untuk ayat/hadits/istilah ilmu, dan kata yang JELAS salah dengar menurut topik (mis. istilah baku ilmunya). JANGAN menambah kalimat, JANGAN melanjutkan dari konteks, JANGAN menghapus isi.
+- Nama kitab, ulama, dan madzhab yang salah dengar: betulkan ke nama baku yang paling mungkin menurut ilmunya dan daftar kitab muqarrar di KONTEKS (mis. شرح ابن عجيل → شرح ابن عقيل، أوضح المساليك → أوضح المسالك، ابن هاشم → ابن هشام). Kalau tidak yakin, biarkan seperti terdengar — jangan mengarang judul kitab.
+- Duktur berbicara ke banyak mahasiswa: kata ganti/kata kerja orang kedua yang tertangkap tunggal atau muannats karena salah dengar (أنتِ تفكرين) dibetulkan ke bentuk 'ammiyah jamak yang diucapkan (إنتو فاكرين).
 
 ${indo
   ? `2. "id" — terjemahkan HANYA kutipan/kalimat berbahasa Arab di dalam transkrip ke bahasa Indonesia. Jangan mengulang bagian yang sudah berbahasa Indonesia. Jika tidak ada kalimat Arab, isi "".`
   : `2. "id" — terjemah untuk DIPAHAMI, bukan kata per kata. Tulis seperti kakak tingkat yang membisikkan maksud duktur di sebelahmu: kalimat pendek, bahasa Indonesia yang natural.
 - Ungkapan 'ammiyah diterjemahkan maknanya. Kata pengisi dan pertanyaan retoris duktur (يعني، طيب، بقى، كده، مش كده؟، فاهمين؟، واضح؟) TIDAK diterjemahkan — langsung ke isinya. Isi ilmunya jangan dibuang.
+- Kamus 'ammiyah kelas (Mesir) — jangan disamakan dengan makna fushah-nya:
+  · Negasi: مش = bukan/tidak · مفيش = tidak ada · مش لازم = tidak harus · ماينفعش = tidak boleh/tidak bisa · ينفع = boleh/bisa · لأ خالص = sama sekali tidak (خالص setelah negasi = "sama sekali")
+  · Waktu & aspek: هـ+fi'il (هنتكلم، هييجي) = akan · بـ+fi'il (بيقول، بنشرح) = sedang/biasanya · دلوقتي = sekarang · النهارده = hari ini · امبارح = kemarin · اللي فات = yang lalu/sebelumnya · الجاي = berikutnya · لسه = masih/belum · خلاص = sudah/cukup
+  · Kata tanya: إيه = apa · ليه = kenapa · إزاي = bagaimana · فين = di mana · إمتى = kapan · مين = siapa · قد إيه = berapa · ولا إيه؟ = bukan begitu?
+  · Rujukan: ده/دي/دول = ini/itu · اللي = yang · بتاع = milik/tentang · الحتة دي = bagian ini · حاجة = hal/sesuatu · إنتو = kalian · إحنا = kita
+  · Lainnya: عايز/عاوز = ingin · فاكر/فاكرين إن = mengira bahwa (atau "ingat", sesuai konteks) · كده = begini/begitu · برضه = juga/tetap · كمان = juga/lagi · بس = tapi/hanya · أوي = sangat · شوية = sedikit · بالظبط = persis · على طول = langsung · عشان = karena/supaya · زي = seperti · كويس = baik/baik-baik · حلو = bagus (bukan "manis") · غلط = salah · صح = benar
+  · Instruksi duktur: خدوا بالكم = perhatikan · ركزوا = fokus · سيبوها/سيبوه = tinggalkan/lewati saja · ذاكروا = pelajari/muraja'ah · هاتوا = bawa/kumpulkan · المذكرة/الشيت = diktat · السكشن = kelas tutorial · محذوف = dihapus dari muqarrar (tidak diujikan)
 - Istilah ilmu tetap dalam transliterasi yang lazim di kalangan Masisir (qiyas, ashl, far', hukm ashl, 'illat, ijma', jumhur, mubtada', khabar, 'am, khash, mutlaq, muqayyad, rajih, nash, zhahir), dengan arti singkat dalam kurung HANYA saat pertama muncul di sesi ini.
 - Pilih padanan yang tepat untuk konteks ilmu, waspadai kata serapan yang maknanya bergeser di bahasa Indonesia. Contoh: التقدير = "mengukur/memperkirakan" (BUKAN "takdir"); المسألة = "persoalan/kasus (fiqh)"; الكلام dalam nahwu = "kalam (kalimat sempurna)", bukan "pembicaraan".
 - Transliterasi konsisten gaya Masisir: Syafi'i, Hanafi, Maliki, Hanbali, fardhu, sunnah, wudhu, syara', 'illat, hadits — sama di semua potongan.
+- Nama kitab ditulis dengan transliterasi yang lazim di kalangan Masisir dan diawali "kitab" saat pertama disebut (mis. kitab Syarh Ibnu 'Aqil, Audhahul Masalik, Mughnil Labib, Al-Majmu', Hasyiyah Al-Bajuri); nama ulama dengan gelar lazimnya (Imam An-Nawawi, Ibnu Hisyam).
 - Perjelas rujukan: عندنا (dalam fiqh) → "menurut madzhab kita (sebut madzhabnya bila jelas)"; الجمهور → "jumhur ulama"; الأحناف → "ulama Hanafiyah"; الظاهرية → "ulama Zhahiriyah"; المصنف / صاحب المتن → "penulis matan".
 - Ayat Al-Qur'an & hadits: terjemahkan makna lahirnya dengan ringkas — jangan memasukkan tafsir atau pendapat madzhab ke dalam terjemah ayat (penjelasan duktur sesudahnya diterjemahkan terpisah). Sebut surat dan ayatnya (mis. QS. Al-Baqarah: 43) HANYA jika kamu benar-benar yakin.
 - Teks biasa saja, tanpa format markdown (*, **, #).
@@ -327,6 +350,8 @@ ${indo
 3. "istilah" — 0–3 istilah ilmu dari potongan ini yang layak dicatat mahasiswa dan belum ada di daftar istilah sesi: [{"ar":"istilah dengan harakat lengkap, bentuk dasar (mufrad, tanpa ال bila bukan bagian istilah)","id":"arti singkat, MAKSIMAL 5 kata"}]. Kata umum, nama benda biasa, nama orang/kitab, dan nama topik yang artinya sudah jelas (mis. الوضوء = wudhu) jangan dimasukkan. Kosongkan bila tidak ada.
 
 4. "penting" — true HANYA jika di potongan ini duktur menekankan sesuatu: menyebutnya penting, akan keluar di imtihan, menyuruh mencatat/menghafal/fokus (mis. مهم، ركزوا، ده هييجي في الامتحان، احفظوا، اكتبوا عندكم، "ini penting", "keluar di ujian"). Selain itu false.
+   Penekanan NEGATIF bukan "penting": bila duktur bilang bagian itu TIDAK keluar / tidak penting / boleh dilewati / dihapus dari muqarrar (مش هتيجي في الامتحان، مش مهم، سيبوها، مش مطلوب، محذوف) → false, dan terjemahnya harus jelas menyatakan "tidak keluar / boleh dilewati".
+   Penekanan yang menunjuk bagian SESUDAHNYA ("خدوا بالكم من اللي بعدها"، "اللي جاي ده مهم") → potongan ini false; potongan berikutnya (yang "Ucapan duktur sebelumnya" di KONTEKS berisi penunjukan itu) → true.
 
 Balas HANYA JSON: {"ar":"...","id":"...","istilah":[],"penting":false}`;
 };
@@ -409,10 +434,11 @@ Format markdown (gunakan judul "## " persis seperti di bawah; LEWATI judul yang 
 ${LECTURE_SECTIONS[lang] || LECTURE_SECTIONS.id}`;
 
 // Pesan pengguna: judul + jenjang + transkrip berpenanda waktu (dibentuk halaman Live Caption).
-export const lectureTalkhisInput = ({ title = '', learner = null, transcript = '' } = {}) => {
+export const lectureTalkhisInput = ({ title = '', learner = null, transcript = '', maddah = null } = {}) => {
   const jenjang = learner && typeof learner === 'object'
     ? [clipLine(learner.level, 40), clipLine(learner.faculty, 60), clipLine(learner.major, 60)].filter(Boolean).join(', ') : '';
   return [
+    maddahLine(maddah).replace(/^- /, ''),
     clipLine(title, 120) && `Judul kuliah: ${clipLine(title, 120)}`,
     jenjang && `Pendengar: mahasiswa ${jenjang}`,
     `\nTRANSKRIP KULIAH:\n<<<\n${String(transcript || '')}\n>>>`,
