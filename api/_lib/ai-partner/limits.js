@@ -9,7 +9,7 @@ export const QUOTA_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', '
 export const DEFAULT_MONTHLY_LIMITS = {
   prompt: 150, chat: 150, generate: 40, create: 15, analyze: 150, grade: 60, ocr: 60, transcribe: 300,
   /* Live Caption: 5 jam kuliah per periode, juga untuk pemegang Paket Imtihan (lihat monthlyLimitFor di
-     api/ai-partner.js). Mode Cepat ±$0,0064/menit → ±$1,9 (±Rp33rb) bila habis; mode Akurat dihitung 3× menit. */
+     api/ai-partner.js). Mode Cepat ±$0,0064/menit → ±$1,9 (±Rp33rb) bila habis; mode Akurat dihitung 4× menit. */
   live: 300,
   talkhis: 6, // muqarrar yang di-talkhis per periode (pemegang Paket Imtihan: tanpa batas bulanan)
 };

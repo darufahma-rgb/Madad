@@ -524,7 +524,9 @@ async function handleTranscribe(ctx, body, res) {
    token bertanda tangan (HMAC). Token yang hilang/diubah hanya membuat kredit mulai dari nol — pemakai yang
    membuang token membayar lebih, bukan kurang. */
 const LIVE_MAX_SECONDS = 20;
-const LIVE_ACCURATE_WEIGHT = 3; // 1 menit mode Akurat = 3 menit jatah (20 dtk × 3 = 60 dtk, tetap cukup satu potong jatah)
+// 1 menit mode Akurat = 4 menit jatah: Argon + 3.7 Flash ±$0,0275/menit vs Cepat ±$0,0064, jadi biaya per menit
+// jatah hampir sama di kedua mode.
+const LIVE_ACCURATE_WEIGHT = 4;
 const LIVE_TOKEN_TTL_MS = 15 * 60 * 1000;
 const liveSecret = () => process.env.LIVE_CAPTION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const liveSign = (payload) => crypto.createHmac('sha256', liveSecret()).update(payload).digest('base64url');
@@ -579,10 +581,10 @@ async function chargeLive(ctx, body, res) {
   if (seconds > LIVE_MAX_SECONDS + 1) { res.status(400).json({ ok: false, error: 'Potongan audio terlalu panjang' }); return null; }
 
   let credit = liveCredit(body.credit, ctx.code);
-  // Mode Akurat (model dengar ±3× biaya per menit kuliah) menghabiskan kredit 3× lebih cepat.
+  // Mode Akurat menghabiskan kredit 4× lebih cepat; potongan Akurat yang panjang bisa butuh 2 menit jatah.
   const cost = seconds * 1000 * (body.mode === 'akurat' ? LIVE_ACCURATE_WEIGHT : 1);
   // Jatah Live Caption terpisah dari transkrip rekaman (jenis kuota "live", menit).
-  if (credit < cost) {
+  while (credit < cost) {
     const over = await takeQuota(ctx, 'live');
     const closed = (over === 'daily' && dailyLimitCache(ctx, 'live') === 0) || (over === 'monthly' && monthlyLimitCache(ctx).live === 0);
     const fail = (message) => { res.status(429).json({ ok: false, error: 'quota', message }); return null; };
@@ -609,25 +611,31 @@ const liveContext = (body) => ({
    sebagai penerjemah gratis untuk teks sembarang — jatahnya sudah dipotong di tahap dengar. */
 const HEARD_TTL_MS = 10 * 60 * 1000;
 const heardDigest = (text) => crypto.createHash('sha256').update(String(text)).digest('base64url').slice(0, 22);
-const heardToken = (code, text) => { const p = `${code}.${heardDigest(text)}.${Date.now()}`; return `${p}.${liveSign(p)}`; };
-const heardValid = (token, code, text) => {
-  if (!isStr(token) || !liveSecret()) return false;
+// Token juga mencatat mode saat didengar ("a" = Akurat, sudah dibayar 4× jatah), supaya terjemah mode Akurat
+// tidak bisa diminta untuk potongan yang dibayar sebagai mode Cepat.
+const heardToken = (code, text, mode) => { const p = `${code}.${heardDigest(text)}.${Date.now()}.${mode === 'akurat' ? 'a' : 'c'}`; return `${p}.${liveSign(p)}`; };
+// Mengembalikan mode potongan ('akurat' / 'cepat') bila tanda sah, atau null.
+const heardMode = (token, code, text) => {
+  if (!isStr(token) || !liveSecret()) return null;
   const at = token.lastIndexOf('.');
   const payload = token.slice(0, at), sig = token.slice(at + 1), expected = liveSign(payload);
-  if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return false;
-  const [owner, digest, issued] = payload.split('.');
-  return owner === code && digest === heardDigest(text) && Date.now() - Number(issued) <= HEARD_TTL_MS;
+  if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return null;
+  const [owner, digest, issued, mode] = payload.split('.');
+  if (owner !== code || digest !== heardDigest(text) || Date.now() - Number(issued) > HEARD_TTL_MS) return null;
+  return mode === 'a' ? 'akurat' : 'cepat';
 };
 
-// Mode dengar: "cepat" (bawaan) atau "akurat" untuk kelas ramai (model lebih kuat, lebih lambat & mahal).
+/* Mode "cepat" (bawaan, hemat) atau "akurat" untuk kelas ramai / hasil terbaik: dengar dengan model audio terkuat dan
+   terjemah dengan model teks yang lebih teliti. Lebih lambat & ±4× biaya, jadi dihitung 4× jatah (LIVE_ACCURATE_WEIGHT). */
 const liveHearModel = (models, body) => (body.mode === 'akurat' ? models.liveHearAccurate : models.liveHear);
+const liveTranslateModel = (models, mode) => (mode === 'akurat' ? models.liveTranslateAccurate : models.liveTranslate);
 
 // Tahap dengar saja: teks Arab langsung tampil di HP, terjemahnya diminta terpisah lewat "live-translate".
 async function handleLiveHear(ctx, body, res) {
   const charged = await chargeLive(ctx, body, res);
   if (!charged) return;
   const ar = await liveHear({ audio: charged.audio, dialect: liveDialect(body), model: liveHearModel(await resolveModels(), body) });
-  return res.status(200).json({ ok: true, ar, heard: ar ? heardToken(ctx.code, ar) : null, credit: liveToken(ctx.code, charged.credit) });
+  return res.status(200).json({ ok: true, ar, heard: ar ? heardToken(ctx.code, ar, body.mode) : null, credit: liveToken(ctx.code, charged.credit) });
 }
 
 /* Halaman menerjemahkan 2–3 potongan dengar sekaligus (lebih hemat & kalimatnya utuh): parts = [{ ar, heard }],
@@ -636,10 +644,13 @@ const LIVE_MAX_PARTS = 3;
 async function handleLiveTranslate(ctx, body, res) {
   const parts = Array.isArray(body.parts) ? body.parts.slice(0, LIVE_MAX_PARTS) : [{ ar: body.ar, heard: body.heard }];
   const texts = parts.map(p => (isStr(p?.ar) ? p.ar.trim().slice(0, 4000) : ''));
-  if (!texts.length || texts.some((t, i) => !t || !heardValid(parts[i].heard, ctx.code, t))) {
+  const modes = texts.map((t, i) => (t ? heardMode(parts[i].heard, ctx.code, t) : null));
+  if (!texts.length || modes.some(m => !m)) {
     return res.status(400).json({ ok: false, error: 'Teks ini tidak berasal dari Live Caption.' });
   }
-  const result = await liveTranslate({ heard: texts.join(' '), dialect: liveDialect(body), model: (await resolveModels()).liveTranslate, context: liveContext(body) });
+  // Terjemah Akurat hanya bila semua potongan dibayar sebagai Akurat (saat pindah mode, satu gabungan memakai Cepat).
+  const mode = modes.every(m => m === 'akurat') ? 'akurat' : 'cepat';
+  const result = await liveTranslate({ heard: texts.join(' '), dialect: liveDialect(body), model: liveTranslateModel(await resolveModels(), mode), context: liveContext(body) });
   return res.status(200).json({ ok: true, ...result });
 }
 
@@ -678,7 +689,7 @@ async function handleLiveCaption(ctx, body, res) {
   if (!charged) return;
   const models = await resolveModels();
   const result = await runLiveCaption({
-    audio: charged.audio, dialect: liveDialect(body), model: liveHearModel(models, body), translateModel: models.liveTranslate, context: liveContext(body),
+    audio: charged.audio, dialect: liveDialect(body), model: liveHearModel(models, body), translateModel: liveTranslateModel(models, body.mode), context: liveContext(body),
   });
   return res.status(200).json({ ok: true, ...result, credit: liveToken(ctx.code, charged.credit) });
 }

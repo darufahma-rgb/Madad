@@ -87,7 +87,7 @@ const FAQS = [
   ['Bayarnya pakai apa? Berapa lama aktifnya?',
     'Lewat Mayar: QRIS, virtual account, atau e-wallet. Tagihannya dibuat langsung untuk akun Google-mu, jadi akses aktif otomatis begitu pembayaran masuk — biasanya kurang dari 1 menit.'],
   ['Paket Imtihan benar-benar sepuasnya?',
-    "Ya, tanpa kuota bulanan selama 120 hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, dan 25 kali membuat ringkasan/kuis/flashcard per hari — jauh di atas pemakaian belajar normal. Pengecualiannya Live Caption kuliah duktur: 5 jam per 30 hari (mode Akurat untuk kelas ramai dihitung 3× menit)."],
+    "Ya, tanpa kuota bulanan selama 120 hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, dan 25 kali membuat ringkasan/kuis/flashcard per hari — jauh di atas pemakaian belajar normal. Pengecualiannya Live Caption kuliah duktur: 5 jam per 30 hari (mode Akurat untuk kelas ramai dihitung 4× menit)."],
   ['AI Partner diperpanjang otomatis?',
     'Tidak. Tidak ada potongan otomatis, baik Paket Imtihan maupun per 30 hari. Kalau mau lanjut, perpanjang kapan saja — sisa harimu tidak hangus.'],
   ['Saya member lama, harus bayar lagi?',
@@ -716,7 +716,7 @@ const GabungPage = () => {
           </table>
         </div>
         <p className="text-[11px] text-ink-soft text-center mt-3 max-w-2xl mx-auto">
-          *Paket Imtihan: tanpa kuota bulanan selama {IMTIHAN_AI_DAYS} hari, dengan batas wajar harian (10 materi baru, 30× i'rab, 40 pesan tutor, 40 pesan Tanya AI, 20 foto per hari). Live Caption: 5 jam kuliah per 30 hari, mode Akurat dihitung 3×. Talkhis: {IMTIHAN_TALKHIS_CAP} muqarrar per paket, maksimal 1 per hari. Materi gratis maksimal ±10–15 halaman.
+          *Paket Imtihan: tanpa kuota bulanan selama {IMTIHAN_AI_DAYS} hari, dengan batas wajar harian (10 materi baru, 30× i'rab, 40 pesan tutor, 40 pesan Tanya AI, 20 foto per hari). Live Caption: 5 jam kuliah per 30 hari, mode Akurat dihitung 4×. Talkhis: {IMTIHAN_TALKHIS_CAP} muqarrar per paket, maksimal 1 per hari. Materi gratis maksimal ±10–15 halaman.
         </p>
       </Section>
 

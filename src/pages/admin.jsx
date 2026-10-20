@@ -2928,8 +2928,9 @@ const AdminSettings = () => {
             ['aiModelChat', 'Tutor & simulasi syafawi', 'chat', 'Jawaban bersandar pada materi yang diunggah — bawaan Haiku 4.5. Ganti ke Sonnet 5 kalau kualitas tutor kurang.'],
             ['aiModelTranscribe', 'Transkrip rekaman kuliah', 'transcribe', "Harus model yang bisa mendengar audio (Gemini). Coba google/gemini-2.5-pro kalau transkrip 'ammiyah kurang akurat. Tes hanya memeriksa ID-nya, bukan kemampuan audio."],
             ['aiModelLiveHear', 'Live Caption — dengar', 'liveHear', 'Mengubah suara duktur jadi teks Arab, ±setiap 5 detik. Harus model audio yang CEPAT (tiap detik terasa) dan tidak mengarang ucapan dari derau kelas.'],
-            ['aiModelLiveHearAccurate', 'Live Caption — dengar (mode Akurat)', 'liveHearAccurate', 'Dipakai saat mahasiswa memilih mode "Akurat" untuk kelas ramai. Model audio terkuat; lebih lambat (±4 dtk) dan ±4× biaya tahap dengar.'],
+            ['aiModelLiveHearAccurate', 'Live Caption — dengar (mode Akurat)', 'liveHearAccurate', 'Dipakai saat mahasiswa memilih mode "Akurat" untuk kelas ramai. Model audio terkuat; lebih lambat (±4 dtk) dan ±4× biaya tahap dengar. Mode Akurat dihitung 4× jatah.'],
             ['aiModelLiveTranslate', 'Live Caption — terjemah', 'liveTranslate', 'Menerjemahkan teks Arab kuliah ke bahasa Indonesia + istilah + tanda "ditekankan duktur". Dipanggil terus selama merekam, jadi biayanya paling besar: bawaan Gemini 3.1 Flash-Lite (±$0,0064/menit kuliah). google/gemini-3.7-flash sedikit lebih teliti tapi ±2,5× biaya.'],
+            ['aiModelLiveTranslateAccurate', 'Live Caption — terjemah (mode Akurat)', 'liveTranslateAccurate', 'Terjemah saat mahasiswa memilih mode "Akurat" (dihitung 4× jatah). Bawaan Gemini 3.7 Flash — lebih teliti untuk nama kitab & \'ammiyah.'],
             ['aiModelLiveTalkhis', 'Live Caption — talkhisan kuliah', 'liveTalkhis', 'Talkhisan dari transkrip satu kuliah (sekali per kuliah, memakai jatah Generate). Bawaan Gemini 3.7 Flash.'],
           ].map(([key, label, task, hint]) => (
             <ModelField key={key} label={label} hint={hint} value={settings[key] || ''}
@@ -2969,7 +2970,7 @@ const AdminSettings = () => {
               <input inputMode="numeric" value={settings.aiLiveDailyLimit ?? ""} placeholder="120"
                 onChange={e => { const v = e.target.value.replace(/[^\d]/g, "").slice(0, 4); setSettings(s => ({ ...s, aiLiveDailyLimit: v })); }}
                 className="w-28 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink outline-none font-mono focus:border-emerald-500/45"/>
-              <span className="text-[11px] text-ink-soft leading-snug">Kosong = 120 (2 jam kuliah). 0 = Live Caption ditutup. Jatah ini terpisah dari Transkrip rekaman. Biaya mode Cepat ±$0,0064/menit (±Rp110); mode Akurat dihitung 3× menit. Kuota Live Caption per 30 hari di atas juga berlaku untuk Paket Imtihan.</span>
+              <span className="text-[11px] text-ink-soft leading-snug">Kosong = 120 (2 jam kuliah). 0 = Live Caption ditutup. Jatah ini terpisah dari Transkrip rekaman. Biaya mode Cepat ±$0,0064/menit (±Rp110); mode Akurat dihitung 4× menit. Kuota Live Caption per 30 hari di atas juga berlaku untuk Paket Imtihan.</span>
             </div>
           </div>
         </div>

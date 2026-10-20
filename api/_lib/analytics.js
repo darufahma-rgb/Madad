@@ -21,7 +21,7 @@ const TOKEN_PROFILE = {
 };
 const TRANSCRIBE_PER_MINUTE_USD = 0.004; // input audio dihargai berbeda dari teks — taksiran tetap per menit
 // Live Caption (diukur Okt 2026, usage.cost OpenRouter): dengar + terjemah Gemini 3.1 Flash-Lite per 2 potongan
-// ≈ $0,0064 per menit jatah (mode Akurat ±$0,019/menit kuliah, tapi dihitung 3 menit jatah).
+// ≈ $0,0064 per menit jatah (mode Akurat ±$0,0275/menit kuliah, dihitung 4 menit jatah).
 const LIVE_PER_MINUTE_USD = 0.0064;
 const FALLBACK_PRICE = { in: 3, out: 15 }; // $ per 1 juta token (Sonnet 4.6) bila harga model tidak ditemukan
 
