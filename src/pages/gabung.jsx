@@ -282,6 +282,8 @@ const GabungPage = () => {
   const toast    = useToast();
   const panelRef = useRef(null);
   useEffect(() => { window.logFunnel?.('view_gabung'); }, []);
+  // Jumlah member live dari server (sudah dibulatkan ke bawah, sama dengan badge di landing). Kosong → tanpa angka.
+  const memberCount = Number.isFinite(settings.userCount) && settings.userCount > 0 ? `${settings.userCount.toLocaleString('id-ID')}+` : null;
 
   const [plan, setPlan]         = useState(planFromHash());
   const [step, setStep]         = useState(null); // null | pay | redeem  (menunggu bayar diatur useCheckout)
@@ -444,9 +446,9 @@ const GabungPage = () => {
             {[
               [CATALOG.maddah, 'maddah S1 + Ma\'had', GOLD],
               [CATALOG.prompts, 'template prompt', GOLD],
-              ['113+', 'member Masisir', EMERALD],
+              memberCount && [memberCount, 'member Masisir', EMERALD],
               ['8', 'dimensi Profil Belajar', SKY],
-            ].map(([n, label, c]) => (
+            ].filter(Boolean).map(([n, label, c]) => (
               <div key={label} className="card-glass px-3 py-3">
                 <div className="font-display text-2xl font-semibold" style={{ color: c }}>{n}</div>
                 <div className="text-[11px] text-ink-muted">{label}</div>
@@ -721,7 +723,7 @@ const GabungPage = () => {
       {/* Testimoni */}
       <Section className="pb-12 md:pb-16">
         <div className="text-center mb-7">
-          <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">113+ member sudah merasakan manfaatnya</h2>
+          <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink">{memberCount ? `${memberCount} member sudah merasakan manfaatnya` : 'Masisir sudah merasakan manfaatnya'}</h2>
           <p className="text-sm text-ink-muted mt-2">Dari Masisir, untuk Masisir.</p>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 md:gap-4 max-w-6xl mx-auto">

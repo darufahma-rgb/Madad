@@ -602,6 +602,9 @@ const AllMaddahPreview = () => {
    5. TESTIMONI
    ══════════════════════════════════════════════════════════════ */
 const TestimoniSection = () => {
+  // Jumlah member live, sama dengan UserCountBadge di hero (dibulatkan ke bawah oleh server). Kosong → tanpa angka.
+  const count = useAppSettings().userCount;
+  const memberCount = Number.isFinite(count) && count > 0 ? `${count.toLocaleString('id-ID')}+` : null;
   const testimonials = [
     {
       text: "Dari yang awalnya ngerasa gak yakin buat ujian jadi akhirnya yakin dan semangat belajar bisa naik berkat adanya Talqeeh.",
@@ -655,7 +658,7 @@ const TestimoniSection = () => {
             <span className="w-6 h-px bg-gold-500/70"/>APA KATA MASISIR<span className="w-6 h-px bg-gold-500/70"/>
           </div>
           <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1] mb-4">
-            113+ member sudah merasakan manfaatnya
+            {memberCount ? `${memberCount} member sudah merasakan manfaatnya` : 'Masisir sudah merasakan manfaatnya'}
           </h2>
           <p className="text-ink-muted text-base max-w-xl mx-auto">
             Dari Masisir untuk Masisir — ini pengalaman nyata mereka.
