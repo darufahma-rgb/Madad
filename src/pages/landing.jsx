@@ -306,6 +306,13 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
         {/* CTA */}
         <Reveal delay={240}>
           <div className="flex flex-col sm:flex-row gap-3 items-center justify-center mb-5 w-full sm:w-auto px-4 sm:px-0">
+            {/* HP: satu tombol utama (Lihat Paket) di atas; di layar lebar tetap urutan semula */}
+            <div className="w-full sm:hidden">
+              <button onClick={() => { document.getElementById("paket")?.scrollIntoView({ behavior: "smooth" }); }}
+                className="btn-hero-gold w-full" style={{ justifyContent: "center" }}>
+                Lihat Paket <Icon name="arrowRight" className="w-4 h-4"/>
+              </button>
+            </div>
             <button
               onClick={() => navigate("/battle")}
               className="btn-hero-dark w-full sm:w-auto flex items-center gap-2"
@@ -321,9 +328,11 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
             >
               Sample Prompt Nahwu →
             </button>
-            <button onClick={() => { document.getElementById("paket")?.scrollIntoView({ behavior: "smooth" }); }} className="btn-hero-dark w-full sm:w-auto" style={{justifyContent:"center"}}>
-              Lihat Paket
-            </button>
+            <div className="hidden sm:block">
+              <button onClick={() => { document.getElementById("paket")?.scrollIntoView({ behavior: "smooth" }); }} className="btn-hero-dark" style={{justifyContent:"center"}}>
+                Lihat Paket
+              </button>
+            </div>
           </div>
         </Reveal>
 
@@ -333,7 +342,7 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
             Sudah member?{" "}
             <button
               onClick={onOpenLogin}
-              style={{ color:"#3ecf8e", textDecoration:"underline", textUnderlineOffset:"3px", background:"none", border:"none", cursor:"pointer", fontSize:"14px" }}
+              style={{ color:"#3ecf8e", textDecoration:"underline", textUnderlineOffset:"3px", background:"none", border:"none", cursor:"pointer", fontSize:"14px", padding:"10px 4px", margin:"-10px -4px" }}
             >
               Masuk dengan Google
             </button>
@@ -342,7 +351,7 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
 
         {/* Trust row */}
         <Reveal delay={340}>
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-16">
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-2 md:mb-16">
             {[`${CATALOG.maddah} maddah (S1 + Ma'had)`, `${CATALOG.prompts} template prompt`, "Library sekali bayar, selamanya", `AI Partner: paket 1 bulan atau Paket Imtihan ${IMTIHAN_AI_DAYS} hari`].map((t, i) => (
               <span key={i} className="flex items-center gap-2 text-xs" style={{ color:"rgba(255,255,255,0.42)" }}>
                 <Icon name="check" className="w-3.5 h-3.5 text-gold-400 flex-shrink-0"/>{t}
@@ -472,8 +481,8 @@ const TwoWaysSection = () => {
                   <p className="text-sm text-ink-muted leading-relaxed mb-5">{w.desc}</p>
                   <ol className="space-y-2 mb-5">
                     {w.steps.map((s, i) => (
-                      <li key={s} className="flex items-center gap-3 text-sm text-ink">
-                        <span className={`font-display font-semibold ${t.num}`}>{i + 1}</span>{s}
+                      <li key={s} className="flex items-start gap-3 text-sm text-ink leading-snug">
+                        <span className={`font-display font-semibold w-3 flex-shrink-0 ${t.num}`}>{i + 1}</span><span>{s}</span>
                       </li>
                     ))}
                   </ol>
@@ -482,51 +491,6 @@ const TwoWaysSection = () => {
               </Reveal>
             );
           })}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-/* ══════════════════════════════════════════════════════════════
-   3. HOW IT WORKS
-   ══════════════════════════════════════════════════════════════ */
-const HowItWorks = () => {
-  const steps = [
-    { num:"01", title:"Login pakai Google", sub:"Tanpa bikin password",
-      desc:"Akun Google jadi identitas keanggotaanmu. Bisa dipakai di HP dan laptop sekaligus." },
-    { num:"02", title:"Pilih paket", sub:"Paket Imtihan paling hemat",
-      desc:`Library: ${CATALOG.prompts} prompt, sekali bayar selamanya. Mau AI Partner? Ada paket 1 bulan, atau Paket Imtihan (${IMTIHAN_AI_DAYS} hari) yang jauh lebih hemat.` },
-    { num:"03", title:"Bayar di Mayar", sub:"Aktif otomatis",
-      desc:"QRIS, virtual account, atau e-wallet. Tagihan langsung atas akunmu — akses terbuka tanpa nunggu admin." },
-    { num:"04", title:"Mulai belajar", sub:"Isi profil 5 pertanyaan",
-      desc:"Fakultas, tingkat, gaya belajar. Dashboard langsung menyiapkan prompt dan AI yang cocok." },
-  ];
-  return (
-    <section className="section pt-0">
-      <div className="container-x">
-        <Reveal className="mb-12 text-center">
-          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 inline-flex items-center gap-2">
-            <span className="w-6 h-px bg-gold-500/70"/>CARA GABUNG TALQEEH
-          </div>
-          <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
-            Login, pilih paket, langsung belajar.
-          </h2>
-        </Reveal>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-x-3 gap-y-8 md:gap-8 relative">
-          <div className="hidden md:block absolute top-10 left-[12%] right-[12%] h-px bg-gradient-to-r from-transparent via-gold-500/30 to-transparent"/>
-          {steps.map((s, i) => (
-            <Reveal key={i}>
-              <div className="text-center px-1 md:px-4">
-                <div className="font-display text-4xl md:text-6xl font-semibold bg-gradient-to-br from-emerald-300 to-gold-400 bg-clip-text text-transparent mb-3 md:mb-5">
-                  {s.num}
-                </div>
-                <h3 className="font-display text-base md:text-2xl font-semibold text-ink mb-1">{s.title}</h3>
-                <div className="text-[10px] md:text-xs uppercase tracking-wider text-gold-400 mb-2 md:mb-3">{s.sub}</div>
-                <p className="text-xs md:text-sm text-ink-muted leading-relaxed">{s.desc}</p>
-              </div>
-            </Reveal>
-          ))}
         </div>
       </div>
     </section>
@@ -904,8 +868,10 @@ const LiveCaptionSection = ({ onOpenJoin }) => (
   <section id="live-caption" className="section pt-0">
     <style>{`@keyframes card-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }`}</style>
     <div className="container-x">
-      <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_1fr] gap-10 lg:gap-14 items-center">
-        <Reveal>
+      {/* HP: judul → demo → keunggulan → tombol (demo paling meyakinkan, jadi tidak ditaruh paling bawah).
+          Layar lebar: teks di kiri (judul di atas, keunggulan di bawah), demo di kanan setinggi keduanya. */}
+      <div className="max-w-6xl mx-auto grid lg:grid-cols-[1.05fr_1fr] gap-y-8 lg:gap-x-14 lg:gap-y-0">
+        <Reveal className="lg:col-start-1 lg:row-start-1 lg:self-end">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-xs text-emerald-300 mb-5">
             <span className="relative flex w-2 h-2">
               <span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-60 animate-ping"/>
@@ -917,9 +883,14 @@ const LiveCaptionSection = ({ onOpenJoin }) => (
             Duktur ngomong 'ammiyah?<br/>
             <span className="bg-gradient-to-br from-emerald-300 to-gold-400 bg-clip-text text-transparent">Kamu tetap paham.</span>
           </h2>
-          <p className="text-ink-muted text-base md:text-lg leading-relaxed max-w-xl mb-7">
+          <p className="text-ink-muted text-base md:text-lg leading-relaxed max-w-xl lg:mb-7">
             Taruh HP di dekat duktur dan tekan rekam. Tiap kalimat muncul dalam huruf Arab beserta terjemahan Indonesia yang mudah dipahami, kira-kira 10 detik setelah diucapkan.
           </p>
+        </Reveal>
+        <Reveal className="lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:self-center">
+          <LiveCaptionDemo/>
+        </Reveal>
+        <Reveal className="lg:col-start-1 lg:row-start-2 lg:self-start">
           <div className="grid sm:grid-cols-2 gap-4 mb-8">
             {LIVE_POINTS.map(p => (
               <div key={p.title} className="flex gap-3">
@@ -934,14 +905,11 @@ const LiveCaptionSection = ({ onOpenJoin }) => (
             ))}
           </div>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-            <button onClick={() => onOpenJoin("imtihan")} className="btn btn-primary px-6 py-3.5 text-sm font-medium">
+            <button onClick={() => onOpenJoin("imtihan")} className="btn btn-primary w-full sm:w-auto justify-center px-6 py-3.5 text-sm font-medium">
               Ambil Paket Imtihan <Icon name="arrowRight" className="w-4 h-4"/>
             </button>
-            <span className="text-xs text-ink-soft">Live Caption 4 jam/hari · {IMTIHAN_AI_DAYS} hari tanpa kuota bulanan</span>
+            <span className="text-xs text-ink-soft w-full sm:w-auto text-center sm:text-left">Live Caption 4 jam/hari · {IMTIHAN_AI_DAYS} hari tanpa kuota bulanan</span>
           </div>
-        </Reveal>
-        <Reveal delay={1}>
-          <LiveCaptionDemo/>
         </Reveal>
       </div>
     </div>
@@ -969,20 +937,33 @@ const LIBRARY_AI_EXTRAS = [
   "Arena Imtihan: ubah muqarrarmu sendiri jadi game ujian, plus 6 cerita AI & 15 tanya AI Halaqah per hari",
   "Coba AI Partner untuk 1 materi: ringkasan, flashcard, kuis, mufradat, 10× i'rab, 15 pesan tutor, 3 halaman scan/foto per hari",
 ];
-const QuotaBox = ({ title, rows, note }) => (
-  <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05] p-4 mb-6">
-    <div className="text-[11px] uppercase tracking-wider text-emerald-300 mb-2.5">{title}</div>
-    <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 text-[13px]">
-      {rows.map(([label, value]) => (
-        <React.Fragment key={label}>
-          <dt className="text-ink-muted">{label}</dt>
-          <dd className="text-ink text-right tabular-nums whitespace-nowrap">{value}</dd>
-        </React.Fragment>
-      ))}
-    </dl>
-    {note && <p className="text-xs text-ink-soft mt-3 leading-relaxed">{note}</p>}
-  </div>
-);
+// Di HP rinciannya dilipat (judul tetap terlihat) supaya kartu paket tidak terlalu panjang; layar lebar selalu terbuka.
+const QuotaBox = ({ title, rows, note }) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/[0.05] p-4 mb-6">
+      <button onClick={() => setOpen(o => !o)} aria-expanded={open}
+        className="w-full flex items-center justify-between gap-3 text-left md:pointer-events-none md:cursor-default">
+        <span className="text-[11px] uppercase tracking-wider text-emerald-300">{title}</span>
+        <span className="md:hidden inline-flex items-center gap-1 text-xs text-emerald-200 flex-shrink-0">
+          {open ? 'Tutup' : 'Lihat batas harian'}
+          <Icon name="chevronDown" className={`w-3.5 h-3.5 transition-transform ${open ? 'rotate-180' : ''}`}/>
+        </span>
+      </button>
+      <div className={`${open ? 'block' : 'hidden'} md:block mt-2.5`}>
+        <dl className="grid grid-cols-[1fr_auto] gap-x-4 gap-y-1.5 text-[13px]">
+          {rows.map(([label, value]) => (
+            <React.Fragment key={label}>
+              <dt className="text-ink-muted">{label}</dt>
+              <dd className="text-ink text-right tabular-nums whitespace-nowrap">{value}</dd>
+            </React.Fragment>
+          ))}
+        </dl>
+        {note && <p className="text-xs text-ink-soft mt-3 leading-relaxed">{note}</p>}
+      </div>
+    </div>
+  );
+};
 const IMTIHAN_QUOTA = [
   ["Terjemah & i'rab", "30× / hari"],
   ["Pesan tutor & Tanya AI", "40 / hari"],
@@ -1056,8 +1037,8 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
 
       <Reveal>
         <div className="grid md:grid-cols-2 gap-5 max-w-5xl mx-auto items-stretch">
-          {/* Paket Library */}
-          <div className="card-glass-strong p-8 relative overflow-hidden flex flex-col"
+          {/* Paket Library (di HP tampil sesudah Paket Imtihan) */}
+          <div className="card-glass-strong p-5 md:p-8 relative overflow-hidden flex flex-col"
             style={{ border:"1px solid rgba(201,168,106,.22)" }}>
             <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full bg-gold-500/12 blur-3xl pointer-events-none"/>
             <div className="relative flex flex-col flex-1">
@@ -1077,8 +1058,8 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
             </div>
           </div>
 
-          {/* Paket Imtihan: Library + AI Partner 1 termin */}
-          <div className="card-glass-strong p-8 relative overflow-hidden flex flex-col"
+          {/* Paket Imtihan: Library + AI Partner 1 termin — paket yang direkomendasikan, jadi tampil pertama di HP */}
+          <div className="card-glass-strong p-5 md:p-8 relative overflow-hidden flex flex-col order-first md:order-none"
             style={{ border:"1px solid rgba(62,207,142,.35)" }}>
             <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full blur-3xl pointer-events-none" style={{background:"rgba(62,207,142,0.14)"}}/>
             <span className="absolute top-5 right-5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500 text-black">Paling hemat</span>
@@ -1646,7 +1627,8 @@ const SubmitSoalBanner = () => (
 );
 
 /* Urutan mengikuti alur keputusan pengunjung baru: fitur baru → apa itu Talqeeh → bukti isi (maddah, bank soal)
-   → bukti sosial → cara gabung → paket. Kampanye sampingan (submit soal, hadiah) tidak menghalangi alur utama. */
+   → bukti sosial → paket (langkah gabung 1-2-3-4 ada di dalam section paket, tepat di samping tombol bayar).
+   Kampanye sampingan (submit soal, hadiah) tidak menghalangi alur utama. */
 const LandingPage = ({ onOpenLogin, onOpenJoin }) => (
   <div className="page-enter">
     <StyleInject/>
@@ -1658,7 +1640,6 @@ const LandingPage = ({ onOpenLogin, onOpenJoin }) => (
     <SubmitSoalBanner/>
     <AllMaddahPreview/>
     <TestimoniSection/>
-    <HowItWorks/>
     <PricingAndCTA onOpenLogin={onOpenLogin} onOpenJoin={onOpenJoin}/>
     <HadiahPreviewBanner/>
     <FounderTeaser/>
