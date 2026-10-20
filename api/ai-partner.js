@@ -40,8 +40,8 @@ const FREE_OCR_LIFETIME = 3;
 /* Member bertipe "Trial — akses sementara" (Admin → Members, kolom member_type) yang diberi akses AI: semua fitur tetap
    terbuka, tapi jatahnya lebih kecil daripada pelanggan berbayar. Tidak berlaku kalau mereka membeli Paket Imtihan,
    dan "Limit khusus per email" di Settings tetap menang. */
-const TRIAL_MEMBER_DAILY = { create: 3, ocr: 5, transcribe: 15, live: 60, generate: 8, analyze: 10, grade: 5, chat: 15, prompt: 15, talkhis: 1 };
-const TRIAL_MEMBER_MONTHLY = { prompt: 60, chat: 60, generate: 15, create: 5, analyze: 60, grade: 20, ocr: 20, transcribe: 60, live: 240, talkhis: 1 };
+const TRIAL_MEMBER_DAILY = { create: 3, ocr: 5, transcribe: 15, live: 15, generate: 8, analyze: 10, grade: 5, chat: 15, prompt: 15, talkhis: 1 };
+const TRIAL_MEMBER_MONTHLY = { prompt: 60, chat: 60, generate: 15, create: 5, analyze: 60, grade: 20, ocr: 20, transcribe: 60, live: 30, talkhis: 1 };
 // Pengaman biaya: total pemanggilan AI oleh SEMUA pengguna coba gratis per hari. Akun gratis bisa dibuat siapa saja
 // yang punya akun Google, jadi tanpa batas bersama ini satu orang dengan banyak akun bisa menguras saldo AI.
 // ±200 × ±$0.03 ≈ $6/hari paling banyak. Atur lewat env TRIAL_DAILY_LIMIT.
@@ -251,8 +251,8 @@ const monthlyUsage = async (code, since) => {
 // Pakai satu jatah pelanggan: cek kuota bulanan dulu, lalu catat di kuota harian (atomik).
 // Mengembalikan null kalau boleh, 'monthly' / 'daily' kalau habis, atau 'unavailable' kalau pemakaian
 // tidak bisa dibaca (ditolak sementara — fail closed, tanpa mengaku kuota habis).
-/* Pemegang Paket Imtihan (tagihan 'imtihan' lunas dalam 120 hari terakhir): tanpa kuota bulanan, hanya batas wajar
-   harian (LIMITS) sebagai pengaman biaya. Dihitung sekali per permintaan. */
+/* Pemegang Paket Imtihan (tagihan 'imtihan' lunas dalam 120 hari terakhir): tanpa kuota bulanan (kecuali Live Caption,
+   lihat monthlyLimitFor), hanya batas wajar harian (LIMITS) sebagai pengaman biaya. Dihitung sekali per permintaan. */
 const IMTIHAN_WINDOW_DAYS = 120;
 // Talkhis paling mahal (±$1–2 per muqarrar), jadi Paket Imtihan dibatasi total sekian muqarrar selama masa paketnya.
 const IMTIHAN_TALKHIS_CAP = 10;
@@ -305,6 +305,14 @@ const monthlyLimitsFor = async (ctx) => {
   return (await isImtihanHolder(ctx)) ? null : await getMonthlyLimits();
 };
 const monthlyLimitCache = (ctx) => (ctx?.trialMember ? TRIAL_MEMBER_MONTHLY : cachedMonthlyLimits());
+/* Jatah per 30 hari untuk satu jenis. Live Caption tetap dibatasi untuk pemegang Paket Imtihan: biayanya nyata per
+   menit kuliah, jadi tanpa batas bulanan pemakai terberat bisa melampaui harga paket. Limit khusus noMonthly tetap bebas. */
+const monthlyLimitFor = async (ctx, kind) => {
+  const limits = await monthlyLimitsFor(ctx);
+  if (limits) return limits[kind] ?? null;
+  if (kind === 'live' && !(await quotaOverride(ctx))?.noMonthly) return (await getMonthlyLimits()).live;
+  return null;
+};
 
 /* Jatah baca halaman scan bisa ditabung: jatah harian yang tidak terpakai menumpuk sampai OCR_BANK_DAYS hari
    (mis. 20/hari → sampai 60 sekali baca setelah dua hari tidak dipakai). Batas bulanan tetap berlaku. */
@@ -337,7 +345,7 @@ const takeQuota = async (ctx, kind) => {
     if (!used) return 'unavailable';
     if ((used.talkhis || 0) >= IMTIHAN_TALKHIS_CAP) return 'package';
   }
-  const monthly = (await monthlyLimitsFor(ctx))?.[kind] ?? null;
+  const monthly = await monthlyLimitFor(ctx, kind);
   if (monthly != null) {
     const period = quotaPeriod(ctx.aiExpiresAt);
     ctx.quotaResetAt = period.resetAt;
@@ -516,6 +524,7 @@ async function handleTranscribe(ctx, body, res) {
    token bertanda tangan (HMAC). Token yang hilang/diubah hanya membuat kredit mulai dari nol — pemakai yang
    membuang token membayar lebih, bukan kurang. */
 const LIVE_MAX_SECONDS = 20;
+const LIVE_ACCURATE_WEIGHT = 3; // 1 menit mode Akurat = 3 menit jatah (20 dtk × 3 = 60 dtk, tetap cukup satu potong jatah)
 const LIVE_TOKEN_TTL_MS = 15 * 60 * 1000;
 const liveSecret = () => process.env.LIVE_CAPTION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 const liveSign = (payload) => crypto.createHmac('sha256', liveSecret()).update(payload).digest('base64url');
@@ -548,7 +557,7 @@ async function handleLiveQuota(ctx, res) {
   const r = await fetch(`${url}/rest/v1/ai_usage?member_code=eq.${encodeURIComponent(ctx.code)}&kind=eq.live&day=eq.${today}&select=count`, { headers: sbHeaders(key) });
   const usedToday = r.ok ? ((await r.json()) || []).reduce((n, row) => n + (Number(row.count) || 0), 0) : 0;
   let monthlyLeft = null;
-  const monthly = (await monthlyLimitsFor(ctx))?.live ?? null;
+  const monthly = await monthlyLimitFor(ctx, 'live');
   if (monthly != null) {
     const used = await monthlyUsage(ctx.code, quotaPeriod(ctx.aiExpiresAt).start);
     if (used) monthlyLeft = Math.max(0, monthly - (used.live || 0));
@@ -570,8 +579,10 @@ async function chargeLive(ctx, body, res) {
   if (seconds > LIVE_MAX_SECONDS + 1) { res.status(400).json({ ok: false, error: 'Potongan audio terlalu panjang' }); return null; }
 
   let credit = liveCredit(body.credit, ctx.code);
+  // Mode Akurat (model dengar ±3× biaya per menit kuliah) menghabiskan kredit 3× lebih cepat.
+  const cost = seconds * 1000 * (body.mode === 'akurat' ? LIVE_ACCURATE_WEIGHT : 1);
   // Jatah Live Caption terpisah dari transkrip rekaman (jenis kuota "live", menit).
-  if (credit < seconds * 1000) {
+  if (credit < cost) {
     const over = await takeQuota(ctx, 'live');
     const closed = (over === 'daily' && dailyLimitCache(ctx, 'live') === 0) || (over === 'monthly' && monthlyLimitCache(ctx).live === 0);
     const fail = (message) => { res.status(429).json({ ok: false, error: 'quota', message }); return null; };
@@ -581,7 +592,7 @@ async function chargeLive(ctx, body, res) {
     if (over) return fail(`Jatah Live Caption ${liveHours(monthlyLimitCache(ctx).live)} di periode langgananmu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx.quotaResetAt || quotaPeriod(null).resetAt)}.`);
     credit += 60_000;
   }
-  return { audio, credit: credit - seconds * 1000 };
+  return { audio, credit: Math.max(0, credit - cost) };
 }
 
 // Live caption hanya dua mode: Arab (fushah/'ammiyah dikenali otomatis) atau kuliah berbahasa Indonesia.
@@ -654,7 +665,7 @@ async function handleLiveTalkhis(ctx, body, res) {
     ? [{ role: 'user', content: input }, { role: 'assistant', content: before }, { role: 'user', content: LECTURE_TALKHIS_CONTINUE }]
     : [{ role: 'user', content: input }];
   const { out, stream, failed } = await runAI(body, res, {
-    system: lectureTalkhisPrompt(lang), messages, model: (await resolveModels()).liveTranslate,
+    system: lectureTalkhisPrompt(lang), messages, model: (await resolveModels()).liveTalkhis,
     maxTokens: LIVE_TALKHIS_TOKENS, temperature: 0.2, thinking: 'low', timeLimitMs: LIVE_TALKHIS_TIME_MS,
   });
   if (failed) return;

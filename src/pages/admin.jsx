@@ -2929,7 +2929,8 @@ const AdminSettings = () => {
             ['aiModelTranscribe', 'Transkrip rekaman kuliah', 'transcribe', "Harus model yang bisa mendengar audio (Gemini). Coba google/gemini-2.5-pro kalau transkrip 'ammiyah kurang akurat. Tes hanya memeriksa ID-nya, bukan kemampuan audio."],
             ['aiModelLiveHear', 'Live Caption — dengar', 'liveHear', 'Mengubah suara duktur jadi teks Arab, ±setiap 5 detik. Harus model audio yang CEPAT (tiap detik terasa) dan tidak mengarang ucapan dari derau kelas.'],
             ['aiModelLiveHearAccurate', 'Live Caption — dengar (mode Akurat)', 'liveHearAccurate', 'Dipakai saat mahasiswa memilih mode "Akurat" untuk kelas ramai. Model audio terkuat; lebih lambat (±4 dtk) dan ±4× biaya tahap dengar.'],
-            ['aiModelLiveTranslate', 'Live Caption — terjemah', 'liveTranslate', 'Menerjemahkan teks Arab kuliah ke bahasa Indonesia + istilah + tanda "ditekankan duktur". Teks saja, utamakan cepat dan teliti.'],
+            ['aiModelLiveTranslate', 'Live Caption — terjemah', 'liveTranslate', 'Menerjemahkan teks Arab kuliah ke bahasa Indonesia + istilah + tanda "ditekankan duktur". Dipanggil terus selama merekam, jadi biayanya paling besar: bawaan Gemini 3.1 Flash-Lite (±$0,0064/menit kuliah). google/gemini-3.7-flash sedikit lebih teliti tapi ±2,5× biaya.'],
+            ['aiModelLiveTalkhis', 'Live Caption — talkhisan kuliah', 'liveTalkhis', 'Talkhisan dari transkrip satu kuliah (sekali per kuliah, memakai jatah Generate). Bawaan Gemini 3.7 Flash.'],
           ].map(([key, label, task, hint]) => (
             <ModelField key={key} label={label} hint={hint} value={settings[key] || ''}
               active={activeModels?.[task]} onChange={v => setSettings({ ...settings, [key]: v })}/>
@@ -2951,7 +2952,7 @@ const AdminSettings = () => {
               ['generate', 'Pembuatan AI', 'kali', 40], ['create', 'Materi baru', 'materi', 15],
               ['analyze', "I'rab & harakat", 'kali', 150], ['grade', 'Nilai tahriri', 'jawaban', 60],
               ['ocr', 'Baca foto', 'halaman', 60], ['transcribe', 'Transkrip', 'menit', 300],
-              ['live', 'Live Caption', 'menit', 1200], ['talkhis', 'Talkhis', 'muqarrar', 6],
+              ['live', 'Live Caption', 'menit', 300], ['talkhis', 'Talkhis', 'muqarrar', 6],
             ].map(([k, label, unit, def]) => (
               <div key={k}>
                 <label className="text-[11px] text-ink-muted block mb-1">{label} <span className="text-ink-soft">({unit})</span></label>
@@ -2965,10 +2966,10 @@ const AdminSettings = () => {
           <div className="pt-3 border-t border-white/[0.06]">
             <label className="text-[11px] text-ink-muted block mb-1">Live Caption per hari <span className="text-ink-soft">(menit, per pelanggan)</span></label>
             <div className="flex items-center gap-3">
-              <input inputMode="numeric" value={settings.aiLiveDailyLimit ?? ""} placeholder="240"
+              <input inputMode="numeric" value={settings.aiLiveDailyLimit ?? ""} placeholder="120"
                 onChange={e => { const v = e.target.value.replace(/[^\d]/g, "").slice(0, 4); setSettings(s => ({ ...s, aiLiveDailyLimit: v })); }}
                 className="w-28 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink outline-none font-mono focus:border-emerald-500/45"/>
-              <span className="text-[11px] text-ink-soft leading-snug">Kosong = 240 (4 jam kuliah). 0 = Live Caption ditutup. Jatah ini terpisah dari Transkrip rekaman; biaya ±$0,013/menit (model bawaan).</span>
+              <span className="text-[11px] text-ink-soft leading-snug">Kosong = 120 (2 jam kuliah). 0 = Live Caption ditutup. Jatah ini terpisah dari Transkrip rekaman. Biaya mode Cepat ±$0,0064/menit (±Rp110); mode Akurat dihitung 3× menit. Kuota Live Caption per 30 hari di atas juga berlaku untuk Paket Imtihan.</span>
             </div>
           </div>
         </div>
@@ -3000,7 +3001,7 @@ const AdminSettings = () => {
                   {[
                     ['talkhis', 'Talkhis', 1], ['generate', 'Pembuatan AI', 25], ['analyze', "I'rab", 30], ['chat', 'Tutor', 40], ['prompt', 'Tanya AI', 40],
                     ['create', 'Materi baru', 10], ['grade', 'Nilai tahriri', 20], ['ocr', 'Baca foto', 20], ['transcribe', 'Transkrip', 60],
-                    ['live', 'Live Caption', Number(settings.aiLiveDailyLimit) || 240],
+                    ['live', 'Live Caption', Number(settings.aiLiveDailyLimit) || 120],
                   ].map(([k, label, def]) => (
                     <div key={k}>
                       <label className="text-[10px] text-ink-muted block mb-1">{label} / hari</label>

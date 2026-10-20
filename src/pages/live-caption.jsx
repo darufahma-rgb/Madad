@@ -158,7 +158,7 @@ const MADDAH_KEY = 'talqeeh_live_caption_maddah';
 const MODE_KEY = 'talqeeh_live_caption_mode';
 const HEAR_MODES = [
   { id: 'cepat', label: 'Cepat', sub: 'teks Arab ±2 dtk' },
-  { id: 'akurat', label: 'Akurat', sub: 'kelas ramai, ±4 dtk' },
+  { id: 'akurat', label: 'Akurat', sub: 'kelas ramai, 3× jatah' },
 ];
 const maddahById = (id) => (id ? window.getMaddahById?.(id) || window.getMahadMaddahById?.(id) || null : null);
 const maddahContext = (id) => {
@@ -615,7 +615,7 @@ const LiveCaptionBody = () => {
             <li>Saat duktur bilang "ini penting" atau "keluar di imtihan", bagian itu ditandai otomatis. Kamu juga bisa menandai sendiri dengan <span className="text-gold-300">Tandai</span>.</li>
             <li>Istilah penting dicatat di bawah tiap kalimat, lalu dirangkum di akhir sesi.</li>
             <li>Setelah selesai, simpan jadi materi AI Partner untuk diringkas, dibuat kuis, dan lainnya.</li>
-            <li>Jatah Live Caption terpisah dari transkrip rekaman: 1 menit kuliah = 1 menit jatah.</li>
+            <li>Jatah Live Caption terpisah dari transkrip rekaman: 1 menit kuliah = 1 menit jatah (mode Akurat = 3 menit jatah).</li>
           </ul>
           {quota && (
             <div className="mt-4 inline-flex items-center gap-2 text-xs rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-ink-muted">

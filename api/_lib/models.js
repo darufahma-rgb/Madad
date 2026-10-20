@@ -15,6 +15,7 @@ export const MODEL_SETTING_KEYS = {
   liveHear:   'aiModelLiveHear',   // Live Caption tahap dengar — model audio, utamakan cepat & akurat
   liveHearAccurate: 'aiModelLiveHearAccurate', // Live Caption mode "Akurat" (kelas ramai) — model audio terkuat
   liveTranslate: 'aiModelLiveTranslate', // Live Caption tahap terjemah — teks saja, utamakan cepat & pintar
+  liveTalkhis: 'aiModelLiveTalkhis',     // talkhisan kuliah dari transkrip Live Caption
 };
 
 // Format ID OpenRouter: "vendor/nama-model" (boleh titik, titik dua untuk varian seperti ":free").
@@ -38,9 +39,12 @@ export const TASK_DEFAULTS = {
   /* Live Caption, dari benchmark audio kuliah Arab (10 potongan fushah/'ammiyah + derau, Okt 2026):
      dengar — Gemini 3.1 Flash-Lite: salah dengar 0,9%, median 1,4 dtk, aman di derau (2.5 Flash: 1,4% / 2,9 dtk;
      Gemini 4 Argon 0,5% tapi 3,8 dtk; Gemini 3 Flash Preview mengarang ucapan dari derau).
-     terjemah — Gemini 3.7 Flash: lolos semua cek (takdir, ayat, penekanan duktur), 3,3 dtk dan stabil. */
+     terjemah — Gemini 3.1 Flash-Lite: biaya per menit kuliah ±$0,0064 (dengar + terjemah) vs ±$0,016 dengan 3.7 Flash,
+     mutu hampir sama (nama salah dengar 24/26 vs 25/26; kelas bising 33/37 vs 35/37). Diganti demi harga paket.
+     talkhisan kuliah — Gemini 3.7 Flash: sekali per kuliah, rapi & setia isi (2.5 Flash bisa berputar-putar). */
   liveHear:      'google/gemini-3.1-flash-lite',
-  liveTranslate: 'google/gemini-3.7-flash',
+  liveTranslate: 'google/gemini-3.1-flash-lite',
+  liveTalkhis:   'google/gemini-3.7-flash',
   /* Mode "Akurat" untuk kelas ramai — di audio bergema + derau (SNR 8 dB): Gemini 4 Argon salah dengar 7,2% & semua
      13 nama kitab/ulama benar (Flash-Lite 15,2%, 11/13); hasil akhir setelah terjemah 37/37 vs 35/37. ±3,9 dtk. */
   liveHearAccurate: 'google/gemini-4-argon',
@@ -74,6 +78,7 @@ export const resolveModels = async () => {
     liveHear: pick('liveHear') || TASK_DEFAULTS.liveHear,
     liveHearAccurate: pick('liveHearAccurate') || TASK_DEFAULTS.liveHearAccurate,
     liveTranslate: pick('liveTranslate') || TASK_DEFAULTS.liveTranslate,
+    liveTalkhis: pick('liveTalkhis') || TASK_DEFAULTS.liveTalkhis,
   };
   cache = { at: Date.now(), value };
   return value;
