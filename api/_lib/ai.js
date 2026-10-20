@@ -64,7 +64,8 @@ const isReasoningModel = async (modelId) => {
 // menggantikan effort "low". Jatahnya ditambahkan ke max_tokens supaya jawaban tetap utuh, dan sengaja berupa
 // angka (bukan effort bebas) supaya waktu respons tetap di bawah batas 60 detik Vercel.
 /* thinking: 'off' = jawab secepat mungkin tanpa berpikir dulu (Live Caption: tiap detik terasa). Model yang menerima
-   parameter reasoning diberi effort "minimal"; Gemini 2.5 Flash dimatikan berpikirnya seperti bawaan di bawah. */
+   parameter reasoning diberi effort "minimal"; Gemini 2.5 Flash dimatikan berpikirnya seperti bawaan di bawah.
+   thinking: 'low' = berpikir singkat (effort "low") — talkhisan kuliah: menyusun ulang transkrip panjang. */
 const buildBody = async ({ modelId, maxTokens, temperature, messages, stream, thinking = 0 }) => {
   const hasAudio = messages.some(m => Array.isArray(m.content) && m.content.some(p => p?.type === 'input_audio'));
   const backup = fallbackFor(modelId);
@@ -74,14 +75,15 @@ const buildBody = async ({ modelId, maxTokens, temperature, messages, stream, th
   // dipakai untuk jawaban. Kalau ditolak, model cadangan tetap menjawab.
   const gemini = /^google\/gemini-2\.5-flash(?!-lite)/.test(modelId);
   const geminiThinking = gemini && thinking > 0;
-  if (thinking === 'off' && !gemini) {
+  if ((thinking === 'off' || thinking === 'low') && !gemini) {
     const params = await paramsOf(modelId);
     const canReason = params ? params.includes('reasoning') : reasoning;
     return {
       model: modelId,
       ...(fallback ? { models: [modelId, backup] } : {}),
-      max_tokens: maxTokens,
-      ...(canReason ? { reasoning: { effort: 'minimal', exclude: true } } : {}),
+      // Berpikir singkat tetap memakai jatah max_tokens: beri ruang tambahan supaya jawabannya tidak terpotong.
+      max_tokens: thinking === 'low' && canReason ? maxTokens + 2048 : maxTokens,
+      ...(canReason ? { reasoning: { effort: thinking === 'low' ? 'low' : 'minimal', exclude: true } } : {}),
       ...((await acceptsTemperature(modelId)) ? { temperature } : {}),
       ...(stream ? { stream: true } : {}),
       usage: { include: true },
@@ -189,6 +191,7 @@ export const streamAI = async ({ system, messages, maxTokens = 2000, temperature
   let timedOut = false;
   const timer = timeLimitMs > 0 ? setTimeout(() => { timedOut = true; controller.abort(); }, timeLimitMs) : null;
   try {
+    // Batas waktu habis sebelum token pertama datang (model masih berpikir) → pesan yang jelas, bukan AbortError mentah.
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       signal: controller.signal,
@@ -202,7 +205,7 @@ export const streamAI = async ({ system, messages, maxTokens = 2000, temperature
         modelId, maxTokens, temperature, stream: true, thinking,
         messages: systemMessage ? [systemMessage, ...messages] : messages,
       })),
-    });
+    }).catch((err) => { throw timedOut ? new Error('AI terlalu lama merespons') : err; });
     if (!res.ok || !res.body) {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.error?.message || `OpenRouter error (${res.status})`);

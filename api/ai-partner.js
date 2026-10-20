@@ -5,7 +5,8 @@ import { callAI, callAIJson, requestAI, streamAI, friendlyAiError, aiErrorDetail
 import { resolveModels, isValidModelId, clearModelCache, TASK_THINKING } from './_lib/models.js';
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, weakPointsNote, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
-  OCR_PROMPT, transcribePrompt, transcribeAnswerPrompt, TRANSCRIBE_DIALECTS, tutorSystem, syafawiSystem, learnerContext,
+  OCR_PROMPT, transcribePrompt, transcribeAnswerPrompt, TRANSCRIBE_DIALECTS,
+  lectureTalkhisPrompt, lectureTalkhisInput, LECTURE_TALKHIS_CONTINUE, tutorSystem, syafawiSystem, learnerContext,
   isHighStakesFiqh, FIQH_REMINDER,
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
@@ -19,7 +20,7 @@ import { withAiContext } from './_lib/ai-cost.js';
 
 // Kategori biaya AI per action (cocok dengan kolom "Fitur" di analitik admin).
 const COST_KIND = {
-  ocr: 'ocr', transcribe: 'transcribe', 'live-caption': 'live', 'live-hear': 'live', 'live-translate': 'live', generate: 'generate', analyze: 'analyze', grade: 'grade',
+  ocr: 'ocr', transcribe: 'transcribe', 'live-caption': 'live', 'live-hear': 'live', 'live-translate': 'live', 'live-talkhis': 'generate', generate: 'generate', analyze: 'analyze', grade: 'grade',
   chat: 'chat', 'prompt-chat': 'prompt', talkhis: 'talkhis', 'battle-story': 'battle_story', 'battle-quiz': 'battle_quiz', 'battle-halaqah': 'battle_halaqah',
 };
 import { handlePromptFeedback, handlePromptQualityAdmin } from './_lib/prompt-quality.js';
@@ -50,7 +51,7 @@ const trialGateClosed = (res) => upgradeRequired(res, 'trial_busy',
   'Kuota coba gratis untuk hari ini sudah penuh. Coba lagi besok, atau berlangganan AI Partner untuk memakai AI kapan saja.');
 const TRIAL_KINDS      = ['summary', 'flashcards', 'quiz', 'glossary'];
 // analyze & chat dibuka sedikit untuk coba gratis (lihat TRIAL_TASTE); sisanya khusus pelanggan.
-const PRO_ONLY_ACTIONS = ['transcribe', 'live-caption', 'live-hear', 'live-translate', 'live-quota', 'grade', 'create-batch', 'talkhis'];
+const PRO_ONLY_ACTIONS = ['transcribe', 'live-caption', 'live-hear', 'live-translate', 'live-talkhis', 'live-quota', 'grade', 'create-batch', 'talkhis'];
 const PRO_ONLY_MESSAGES = {
   'live-caption': 'Live Caption khusus pelanggan AI Partner. Berlangganan untuk mendengar terjemahan kuliah duktur secara langsung.',
   talkhis: 'Talkhis otomatis khusus pelanggan AI Partner. Berlangganan untuk men-talkhis seluruh muqarrarmu dalam bahasa Arab, lengkap dengan cek kelengkapan dan PDF siap cetak.',
@@ -626,6 +627,35 @@ async function handleLiveTranslate(ctx, body, res) {
   return res.status(200).json({ ok: true, ...result });
 }
 
+/* Talkhisan kuliah dari transkrip Live Caption (lihat lectureTalkhisPrompt). Memakai jatah "generate" seperti
+   ringkasan materi. Kuliah panjang bisa melewati batas waktu fungsi (60 dtk): hasilnya dikirim sebagai sebagian
+   (truncated) dan halaman meminta lanjutan dengan continue_from — lanjutan tidak memotong jatah lagi. */
+const LIVE_TALKHIS_MAX_CHARS = 150000;
+const LIVE_TALKHIS_TOKENS = 8000;
+const LIVE_TALKHIS_TIME_MS = 50000;
+const LIVE_TALKHIS_MAX_CONTINUE_CHARS = 80000;
+async function handleLiveTalkhis(ctx, body, res) {
+  const transcript = isStr(body.transcript) ? body.transcript.trim() : '';
+  if (transcript.length < 80) return res.status(400).json({ ok: false, error: 'Transkrip kuliah masih terlalu pendek untuk dibuat talkhisan.' });
+  if (transcript.length > LIVE_TALKHIS_MAX_CHARS) return res.status(400).json({ ok: false, error: 'Transkrip terlalu panjang (lebih dari ±3 jam kuliah). Buat talkhisan per sesi.' });
+  const lang = SUMMARY_LANGS.includes(body.lang) ? body.lang : 'id';
+  const before = isStr(body.continue_from) ? body.continue_from.slice(0, LIVE_TALKHIS_MAX_CONTINUE_CHARS) : '';
+  if (!before) {
+    const over = await takeQuota(ctx, 'generate');
+    if (over) return quotaExceeded(res, 'generate', over, ctx);
+  }
+  const input = lectureTalkhisInput({ title: body.title, learner: body.learner, transcript });
+  const messages = before
+    ? [{ role: 'user', content: input }, { role: 'assistant', content: before }, { role: 'user', content: LECTURE_TALKHIS_CONTINUE }]
+    : [{ role: 'user', content: input }];
+  const { out, stream, failed } = await runAI(body, res, {
+    system: lectureTalkhisPrompt(lang), messages, model: (await resolveModels()).liveTranslate,
+    maxTokens: LIVE_TALKHIS_TOKENS, temperature: 0.2, thinking: 'low', timeLimitMs: LIVE_TALKHIS_TIME_MS,
+  });
+  if (failed) return;
+  return sendResult(res, stream, { data: out.text, lang, truncated: !!out.truncated, model: out.model });
+}
+
 // Satu panggilan untuk kedua tahap (dipakai halaman versi lama yang masih terbuka di HP pengguna).
 async function handleLiveCaption(ctx, body, res) {
   const charged = await chargeLive(ctx, body, res);
@@ -669,6 +699,11 @@ async function handleCreate(ctx, body, res) {
       maddah_id:   isStr(body.maddah_id) ? body.maddah_id.slice(0, 80) : null,
       source_type: sourceType,
       content:     content.slice(0, limit),
+      // Talkhisan kuliah dari Live Caption ikut disimpan sebagai ringkasan materi ini (tab Ringkasan langsung terisi).
+      ...(isStr(body.summary) && body.summary.trim() ? {
+        summary: body.summary.trim().slice(0, 120000),
+        summary_lang: SUMMARY_LANGS.includes(body.summary_lang) ? body.summary_lang : 'id',
+      } : {}),
     }),
   });
   if (!r.ok) {
@@ -1494,6 +1529,7 @@ export default async function handler(req, res) {
       case 'live-caption':  return await handleLiveCaption(ctx, body, res);
       case 'live-hear':     return await handleLiveHear(ctx, body, res);
       case 'live-translate': return await handleLiveTranslate(ctx, body, res);
+      case 'live-talkhis':  return await handleLiveTalkhis(ctx, body, res);
       case 'live-quota':    return await handleLiveQuota(ctx, res);
       case 'create':        return await handleCreate(ctx, body, res);
       case 'create-batch':  return await handleCreateBatch(ctx, body, res);

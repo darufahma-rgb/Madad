@@ -331,6 +331,97 @@ ${indo
 Balas HANYA JSON: {"ar":"...","id":"...","istilah":[],"penting":false}`;
 };
 
+/* ── Talkhisan kuliah dari Live Caption ──
+   Sumbernya transkrip kuliah lisan (bukan muqarrar): hasil mesin pendengar, campur 'ammiyah, banyak pengulangan,
+   kadang salah dengar. Penanda [DITEKANKAN DUKTUR] berasal dari deteksi penekanan di Live Caption — bagian itu
+   paling berharga untuk imtihan, jadi diberi section sendiri. Judul "## " mengikuti SummaryView (ikon & warna). */
+const LECTURE_SECTIONS = {
+  id: `## Inti Kuliah
+- 3–6 poin terpenting yang diajarkan duktur hari ini, masing-masing satu gagasan
+## Ditekankan Duktur — Kemungkinan Keluar Imtihan
+- Setiap bagian bertanda [DITEKANKAN DUKTUR], plus hal yang duktur ulang-ulang atau sebut penting: tulis APA yang harus dihafal/dipahami, dengan istilah Arabnya. Lewati judul ini bila tidak ada.
+## Penjelasan Materi
+Uraikan kuliah per subtopik sesuai urutan duktur, seperti kakak tingkat menerangkan ke adik tingkat. Untuk tiap subtopik:
+### judul subtopik
+- **Intinya:** 1–2 kalimat
+- **Penjelasan:** 2–4 poin bahasa sederhana, termasuk alasan/hikmah yang disebut duktur
+- **Contoh:** contoh yang diberikan duktur (lewati bila tidak ada)
+## Ta'rif
+Untuk tiap istilah yang didefinisikan duktur:
+### istilah Arab berharakat — transliterasi
+- **Lughatan:** makna bahasa (bila disebut)
+- **Istilahan:**
+> ta'rif dalam bahasa Arab fushah berharakat
+↳ terjemah Indonesia
+## Taqsim (Pembagian)
+Pembagian/rukun/syarat yang disebut duktur, sebagai daftar bertingkat dengan keterangan singkat
+## Khilaf & Tarjih
+Tabel markdown | Masalah | Pendapat & pemiliknya | Dalil | Yang rajih | — isi singkat, lalu 1–2 poin penjelasan
+## Dalil
+> teks dalil Arab berharakat
+↳ terjemah
+- **Wajh dilalah:** bagaimana dalil itu dipakai, bila dijelaskan duktur
+## Istilah Penting
+Tabel | Istilah | Arti | — istilah ilmu dari kuliah ini (Arab berharakat)
+## Muraja'ah Cepat
+3–5 pertanyaan gaya imtihan dari isi kuliah, masing-masing dengan jawaban singkat di baris "↳ "`,
+
+  ar: `Tulis SELURUH talkhisan dalam bahasa Arab fushah yang mudah (ubah 'ammiyah duktur ke fushah), dengan judul:
+## خُلَاصَةُ الْمُحَاضَرَةِ
+## مَا أَكَّدَ عَلَيْهِ الدُّكْتُورُ — الْمُتَوَقَّعُ فِي الِامْتِحَانِ
+## الشَّرْحُ (per subtopik: "### judul", lalu الفكرة، البيان، المثال)
+## التَّعْرِيفُ (لُغَةً وَاصْطِلَاحًا)
+## التَّقْسِيمُ
+## الْخِلَافُ وَالتَّرْجِيحُ (جدول)
+## الْأَدِلَّةُ
+## الْمُصْطَلَحَاتُ
+## أَسْئِلَةُ الْمُرَاجَعَةِ (3–5 soal + jawaban singkat)`,
+
+  'id+ar': `Tulis dwibahasa: tiap poin ditulis dulu dalam bahasa Arab fushah (satu baris, diawali "- "), lalu baris berikutnya terjemah/penjelasan Indonesia diawali "↳ ". Tabel boleh berbahasa Indonesia dengan istilah Arab.
+Gunakan judul:
+## Inti Kuliah — خُلَاصَةُ الْمُحَاضَرَةِ
+## Ditekankan Duktur — الْمُتَوَقَّعُ فِي الِامْتِحَانِ
+## Penjelasan Materi — الشَّرْحُ
+(per subtopik "### judul": intinya, penjelasan, contoh dari duktur)
+## Ta'rif — التَّعْرِيفُ
+## Taqsim — التَّقْسِيمُ
+## Khilaf & Tarjih — الْخِلَافُ وَالتَّرْجِيحُ
+## Dalil — الْأَدِلَّةُ
+## Istilah Penting — الْمُصْطَلَحَاتُ
+## Muraja'ah Cepat — أَسْئِلَةُ الْمُرَاجَعَةِ`,
+};
+
+export const lectureTalkhisPrompt = (lang = 'id') => `${BASE_PERSONA}
+Susun TALKHISAN KULIAH dari transkrip kuliah duktur yang direkam langsung di kelas, supaya mahasiswa yang tadi ikut kuliah bisa muraja'ah dengan cepat dan benar-benar paham — dan mahasiswa yang tidak sempat mencatat tetap mendapat catatan lengkap.
+
+Tentang sumber:
+- Transkrip dibuat mesin pendengar dari ucapan lisan: campur fushah & 'ammiyah Mesir, banyak pengulangan, kata pengisi, kalimat terputus, dan kadang salah dengar. Tiap potongan punya baris AR (ucapan duktur) dan ID (terjemah langsung).
+- Rapikan jadi bahasa tulis: buang pengulangan & kata pengisi, ubah 'ammiyah ke maksudnya, betulkan kata yang jelas salah dengar menurut istilah baku ilmunya.
+- Penanda [DITEKANKAN DUKTUR] = duktur menyebut bagian itu penting / akan keluar di imtihan / menyuruh mencatat. Bagian ini WAJIB masuk ke section penekanan dan tidak boleh hilang.
+- Penanda [DITANDAI MAHASISWA] = mahasiswa sendiri menandai bagian itu penting saat kuliah: pastikan isinya masuk dan jelas di talkhisan (tidak otomatis masuk section penekanan duktur).
+- Gunakan HANYA isi kuliah. Jangan menambah ta'rif, dalil, pendapat ulama, contoh, atau hukum yang tidak diucapkan duktur — termasuk melengkapi dari pengetahuanmu sendiri. Kalau duktur hanya menyebut sebagian (mis. 2 dari 4 rukun), tulis yang disebut saja.
+- Bagian transkrip yang tidak jelas atau tidak masuk akal: lewati, jangan ditebak.
+- Ayat Al-Qur'an & hadits yang dikutip duktur: tulis dengan ejaan fushah baku berharakat; terjemahkan makna lahirnya.
+${ARABIC_RULES}
+${readabilityRules({ translate: lang !== 'ar' })}
+
+Format markdown (gunakan judul "## " persis seperti di bawah; LEWATI judul yang tidak ada isinya di kuliah ini — kuliah biasa tidak memuat semua bagian):
+${LECTURE_SECTIONS[lang] || LECTURE_SECTIONS.id}`;
+
+// Pesan pengguna: judul + jenjang + transkrip berpenanda waktu (dibentuk halaman Live Caption).
+export const lectureTalkhisInput = ({ title = '', learner = null, transcript = '' } = {}) => {
+  const jenjang = learner && typeof learner === 'object'
+    ? [clipLine(learner.level, 40), clipLine(learner.faculty, 60), clipLine(learner.major, 60)].filter(Boolean).join(', ') : '';
+  return [
+    clipLine(title, 120) && `Judul kuliah: ${clipLine(title, 120)}`,
+    jenjang && `Pendengar: mahasiswa ${jenjang}`,
+    `\nTRANSKRIP KULIAH:\n<<<\n${String(transcript || '')}\n>>>`,
+  ].filter(Boolean).join('\n');
+};
+
+// Talkhisan yang terpotong batas waktu server dilanjutkan dari ujungnya (tanpa mengulang).
+export const LECTURE_TALKHIS_CONTINUE = 'Talkhisan di atas terpotong. Lanjutkan TEPAT dari kata terakhirnya — jangan mengulang bagian yang sudah ditulis, jangan menulis pembuka, dan tetap ikuti format serta urutan judul yang sama sampai selesai.';
+
 // Jawaban lisan mahasiswa di simulasi syafawi (satu rekaman pendek).
 export const transcribeAnswerPrompt = ({ question = '' } = {}) => {
   const q = clipLine(question, 400);

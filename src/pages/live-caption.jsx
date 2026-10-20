@@ -151,6 +151,14 @@ const learnerLevel = () => {
   return p ? { level: p.level || '', faculty: p.faculty || '', major: p.major || '' } : null;
 };
 
+// Transkrip untuk talkhisan kuliah: per kartu waktu + penanda + ucapan duktur (AR) + terjemah langsung (ID).
+const TALKHIS_MAX_ROUNDS = 4;
+const lectureTranscript = (segments) => segments.filter(s => s.ar).map(s => [
+  `[${clock(s.t)}]${s.penting ? ' [DITEKANKAN DUKTUR]' : s.marked ? ' [DITANDAI MAHASISWA]' : ''}`,
+  `AR: ${s.ar}`,
+  ...(s.idText ? [`ID: ${s.idText}`] : []),
+].join('\n')).join('\n');
+
 const penandaOf = (s) => (s.penting ? ' ★ DITEKANKAN DUKTUR' : s.marked ? ' ★ PENTING' : '');
 
 const exportText = (title, segments) => {
@@ -176,6 +184,12 @@ const LiveCaptionBody = () => {
   const [confirmReset, setConfirmReset] = useState(false);
   const restored = useRef(!!draft?.segments?.length);
   const [quota, setQuota] = useState(null); // { left, dailyLeft, monthlyLeft } dalam menit
+  // Talkhisan kuliah (dibuat setelah rekaman berhenti; ikut tersimpan di draf).
+  const [talkhis, setTalkhis] = useState(draft?.talkhis || null); // { md, lang, partial, segCount }
+  const [talkhisLang, setTalkhisLang] = useState(draft?.talkhis?.lang || 'id');
+  const [writing, setWriting] = useState(false);
+  const [liveMd, setLiveMd] = useState('');
+  const liveBuf = useRef({ text: '', timer: null });
   const loadQuota = () => aiCall('live-quota').then(d => { if (d.ok) setQuota(d); });
 
   const queue = useRef([]);           // potongan yang menunggu dikirim
@@ -333,11 +347,11 @@ const LiveCaptionBody = () => {
     return () => clearInterval(t);
   }, [mic.recording]);
 
-  // Simpan draf di perangkat supaya catatan tidak hilang kalau halaman tertutup.
+  // Simpan draf di perangkat supaya catatan (dan talkhisannya) tidak hilang kalau halaman tertutup.
   useEffect(() => {
     const done = segments.filter(s => s.status === 'done');
-    writeDraft(done.length || title ? { title, segments: done, elapsed, savedAt: Date.now() } : null);
-  }, [segments, title, Math.floor(elapsed / 10)]);
+    writeDraft(done.length || title ? { title, segments: done, elapsed, talkhis, savedAt: Date.now() } : null);
+  }, [segments, title, talkhis, Math.floor(elapsed / 10)]);
 
   // Ikuti teks terbaru, kecuali pengguna sedang menggulir ke atas.
   useEffect(() => {
@@ -377,6 +391,57 @@ const LiveCaptionBody = () => {
   const pending = segments.filter(s => s.status === 'pending' || s.status === 'translating').length;
   const marked = segments.filter(s => s.marked).length;
 
+  /* ── Talkhisan kuliah: transkrip (+ penanda penekanan duktur & tanda mahasiswa) → catatan rapi gaya Ringkasan.
+     Kuliah panjang bisa terpotong batas waktu server: dilanjutkan otomatis (maks TALKHIS_MAX_ROUNDS) dari ujungnya. */
+  const pushLive = (text) => {
+    // Diperbarui maks ±10x/detik supaya HP tidak berat saat AI menulis panjang.
+    liveBuf.current.text = text;
+    if (!liveBuf.current.timer) liveBuf.current.timer = setTimeout(() => { liveBuf.current.timer = null; setLiveMd(liveBuf.current.text); }, 100);
+  };
+  const makeTalkhis = async (lang) => {
+    const transcript = lectureTranscript(done);
+    if (transcript.length < 80) { toast.push('Transkrip masih terlalu pendek untuk dibuat talkhisan.'); return; }
+    setTalkhisLang(lang); setWriting(true); setLiveMd('');
+    let acc = '', truncated = false, failed = '';
+    for (let round = 0; round < TALKHIS_MAX_ROUNDS; round++) {
+      const d = await aiStream('live-talkhis', {
+        title: title.trim(), lang, transcript, learner: learnerLevel(), ...(acc ? { continue_from: acc } : {}),
+      }, (_, full) => pushLive(acc + full));
+      if (!d.ok) {
+        if (d.upgrade) openAiUpgrade('live');
+        failed = d.error || 'Gagal membuat talkhisan.';
+        if (d.partial) acc += d.partial;
+        break;
+      }
+      // Lanjutan dimulai tepat dari karakter terakhir (bisa di tengah kata): sambung apa adanya.
+      acc += d.data || '';
+      truncated = !!d.truncated;
+      if (!truncated) break;
+    }
+    clearTimeout(liveBuf.current.timer); liveBuf.current.timer = null;
+    setWriting(false);
+    if (acc.trim()) setTalkhis({ md: acc.trim(), lang, partial: truncated || !!failed, segCount: done.length });
+    if (failed) toast.push(failed);
+  };
+  const copyTalkhis = async () => {
+    try { await navigator.clipboard.writeText(talkhis.md); toast.push('Talkhisan disalin.'); } catch { toast.push('Gagal menyalin.'); }
+  };
+  const talkhisToKurasah = () => {
+    try { window.saveToKurasah(`Talkhisan — ${title.trim() || 'Kuliah'}`, talkhis.md, ['talkhisan', 'live-caption']); toast.push('Tersimpan di Kurasah.'); }
+    catch { toast.push('Gagal menyimpan ke Kurasah.'); }
+  };
+  const downloadTalkhis = () => {
+    const blob = new Blob([`# Talkhisan — ${title.trim() || 'Kuliah'}\n\n${talkhis.md}\n`], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `talkhisan-${(title || 'kuliah').replace(/[\\/:*?"<>|]+/g, '').slice(0, 60) || 'kuliah'}.md`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  // Talkhisan dibuat sebelum ada rekaman tambahan → tawarkan buat ulang.
+  const talkhisStale = !!talkhis && done.length > (talkhis.segCount || 0);
+
   const copyAll = async () => {
     try { await navigator.clipboard.writeText(exportText(title, done)); toast.push('Transkrip disalin.'); }
     catch { toast.push('Gagal menyalin. Coba unduh .txt.'); }
@@ -399,6 +464,8 @@ const LiveCaptionBody = () => {
     const d = await aiCall('create', {
       title: title.trim() || `Kuliah ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })}`,
       source_type: 'audio', content,
+      // Talkhisan kuliah (kalau sudah dibuat) jadi isi tab Ringkasan materi ini.
+      ...(talkhis?.md ? { summary: talkhis.md, summary_lang: talkhis.lang } : {}),
     });
     setSaving(false);
     if (!d.ok) { if (d.upgrade) openAiUpgrade('materi'); else toast.push(d.error || 'Gagal menyimpan materi.'); return; }
@@ -411,6 +478,7 @@ const LiveCaptionBody = () => {
     queue.current = []; audioById.current.clear(); credit.current = null; baseElapsed.current = 0;
     waiting.current = []; clearTimeout(waitTimer.current); waitTimer.current = null;
     setSegments([]); setElapsed(0); setTitle(''); setError(''); setConfirmReset(false);
+    setTalkhis(null); setLiveMd('');
     writeDraft(null);
   };
 
@@ -545,6 +613,58 @@ const LiveCaptionBody = () => {
               </React.Fragment>
             ))}
           </dl>
+        </div>
+      )}
+
+      {/* Talkhisan kuliah: muncul setelah rekaman berhenti. Tampilannya sama dengan tab Ringkasan (SummaryView). */}
+      {!mic.recording && done.length > 0 && window.SummaryView && (
+        <div className="mt-6 rounded-2xl border border-emerald-500/25 bg-emerald-500/[0.04] p-4 md:p-5">
+          <div className="flex items-start gap-3 mb-3">
+            <span className="w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center bg-emerald-500/12 border border-emerald-500/25">
+              <Icon name="bookOpen" className="w-5 h-5 text-emerald-300"/>
+            </span>
+            <div className="min-w-0">
+              <div className="font-display text-base md:text-lg font-semibold text-ink">Talkhisan kuliah</div>
+              <p className="text-[13px] text-ink-muted leading-relaxed">
+                Transkrip tadi disusun jadi catatan rapi: inti kuliah, yang ditekankan duktur, ta'rif, pembagian, khilaf, dalil, istilah, dan soal muraja'ah — hanya dari ucapan duktur.
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <window.LangPicker value={talkhisLang} onChange={setTalkhisLang} disabled={writing}/>
+            <button onClick={() => makeTalkhis(talkhisLang)} disabled={writing || pending > 0}
+              className="btn btn-primary text-sm px-4 py-2.5 disabled:opacity-60">
+              <Icon name="sparkles" className="w-4 h-4"/>
+              {writing ? 'Menyusun…' : talkhis ? 'Buat ulang' : 'Buat talkhisan'}
+            </button>
+          </div>
+          {pending > 0 && !writing && <p className="text-xs text-ink-soft mt-2">Tunggu kalimat terakhir selesai diterjemahkan dulu.</p>}
+          {talkhisStale && !writing && <p className="text-xs text-gold-200 mt-2">Ada rekaman baru setelah talkhisan ini dibuat — tekan "Buat ulang" supaya ikut masuk.</p>}
+
+          {writing && (
+            <div className="mt-4">
+              <window.LiveWritingNote text="AI sedang menyusun talkhisan kuliahmu…"/>
+              {liveMd && <window.SummaryView markdown={liveMd} rtl={talkhisLang === 'ar'}/>}
+            </div>
+          )}
+          {!writing && talkhis && (
+            <div className="mt-4">
+              <div className="flex flex-wrap gap-2 mb-3">
+                <button onClick={copyTalkhis} className="h-9 px-3 rounded-xl border border-white/10 text-xs text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5">
+                  <Icon name="copy" className="w-3.5 h-3.5"/> Salin
+                </button>
+                <button onClick={talkhisToKurasah} className="h-9 px-3 rounded-xl border border-white/10 text-xs text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5">
+                  <Icon name="bookmark" className="w-3.5 h-3.5"/> Simpan ke Kurasah
+                </button>
+                <button onClick={downloadTalkhis} className="h-9 px-3 rounded-xl border border-white/10 text-xs text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5">
+                  <Icon name="download" className="w-3.5 h-3.5"/> Unduh
+                </button>
+              </div>
+              {talkhis.partial && <p className="text-xs text-gold-200 mb-3">Talkhisan ini belum lengkap (kuliah sangat panjang atau koneksi terputus). Tekan "Buat ulang" untuk mencoba lagi.</p>}
+              <window.SummaryView markdown={talkhis.md} rtl={talkhis.lang === 'ar'}/>
+              <p className="text-[11px] text-ink-soft mt-3">Disusun AI dari transkrip kuliah — cocokkan istilah & dalil penting dengan muqarrar sebelum dihafal. "Simpan jadi materi" menyimpan talkhisan ini sebagai Ringkasan.</p>
+            </div>
+          )}
         </div>
       )}
 

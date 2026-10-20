@@ -205,7 +205,7 @@ const LangPicker = ({ value, onChange, disabled }) => (
 
 // Jenis bagian ringkasan → ikon & warna. Dicocokkan dari judul (Indonesia atau Arab tanpa harakat).
 const SECTION_KINDS = [
-  { id: 'key',    icon: 'sparkles', color: '#3ecf8e', match: /poin inti|intisari|النقاط|الرئيسة/i },
+  { id: 'key',    icon: 'sparkles', color: '#3ecf8e', match: /poin inti|inti kuliah|intisari|النقاط|الرئيسة|خلاصة/i },
   { id: 'explain', icon: 'lightbulb', color: '#2dd4bf', match: /penjelasan|الشرح/i },
   { id: 'def',    icon: 'bookOpen', color: '#c9a86a', match: /ta'?rif|definisi|التعريف/i },
   { id: 'split',  icon: 'network',  color: '#60a5fa', match: /taqsim|pembagian|klasifikasi|التقسيم/i },
@@ -213,6 +213,9 @@ const SECTION_KINDS = [
   { id: 'debate', icon: 'scale',    color: '#f59e0b', match: /khilaf|tarjih|perbedaan|الخلاف|الترجيح/i },
   { id: 'proof',  icon: 'quote',    color: '#c9a86a', match: /dalil|الأدلة|الدليل/i },
   { id: 'exam',   icon: 'target',   color: '#f472b6', match: /imtihan|ujian|الامتحان|المتوقع/i },
+  // Bagian khas talkhisan kuliah (Live Caption).
+  { id: 'terms',  icon: 'type',     color: '#38bdf8', match: /istilah|mufradat|المصطلحات|المفردات/i },
+  { id: 'review', icon: 'check',    color: '#3ecf8e', match: /muraja'?ah|المراجعة/i },
 ];
 const stripHarakat = (s) => s.replace(/[ً-ٰٟـ]/g, '');
 
@@ -2222,4 +2225,6 @@ export const BattleTab = ({ set }) => {
 Object.assign(window, {
   MasteryCard, SummaryTab, MindmapTab, MaterialTab, FlashcardTab, GlossaryTab, QuizTab, EssayTab, TutorTab,
   BattleTab, BattleStudyBanner, launchBattleFromSet,
+  // Dipakai juga oleh talkhisan kuliah di halaman Live Caption.
+  SummaryView, LangPicker, LiveWritingNote,
 });
