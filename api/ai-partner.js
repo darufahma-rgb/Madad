@@ -592,15 +592,28 @@ async function handleLiveCaption(ctx, body, res) {
       role: 'user',
       content: [
         { type: 'input_audio', input_audio: { data: audio, format: 'wav' } },
-        { type: 'text', text: liveCaptionPrompt({ dialect, title: body.title, prevTail: body.prev_tail }) },
+        // Konteks supaya terjemah nyambung & konsisten: 1–2 potongan terakhir, istilah yang sudah dijelaskan, jenjang pelajar.
+        { type: 'text', text: liveCaptionPrompt({
+          dialect, title: body.title, prevTail: body.prev_tail, prevId: body.prev_id,
+          terms: Array.isArray(body.terms) ? body.terms.filter(isStr).slice(-40) : [],
+          learner: body.learner && typeof body.learner === 'object' ? body.learner : null,
+        }) },
       ],
     }],
   });
-  const clean = (v) => (isStr(v) ? v.trim().slice(0, 4000) : '');
+  const clean = (v, n = 4000) => (isStr(v) ? v.trim().slice(0, n) : '');
   const ar = clean(out?.ar) === '[HENING]' ? '' : clean(out?.ar);
   // Mode Indonesia: "id" boleh kosong (tidak ada kutipan Arab); jangan tampilkan terjemah yang sekadar mengulang.
-  const id = ar ? clean(out?.id) : '';
-  return res.status(200).json({ ok: true, ar, id: id === ar ? '' : id, credit: liveToken(ctx.code, credit) });
+  // Kartu menampilkan teks biasa: buang sisa markdown (*miring*, **tebal**) bila model tetap menuliskannya.
+  const id = ar ? clean(out?.id).replace(/\*+([^*\n]+)\*+/g, '$1') : '';
+  const istilah = !ar || !Array.isArray(out?.istilah) ? [] : out.istilah
+    .map(t => ({ ar: clean(t?.ar, 60), id: clean(t?.id, 80) }))
+    .filter(t => t.ar && t.id)
+    .slice(0, 3);
+  return res.status(200).json({
+    ok: true, ar, id: id === ar ? '' : id, istilah, penting: !!ar && out?.penting === true,
+    credit: liveToken(ctx.code, credit),
+  });
 }
 
 async function handleCreate(ctx, body, res) {

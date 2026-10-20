@@ -131,12 +131,32 @@ const LevelBars =({ level, active }) => (
   </span>
 );
 
+// Istilah yang dicatat AI sepanjang sesi, tanpa duplikat (urutan kemunculan).
+const sessionTerms = (segments) => {
+  const seen = new Set(), out = [];
+  for (const s of segments) for (const t of s.istilah || []) {
+    const key = (t.ar || '').replace(/[ً-ْٰ]/g, '').replace(/^ال/, '');
+    if (t.ar && !seen.has(key)) { seen.add(key); out.push(t); }
+  }
+  return out;
+};
+
+// Jenjang pelajar dari Profil Belajar (tanpa data lain), supaya istilah & kedalaman terjemah pas.
+const learnerLevel = () => {
+  const p = window.learnerPayload?.();
+  return p ? { level: p.level || '', faculty: p.faculty || '', major: p.major || '' } : null;
+};
+
+const penandaOf = (s) => (s.penting ? ' ★ DITEKANKAN DUKTUR' : s.marked ? ' ★ PENTING' : '');
+
 const exportText = (title, segments) => {
   const lines = [title || 'Live Caption Talqeeh', new Date().toLocaleString('id-ID'), ''];
   for (const s of segments) {
     if (!s.ar) continue;
-    lines.push(`[${clock(s.t)}]${s.marked ? ' ★ PENTING' : ''}`, s.ar, ...(s.idText ? [s.idText] : []), '');
+    lines.push(`[${clock(s.t)}]${penandaOf(s)}`, s.ar, ...(s.idText ? [s.idText] : []), '');
   }
+  const terms = sessionTerms(segments);
+  if (terms.length) lines.push('— Istilah sesi ini —', ...terms.map(t => `${t.ar} : ${t.id}`));
   return lines.join('\n');
 };
 
@@ -189,15 +209,30 @@ const LiveCaptionBody = () => {
   };
 
   const send = async (id, base64) => {
-    const prev = [...segRef.current].reverse().find(s => s.status === 'done' && s.ar && s.id !== id);
+    // Konteks untuk AI: 2 kalimat terakhir sebelum potongan ini (transkrip & terjemahnya) dan istilah yang sudah
+    // dijelaskan di sesi ini — supaya terjemah nyambung, istilahnya konsisten, dan arti istilah tidak diulang-ulang.
+    const list = segRef.current;
+    const at = list.findIndex(s => s.id === id);
+    const prev = list.slice(0, at < 0 ? list.length : at).filter(s => s.status === 'done' && s.ar).slice(-2);
     const d = await aiCall('live-caption', {
-      audio_base64: base64, dialect, title: titleRef.current, prev_tail: prev ? prev.ar.slice(-300) : '', credit: credit.current,
+      audio_base64: base64, dialect: dialectRef.current, title: titleRef.current,
+      prev_tail: prev.map(s => s.ar).join(' ').slice(-400),
+      prev_id: prev.map(s => s.idText).filter(Boolean).join(' ').slice(-300),
+      terms: sessionTerms(list).map(t => t.ar),
+      learner: learnerLevel(),
+      credit: credit.current,
     });
     if (d.ok) {
       credit.current = d.credit || null;
       audioById.current.delete(id);
-      if (!d.ar) setSegments(list => list.filter(s => s.id !== id)); // hening: buang kartunya
-      else patch(id, { status: 'done', ar: d.ar, idText: d.id });
+      if (!d.ar) setSegments(l => l.filter(s => s.id !== id)); // hening: buang kartunya
+      else {
+        // Duktur menekankan bagian ini ("ini penting", "keluar di imtihan") → ditandai otomatis + getar singkat di HP.
+        setSegments(l => l.map(s => (s.id === id
+          ? { ...s, status: 'done', ar: d.ar, idText: d.id, istilah: d.istilah || [], penting: !!d.penting, marked: s.marked || !!d.penting }
+          : s)));
+        if (d.penting) try { navigator.vibrate?.(120); } catch {}
+      }
       return true;
     }
     if (d.upgrade) { stopAll(); openAiUpgrade('live'); }
@@ -269,7 +304,11 @@ const LiveCaptionBody = () => {
     if (mic.recording) baseElapsed.current = mic.stop();
     else { restored.current = false; mic.start(baseElapsed.current); }
   };
-  const toggleMark = (id) => patch(id, { marked: !segments.find(s => s.id === id)?.marked });
+  // Menghapus tanda juga menghapus label "Ditekankan duktur" (pengguna yang memutuskan).
+  const toggleMark = (id) => {
+    const s = segments.find(x => x.id === id);
+    patch(id, s?.marked ? { marked: false, penting: false } : { marked: true });
+  };
   const markLatest = () => {
     const last = segments[segments.length - 1];
     if (!last) { toast.push('Belum ada kalimat untuk ditandai.'); return; }
@@ -295,7 +334,9 @@ const LiveCaptionBody = () => {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   };
   const saveAsMaterial = async () => {
-    const content = done.map(s => `${s.marked ? '【PENTING】 ' : ''}${s.ar}${s.idText ? `\n— ${s.idText}` : ''}`).join('\n\n');
+    const terms = sessionTerms(done);
+    const content = done.map(s => `${s.penting ? '【DITEKANKAN DUKTUR】 ' : s.marked ? '【PENTING】 ' : ''}${s.ar}${s.idText ? `\n— ${s.idText}` : ''}`).join('\n\n')
+      + (terms.length ? `\n\nISTILAH SESI INI:\n${terms.map(t => `${t.ar} : ${t.id}`).join('\n')}` : '');
     if (content.length < 50) { toast.push('Transkrip masih terlalu pendek untuk dijadikan materi.'); return; }
     setSaving(true);
     const d = await aiCall('create', {
@@ -374,7 +415,8 @@ const LiveCaptionBody = () => {
             Taruh HP di dekat duktur, lalu tekan tombol rekam. Ucapan duktur muncul per kalimat beserta terjemahan Indonesianya, dengan jeda ±10 detik. Fushah dan 'ammiyah Mesir dikenali otomatis.
           </p>
           <ul className="text-xs text-ink-soft mt-4 space-y-1">
-            <li>Tandai bagian penting dengan <span className="text-gold-300">Tandai</span>.</li>
+            <li>Saat duktur bilang "ini penting" atau "keluar di imtihan", bagian itu ditandai otomatis. Kamu juga bisa menandai sendiri dengan <span className="text-gold-300">Tandai</span>.</li>
+            <li>Istilah penting dicatat di bawah tiap kalimat, lalu dirangkum di akhir sesi.</li>
             <li>Setelah selesai, simpan jadi materi AI Partner untuk diringkas, dibuat kuis, dan lainnya.</li>
             <li>Jatah Live Caption terpisah dari transkrip rekaman: 1 menit kuliah = 1 menit jatah.</li>
           </ul>
@@ -389,7 +431,9 @@ const LiveCaptionBody = () => {
         <div className="space-y-3">
           {segments.map(s => (
             <div key={s.id} className={`relative rounded-2xl border p-4 pr-12 transition ${s.marked ? 'border-gold-500/40 bg-gold-500/[0.06]' : 'border-white/8 bg-white/[0.03]'}`}>
-              <div className="text-[11px] text-ink-soft mb-1.5 tabular-nums">{clock(s.t)}{s.marked && <span className="text-gold-300 ml-2">★ Penting</span>}</div>
+              <div className="text-[11px] text-ink-soft mb-1.5 tabular-nums">
+                {clock(s.t)}{s.marked && <span className="text-gold-300 ml-2">{s.penting ? '★ Ditekankan duktur' : '★ Penting'}</span>}
+              </div>
               {s.status === 'pending' && <div className="text-sm text-ink-soft animate-pulse">Mendengarkan & menerjemahkan…</div>}
               {s.status === 'error' && (
                 <div className="text-sm text-rose-300">
@@ -403,6 +447,15 @@ const LiveCaptionBody = () => {
                   ? <p dir="auto" className="text-ink text-[15px] leading-relaxed">{s.ar}</p>
                   : <p dir="rtl" className="text-ink leading-loose text-right" style={{ ...ARABIC_FONT, fontSize: 20 }}>{s.ar}</p>}
                 {s.idText && <p className="text-[15px] leading-relaxed mt-2 text-emerald-200/90">{s.idText}</p>}
+                {!!s.istilah?.length && (
+                  <div className="flex flex-wrap gap-1.5 mt-2.5">
+                    {s.istilah.map(t => (
+                      <span key={t.ar} className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/[0.04] px-2 py-1 text-[12px] text-ink-muted">
+                        <span dir="rtl" className="text-ink" style={{ ...ARABIC_FONT, fontSize: 15 }}>{t.ar}</span>{t.id}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </>}
               <button onClick={() => toggleMark(s.id)} aria-label={s.marked ? 'Hapus tanda' : 'Tandai penting'}
                 className={`absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 ${s.marked ? 'text-gold-300' : 'text-ink-soft'}`}>
@@ -411,6 +464,21 @@ const LiveCaptionBody = () => {
             </div>
           ))}
           <div ref={listEnd}/>
+        </div>
+      )}
+
+      {/* Rangkuman istilah sesi: bahan mufradat untuk muraja'ah setelah kuliah. */}
+      {!mic.recording && sessionTerms(done).length > 0 && (
+        <div className="mt-6 rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+          <div className="text-xs uppercase tracking-wider text-gold-300 mb-2.5">Istilah sesi ini · {sessionTerms(done).length}</div>
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
+            {sessionTerms(done).map(t => (
+              <React.Fragment key={t.ar}>
+                <dt dir="rtl" className="text-ink text-right" style={{ ...ARABIC_FONT, fontSize: 17 }}>{t.ar}</dt>
+                <dd className="text-sm text-ink-muted self-center">{t.id}</dd>
+              </React.Fragment>
+            ))}
+          </dl>
         </div>
       )}
 

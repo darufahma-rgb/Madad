@@ -272,26 +272,55 @@ ${DIALECT_RULES[dialect] || DIALECT_RULES.campur}
 };
 
 /* Live caption: potongan pendek (±5–15 detik) dari mikrofon saat kuliah berlangsung → transkrip + terjemah Indonesia
-   dalam satu panggilan, supaya mahasiswa langsung paham apa yang dikatakan duktur. */
-// dialect: 'campur' (Arab — fushah/'ammiyah dikenali otomatis) atau 'indonesia'.
-export const liveCaptionPrompt = ({ dialect = 'campur', title = '', prevTail = '' } = {}) => {
+   + istilah untuk dicatat + tanda "ditekankan duktur", dalam satu panggilan. Hasilnya dibaca mahasiswa di HP saat itu
+   juga, jadi terjemahnya harus langsung dipahami dalam sekali baca dan konsisten dengan potongan sebelumnya.
+   dialect: 'campur' (Arab — fushah/'ammiyah dikenali otomatis) atau 'indonesia'.
+   prevTail / prevId: transkrip & terjemah 1–2 potongan terakhir; terms: istilah yang sudah dijelaskan di sesi ini;
+   learner: jenjang pelajar (level, faculty, major) dari profil belajar. */
+export const liveCaptionPrompt = ({ dialect = 'campur', title = '', prevTail = '', prevId = '', terms = [], learner = null } = {}) => {
   const topic = clipLine(title, 120);
-  const tail = clipLine(prevTail, 300);
+  const tail = clipLine(prevTail, 400);
+  const tailId = clipLine(prevId, 300);
+  const known = (Array.isArray(terms) ? terms : []).map(t => clipLine(t, 40)).filter(Boolean).slice(-40);
+  const jenjang = learner && typeof learner === 'object'
+    ? [clipLine(learner.level, 40), clipLine(learner.faculty, 60), clipLine(learner.major, 60)].filter(Boolean).join(', ') : '';
   const indo = dialect === 'indonesia';
-  return `Ini potongan pendek rekaman langsung kuliah Universitas Al-Azhar. Lakukan dua hal:
-1. "ar": transkripsikan ucapannya kata demi kata.
-${indo ? DIALECT_RULES.indonesia : `- Duktur bisa berbicara dengan fushah, 'ammiyah Mesir, atau mencampur keduanya — kenali sendiri dan tulis sesuai yang diucapkan.\n${AMMIYAH_RULES}`}
-- Ayat Al-Qur'an, hadits, matan, dan istilah ilmu tulis dengan ejaan fushah baku.
-- Jangan meringkas dan jangan menambah komentar. Potongan bisa mulai/berhenti di tengah kalimat — tulis apa adanya.
-${indo
-  ? `2. "id": terjemahkan HANYA kutipan/kalimat berbahasa Arab di dalam transkrip ke bahasa Indonesia. Jangan mengulang bagian yang sudah berbahasa Indonesia. Jika tidak ada kalimat Arab, isi "".`
-  : `2. "id": terjemahkan transkrip itu ke bahasa Indonesia yang natural dan mudah dipahami mahasiswa Indonesia.
-- Istilah ilmu yang lazim dipakai Masisir (mis. ijma', qiyas, mubtada', 'illat) boleh dibiarkan, beri arti singkat dalam kurung bila perlu.
-- Ayat Al-Qur'an diterjemahkan maknanya secara ringkas.
-- Ucapan 'ammiyah diterjemahkan maknanya, bukan kata per kata.`}${topic ? `\n- Topik kuliah: "${topic}" — gunakan untuk mengenali istilah yang kurang jelas terdengar.` : ''}${tail ? `\n- Potongan sebelumnya berakhir dengan: «${tail}». Lanjutkan dari sana tanpa mengulang kalimat itu.` : ''}
+  const context = [
+    topic && `- Mata kuliah/topik: "${topic}" — pakai untuk mengenali istilah yang kurang jelas terdengar.`,
+    jenjang && `- Pendengar: mahasiswa ${jenjang}.`,
+    tail && `- Ucapan duktur sebelumnya: «${tail}» — potongan ini melanjutkannya; jangan menulis ulang kalimat itu.`,
+    tailId && `- Terjemah sebelumnya: «${tailId}» — lanjutkan alur dan pilihan istilahnya supaya konsisten.`,
+    known.length && `- Istilah yang sudah dijelaskan di sesi ini (jangan diberi arti lagi, jangan dimasukkan ke "istilah"): ${known.join('، ')}`,
+  ].filter(Boolean);
 
-Balas HANYA JSON: {"ar": "...", "id": "..."}
-Jika tidak ada ucapan yang jelas, balas: {"ar": "", "id": ""}`;
+  return `Kamu juru terjemah langsung untuk mahasiswa Indonesia di Universitas Al-Azhar Kairo (Masisir) yang sedang mengikuti kuliah duktur. Yang kamu terima: potongan rekaman ±10 detik dari kuliah yang sedang berlangsung. Hasilmu langsung dibaca mahasiswa di HP saat itu juga.
+${context.length ? `\nKONTEKS\n${context.join('\n')}\n` : ''}
+1. "ar" — transkrip kata demi kata.
+${indo ? DIALECT_RULES.indonesia : `- Duktur bisa berbicara dengan fushah, 'ammiyah Mesir, atau mencampur keduanya — kenali sendiri dan tulis sesuai yang diucapkan.\n${AMMIYAH_RULES}`}
+- Ejaan rapi: bedakan ة dan ه, أ / إ / ا, ى dan ي; beri tanda baca (، . ؟) di batas kalimat.
+- Kata yang kurang jelas terdengar: pilih yang paling masuk akal menurut topik, istilah baku ilmunya, dan kalimat sebelumnya.
+- Ayat Al-Qur'an, hadits, matan, dan istilah ilmu: ejaan fushah baku, harakat pada ayat dan istilah kunci.
+- Jangan meringkas, jangan menambah komentar. Potongan bisa mulai/berhenti di tengah kalimat — tulis apa adanya.
+
+${indo
+  ? `2. "id" — terjemahkan HANYA kutipan/kalimat berbahasa Arab di dalam transkrip ke bahasa Indonesia. Jangan mengulang bagian yang sudah berbahasa Indonesia. Jika tidak ada kalimat Arab, isi "".`
+  : `2. "id" — terjemah untuk DIPAHAMI, bukan kata per kata. Tulis seperti kakak tingkat yang membisikkan maksud duktur di sebelahmu: kalimat pendek, bahasa Indonesia yang natural.
+- Ungkapan 'ammiyah diterjemahkan maknanya. Kata pengisi dan pertanyaan retoris duktur (يعني، طيب، بقى، كده، مش كده؟، فاهمين؟، واضح؟) TIDAK diterjemahkan — langsung ke isinya. Isi ilmunya jangan dibuang.
+- Istilah ilmu tetap dalam transliterasi yang lazim di kalangan Masisir (qiyas, ashl, far', hukm ashl, 'illat, ijma', jumhur, mubtada', khabar, 'am, khash, mutlaq, muqayyad, rajih, nash, zhahir), dengan arti singkat dalam kurung HANYA saat pertama muncul di sesi ini.
+- Pilih padanan yang tepat untuk konteks ilmu, waspadai kata serapan yang maknanya bergeser di bahasa Indonesia. Contoh: التقدير = "mengukur/memperkirakan" (BUKAN "takdir"); المسألة = "persoalan/kasus (fiqh)"; الكلام dalam nahwu = "kalam (kalimat sempurna)", bukan "pembicaraan".
+- Transliterasi konsisten gaya Masisir: Syafi'i, Hanafi, Maliki, Hanbali, fardhu, sunnah, wudhu, syara', 'illat, hadits — sama di semua potongan.
+- Perjelas rujukan: عندنا (dalam fiqh) → "menurut madzhab kita (sebut madzhabnya bila jelas)"; الجمهور → "jumhur ulama"; الأحناف → "ulama Hanafiyah"; الظاهرية → "ulama Zhahiriyah"; المصنف / صاحب المتن → "penulis matan".
+- Ayat Al-Qur'an & hadits: terjemahkan makna lahirnya dengan ringkas — jangan memasukkan tafsir atau pendapat madzhab ke dalam terjemah ayat (penjelasan duktur sesudahnya diterjemahkan terpisah). Sebut surat dan ayatnya (mis. QS. Al-Baqarah: 43) HANYA jika kamu benar-benar yakin.
+- Teks biasa saja, tanpa format markdown (*, **, #).
+- Potongan yang berhenti di tengah kalimat: terjemahkan bagian yang ada lalu akhiri dengan "…". Awali dengan "…" HANYA bila terjemah sebelumnya berakhir dengan "…" (kalimatnya memang bersambung); potongan yang mulai dengan kalimat baru tidak diawali "…". Jangan menebak lanjutannya.
+- Jangan menambah hukum, dalil, contoh, atau pendapat yang tidak diucapkan duktur.`}
+
+3. "istilah" — 0–3 istilah ilmu dari potongan ini yang layak dicatat mahasiswa dan belum ada di daftar istilah sesi: [{"ar":"istilah dengan harakat lengkap, bentuk dasar (mufrad, tanpa ال bila bukan bagian istilah)","id":"arti singkat, MAKSIMAL 5 kata"}]. Kata umum, nama benda biasa, nama orang/kitab, dan nama topik yang artinya sudah jelas (mis. الوضوء = wudhu) jangan dimasukkan. Kosongkan bila tidak ada.
+
+4. "penting" — true HANYA jika di potongan ini duktur menekankan sesuatu: menyebutnya penting, akan keluar di imtihan, menyuruh mencatat/menghafal/fokus (mis. مهم، ركزوا، ده هييجي في الامتحان، احفظوا، اكتبوا عندكم، "ini penting", "keluar di ujian"). Selain itu false.
+
+Balas HANYA JSON: {"ar":"...","id":"...","istilah":[],"penting":false}
+Jika tidak ada ucapan yang jelas: {"ar":"","id":"","istilah":[],"penting":false}`;
 };
 
 // Jawaban lisan mahasiswa di simulasi syafawi (satu rekaman pendek).
