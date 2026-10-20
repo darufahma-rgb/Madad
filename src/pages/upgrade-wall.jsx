@@ -13,12 +13,14 @@ const REASONS = {
   ocr:      { title: 'Jatah baca foto gratismu sudah habis', tried: 'Pelanggan bisa membaca foto halaman kitab dan PDF muqarrar sekaligus.' },
   pdf:      { title: 'Upload PDF muqarrar khusus pelanggan', tried: 'Upload PDF muqarrar utuh, lalu Talqeeh mengolahnya jadi ringkasan, kuis, dan talkhis.' },
   talkhis:  { title: 'Talkhis otomatis khusus pelanggan', tried: 'Talkhis Arab gaya Masisir dari muqarrarmu sendiri, dicek kelengkapannya, siap dicetak jadi PDF.' },
+  live:     { title: 'Live Caption khusus pelanggan', tried: 'Dengar kuliah duktur dengan transkrip Arab dan terjemahan Indonesia secara langsung, lalu simpan jadi materi.' },
   preview:  { title: 'Buka semua alat belajar untuk materi ini', tried: 'Ringkasan tadi baru sebagian kecil. Peta konsep, latihan tahriri, dan talkhis menunggu di balik langganan.' },
   default:  { title: 'Fitur ini khusus pelanggan', tried: 'Berlangganan untuk membuka semua fitur AI Partner.' },
 };
 
 const UNLOCKS = [
   'Talkhis otomatis dari PDF muqarrar, siap cetak + latihan soal',
+  "Live Caption: terjemah kuliah duktur secara langsung, paham fushah & 'ammiyah",
   'Tambah materi setiap hari: PDF, foto, Word, audio & video kuliah',
   "I'rab, tutor, peta konsep, dan latihan tahriri yang dinilai AI",
   'Bank soal imtihan asli, banin & banat',

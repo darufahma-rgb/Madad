@@ -32,7 +32,8 @@ const SECURITY_HEADERS = {
   'X-Content-Type-Options': 'nosniff',
   'X-XSS-Protection': '1; mode=block',
   'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+  // Mikrofon dipakai Live Caption & jawaban lisan syafawi (hanya dari situs ini sendiri).
+  'Permissions-Policy': 'camera=(), microphone=(self), geolocation=()',
   'Content-Security-Policy': [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com",

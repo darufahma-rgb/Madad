@@ -599,6 +599,17 @@ const recordingToWavBase64 = async (blob) => {
   return { base64: await fileToBase64(encodeWav(samples)), silent: false, duration: decoded.duration };
 };
 
+// Sampel mentah dari mikrofon (Float32, sample rate perangkat) → WAV 16kHz mono base64, untuk action "live-caption".
+const pcmToWavBase64 = async (samples, rate) => {
+  let out = samples;
+  if (rate !== AUDIO_RATE) {
+    const ratio = rate / AUDIO_RATE;
+    out = new Float32Array(Math.floor(samples.length / ratio));
+    for (let j = 0; j < out.length; j++) out[j] = samples[Math.floor(j * ratio)];
+  }
+  return fileToBase64(encodeWav(out));
+};
+
 /* ── Deteksi jenis file ── */
 
 const FILE_KINDS = {
@@ -629,6 +640,6 @@ const ACCEPTED_FILE_TYPES = Object.values(FILE_KINDS).flatMap(v => v.exts.map(e 
 
 Object.assign(window, {
   extractPdfPages, renderPdfPagesAsImages, readPdfPages, readPdfRange, readPdfOutline, openPdf, pdfFileHash, renderPdfPage, cleanPdfText, compressImage, fileToBase64,
-  extractDocx, extractPptx, extractXlsx, prepareMediaChunks, recordingToWavBase64,
+  extractDocx, extractPptx, extractXlsx, prepareMediaChunks, recordingToWavBase64, pcmToWavBase64,
   detectFileKind, FILE_KINDS, ACCEPTED_FILE_TYPES, MAX_MEDIA_MINUTES,
 });

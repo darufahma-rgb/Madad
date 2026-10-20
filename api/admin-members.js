@@ -8,7 +8,7 @@ import { buildAdminAnalytics } from './_lib/analytics.js';
 import { buildAiUsage } from './_lib/ai-usage.js';
 import { parseAiPrice, extendAi } from './_lib/payments.js';
 import { newMemberCode } from './_lib/member.js';
-import { QUOTA_KINDS, parseQuotaOverrides } from './_lib/ai-partner/limits.js';
+import { QUOTA_KINDS, parseQuotaOverrides, MAX_LIVE_DAILY } from './_lib/ai-partner/limits.js';
 import { handleEmailAdmin } from './_lib/email.js';
 
 const sbRequest = (supabaseUrl, serviceKey, method, path, body, prefer = 'return=representation') => {
@@ -319,6 +319,12 @@ export default async function handler(req, res) {
         const bad = QUOTA_KINDS.find(k => src[k] !== '' && src[k] != null && !(Number.isInteger(Number(src[k])) && Number(src[k]) >= 0 && Number(src[k]) <= 5000));
         if (bad) { res.status(400).json({ ok: false, error: `Kuota bulanan "${bad}" harus angka 0–5000` }); return; }
         row.aiMonthlyLimits = JSON.stringify(Object.fromEntries(QUOTA_KINDS.filter(k => src[k] !== '' && src[k] != null).map(k => [k, Number(src[k])])));
+      }
+      // Batas harian Live Caption (menit): kosong = bawaan, 0 = ditutup.
+      if (typeof row?.aiLiveDailyLimit === 'string' && row.aiLiveDailyLimit.trim()) {
+        const n = Number(row.aiLiveDailyLimit.trim());
+        if (!Number.isInteger(n) || n < 0 || n > MAX_LIVE_DAILY) { res.status(400).json({ ok: false, error: `Batas harian Live Caption harus angka 0–${MAX_LIVE_DAILY} menit` }); return; }
+        row.aiLiveDailyLimit = String(n);
       }
       // Event penjualan: objek dari form admin → divalidasi lalu disimpan sebagai JSON ("" = event dimatikan).
       for (const [key, validate] of [['imtihanEvent', validateImtihanEvent], ['rombonganEvent', validateRombonganEvent]]) {

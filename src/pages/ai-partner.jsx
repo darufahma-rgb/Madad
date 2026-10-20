@@ -355,6 +355,10 @@ const Composer = ({ tier, trial, onUpload }) => {
               className="h-9 px-3 rounded-xl border border-white/10 text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5 text-xs">
               <Icon name="upload" className="w-4 h-4"/> <span className="hidden sm:inline">Unggah materi</span>
             </button>
+            <button onClick={() => navigate('/ai-partner/live')} title="Live Caption: terjemah kuliah duktur secara langsung"
+              className="h-9 px-3 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.06] text-emerald-200 hover:bg-emerald-500/10 inline-flex items-center gap-1.5 text-xs">
+              <Icon name="mic" className="w-4 h-4"/> <span className="hidden sm:inline">Live Caption</span>
+            </button>
             <button onClick={() => navigate('/maddah')} title="Pilih prompt dari Maddah"
               className="h-9 px-3 rounded-xl border border-white/10 text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5 text-xs">
               <Icon name="layers" className="w-4 h-4"/> <span className="hidden sm:inline">Prompt Maddah</span>

@@ -20,6 +20,8 @@ const TOKEN_PROFILE = {
   talkhis:  { in: 300000, out: 60000, tasks: ['arabic'] }, // satu muqarrar ±100 halaman: peta + ±25 judul + cek
 };
 const TRANSCRIBE_PER_MINUTE_USD = 0.004; // input audio dihargai berbeda dari teks — taksiran tetap per menit
+// Live Caption: ±6 potongan per menit, tiap potongan membawa prompt + transkrip & terjemah, jadi sedikit lebih mahal.
+const LIVE_PER_MINUTE_USD = 0.005;
 const FALLBACK_PRICE = { in: 3, out: 15 }; // $ per 1 juta token (Sonnet 4.6) bila harga model tidak ditemukan
 
 let priceCache = { at: 0, map: null };
@@ -58,6 +60,7 @@ export const aiCostTable = async () => {
     table[kind] = +(costs.reduce((a, b) => a + b, 0) / costs.length).toFixed(4);
   }
   table.transcribe = TRANSCRIBE_PER_MINUTE_USD;
+  table.live = LIVE_PER_MINUTE_USD;
   table.create = 0;
   return { table, models, prices, pricesMissing: estimated || !Object.keys(prices).length };
 };

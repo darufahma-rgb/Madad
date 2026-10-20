@@ -819,7 +819,8 @@ const FeatureList = ({ items, color }) => (
 );
 
 /* Jatah AI per paket — angka sama dengan api/ai-partner.js (LIMITS, TRIAL_TASTE, TRIAL_OCR_LIMIT),
-   api/_lib/ai-partner/limits.js (bulanan) dan api/_lib/ai-partner/battle-story.js (Arena Imtihan). */
+   api/_lib/ai-partner/limits.js (bulanan; Live Caption harian = DEFAULT_LIVE_DAILY, bisa diubah admin) dan
+   api/_lib/ai-partner/battle-story.js (Arena Imtihan). */
 const LIBRARY_AI_EXTRAS = [
   "Arena Imtihan: ubah muqarrarmu sendiri jadi game ujian, plus 6 cerita AI & 15 tanya AI Halaqah per hari",
   "Coba AI Partner untuk 1 materi: ringkasan, flashcard, kuis, mufradat, 10× i'rab, 15 pesan tutor, 3 halaman scan/foto per hari",
@@ -844,6 +845,7 @@ const IMTIHAN_QUOTA = [
   ["Ringkasan, kuis, flashcard", "25× / hari"],
   ["Materi baru", "10 / hari"],
   ["Halaman scan / foto", "20 / hari"],
+  ["Live Caption kuliah duktur", "4 jam / hari"],
   ["Transkrip rekaman kuliah", "60 menit / hari"],
   ["Talkhis muqarrar", "10 muqarrar / paket"],
   ["Cerita AI & Halaqah (game)", "15 & 40 / hari"],
@@ -857,7 +859,7 @@ const LANDING_FAQ = [
   { q: "Ada paket AI Partner 1 bulan? Mana yang lebih baik?",
     a: `Ada. Paket 1 bulan = Library selamanya + AI Partner 30 hari, bisa diperpanjang per 30 hari. Tapi satu termin kuliah sampai imtihan butuh sekitar 4 bulan, jadi Paket Imtihan (Library + AI Partner ${IMTIHAN_AI_DAYS} hari, sekali bayar) jauh lebih hemat daripada memperpanjang 4 kali — dan selama ${IMTIHAN_AI_DAYS} hari itu tidak ada kuota bulanan. Selama event ${IMTIHAN_PROMO.name}, harganya lebih murah lagi. Kalau ragu, ambil Paket Imtihan.` },
   { q: "AI Partner di Paket Imtihan ada batasnya?",
-    a: `Tidak ada kuota bulanan selama ${IMTIHAN_AI_DAYS} hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, 25 kali membuat ringkasan/kuis/flashcard, dan 20 halaman PDF scan per hari (jatah scan yang tidak terpakai bisa ditabung sampai 60) — jauh di atas pemakaian belajar normal. Halaman muqarrar scan yang sudah pernah dibaca AI di Talqeeh bisa langsung terbuka gratis. Talkhis otomatis: 10 muqarrar per paket.` },
+    a: `Tidak ada kuota bulanan selama ${IMTIHAN_AI_DAYS} hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, 25 kali membuat ringkasan/kuis/flashcard, 4 jam Live Caption kuliah, dan 20 halaman PDF scan per hari (jatah scan yang tidak terpakai bisa ditabung sampai 60) — jauh di atas pemakaian belajar normal. Halaman muqarrar scan yang sudah pernah dibaca AI di Talqeeh bisa langsung terbuka gratis. Talkhis otomatis: 10 muqarrar per paket.` },
   { q: "Bisa coba dulu sebelum bayar?",
     a: "Bisa. Masuk dengan Google lalu pilih \"Mulai gratis\": kamu dapat akun gratis dengan maddah Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan coba AI Partner untuk 1 materi pendek (±10–15 halaman): ringkasan, flashcard, kuis, mufradat, plus 2× terjemah & i'rab, 3 pesan tutor, 1 kali Tanya AI, dan 3 foto dibaca AI. Upgrade kapan saja — akunnya sama, progresmu tetap aman." },
   { q: "Library-nya berlaku sampai kapan?",

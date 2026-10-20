@@ -768,7 +768,7 @@ const WelcomeOfferPopup = () => {
           <div className="text-[10px] text-ink-soft mt-1">jam : menit : detik</div>
         </div>
         <ul className="mt-4 space-y-1.5 text-left text-sm text-ink">
-          {["Talkhis otomatis muqarrar + PDF siap cetak", `AI Study Partner ${IMTIHAN_AI_DAYS} hari`, `Library ${CATALOG.maddah} maddah + bank soal, selamanya`].map(t => (
+          {["Talkhis otomatis muqarrar + PDF siap cetak", "Live Caption: terjemah kuliah duktur secara langsung", `AI Study Partner ${IMTIHAN_AI_DAYS} hari`, `Library ${CATALOG.maddah} maddah + bank soal, selamanya`].map(t => (
             <li key={t} className="flex gap-2"><Icon name="check" className="w-4 h-4 text-emerald-300 flex-shrink-0 mt-0.5"/>{t}</li>
           ))}
         </ul>
@@ -845,6 +845,7 @@ const EventBanner = () => {
 // Manfaat AI Study Partner — hanya fitur yang memang ada di aplikasi.
 const AI_BUNDLE_FEATURES = [
   "Tanya AI langsung di Talqeeh — tanpa salin-tempel ke ChatGPT, dijawab sesuai muqarrar & jurusanmu",
+  "Live Caption: dengar kuliah duktur, langsung muncul transkrip Arab + terjemah Indonesia — paham fushah & 'ammiyah Mesir",
   "Unggah diktat, PDF scan, slide, foto, atau rekaman kuliah duktur",
   "Ringkasan gaya kitab, peta konsep taqsimat, flashcard, dan kuis dari materimu sendiri",
   "Talkhis otomatis muqarrar dalam bahasa Arab + PDF siap cetak",

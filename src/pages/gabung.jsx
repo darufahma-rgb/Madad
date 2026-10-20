@@ -42,7 +42,7 @@ const ADVANTAGES = [
   { icon: 'type', color: EMERALD, tag: 'AI Partner', title: 'Kuat di bahasa Arab',
     text: "Terjemah & i'rab per kalimat, harakat otomatis, mufradat lengkap dengan wazan — dari diktatmu sendiri." },
   { icon: 'headphones', color: EMERALD, tag: 'AI Partner', title: 'Dari diktat & rekaman kuliah',
-    text: 'Unggah PDF scan, foto diktat, slide, atau rekaman duktur. Jadi ringkasan, flashcard, kuis, dan latihan.' },
+    text: 'Unggah PDF scan, foto diktat, slide, atau rekaman duktur — atau pakai Live Caption untuk membaca terjemah kuliah secara langsung.' },
   { icon: 'brain', color: SKY, tag: 'Semua akun', title: 'Menyesuaikan cara belajarmu',
     text: 'Profil Belajar 8 dimensi membuat saran dan penjelasan AI mengikuti level Arab, target, dan gaya belajarmu.' },
 ];
@@ -65,6 +65,7 @@ const COMPARE_ROWS = [
   ['Upload PDF muqarrar utuh', false, false, true],
   ['Talkhis otomatis bahasa Arab + PDF siap cetak & latihan soal', false, false, `${IMTIHAN_TALKHIS_CAP} muqarrar`],
   ['Peta konsep, harakat, tahriri dinilai AI, simulasi syafawi', false, false, true],
+  ['Live Caption kuliah duktur (Arab → Indonesia)', false, false, '4 jam/hari*'],
   ['Unggah rekaman kuliah (audio/video)', false, false, true],
 ];
 
@@ -86,7 +87,7 @@ const FAQS = [
   ['Bayarnya pakai apa? Berapa lama aktifnya?',
     'Lewat Mayar: QRIS, virtual account, atau e-wallet. Tagihannya dibuat langsung untuk akun Google-mu, jadi akses aktif otomatis begitu pembayaran masuk — biasanya kurang dari 1 menit.'],
   ['Paket Imtihan benar-benar sepuasnya?',
-    "Ya, tanpa kuota bulanan selama 120 hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, dan 25 kali membuat ringkasan/kuis/flashcard per hari — jauh di atas pemakaian belajar normal."],
+    "Ya, tanpa kuota bulanan selama 120 hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, 25 kali membuat ringkasan/kuis/flashcard, dan 4 jam Live Caption kuliah per hari — jauh di atas pemakaian belajar normal."],
   ['AI Partner diperpanjang otomatis?',
     'Tidak. Tidak ada potongan otomatis, baik Paket Imtihan maupun per 30 hari. Kalau mau lanjut, perpanjang kapan saja — sisa harimu tidak hangus.'],
   ['Saya member lama, harus bayar lagi?',
@@ -713,7 +714,7 @@ const GabungPage = () => {
           </table>
         </div>
         <p className="text-[11px] text-ink-soft text-center mt-3 max-w-2xl mx-auto">
-          *Paket Imtihan: tanpa kuota bulanan selama {IMTIHAN_AI_DAYS} hari, dengan batas wajar harian (10 materi baru, 30× i'rab, 40 pesan tutor, 40 pesan Tanya AI, 20 foto per hari). Talkhis: {IMTIHAN_TALKHIS_CAP} muqarrar per paket, maksimal 1 per hari. Materi gratis maksimal ±10–15 halaman.
+          *Paket Imtihan: tanpa kuota bulanan selama {IMTIHAN_AI_DAYS} hari, dengan batas wajar harian (10 materi baru, 30× i'rab, 40 pesan tutor, 40 pesan Tanya AI, 20 foto, 4 jam Live Caption per hari). Talkhis: {IMTIHAN_TALKHIS_CAP} muqarrar per paket, maksimal 1 per hari. Materi gratis maksimal ±10–15 halaman.
         </p>
       </Section>
 

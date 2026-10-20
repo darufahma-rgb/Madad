@@ -481,6 +481,7 @@ const AI_KIND_LABELS = {
   grade:      { label: 'Nilai tahriri',    sub: 'jawaban', color: '#f97316' },
   ocr:        { label: 'Baca foto/scan',   sub: 'halaman', color: '#a78bfa' },
   transcribe: { label: 'Transkrip',        sub: 'menit', color: '#f472b6' },
+  live:       { label: 'Live Caption',     sub: 'menit', color: '#38bdf8' },
   talkhis:    { label: 'Talkhis',          sub: 'muqarrar', color: '#f59e0b' },
   admin:      { label: 'Admin & uji',      sub: 'tes model, evaluasi, draf bank soal', color: '#9ca3af', costOnly: true },
   other:      { label: 'Lainnya',          sub: 'tanpa kategori', color: '#6b7280', costOnly: true },
@@ -2947,7 +2948,7 @@ const AdminSettings = () => {
               ['generate', 'Pembuatan AI', 'kali', 40], ['create', 'Materi baru', 'materi', 15],
               ['analyze', "I'rab & harakat", 'kali', 150], ['grade', 'Nilai tahriri', 'jawaban', 60],
               ['ocr', 'Baca foto', 'halaman', 60], ['transcribe', 'Transkrip', 'menit', 300],
-              ['talkhis', 'Talkhis', 'muqarrar', 6],
+              ['live', 'Live Caption', 'menit', 1200], ['talkhis', 'Talkhis', 'muqarrar', 6],
             ].map(([k, label, unit, def]) => (
               <div key={k}>
                 <label className="text-[11px] text-ink-muted block mb-1">{label} <span className="text-ink-soft">({unit})</span></label>
@@ -2958,6 +2959,15 @@ const AdminSettings = () => {
             ))}
           </div>
           <p className="text-[11px] text-ink-soft">Angka abu-abu = bawaan. Perkiraan biaya per fitur (mengikuti model di atas) ada di Analitik → AI Partner.</p>
+          <div className="pt-3 border-t border-white/[0.06]">
+            <label className="text-[11px] text-ink-muted block mb-1">Live Caption per hari <span className="text-ink-soft">(menit, per pelanggan)</span></label>
+            <div className="flex items-center gap-3">
+              <input inputMode="numeric" value={settings.aiLiveDailyLimit ?? ""} placeholder="240"
+                onChange={e => { const v = e.target.value.replace(/[^\d]/g, "").slice(0, 4); setSettings(s => ({ ...s, aiLiveDailyLimit: v })); }}
+                className="w-28 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink outline-none font-mono focus:border-emerald-500/45"/>
+              <span className="text-[11px] text-ink-soft leading-snug">Kosong = 240 (4 jam kuliah). 0 = Live Caption ditutup. Jatah ini terpisah dari Transkrip rekaman; biaya ±$0,005/menit.</span>
+            </div>
+          </div>
         </div>
 
         <div className="card-glass p-6 space-y-4">
@@ -2987,6 +2997,7 @@ const AdminSettings = () => {
                   {[
                     ['talkhis', 'Talkhis', 1], ['generate', 'Pembuatan AI', 25], ['analyze', "I'rab", 30], ['chat', 'Tutor', 40], ['prompt', 'Tanya AI', 40],
                     ['create', 'Materi baru', 10], ['grade', 'Nilai tahriri', 20], ['ocr', 'Baca foto', 20], ['transcribe', 'Transkrip', 60],
+                    ['live', 'Live Caption', Number(settings.aiLiveDailyLimit) || 240],
                   ].map(([k, label, def]) => (
                     <div key={k}>
                       <label className="text-[10px] text-ink-muted block mb-1">{label} / hari</label>

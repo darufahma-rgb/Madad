@@ -5,7 +5,7 @@ import { callAI, callAIJson, requestAI, streamAI, friendlyAiError, aiErrorDetail
 import { resolveModels, isValidModelId, clearModelCache, TASK_THINKING } from './_lib/models.js';
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, weakPointsNote, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
-  OCR_PROMPT, transcribePrompt, transcribeAnswerPrompt, TRANSCRIBE_DIALECTS, tutorSystem, syafawiSystem, learnerContext,
+  OCR_PROMPT, transcribePrompt, transcribeAnswerPrompt, liveCaptionPrompt, TRANSCRIBE_DIALECTS, tutorSystem, syafawiSystem, learnerContext,
   isHighStakesFiqh, FIQH_REMINDER,
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
@@ -18,11 +18,11 @@ import { withAiContext } from './_lib/ai-cost.js';
 
 // Kategori biaya AI per action (cocok dengan kolom "Fitur" di analitik admin).
 const COST_KIND = {
-  ocr: 'ocr', transcribe: 'transcribe', generate: 'generate', analyze: 'analyze', grade: 'grade',
+  ocr: 'ocr', transcribe: 'transcribe', 'live-caption': 'live', generate: 'generate', analyze: 'analyze', grade: 'grade',
   chat: 'chat', 'prompt-chat': 'prompt', talkhis: 'talkhis', 'battle-story': 'battle_story', 'battle-quiz': 'battle_quiz', 'battle-halaqah': 'battle_halaqah',
 };
 import { handlePromptFeedback, handlePromptQualityAdmin } from './_lib/prompt-quality.js';
-import { getMonthlyLimits, cachedMonthlyLimits, getQuotaOverride } from './_lib/ai-partner/limits.js';
+import { getMonthlyLimits, cachedMonthlyLimits, getQuotaOverride, getLiveDailyLimit, cachedLiveDailyLimit, DEFAULT_LIVE_DAILY } from './_lib/ai-partner/limits.js';
 import { splitChunks, spreadSample, stickyExcerpt } from './_lib/ai-partner/chunks.js';
 import {
   isStr, cleanFlashcards, cleanQuiz, shuffleQuizOptions, cleanGlossary, cleanMindmap, cleanEssays,
@@ -31,14 +31,15 @@ import {
 
 // Kuota harian pelanggan. Pengguna coba gratis dibatasi per materi (lihat TRIAL_*), bukan per hari.
 // talkhis = jumlah muqarrar yang dipetakan per hari (tiap muqarrar berisi puluhan pemanggilan AI).
-const LIMITS = { create: 10, ocr: 20, transcribe: 60, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40, talkhis: 1 };
+// live (Live Caption, menit): bawaannya diatur admin lewat aiLiveDailyLimit (lihat getLiveDailyLimit); angka di sini cadangan.
+const LIMITS = { create: 10, ocr: 20, transcribe: 60, live: DEFAULT_LIVE_DAILY, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40, talkhis: 1 };
 const TRIAL_OCR_LIMIT  = 3;  // per hari untuk member Library tanpa langganan; akun gratis: 3 seumur akun
 const FREE_OCR_LIFETIME = 3;
 /* Member bertipe "Trial — akses sementara" (Admin → Members, kolom member_type) yang diberi akses AI: semua fitur tetap
    terbuka, tapi jatahnya lebih kecil daripada pelanggan berbayar. Tidak berlaku kalau mereka membeli Paket Imtihan,
    dan "Limit khusus per email" di Settings tetap menang. */
-const TRIAL_MEMBER_DAILY = { create: 3, ocr: 5, transcribe: 15, generate: 8, analyze: 10, grade: 5, chat: 15, prompt: 15, talkhis: 1 };
-const TRIAL_MEMBER_MONTHLY = { prompt: 60, chat: 60, generate: 15, create: 5, analyze: 60, grade: 20, ocr: 20, transcribe: 60, talkhis: 1 };
+const TRIAL_MEMBER_DAILY = { create: 3, ocr: 5, transcribe: 15, live: 60, generate: 8, analyze: 10, grade: 5, chat: 15, prompt: 15, talkhis: 1 };
+const TRIAL_MEMBER_MONTHLY = { prompt: 60, chat: 60, generate: 15, create: 5, analyze: 60, grade: 20, ocr: 20, transcribe: 60, live: 240, talkhis: 1 };
 // Pengaman biaya: total pemanggilan AI oleh SEMUA pengguna coba gratis per hari. Akun gratis bisa dibuat siapa saja
 // yang punya akun Google, jadi tanpa batas bersama ini satu orang dengan banyak akun bisa menguras saldo AI.
 // ±200 × ±$0.03 ≈ $6/hari paling banyak. Atur lewat env TRIAL_DAILY_LIMIT.
@@ -48,8 +49,9 @@ const trialGateClosed = (res) => upgradeRequired(res, 'trial_busy',
   'Kuota coba gratis untuk hari ini sudah penuh. Coba lagi besok, atau berlangganan AI Partner untuk memakai AI kapan saja.');
 const TRIAL_KINDS      = ['summary', 'flashcards', 'quiz', 'glossary'];
 // analyze & chat dibuka sedikit untuk coba gratis (lihat TRIAL_TASTE); sisanya khusus pelanggan.
-const PRO_ONLY_ACTIONS = ['transcribe', 'grade', 'create-batch', 'talkhis'];
+const PRO_ONLY_ACTIONS = ['transcribe', 'live-caption', 'live-quota', 'grade', 'create-batch', 'talkhis'];
 const PRO_ONLY_MESSAGES = {
+  'live-caption': 'Live Caption khusus pelanggan AI Partner. Berlangganan untuk mendengar terjemahan kuliah duktur secara langsung.',
   talkhis: 'Talkhis otomatis khusus pelanggan AI Partner. Berlangganan untuk men-talkhis seluruh muqarrarmu dalam bahasa Arab, lengkap dengan cek kelengkapan dan PDF siap cetak.',
 };
 // Tanya AI untuk pengguna coba gratis: satu percakapan, maksimal sekian pesan seumur akun.
@@ -285,8 +287,14 @@ const isTrialMember = async (ctx) => {
   } catch {}
   return ctx.trialMember;
 };
-const baseDaily = (ctx) => (ctx?.trialMember ? TRIAL_MEMBER_DAILY : LIMITS);
-const dailyLimit = async (ctx, kind) => (await quotaOverride(ctx))?.daily?.[kind] ?? ((await isTrialMember(ctx)) ? TRIAL_MEMBER_DAILY : LIMITS)[kind];
+// Live Caption pelanggan biasa: batas harian dari setting admin (aiLiveDailyLimit), bukan angka tetap di LIMITS.
+const baseDaily = (ctx) => (ctx?.trialMember ? TRIAL_MEMBER_DAILY : { ...LIMITS, live: cachedLiveDailyLimit() });
+const dailyLimit = async (ctx, kind) => {
+  const own = (await quotaOverride(ctx))?.daily?.[kind];
+  if (own != null) return own;
+  if (await isTrialMember(ctx)) return TRIAL_MEMBER_DAILY[kind];
+  return kind === 'live' ? await getLiveDailyLimit() : LIMITS[kind];
+};
 const dailyLimitCache = (ctx, kind) => ctx?.banked?.[kind] ?? ctx?.override?.daily?.[kind] ?? baseDaily(ctx)[kind];
 // Jatah per periode 30 hari: null = tanpa kuota bulanan (Paket Imtihan atau limit khusus noMonthly).
 const monthlyLimitsFor = async (ctx) => {
@@ -497,6 +505,102 @@ async function handleTranscribe(ctx, body, res) {
   });
   const teks = text.trim() === '[HENING]' ? '' : text.trim();
   return res.status(200).json({ ok: true, teks });
+}
+
+/* ── Live caption ──
+   Potongan pendek dari mikrofon (±5–15 detik) ditranskrip + diterjemahkan sekaligus. Jatah Live Caption ("live",
+   terpisah dari transkrip rekaman) dihitung per
+   menit audio, bukan per potongan: tiap potong 1 menit jatah memberi "kredit" 60 detik yang dibawa browser sebagai
+   token bertanda tangan (HMAC). Token yang hilang/diubah hanya membuat kredit mulai dari nol — pemakai yang
+   membuang token membayar lebih, bukan kurang. */
+const LIVE_MAX_SECONDS = 20;
+const LIVE_TOKEN_TTL_MS = 15 * 60 * 1000;
+const liveSecret = () => process.env.LIVE_CAPTION_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || '';
+const liveSign = (payload) => crypto.createHmac('sha256', liveSecret()).update(payload).digest('base64url');
+const liveToken = (code, creditMs) => {
+  const payload = `${code}.${Math.max(0, Math.round(creditMs))}.${Date.now()}`;
+  return `${payload}.${liveSign(payload)}`;
+};
+const liveCredit = (token, code) => {
+  if (!isStr(token) || !liveSecret()) return 0;
+  const at = token.lastIndexOf('.');
+  const payload = token.slice(0, at), sig = token.slice(at + 1);
+  const expected = liveSign(payload);
+  if (sig.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) return 0;
+  const [owner, credit, issued] = payload.split('.');
+  if (owner !== code || Date.now() - Number(issued) > LIVE_TOKEN_TTL_MS) return 0;
+  return Number(credit) || 0;
+};
+
+// 90 → "1 jam 30 menit", 45 → "45 menit".
+const liveHours = (min) => {
+  const h = Math.floor(min / 60), m = min % 60;
+  return [h ? `${h} jam` : '', m || !h ? `${m} menit` : ''].filter(Boolean).join(' ');
+};
+
+// Sisa jatah Live Caption (menit) untuk ditampilkan di halaman: hari ini dan, bila ada, periode langganan.
+async function handleLiveQuota(ctx, res) {
+  const daily = await dailyLimit(ctx, 'live');
+  const { url, key } = sbConfig();
+  const today = new Date().toISOString().slice(0, 10);
+  const r = await fetch(`${url}/rest/v1/ai_usage?member_code=eq.${encodeURIComponent(ctx.code)}&kind=eq.live&day=eq.${today}&select=count`, { headers: sbHeaders(key) });
+  const usedToday = r.ok ? ((await r.json()) || []).reduce((n, row) => n + (Number(row.count) || 0), 0) : 0;
+  let monthlyLeft = null;
+  const monthly = (await monthlyLimitsFor(ctx))?.live ?? null;
+  if (monthly != null) {
+    const used = await monthlyUsage(ctx.code, quotaPeriod(ctx.aiExpiresAt).start);
+    if (used) monthlyLeft = Math.max(0, monthly - (used.live || 0));
+  }
+  const dailyLeft = Math.max(0, daily - usedToday);
+  return res.status(200).json({
+    ok: true, daily, dailyLeft, monthly, monthlyLeft,
+    left: monthlyLeft == null ? dailyLeft : Math.min(dailyLeft, monthlyLeft),
+  });
+}
+
+async function handleLiveCaption(ctx, body, res) {
+  const audio = body.audio_base64;
+  if (!isStr(audio) || !audio.startsWith('UklGR')) return res.status(400).json({ ok: false, error: 'Potongan audio tidak valid' });
+  // WAV 16kHz mono 16-bit = 32.000 byte per detik (+44 byte header).
+  const seconds = Math.max(0, (Math.floor(audio.length * 3 / 4) - 44) / 32000);
+  if (seconds > LIVE_MAX_SECONDS + 1) return res.status(400).json({ ok: false, error: 'Potongan audio terlalu panjang' });
+
+  let credit = liveCredit(body.credit, ctx.code);
+  // Jatah Live Caption terpisah dari transkrip rekaman (jenis kuota "live", menit).
+  if (credit < seconds * 1000) {
+    const over = await takeQuota(ctx, 'live');
+    const closed = (over === 'daily' && dailyLimitCache(ctx, 'live') === 0) || (over === 'monthly' && monthlyLimitCache(ctx).live === 0);
+    if (closed) return res.status(429).json({ ok: false, error: 'quota', message: 'Live Caption sedang ditutup sementara. Kabari admin Talqeeh, ya.' });
+    if (over === 'daily') {
+      return res.status(429).json({ ok: false, error: 'quota', message: `Jatah Live Caption hari ini (${liveHours(dailyLimitCache(ctx, 'live'))}) sudah habis. Coba lagi besok.` });
+    }
+    if (over === 'unavailable') return quotaExceeded(res, 'live', over, ctx);
+    if (over) {
+      return res.status(429).json({ ok: false, error: 'quota', message: `Jatah Live Caption ${liveHours(monthlyLimitCache(ctx).live)} di periode langgananmu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx.quotaResetAt || quotaPeriod(null).resetAt)}.` });
+    }
+    credit += 60_000;
+  }
+  credit -= seconds * 1000;
+
+  // Live caption hanya dua mode: Arab (fushah/'ammiyah dikenali otomatis) atau kuliah berbahasa Indonesia.
+  const dialect = body.dialect === 'indonesia' ? 'indonesia' : 'campur';
+  const out = await callAIJson({
+    model: (await resolveModels()).transcribe,
+    maxTokens: 1500,
+    temperature: 0,
+    messages: [{
+      role: 'user',
+      content: [
+        { type: 'input_audio', input_audio: { data: audio, format: 'wav' } },
+        { type: 'text', text: liveCaptionPrompt({ dialect, title: body.title, prevTail: body.prev_tail }) },
+      ],
+    }],
+  });
+  const clean = (v) => (isStr(v) ? v.trim().slice(0, 4000) : '');
+  const ar = clean(out?.ar) === '[HENING]' ? '' : clean(out?.ar);
+  // Mode Indonesia: "id" boleh kosong (tidak ada kutipan Arab); jangan tampilkan terjemah yang sekadar mengulang.
+  const id = ar ? clean(out?.id) : '';
+  return res.status(200).json({ ok: true, ar, id: id === ar ? '' : id, credit: liveToken(ctx.code, credit) });
 }
 
 async function handleCreate(ctx, body, res) {
@@ -1166,7 +1270,7 @@ async function handleStats(ctx, res) {
       usage30,
       usageToday,
       usageMonth,
-      limits: ctx.tier === 'pro' ? ((await isTrialMember(ctx)) ? TRIAL_MEMBER_DAILY : LIMITS) : null,
+      limits: ctx.tier === 'pro' ? ((await isTrialMember(ctx)) ? TRIAL_MEMBER_DAILY : { ...LIMITS, live: await getLiveDailyLimit() }) : null,
       // Paket Imtihan: tanpa kuota bulanan (hanya batas harian), jadi kotak jatah bulanan tidak ditampilkan.
       monthlyLimits: ctx.tier === 'pro' ? await monthlyLimitsFor(ctx) : null,
       unlimitedMonthly: ctx.tier === 'pro' && !(await isTrialMember(ctx)) && (await isImtihanHolder(ctx)),
@@ -1353,6 +1457,8 @@ export default async function handler(req, res) {
       case 'ocr-quota':     return await handleOcrQuota(ctx, res);
       case 'ocr-cache':     return (await isPayingAi(ctx)) ? await handleOcrCache(ctx, body, res) : res.status(200).json({ ok: true, texts: {} });
       case 'transcribe':    return await handleTranscribe(ctx, body, res);
+      case 'live-caption':  return await handleLiveCaption(ctx, body, res);
+      case 'live-quota':    return await handleLiveQuota(ctx, res);
       case 'create':        return await handleCreate(ctx, body, res);
       case 'create-batch':  return await handleCreateBatch(ctx, body, res);
       case 'list':          return await handleList(ctx, res);

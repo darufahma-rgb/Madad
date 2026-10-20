@@ -68,7 +68,7 @@ const Box = ({ title, children, className = '' }) => (
 
 const QUOTA_LABELS = {
   prompt: 'Tanya AI', generate: 'Pembuatan AI', chat: 'Tutor & syafawi', analyze: "I'rab & harakat",
-  grade: 'Nilai tahriri', ocr: 'Baca foto', transcribe: 'Transkrip (menit)', create: 'Materi baru',
+  grade: 'Nilai tahriri', ocr: 'Baca foto', transcribe: 'Transkrip (menit)', live: 'Live Caption (menit)', create: 'Materi baru',
 };
 
 const QuotaBox = ({ title, used, limits, note }) => (

@@ -1,0 +1,486 @@
+import React, { useState, useEffect, useRef } from 'react';
+/* Talqeeh — Live Caption: dengar kuliah duktur, tampilkan transkrip Arab + terjemah Indonesia secara langsung.
+   Mikrofon dibaca sebagai sampel mentah (bukan MediaRecorder) supaya tiap potongan bisa dipotong di jeda bicara
+   dan dikirim sebagai WAV utuh ke action "live-caption" (transkrip + terjemah dalam satu panggilan). */
+
+/* Dua mode saja: duktur berbahasa Arab (fushah, 'ammiyah Mesir, atau campuran — dikenali otomatis lewat dialek
+   "campur") atau kuliah berbahasa Indonesia (kutipan Arabnya tetap diterjemahkan). */
+const DIALECT_KEY = 'talqeeh_live_caption_lang';
+const DIALECTS = [
+  { id: 'campur', label: 'Bahasa Arab', sub: "fushah & 'ammiyah" },
+  { id: 'indonesia', label: 'Bahasa Indonesia', sub: 'kutipan Arab diterjemahkan' },
+];
+const readDialect = () => { try { return DIALECTS.some(d => d.id === localStorage.getItem(DIALECT_KEY)) ? localStorage.getItem(DIALECT_KEY) : 'campur'; } catch { return 'campur'; } };
+
+const DRAFT_KEY = 'talqeeh_live_caption_draft';
+const readDraft = () => { try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null'); } catch { return null; } };
+const writeDraft = (d) => { try { d ? localStorage.setItem(DRAFT_KEY, JSON.stringify(d)) : localStorage.removeItem(DRAFT_KEY); } catch {} };
+
+// Potongan dipotong di jeda bicara setelah MIN detik, paling lambat MAX detik (server menerima maks 20 detik).
+const CHUNK_MIN_S = 6;
+const CHUNK_MAX_S = 14;
+const PAUSE_S = 0.35;
+const ARABIC_FONT = { fontFamily: '"Noto Naskh Arabic", serif' };
+
+const clock = (s) => {
+  const t = Math.max(0, Math.floor(s));
+  const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), sec = t % 60;
+  return `${h ? `${h}:` : ''}${h ? String(m).padStart(2, '0') : m}:${String(sec).padStart(2, '0')}`;
+};
+
+/* Mikrofon → potongan Float32 di jeda bicara. onChunk(samples, sampleRate, startSec). */
+const useLiveMic = ({ onChunk, onError }) => {
+  const [recording, setRecording] = useState(false);
+  const [level, setLevel] = useState(0);
+  const mic = useRef(null);
+  const onChunkRef = useRef(onChunk);
+  onChunkRef.current = onChunk;
+  const supported = typeof window !== 'undefined' && !!navigator.mediaDevices?.getUserMedia && !!(window.AudioContext || window.webkitAudioContext);
+
+  const flush = (m, force) => {
+    const len = m.parts.reduce((n, p) => n + p.length, 0);
+    if (!len || (!force && len < m.rate)) { if (force) m.parts = []; return; }
+    const samples = new Float32Array(len);
+    let o = 0;
+    for (const p of m.parts) { samples.set(p, o); o += p.length; }
+    const startSec = m.offset / m.rate;
+    m.offset += len;
+    m.parts = []; m.quiet = 0;
+    // Potongan tanpa suara (peak rendah) tidak dikirim — tidak memakai jatah.
+    if (m.peak >= 0.01) onChunkRef.current(samples, m.rate, startSec);
+    m.peak = 0;
+  };
+
+  const release = () => {
+    const m = mic.current;
+    if (!m) return;
+    m.proc.onaudioprocess = null;
+    try { m.src.disconnect(); m.proc.disconnect(); } catch {}
+    m.stream.getTracks().forEach(t => t.stop());
+    m.ctx.close?.();
+    m.wake?.release?.().catch?.(() => {});
+    mic.current = null;
+  };
+  useEffect(() => () => release(), []);
+
+  // baseOffset: detik rekaman sebelumnya, supaya cap waktu tetap berlanjut setelah jeda.
+  const start = async (baseOffset = 0) => {
+    if (mic.current) return;
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+    } catch {
+      onError('Izin mikrofon ditolak. Aktifkan izin mikrofon untuk situs ini di pengaturan browser.');
+      return;
+    }
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    const ctx = new Ctx();
+    await ctx.resume?.();
+    const src = ctx.createMediaStreamSource(stream);
+    const proc = ctx.createScriptProcessor(4096, 1, 1);
+    const m = { ctx, src, proc, stream, rate: ctx.sampleRate, parts: [], quiet: 0, peak: 0, offset: Math.round(baseOffset * ctx.sampleRate), lastLevel: 0 };
+    proc.onaudioprocess = (e) => {
+      const input = e.inputBuffer.getChannelData(0);
+      const copy = new Float32Array(input);
+      let sum = 0, peak = 0;
+      for (let i = 0; i < copy.length; i++) { const v = copy[i]; sum += v * v; if (Math.abs(v) > peak) peak = Math.abs(v); }
+      const rms = Math.sqrt(sum / copy.length);
+      m.parts.push(copy);
+      m.peak = Math.max(m.peak, peak);
+      m.quiet = rms < 0.015 ? m.quiet + copy.length : 0;
+      const dur = m.parts.reduce((n, p) => n + p.length, 0) / m.rate;
+      if ((dur >= CHUNK_MIN_S && m.quiet >= PAUSE_S * m.rate) || dur >= CHUNK_MAX_S) flush(m, false);
+      const now = performance.now();
+      if (now - m.lastLevel > 120) { m.lastLevel = now; setLevel(Math.min(1, rms * 12)); }
+    };
+    src.connect(proc);
+    proc.connect(ctx.destination);
+    // Layar tetap menyala selama kuliah (kalau browser mendukung).
+    try { m.wake = await navigator.wakeLock?.request('screen'); } catch {}
+    mic.current = m;
+    setRecording(true);
+  };
+
+  // Mengembalikan total detik yang sudah direkam (untuk sambungan berikutnya).
+  const stop = () => {
+    const m = mic.current;
+    if (!m) return 0;
+    flush(m, true);
+    const total = m.offset / m.rate;
+    release();
+    setRecording(false);
+    setLevel(0);
+    return total;
+  };
+
+  return { supported, recording, level, start, stop };
+};
+
+// 90 → "1 jam 30 menit", 45 → "45 menit".
+const durationLabel = (min) => {
+  const h = Math.floor(min / 60), m = min % 60;
+  return [h ? `${h} jam` : '', m || !h ? `${m} menit` : ''].filter(Boolean).join(' ');
+};
+
+const LevelBars =({ level, active }) => (
+  <span className="inline-flex items-end gap-[3px] h-4" aria-hidden="true">
+    {[0.35, 0.7, 1, 0.6, 0.3].map((k, i) => (
+      <span key={i} className="w-[3px] rounded-full transition-all duration-100"
+        style={{ height: `${Math.max(18, (active ? level * k : 0) * 100)}%`, background: active ? '#3ecf8e' : 'rgba(255,255,255,0.25)' }}/>
+    ))}
+  </span>
+);
+
+const exportText = (title, segments) => {
+  const lines = [title || 'Live Caption Talqeeh', new Date().toLocaleString('id-ID'), ''];
+  for (const s of segments) {
+    if (!s.ar) continue;
+    lines.push(`[${clock(s.t)}]${s.marked ? ' ★ PENTING' : ''}`, s.ar, ...(s.idText ? [s.idText] : []), '');
+  }
+  return lines.join('\n');
+};
+
+const LiveCaptionBody = () => {
+  const toast = useToast();
+  const draft = useRef(readDraft()).current;
+  const [title, setTitle] = useState(draft?.title || '');
+  const [dialect, setDialect] = useState(readDialect);
+  const [segments, setSegments] = useState(() => (draft?.segments || []).filter(s => s.status === 'done'));
+  const [elapsed, setElapsed] = useState(draft?.elapsed || 0);
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const restored = useRef(!!draft?.segments?.length);
+  const [quota, setQuota] = useState(null); // { left, dailyLeft, monthlyLeft } dalam menit
+  const loadQuota = () => aiCall('live-quota').then(d => { if (d.ok) setQuota(d); });
+
+  const queue = useRef([]);           // potongan yang menunggu dikirim
+  const busy = useRef(false);
+  const credit = useRef(null);        // token kredit menit dari server
+  const audioById = useRef(new Map()); // simpan audio potongan yang gagal untuk dicoba ulang
+  const baseElapsed = useRef(draft?.elapsed || 0);
+  const startedAt = useRef(0);
+  const listEnd = useRef(null);
+  const stick = useRef(true);
+  const segRef = useRef(segments);
+  segRef.current = segments;
+  const titleRef = useRef(title);
+  titleRef.current = title;
+  const dialectRef = useRef(dialect);
+  dialectRef.current = dialect;
+
+  const patch = (id, p) => setSegments(list => list.map(s => (s.id === id ? { ...s, ...p } : s)));
+
+  const mic = useLiveMic({
+    onChunk: (samples, rate, startSec) => {
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      setSegments(list => [...list, { id, t: startSec, ar: '', idText: '', lang: dialectRef.current, status: 'pending', marked: false }]);
+      queue.current.push({ id, samples, rate });
+      pump();
+    },
+    onError: setError,
+  });
+
+  // Dipanggil dari antrean (closure bisa basi), jadi tidak bergantung pada mic.recording.
+  const stopAll = (msg) => {
+    const total = mic.stop();
+    if (total) baseElapsed.current = total;
+    if (msg) setError(msg);
+  };
+
+  const send = async (id, base64) => {
+    const prev = [...segRef.current].reverse().find(s => s.status === 'done' && s.ar && s.id !== id);
+    const d = await aiCall('live-caption', {
+      audio_base64: base64, dialect, title: titleRef.current, prev_tail: prev ? prev.ar.slice(-300) : '', credit: credit.current,
+    });
+    if (d.ok) {
+      credit.current = d.credit || null;
+      audioById.current.delete(id);
+      if (!d.ar) setSegments(list => list.filter(s => s.id !== id)); // hening: buang kartunya
+      else patch(id, { status: 'done', ar: d.ar, idText: d.id });
+      return true;
+    }
+    if (d.upgrade) { stopAll(); openAiUpgrade('live'); }
+    else if (/batas|jatah|quota/i.test(d.error || '')) stopAll(d.error);
+    patch(id, { status: 'error', err: d.error || 'Gagal memproses potongan ini.' });
+    return false;
+  };
+
+  const pump = async () => {
+    if (busy.current) return;
+    busy.current = true;
+    try {
+      while (queue.current.length) {
+        const { id, samples, rate } = queue.current.shift();
+        let base64;
+        try { base64 = await window.pcmToWavBase64(samples, rate); } catch { patch(id, { status: 'error', err: 'Gagal menyiapkan audio.' }); continue; }
+        audioById.current.set(id, base64);
+        await send(id, base64);
+      }
+    } finally {
+      busy.current = false;
+    }
+  };
+
+  const retry = async (id) => {
+    const base64 = audioById.current.get(id);
+    if (!base64) { setSegments(list => list.filter(s => s.id !== id)); return; }
+    patch(id, { status: 'pending', err: '' });
+    await send(id, base64);
+  };
+
+  // Sisa jatah: dimuat saat halaman dibuka dan diperbarui setiap berhenti merekam.
+  useEffect(() => { if (!mic.recording) loadQuota(); }, [mic.recording]);
+
+  // Timer
+  useEffect(() => {
+    if (!mic.recording) return;
+    startedAt.current = Date.now();
+    const base = elapsed;
+    const t = setInterval(() => setElapsed(base + (Date.now() - startedAt.current) / 1000), 500);
+    return () => clearInterval(t);
+  }, [mic.recording]);
+
+  // Simpan draf di perangkat supaya catatan tidak hilang kalau halaman tertutup.
+  useEffect(() => {
+    const done = segments.filter(s => s.status === 'done');
+    writeDraft(done.length || title ? { title, segments: done, elapsed, savedAt: Date.now() } : null);
+  }, [segments, title, Math.floor(elapsed / 10)]);
+
+  // Ikuti teks terbaru, kecuali pengguna sedang menggulir ke atas.
+  useEffect(() => {
+    const onScroll = () => { stick.current = window.innerHeight + window.scrollY >= document.body.scrollHeight - 160; };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+  useEffect(() => { if (stick.current) listEnd.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [segments.length]);
+
+  // Peringatan sebelum menutup halaman saat masih merekam / memproses.
+  useEffect(() => {
+    if (!mic.recording && !segments.some(s => s.status === 'pending')) return;
+    const warn = (e) => { e.preventDefault(); e.returnValue = ''; };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [mic.recording, segments]);
+
+  const chooseDialect = (d) => { setDialect(d); try { localStorage.setItem(DIALECT_KEY, d); } catch {} };
+  const toggleRecord = () => {
+    setError('');
+    if (mic.recording) baseElapsed.current = mic.stop();
+    else { restored.current = false; mic.start(baseElapsed.current); }
+  };
+  const toggleMark = (id) => patch(id, { marked: !segments.find(s => s.id === id)?.marked });
+  const markLatest = () => {
+    const last = segments[segments.length - 1];
+    if (!last) { toast.push('Belum ada kalimat untuk ditandai.'); return; }
+    if (!last.marked) { patch(last.id, { marked: true }); toast.push('Ditandai penting.'); }
+    else patch(last.id, { marked: false });
+  };
+
+  const done = segments.filter(s => s.status === 'done' && s.ar);
+  const pending = segments.filter(s => s.status === 'pending').length;
+  const marked = segments.filter(s => s.marked).length;
+
+  const copyAll = async () => {
+    try { await navigator.clipboard.writeText(exportText(title, done)); toast.push('Transkrip disalin.'); }
+    catch { toast.push('Gagal menyalin. Coba unduh .txt.'); }
+  };
+  const download = () => {
+    const blob = new Blob([exportText(title, done)], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(title || 'live-caption').replace(/[\\/:*?"<>|]+/g, '').slice(0, 60) || 'live-caption'}.txt`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+  const saveAsMaterial = async () => {
+    const content = done.map(s => `${s.marked ? '【PENTING】 ' : ''}${s.ar}${s.idText ? `\n— ${s.idText}` : ''}`).join('\n\n');
+    if (content.length < 50) { toast.push('Transkrip masih terlalu pendek untuk dijadikan materi.'); return; }
+    setSaving(true);
+    const d = await aiCall('create', {
+      title: title.trim() || `Kuliah ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long' })}`,
+      source_type: 'audio', content,
+    });
+    setSaving(false);
+    if (!d.ok) { if (d.upgrade) openAiUpgrade('materi'); else toast.push(d.error || 'Gagal menyimpan materi.'); return; }
+    writeDraft(null);
+    try { sessionStorage.setItem('talqeeh_new_set', String(d.id)); } catch {}
+    navigate(`/ai-partner/${d.id}`);
+  };
+  const reset = () => {
+    if (mic.recording) mic.stop();
+    queue.current = []; audioById.current.clear(); credit.current = null; baseElapsed.current = 0;
+    setSegments([]); setElapsed(0); setTitle(''); setError(''); setConfirmReset(false);
+    writeDraft(null);
+  };
+
+  const idle = !mic.recording && !segments.length;
+
+  return (
+    <div className="container-x max-w-3xl pb-28 md:pb-12">
+      <div className="flex items-start justify-between gap-3 mb-4">
+        <div className="min-w-0">
+          <div className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-wider text-emerald-300 mb-1.5">
+            <Icon name="mic" className="w-3.5 h-3.5"/> Live Caption
+          </div>
+          <h1 className="font-display text-2xl md:text-3xl font-semibold text-ink leading-tight">Dengar duktur, langsung paham</h1>
+        </div>
+        {!!segments.length && !mic.recording && (
+          <button onClick={() => setConfirmReset(true)} className="text-xs text-ink-soft hover:text-rose-300 px-2.5 py-1.5 rounded-lg hover:bg-white/5 flex-shrink-0">Sesi baru</button>
+        )}
+      </div>
+
+      {confirmReset && (
+        <div className="rounded-xl border border-rose-500/25 bg-rose-500/5 p-3.5 mb-4 flex items-center justify-between gap-3">
+          <span className="text-sm text-ink-muted">Hapus transkrip ini dan mulai sesi baru?</span>
+          <span className="flex gap-1.5 flex-shrink-0">
+            <button onClick={() => setConfirmReset(false)} className="text-xs px-3 py-1.5 rounded-lg text-ink-soft hover:text-ink">Batal</button>
+            <button onClick={reset} className="text-xs px-3 py-1.5 rounded-lg bg-rose-500/15 text-rose-300 hover:bg-rose-500/25">Hapus</button>
+          </span>
+        </div>
+      )}
+
+      <input value={title} onChange={e => setTitle(e.target.value)} maxLength={120} placeholder="Judul kuliah (opsional), mis. Ushul Fiqh — Bab Qiyas"
+        className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-2.5 text-ink placeholder-ink-soft outline-none focus:border-emerald-500/40 mb-3" style={{ fontSize: 16 }}/>
+
+      <div className="text-[11px] text-ink-soft mb-1.5">Duktur berbicara dalam</div>
+      <div className="grid grid-cols-2 gap-2 mb-5">
+        {DIALECTS.map(d => (
+          <button key={d.id} onClick={() => chooseDialect(d.id)} disabled={mic.recording}
+            className={`text-left px-3.5 py-2.5 rounded-xl border transition disabled:opacity-60 ${dialect === d.id ? 'bg-emerald-500/15 border-emerald-500/40' : 'border-white/10 hover:bg-white/[0.04]'}`}>
+            <div className={`text-sm font-medium ${dialect === d.id ? 'text-emerald-200' : 'text-ink'}`}>{d.label}</div>
+            <div className="text-[11px] text-ink-soft mt-0.5">{d.sub}</div>
+          </button>
+        ))}
+      </div>
+
+      {!mic.supported && (
+        <div className="rounded-xl border border-rose-500/25 bg-rose-500/5 p-4 text-sm text-rose-200 mb-4">
+          Browser ini tidak bisa merekam suara. Coba buka Talqeeh di Chrome atau Safari terbaru.
+        </div>
+      )}
+      {error && <div className="rounded-xl border border-rose-500/25 bg-rose-500/5 p-3.5 text-sm text-rose-200 mb-4">{error}</div>}
+      {restored.current && !!segments.length && !mic.recording && (
+        <div className="text-xs text-ink-soft mb-3">Sesi sebelumnya dipulihkan dari perangkat ini. Tekan rekam untuk melanjutkan.</div>
+      )}
+
+      {idle ? (
+        <div className="card-glass p-6 md:p-8 text-center">
+          <div className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-emerald-500/12 border border-emerald-500/25">
+            <Icon name="mic" className="w-6 h-6 text-emerald-300"/>
+          </div>
+          <p className="text-sm text-ink-muted max-w-md mx-auto leading-relaxed">
+            Taruh HP di dekat duktur, lalu tekan tombol rekam. Ucapan duktur muncul per kalimat beserta terjemahan Indonesianya, dengan jeda ±10 detik. Fushah dan 'ammiyah Mesir dikenali otomatis.
+          </p>
+          <ul className="text-xs text-ink-soft mt-4 space-y-1">
+            <li>Tandai bagian penting dengan <span className="text-gold-300">Tandai</span>.</li>
+            <li>Setelah selesai, simpan jadi materi AI Partner untuk diringkas, dibuat kuis, dan lainnya.</li>
+            <li>Jatah Live Caption terpisah dari transkrip rekaman: 1 menit kuliah = 1 menit jatah.</li>
+          </ul>
+          {quota && (
+            <div className="mt-4 inline-flex items-center gap-2 text-xs rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-ink-muted">
+              Sisa jatah: <span className="text-emerald-200 font-medium">{durationLabel(quota.left)}</span>
+              {quota.monthlyLeft != null && quota.monthlyLeft < quota.dailyLeft ? ' periode ini' : ' hari ini'}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {segments.map(s => (
+            <div key={s.id} className={`relative rounded-2xl border p-4 pr-12 transition ${s.marked ? 'border-gold-500/40 bg-gold-500/[0.06]' : 'border-white/8 bg-white/[0.03]'}`}>
+              <div className="text-[11px] text-ink-soft mb-1.5 tabular-nums">{clock(s.t)}{s.marked && <span className="text-gold-300 ml-2">★ Penting</span>}</div>
+              {s.status === 'pending' && <div className="text-sm text-ink-soft animate-pulse">Mendengarkan & menerjemahkan…</div>}
+              {s.status === 'error' && (
+                <div className="text-sm text-rose-300">
+                  {s.err}
+                  <button onClick={() => retry(s.id)} className="ml-2 text-xs underline underline-offset-2 text-rose-200">Coba lagi</button>
+                </div>
+              )}
+              {/* Mode Indonesia: transkripnya huruf Latin; "terjemah" hanya untuk kutipan Arab di dalamnya (bisa kosong). */}
+              {s.status === 'done' && <>
+                {s.lang === 'indonesia'
+                  ? <p dir="auto" className="text-ink text-[15px] leading-relaxed">{s.ar}</p>
+                  : <p dir="rtl" className="text-ink leading-loose text-right" style={{ ...ARABIC_FONT, fontSize: 20 }}>{s.ar}</p>}
+                {s.idText && <p className="text-[15px] leading-relaxed mt-2 text-emerald-200/90">{s.idText}</p>}
+              </>}
+              <button onClick={() => toggleMark(s.id)} aria-label={s.marked ? 'Hapus tanda' : 'Tandai penting'}
+                className={`absolute top-3 right-3 w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/5 ${s.marked ? 'text-gold-300' : 'text-ink-soft'}`}>
+                <Icon name="bookmark" className="w-4 h-4" style={s.marked ? { fill: 'currentColor' } : undefined}/>
+              </button>
+            </div>
+          ))}
+          <div ref={listEnd}/>
+        </div>
+      )}
+
+      {!mic.recording && done.length > 0 && (
+        <div className="mt-6 flex flex-wrap gap-2">
+          <button onClick={saveAsMaterial} disabled={saving || pending > 0} className="btn btn-gold text-sm px-4 py-2.5 disabled:opacity-60">
+            <Icon name="upload" className="w-4 h-4"/> {saving ? 'Menyimpan…' : 'Simpan jadi materi'}
+          </button>
+          <button onClick={copyAll} className="h-10 px-3.5 rounded-xl border border-white/10 text-sm text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5">
+            <Icon name="copy" className="w-4 h-4"/> Salin
+          </button>
+          <button onClick={download} className="h-10 px-3.5 rounded-xl border border-white/10 text-sm text-ink-muted hover:text-ink hover:bg-white/5 inline-flex items-center gap-1.5">
+            <Icon name="download" className="w-4 h-4"/> Unduh .txt
+          </button>
+        </div>
+      )}
+
+      {/* Kontrol bawah: timer, tandai, rekam/stop. Sticky (bukan fixed) supaya ikut kolom konten di samping sidebar
+          desktop, dan di HP berada di atas bottom nav (60px). */}
+      <div className="sticky z-30 mt-6 bottom-[calc(72px+env(safe-area-inset-bottom))] md:bottom-4">
+        <div>
+          <div className="rounded-2xl border border-white/10 shadow-2xl shadow-black/40 px-4 py-3 flex items-center gap-3" style={{ background: 'rgba(16,18,17,0.96)' }}>
+            <LevelBars level={mic.level} active={mic.recording}/>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold text-ink tabular-nums">{clock(elapsed)}</div>
+              <div className="text-[11px] text-ink-soft truncate">
+                {mic.recording ? (pending ? `Merekam · ${pending} diproses` : 'Merekam') : pending ? `${pending} diproses` : `${done.length} kalimat`}
+                {marked > 0 && ` · ★ ${marked}`}
+              </div>
+            </div>
+            <button onClick={markLatest} disabled={!segments.length}
+              className="ml-auto h-10 px-3.5 rounded-xl border border-gold-500/30 bg-gold-500/10 text-gold-200 text-sm inline-flex items-center gap-1.5 disabled:opacity-40">
+              <Icon name="bookmark" className="w-4 h-4"/> Tandai
+            </button>
+            <button onClick={toggleRecord} disabled={!mic.supported} aria-label={mic.recording ? 'Berhenti merekam' : 'Mulai merekam'}
+              className="w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 transition disabled:opacity-40"
+              style={{ background: mic.recording ? '#f0715a' : '#3ecf8e', boxShadow: mic.recording ? '0 0 0 6px rgba(240,113,90,0.18)' : '0 0 0 6px rgba(62,207,142,0.15)' }}>
+              {mic.recording
+                ? <span className="w-5 h-5 rounded-[5px] bg-white"/>
+                : <Icon name="mic" className="w-6 h-6" style={{ stroke: '#0b0b0b' }}/>}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const LiveCaptionPage = () => {
+  const status = useAiStatus();
+  useEffect(() => { window.logFunnel?.('view_live_caption'); }, []);
+  return (
+    <div className="page-enter">
+      <div className="container-x pt-4 md:pt-8">
+        <button onClick={() => navigate('/ai-partner')} className="text-sm text-ink-soft hover:text-ink inline-flex items-center gap-1.5" style={{ minHeight: 40 }}>
+          <Icon name="chevronLeft" className="w-4 h-4"/> AI Partner
+        </button>
+      </div>
+      <div className="pt-4">
+        {status.loading
+          ? <div className="container-x pb-24"><div className="card-glass p-6 max-w-xl"><Skeleton lines={3}/></div></div>
+          : status.tier !== 'pro'
+            ? <div className="container-x max-w-3xl pb-24">
+                <UpgradeCard title="Live Caption khusus pelanggan AI Partner"
+                  message="Rekam kuliah duktur dan baca transkrip Arab beserta terjemahan Indonesianya secara langsung, lalu simpan jadi materi untuk diringkas dan dibuat kuis."/>
+              </div>
+            : <LiveCaptionBody/>}
+      </div>
+    </div>
+  );
+};
+
+Object.assign(window, { LiveCaptionPage });

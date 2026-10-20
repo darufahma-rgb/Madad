@@ -3,11 +3,12 @@
 // Tujuannya menahan biaya pemakai paling berat supaya tetap sebanding dengan harga langganan.
 import { readSettings } from '../settings.js';
 
-export const QUOTA_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', 'grade', 'ocr', 'transcribe', 'talkhis'];
+export const QUOTA_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', 'grade', 'ocr', 'transcribe', 'live', 'talkhis'];
 
-// Bawaan kalau admin belum mengatur. transcribe dalam menit, lainnya jumlah pemakaian.
+// Bawaan kalau admin belum mengatur. transcribe & live dalam menit, lainnya jumlah pemakaian.
 export const DEFAULT_MONTHLY_LIMITS = {
   prompt: 150, chat: 150, generate: 40, create: 15, analyze: 150, grade: 60, ocr: 60, transcribe: 300,
+  live: 1200, // Live Caption: ±20 jam kuliah per periode (±$0,005/menit → ±$6 bila habis terpakai)
   talkhis: 6, // muqarrar yang di-talkhis per periode (pemegang Paket Imtihan: tanpa batas bulanan)
 };
 const MAX_LIMIT = 5000;
@@ -36,7 +37,7 @@ export const getMonthlyLimits = async () => {
 /* ── Limit khusus per email (diatur admin) ──
    Disimpan sebagai JSON [{ email, daily: { talkhis: 5, … }, noMonthly: true }]. daily menggantikan batas harian
    bawaan untuk jenis yang diisi; noMonthly = kuota bulanan tidak berlaku untuk email itu. */
-export const DAILY_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', 'grade', 'ocr', 'transcribe', 'talkhis'];
+export const DAILY_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', 'grade', 'ocr', 'transcribe', 'live', 'talkhis'];
 const MAX_DAILY = 1000;
 export const normEmail = (e) => String(e || '').trim().toLowerCase();
 
@@ -68,3 +69,22 @@ export const getQuotaOverride = async (emails) => {
 
 // Untuk pesan "kuota habis" setelah getMonthlyLimits() dipanggil di permintaan yang sama.
 export const cachedMonthlyLimits = () => cache.value || DEFAULT_MONTHLY_LIMITS;
+
+/* ── Batas harian Live Caption (menit), diatur admin lewat setting aiLiveDailyLimit ──
+   Batas harian fitur lain tetap di kode (LIMITS di api/ai-partner.js); Live Caption bisa diatur karena lama kuliah
+   per hari berbeda-beda. Kosong/tidak valid → bawaan. 0 = Live Caption ditutup. */
+export const DEFAULT_LIVE_DAILY = 240; // 4 jam kuliah
+export const MAX_LIVE_DAILY = 1440;
+export const parseLiveDaily = (raw) => {
+  const n = Number(raw);
+  return raw !== '' && raw != null && Number.isInteger(n) && n >= 0 && n <= MAX_LIVE_DAILY ? n : DEFAULT_LIVE_DAILY;
+};
+let liveDailyCache = { at: 0, value: null };
+export const getLiveDailyLimit = async () => {
+  if (liveDailyCache.value != null && Date.now() - liveDailyCache.at < CACHE_MS) return liveDailyCache.value;
+  let raw = null;
+  try { raw = (await readSettings(['aiLiveDailyLimit'])).aiLiveDailyLimit; } catch {}
+  liveDailyCache = { at: Date.now(), value: parseLiveDaily(raw) };
+  return liveDailyCache.value;
+};
+export const cachedLiveDailyLimit = () => liveDailyCache.value ?? DEFAULT_LIVE_DAILY;

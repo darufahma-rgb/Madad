@@ -16,7 +16,7 @@
     {
       "name": "api-server",
       "runtimeExecutable": "node",
-      "runtimeArgs": ["server.cjs"],
+      "runtimeArgs": ["--env-file-if-exists=.env", "server.cjs"],
       "port": 5000
     }
   ]

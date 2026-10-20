@@ -271,6 +271,29 @@ ${DIALECT_RULES[dialect] || DIALECT_RULES.campur}
 - Jika tidak ada ucapan yang jelas, tulis HANYA: [HENING]`;
 };
 
+/* Live caption: potongan pendek (±5–15 detik) dari mikrofon saat kuliah berlangsung → transkrip + terjemah Indonesia
+   dalam satu panggilan, supaya mahasiswa langsung paham apa yang dikatakan duktur. */
+// dialect: 'campur' (Arab — fushah/'ammiyah dikenali otomatis) atau 'indonesia'.
+export const liveCaptionPrompt = ({ dialect = 'campur', title = '', prevTail = '' } = {}) => {
+  const topic = clipLine(title, 120);
+  const tail = clipLine(prevTail, 300);
+  const indo = dialect === 'indonesia';
+  return `Ini potongan pendek rekaman langsung kuliah Universitas Al-Azhar. Lakukan dua hal:
+1. "ar": transkripsikan ucapannya kata demi kata.
+${indo ? DIALECT_RULES.indonesia : `- Duktur bisa berbicara dengan fushah, 'ammiyah Mesir, atau mencampur keduanya — kenali sendiri dan tulis sesuai yang diucapkan.\n${AMMIYAH_RULES}`}
+- Ayat Al-Qur'an, hadits, matan, dan istilah ilmu tulis dengan ejaan fushah baku.
+- Jangan meringkas dan jangan menambah komentar. Potongan bisa mulai/berhenti di tengah kalimat — tulis apa adanya.
+${indo
+  ? `2. "id": terjemahkan HANYA kutipan/kalimat berbahasa Arab di dalam transkrip ke bahasa Indonesia. Jangan mengulang bagian yang sudah berbahasa Indonesia. Jika tidak ada kalimat Arab, isi "".`
+  : `2. "id": terjemahkan transkrip itu ke bahasa Indonesia yang natural dan mudah dipahami mahasiswa Indonesia.
+- Istilah ilmu yang lazim dipakai Masisir (mis. ijma', qiyas, mubtada', 'illat) boleh dibiarkan, beri arti singkat dalam kurung bila perlu.
+- Ayat Al-Qur'an diterjemahkan maknanya secara ringkas.
+- Ucapan 'ammiyah diterjemahkan maknanya, bukan kata per kata.`}${topic ? `\n- Topik kuliah: "${topic}" — gunakan untuk mengenali istilah yang kurang jelas terdengar.` : ''}${tail ? `\n- Potongan sebelumnya berakhir dengan: «${tail}». Lanjutkan dari sana tanpa mengulang kalimat itu.` : ''}
+
+Balas HANYA JSON: {"ar": "...", "id": "..."}
+Jika tidak ada ucapan yang jelas, balas: {"ar": "", "id": ""}`;
+};
+
 // Jawaban lisan mahasiswa di simulasi syafawi (satu rekaman pendek).
 export const transcribeAnswerPrompt = ({ question = '' } = {}) => {
   const q = clipLine(question, 400);
