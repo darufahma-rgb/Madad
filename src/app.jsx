@@ -212,7 +212,7 @@ const App = () => {
   }, [session, authStatus, profile, isFree, canUpgrade]);
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
-  const isPublic = path === "/" || path.startsWith("/gabung") || path === "/rombongan" || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/developer" || path === "/seminar" || path.startsWith("/seminar/") || path.startsWith("/seminar?") || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal" || path === "/battle" || path.startsWith("/battle") || path === "/game";
+  const isPublic = path === "/" || path.startsWith("/gabung") || path === "/rombongan" || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/developer" || path.split("?")[0] === "/presentasi" || path === "/seminar" || path.startsWith("/seminar/") || path.startsWith("/seminar?") || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal" || path === "/battle" || path.startsWith("/battle") || path === "/game";
 
   // Admin gets its own layout (no public nav/footer)
   if (isAdmin) {
@@ -237,6 +237,7 @@ const App = () => {
   else if (path.split("?")[0] === "/seminar/slides") { page = <SeminarGate view="slides"/>; routeLabel = "Slide Seminar"; }
   else if (path === "/seminar" || path.startsWith("/seminar/") || path.startsWith("/seminar?")) { page = <SeminarGate view="baca"/>; routeLabel = "Materi Seminar"; }
   else if (path === "/developer")         { page = <DeveloperPage/>; routeLabel = "Tentang Developer"; }
+  else if (path.split("?")[0] === "/presentasi") { page = <PresentasiPage/>; routeLabel = "Presentasi"; }
   else if (path === "/maddah-publik")    { page = <MaddahPublikPage onOpenPayment={() => openJoin("library")} onOpenJoin={openJoin} onOpenLogin={openLogin}/>; routeLabel = "Katalog Maddah"; }
   else if (path === "/onboarding" || path.startsWith("/onboarding?"))   { page = <OnboardingPage/>; routeLabel = "Onboarding"; }
   else if (path === "/welcome")      { page = <WelcomePage/>; routeLabel = "Selamat Datang"; }

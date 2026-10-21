@@ -54,6 +54,7 @@ import './pages/seminar-qr.jsx';
 import './pages/seminar-slides.jsx';
 import './pages/seminar-gate.jsx';
 import './pages/seminar-guide.jsx';
+import './pages/presentasi.jsx';
 import './pages/admin.jsx';
 import './pages/admin-eval.jsx';
 import './pages/admin-seminar.jsx';
