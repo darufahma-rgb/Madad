@@ -163,7 +163,7 @@ export const requestAI = async ({ system, messages, maxTokens = 2000, temperatur
   // data.model = model yang benar-benar menjawab (bisa model cadangan).
   logFallback(modelId, data.model);
   await recordAiCost(data.model || modelId, data.usage);
-  return { text, truncated, model: data.model || modelId };
+  return { text, truncated, model: data.model || modelId, usage: data.usage || null };
 };
 
 // Catat di log Vercel bila model cadangan yang menjawab (OpenRouter bisa menambah akhiran versi pada nama model).
@@ -250,7 +250,7 @@ export const streamAI = async ({ system, messages, maxTokens = 2000, temperature
     });
     if (!text) throw new Error(timedOut ? 'AI terlalu lama merespons' : 'AI tidak mengembalikan hasil');
     logFallback(modelId, usedModel);
-    return { text, truncated: truncated || timedOut, timedOut, model: usedModel };
+    return { text, truncated: truncated || timedOut, timedOut, model: usedModel, usage };
   } finally {
     if (timer) clearTimeout(timer);
   }

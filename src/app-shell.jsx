@@ -38,6 +38,7 @@ const navGroups = (profile) => [
     { to: '/kurasah',    label: 'Kurasah',    icon: 'pen' },
   ]},
   { label: 'Latihan', items: [
+    { to: '/ilmi-index',      label: 'Ilmi Index',     icon: 'list' },
     { to: '/battle',          label: 'Arena Imtihan', icon: 'gamepad' },
     { to: '/siap-imtihan',    label: 'Siap Imtihan',   icon: 'target',  locked: true },
     { to: '/paths/muqaranah', label: 'Muqaranah',      icon: 'scale',   locked: true },

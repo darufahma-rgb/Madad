@@ -17,6 +17,7 @@ export const MODEL_SETTING_KEYS = {
   liveTranslate: 'aiModelLiveTranslate', // Live Caption tahap terjemah — teks saja, utamakan cepat & pintar
   liveTranslateAccurate: 'aiModelLiveTranslateAccurate', // terjemah mode "Akurat" — utamakan teliti
   liveTalkhis: 'aiModelLiveTalkhis',     // talkhisan kuliah dari transkrip Live Caption
+  ilmi:       'aiModelIlmi',       // Ilmi Index: peta pembahasan & kutipan per halaman — membaca muqarrar penuh, JSON
 };
 
 // Format ID OpenRouter: "vendor/nama-model" (boleh titik, titik dua untuk varian seperti ":free").
@@ -51,6 +52,9 @@ export const TASK_DEFAULTS = {
   /* Mode "Akurat" untuk kelas ramai — di audio bergema + derau (SNR 8 dB): Gemini 4 Argon salah dengar 7,2% & semua
      13 nama kitab/ulama benar (Flash-Lite 15,2%, 11/13); hasil akhir setelah terjemah 37/37 vs 35/37. ±3,9 dtk. */
   liveHearAccurate: 'google/gemini-4-argon',
+  /* Ilmi Index membaca SELURUH muqarrar (±1 token per karakter Arab) dan menyalin kutipan persis → model hemat yang
+     kuat menyalin teks Arab. Semua hasilnya dicek ulang ke teks asli di server, jadi kesalahan salin dibuang, bukan disimpan. */
+  ilmi: 'google/gemini-2.5-flash',
 };
 
 /* Jatah token berpikir untuk tugas yang inputnya pendek tapi menuntut ketelitian nahwu-sharaf. Sonnet 5 bawaannya
@@ -83,6 +87,7 @@ export const resolveModels = async () => {
     liveTranslate: pick('liveTranslate') || TASK_DEFAULTS.liveTranslate,
     liveTranslateAccurate: pick('liveTranslateAccurate') || TASK_DEFAULTS.liveTranslateAccurate,
     liveTalkhis: pick('liveTalkhis') || TASK_DEFAULTS.liveTalkhis,
+    ilmi: pick('ilmi') || TASK_DEFAULTS.ilmi,
   };
   cache = { at: Date.now(), value };
   return value;

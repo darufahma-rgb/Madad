@@ -83,6 +83,7 @@ import './pages/ai-partner-talkhis.jsx';
 import './pages/ai-partner.jsx';
 import './pages/ai-partner-prompt.jsx';
 import './pages/live-caption.jsx';
+import './pages/ilmi-index.jsx';
 import './pages/statistik.jsx';
 import './pages/gabung.jsx';
 import './pages/upgrade-wall.jsx';

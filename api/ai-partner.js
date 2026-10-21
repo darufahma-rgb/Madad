@@ -17,11 +17,13 @@ import { handleBattleStory, handleBattleHalaqah } from './_lib/ai-partner/battle
 import { handleBattleQuiz } from './_lib/ai-partner/battle-quiz.js';
 import { ocrCacheKey, lookupOcrPages, storeOcrPage, handleOcrCache } from './_lib/ai-partner/ocr-cache.js';
 import { withAiContext } from './_lib/ai-cost.js';
+import { handleIlmi, handleIlmiView } from './_lib/ai-partner/ilmi-index.js';
 
 // Kategori biaya AI per action (cocok dengan kolom "Fitur" di analitik admin).
 const COST_KIND = {
   ocr: 'ocr', transcribe: 'transcribe', 'live-caption': 'live', 'live-hear': 'live', 'live-translate': 'live', 'live-talkhis': 'generate', generate: 'generate', analyze: 'analyze', grade: 'grade',
   chat: 'chat', 'prompt-chat': 'prompt', talkhis: 'talkhis', 'battle-story': 'battle_story', 'battle-quiz': 'battle_quiz', 'battle-halaqah': 'battle_halaqah',
+  ilmi: 'ilmi',
 };
 import { handlePromptFeedback, handlePromptQualityAdmin } from './_lib/prompt-quality.js';
 import { getMonthlyLimits, cachedMonthlyLimits, getQuotaOverride, getLiveDailyLimit, cachedLiveDailyLimit, DEFAULT_LIVE_DAILY } from './_lib/ai-partner/limits.js';
@@ -33,15 +35,16 @@ import {
 
 // Kuota harian pelanggan. Pengguna coba gratis dibatasi per materi (lihat TRIAL_*), bukan per hari.
 // talkhis = jumlah muqarrar yang dipetakan per hari (tiap muqarrar berisi puluhan pemanggilan AI).
+// ilmi = muqarrar yang dianalisis Ilmi Index per hari (±$0,2–0,4 per muqarrar 100 halaman).
 // live (Live Caption, menit): bawaannya diatur admin lewat aiLiveDailyLimit (lihat getLiveDailyLimit); angka di sini cadangan.
-const LIMITS = { create: 10, ocr: 20, transcribe: 60, live: DEFAULT_LIVE_DAILY, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40, talkhis: 1 };
+const LIMITS = { create: 10, ocr: 20, transcribe: 60, live: DEFAULT_LIVE_DAILY, generate: 25, analyze: 30, grade: 20, chat: 40, prompt: 40, talkhis: 1, ilmi: 3 };
 const TRIAL_OCR_LIMIT  = 3;  // per hari untuk member Library tanpa langganan; akun gratis: 3 seumur akun
 const FREE_OCR_LIFETIME = 3;
 /* Member bertipe "Trial — akses sementara" (Admin → Members, kolom member_type) yang diberi akses AI: semua fitur tetap
    terbuka, tapi jatahnya lebih kecil daripada pelanggan berbayar. Tidak berlaku kalau mereka membeli Paket Imtihan,
    dan "Limit khusus per email" di Settings tetap menang. */
-const TRIAL_MEMBER_DAILY = { create: 3, ocr: 5, transcribe: 15, live: 15, generate: 8, analyze: 10, grade: 5, chat: 15, prompt: 15, talkhis: 1 };
-const TRIAL_MEMBER_MONTHLY = { prompt: 60, chat: 60, generate: 15, create: 5, analyze: 60, grade: 20, ocr: 20, transcribe: 60, live: 30, talkhis: 1 };
+const TRIAL_MEMBER_DAILY = { create: 3, ocr: 5, transcribe: 15, live: 15, generate: 8, analyze: 10, grade: 5, chat: 15, prompt: 15, talkhis: 1, ilmi: 1 };
+const TRIAL_MEMBER_MONTHLY = { prompt: 60, chat: 60, generate: 15, create: 5, analyze: 60, grade: 20, ocr: 20, transcribe: 60, live: 30, talkhis: 1, ilmi: 2 };
 // Pengaman biaya: total pemanggilan AI oleh SEMUA pengguna coba gratis per hari. Akun gratis bisa dibuat siapa saja
 // yang punya akun Google, jadi tanpa batas bersama ini satu orang dengan banyak akun bisa menguras saldo AI.
 // ±200 × ±$0.03 ≈ $6/hari paling banyak. Atur lewat env TRIAL_DAILY_LIMIT.
@@ -51,8 +54,11 @@ const trialGateClosed = (res) => upgradeRequired(res, 'trial_busy',
   'Kuota coba gratis untuk hari ini sudah penuh. Coba lagi besok, atau berlangganan AI Partner untuk memakai AI kapan saja.');
 const TRIAL_KINDS      = ['summary', 'flashcards', 'quiz', 'glossary'];
 // analyze & chat dibuka sedikit untuk coba gratis (lihat TRIAL_TASTE); sisanya khusus pelanggan.
-const PRO_ONLY_ACTIONS = ['transcribe', 'live-caption', 'live-hear', 'live-translate', 'live-talkhis', 'live-quota', 'grade', 'create-batch', 'talkhis'];
+// 'ilmi-view' (membuka hasil Ilmi Index yang sudah tersimpan) sengaja tidak di sini: hasil milik member tetap bisa dibuka
+// walau langganannya habis; analisis baru & Tanya Muqarrar ('ilmi') khusus pelanggan.
+const PRO_ONLY_ACTIONS = ['transcribe', 'live-caption', 'live-hear', 'live-translate', 'live-talkhis', 'live-quota', 'grade', 'create-batch', 'talkhis', 'ilmi'];
 const PRO_ONLY_MESSAGES = {
+  ilmi: 'Talqeeh Ilmi Index khusus pelanggan AI Partner. Berlangganan untuk memetakan pembahasan dan menelusuri kutipan muqarrarmu per halaman.',
   'live-caption': 'Live Caption khusus pelanggan AI Partner. Berlangganan untuk mendengar terjemahan kuliah duktur secara langsung.',
   talkhis: 'Talkhis otomatis khusus pelanggan AI Partner. Berlangganan untuk men-talkhis seluruh muqarrarmu dalam bahasa Arab, lengkap dengan cek kelengkapan dan PDF siap cetak.',
 };
@@ -1580,6 +1586,10 @@ export default async function handler(req, res) {
         getOwnedSet, saveTalkhis, takeQuota, quotaExceeded, upgradeRequired, getTrialSetId, trialGateOpen, trialGateClosed,
         consumeQuota, resolveModels, requestAI, callAIJson, runAI, sendResult,
       });
+      case 'ilmi':          return await handleIlmi(ctx, body, res, {
+        sbConfig, sbHeaders, takeQuota, quotaExceeded, consumeQuota, resolveModels, streamAI, requestAI,
+      });
+      case 'ilmi-view':     return await handleIlmiView(ctx, body, res, { sbConfig, sbHeaders });
       default:              return res.status(400).json({ ok: false, error: 'Action tidak valid' });
     } });
   } catch (err) {

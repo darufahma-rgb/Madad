@@ -3,7 +3,7 @@
 // Tujuannya menahan biaya pemakai paling berat supaya tetap sebanding dengan harga langganan.
 import { readSettings } from '../settings.js';
 
-export const QUOTA_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', 'grade', 'ocr', 'transcribe', 'live', 'talkhis'];
+export const QUOTA_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', 'grade', 'ocr', 'transcribe', 'live', 'talkhis', 'ilmi'];
 
 // Bawaan kalau admin belum mengatur. transcribe & live dalam menit, lainnya jumlah pemakaian.
 export const DEFAULT_MONTHLY_LIMITS = {
@@ -12,6 +12,7 @@ export const DEFAULT_MONTHLY_LIMITS = {
      api/ai-partner.js). Mode Cepat ±$0,0064/menit → ±$3,1 (±Rp53rb) bila habis; mode Akurat dihitung 4× menit. */
   live: 480,
   talkhis: 6, // muqarrar yang di-talkhis per periode (pemegang Paket Imtihan: tanpa batas bulanan)
+  ilmi: 8,    // muqarrar yang dianalisis Ilmi Index per periode (membuka hasil tersimpan tidak memakai jatah)
 };
 const MAX_LIMIT = 5000;
 
@@ -39,7 +40,7 @@ export const getMonthlyLimits = async () => {
 /* ── Limit khusus per email (diatur admin) ──
    Disimpan sebagai JSON [{ email, daily: { talkhis: 5, … }, noMonthly: true }]. daily menggantikan batas harian
    bawaan untuk jenis yang diisi; noMonthly = kuota bulanan tidak berlaku untuk email itu. */
-export const DAILY_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', 'grade', 'ocr', 'transcribe', 'live', 'talkhis'];
+export const DAILY_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', 'grade', 'ocr', 'transcribe', 'live', 'talkhis', 'ilmi'];
 const MAX_DAILY = 1000;
 export const normEmail = (e) => String(e || '').trim().toLowerCase();
 

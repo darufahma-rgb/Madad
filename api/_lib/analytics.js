@@ -18,6 +18,7 @@ const TOKEN_PROFILE = {
   analyze:  { in: 1500,  out: 500,  tasks: ['arabic'] },  // terjemah & i'rab / harakat
   grade:    { in: 2000,  out: 1000, tasks: ['grade'] },   // nilai satu jawaban tahriri
   talkhis:  { in: 300000, out: 60000, tasks: ['arabic'] }, // satu muqarrar ±100 halaman: peta + ±25 judul + cek
+  ilmi:     { in: 320000, out: 90000, tasks: ['ilmi'] },   // Ilmi Index: muqarrar ±100 halaman dibaca per ±3 halaman + JSON
 };
 const TRANSCRIBE_PER_MINUTE_USD = 0.004; // input audio dihargai berbeda dari teks — taksiran tetap per menit
 // Live Caption (diukur Okt 2026, usage.cost OpenRouter): dengar + terjemah Gemini 3.1 Flash-Lite per 2 potongan

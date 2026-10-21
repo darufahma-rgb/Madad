@@ -136,7 +136,7 @@ const App = () => {
       "/dashboard", "/library", "/tools", "/paths", "/onboarding",
       "/kurasah", "/maddah", "/siap-imtihan",
       "/s2-maddah", "/mahad-maddah", "/prompt-library",
-      "/soal-detail", "/ai-partner", "/statistik", "/profil-belajar",
+      "/soal-detail", "/ai-partner", "/statistik", "/profil-belajar", "/ilmi-index",
     ];
     const isMemberRoute = memberOnly.some(r => path === r || path.startsWith(r + "?") || path.startsWith(r + "/"));
 
@@ -271,6 +271,7 @@ const App = () => {
   else if (path === "/ai-partner" || path === "/ai-partner/") { page = <AiPartnerPage/>; routeLabel = "AI Partner"; }
   else if (path === "/ai-partner/prompt" || path.startsWith("/ai-partner/prompt?")) { page = <AiPromptPage/>; routeLabel = "AI Partner"; }
   else if (path === "/ai-partner/live") { page = <LiveCaptionPage/>; routeLabel = "Live Caption"; }
+  else if (path === "/ilmi-index" || path.startsWith("/ilmi-index?")) { page = <IlmiIndexPage/>; routeLabel = "Ilmi Index"; }
   else if (path.startsWith("/ai-partner/")) { page = <AiPartnerDetailPage key={path} setId={path.split("/")[2].split("?")[0]}/>; routeLabel = "AI Partner"; }
   else if (path === "/battle" || path.startsWith("/battle") || path === "/game") { page = <BattlePage/>; routeLabel = "Arena Imtihan"; }
 

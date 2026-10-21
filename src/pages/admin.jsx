@@ -483,6 +483,7 @@ const AI_KIND_LABELS = {
   transcribe: { label: 'Transkrip',        sub: 'menit', color: '#f472b6' },
   live:       { label: 'Live Caption',     sub: 'menit', color: '#38bdf8' },
   talkhis:    { label: 'Talkhis',          sub: 'muqarrar', color: '#f59e0b' },
+  ilmi:       { label: 'Ilmi Index',       sub: 'muqarrar dianalisis', color: '#c9a86a' },
   admin:      { label: 'Admin & uji',      sub: 'tes model, evaluasi, draf bank soal', color: '#9ca3af', costOnly: true },
   other:      { label: 'Lainnya',          sub: 'tanpa kategori', color: '#6b7280', costOnly: true },
 };
@@ -2932,6 +2933,7 @@ const AdminSettings = () => {
             ['aiModelLiveTranslate', 'Live Caption — terjemah', 'liveTranslate', 'Menerjemahkan teks Arab kuliah ke bahasa Indonesia + istilah + tanda "ditekankan duktur". Dipanggil terus selama merekam, jadi biayanya paling besar: bawaan Gemini 3.1 Flash-Lite (±$0,0064/menit kuliah). google/gemini-3.7-flash sedikit lebih teliti tapi ±2,5× biaya.'],
             ['aiModelLiveTranslateAccurate', 'Live Caption — terjemah (mode Akurat)', 'liveTranslateAccurate', 'Terjemah saat mahasiswa memilih mode "Akurat" (dihitung 4× jatah). Bawaan Gemini 3.7 Flash — lebih teliti untuk nama kitab & \'ammiyah.'],
             ['aiModelLiveTalkhis', 'Live Caption — talkhisan kuliah', 'liveTalkhis', 'Talkhisan dari transkrip satu kuliah (sekali per kuliah, memakai jatah Generate). Bawaan Gemini 3.7 Flash.'],
+            ['aiModelIlmi', 'Ilmi Index — peta pembahasan & kutipan', 'ilmi', 'Membaca seluruh muqarrar per beberapa halaman dan menyalin judul & kutipan Arab persis (JSON). Hasilnya dicek ulang ke teks asli di server. Bawaan Gemini 2.5 Flash (±$0,2–0,4 per muqarrar 100 halaman).'],
           ].map(([key, label, task, hint]) => (
             <ModelField key={key} label={label} hint={hint} value={settings[key] || ''}
               active={activeModels?.[task]} onChange={v => setSettings({ ...settings, [key]: v })}/>
@@ -2954,6 +2956,7 @@ const AdminSettings = () => {
               ['analyze', "I'rab & harakat", 'kali', 150], ['grade', 'Nilai tahriri', 'jawaban', 60],
               ['ocr', 'Baca foto', 'halaman', 60], ['transcribe', 'Transkrip', 'menit', 300],
               ['live', 'Live Caption', 'menit', 480], ['talkhis', 'Talkhis', 'muqarrar', 6],
+              ['ilmi', 'Ilmi Index', 'muqarrar', 8],
             ].map(([k, label, unit, def]) => (
               <div key={k}>
                 <label className="text-[11px] text-ink-muted block mb-1">{label} <span className="text-ink-soft">({unit})</span></label>
