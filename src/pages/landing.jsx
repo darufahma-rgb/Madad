@@ -262,13 +262,13 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
           <UserCountBadge/>
         </Reveal>
 
-        {/* Fitur terbaru: lompat ke demo Live Caption tepat di bawah hero */}
+        {/* Pustaka rujukan masih menunggu aktivasi: status harus terlihat sejak hero. */}
         <Reveal delay={90}>
-          <button onClick={() => document.getElementById("live-caption")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+          <button onClick={() => document.getElementById("pustaka-rujukan")?.scrollIntoView({ behavior: "smooth", block: "start" })}
             className="inline-flex items-center gap-2 rounded-full pl-1.5 pr-3.5 py-1.5 mb-6 text-sm transition hover:bg-white/[0.06]"
             style={{ border: "1px solid rgba(201,168,106,0.35)", background: "rgba(201,168,106,0.07)", color: "rgba(255,255,255,0.82)" }}>
-            <span className="rounded-full px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider" style={{ background: "#C9A86A", color: "#141414" }}>Baru</span>
-            <span>Live Caption<span className="hidden sm:inline">: terjemah kuliah duktur secara langsung</span><span className="sm:hidden"> kuliah duktur</span></span>
+            <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shrink-0" style={{ background: "#C9A86A", color: "#141414" }}>Segera hadir</span>
+            <span className="text-left">Tanya AI dengan rujukan kitab</span>
             <Icon name="arrowRight" className="w-3.5 h-3.5 text-gold-300 flex-shrink-0"/>
           </button>
         </Reveal>
@@ -864,6 +864,38 @@ const LiveCaptionDemo = () => {
   );
 };
 
+const ReferenceLibrarySection = () => (
+  <section id="pustaka-rujukan" className="section pt-0 scroll-mt-20" aria-labelledby="reference-library-heading">
+    <div className="container-x">
+      <div className="max-w-6xl mx-auto rounded-3xl border border-emerald-400/20 p-5 sm:p-8 lg:p-12 overflow-hidden" style={{ background: 'radial-gradient(ellipse at top right,rgba(62,207,142,.11),transparent 65%),linear-gradient(135deg,#111c16,#0d1210)' }}>
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <Reveal>
+            <div className="inline-flex flex-wrap items-center gap-2 text-[11px] mb-5"><span className="rounded-full border border-gold-400/30 bg-gold-400/10 text-gold-200 px-3 py-1">Segera hadir</span><span className="text-emerald-200">Pustaka Rujukan Talqeeh</span></div>
+            <h2 id="reference-library-heading" className="font-display text-3xl sm:text-4xl lg:text-5xl font-semibold text-ink leading-[1.12]">Paham penjelasannya.<br/><span className="text-emerald-300">Bisa periksa dasarnya.</span></h2>
+            <p className="text-base text-ink-muted leading-relaxed mt-5">Belajar ilmu agama perlu rujukan yang bisa ditelusuri. Talqeeh sedang menyiapkan jawaban Tanya AI dan Tutor yang berpijak pada pustaka kitab pilihan admin—lengkap dengan kutipan asli dan halaman untuk kamu periksa.</p>
+            <div className="space-y-4 mt-6">
+              {[
+                ['01', 'Rujukan yang bisa dibuka', 'Lihat teks Arab, identitas kitab, edisi yang tersedia, dan halaman PDF sumber jawaban.'],
+                ['02', 'Memperhatikan konteks ilmu', 'Bidang ilmu, pembahasan, dan mazhab yang kamu tanyakan membantu memilih rujukan yang sesuai.'],
+                ['03', 'Jujur ketika bukti belum cukup', 'Talqeeh dapat meminta penjelasan konteks atau menahan jawaban ketika dasarnya belum ditemukan.'],
+              ].map(([n,title,text]) => <div key={n} className="flex items-start gap-3"><span className="text-[11px] text-gold-300 border border-gold-300/20 rounded-lg w-8 h-8 shrink-0 flex items-center justify-center">{n}</span><div><h3 className="text-sm font-semibold text-ink">{title}</h3><p className="text-[13px] text-ink-muted leading-relaxed mt-1">{text}</p></div></div>)}
+            </div>
+            <p className="mt-6 text-xs text-ink-soft leading-relaxed">Sedang disiapkan untuk Tanya AI dan Tutor. Aktivasi menunggu penyiapan database serta pemeriksaan dan pengisian kitab rujukan.</p>
+          </Reveal>
+          <Reveal>
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-4 sm:p-6 shadow-2xl">
+              <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-4"><span className="text-sm font-medium text-ink">Dari pertanyaan ke rujukan</span><span className="text-[10px] text-gold-200 rounded-full border border-gold-300/20 px-2 py-1 shrink-0">Pratinjau alur</span></div>
+              <div className="mt-5 ml-4 sm:ml-10 rounded-2xl rounded-tr-sm border border-emerald-400/20 bg-emerald-400/[0.08] p-4"><p className="text-[10px] uppercase tracking-wider text-emerald-200 mb-2">Pertanyaanmu</p><p className="text-sm text-ink leading-relaxed">Apa bedanya amr dalam nahwu dan usul fikih?</p></div>
+              <div className="mt-5 rounded-2xl border border-white/[0.08] p-4 sm:p-5 bg-white/[0.02]"><p className="text-sm font-medium text-ink mb-3">Pilih konteks, lalu telusuri bukti</p><div className="flex flex-wrap gap-2">{['Nahwu', 'Usul fikih'].map(t => <span key={t} className="text-[11px] px-3 py-1 rounded-full border border-emerald-400/20 text-emerald-200 bg-emerald-400/5">{t}</span>)}</div><p className="text-[13px] text-ink-muted leading-relaxed mt-3">Penjelasan dipisahkan sesuai bidang ilmunya, dengan rujukan yang mendukung masing-masing pembahasan.</p><div className="mt-4 rounded-xl border border-gold-300/20 bg-gold-300/[0.04] p-4"><div className="flex items-center gap-2 text-gold-200 text-xs"><Icon name="quote" className="w-4 h-4"/> Bukti dari kitab</div><p className="text-sm text-ink mt-3">Kutipan asli · identitas kitab · halaman PDF</p><p className="text-xs text-ink-muted mt-2 leading-relaxed">Buka teks halaman untuk membaca dan memeriksa konteksnya sendiri.</p></div></div>
+              <p className="text-[11px] text-ink-soft leading-relaxed mt-4">Ilustrasi alur, bukan contoh jawaban ilmiah. Kecocokan kutipan tidak otomatis menjamin kesimpulan AI atau kesahihan hadis. Tetap belajar bersama duktur.</p>
+            </div>
+          </Reveal>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
 const LiveCaptionSection = ({ onOpenJoin }) => (
   <section id="live-caption" className="section pt-0">
     <style>{`@keyframes card-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }`}</style>
@@ -977,6 +1009,10 @@ const IMTIHAN_QUOTA = [
 ];
 
 const LANDING_FAQ = [
+  { q: "Apa itu Pustaka Rujukan Talqeeh? Sudah bisa dipakai?",
+    a: "Pustaka Rujukan sedang disiapkan untuk membantu Tanya AI dan Tutor menjawab berdasarkan kitab pilihan admin, disertai kutipan asli dan halaman PDF yang bisa diperiksa. Fitur ini belum aktif; aktivasi menunggu penyiapan database dan pengisian serta pemeriksaan kitab. Jawaban AI tetap perlu ditelaah bersama duktur." },
+  { q: "Siapa yang memilih kitab rujukannya?",
+    a: "Pustaka bersama dikelola admin: kitab diunggah, metadata edisinya dilengkapi, hasil pembacaannya diperiksa, lalu diaktifkan sebagai rujukan. Materi pribadi yang diunggah pengguna tetap terpisah dan tidak otomatis masuk pustaka bersama." },
   { q: "Kenapa harus login pakai Google dulu?",
     a: "Akun Google jadi identitas keanggotaanmu. Pembayaran otomatis tercatat ke akun itu, jadi nggak ada kode yang perlu ditunggu atau diketik, dan kamu bisa belajar di HP maupun laptop dengan akun yang sama." },
   { q: "Apa beda paket Library dan Paket Imtihan?",
@@ -1633,6 +1669,7 @@ const LandingPage = ({ onOpenLogin, onOpenJoin }) => (
   <div className="page-enter">
     <StyleInject/>
     <LandingHero onOpenLogin={onOpenLogin} onOpenJoin={onOpenJoin}/>
+    <ReferenceLibrarySection/>
     <LiveCaptionSection onOpenJoin={onOpenJoin}/>
     <TwoWaysSection/>
     <SampleMaddahSection/>
