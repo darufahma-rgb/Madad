@@ -1034,7 +1034,7 @@ const IlmiIndexPage = ({ libraryMode = false }) => {
             <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center bg-emerald-500/12 border border-emerald-500/25"><Icon name="upload" className="w-6 h-6 text-emerald-300"/></div>
             <div className="font-display text-lg font-semibold text-ink">Pilih PDF muqarrar</div>
             <div className="text-xs text-ink-soft mt-1.5 leading-relaxed max-w-md mx-auto">
-              PDF berteks atau hasil scan, maksimal {MAX_PAGES} halaman dan {MAX_MB}MB. Halaman scan dibaca memakai jatah baca foto.
+              PDF berteks atau hasil scan, maksimal {MAX_PAGES} halaman dan {MAX_MB}MB. {libraryMode ? 'Halaman scan dibaca AI satu per satu (±10 detik dan ±Rp90 per halaman, tanpa jatah); biarkan tab ini terbuka. Halaman yang sudah terbaca tersimpan, jadi aman dilanjutkan.' : 'Halaman scan dibaca memakai jatah baca foto.'}
               {libraryMode ? ' Kitab besar: unggah per jilid (maks. 400 halaman per PDF) dan isi kolom Jilid. PDF yang sama tidak diproses ulang.' : 'Satu analisis memakai 1 kuota Ilmi Index; PDF yang sama dibuka lagi tanpa kuota.'}
             </div>
           </button>

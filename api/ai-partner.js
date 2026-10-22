@@ -432,7 +432,10 @@ async function handleOcr(ctx, body, res) {
     const hit = (await lookupOcrPages(ctx.code, cacheKey.hash, [cacheKey.page]))[cacheKey.page];
     if (hit) return res.status(200).json({ ok: true, teks: hit, truncated: false, cached: true });
   }
-  if (ctx.tier === 'pro') {
+  // Kitab Pustaka Rujukan (hanya admin): satu jilid scan bisa ratusan halaman, jadi tidak memakai jatah member.
+  if (ctx.library) {
+    // tanpa jatah
+  } else if (ctx.tier === 'pro') {
     const over = await takeQuota(ctx, 'ocr');
     if (over) return quotaExceeded(res, 'ocr', over, ctx);
   } else if (ctx.memberTier === 'free' && (await lifetimeUsage(ctx.code, 'ocr')) >= FREE_OCR_LIFETIME) {
@@ -466,6 +469,7 @@ async function handleOcr(ctx, body, res) {
 // Sisa jatah baca foto/halaman scan, supaya wizard membaca PDF scan sebanyak jatahnya saja
 // (sisanya ditandai "belum terbaca") — bukan berhenti di tengah dan membuang halaman yang sudah terbaca.
 async function handleOcrQuota(ctx, res) {
+  if (ctx.library) return res.status(200).json({ ok: true, remaining: null, scope: 'library' });
   const { url, key } = sbConfig();
   const today = new Date().toISOString().slice(0, 10); // sama dengan current_date (UTC) di consume_ai_quota
   const r = await fetch(`${url}/rest/v1/ai_usage?member_code=eq.${encodeURIComponent(ctx.code)}&kind=eq.ocr&day=eq.${today}&select=count`, { headers: sbHeaders(key) });
@@ -1451,7 +1455,7 @@ async function handleAdmin(action, req, res, body) {
     return res.status(401).json({ ok: false, error: 'Unauthorized' });
   }
   const { url, key } = sbConfig();
-  const libraryCtx = { code: LIBRARY_OWNER, tier: 'pro' };
+  const libraryCtx = { code: LIBRARY_OWNER, tier: 'pro', library: true };
   const libraryDeps = { sbConfig, sbHeaders, takeQuota: async () => null, quotaExceeded, consumeQuota, resolveModels, streamAI, requestAI, allowTextOnly: true };
   if (action === 'admin-reference') return manageReferenceBook(body, res, libraryDeps);
   if (action === 'admin-reference-ilmi') {
