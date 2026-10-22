@@ -114,7 +114,25 @@ export async function manageReferenceBook(body, res, deps) {
   if (body.op === 'publish' && (doc.status !== 'done' || !doc.edition?.author || !doc.edition?.title)) return res.status(400).json({ ok: false, error: 'Selesaikan seluruh analisis dan isi judul serta penulis pada metadata edisi sebelum mengaktifkan rujukan.' });
   if (body.op === 'publish' && !SUBJECTS.has(doc.edition?.subject)) return res.status(400).json({ ok: false, error: 'Pilih bidang ilmu pada metadata kitab agar rujukan dapat dicari sesuai konteks.' });
   if (body.op === 'publish' && ['unread','garbled'].some(k => Number(doc.page_stats?.[k]) > 0)) return res.status(400).json({ ok: false, error: 'Masih ada halaman yang belum terbaca. Perbaiki pembacaan PDF sebelum dijadikan rujukan bersama.' });
-  await db('talqeeh_reference_books?on_conflict=document_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ document_id: doc.id, active: body.op === 'publish', updated_at: new Date().toISOString() }) });
+  const active = body.op === 'publish';
+  // Halaman kitab aktif ditandai is_reference supaya masuk indeks pencarian (migrations/reference_library_scale.sql).
+  // Aktivasi: tandai halaman dulu, baru buku diaktifkan; nonaktif: buku dulu, baru tanda dicabut — pencarian tidak
+  // pernah melihat buku aktif tanpa halaman terindeks.
+  const markPages = async (flag) => {
+    try {
+      await db(`ilmi_pages?document_id=eq.${enc(doc.id)}`, { method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ is_reference: flag }) });
+    } catch {
+      throw Object.assign(new Error('Indeks pustaka belum siap. Jalankan migrations/reference_library_scale.sql di Supabase SQL Editor.'), { userFacing: true });
+    }
+  };
+  const setBook = () => db('talqeeh_reference_books?on_conflict=document_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ document_id: doc.id, active, updated_at: new Date().toISOString() }) });
+  try {
+    if (active) { await markPages(true); await setBook(); }
+    else { await setBook(); await markPages(false); }
+  } catch (err) {
+    if (err.userFacing) return res.status(503).json({ ok: false, error: err.message });
+    throw err;
+  }
   return res.status(200).json({ ok: true });
 }
 

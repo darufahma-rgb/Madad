@@ -226,6 +226,31 @@ export async function handleIlmi(ctx, body, res, deps) {
       return res.status(200).json({ ok: true, edition });
     }
 
+    /* Pustaka Rujukan "rujukan saja": teks per halaman disimpan tanpa analisis AI per chunk (cepat & tanpa biaya AI),
+       untuk kitab besar yang cukup dicari teksnya. Hanya untuk pemanggil yang diizinkan (deps.allowTextOnly = panel
+       admin); Ilmi Index pengguna tetap memakai analisis penuh. Fihris & kutipan kitab ini kosong. */
+    if (op === 'finish-text') {
+      if (!deps.allowTextOnly) return res.status(400).json({ ok: false, error: 'Perintah Ilmi Index tidak dikenal' });
+      if (doc.status === 'done' || doc.status === 'partial') return res.status(200).json({ ok: true, status: doc.status });
+      if (await getJob(db, ctx.code, doc.id)) return res.status(409).json({ ok: false, error: 'Dokumen ini sedang/sudah dianalisis penuh. Lanjutkan analisisnya, bukan mode rujukan saja.' });
+      const pages = await db.all(`ilmi_pages?document_id=eq.${doc.id}&select=page_no,status,char_count,printed_candidate&order=page_no.asc`);
+      const have = new Set(pages.map(p => p.page_no));
+      const missing = [];
+      for (let n = 1; n <= doc.num_pages && missing.length < 20; n++) if (!have.has(n)) missing.push(n);
+      if (missing.length) return res.status(400).json({ ok: false, error: `Teks halaman belum lengkap terunggah (mis. halaman ${missing.join(', ')}). Coba unggah lagi.`, missing });
+      const readableChars = pages.filter(p => READABLE.has(p.status)).reduce((n, p) => n + (p.char_count || 0), 0);
+      if (readableChars < MIN_READABLE_CHARS) return res.status(400).json({ ok: false, error: 'Tidak ada teks yang bisa dibaca di PDF ini.' });
+      const pageStats = pages.reduce((m, p) => ({ ...m, [p.status]: (m[p.status] || 0) + 1 }), {});
+      const cands = Object.fromEntries(pages.filter(p => p.printed_candidate).map(p => [p.page_no, p.printed_candidate]));
+      const printed = detectPrintedPages(cands, doc.num_pages);
+      await patchDoc(db, ctx.code, doc.id, {
+        status: 'done', model: null, page_stats: pageStats, pdf_kind: pdfKindOf(pageStats),
+        printed_map: printed.map, printed_segments: printed.segments,
+        stats: { mode: 'text', entries: 0, citations: 0, sources: 0, entries_review: 0, citations_review: 0 },
+      });
+      return res.status(200).json({ ok: true, status: 'done' });
+    }
+
     if (op === 'start') {
       const existingJob = await getJob(db, ctx.code, doc.id);
       if (existingJob) {

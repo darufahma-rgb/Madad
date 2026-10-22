@@ -643,7 +643,7 @@ const IlmiResult = ({ data, pdf, onPickFile, onReanalyze, readOnly, onEdition })
 
       {tab === 'fihris' && (
         entries.length === 0
-          ? <div className="card-glass p-6 text-sm text-ink-muted">Tidak ada pembahasan yang bisa dibuktikan dari teks dokumen ini.</div>
+          ? <div className="card-glass p-6 text-sm text-ink-muted">{doc.stats?.mode === 'text' ? 'Kitab ini diimpor sebagai rujukan saja: teksnya dipakai untuk menjawab pertanyaan, tanpa fihris AI.' : 'Tidak ada pembahasan yang bisa dibuktikan dari teks dokumen ini.'}</div>
           : roots.length === 0
             ? <div className="card-glass p-6 text-sm text-ink-muted">Tidak ada pembahasan yang cocok dengan pencarian/filter.</div>
             : <ul>{roots.map(e => <EntryNode key={e.id} node={e} childrenOf={childrenOf} depth={0} open={open} toggle={toggle} visible={visible}
@@ -739,6 +739,8 @@ const IlmiIndexPage = ({ libraryMode = false }) => {
   const fileRef = useRef(null);
   const pickModeRef = useRef('analyze');
   const cancelRef = useRef(false);
+  // Pustaka admin: "rujukan saja" (teks per halaman, tanpa analisis AI) atau analisis lengkap (fihris & kutipan).
+  const [textOnly, setTextOnly] = useState(true);
   const pro = libraryMode || status.tier === 'pro';
 
   const loadDocs = async () => {
@@ -901,8 +903,14 @@ const IlmiIndexPage = ({ libraryMode = false }) => {
       }
       doneStep('upload');
 
-      // 4–5. Analisis & finalisasi.
-      await runAnalysis(doc);
+      // 4–5. Analisis & finalisasi — atau, di pustaka admin mode "rujukan saja", langsung disimpan sebagai teks.
+      if (libraryMode && textOnly) {
+        doneStep('analyze', { skipped: true });
+        setStep('finalize');
+        const r = await ilmi('finish-text', { document_id: doc.id });
+        if (!r.ok) throw new Error(r.error || 'Teks kitab gagal disimpan.');
+        doneStep('finalize');
+      } else await runAnalysis(doc);
       setProg(null);
       loadDocs();
       navigate(`/ilmi-index?doc=${doc.id}`);
@@ -1009,13 +1017,25 @@ const IlmiIndexPage = ({ libraryMode = false }) => {
     body = (
       <div className="space-y-5">
         {error && <div className="card-glass p-4 text-sm text-red-300 border border-red-500/20">{error}</div>}
+        {libraryMode && (
+          <div className="grid sm:grid-cols-2 gap-2" role="radiogroup" aria-label="Cara impor kitab">
+            {[[true, 'Rujukan saja', 'Teks per halaman disimpan untuk dicari & dikutip. Cepat, tanpa biaya AI. Cocok untuk kitab besar per jilid.'],
+              [false, 'Analisis lengkap', 'Ditambah fihris pembahasan & daftar kutipan (Ilmi Index). ±5–7 menit dan ±Rp3.400 per 100 halaman.']].map(([v, t, s]) => (
+              <button key={t} role="radio" aria-checked={textOnly === v} onClick={() => setTextOnly(v)}
+                className={`text-start rounded-xl border p-3.5 transition-colors ${textOnly === v ? 'border-emerald-400/60 bg-emerald-400/[0.07]' : 'border-white/10 hover:border-white/20'}`}>
+                <div className="text-sm font-medium text-ink flex items-center gap-2"><span className={`w-3.5 h-3.5 rounded-full border ${textOnly === v ? 'border-emerald-300 bg-emerald-400' : 'border-white/30'}`}/>{t}</div>
+                <div className="text-xs text-ink-soft mt-1 leading-relaxed">{s}</div>
+              </button>
+            ))}
+          </div>
+        )}
         {pro ? (
           <button onClick={() => pick('analyze')} className="w-full card-glass p-6 md:p-8 text-center border-2 border-dashed border-emerald-500/25 hover:border-emerald-500/50 hover:bg-emerald-500/[0.03] transition-colors rounded-2xl">
             <div className="w-14 h-14 rounded-2xl mx-auto mb-3 flex items-center justify-center bg-emerald-500/12 border border-emerald-500/25"><Icon name="upload" className="w-6 h-6 text-emerald-300"/></div>
             <div className="font-display text-lg font-semibold text-ink">Pilih PDF muqarrar</div>
             <div className="text-xs text-ink-soft mt-1.5 leading-relaxed max-w-md mx-auto">
               PDF berteks atau hasil scan, maksimal {MAX_PAGES} halaman dan {MAX_MB}MB. Halaman scan dibaca memakai jatah baca foto.
-              {libraryMode ? 'Analisis admin dibatasi pemanggilan harian untuk menjaga biaya. PDF yang sama tidak dianalisis ulang.' : 'Satu analisis memakai 1 kuota Ilmi Index; PDF yang sama dibuka lagi tanpa kuota.'}
+              {libraryMode ? ' Kitab besar: unggah per jilid (maks. 400 halaman per PDF) dan isi kolom Jilid. PDF yang sama tidak diproses ulang.' : 'Satu analisis memakai 1 kuota Ilmi Index; PDF yang sama dibuka lagi tanpa kuota.'}
             </div>
           </button>
         ) : (

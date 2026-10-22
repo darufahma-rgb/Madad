@@ -8,7 +8,7 @@ const quote = 'الماء المطلق طاهر في نفسه مطهر لغير�
 const page = { key: 'S1', document_id: id, page_no: 7, text: `باب المياه\n${quote}\nهذا النص للاختبار فقط.`, excerpt: quote, title: 'Kitab uji', edition: { title: 'Kitab uji', author: 'Penulis uji', subject: 'fiqh' }, printed: { p: 3, s: 'detected' } };
 const raw = { claims: [{ explanation: 'Petikan ini menjelaskan bahwa air mutlak suci dan menyucikan.', source: 'S1', quote }] };
 const deps = { sbConfig: () => ({ url: 'https://db.invalid', key: 'test-only' }), sbHeaders: () => ({}), resolveModels: async () => ({ chat: 'test-chat', ilmi: 'test-ilmi' }) };
-const response = data => new Response(JSON.stringify(data), { status: 200 });
+const response = (data, status = 200) => new Response(JSON.stringify(data), { status });
 const res = () => ({ status(n) { this.code = n; return this; }, json(body) { this.body = body; return this; } });
 
 test('kutipan diambil dari teks asli dan halaman PDF tidak disamakan dengan cetak', () => {
@@ -74,6 +74,7 @@ test('penerbitan kitab memerlukan kepemilikan admin, analisis selesai dan metada
   let doc = null; let writes = 0;
   t.mock.method(globalThis, 'fetch', async (url, init) => {
     if (init.method === 'POST') { writes++; return response(null); }
+    if (init.method === 'PATCH') return response(null);
     assert.match(url, /member_code=eq.ADMIN-REFERENCE/);
     return response(doc ? [doc] : []);
   });
@@ -85,6 +86,30 @@ test('penerbitan kitab memerlukan kepemilikan admin, analisis selesai dan metada
   doc = { id, status: 'done', edition: page.edition };
   const r = res(); await manageReferenceBook({ op: 'publish', document_id: id }, r, deps);
   assert.equal(r.code, 200); assert.equal(writes, 1); assert.equal(LIBRARY_OWNER, 'ADMIN-REFERENCE');
+});
+
+test('aktivasi menandai halaman sebelum buku aktif, penonaktifan sebaliknya', async t => {
+  const doc = { id, status: 'done', edition: page.edition }; let log = [];
+  t.mock.method(globalThis, 'fetch', async (url, init = {}) => {
+    if (init.method === 'PATCH') log.push(`pages:${JSON.parse(init.body).is_reference}`);
+    else if (init.method === 'POST') log.push(`book:${JSON.parse(init.body).active}`);
+    return response(init.method ? null : [doc]);
+  });
+  await manageReferenceBook({ op: 'publish', document_id: id }, res(), deps);
+  assert.deepEqual(log, ['pages:true', 'book:true']);
+  log = []; await manageReferenceBook({ op: 'unpublish', document_id: id }, res(), deps);
+  assert.deepEqual(log, ['book:false', 'pages:false']);
+});
+
+test('tanpa migrasi indeks, aktivasi gagal jelas dan buku tidak diaktifkan', async t => {
+  const doc = { id, status: 'done', edition: page.edition }; let bookWrites = 0;
+  t.mock.method(globalThis, 'fetch', async (url, init = {}) => {
+    if (init.method === 'PATCH') return response({ message: 'column "is_reference" does not exist' }, 400);
+    if (init.method === 'POST') bookWrites++;
+    return response(init.method ? null : [doc]);
+  });
+  const r = res(); await manageReferenceBook({ op: 'publish', document_id: id }, r, deps);
+  assert.equal(r.code, 503); assert.match(r.body.error, /reference_library_scale/); assert.equal(bookWrites, 0);
 });
 
 test('seluruh endpoint pustaka admin menolak pengguna tanpa token sebelum menyentuh database', () => {

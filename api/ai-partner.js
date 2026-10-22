@@ -1452,10 +1452,10 @@ async function handleAdmin(action, req, res, body) {
   }
   const { url, key } = sbConfig();
   const libraryCtx = { code: LIBRARY_OWNER, tier: 'pro' };
-  const libraryDeps = { sbConfig, sbHeaders, takeQuota: async () => null, quotaExceeded, consumeQuota, resolveModels, streamAI, requestAI };
+  const libraryDeps = { sbConfig, sbHeaders, takeQuota: async () => null, quotaExceeded, consumeQuota, resolveModels, streamAI, requestAI, allowTextOnly: true };
   if (action === 'admin-reference') return manageReferenceBook(body, res, libraryDeps);
   if (action === 'admin-reference-ilmi') {
-    if (!['create','pages','edition','start','chunk','finalize','retry-failed'].includes(body.op)) return res.status(400).json({ ok: false, error: 'Perintah pustaka tidak diizinkan.' });
+    if (!['create','pages','edition','start','chunk','finalize','retry-failed','finish-text'].includes(body.op)) return res.status(400).json({ ok: false, error: 'Perintah pustaka tidak diizinkan.' });
     return handleIlmi(libraryCtx, body, res, libraryDeps);
   }
   if (action === 'admin-reference-view') return handleIlmiView(libraryCtx, body, res, libraryDeps);
