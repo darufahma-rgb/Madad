@@ -8,7 +8,7 @@ import {
   OCR_PROMPT, transcribePrompt, transcribeAnswerPrompt, TRANSCRIBE_DIALECTS,
   lectureTalkhisPrompt, lectureTalkhisInput, LECTURE_TALKHIS_CONTINUE, tutorSystem, syafawiSystem, learnerContext,
   isHighStakesFiqh, FIQH_REMINDER,
-  SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
+  SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt,
 } from './_lib/ai-partner/prompts.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { handleTalkhis } from './_lib/ai-partner/talkhis.js';
@@ -18,6 +18,7 @@ import { handleBattleQuiz } from './_lib/ai-partner/battle-quiz.js';
 import { ocrCacheKey, lookupOcrPages, storeOcrPage, handleOcrCache } from './_lib/ai-partner/ocr-cache.js';
 import { withAiContext } from './_lib/ai-cost.js';
 import { handleIlmi, handleIlmiView } from './_lib/ai-partner/ilmi-index.js';
+import { answerFromLibrary, manageReferenceBook, readReferencePage, LIBRARY_OWNER } from './_lib/ai-partner/reference-library.js';
 
 // Kategori biaya AI per action (cocok dengan kolom "Fitur" di analitik admin).
 const COST_KIND = {
@@ -1164,6 +1165,14 @@ async function handleChat(ctx, body, res) {
   const all = Array.isArray(set.chat) ? set.chat : [];
   // Riwayat per mode supaya simulasi syafawi tidak tercampur tanya-jawab biasa.
   const history = all.filter(m => (m.mode || 'tutor') === mode).slice(-CHAT_HISTORY);
+  if (mode === 'tutor') {
+    const result = await answerFromLibrary({ question: message, history, modelTask: isHighStakesFiqh(message) ? 'grade' : 'chat', material: { id: set.id, title: set.title, text: set.content } }, { sbConfig, sbHeaders, resolveModels, requestAI });
+    const reply = result.reply + (isHighStakesFiqh(message) ? FIQH_REMINDER : '');
+    const at = new Date().toISOString();
+    await updateSet(ctx.code, set.id, { chat: [...all, { role: 'user', content: message, at, mode },
+      { role: 'assistant', content: reply, at, mode, model: result.model, refs: result.refs, grounded: result.grounded, needs_clarification: result.needs_clarification }].slice(-CHAT_MAX_STORED) });
+    return res.status(200).json({ ok: true, ...result, reply, ...(trialLeft != null ? { trial_left: trialLeft } : {}) });
+  }
   // Materi yang muat dikirim utuh (system prompt di-cache supaya pesan berikutnya murah). Materi panjang:
   // tutor menerima potongan yang relevan — dipakai ulang selama masih cocok supaya cache tetap kena —
   // syafawi menerima contoh merata dari semua bab (selalu sama, jadi cache juga kena).
@@ -1242,26 +1251,11 @@ async function handlePromptChat(ctx, body, res) {
     if (over) return quotaExceeded(res, 'prompt', over, ctx);
   }
 
-  // Waris, nikah, talak, zakat, dll.: model yang lebih teliti (bukan model hemat) + pengingat di akhir jawaban.
-  const highStakes = isHighStakesFiqh(messages.filter(m => m.role === 'user').slice(-3).map(m => m.content).join('\n'));
-  const models = await resolveModels();
-  const { out, stream, failed } = await runAI(body, res, {
-    system: promptChatSystem() + learnerContext(body.learner, { material: false }),
-    messages,
-    // Jawaban dijaga ringkas (±600 kata) supaya selesai jauh sebelum batas waktu.
-    maxTokens: 1800,
-    // Sisakan waktu untuk menutup stream sebelum batas 60 detik Vercel.
-    timeLimitMs: 48000,
-    cacheSystem: true,
-    model: highStakes ? models.grade : models.prompt,
-    thinking: highStakes ? 1024 : 0,
-  });
-  if (failed) return;
-  const note = '\n\n_(Jawaban terpotong karena terlalu panjang — ketik **lanjutkan** untuk meneruskan.)_';
-  if (out.truncated && stream) stream.delta(note);
-  if (highStakes && stream) stream.delta(FIQH_REMINDER);
-  const reply = `${out.truncated ? `${out.text.trimEnd()}${note}` : out.text}${highStakes ? FIQH_REMINDER : ''}`;
-  return sendResult(res, stream, { reply, model: out.model, ...(trialLeft != null ? { trial_left: trialLeft } : {}) });
+  // Jawaban ditampilkan setelah kutipan dan dukungan penjelasannya diperiksa.
+  const grounded = await answerFromLibrary({ question: messages[messages.length - 1].content, history: messages.slice(0, -1), modelTask: isHighStakesFiqh(messages[messages.length - 1].content) ? 'grade' : 'prompt' }, { sbConfig, sbHeaders, resolveModels, requestAI });
+  return res.status(200).json({ ok: true, ...grounded,
+    reply: grounded.reply + (isHighStakesFiqh(messages[messages.length - 1].content) ? FIQH_REMINDER : ''),
+    ...(trialLeft != null ? { trial_left: trialLeft } : {}) });
 }
 
 /* ── Masukan kualitas (👍/👎 + laporan kesalahan) ── */
@@ -1400,6 +1394,17 @@ async function handleAdmin(action, req, res, body) {
     return res.status(401).json({ ok: false, error: 'Unauthorized' });
   }
   const { url, key } = sbConfig();
+  const libraryCtx = { code: LIBRARY_OWNER, tier: 'pro' };
+  const libraryDeps = { sbConfig, sbHeaders, takeQuota: async () => null, quotaExceeded, consumeQuota, resolveModels, streamAI, requestAI };
+  if (action === 'admin-reference') return manageReferenceBook(body, res, libraryDeps);
+  if (action === 'admin-reference-ilmi') {
+    if (!['create','pages','edition','start','chunk','finalize','retry-failed'].includes(body.op)) return res.status(400).json({ ok: false, error: 'Perintah pustaka tidak diizinkan.' });
+    return handleIlmi(libraryCtx, body, res, libraryDeps);
+  }
+  if (action === 'admin-reference-view') return handleIlmiView(libraryCtx, body, res, libraryDeps);
+  if (action === 'admin-reference-ocr-cache') return handleOcrCache(libraryCtx, body, res);
+  if (action === 'admin-reference-ocr-quota') return handleOcrQuota(libraryCtx, res);
+  if (action === 'admin-reference-ocr') return handleOcr(libraryCtx, body, res);
 
   if (action === 'admin-list') {
     const list = (extra) => fetch(
@@ -1548,6 +1553,7 @@ export default async function handler(req, res) {
       code: access.code, tier: access.tier, aiExpiresAt: access.aiExpiresAt || null, memberTier: access.member?.tier || 'library',
       emails: [access.member?.email, access.user?.email],
     };
+    if (ctx.code === LIBRARY_OWNER) return res.status(403).json({ ok: false, error: 'Pemilik pustaka hanya dapat digunakan melalui panel admin.' });
 
     if (ctx.tier === 'trial' && PRO_ONLY_ACTIONS.includes(action)) {
       return upgradeRequired(res, action, PRO_ONLY_MESSAGES[action]);
@@ -1574,6 +1580,7 @@ export default async function handler(req, res) {
       case 'add-cards':     return await handleAddCards(ctx, body, res);
       case 'analyze':       return await handleAnalyze(ctx, body, res);
       case 'grade':         return await handleGrade(ctx, body, res);
+      case 'reference-page': return await readReferencePage(body, res, { sbConfig, sbHeaders });
       case 'chat':          return await handleChat(ctx, body, res);
       case 'clear-chat':    return await handleClearChat(ctx, body, res);
       case 'prompt-chat':   return await handlePromptChat(ctx, body, res);

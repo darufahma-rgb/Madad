@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useContext, createContext } from 'react';
+import ReferenceShelf, { REFERENCE_SUBJECTS } from '../components/ReferenceShelf.jsx';
 /* Talqeeh Ilmi Index — الفهرس العلمي الذكي.
    Unggah/pilih PDF muqarrar → teks per halaman (pdf.js; halaman scan dibaca OCR AI Partner) → diunggah ke server →
    dianalisis per beberapa halaman (server: api/_lib/ai-partner/ilmi-index.js) → daftar pembahasan, kutipan, dan sumber
@@ -9,6 +10,20 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 
 const ilmi = (op, payload = {}) => aiCall('ilmi', { op, ...payload });
 const ilmiView = (op, payload = {}) => aiCall('ilmi-view', { op, ...payload });
+const IlmiApi = createContext({ ilmi, ilmiView, aiCall });
+const adminLibraryCall = async (action, payload = {}) => {
+  try {
+    const r = await fetch(`/api/ai-partner?action=${action}`, { method: 'POST', headers: {
+      'Content-Type': 'application/json', 'x-admin-token': sessionStorage.getItem('talqee_admin_token') || '',
+    }, body: JSON.stringify(payload) });
+    return await r.json();
+  } catch { return { ok: false, error: 'Tidak bisa terhubung ke pustaka rujukan.' }; }
+};
+const adminLibraryApi = {
+  ilmi: (op, payload = {}) => adminLibraryCall('admin-reference-ilmi', { op, ...payload }),
+  ilmiView: (op, payload = {}) => adminLibraryCall('admin-reference-view', { op, ...payload }),
+  aiCall: (action, payload) => adminLibraryCall(`admin-reference-${action}`, payload),
+};
 
 const MAX_PAGES = 400;
 const MAX_MB = 150;
@@ -150,6 +165,7 @@ const findItemRects = (items, snippet) => {
 };
 
 const PdfLocator = ({ doc, target, pdf, onPickFile, onClose }) => {
+  const { ilmiView } = useContext(IlmiApi);
   const [page, setPage] = useState(target.page);
   const [mode, setMode] = useState(pdf ? 'pdf' : 'text');
   const [rects, setRects] = useState(null);
@@ -401,6 +417,8 @@ const AnswerText = ({ text, onPage }) => {
 };
 
 const AskPanel = ({ doc, onLocate, readOnly }) => {
+  const { ilmi } = useContext(IlmiApi);
+  const adminLibrary = useContext(IlmiApi) === adminLibraryApi;
   const [q, setQ] = useState('');
   const [items, setItems] = useState([]);
   const [busy, setBusy] = useState(false);
@@ -421,7 +439,7 @@ const AskPanel = ({ doc, onLocate, readOnly }) => {
           Jawaban HANYA dari teks halaman muqarrar ini yang tersimpan, dengan rujukan halaman PDF yang bisa diklik. Kalau tidak ada di muqarrar,
           jawabannya "tidak ditemukan" — AI tidak menjawab dari hafalannya. Memakai jatah pesan tutor.
         </p>
-        {readOnly ? <UpgradeCard compact title="Tanya Muqarrar khusus pelanggan" message="Berlangganan AI Partner untuk bertanya langsung ke isi muqarrarmu."/> : (
+        {adminLibrary ? <p className="text-sm text-emerald-200">Setelah kitab diaktifkan, uji pertanyaannya melalui Tanya AI atau Tutor untuk memeriksa jawaban dari pustaka bersama.</p> : readOnly ? <UpgradeCard compact title="Tanya Muqarrar khusus pelanggan" message="Berlangganan AI Partner untuk bertanya langsung ke isi muqarrarmu."/> : (
           <div className="flex gap-2">
             <input value={q} onChange={e => setQ(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) ask(); }} dir="auto" maxLength={600}
               placeholder="Mis. Apa pendapat Hanafiyah tentang air musta'mal? / ما حكم الماء المستعمل؟"
@@ -458,11 +476,12 @@ const AskPanel = ({ doc, onLocate, readOnly }) => {
 
 /* ── Metadata edisi (Source Tracker) ── */
 const EditionForm = ({ doc, onSaved, readOnly }) => {
+  const { ilmi } = useContext(IlmiApi);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(doc.edition || {});
   const [busy, setBusy] = useState(false);
   const toast = useToast();
-  const fields = [['title', 'Judul kitab/muqarrar'], ['author', 'Penulis/duktur'], ['edition', 'Cetakan/edisi'], ['year', 'Tahun'], ['publisher', 'Penerbit'], ['faculty', 'Fakultas/tingkat'], ['note', 'Catatan']];
+  const fields = [['title', 'Judul kitab/muqarrar'], ['author', 'Penulis/duktur'], ['subject', 'Bidang ilmu'], ['madhhab', 'Mazhab (jika dinyatakan kitab)'], ['volume', 'Jilid'], ['edition', 'Cetakan/edisi'], ['year', 'Tahun'], ['publisher', 'Penerbit'], ['faculty', 'Fakultas/tingkat'], ['note', 'Catatan']];
   const save = async () => {
     setBusy(true);
     const d = await ilmi('edition', { document_id: doc.id, edition: form });
@@ -486,8 +505,8 @@ const EditionForm = ({ doc, onSaved, readOnly }) => {
           {fields.map(([k, label]) => (
             <label key={k} className={k === 'note' ? 'sm:col-span-2' : ''}>
               <span className="text-[11px] text-ink-muted">{label}</span>
-              <input value={form[k] || ''} onChange={e => setForm({ ...form, [k]: e.target.value })} dir="auto" maxLength={k === 'note' ? 400 : 160}
-                className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 h-10 text-ink outline-none focus:border-emerald-500/40" style={{ fontSize: 16 }}/>
+              {k === 'subject' ? <select aria-label={label} value={form[k] || ''} onChange={e => setForm({ ...form, [k]: e.target.value })} className="w-full bg-[#131a17] border border-white/10 rounded-lg px-3 h-10 text-ink" style={{ fontSize: 16 }}><option value="">Pilih bidang ilmu</option>{Object.entries(REFERENCE_SUBJECTS).map(([id,label]) => <option key={id} value={id}>{label}</option>)}</select> : <input aria-label={label} value={form[k] || ''} onChange={e => setForm({ ...form, [k]: e.target.value })} dir="auto" maxLength={k === 'note' ? 400 : 160}
+                className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-3 h-10 text-ink outline-none focus:border-emerald-500/40" style={{ fontSize: 16 }}/>}
             </label>
           ))}
           <div className="sm:col-span-2"><button className="btn btn-primary text-sm" disabled={busy} onClick={save}>{busy ? 'Menyimpan…' : 'Simpan'}</button></div>
@@ -581,7 +600,7 @@ const IlmiResult = ({ data, pdf, onPickFile, onReanalyze, readOnly, onEdition })
         </div>
         <div className="flex flex-wrap gap-2 mt-3">
           {!pdf && <button className="btn-subtle text-xs" onClick={onPickFile}><Icon name="upload" className="w-3.5 h-3.5"/> Buka file PDF-nya untuk melihat halaman asli</button>}
-          {!readOnly && <button className="btn-ghost btn text-xs h-8 px-3" onClick={onReanalyze}><Icon name="refresh" className="w-3.5 h-3.5"/> Analisis ulang</button>}
+          {!readOnly && onReanalyze && <button className="btn-ghost btn text-xs h-8 px-3" onClick={onReanalyze}><Icon name="refresh" className="w-3.5 h-3.5"/> Analisis ulang</button>}
         </div>
       </div>
 
@@ -701,12 +720,17 @@ const ProgressCard = ({ prog, onCancel }) => (
 );
 
 /* ── Halaman ── */
-const IlmiIndexPage = () => {
+const IlmiIndexPage = ({ libraryMode = false }) => {
+  const { ilmi, ilmiView, aiCall } = useContext(IlmiApi);
   const status = useAiStatus();
   const path = useRoute();
-  const docId = new URLSearchParams(path.split('?')[1] || '').get('doc');
+  const [libraryDoc, setLibraryDoc] = useState(null);
+  const docId = libraryMode ? libraryDoc : new URLSearchParams(path.split('?')[1] || '').get('doc');
+  const navigate = libraryMode ? (url) => setLibraryDoc(new URLSearchParams(url.split('?')[1] || '').get('doc')) : window.navigate;
   const toast = useToast();
   const [docs, setDocs] = useState(null);
+  const [publications, setPublications] = useState(null);
+  const [publicationError, setPublicationError] = useState('');
   const [data, setData] = useState(null);
   const [pdf, setPdf] = useState(null);
   const [prog, setProg] = useState(null);
@@ -715,24 +739,34 @@ const IlmiIndexPage = () => {
   const fileRef = useRef(null);
   const pickModeRef = useRef('analyze');
   const cancelRef = useRef(false);
-  const pro = status.tier === 'pro';
+  const pro = libraryMode || status.tier === 'pro';
 
-  const loadDocs = () => ilmiView('list').then(d => setDocs(d.ok ? d.documents : []));
+  const loadDocs = async () => {
+    const d = await ilmiView('list');
+    if (!d.ok) setError(d.error || 'Koleksi belum bisa dimuat.');
+    setDocs(d.ok ? d.documents : []);
+    if (libraryMode) {
+      const p = await adminLibraryCall('admin-reference', { op: 'list' });
+      setPublications(p.ok ? p.books : null);
+      setPublicationError(p.ok ? '' : p.error || 'Status pustaka belum tersedia.');
+    }
+  };
   useEffect(() => { if (!status.loading) loadDocs(); }, [status.loading]);
   useEffect(() => { window.logFunnel?.('view_ilmi_index'); }, []);
 
   // Buka hasil tersimpan dari URL (?doc=…), tanpa analisis ulang.
   useEffect(() => {
-    if (!docId) { setData(null); return; }
+    if (!docId) { setData(null); setPdf(null); return; }
     if (data?.document?.id === docId) return;
     let alive = true;
+    setPdf(null); setData(null);
     setError('');
     ilmiView('get', { document_id: docId }).then(async d => {
       if (!alive) return;
       if (!d.ok) { setError(d.error || 'Dokumen gagal dibuka.'); return; }
       if (d.document.status === 'done' || d.document.status === 'partial') {
         setData(d);
-        if (!pdf) {
+        {
           const blob = await loadPdfLocal(d.document.file_hash);
           if (blob && alive) { try { setPdf(await window.openPdf(new File([blob], d.document.file_name || 'muqarrar.pdf', { type: 'application/pdf' }))); } catch {} }
         }
@@ -838,6 +872,7 @@ const IlmiIndexPage = () => {
           const small = await window.compressImage(img);
           const d = await aiCall('ocr', { foto_base64: await window.fileToBase64(small), mime_type: small.type || 'image/jpeg', file_hash: hash, page: p });
           if (!d.ok) { reason = d.error || 'AI gagal membaca halaman scan.'; if (d.upgrade || /jatah|batas|kuota/i.test(reason)) break; continue; }
+          if (libraryMode && d.truncated) { reason = `Hasil OCR halaman ${p} terpotong. Pisahkan PDF atau perbaiki lapisan teksnya sebelum dijadikan rujukan.`; break; }
           if (d.teks?.trim()) out.set(p, { n: p, text: d.teks, status: 'ocr' });
           else out.set(p, { n: p, text: '', status: 'empty' });
           n++;
@@ -942,8 +977,8 @@ const IlmiIndexPage = () => {
   );
 
   const backLink = (
-    <button onClick={() => navigate(docId ? '/ilmi-index' : '/ai-partner')} className="text-sm text-ink-soft hover:text-ink inline-flex items-center gap-1.5 mb-3" style={{ minHeight: 40 }}>
-      <Icon name="chevronLeft" className="w-4 h-4"/> {docId ? 'Muqarrar tersimpan' : 'AI Partner'}
+    <button onClick={() => navigate(docId ? '/ilmi-index' : '/ai-partner')} className={`text-sm text-ink-soft hover:text-ink inline-flex items-center gap-1.5 mb-3 ${libraryMode && !docId ? 'hidden' : ''}`} style={{ minHeight: 40 }}>
+      <Icon name="chevronLeft" className="w-4 h-4"/> {libraryMode ? 'Pustaka rujukan' : docId ? 'Muqarrar tersimpan' : 'AI Partner'}
     </button>
   );
 
@@ -967,7 +1002,7 @@ const IlmiIndexPage = () => {
             : <UpgradeCard compact title="Melanjutkan analisis khusus pelanggan" message="Berlangganan AI Partner untuk menyelesaikan analisis muqarrar ini."/>}
         </div>
       ) : (
-        <IlmiResult data={data} pdf={pdf} readOnly={!pro} onPickFile={() => pick('view')} onReanalyze={reanalyze}
+        <IlmiResult data={data} pdf={pdf} readOnly={!pro} onPickFile={() => pick('view')} onReanalyze={libraryMode ? undefined : reanalyze}
           onEdition={(edition) => setData(d => ({ ...d, document: { ...d.document, edition } }))}/>
       );
   } else {
@@ -980,14 +1015,14 @@ const IlmiIndexPage = () => {
             <div className="font-display text-lg font-semibold text-ink">Pilih PDF muqarrar</div>
             <div className="text-xs text-ink-soft mt-1.5 leading-relaxed max-w-md mx-auto">
               PDF berteks atau hasil scan, maksimal {MAX_PAGES} halaman dan {MAX_MB}MB. Halaman scan dibaca memakai jatah baca foto.
-              Satu analisis memakai 1 kuota Ilmi Index; PDF yang sama dibuka lagi tanpa kuota.
+              {libraryMode ? 'Analisis admin dibatasi pemanggilan harian untuk menjaga biaya. PDF yang sama tidak dianalisis ulang.' : 'Satu analisis memakai 1 kuota Ilmi Index; PDF yang sama dibuka lagi tanpa kuota.'}
             </div>
           </button>
         ) : (
           <UpgradeCard title="Ilmi Index khusus pelanggan AI Partner"
             message="Petakan pembahasan muqarrarmu per halaman PDF dan telusuri kutipan ulama, ayat, hadis, serta kitab rujukannya — lengkap dengan bukti teks aslinya."/>
         )}
-        <div>
+        {libraryMode ? <ReferenceShelf docs={docs} publications={publications} publicationError={publicationError} onOpen={d => navigate(`/ilmi-index?doc=${d.id}`)} onRemove={remove}/> : <div>
           <div className="text-xs uppercase tracking-wider text-ink-soft mb-2">Muqarrar tersimpan</div>
           {docs === null ? <div className="card-glass p-5"><Skeleton lines={3}/></div>
             : docs.length === 0 ? <div className="text-sm text-ink-soft">Belum ada. Hasil analisis tersimpan otomatis di sini.</div>
@@ -1010,7 +1045,7 @@ const IlmiIndexPage = () => {
                 ))}
               </div>
             )}
-        </div>
+        </div>}
       </div>
     );
   }
@@ -1019,7 +1054,8 @@ const IlmiIndexPage = () => {
     <div className="page-enter">
       <div className="container-x max-w-4xl pt-4 md:pt-8 pb-24">
         {backLink}
-        {header}
+        {libraryMode ? <div className="mb-6 rounded-3xl border border-emerald-300/15 p-5 sm:p-8 relative overflow-hidden" style={{ background: 'radial-gradient(ellipse at 100% 0%,rgba(62,207,142,.12),transparent 70%),#111a15' }}><p className="text-[10px] tracking-[.25em] uppercase text-gold-300 mb-3">Talqeeh · Pustaka ilmiah</p><h1 className="text-2xl sm:text-3xl text-ink font-display font-semibold">Pustaka Rujukan Talqeeh</h1><p className="arabic text-xl sm:text-2xl text-gold-200/80 mt-2" dir="rtl">من الكتاب إلى الفهم</p><p className="mt-4 text-sm leading-relaxed max-w-2xl text-ink-muted">Kitab yang tertata. Pemahaman yang punya dasar. Kelola koleksi, periksa hasil pembacaan, lalu pilih rujukan untuk jawaban Tanya AI dan Tutor.</p><div className="flex flex-wrap gap-2 mt-5">{['Unggah kitab','Periksa teks & edisi','Aktifkan rujukan'].map((s,i) => <span key={s} className="text-[11px] text-ink-muted rounded-full border border-white/10 px-3 py-1.5"><span className="text-emerald-300 mr-2">0{i+1}</span>{s}</span>)}</div></div> : header}
+        {libraryMode && data?.document && <ReferencePublishPanel key={data.document.id} doc={data.document}/>}
         {body}
         <input ref={fileRef} type="file" accept="application/pdf,.pdf" className="hidden" onChange={onFile}/>
       </div>
@@ -1043,3 +1079,35 @@ const IlmiIndexPage = () => {
 };
 
 Object.assign(window, { IlmiIndexPage, IlmiResult, IlmiProgressCard: ProgressCard, openPdfChecked, looksScrambledArabic });
+
+const ReferencePublishPanel = ({ doc }) => {
+  const [active, setActive] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const checks = [
+    ['Pembacaan & indeks selesai', doc.status === 'done'],
+    ['Judul & penulis terisi', !!(doc.edition?.title && doc.edition?.author)],
+    ['Bidang ilmu dipilih', !!REFERENCE_SUBJECTS[doc.edition?.subject]],
+    ['Tidak ada halaman gagal dibaca', !['unread','garbled'].some(k => Number(doc.page_stats?.[k]) > 0)],
+  ];
+  const eligible = checks.every(([,ok]) => ok);
+  useEffect(() => { adminLibraryCall('admin-reference', { op: 'list' }).then(d => {
+    if (!d.ok) { setError(d.error || 'Status pustaka gagal dibaca. Jalankan migrasi reference_library.sql.'); return; }
+    setActive(d.books.some(b => b.document_id === doc.id && b.active)); setLoaded(true);
+  }); }, [doc.id]);
+  const toggle = async () => {
+    setBusy(true); setError('');
+    const d = await adminLibraryCall('admin-reference', { op: active ? 'unpublish' : 'publish', document_id: doc.id });
+    if (d.ok) setActive(!active); else setError(d.error || 'Gagal mengubah status.');
+    setBusy(false);
+  };
+  return <div className="rounded-2xl bg-emerald-400/[0.04] p-5 mb-5 space-y-4 border border-emerald-500/20">
+    <div className="flex flex-wrap justify-between gap-3 items-start"><div><p className="text-[10px] text-gold-300 uppercase tracking-[.18em] mb-2">Tinjauan rujukan</p><div className="text-base text-emerald-200">{!loaded ? error ? 'Status aktivasi belum tersedia' : 'Memeriksa status pustaka…' : active ? 'Aktif sebagai dasar jawaban' : eligible ? 'Siap untuk tinjauan akhir' : 'Lengkapi sebelum diaktifkan'}</div></div><span className="text-xs text-ink-soft rounded-full bg-white/5 px-3 py-1.5">{checks.filter(([,ok]) => ok).length} / {checks.length} syarat terpenuhi</span></div>
+    <div className="grid sm:grid-cols-2 gap-2">{checks.map(([label,ok]) => <div key={label} className="rounded-xl border border-white/[0.06] bg-black/10 p-3 text-xs text-ink-muted"><span className={`mr-2 ${ok ? 'text-emerald-300' : 'text-gold-300'}`} aria-hidden>{ok ? '✓' : '○'}</span>{label}</div>)}</div>
+    <p className="text-xs leading-relaxed text-ink-soft">Periksa teks Arab, terutama hasil OCR, serta kesesuaian edisi. Aktivasi membagikan teks sebagai bukti kepada pengguna. Syarat teknis ini tidak menggantikan pemeriksaan ilmiah.</p>
+    {error && <p className="text-sm text-red-300">{error}</p>}
+    <button disabled={!loaded || busy || (!active && !eligible)} onClick={toggle} className="btn btn-primary text-sm disabled:opacity-50">{busy ? 'Menyimpan…' : active ? 'Nonaktifkan rujukan' : 'Aktifkan sebagai rujukan'}</button>
+  </div>;
+};
+window.AdminReferenceLibrary = () => <IlmiApi.Provider value={adminLibraryApi}><IlmiIndexPage libraryMode/></IlmiApi.Provider>;

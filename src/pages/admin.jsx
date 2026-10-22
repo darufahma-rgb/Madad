@@ -177,6 +177,7 @@ const ADMIN_TABS = [
   { id: "guides",     label: "Guide Manager",     icon: "sparkles" },
   { id: "ai-eval",    label: "Evaluasi AI",       icon: "target" },
   { id: "prompt-quality", label: "Mutu Prompt",   icon: "check" },
+  { id: "reference-library", label: "Pustaka Rujukan", icon: "list" },
   { id: "settings",   label: "Settings",          icon: "shield" },
 ];
 
@@ -282,6 +283,7 @@ const AdminPage = () => {
         {tab === "ai-eval"    && <AdminEval/>}
         {tab === "prompt-quality" && <AdminPromptQuality/>}
         {tab === "settings"   && <AdminSettings/>}
+        {tab === "reference-library" && <AdminReferenceLibrary/>}
       </div>
     </div>
   );

@@ -121,13 +121,15 @@ export const friendlyAiError = (err) => {
   if (/401|no auth|unauthori[sz]ed|user not found|invalid.*(key|token)|OPENROUTER_API_KEY/i.test(m)) return 'Layanan AI sedang tidak tersedia (kunci API tidak valid). Kabari admin Talqeeh, ya.';
   if (/rate.?limit|429|overloaded|capacity/i.test(m)) return 'AI sedang sibuk. Coba lagi sebentar.';
   if (/terlalu lama/i.test(m)) return 'AI terlalu lama merespons. Coba lagi, atau persingkat pertanyaannya.';
+  if (/timeout|aborted/i.test(m)) return 'Pencarian rujukan terlalu lama. Coba lagi sebentar.';
+  if (/Pustaka rujukan tidak tersedia/i.test(m)) return 'Pustaka rujukan belum tersedia. Hubungi admin Talqeeh.';
   return 'AI sedang bermasalah. Coba lagi sebentar.';
 };
 
 /* Panggil model lewat OpenRouter. Mengembalikan teks + apakah jawabannya terpotong batas token.
    cacheSystem: system prompt (mis. materi panjang untuk tutor) di-cache Anthropic ±5 menit, jadi pesan
    berikutnya dalam satu sesi chat jauh lebih murah dan cepat. Model non-Anthropic menerima teks biasa. */
-export const requestAI = async ({ system, messages, maxTokens = 2000, temperature = 0.3, model, cacheSystem = false, thinking = 0 }) => {
+export const requestAI = async ({ system, messages, maxTokens = 2000, temperature = 0.3, model, cacheSystem = false, thinking = 0, timeLimitMs = 0 }) => {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY belum diset');
 
@@ -139,6 +141,7 @@ export const requestAI = async ({ system, messages, maxTokens = 2000, temperatur
 
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
+    ...(timeLimitMs > 0 ? { signal: AbortSignal.timeout(timeLimitMs) } : {}),
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',

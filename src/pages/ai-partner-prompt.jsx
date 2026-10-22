@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import AiRichText, { aiTextForCopy } from '../components/AiRichText.jsx';
+import ReferenceEvidence, { referenceText } from '../components/ReferenceEvidence.jsx';
 /* Talqeeh — AI Partner: jalankan prompt Talqeeh langsung di sini, tanpa salin-tempel ke AI lain.
    Tombol "Jalankan di Talqeeh" di halaman prompt memanggil runPromptInTalqeeh(); percakapan disimpan di perangkat. */
 
@@ -191,7 +192,7 @@ const PromptChat = ({ trial = null }) => {
     }
     const done = {
       ...withUser,
-      messages: [...withUser.messages, { role: 'assistant', content: data.reply, model: data.model }].slice(-MAX_MESSAGES),
+      messages: [...withUser.messages, { role: 'assistant', content: data.reply, model: data.model, refs: data.refs, grounded: data.grounded, needs_clarification: data.needs_clarification }].slice(-MAX_MESSAGES),
       updatedAt: new Date().toISOString(),
     };
     setThread(done);
@@ -319,11 +320,12 @@ const PromptChat = ({ trial = null }) => {
               <LogoMark size={28} className="hidden sm:block flex-shrink-0 mt-0.5"/>
               <div className="min-w-0 flex-1">
                 <AiRichText content={m.content} size="md"/>
+                <ReferenceEvidence refs={m.refs} grounded={m.grounded} needsClarification={m.needs_clarification}/>
                 <div className="mt-2 flex gap-1 text-xs text-ink-soft">
-                  <button onClick={() => copy(aiTextForCopy(m.content))} className="h-7 px-2 rounded-md inline-flex items-center gap-1 hover:text-ink hover:bg-white/5">
+                  <button onClick={() => copy(aiTextForCopy(referenceText(m)))} className="h-7 px-2 rounded-md inline-flex items-center gap-1 hover:text-ink hover:bg-white/5">
                     <Icon name="copy" className="w-3.5 h-3.5"/> Salin
                   </button>
-                  <button onClick={() => saveNote(aiTextForCopy(m.content))} className="h-7 px-2 rounded-md inline-flex items-center gap-1 hover:text-ink hover:bg-white/5">
+                  <button onClick={() => saveNote(aiTextForCopy(referenceText(m)))} className="h-7 px-2 rounded-md inline-flex items-center gap-1 hover:text-ink hover:bg-white/5">
                     <Icon name="bookmark" className="w-3.5 h-3.5"/> Simpan ke Kurasah
                   </button>
                 </div>

@@ -116,7 +116,7 @@ export async function handleIlmiView(ctx, body, res, deps) {
   const op = String(body.op || '');
   try {
     if (op === 'list') {
-      const docs = await db.json(`ilmi_documents?member_code=eq.${enc(ctx.code)}&select=id,title,file_name,file_hash,num_pages,pdf_kind,status,stats,edition,updated_at&order=updated_at.desc&limit=${MAX_DOCS_PER_MEMBER}`);
+      const docs = await db.json(`ilmi_documents?member_code=eq.${enc(ctx.code)}&select=id,title,file_name,file_hash,num_pages,pdf_kind,status,stats,page_stats,edition,updated_at&order=updated_at.desc&limit=${MAX_DOCS_PER_MEMBER}`);
       return res.status(200).json({ ok: true, documents: docs || [] });
     }
     if (op === 'lookup') {
@@ -220,7 +220,7 @@ export async function handleIlmi(ctx, body, res, deps) {
 
     if (op === 'edition') {
       const e = body.edition && typeof body.edition === 'object' ? body.edition : {};
-      const edition = Object.fromEntries(['title', 'author', 'year', 'edition', 'publisher', 'faculty', 'note']
+      const edition = Object.fromEntries(['title', 'author', 'year', 'edition', 'publisher', 'faculty', 'subject', 'madhhab', 'volume', 'note']
         .map(k => [k, clip(e[k], k === 'note' ? 400 : 160)]).filter(([, v]) => v));
       await patchDoc(db, ctx.code, doc.id, { edition });
       return res.status(200).json({ ok: true, edition });
