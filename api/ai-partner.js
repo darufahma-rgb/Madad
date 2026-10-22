@@ -8,7 +8,7 @@ import {
   OCR_PROMPT, transcribePrompt, transcribeAnswerPrompt, TRANSCRIBE_DIALECTS,
   lectureTalkhisPrompt, lectureTalkhisInput, LECTURE_TALKHIS_CONTINUE, tutorSystem, syafawiSystem, learnerContext,
   isHighStakesFiqh, FIQH_REMINDER,
-  SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt,
+  SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { handleTalkhis } from './_lib/ai-partner/talkhis.js';
@@ -1165,8 +1165,12 @@ async function handleChat(ctx, body, res) {
   const all = Array.isArray(set.chat) ? set.chat : [];
   // Riwayat per mode supaya simulasi syafawi tidak tercampur tanya-jawab biasa.
   const history = all.filter(m => (m.mode || 'tutor') === mode).slice(-CHAT_HISTORY);
-  if (mode === 'tutor') {
-    const result = await answerFromLibrary({ question: message, history, modelTask: isHighStakesFiqh(message) ? 'grade' : 'chat', material: { id: set.id, title: set.title, text: set.content } }, { sbConfig, sbHeaders, resolveModels, requestAI });
+  // Tutor memakai Pustaka Rujukan hanya bila ada kitab aktif yang benar-benar mendukung jawaban; selain itu tutor
+  // biasa dari materi (di bawah) tetap berjalan seperti semula.
+  const result = mode === 'tutor'
+    ? await tryReferenceLibrary({ question: message, history, modelTask: isHighStakesFiqh(message) ? 'grade' : 'chat', material: { id: set.id, title: set.title, text: set.content } })
+    : null;
+  if (result) {
     const reply = result.reply + (isHighStakesFiqh(message) ? FIQH_REMINDER : '');
     const at = new Date().toISOString();
     await updateSet(ctx.code, set.id, { chat: [...all, { role: 'user', content: message, at, mode },
@@ -1251,11 +1255,64 @@ async function handlePromptChat(ctx, body, res) {
     if (over) return quotaExceeded(res, 'prompt', over, ctx);
   }
 
-  // Jawaban ditampilkan setelah kutipan dan dukungan penjelasannya diperiksa.
-  const grounded = await answerFromLibrary({ question: messages[messages.length - 1].content, history: messages.slice(0, -1), modelTask: isHighStakesFiqh(messages[messages.length - 1].content) ? 'grade' : 'prompt' }, { sbConfig, sbHeaders, resolveModels, requestAI });
-  return res.status(200).json({ ok: true, ...grounded,
-    reply: grounded.reply + (isHighStakesFiqh(messages[messages.length - 1].content) ? FIQH_REMINDER : ''),
-    ...(trialLeft != null ? { trial_left: trialLeft } : {}) });
+  // 1) Ada kitab aktif yang mendukung jawaban → jawaban berbasis kitab (kutipan & dukungan penjelasan sudah diperiksa).
+  const lastQuestion = messages[messages.length - 1].content;
+  const grounded = await tryReferenceLibrary({ question: lastQuestion, history: messages.slice(0, -1), modelTask: isHighStakesFiqh(lastQuestion) ? 'grade' : 'prompt' });
+  if (grounded) {
+    return res.status(200).json({ ok: true, ...grounded,
+      reply: grounded.reply + (isHighStakesFiqh(lastQuestion) ? FIQH_REMINDER : ''),
+      ...(trialLeft != null ? { trial_left: trialLeft } : {}) });
+  }
+
+  // 2) Tidak ada dasar di pustaka (atau pustaka belum aktif) → jawaban umum seperti biasa, diberi label jujur.
+  // Waris, nikah, talak, zakat, dll.: model yang lebih teliti (bukan model hemat) + pengingat di akhir jawaban.
+  const highStakes = isHighStakesFiqh(messages.filter(m => m.role === 'user').slice(-3).map(m => m.content).join('\n'));
+  const models = await resolveModels();
+  const { out, stream, failed } = await runAI(body, res, {
+    system: promptChatSystem() + learnerContext(body.learner, { material: false }),
+    messages,
+    // Jawaban dijaga ringkas (±600 kata) supaya selesai jauh sebelum batas waktu.
+    maxTokens: 1800,
+    // Sisakan waktu untuk menutup stream sebelum batas 60 detik Vercel.
+    timeLimitMs: 48000,
+    cacheSystem: true,
+    model: highStakes ? models.grade : models.prompt,
+    thinking: highStakes ? 1024 : 0,
+  });
+  if (failed) return;
+  const note = '\n\n_(Jawaban terpotong karena terlalu panjang — ketik **lanjutkan** untuk meneruskan.)_';
+  if (out.truncated && stream) stream.delta(note);
+  if (highStakes && stream) stream.delta(FIQH_REMINDER);
+  const reply = `${out.truncated ? `${out.text.trimEnd()}${note}` : out.text}${highStakes ? FIQH_REMINDER : ''}`;
+  return sendResult(res, stream, { reply, model: out.model, grounded: false, general: true, ...(trialLeft != null ? { trial_left: trialLeft } : {}) });
+}
+
+/* Pustaka Rujukan dipakai hanya bila ada kitab aktif. Mengembalikan jawaban berbasis kitab (minimal satu rujukan kitab,
+   bukan hanya materi pribadi) atau permintaan klarifikasi; null bila tidak ada dasar, pustaka belum aktif, atau
+   pustaka gagal (migrasi belum jalan, timeout) — pemanggil lalu memakai jawaban biasa, jadi Tanya AI & Tutor tidak
+   pernah mati karena pustaka. Jumlah kitab aktif di-cache 60 detik supaya pertanyaan biasa tidak menunggu. */
+let activeReferenceCache = { at: 0, n: null };
+const activeReferenceBooks = async () => {
+  if (activeReferenceCache.n != null && Date.now() - activeReferenceCache.at < 60_000) return activeReferenceCache.n;
+  let n = 0;
+  try {
+    const { url, key } = sbConfig();
+    const r = await fetch(`${url}/rest/v1/talqeeh_reference_books?active=eq.true&select=document_id&limit=1`, { headers: sbHeaders(key), signal: AbortSignal.timeout(4000) });
+    n = r.ok ? ((await r.json()) || []).length : 0;
+  } catch {}
+  activeReferenceCache = { at: Date.now(), n };
+  return n;
+};
+async function tryReferenceLibrary(args) {
+  if (!(await activeReferenceBooks())) return null;
+  try {
+    const r = await answerFromLibrary(args, { sbConfig, sbHeaders, resolveModels, requestAI });
+    if (r.needs_clarification) return r;
+    return r.grounded && r.refs.some(x => x.source_type !== 'material') ? r : null;
+  } catch (err) {
+    console.warn('Pustaka rujukan gagal, memakai jawaban biasa:', err.message);
+    return null;
+  }
 }
 
 /* ── Masukan kualitas (👍/👎 + laporan kesalahan) ── */

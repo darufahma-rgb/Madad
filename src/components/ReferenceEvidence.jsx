@@ -28,9 +28,15 @@ const ReferencePage = ({ reference: r, onClose }) => {
   </div>;
 };
 
-export default function ReferenceEvidence({ refs, grounded, needsClarification }) {
+// general: jawaban umum karena pustaka belum memuat dasarnya (lihat tryReferenceLibrary di api/ai-partner.js).
+// Jawaban lama atau jawaban tutor dari materi tidak diberi label apa pun.
+export default function ReferenceEvidence({ refs, needsClarification, general }) {
   const [selected, setSelected] = useState(null);
-  if (!refs?.length) return <p className="mt-2 text-xs text-amber-200/80">{needsClarification ? 'Konteks perlu diperjelas sebelum memilih rujukan.' : grounded === false ? 'Dasar rujukan belum ditemukan; Talqeeh menahan jawaban.' : 'Jawaban lama ini belum memiliki rujukan yang diperiksa lewat pustaka.'}</p>;
+  if (!refs?.length) {
+    if (needsClarification) return <p className="mt-2 text-xs text-amber-200/80">Konteks perlu diperjelas sebelum memilih rujukan.</p>;
+    if (general) return <p className="mt-2 text-xs text-amber-200/80">Belum ditemukan rujukan di Pustaka Talqeeh untuk pertanyaan ini, jadi ini jawaban umum. Cek lagi ke kitab dan duktur.</p>;
+    return null;
+  }
   return <div className="mt-4 space-y-2 min-w-0">
     <p className="text-xs text-emerald-300">Dasar rujukan · kutipan cocok dengan teks tersimpan</p>
     {refs.map((r, i) => <details key={`${r.document_id}-${r.page}-${i}`} className="rounded-xl border border-emerald-400/20 bg-emerald-400/[0.04] p-3">

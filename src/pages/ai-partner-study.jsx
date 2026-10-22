@@ -1957,7 +1957,7 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
                   : <>
                       {/* Di syafawi, baris "> …" adalah pertanyaan duktur, bukan kutipan materi → jangan dicek ke materi. */}
                       <AiRichText content={m.content} size="sm" source={mode === 'tutor' ? set.content : undefined} onCite={cite.onCite}/>
-                      {mode === 'tutor' && <ReferenceEvidence refs={m.refs} grounded={m.grounded} needsClarification={m.needs_clarification}/>}
+                      {mode === 'tutor' && <ReferenceEvidence refs={m.refs} needsClarification={m.needs_clarification}/>}
                       {mode === 'syafawi' && speech.available && arabicQuestionOf(m.content) && (
                         <button onClick={() => (speech.speaking === arabicQuestionOf(m.content) ? speech.stop() : speech.speak(arabicQuestionOf(m.content)))}
                           className="mt-2 inline-flex items-center gap-1.5 text-xs text-emerald-300 hover:text-emerald-200">
