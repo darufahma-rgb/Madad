@@ -113,6 +113,22 @@ const Device = ({ src, w, h, rotate = 0, left, top, alt }) => (
     </div>
   </div>
 );
+// Tangkapan layar desktop dalam jendela peramban (titik tiga warna + alamat).
+const Browser = ({ src, w, ratio, left, top, url, alt }) => (
+  <div className="absolute" style={{ left, top }}>
+    <div className="pr-float" style={{ animationDuration: "8s" }}>
+      <div style={{ width: w, borderRadius: 18, overflow: "hidden", background: "#0b0f0d", border: "1.5px solid #2B3A33", boxShadow: "0 28px 70px rgba(15,26,21,0.35)" }}>
+        <div className="flex items-center" style={{ height: 40, padding: "0 16px", gap: 8, background: "#141a17", borderBottom: "1px solid #2B3A33" }}>
+          {["#f0715a", "#e8c25a", "#3ecf8e"].map(c => <span key={c} style={{ width: 12, height: 12, borderRadius: 99, background: c }}/>)}
+          <span style={{ marginLeft: 14, padding: "4px 14px", borderRadius: 8, background: "#0b0f0d", fontSize: 14, color: MUTED_D }}>{url}</span>
+        </div>
+        <img src={src} alt={alt} draggable="false" style={{ width: w, height: Math.round(w / ratio), display: "block" }}/>
+      </div>
+    </div>
+  </div>
+);
+// Ukuran layar HP dari tangkapan 704×1624 (rasio sama untuk semua tangkapan AI Partner).
+const PHONE_RATIO = 704 / 1624;
 const Kicker = ({ children, color = GOLD, style }) => (
   <div style={{ fontSize: 21, fontWeight: 700, letterSpacing: "0.3em", textTransform: "uppercase", color, ...style }}>{children}</div>
 );
@@ -238,16 +254,17 @@ const buildSlides = (d) => [
       <BgDark/>
       <img src="/assets/talqeeh-logo.png" alt="Talqeeh" className="absolute" style={{ left: 96, top: 76, width: 104 }}/>
       <Kicker style={{ position: "absolute", left: 96, top: 214 }}>Teman belajar Masisir</Kicker>
-      <h1 className="absolute font-display" style={{ left: 96, top: 262, width: 960, margin: 0, fontSize: 100, lineHeight: 1.02, fontWeight: 800, letterSpacing: "-0.03em", color: "#fff" }}>
+      <h1 className="absolute font-display" style={{ left: 96, top: 262, width: 860, margin: 0, fontSize: 88, lineHeight: 1.04, fontWeight: 800, letterSpacing: "-0.03em", color: "#fff" }}>
         Muqarrar tebal?<br/><span className="pr-shine">Kini terasa ringan.</span>
       </h1>
-      <p className="absolute" style={{ left: 96, top: 500, width: 800, margin: 0, fontSize: 32, lineHeight: 1.45, color: MUTED_D }}>AI pertama yang dibentuk khusus untuk cara Al-Azhar mengajar dan menguji, dari Ma'had sampai S2.</p>
+      <p className="absolute" style={{ left: 96, top: 478, width: 760, margin: 0, fontSize: 31, lineHeight: 1.45, color: MUTED_D }}>Teman belajar AI yang dibentuk khusus untuk muqarrar dan cara ujian Al-Azhar, dari Ma'had sampai S2.</p>
       <div className="absolute flex items-center" style={{ left: 96, top: 660, gap: 18 }}>
         <span style={{ padding: "14px 30px", borderRadius: 14, background: EM, color: NIGHT, fontSize: 26, fontWeight: 700 }}>talqeeh.id</span>
         <span style={{ fontSize: 23, color: GOLD }}>{d.users === "Ratusan" ? "Sudah dipakai ratusan Masisir" : `Sudah dipakai ${d.users} Masisir`}</span>
       </div>
-      <Ornament size={740} left={920} top={56}/>
-      <Device src="/presentasi/hero.webp" alt="Beranda talqeeh.id" w={336} h={727} rotate={4} left={1120} top={72}/>
+      <Ornament size={740} left={900} top={70}/>
+      <Device src="/seminar/aipartner-beranda.webp" alt="Beranda AI Partner" w={270} h={Math.round(270 / PHONE_RATIO)} rotate={-7} left={960} top={120}/>
+      <Device src="/seminar/aipartner-ringkasan.webp" alt="Ringkasan dwibahasa AI Partner" w={300} h={Math.round(300 / PHONE_RATIO)} rotate={4} left={1200} top={78}/>
     </>) },
 
   { key: "masalah", theme: "light", note: "Kita semua pernah di sini. Diktat ratusan halaman, imtihan tinggal beberapa minggu. Istilah yang sudah diterjemahkan tapi maknanya tetap gelap. Duktur bicara cepat dalam 'ammiyah. Dan ketika bertanya ke AI umum, jawabannya bukan cara Azhar. Masalahnya bukan kita kurang rajin, tapi alatnya belum dibuat untuk kita.",
@@ -257,7 +274,7 @@ const buildSlides = (d) => [
       {[["bookOpen", "Diktat ratusan halaman", "Imtihan tinggal hitungan minggu, sementara bab pertama saja belum tuntas."],
         ["type", "Diterjemahkan, tapi tetap gelap", "Kata-katanya sudah paham, maksud istilahnya belum juga."],
         ["mic", "Duktur bicara secepat kilat", "'Ammiyah bercampur fushah. Catatan selalu tertinggal satu kalimat."],
-        ["cpu", "AI umum, jawaban umum", "ChatGPT tidak tahu cara Azhar mengajar, apalagi cara Azhar menguji."]].map(([ic, t, s], i) => (
+        ["cpu", "AI umum, jawaban umum", "ChatGPT belum mengenal muqarrar Azhar, apalagi cara Azhar menguji."]].map(([ic, t, s], i) => (
         <div key={t} className="absolute" style={{ left: 80 + i * 368, top: 200, width: 330 }}>
           <div className="flex items-center justify-between">
             <span className="font-display" style={{ fontSize: 66, fontWeight: 800, color: i === 3 ? GOLD_DARK : EM_DARK }}>0{i + 1}</span>
@@ -298,8 +315,7 @@ const buildSlides = (d) => [
       <BgDark/>
       <Title dark>Satu kata, satu misi</Title>
       <Ornament size={576} left={120} top={192}/>
-      <Arabic style={{ position: "absolute", left: 120, top: 360, width: 576, textAlign: "center", fontSize: 140, color: "#fff" }}>تَلْقِيح</Arabic>
-      <div className="absolute" style={{ left: 120, top: 600, width: 576, textAlign: "center", fontSize: 22, letterSpacing: "0.5em", color: GOLD }}>TALQĪḤ</div>
+      <img src="/assets/talqeeh-logo.png" alt="Logo Talqeeh (تلقيح)" className="absolute" style={{ left: 283, top: 330, width: 250, filter: "drop-shadow(0 6px 24px rgba(0,0,0,0.45))" }}/>
       <div className="absolute" style={{ left: 800, top: 222, right: 80 }}>
         <Kicker>Filosofi nama</Kicker>
         <div className="font-display" style={{ fontSize: 64, fontWeight: 800, color: "#fff", marginTop: 18, lineHeight: 1.05 }}>Menyuburkan <span className="pr-shine">pemahaman</span></div>
@@ -366,36 +382,41 @@ const buildSlides = (d) => [
         ["pen", "Kurasah & Companion", "Catatan pribadi di cloud dan niat harian"],
         ["compass", "Tool Guide & Learning Path", "Tahu AI mana untuk tugas apa"],
         ["mosque", "Sesuai kurikulummu", "Muncul sesuai fakultas, tingkat, dan jurusan"]].map(([ic, t, s], i) => (
-        <div key={t} className="absolute flex" style={{ left: 80 + (i % 2) * 512, top: 210 + Math.floor(i / 2) * 192, width: 480, gap: 24 }}>
-          <Badge icon={ic} v="lightGold" size={96}/>
+        <div key={t} className="absolute flex items-center" style={{ left: 80, top: 196 + i * 100, width: 640, gap: 22 }}>
+          <Badge icon={ic} v="lightGold" size={74}/>
           <div>
-            <div style={{ fontSize: 29, fontWeight: 700, color: INK }}>{t}</div>
-            <div style={{ fontSize: 25, color: MUTED, marginTop: 8, lineHeight: 1.4 }}>{s}</div>
+            <div style={{ fontSize: 26, fontWeight: 700, color: INK }}>{t}</div>
+            <div style={{ fontSize: 21, color: MUTED, marginTop: 2 }}>{s}</div>
           </div>
         </div>
       ))}
-      <Ornament size={480} color={EM} opacity={0.35} left={1104} top={152}/>
-      <Device src="/presentasi/prompt.webp" alt="Contoh template prompt Nahwu" w={262} h={567} rotate={-3} left={1196} top={196}/>
+      <Ornament size={420} color={EM} opacity={0.3} left={1150} top={420}/>
+      <Browser src="/presentasi/katalog.webp" ratio={1400 / 886} w={760} left={760} top={210} url="talqeeh.id/maddah" alt="Katalog maddah Talqeeh"/>
     </>) },
 
   { key: "ai-partner", theme: "light", note: "Lalu AI Partner. Unggah diktatmu, bahkan yang hasil scan atau foto, dan biarkan AI bekerja. Ia merangkum gaya kitab, membuat peta konsep, menyiapkan flashcard yang muncul tepat sebelum kamu lupa, menguji dengan soal tahriri, dan menjawab pertanyaanmu berdasarkan materimu sendiri.",
     body: () => (<>
       <BgLight/>
       <Title>Unggah diktatmu. Sisanya, biar AI.</Title>
-      <div className="absolute flex items-center" style={{ left: 80, right: 80, top: 208, height: 128, borderRadius: 99, background: NIGHT, padding: "0 30px", gap: 30 }}>
-        <Badge icon="upload" v="darkEm" size={104}/>
-        <div style={{ fontSize: 30 }}><b style={{ color: EM }}>PDF, scan, Word, slide, foto, rekaman</b>&nbsp; <span style={{ color: "#fff" }}>semua bisa, termasuk teks Arab</span></div>
+      <div className="absolute flex items-center" style={{ left: 80, width: 740, top: 196, height: 104, borderRadius: 99, background: NIGHT, padding: "0 24px", gap: 22 }}>
+        <Badge icon="upload" v="darkEm" size={80}/>
+        <div style={{ fontSize: 24, lineHeight: 1.3 }}><b style={{ color: EM }}>PDF, scan, Word, slide, foto, rekaman</b><br/><span style={{ color: "#fff" }}>semua bisa, termasuk teks Arab</span></div>
       </div>
-      {[["bookOpen", "Pahami", "Ringkasan gaya kitab, peta konsep taqsimat, terjemah & i'rab sekali klik"],
-        ["refresh", "Hafalkan", "Flashcard yang muncul tepat sebelum kamu lupa, lengkap dengan wazan"],
-        ["target", "Uji diri", "Kuis dan tahriri yang dinilai AI, termasuk koreksi bahasa Arabmu"],
-        ["messageSquare", "Tanya", "Tutor yang menjawab dari materimu, plus simulasi ujian syafawi"]].map(([ic, t, s], i) => (
-        <Card key={t} style={{ left: 80 + i * 368, top: 384, width: 336, height: 400 }}>
-          <Badge icon={ic} size={96}/>
-          <div style={{ fontSize: 34, fontWeight: 700, color: INK, marginTop: 26 }}>{t}</div>
-          <div style={{ fontSize: 25, color: MUTED, marginTop: 12, lineHeight: 1.45 }}>{s}</div>
+      {[["bookOpen", "Pahami", "Ringkasan gaya kitab, peta konsep, terjemah & i'rab"],
+        ["refresh", "Hafalkan", "Flashcard yang muncul tepat sebelum kamu lupa"],
+        ["target", "Uji diri", "Kuis & tahriri yang dinilai, plus koreksi bahasa Arab"],
+        ["messageSquare", "Tanya", "Tanya jawab dari isi materimu & simulasi syafawi"]].map(([ic, t, s], i) => (
+        <Card key={t} style={{ left: 80 + (i % 2) * 380, top: 334 + Math.floor(i / 2) * 226, width: 360, height: 206, padding: 26 }}>
+          <div className="flex items-center" style={{ gap: 16 }}>
+            <Badge icon={ic} size={68}/>
+            <div style={{ fontSize: 30, fontWeight: 700, color: INK }}>{t}</div>
+          </div>
+          <div style={{ fontSize: 22, color: MUTED, marginTop: 14, lineHeight: 1.4 }}>{s}</div>
         </Card>
       ))}
+      <Device src="/seminar/aipartner-flashcard.webp" alt="Flashcard AI Partner" w={240} h={Math.round(240 / PHONE_RATIO)} rotate={-8} left={880} top={200}/>
+      <Device src="/seminar/aipartner-tutor.webp" alt="Tanya tutor AI Partner" w={240} h={Math.round(240 / PHONE_RATIO)} rotate={8} left={1270} top={200}/>
+      <Device src="/seminar/aipartner-kuis.webp" alt="Kuis AI Partner" w={262} h={Math.round(262 / PHONE_RATIO)} left={1064} top={168}/>
     </>) },
 
   { key: "live-caption", theme: "dark", note: "Dan ini yang paling sering membuat Masisir terdiam: Live Caption. Taruh HP di dekat duktur dan tekan rekam. Ucapannya muncul dalam huruf Arab, lalu terjemah Indonesianya menyusul dalam hitungan detik. Saat duktur bilang ini keluar di imtihan, bagian itu langsung ditandai. Dan setelah kuliah, semuanya jadi talkhisan siap baca.",
@@ -420,11 +441,13 @@ const buildSlides = (d) => [
       <LivePhone left={1100} top={165}/>
     </>) },
 
-  { key: "arena", theme: "dark", note: "Muraja'ah tidak harus membosankan. Di Arena Imtihan, muqarrarmu sendiri berubah jadi game: soal disusun AI dari isi diktatmu, lengkap dengan cerita, level, dan bintang. Tiga dunia bisa langsung dicoba gratis. Dan Talkhis otomatis meringkas muqarrar dalam bahasa Arab, siap dicetak.",
+  { key: "arena", theme: "dark", foot: false, note: "Muraja'ah tidak harus membosankan. Di Arena Imtihan, muqarrarmu sendiri berubah jadi game: soal disusun AI dari isi diktatmu, lengkap dengan cerita, level, dan bintang. Tiga dunia bisa langsung dicoba gratis. Dan Talkhis otomatis meringkas muqarrar dalam bahasa Arab, siap dicetak.",
     body: () => (<>
-      <BgDark/>
+      {/* Latar penuh: adegan pertarungan Ushul Fiqh dari Arena Imtihan, digelapkan ke kanan untuk teks. */}
+      <div className="pr-bg absolute inset-0" style={{ background: `url(/presentasi/battle-ushul.webp) center / cover no-repeat, ${NIGHT}` }}>
+        <div className="absolute inset-0" style={{ background: `linear-gradient(90deg, rgba(7,17,13,0.05) 0%, rgba(7,17,13,0.35) 45%, rgba(7,17,13,0.92) 63%, ${NIGHT} 78%), linear-gradient(180deg, rgba(7,17,13,0.85) 0%, rgba(7,17,13,0) 26%)` }}/>
+      </div>
       <Title dark>Muraja'ah yang bikin nagih</Title>
-      <Device src="/presentasi/arena.webp" alt="Arena Imtihan" w={880} h={550} left={80} top={208}/>
       <div className="absolute" style={{ left: 1040, top: 210, right: 80 }}>
         <p style={{ fontSize: 29, color: "#fff", lineHeight: 1.45, margin: 0 }}>Muqarrarmu berubah jadi petualangan. Raih syahadah di hadapan Majelis Ulama.</p>
         {[["sparkles", "Soal disusun AI dari diktatmu"], ["star", "Cerita, level, bintang, misi"], ["gamepad", "3 dunia gratis untuk dicoba"]].map(([ic, t], i) => (
@@ -561,12 +584,12 @@ const buildSlides = (d) => [
       </>);
     } },
 
-  { key: "prinsip", theme: "dark", note: "Dan ini janji kami. Isi lebih dulu daripada fitur. AI yang mengajar, bukan sekadar menjawab. Data yang tidak dijual. Dan telinga yang selalu terbuka untuk masukan. Karena pada akhirnya, Talqeeh adalah alat bantu, bukan pengganti talaqqi.",
+  { key: "prinsip", theme: "dark", note: "Dan ini janji kami. Isi lebih dulu daripada fitur. AI sebagai teman belajar yang membantu memahami dan melatih, sementara duktur tetap guru kita. Data yang tidak dijual. Dan telinga yang selalu terbuka untuk masukan. Karena pada akhirnya, Talqeeh adalah alat bantu, bukan pengganti talaqqi.",
     body: () => (<>
       <BgDark/>
       <Title dark>Janji kami kepadamu</Title>
       {[["bookOpen", "Isi dulu, fitur kemudian", "Maddah dan soal dikurasi dari muqarrar Azhar yang benar-benar dipakai."],
-        ["brain", "AI yang mengajar", "Bukan sekadar menjawab: mengajar, menguji, dan mengingat titik lemahmu."],
+        ["brain", "AI sebagai teman belajar", "Membantu memahami, melatih, dan mengingat titik lemahmu. Duktur tetap gurumu."],
         ["shield", "Privasimu dijaga", "Datamu tidak dijual dan tidak dipakai untuk iklan."],
         ["heart", "Selalu mendengar", "Bug, ide, atau soal yang keliru? Kabari kami, kami perbaiki."]].map(([ic, t, s], i) => (
         <div key={t} className="absolute flex" style={{ left: 80 + (i % 2) * 736, top: 216 + Math.floor(i / 2) * 208, width: 690, gap: 30 }}>
@@ -715,7 +738,7 @@ const PresentasiPage = () => {
             <div key={idx} className="pr-slide relative overflow-hidden" style={{ width: SW, height: SH, "--dx": dir * 30 + "px" }}>
               <div className="pr-stage absolute inset-0" lang="id">
                 {slide.body()}
-                <Foot dark={slide.theme !== "light"}/>
+                {slide.foot !== false && <Foot dark={slide.theme !== "light"}/>}
               </div>
             </div>
           </div>
