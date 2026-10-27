@@ -282,7 +282,7 @@ const CreateWizard = ({ tier, onCancel, onCreated }) => {
     const base64 = await window.fileToBase64(compressed);
     return aiCall('ocr', { foto_base64: base64, mime_type: compressed.type || 'image/jpeg', ...(cacheKey || {}) });
   };
-  const scanPerRead = isTrial ? 3 : 40;
+  const scanPerRead = isTrial ? 3 : 100;
 
   // Halaman PDF yang sudah pernah dibaca AI (cache bersama) → { [n]: teks }. Tidak memakai jatah baca.
   const cachedPdfPages = async (pdf, pageNums) => {
