@@ -409,6 +409,40 @@ const runAI = async (body, res, opts) => {
   }
 };
 
+/* Jawaban yang terhenti karena batas token disambung otomatis (maks. 2 kali) selama waktu fungsi masih cukup,
+   jadi pelajar tidak perlu mengetik "lanjutkan". Terhenti karena waktu habis tidak disambung. */
+const CONTINUE_INSTRUCTION = 'Lanjutkan jawabanmu persis dari titik berhenti tadi. Jangan mengulang apa pun yang sudah ditulis, jangan membuka dengan sapaan atau ringkasan; kalau berhenti di tengah kata, selesaikan kata itu. Selesaikan jawaban secara ringkas dan akhiri dengan bagian penutup yang diminta.';
+const CONTINUE_MIN_LEFT_MS = 12000;
+
+const runAIContinued = async (body, res, opts, maxRounds = 2) => {
+  const started = Date.now();
+  const first = await runAI(body, res, opts);
+  if (first.failed) return first;
+  const { stream } = first;
+  let out = first.out;
+  for (let round = 0; round < maxRounds && out.truncated && !out.timedOut; round++) {
+    const left = opts.timeLimitMs - (Date.now() - started);
+    if (left < CONTINUE_MIN_LEFT_MS) break;
+    const next = {
+      ...opts, timeLimitMs: left, thinking: 0,
+      messages: [...opts.messages, { role: 'assistant', content: out.text.trimEnd() }, { role: 'user', content: CONTINUE_INSTRUCTION }],
+    };
+    let seen = '';
+    try {
+      const more = stream
+        ? await streamAI(next, (d) => { seen += d; stream.delta(d); })
+        : await requestAI(next);
+      out = { ...out, text: out.text + more.text, truncated: more.truncated, timedOut: more.timedOut };
+    } catch (err) {
+      console.error('[ai-partner:continue]', err.message);
+      // Potongan yang sempat tampil di layar tetap dibawa supaya jawaban tersimpan sama dengan yang dibaca.
+      if (seen) out = { ...out, text: out.text + seen };
+      break;
+    }
+  }
+  return { out, stream };
+};
+
 const sendResult = (res, stream, data) => (stream ? stream.done({ ok: true, ...data }) : res.status(200).json({ ok: true, ...data }));
 
 // Catat model yang membuat tiap hasil (untuk membandingkan kualitas antar model).
@@ -1149,14 +1183,28 @@ async function handleGrade(ctx, body, res) {
   return res.status(200).json({ ok: true, data: attempt });
 }
 
+// Teks Arab memakai banyak token per kata; 1500 token sering habis di tengah ringkasan beberapa halaman.
+const CHAT_MAX_TOKENS = 3200;
+const CUT_NOTE_MARK = 'Jawaban terpotong karena terlalu panjang';
+const isContinueAfterCut = (message, lastAssistant) =>
+  /^(lanjut(kan)?|teruskan|continue)[\s.!]*$/i.test(String(message || '').trim())
+  && typeof lastAssistant === 'string' && lastAssistant.includes(CUT_NOTE_MARK);
+
 async function handleChat(ctx, body, res) {
   const message = typeof body.message === 'string' ? body.message.trim() : '';
   if (!message || message.length > 2000) return res.status(400).json({ ok: false, error: 'Pesan kosong atau terlalu panjang' });
   const mode = body.mode === 'syafawi' ? 'syafawi' : 'tutor';
   const set = await getOwnedSet(ctx.code, body.set_id, 'id,title,content,chat,quiz,flashcards,essays,essay_attempts,progress');
   if (!set) return res.status(404).json({ ok: false, error: 'Materi tidak ditemukan' });
+  const all = Array.isArray(set.chat) ? set.chat : [];
+  // Riwayat per mode supaya simulasi syafawi tidak tercampur tanya-jawab biasa.
+  const history = all.filter(m => (m.mode || 'tutor') === mode).slice(-CHAT_HISTORY);
+  // "lanjutkan" untuk jawaban yang terpotong tidak memakan jatah: itu kelanjutan pertanyaan yang sama.
+  const continuing = isContinueAfterCut(message, history[history.length - 1]?.content);
   let trialLeft = null;
-  if (ctx.tier === 'trial') {
+  if (continuing) {
+    // Tanpa jatah baru.
+  } else if (ctx.tier === 'trial') {
     if (mode === 'syafawi') return upgradeRequired(res, 'syafawi', 'Simulasi syafawi khusus pelanggan AI Partner.');
     const taste = await takeTrialTaste(ctx, res, set.id, 'tutor');
     if (taste.done) return;
@@ -1166,9 +1214,6 @@ async function handleChat(ctx, body, res) {
     if (over) return quotaExceeded(res, 'chat', over, ctx);
   }
 
-  const all = Array.isArray(set.chat) ? set.chat : [];
-  // Riwayat per mode supaya simulasi syafawi tidak tercampur tanya-jawab biasa.
-  const history = all.filter(m => (m.mode || 'tutor') === mode).slice(-CHAT_HISTORY);
   // Tutor memakai Pustaka Rujukan hanya bila ada kitab aktif yang benar-benar mendukung jawaban; selain itu tutor
   // biasa dari materi (di bawah) tetap berjalan seperti semula.
   const result = mode === 'tutor'
@@ -1201,10 +1246,10 @@ async function handleChat(ctx, body, res) {
   // dengan jatah berpikir, dan pengingat untuk memastikan ke duktur/mufti di akhir jawaban.
   const highStakes = mode !== 'syafawi' && isHighStakesFiqh(`${message}\n${history.filter(m => m.role === 'user').slice(-2).map(m => m.content).join('\n')}`);
   const models = await resolveModels();
-  const { out, stream, failed } = await runAI(body, res, {
+  const { out, stream, failed } = await runAIContinued(body, res, {
     system: (mode === 'syafawi' ? syafawiSystem(set.title, material) + weakPointsNote(set, 'syafawi') : tutorSystem(set.title, material) + weakPointsNote(set)) + learnerContext(body.learner),
     messages: [...history.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: message }],
-    maxTokens: 1500,
+    maxTokens: CHAT_MAX_TOKENS,
     timeLimitMs: 48000,
     cacheSystem: true,
     model: highStakes ? models.grade : models.chat,
@@ -1246,7 +1291,9 @@ async function handlePromptChat(ctx, body, res) {
   while (messages.length > 1 && messages.reduce((n, m) => n + m.content.length, 0) > PROMPT_MAX_TOTAL) messages.shift();
   while (messages.length > 1 && messages[0].role !== 'user') messages.shift();
   let trialLeft = null;
-  if (ctx.tier === 'trial') {
+  if (isContinueAfterCut(messages[messages.length - 1].content, messages[messages.length - 2]?.content)) {
+    // "lanjutkan" untuk jawaban terpotong: tanpa jatah baru.
+  } else if (ctx.tier === 'trial') {
     const used = await lifetimeUsage(ctx.code, 'prompt_trial');
     const outOfTrial = () => upgradeRequired(res, 'prompt_trial_used',
       `Percakapan gratismu (${promptTrialLimit(ctx.memberTier)} pesan) sudah terpakai. Berlangganan AI Partner untuk bertanya tanpa batas.`);
@@ -1272,11 +1319,11 @@ async function handlePromptChat(ctx, body, res) {
   // Waris, nikah, talak, zakat, dll.: model yang lebih teliti (bukan model hemat) + pengingat di akhir jawaban.
   const highStakes = isHighStakesFiqh(messages.filter(m => m.role === 'user').slice(-3).map(m => m.content).join('\n'));
   const models = await resolveModels();
-  const { out, stream, failed } = await runAI(body, res, {
+  const { out, stream, failed } = await runAIContinued(body, res, {
     system: promptChatSystem() + learnerContext(body.learner, { material: false }),
     messages,
     // Jawaban dijaga ringkas (±600 kata) supaya selesai jauh sebelum batas waktu.
-    maxTokens: 1800,
+    maxTokens: CHAT_MAX_TOKENS,
     // Sisakan waktu untuk menutup stream sebelum batas 60 detik Vercel.
     timeLimitMs: 48000,
     cacheSystem: true,
