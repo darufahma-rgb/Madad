@@ -10,6 +10,7 @@ import {
   isHighStakesFiqh, FIQH_REMINDER,
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
+import { makeRunContinued, isContinueAfterCut } from './_lib/ai-partner/continue.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { handleTalkhis } from './_lib/ai-partner/talkhis.js';
 import { runLiveCaption, liveHear, liveTranslate } from './_lib/ai-partner/live-caption.js';
@@ -409,39 +410,7 @@ const runAI = async (body, res, opts) => {
   }
 };
 
-/* Jawaban yang terhenti karena batas token disambung otomatis (maks. 2 kali) selama waktu fungsi masih cukup,
-   jadi pelajar tidak perlu mengetik "lanjutkan". Terhenti karena waktu habis tidak disambung. */
-const CONTINUE_INSTRUCTION = 'Lanjutkan jawabanmu persis dari titik berhenti tadi. Jangan mengulang apa pun yang sudah ditulis, jangan membuka dengan sapaan atau ringkasan; kalau berhenti di tengah kata, selesaikan kata itu. Selesaikan jawaban secara ringkas dan akhiri dengan bagian penutup yang diminta.';
-const CONTINUE_MIN_LEFT_MS = 12000;
-
-const runAIContinued = async (body, res, opts, maxRounds = 2) => {
-  const started = Date.now();
-  const first = await runAI(body, res, opts);
-  if (first.failed) return first;
-  const { stream } = first;
-  let out = first.out;
-  for (let round = 0; round < maxRounds && out.truncated && !out.timedOut; round++) {
-    const left = opts.timeLimitMs - (Date.now() - started);
-    if (left < CONTINUE_MIN_LEFT_MS) break;
-    const next = {
-      ...opts, timeLimitMs: left, thinking: 0,
-      messages: [...opts.messages, { role: 'assistant', content: out.text.trimEnd() }, { role: 'user', content: CONTINUE_INSTRUCTION }],
-    };
-    let seen = '';
-    try {
-      const more = stream
-        ? await streamAI(next, (d) => { seen += d; stream.delta(d); })
-        : await requestAI(next);
-      out = { ...out, text: out.text + more.text, truncated: more.truncated, timedOut: more.timedOut };
-    } catch (err) {
-      console.error('[ai-partner:continue]', err.message);
-      // Potongan yang sempat tampil di layar tetap dibawa supaya jawaban tersimpan sama dengan yang dibaca.
-      if (seen) out = { ...out, text: out.text + seen };
-      break;
-    }
-  }
-  return { out, stream };
-};
+const runAIContinued = makeRunContinued({ runAI, streamAI, requestAI });
 
 const sendResult = (res, stream, data) => (stream ? stream.done({ ok: true, ...data }) : res.status(200).json({ ok: true, ...data }));
 
@@ -1185,10 +1154,6 @@ async function handleGrade(ctx, body, res) {
 
 // Teks Arab memakai banyak token per kata; 1500 token sering habis di tengah ringkasan beberapa halaman.
 const CHAT_MAX_TOKENS = 3200;
-const CUT_NOTE_MARK = 'Jawaban terpotong karena terlalu panjang';
-const isContinueAfterCut = (message, lastAssistant) =>
-  /^(lanjut(kan)?|teruskan|continue)[\s.!]*$/i.test(String(message || '').trim())
-  && typeof lastAssistant === 'string' && lastAssistant.includes(CUT_NOTE_MARK);
 
 async function handleChat(ctx, body, res) {
   const message = typeof body.message === 'string' ? body.message.trim() : '';
