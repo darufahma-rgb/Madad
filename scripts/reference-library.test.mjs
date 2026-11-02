@@ -75,6 +75,7 @@ test('penerbitan kitab memerlukan kepemilikan admin, analisis selesai dan metada
   t.mock.method(globalThis, 'fetch', async (url, init) => {
     if (init.method === 'POST') { writes++; return response(null); }
     if (init.method === 'PATCH') return response(null);
+    if (url.includes('/ilmi_pages?')) return response([]);
     assert.match(url, /member_code=eq.ADMIN-REFERENCE/);
     return response(doc ? [doc] : []);
   });
@@ -110,6 +111,30 @@ test('tanpa migrasi indeks, aktivasi gagal jelas dan buku tidak diaktifkan', asy
   });
   const r = res(); await manageReferenceBook({ op: 'publish', document_id: id }, r, deps);
   assert.equal(r.code, 503); assert.match(r.body.error, /reference_library_scale/); assert.equal(bookWrites, 0);
+});
+
+test('kitab besar ditandai per 200 halaman, yang sudah ditandai dilewati', async t => {
+  const doc = { id, status: 'done', edition: page.edition }; const patches = [];
+  t.mock.method(globalThis, 'fetch', async (url, init = {}) => {
+    if (init.method === 'PATCH') { patches.push(String(url)); return response(null); }
+    if (init.method === 'POST') return response(null);
+    return response(String(url).includes('select=page_no') ? [{ page_no: 450 }] : [doc]);
+  });
+  const r = res(); await manageReferenceBook({ op: 'publish', document_id: id }, r, deps);
+  assert.equal(r.code, 200); assert.equal(patches.length, 3);
+  assert.ok(patches.every(u => u.includes('is_reference=eq.false')));
+  assert.match(patches[0], /page_no=gte\.1&page_no=lte\.200/); assert.match(patches[2], /page_no=gte\.401&page_no=lte\.600/);
+});
+
+test('penandaan gagal bukan karena migrasi: pesannya minta klik ulang, buku tidak diaktifkan', async t => {
+  const doc = { id, status: 'done', edition: page.edition }; let bookWrites = 0;
+  t.mock.method(globalThis, 'fetch', async (url, init = {}) => {
+    if (init.method === 'PATCH') throw Object.assign(new Error('timeout'), { name: 'TimeoutError' });
+    if (init.method === 'POST') bookWrites++;
+    return response(init.method ? null : [doc]);
+  });
+  const r = res(); await manageReferenceBook({ op: 'publish', document_id: id }, r, deps);
+  assert.equal(r.code, 503); assert.match(r.body.error, /aman diulang/); assert.doesNotMatch(r.body.error, /reference_library_scale/); assert.equal(bookWrites, 0);
 });
 
 test('seluruh endpoint pustaka admin menolak pengguna tanpa token sebelum menyentuh database', () => {

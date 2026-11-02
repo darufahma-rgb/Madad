@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { makeRunContinued, isContinueAfterCut, CUT_NOTE_MARK, CONTINUE_INSTRUCTION } from '../api/_lib/ai-partner/continue.js';
+import { makeRunContinued, isContinueAfterCut, chatTimeLeft, withinBudget, CUT_NOTE_MARK, CONTINUE_INSTRUCTION, CHAT_TIME_MS, LIBRARY_BUDGET_MS } from '../api/_lib/ai-partner/continue.js';
 
 const cut = `Jawaban panjang._(${CUT_NOTE_MARK} — ketik **lanjutkan** untuk meneruskan.)_`;
 const opts = { system: 's', messages: [{ role: 'user', content: 'ringkas 3 halaman' }], maxTokens: 3200, timeLimitMs: 48000, thinking: 1024 };
@@ -91,6 +91,20 @@ test('sambungan gagal: jawaban awal tetap dikembalikan dan ditandai terpotong', 
   const { out } = await run({}, {}, opts);
   assert.equal(out.text, 'Awal');
   assert.equal(out.truncated, true);
+});
+
+test('waktu tutor dihitung dari awal pesan, jadi pustaka + tutor tetap di bawah 60 detik Vercel', () => {
+  assert.equal(chatTimeLeft(1000, 1000), CHAT_TIME_MS);
+  assert.equal(chatTimeLeft(0, 20000), 28000);
+  assert.equal(chatTimeLeft(0, 45000), 15000);
+  // Skenario terburuk: cek kitab aktif 4 dtk, pustaka habis jatah, lalu tutor.
+  assert.ok(4000 + LIBRARY_BUDGET_MS + chatTimeLeft(0, LIBRARY_BUDGET_MS) < 60000);
+});
+
+test('pustaka yang melewati jatah waktu ditolak, yang selesai tepat waktu diteruskan', async () => {
+  assert.equal(await withinBudget(Promise.resolve('ok'), 50), 'ok');
+  await assert.rejects(withinBudget(new Promise(() => {}), 5), /melewati batas/);
+  await assert.rejects(withinBudget(Promise.reject(new Error('gagal')), 50), /gagal/);
 });
 
 test('gagal di panggilan pertama diteruskan apa adanya', async () => {

@@ -3,6 +3,7 @@ import { normalizeAr, keywordsOf, parseJsonText, findSnippet, excerptAround, ran
 export const LIBRARY_OWNER = 'ADMIN-REFERENCE';
 export const NO_EVIDENCE = 'Belum ditemukan dasar yang cukup dalam rujukan yang tersedia di Talqeeh untuk menjawab pertanyaan ini. Coba perjelas pembahasannya atau tanyakan kepada duktur. Ini tidak berarti pembahasannya tidak ada di kitab lain.';
 const enc = encodeURIComponent;
+const MARK_PAGES_BATCH = 200;
 const SUBJECTS = new Set(['fiqh','usul','nahwu','sarf','balaghah','hadith','tafsir','aqidah','other']);
 export function cleanSearchPlan(raw, question) {
   const standalone = typeof raw?.question === 'string' ? raw.question.trim().slice(0, 1200) : '';
@@ -12,8 +13,9 @@ export function cleanSearchPlan(raw, question) {
 }
 export const referenceDb = (deps) => async (path, init = {}) => {
   const { url, key } = deps.sbConfig();
-  const r = await fetch(`${url}/rest/v1/${path}`, { ...init, signal: AbortSignal.timeout(6000), headers: deps.sbHeaders(key, init.headers || {}) });
-  if (!r.ok) throw new Error(`Pustaka rujukan tidak tersedia (${r.status}).`);
+  const { timeoutMs = 6000, ...rest } = init;
+  const r = await fetch(`${url}/rest/v1/${path}`, { ...rest, signal: AbortSignal.timeout(timeoutMs), headers: deps.sbHeaders(key, init.headers || {}) });
+  if (!r.ok) throw Object.assign(new Error(`Pustaka rujukan tidak tersedia (${r.status}).`), { status: r.status, detail: await r.text().catch(() => '') });
   const t = await r.text();
   return t ? JSON.parse(t) : null;
 };
@@ -118,11 +120,23 @@ export async function manageReferenceBook(body, res, deps) {
   // Halaman kitab aktif ditandai is_reference supaya masuk indeks pencarian (migrations/reference_library_scale.sql).
   // Aktivasi: tandai halaman dulu, baru buku diaktifkan; nonaktif: buku dulu, baru tanda dicabut — pencarian tidak
   // pernah melihat buku aktif tanpa halaman terindeks.
+  // Kitab besar ditandai per kelompok halaman: tiap baris masuk indeks trigram, jadi satu PATCH besar bisa kehabisan
+  // waktu. Yang sudah ditandai dilewati, jadi klik ulang setelah gagal melanjutkan sisanya.
   const markPages = async (flag) => {
     try {
-      await db(`ilmi_pages?document_id=eq.${enc(doc.id)}`, { method: 'PATCH', headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ is_reference: flag }) });
-    } catch {
-      throw Object.assign(new Error('Indeks pustaka belum siap. Jalankan migrations/reference_library_scale.sql di Supabase SQL Editor.'), { userFacing: true });
+      const last = await db(`ilmi_pages?document_id=eq.${enc(doc.id)}&select=page_no&order=page_no.desc&limit=1`);
+      const max = Number(last?.[0]?.page_no) || 0;
+      const ranges = [];
+      if (max > MARK_PAGES_BATCH) for (let from = 1; from <= max; from += MARK_PAGES_BATCH) ranges.push(`&page_no=gte.${from}&page_no=lte.${from + MARK_PAGES_BATCH - 1}`);
+      else ranges.push('');
+      for (const range of ranges) {
+        await db(`ilmi_pages?document_id=eq.${enc(doc.id)}&is_reference=eq.${!flag}${range}`, { method: 'PATCH', timeoutMs: 20000, headers: { Prefer: 'return=minimal' }, body: JSON.stringify({ is_reference: flag }) });
+      }
+    } catch (err) {
+      const noColumn = err.status === 400 && /is_reference|42703|PGRST204/.test(err.detail || '');
+      throw Object.assign(new Error(noColumn
+        ? 'Indeks pustaka belum siap. Jalankan migrations/reference_library_scale.sql di Supabase SQL Editor.'
+        : 'Gagal menandai halaman kitab, mungkin kehabisan waktu. Klik lagi: aman diulang dan melanjutkan sisanya.'), { userFacing: true });
     }
   };
   const setBook = () => db('talqeeh_reference_books?on_conflict=document_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ document_id: doc.id, active, updated_at: new Date().toISOString() }) });

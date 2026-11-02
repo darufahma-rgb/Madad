@@ -10,7 +10,7 @@ import {
   isHighStakesFiqh, FIQH_REMINDER,
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
-import { makeRunContinued, isContinueAfterCut } from './_lib/ai-partner/continue.js';
+import { makeRunContinued, isContinueAfterCut, chatTimeLeft, withinBudget, LIBRARY_BUDGET_MS } from './_lib/ai-partner/continue.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { handleTalkhis } from './_lib/ai-partner/talkhis.js';
 import { runLiveCaption, liveHear, liveTranslate } from './_lib/ai-partner/live-caption.js';
@@ -1181,7 +1181,9 @@ async function handleChat(ctx, body, res) {
 
   // Tutor memakai Pustaka Rujukan hanya bila ada kitab aktif yang benar-benar mendukung jawaban; selain itu tutor
   // biasa dari materi (di bawah) tetap berjalan seperti semula.
-  const result = mode === 'tutor'
+  // "lanjutkan" meneruskan jawaban yang terpotong, jadi tidak dicari di pustaka.
+  const startedAt = Date.now();
+  const result = mode === 'tutor' && !continuing
     ? await tryReferenceLibrary({ question: message, history, modelTask: isHighStakesFiqh(message) ? 'grade' : 'chat', material: { id: set.id, title: set.title, text: set.content } })
     : null;
   if (result) {
@@ -1215,7 +1217,7 @@ async function handleChat(ctx, body, res) {
     system: (mode === 'syafawi' ? syafawiSystem(set.title, material) + weakPointsNote(set, 'syafawi') : tutorSystem(set.title, material) + weakPointsNote(set)) + learnerContext(body.learner),
     messages: [...history.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: message }],
     maxTokens: CHAT_MAX_TOKENS,
-    timeLimitMs: 48000,
+    timeLimitMs: chatTimeLeft(startedAt),
     cacheSystem: true,
     model: highStakes ? models.grade : models.chat,
     thinking: highStakes ? 1024 : 0,
@@ -1256,7 +1258,8 @@ async function handlePromptChat(ctx, body, res) {
   while (messages.length > 1 && messages.reduce((n, m) => n + m.content.length, 0) > PROMPT_MAX_TOTAL) messages.shift();
   while (messages.length > 1 && messages[0].role !== 'user') messages.shift();
   let trialLeft = null;
-  if (isContinueAfterCut(messages[messages.length - 1].content, messages[messages.length - 2]?.content)) {
+  const continuing = isContinueAfterCut(messages[messages.length - 1].content, messages[messages.length - 2]?.content);
+  if (continuing) {
     // "lanjutkan" untuk jawaban terpotong: tanpa jatah baru.
   } else if (ctx.tier === 'trial') {
     const used = await lifetimeUsage(ctx.code, 'prompt_trial');
@@ -1273,7 +1276,8 @@ async function handlePromptChat(ctx, body, res) {
 
   // 1) Ada kitab aktif yang mendukung jawaban → jawaban berbasis kitab (kutipan & dukungan penjelasan sudah diperiksa).
   const lastQuestion = messages[messages.length - 1].content;
-  const grounded = await tryReferenceLibrary({ question: lastQuestion, history: messages.slice(0, -1), modelTask: isHighStakesFiqh(lastQuestion) ? 'grade' : 'prompt' });
+  const startedAt = Date.now();
+  const grounded = continuing ? null : await tryReferenceLibrary({ question: lastQuestion, history: messages.slice(0, -1), modelTask: isHighStakesFiqh(lastQuestion) ? 'grade' : 'prompt' });
   if (grounded) {
     return res.status(200).json({ ok: true, ...grounded,
       reply: grounded.reply + (isHighStakesFiqh(lastQuestion) ? FIQH_REMINDER : ''),
@@ -1290,7 +1294,7 @@ async function handlePromptChat(ctx, body, res) {
     // Jawaban dijaga ringkas (±600 kata) supaya selesai jauh sebelum batas waktu.
     maxTokens: CHAT_MAX_TOKENS,
     // Sisakan waktu untuk menutup stream sebelum batas 60 detik Vercel.
-    timeLimitMs: 48000,
+    timeLimitMs: chatTimeLeft(startedAt),
     cacheSystem: true,
     model: highStakes ? models.grade : models.prompt,
     thinking: highStakes ? 1024 : 0,
@@ -1322,7 +1326,7 @@ const activeReferenceBooks = async () => {
 async function tryReferenceLibrary(args) {
   if (!(await activeReferenceBooks())) return null;
   try {
-    const r = await answerFromLibrary(args, { sbConfig, sbHeaders, resolveModels, requestAI });
+    const r = await withinBudget(answerFromLibrary(args, { sbConfig, sbHeaders, resolveModels, requestAI }), LIBRARY_BUDGET_MS);
     if (r.needs_clarification) return r;
     return r.grounded && r.refs.some(x => x.source_type !== 'material') ? r : null;
   } catch (err) {

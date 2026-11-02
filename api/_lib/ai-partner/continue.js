@@ -10,6 +10,19 @@ export const isContinueAfterCut = (message, lastAssistant) =>
   /^(lanjut(kan)?|teruskan|continue)[\s.!]*$/i.test(String(message || '').trim())
   && typeof lastAssistant === 'string' && lastAssistant.includes(CUT_NOTE_MARK);
 
+/* Pembagian waktu satu pesan dalam batas 60 detik Vercel. Pustaka Rujukan berjalan lebih dulu (bisa sampai 3 panggilan
+   model); kalau tidak menghasilkan jawaban, tutor biasa memakai sisa waktunya, bukan 48 detik baru. */
+export const CHAT_TIME_MS = 48000;
+export const LIBRARY_BUDGET_MS = 30000;
+const CHAT_MIN_TIME_MS = 15000;
+export const chatTimeLeft = (startedAt, now = Date.now()) => Math.max(CHAT_MIN_TIME_MS, CHAT_TIME_MS - (now - startedAt));
+
+export const withinBudget = (promise, ms) => {
+  let timer;
+  const limit = new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`melewati batas ${ms} ms`)), ms); });
+  return Promise.race([promise, limit]).finally(() => clearTimeout(timer));
+};
+
 // deps dipasang dari ai-partner.js (runAI, streamAI, requestAI); now bisa diganti di tes.
 export const makeRunContinued = ({ runAI, streamAI, requestAI, now = Date.now, log = console.error }) =>
   async (body, res, opts, maxRounds = 2) => {

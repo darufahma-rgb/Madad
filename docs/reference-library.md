@@ -2,11 +2,16 @@
 
 ## Aktivasi
 
-1. Jalankan `migrations/ilmi_index.sql` bila Ilmi Index belum terpasang, kemudian `migrations/reference_library.sql` di Supabase SQL Editor. Migrasi baru tidak mengubah atau membuka dokumen privat lama.
+Cek posisi dulu: jalankan `scripts/reference-library-check.sql` di Supabase SQL Editor. Script itu hanya membaca; tiap baris `BELUM` menyebut migrasi yang perlu dijalankan.
+
+1. Di Supabase SQL Editor, jalankan berurutan: `migrations/ilmi_index.sql` (bila Ilmi Index belum terpasang), `migrations/reference_library.sql`, `migrations/reference_library_scale.sql`. Semuanya aman diulang dan tidak mengubah atau membuka dokumen privat lama. Jalankan script cek lagi sampai semua `OK`.
 2. Buka `/admin` → **Pustaka Rujukan**. Unggah PDF, tunggu pembacaan/analisis selesai, lalu buka hasilnya.
 3. Periksa teks halaman, terutama OCR, serta judul, penulis, dan **bidang ilmu** di Metadata edisi. Isi mazhab hanya bila dinyatakan kitab, serta jilid/cetakan/penerbit/tahun jika tersedia. Metadata ini diisi admin, bukan diverifikasi otomatis.
 4. Klik **Aktifkan sebagai rujukan**. Hanya dokumen milik pustaka admin, berstatus `done`, tanpa halaman `unread`/`garbled`, dengan judul, penulis, dan bidang ilmu terisi yang dapat diaktifkan. Analisis gagal atau parsial tidak dapat diterbitkan.
-5. Uji di **Tanya AI** dan **Tutor**. Klik kartu rujukan untuk membaca kutipan dan teks halaman. **Nonaktifkan rujukan** menghentikan pemakaian pada pencarian berikutnya.
+5. Uji di **Tanya AI** dan **Tutor**. Klik kartu rujukan untuk membaca kutipan dan teks halaman. **Nonaktifkan rujukan** menghentikan pemakaian pada pencarian berikutnya. Status aktif di-cache sampai 60 detik per instance server.
+6. Setelah hasil uji memuaskan, baru ubah janji di landing: label "Segera hadir" (`src/pages/landing.jsx` di hero dan bagian Pustaka Rujukan), paragraf "Sedang disiapkan…", dan FAQ "Sudah bisa dipakai?".
+
+Begitu ada satu kitab aktif, **setiap** pesan Tanya AI dan Tutor melewati pustaka dulu: lebih lambat beberapa detik dan menambah biaya model, juga saat tidak ada hasil. Pantau `/admin` → AI usage setelah aktivasi. Jatah waktu pustaka 30 detik; bila terlewati, tutor biasa menjawab dengan sisa waktunya.
 
 Tidak ada environment variable atau penyedia berbayar baru. Model penjawab menggunakan setelan Tanya AI/Tutor existing, model penilaian untuk pertanyaan fikih berisiko, dan model Ilmi Index untuk menerjemahkan pencarian serta memeriksa dukungan penjelasan. Jatah pesan existing tetap berlaku. Pencarian, jawaban, dan pemeriksaan menggunakan hingga tiga panggilan model per pesan; biaya aktual tercatat melalui pencatat biaya existing.
 
@@ -22,7 +27,7 @@ Tidak ada environment variable atau penyedia berbayar baru. Model penjawab mengg
 - Istilah ambigu dapat memicu pertanyaan klarifikasi; model juga dapat menjelaskan beberapa konteks secara terpisah bila masing-masing memiliki bukti. Riwayat percakapan bukan sumber bukti baru.
 - Katalog admin memiliki pencarian judul/penulis/edisi, filter status dan bidang ilmu, urutan judul atau terbaru, metadata edisi, serta daftar syarat sebelum aktivasi. Semua angka berasal dari dokumen tersimpan; status aktivasi tidak ditampilkan sebagai draf jika gagal dimuat.
 - Jawaban lama dilabeli belum diperiksa. Kutipan yang pernah diterima pengguna tetap ada pada riwayat mereka meskipun buku dinonaktifkan; halaman bersama tidak lagi dapat dimuat setelah nonaktif.
-- Jawaban baru ditampilkan setelah validasi selesai, sehingga tidak dikirim token demi token. Jika migrasi belum dijalankan, layanan pustaka akan gagal tertutup dan tidak kembali ke jawaban tanpa sumber.
+- Jawaban baru ditampilkan setelah validasi selesai, sehingga tidak dikirim token demi token. Jika migrasi belum dijalankan, pustaka gagal, atau tidak ada dasar di kitab, Tanya AI dan Tutor kembali ke jawaban biasa tanpa kartu rujukan (Tanya AI melabelinya jawaban umum), jadi keduanya tidak mati karena pustaka. Aktivasi kitab tetap ditolak selama indeks belum siap.
 
 ## Verifikasi
 
@@ -30,4 +35,6 @@ Tidak ada environment variable atau penyedia berbayar baru. Model penjawab mengg
 
 Jalankan `npm run build` dan `npm run lint:prompts`. Tidak ada perintah typecheck atau lint JavaScript umum pada repository saat ini.
 
-Tambahan uji manual: respons API tiruan dipakai untuk memeriksa katalog/filter, formulir metadata, aktivasi, dan lebar layar 390px/1440px. Model OpenRouter sungguhan diuji dengan dua petikan buatan bertema **amr** di nahwu dan usul: jawaban khusus nahwu mengambil kutipan nahwu; pertanyaan umum memisahkan dua bidang. Ini uji terbatas, bukan jaminan semua konteks benar. Migrasi RPC baru `search_reference_passages` masih harus dijalankan dan diuji di Supabase sebelum produksi.
+Tambahan uji manual: respons API tiruan dipakai untuk memeriksa katalog/filter, formulir metadata, aktivasi, dan lebar layar 390px/1440px. Model OpenRouter sungguhan diuji dengan dua petikan buatan bertema **amr** di nahwu dan usul: jawaban khusus nahwu mengambil kutipan nahwu; pertanyaan umum memisahkan dua bidang. Ini uji terbatas, bukan jaminan semua konteks benar.
+
+Ketiga migrasi dan `search_reference_passages` sudah dijalankan di Postgres 16 lokal (PGlite, 2026-11): urutan dan pengulangan migrasi, buku nonaktif tidak muncul, istilah berkarakter regex, istilah 2 huruf, dan 3.000 halaman uji memakai indeks trigram untuk teks Arab. Ini bukan Supabase: locale, ukuran server, dan isi kitab sungguhan bisa berbeda, jadi langkah uji di atas tetap wajib.
