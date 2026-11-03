@@ -10,6 +10,7 @@ import {
   isHighStakesFiqh, FIQH_REMINDER,
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
+import { imtihanDaysFor, IMTIHAN_LEGACY_DAYS } from './_lib/payments.js';
 import { makeRunContinued, isContinueAfterCut, chatTimeLeft, withinBudget, LIBRARY_BUDGET_MS } from './_lib/ai-partner/continue.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { handleTalkhis } from './_lib/ai-partner/talkhis.js';
@@ -259,9 +260,9 @@ const monthlyUsage = async (code, since) => {
 // Pakai satu jatah pelanggan: cek kuota bulanan dulu, lalu catat di kuota harian (atomik).
 // Mengembalikan null kalau boleh, 'monthly' / 'daily' kalau habis, atau 'unavailable' kalau pemakaian
 // tidak bisa dibaca (ditolak sementara — fail closed, tanpa mengaku kuota habis).
-/* Pemegang Paket Imtihan (tagihan 'imtihan' lunas dalam 120 hari terakhir): tanpa kuota bulanan (kecuali Live Caption,
-   lihat monthlyLimitFor), hanya batas wajar harian (LIMITS) sebagai pengaman biaya. Dihitung sekali per permintaan. */
-const IMTIHAN_WINDOW_DAYS = 120;
+/* Pemegang Paket Imtihan (tagihan 'imtihan' lunas yang masa paketnya masih berjalan): tanpa kuota bulanan (kecuali Live
+   Caption, lihat monthlyLimitFor), hanya batas wajar harian (LIMITS) sebagai pengaman biaya. Dihitung sekali per permintaan. */
+const IMTIHAN_WINDOW_DAYS = IMTIHAN_LEGACY_DAYS;
 // Talkhis paling mahal (±$1–2 per muqarrar), jadi Paket Imtihan dibatasi total sekian muqarrar selama masa paketnya.
 const IMTIHAN_TALKHIS_CAP = 10;
 const isImtihanHolder = async (ctx) => {
@@ -270,10 +271,11 @@ const isImtihanHolder = async (ctx) => {
   try {
     const { url, key } = sbConfig();
     const since = new Date(Date.now() - IMTIHAN_WINDOW_DAYS * 86400000).toISOString();
-    const r = await fetch(`${url}/rest/v1/payment_checkouts?member_code=eq.${encodeURIComponent(ctx.code)}&plan=eq.imtihan&status=eq.paid&paid_at=gte.${since}&select=paid_at&order=paid_at.asc&limit=1`, { headers: sbHeaders(key) });
+    const r = await fetch(`${url}/rest/v1/payment_checkouts?member_code=eq.${encodeURIComponent(ctx.code)}&plan=eq.imtihan&status=eq.paid&paid_at=gte.${since}&select=paid_at,created_at&order=paid_at.asc&limit=10`, { headers: sbHeaders(key) });
     const rows = r.ok ? (await r.json()) || [] : [];
-    ctx.imtihan = rows.length > 0;
-    if (ctx.imtihan) ctx.imtihanSince = String(rows[0].paid_at || '').slice(0, 10);
+    const running = rows.filter(row => Date.parse(row.paid_at) + imtihanDaysFor(row.created_at) * 86400000 > Date.now());
+    ctx.imtihan = running.length > 0;
+    if (ctx.imtihan) ctx.imtihanSince = String(running[0].paid_at || '').slice(0, 10);
   } catch {}
   return ctx.imtihan;
 };

@@ -5,7 +5,10 @@
 import { sbConfig, sbHeaders } from './member.js';
 
 export const WELCOME_OFFER = {
-  price: 139000,
+  price: 149000,
+  // Hitung mundur yang berjalan sebelum harga naik tetap memakai harga yang sudah dilihat penggunanya.
+  previousPrice: 139000,
+  priceChangedAt: '2026-11-05T00:00:00Z',
   hours: 24,
   launchedAt: '2026-10-11T16:00:00Z', // akun yang dibuat sebelum ini = akun lama
   // Hitung mundur yang sudah berjalan sebelum ini tetap 48 jam: jam yang sudah dilihat pengguna tidak boleh tiba-tiba terpotong.
@@ -25,6 +28,9 @@ const fetchOfferRow = async (code) => {
   if (!r.ok) return null; // kolom belum dibuat → penawaran nonaktif
   return (await r.json())?.[0] || null;
 };
+
+export const offerPriceFor = (startedAt) =>
+  (Date.parse(startedAt) < Date.parse(WELCOME_OFFER.priceChangedAt) ? WELCOME_OFFER.previousPrice : WELCOME_OFFER.price);
 
 /* member: hasil resolveMember. start = boleh memulai hitung mundur kalau belum pernah (dipanggil saat pengguna membuka app).
    Kembalian { price, endsAt } selama penawaran berlaku, selain itu null. Tidak pernah melempar error. */
@@ -52,7 +58,7 @@ export async function getWelcomeOffer(member, { start = false } = {}) {
     }
     const endsAt = offerEndsAt(startedAt);
     if (!(endsAt > Date.now())) return null;
-    return { price: WELCOME_OFFER.price, endsAt: new Date(endsAt).toISOString() };
+    return { price: offerPriceFor(startedAt), endsAt: new Date(endsAt).toISOString() };
   } catch {
     return null;
   }

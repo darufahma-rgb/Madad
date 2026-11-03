@@ -63,6 +63,45 @@ export const validateRombonganEvent = (raw) => {
   return { value: { name, sizes: sizes.sort((a, b) => a.seats - b.seats), ...w } };
 };
 
+/* Tautan kerja sama (mis. kelas bersama kekeluargaan): harga khusus Paket Imtihan lewat #/gabung?plan=imtihan&kelas=<slug>.
+   Tiap tagihan lunas dicatat ke slug-nya, dan kasPercent menjadi dasar hitungan bagian kas di laporan admin. */
+const MAX_PARTNER_LINKS = 30;
+export const validatePartnerLinks = (raw) => {
+  const list = parseJson(raw);
+  if (list == null || list === '') return { value: [] };
+  if (!Array.isArray(list)) return { error: 'Format tautan kerja sama tidak valid.' };
+  if (list.length > MAX_PARTNER_LINKS) return { error: `Tautan kerja sama paling banyak ${MAX_PARTNER_LINKS}.` };
+  const value = [];
+  for (const item of list) {
+    const slug = str(item?.slug, 40).toLowerCase();
+    if (!/^[a-z0-9][a-z0-9-]{2,39}$/.test(slug)) return { error: 'Kode tautan kerja sama minimal 3 huruf kecil/angka/strip (contoh: kelas-kmm).' };
+    if (value.some(x => x.slug === slug)) return { error: `Kode tautan "${slug}" ditulis dua kali.` };
+    const name = str(item?.name, 60);
+    if (name.length < 3) return { error: `Nama kekeluargaan untuk "${slug}" minimal 3 huruf.` };
+    const price = asInt(item?.price);
+    if (!(price >= MIN_SEAT_PRICE && price < NORMAL_IMTIHAN_PRICE)) {
+      return { error: `Harga tautan "${slug}" harus antara ${MIN_SEAT_PRICE.toLocaleString('id-ID')} dan ${(NORMAL_IMTIHAN_PRICE - 1000).toLocaleString('id-ID')}.` };
+    }
+    const kasPercent = item?.kasPercent === '' || item?.kasPercent == null ? 0 : asInt(item.kasPercent);
+    if (!(kasPercent >= 0 && kasPercent <= 50)) return { error: `Bagian kas tautan "${slug}" harus 0 sampai 50 persen.` };
+    const w = parseWindow(item);
+    if (w.error) return { error: `Tautan "${slug}": ${w.error}` };
+    value.push({ slug, name, price, kasPercent, ...w });
+  }
+  return { value };
+};
+
+export const readPartnerLinks = async () =>
+  validatePartnerLinks((await readSettings(['partnerLinks']).catch(() => ({}))).partnerLinks || null).value || [];
+
+// Tautan yang sedang berlaku. null kalau kodenya tidak dikenal atau di luar rentang waktunya.
+export const getLivePartnerLink = async (slug, now = Date.now()) => {
+  const code = str(slug, 40).toLowerCase();
+  if (!code) return null;
+  const link = (await readPartnerLinks()).find(l => l.slug === code);
+  return link && isLive(link, now) ? link : null;
+};
+
 export const isLive = (ev, now = Date.now()) => !!ev && now >= Date.parse(ev.startsAt) && now <= Date.parse(ev.endsAt);
 
 let cache = { at: 0, value: null };

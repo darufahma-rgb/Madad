@@ -2755,6 +2755,69 @@ const SalesEventsCard = ({ imtihan, setImtihan, rombongan, setRombongan }) => {
   );
 };
 
+/* Tautan kerja sama: harga khusus Paket Imtihan untuk peserta kelas bersama kekeluargaan, plus laporan bagian kas. */
+const PartnerLinksCard = ({ links, setLinks }) => {
+  const [report, setReport] = useState(null);
+  const [reportError, setReportError] = useState('');
+  const toast = useToast();
+  useEffect(() => {
+    adminMembersAPI('partner-report').then(d => setReport(Array.isArray(d) ? d : [])).catch(e => setReportError(e.message));
+  }, []);
+  const setLink = (k, patch) => setLinks(links.map((l, j) => (j === k ? { ...l, ...patch } : l)));
+  const urlFor = (slug) => `${window.location.origin}/#/gabung?plan=imtihan&kelas=${slug}`;
+  const copy = (slug) => navigator.clipboard?.writeText(urlFor(slug)).then(() => toast.push('Tautan disalin.')).catch(() => {});
+  return (
+    <div className="card-glass p-6 space-y-4">
+      <div>
+        <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Tautan kerja sama</div>
+        <p className="text-[11px] text-ink-soft leading-relaxed">
+          Harga khusus Paket Imtihan untuk peserta kelas. Berlaku hanya dalam rentang waktunya, jadi tutup secepatnya setelah kelas selesai.
+          Jalankan <span className="font-mono">migrations/partner_links.sql</span> sekali sebelum membagikan tautan. Klik Simpan setelah mengubah.
+        </p>
+      </div>
+      {links.map((l, k) => {
+        const [label, tone] = eventStatus({ ...l, enabled: true });
+        return (
+          <div key={k} className="rounded-xl border border-white/10 p-4 space-y-3">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <span className={`text-[11px] px-2 py-0.5 rounded-full border ${tone}`}>{label}</span>
+              <div className="flex items-center gap-3">
+                {l.slug && <button type="button" onClick={() => copy(l.slug)} className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2">Salin tautan</button>}
+                <button type="button" onClick={() => setLinks(links.filter((_, j) => j !== k))} className="text-xs text-rose-300 hover:text-rose-200">Hapus</button>
+              </div>
+            </div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <SettingsField label="Nama kekeluargaan" value={l.name || ''} onChange={v => setLink(k, { name: v })}/>
+              <SettingsField label="Kode tautan (contoh: kelas-kmm)" value={l.slug || ''} mono onChange={v => setLink(k, { slug: v.toLowerCase().replace(/[^a-z0-9-]/g, '') })}/>
+              <SettingsField label="Harga peserta (Rp)" value={String(l.price || '')} mono onChange={v => setLink(k, { price: v.replace(/[^\d]/g, '') })}/>
+              <SettingsField label="Bagian kas (%)" value={String(l.kasPercent ?? '')} mono onChange={v => setLink(k, { kasPercent: v.replace(/[^\d]/g, '') })}/>
+              <DateField label="Mulai" value={l.startsAt} onChange={v => setLink(k, { startsAt: v })}/>
+              <DateField label="Selesai" value={l.endsAt} onChange={v => setLink(k, { endsAt: v })}/>
+            </div>
+          </div>
+        );
+      })}
+      <button type="button" onClick={() => setLinks([...links, { name: '', slug: '', price: 123000, kasPercent: 10, startsAt: '', endsAt: '' }])}
+        className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2">+ Tambah tautan</button>
+      <div className="border-t border-white/10 pt-4">
+        <div className="text-sm text-ink font-medium mb-2">Laporan penjualan</div>
+        {reportError && <p className="text-xs text-amber-300">{reportError}</p>}
+        {!reportError && report && !report.length && <p className="text-xs text-ink-muted">Belum ada tautan atau penjualan.</p>}
+        {!!report?.length && (
+          <table className="w-full text-xs">
+            <thead><tr className="text-left text-ink-muted"><th className="pb-2 font-normal">Kekeluargaan</th><th className="pb-2 font-normal">Terjual</th><th className="pb-2 font-normal">Omzet</th><th className="pb-2 font-normal">Bagian kas</th></tr></thead>
+            <tbody>{report.map(r => (
+              <tr key={r.slug} className="border-t border-white/10 text-ink">
+                <td className="py-2">{r.name}</td><td className="py-2">{r.sold}</td><td className="py-2">{formatRupiah(r.gross)}</td><td className="py-2 text-emerald-300">{formatRupiah(r.kas)}</td>
+              </tr>
+            ))}</tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  );
+};
+
 // Satu pilihan model AI + tombol uji (memanggil model sungguhan dengan pertanyaan kecil).
 const ModelField = ({ label, hint, value, active, onChange }) => {
   const [test, setTest] = useState(null);
@@ -2818,6 +2881,7 @@ const AdminSettings = () => {
   // Event penjualan; contoh awal Paket Rombongan: 3 orang Rp 447.000 (Rp 149rb/orang), 5 orang Rp 695.000 (Rp 139rb/orang).
   const [imtihanEvent, setImtihanEvent] = useState({ enabled: false, name: '', price: '', startsAt: '', endsAt: '' });
   const [rombonganEvent, setRombonganEvent] = useState({ enabled: false, name: 'Paket Rombongan', startsAt: '', endsAt: '', sizes: [{ seats: 3, price: 447000 }, { seats: 5, price: 695000 }] });
+  const [partnerLinks, setPartnerLinks] = useState([]);
   const [saved, setSaved] = useState(false);
   const [saving, setSaving] = useState(false);
   const [activeModels, setActiveModels] = useState(null);
@@ -2834,6 +2898,8 @@ const AdminSettings = () => {
         if (ie) setImtihanEvent({ ...ie, enabled: true });
         const re = parseEventSetting(server.rombonganEvent);
         if (re) setRombonganEvent({ ...re, enabled: true });
+        const pl = parseEventSetting(server.partnerLinks);
+        if (Array.isArray(pl)) setPartnerLinks(pl);
       })
       .catch(err => toast.push("Gagal memuat settings: " + err.message));
     aiPartnerAdmin('admin-models').then(d => { if (d.ok) setActiveModels(d.data); }).catch(() => {});
@@ -2846,6 +2912,7 @@ const AdminSettings = () => {
         ...settings, aiMonthlyLimits: limits, aiQuotaOverrides: overrides,
         imtihanEvent: imtihanEvent.enabled ? imtihanEvent : { enabled: false },
         rombonganEvent: rombonganEvent.enabled ? rombonganEvent : { enabled: false },
+        partnerLinks,
       });
       localStorage.removeItem("talqee_admin_settings");
       setSaved(true);
@@ -2900,6 +2967,7 @@ const AdminSettings = () => {
         </div>
 
         <SalesEventsCard imtihan={imtihanEvent} setImtihan={setImtihanEvent} rombongan={rombonganEvent} setRombongan={setRombonganEvent}/>
+        <PartnerLinksCard links={partnerLinks} setLinks={setPartnerLinks}/>
 
         <div className="card-glass p-6 space-y-4">
           <div>

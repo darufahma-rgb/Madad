@@ -125,15 +125,15 @@ const FAQS = [
   ['Apa bedanya dengan pakai ChatGPT langsung?',
     'Kamu tidak mulai dari nol. Talqeeh sudah menyiapkan prompt untuk tiap maddah muqarrar Azhar, rekomendasi AI yang paling cocok, dan bank soal imtihan. AI Partner juga dibuat khusus untuk teks Arab: i\'rab, harakat, dan ringkasan gaya kitab.'],
   ['Apa itu Paket Imtihan?',
-    `Library selamanya + AI Study Partner ${IMTIHAN_AI_DAYS} hari (satu termin penuh) dalam sekali bayar — harga normal ${formatRupiah(IMTIHAN_PRICE_IDR)}, lebih murah selama event promo. Lebih hemat daripada beli Library lalu memperpanjang AI tiap 30 hari, dan cukup untuk menemani dari awal kuliah sampai imtihan.`],
+    `Library selamanya + AI Study Partner ${IMTIHAN_AI_DAYS} hari untuk persiapan imtihan, dalam sekali bayar — harga normal ${formatRupiah(IMTIHAN_PRICE_IDR)}, lebih murah selama event promo. Setelah masanya habis, Library tetap milikmu dan AI bisa diperpanjang kapan saja.`],
   ['Library bayar sekali atau bulanan?',
-    `Sekali bayar ${LIBRARY_PRICE}, aksesnya berlaku selamanya — termasuk semua update fitur Library ke depan. AI Partner opsional: ambil Paket Imtihan untuk satu termin, atau per 30 hari.`],
+    `Sekali bayar ${LIBRARY_PRICE}, aksesnya berlaku selamanya — termasuk semua update fitur Library ke depan. AI Partner opsional: ambil Paket Imtihan untuk persiapan imtihan, atau per 30 hari.`],
   ['Boleh coba gratis dulu?',
     "Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan AI Partner untuk 1 materi pendek (±10–15 halaman) — termasuk 2× terjemah & i'rab dan 3× tanya tutor (member Library: 10× dan 15×). Kalau cocok, upgrade kapan saja — progresmu tetap tersimpan."],
   ['Bayarnya pakai apa? Berapa lama aktifnya?',
     'Lewat Mayar: QRIS, virtual account, atau e-wallet. Tagihannya dibuat langsung untuk akun Google-mu, jadi akses aktif otomatis begitu pembayaran masuk — biasanya kurang dari 1 menit.'],
   ['Paket Imtihan benar-benar sepuasnya?',
-    "Ya, tanpa kuota bulanan selama 120 hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, dan 25 kali membuat ringkasan/kuis/flashcard per hari — jauh di atas pemakaian belajar normal. Pengecualiannya Live Caption kuliah duktur: 8 jam per 30 hari, maksimal 3 jam per hari (mode Akurat untuk kelas ramai dihitung 4× menit)."],
+    `Ya, tanpa kuota bulanan selama ${IMTIHAN_AI_DAYS} hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, dan 25 kali membuat ringkasan/kuis/flashcard per hari — jauh di atas pemakaian belajar normal. Pengecualiannya Live Caption kuliah duktur: 8 jam per 30 hari, maksimal 3 jam per hari (mode Akurat untuk kelas ramai dihitung 4× menit).`],
   ['AI Partner diperpanjang otomatis?',
     'Tidak. Tidak ada potongan otomatis, baik Paket Imtihan maupun per 30 hari. Kalau mau lanjut, perpanjang kapan saja — sisa harimu tidak hangus.'],
   ['Saya member lama, harus bayar lagi?',
@@ -144,6 +144,27 @@ const planFromHash = () => {
   const q = (window.location.hash.split('?')[1] || '');
   const plan = new URLSearchParams(q).get('plan');
   return ['free', 'library', 'library_ai', 'imtihan', 'rombongan'].includes(plan) ? plan : null;
+};
+
+/* Tautan kerja sama (#/gabung?plan=imtihan&kelas=<slug>). Kodenya disimpan di browser karena pembeli biasanya login
+   dulu dan kembali lewat halaman lain. Harga tetap ditentukan server saat tagihan dibuat. */
+const PARTNER_LINK_KEY = 'talqeeh_partner_link';
+const clearPartnerLink = () => { try { localStorage.removeItem(PARTNER_LINK_KEY); } catch {} };
+const usePartnerLink = () => {
+  const [partner, setPartner] = useState(null);
+  useEffect(() => {
+    let slug = new URLSearchParams(window.location.hash.split('?')[1] || '').get('kelas') || '';
+    try {
+      if (slug) localStorage.setItem(PARTNER_LINK_KEY, slug);
+      else slug = localStorage.getItem(PARTNER_LINK_KEY) || '';
+    } catch {}
+    if (!slug) return;
+    fetch('/api/login?action=partner-info', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug }) })
+      .then(r => r.json())
+      .then(d => { if (d.partner) setPartner(d.partner); else if (d.ok) clearPartnerLink(); })
+      .catch(() => {});
+  }, []);
+  return partner;
 };
 
 const GROUP_ERRORS = {
@@ -350,7 +371,9 @@ const GabungPage = () => {
   const aiPrice      = settings.aiPriceMonthly || null;
   const bundle       = aiBundle(settings);
   const offer        = useWelcomeOffer();
-  const imtihan      = imtihanBundle(settings, offer);
+  const partner      = usePartnerLink();
+  const usePartner   = !!partner && (!offer || partner.price <= offer.price);
+  const imtihan      = imtihanBundle(settings, usePartner ? { price: partner.price, endsAt: partner.endsAt, name: `Kelas ${partner.name}`, partner: true } : offer);
   const adminWa      = (settings.whatsapp || '').replace(/\D/g, '') || DEFAULT_ADMIN_WA;
   // Library + AI tanpa harga AI → hanya Library yang bisa dibayar sekarang.
   // Paket Imtihan berharga tetap (tidak bergantung harga AI bulanan).
@@ -366,6 +389,7 @@ const GabungPage = () => {
     enabled: !signedOut,
     onPaid: async (c) => {
       saveJoinPlanLocal(null);
+      clearPartnerLink();
       if (c.plan === 'ai') {
         window.dispatchEvent(new Event('talqeeh:ai-status-changed'));
         toast.push('Pembayaran diterima — AI Partner aktif 30 hari!');
@@ -437,8 +461,8 @@ const GabungPage = () => {
     navigate('/dashboard');
   };
 
-  const openPayment = () => { setStep(null); checkout.start(payPlan, payPlan === 'rombongan' ? { seats: rombonganSize.seats } : {}); };
-  // Rombongan boleh dibeli member Library juga (bagian pembeli menambah 120 hari AI Partner).
+  const openPayment = () => { setStep(null); checkout.start(payPlan, payPlan === 'rombongan' ? { seats: rombonganSize.seats } : payPlan === 'imtihan' && partner ? { partner: partner.slug } : {}); };
+  // Rombongan boleh dibeli member Library juga (bagian pembeli menambah masa AI Partner).
   const chooseRombongan = (n) => {
     setSeats(n);
     if (signedOut) { requireLogin('rombongan'); return; }
@@ -552,8 +576,8 @@ const GabungPage = () => {
             </>
           ) : (
             <>
-              {/* Paket utama di tengah: satu termin penuh sampai imtihan, sekali bayar. */}
-              <PlanCard className="order-first md:order-none" color={EMERALD} icon="sparkles" recommended badge={imtihan.promo ? (imtihan.promo.personal ? "🎁 Khusus untukmu" : `Promo ${imtihan.promo.name}`) : "Paling hemat untuk imtihan"} title="Paket Imtihan" tagline="Library + AI, satu termin penuh"
+              {/* Paket utama di tengah: persiapan sampai imtihan, sekali bayar. */}
+              <PlanCard className="order-first md:order-none" color={EMERALD} icon="sparkles" recommended badge={imtihan.promo ? (imtihan.promo.personal ? "🎁 Khusus untukmu" : `Promo ${imtihan.promo.name}`) : "Untuk persiapan imtihan"} title="Paket Imtihan" tagline="Library + AI, persiapan imtihan"
                 strike={imtihan.promo ? formatRupiah(imtihan.promo.normal) : undefined} saving={imtihan.promo ? (imtihan.promo.personal ? <>Hangus dalam <OfferClock endsAt={imtihan.promo.endsAt}/></> : `Sampai ${imtihan.promo.endLabel}`) : undefined}
                 price={formatRupiah(imtihan.total)} priceNote="sekali bayar"
                 sub={`Library selamanya + AI ${IMTIHAN_AI_DAYS} hari`}
@@ -608,7 +632,7 @@ const GabungPage = () => {
                 <div className="flex justify-between gap-3"><span className="text-ink-muted">AI Partner · 30 hari pertama</span><span className="text-ink">{formatRupiah(aiPrice)}</span></div>
               )}
               {payPlan === 'imtihan' && (
-                <div className="flex justify-between gap-3"><span className="text-ink-muted">AI Partner · {IMTIHAN_AI_DAYS} hari (1 termin)</span><span className="text-ink">{formatRupiah(imtihan.aiPart)}</span></div>
+                <div className="flex justify-between gap-3"><span className="text-ink-muted">AI Partner · {IMTIHAN_AI_DAYS} hari</span><span className="text-ink">{formatRupiah(imtihan.aiPart)}</span></div>
               )}
               <div className="flex justify-between gap-3 border-t border-white/10 pt-2 font-semibold"><span className="text-ink">Total</span><span className="text-ink">{formatRupiah(payTotal)}</span></div>
               {plan === 'library_ai' && !aiPrice && (

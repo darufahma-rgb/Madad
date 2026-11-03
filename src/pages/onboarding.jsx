@@ -573,11 +573,11 @@ const UpgradeOfferModal = ({ onClose }) => {
       items: LIBRARY_FEATURES.slice(0, 4), cta: "Pilih Library" },
     { plan: "imtihan", title: "Paket Imtihan", color: "#3ecf8e", recommended: true,
       price: formatRupiah(imtihan.total), note: "sekali bayar",
-      tagline: `Library selamanya + AI Study Partner ${IMTIHAN_AI_DAYS} hari (1 termin)`,
+      tagline: `Library selamanya + AI Study Partner ${IMTIHAN_AI_DAYS} hari`,
       imtihan,
       itemsTitle: "Semua isi Library, ditambah:",
       items: AI_BUNDLE_FEATURES,
-      footnote: offer ? <>🎁 Harga khusus akun baru, hangus dalam <OfferClock endsAt={offer.endsAt}/></> : "Satu kali bayar untuk satu termin penuh sampai imtihan.",
+      footnote: offer ? <>🎁 Harga khusus akun baru, hangus dalam <OfferClock endsAt={offer.endsAt}/></> : "Satu kali bayar untuk persiapan sampai imtihan.",
       cta: `Ambil Paket Imtihan · ${formatRupiah(imtihan.total)}` },
   ];
   return (
@@ -597,7 +597,7 @@ const UpgradeOfferModal = ({ onClose }) => {
                 style={{ background: `${p.color}0f`, border: `1px solid ${p.color}${p.recommended ? "66" : "40"}` }}>
                 {p.recommended && (
                   <span className="absolute -top-2.5 right-4 text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                    style={{ background: p.color, color: "#0b0b0b" }}>Paling hemat</span>
+                    style={{ background: p.color, color: "#0b0b0b" }}>Rekomendasi</span>
                 )}
                 <div className="font-display text-lg font-semibold text-ink">{p.title}</div>
                 <div className="mt-1">

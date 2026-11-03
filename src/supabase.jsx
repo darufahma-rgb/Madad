@@ -143,7 +143,7 @@ const checkAiSubscription = async () => {
 // Buat tagihan untuk paket 'library' | 'library_ai' | 'ai' | 'imtihan' | 'rombongan' (opts.seats). Harga ditentukan server.
 const createCheckout = async (plan, opts = {}) => {
   try {
-    const res = await authFetch('/api/login?action=checkout', { method: 'POST', body: JSON.stringify({ plan, ...(opts.seats ? { seats: opts.seats } : {}) }) });
+    const res = await authFetch('/api/login?action=checkout', { method: 'POST', body: JSON.stringify({ plan, ...(opts.seats ? { seats: opts.seats } : {}), ...(opts.partner ? { partner: opts.partner } : {}) }) });
     const data = await res.json().catch(() => ({}));
     if (res.status === 429) return { ok: false, status: 'rate_limited' };
     return data.ok ? data : { ok: false, status: data.status || 'error' };

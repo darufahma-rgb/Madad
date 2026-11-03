@@ -554,17 +554,17 @@ const buildSlides = (d) => [
       </div>
     </>) },
 
-  { key: "paket", theme: "light", note: "Pilihannya sederhana. Library sekali bayar untuk selamanya. Paket Imtihan, yang paling banyak dipilih, membuka Library selamanya plus AI Partner untuk satu termin penuh sampai imtihan. Hitung per hari, harganya lebih murah dari segelas teh di kantin. Atau mulai dari Paket 1 Bulan kalau ingin mencoba dulu.",
+  { key: "paket", theme: "light", note: "Pilihannya sederhana. Library sekali bayar untuk selamanya. Paket Imtihan, yang paling banyak dipilih, membuka Library selamanya plus AI Partner 2 bulan untuk persiapan imtihan. Hitung per hari, harganya lebih murah dari segelas teh di kantin. Atau mulai dari Paket 1 Bulan kalau ingin mencoba dulu.",
     body: () => {
       const plans = [
         { name: "Library", price: d.libraryPrice, when: "Sekali bayar · selamanya", col: GOLD_DARK, pts: [`${d.maddah} maddah & ${d.prompts} prompt`, "Bank soal, Siap Imtihan, Muqaranah", "Arena Imtihan & coba AI 1 materi"] },
-        { name: "Paket Imtihan", price: d.imtihanPrice, strike: d.imtihanNormal, when: `Library selamanya + AI Partner ${d.aiDays} hari`, best: true, pts: ["Semua isi Library", "AI Partner satu termin penuh", "Live Caption 8 jam / 30 hari", `Talkhis ${d.talkhisCap} muqarrar per paket`] },
+        { name: "Paket Imtihan", price: d.imtihanPrice, strike: d.imtihanNormal, when: `Library selamanya + AI Partner ${d.aiDays} hari`, best: true, pts: ["Semua isi Library", "AI Partner 2 bulan, tanpa kuota bulanan", "Live Caption 8 jam / 30 hari", `Talkhis ${d.talkhisCap} muqarrar per paket`] },
         { name: "Paket 1 Bulan", price: d.monthlyPrice, when: "Library selamanya + AI Partner 30 hari", col: EM_DARK, pts: ["Semua isi Library", "AI Partner 30 hari", "Bisa diperpanjang per 30 hari"] },
       ].filter(p => p.price);
       const w = 456, gap = 32, x0 = (SW - (plans.length * w + (plans.length - 1) * gap)) / 2;
       return (<>
         <BgLight/>
-        <Title>Satu termin, sekali bayar, paham sampai imtihan</Title>
+        <Title>Sekali bayar, paham sampai imtihan</Title>
         {plans.map((p, i) => {
           const dark = !!p.best;
           return (
@@ -575,12 +575,12 @@ const buildSlides = (d) => [
               </div>
               <div className="font-display tabular-nums" style={{ fontSize: 64, fontWeight: 800, color: dark ? "#fff" : INK, marginTop: 22, letterSpacing: "-0.02em" }}>{p.price}</div>
               {p.strike && <div style={{ fontSize: 22, color: MUTED_D, textDecoration: "line-through" }}>{p.strike}</div>}
-              <div style={{ fontSize: 23, color: dark ? MUTED_D : MUTED, marginTop: 10, lineHeight: 1.4 }}>{dark ? `Hanya ±${d.imtihanPerDay} per hari selama satu termin` : p.when}</div>
+              <div style={{ fontSize: 23, color: dark ? MUTED_D : MUTED, marginTop: 10, lineHeight: 1.4 }}>{dark ? `Hanya ±${d.imtihanPerDay} per hari selama masa paket` : p.when}</div>
               <ul style={{ margin: "26px 0 0", paddingLeft: 28, fontSize: 25, color: dark ? "#fff" : INK, lineHeight: 1.65 }}>{p.pts.map(t => <li key={t}>{t}</li>)}</ul>
             </Card>
           );
         })}
-        <div className="absolute" style={{ left: 80, right: 80, top: 776, fontSize: 20, color: MUTED }}>{d.promoName ? `Harga event ${d.promoName}. ` : ""}Paket Imtihan = Library selamanya + AI Partner {d.aiDays} hari. Satu termin sampai imtihan ±4 bulan, jadi jauh lebih hemat daripada memperpanjang tiap bulan.</div>
+        <div className="absolute" style={{ left: 80, right: 80, top: 776, fontSize: 20, color: MUTED }}>{d.promoName ? `Harga event ${d.promoName}. ` : ""}Paket Imtihan = Library selamanya + AI Partner {d.aiDays} hari.</div>
       </>);
     } },
 

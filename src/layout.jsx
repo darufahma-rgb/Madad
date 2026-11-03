@@ -590,9 +590,9 @@ const LIBRARY_PRICE          = "Rp 63.000";
 const formatRupiah = (n) => `Rp ${Number(n || 0).toLocaleString("id-ID")}`;
 // Harga coret Library dihapus (Okt 2026): coretan permanen terkesan diskon palsu. null = tidak ditampilkan.
 const LIBRARY_PRICE_ORIGINAL = null;
-// Paket Imtihan: Library selamanya + AI Partner 1 termin (120 hari). Sama dengan api/_lib/payments.js.
+// Paket Imtihan: Library selamanya + AI Partner 2 bulan. Sama dengan api/_lib/payments.js.
 const IMTIHAN_PRICE_IDR = 199000;
-const IMTIHAN_AI_DAYS = 120;
+const IMTIHAN_AI_DAYS = 60;
 /* Event penjualan diatur di Admin → Settings → Event penjualan (api/_lib/events.js); /api/config hanya mengirim
    event yang sedang berlangsung, dan server tetap yang menentukan harga tagihan. IMTIHAN_PROMO diisi ulang setiap
    settings termuat, jadi pemakai lama (window.IMTIHAN_PROMO, imtihanPromoActive) tidak perlu diubah. */
@@ -648,7 +648,7 @@ const aiBundle = (settings) => {
 /* Paket Imtihan dibanding beli terpisah (Library + 4 × AI 30 hari). Harga AI bulanan dari Settings dipakai untuk
    perbandingan; kalau belum diisi, paket tetap bisa dibeli tanpa angka hemat. */
 const imtihanBundle = (settings, offer = null) => {
-  // offer: penawaran pribadi berbatas waktu (useWelcomeOffer); dipakai kalau lebih murah dari harga event.
+  // offer: penawaran pribadi berbatas waktu (useWelcomeOffer) atau tautan kerja sama (partner: true); dipakai kalau lebih murah dari harga event.
   if (offer && offer.price < (imtihanPromoActive() ? IMTIHAN_PROMO.price : IMTIHAN_PRICE_IDR)) {
     const total = offer.price;
     const ai = settings?.aiPriceMonthly || null;
@@ -658,7 +658,7 @@ const imtihanBundle = (settings, offer = null) => {
       total, aiPart: total - LIBRARY_PRICE_IDR, ai, separate, saving,
       savingPct: saving ? Math.round((saving / separate) * 100) : null,
       perDay: Math.ceil((total - LIBRARY_PRICE_IDR) / IMTIHAN_AI_DAYS / 100) * 100,
-      promo: { normal: IMTIHAN_PRICE_IDR, name: 'Hadiah khusus', endLabel: offerEndLabel(offer.endsAt), personal: true, endsAt: offer.endsAt },
+      promo: { normal: IMTIHAN_PRICE_IDR, name: offer.name || 'Hadiah khusus', endLabel: offerEndLabel(offer.endsAt), personal: !offer.partner, endsAt: offer.endsAt },
     };
   }
   const promo = imtihanPromoActive();
@@ -876,7 +876,7 @@ const AiBundleBreakdown = ({ bundle, className = "" }) => bundle ? (
   </div>
 ) : null;
 
-// Rincian Paket Imtihan: isi paket, perbandingan dengan beli terpisah, dan yang terjadi setelah 120 hari.
+// Rincian Paket Imtihan: isi paket, perbandingan dengan beli terpisah, dan yang terjadi setelah masanya habis.
 const ImtihanBreakdown = ({ bundle, className = "" }) => bundle ? (
   <div className={`rounded-xl border border-white/10 bg-black/20 p-3.5 text-[13px] ${className}`}>
     <div className="flex items-start justify-between gap-3">
@@ -884,7 +884,7 @@ const ImtihanBreakdown = ({ bundle, className = "" }) => bundle ? (
       <span className="text-ink tabular-nums flex-shrink-0">{formatRupiah(LIBRARY_PRICE_IDR)}</span>
     </div>
     <div className="flex items-start justify-between gap-3 mt-1.5">
-      <span className="text-ink-muted"><span className="text-ink">AI Study Partner</span> · {IMTIHAN_AI_DAYS} hari (1 termin), sepuasnya</span>
+      <span className="text-ink-muted"><span className="text-ink">AI Study Partner</span> · {IMTIHAN_AI_DAYS} hari, sepuasnya</span>
       <span className="text-ink tabular-nums flex-shrink-0">{formatRupiah(bundle.aiPart)}</span>
     </div>
     <div className="flex items-start justify-between gap-3 mt-2 pt-2 border-t border-white/10 font-semibold">
@@ -1038,6 +1038,7 @@ const CHECKOUT_ERRORS = {
   needs_library:     "AI Partner adalah tambahan untuk member Library. Pilih paket Library + AI Partner.",
   rate_limited:      "Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.",
   rombongan_closed:  "Event Paket Rombongan sudah berakhir atau ukuran rombongan ini tidak tersedia.",
+  partner_closed:    "Tautan harga khusus ini sudah berakhir. Muat ulang halaman untuk melihat harga saat ini.",
   network:           "Tidak bisa terhubung ke server. Cek koneksi lalu coba lagi.",
   error:             "Gagal membuat tagihan. Coba lagi sebentar, atau hubungi admin.",
 };

@@ -1016,9 +1016,9 @@ const LANDING_FAQ = [
   { q: "Kenapa harus login pakai Google dulu?",
     a: "Akun Google jadi identitas keanggotaanmu. Pembayaran otomatis tercatat ke akun itu, jadi nggak ada kode yang perlu ditunggu atau diketik, dan kamu bisa belajar di HP maupun laptop dengan akun yang sama." },
   { q: "Apa beda paket Library dan Paket Imtihan?",
-    a: `Library berisi ${CATALOG.maddah} maddah, ${CATALOG.prompts} template prompt, bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Prompt-nya kamu salin ke AI pilihanmu (Claude, ChatGPT, NotebookLM, dll). Paket Imtihan = Library selamanya + AI Partner ${IMTIHAN_AI_DAYS} hari (satu termin): unggah materi kuliahmu sendiri (PDF, Word, slide, foto diktat, rekaman kuliah), lalu AI membuat ringkasan berpenjelasan, peta konsep, mufradat, flashcard, kuis, dan soal tahriri, menerjemahkan & meng-i'rab kalimat Arab, men-talkhis muqarrar jadi PDF siap cetak, dan menemani lewat tutor serta simulasi syafawi — tanpa pindah aplikasi.` },
+    a: `Library berisi ${CATALOG.maddah} maddah, ${CATALOG.prompts} template prompt, bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Prompt-nya kamu salin ke AI pilihanmu (Claude, ChatGPT, NotebookLM, dll). Paket Imtihan = Library selamanya + AI Partner ${IMTIHAN_AI_DAYS} hari: unggah materi kuliahmu sendiri (PDF, Word, slide, foto diktat, rekaman kuliah), lalu AI membuat ringkasan berpenjelasan, peta konsep, mufradat, flashcard, kuis, dan soal tahriri, menerjemahkan & meng-i'rab kalimat Arab, men-talkhis muqarrar jadi PDF siap cetak, dan menemani lewat tutor serta simulasi syafawi — tanpa pindah aplikasi.` },
   { q: "Ada paket AI Partner 1 bulan? Mana yang lebih baik?",
-    a: `Ada. Paket 1 bulan = Library selamanya + AI Partner 30 hari, bisa diperpanjang per 30 hari. Tapi satu termin kuliah sampai imtihan butuh sekitar 4 bulan, jadi Paket Imtihan (Library + AI Partner ${IMTIHAN_AI_DAYS} hari, sekali bayar) jauh lebih hemat daripada memperpanjang 4 kali — dan selama ${IMTIHAN_AI_DAYS} hari itu tidak ada kuota bulanan. Selama event ${IMTIHAN_PROMO.name}, harganya lebih murah lagi. Kalau ragu, ambil Paket Imtihan.` },
+    a: `Ada. Paket 1 bulan = Library selamanya + AI Partner 30 hari, bisa diperpanjang per 30 hari. Untuk persiapan imtihan, ambil Paket Imtihan (Library + AI Partner ${IMTIHAN_AI_DAYS} hari, sekali bayar): selama ${IMTIHAN_AI_DAYS} hari itu tidak ada kuota bulanan. Selama ada event promo, harganya lebih murah lagi.` },
   { q: "AI Partner di Paket Imtihan ada batasnya?",
     a: `Tidak ada kuota bulanan selama ${IMTIHAN_AI_DAYS} hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, 25 kali membuat ringkasan/kuis/flashcard, dan 20 halaman PDF scan per hari (jatah scan yang tidak terpakai bisa ditabung sampai 60) — jauh di atas pemakaian belajar normal. Live Caption kuliah duktur: 8 jam per 30 hari, maksimal 3 jam per hari (mode Akurat untuk kelas ramai dihitung 4× menit). Halaman muqarrar scan yang sudah pernah dibaca AI di Talqeeh bisa langsung terbuka gratis. Talkhis otomatis: 10 muqarrar per paket.` },
   { q: "Bisa coba dulu sebelum bayar?",
@@ -1049,7 +1049,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
           <span className="w-6 h-px bg-gold-500/70"/>PILIH PAKET
         </div>
         <h2 className="font-display text-4xl md:text-5xl font-semibold text-ink leading-[1.1]">
-          Library sekali bayar.<br className="hidden md:block"/> Paket Imtihan untuk satu termin penuh.
+          Library sekali bayar.<br className="hidden md:block"/> Paket Imtihan untuk persiapan imtihan.
         </h2>
         <p className="text-ink-muted text-base md:text-lg mt-4 max-w-2xl mx-auto leading-relaxed">
           Login pakai Google, pilih paket, bayar di Mayar — akses langsung aktif otomatis.
@@ -1094,11 +1094,11 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
             </div>
           </div>
 
-          {/* Paket Imtihan: Library + AI Partner 1 termin — paket yang direkomendasikan, jadi tampil pertama di HP */}
+          {/* Paket Imtihan: Library + AI Partner 2 bulan — paket yang direkomendasikan, jadi tampil pertama di HP */}
           <div className="card-glass-strong p-5 md:p-8 relative overflow-hidden flex flex-col order-first md:order-none"
             style={{ border:"1px solid rgba(62,207,142,.35)" }}>
             <div className="absolute -top-20 -right-20 w-60 h-60 rounded-full blur-3xl pointer-events-none" style={{background:"rgba(62,207,142,0.14)"}}/>
-            <span className="absolute top-5 right-5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500 text-black">Paling hemat</span>
+            <span className="absolute top-5 right-5 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500 text-black">Rekomendasi</span>
             <div className="relative flex flex-col flex-1">
               <div className="inline-flex self-start items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300 mb-5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"/>Paket Imtihan
@@ -1128,7 +1128,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
                 rows={IMTIHAN_QUOTA}
                 note="Batas harian hanya pengaman wajar, jauh di atas pemakaian belajar normal. Jatah halaman scan yang tidak terpakai bisa ditabung sampai 60, dan halaman muqarrar scan yang sudah pernah dibaca AI di Talqeeh bisa langsung terbuka gratis, tanpa memakai jatah."
               />
-              <p className="text-xs text-emerald-300 mb-3">Cukup satu kali bayar untuk satu termin penuh sampai imtihan.</p>
+              <p className="text-xs text-emerald-300 mb-3">Cukup satu kali bayar untuk persiapan sampai imtihan.</p>
               <button onClick={() => onOpenJoin("imtihan")}
                 className="btn btn-primary w-full py-4 text-base font-medium">
                 Ambil Paket Imtihan · {formatRupiah(imtihan.total)}
@@ -1148,8 +1148,8 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
             <div className="text-sm text-ink-muted leading-relaxed">
               Library selamanya + AI Partner 30 hari{monthly ? ` (perpanjang ${formatRupiah(monthly.ai)} per 30 hari)` : ''}.{' '}
               {imtihan.saving
-                ? <>Satu termin butuh ±4 bulan: beli terpisah {formatRupiah(imtihan.separate)}, <span className="text-emerald-300">Paket Imtihan cuma {formatRupiah(imtihan.total)} — hemat {formatRupiah(imtihan.saving)}</span>.</>
-                : <span className="text-emerald-300">Untuk satu termin penuh, Paket Imtihan ({IMTIHAN_AI_DAYS} hari) lebih hemat.</span>}
+                ? <>Beli terpisah {formatRupiah(imtihan.separate)}, <span className="text-emerald-300">Paket Imtihan cuma {formatRupiah(imtihan.total)} — hemat {formatRupiah(imtihan.saving)}</span>.</>
+                : <span className="text-emerald-300">Untuk persiapan imtihan, pilih Paket Imtihan ({IMTIHAN_AI_DAYS} hari tanpa kuota bulanan).</span>}
             </div>
             <div className="text-xs text-ink-soft leading-relaxed mt-1.5">
               Jatah per 30 hari: 150 pesan tutor/Tanya AI, 150× i'rab, 40× ringkasan/kuis/flashcard, 15 materi baru, 60 halaman scan, 300 menit transkrip, 6 talkhis muqarrar.
@@ -1197,7 +1197,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 text-sm">
             {[
               ["Login Google", "Tombol paket langsung minta login dulu."],
-              ["Pilih paket", "Library, paket 1 bulan, atau Paket Imtihan (paling hemat)."],
+              ["Pilih paket", "Library, paket 1 bulan, atau Paket Imtihan (rekomendasi)."],
               ["Bayar di Mayar", "QRIS, VA, e-wallet. Tagihan langsung atas akunmu."],
               ["Aktif otomatis", `Tanpa kode, tanpa nunggu admin. AI Partner langsung aktif: 30 hari (paket 1 bulan) atau ${IMTIHAN_AI_DAYS} hari (Paket Imtihan).`],
             ].map(([title, desc], i) => (

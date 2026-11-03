@@ -90,7 +90,7 @@ Imtihan termin satu tinggal hitungan bulan. Biar persiapannya nggak mepet, Talqe
 
 Selama event, Paket Imtihan cuma ${fmt(P.price)} (normalnya ${fmt(normal)}):
 • Library selamanya: ${window.CATALOG?.maddah || 88} maddah S1 & Ma'had, ${window.CATALOG?.prompts || '1.200+'} template prompt, bank soal tahriri, Siap Imtihan, dan muqaranah 4 madzhab
-• AI Study Partner ${days} hari, satu termin penuh: unggah diktatmu, lalu dapat ringkasan gaya kitab, flashcard, kuis, terjemah & i'rab, dan tutor yang menjawab dari materimu sendiri
+• AI Study Partner ${days} hari untuk persiapan imtihan: unggah diktatmu, lalu dapat ringkasan gaya kitab, flashcard, kuis, terjemah & i'rab, dan tutor yang menjawab dari materimu sendiri
 
 Sekali bayar, tanpa potongan otomatis. Bayar lewat QRIS, virtual account, atau e-wallet, aksesnya langsung aktif.
 

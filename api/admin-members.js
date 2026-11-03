@@ -1,7 +1,7 @@
 import https from 'https';
 import { verifyToken } from './admin-auth.js';
 import { ADMIN_SETTING_KEYS, readSettings } from './_lib/settings.js';
-import { validateImtihanEvent, validateRombonganEvent, clearSalesEventsCache } from './_lib/events.js';
+import { validateImtihanEvent, validateRombonganEvent, validatePartnerLinks, readPartnerLinks, clearSalesEventsCache } from './_lib/events.js';
 import { MODEL_SETTING_KEYS, isValidModelId } from './_lib/models.js';
 import { newActivationPin, PIN_TTL_DAYS } from './_lib/pin.js';
 import { buildAdminAnalytics } from './_lib/analytics.js';
@@ -302,6 +302,23 @@ export default async function handler(req, res) {
       result = { status: 200, data: out };
     } else if (action === 'analytics') {
       result = { status: 200, data: await buildAdminAnalytics(Number(days)) };
+    } else if (action === 'partner-report') {
+      // Penjualan lunas per tautan kerja sama. Kolom partner_slug belum ada → jalankan migrations/partner_links.sql.
+      const sold = await sbRequest(supabaseUrl, serviceKey, 'GET', 'payment_checkouts?partner_slug=not.is.null&status=eq.paid&select=partner_slug,amount&limit=5000');
+      if (sold.status >= 400) { res.status(400).json({ ok: false, error: 'Laporan belum tersedia. Jalankan migrations/partner_links.sql di Supabase.' }); return; }
+      const links = await readPartnerLinks();
+      const totals = {};
+      for (const row of Array.isArray(sold.data) ? sold.data : []) {
+        const t = totals[row.partner_slug] || (totals[row.partner_slug] = { sold: 0, gross: 0 });
+        t.sold += 1;
+        t.gross += Number(row.amount) || 0;
+      }
+      const slugs = [...new Set([...links.map(l => l.slug), ...Object.keys(totals)])];
+      result = { status: 200, data: slugs.map(slug => {
+        const link = links.find(l => l.slug === slug);
+        const t = totals[slug] || { sold: 0, gross: 0 };
+        return { slug, name: link?.name || slug, ...t, kas: Math.round(t.gross * (link?.kasPercent || 0) / 100) };
+      }) };
     } else if (action === 'get-settings') {
       result = { status: 200, data: await readSettings(ADMIN_SETTING_KEYS) };
     } else if (action === 'save-settings') {
@@ -334,6 +351,11 @@ export default async function handler(req, res) {
           row[key] = out.value ? JSON.stringify(out.value) : '';
         }
       }
+      if (row && row.partnerLinks != null && typeof row.partnerLinks !== 'string') {
+        const out = validatePartnerLinks(row.partnerLinks);
+        if (out.error) { res.status(400).json({ ok: false, error: out.error }); return; }
+        row.partnerLinks = out.value.length ? JSON.stringify(out.value) : '';
+      }
       clearSalesEventsCache();
       // Limit khusus per email: dirapikan & divalidasi di server, disimpan sebagai JSON (boleh lebih panjang dari 500).
       if (row && row.aiQuotaOverrides != null && typeof row.aiQuotaOverrides !== 'string') {
@@ -342,7 +364,7 @@ export default async function handler(req, res) {
       const now = new Date().toISOString();
       const rows = ADMIN_SETTING_KEYS
         .filter(k => typeof row?.[k] === 'string')
-        .map(k => ({ key: k, value: row[k].trim().slice(0, k === 'aiQuotaOverrides' ? 20000 : 500), updated_at: now }));
+        .map(k => ({ key: k, value: row[k].trim().slice(0, k === 'aiQuotaOverrides' || k === 'partnerLinks' ? 20000 : 500), updated_at: now }));
       result = rows.length
         ? await sbRequest(supabaseUrl, serviceKey, 'POST', 'app_settings?on_conflict=key', rows, 'resolution=merge-duplicates,return=minimal')
         : { status: 200, data: null };
