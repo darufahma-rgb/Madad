@@ -313,6 +313,12 @@ export default async function handler(req, res) {
         const slug = String(row.last_event || '').replace('kelas.trial:', '');
         trialCount[slug] = (trialCount[slug] || 0) + 1;
       }
+      // Akun yang ditandai ke tiap kekeluargaan. Kolom belum ada → jumlahnya 0, laporan penjualan tetap tampil.
+      const tagged = await sbRequest(supabaseUrl, serviceKey, 'GET', 'members?partner_slug=not.is.null&select=partner_slug&limit=5000');
+      const accountCount = {};
+      for (const row of tagged.status < 400 && Array.isArray(tagged.data) ? tagged.data : []) {
+        accountCount[row.partner_slug] = (accountCount[row.partner_slug] || 0) + 1;
+      }
       const totals = {};
       for (const row of Array.isArray(sold.data) ? sold.data : []) {
         const t = totals[row.partner_slug] || (totals[row.partner_slug] = { sold: 0, gross: 0 });
@@ -323,7 +329,7 @@ export default async function handler(req, res) {
       result = { status: 200, data: slugs.map(slug => {
         const link = links.find(l => l.slug === slug);
         const t = totals[slug] || { sold: 0, gross: 0 };
-        return { slug, name: link?.name || slug, ...t, kas: Math.round(t.gross * (link?.kasPercent || 0) / 100), trials: trialCount[slug] || 0 };
+        return { slug, name: link?.name || slug, ...t, kas: Math.round(t.gross * (link?.kasPercent || 0) / 100), trials: trialCount[slug] || 0, accounts: accountCount[slug] || 0 };
       }) };
     } else if (action === 'get-settings') {
       result = { status: 200, data: await readSettings(ADMIN_SETTING_KEYS) };

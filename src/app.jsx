@@ -87,6 +87,8 @@ const App = () => {
   const autoFreeStarted = useRef(false);
   // Corong konversi: satu "kunjungan" per pengunjung per hari (src/funnel.jsx).
   useEffect(() => { window.logFunnel?.('visit'); }, []);
+  // Akun yang datang lewat tautan kerja sama ditandai ke kekeluargaannya, di halaman mana pun ia kembali setelah login.
+  useEffect(() => { if (session?.code) window.tagPartnerReferral?.(); }, [session?.code]);
   const [joinPlan, setJoinPlan] = useState(null);
   const [aiPaymentOpen, setAiPaymentOpen] = useState(false);
 

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { imtihanDaysFor, IMTIHAN_AI_DAYS, IMTIHAN_LEGACY_DAYS, IMTIHAN_SHORTENED_AT, claimClassTrial } from '../api/_lib/payments.js';
 import { offerPriceFor, WELCOME_OFFER } from '../api/_lib/offer.js';
-import { validatePartnerLinks, classTrialOpen, CLASS_TRIAL_PRODUCT, CLASS_TRIAL_HOURS } from '../api/_lib/events.js';
+import { validatePartnerLinks, classTrialOpen, getOpenPartnerLink, getLivePartnerLink, CLASS_TRIAL_PRODUCT, CLASS_TRIAL_HOURS } from '../api/_lib/events.js';
 
 const link = { slug: 'kelas-kmm', name: 'Kekeluargaan Uji', price: 123000, kasPercent: 10, startsAt: '2026-12-01T10:00:00Z', endsAt: '2026-12-04T10:00:00Z' };
 
@@ -76,6 +76,19 @@ test('klaim trial kelas: sekali per akun, patuh kuota, masa aktif 4 jam', async 
   const hours = (Date.parse(r.expiresAt) - before) / 3600e3;
   assert.ok(Math.abs(hours - CLASS_TRIAL_HOURS) < 0.01);
   m.mock.restore();
+});
+
+test('tautan bisa dipakai mendaftar sebelum harga dibuka, harga khusus hanya di rentang waktunya', async t => {
+  process.env.SUPABASE_URL = 'https://db.invalid';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-only';
+  t.mock.method(globalThis, 'fetch', async () => new Response(JSON.stringify([{ key: 'partnerLinks', value: JSON.stringify([link]) }])));
+  const before = Date.parse('2026-11-20T10:00:00Z'), during = Date.parse('2026-12-02T10:00:00Z'), after = Date.parse('2026-12-05T10:00:00Z');
+  assert.equal((await getOpenPartnerLink('kelas-kmm', before)).slug, 'kelas-kmm');
+  assert.equal(await getLivePartnerLink('kelas-kmm', before), null);
+  assert.equal((await getLivePartnerLink('KELAS-KMM', during)).price, 123000);
+  assert.equal(await getOpenPartnerLink('kelas-kmm', after), null);
+  assert.equal(await getOpenPartnerLink('tidak-ada', during), null);
+  assert.equal(await getOpenPartnerLink('', during), null);
 });
 
 test('tautan kerja sama yang salah ditolak', () => {

@@ -150,20 +150,27 @@ const planFromHash = () => {
    dulu dan kembali lewat halaman lain. Harga tetap ditentukan server saat tagihan dibuat. */
 const PARTNER_LINK_KEY = 'talqeeh_partner_link';
 const clearPartnerLink = () => { try { localStorage.removeItem(PARTNER_LINK_KEY); } catch {} };
-const usePartnerLink = () => {
+const usePartnerLink = (memberCode) => {
   const [partner, setPartner] = useState(null);
   useEffect(() => {
-    let slug = new URLSearchParams(window.location.hash.split('?')[1] || '').get('kelas') || '';
-    try {
-      if (slug) localStorage.setItem(PARTNER_LINK_KEY, slug);
-      else slug = localStorage.getItem(PARTNER_LINK_KEY) || '';
-    } catch {}
-    if (!slug) return;
-    fetch('/api/login?action=partner-info', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug }) })
-      .then(r => r.json())
-      .then(d => { if (d.partner) setPartner(d.partner); else if (d.ok) clearPartnerLink(); })
-      .catch(() => {});
-  }, []);
+    let alive = true;
+    (async () => {
+      let slug = new URLSearchParams(window.location.hash.split('?')[1] || '').get('kelas') || '';
+      try {
+        if (slug) localStorage.setItem(PARTNER_LINK_KEY, slug);
+        else slug = localStorage.getItem(PARTNER_LINK_KEY) || '';
+      } catch {}
+      // Akun yang sudah ditandai memakai kekeluargaannya, walau kali ini tidak membawa tautan atau membawa tautan lain.
+      if (memberCode) slug = (await window.tagPartnerReferral(slug)) || slug;
+      if (!slug) return;
+      const r = await fetch('/api/login?action=partner-info', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug }) });
+      const d = await r.json();
+      if (!alive) return;
+      if (d.partner) setPartner(d.partner);
+      else if (d.ok) clearPartnerLink();
+    })().catch(() => {});
+    return () => { alive = false; };
+  }, [memberCode]);
   return partner;
 };
 
@@ -379,10 +386,10 @@ const GabungPage = () => {
   const aiPrice      = settings.aiPriceMonthly || null;
   const bundle       = aiBundle(settings);
   const offer        = useWelcomeOffer();
-  const partner      = usePartnerLink();
+  const partner      = usePartnerLink(session?.code);
   const [trialBusy, setTrialBusy]   = useState(false);
   const [trialError, setTrialError] = useState('');
-  const usePartner   = !!partner && (!offer || partner.price <= offer.price);
+  const usePartner   = !!partner?.priceLive && (!offer || partner.price <= offer.price);
   const imtihan      = imtihanBundle(settings, usePartner ? { price: partner.price, endsAt: partner.endsAt, name: `Kelas ${partner.name}`, partner: true } : offer);
   const adminWa      = (settings.whatsapp || '').replace(/\D/g, '') || DEFAULT_ADMIN_WA;
   // Library + AI tanpa harga AI → hanya Library yang bisa dibayar sekarang.
@@ -471,7 +478,7 @@ const GabungPage = () => {
     navigate('/dashboard');
   };
 
-  const openPayment = () => { setStep(null); checkout.start(payPlan, payPlan === 'rombongan' ? { seats: rombonganSize.seats } : payPlan === 'imtihan' && partner ? { partner: partner.slug } : {}); };
+  const openPayment = () => { setStep(null); checkout.start(payPlan, payPlan === 'rombongan' ? { seats: rombonganSize.seats } : payPlan === 'imtihan' && partner?.priceLive ? { partner: partner.slug } : {}); };
   // Rombongan boleh dibeli member Library juga (bagian pembeli menambah masa AI Partner).
   const chooseRombongan = (n) => {
     setSeats(n);
@@ -576,6 +583,11 @@ const GabungPage = () => {
 
       {/* Paket */}
       <Section className="pt-4 pb-8">
+        {partner && !partner.priceLive && !paidMember && (
+          <div className="card-glass p-5 max-w-3xl mx-auto mb-8 text-sm text-ink-muted" style={{ border: '1px solid rgba(62,207,142,0.25)' }}>
+            Kamu mendaftar lewat <span className="text-ink">{partner.name}</span>. Buat akun gratis dulu, lalu harga khusus dan akun trial dibuka di hari kelas.
+          </div>
+        )}
         {partner?.trialOpen && (
           <div className="card-glass p-5 max-w-3xl mx-auto mb-8" style={{ border: '1px solid rgba(62,207,142,0.35)' }}>
             <div className="flex items-center gap-4 flex-wrap">

@@ -120,6 +120,15 @@ export const getLivePartnerLink = async (slug, now = Date.now()) => {
   return link && isLive(link, now) ? link : null;
 };
 
+/* Tautan masih bisa dipakai mendaftar selama belum berakhir, termasuk sebelum harga khususnya dibuka: poster disebar
+   jauh sebelum hari kelas. Harga khusus sendiri tetap hanya di dalam rentang waktu (getLivePartnerLink). */
+export const getOpenPartnerLink = async (slug, now = Date.now()) => {
+  const code = str(slug, 40).toLowerCase();
+  if (!code) return null;
+  const link = (await readPartnerLinks()).find(l => l.slug === code);
+  return link && now <= Date.parse(link.endsAt) ? link : null;
+};
+
 export const isLive = (ev, now = Date.now()) => !!ev && now >= Date.parse(ev.startsAt) && now <= Date.parse(ev.endsAt);
 
 let cache = { at: 0, value: null };

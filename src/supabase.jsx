@@ -152,6 +152,18 @@ const createCheckout = async (plan, opts = {}) => {
   }
 };
 
+// Menandai akun ke kekeluargaan dari tautan kerja sama yang tersimpan di browser. Mengembalikan tanda akun ini, atau null.
+const tagPartnerReferral = async (slug) => {
+  try {
+    let code = slug;
+    if (code === undefined) { try { code = localStorage.getItem('talqeeh_partner_link') || ''; } catch { code = ''; } }
+    const res = await authFetch('/api/login?action=partner-tag', { method: 'POST', body: JSON.stringify({ slug: code }) });
+    return (await res.json().catch(() => ({})))?.slug || null;
+  } catch {
+    return null;
+  }
+};
+
 // Status tagihan: 'pending' | 'paid' | 'expired' | 'not_found' | 'error'.
 const checkCheckout = async (id) => {
   try {
@@ -479,7 +491,7 @@ const sbPushAllUserData = async () => {
 
 Object.assign(window, {
   getMemberCode, isPaidMember,
-  checkAiSubscription, createCheckout, checkCheckout, getGroupCodes, redeemGroupCode,
+  checkAiSubscription, createCheckout, checkCheckout, tagPartnerReferral, getGroupCodes, redeemGroupCode,
   sbLoadNotes, sbSaveNote, sbDeleteNote,
   sbLoadProgress, sbSaveProgress,
   sbLoadIntentions, sbSaveIntention,

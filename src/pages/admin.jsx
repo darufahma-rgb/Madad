@@ -2771,8 +2771,9 @@ const PartnerLinksCard = ({ links, setLinks }) => {
       <div>
         <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Tautan kerja sama</div>
         <p className="text-[11px] text-ink-soft leading-relaxed">
-          Harga khusus Paket Imtihan untuk peserta kelas. Berlaku hanya dalam rentang waktunya, jadi tutup secepatnya setelah kelas selesai.
-          Jalankan <span className="font-mono">migrations/partner_links.sql</span> sekali sebelum membagikan tautan. Klik Simpan setelah mengubah.
+          Tiap kekeluargaan punya tautan sendiri. Akun gratis yang mendaftar lewatnya ditandai ke kekeluargaan itu sampai tanggal Selesai, sedangkan harga khusus
+          hanya berlaku antara Mulai dan Selesai, jadi isi Mulai di hari kelas. Jalankan <span className="font-mono">migrations/partner_links.sql</span> dan{' '}
+          <span className="font-mono">migrations/member_referral.sql</span> sekali sebelum membagikan tautan. Klik Simpan setelah mengubah.
         </p>
       </div>
       {links.map((l, k) => {
@@ -2808,10 +2809,10 @@ const PartnerLinksCard = ({ links, setLinks }) => {
         {!reportError && report && !report.length && <p className="text-xs text-ink-muted">Belum ada tautan atau penjualan.</p>}
         {!!report?.length && (
           <table className="w-full text-xs">
-            <thead><tr className="text-left text-ink-muted"><th className="pb-2 font-normal">Kekeluargaan</th><th className="pb-2 font-normal">Trial</th><th className="pb-2 font-normal">Terjual</th><th className="pb-2 font-normal">Omzet</th><th className="pb-2 font-normal">Bagian kas</th></tr></thead>
+            <thead><tr className="text-left text-ink-muted"><th className="pb-2 font-normal">Kekeluargaan</th><th className="pb-2 font-normal">Akun</th><th className="pb-2 font-normal">Trial</th><th className="pb-2 font-normal">Terjual</th><th className="pb-2 font-normal">Omzet</th><th className="pb-2 font-normal">Bagian kas</th></tr></thead>
             <tbody>{report.map(r => (
               <tr key={r.slug} className="border-t border-white/10 text-ink">
-                <td className="py-2">{r.name}</td><td className="py-2">{r.trials}</td><td className="py-2">{r.sold}</td><td className="py-2">{formatRupiah(r.gross)}</td><td className="py-2 text-emerald-300">{formatRupiah(r.kas)}</td>
+                <td className="py-2">{r.name}</td><td className="py-2">{r.accounts}</td><td className="py-2">{r.trials}</td><td className="py-2">{r.sold}</td><td className="py-2">{formatRupiah(r.gross)}</td><td className="py-2 text-emerald-300">{formatRupiah(r.kas)}</td>
               </tr>
             ))}</tbody>
           </table>
