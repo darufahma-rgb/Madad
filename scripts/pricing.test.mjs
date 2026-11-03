@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { imtihanDaysFor, IMTIHAN_AI_DAYS, IMTIHAN_LEGACY_DAYS, IMTIHAN_SHORTENED_AT } from '../api/_lib/payments.js';
+import { imtihanDaysFor, IMTIHAN_AI_DAYS, IMTIHAN_LEGACY_DAYS, IMTIHAN_SHORTENED_AT, claimClassTrial } from '../api/_lib/payments.js';
 import { offerPriceFor, WELCOME_OFFER } from '../api/_lib/offer.js';
-import { validatePartnerLinks } from '../api/_lib/events.js';
+import { validatePartnerLinks, classTrialOpen, CLASS_TRIAL_PRODUCT, CLASS_TRIAL_HOURS } from '../api/_lib/events.js';
 
 const link = { slug: 'kelas-kmm', name: 'Kekeluargaan Uji', price: 123000, kasPercent: 10, startsAt: '2026-12-01T10:00:00Z', endsAt: '2026-12-04T10:00:00Z' };
 
@@ -28,6 +28,54 @@ test('tautan kerja sama yang benar lolos dan dirapikan', () => {
   assert.equal(value[0].kasPercent, 10);
   assert.deepEqual(validatePartnerLinks([]).value, []);
   assert.deepEqual(validatePartnerLinks(null).value, []);
+});
+
+test('trial kelas hanya terbuka di sekitar jam kelas, dan bisa dimatikan', () => {
+  const at = Date.parse('2026-12-01T12:00:00Z');
+  const open = { classStartsAt: '2026-12-01T12:00:00Z', trialMax: 50 };
+  assert.equal(classTrialOpen(open, at - 31 * 60000), false);
+  assert.equal(classTrialOpen(open, at - 30 * 60000), true);
+  assert.equal(classTrialOpen(open, at + 2 * 3600e3), true);
+  assert.equal(classTrialOpen(open, at + 2 * 3600e3 + 1), false);
+  assert.equal(classTrialOpen({ trialMax: 50 }, at), false);
+  assert.equal(classTrialOpen({ ...open, trialMax: 0 }, at), false);
+  const { value } = validatePartnerLinks([{ ...link, classStartsAt: '2026-12-01T12:00:00Z', trialMax: '' }]);
+  assert.equal(value[0].trialMax, 50);
+  assert.equal(validatePartnerLinks([link]).value[0].classStartsAt, undefined);
+  assert.ok(validatePartnerLinks([{ ...link, classStartsAt: 'bukan-tanggal' }]).error);
+});
+
+test('klaim trial kelas: sekali per akun, patuh kuota, masa aktif 4 jam', async t => {
+  process.env.SUPABASE_URL = 'https://db.invalid';
+  process.env.SUPABASE_SERVICE_ROLE_KEY = 'test-only';
+  const kelas = { slug: 'kelas-uji', trialMax: 2 };
+  const member = { code: 'MSR-AAAA-BBBB', email: 'a@b.c' };
+  const respond = (claimed, inserted) => t.mock.method(globalThis, 'fetch', async (url, init = {}) => {
+    if (init.method === 'POST') { written.push(JSON.parse(init.body)); return new Response(JSON.stringify(inserted), { status: 201 }); }
+    return new Response(JSON.stringify(claimed));
+  });
+  let written = [];
+
+  let m = respond([{ member_code: member.code }], []);
+  assert.deepEqual(await claimClassTrial(member, kelas), { ok: false, status: 'trial_used' });
+  m.mock.restore();
+  m = respond([{ member_code: 'X' }, { member_code: 'Y' }], []);
+  assert.deepEqual(await claimClassTrial(member, kelas), { ok: false, status: 'trial_full' });
+  assert.equal(written.length, 0);
+  m.mock.restore();
+  m = respond([], []);
+  assert.deepEqual(await claimClassTrial(member, kelas), { ok: false, status: 'trial_used' });
+  m.mock.restore();
+  written = [];
+  m = respond([], [{ member_code: member.code }]);
+  const before = Date.now();
+  const r = await claimClassTrial(member, kelas);
+  assert.equal(r.ok, true);
+  assert.equal(written[0].product_id, CLASS_TRIAL_PRODUCT);
+  assert.equal(written[0].last_event, 'kelas.trial:kelas-uji');
+  const hours = (Date.parse(r.expiresAt) - before) / 3600e3;
+  assert.ok(Math.abs(hours - CLASS_TRIAL_HOURS) < 0.01);
+  m.mock.restore();
 });
 
 test('tautan kerja sama yang salah ditolak', () => {

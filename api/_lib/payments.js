@@ -4,7 +4,7 @@
 import crypto from 'crypto';
 import { sbConfig, sbHeaders, newMemberCode } from './member.js';
 import { readSettings } from './settings.js';
-import { getLiveEvents } from './events.js';
+import { getLiveEvents, CLASS_TRIAL_PRODUCT, CLASS_TRIAL_HOURS, CLASS_TRIAL_DEFAULT_MAX } from './events.js';
 
 // Samakan dengan LIBRARY_PRICE di src/layout.jsx.
 export const LIBRARY_PRICE_IDR = 63000;
@@ -306,6 +306,33 @@ export async function extendAi(memberCode, { email, event = 'checkout.paid', day
   });
   if (!r.ok) throw new Error(`Gagal menambah masa AI Partner (${r.status}): ${(await r.text()).slice(0, 200)}`);
   return expiresAt;
+}
+
+/* Akun trial peserta kelas (api/_lib/events.js). Satu kali per akun: baris (member_code, product_id) yang sudah ada tidak
+   ditimpa. Kuota dihitung sebelum menulis, jadi bisa lewat sedikit kalau banyak yang menekan bersamaan. */
+export async function claimClassTrial(member, link) {
+  const { url, h } = sb();
+  const event = `kelas.trial:${link.slug}`;
+  const base = `${url}/rest/v1/ai_subscriptions`;
+  const claimed = await fetch(`${base}?product_id=eq.${CLASS_TRIAL_PRODUCT}&last_event=eq.${encodeURIComponent(event)}&select=member_code`, { headers: h() })
+    .then(r => (r.ok ? r.json() : Promise.reject(new Error(`ai_subscriptions ${r.status}`))));
+  if (claimed.some(row => row.member_code === member.code)) return { ok: false, status: 'trial_used' };
+  if (claimed.length >= (link.trialMax ?? CLASS_TRIAL_DEFAULT_MAX)) return { ok: false, status: 'trial_full' };
+
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + CLASS_TRIAL_HOURS * 3600e3).toISOString();
+  const r = await fetch(`${base}?on_conflict=member_code,product_id`, {
+    method: 'POST',
+    headers: h({ Prefer: 'resolution=ignore-duplicates,return=representation' }),
+    body: JSON.stringify({
+      member_code: member.code, product_id: CLASS_TRIAL_PRODUCT, status: 'active', expires_at: expiresAt,
+      mayar_email: member.email || null, last_event: event, last_event_at: now.toISOString(), updated_at: now.toISOString(),
+    }),
+  });
+  if (!r.ok) throw new Error(`Gagal mengaktifkan trial kelas (${r.status}): ${(await r.text()).slice(0, 200)}`);
+  // Baris kosong = akun ini sudah pernah trial di kelas lain.
+  if (!(await r.json())?.length) return { ok: false, status: 'trial_used' };
+  return { ok: true, expiresAt };
 }
 
 // Idempoten: tagihan diklaim pending → paid dulu, jadi webhook + cek status bersamaan tidak memproses dua kali.

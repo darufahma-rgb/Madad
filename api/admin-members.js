@@ -1,7 +1,7 @@
 import https from 'https';
 import { verifyToken } from './admin-auth.js';
 import { ADMIN_SETTING_KEYS, readSettings } from './_lib/settings.js';
-import { validateImtihanEvent, validateRombonganEvent, validatePartnerLinks, readPartnerLinks, clearSalesEventsCache } from './_lib/events.js';
+import { validateImtihanEvent, validateRombonganEvent, validatePartnerLinks, readPartnerLinks, clearSalesEventsCache, CLASS_TRIAL_PRODUCT } from './_lib/events.js';
 import { MODEL_SETTING_KEYS, isValidModelId } from './_lib/models.js';
 import { newActivationPin, PIN_TTL_DAYS } from './_lib/pin.js';
 import { buildAdminAnalytics } from './_lib/analytics.js';
@@ -307,6 +307,12 @@ export default async function handler(req, res) {
       const sold = await sbRequest(supabaseUrl, serviceKey, 'GET', 'payment_checkouts?partner_slug=not.is.null&status=eq.paid&select=partner_slug,amount&limit=5000');
       if (sold.status >= 400) { res.status(400).json({ ok: false, error: 'Laporan belum tersedia. Jalankan migrations/partner_links.sql di Supabase.' }); return; }
       const links = await readPartnerLinks();
+      const trials = await sbRequest(supabaseUrl, serviceKey, 'GET', `ai_subscriptions?product_id=eq.${CLASS_TRIAL_PRODUCT}&select=last_event&limit=5000`);
+      const trialCount = {};
+      for (const row of Array.isArray(trials.data) ? trials.data : []) {
+        const slug = String(row.last_event || '').replace('kelas.trial:', '');
+        trialCount[slug] = (trialCount[slug] || 0) + 1;
+      }
       const totals = {};
       for (const row of Array.isArray(sold.data) ? sold.data : []) {
         const t = totals[row.partner_slug] || (totals[row.partner_slug] = { sold: 0, gross: 0 });
@@ -317,7 +323,7 @@ export default async function handler(req, res) {
       result = { status: 200, data: slugs.map(slug => {
         const link = links.find(l => l.slug === slug);
         const t = totals[slug] || { sold: 0, gross: 0 };
-        return { slug, name: link?.name || slug, ...t, kas: Math.round(t.gross * (link?.kasPercent || 0) / 100) };
+        return { slug, name: link?.name || slug, ...t, kas: Math.round(t.gross * (link?.kasPercent || 0) / 100), trials: trialCount[slug] || 0 };
       }) };
     } else if (action === 'get-settings') {
       result = { status: 200, data: await readSettings(ADMIN_SETTING_KEYS) };

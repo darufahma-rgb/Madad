@@ -2793,11 +2793,14 @@ const PartnerLinksCard = ({ links, setLinks }) => {
               <SettingsField label="Bagian kas (%)" value={String(l.kasPercent ?? '')} mono onChange={v => setLink(k, { kasPercent: v.replace(/[^\d]/g, '') })}/>
               <DateField label="Mulai" value={l.startsAt} onChange={v => setLink(k, { startsAt: v })}/>
               <DateField label="Selesai" value={l.endsAt} onChange={v => setLink(k, { endsAt: v })}/>
+              <DateField label="Jam mulai kelas (untuk akun trial)" value={l.classStartsAt} onChange={v => setLink(k, { classStartsAt: v })}/>
+              <SettingsField label="Kuota akun trial" value={String(l.trialMax ?? '')} mono onChange={v => setLink(k, { trialMax: v.replace(/[^\d]/g, '') })}
+                hint="Peserta bisa mengaktifkan trial 4 jam dari 30 menit sebelum kelas sampai 2 jam setelah mulai. Kosongkan jam kelas kalau tanpa trial."/>
             </div>
           </div>
         );
       })}
-      <button type="button" onClick={() => setLinks([...links, { name: '', slug: '', price: 123000, kasPercent: 10, startsAt: '', endsAt: '' }])}
+      <button type="button" onClick={() => setLinks([...links, { name: '', slug: '', price: 123000, kasPercent: 10, startsAt: '', endsAt: '', classStartsAt: '', trialMax: 50 }])}
         className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2">+ Tambah tautan</button>
       <div className="border-t border-white/10 pt-4">
         <div className="text-sm text-ink font-medium mb-2">Laporan penjualan</div>
@@ -2805,10 +2808,10 @@ const PartnerLinksCard = ({ links, setLinks }) => {
         {!reportError && report && !report.length && <p className="text-xs text-ink-muted">Belum ada tautan atau penjualan.</p>}
         {!!report?.length && (
           <table className="w-full text-xs">
-            <thead><tr className="text-left text-ink-muted"><th className="pb-2 font-normal">Kekeluargaan</th><th className="pb-2 font-normal">Terjual</th><th className="pb-2 font-normal">Omzet</th><th className="pb-2 font-normal">Bagian kas</th></tr></thead>
+            <thead><tr className="text-left text-ink-muted"><th className="pb-2 font-normal">Kekeluargaan</th><th className="pb-2 font-normal">Trial</th><th className="pb-2 font-normal">Terjual</th><th className="pb-2 font-normal">Omzet</th><th className="pb-2 font-normal">Bagian kas</th></tr></thead>
             <tbody>{report.map(r => (
               <tr key={r.slug} className="border-t border-white/10 text-ink">
-                <td className="py-2">{r.name}</td><td className="py-2">{r.sold}</td><td className="py-2">{formatRupiah(r.gross)}</td><td className="py-2 text-emerald-300">{formatRupiah(r.kas)}</td>
+                <td className="py-2">{r.name}</td><td className="py-2">{r.trials}</td><td className="py-2">{r.sold}</td><td className="py-2">{formatRupiah(r.gross)}</td><td className="py-2 text-emerald-300">{formatRupiah(r.kas)}</td>
               </tr>
             ))}</tbody>
           </table>

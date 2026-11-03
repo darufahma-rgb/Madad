@@ -167,6 +167,14 @@ const usePartnerLink = () => {
   return partner;
 };
 
+const CLASS_TRIAL_ERRORS = {
+  trial_closed:   'Trial hanya bisa diaktifkan saat kelas berlangsung.',
+  trial_used:     'Akun ini sudah pernah memakai trial kelas.',
+  trial_full:     'Kuota trial kelas ini sudah penuh.',
+  already_active: 'AI Partner di akunmu masih aktif, jadi tidak perlu trial.',
+  rate_limited:   'Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.',
+};
+
 const GROUP_ERRORS = {
   invalid_code:     'Kode tidak dikenal. Cek lagi penulisannya (format RMB-XXXX-XXXX).',
   code_used:        'Kode ini sudah dipakai. Minta kode lain ke teman yang membeli rombongan.',
@@ -372,6 +380,8 @@ const GabungPage = () => {
   const bundle       = aiBundle(settings);
   const offer        = useWelcomeOffer();
   const partner      = usePartnerLink();
+  const [trialBusy, setTrialBusy]   = useState(false);
+  const [trialError, setTrialError] = useState('');
   const usePartner   = !!partner && (!offer || partner.price <= offer.price);
   const imtihan      = imtihanBundle(settings, usePartner ? { price: partner.price, endsAt: partner.endsAt, name: `Kelas ${partner.name}`, partner: true } : offer);
   const adminWa      = (settings.whatsapp || '').replace(/\D/g, '') || DEFAULT_ADMIN_WA;
@@ -470,6 +480,29 @@ const GabungPage = () => {
     setStep('pay');
   };
 
+  // Peserta kelas mengaktifkan akun trial sendiri, lalu langsung praktik di AI Partner.
+  const startClassTrial = async () => {
+    if (signedOut) { requireLogin('imtihan'); return; }
+    setTrialBusy(true);
+    setTrialError('');
+    try {
+      if (noAccount) {
+        const made = await startFreeAccount();
+        if (!made.ok) { setTrialError('Gagal membuat akun. Coba lagi sebentar.'); return; }
+      }
+      const res = await window.authFetch('/api/login?action=class-trial', { method: 'POST', body: JSON.stringify({ slug: partner.slug }) });
+      const d = await res.json().catch(() => ({}));
+      if (!d.ok) { setTrialError(CLASS_TRIAL_ERRORS[d.status] || 'Gagal mengaktifkan trial. Coba lagi sebentar.'); return; }
+      window.dispatchEvent(new Event('talqeeh:ai-status-changed'));
+      toast.push(`Akun trial ${partner.trialHours} jam aktif. Selamat praktik!`);
+      navigate('/ai-partner');
+    } catch {
+      setTrialError('Tidak bisa terhubung ke server. Cek koneksi lalu coba lagi.');
+    } finally {
+      setTrialBusy(false);
+    }
+  };
+
   const pinComplete = pin.replace(/-/g, '').length === 8;
   const handleRedeem = async (e) => {
     e?.preventDefault();
@@ -543,6 +576,20 @@ const GabungPage = () => {
 
       {/* Paket */}
       <Section className="pt-4 pb-8">
+        {partner?.trialOpen && (
+          <div className="card-glass p-5 max-w-3xl mx-auto mb-8" style={{ border: '1px solid rgba(62,207,142,0.35)' }}>
+            <div className="flex items-center gap-4 flex-wrap">
+              <div className="flex-1 min-w-[220px]">
+                <div className="font-display text-lg font-semibold text-ink">Akun trial {partner.trialHours} jam untuk peserta kelas</div>
+                <p className="text-sm text-ink-muted mt-1">Gratis, dari kelas bersama {partner.name}. Aktifkan sekarang, lalu praktik dengan diktatmu sendiri.</p>
+              </div>
+              <button onClick={startClassTrial} disabled={trialBusy} className={`btn btn-primary text-sm px-5 py-3 ${trialBusy ? 'opacity-60 cursor-wait' : ''}`}>
+                {trialBusy ? 'Mengaktifkan…' : signedOut ? 'Masuk dan aktifkan trial' : 'Aktifkan trial'}
+              </button>
+            </div>
+            {trialError && <p className="text-sm text-amber-300 mt-3">{trialError}</p>}
+          </div>
+        )}
         {paidMember && !step && (
           <div className="card-glass p-5 max-w-3xl mx-auto mb-8 flex items-center gap-4 flex-wrap" style={{ border: '1px solid rgba(62,207,142,0.3)' }}>
             <Icon name="check" className="w-5 h-5" style={{ stroke: EMERALD }}/>

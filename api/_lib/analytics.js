@@ -2,6 +2,7 @@
 import { sbConfig, sbHeaders } from './member.js';
 import { readSettings } from './settings.js';
 import { resolveModels } from './models.js';
+import { CLASS_TRIAL_PRODUCT } from './events.js';
 
 const DAY_MS = 86400000;
 const dayKey = (d) => new Date(d).toISOString().slice(0, 10);
@@ -243,8 +244,10 @@ export async function buildAdminAnalytics(days) {
 
   /* ── AI Partner ── */
   const nowIso = new Date().toISOString();
-  const activeSubs = new Set(subs.rows.filter(s => s.status === 'active' && (!s.expires_at || s.expires_at > nowIso)).map(s => s.member_code));
-  const everPaid = new Set(subs.rows.filter(s => s.product_id !== 'manual').map(s => s.member_code));
+  // Trial kelas gratis, jadi tidak dihitung sebagai pelanggan maupun pembeli.
+  const paidOrManual = subs.rows.filter(s => s.product_id !== CLASS_TRIAL_PRODUCT);
+  const activeSubs = new Set(paidOrManual.filter(s => s.status === 'active' && (!s.expires_at || s.expires_at > nowIso)).map(s => s.member_code));
+  const everPaid = new Set(paidOrManual.filter(s => s.product_id !== 'manual').map(s => s.member_code));
   const trialMembers = m.filter(x => x.ai_trial_set_id);
   const trialConverted = trialMembers.filter(x => everPaid.has(x.code)).length;
 

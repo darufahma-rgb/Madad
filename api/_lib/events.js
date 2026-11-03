@@ -86,9 +86,27 @@ export const validatePartnerLinks = (raw) => {
     if (!(kasPercent >= 0 && kasPercent <= 50)) return { error: `Bagian kas tautan "${slug}" harus 0 sampai 50 persen.` };
     const w = parseWindow(item);
     if (w.error) return { error: `Tautan "${slug}": ${w.error}` };
-    value.push({ slug, name, price, kasPercent, ...w });
+    // Akun trial peserta: opsional, hanya kalau jam kelasnya diisi.
+    const classAt = Date.parse(item?.classStartsAt || '');
+    if (item?.classStartsAt && !Number.isFinite(classAt)) return { error: `Jam kelas tautan "${slug}" tidak valid.` };
+    const trialMax = item?.trialMax === '' || item?.trialMax == null ? CLASS_TRIAL_DEFAULT_MAX : asInt(item.trialMax);
+    if (!(trialMax >= 0 && trialMax <= 500)) return { error: `Kuota trial tautan "${slug}" harus 0 sampai 500.` };
+    value.push({ slug, name, price, kasPercent, ...w, ...(Number.isFinite(classAt) ? { classStartsAt: new Date(classAt).toISOString(), trialMax } : {}) });
   }
   return { value };
+};
+
+/* Akun trial peserta kelas: selama kelas berlangsung, peserta mengaktifkan AI Partner sendiri lewat tautan kelasnya.
+   Masa aktif dihitung dari saat diaktifkan, satu kali per akun, dengan batas harian trial sebagai pengaman biaya. */
+export const CLASS_TRIAL_PRODUCT = 'talqeeh-kelas-trial';
+export const CLASS_TRIAL_HOURS = 4;
+export const CLASS_TRIAL_DEFAULT_MAX = 50;
+const CLASS_TRIAL_OPEN_BEFORE_MS = 30 * 60 * 1000;
+const CLASS_TRIAL_OPEN_AFTER_MS = 2 * 3600 * 1000;
+export const classTrialOpen = (link, now = Date.now()) => {
+  const at = Date.parse(link?.classStartsAt || '');
+  return Number.isFinite(at) && (link.trialMax ?? CLASS_TRIAL_DEFAULT_MAX) > 0
+    && now >= at - CLASS_TRIAL_OPEN_BEFORE_MS && now <= at + CLASS_TRIAL_OPEN_AFTER_MS;
 };
 
 export const readPartnerLinks = async () =>

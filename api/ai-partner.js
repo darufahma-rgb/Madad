@@ -11,6 +11,7 @@ import {
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
 import { imtihanDaysFor, IMTIHAN_LEGACY_DAYS } from './_lib/payments.js';
+import { CLASS_TRIAL_PRODUCT } from './_lib/events.js';
 import { makeRunContinued, isContinueAfterCut, chatTimeLeft, withinBudget, LIBRARY_BUDGET_MS } from './_lib/ai-partner/continue.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { handleTalkhis } from './_lib/ai-partner/talkhis.js';
@@ -296,6 +297,12 @@ const isTrialMember = async (ctx) => {
     const r = await fetch(`${url}/rest/v1/members?code=eq.${encodeURIComponent(ctx.code)}&select=member_type&limit=1`, { headers: sbHeaders(key) });
     const rows = r.ok ? await r.json() : [];
     ctx.trialMember = rows?.[0]?.member_type === 'trial' && !(await isImtihanHolder(ctx));
+    // Trial kelas: selama itu satu-satunya langganan aktif, jatahnya jatah trial (pengaman biaya).
+    if (!ctx.trialMember) {
+      const s = await fetch(`${url}/rest/v1/ai_subscriptions?member_code=eq.${encodeURIComponent(ctx.code)}&status=eq.active&or=(expires_at.is.null,expires_at.gt.${new Date().toISOString()})&select=product_id`, { headers: sbHeaders(key) });
+      const subs = s.ok ? await s.json() : [];
+      ctx.trialMember = subs.length > 0 && subs.every(x => x.product_id === CLASS_TRIAL_PRODUCT);
+    }
   } catch {}
   return ctx.trialMember;
 };
