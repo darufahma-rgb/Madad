@@ -8,6 +8,52 @@ const GOLD = '#c9a86a';
 const EMERALD = '#3ecf8e';
 const SKY = '#60a5fa';
 
+/* Bar tenggat di halaman bayar. Hanya tampil untuk tenggat sungguhan (penawaran per akun atau event dari
+   Admin → Settings), yang harganya juga ditegakkan server saat tagihan dibuat; hilang sendiri saat waktunya habis. */
+const DeadlineBar = ({ promo, total, hideCta, onTake }) => {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  const left = Date.parse(promo.endsAt) - now;
+  if (!(left > 0)) return null;
+  const days = Math.floor(left / 86400e3);
+  return (
+    <div className="sticky top-[var(--app-header-h)] z-30 border-b border-gold-500/30 backdrop-blur-xl" style={{ background: 'rgba(28,24,16,0.92)' }}>
+      <div className="container-x py-2 flex items-center gap-3">
+        <div className="flex-1 min-w-0 leading-tight">
+          <div className="text-[11px] text-ink-muted truncate">
+            {promo.personal ? 'Harga khusus akunmu' : promo.name} · <span className="line-through">{formatRupiah(promo.normal)}</span> <b className="text-gold-200">{formatRupiah(total)}</b>
+          </div>
+          <div className="text-sm text-ink">
+            Berakhir dalam{' '}
+            {days >= 3
+              ? <b className="text-gold-200">{days} hari</b>
+              : <OfferClock endsAt={promo.endsAt} className="font-semibold text-gold-200"/>}
+          </div>
+        </div>
+        {!hideCta && <button onClick={onTake} className="btn btn-gold text-xs px-3.5 py-2 flex-shrink-0 whitespace-nowrap">Ambil harga ini</button>}
+      </div>
+    </div>
+  );
+};
+
+/* Ringkasan dari jawaban onboarding pengguna sendiri, supaya paket terasa sebagai bekal untuknya. */
+const PersonalRecap = ({ profile }) => {
+  if (!profile?.onboarded) return null;
+  const level = window.TINGKATAN_LABEL?.[profile.level];
+  const faculty = profile.faculty && profile.faculty !== 'umum' ? window.FAKULTAS_LABEL?.[profile.faculty] : null;
+  const maddahs = window.getMaddahsForProfile?.(profile)?.length || 0;
+  if (!level && !faculty) return null;
+  return (
+    <div className="card-glass max-w-xl mx-auto mt-5 p-4 text-left" style={{ border: '1px solid rgba(201,168,106,0.25)' }}>
+      <div className="text-[11px] uppercase tracking-[0.16em] mb-1.5" style={{ color: GOLD }}>Disiapkan untukmu</div>
+      <p className="text-sm text-ink leading-relaxed">
+        {[level, faculty].filter(Boolean).join(' · ')}
+        {maddahs > 0 && <>: <b>{maddahs} maddah</b> sesuai tingkat dan jurusanmu, lengkap dengan prompt siap pakai.</>}
+      </p>
+    </div>
+  );
+};
+
 // Isi tiap paket: [teks, termasuk?]. Yang tidak termasuk ditampilkan redup + ikon silang.
 const FREE_ITEMS = [
   ['Maddah Nahwu + 1 maddah pilihanmu', true],
@@ -420,6 +466,10 @@ const GabungPage = () => {
 
   return (
     <div className="page-enter">
+      {!paidMember && !waiting && imtihan.promo?.endsAt && (
+        <DeadlineBar promo={imtihan.promo} total={imtihan.total} hideCta={step === 'pay' && plan === 'imtihan'}
+          onTake={() => { window.logFunnel?.('click_pay', 'deadline_bar'); choosePaid('imtihan'); }}/>
+      )}
       {/* Hero */}
       <Section className="pt-8 md:pt-14 pb-6 text-center relative">
         <div className="absolute inset-x-0 top-0 h-72 pointer-events-none"
@@ -455,6 +505,8 @@ const GabungPage = () => {
               </div>
             ))}
           </div>
+
+          {canUpgrade && <PersonalRecap profile={profile}/>}
 
           {email && (
             <div className="inline-flex items-center gap-2 mt-6 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-ink-muted">

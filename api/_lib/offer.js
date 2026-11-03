@@ -1,4 +1,4 @@
-// Penawaran 48 jam untuk akun gratis: Paket Imtihan dengan harga khusus, berlaku 48 jam per akun, sekali seumur akun.
+// Penawaran untuk akun gratis: Paket Imtihan dengan harga khusus, berlaku 24 jam per akun, sekali seumur akun.
 // Akun baru mulai dihitung sejak daftar; akun gratis lama mulai dihitung saat pertama membuka Talqeeh setelah fitur ini aktif.
 // Waktu mulai disimpan di members.offer_started_at (migrations/welcome_offer.sql). Harga tagihan ditentukan di sini,
 // jadi yang tampil di layar dan yang ditagih Mayar selalu sama.
@@ -6,8 +6,17 @@ import { sbConfig, sbHeaders } from './member.js';
 
 export const WELCOME_OFFER = {
   price: 139000,
-  hours: 48,
+  hours: 24,
   launchedAt: '2026-10-11T16:00:00Z', // akun yang dibuat sebelum ini = akun lama
+  // Hitung mundur yang sudah berjalan sebelum ini tetap 48 jam: jam yang sudah dilihat pengguna tidak boleh tiba-tiba terpotong.
+  shortenedAt: '2026-11-04T00:00:00Z',
+  previousHours: 48,
+};
+
+export const offerEndsAt = (startedAt) => {
+  const start = Date.parse(startedAt);
+  const hours = start < Date.parse(WELCOME_OFFER.shortenedAt) ? WELCOME_OFFER.previousHours : WELCOME_OFFER.hours;
+  return start + hours * 3600e3;
 };
 
 const fetchOfferRow = async (code) => {
@@ -41,7 +50,7 @@ export async function getWelcomeOffer(member, { start = false } = {}) {
       if (!saved) { const again = await fetchOfferRow(member.code); startedAt = again?.offer_started_at || null; }
       if (!startedAt) return null;
     }
-    const endsAt = Date.parse(startedAt) + WELCOME_OFFER.hours * 3600e3;
+    const endsAt = offerEndsAt(startedAt);
     if (!(endsAt > Date.now())) return null;
     return { price: WELCOME_OFFER.price, endsAt: new Date(endsAt).toISOString() };
   } catch {

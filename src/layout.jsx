@@ -648,7 +648,7 @@ const aiBundle = (settings) => {
 /* Paket Imtihan dibanding beli terpisah (Library + 4 × AI 30 hari). Harga AI bulanan dari Settings dipakai untuk
    perbandingan; kalau belum diisi, paket tetap bisa dibeli tanpa angka hemat. */
 const imtihanBundle = (settings, offer = null) => {
-  // offer: penawaran 48 jam pribadi (useWelcomeOffer); dipakai kalau lebih murah dari harga event.
+  // offer: penawaran pribadi berbatas waktu (useWelcomeOffer); dipakai kalau lebih murah dari harga event.
   if (offer && offer.price < (imtihanPromoActive() ? IMTIHAN_PROMO.price : IMTIHAN_PRICE_IDR)) {
     const total = offer.price;
     const ai = settings?.aiPriceMonthly || null;
@@ -658,7 +658,7 @@ const imtihanBundle = (settings, offer = null) => {
       total, aiPart: total - LIBRARY_PRICE_IDR, ai, separate, saving,
       savingPct: saving ? Math.round((saving / separate) * 100) : null,
       perDay: Math.ceil((total - LIBRARY_PRICE_IDR) / IMTIHAN_AI_DAYS / 100) * 100,
-      promo: { normal: IMTIHAN_PRICE_IDR, name: 'Hadiah 48 jam', endLabel: offerEndLabel(offer.endsAt), personal: true, endsAt: offer.endsAt },
+      promo: { normal: IMTIHAN_PRICE_IDR, name: 'Hadiah khusus', endLabel: offerEndLabel(offer.endsAt), personal: true, endsAt: offer.endsAt },
     };
   }
   const promo = imtihanPromoActive();
@@ -670,7 +670,7 @@ const imtihanBundle = (settings, offer = null) => {
     total, aiPart: total - LIBRARY_PRICE_IDR, ai, separate, saving,
     savingPct: saving ? Math.round((saving / separate) * 100) : null,
     perDay: Math.ceil((total - LIBRARY_PRICE_IDR) / IMTIHAN_AI_DAYS / 100) * 100,
-    promo: promo ? { normal: IMTIHAN_PRICE_IDR, name: IMTIHAN_PROMO.name, endLabel: IMTIHAN_PROMO.endLabel } : null,
+    promo: promo ? { normal: IMTIHAN_PRICE_IDR, name: IMTIHAN_PROMO.name, endLabel: IMTIHAN_PROMO.endLabel, endsAt: IMTIHAN_PROMO.endsAt } : null,
   };
 };
 
@@ -685,7 +685,7 @@ const usePromoCountdown = () => {
   return d > 0 ? `${d} hari ${h} jam` : `${h} jam ${m} menit`;
 };
 
-/* ── Penawaran 48 jam untuk akun gratis (server: api/_lib/offer.js) ──
+/* ── Penawaran berbatas waktu untuk akun gratis (server: api/_lib/offer.js) ──
    Dimuat sekali per akun lalu dibagikan ke semua komponen. Hitung mundur dimulai server saat pertama dimuat. */
 const offerEndLabel = (iso) => new Date(iso).toLocaleString("id-ID", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 const offerStore = { code: null, offer: null, promise: null, listeners: new Set() };
@@ -780,7 +780,7 @@ const WelcomeOfferPopup = () => {
 };
 
 /* Banner event untuk pengunjung, akun gratis, dan member trial (member Library berbayar tidak bisa membeli Paket Imtihan).
-   Selama penawaran 48 jam berjalan, banner ini berganti menjadi hitung mundur pribadi. */
+   Selama penawaran pribadi berjalan, banner ini berganti menjadi hitung mundur pribadi. */
 const EventBanner = () => {
   const { session, canUpgrade } = useAuth();
   const path = useRoute();
@@ -830,7 +830,7 @@ const EventBanner = () => {
         <span className="hidden sm:inline px-2 py-0.5 rounded-full bg-emerald-500 text-black text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Event</span>
         <span className="text-ink flex-1 min-w-0 leading-snug">
           <b>{IMTIHAN_PROMO.name}</b> · Paket Imtihan <span className="line-through text-ink-soft whitespace-nowrap">{formatRupiah(IMTIHAN_PRICE_IDR)}</span>{" "}
-          <b className="text-emerald-300 whitespace-nowrap">{formatRupiah(IMTIHAN_PROMO.price)}</b> · berakhir dalam <b className="whitespace-nowrap">{left}</b>
+          <b className="text-emerald-300 whitespace-nowrap">{formatRupiah(IMTIHAN_PROMO.price)}</b> · berakhir dalam <b className="whitespace-nowrap">{Date.parse(IMTIHAN_PROMO.endsAt) - Date.now() < 48 * 3600e3 ? <OfferClock endsAt={IMTIHAN_PROMO.endsAt}/> : left}</b>
         </span>
         <button onClick={() => { window.logFunnel?.("view_join", "event_banner"); navigate("/gabung?plan=imtihan"); }}
           className="btn btn-primary text-xs px-3 py-1.5 flex-shrink-0 whitespace-nowrap">Ambil promo</button>

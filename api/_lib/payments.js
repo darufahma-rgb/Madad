@@ -90,7 +90,7 @@ export async function getPrices() {
   return { library: LIBRARY_PRICE_IDR, ai: parseAiPrice(aiPriceMonthly) };
 }
 
-// imtihanAmount: harga khusus Paket Imtihan (penawaran 48 jam, api/_lib/offer.js); dipakai hanya kalau lebih murah.
+// imtihanAmount: harga khusus Paket Imtihan (penawaran per akun, api/_lib/offer.js); dipakai hanya kalau lebih murah.
 // rombongan: { seats, price } dari event Paket Rombongan yang sedang berlangsung.
 const splitAmount = async (plan, prices, imtihanAmount, rombongan) => {
   if (plan === 'rombongan') return { library_amount: prices.library * rombongan.seats, ai_amount: rombongan.price - prices.library * rombongan.seats };
