@@ -15,11 +15,22 @@ Begitu ada satu kitab aktif, **setiap** pesan Tanya AI dan Tutor melewati pustak
 
 Tidak ada environment variable atau penyedia berbayar baru. Model penjawab menggunakan setelan Tanya AI/Tutor existing, model penilaian untuk pertanyaan fikih berisiko, dan model Ilmi Index untuk menerjemahkan pencarian serta memeriksa dukungan penjelasan. Jatah pesan existing tetap berlaku. Pencarian, jawaban, dan pemeriksaan menggunakan hingga tiga panggilan model per pesan; biaya aktual tercatat melalui pencatat biaya existing.
 
+## Sumbangan kitab dari pengguna
+
+Jalankan `migrations/reference_submissions.sql` setelah tiga migrasi di atas. Sebelum dijalankan, tombol sumbang tidak muncul dan antrean admin hanya menampilkan pengingat.
+
+1. Pengguna membuka hasil Ilmi Index yang selesai, memilih jenis dokumen (kitab atau muqarrar), menyetujui syaratnya, lalu mengirim. Dokumen yang analisisnya sebagian gagal atau masih punya halaman tak terbaca ditolak. Satu pengguna maksimal 5 sumbangan menunggu.
+2. Sumbangan masuk **Sumbangan menunggu diperiksa** di `/admin` → **Pustaka Rujukan**. Admin bisa membaca teks per halaman selama statusnya menunggu, lalu menolak dengan alasan atau menerima.
+3. **Terima ke pustaka** menyalin teks, indeks, dan kutipan dalam satu transaksi ke `ADMIN-REFERENCE`. Nama file dan catatan edisi tidak ikut. Salinan penyumbang tetap privat.
+4. Salinan itu masih draf. Lengkapi metadata lalu klik **Aktifkan sebagai rujukan** seperti kitab biasa.
+
+File yang sidik jarinya sama ditolak. PDF berbeda dari kitab yang sama tidak terdeteksi otomatis; antrean hanya memberi peringatan bila judulnya sama, jadi admin tetap perlu memeriksa. Persetujuan pengguna bukan bukti izin hak cipta: keputusan menerbitkan tetap di admin. Pengguna yang ingin mencabut sumbangan yang sudah diterima menghubungi admin, lalu admin menonaktifkan dan menghapus salinannya.
+
 ## Batas integrasi
 
 - Tanya AI dan Tutor memakai pustaka rujukan bersama. Tutor juga mencari materi pribadi yang dimiliki pengguna tersebut dan melabelinya sebagai **materi pribadi**, tanpa nomor halaman PDF buatan.
 - Simulasi syafawi, ringkasan, kuis, Live Caption, dan Tanya Muqarrar personal tetap memakai alur sumber masing-masing. Pustaka belum otomatis ditambahkan ke semua generator.
-- Kitab admin disimpan terpisah dengan pemilik server `ADMIN-REFERENCE`; buku pengguna tidak otomatis dipublikasikan. Endpoint pengelolaan memerlukan token admin; RLS tabel baru tidak memberi akses browser langsung.
+- Kitab admin disimpan terpisah dengan pemilik server `ADMIN-REFERENCE`; buku pengguna hanya masuk lewat sumbangan yang disetujui pemiliknya dan diperiksa admin. Endpoint pengelolaan memerlukan token admin; RLS tabel baru tidak memberi akses browser langsung.
 - Yang disimpan di server ialah teks per halaman dan indeks. Berkas PDF asli mengikuti cache perangkat Ilmi Index. Pembaca bukti bersama menampilkan **teks halaman**, bukan PDF asli yang diunduh dari server.
 - Kutipan di jawaban dicocokkan dengan teks asli tersimpan. Penjelasan menjalani pemeriksaan model kedua. Kecocokan teks bukan jaminan kebenaran tafsir, fatwa, atribusi sekunder, atau kesahihan hadis. Hasil OCR dan isi kitab tetap perlu tinjauan ilmiah.
 - Pencarian berupa perluasan istilah Arab/Indonesia dan pencarian leksikal, maksimal delapan halaman kitab per pesan. Ia bisa melewatkan pembahasan; pesan “belum ditemukan” tidak berarti kitab tidak membahasnya. Pustaka besar belum diuji bebannya.

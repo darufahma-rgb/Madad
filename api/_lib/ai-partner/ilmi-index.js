@@ -23,6 +23,8 @@ const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 export const ILMI_MAX_PAGES = 400;
 export const ILMI_MAX_FILE_BYTES = 150 * 1024 * 1024;
 const MAX_DOCS_PER_MEMBER = 60;
+const MAX_DOCS_LIBRARY = 1000;         // pustaka bersama, termasuk sumbangan pengguna
+const docLimit = (ctx) => ctx.library ? MAX_DOCS_LIBRARY : MAX_DOCS_PER_MEMBER;
 const MAX_PAGE_TEXT = 30000;
 const PAGES_PER_UPLOAD = 30;
 const MIN_READABLE_CHARS = 200;
@@ -116,7 +118,7 @@ export async function handleIlmiView(ctx, body, res, deps) {
   const op = String(body.op || '');
   try {
     if (op === 'list') {
-      const docs = await db.json(`ilmi_documents?member_code=eq.${enc(ctx.code)}&select=id,title,file_name,file_hash,num_pages,pdf_kind,status,stats,page_stats,edition,updated_at&order=updated_at.desc&limit=${MAX_DOCS_PER_MEMBER}`);
+      const docs = await db.json(`ilmi_documents?member_code=eq.${enc(ctx.code)}&select=id,title,file_name,file_hash,num_pages,pdf_kind,status,stats,page_stats,edition,updated_at&order=updated_at.desc&limit=${docLimit(ctx)}`);
       return res.status(200).json({ ok: true, documents: docs || [] });
     }
     if (op === 'lookup') {
@@ -174,9 +176,9 @@ export async function handleIlmi(ctx, body, res, deps) {
       if (Number.isFinite(size) && size > ILMI_MAX_FILE_BYTES) return res.status(400).json({ ok: false, error: 'PDF lebih dari 150MB. Kompres dulu lalu unggah lagi.' });
       const existing = await db.json(`ilmi_documents?member_code=eq.${enc(ctx.code)}&file_hash=eq.${hash}&params_key=eq.${enc(PARAMS_KEY)}&select=${DOC_FIELDS}&limit=1`);
       if (existing?.[0]) return res.status(200).json({ ok: true, document: existing[0], existing: true });
-      const owned = await db.json(`ilmi_documents?member_code=eq.${enc(ctx.code)}&select=id&limit=${MAX_DOCS_PER_MEMBER}`);
-      if ((owned || []).length >= MAX_DOCS_PER_MEMBER) {
-        return res.status(400).json({ ok: false, error: `Kamu sudah menyimpan ${MAX_DOCS_PER_MEMBER} muqarrar. Hapus yang tidak dipakai dulu.` });
+      const owned = await db.json(`ilmi_documents?member_code=eq.${enc(ctx.code)}&select=id&limit=${docLimit(ctx)}`);
+      if ((owned || []).length >= docLimit(ctx)) {
+        return res.status(400).json({ ok: false, error: `Kamu sudah menyimpan ${docLimit(ctx)} muqarrar. Hapus yang tidak dipakai dulu.` });
       }
       const row = {
         member_code: ctx.code, file_hash: hash, params_key: PARAMS_KEY, num_pages: numPages,

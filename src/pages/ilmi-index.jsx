@@ -1076,6 +1076,8 @@ const IlmiIndexPage = ({ libraryMode = false }) => {
         {backLink}
         {libraryMode ? <div className="mb-6 rounded-3xl border border-emerald-300/15 p-5 sm:p-8 relative overflow-hidden" style={{ background: 'radial-gradient(ellipse at 100% 0%,rgba(62,207,142,.12),transparent 70%),#111a15' }}><p className="text-[10px] tracking-[.25em] uppercase text-gold-300 mb-3">Talqeeh · Pustaka ilmiah</p><h1 className="text-2xl sm:text-3xl text-ink font-display font-semibold">Pustaka Rujukan Talqeeh</h1><p className="arabic text-xl sm:text-2xl text-gold-200/80 mt-2" dir="rtl">من الكتاب إلى الفهم</p><p className="mt-4 text-sm leading-relaxed max-w-2xl text-ink-muted">Kitab yang tertata. Pemahaman yang punya dasar. Kelola koleksi, periksa hasil pembacaan, lalu pilih rujukan untuk jawaban Tanya AI dan Tutor.</p><div className="flex flex-wrap gap-2 mt-5">{['Unggah kitab','Periksa teks & edisi','Aktifkan rujukan'].map((s,i) => <span key={s} className="text-[11px] text-ink-muted rounded-full border border-white/10 px-3 py-1.5"><span className="text-emerald-300 mr-2">0{i+1}</span>{s}</span>)}</div></div> : header}
         {libraryMode && data?.document && <ReferencePublishPanel key={data.document.id} doc={data.document}/>}
+        {libraryMode && !docId && <SubmissionQueue onAccepted={(id) => { loadDocs(); navigate(`/ilmi-index?doc=${id}`); }}/>}
+        {!libraryMode && (data?.document?.status === 'done' || data?.document?.status === 'partial') && <DonatePanel doc={data.document}/>}
         {body}
         <input ref={fileRef} type="file" accept="application/pdf,.pdf" className="hidden" onChange={onFile}/>
       </div>
@@ -1130,4 +1132,175 @@ const ReferencePublishPanel = ({ doc }) => {
     <button disabled={!loaded || busy || (!active && !eligible)} onClick={toggle} className="btn btn-primary text-sm disabled:opacity-50">{busy ? 'Menyimpan…' : active ? 'Nonaktifkan rujukan' : 'Aktifkan sebagai rujukan'}</button>
   </div>;
 };
+
+/* ── Sumbangan kitab: penyumbang ── */
+const DonatePanel = ({ doc }) => {
+  const { aiCall } = useContext(IlmiApi);
+  const toast = useToast();
+  const [info, setInfo] = useState(null);
+  const [open, setOpen] = useState(false);
+  const [kind, setKind] = useState('');
+  const [agreed, setAgreed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    let alive = true;
+    setInfo(null); setOpen(false); setAgreed(false); setKind(''); setError('');
+    aiCall('reference-donate', { op: 'status', document_id: doc.id }).then(d => { if (alive && d.ok) setInfo(d); });
+    return () => { alive = false; };
+  }, [doc.id]);
+  if (!info?.available) return null;
+  const line = (tone, title, text, action) => (
+    <div className="card-glass p-4 mb-4 flex items-start gap-3 flex-wrap">
+      <div className="min-w-0 flex-1">
+        <div className={`text-sm font-medium ${tone}`}>{title}</div>
+        {text && <div className="text-xs text-ink-muted mt-1 leading-relaxed">{text}</div>}
+      </div>
+      {action}
+    </div>
+  );
+  const sub = info.submission;
+  const withdraw = async () => {
+    setBusy(true);
+    const d = await aiCall('reference-donate', { op: 'withdraw', document_id: doc.id });
+    setBusy(false);
+    if (!d.ok) { toast.push(d.error || 'Gagal membatalkan.'); return; }
+    setInfo({ ...info, submission: null });
+  };
+  const submit = async () => {
+    setBusy(true); setError('');
+    const d = await aiCall('reference-donate', { op: 'submit', document_id: doc.id, source_kind: kind, consent: info.consent_version });
+    setBusy(false);
+    if (!d.ok) { setError(d.error || 'Sumbangan gagal dikirim.'); return; }
+    setInfo({ ...info, submission: d.submission }); setOpen(false);
+    toast.push('Terima kasih, sumbanganmu masuk antrean pemeriksaan.');
+  };
+  if (sub?.status === 'pending') return line('text-gold-300', 'Sumbanganmu sedang diperiksa admin', 'Teksnya belum dipakai untuk pengguna lain sampai admin mengaktifkannya.',
+    <button className="btn-subtle text-xs" disabled={busy} onClick={withdraw}>Batalkan</button>);
+  if (sub?.status === 'approved') return line('text-emerald-300', 'Sumbanganmu diterima di Pustaka Talqeeh', 'Terima kasih. Salinan di akunmu tetap milikmu dan tetap privat.');
+  if (sub?.status === 'rejected') return line('text-ink', 'Sumbanganmu belum bisa diterima', sub.review_note ? `Catatan admin: ${sub.review_note}` : '');
+  if (info.taken) return line('text-ink-muted', 'Kitab ini sudah ada di Pustaka Talqeeh atau sedang diperiksa', '');
+  if (info.blocked) return line('text-ink-muted', 'Belum bisa disumbangkan ke Pustaka Talqeeh', info.blocked);
+  if (!open) return line('text-ink', 'Sumbangkan ke Pustaka Talqeeh', 'Kalau ini kitab atau muqarrar cetak, teksnya bisa jadi rujukan jawaban untuk pelajar lain. Dokumenmu tetap privat kalau tidak kamu sumbangkan.',
+    <button className="btn btn-ghost text-sm" onClick={() => setOpen(true)}>Sumbangkan</button>);
+  return (
+    <div className="card-glass p-4 md:p-5 mb-4 space-y-4">
+      <div className="font-medium text-ink">Sumbangkan ke Pustaka Talqeeh</div>
+      <div>
+        <div className="text-xs text-ink-muted mb-2">Dokumen ini apa?</div>
+        <div className="grid sm:grid-cols-2 gap-2" role="radiogroup" aria-label="Jenis dokumen">
+          {[['kitab', 'Kitab cetak', 'Kitab terbitan, per jilid atau utuh.'], ['muqarrar', 'Muqarrar kuliah', 'Muqarrar resmi, bukan ringkasan buatan sendiri.']].map(([v, t, s]) => (
+            <button key={v} role="radio" aria-checked={kind === v} onClick={() => setKind(v)}
+              className={`text-start rounded-xl border p-3 transition-colors ${kind === v ? 'border-emerald-400/60 bg-emerald-400/[0.07]' : 'border-white/10 hover:border-white/20'}`}>
+              <div className="text-sm text-ink font-medium">{t}</div>
+              <div className="text-xs text-ink-muted mt-0.5">{s}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+      <ul className="text-xs text-ink-muted leading-relaxed space-y-1.5 list-disc ps-4">
+        <li>Admin Talqeeh akan membaca teks dokumen ini untuk memeriksanya.</li>
+        <li>Kalau diterima, teks dan indeksnya disalin ke Pustaka Talqeeh dan bisa dikutip dalam jawaban untuk pengguna lain.</li>
+        <li>Salinan itu tetap ada walau dokumen ini kamu hapus dari akunmu. Untuk mencabutnya, hubungi admin Talqeeh.</li>
+        <li>Namamu tidak ditampilkan ke pengguna lain. File PDF aslimu tidak dikirim.</li>
+      </ul>
+      <label className="flex items-start gap-2.5 text-sm text-ink cursor-pointer">
+        <input type="checkbox" className="mt-1" checked={agreed} onChange={e => setAgreed(e.target.checked)}/>
+        <span>Saya setuju dengan hal di atas. Dokumen ini kitab atau muqarrar cetak, bukan catatan pribadi, tidak memuat data pribadi, dan setahu saya boleh dibagikan.</span>
+      </label>
+      {error && <p className="text-sm text-red-300">{error}</p>}
+      <div className="flex gap-2 justify-end">
+        <button className="btn btn-ghost text-sm" onClick={() => setOpen(false)}>Batal</button>
+        <button className="btn btn-primary text-sm disabled:opacity-50" disabled={busy || !kind || !agreed} onClick={submit}>{busy ? 'Mengirim…' : 'Kirim untuk diperiksa'}</button>
+      </div>
+    </div>
+  );
+};
+
+/* ── Sumbangan kitab: antrean admin ── */
+const submissionCall = (op, payload = {}) => adminLibraryCall('admin-reference-submissions', { op, ...payload });
+const SubmissionItem = ({ item, onDone }) => {
+  const toast = useToast();
+  const [page, setPage] = useState(null);
+  const [rejecting, setRejecting] = useState(false);
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const show = async (n) => {
+    const d = await submissionCall('page', { id: item.id, page: n });
+    if (d.ok) setPage(d.page); else setError(d.error || 'Halaman gagal dibuka.');
+  };
+  const act = async (op, extra) => {
+    setBusy(true); setError('');
+    const d = await submissionCall(op, { id: item.id, ...extra });
+    setBusy(false);
+    if (!d.ok) { setError(d.error || 'Gagal menyimpan.'); return; }
+    toast.push(op === 'approve' ? 'Diterima. Lengkapi metadata lalu aktifkan rujukannya.' : 'Sumbangan ditolak.');
+    onDone(d.document_id);
+  };
+  const unread = Number(item.page_stats?.unread || 0) + Number(item.page_stats?.garbled || 0);
+  const facts = [item.source_kind === 'kitab' ? 'Kitab cetak' : 'Muqarrar kuliah', `${item.num_pages ?? '?'} halaman`,
+    item.pdf_kind === 'scan' ? 'scan (OCR)' : item.pdf_kind === 'mixed' ? 'campuran' : 'berteks',
+    new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })];
+  return (
+    <div className="rounded-xl border border-white/10 p-4 space-y-3">
+      <div>
+        <div className="text-sm font-medium text-ink break-words" dir="auto">{item.title}</div>
+        <div className="text-xs text-ink-muted mt-0.5">{facts.join(' · ')}</div>
+        {item.edition?.author && <div className="text-xs text-ink-muted mt-0.5" dir="auto">Penulis: {item.edition.author}</div>}
+      </div>
+      {item.similar_title && <p className="text-xs text-amber-300">Judul yang sama sudah ada di pustaka. Periksa apakah ini kitab yang sama.</p>}
+      {unread > 0 && <p className="text-xs text-amber-300">{unread} halaman belum terbaca, jadi belum bisa diterima.</p>}
+      {page && (
+        <div className="rounded-lg bg-black/20 border border-white/[0.06] p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <button className="btn-subtle text-xs" disabled={page.page_no <= 1} onClick={() => show(page.page_no - 1)}>Sebelumnya</button>
+            <span className="text-xs text-ink-soft">Halaman {page.page_no}</span>
+            <button className="btn-subtle text-xs" disabled={page.page_no >= (item.num_pages || 1)} onClick={() => show(page.page_no + 1)}>Berikutnya</button>
+          </div>
+          <div className="text-sm text-ink-muted leading-loose whitespace-pre-wrap max-h-72 overflow-y-auto" dir="auto">{page.text || 'Halaman ini kosong.'}</div>
+        </div>
+      )}
+      {rejecting && (
+        <label className="block">
+          <span className="text-xs text-ink-muted">Alasan penolakan (dibaca penyumbang)</span>
+          <textarea value={note} maxLength={300} rows={2} onChange={e => setNote(e.target.value)}
+            className="mt-1 w-full bg-white/[0.04] border border-white/10 rounded-lg p-3 text-ink outline-none focus:border-emerald-500/40" style={{ fontSize: 16 }}/>
+        </label>
+      )}
+      {error && <p className="text-sm text-red-300">{error}</p>}
+      <div className="flex flex-wrap gap-2">
+        {!page && <button className="btn btn-ghost text-sm" onClick={() => show(1)}>Baca teksnya</button>}
+        {rejecting
+          ? <>
+              <button className="btn btn-ghost text-sm" onClick={() => setRejecting(false)}>Batal</button>
+              <button className="btn btn-primary text-sm disabled:opacity-50" disabled={busy || note.trim().length < 5} onClick={() => act('reject', { note })}>Kirim penolakan</button>
+            </>
+          : <>
+              <button className="btn btn-ghost text-sm" onClick={() => setRejecting(true)}>Tolak</button>
+              <button className="btn btn-primary text-sm disabled:opacity-50" disabled={busy || unread > 0 || item.doc_status !== 'done'} onClick={() => act('approve')}>{busy ? 'Menyalin…' : 'Terima ke pustaka'}</button>
+            </>}
+      </div>
+    </div>
+  );
+};
+const SubmissionQueue = ({ onAccepted }) => {
+  const [state, setState] = useState(null);
+  const load = async () => setState(await submissionCall('list'));
+  useEffect(() => { load(); }, []);
+  if (!state) return null;
+  if (!state.ok) return <div className="card-glass p-4 mb-5 text-sm text-red-300">{state.error || 'Antrean sumbangan gagal dimuat.'}</div>;
+  if (!state.available) return <div className="card-glass p-4 mb-5 text-sm text-ink-soft">Antrean sumbangan belum aktif. Jalankan migrations/reference_submissions.sql di Supabase.</div>;
+  if (!state.submissions.length) return null;
+  return (
+    <div className="card-glass p-4 md:p-5 mb-5 space-y-3">
+      <div>
+        <div className="font-medium text-ink">Sumbangan menunggu diperiksa ({state.submissions.length})</div>
+        <p className="text-xs text-ink-muted mt-1 leading-relaxed">Periksa jenis dokumen, izin, dan mutu teksnya. Terima berarti disalin ke pustaka sebagai draf; kitabnya baru dipakai setelah kamu aktifkan.</p>
+      </div>
+      {state.submissions.map(item => <SubmissionItem key={item.id} item={item} onDone={(docId) => { load(); if (docId) onAccepted(docId); }}/>)}
+    </div>
+  );
+};
+
 window.AdminReferenceLibrary = () => <IlmiApi.Provider value={adminLibraryApi}><IlmiIndexPage libraryMode/></IlmiApi.Provider>;

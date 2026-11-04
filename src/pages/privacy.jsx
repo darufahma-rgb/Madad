@@ -31,6 +31,7 @@ const PRIVACY_SECTIONS = [
       "Kalau kamu memakai AI Partner, teks materi yang kamu unggah disimpan bersama hasil belajarnya (ringkasan, peta konsep, mufradat, flashcard, kuis, soal tahriri beserta jawaban dan nilaimu, hasil terjemah/i'rab, dan riwayat chat tutor). File asli tidak pernah disimpan.",
       "Dokumen Word, PowerPoint, Excel, TXT, dan PDF berteks dibaca langsung di perangkatmu. Foto, halaman PDF hasil scan, dan potongan rekaman audio/video (per 1 menit) dikirim ke penyedia AI untuk dibaca atau ditranskrip, lalu hanya teksnya yang disimpan.",
       "Pemrosesan AI dilakukan oleh penyedia pihak ketiga melalui OpenRouter: model Claude (Anthropic) untuk materi dan model Gemini (Google) untuk transkrip rekaman. Jangan mengunggah data pribadi atau rahasia ke dalam materi.",
+      "Muqarrar di Ilmi Index privat secara bawaan. Kalau kamu memilih menyumbangkannya ke Pustaka Talqeeh, admin membaca teksnya untuk memeriksa. Kalau diterima, teks dan indeksnya disalin ke pustaka dan bisa dikutip dalam jawaban untuk pengguna lain, tanpa menampilkan namamu. File PDF asli tidak dikirim. Sumbangan yang belum diterima bisa kamu batalkan. Salinan yang sudah diterima tetap ada walau dokumenmu dihapus, dan bisa dicabut dengan menghubungi admin Talqeeh.",
     ],
   },
   {
