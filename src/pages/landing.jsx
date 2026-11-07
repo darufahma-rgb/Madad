@@ -997,11 +997,11 @@ const QuotaBox = ({ title, rows, note }) => {
   );
 };
 const IMTIHAN_QUOTA = [
-  ["Terjemah & i'rab", "30× / hari"],
-  ["Pesan tutor & Tanya AI", "40 / hari"],
-  ["Ringkasan, kuis, flashcard", "25× / hari"],
-  ["Materi baru", "10 / hari"],
-  ["Halaman scan / foto", "20 / hari"],
+  ["Terjemah & i'rab", "Sepuasnya"],
+  ["Pesan tutor & Tanya AI", "Sepuasnya"],
+  ["Ringkasan, kuis, flashcard", "Sepuasnya"],
+  ["Materi baru", "Sepuasnya"],
+  ["Halaman scan / foto", "Sepuasnya"],
   ["Live Caption kuliah duktur", "8 jam / 30 hari"],
   ["Transkrip rekaman kuliah", "60 menit / hari"],
   ["Talkhis muqarrar", "10 muqarrar / paket"],
@@ -1020,7 +1020,7 @@ const LANDING_FAQ = [
   { q: "Ada paket AI Partner 1 bulan? Mana yang lebih baik?",
     a: `Ada. Paket 1 bulan = Library selamanya + AI Partner 30 hari, bisa diperpanjang per 30 hari. Untuk persiapan imtihan, ambil Paket Imtihan (Library + AI Partner ${IMTIHAN_AI_DAYS} hari, sekali bayar): selama ${IMTIHAN_AI_DAYS} hari itu tidak ada kuota bulanan. Selama ada event promo, harganya lebih murah lagi.` },
   { q: "AI Partner di Paket Imtihan ada batasnya?",
-    a: `Tidak ada kuota bulanan selama ${IMTIHAN_AI_DAYS} hari. Hanya ada batas wajar harian supaya layanan tetap lancar untuk semua: 30× terjemah & i'rab, 40 pesan tutor, 25 kali membuat ringkasan/kuis/flashcard, dan 20 halaman PDF scan per hari (jatah scan yang tidak terpakai bisa ditabung sampai 60) — jauh di atas pemakaian belajar normal. Live Caption kuliah duktur: 8 jam per 30 hari, maksimal 3 jam per hari (mode Akurat untuk kelas ramai dihitung 4× menit). Halaman muqarrar scan yang sudah pernah dibaca AI di Talqeeh bisa langsung terbuka gratis. Talkhis otomatis: 10 muqarrar per paket.` },
+    a: `Selama ${IMTIHAN_AI_DAYS} hari, terjemah & i'rab, pesan tutor, Tanya AI, ringkasan/kuis/flashcard, materi baru, dan baca halaman scan bisa kamu pakai sepuasnya. Batas hanya untuk fitur yang biayanya dihitung per menit atau per muqarrar. Live Caption kuliah duktur: 8 jam per 30 hari, maksimal 3 jam per hari (mode Akurat untuk kelas ramai dihitung 4× menit). Halaman muqarrar scan yang sudah pernah dibaca AI di Talqeeh bisa langsung terbuka gratis. Talkhis otomatis: 10 muqarrar per paket.` },
   { q: "Bisa coba dulu sebelum bayar?",
     a: "Bisa. Masuk dengan Google lalu pilih \"Mulai gratis\": kamu dapat akun gratis dengan maddah Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan coba AI Partner untuk 1 materi pendek (±10–15 halaman): ringkasan, flashcard, kuis, mufradat, plus 2× terjemah & i'rab, 3 pesan tutor, 1 kali Tanya AI, dan 3 foto dibaca AI. Upgrade kapan saja — akunnya sama, progresmu tetap aman." },
   { q: "Library-nya berlaku sampai kapan?",
@@ -1126,7 +1126,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
               <QuotaBox
                 title={`Tanpa kuota bulanan selama ${IMTIHAN_AI_DAYS} hari`}
                 rows={IMTIHAN_QUOTA}
-                note="Batas harian hanya pengaman wajar, jauh di atas pemakaian belajar normal. Jatah halaman scan yang tidak terpakai bisa ditabung sampai 60, dan halaman muqarrar scan yang sudah pernah dibaca AI di Talqeeh bisa langsung terbuka gratis, tanpa memakai jatah."
+                note="Fitur belajar harian bisa kamu pakai sepuasnya selama masa paket. Batas hanya untuk Live Caption, transkrip rekaman, dan talkhis, karena biayanya dihitung per menit atau per muqarrar."
               />
               <p className="text-xs text-emerald-300 mb-3">Cukup satu kali bayar untuk persiapan sampai imtihan.</p>
               <button onClick={() => onOpenJoin("imtihan")}

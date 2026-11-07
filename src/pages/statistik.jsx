@@ -237,7 +237,9 @@ const StatistikPage = () => {
               {ai.limits && (
                 <div className="grid lg:grid-cols-2 gap-4">
                   <QuotaBox title="Jatah AI hari ini" used={ai.usageToday} limits={ai.limits}
-                    note="Jatah harian direset setiap hari pukul 07.00 WIB (tengah malam UTC)."/>
+                    note={ai.unlimitedMonthly
+                      ? "Paket Imtihan: Tanya AI, tutor, pembuatan AI, i'rab, penilaian, dan baca foto bisa kamu pakai sepuasnya. Jatah di atas direset setiap hari pukul 07.00 WIB."
+                      : "Jatah harian direset setiap hari pukul 07.00 WIB (tengah malam UTC)."}/>
                   {ai.monthlyLimits && (
                     <QuotaBox title={ai.quotaPerSubscription ? "Jatah AI periode langgananmu" : "Jatah AI bulan ini"} used={ai.usageMonth || {}} limits={ai.monthlyLimits}
                       note={ai.quotaResetAt

@@ -307,15 +307,22 @@ const isTrialMember = async (ctx) => {
   } catch {}
   return ctx.trialMember;
 };
+/* Paket Imtihan: fitur yang murah per pemakaian dipakai sepuasnya. Batas harian yang terlihat tidak ada; yang tersisa
+   hanya pengaman anti-bot yang jauh di atas pemakaian belajar normal. Fitur mahal (talkhis, Live Caption, Ilmi Index,
+   transkripsi audio) tetap memakai batas harian biasa dan batas paketnya. */
+const IMTIHAN_OPEN_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', 'grade', 'ocr'];
+const IMTIHAN_FAIR_DAILY = 300;
+const imtihanOpen = (ctx, kind) => ctx?.imtihan === true && !ctx?.trialMember && IMTIHAN_OPEN_KINDS.includes(kind);
 // Live Caption pelanggan biasa: batas harian dari setting admin (aiLiveDailyLimit), bukan angka tetap di LIMITS.
 const baseDaily = (ctx) => (ctx?.trialMember ? TRIAL_MEMBER_DAILY : { ...LIMITS, live: cachedLiveDailyLimit() });
 const dailyLimit = async (ctx, kind) => {
   const own = (await quotaOverride(ctx))?.daily?.[kind];
   if (own != null) return own;
   if (await isTrialMember(ctx)) return TRIAL_MEMBER_DAILY[kind];
+  if (IMTIHAN_OPEN_KINDS.includes(kind) && (await isImtihanHolder(ctx))) return IMTIHAN_FAIR_DAILY;
   return kind === 'live' ? await getLiveDailyLimit() : LIMITS[kind];
 };
-const dailyLimitCache = (ctx, kind) => ctx?.banked?.[kind] ?? ctx?.override?.daily?.[kind] ?? baseDaily(ctx)[kind];
+const dailyLimitCache = (ctx, kind) => ctx?.banked?.[kind] ?? ctx?.override?.daily?.[kind] ?? (imtihanOpen(ctx, kind) ? IMTIHAN_FAIR_DAILY : baseDaily(ctx)[kind]);
 // Jatah per periode 30 hari: null = tanpa kuota bulanan (Paket Imtihan atau limit khusus noMonthly).
 const monthlyLimitsFor = async (ctx) => {
   if ((await quotaOverride(ctx))?.noMonthly) return null;
@@ -1440,6 +1447,7 @@ async function handleStats(ctx, res) {
     if (u.day === today) usageToday[u.kind] = u.count;
   }
 
+  const imtihanHolder = ctx.tier === 'pro' && !(await isTrialMember(ctx)) && (await isImtihanHolder(ctx));
   return res.status(200).json({
     ok: true,
     data: {
@@ -1454,7 +1462,10 @@ async function handleStats(ctx, res) {
       usage30,
       usageToday,
       usageMonth,
-      limits: ctx.tier === 'pro' ? ((await isTrialMember(ctx)) ? TRIAL_MEMBER_DAILY : { ...LIMITS, live: await getLiveDailyLimit() }) : null,
+      // Paket Imtihan: fitur yang sepuasnya tidak ditampilkan di kotak jatah harian.
+      limits: ctx.tier === 'pro' ? ((await isTrialMember(ctx)) ? TRIAL_MEMBER_DAILY
+        : Object.fromEntries(Object.entries({ ...LIMITS, live: await getLiveDailyLimit() })
+          .filter(([k]) => !(imtihanHolder && IMTIHAN_OPEN_KINDS.includes(k))))) : null,
       // Paket Imtihan: tanpa kuota bulanan (hanya batas harian), jadi kotak jatah bulanan tidak ditampilkan.
       monthlyLimits: ctx.tier === 'pro' ? await monthlyLimitsFor(ctx) : null,
       unlimitedMonthly: ctx.tier === 'pro' && !(await isTrialMember(ctx)) && (await isImtihanHolder(ctx)),
