@@ -588,7 +588,10 @@ FARAIDH — LANGKAH WAJIB SEBELUM MENGHITUNG (periksa ulang setiap langkah):
 
 /* Pertanyaan yang hasilnya dipakai untuk keputusan nyata: dijawab model yang lebih teliti + pengingat di akhir. */
 // Cocok di awal kata saja, supaya akhiran Indonesia (-nya, -an, -kan) tetap terdeteksi ("warisannya").
-const HIGH_STAKES_RE = /(?:^|[^a-z])(waris|diwaris|mewaris|faraidh|fara'idh|faraid|mirats|mawarits|harta\s*peninggalan|tirkah|hibah|wasiat|talak|ditalak|menalak|thalaq|talaq|cerai|bercerai|perceraian|diceraikan|rujuk|iddah|'iddah|khulu|nikah|menikah|pernikahan|dinikahi|mahar|nafkah|hadhanah|hak\s*asuh|zakat|nisab|fidyah|kafarat)|مِيرَاث|ميراث|فرائض|تركة|طلاق|نكاح|زكاة|وصية/i;
+/* Kata utuh saja (boleh berakhiran -nya): tanpa batas akhir, "RUJUKAN LITERATUR" di template format prompt terbaca
+   "rujuk" dan "maharah" terbaca "mahar" — prompt Nahwu biasa jadi dianggap fikih berisiko tinggi, dipindah ke model
+   berpikir yang lambat, dan sering berakhir "AI terlalu lama merespons". */
+const HIGH_STAKES_RE = /(?:^|[^a-z])(waris|warisan|diwaris|mewaris|mewarisi|faraidh|fara'idh|faraid|mirats|mawarits|harta\s*peninggalan|tirkah|hibah|wasiat|talak|ditalak|menalak|thalaq|talaq|cerai|bercerai|perceraian|diceraikan|rujuk|iddah|'iddah|khulu'?|nikah|menikah|pernikahan|dinikahi|mahar|nafkah|hadhanah|hak\s*asuh|zakat|nisab|fidyah|kafarat)(?:nya)?(?![a-z])|مِيرَاث|ميراث|فرائض|تركة|طلاق|نكاح|زكاة|وصية/i;
 export const isHighStakesFiqh = (text) => HIGH_STAKES_RE.test(String(text || ''));
 export const FIQH_REMINDER = '\n\n> ⚖️ **Catatan Talqeeh:** penjelasan ini untuk belajar. Untuk kasus nyata (pembagian harta, nikah, talak, zakat), pastikan dulu ke duktur, mufti/Dar al-Ifta\', atau Pengadilan Agama sebelum dilaksanakan.';
 

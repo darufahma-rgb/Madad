@@ -1173,6 +1173,9 @@ async function handleGrade(ctx, body, res) {
 const CHAT_MAX_TOKENS = 3200;
 // Biasanya huruf pertama datang dalam ±4–6 dtk; lewat 15 dtk tanpa apa pun berarti macet (lihat streamAI).
 const FIRST_TOKEN_MS = 15000;
+// Model berpikir (pertanyaan hukum nyata, jatah berpikir 1024 token) baru menulis setelah selesai berpikir.
+// 30 dtk masih menyisakan ≥18 dtk untuk model cadangan.
+const FIRST_TOKEN_THINKING_MS = 30000;
 
 async function handleChat(ctx, body, res) {
   const message = typeof body.message === 'string' ? body.message.trim() : '';
@@ -1240,7 +1243,7 @@ async function handleChat(ctx, body, res) {
     cacheSystem: true,
     model: highStakes ? models.grade : models.chat,
     thinking: highStakes ? 1024 : 0,
-    firstTokenMs: highStakes ? 0 : FIRST_TOKEN_MS,
+    firstTokenMs: highStakes ? FIRST_TOKEN_THINKING_MS : FIRST_TOKEN_MS,
   });
   if (failed) return;
   const note = '\n\n_(Jawaban terpotong karena terlalu panjang — ketik **lanjutkan** untuk meneruskan.)_';
@@ -1318,8 +1321,8 @@ async function handlePromptChat(ctx, body, res) {
     cacheSystem: true,
     model: highStakes ? models.grade : models.prompt,
     thinking: highStakes ? 1024 : 0,
-    // Model yang macet tanpa satu huruf pun → ulang dengan model cadangan (model berpikir dibiarkan, wajar lebih lama).
-    firstTokenMs: highStakes ? 0 : FIRST_TOKEN_MS,
+    // Model yang macet tanpa satu huruf pun → ulang dengan model cadangan. Model berpikir diberi waktu lebih panjang.
+    firstTokenMs: highStakes ? FIRST_TOKEN_THINKING_MS : FIRST_TOKEN_MS,
   });
   if (failed) return;
   const note = '\n\n_(Jawaban terpotong karena terlalu panjang — ketik **lanjutkan** untuk meneruskan.)_';
