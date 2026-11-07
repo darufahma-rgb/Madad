@@ -181,7 +181,29 @@ export const callAI = async (opts) => (await requestAI(opts)).text;
 /* Versi streaming: onDelta(potongan) dipanggil tiap token datang; hasil akhirnya sama dengan requestAI. */
 /* timeLimitMs: hentikan dengan rapi sebelum batas waktu fungsi (Vercel 60 dtk) — teks yang sudah ada
    dikembalikan dengan truncated = true, jadi pengguna bisa minta "lanjutkan". */
-export const streamAI = async ({ system, messages, maxTokens = 2000, temperature = 0.3, model, cacheSystem = false, timeLimitMs = 0, thinking = 0 }, onDelta) => {
+/* firstTokenMs: model yang belum mengirim satu huruf pun setelah sekian ms dianggap macet (OpenRouter/penyedia sesekali
+   menahan permintaan sampai batas waktu habis — log Vercel: 48 dtk tanpa teks, padahal permintaan yang sama biasanya
+   mulai menjawab dalam ±5 dtk). Permintaannya dihentikan lalu diulang sekali dengan model cadangan memakai sisa waktu.
+   Fallback `models` OpenRouter hanya berlaku kalau model utama menolak, bukan kalau lambat. */
+const STALL_RETRY_MIN_MS = 10000;
+export const streamAI = async (opts, onDelta) => {
+  const { firstTokenMs = 0, timeLimitMs = 0 } = opts;
+  if (!(firstTokenMs > 0)) return streamOnce(opts, onDelta);
+  const started = Date.now();
+  try {
+    return await streamOnce(opts, onDelta);
+  } catch (err) {
+    if (!err?.stalled) throw err;
+    const left = timeLimitMs > 0 ? timeLimitMs - (Date.now() - started) : 0;
+    if (timeLimitMs > 0 && left < STALL_RETRY_MIN_MS) throw new Error('AI terlalu lama merespons');
+    const asked = opts.model || activeModel();
+    const backup = fallbackFor(asked);
+    console.warn('[ai] model macet tanpa jawaban, pindah ke cadangan:', asked, '→', backup);
+    return streamOnce({ ...opts, model: backup, firstTokenMs: 0, thinking: 0, timeLimitMs: left }, onDelta);
+  }
+};
+
+const streamOnce = async ({ system, messages, maxTokens = 2000, temperature = 0.3, model, cacheSystem = false, timeLimitMs = 0, thinking = 0, firstTokenMs = 0 }, onDelta) => {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('OPENROUTER_API_KEY belum diset');
   const modelId = model || activeModel();
@@ -193,6 +215,9 @@ export const streamAI = async ({ system, messages, maxTokens = 2000, temperature
   const controller = new AbortController();
   let timedOut = false;
   const timer = timeLimitMs > 0 ? setTimeout(() => { timedOut = true; controller.abort(); }, timeLimitMs) : null;
+  let stalled = false;
+  let firstTimer = firstTokenMs > 0 ? setTimeout(() => { stalled = true; controller.abort(); }, firstTokenMs) : null;
+  const stallError = () => Object.assign(new Error('AI belum menjawab (macet)'), { stalled: true });
   try {
     // Batas waktu habis sebelum token pertama datang (model masih berpikir) → pesan yang jelas, bukan AbortError mentah.
     const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -208,7 +233,7 @@ export const streamAI = async ({ system, messages, maxTokens = 2000, temperature
         modelId, maxTokens, temperature, stream: true, thinking,
         messages: systemMessage ? [systemMessage, ...messages] : messages,
       })),
-    }).catch((err) => { throw timedOut ? new Error('AI terlalu lama merespons') : err; });
+    }).catch((err) => { throw stalled && !timedOut ? stallError() : timedOut ? new Error('AI terlalu lama merespons') : err; });
     if (!res.ok || !res.body) {
       const data = await res.json().catch(() => ({}));
       throw new Error(data.error?.message || `OpenRouter error (${res.status})`);
@@ -228,7 +253,10 @@ export const streamAI = async ({ system, messages, maxTokens = 2000, temperature
       if (chunk.usage) usage = chunk.usage;
       const choice = chunk.choices?.[0];
       const piece = choice?.delta?.content || '';
-      if (piece) { text += piece; onDelta?.(piece); }
+      if (piece) {
+        if (firstTimer) { clearTimeout(firstTimer); firstTimer = null; }
+        text += piece; onDelta?.(piece);
+      }
       if (choice?.finish_reason === 'length' || choice?.native_finish_reason === 'max_tokens') truncated = true;
     };
     try {
@@ -244,8 +272,10 @@ export const streamAI = async ({ system, messages, maxTokens = 2000, temperature
       }
       if (buffer.trim()) handleLine(buffer.trim());
     } catch (err) {
-      if (!timedOut) throw err;
+      if (!timedOut && !stalled) throw err;
     }
+    // Macet sebelum huruf pertama: tidak ada yang tampil di layar, jadi aman diulang dengan model lain.
+    if (stalled && !text && !timedOut) throw stallError();
     // Stream yang dihentikan karena batas waktu tidak membawa usage: catat taksiran token (teks Arab ±1 token per karakter),
     // biayanya dihitung analitik dari harga model.
     await recordAiCost(usedModel, usage, usage ? null : {
@@ -256,6 +286,7 @@ export const streamAI = async ({ system, messages, maxTokens = 2000, temperature
     return { text, truncated: truncated || timedOut, timedOut, model: usedModel, usage };
   } finally {
     if (timer) clearTimeout(timer);
+    if (firstTimer) clearTimeout(firstTimer);
   }
 };
 

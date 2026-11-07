@@ -1171,6 +1171,8 @@ async function handleGrade(ctx, body, res) {
 
 // Teks Arab memakai banyak token per kata; 1500 token sering habis di tengah ringkasan beberapa halaman.
 const CHAT_MAX_TOKENS = 3200;
+// Biasanya huruf pertama datang dalam ±4–6 dtk; lewat 15 dtk tanpa apa pun berarti macet (lihat streamAI).
+const FIRST_TOKEN_MS = 15000;
 
 async function handleChat(ctx, body, res) {
   const message = typeof body.message === 'string' ? body.message.trim() : '';
@@ -1238,6 +1240,7 @@ async function handleChat(ctx, body, res) {
     cacheSystem: true,
     model: highStakes ? models.grade : models.chat,
     thinking: highStakes ? 1024 : 0,
+    firstTokenMs: highStakes ? 0 : FIRST_TOKEN_MS,
   });
   if (failed) return;
   const note = '\n\n_(Jawaban terpotong karena terlalu panjang — ketik **lanjutkan** untuk meneruskan.)_';
@@ -1315,6 +1318,8 @@ async function handlePromptChat(ctx, body, res) {
     cacheSystem: true,
     model: highStakes ? models.grade : models.prompt,
     thinking: highStakes ? 1024 : 0,
+    // Model yang macet tanpa satu huruf pun → ulang dengan model cadangan (model berpikir dibiarkan, wajar lebih lama).
+    firstTokenMs: highStakes ? 0 : FIRST_TOKEN_MS,
   });
   if (failed) return;
   const note = '\n\n_(Jawaban terpotong karena terlalu panjang — ketik **lanjutkan** untuk meneruskan.)_';
