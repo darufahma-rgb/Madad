@@ -399,6 +399,10 @@ export default function BankSoalPublikPage() {
 
   const EM = '#3ecf8e';
 
+  // Yang dibuka gratis adalah kelompok soal (maddah + tahun + fashl), bukan butir soal.
+  const MAX_FREE = 2;
+  const freePacks = Math.min(MAX_FREE, groups.length);
+
   /* Label fakultas */
   const fakultasLabel = (f) => {
     const map = {
@@ -438,7 +442,7 @@ export default function BankSoalPublikPage() {
           maxWidth: 480, lineHeight: 1.7,
         }}>
           Koleksi soal tahriri dari Masisir untuk Masisir.<br/>
-          2 soal pertama bisa dilihat gratis — sisanya untuk member Talqeeh.
+          {MAX_FREE} paket soal pertama bisa dilihat gratis — sisanya untuk member Talqeeh.
         </p>
 
         {/* Filter */}
@@ -500,7 +504,7 @@ export default function BankSoalPublikPage() {
               display: 'inline-block', width: 6, height: 6,
               borderRadius: '50%', background: EM,
             }}/>
-            {groups.length} soal tersedia · 3 gratis · {Math.max(0, groups.length - 3)} untuk member
+            {filtered.length} soal dalam {groups.length} paket · {freePacks} paket gratis · {groups.length - freePacks} paket untuk member
           </div>
         )}
 
@@ -530,13 +534,12 @@ export default function BankSoalPublikPage() {
         ) : (
           <>
             {(() => {
-              const MAX_FREE = 2;
               const visibleGroups = groups.slice(0, MAX_FREE);
               const lockedGroups  = groups.slice(MAX_FREE);
               return (
                 <>
                   <div className="bank-soal-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14 }}>
-                    {/* 2 soal pertama — bisa diklik normal */}
+                    {/* Paket soal gratis — bisa diklik normal */}
                     {visibleGroups.map(group => (
                       <div
                         key={group.key}
@@ -635,7 +638,7 @@ export default function BankSoalPublikPage() {
                     ))}
                   </div>
 
-                  {/* Banner lock — muncul setelah 2 soal */}
+                  {/* Banner lock — muncul setelah paket gratis */}
                   {lockedGroups.length > 0 && (
                     <div id="cta-login" style={{
                       marginTop: 24, padding: '24px 28px',
@@ -645,10 +648,10 @@ export default function BankSoalPublikPage() {
                     }}>
                       <div style={{ fontSize: 20, marginBottom: 8 }}>🔒</div>
                       <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 6 }}>
-                        {lockedGroups.length} soal lainnya hanya untuk member
+                        {lockedGroups.length} paket soal lainnya hanya untuk member
                       </div>
                       <div style={{ fontSize: 13, color: '#888', marginBottom: 20, lineHeight: 1.6 }}>
-                        Kamu sudah lihat 2 soal gratis. Semua soal lengkap dengan prompt jawabannya
+                        Kamu sudah lihat {MAX_FREE} paket soal gratis. Semua soal lengkap dengan prompt jawabannya
                         ada di paket Library — sekali bayar, berlaku selamanya.
                       </div>
                       <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
