@@ -13,8 +13,14 @@ export const isContinueAfterCut = (message, lastAssistant) =>
 /* Pembagian waktu satu pesan dalam batas 60 detik Vercel. Pustaka Rujukan berjalan lebih dulu (bisa sampai 3 panggilan
    model); kalau tidak menghasilkan jawaban, tutor biasa memakai sisa waktunya, bukan 48 detik baru. */
 export const CHAT_TIME_MS = 48000;
-export const LIBRARY_BUDGET_MS = 30000;
-const CHAT_MIN_TIME_MS = 15000;
+export const LIBRARY_BUDGET_MS = 25000;
+// Jawaban umum butuh waktu sampai token pertama (prompt panjang, model berpikir); 15 dtk sering habis sebelum ada teks.
+const CHAT_MIN_TIME_MS = 20000;
+/* Pustaka Rujukan hanya untuk pertanyaan pendek. Prompt panjang dari Prompt Talqeeh (mis. "jelaskan tiga bab, satu per
+   satu") adalah tugas menyusun penjelasan, hampir tidak pernah terjawab dari petikan kitab, dan menghabiskan
+   sampai 30 dtk sebelum jawaban biasa dimulai — penyebab "AI terlalu lama merespons". */
+export const LIBRARY_MAX_QUESTION = 600;
+export const libraryFits = (question) => String(question || '').trim().length <= LIBRARY_MAX_QUESTION;
 export const chatTimeLeft = (startedAt, now = Date.now()) => Math.max(CHAT_MIN_TIME_MS, CHAT_TIME_MS - (now - startedAt));
 
 export const withinBudget = (promise, ms) => {

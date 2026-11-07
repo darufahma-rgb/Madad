@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { makeRunContinued, isContinueAfterCut, chatTimeLeft, withinBudget, CUT_NOTE_MARK, CONTINUE_INSTRUCTION, CHAT_TIME_MS, LIBRARY_BUDGET_MS } from '../api/_lib/ai-partner/continue.js';
+import { makeRunContinued, isContinueAfterCut, chatTimeLeft, withinBudget, CUT_NOTE_MARK, CONTINUE_INSTRUCTION, CHAT_TIME_MS, LIBRARY_BUDGET_MS, libraryFits } from '../api/_lib/ai-partner/continue.js';
 
 const cut = `Jawaban panjang._(${CUT_NOTE_MARK} — ketik **lanjutkan** untuk meneruskan.)_`;
 const opts = { system: 's', messages: [{ role: 'user', content: 'ringkas 3 halaman' }], maxTokens: 3200, timeLimitMs: 48000, thinking: 1024 };
@@ -96,9 +96,16 @@ test('sambungan gagal: jawaban awal tetap dikembalikan dan ditandai terpotong', 
 test('waktu tutor dihitung dari awal pesan, jadi pustaka + tutor tetap di bawah 60 detik Vercel', () => {
   assert.equal(chatTimeLeft(1000, 1000), CHAT_TIME_MS);
   assert.equal(chatTimeLeft(0, 20000), 28000);
-  assert.equal(chatTimeLeft(0, 45000), 15000);
-  // Skenario terburuk: cek kitab aktif 4 dtk, pustaka habis jatah, lalu tutor.
-  assert.ok(4000 + LIBRARY_BUDGET_MS + chatTimeLeft(0, LIBRARY_BUDGET_MS) < 60000);
+  assert.equal(chatTimeLeft(0, 45000), 20000);
+  // Skenario terburuk: cek kitab aktif 4 dtk, pustaka habis jatah, lalu tutor — tetap ada sisa untuk menutup stream.
+  assert.ok(4000 + LIBRARY_BUDGET_MS + chatTimeLeft(0, 4000 + LIBRARY_BUDGET_MS) <= 52000);
+});
+
+test('prompt panjang dari Prompt Talqeeh langsung dijawab, tidak lewat Pustaka Rujukan', () => {
+  assert.equal(libraryFits('Apa hukum air musta\'mal?'), true);
+  const template = 'Aku thalib Tingkat I di Fakultas Ushuluddin. Jelaskan tiga bab yang sering bikin thalib bingung, satu per satu: '.repeat(8);
+  assert.equal(libraryFits(template), false);
+  assert.equal(libraryFits(''), true);
 });
 
 test('pustaka yang melewati jatah waktu ditolak, yang selesai tepat waktu diteruskan', async () => {

@@ -12,7 +12,7 @@ import {
 } from './_lib/ai-partner/prompts.js';
 import { imtihanDaysFor, IMTIHAN_LEGACY_DAYS } from './_lib/payments.js';
 import { CLASS_TRIAL_PRODUCT } from './_lib/events.js';
-import { makeRunContinued, isContinueAfterCut, chatTimeLeft, withinBudget, LIBRARY_BUDGET_MS } from './_lib/ai-partner/continue.js';
+import { makeRunContinued, isContinueAfterCut, chatTimeLeft, withinBudget, LIBRARY_BUDGET_MS, libraryFits } from './_lib/ai-partner/continue.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
 import { handleTalkhis } from './_lib/ai-partner/talkhis.js';
 import { runLiveCaption, liveHear, liveTranslate } from './_lib/ai-partner/live-caption.js';
@@ -1334,6 +1334,7 @@ const activeReferenceBooks = async () => {
   return n;
 };
 async function tryReferenceLibrary(args) {
+  if (!libraryFits(args.question)) return null;
   if (!(await activeReferenceBooks())) return null;
   try {
     const r = await withinBudget(answerFromLibrary(args, { sbConfig, sbHeaders, resolveModels, requestAI }), LIBRARY_BUDGET_MS);
