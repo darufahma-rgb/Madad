@@ -174,6 +174,21 @@ const usePartnerLink = (memberCode) => {
   return partner;
 };
 
+/* Tautan ajakan mitra (?ref=<kode>, disimpan src/supabase.jsx). Setelah login, server yang menentukan mitra akun ini
+   (tautan pertama yang menang); sebelum login hanya info tautan tersimpan. Harga tetap dihitung server saat tagihan dibuat. */
+const useAffiliateRef = (memberCode) => {
+  const [affiliate, setAffiliate] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      const a = memberCode ? await window.tagAffiliateRef() : await window.getAffiliateInfo(window.readAffiliateRef());
+      if (alive) setAffiliate(a);
+    })().catch(() => {});
+    return () => { alive = false; };
+  }, [memberCode]);
+  return affiliate;
+};
+
 const CLASS_TRIAL_ERRORS = {
   trial_closed:   'Trial hanya bisa diaktifkan saat kelas berlangsung.',
   trial_used:     'Akun ini sudah pernah memakai trial kelas.',
@@ -389,8 +404,14 @@ const GabungPage = () => {
   const partner      = usePartnerLink(session?.code);
   const [trialBusy, setTrialBusy]   = useState(false);
   const [trialError, setTrialError] = useState('');
-  const usePartner   = !!partner?.priceLive && (!offer || partner.price <= offer.price);
-  const imtihan      = imtihanBundle(settings, usePartner ? { price: partner.price, endsAt: partner.endsAt, name: `Kelas ${partner.name}`, partner: true } : offer);
+  const affiliate    = useAffiliateRef(session?.code);
+  // Potongan mitra dihitung dari harga yang sedang berlaku (event atau normal), sama seperti di server.
+  const affiliateOffer = !paidMember && affiliate?.discount > 0
+    ? { price: (imtihanPromoActive() ? IMTIHAN_PROMO.price : IMTIHAN_PRICE_IDR) - affiliate.discount, name: `Ajakan ${affiliate.name}`, partner: true, affiliate: true, endsAt: null }
+    : null;
+  const bestOffer    = [offer, affiliateOffer].filter(Boolean).sort((a, b) => a.price - b.price)[0] || null;
+  const usePartner   = !!partner?.priceLive && (!bestOffer || partner.price <= bestOffer.price);
+  const imtihan      = imtihanBundle(settings, usePartner ? { price: partner.price, endsAt: partner.endsAt, name: `Kelas ${partner.name}`, partner: true } : bestOffer);
   const adminWa      = (settings.whatsapp || '').replace(/\D/g, '') || DEFAULT_ADMIN_WA;
   // Library + AI tanpa harga AI → hanya Library yang bisa dibayar sekarang.
   // Paket Imtihan berharga tetap (tidak bergantung harga AI bulanan).
@@ -583,6 +604,16 @@ const GabungPage = () => {
 
       {/* Paket */}
       <Section className="pt-4 pb-8">
+        {affiliate && !paidMember && !usePartner && (
+          <div className="card-glass p-4 max-w-3xl mx-auto mb-8 text-sm text-ink-muted flex items-center gap-3" style={{ border: '1px solid rgba(201,168,106,0.3)' }}>
+            <Icon name="users" className="w-5 h-5 flex-shrink-0" style={{ stroke: GOLD }}/>
+            <span>
+              Kamu diajak oleh <span className="text-ink">{affiliate.name}</span>
+              {affiliate.discount > 0 ? <>, jadi Paket Imtihan-mu lebih hemat <b className="text-gold-200">{formatRupiah(affiliate.discount)}</b>.</> : '.'}
+              {signedOut && affiliate.discount > 0 ? ' Potongannya berlaku setelah kamu masuk dengan Google.' : ''}
+            </span>
+          </div>
+        )}
         {partner && !partner.priceLive && !paidMember && (
           <div className="card-glass p-5 max-w-3xl mx-auto mb-8 text-sm text-ink-muted" style={{ border: '1px solid rgba(62,207,142,0.25)' }}>
             Kamu mendaftar lewat <span className="text-ink">{partner.name}</span>. Buat akun gratis dulu, lalu harga khusus dan akun trial dibuka di hari kelas.
@@ -636,8 +667,8 @@ const GabungPage = () => {
           ) : (
             <>
               {/* Paket utama di tengah: persiapan sampai imtihan, sekali bayar. */}
-              <PlanCard className="order-first md:order-none" color={EMERALD} icon="sparkles" recommended badge={imtihan.promo ? (imtihan.promo.personal ? "🎁 Khusus untukmu" : `Promo ${imtihan.promo.name}`) : "Untuk persiapan imtihan"} title="Paket Imtihan" tagline="Library + AI, persiapan imtihan"
-                strike={imtihan.promo ? formatRupiah(imtihan.promo.normal) : undefined} saving={imtihan.promo ? (imtihan.promo.personal ? <>Hangus dalam <OfferClock endsAt={imtihan.promo.endsAt}/></> : `Sampai ${imtihan.promo.endLabel}`) : undefined}
+              <PlanCard className="order-first md:order-none" color={EMERALD} icon="sparkles" recommended badge={imtihan.promo ? (imtihan.promo.personal ? "🎁 Khusus untukmu" : imtihan.promo.affiliate ? `🤝 ${imtihan.promo.name}` : `Promo ${imtihan.promo.name}`) : "Untuk persiapan imtihan"} title="Paket Imtihan" tagline="Library + AI, persiapan imtihan"
+                strike={imtihan.promo ? formatRupiah(imtihan.promo.normal) : undefined} saving={imtihan.promo ? (imtihan.promo.personal ? <>Hangus dalam <OfferClock endsAt={imtihan.promo.endsAt}/></> : imtihan.promo.endLabel ? `Sampai ${imtihan.promo.endLabel}` : `Hemat ${formatRupiah(imtihan.promo.normal - imtihan.total)}`) : undefined}
                 price={formatRupiah(imtihan.total)} priceNote="sekali bayar"
                 sub={`Library selamanya + AI ${IMTIHAN_AI_DAYS} hari`}
                 extra={<div className="mb-5 -mt-2"><ImtihanBreakdown bundle={imtihan}/></div>}

@@ -89,6 +89,9 @@ const App = () => {
   useEffect(() => { window.logFunnel?.('visit'); }, []);
   // Akun yang datang lewat tautan kerja sama ditandai ke kekeluargaannya, di halaman mana pun ia kembali setelah login.
   useEffect(() => { if (session?.code) window.tagPartnerReferral?.(); }, [session?.code]);
+  // Tautan ajakan mitra (?ref=<kode>): disimpan di browser, lalu akun ditandai ke mitranya setelah login.
+  useEffect(() => { window.captureAffiliateRef?.(); }, [path]);
+  useEffect(() => { if (session?.code && window.readAffiliateRef?.()) window.tagAffiliateRef?.(); }, [session?.code]);
   const [joinPlan, setJoinPlan] = useState(null);
   const [aiPaymentOpen, setAiPaymentOpen] = useState(false);
 
@@ -214,7 +217,7 @@ const App = () => {
   }, [session, authStatus, profile, isFree, canUpgrade]);
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
-  const isPublic = path === "/" || path.startsWith("/gabung") || path === "/rombongan" || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/developer" || path.split("?")[0] === "/presentasi" || path === "/seminar" || path.startsWith("/seminar/") || path.startsWith("/seminar?") || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal" || path === "/battle" || path.startsWith("/battle") || path === "/game";
+  const isPublic = path === "/" || path.startsWith("/gabung") || path === "/rombongan" || path === "/mitra" || path.startsWith("/mitra?") || path.startsWith("/sample/") || path === "/ethics" || path === "/privacy" || path === "/developer" || path.split("?")[0] === "/presentasi" || path === "/seminar" || path.startsWith("/seminar/") || path.startsWith("/seminar?") || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal" || path === "/battle" || path.startsWith("/battle") || path === "/game";
 
   // Admin gets its own layout (no public nav/footer)
   if (isAdmin) {
@@ -232,6 +235,7 @@ const App = () => {
   if (session && isFree && isFreeLocked(path))      { page = <FreeUpgradeWall path={path}/>; routeLabel = "Khusus Library"; }
   else if (path === "/gabung" || path.startsWith("/gabung?")) { page = <GabungPage key={path}/>; routeLabel = "Gabung"; }
   else if (path === "/rombongan") { page = <RombonganPage/>; routeLabel = "Paket Rombongan"; }
+  else if (path === "/mitra" || path.startsWith("/mitra?")) { page = <MitraPage/>; routeLabel = "Mitra Talqeeh"; }
   else if (path.startsWith("/sample/nahwu"))        { page = <SampleNahwuPage/>; routeLabel = "Sample Nahwu"; }
   else if (path === "/ethics")            { page = <EthicsPage/>; routeLabel = "Etika"; }
   else if (path === "/privacy")           { page = <PrivacyPage/>; routeLabel = "Kebijakan Privasi"; }

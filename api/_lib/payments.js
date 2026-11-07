@@ -160,7 +160,8 @@ export function checkoutBlockReason(plan, member) {
 }
 
 // partnerSlug: tagihan dicatat ke tautan kerja sama itu (dasar hitungan kas kekeluargaan). imtihanAmount sudah harga tautannya.
-export async function createCheckout({ user, member, plan, appOrigin, imtihanAmount, seats, partnerSlug }) {
+// affiliate: { slug, percent } dari Program Mitra (api/_lib/affiliates.js); komisinya dihitung dari harga yang ditagih.
+export async function createCheckout({ user, member, plan, appOrigin, imtihanAmount, seats, partnerSlug, affiliate }) {
   const prices = await getPrices();
   // Paket Imtihan & Rombongan berharga tetap, jadi tidak bergantung pada harga AI bulanan di Settings.
   if (!['library', 'imtihan', 'rombongan'].includes(plan) && !prices.ai) return { ok: false, status: 'ai_price_unset' };
@@ -172,9 +173,12 @@ export async function createCheckout({ user, member, plan, appOrigin, imtihanAmo
   // Pembeli yang menekan "Bayar" berkali-kali dapat link yang sama.
   const since = new Date(Date.now() - REUSE_WINDOW_MS).toISOString();
   const pending = await selectCheckouts(
-    `auth_user_id=eq.${encodeURIComponent(user.id)}&plan=eq.${plan}&amount=eq.${amount}&status=eq.pending&created_at=gte.${since}${partnerSlug ? `&partner_slug=eq.${encodeURIComponent(partnerSlug)}` : ''}&order=created_at.desc&limit=1`
+    `auth_user_id=eq.${encodeURIComponent(user.id)}&plan=eq.${plan}&amount=eq.${amount}&status=eq.pending&created_at=gte.${since}${partnerSlug ? `&partner_slug=eq.${encodeURIComponent(partnerSlug)}` : ''}${affiliate ? `&affiliate_slug=eq.${encodeURIComponent(affiliate.slug)}` : ''}&order=created_at.desc&limit=1`
   );
   if (pending[0]?.link) return { ok: true, checkout: pending[0], reused: true };
+  const affiliateFields = affiliate
+    ? { affiliate_slug: affiliate.slug, affiliate_commission: Math.max(0, Math.round(amount * affiliate.percent / 100)) }
+    : {};
 
   const { url, h } = sb();
   const name = (member?.name || user.name || user.email.split('@')[0]).slice(0, 120);
@@ -182,7 +186,7 @@ export async function createCheckout({ user, member, plan, appOrigin, imtihanAmo
     method: 'POST',
     headers: h({ Prefer: 'return=representation' }),
     body: JSON.stringify({
-      plan, amount, ...parts, ...(rombongan ? { seats: rombongan.seats } : {}), ...(partnerSlug ? { partner_slug: partnerSlug } : {}),
+      plan, amount, ...parts, ...(rombongan ? { seats: rombongan.seats } : {}), ...(partnerSlug ? { partner_slug: partnerSlug } : {}), ...affiliateFields,
       email: user.email, name, auth_user_id: user.id, member_code: member?.code || null,
     }),
   });

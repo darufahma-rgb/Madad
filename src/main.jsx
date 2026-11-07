@@ -86,6 +86,8 @@ import './pages/live-caption.jsx';
 import './pages/ilmi-index.jsx';
 import './pages/statistik.jsx';
 import './pages/gabung.jsx';
+import './pages/mitra.jsx';
+import './pages/admin-mitra.jsx';
 import './pages/upgrade-wall.jsx';
 import './pages/profil-belajar.jsx';
 import './pages/battle-page.jsx';

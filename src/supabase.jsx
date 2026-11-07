@@ -143,7 +143,8 @@ const checkAiSubscription = async () => {
 // Buat tagihan untuk paket 'library' | 'library_ai' | 'ai' | 'imtihan' | 'rombongan' (opts.seats). Harga ditentukan server.
 const createCheckout = async (plan, opts = {}) => {
   try {
-    const res = await authFetch('/api/login?action=checkout', { method: 'POST', body: JSON.stringify({ plan, ...(opts.seats ? { seats: opts.seats } : {}), ...(opts.partner ? { partner: opts.partner } : {}) }) });
+    const ref = readAffiliateRef();
+    const res = await authFetch('/api/login?action=checkout', { method: 'POST', body: JSON.stringify({ plan, ...(opts.seats ? { seats: opts.seats } : {}), ...(opts.partner ? { partner: opts.partner } : {}), ...(ref ? { ref } : {}) }) });
     const data = await res.json().catch(() => ({}));
     if (res.status === 429) return { ok: false, status: 'rate_limited' };
     return data.ok ? data : { ok: false, status: data.status || 'error' };
@@ -159,6 +160,46 @@ const tagPartnerReferral = async (slug) => {
     if (code === undefined) { try { code = localStorage.getItem('talqeeh_partner_link') || ''; } catch { code = ''; } }
     const res = await authFetch('/api/login?action=partner-tag', { method: 'POST', body: JSON.stringify({ slug: code }) });
     return (await res.json().catch(() => ({})))?.slug || null;
+  } catch {
+    return null;
+  }
+};
+
+/* ── PROGRAM MITRA (api/_lib/affiliates.js) ──
+   Tautan ajakan: ?ref=<kode> di halaman mana pun. Kodenya disimpan 30 hari di browser karena pengunjung biasanya
+   login dulu dan kembali lewat halaman lain; setelah login, akunnya ditandai ke mitra itu di server. */
+const AFFILIATE_REF_KEY = 'talqeeh_ref';
+const AFFILIATE_REF_DAYS = 30;
+const captureAffiliateRef = () => {
+  try {
+    const q = new URLSearchParams(window.location.search);
+    const hq = new URLSearchParams(window.location.hash.split('?')[1] || '');
+    const slug = String(hq.get('ref') || q.get('ref') || '').trim().toLowerCase();
+    if (/^[a-z0-9][a-z0-9-]{2,23}$/.test(slug)) localStorage.setItem(AFFILIATE_REF_KEY, JSON.stringify({ slug, at: Date.now() }));
+  } catch {}
+};
+const readAffiliateRef = () => {
+  try {
+    const r = JSON.parse(localStorage.getItem(AFFILIATE_REF_KEY) || 'null');
+    if (r?.slug && Date.now() - (r.at || 0) < AFFILIATE_REF_DAYS * 86400e3) return r.slug;
+  } catch {}
+  return '';
+};
+// Mitra yang berlaku untuk akun ini ({ slug, name, discount }) atau null. Menandai akun ke tautan tersimpan kalau belum bertanda.
+const tagAffiliateRef = async () => {
+  try {
+    const res = await authFetch('/api/login?action=affiliate-tag', { method: 'POST', body: JSON.stringify({ slug: readAffiliateRef() }) });
+    return (await res.json().catch(() => ({})))?.affiliate || null;
+  } catch {
+    return null;
+  }
+};
+// Untuk pengunjung yang belum login.
+const getAffiliateInfo = async (slug) => {
+  if (!slug) return null;
+  try {
+    const res = await fetch('/api/login?action=affiliate-info', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ slug }) });
+    return (await res.json().catch(() => ({})))?.affiliate || null;
   } catch {
     return null;
   }
@@ -492,6 +533,7 @@ const sbPushAllUserData = async () => {
 Object.assign(window, {
   getMemberCode, isPaidMember,
   checkAiSubscription, createCheckout, checkCheckout, tagPartnerReferral, getGroupCodes, redeemGroupCode,
+  captureAffiliateRef, readAffiliateRef, tagAffiliateRef, getAffiliateInfo,
   sbLoadNotes, sbSaveNote, sbDeleteNote,
   sbLoadProgress, sbSaveProgress,
   sbLoadIntentions, sbSaveIntention,

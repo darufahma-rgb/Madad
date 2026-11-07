@@ -3,8 +3,12 @@ import { normalizePin } from './_lib/pin.js';
 import { verifyUnsubToken, addOptout } from './_lib/email.js';
 import {
   CHECKOUT_PLANS, mayarConfigured, checkoutBlockReason, createCheckout, getOwnedCheckout, refreshCheckout,
-  listGroupCodes, redeemGroupCode, claimClassTrial,
+  listGroupCodes, redeemGroupCode, claimClassTrial, imtihanPrice,
 } from './_lib/payments.js';
+import {
+  readAffiliateProgram, resolveMemberAffiliate, getApprovedAffiliate, getAffiliateByMember, affiliatePrice, commissionPercent,
+  validateApplication, isSlugTaken, affiliateStats, AFFILIATE_FIELDS,
+} from './_lib/affiliates.js';
 import { getWelcomeOffer } from './_lib/offer.js';
 import { getLivePartnerLink, getOpenPartnerLink, isLive, classTrialOpen, CLASS_TRIAL_HOURS } from './_lib/events.js';
 
@@ -203,7 +207,7 @@ const publicCheckout = (c) => ({ id: c.id, plan: c.plan, amount: c.amount, link:
 // Buat tagihan Mayar untuk paket yang dipilih (harga ditentukan server, bukan browser).
 async function handleCheckout(req, user, res) {
   if (!mayarConfigured()) return res.status(200).json({ ok: false, status: 'payments_disabled' });
-  const { plan, seats, partner: partnerSlug } = await parseBody(req);
+  const { plan, seats, partner: partnerSlug, ref } = await parseBody(req);
   if (!CHECKOUT_PLANS.includes(plan)) return res.status(400).json({ ok: false, status: 'invalid_plan' });
   if (!checkCheckoutLimit(user.id)) return res.status(429).json({ ok: false, status: 'rate_limited' });
 
@@ -219,11 +223,18 @@ async function handleCheckout(req, user, res) {
   const partner = plan !== 'imtihan' ? null
     : (tagged && await getLivePartnerLink(tagged)) || (partnerSlug ? await getLivePartnerLink(partnerSlug) : null);
   if (plan === 'imtihan' && partnerSlug && !partner) return res.status(200).json({ ok: false, status: 'partner_closed' });
-  const usePartner = partner && partner.price <= (offer?.price || Infinity);
+  // Program Mitra: akun yang diajak mitra dapat potongan; harga termurah yang menang (penawaran pribadi, mitra, kekeluargaan).
+  const program = plan === 'imtihan' && member ? await readAffiliateProgram() : null;
+  const affiliate = program?.open ? await resolveMemberAffiliate(member, ref).catch(() => null) : null;
+  const affiliateAmount = affiliate ? affiliatePrice(await imtihanPrice(), program.discount) : null;
+  const best = Math.min(offer?.price || Infinity, affiliateAmount || Infinity);
+  const usePartner = partner && partner.price <= best;
   const result = await createCheckout({
     user, member, plan, appOrigin: appOrigin(req), seats,
-    imtihanAmount: usePartner ? partner.price : offer?.price,
+    imtihanAmount: usePartner ? partner.price : (Number.isFinite(best) ? best : undefined),
     partnerSlug: usePartner ? partner.slug : undefined,
+    // Tagihan lewat tautan kekeluargaan tidak diberi komisi mitra (bagiannya sudah untuk kas kekeluargaan).
+    affiliate: affiliate && !usePartner ? { slug: affiliate.slug, percent: commissionPercent(affiliate, program) } : undefined,
   });
   if (!result.ok) return res.status(200).json(result);
   return res.status(200).json({ ok: true, checkout: publicCheckout(result.checkout) });
@@ -337,6 +348,98 @@ async function handleClassTrial(req, user, res) {
   return res.status(200).json(await claimClassTrial(member, link));
 }
 
+/* ── Program Mitra (api/_lib/affiliates.js, migrations/mitra.sql) ── */
+
+const publicAffiliate = (a, program) => (a ? { slug: a.slug, name: a.name, discount: program.discount } : null);
+
+// Info tautan ajakan untuk halaman Gabung. Tanpa login: pengunjung belum tentu punya akun.
+async function handleAffiliateInfo(req, res) {
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+  if (!checkTrackLimit(ip)) return res.status(429).json({ ok: false });
+  const { slug } = await parseBody(req);
+  const program = await readAffiliateProgram();
+  const affiliate = program.open && slug ? await getApprovedAffiliate(slug).catch(() => null) : null;
+  return res.status(200).json({
+    ok: true, affiliate: publicAffiliate(affiliate, program),
+    program: { open: program.open, percent: program.percent, discount: program.discount },
+  });
+}
+
+// Menandai akun ke mitra yang tautannya dipakai, lalu mengembalikan mitra yang berlaku untuk akun ini (atau null).
+async function handleAffiliateTag(req, user, res) {
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+  if (!checkTrackLimit(ip)) return res.status(429).json({ ok: false });
+  const { slug } = await parseBody(req);
+  const program = await readAffiliateProgram();
+  if (!program.open) return res.status(200).json({ ok: true, affiliate: null });
+  const member = await resolveMember(user);
+  const affiliate = await resolveMemberAffiliate(member, slug).catch(() => null);
+  return res.status(200).json({ ok: true, affiliate: publicAffiliate(affiliate, program) });
+}
+
+// Dasbor mitra: status pendaftaran, tautan, dan ringkasan komisi milik akun ini.
+async function handleAffiliateMe(user, res) {
+  const member = await resolveMember(user);
+  if (!member) return res.status(200).json({ ok: false, status: 'not_member' });
+  const program = await readAffiliateProgram();
+  let affiliate;
+  try { affiliate = await getAffiliateByMember(member.code); }
+  catch (err) {
+    if (err.message === 'migration') return res.status(200).json({ ok: false, status: 'not_ready' });
+    throw err;
+  }
+  const stats = affiliate?.status === 'approved' || affiliate?.status === 'suspended' ? await affiliateStats(affiliate.slug) : null;
+  return res.status(200).json({
+    ok: true,
+    program: { open: program.open, percent: program.percent, discount: program.discount },
+    affiliate: affiliate ? { ...affiliate, percent: commissionPercent(affiliate, program) } : null,
+    stats,
+    suggestedName: member.name || user.name || '',
+  });
+}
+
+const applyAttempts = new Map();
+async function handleAffiliateApply(req, user, res) {
+  const now = Date.now();
+  const recent = (applyAttempts.get(user.id) || []).filter(t => now - t < 3600e3);
+  if (recent.length >= 10) return res.status(429).json({ ok: false, status: 'rate_limited' });
+  applyAttempts.set(user.id, [...recent, now]);
+
+  const member = await resolveMember(user);
+  if (!member) return res.status(200).json({ ok: false, status: 'not_member' });
+  if (member.status !== 'active') return res.status(200).json({ ok: false, status: member.status });
+  const program = await readAffiliateProgram();
+  if (!program.open) return res.status(200).json({ ok: false, status: 'closed' });
+  const form = validateApplication(await parseBody(req));
+  if (form.error) return res.status(200).json({ ok: false, status: 'invalid', error: form.error });
+
+  let existing;
+  try { existing = await getAffiliateByMember(member.code); }
+  catch (err) {
+    if (err.message === 'migration') return res.status(200).json({ ok: false, status: 'not_ready' });
+    throw err;
+  }
+  // Yang sudah disetujui atau sedang dinonaktifkan tidak bisa mengubah datanya sendiri (kode tautannya sudah tersebar).
+  if (existing && existing.status !== 'pending' && existing.status !== 'rejected') {
+    return res.status(200).json({ ok: false, status: 'already', error: 'Kamu sudah terdaftar sebagai mitra.' });
+  }
+  if (await isSlugTaken(form.value.slug, member.code)) {
+    return res.status(200).json({ ok: false, status: 'invalid', error: `Kode "${form.value.slug}" sudah dipakai mitra lain. Coba kode lain.` });
+  }
+  const { url, key } = sbConfig();
+  const r = await fetch(`${url}/rest/v1/affiliates?on_conflict=member_code&select=${AFFILIATE_FIELDS}`, {
+    method: 'POST',
+    headers: sbHeaders(key, { Prefer: 'resolution=merge-duplicates,return=representation' }),
+    body: JSON.stringify({ member_code: member.code, ...form.value, status: 'pending', admin_note: null, created_at: new Date().toISOString() }),
+  });
+  if (r.status === 409) return res.status(200).json({ ok: false, status: 'invalid', error: `Kode "${form.value.slug}" sudah dipakai mitra lain. Coba kode lain.` });
+  if (!r.ok) {
+    console.error('[login:affiliate-apply]', r.status, (await r.text()).slice(0, 200));
+    return res.status(200).json({ ok: false, status: 'error' });
+  }
+  return res.status(200).json({ ok: true, affiliate: (await r.json())?.[0] || null });
+}
+
 async function handleTrack(req, res) {
   const body = req.body || {};
   const event = String(body.event || '');
@@ -383,6 +486,7 @@ export default async function handler(req, res) {
   try {
     if (action === 'track') return await handleTrack(req, res);
     if (action === 'partner-info') return await handlePartnerInfo(req, res);
+    if (action === 'affiliate-info') return await handleAffiliateInfo(req, res);
     const user = await getAuthUser(req);
     if (!user) return res.status(401).json({ ok: false, status: 'unauthenticated' });
 
@@ -392,6 +496,9 @@ export default async function handler(req, res) {
     if (action === 'checkout') return await handleCheckout(req, user, res);
     if (action === 'class-trial') return await handleClassTrial(req, user, res);
     if (action === 'partner-tag') return await handlePartnerTag(req, user, res);
+    if (action === 'affiliate-tag') return await handleAffiliateTag(req, user, res);
+    if (action === 'affiliate-me') return await handleAffiliateMe(user, res);
+    if (action === 'affiliate-apply') return await handleAffiliateApply(req, user, res);
     if (action === 'offer') {
       const member = await resolveMember(user);
       return res.status(200).json({ ok: true, offer: await getWelcomeOffer(member, { start: true }) });

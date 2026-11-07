@@ -437,6 +437,7 @@ const Footer = () => {
             ["/bank-soal", "Bank Soal"],
             ["/submit-soal", "Submit Soal"],
             ["/tutorial", "Cara Pakai"],
+            ["/mitra", "Jadi Mitra"],
             ["/ethics", "Etika Pakai AI"],
             ["/privacy", "Kebijakan Privasi"],
             ["/developer", "Tentang Developer"],
@@ -658,7 +659,8 @@ const imtihanBundle = (settings, offer = null) => {
       total, aiPart: total - LIBRARY_PRICE_IDR, ai, separate, saving,
       savingPct: saving ? Math.round((saving / separate) * 100) : null,
       perDay: Math.ceil((total - LIBRARY_PRICE_IDR) / IMTIHAN_AI_DAYS / 100) * 100,
-      promo: { normal: IMTIHAN_PRICE_IDR, name: offer.name || 'Hadiah khusus', endLabel: offerEndLabel(offer.endsAt), personal: !offer.partner, endsAt: offer.endsAt },
+      // Potongan mitra tidak berbatas waktu (endsAt kosong): tanpa tenggat & tanpa jam hitung mundur.
+      promo: { normal: IMTIHAN_PRICE_IDR, name: offer.name || 'Hadiah khusus', endLabel: offer.endsAt ? offerEndLabel(offer.endsAt) : null, personal: !offer.partner, affiliate: !!offer.affiliate, endsAt: offer.endsAt || null },
     };
   }
   const promo = imtihanPromoActive();

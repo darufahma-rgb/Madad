@@ -53,6 +53,7 @@ const navGroups = (profile) => [
     { to: '/library',       label: 'Library',        icon: 'bookOpen' },
     { to: '/framework',     label: 'Metode Belajar', icon: 'lightbulb' },
     { action: openTutorial, label: 'Tutorial',       icon: 'info' },
+    { to: '/mitra',         label: 'Jadi Mitra',     icon: 'users' },
     { to: '/ethics',        label: 'Etika Pakai AI', icon: 'shield' },
     { to: '/developer',     label: 'Tentang Developer', icon: 'user' },
   ]},

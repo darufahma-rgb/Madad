@@ -168,6 +168,7 @@ const ADMIN_TABS = [
   { id: "ai-usage",   label: "Pemakaian AI",      icon: "brain" },
   { id: "members",    label: "Members",           icon: "users" },
   { id: "ai-subs",    label: "Langganan & Bayar", icon: "sparkles" },
+  { id: "mitra",      label: "Mitra",             icon: "users" },
   { id: "email",      label: "Email & Event",     icon: "messageSquare" },
   { id: "bank-soal",  label: "Bank Soal",         icon: "fileText" },
   { id: "seminar",    label: "Akses Seminar",     icon: "book" },
@@ -278,6 +279,7 @@ const AdminPage = () => {
         {tab === "guides"     && <AdminGuides/>}
         {tab === "bank-soal"  && <AdminBankSoal/>}
         {tab === "ai-subs"    && <AdminSubscriptions/>}
+        {tab === "mitra"      && <AdminMitra/>}
         {tab === "seminar"    && <AdminSeminar/>}
         {tab === "email"      && <AdminEmail/>}
         {tab === "ai-eval"    && <AdminEval/>}
@@ -2917,6 +2919,7 @@ const AdminSettings = () => {
         imtihanEvent: imtihanEvent.enabled ? imtihanEvent : { enabled: false },
         rombonganEvent: rombonganEvent.enabled ? rombonganEvent : { enabled: false },
         partnerLinks,
+        affiliateProgram: undefined, // diatur di tab Mitra; jangan ditimpa nilai lama dari tab ini
       });
       localStorage.removeItem("talqee_admin_settings");
       setSaved(true);

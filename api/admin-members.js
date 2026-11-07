@@ -10,6 +10,10 @@ import { parseAiPrice, extendAi } from './_lib/payments.js';
 import { newMemberCode } from './_lib/member.js';
 import { QUOTA_KINDS, parseQuotaOverrides, MAX_LIVE_DAILY } from './_lib/ai-partner/limits.js';
 import { handleEmailAdmin } from './_lib/email.js';
+import { validateAffiliateProgram, readAffiliateProgram, slugAllowed, cleanSlug, summarizeSales, AFFILIATE_FIELDS } from './_lib/affiliates.js';
+
+const AFFILIATE_STATUSES = ['pending', 'approved', 'rejected', 'suspended'];
+const AFFILIATE_MIGRATION_ERROR = 'Program Mitra belum siap. Jalankan migrations/mitra.sql di Supabase SQL Editor.';
 
 const sbRequest = (supabaseUrl, serviceKey, method, path, body, prefer = 'return=representation') => {
   const url = new URL(`${supabaseUrl}/rest/v1/${path}`);
@@ -331,6 +335,72 @@ export default async function handler(req, res) {
         const t = totals[slug] || { sold: 0, gross: 0 };
         return { slug, name: link?.name || slug, ...t, kas: Math.round(t.gross * (link?.kasPercent || 0) / 100), trials: trialCount[slug] || 0, accounts: accountCount[slug] || 0 };
       }) };
+    } else if (action === 'affiliate-list') {
+      // Semua mitra + ringkasan per mitra: akun yang diajak, penjualan lunas, komisi (sudah/belum dibayar).
+      const list = await sbRequest(supabaseUrl, serviceKey, 'GET', `affiliates?select=${AFFILIATE_FIELDS}&order=created_at.desc&limit=1000`);
+      if (list.status >= 400) { res.status(400).json({ ok: false, error: AFFILIATE_MIGRATION_ERROR }); return; }
+      const [tagged, sold, program] = await Promise.all([
+        sbRequest(supabaseUrl, serviceKey, 'GET', 'members?affiliate_slug=not.is.null&select=affiliate_slug&limit=10000'),
+        sbRequest(supabaseUrl, serviceKey, 'GET', 'payment_checkouts?affiliate_slug=not.is.null&status=eq.paid&select=affiliate_slug,amount,affiliate_commission,affiliate_paid_at,paid_at&order=paid_at.desc&limit=10000'),
+        readAffiliateProgram(),
+      ]);
+      const signups = {};
+      for (const row of Array.isArray(tagged.data) ? tagged.data : []) signups[row.affiliate_slug] = (signups[row.affiliate_slug] || 0) + 1;
+      const salesBySlug = {};
+      for (const row of Array.isArray(sold.data) ? sold.data : []) (salesBySlug[row.affiliate_slug] ||= []).push(row);
+      result = { status: 200, data: {
+        program,
+        affiliates: (Array.isArray(list.data) ? list.data : []).map(a => {
+          const s = summarizeSales(signups[a.slug] || 0, salesBySlug[a.slug] || []);
+          return { ...a, percent: a.commission_percent || program.percent, signups: s.signups, sold: s.sold, gross: (salesBySlug[a.slug] || []).reduce((n, r) => n + (Number(r.amount) || 0), 0), earned: s.earned, paid: s.paid, unpaid: s.unpaid };
+        }),
+      } };
+    } else if (action === 'affiliate-update') {
+      // Ubah status, persen komisi khusus, catatan, atau kode tautan satu mitra.
+      const one = String(code || '').trim().toUpperCase();
+      if (!/^[A-Z0-9-]{3,40}$/.test(one)) { res.status(400).json({ ok: false, error: 'Kode member tidak valid' }); return; }
+      const patch = {};
+      if (row?.status !== undefined) {
+        if (!AFFILIATE_STATUSES.includes(row.status)) { res.status(400).json({ ok: false, error: 'Status mitra tidak valid' }); return; }
+        patch.status = row.status;
+        if (row.status === 'approved') patch.approved_at = new Date().toISOString();
+      }
+      if (row?.commission_percent !== undefined) {
+        const p = row.commission_percent === '' || row.commission_percent == null ? null : Number(row.commission_percent);
+        if (p !== null && !(Number.isInteger(p) && p >= 1 && p <= 50)) { res.status(400).json({ ok: false, error: 'Komisi khusus harus 1–50 persen, atau kosong untuk bawaan' }); return; }
+        patch.commission_percent = p;
+      }
+      if (row?.admin_note !== undefined) patch.admin_note = String(row.admin_note || '').trim().slice(0, 300) || null;
+      if (row?.slug !== undefined) {
+        // Kode tautan yang sudah dibagikan sebaiknya tidak diubah: akun & komisi lama tetap tercatat di kode lama.
+        const slug = cleanSlug(row.slug);
+        if (!slugAllowed(slug)) { res.status(400).json({ ok: false, error: 'Kode tautan 3–24 huruf kecil, angka, atau strip' }); return; }
+        patch.slug = slug;
+      }
+      if (!Object.keys(patch).length) { res.status(400).json({ ok: false, error: 'Tidak ada yang diubah' }); return; }
+      const before = patch.slug ? await sbRequest(supabaseUrl, serviceKey, 'GET', `affiliates?member_code=eq.${encodeURIComponent(one)}&select=slug&limit=1`) : null;
+      const oldSlug = Array.isArray(before?.data) ? before.data[0]?.slug : null;
+      result = await sbRequest(supabaseUrl, serviceKey, 'PATCH', `affiliates?member_code=eq.${encodeURIComponent(one)}&select=${AFFILIATE_FIELDS}`, patch);
+      if (result.status === 409) { res.status(400).json({ ok: false, error: 'Kode tautan itu sudah dipakai mitra lain' }); return; }
+      if (result.status < 400 && !(Array.isArray(result.data) && result.data[0])) { res.status(404).json({ ok: false, error: 'Mitra tidak ditemukan' }); return; }
+      // Kode tautan diganti: akun yang diajak & komisinya ikut pindah ke kode baru (tautan lama berhenti berlaku).
+      if (result.status < 400 && oldSlug && oldSlug !== patch.slug) {
+        const moved = { affiliate_slug: patch.slug };
+        await sbRequest(supabaseUrl, serviceKey, 'PATCH', `members?affiliate_slug=eq.${encodeURIComponent(oldSlug)}`, moved, 'return=minimal');
+        await sbRequest(supabaseUrl, serviceKey, 'PATCH', `payment_checkouts?affiliate_slug=eq.${encodeURIComponent(oldSlug)}`, moved, 'return=minimal');
+      }
+    } else if (action === 'affiliate-payout') {
+      // Admin sudah mentransfer komisi → semua komisi lunas yang belum dibayar untuk mitra ini ditandai dibayar.
+      const one = String(code || '').trim().toUpperCase();
+      const aff = await sbRequest(supabaseUrl, serviceKey, 'GET', `affiliates?member_code=eq.${encodeURIComponent(one)}&select=slug&limit=1`);
+      const slug = Array.isArray(aff.data) ? aff.data[0]?.slug : null;
+      if (!slug) { res.status(404).json({ ok: false, error: 'Mitra tidak ditemukan' }); return; }
+      const marked = await sbRequest(supabaseUrl, serviceKey, 'PATCH',
+        `payment_checkouts?affiliate_slug=eq.${encodeURIComponent(slug)}&status=eq.paid&affiliate_paid_at=is.null&select=affiliate_commission`,
+        { affiliate_paid_at: new Date().toISOString() });
+      if (marked.status >= 400) { res.status(400).json({ ok: false, error: pgErrorText(marked.data) }); return; }
+      const rows = Array.isArray(marked.data) ? marked.data : [];
+      result = { status: 200, data: { count: rows.length, total: rows.reduce((n, r) => n + (Number(r.affiliate_commission) || 0), 0) } };
     } else if (action === 'get-settings') {
       result = { status: 200, data: await readSettings(ADMIN_SETTING_KEYS) };
     } else if (action === 'save-settings') {
@@ -367,6 +437,11 @@ export default async function handler(req, res) {
         const out = validatePartnerLinks(row.partnerLinks);
         if (out.error) { res.status(400).json({ ok: false, error: out.error }); return; }
         row.partnerLinks = out.value.length ? JSON.stringify(out.value) : '';
+      }
+      if (row && row.affiliateProgram != null && typeof row.affiliateProgram !== 'string') {
+        const out = validateAffiliateProgram(row.affiliateProgram);
+        if (out.error) { res.status(400).json({ ok: false, error: out.error }); return; }
+        row.affiliateProgram = JSON.stringify(out.value);
       }
       clearSalesEventsCache();
       // Limit khusus per email: dirapikan & divalidasi di server, disimpan sebagai JSON (boleh lebih panjang dari 500).
