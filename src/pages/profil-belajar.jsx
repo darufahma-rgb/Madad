@@ -28,7 +28,6 @@ const LevelPill = ({ value, dim }) => {
 const ProfilBelajarPage = () => {
   const { session, profile, saveProfile, isFree } = useAuth();
   const aiStatus = useAiStatus();
-  const settings = useAppSettings();
   const fromOnboarding = queryParam('from') === 'onboarding';
   const existing = cognitiveScores(profile);
   const [stage, setStage] = useState(existing && queryParam('retake') !== '1' ? 'result' : 'intro');
@@ -193,7 +192,7 @@ const ProfilBelajarPage = () => {
     ? { price: LIBRARY_PRICE, per: 'sekali bayar', cta: 'Buka semua dengan Library', later: 'Nanti aja, pakai gratisan dulu',
         onClick: () => navigate('/gabung?plan=library') }
     : aiStatus.loading || aiStatus.tier === 'pro' ? null
-    : { price: settings.aiPriceLabel || null, per: settings.aiPriceLabel ? '/30 hari' : '', cta: 'Mulai AI Partner', later: 'Nanti saja',
+    : { price: formatRupiah(AI_RENEW_PRICE_IDR), per: '/30 hari', cta: 'Mulai AI Partner', later: 'Nanti saja',
         note: 'Ringkasan, flashcard, kuis, dan tutor dari materimu — disesuaikan dengan profil ini.',
         onClick: () => window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library_ai' } })) };
 

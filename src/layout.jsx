@@ -588,6 +588,8 @@ const LoginModal = ({ open, onClose, onSuccess, joinPlan }) => {
 /* ---------------- Paket & Join Modal ---------------- */
 const LIBRARY_PRICE_IDR      = 63000; // sama dengan LIBRARY_PRICE_IDR di api/_lib/payments.js
 const LIBRARY_PRICE          = "Rp 63.000";
+// Perpanjang AI Partner 30 hari untuk member Library (termasuk setelah Paket Imtihan habis). Sama dengan api/_lib/payments.js.
+const AI_RENEW_PRICE_IDR     = 75000;
 const formatRupiah = (n) => `Rp ${Number(n || 0).toLocaleString("id-ID")}`;
 // Harga coret Library dihapus (Okt 2026): coretan permanen terkesan diskon palsu. null = tidak ditampilkan.
 const LIBRARY_PRICE_ORIGINAL = null;
@@ -874,7 +876,7 @@ const AiBundleBreakdown = ({ bundle, className = "" }) => bundle ? (
       <span className="text-emerald-300 tabular-nums flex-shrink-0">{formatRupiah(bundle.total)}</span>
     </div>
     <p className="text-[11.5px] text-ink-soft leading-relaxed mt-2.5">
-      Setelah 30 hari, Library tetap milikmu selamanya. AI Partner bisa diperpanjang {formatRupiah(bundle.ai)}/30 hari
+      Setelah 30 hari, Library tetap milikmu selamanya. AI Partner bisa diperpanjang {formatRupiah(AI_RENEW_PRICE_IDR)}/30 hari
       kapan saja — tanpa potongan otomatis, sisa hari tidak hangus.
     </p>
   </div>
@@ -907,7 +909,7 @@ const ImtihanBreakdown = ({ bundle, className = "" }) => bundle ? (
       </div>
     )}
     <p className="text-[11.5px] text-ink-soft leading-relaxed mt-2.5">
-      Setelah {IMTIHAN_AI_DAYS} hari, Library tetap milikmu selamanya. AI Partner bisa diperpanjang kapan saja — tanpa potongan otomatis.
+      Setelah {IMTIHAN_AI_DAYS} hari, Library tetap milikmu selamanya. AI Partner bisa diperpanjang {formatRupiah(AI_RENEW_PRICE_IDR)}/30 hari kapan saja — tanpa potongan otomatis.
     </p>
   </div>
 ) : null;
@@ -1306,8 +1308,8 @@ const AiSubscriptionModal = ({ open, onClose, onNeedMembership }) => {
   const needsLibrary = !memberCode || session?.tier === "free";
 
   const settings = useAppSettings();
-  const aiPrice  = settings.aiPriceMonthly || null;
-  const canPay   = !!settings.payOnline && !!aiPrice;
+  const aiPrice  = AI_RENEW_PRICE_IDR;
+  const canPay   = !!settings.payOnline;
   const adminWa  = (settings.whatsapp || "").replace(/\D/g, "") || DEFAULT_ADMIN_WA;
 
   const loadStatus = () => {
@@ -1586,7 +1588,7 @@ Object.assign(window, {
   rombonganEvent,
   useWelcomeOffer, OfferClock, WelcomeOfferPopup,
   useCheckout, CheckoutWaiting, CheckoutWatcher, CheckoutPayModal, readPendingCheckout, savePendingCheckout, formatRupiah, isTalkhisAddonPlan,
-  LIBRARY_PRICE, LIBRARY_PRICE_IDR, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
+  LIBRARY_PRICE, LIBRARY_PRICE_IDR, AI_RENEW_PRICE_IDR, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
   scrollToLandingSection, scrollToPaket,
   MobileTabBar, SupportButton,
 });

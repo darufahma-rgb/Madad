@@ -2,7 +2,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { needsStrongComplete, ESCALATE_SCORE, STRONG_PER_SET, MAX_WRITES } from '../api/_lib/ai-partner/talkhis.js';
-import { TALKHIS_ADDONS, isTalkhisAddon, addonCredits, checkoutBlockReason, CHECKOUT_PLANS } from '../api/_lib/payments.js';
+import { TALKHIS_ADDONS, isTalkhisAddon, addonCredits, checkoutBlockReason, CHECKOUT_PLANS, AI_RENEW_PRICE_IDR } from '../api/_lib/payments.js';
+
+test('perpanjang AI Partner: harga tetap Rp75.000, hanya untuk member Library', () => {
+  assert.equal(AI_RENEW_PRICE_IDR, 75000);
+  assert.equal(checkoutBlockReason('ai', { status: 'active', tier: 'library' }), null);
+  assert.equal(checkoutBlockReason('ai', { status: 'active', tier: 'free' }), 'needs_library');
+});
 
 test('tambahan talkhis: harga tetap, jatah dihitung dari tagihan lunas', () => {
   assert.deepEqual(TALKHIS_ADDONS.talkhis_1, { credits: 1, price: 39000 });

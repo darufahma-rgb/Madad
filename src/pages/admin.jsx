@@ -2968,7 +2968,7 @@ const AdminSettings = () => {
             <span className="text-ink-muted">Harga Library</span>
             <span className="text-ink">{LIBRARY_PRICE} · sekali bayar</span>
           </div>
-          <SettingsField label="Harga AI Partner per 30 hari (Rp)" value={settings.aiPriceMonthly} mono
+          <SettingsField label="Harga AI Partner 30 hari pertama di paket Library + AI (Rp) · perpanjang tetap Rp75.000" value={settings.aiPriceMonthly} mono
             onChange={v => setSettings({...settings, aiPriceMonthly: v.replace(/[^\d]/g, "")})}
             hint="Angka saja, misal 49000. Harga ini yang ditampilkan dan ditagihkan. Kosongkan untuk menutup penjualan AI Partner (akses manual dari tab Langganan & Bayar tetap bisa)."/>
         </div>

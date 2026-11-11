@@ -1146,7 +1146,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
               Mau coba AI Partner 1 bulan dulu?{monthly ? ` Paket 1 bulan ${formatRupiah(monthly.total)}` : ''}
             </div>
             <div className="text-sm text-ink-muted leading-relaxed">
-              Library selamanya + AI Partner 30 hari{monthly ? ` (perpanjang ${formatRupiah(monthly.ai)} per 30 hari)` : ''}.{' '}
+              Library selamanya + AI Partner 30 hari{` (perpanjang ${formatRupiah(AI_RENEW_PRICE_IDR)} per 30 hari)`}.{' '}
               {imtihan.saving
                 ? <>Beli terpisah {formatRupiah(imtihan.separate)}, <span className="text-emerald-300">Paket Imtihan cuma {formatRupiah(imtihan.total)} — hemat {formatRupiah(imtihan.saving)}</span>.</>
                 : <span className="text-emerald-300">Untuk persiapan imtihan, pilih Paket Imtihan ({IMTIHAN_AI_DAYS} hari tanpa kuota bulanan).</span>}

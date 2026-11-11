@@ -10,6 +10,10 @@ import { getLiveEvents, CLASS_TRIAL_PRODUCT, CLASS_TRIAL_HOURS, CLASS_TRIAL_DEFA
 export const LIBRARY_PRICE_IDR = 63000;
 export const AI_PERIOD_DAYS = 30;
 export const AI_PRODUCT_ID = 'talqeeh-ai-30hari';
+/* Perpanjang AI Partner (paket 'ai') untuk member yang sudah punya Library, termasuk pemegang Paket Imtihan yang
+   masanya habis: harga tetap per 30 hari, tidak ikut harga AI bulanan di Settings (yang hanya untuk paket Library + AI).
+   Samakan dengan AI_RENEW_PRICE_IDR di src/layout.jsx. */
+export const AI_RENEW_PRICE_IDR = 75000;
 export const CHECKOUT_PLANS = ['library', 'library_ai', 'ai', 'imtihan', 'rombongan', 'talkhis_1', 'talkhis_3'];
 /* Tambahan talkhis untuk pemegang Paket Imtihan yang jatah talkhisnya habis (migrations/talkhis_addon.sql).
    Samakan dengan TALKHIS_ADDONS di src/pages/ai-partner-talkhis.jsx. Biaya AI terburuk ±$2,7 per muqarrar 40 judul. */
@@ -112,8 +116,9 @@ const splitAmount = async (plan, prices, imtihanAmount, rombongan) => {
   if (plan === 'rombongan') return { library_amount: prices.library * rombongan.seats, ai_amount: rombongan.price - prices.library * rombongan.seats };
   if (isTalkhisAddon(plan)) return { library_amount: 0, ai_amount: TALKHIS_ADDONS[plan].price };
   if (plan === 'imtihan') return { library_amount: prices.library, ai_amount: Math.min(await imtihanPrice(), imtihanAmount || Infinity) - prices.library };
+  if (plan === 'ai') return { library_amount: 0, ai_amount: AI_RENEW_PRICE_IDR };
   return {
-    library_amount: plan === 'ai' ? 0 : prices.library,
+    library_amount: prices.library,
     ai_amount: plan === 'library' ? 0 : prices.ai,
   };
 };
@@ -175,8 +180,8 @@ export function checkoutBlockReason(plan, member) {
 // affiliate: { slug, percent } dari Program Mitra (api/_lib/affiliates.js); komisinya dihitung dari harga yang ditagih.
 export async function createCheckout({ user, member, plan, appOrigin, imtihanAmount, seats, partnerSlug, affiliate }) {
   const prices = await getPrices();
-  // Paket Imtihan & Rombongan berharga tetap, jadi tidak bergantung pada harga AI bulanan di Settings.
-  if (!['library', 'imtihan', 'rombongan'].includes(plan) && !isTalkhisAddon(plan) && !prices.ai) return { ok: false, status: 'ai_price_unset' };
+  // Paket Imtihan, Rombongan & perpanjang AI berharga tetap, jadi tidak bergantung pada harga AI bulanan di Settings.
+  if (!['library', 'ai', 'imtihan', 'rombongan'].includes(plan) && !isTalkhisAddon(plan) && !prices.ai) return { ok: false, status: 'ai_price_unset' };
   const rombongan = plan === 'rombongan' ? await rombonganSize(seats) : null;
   if (plan === 'rombongan' && !rombongan) return { ok: false, status: 'rombongan_closed' };
   const parts = await splitAmount(plan, prices, imtihanAmount, rombongan);

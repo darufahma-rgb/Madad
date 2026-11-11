@@ -125,7 +125,7 @@ const FAQS = [
   ['Apa bedanya dengan pakai ChatGPT langsung?',
     'Kamu tidak mulai dari nol. Talqeeh sudah menyiapkan prompt untuk tiap maddah muqarrar Azhar, rekomendasi AI yang paling cocok, dan bank soal imtihan. AI Partner juga dibuat khusus untuk teks Arab: i\'rab, harakat, dan ringkasan gaya kitab.'],
   ['Apa itu Paket Imtihan?',
-    `Library selamanya + AI Study Partner ${IMTIHAN_AI_DAYS} hari untuk persiapan imtihan, dalam sekali bayar — harga normal ${formatRupiah(IMTIHAN_PRICE_IDR)}, lebih murah selama event promo. Setelah masanya habis, Library tetap milikmu dan AI bisa diperpanjang kapan saja.`],
+    `Library selamanya + AI Study Partner ${IMTIHAN_AI_DAYS} hari untuk persiapan imtihan, dalam sekali bayar — harga normal ${formatRupiah(IMTIHAN_PRICE_IDR)}, lebih murah selama event promo. Setelah masanya habis, Library tetap milikmu dan AI bisa diperpanjang ${formatRupiah(AI_RENEW_PRICE_IDR)} per 30 hari, kapan saja.`],
   ['Library bayar sekali atau bulanan?',
     `Sekali bayar ${LIBRARY_PRICE}, aksesnya berlaku selamanya — termasuk semua update fitur Library ke depan. AI Partner opsional: ambil Paket Imtihan untuk persiapan imtihan, atau per 30 hari.`],
   ['Boleh coba gratis dulu?',
@@ -135,7 +135,7 @@ const FAQS = [
   ['Paket Imtihan benar-benar sepuasnya?',
     `Ya. Selama ${IMTIHAN_AI_DAYS} hari, terjemah & i'rab, pesan tutor, Tanya AI, ringkasan/kuis/flashcard, materi baru, dan baca foto bisa kamu pakai sepuasnya. Pengecualiannya fitur yang biayanya dihitung per menit atau per muqarrar: talkhis ${IMTIHAN_TALKHIS_CAP} muqarrar per paket (bisa ditambah mulai Rp39.000 per muqarrar), dan Live Caption kuliah duktur: 8 jam per 30 hari, maksimal 3 jam per hari (mode Akurat untuk kelas ramai dihitung 4× menit).`],
   ['AI Partner diperpanjang otomatis?',
-    'Tidak. Tidak ada potongan otomatis, baik Paket Imtihan maupun per 30 hari. Kalau mau lanjut, perpanjang kapan saja — sisa harimu tidak hangus.'],
+    `Tidak. Tidak ada potongan otomatis, baik Paket Imtihan maupun per 30 hari. Kalau mau lanjut, perpanjang ${formatRupiah(AI_RENEW_PRICE_IDR)} per 30 hari kapan saja — sisa harimu tidak hangus.`],
   ['Saya member lama, harus bayar lagi?',
     'Tidak. Minta PIN aktivasi ke admin, lalu masukkan lewat tautan "Member lama? Masukkan PIN" di halaman ini.'],
 ];
@@ -652,17 +652,18 @@ const GabungPage = () => {
                 price={LIBRARY_PRICE} sub="Sekali bayar · akses selamanya"
                 items={LIBRARY_ITEMS} current selected={plan === 'library'} ctaClass="btn btn-gold"
                 cta="Pilih Library" onClick={() => choosePaid('library')}/>
-              {/* Sudah punya Library: cukup bayar AI Partner (server menagih paket 'ai' saja). */}
-              <PlanCard color={EMERALD} icon="sparkles" recommended={!!bundle} badge={bundle ? 'Untuk member Library' : undefined} title="AI Study Partner" tagline="Tambahan untuk Library-mu"
-                price={aiPrice ? formatRupiah(aiPrice) : 'Segera'} priceNote={aiPrice ? '/ 30 hari' : ''}
-                sub={aiPrice ? 'Library-mu sudah aktif — cukup bayar AI' : 'Harga AI Partner segera diumumkan'}
-                extra={bundle && (
+              {/* Sudah punya Library (termasuk Paket Imtihan yang masanya habis): cukup bayar AI Partner — paket 'ai',
+                  harga tetap AI_RENEW_PRICE_IDR per 30 hari. */}
+              <PlanCard color={EMERALD} icon="sparkles" recommended badge="Untuk member Library" title="AI Study Partner" tagline="Tambahan untuk Library-mu"
+                price={formatRupiah(AI_RENEW_PRICE_IDR)} priceNote="/ 30 hari"
+                sub="Library-mu sudah aktif — cukup bayar AI"
+                extra={
                   <p className="text-[11.5px] mb-5 -mt-2" style={{ color: EMERALD }}>
-                    Cuma sekitar {formatRupiah(bundle.perDay)}/hari · tanpa potongan otomatis, perpanjang kapan saja.
+                    Cuma sekitar {formatRupiah(Math.ceil(AI_RENEW_PRICE_IDR / 30 / 100) * 100)}/hari · tanpa potongan otomatis, perpanjang kapan saja.
                   </p>
-                )}
+                }
                 items={AI_BUNDLE_FEATURES.map(f => [f, true])} ctaClass="btn btn-primary"
-                cta={aiPrice ? `Tambah AI Partner · ${formatRupiah(aiPrice)}` : 'Hubungi admin'} onClick={() => choosePaid('library_ai')}/>
+                cta={`Tambah AI Partner · ${formatRupiah(AI_RENEW_PRICE_IDR)}`} onClick={() => choosePaid('library_ai')}/>
             </>
           ) : (
             <>
