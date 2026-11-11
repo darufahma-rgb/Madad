@@ -9,9 +9,9 @@
                disimpan sebagian, browser meminta lanjutan (mode continue, tidak dihitung sebagai tulis baru).
    4. check  — AI pemeriksa (Gemini) membandingkan talkhis dengan sumbernya: skor cakupan, poin yang terlewat,
                dan klaim yang tidak didukung sumber.
-   5. write mode complete — Sonnet menulis ulang talkhis dengan menambahkan poin yang terlewat & membetulkan yang salah.
-   Pembagian model ini menekan biaya ±40–70% (tergantung berapa judul yang perlu dilengkapi): draf di model murah, Sonnet hanya untuk judul
-   yang hasil ceknya kurang. Lanjutan (continue) memakai model yang sama dengan tulisan yang dilanjutkan.
+   5. write mode complete — model hemat menulis ulang talkhis dengan menambahkan poin yang terlewat & membetulkan yang salah.
+   Semua langkah memakai model hemat (dulu lengkapi & lanjutan memakai Sonnet; itu ±70% biaya talkhis karena hampir tiap
+   judul dilengkapi).
 
    Biaya dijaga dengan: 1 kuota "talkhis" per muqarrar (saat pemetaan mulai), jumlah judul maksimal, dan batas
    tulis/cek per judul. Data disimpan di kolom study_sets.talkhis (jsonb). */
@@ -385,11 +385,14 @@ export async function handleTalkhis(ctx, body, res, deps) {
     const messages = mode === 'new' ? base
       : mode === 'complete' ? [...base, { role: 'assistant', content: topic.text }, { role: 'user', content: completeAsk(topic.coverage) }]
       : [...base, { role: 'assistant', content: topic.text }, { role: 'user', content: CONTINUE_ASK }];
-    const role = mode === 'complete' ? 'arabic' : mode === 'continue' ? (topic.write_role || 'arabic') : 'default';
-    const writeModel = models[role] || models.default;
+    /* Semua langkah tulis (draf, lengkapi, lanjutan) memakai model hemat. Sebelumnya lengkapi & lanjutan memakai Sonnet:
+       data ai_cost_log Okt–Nov 2026 menunjukkan itu 69% biaya talkhis (±$4 per muqarrar 40 judul, melebihi harga paket
+       kalau jatahnya dihabiskan). Pemeriksa kelengkapan tetap memberi daftar poin yang terlewat untuk dilengkapi. */
+    const role = 'default';
+    const writeModel = models.default;
     const { out, stream, failed } = await runAI(body, res, {
       system: WRITE_RULES, messages, maxTokens: WRITE_TOKENS, model: writeModel, timeLimitMs: WRITE_TIME_MS,
-      thinking: role === 'default' ? DRAFT_THINKING : 0,
+      thinking: DRAFT_THINKING,
     });
     if (failed) return;
     let text;

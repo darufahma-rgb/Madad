@@ -1004,7 +1004,7 @@ const IMTIHAN_QUOTA = [
   ["Halaman scan / foto", "Sepuasnya"],
   ["Live Caption kuliah duktur", "8 jam / 30 hari"],
   ["Transkrip rekaman kuliah", "60 menit / hari"],
-  ["Talkhis muqarrar", "10 muqarrar / paket"],
+  ["Talkhis muqarrar", "3 muqarrar / paket"],
   ["Cerita AI & Halaqah (game)", "15 & 40 / hari"],
 ];
 
@@ -1020,7 +1020,7 @@ const LANDING_FAQ = [
   { q: "Ada paket AI Partner 1 bulan? Mana yang lebih baik?",
     a: `Ada. Paket 1 bulan = Library selamanya + AI Partner 30 hari, bisa diperpanjang per 30 hari. Untuk persiapan imtihan, ambil Paket Imtihan (Library + AI Partner ${IMTIHAN_AI_DAYS} hari, sekali bayar): selama ${IMTIHAN_AI_DAYS} hari itu tidak ada kuota bulanan. Selama ada event promo, harganya lebih murah lagi.` },
   { q: "AI Partner di Paket Imtihan ada batasnya?",
-    a: `Selama ${IMTIHAN_AI_DAYS} hari, terjemah & i'rab, pesan tutor, Tanya AI, ringkasan/kuis/flashcard, materi baru, dan baca halaman scan bisa kamu pakai sepuasnya. Batas hanya untuk fitur yang biayanya dihitung per menit atau per muqarrar. Live Caption kuliah duktur: 8 jam per 30 hari, maksimal 3 jam per hari (mode Akurat untuk kelas ramai dihitung 4× menit). Halaman muqarrar scan yang sudah pernah dibaca AI di Talqeeh bisa langsung terbuka gratis. Talkhis otomatis: 10 muqarrar per paket.` },
+    a: `Selama ${IMTIHAN_AI_DAYS} hari, terjemah & i'rab, pesan tutor, Tanya AI, ringkasan/kuis/flashcard, materi baru, dan baca halaman scan bisa kamu pakai sepuasnya. Batas hanya untuk fitur yang biayanya dihitung per menit atau per muqarrar. Live Caption kuliah duktur: 8 jam per 30 hari, maksimal 3 jam per hari (mode Akurat untuk kelas ramai dihitung 4× menit). Halaman muqarrar scan yang sudah pernah dibaca AI di Talqeeh bisa langsung terbuka gratis. Talkhis otomatis: 3 muqarrar per paket.` },
   { q: "Bisa coba dulu sebelum bayar?",
     a: "Bisa. Masuk dengan Google lalu pilih \"Mulai gratis\": kamu dapat akun gratis dengan maddah Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan coba AI Partner untuk 1 materi pendek (±10–15 halaman): ringkasan, flashcard, kuis, mufradat, plus 2× terjemah & i'rab, 3 pesan tutor, 1 kali Tanya AI, dan 3 foto dibaca AI. Upgrade kapan saja — akunnya sama, progresmu tetap aman." },
   { q: "Library-nya berlaku sampai kapan?",

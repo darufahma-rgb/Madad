@@ -95,7 +95,7 @@ const ADVANTAGES = [
 
 // [fitur, gratis, library, library+ai] — true = termasuk, false = tidak, string = keterangan.
 // Angka jatah mengikuti api/ai-partner.js (TRIAL_TASTE, TRIAL_MAX_CONTENT, FREE_OCR_LIFETIME, LIMITS, IMTIHAN_TALKHIS_CAP).
-const IMTIHAN_TALKHIS_CAP = 10;
+const IMTIHAN_TALKHIS_CAP = 3;
 const COMPARE_ROWS = [
   ['Maddah S1 + Ma\'had', 'Nahwu + 1', `Semua ${CATALOG.maddah}`, `Semua ${CATALOG.maddah}`],
   ['Template prompt per maddah', 'Maddah terbuka', CATALOG.prompts, CATALOG.prompts],

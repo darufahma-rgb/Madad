@@ -689,7 +689,7 @@ const TalkhisTab = ({ set, setSet, access }) => {
   };
 
   /* Tulis (atau lengkapi) satu judul, lanjutkan otomatis bila terpotong, lalu cek kelengkapannya. Draf ditulis model
-     hemat; kalau hasil ceknya masih kurang, langsung dilengkapi Sonnet (sekali, sesuai jatah tulis per judul). */
+     hemat; kalau hasil ceknya masih kurang, langsung dilengkapi (sekali, sesuai jatah tulis per judul). */
   const write = async (x, mode) => {
     const latest = await writeOnce(x, mode);
     if (!latest) return false;

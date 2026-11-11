@@ -239,7 +239,7 @@ const formatQuotaDate = (iso) => new Date(iso).toLocaleDateString('id-ID', { day
 const quotaExceeded = (res, kind, scope = 'daily', ctx = null) => scope === 'unavailable'
   ? res.status(503).json({ ok: false, error: 'Tidak bisa memeriksa kuota sekarang. Coba lagi sebentar.' })
   : scope === 'package'
-  ? res.status(429).json({ ok: false, error: 'quota', scope, message: `Jatah talkhis Paket Imtihan (${IMTIHAN_TALKHIS_CAP} muqarrar) sudah terpakai semua. Fitur AI lainnya tetap bisa kamu pakai seperti biasa.` })
+  ? res.status(429).json({ ok: false, error: 'quota', scope, message: `Jatah talkhis Paket Imtihan (${imtihanTalkhisCap(ctx)} muqarrar) sudah terpakai semua. Fitur AI lainnya tetap bisa kamu pakai seperti biasa.` })
   : res.status(429).json({
     ok: false, error: 'quota', scope,
     message: scope === 'monthly'
@@ -265,8 +265,16 @@ const monthlyUsage = async (code, since) => {
 /* Pemegang Paket Imtihan (tagihan 'imtihan' lunas yang masa paketnya masih berjalan): tanpa kuota bulanan (kecuali Live
    Caption, lihat monthlyLimitFor), hanya batas wajar harian (LIMITS) sebagai pengaman biaya. Dihitung sekali per permintaan. */
 const IMTIHAN_WINDOW_DAYS = IMTIHAN_LEGACY_DAYS;
-// Talkhis paling mahal (±$1–2 per muqarrar), jadi Paket Imtihan dibatasi total sekian muqarrar selama masa paketnya.
-const IMTIHAN_TALKHIS_CAP = 10;
+/* Talkhis paling mahal (±$1,5 per muqarrar 40 judul setelah semua langkah memakai model hemat), jadi Paket Imtihan
+   dibatasi total sekian muqarrar selama masa paketnya supaya biaya terburuknya tetap jauh di bawah harga paket.
+   Tagihan yang dibuat sebelum batas diturunkan tetap mendapat jatah yang dijanjikan saat dibeli. */
+const IMTIHAN_TALKHIS_CAP = 3;
+const IMTIHAN_TALKHIS_LEGACY_CAP = 10;
+const IMTIHAN_TALKHIS_CAP_CHANGED_AT = '2026-11-12T00:00:00Z';
+const imtihanTalkhisCap = (ctx) => {
+  const t = Date.parse(ctx?.imtihanCreatedAt || '');
+  return Number.isFinite(t) && t < Date.parse(IMTIHAN_TALKHIS_CAP_CHANGED_AT) ? IMTIHAN_TALKHIS_LEGACY_CAP : IMTIHAN_TALKHIS_CAP;
+};
 const isImtihanHolder = async (ctx) => {
   if (ctx.imtihan !== undefined) return ctx.imtihan;
   ctx.imtihan = false;
@@ -277,7 +285,10 @@ const isImtihanHolder = async (ctx) => {
     const rows = r.ok ? (await r.json()) || [] : [];
     const running = rows.filter(row => Date.parse(row.paid_at) + imtihanDaysFor(row.created_at) * 86400000 > Date.now());
     ctx.imtihan = running.length > 0;
-    if (ctx.imtihan) ctx.imtihanSince = String(running[0].paid_at || '').slice(0, 10);
+    if (ctx.imtihan) {
+      ctx.imtihanSince = String(running[0].paid_at || '').slice(0, 10);
+      ctx.imtihanCreatedAt = running[0].created_at || null;
+    }
   } catch {}
   return ctx.imtihan;
 };
@@ -368,7 +379,7 @@ const takeQuota = async (ctx, kind) => {
   if (kind === 'talkhis' && !(await quotaOverride(ctx))?.noMonthly && !(await isTrialMember(ctx)) && (await isImtihanHolder(ctx)) && ctx.imtihanSince) {
     const used = await monthlyUsage(ctx.code, ctx.imtihanSince);
     if (!used) return 'unavailable';
-    if ((used.talkhis || 0) >= IMTIHAN_TALKHIS_CAP) return 'package';
+    if ((used.talkhis || 0) >= imtihanTalkhisCap(ctx)) return 'package';
   }
   const monthly = await monthlyLimitFor(ctx, kind);
   if (monthly != null) {

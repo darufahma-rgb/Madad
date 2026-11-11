@@ -639,7 +639,7 @@ const PresentasiPage = () => {
     return {
       maddah: CATALOG.maddah, maddahS1: CATALOG.maddahS1, maddahMahad: CATALOG.maddahMahad, prompts: CATALOG.prompts,
       users: Number.isFinite(count) && count > 0 ? `${count.toLocaleString("id-ID")}+` : "Ratusan",
-      aiDays: IMTIHAN_AI_DAYS, talkhisCap: 10, // = IMTIHAN_TALKHIS_CAP di api/ai-partner.js
+      aiDays: IMTIHAN_AI_DAYS, talkhisCap: 3, // = IMTIHAN_TALKHIS_CAP di api/ai-partner.js
       libraryPrice: LIBRARY_PRICE.replace(/\s/g, ""),
       imtihanPrice: compact(imtihan.total),
       imtihanPerDay: compact(Math.ceil(imtihan.total / IMTIHAN_AI_DAYS / 100) * 100),
