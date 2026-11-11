@@ -4,7 +4,9 @@ import { createPortal } from 'react-dom';
    Muqarrar dipetakan jadi daftar mabahits, tiap judul ditalkhis dalam bahasa Arab dari potongan sumbernya sendiri,
    lalu dicek kelengkapannya terhadap sumber itu. Logika & batasnya ada di api/_lib/ai-partner/talkhis.js. */
 
-const MAX_WRITES = 2;     // sama dengan server
+const MAX_WRITES = 3;     // sama dengan server
+const ESCALATE_SCORE = 85; // sama dengan server: di bawah ini (atau ada poin salah) lengkapi kedua memakai model kuat
+const stillWeak = (x) => !!x?.coverage && (x.coverage.score < ESCALATE_SCORE || (x.coverage.wrong || []).length > 0);
 const TRIAL_TOPICS = 2;
 const CHARS_PER_PAGE = 1800;
 
@@ -688,14 +690,20 @@ const TalkhisTab = ({ set, setSet, access }) => {
     return d.talkhis; // hasil terbaru (dipakai write untuk memutuskan perlu dilengkapi atau tidak)
   };
 
-  /* Tulis (atau lengkapi) satu judul, lanjutkan otomatis bila terpotong, lalu cek kelengkapannya. Draf ditulis model
-     hemat; kalau hasil ceknya masih kurang, langsung dilengkapi (sekali, sesuai jatah tulis per judul). */
+  /* Tulis (atau lengkapi) satu judul, lanjutkan otomatis bila terpotong, lalu cek kelengkapannya. Lengkapi bertingkat:
+     draf & lengkapi pertama ditulis model hemat; kalau setelah dicek ulang masih lemah, server memakai model kuat
+     untuk lengkapi kedua. */
   const write = async (x, mode) => {
-    const latest = await writeOnce(x, mode);
+    let latest = await writeOnce(x, mode);
     if (!latest) return false;
-    const now = latest.topics?.find(y => y.id === x.id);
+    let now = latest.topics?.find(y => y.id === x.id);
     if (mode === 'new' && now && stateOf(now) === 'incomplete' && (now.writes || 0) < MAX_WRITES && !isTrial) {
-      return writeOnce(x, 'complete');
+      latest = await writeOnce(x, 'complete');
+      if (!latest) return false;
+      now = latest.topics?.find(y => y.id === x.id);
+      if (now && stateOf(now) === 'incomplete' && stillWeak(now) && (now.writes || 0) < MAX_WRITES && (now.checks || 0) < 3) {
+        return writeOnce(x, 'complete');
+      }
     }
     return true;
   };
