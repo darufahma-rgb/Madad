@@ -287,14 +287,9 @@ const monthlyUsage = async (code, since) => {
 const IMTIHAN_WINDOW_DAYS = IMTIHAN_LEGACY_DAYS;
 /* Talkhis paling mahal (±$1,5 per muqarrar 40 judul setelah semua langkah memakai model hemat), jadi Paket Imtihan
    dibatasi total sekian muqarrar selama masa paketnya supaya biaya terburuknya tetap jauh di bawah harga paket.
-   Tagihan yang dibuat sebelum batas diturunkan tetap mendapat jatah yang dijanjikan saat dibeli. */
+   Berlaku untuk semua pemegang paket, termasuk yang membeli saat jatahnya masih 10 muqarrar. */
 const IMTIHAN_TALKHIS_CAP = 3;
-const IMTIHAN_TALKHIS_LEGACY_CAP = 10;
-const IMTIHAN_TALKHIS_CAP_CHANGED_AT = '2026-11-12T00:00:00Z';
-const imtihanTalkhisCap = (ctx) => {
-  const t = Date.parse(ctx?.imtihanCreatedAt || '');
-  return Number.isFinite(t) && t < Date.parse(IMTIHAN_TALKHIS_CAP_CHANGED_AT) ? IMTIHAN_TALKHIS_LEGACY_CAP : IMTIHAN_TALKHIS_CAP;
-};
+const imtihanTalkhisCap = () => IMTIHAN_TALKHIS_CAP;
 const isImtihanHolder = async (ctx) => {
   if (ctx.imtihan !== undefined) return ctx.imtihan;
   ctx.imtihan = false;
@@ -307,7 +302,6 @@ const isImtihanHolder = async (ctx) => {
     ctx.imtihan = running.length > 0;
     if (ctx.imtihan) {
       ctx.imtihanSince = String(running[0].paid_at || '').slice(0, 10);
-      ctx.imtihanCreatedAt = running[0].created_at || null;
     }
   } catch {}
   return ctx.imtihan;
