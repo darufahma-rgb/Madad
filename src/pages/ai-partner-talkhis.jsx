@@ -458,6 +458,20 @@ const TalkhisBody = ({ md, sourceNorm }) => {
   return <div dir="rtl" lang="ar" className="tk-body" dangerouslySetInnerHTML={{ __html: html }}/>;
 };
 
+// Sama dengan translationKey di api/_lib/ai-partner/talkhis.js: terjemah lama tidak berlaku bila talkhisnya berubah.
+const translationFresh = (x) => !!x.translation?.text && x.translation.key === `${x.writes || 0}.${x.continues || 0}.${String(x.text || '').length}`;
+const TranslationBox = ({ x }) => {
+  const html = useMemo(() => talkhisHtml(x.translation?.text || '', null), [x.translation?.text]);
+  return (
+    <div className="mt-4 rounded-xl border border-sky-400/20 bg-sky-400/[0.04] px-4 py-3">
+      <div className="text-[11px] uppercase tracking-wider text-sky-200/80 mb-1.5">Terjemah Indonesia</div>
+      <div dir="ltr" lang="id" className="tk-body tk-id" dangerouslySetInnerHTML={{ __html: html }}/>
+      {x.translation.partial && <p className="text-[11px] text-ink-soft mt-2">Terjemahnya terpotong karena talkhis judul ini panjang.</p>}
+      <p className="text-[11px] text-ink-soft mt-2">Terjemah dibuat AI untuk membantu memahami. Untuk hafalan dan imtihan, tetap pegang teks Arabnya.</p>
+    </div>
+  );
+};
+
 const CoverageBox = ({ cov }) => {
   if (!cov) return null;
   const ok = cov.score >= 90 && !cov.missing.length && !cov.wrong.length;
@@ -512,10 +526,17 @@ const BabHeader = ({ bab, disabled, onRename }) => {
   );
 };
 
-const TopicRow = ({ x, i, open, onToggle, live, busy, running, canWrite, sourceNorm, onWrite, onCheck, onEdit, onCopy, onKurasah, onExercise }) => {
+const TopicRow = ({ x, i, open, onToggle, live, busy, running, canWrite, sourceNorm, onWrite, onCheck, onEdit, onCopy, onKurasah, onExercise, onTranslate, translating }) => {
   const st = live ? 'writing' : stateOf(x);
   const meta = STATE_META[st] || { label: 'Sedang ditulis…', dot: 'bg-emerald-400 animate-pulse', text: 'text-emerald-300' };
   const [renaming, setRenaming] = useState(false);
+  const [showTr, setShowTr] = useState(false);
+  const trFresh = translationFresh(x);
+  // Terjemah yang sudah ada cukup dibuka/ditutup; yang belum ada dibuat dulu lalu langsung dibuka.
+  const toggleTr = async () => {
+    if (trFresh) { setShowTr(v => !v); return; }
+    if (await onTranslate(x)) setShowTr(true);
+  };
   const [title, setTitle] = useState(x.title);
   const writesLeft = MAX_WRITES - (x.writes || 0);
   const shown = live ? (x.partial && x.text ? `${x.text}\n${live}` : live) : x.text;
@@ -550,6 +571,11 @@ const TopicRow = ({ x, i, open, onToggle, live, busy, running, canWrite, sourceN
             {!x.skip && x.text && st === 'complete' && writesLeft > 0 && <button disabled={disabled} onClick={() => onWrite(x, 'new')} className={btn}><Icon name="refresh" className="w-3.5 h-3.5"/> Tulis ulang</button>}
             {x.text && !live && <button onClick={() => onCopy(x)} className={btn}><Icon name="copy" className="w-3.5 h-3.5"/> Salin</button>}
             {x.text && !live && <button onClick={() => onKurasah(x)} className={btn}><Icon name="bookmark" className="w-3.5 h-3.5"/> Ke Kurasah</button>}
+            {x.text && !live && !x.partial && (
+              <button disabled={translating || (!trFresh && disabled)} onClick={toggleTr} className={btn}>
+                <Icon name="type" className="w-3.5 h-3.5"/> {translating ? 'Menerjemahkan…' : trFresh && showTr ? 'Tutup terjemah' : 'Terjemah'}
+              </button>
+            )}
             {x.text && !live && !x.partial && !x.exercises && <button disabled={disabled} onClick={() => onExercise(x)} className={btn}><Icon name="target" className="w-3.5 h-3.5"/> Buat latihan</button>}
             <button disabled={disabled} onClick={() => setRenaming(r => !r)} className={btn}><Icon name="pen" className="w-3.5 h-3.5"/> Ganti judul</button>
             {i > 0 && <button disabled={disabled} onClick={() => onEdit(x, 'merge-prev')} className={btn} title="Gabungkan judul ini ke judul di atasnya"><Icon name="chevronUp" className="w-3.5 h-3.5"/> Gabung ke atas</button>}
@@ -565,6 +591,7 @@ const TopicRow = ({ x, i, open, onToggle, live, busy, running, canWrite, sourceN
           {shown
             ? <TalkhisBody md={shown} sourceNorm={live ? null : sourceNorm}/>
             : !x.skip && <p className="text-xs text-ink-soft">Belum ditulis. AI hanya memakai teks muqarrar bagian ini (± {pages(x)} halaman).</p>}
+          {!live && showTr && trFresh && <TranslationBox x={x}/>}
           {!live && <CoverageBox cov={x.coverage}/>}
           {!live && <ExercisesBox x={x}/>}
           {!live && x.text && writesLeft <= 0 && stateOf(x) === 'incomplete' && (
@@ -845,6 +872,18 @@ const TalkhisTab = ({ set, setSet, access }) => {
     if (r) toast.push(r.added ? `${r.added} judul masuk ke catatan Kurasah${r.kept ? ` (${r.kept} sudah ada, tidak ditimpa)` : ''}.` : 'Semua judul sudah ada di catatan Kurasah.');
   };
 
+  /* Terjemah satu judul (tidak memblokir tombol lain; satu terjemah berjalan dalam satu waktu). */
+  const [translatingId, setTranslatingId] = useState(null);
+  const translate = async (x) => {
+    if (translatingId) return false;
+    setTranslatingId(x.id);
+    const d = await aiCall('talkhis', { op: 'translate', set_id: set.id, topic_id: x.id });
+    setTranslatingId(null);
+    if (!d.ok) { fail(d); return false; }
+    apply(d);
+    return true;
+  };
+
   /* Latihan dibuat per judul secara berurutan; mengembalikan data talkhis terbaru (atau null bila gagal di tengah). */
   const makeExercises = async (list, onStep) => {
     let latest = null;
@@ -1026,7 +1065,8 @@ const TalkhisTab = ({ set, setSet, access }) => {
                 <TopicRow key={x.id} x={x} i={i} open={openId === x.id} onToggle={() => setOpenId(id => (id === x.id ? null : x.id))}
                   live={live && live.id === x.id ? live.text : null} busy={!!busy} running={running}
                   canWrite={!isTrial || x.writes > 0 || trialLeft > 0} sourceNorm={srcNorms[x.id]}
-                  onWrite={write} onCheck={check} onEdit={edit} onCopy={onCopy} onKurasah={onKurasah} onExercise={(x) => makeExercises([x])}/>
+                  onWrite={write} onCheck={check} onEdit={edit} onCopy={onCopy} onKurasah={onKurasah} onExercise={(x) => makeExercises([x])}
+                  onTranslate={translate} translating={translatingId === x.id}/>
               ))}
             </div>
           </div>

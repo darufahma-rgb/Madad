@@ -181,3 +181,53 @@ test('pemetaan pertama memakai talkhis sumbangan tanpa memotong jatah dan tanpa 
   assert.equal(saved.topics[0].text, 'تلخيص');
   assert.equal(res.body.talkhis.raw, undefined);
 });
+
+/* ── Terjemah talkhis per judul ── */
+import { translationKey, MAX_TRANSLATES } from '../api/_lib/ai-partner/talkhis.js';
+const trDeps = (t, calls) => ({
+  getOwnedSet: async () => ({ id: SET_ID, title: 'x', content, talkhis: t }),
+  saveTalkhis: async (_c, _id, v) => { calls.saved = v; },
+  consumeQuota: async () => { calls.quota = (calls.quota || 0) + 1; return true; },
+  resolveModels: async () => ({ default: 'flash' }),
+  requestAI: async (o) => { calls.ai = (calls.ai || 0) + 1; calls.model = o.model; return { text: '#### Definisi\n- **Qiyas (القِيَاس):** menyamakan cabang dengan pokok.', truncated: false, model: o.model }; },
+});
+const trTopic = () => ({ id: 't1', title: 'باب', start: 0, end: 100, text: 'تلخيص', writes: 1, continues: 0 });
+
+test('terjemah: dibuat sekali dengan model hemat, lalu dipakai lagi tanpa AI', async () => {
+  const t = { v: 1, stage: 'write', topics: [trTopic()] };
+  const calls = {};
+  const res = makeRes();
+  await handleTalkhis({ code: ctx.code, tier: 'pro' }, { op: 'translate', set_id: SET_ID, topic_id: 't1' }, res, trDeps(t, calls));
+  assert.equal(res.code, 200);
+  assert.equal(calls.ai, 1);
+  assert.equal(calls.model, 'flash');
+  const tr = calls.saved.topics[0].translation;
+  assert.match(tr.text, /Qiyas/);
+  assert.equal(tr.key, translationKey(trTopic()));
+  const again = makeRes();
+  await handleTalkhis({ code: ctx.code, tier: 'pro' }, { op: 'translate', set_id: SET_ID, topic_id: 't1' }, again, trDeps(calls.saved, calls));
+  assert.equal(again.code, 200);
+  assert.equal(calls.ai, 1);
+});
+
+test('terjemah: talkhis yang berubah membuat terjemah lama tidak berlaku', () => {
+  const x = trTopic();
+  const key = translationKey(x);
+  assert.notEqual(translationKey({ ...x, writes: 2 }), key);
+  assert.notEqual(translationKey({ ...x, continues: 1 }), key);
+  assert.notEqual(translationKey({ ...x, text: 'تلخيص آخر' }), key);
+});
+
+test('terjemah: talkhis kosong/terpotong ditolak, dan dibatasi per judul', async () => {
+  for (const topic of [{ ...trTopic(), text: '' }, { ...trTopic(), partial: true }]) {
+    const res = makeRes(); const calls = {};
+    await handleTalkhis({ code: ctx.code, tier: 'pro' }, { op: 'translate', set_id: SET_ID, topic_id: 't1' }, res, trDeps({ v: 1, stage: 'write', topics: [topic] }, calls));
+    assert.equal(res.code, 400);
+    assert.equal(calls.ai, undefined);
+  }
+  const res = makeRes(); const calls = {};
+  await handleTalkhis({ code: ctx.code, tier: 'pro' }, { op: 'translate', set_id: SET_ID, topic_id: 't1' }, res,
+    trDeps({ v: 1, stage: 'write', topics: [{ ...trTopic(), tr_count: MAX_TRANSLATES }] }, calls));
+  assert.equal(res.code, 429);
+  assert.equal(calls.ai, undefined);
+});

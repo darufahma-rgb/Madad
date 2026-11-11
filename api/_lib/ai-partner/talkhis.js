@@ -165,6 +165,17 @@ export const EXERCISE_PROMPT = `Kamu pembuat soal latihan imtihan Al-Azhar. Dari
 Semua soal dan jawaban HANYA dari isi talkhis; jangan menambah informasi dari luar. Beri harakat pada istilah kunci.
 Balas HANYA JSON: {"tahriri":[{"q":"...","a":["...","..."]}],"tf":[{"s":"...","ok":true,"fix":""}]}`;
 
+/* Terjemah talkhis satu judul ke bahasa Indonesia (tab Talkhis → Terjemah). Model hemat; hasil disimpan per judul. */
+export const TRANSLATE_PROMPT = `Kamu penerjemah talkhis muqarrar Al-Azhar untuk mahasiswa Indonesia. Terjemahkan TALKHIS berbahasa Arab berikut ke bahasa Indonesia yang baku dan mudah dipahami.
+- Pertahankan struktur Markdown persis: judul (####), poin (-), cetak tebal, kutipan (>), tabel, dan urutan poin. Jangan menambah, membuang, atau meringkas isi.
+- Istilah fikih/ushul/nahwu yang penting: tulis terjemahannya lalu istilah Arabnya dalam kurung pada kemunculan pertama, mis. "qiyas (القِيَاس)".
+- Ayat Al-Qur'an dan hadits: biarkan teks Arabnya, lalu beri terjemahannya di baris berikutnya dalam tanda kutip.
+- Nama ulama, kitab, dan mazhab ditulis dengan ejaan Indonesia yang lazim (mis. Imam Syafi'i, Hanafiyah).
+Balas HANYA terjemahannya dalam Markdown, tanpa pengantar atau penutup.`;
+export const MAX_TRANSLATES = 3;
+// Kunci isi: terjemah lama tidak berlaku bila talkhisnya ditulis ulang atau dilanjutkan.
+export const translationKey = (topic) => `${topic.writes || 0}.${topic.continues || 0}.${String(topic.text || '').length}`;
+
 const CONTINUE_ASK = 'تَوَقَّفَ تلخيصك قبل أن يكتمل. أكمِل مباشرةً من بعد السطر الأخير بالتنسيق نفسه، دون تكرار ما كُتب. إن كان التلخيص قد اكتمل فاكتب فقط: [تم]';
 
 /* ── Data ── */
@@ -349,7 +360,7 @@ export async function handleTalkhis(ctx, body, res, deps) {
       if (topic.end - prev.start > TOPIC_MAX_CHARS * 1.6) return res.status(400).json({ ok: false, error: 'Gabungannya terlalu panjang untuk satu talkhis.' });
       // Talkhis yang sudah ada tidak berlaku lagi karena sumbernya berubah; jatah tulis tetap terhitung.
       prev.end = topic.end;
-      prev.status = 'empty'; prev.text = ''; prev.coverage = null; prev.partial = false; prev.continues = 0;
+      prev.status = 'empty'; prev.text = ''; prev.coverage = null; prev.partial = false; prev.continues = 0; prev.translation = null;
       prev.writes = Math.max(prev.writes, topic.writes);
       prev.checks = Math.max(prev.checks, topic.checks);
       t.topics.splice(i, 1);
@@ -427,6 +438,7 @@ export async function handleTalkhis(ctx, body, res, deps) {
       topic.partial = !!out.truncated;
       topic.coverage = null;
       topic.exercises = null; // isi berubah → latihan lama tidak berlaku
+      topic.translation = null; topic.tr_count = 0;
     }
     // Baris terakhir yang terpotong dibuang supaya lanjutan mulai dari baris utuh.
     if (topic.partial) { const cut = text.lastIndexOf('\n'); if (cut > text.length * 0.5) text = text.slice(0, cut).trimEnd(); }
@@ -456,6 +468,27 @@ export async function handleTalkhis(ctx, body, res, deps) {
     if (!tahriri.length && !tf.length) throw new Error('AI gagal membuat latihan yang valid');
     topic.exercises = { tahriri, tf, at: new Date().toISOString() };
     topic.ex_count = (topic.ex_count || 0) + 1;
+    await saveTalkhis(ctx.code, set.id, t);
+    return done({ topic_id: topic.id });
+  }
+
+  /* Terjemah talkhis judul ini ke bahasa Indonesia. Terjemah yang masih cocok dengan isinya dipakai lagi tanpa AI. */
+  if (op === 'translate') {
+    if (!topic.text || topic.partial) return res.status(400).json({ ok: false, error: 'Selesaikan talkhis judul ini dulu.' });
+    const key = translationKey(topic);
+    if (topic.translation?.key === key && topic.translation.text) return done({ topic_id: topic.id });
+    if ((topic.tr_count || 0) >= MAX_TRANSLATES) return res.status(429).json({ ok: false, error: 'Judul ini sudah diterjemahkan beberapa kali.' });
+    if (trial && !(await trialGateOpen())) return trialGateClosed(res);
+    if (!(await consumeQuota(ctx.code, 'talkhis_tr', 300))) return res.status(429).json({ ok: false, error: 'Batas wajar terjemah talkhis hari ini tercapai. Lanjutkan besok, ya.' });
+    const out = await requestAI({
+      system: TRANSLATE_PROMPT,
+      messages: [{ role: 'user', content: `المبحث: ${topic.title}\n\nالتلخيص:\n${topic.text}` }],
+      maxTokens: 6000, model: models.default, temperature: 0.2,
+    });
+    const text = String(out?.text || '').trim();
+    if (!text) throw new Error('AI gagal menerjemahkan');
+    topic.translation = { text: text.slice(0, 40000), key, partial: !!out.truncated, model: out.model || null, at: new Date().toISOString() };
+    topic.tr_count = (topic.tr_count || 0) + 1;
     await saveTalkhis(ctx.code, set.id, t);
     return done({ topic_id: topic.id });
   }

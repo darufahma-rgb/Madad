@@ -686,6 +686,13 @@ html.app-shell { --app-header-h: calc(57px + var(--safe-top)); }
 .tk-body p { margin: 4px 0; }
 .tk-mini { font-family: "Noto Naskh Arabic", Amiri, serif; font-size: 15px; line-height: 1.85; color: #e7e0d2; text-align: right; padding-inline-start: 18px; list-style: disc; }
 @media (max-width: 767px) { .tk-body { font-size: 17px; } .tk-body .tk-nass { font-size: 18px; padding: 6px 10px; } }
+/* Terjemah Indonesia talkhis (tab Talkhis → Terjemah): kiri ke kanan, huruf Latin. */
+.tk-body.tk-id { font-family: inherit; font-size: 15px; line-height: 1.75; text-align: left; color: #d9e6df; }
+.tk-body.tk-id .tk-h4 { font-size: 14.5px; margin-top: 12px; }
+.tk-body.tk-id .tk-nass { font-size: 15px; font-family: "Noto Naskh Arabic", Amiri, serif; direction: rtl; text-align: right; }
+.tk-body.tk-id .tk-sec { border-right: 0; border-left: 3px solid transparent; }
+.tk-body.tk-id b { text-decoration: none; }
+@media (max-width: 767px) { .tk-body.tk-id { font-size: 15px; } }
 .tk-body .tk-nl-warn { text-decoration: underline dashed rgba(251,191,36,.7); text-underline-offset: 7px; }
 .tk-body .tk-bab { text-align: center; font-size: 22px; color: #e3c88d; margin: 22px 0 10px; }
 .tk-body .tk-bab:first-child { margin-top: 4px; }
