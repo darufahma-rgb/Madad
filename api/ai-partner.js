@@ -10,7 +10,7 @@ import {
   isHighStakesFiqh, FIQH_REMINDER,
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
-import { imtihanDaysFor, IMTIHAN_LEGACY_DAYS } from './_lib/payments.js';
+import { imtihanDaysFor, IMTIHAN_LEGACY_DAYS, talkhisAddonCredits } from './_lib/payments.js';
 import { CLASS_TRIAL_PRODUCT } from './_lib/events.js';
 import { makeRunContinued, isContinueAfterCut, chatTimeLeft, withinBudget, LIBRARY_BUDGET_MS, libraryFits } from './_lib/ai-partner/continue.js';
 import { handleEvalAdmin } from './_lib/ai-partner/eval.js';
@@ -236,16 +236,35 @@ const quotaPeriod = (expiresAt) => {
 };
 const formatQuotaDate = (iso) => new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', timeZone: 'Asia/Jakarta' });
 
-const quotaExceeded = (res, kind, scope = 'daily', ctx = null) => scope === 'unavailable'
-  ? res.status(503).json({ ok: false, error: 'Tidak bisa memeriksa kuota sekarang. Coba lagi sebentar.' })
-  : scope === 'package'
-  ? res.status(429).json({ ok: false, error: 'quota', scope, message: `Jatah talkhis Paket Imtihan (${imtihanTalkhisCap(ctx)} muqarrar) sudah terpakai semua. Fitur AI lainnya tetap bisa kamu pakai seperti biasa.` })
-  : res.status(429).json({
-    ok: false, error: 'quota', scope,
-    message: scope === 'monthly'
-      ? `Jatah ${monthlyLimitCache(ctx)[kind]}x untuk fitur ini di periode ${ctx?.trialMember ? 'trial' : 'langganan'}mu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx?.quotaResetAt || quotaPeriod(null).resetAt)}.`
-      : `Batas harian (${dailyLimitCache(ctx, kind)}x) untuk fitur ini tercapai. Coba lagi besok.`,
+// Jatah harian (consume_ai_quota memakai current_date Supabase = UTC) dibuka lagi tengah malam UTC.
+const nextDailyReset = (now = new Date()) => new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1));
+const clockIn = (d, timeZone) => d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', timeZone });
+const resetLabel = (d) => `${clockIn(d, 'Asia/Jakarta')} WIB (${clockIn(d, 'Africa/Cairo')} waktu Kairo)`;
+
+const quotaExceeded = (res, kind, scope = 'daily', ctx = null) => {
+  if (scope === 'unavailable') return res.status(503).json({ ok: false, error: 'Tidak bisa memeriksa kuota sekarang. Coba lagi sebentar.' });
+  if (scope === 'package') {
+    const cap = ctx?.talkhisCap ?? imtihanTalkhisCap(ctx);
+    return res.status(429).json({
+      ok: false, error: 'quota', scope, addon: 'talkhis', used: ctx?.talkhisUsed ?? cap, cap,
+      message: `Jatah talkhis di Paket Imtihan-mu (${cap} muqarrar) sudah terpakai semua. Talkhis dibatasi per paket karena satu muqarrar dibaca dan ditulis ulang judul demi judul oleh AI, jadi biayanya jauh lebih besar dari fitur lain. Kamu bisa menambah jatah talkhis, dan fitur AI lainnya tetap bisa dipakai seperti biasa.`,
+    });
+  }
+  if (scope === 'monthly') {
+    return res.status(429).json({
+      ok: false, error: 'quota', scope,
+      message: `Jatah ${monthlyLimitCache(ctx)[kind]}x untuk fitur ini di periode ${ctx?.trialMember ? 'trial' : 'langganan'}mu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx?.quotaResetAt || quotaPeriod(null).resetAt)}.`,
+    });
+  }
+  const resetAt = nextDailyReset();
+  const limit = dailyLimitCache(ctx, kind);
+  return res.status(429).json({
+    ok: false, error: 'quota', scope, resetAt: resetAt.toISOString(),
+    message: kind === 'talkhis'
+      ? `Hari ini kamu sudah memetakan ${limit} muqarrar untuk talkhis, dan batasnya ${limit} muqarrar per hari supaya antrean AI tetap cepat untuk semua. Muqarrar berikutnya bisa dipetakan lagi mulai ${resetLabel(resetAt)}. Judul di muqarrar yang sudah dipetakan tetap bisa kamu tulis sekarang.`
+      : `Batas harian (${limit}x) untuk fitur ini tercapai. Bisa dipakai lagi mulai ${resetLabel(resetAt)}.`,
   });
+};
 
 // Pemakaian sejak tanggal `since` per jenis: { chat: 12, … }. Gagal membaca → null (pemanggil memutuskan).
 const monthlyUsage = async (code, since) => {
@@ -379,7 +398,10 @@ const takeQuota = async (ctx, kind) => {
   if (kind === 'talkhis' && !(await quotaOverride(ctx))?.noMonthly && !(await isTrialMember(ctx)) && (await isImtihanHolder(ctx)) && ctx.imtihanSince) {
     const used = await monthlyUsage(ctx.code, ctx.imtihanSince);
     if (!used) return 'unavailable';
-    if ((used.talkhis || 0) >= imtihanTalkhisCap(ctx)) return 'package';
+    // Jatah paket + tambahan talkhis yang dibeli selama paket ini berjalan.
+    ctx.talkhisCap = imtihanTalkhisCap(ctx) + (await talkhisAddonCredits(ctx.code, ctx.imtihanSince));
+    ctx.talkhisUsed = used.talkhis || 0;
+    if (ctx.talkhisUsed >= ctx.talkhisCap) return 'package';
   }
   const monthly = await monthlyLimitFor(ctx, kind);
   if (monthly != null) {

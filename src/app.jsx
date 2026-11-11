@@ -108,7 +108,10 @@ const App = () => {
     url.searchParams.delete("checkout");
     window.history.replaceState(null, "", url.pathname + url.search + url.hash);
     if (!/^[0-9a-f-]{36}$/i.test(id)) return;
-    if (readPendingCheckout()?.id !== id) savePendingCheckout({ id, at: Date.now() });
+    const pending = readPendingCheckout();
+    if (pending?.id !== id) savePendingCheckout({ id, at: Date.now() });
+    // Tambahan talkhis dibeli dari halaman talkhis: kembali ke sana (pemantau tagihan global mengecek lunasnya).
+    if (pending?.id === id && pending.returnTo && pending.returnTo.startsWith("/")) { navigate(pending.returnTo); return; }
     navigate("/gabung");
   }, []);
 

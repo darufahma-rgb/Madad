@@ -133,7 +133,7 @@ const FAQS = [
   ['Bayarnya pakai apa? Berapa lama aktifnya?',
     'Lewat Mayar: QRIS, virtual account, atau e-wallet. Tagihannya dibuat langsung untuk akun Google-mu, jadi akses aktif otomatis begitu pembayaran masuk — biasanya kurang dari 1 menit.'],
   ['Paket Imtihan benar-benar sepuasnya?',
-    `Ya. Selama ${IMTIHAN_AI_DAYS} hari, terjemah & i'rab, pesan tutor, Tanya AI, ringkasan/kuis/flashcard, materi baru, dan baca foto bisa kamu pakai sepuasnya. Pengecualiannya fitur yang biayanya dihitung per menit atau per muqarrar: talkhis ${IMTIHAN_TALKHIS_CAP} muqarrar per paket, dan Live Caption kuliah duktur: 8 jam per 30 hari, maksimal 3 jam per hari (mode Akurat untuk kelas ramai dihitung 4× menit).`],
+    `Ya. Selama ${IMTIHAN_AI_DAYS} hari, terjemah & i'rab, pesan tutor, Tanya AI, ringkasan/kuis/flashcard, materi baru, dan baca foto bisa kamu pakai sepuasnya. Pengecualiannya fitur yang biayanya dihitung per menit atau per muqarrar: talkhis ${IMTIHAN_TALKHIS_CAP} muqarrar per paket (bisa ditambah mulai Rp39.000 per muqarrar), dan Live Caption kuliah duktur: 8 jam per 30 hari, maksimal 3 jam per hari (mode Akurat untuk kelas ramai dihitung 4× menit).`],
   ['AI Partner diperpanjang otomatis?',
     'Tidak. Tidak ada potongan otomatis, baik Paket Imtihan maupun per 30 hari. Kalau mau lanjut, perpanjang kapan saja — sisa harimu tidak hangus.'],
   ['Saya member lama, harus bayar lagi?',
@@ -882,7 +882,7 @@ const GabungPage = () => {
           </table>
         </div>
         <p className="text-[11px] text-ink-soft text-center mt-3 max-w-2xl mx-auto">
-          *Paket Imtihan: materi baru, i'rab, pesan tutor, Tanya AI, dan baca foto sepuasnya selama {IMTIHAN_AI_DAYS} hari. Live Caption: 8 jam kuliah per 30 hari, mode Akurat dihitung 4×. Talkhis: {IMTIHAN_TALKHIS_CAP} muqarrar per paket, maksimal 1 per hari. Materi gratis maksimal ±10–15 halaman.
+          *Paket Imtihan: materi baru, i'rab, pesan tutor, Tanya AI, dan baca foto sepuasnya selama {IMTIHAN_AI_DAYS} hari. Live Caption: 8 jam kuliah per 30 hari, mode Akurat dihitung 4×. Talkhis: {IMTIHAN_TALKHIS_CAP} muqarrar per paket, maksimal 1 per hari; tambahan Rp39.000/muqarrar atau Rp99.000/3 muqarrar. Materi gratis maksimal ±10–15 halaman.
         </p>
       </Section>
 

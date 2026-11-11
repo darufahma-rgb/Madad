@@ -3,7 +3,7 @@ import { normalizePin } from './_lib/pin.js';
 import { verifyUnsubToken, addOptout } from './_lib/email.js';
 import {
   CHECKOUT_PLANS, mayarConfigured, checkoutBlockReason, createCheckout, getOwnedCheckout, refreshCheckout,
-  listGroupCodes, redeemGroupCode, claimClassTrial, imtihanPrice,
+  listGroupCodes, redeemGroupCode, claimClassTrial, imtihanPrice, isTalkhisAddon, runningImtihan,
 } from './_lib/payments.js';
 import {
   readAffiliateProgram, resolveMemberAffiliate, getApprovedAffiliate, getAffiliateByMember, affiliatePrice, commissionPercent,
@@ -215,6 +215,10 @@ async function handleCheckout(req, user, res) {
   if (member && member.status !== 'active') return res.status(200).json({ ok: false, status: member.status });
   const blocked = checkoutBlockReason(plan, member);
   if (blocked) return res.status(200).json({ ok: false, status: blocked });
+  // Tambahan talkhis hanya untuk pemegang Paket Imtihan yang masih berjalan (jatahnya ikut masa paket itu).
+  if (isTalkhisAddon(plan) && !(member && (await runningImtihan(member.code)))) {
+    return res.status(200).json({ ok: false, status: 'needs_imtihan' });
+  }
 
   const offer = plan === 'imtihan' ? await getWelcomeOffer(member) : null;
   // Tautan kerja sama: akun yang sudah ditandai ke satu kekeluargaan tetap tercatat ke sana, walau memakai tautan lain.

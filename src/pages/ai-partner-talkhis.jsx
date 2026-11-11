@@ -643,6 +643,63 @@ const viewTalkhis = (raw) => (raw && Array.isArray(raw.topics)
   ? { ...raw, topics: raw.topics.map(x => ({ ...x, bab: fixLamAlef(x.bab), title: fixLamAlef(x.title) })) }
   : null);
 
+/* Jatah talkhis habis. Batas harian: dijelaskan beserta jam bukanya lagi (dari server). Jatah paket: ditawari tambahan
+   talkhis (api/_lib/payments.js TALKHIS_ADDONS, harga ditentukan server). Setelah bayar, Mayar mengembalikan pembeli
+   ke halaman ini dan pemantau tagihan global (CheckoutWatcher) mengecek lunasnya. */
+const TALKHIS_ADDONS = [
+  { plan: 'talkhis_1', credits: 1, price: 39000 },
+  { plan: 'talkhis_3', credits: 3, price: 99000, best: true },
+];
+const ADDON_ERRORS = {
+  needs_imtihan: 'Tambahan talkhis khusus untuk pemegang Paket Imtihan yang masih aktif.',
+  payments_disabled: 'Pembayaran online belum dibuka. Hubungi admin lewat WhatsApp.',
+  rate_limited: 'Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.',
+  network: 'Tidak bisa terhubung ke server. Cek koneksi lalu coba lagi.',
+};
+const TalkhisQuotaCard = ({ quota }) => {
+  const [busy, setBusy] = useState('');
+  const [err, setErr] = useState('');
+  const buy = async (plan) => {
+    setBusy(plan);
+    setErr('');
+    const r = await window.createCheckout(plan);
+    if (!r.ok || !r.checkout?.link) {
+      setBusy('');
+      setErr(ADDON_ERRORS[r.status] || 'Gagal membuat tagihan. Coba lagi sebentar, atau hubungi admin.');
+      return;
+    }
+    window.savePendingCheckout?.({ ...r.checkout, at: Date.now(), returnTo: window.location.hash.slice(1) || '/ai-partner' });
+    window.location.href = r.checkout.link;
+  };
+  const daily = quota.scope === 'daily';
+  return (
+    <div className="text-left rounded-2xl border p-5 mb-3" style={{ borderColor: 'rgba(201,168,106,0.35)', background: 'rgba(201,168,106,0.06)' }}>
+      <div className="flex items-center gap-2 mb-2">
+        <Icon name={daily ? 'timer' : 'list'}className="w-4 h-4 text-gold-300"/>
+        <div className="text-sm font-semibold text-ink">{daily ? 'Batas talkhis hari ini tercapai' : 'Jatah talkhis paketmu sudah habis'}</div>
+      </div>
+      <p className="text-[13px] text-ink-muted leading-relaxed">{quota.error || quota.message}</p>
+      {quota.addon === 'talkhis' && (
+        <>
+          <div className="grid sm:grid-cols-2 gap-2 mt-4">
+            {TALKHIS_ADDONS.map(a => (
+              <button key={a.plan} onClick={() => buy(a.plan)} disabled={!!busy}
+                className={`rounded-xl border px-4 py-3 text-left transition ${a.best ? 'border-emerald-400/50 bg-emerald-500/10 hover:bg-emerald-500/15' : 'border-white/10 hover:border-white/20'} ${busy && busy !== a.plan ? 'opacity-50' : ''}`}>
+                <span className="block text-ink font-medium">+{a.credits} muqarrar{a.best ? <span className="ml-2 text-[10px] uppercase tracking-wider text-emerald-300">Hemat</span> : null}</span>
+                <span className="block text-[12px] text-ink-muted">
+                  {busy === a.plan ? 'Membuat tagihan…' : `${formatRupiah(a.price)}${a.credits > 1 ? ` · ${formatRupiah(Math.round(a.price / a.credits / 1000) * 1000)}/muqarrar` : ''}`}
+                </span>
+              </button>
+            ))}
+          </div>
+          <p className="text-[11px] text-ink-soft mt-2">Sekali bayar lewat QRIS, VA, atau e-wallet. Jatah tambahan berlaku selama Paket Imtihan-mu aktif, tetap maksimal 1 muqarrar dipetakan per hari.</p>
+        </>
+      )}
+      {err && <p className="text-xs text-rose-300 mt-2">{err}</p>}
+    </div>
+  );
+};
+
 const TalkhisTab = ({ set, setSet, access }) => {
   const toast = useToast();
   const t = viewTalkhis(set.talkhis);
@@ -656,6 +713,12 @@ const TalkhisTab = ({ set, setSet, access }) => {
   const [openId, setOpenId] = useState(null);
   const [upgrade, setUpgrade] = useState('');
   const [mapErr, setMapErr] = useState('');
+  const [quota, setQuota] = useState(null);      // jatah talkhis habis (harian atau per paket): { scope, message, addon }
+  useEffect(() => {
+    const paid = () => setQuota(null);
+    window.addEventListener('talqeeh:checkout-paid', paid);
+    return () => window.removeEventListener('talqeeh:checkout-paid', paid);
+  }, []);
   const [live, pushLive, resetLive] = useLive();
   const isTrial = access.tier !== 'pro';
   const canUse = access.tier === 'pro';
@@ -671,10 +734,16 @@ const TalkhisTab = ({ set, setSet, access }) => {
 
   /* Pemetaan: satu bagian per request sampai selesai. */
   const runMap = async () => {
-    setBusy('map'); setMapErr(''); setUpgrade('');
+    setBusy('map'); setMapErr(''); setUpgrade(''); setQuota(null);
     for (let guard = 0; guard < 20; guard++) {
       const d = await aiCall('talkhis', { op: 'map', set_id: set.id });
-      if (!d.ok) { setBusy(''); if (d.upgrade) setUpgrade(d.error); else setMapErr(d.error || 'Gagal memetakan'); return; }
+      if (!d.ok) {
+        setBusy('');
+        if (d.upgrade) setUpgrade(d.error);
+        else if (d.scope === 'package' || d.scope === 'daily') setQuota(d);
+        else setMapErr(d.error || 'Gagal memetakan');
+        return;
+      }
       apply(d);
       if (d.talkhis?.stage !== 'map') break;
     }
@@ -851,9 +920,10 @@ const TalkhisTab = ({ set, setSet, access }) => {
             ) : (
               <>
                 {mapErr && <p className="text-xs text-rose-300 mb-3">{mapErr}</p>}
-                <button onClick={runMap} className="btn btn-primary text-sm px-6 py-3">
+                {quota && <TalkhisQuotaCard quota={quota}/>}
+                {!quota && <button onClick={runMap} className="btn btn-primary text-sm px-6 py-3">
                   <Icon name="sparkles" className="w-4 h-4"/> {t ? 'Lanjutkan pemetaan' : 'Petakan mabahits'}
-                </button>
+                </button>}
                 <p className="text-[11px] text-ink-soft mt-3">
                   {isTrial ? `Coba gratis: pemetaan + talkhis ${TRIAL_TOPICS} judul.` : 'Memakai 1 kuota talkhis untuk seluruh muqarrar ini.'}
                 </p>

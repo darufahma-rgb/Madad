@@ -10,7 +10,14 @@ import { getLiveEvents, CLASS_TRIAL_PRODUCT, CLASS_TRIAL_HOURS, CLASS_TRIAL_DEFA
 export const LIBRARY_PRICE_IDR = 63000;
 export const AI_PERIOD_DAYS = 30;
 export const AI_PRODUCT_ID = 'talqeeh-ai-30hari';
-export const CHECKOUT_PLANS = ['library', 'library_ai', 'ai', 'imtihan', 'rombongan'];
+export const CHECKOUT_PLANS = ['library', 'library_ai', 'ai', 'imtihan', 'rombongan', 'talkhis_1', 'talkhis_3'];
+/* Tambahan talkhis untuk pemegang Paket Imtihan yang jatah talkhisnya habis (migrations/talkhis_addon.sql).
+   Samakan dengan TALKHIS_ADDONS di src/pages/ai-partner-talkhis.jsx. Biaya AI terburuk ±$2,7 per muqarrar 40 judul. */
+export const TALKHIS_ADDONS = {
+  talkhis_1: { credits: 1, price: 39000 },
+  talkhis_3: { credits: 3, price: 99000 },
+};
+export const isTalkhisAddon = (plan) => Object.prototype.hasOwnProperty.call(TALKHIS_ADDONS, plan);
 // Paket Imtihan: Library selamanya + AI Partner 2 bulan dengan satu harga.
 // Samakan dengan IMTIHAN_PRICE_IDR dan IMTIHAN_AI_DAYS di src/layout.jsx.
 export const IMTIHAN_PRICE_IDR = 199000;
@@ -38,6 +45,8 @@ const PLAN_TITLES = {
   library_ai: `Talqeeh Library + AI Partner ${AI_PERIOD_DAYS} hari`,
   ai:         `Talqeeh AI Partner ${AI_PERIOD_DAYS} hari`,
   imtihan:    `Talqeeh Paket Imtihan (Library + AI Partner ${IMTIHAN_AI_DAYS} hari)`,
+  talkhis_1:  'Talqeeh Tambahan Talkhis 1 muqarrar',
+  talkhis_3:  'Talqeeh Tambahan Talkhis 3 muqarrar',
 };
 const rombonganTitle = (seats) => `Talqeeh Paket Rombongan ${seats} orang (Paket Imtihan)`;
 const planTitle = (plan, seats) => (plan === 'rombongan' ? rombonganTitle(seats) : PLAN_TITLES[plan]);
@@ -101,6 +110,7 @@ export async function getPrices() {
 // rombongan: { seats, price } dari event Paket Rombongan yang sedang berlangsung.
 const splitAmount = async (plan, prices, imtihanAmount, rombongan) => {
   if (plan === 'rombongan') return { library_amount: prices.library * rombongan.seats, ai_amount: rombongan.price - prices.library * rombongan.seats };
+  if (isTalkhisAddon(plan)) return { library_amount: 0, ai_amount: TALKHIS_ADDONS[plan].price };
   if (plan === 'imtihan') return { library_amount: prices.library, ai_amount: Math.min(await imtihanPrice(), imtihanAmount || Infinity) - prices.library };
   return {
     library_amount: plan === 'ai' ? 0 : prices.library,
@@ -154,6 +164,8 @@ export async function getOwnedCheckout(id, authUserId) {
 export function checkoutBlockReason(plan, member) {
   // Rombongan: pembeli yang sudah Library tetap boleh (bagiannya menambah masa AI Partner).
   if (plan === 'rombongan') return null;
+  // Tambahan talkhis: syarat Paket Imtihan yang masih berjalan diperiksa di api/login.js (runningImtihan).
+  if (isTalkhisAddon(plan)) return null;
   const paidLibrary = member && member.status === 'active' && member.tier !== 'free' && member.member_type !== 'trial';
   if (plan === 'ai') return paidLibrary ? null : 'needs_library';
   return paidLibrary ? 'already_library' : null;
@@ -164,7 +176,7 @@ export function checkoutBlockReason(plan, member) {
 export async function createCheckout({ user, member, plan, appOrigin, imtihanAmount, seats, partnerSlug, affiliate }) {
   const prices = await getPrices();
   // Paket Imtihan & Rombongan berharga tetap, jadi tidak bergantung pada harga AI bulanan di Settings.
-  if (!['library', 'imtihan', 'rombongan'].includes(plan) && !prices.ai) return { ok: false, status: 'ai_price_unset' };
+  if (!['library', 'imtihan', 'rombongan'].includes(plan) && !isTalkhisAddon(plan) && !prices.ai) return { ok: false, status: 'ai_price_unset' };
   const rombongan = plan === 'rombongan' ? await rombonganSize(seats) : null;
   if (plan === 'rombongan' && !rombongan) return { ok: false, status: 'rombongan_closed' };
   const parts = await splitAmount(plan, prices, imtihanAmount, rombongan);
@@ -348,7 +360,8 @@ export async function fulfillCheckout(checkout, { via, mobile } = {}) {
   try {
     const note = `Mayar API · ${checkout.mayar_id || checkout.id}`;
     let code = checkout.member_code;
-    if (checkout.plan !== 'ai') {
+    // Tambahan talkhis tidak mengaktifkan apa pun: jatahnya dihitung langsung dari tagihan lunas ini (talkhisAddonCredits).
+    if (checkout.plan !== 'ai' && !isTalkhisAddon(checkout.plan)) {
       code = await activateLibrary({ authUserId: checkout.auth_user_id, email: checkout.email, name: checkout.name, mobile, note });
     }
     if (!code) {
@@ -357,7 +370,7 @@ export async function fulfillCheckout(checkout, { via, mobile } = {}) {
     }
     if (!code) throw new Error('Member pembeli tidak ditemukan');
     let aiExpiresAt = null;
-    if (checkout.plan !== 'library') {
+    if (checkout.plan !== 'library' && !isTalkhisAddon(checkout.plan)) {
       const longPlan = checkout.plan === 'imtihan' || checkout.plan === 'rombongan';
       aiExpiresAt = await extendAi(code, { email: checkout.email, days: longPlan ? imtihanDaysFor(checkout.created_at) : AI_PERIOD_DAYS });
     }
@@ -383,6 +396,32 @@ export async function refreshCheckout(checkout) {
   if (!isPaidRequest(data)) return 'pending';
   await fulfillCheckout(checkout, { via: 'status_check' });
   return 'paid';
+}
+
+/* ── Tambahan talkhis ── */
+
+// Paket Imtihan yang masih berjalan milik member ini: { since, createdAt } dari tagihan pertamanya, atau null.
+export async function runningImtihan(memberCode, now = Date.now()) {
+  if (!memberCode) return null;
+  const { url, h } = sb();
+  const since = new Date(now - IMTIHAN_LEGACY_DAYS * 86400000).toISOString();
+  const r = await fetch(`${url}/rest/v1/payment_checkouts?member_code=eq.${encodeURIComponent(memberCode)}&plan=eq.imtihan&status=eq.paid&paid_at=gte.${since}&select=paid_at,created_at&order=paid_at.asc&limit=10`, { headers: h() });
+  const rows = r.ok ? (await r.json()) || [] : [];
+  const running = rows.filter(row => Date.parse(row.paid_at) + imtihanDaysFor(row.created_at) * 86400000 > now);
+  return running[0] ? { since: String(running[0].paid_at).slice(0, 10), createdAt: running[0].created_at } : null;
+}
+
+export const addonCredits = (rows) => (Array.isArray(rows) ? rows : [])
+  .reduce((n, row) => n + (TALKHIS_ADDONS[row.plan]?.credits || 0), 0);
+
+// Jumlah muqarrar tambahan yang sudah dibayar sejak `since` (awal Paket Imtihan yang berjalan). Gagal membaca → 0.
+export async function talkhisAddonCredits(memberCode, since) {
+  if (!memberCode || !since) return 0;
+  const { url, h } = sb();
+  const plans = Object.keys(TALKHIS_ADDONS).join(',');
+  const r = await fetch(`${url}/rest/v1/payment_checkouts?member_code=eq.${encodeURIComponent(memberCode)}&plan=in.(${plans})&status=eq.paid&paid_at=gte.${since}&select=plan&limit=200`, { headers: h() })
+    .catch(() => null);
+  return r?.ok ? addonCredits(await r.json()) : 0;
 }
 
 /* ── Webhook ── */

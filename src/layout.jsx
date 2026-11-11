@@ -637,7 +637,9 @@ const AI_PARTNER_FEATURES = [
   "Flashcard pengulangan berjarak, kuis, dan latihan tahriri dinilai AI",
   "Tutor dari materimu + simulasi ujian syafawi",
 ];
-const PLAN_LABELS = { library: "Library", library_ai: "Library + AI Partner 30 hari", ai: "AI Partner 30 hari", imtihan: "Paket Imtihan", rombongan: "Paket Rombongan" };
+const PLAN_LABELS = { library: "Library", library_ai: "Library + AI Partner 30 hari", ai: "AI Partner 30 hari", imtihan: "Paket Imtihan", rombongan: "Paket Rombongan",
+  talkhis_1: "Tambahan talkhis 1 muqarrar", talkhis_3: "Tambahan talkhis 3 muqarrar" };
+const isTalkhisAddonPlan = (plan) => plan === "talkhis_1" || plan === "talkhis_3";
 
 /* Paket Library + AI Study Partner: satu kali bayar di awal = Library selamanya + AI 30 hari pertama.
    Harga AI dari Admin → Settings (aiPriceMonthly); null kalau belum diisi. */
@@ -1181,6 +1183,11 @@ const CheckoutWatcher = ({ paused }) => {
   const checkout = useCheckout({
     enabled: !!session && !paused && !onGabung,
     onPaid: async (c) => {
+      window.dispatchEvent(new CustomEvent("talqeeh:checkout-paid", { detail: c }));
+      if (isTalkhisAddonPlan(c.plan)) {
+        toast.push(`Pembayaran diterima — jatah talkhis bertambah ${c.plan === "talkhis_3" ? 3 : 1} muqarrar!`);
+        return;
+      }
       window.dispatchEvent(new Event("talqeeh:ai-status-changed"));
       await refreshMemberSession();
       toast.push(c.plan === "ai" ? "Pembayaran diterima — AI Partner aktif 30 hari!"
@@ -1202,7 +1209,9 @@ const CheckoutWatcher = ({ paused }) => {
           {timedOut ? "Pembayaran belum terdeteksi" : "Menunggu pembayaran…"}
           <span className="block text-[11px] text-ink-muted truncate">{PLAN_LABELS[checkout.checkout?.plan] || "Paket Talqeeh"} · aktif otomatis setelah lunas</span>
         </div>
-        <button onClick={() => navigate("/gabung")} className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2 flex-shrink-0">Lihat</button>
+        {isTalkhisAddonPlan(checkout.checkout?.plan)
+          ? (checkout.checkout?.link && <button onClick={() => { window.location.href = checkout.checkout.link; }} className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2 flex-shrink-0">Bayar</button>)
+          : <button onClick={() => navigate("/gabung")} className="text-xs text-emerald-300 hover:text-emerald-200 underline underline-offset-2 flex-shrink-0">Lihat</button>}
       </div>
     </div>
   );
@@ -1576,7 +1585,7 @@ Object.assign(window, {
   imtihanBundle, ImtihanBreakdown, IMTIHAN_PRICE_IDR, IMTIHAN_AI_DAYS, IMTIHAN_PROMO, imtihanPromoActive, EventBanner, usePromoCountdown,
   rombonganEvent,
   useWelcomeOffer, OfferClock, WelcomeOfferPopup,
-  useCheckout, CheckoutWaiting, CheckoutWatcher, CheckoutPayModal, readPendingCheckout, savePendingCheckout, formatRupiah,
+  useCheckout, CheckoutWaiting, CheckoutWatcher, CheckoutPayModal, readPendingCheckout, savePendingCheckout, formatRupiah, isTalkhisAddonPlan,
   LIBRARY_PRICE, LIBRARY_PRICE_IDR, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
   scrollToLandingSection, scrollToPaket,
   MobileTabBar, SupportButton,
