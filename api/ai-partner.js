@@ -654,9 +654,17 @@ async function chargeLive(ctx, body, res) {
     const closed = (over === 'daily' && dailyLimitCache(ctx, 'live') === 0) || (over === 'monthly' && monthlyLimitCache(ctx).live === 0);
     const fail = (message) => { res.status(429).json({ ok: false, error: 'quota', message }); return null; };
     if (closed) return fail('Live Caption sedang ditutup sementara. Kabari admin Talqeeh, ya.');
-    if (over === 'daily') return fail(`Jatah Live Caption hari ini (${liveHours(dailyLimitCache(ctx, 'live'))}) sudah habis. Coba lagi besok.`);
+    // Mode Akurat menghabiskan jatah 4× lebih cepat: sebut setara rekamannya, karena itulah yang dirasakan pemakai.
+    const akurat = (min) => (body.mode === 'akurat' ? ` Mode Akurat dihitung 4× jatah, jadi ${liveHours(min)} jatah setara ±${liveHours(Math.floor(min / LIVE_ACCURATE_WEIGHT))} rekaman Akurat. Mode Cepat dihitung 1×.` : '');
+    if (over === 'daily') {
+      const day = dailyLimitCache(ctx, 'live');
+      return fail(`Jatah Live Caption hari ini (${liveHours(day)}) sudah habis.${akurat(day)} Jatah harian terisi lagi pukul ${resetLabel(nextDailyReset())}.`);
+    }
     if (over === 'unavailable') { quotaExceeded(res, 'live', over, ctx); return null; }
-    if (over) return fail(`Jatah Live Caption ${liveHours(monthlyLimitCache(ctx).live)} di periode langgananmu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx.quotaResetAt || quotaPeriod(null).resetAt)}.`);
+    if (over) {
+      const period = monthlyLimitCache(ctx).live;
+      return fail(`Jatah Live Caption ${liveHours(period)} di periode langgananmu sudah habis.${akurat(period)} Jatah baru mulai ${formatQuotaDate(ctx.quotaResetAt || quotaPeriod(null).resetAt)}.`);
+    }
     credit += 60_000;
   }
   return { audio, credit: Math.max(0, credit - cost) };

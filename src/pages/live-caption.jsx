@@ -126,6 +126,22 @@ const durationLabel = (min) => {
   return [h ? `${h} jam` : '', m || !h ? `${m} menit` : ''].filter(Boolean).join(' ');
 };
 
+/* Live Caption: 1 menit kuliah = 1 menit jatah, mode Akurat = 4 menit jatah (LIVE_ACCURATE_WEIGHT di api/ai-partner.js).
+   Sisa jatah ditampilkan juga dalam menit rekaman Akurat supaya tidak mengira jatahnya "cuma 2 jam". */
+const ACCURATE_WEIGHT = 4;
+const accurateMinutes = (min) => Math.floor((min || 0) / ACCURATE_WEIGHT);
+// Pesan sebelum mulai merekam bila jatah sudah tidak cukup untuk satu potongan; null = boleh merekam.
+const quotaOutMessage = (quota, mode) => {
+  if (!quota || quota.left == null) return null;
+  const need = mode === 'akurat' ? ACCURATE_WEIGHT : 1;
+  if (quota.left >= need) return null;
+  const monthly = quota.monthlyLeft != null && quota.monthlyLeft < need;
+  if (quota.left > 0 && mode === 'akurat') return `Sisa jatah Live Caption tinggal ${durationLabel(quota.left)}, belum cukup untuk mode Akurat (1 menit rekaman = 4 menit jatah). Pakai mode Cepat untuk sisanya.`;
+  return monthly
+    ? `Jatah Live Caption ${durationLabel(quota.monthly)} di periode langgananmu sudah habis.`
+    : `Jatah Live Caption hari ini (${durationLabel(quota.daily)}) sudah habis. Coba lagi besok.`;
+};
+
 const LevelBars =({ level, active }) => (
   <span className="inline-flex items-end gap-[3px] h-4" aria-hidden="true">
     {[0.35, 0.7, 1, 0.6, 0.3].map((k, i) => (
@@ -347,7 +363,18 @@ const LiveCaptionBody = () => {
       return true;
     }
     if (d.upgrade) { stopAll(); openAiUpgrade('live'); }
-    else if (/batas|jatah|quota|ditutup/i.test(d.error || '')) stopAll(d.error);
+    else if (/batas|jatah|quota|ditutup/i.test(d.error || '')) {
+      // Jatah habis: berhenti merekam, buang potongan yang masih mengantre (semuanya akan ditolak dengan pesan yang
+      // sama), dan jangan tampilkan kartu error + "Coba lagi" per potongan. Pesannya cukup sekali di atas.
+      // stopAll dulu: mic.stop() masih mengirim potongan terakhir ke antrean, yang lalu ikut dibuang di bawah.
+      stopAll(d.error);
+      queue.current = [];
+      audioById.current.delete(id);
+      for (const s of segRef.current) if (s.status === 'pending') audioById.current.delete(s.id);
+      setSegments(l => l.filter(s => s.id !== id && s.status !== 'pending'));
+      loadQuota();
+      return false;
+    }
     // Gangguan sesaat (koneksi kelas, server sibuk): coba ulang sekali otomatis sebelum menampilkan error.
     else if (!retried) { await new Promise(r => setTimeout(r, 1500)); return send(id, base64, true); }
     patch(id, { status: 'error', err: d.error || 'Kalimat ini gagal diproses.' });
@@ -414,8 +441,12 @@ const LiveCaptionBody = () => {
   const chooseDialect = (d) => { setDialect(d); try { localStorage.setItem(DIALECT_KEY, d); } catch {} };
   const toggleRecord = () => {
     setError('');
-    if (mic.recording) baseElapsed.current = mic.stop();
-    else { restored.current = false; mic.start(baseElapsed.current); }
+    if (mic.recording) { baseElapsed.current = mic.stop(); return; }
+    // Jatah sudah habis: jangan mulai merekam lalu ditolak potongan demi potongan.
+    const out = quotaOutMessage(quota, hearMode);
+    if (out) { setError(out); return; }
+    restored.current = false;
+    mic.start(baseElapsed.current);
   };
   // Menghapus tanda juga menghapus label "Ditekankan duktur" (pengguna yang memutuskan).
   const toggleMark = (id) => {
@@ -621,7 +652,13 @@ const LiveCaptionBody = () => {
             <div className="mt-4 inline-flex items-center gap-2 text-xs rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-ink-muted">
               Sisa jatah: <span className="text-emerald-200 font-medium">{durationLabel(quota.left)}</span>
               {quota.monthlyLeft != null && quota.monthlyLeft < quota.dailyLeft ? ' periode ini' : ' hari ini'}
+              {hearMode === 'akurat' && quota.left > 0 && <> · ±{durationLabel(accurateMinutes(quota.left))} di mode Akurat</>}
             </div>
+          )}
+          {quota && (
+            <p className="text-[11px] text-ink-soft mt-2">
+              Jatah: {durationLabel(quota.daily)} per hari{quota.monthly != null ? `, ${durationLabel(quota.monthly)} per periode langganan` : ''}.
+            </p>
           )}
         </div>
       ) : (
