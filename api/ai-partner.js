@@ -23,6 +23,7 @@ import { withAiContext } from './_lib/ai-cost.js';
 import { handleIlmi, handleIlmiView } from './_lib/ai-partner/ilmi-index.js';
 import { answerFromLibrary, manageReferenceBook, readReferencePage, LIBRARY_OWNER } from './_lib/ai-partner/reference-library.js';
 import { handleReferenceDonation, manageSubmissions } from './_lib/ai-partner/reference-donation.js';
+import { handleMaterialDonation, manageMaterialSubmissions } from './_lib/ai-partner/material-donation.js';
 
 // Kategori biaya AI per action (cocok dengan kolom "Fitur" di analitik admin).
 const COST_KIND = {
@@ -1538,6 +1539,7 @@ async function handleAdmin(action, req, res, body) {
   const libraryDeps = { sbConfig, sbHeaders, takeQuota: async () => null, quotaExceeded, consumeQuota, resolveModels, streamAI, requestAI, allowTextOnly: true };
   if (action === 'admin-reference') return manageReferenceBook(body, res, libraryDeps);
   if (action === 'admin-reference-submissions') return manageSubmissions(body, res, libraryDeps);
+  if (action === 'admin-material-submissions') return manageMaterialSubmissions(body, res, libraryDeps);
   if (action === 'admin-reference-ilmi') {
     if (!['create','pages','edition','start','chunk','finalize','retry-failed','finish-text'].includes(body.op)) return res.status(400).json({ ok: false, error: 'Perintah pustaka tidak diizinkan.' });
     return handleIlmi(libraryCtx, body, res, libraryDeps);
@@ -1723,6 +1725,7 @@ export default async function handler(req, res) {
       case 'grade':         return await handleGrade(ctx, body, res);
       case 'reference-page': return await readReferencePage(body, res, { sbConfig, sbHeaders });
       case 'reference-donate': return await handleReferenceDonation(ctx, body, res, { sbConfig, sbHeaders });
+      case 'material-donate': return await handleMaterialDonation(ctx, body, res, { sbConfig, sbHeaders });
       case 'chat':          return await handleChat(ctx, body, res);
       case 'clear-chat':    return await handleClearChat(ctx, body, res);
       case 'prompt-chat':   return await handlePromptChat(ctx, body, res);

@@ -26,6 +26,17 @@ Jalankan `migrations/reference_submissions.sql` setelah tiga migrasi di atas. Se
 
 File yang sidik jarinya sama ditolak. PDF berbeda dari kitab yang sama tidak terdeteksi otomatis; antrean hanya memberi peringatan bila judulnya sama, jadi admin tetap perlu memeriksa. Persetujuan pengguna bukan bukti izin hak cipta: keputusan menerbitkan tetap di admin. Pengguna yang ingin mencabut sumbangan yang sudah diterima menghubungi admin, lalu admin menonaktifkan dan menghapus salinannya.
 
+## Sumbangan materi AI Partner
+
+Jalankan `migrations/material_submissions.sql`. Sebelum dijalankan, tombol **Sumbangkan materi** tidak muncul di halaman materi dan antrean admin hanya menampilkan pengingat.
+
+1. Di halaman materi AI Partner, pemilik menekan **Sumbangkan materi**, memilih jenis (kitab atau muqarrar), menyetujui syaratnya, lalu mengirim. Hanya materi dari PDF atau foto dengan minimal 1.500 karakter. Satu pengguna maksimal 5 sumbangan menunggu.
+2. Antrean **Sumbangan materi AI Partner** ada di `/admin` → **Pustaka Rujukan**. Admin membaca teksnya per potongan 6.000 karakter selama statusnya menunggu, lalu menolak dengan alasan atau menerima.
+3. **Terima** menyalin teks materi dan talkhisnya ke `material_submissions` dan memutus tautan ke materi pengguna. Ringkasan, kuis, flashcard, chat, dan nilai tidak disalin. Materi pengguna tetap privat.
+4. Salinan ini belum dipakai otomatis untuk pengguna lain. Ia bahan untuk talkhis bersama atau pustaka rujukan nanti.
+
+Materi yang teksnya sama (setelah harakat dan spasi dinormalisasi) hanya bisa mengantre atau diterima sekali. Teks OCR yang sedikit berbeda tidak terdeteksi sebagai sama. Persetujuan pengguna bukan bukti izin hak cipta.
+
 ## Batas integrasi
 
 - Tanya AI dan Tutor memakai pustaka rujukan bersama. Tutor juga mencari materi pribadi yang dimiliki pengguna tersebut dan melabelinya sebagai **materi pribadi**, tanpa nomor halaman PDF buatan.

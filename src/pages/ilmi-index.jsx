@@ -1077,6 +1077,7 @@ const IlmiIndexPage = ({ libraryMode = false }) => {
         {libraryMode ? <div className="mb-6 rounded-3xl border border-emerald-300/15 p-5 sm:p-8 relative overflow-hidden" style={{ background: 'radial-gradient(ellipse at 100% 0%,rgba(62,207,142,.12),transparent 70%),#111a15' }}><p className="text-[10px] tracking-[.25em] uppercase text-gold-300 mb-3">Talqeeh · Pustaka ilmiah</p><h1 className="text-2xl sm:text-3xl text-ink font-display font-semibold">Pustaka Rujukan Talqeeh</h1><p className="arabic text-xl sm:text-2xl text-gold-200/80 mt-2" dir="rtl">من الكتاب إلى الفهم</p><p className="mt-4 text-sm leading-relaxed max-w-2xl text-ink-muted">Kitab yang tertata. Pemahaman yang punya dasar. Kelola koleksi, periksa hasil pembacaan, lalu pilih rujukan untuk jawaban Tanya AI dan Tutor.</p><div className="flex flex-wrap gap-2 mt-5">{['Unggah kitab','Periksa teks & edisi','Aktifkan rujukan'].map((s,i) => <span key={s} className="text-[11px] text-ink-muted rounded-full border border-white/10 px-3 py-1.5"><span className="text-emerald-300 mr-2">0{i+1}</span>{s}</span>)}</div></div> : header}
         {libraryMode && data?.document && <ReferencePublishPanel key={data.document.id} doc={data.document}/>}
         {libraryMode && !docId && <SubmissionQueue onAccepted={(id) => { loadDocs(); navigate(`/ilmi-index?doc=${id}`); }}/>}
+        {libraryMode && !docId && <MaterialSubmissionQueue/>}
         {!libraryMode && (data?.document?.status === 'done' || data?.document?.status === 'partial') && <DonatePanel doc={data.document}/>}
         {body}
         <input ref={fileRef} type="file" accept="application/pdf,.pdf" className="hidden" onChange={onFile}/>
@@ -1299,6 +1300,91 @@ const SubmissionQueue = ({ onAccepted }) => {
         <p className="text-xs text-ink-muted mt-1 leading-relaxed">Periksa jenis dokumen, izin, dan mutu teksnya. Terima berarti disalin ke pustaka sebagai draf; kitabnya baru dipakai setelah kamu aktifkan.</p>
       </div>
       {state.submissions.map(item => <SubmissionItem key={item.id} item={item} onDone={(docId) => { load(); if (docId) onAccepted(docId); }}/>)}
+    </div>
+  );
+};
+
+/* ── Sumbangan materi AI Partner: antrean admin (api/_lib/ai-partner/material-donation.js) ── */
+const materialCall = (op, payload = {}) => adminLibraryCall('admin-material-submissions', { op, ...payload });
+const MaterialSubmissionItem = ({ item, onDone }) => {
+  const toast = useToast();
+  const [view, setView] = useState(null);
+  const [rejecting, setRejecting] = useState(false);
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const show = async (offset) => {
+    const d = await materialCall('read', { id: item.id, offset });
+    if (d.ok) setView(d); else setError(d.error || 'Teks gagal dibuka.');
+  };
+  const act = async (op, extra) => {
+    setBusy(true); setError('');
+    const d = await materialCall(op, { id: item.id, ...extra });
+    setBusy(false);
+    if (!d.ok) { setError(d.error || 'Gagal menyimpan.'); return; }
+    toast.push(op === 'approve' ? 'Diterima. Teks dan talkhisnya disalin.' : 'Sumbangan ditolak.');
+    onDone();
+  };
+  const facts = [item.source_kind === 'kitab' ? 'Kitab cetak' : 'Muqarrar kuliah', item.source_type === 'foto' ? 'dari foto' : 'dari PDF',
+    `${Number(item.chars || 0).toLocaleString('id-ID')} karakter`,
+    item.talkhis_topics ? `talkhis ${item.talkhis_written}/${item.talkhis_topics} judul` : 'belum ada talkhis',
+    item.maddah_id ? (window.maddahName?.(item.maddah_id) || item.maddah_id) : 'tanpa maddah',
+    new Date(item.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })];
+  const CHUNK = 6000;
+  return (
+    <div className="rounded-xl border border-white/10 p-4 space-y-3">
+      <div>
+        <div className="text-sm font-medium text-ink break-words" dir="auto">{item.title}</div>
+        <div className="text-xs text-ink-muted mt-0.5">{facts.join(' · ')}</div>
+      </div>
+      {view && (
+        <div className="rounded-lg bg-black/20 border border-white/[0.06] p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <button className="btn-subtle text-xs" disabled={view.offset <= 0} onClick={() => show(Math.max(0, view.offset - CHUNK))}>Sebelumnya</button>
+            <span className="text-xs text-ink-soft">{Math.floor(view.offset / CHUNK) + 1} / {Math.max(1, Math.ceil(view.total / CHUNK))}</span>
+            <button className="btn-subtle text-xs" disabled={view.offset + CHUNK >= view.total} onClick={() => show(view.offset + CHUNK)}>Berikutnya</button>
+          </div>
+          <div className="text-sm text-ink-muted leading-loose whitespace-pre-wrap max-h-72 overflow-y-auto" dir="auto">{view.text || 'Teksnya kosong.'}</div>
+        </div>
+      )}
+      {rejecting && (
+        <label className="block">
+          <span className="text-xs text-ink-muted">Alasan penolakan (dibaca penyumbang)</span>
+          <textarea value={note} maxLength={300} rows={2} onChange={e => setNote(e.target.value)}
+            className="mt-1 w-full bg-white/[0.04] border border-white/10 rounded-lg p-3 text-ink outline-none focus:border-emerald-500/40" style={{ fontSize: 16 }}/>
+        </label>
+      )}
+      {error && <p className="text-sm text-red-300">{error}</p>}
+      <div className="flex flex-wrap gap-2">
+        {!view && <button className="btn btn-ghost text-sm" onClick={() => show(0)}>Baca teksnya</button>}
+        {rejecting
+          ? <>
+              <button className="btn btn-ghost text-sm" onClick={() => setRejecting(false)}>Batal</button>
+              <button className="btn btn-primary text-sm disabled:opacity-50" disabled={busy || note.trim().length < 5} onClick={() => act('reject', { note })}>Kirim penolakan</button>
+            </>
+          : <>
+              <button className="btn btn-ghost text-sm" onClick={() => setRejecting(true)}>Tolak</button>
+              <button className="btn btn-primary text-sm disabled:opacity-50" disabled={busy} onClick={() => act('approve')}>{busy ? 'Menyalin…' : 'Terima'}</button>
+            </>}
+      </div>
+    </div>
+  );
+};
+const MaterialSubmissionQueue = () => {
+  const [state, setState] = useState(null);
+  const load = async () => setState(await materialCall('list'));
+  useEffect(() => { load(); }, []);
+  if (!state) return null;
+  if (!state.ok) return <div className="card-glass p-4 mb-5 text-sm text-red-300">{state.error || 'Antrean sumbangan materi gagal dimuat.'}</div>;
+  if (!state.available) return <div className="card-glass p-4 mb-5 text-sm text-ink-soft">Antrean sumbangan materi AI Partner belum aktif. Jalankan migrations/material_submissions.sql di Supabase.</div>;
+  if (!state.submissions.length) return null;
+  return (
+    <div className="card-glass p-4 md:p-5 mb-5 space-y-3">
+      <div>
+        <div className="font-medium text-ink">Sumbangan materi AI Partner ({state.submissions.length})</div>
+        <p className="text-xs text-ink-muted mt-1 leading-relaxed">Periksa jenis materi, izin, dan mutu teksnya. Terima berarti teks dan talkhisnya disalin dan disimpan; belum dipakai untuk pengguna lain secara otomatis.</p>
+      </div>
+      {state.submissions.map(item => <MaterialSubmissionItem key={item.id} item={item} onDone={load}/>)}
     </div>
   );
 };

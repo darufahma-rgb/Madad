@@ -21,6 +21,111 @@ const TrialBanner = ({ trial }) => (
   </div>
 );
 
+/* Sumbang materi ke Talqeeh (api/_lib/ai-partner/material-donation.js). Pola dan persetujuannya sama dengan sumbangan
+   kitab di Ilmi Index: privat secara bawaan, dibaca admin hanya setelah pemiliknya setuju. */
+const useMaterialDonation = (setId) => {
+  const [info, setInfo] = useState(null);
+  const load = () => aiCall('material-donate', { op: 'status', set_id: setId }).then(d => setInfo(d.ok ? d : null));
+  useEffect(() => { setInfo(null); load(); }, [setId]);
+  return [info, setInfo];
+};
+
+const DonateMaterialButton = ({ info, onOpen }) => {
+  if (!info?.available || (info.blocked && !info.submission)) return null;
+  const s = info.submission?.status;
+  const label = s === 'pending' ? 'Sumbangan diperiksa' : s === 'approved' ? 'Sudah disumbangkan' : s === 'rejected' ? 'Sumbangan ditolak' : 'Sumbangkan materi';
+  return (
+    <button onClick={onOpen}
+      className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg transition ${s === 'approved' ? 'text-emerald-300 hover:bg-emerald-500/10' : 'text-ink-soft hover:text-ink hover:bg-white/5'}`}>
+      <Icon name={s === 'approved' ? 'check' : 'heart'} className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> {label}
+    </button>
+  );
+};
+
+const DonateMaterialDialog = ({ set, info, onChange, onClose }) => {
+  const toast = useToast();
+  const [kind, setKind] = useState('');
+  const [agreed, setAgreed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const sub = info.submission;
+  const submit = async () => {
+    setBusy(true); setError('');
+    const d = await aiCall('material-donate', { op: 'submit', set_id: set.id, source_kind: kind, consent: info.consent_version });
+    setBusy(false);
+    if (!d.ok) { setError(d.error || 'Sumbangan gagal dikirim.'); return; }
+    onChange({ ...info, submission: d.submission });
+    toast.push('Terima kasih, sumbanganmu masuk antrean pemeriksaan.');
+    onClose();
+  };
+  const withdraw = async () => {
+    setBusy(true); setError('');
+    const d = await aiCall('material-donate', { op: 'withdraw', set_id: set.id });
+    setBusy(false);
+    if (!d.ok) { setError(d.error || 'Gagal membatalkan.'); return; }
+    onChange({ ...info, submission: null });
+    toast.push('Sumbangan dibatalkan.');
+    onClose();
+  };
+  const status = sub?.status === 'pending' ? ['text-gold-300', 'Sumbanganmu sedang diperiksa admin', 'Materinya belum dipakai untuk pengguna lain. Kamu masih bisa membatalkannya.']
+    : sub?.status === 'approved' ? ['text-emerald-300', 'Sumbanganmu diterima', 'Terima kasih. Materi di akunmu tetap milikmu dan tetap privat. Untuk mencabut salinan yang diterima, hubungi admin Talqeeh.']
+    : sub?.status === 'rejected' ? ['text-ink', 'Sumbanganmu belum bisa diterima', sub.review_note ? `Catatan admin: ${sub.review_note}` : '']
+    : info.taken ? ['text-ink-muted', 'Materi yang sama sudah disumbangkan atau sedang diperiksa', 'Terima kasih sudah mau berbagi.']
+    : null;
+  return (
+    <Modal open onClose={busy ? () => {} : onClose} size="md" closable={!busy}>
+      <div className="p-6 space-y-4">
+        <div>
+          <span className="w-11 h-11 rounded-xl bg-emerald-500/12 border border-emerald-500/25 flex items-center justify-center mb-4">
+            <Icon name="heart" className="w-5 h-5 text-emerald-300"/>
+          </span>
+          <h3 className="font-display text-xl font-semibold text-ink mb-1">Sumbangkan materi ke Talqeeh</h3>
+          <p className="text-sm text-ink-muted leading-relaxed">
+            Kalau ini kitab atau muqarrar cetak, isinya bisa membantu pelajar lain yang belajar muqarrar yang sama. Materimu tetap privat kalau tidak kamu sumbangkan.
+          </p>
+        </div>
+        {status ? (
+          <div className="rounded-xl border border-white/10 p-4">
+            <div className={`text-sm font-medium ${status[0]}`}>{status[1]}</div>
+            {status[2] && <div className="text-xs text-ink-muted mt-1 leading-relaxed">{status[2]}</div>}
+          </div>
+        ) : (
+          <>
+            <div>
+              <div className="text-xs text-ink-muted mb-2">Materi ini apa?</div>
+              <div className="grid sm:grid-cols-2 gap-2" role="radiogroup" aria-label="Jenis materi">
+                {[['kitab', 'Kitab cetak', 'Kitab terbitan, per jilid atau utuh.'], ['muqarrar', 'Muqarrar kuliah', 'Muqarrar resmi, bukan ringkasan buatan sendiri.']].map(([v, t, s]) => (
+                  <button key={v} role="radio" aria-checked={kind === v} onClick={() => setKind(v)}
+                    className={`text-start rounded-xl border p-3 transition-colors ${kind === v ? 'border-emerald-400/60 bg-emerald-400/[0.07]' : 'border-white/10 hover:border-white/20'}`}>
+                    <div className="text-sm text-ink font-medium">{t}</div>
+                    <div className="text-xs text-ink-muted mt-0.5">{s}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <ul className="text-xs text-ink-muted leading-relaxed space-y-1.5 list-disc ps-4">
+              <li>Admin Talqeeh akan membaca teks materi ini untuk memeriksanya.</li>
+              <li>Kalau diterima, teks materi dan talkhisnya disalin ke Talqeeh dan bisa dipakai untuk membantu pengguna lain, misalnya talkhis bersama atau rujukan jawaban.</li>
+              <li>Salinan itu tetap ada walau materi ini kamu hapus dari akunmu. Untuk mencabutnya, hubungi admin Talqeeh.</li>
+              <li>Namamu tidak ditampilkan ke pengguna lain. File aslimu tidak dikirim, hanya teks hasil bacaannya.</li>
+            </ul>
+            <label className="flex items-start gap-2.5 text-sm text-ink cursor-pointer">
+              <input type="checkbox" className="mt-1" checked={agreed} onChange={e => setAgreed(e.target.checked)}/>
+              <span>Saya setuju dengan hal di atas. Materi ini kitab atau muqarrar cetak, bukan catatan pribadi, tidak memuat data pribadi, dan setahu saya boleh dibagikan.</span>
+            </label>
+          </>
+        )}
+        {error && <p className="text-sm text-rose-400">{error}</p>}
+        <div className="flex gap-2 justify-end">
+          <button className="btn btn-ghost text-sm" disabled={busy} onClick={onClose}>{status ? 'Tutup' : 'Batal'}</button>
+          {sub?.status === 'pending' && <button className="btn btn-ghost text-sm" disabled={busy} onClick={withdraw}>{busy ? 'Membatalkan…' : 'Batalkan sumbangan'}</button>}
+          {!status && <button className="btn btn-primary text-sm disabled:opacity-50" disabled={busy || !kind || !agreed} onClick={submit}>{busy ? 'Mengirim…' : 'Kirim untuk diperiksa'}</button>}
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
 const StatTile = ({ value, label, icon }) => (
   <div className="card-glass p-4 flex items-center gap-3">
     <span className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">
@@ -501,6 +606,8 @@ const AiPartnerDetail = ({ setId, status }) => {
   const [step, setStep]   = useState('pahami');
   const [sub, setSub]     = useState({ pahami: 'summary', hafalkan: 'cards', uji: 'quiz', tanya: 'tutor' });
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [donation, setDonation] = useMaterialDonation(setId);
+  const [donateOpen, setDonateOpen] = useState(false);
   const [pendingAsk, setPendingAsk] = useState(null);
   // Baru saja diunggah (ditandai CreateWizard) → tawarkan langsung uji di Arena Imtihan, sekali saja.
   const [isNew, setIsNew] = useState(() => { try { return sessionStorage.getItem('talqeeh_new_set') === String(setId); } catch { return false; } });
@@ -575,6 +682,7 @@ const AiPartnerDetail = ({ setId, status }) => {
               className="inline-flex items-center gap-1.5 text-xs text-ink-soft hover:text-rose-400 px-2.5 py-1.5 rounded-lg hover:bg-rose-500/10 transition">
               <Icon name="trash" className="w-3.5 h-3.5" style={{ stroke: 'currentColor' }}/> Hapus materi
             </button>
+            <DonateMaterialButton info={donation} onOpen={() => setDonateOpen(true)}/>
           </div>
         </div>
         <ProgressRing percent={studyPercent(set)} size={narrow ? 46 : 56}/>
@@ -586,6 +694,9 @@ const AiPartnerDetail = ({ setId, status }) => {
       )}
       {confirmDelete && (
         <DeleteSetDialog set={set} isTrialSet={access.isTrialSet} onClose={() => setConfirmDelete(false)} onDeleted={handleDeleted}/>
+      )}
+      {donateOpen && donation?.available && (
+        <DonateMaterialDialog set={set} info={donation} onChange={setDonation} onClose={() => setDonateOpen(false)}/>
       )}
 
       {/* Stepper alur belajar — di HP menempel di bawah top bar supaya pindah tahap tanpa menggulir ke atas */}
