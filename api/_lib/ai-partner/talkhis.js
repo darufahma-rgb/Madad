@@ -252,7 +252,7 @@ export const topicSource = (content, topic) => content.slice(topic.start, topic.
 /* deps: fungsi dari api/ai-partner.js (supaya kuota, tier, dan penyimpanan memakai aturan yang sama). */
 export async function handleTalkhis(ctx, body, res, deps) {
   const { getOwnedSet, saveTalkhis, takeQuota, quotaExceeded, upgradeRequired, getTrialSetId, trialGateOpen, trialGateClosed,
-    consumeQuota, resolveModels, requestAI, callAIJson, runAI, sendResult } = deps;
+    consumeQuota, resolveModels, requestAI, callAIJson, runAI, sendResult, findSharedTalkhis } = deps;
   const op = String(body.op || '');
   const set = await getOwnedSet(ctx.code, body.set_id, 'id,title,content,talkhis');
   if (!set) {
@@ -275,6 +275,13 @@ export async function handleTalkhis(ctx, body, res, deps) {
   if (op === 'map') {
     const chunks = splitChunks(set.content, TALKHIS_MAP_CHUNK);
     if (!t) {
+      // Teks persis sama dengan materi sumbangan yang sudah diterima: pakai talkhisnya, tanpa AI dan tanpa memotong jatah.
+      const shared = findSharedTalkhis ? await findSharedTalkhis(set.content) : null;
+      if (shared) {
+        t = shared;
+        await saveTalkhis(ctx.code, set.id, t);
+        return done({ shared: true });
+      }
       if (trial) {
         if (!(await trialGateOpen())) return trialGateClosed(res);
       } else {

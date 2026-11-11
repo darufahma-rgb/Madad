@@ -745,6 +745,7 @@ const TalkhisTab = ({ set, setSet, access }) => {
         return;
       }
       apply(d);
+      if (d.shared) toast.push('Talkhis muqarrar ini sudah ada dari sumbangan pelajar lain. Langsung siap, tidak memakai jatahmu.');
       if (d.talkhis?.stage !== 'map') break;
     }
     setBusy('');
@@ -925,7 +926,7 @@ const TalkhisTab = ({ set, setSet, access }) => {
                   <Icon name="sparkles" className="w-4 h-4"/> {t ? 'Lanjutkan pemetaan' : 'Petakan mabahits'}
                 </button>}
                 <p className="text-[11px] text-ink-soft mt-3">
-                  {isTrial ? `Coba gratis: pemetaan + talkhis ${TRIAL_TOPICS} judul.` : 'Memakai 1 kuota talkhis untuk seluruh muqarrar ini.'}
+                  {isTrial ? `Coba gratis: pemetaan + talkhis ${TRIAL_TOPICS} judul.` : 'Memakai 1 kuota talkhis untuk seluruh muqarrar ini, kecuali talkhisnya sudah ada dari sumbangan pelajar lain.'}
                 </p>
               </>
             )}
@@ -953,6 +954,12 @@ const TalkhisTab = ({ set, setSet, access }) => {
 
       {/* Ringkasan kelengkapan */}
       <div className="card-glass p-4 md:p-5 mb-4">
+        {t.shared && (
+          <div className="flex items-start gap-2 text-xs text-emerald-200/90 mb-3 pb-3 border-b border-white/[0.06]">
+            <Icon name="heart" className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-emerald-300"/>
+            <span>Talkhis ini berasal dari muqarrar yang sama yang disumbangkan pelajar lain dan diperiksa admin. Tidak memakai jatah talkhismu. Judul yang belum ditalkhis bisa kamu tulis seperti biasa.</span>
+          </div>
+        )}
         <div className="flex items-baseline justify-between gap-3 mb-2 flex-wrap">
           <div className="text-sm text-ink font-medium">
             {complete.length} dari {active.length} judul lengkap

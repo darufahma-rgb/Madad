@@ -3,7 +3,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   handleMaterialDonation, manageMaterialSubmissions, materialDonationBlock, materialHash, MATERIAL_CONSENT_VERSION, MAX_PENDING_MATERIALS,
+  findSharedTalkhis, reusableTalkhis,
 } from '../api/_lib/ai-partner/material-donation.js';
+import { handleTalkhis } from '../api/_lib/ai-partner/talkhis.js';
 
 const deps = { sbConfig: () => ({ url: 'https://db.invalid', key: 'test-only' }), sbHeaders: (_k, h = {}) => h };
 const SET_ID = '11111111-1111-4111-8111-111111111111';
@@ -129,4 +131,53 @@ test('admin: teks hanya bisa dibaca selama menunggu', async t => {
   const res = makeRes();
   await manageMaterialSubmissions({ op: 'read', id: SUB_ID }, res, deps);
   assert.equal(res.code, 404);
+});
+
+/* ── Pakai ulang talkhis sumbangan ── */
+const sharedT = { v: 1, stage: 'write', raw: [{ x: 1 }], strong_used: 7, topics: [{ id: 't1', title: 'باب', start: 0, end: 100, text: 'تلخيص', writes: 1 }] };
+
+test('talkhis yang dipakai ulang: tanpa catatan mentah dan jatah model kuat penyumbang', () => {
+  const t = reusableTalkhis(sharedT);
+  assert.deepEqual(t.raw, []);
+  assert.equal(t.strong_used, undefined);
+  assert.ok(t.shared?.at);
+  assert.equal(t.topics[0].text, 'تلخيص');
+  assert.equal(reusableTalkhis({ ...sharedT, stage: 'map' }), null);
+  assert.equal(reusableTalkhis({ ...sharedT, topics: [] }), null);
+  assert.equal(reusableTalkhis(null), null);
+});
+
+test('hanya teks yang persis sama yang memakai talkhis sumbangan', async t => {
+  const calls = mockDb(t, [[/GET .*material_submissions/, [{ content, talkhis: sharedT }]]]);
+  assert.ok(await findSharedTalkhis(content, deps));
+  assert.match(calls[0].url, /status=eq\.approved/);
+  assert.match(calls[0].url, new RegExp(`content_hash=eq\\.${materialHash(content)}`));
+  // Sidik jari sama tapi harakat berbeda: posisi judul tidak cocok, jadi tidak dipakai.
+  const unvowelled = content.replace(/[ً-ْ]/g, '');
+  assert.equal(materialHash(unvowelled), materialHash(content));
+  assert.equal(await findSharedTalkhis(unvowelled, deps), null);
+});
+
+test('database gagal: talkhis dibuat seperti biasa', async t => {
+  mockDb(t, [[/material_submissions/, () => new Response('{"code":"PGRST205"}', { status: 404 })]]);
+  assert.equal(await findSharedTalkhis(content, deps), null);
+});
+
+test('pemetaan pertama memakai talkhis sumbangan tanpa memotong jatah dan tanpa AI', async () => {
+  let quota = 0, ai = 0, saved = null;
+  const res = makeRes();
+  await handleTalkhis({ code: ctx.code, tier: 'pro' }, { op: 'map', set_id: SET_ID }, res, {
+    getOwnedSet: async () => ({ id: SET_ID, title: 'x', content, talkhis: null }),
+    saveTalkhis: async (_c, _id, t) => { saved = t; },
+    takeQuota: async () => { quota++; return null; },
+    callAIJson: async () => { ai++; return { items: [] }; },
+    resolveModels: async () => ({ default: 'm' }),
+    findSharedTalkhis: async () => reusableTalkhis(sharedT),
+  });
+  assert.equal(res.code, 200);
+  assert.equal(res.body.shared, true);
+  assert.equal(quota, 0);
+  assert.equal(ai, 0);
+  assert.equal(saved.topics[0].text, 'تلخيص');
+  assert.equal(res.body.talkhis.raw, undefined);
 });

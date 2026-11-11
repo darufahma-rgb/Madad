@@ -23,7 +23,7 @@ import { withAiContext } from './_lib/ai-cost.js';
 import { handleIlmi, handleIlmiView } from './_lib/ai-partner/ilmi-index.js';
 import { answerFromLibrary, manageReferenceBook, readReferencePage, LIBRARY_OWNER } from './_lib/ai-partner/reference-library.js';
 import { handleReferenceDonation, manageSubmissions } from './_lib/ai-partner/reference-donation.js';
-import { handleMaterialDonation, manageMaterialSubmissions } from './_lib/ai-partner/material-donation.js';
+import { handleMaterialDonation, manageMaterialSubmissions, findSharedTalkhis } from './_lib/ai-partner/material-donation.js';
 
 // Kategori biaya AI per action (cocok dengan kolom "Fitur" di analitik admin).
 const COST_KIND = {
@@ -1737,6 +1737,7 @@ export default async function handler(req, res) {
       case 'talkhis':       return await handleTalkhis(ctx, body, res, {
         getOwnedSet, saveTalkhis, takeQuota, quotaExceeded, upgradeRequired, getTrialSetId, trialGateOpen, trialGateClosed,
         consumeQuota, resolveModels, requestAI, callAIJson, runAI, sendResult,
+        findSharedTalkhis: (content) => findSharedTalkhis(content, { sbConfig, sbHeaders }),
       });
       case 'ilmi':          return await handleIlmi(ctx, body, res, {
         sbConfig, sbHeaders, takeQuota, quotaExceeded, consumeQuota, resolveModels, streamAI, requestAI,

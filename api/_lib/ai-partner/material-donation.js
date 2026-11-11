@@ -86,6 +86,29 @@ export async function handleMaterialDonation(ctx, body, res, deps) {
   }
 }
 
+/* ── Pakai ulang ──
+   Talkhis dari sumbangan yang sudah diterima, untuk materi yang teksnya PERSIS sama (posisi judul menunjuk ke posisi
+   huruf di teks, jadi teks yang hanya mirip tidak boleh memakainya). Gagal membaca → null: talkhis dibuat seperti biasa. */
+export const reusableTalkhis = (talkhis) => {
+  const t = talkhis && typeof talkhis === 'object' && Array.isArray(talkhis.topics) ? talkhis : null;
+  if (!t || t.stage === 'map' || !t.topics.length) return null;
+  const { raw, strong_used, ...rest } = t;
+  return { ...rest, raw: [], shared: { at: new Date().toISOString() }, created_at: new Date().toISOString() };
+};
+
+export async function findSharedTalkhis(content, deps) {
+  if (String(content || '').trim().length < MIN_MATERIAL_CHARS) return null;
+  try {
+    const rows = await referenceDb(deps)(`material_submissions?content_hash=eq.${materialHash(content)}&status=eq.approved&talkhis=not.is.null&select=content,talkhis&order=reviewed_at.desc&limit=3`);
+    for (const r of rows || []) {
+      if (r.content !== content) continue;
+      const t = reusableTalkhis(r.talkhis);
+      if (t) return t;
+    }
+  } catch { /* tabel belum ada atau database lambat */ }
+  return null;
+}
+
 /* ── Admin ── */
 export async function manageMaterialSubmissions(body, res, deps) {
   const db = referenceDb(deps);
