@@ -10,7 +10,7 @@
    4. check  — AI pemeriksa (Gemini) membandingkan talkhis dengan sumbernya: skor cakupan, poin yang terlewat,
                dan klaim yang tidak didukung sumber.
    5. write mode complete — menulis ulang talkhis dengan menambahkan poin yang terlewat & membetulkan yang salah.
-      Bertingkat: lengkapi pertama model hemat, dicek lagi; yang masih lemah dilengkapi Sonnet (needsStrongComplete).
+      Bertingkat: lengkapi pertama model hemat, dicek lagi; yang masih lemah dilengkapi model kuat talkhis (models.talkhisStrong, needsStrongComplete).
 
    Biaya dijaga dengan: 1 kuota "talkhis" per muqarrar (saat pemetaan mulai), jumlah judul maksimal, dan batas
    tulis/cek per judul. Data disimpan di kolom study_sets.talkhis (jsonb). */
@@ -25,8 +25,8 @@ const WRITE_TOKENS = 4000;
 const WRITE_TIME_MS = 52000;
 // Draf oleh Gemini Flash diberi jatah berpikir supaya memeriksa dulu semua poin sumber sebelum menulis (±$0,003/judul).
 const DRAFT_THINKING = 1536;
-export const MAX_WRITES = 3;               // tulis + lengkapi model hemat + lengkapi Sonnet (bila masih kurang)
-/* Lengkapi bertingkat: lengkapi pertama selalu model hemat. Sonnet hanya untuk judul yang setelah itu masih lemah
+export const MAX_WRITES = 3;               // tulis + lengkapi model hemat + lengkapi model kuat (bila masih kurang)
+/* Lengkapi bertingkat: lengkapi pertama selalu model hemat. Model kuat (Gemini 3.7 Flash) hanya untuk judul yang setelah itu masih lemah
    (skor < ESCALATE_SCORE atau ada poin yang salah), dan paling banyak STRONG_PER_SET judul per muqarrar, supaya biaya
    terburuk satu muqarrar tetap terbatas (±$2,7 untuk 40 judul). */
 export const ESCALATE_SCORE = 85;
@@ -414,11 +414,13 @@ export async function handleTalkhis(ctx, body, res, deps) {
        needsStrongComplete). Dulu tiap lengkapi memakai Sonnet: 69% biaya talkhis di ai_cost_log Okt–Nov 2026.
        Lanjutan memakai model yang sama dengan tulisan yang dilanjutkan. */
     const strong = mode === 'complete' && needsStrongComplete(topic, t.strong_used || 0);
-    const role = mode === 'continue' ? (topic.write_role || 'default') : strong ? 'arabic' : 'default';
+    // Tulisan lama dengan peran 'arabic' (Sonnet) dilanjutkan oleh model kuat talkhis yang baru.
+    const prevRole = topic.write_role === 'arabic' ? 'talkhisStrong' : (topic.write_role || 'default');
+    const role = mode === 'continue' ? prevRole : strong ? 'talkhisStrong' : 'default';
     const writeModel = models[role] || models.default;
     const { out, stream, failed } = await runAI(body, res, {
       system: WRITE_RULES, messages, maxTokens: WRITE_TOKENS, model: writeModel, timeLimitMs: WRITE_TIME_MS,
-      thinking: role === 'default' ? DRAFT_THINKING : 0,
+      thinking: DRAFT_THINKING,
     });
     if (failed) return;
     let text;

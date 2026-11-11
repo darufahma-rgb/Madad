@@ -18,6 +18,7 @@ export const MODEL_SETTING_KEYS = {
   liveTranslateAccurate: 'aiModelLiveTranslateAccurate', // terjemah mode "Akurat" — utamakan teliti
   liveTalkhis: 'aiModelLiveTalkhis',     // talkhisan kuliah dari transkrip Live Caption
   ilmi:       'aiModelIlmi',       // Ilmi Index: peta pembahasan & kutipan per halaman — membaca muqarrar penuh, JSON
+  talkhisStrong: 'aiModelTalkhisStrong', // talkhis: lengkapi judul yang masih lemah setelah dilengkapi model utama
 };
 
 // Format ID OpenRouter: "vendor/nama-model" (boleh titik, titik dua untuk varian seperti ":free").
@@ -55,6 +56,9 @@ export const TASK_DEFAULTS = {
   /* Ilmi Index membaca SELURUH muqarrar (±1 token per karakter Arab) dan menyalin kutipan persis → model hemat yang
      kuat menyalin teks Arab. Semua hasilnya dicek ulang ke teks asli di server, jadi kesalahan salin dibuang, bukan disimpan. */
   ilmi: 'google/gemini-2.5-flash',
+  /* Talkhis "lengkapi" untuk judul yang masih lemah. Dulu Sonnet 5: ai_cost_log 11 Nov 2026 (setelah draf pindah
+     ke model hemat) masih ±38% biaya talkhis dari Sonnet ($0,064 per lengkapi). Gemini 3.7 Flash ±$0,02 per langkah. */
+  talkhisStrong: 'google/gemini-3.7-flash',
 };
 
 /* Jatah token berpikir untuk tugas yang inputnya pendek tapi menuntut ketelitian nahwu-sharaf. Sonnet 5 bawaannya
@@ -88,6 +92,7 @@ export const resolveModels = async () => {
     liveTranslateAccurate: pick('liveTranslateAccurate') || TASK_DEFAULTS.liveTranslateAccurate,
     liveTalkhis: pick('liveTalkhis') || TASK_DEFAULTS.liveTalkhis,
     ilmi: pick('ilmi') || TASK_DEFAULTS.ilmi,
+    talkhisStrong: pick('talkhisStrong') || TASK_DEFAULTS.talkhisStrong,
   };
   cache = { at: Date.now(), value };
   return value;

@@ -2,7 +2,7 @@
 export const ADMIN_SETTING_KEYS = [
   'platformName', 'tagline', 'whatsapp',
   'mayarLibraryUrl', 'mayarLibraryProductId', 'mayarUrl', 'mayarAiProductId', 'aiPriceLabel', 'aiPriceMonthly',
-  'aiModelDefault', 'aiModelStudy', 'aiModelVision', 'aiModelArabic', 'aiModelGrade', 'aiModelChat', 'aiModelPrompt', 'aiModelTranscribe', 'aiModelLiveHear', 'aiModelLiveHearAccurate', 'aiModelLiveTranslate', 'aiModelLiveTranslateAccurate', 'aiModelLiveTalkhis', 'aiModelIlmi',
+  'aiModelDefault', 'aiModelStudy', 'aiModelVision', 'aiModelArabic', 'aiModelGrade', 'aiModelChat', 'aiModelPrompt', 'aiModelTranscribe', 'aiModelLiveHear', 'aiModelLiveHearAccurate', 'aiModelLiveTranslate', 'aiModelLiveTranslateAccurate', 'aiModelLiveTalkhis', 'aiModelIlmi', 'aiModelTalkhisStrong',
   'aiMonthlyLimits', 'aiQuotaOverrides', 'aiLiveDailyLimit',
   'imtihanEvent', 'rombonganEvent', 'partnerLinks', // event penjualan (JSON, lihat api/_lib/events.js)
   'affiliateProgram', // Program Mitra (JSON, lihat api/_lib/affiliates.js)

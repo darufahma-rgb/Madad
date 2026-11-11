@@ -3010,6 +3010,7 @@ const AdminSettings = () => {
             ['aiModelLiveTranslate', 'Live Caption — terjemah', 'liveTranslate', 'Menerjemahkan teks Arab kuliah ke bahasa Indonesia + istilah + tanda "ditekankan duktur". Dipanggil terus selama merekam, jadi biayanya paling besar: bawaan Gemini 3.1 Flash-Lite (±$0,0064/menit kuliah). google/gemini-3.7-flash sedikit lebih teliti tapi ±2,5× biaya.'],
             ['aiModelLiveTranslateAccurate', 'Live Caption — terjemah (mode Akurat)', 'liveTranslateAccurate', 'Terjemah saat mahasiswa memilih mode "Akurat" (dihitung 4× jatah). Bawaan Gemini 3.7 Flash — lebih teliti untuk nama kitab & \'ammiyah.'],
             ['aiModelLiveTalkhis', 'Live Caption — talkhisan kuliah', 'liveTalkhis', 'Talkhisan dari transkrip satu kuliah (sekali per kuliah, memakai jatah Generate). Bawaan Gemini 3.7 Flash.'],
+            ['aiModelTalkhisStrong', 'Talkhis — lengkapi judul yang masih lemah', 'talkhisStrong', 'Dipakai hanya untuk judul yang skornya masih rendah setelah dilengkapi model utama. Bawaan Gemini 3.7 Flash (±3× lebih murah dari Sonnet 5 untuk langkah ini).'],
             ['aiModelIlmi', 'Ilmi Index — peta pembahasan & kutipan', 'ilmi', 'Membaca seluruh muqarrar per beberapa halaman dan menyalin judul & kutipan Arab persis (JSON). Hasilnya dicek ulang ke teks asli di server. Bawaan Gemini 2.5 Flash (±$0,2–0,4 per muqarrar 100 halaman).'],
           ].map(([key, label, task, hint]) => (
             <ModelField key={key} label={label} hint={hint} value={settings[key] || ''}
