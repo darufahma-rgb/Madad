@@ -691,18 +691,213 @@ const usePromoCountdown = () => {
   return d > 0 ? `${d} hari ${h} jam` : `${h} jam ${m} menit`;
 };
 
-/* ── Penawaran berbatas waktu untuk akun gratis (server: api/_lib/offer.js) ──
-   Dimuat sekali per akun lalu dibagikan ke semua komponen. Hitung mundur dimulai server saat pertama dimuat. */
+/* ── Kupon Paket Imtihan untuk akun gratis (server: api/_lib/offer.js) ──
+   Follow Instagram @talqeeh → unggah screenshot profilnya → AI memastikan sudah mengikuti → harga khusus 24 jam.
+   Keadaannya dimuat sekali per akun lalu dibagikan ke semua komponen. */
 const offerEndLabel = (iso) => new Date(iso).toLocaleString("id-ID", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
-const offerStore = { code: null, offer: null, promise: null, listeners: new Set() };
+const OFFER_COUPON_PRICE = 149000; // = WELCOME_OFFER.price di api/_lib/offer.js
+const TALQEEH_INSTAGRAM = "https://instagram.com/talqeeh";
+const offerStore = { code: null, offer: null, coupon: false, promise: null, listeners: new Set() };
+const notifyOffer = () => offerStore.listeners.forEach(f => f());
 const loadWelcomeOffer = (code) => {
   if (offerStore.code === code && offerStore.promise) return offerStore.promise;
   offerStore.code = code;
   offerStore.offer = null;
+  offerStore.coupon = false;
   offerStore.promise = Promise.resolve(window.authFetch?.("/api/login?action=offer", { method: "POST", body: "{}" }))
-    .then(r => r?.json()).then(d => { offerStore.offer = d?.ok && d.offer ? d.offer : null; })
-    .catch(() => {}).finally(() => offerStore.listeners.forEach(f => f()));
+    .then(r => r?.json()).then(d => {
+      offerStore.offer = d?.ok && d.offer ? d.offer : null;
+      offerStore.coupon = !!(d?.ok && d.coupon?.eligible);
+    })
+    .catch(() => {}).finally(notifyOffer);
   return offerStore.promise;
+};
+const COUPON_ERRORS = {
+  not_profile: "Itu belum terlihat seperti halaman profil Instagram. Buka profil @talqeeh lalu screenshot satu layar penuh.",
+  wrong_account: "Profil di screenshot bukan @talqeeh. Buka instagram.com/talqeeh lalu screenshot profilnya.",
+  not_following: "Tombolnya belum \"Mengikuti\". Tekan Ikuti di profil @talqeeh dulu, lalu screenshot lagi.",
+  screenshot_used: "Screenshot ini sudah dipakai akun lain. Ambil screenshot baru dari HP-mu sendiri.",
+  coupon_used: "Akun ini sudah pernah mendapat kupon.",
+  rate_limited: "Terlalu banyak percobaan hari ini. Coba lagi besok, ya.",
+  bad_image: "Gambarnya tidak bisa dibaca. Unggah screenshot berformat JPG atau PNG.",
+  not_eligible: "Kupon ini khusus akun gratis yang belum berlangganan.",
+  unavailable: "Kupon belum bisa diklaim sekarang. Coba lagi sebentar.",
+};
+/* Kode kupon yang sudah dimasukkan pengguna (per akun). Harga kupon baru tampil & ditagih setelah kode dimasukkan;
+   createCheckout (supabase.jsx) mengirim kode ini, server mencocokkannya dengan kode akun. */
+const normalizeCoupon = (s) => String(s || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+const appliedCouponKey = () => `talqeeh_coupon_applied_${offerStore.code || ""}`;
+const readAppliedCoupon = () => { try { return localStorage.getItem(appliedCouponKey()) || ""; } catch { return ""; } };
+const couponApplied = (offer) => !offer?.code || normalizeCoupon(readAppliedCoupon()) === normalizeCoupon(offer.code);
+const applyOfferCoupon = (entered) => {
+  const offer = offerStore.offer;
+  if (!normalizeCoupon(entered)) return { ok: false, message: "Masukkan kode kuponnya dulu." };
+  if (!offer?.code || Date.parse(offer.endsAt) <= Date.now()) return { ok: false, message: "Kode kupon tidak berlaku untuk akunmu. Kupon hanya bisa dipakai akun yang mengklaimnya." };
+  if (normalizeCoupon(entered) !== normalizeCoupon(offer.code)) return { ok: false, message: "Kode kupon tidak cocok. Periksa lagi hurufnya." };
+  try { localStorage.setItem(appliedCouponKey(), offer.code); localStorage.setItem(`talqeeh_offer_seen_${offer.endsAt}`, "1"); } catch {}
+  notifyOffer();
+  window.logFunnel?.("coupon_applied", "instagram");
+  return { ok: true };
+};
+// Kirim screenshot ke server. Berhasil → kode kupon acak 24 jam untuk akun ini.
+const claimOfferCoupon = async (file) => {
+  const small = await window.compressImage(file, 1);
+  const image = await window.fileToBase64(small);
+  const r = await window.authFetch("/api/login?action=offer-coupon", {
+    method: "POST", body: JSON.stringify({ image, mime: small.type || file.type }),
+  });
+  const d = await r.json().catch(() => ({}));
+  if (d?.ok && d.offer) {
+    offerStore.offer = d.offer;
+    offerStore.coupon = false;
+    notifyOffer();
+    window.logFunnel?.("coupon_claimed", "instagram");
+    return { ok: true, offer: d.offer };
+  }
+  if (d?.status === "coupon_used") { offerStore.coupon = false; notifyOffer(); }
+  return { ok: false, message: COUPON_ERRORS[d?.status] || "Gagal memeriksa screenshot. Coba lagi." };
+};
+// true kalau akun gratis ini masih bisa mengklaim kupon follow Instagram.
+const useOfferCoupon = () => {
+  const { session, isFree } = useAuth();
+  const [, rerender] = useState(0);
+  useEffect(() => {
+    if (!session?.code || !isFree) return;
+    const f = () => rerender(x => x + 1);
+    offerStore.listeners.add(f);
+    loadWelcomeOffer(session.code);
+    return () => { offerStore.listeners.delete(f); };
+  }, [session?.code, isFree]);
+  return !!(session?.code && isFree && offerStore.code === session.code && offerStore.coupon && !offerStore.offer);
+};
+// Kupon yang sudah diklaim tapi kodenya belum dimasukkan: { code, price, endsAt } atau null.
+const useCouponCode = () => {
+  const { session, isFree } = useAuth();
+  const [, rerender] = useState(0);
+  useEffect(() => {
+    if (!session?.code || !isFree) return;
+    const f = () => rerender(x => x + 1);
+    offerStore.listeners.add(f);
+    loadWelcomeOffer(session.code);
+    return () => { offerStore.listeners.delete(f); };
+  }, [session?.code, isFree]);
+  const o = session?.code && isFree && offerStore.code === session.code ? offerStore.offer : null;
+  return o?.code && Date.parse(o.endsAt) > Date.now() && !couponApplied(o) ? o : null;
+};
+
+/* Kode kupon hasil klaim, dengan tombol salin. */
+const CouponCodeReveal = ({ offer }) => {
+  const toast = useToast();
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(offer.code); toast.push("Kode kupon disalin."); } catch { toast.push(`Kode kuponmu: ${offer.code}`); }
+  };
+  return (
+    <div className="rounded-xl border border-dashed border-gold-400/60 bg-black/40 p-3 text-center">
+      <div className="text-[10px] uppercase tracking-wider text-ink-soft">Kode kuponmu</div>
+      <div className="font-mono text-2xl font-semibold tracking-[0.15em] text-gold-200 my-1 select-all">{offer.code}</div>
+      <div className="text-[11px] text-ink-soft">Berlaku untuk akunmu saja · hangus dalam <OfferClock endsAt={offer.endsAt}/></div>
+      <button onClick={copy} className="btn btn-ghost text-xs px-3 py-1.5 mt-2"><Icon name="copy" className="w-3.5 h-3.5"/> Salin kode</button>
+    </div>
+  );
+};
+
+/* Kolom isi kode kupon di panel bayar Paket Imtihan. */
+const CouponCodeField = () => {
+  const [value, setValue] = useState("");
+  const [error, setError] = useState("");
+  const apply = (e) => {
+    e.preventDefault();
+    const r = applyOfferCoupon(value);
+    setError(r.ok ? "" : r.message);
+  };
+  return (
+    <div>
+      <form onSubmit={apply} className="flex gap-2">
+        <input value={value} onChange={e => { setValue(e.target.value.toUpperCase()); setError(""); }} placeholder="Masukkan kode kupon"
+          aria-label="Kode kupon" autoCapitalize="characters" spellCheck={false}
+          className="flex-1 min-w-0 rounded-xl bg-black/30 border border-white/15 px-3 py-2.5 text-sm text-ink font-mono tracking-wider placeholder:font-sans placeholder:tracking-normal placeholder:text-ink-soft focus:outline-none focus:border-gold-400/60"/>
+        <button type="submit" className="btn btn-gold text-sm px-4 py-2.5">Pakai</button>
+      </form>
+      {error && <p className="text-xs text-rose-300 mt-2" role="alert">{error}</p>}
+    </div>
+  );
+};
+
+/* Panel kupon di halaman bayar Paket Imtihan: klaim (follow IG) → kode muncul → masukkan kode → harga turun. */
+const ImtihanCouponPanel = () => {
+  const open = useOfferCoupon();
+  const pending = useCouponCode();
+  const offer = useWelcomeOffer();
+  if (offer?.code) {
+    return (
+      <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/5 px-4 py-3 text-sm text-ink flex items-center gap-2">
+        <Icon name="check" className="w-4 h-4 text-emerald-300 flex-shrink-0"/>
+        <span>Kupon <b className="font-mono">{offer.code}</b> dipakai · hangus dalam <OfferClock endsAt={offer.endsAt}/></span>
+      </div>
+    );
+  }
+  if (pending) {
+    return (
+      <div className="rounded-2xl border border-gold-500/30 p-4 space-y-3" style={{ background: "linear-gradient(135deg, rgba(201,168,106,0.12), rgba(62,207,142,0.06))" }}>
+        <div className="text-sm font-semibold text-ink">Pakai kupon Paket Imtihan {formatRupiah(pending.price)}</div>
+        <CouponCodeReveal offer={pending}/>
+        <CouponCodeField/>
+      </div>
+    );
+  }
+  return open ? <InstagramCouponCard compact/> : null;
+};
+
+/* Kartu klaim kupon: tiga langkah, unggah screenshot, AI memeriksa, lalu kode kupon acak muncul.
+   compact = di panel bayar Gabung. */
+const InstagramCouponCard = ({ compact = false, onClaimed }) => {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef(null);
+  const toast = useToast();
+  const pick = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (!/^image\//.test(file.type)) { setError(COUPON_ERRORS.bad_image); return; }
+    setBusy(true); setError("");
+    try {
+      const r = await claimOfferCoupon(file);
+      if (r.ok) { toast.push(`Terverifikasi! Kode kuponmu ${r.offer.code}.`); onClaimed?.(r.offer); }
+      else setError(r.message);
+    } catch { setError("Gagal mengirim screenshot. Periksa koneksimu lalu coba lagi."); }
+    setBusy(false);
+  };
+  return (
+    <div className={`rounded-2xl border border-gold-500/30 text-left ${compact ? "p-4" : "p-4 bg-black/30"}`}
+      style={compact ? { background: "linear-gradient(135deg, rgba(201,168,106,0.12), rgba(62,207,142,0.06))" } : undefined}>
+      {compact && (
+        <div className="text-sm font-semibold text-ink mb-1">Kupon Paket Imtihan {formatRupiah(OFFER_COUPON_PRICE)}</div>
+      )}
+      {compact && <p className="text-xs text-ink-muted mb-3">Follow Instagram Talqeeh, kirim screenshot-nya, dan harga ini berlaku 24 jam untuk akunmu.</p>}
+      <ol className="space-y-2 text-sm text-ink">
+        <li className="flex gap-2.5"><span className="w-5 h-5 rounded-full bg-gold-400 text-black text-[11px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">1</span>
+          <span>Follow <a href={TALQEEH_INSTAGRAM} target="_blank" rel="noopener noreferrer" className="text-gold-200 underline underline-offset-2 font-semibold">@talqeeh</a> di Instagram</span></li>
+        <li className="flex gap-2.5"><span className="w-5 h-5 rounded-full bg-gold-400 text-black text-[11px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">2</span>
+          <span>Screenshot profil @talqeeh yang tombolnya sudah <b>"Mengikuti"</b></span></li>
+        <li className="flex gap-2.5"><span className="w-5 h-5 rounded-full bg-gold-400 text-black text-[11px] font-bold flex items-center justify-center flex-shrink-0 mt-0.5">3</span>
+          <span>Unggah screenshot-nya di sini, AI memeriksanya dalam beberapa detik</span></li>
+      </ol>
+      <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={pick}/>
+      <div className="flex flex-col sm:flex-row gap-2 mt-4">
+        <a href={TALQEEH_INSTAGRAM} target="_blank" rel="noopener noreferrer" onClick={() => window.logFunnel?.("coupon_open_ig", compact ? "gabung" : "popup")}
+          className="btn btn-ghost text-sm py-2.5 justify-center flex-1">
+          <Icon name="arrowRight" className="w-4 h-4"/> Buka Instagram
+        </a>
+        <button onClick={() => inputRef.current?.click()} disabled={busy}
+          className={`btn btn-gold text-sm py-2.5 justify-center flex-1 ${busy ? "opacity-60 cursor-wait" : ""}`}>
+          <Icon name={busy ? "refresh" : "upload"} className={`w-4 h-4 ${busy ? "animate-spin" : ""}`}/>
+          {busy ? "Memeriksa…" : "Unggah screenshot"}
+        </button>
+      </div>
+      {error && <p className="text-xs text-rose-300 mt-2.5" role="alert">{error}</p>}
+    </div>
+  );
 };
 const useWelcomeOffer = () => {
   const { session, isFree } = useAuth();
@@ -718,7 +913,8 @@ const useWelcomeOffer = () => {
     return () => { offerStore.listeners.delete(f); if (t) clearTimeout(t); };
   }, [session?.code, isFree, offerStore.offer?.endsAt]);
   const o = session?.code && isFree && offerStore.code === session.code ? offerStore.offer : null;
-  return o && Date.parse(o.endsAt) > Date.now() ? o : null;
+  // Penawaran dari kupon baru berlaku setelah kodenya dimasukkan (couponApplied).
+  return o && Date.parse(o.endsAt) > Date.now() && couponApplied(o) ? o : null;
 };
 // Sisa waktu "47:59:12", diperbarui tiap detik.
 const useClock = (endsAt) => {
@@ -739,11 +935,58 @@ const OfferClock = ({ endsAt, className = "" }) => {
   return <span className={`font-mono tabular-nums ${className}`}>{clock}</span>;
 };
 
-/* Popup sekali per penawaran: muncul saat akun gratis membuka app selama penawaran berjalan. */
+/* Popup sekali per akun: akun gratis yang belum klaim ditawari kupon follow Instagram. */
+const CouponPopup = () => {
+  const { profile, session } = useAuth();
+  const path = useRoute();
+  const eligible = useOfferCoupon();
+  const pending = useCouponCode();
+  const key = session?.code ? `talqeeh_igcoupon_seen_${session.code}` : null;
+  const [seen, setSeen] = useState(true);
+  useEffect(() => { if (key) { try { setSeen(localStorage.getItem(key) === "1"); } catch { setSeen(false); } } }, [key]);
+  const blocked = !profile || /^\/(admin|seminar|gabung|onboarding)/.test(path) || !!window.readUpgradeOffer?.();
+  if (!(eligible || pending) || seen || blocked) return null;
+  const close = () => { setSeen(true); try { localStorage.setItem(key, "1"); } catch {} };
+  const use = () => { close(); navigate("/gabung?plan=imtihan"); };
+  return (
+    <div className="fixed inset-0 z-[135] flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="coupon-title">
+      <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={close}/>
+      <div className="relative w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border border-gold-500/30 p-6 text-center shadow-2xl max-h-[92vh] overflow-y-auto"
+        style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(201,168,106,0.20), transparent 60%), #121614" }}>
+        <button onClick={close} aria-label="Tutup" className="absolute top-3 right-3 w-9 h-9 rounded-xl text-ink-muted hover:text-ink hover:bg-white/5 flex items-center justify-center">
+          <Icon name="x" className="w-4 h-4"/>
+        </button>
+        <div className="text-4xl mb-2" aria-hidden="true">🎟️</div>
+        <div className="text-[11px] uppercase tracking-[0.2em] text-gold-300">Kupon follow Instagram</div>
+        <h2 id="coupon-title" className="font-display text-2xl font-semibold text-ink mt-1 leading-tight">Paket Imtihan cuma {formatRupiah(OFFER_COUPON_PRICE)}</h2>
+        <p className="text-sm text-ink-muted mt-2 mb-4">
+          Hemat <b className="text-ink">{formatRupiah(IMTIHAN_PRICE_IDR - OFFER_COUPON_PRICE)}</b> dari harga normal <span className="line-through">{formatRupiah(IMTIHAN_PRICE_IDR)}</span>.
+          {" "}{pending ? <>Masukkan kode ini di halaman bayar Paket Imtihan.</> : <>Kode kupon berlaku <b className="text-ink">24 jam</b> setelah kamu dapat.</>}
+        </p>
+        {pending ? (
+          <>
+            <CouponCodeReveal offer={pending}/>
+            <button onClick={use} className="btn btn-gold w-full justify-center text-sm py-3 mt-4">Pakai di halaman bayar</button>
+          </>
+        ) : <InstagramCouponCard/>}
+        <button onClick={close} className="text-xs text-ink-soft hover:text-ink-muted mt-4">Nanti saja</button>
+      </div>
+    </div>
+  );
+};
+
+/* Popup sekali per penawaran: muncul saat akun gratis membuka app selama penawaran berjalan. Belum punya kupon →
+   popup kupon. */
 const WelcomeOfferPopup = () => {
   const offer = useWelcomeOffer();
   const { profile } = useAuth();
   const path = useRoute();
+  const eligible = useOfferCoupon();
+  const pending = useCouponCode();
+  if (!offer && (eligible || pending)) return <CouponPopup/>;
+  return <RunningOfferPopup offer={offer} profile={profile} path={path}/>;
+};
+const RunningOfferPopup = ({ offer, profile, path }) => {
   const key = offer ? `talqeeh_offer_seen_${offer.endsAt}` : null;
   const [seen, setSeen] = useState(false);
   useEffect(() => { if (key) { try { setSeen(localStorage.getItem(key) === "1"); } catch {} } }, [key]);
@@ -792,6 +1035,8 @@ const EventBanner = () => {
   const path = useRoute();
   const left = usePromoCountdown();
   const offer = useWelcomeOffer();
+  const couponOpen = useOfferCoupon();
+  const pendingCoupon = useCouponCode();
   const [hidden, setHidden] = useState(() => { try { return sessionStorage.getItem("talqeeh_event_hide") === IMTIHAN_PROMO.endsAt; } catch { return false; } });
   if (offer && !/^\/(admin|seminar|gabung)/.test(path)) {
     return (
@@ -805,6 +1050,35 @@ const EventBanner = () => {
           </span>
           <button onClick={() => { window.logFunnel?.("view_join", "offer_banner"); navigate("/gabung?plan=imtihan"); }}
             className="btn btn-gold text-xs px-3 py-1.5 flex-shrink-0 whitespace-nowrap">Ambil</button>
+        </div>
+      </div>
+    );
+  }
+  if (pendingCoupon && !/^\/(admin|seminar|gabung)/.test(path)) {
+    return (
+      <div className="relative z-[5] border-b border-gold-500/30" style={{ background: "linear-gradient(90deg, rgba(201,168,106,0.22), rgba(62,207,142,0.12))" }}>
+        <div className="container-x py-2.5 flex items-center gap-2.5 md:gap-3 text-[12.5px] md:text-[13px]">
+          <span className="hidden sm:inline px-2 py-0.5 rounded-full bg-gold-400 text-black text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Kupon</span>
+          <span className="text-ink flex-1 min-w-0 leading-snug">
+            Kode <b className="font-mono text-gold-200">{pendingCoupon.code}</b> siap dipakai · hangus dalam <b className="whitespace-nowrap"><OfferClock endsAt={pendingCoupon.endsAt}/></b>
+          </span>
+          <button onClick={() => { window.logFunnel?.("view_join", "coupon_code_banner"); navigate("/gabung?plan=imtihan"); }}
+            className="btn btn-gold text-xs px-3 py-1.5 flex-shrink-0 whitespace-nowrap">Pakai</button>
+        </div>
+      </div>
+    );
+  }
+  if (couponOpen && !left && !/^\/(admin|seminar|gabung)/.test(path)) {
+    return (
+      <div className="relative z-[5] border-b border-gold-500/30" style={{ background: "linear-gradient(90deg, rgba(201,168,106,0.18), rgba(62,207,142,0.10))" }}>
+        <div className="container-x py-2.5 flex items-center gap-2.5 md:gap-3 text-[12.5px] md:text-[13px]">
+          <span className="hidden sm:inline px-2 py-0.5 rounded-full bg-gold-400 text-black text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Kupon</span>
+          <span className="text-ink flex-1 min-w-0 leading-snug">
+            Follow Instagram <b>@talqeeh</b>, dapat Paket Imtihan <span className="line-through text-ink-soft whitespace-nowrap">{formatRupiah(IMTIHAN_PRICE_IDR)}</span>{" "}
+            <b className="text-gold-200 whitespace-nowrap">{formatRupiah(OFFER_COUPON_PRICE)}</b>
+          </span>
+          <button onClick={() => { window.logFunnel?.("view_join", "coupon_banner"); navigate("/gabung?plan=imtihan"); }}
+            className="btn btn-gold text-xs px-3 py-1.5 flex-shrink-0 whitespace-nowrap">Klaim</button>
         </div>
       </div>
     );
@@ -1586,7 +1860,7 @@ Object.assign(window, {
   PLAN_LABELS, DEFAULT_ADMIN_WA, PAYMENT_WAIT_LIMIT_MS, aiBundle, AI_BUNDLE_FEATURES, AiBundleBreakdown,
   imtihanBundle, ImtihanBreakdown, IMTIHAN_PRICE_IDR, IMTIHAN_AI_DAYS, IMTIHAN_PROMO, imtihanPromoActive, EventBanner, usePromoCountdown,
   rombonganEvent,
-  useWelcomeOffer, OfferClock, WelcomeOfferPopup,
+  useWelcomeOffer, OfferClock, WelcomeOfferPopup, useOfferCoupon, useCouponCode, InstagramCouponCard, ImtihanCouponPanel, OFFER_COUPON_PRICE, readAppliedCoupon,
   useCheckout, CheckoutWaiting, CheckoutWatcher, CheckoutPayModal, readPendingCheckout, savePendingCheckout, formatRupiah, isTalkhisAddonPlan,
   LIBRARY_PRICE, LIBRARY_PRICE_IDR, AI_RENEW_PRICE_IDR, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
   scrollToLandingSection, scrollToPaket,

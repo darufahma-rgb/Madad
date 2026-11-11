@@ -563,6 +563,7 @@ const clearUpgradeOffer = () => { try { localStorage.removeItem(UPGRADE_OFFER_KE
 const UpgradeOfferModal = ({ onClose }) => {
   const settings = useAppSettings();
   const offer = useWelcomeOffer();
+  const couponOpen = useOfferCoupon();
   const imtihan = imtihanBundle(settings, offer);
   // Harga khusus sudah tampil di sini, jadi popup hadiah tidak perlu muncul lagi setelahnya.
   useEffect(() => { if (offer) { try { localStorage.setItem(`talqeeh_offer_seen_${offer.endsAt}`, "1"); } catch {} } }, [offer?.endsAt]);
@@ -577,7 +578,9 @@ const UpgradeOfferModal = ({ onClose }) => {
       imtihan,
       itemsTitle: "Semua isi Library, ditambah:",
       items: AI_BUNDLE_FEATURES,
-      footnote: offer ? <>🎁 Harga khusus akun baru, hangus dalam <OfferClock endsAt={offer.endsAt}/></> : "Satu kali bayar untuk persiapan sampai imtihan.",
+      footnote: offer ? <>🎁 Harga kuponmu, hangus dalam <OfferClock endsAt={offer.endsAt}/></>
+        : couponOpen ? <>🎟️ Follow Instagram @talqeeh, dapat kupon {formatRupiah(OFFER_COUPON_PRICE)}. Klaim di halaman bayar.</>
+        : "Satu kali bayar untuk persiapan sampai imtihan.",
       cta: `Ambil Paket Imtihan · ${formatRupiah(imtihan.total)}` },
   ];
   return (

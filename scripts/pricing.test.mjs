@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { imtihanDaysFor, IMTIHAN_AI_DAYS, IMTIHAN_LEGACY_DAYS, IMTIHAN_SHORTENED_AT, claimClassTrial } from '../api/_lib/payments.js';
-import { offerPriceFor, WELCOME_OFFER } from '../api/_lib/offer.js';
+import { offerFromRow, WELCOME_OFFER } from '../api/_lib/offer.js';
 import { validatePartnerLinks, classTrialOpen, getOpenPartnerLink, getLivePartnerLink, CLASS_TRIAL_PRODUCT, CLASS_TRIAL_HOURS } from '../api/_lib/events.js';
 
 const link = { slug: 'kelas-kmm', name: 'Kekeluargaan Uji', price: 123000, kasPercent: 10, startsAt: '2026-12-01T10:00:00Z', endsAt: '2026-12-04T10:00:00Z' };
@@ -14,10 +14,11 @@ test('Paket Imtihan baru 60 hari, tagihan dan kode rombongan lama tetap 120 hari
   assert.equal(imtihanDaysFor(null), 60);
 });
 
-test('penawaran akun Rp 149.000, hitung mundur yang sudah berjalan tetap harga lama', () => {
+test('harga khusus satu-satunya Rp 149.000, harga lama 139rb tidak ada lagi', () => {
   assert.equal(WELCOME_OFFER.price, 149000);
-  assert.equal(offerPriceFor(WELCOME_OFFER.priceChangedAt), 149000);
-  assert.equal(offerPriceFor('2026-11-04T10:00:00Z'), 139000);
+  const now = Date.parse('2026-11-12T10:00:00Z');
+  assert.equal(offerFromRow({ offer_started_at: '2026-11-04T10:00:00Z' }, Date.parse('2026-11-04T12:00:00Z')).offer.price, 149000);
+  assert.equal(offerFromRow({ offer_coupon_at: '2026-11-12T09:00:00Z' }, now).offer.price, 149000);
 });
 
 test('tautan kerja sama yang benar lolos dan dirapikan', () => {

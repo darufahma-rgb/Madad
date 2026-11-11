@@ -710,6 +710,9 @@ const GabungPage = () => {
           <div className="card-glass-strong p-6 md:p-8 max-w-2xl mx-auto">
             <h2 className="font-display text-2xl font-semibold text-ink mb-1">Bayar {payPlan === 'rombongan' ? `Paket Rombongan ${rombonganSize.seats} orang` : `paket ${PLAN_LABELS[payPlan]}`}</h2>
             <p className="text-sm text-ink-muted mb-5">Tagihan dibuat langsung untuk akun <span className="text-ink">{email}</span> — tidak perlu isi data lagi.</p>
+            {payPlan === 'imtihan' && isFree && !usePartner && (
+              <div className="mb-5 empty:hidden"><ImtihanCouponPanel/></div>
+            )}
             <div className="card-glass p-4 mb-5 text-sm space-y-2">
               {payPlan === 'rombongan' ? (
                 <>

@@ -144,7 +144,9 @@ const checkAiSubscription = async () => {
 const createCheckout = async (plan, opts = {}) => {
   try {
     const ref = readAffiliateRef();
-    const res = await authFetch('/api/login?action=checkout', { method: 'POST', body: JSON.stringify({ plan, ...(opts.seats ? { seats: opts.seats } : {}), ...(opts.partner ? { partner: opts.partner } : {}), ...(ref ? { ref } : {}) }) });
+    // Kode kupon follow Instagram yang sudah dimasukkan (layout.jsx); server mencocokkannya dengan kode akun.
+    const coupon = plan === 'imtihan' ? window.readAppliedCoupon?.() : '';
+    const res = await authFetch('/api/login?action=checkout', { method: 'POST', body: JSON.stringify({ plan, ...(opts.seats ? { seats: opts.seats } : {}), ...(opts.partner ? { partner: opts.partner } : {}), ...(ref ? { ref } : {}), ...(coupon ? { coupon } : {}) }) });
     const data = await res.json().catch(() => ({}));
     if (res.status === 429) return { ok: false, status: 'rate_limited' };
     return data.ok ? data : { ok: false, status: data.status || 'error' };

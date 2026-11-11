@@ -9,7 +9,9 @@ import {
   readAffiliateProgram, resolveMemberAffiliate, getApprovedAffiliate, getAffiliateByMember, affiliatePrice, commissionPercent,
   validateApplication, isSlugTaken, affiliateStats, AFFILIATE_FIELDS,
 } from './_lib/affiliates.js';
-import { getWelcomeOffer } from './_lib/offer.js';
+import { getWelcomeOffer, getOfferState, claimInstagramCoupon, COUPON_PROMPT } from './_lib/offer.js';
+import { callAIJson } from './_lib/ai.js';
+import { resolveModels } from './_lib/models.js';
 import { getLivePartnerLink, getOpenPartnerLink, isLive, classTrialOpen, CLASS_TRIAL_HOURS } from './_lib/events.js';
 
 // Identity comes from the Supabase (Google) access token. Existing members link their
@@ -207,7 +209,7 @@ const publicCheckout = (c) => ({ id: c.id, plan: c.plan, amount: c.amount, link:
 // Buat tagihan Mayar untuk paket yang dipilih (harga ditentukan server, bukan browser).
 async function handleCheckout(req, user, res) {
   if (!mayarConfigured()) return res.status(200).json({ ok: false, status: 'payments_disabled' });
-  const { plan, seats, partner: partnerSlug, ref } = await parseBody(req);
+  const { plan, seats, partner: partnerSlug, ref, coupon } = await parseBody(req);
   if (!CHECKOUT_PLANS.includes(plan)) return res.status(400).json({ ok: false, status: 'invalid_plan' });
   if (!checkCheckoutLimit(user.id)) return res.status(429).json({ ok: false, status: 'rate_limited' });
 
@@ -220,7 +222,7 @@ async function handleCheckout(req, user, res) {
     return res.status(200).json({ ok: false, status: 'needs_imtihan' });
   }
 
-  const offer = plan === 'imtihan' ? await getWelcomeOffer(member) : null;
+  const offer = plan === 'imtihan' ? await getWelcomeOffer(member, { coupon }) : null;
   // Tautan kerja sama: akun yang sudah ditandai ke satu kekeluargaan tetap tercatat ke sana, walau memakai tautan lain.
   // Yang menekan bayar setelah tautannya berakhir diberi tahu, bukan diam-diam ditagih harga normal.
   const tagged = plan === 'imtihan' && member ? (await readMemberReferral(member.code))?.partner_slug : null;
@@ -242,6 +244,25 @@ async function handleCheckout(req, user, res) {
   });
   if (!result.ok) return res.status(200).json(result);
   return res.status(200).json({ ok: true, checkout: publicCheckout(result.checkout) });
+}
+
+/* Kupon Paket Imtihan dari follow Instagram: screenshot profil @talqeeh diperiksa AI (model baca foto). */
+const verifyFollowScreenshot = async (base64, mime) => {
+  const models = await resolveModels();
+  return callAIJson({
+    model: models.vision, maxTokens: 300, temperature: 0,
+    messages: [{ role: 'user', content: [
+      { type: 'image_url', image_url: { url: `data:${mime};base64,${base64}` } },
+      { type: 'text', text: COUPON_PROMPT },
+    ] }],
+  });
+};
+
+async function handleOfferCoupon(req, user, res) {
+  const { image, mime } = await parseBody(req);
+  const member = await resolveMember(user);
+  const result = await claimInstagramCoupon(member, { image, mime }, { verify: verifyFollowScreenshot });
+  return res.status(200).json(result);
 }
 
 // Dipanggil berkala selama pembeli menunggu. Kalau Mayar sudah lunas, akses langsung diaktifkan.
@@ -505,8 +526,10 @@ export default async function handler(req, res) {
     if (action === 'affiliate-apply') return await handleAffiliateApply(req, user, res);
     if (action === 'offer') {
       const member = await resolveMember(user);
-      return res.status(200).json({ ok: true, offer: await getWelcomeOffer(member, { start: true }) });
+      const state = await getOfferState(member);
+      return res.status(200).json({ ok: true, offer: state.offer, coupon: { eligible: state.couponEligible } });
     }
+    if (action === 'offer-coupon') return await handleOfferCoupon(req, user, res);
     if (action === 'checkout-status') return await handleCheckoutStatus(req, user, res);
     if (action === 'group-codes') return await handleGroupCodes(user, res);
     if (action === 'group-redeem') return await handleGroupRedeem(req, user, res);
