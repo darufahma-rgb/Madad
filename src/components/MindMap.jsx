@@ -160,7 +160,7 @@ const MindDetail = ({ root, path, onSelect, onClose, onFocus, onAsk, variant = '
         {node.contoh && (
           <div className="mm-detail-section">
             <div className="mm-detail-sub">Contoh</div>
-            <p className="text-[14px] text-ink-muted leading-relaxed rounded-lg px-3 py-2 border-l-2" style={{ borderColor: color, background: 'rgba(255,255,255,0.03)' }}>{renderNote(node.contoh)}</p>
+            <p className="text-[14px] text-ink-muted leading-relaxed rounded-lg px-3 py-2 border-l-2" style={{ borderColor: color, background: 'rgba(var(--fg, 255,255,255),0.03)' }}>{renderNote(node.contoh)}</p>
           </div>
         )}
         {!node.note && !node.detail && !node.contoh && (
@@ -485,7 +485,7 @@ const MindFullscreen = ({ title, root, ui, selected, onSelect, onClearSelection,
   const focusNode = (p) => view.ctl.current?.focus(p);
 
   return createPortal(
-    <div ref={shellRef} className="fixed inset-0 z-[130] flex flex-col" style={{ background: '#0b0b0b' }}>
+    <div ref={shellRef} className="fixed inset-0 z-[130] flex flex-col" style={{ background: 'var(--bg-0, #0b0b0b)' }}>
       <div className="flex items-center gap-2 px-3 md:px-5 py-2.5 border-b border-white/[0.07] flex-wrap" style={{ paddingTop: 'max(10px, var(--safe-top))' }}>
         <Icon name="network" className="w-4 h-4 flex-shrink-0" style={{ stroke: '#3ecf8e' }}/>
         <div className="font-display text-sm md:text-base font-semibold text-ink truncate min-w-0 flex-1">{title}</div>

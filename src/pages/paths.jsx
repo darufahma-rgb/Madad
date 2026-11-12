@@ -44,8 +44,8 @@ const PraktikContent = ({ content }) => {
         </ol>
       </div>
       {content.practicePrompt && (
-        <div className="rounded-xl overflow-hidden" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
-          <div className="flex items-center justify-between px-4 py-3" style={{borderBottom:"1px solid rgba(255,255,255,0.07)"}}>
+        <div className="rounded-xl overflow-hidden" style={{border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
+          <div className="flex items-center justify-between px-4 py-3" style={{borderBottom:"1px solid rgba(var(--fg, 255,255,255),0.07)"}}>
             <div className="text-[11px] uppercase tracking-wider text-gold-400 font-medium">Prompt untuk dicoba</div>
             <button
               onClick={() => { navigator.clipboard.writeText(content.practicePrompt); toast.push("Prompt tersalin. Paste ke AI."); }}
@@ -256,7 +256,7 @@ const PathsPage = () => {
                       <div className="h-1.5 bg-white/5 rounded-full overflow-hidden mb-2">
                         <div className="h-full transition-all duration-700 rounded-full" style={{width: `${pct}%`, background: `linear-gradient(90deg, ${path.color}, #C9A86A)`}}/>
                       </div>
-                      <p style={{ fontSize:"13px", color:"rgba(255,255,255,0.5)", fontStyle:"italic", marginBottom:"4px" }}>Kamu sudah lebih maju dari kebanyakan Masisir yang belum tahu cara pakai AI sama sekali.</p>
+                      <p style={{ fontSize:"13px", color:"rgba(var(--fg, 255,255,255),0.5)", fontStyle:"italic", marginBottom:"4px" }}>Kamu sudah lebih maju dari kebanyakan Masisir yang belum tahu cara pakai AI sama sekali.</p>
                       <div className="text-xs text-ink-muted">{path.modules.filter(m => progress.modules?.[`${path.id}.${m.id}`]?.completed).length} dari {path.modules.length} modul selesai</div>
                     </div>
                     <div className="md:col-span-4 md:text-right">
@@ -322,7 +322,7 @@ const PathsPage = () => {
       <section className="pb-20">
         <div className="container-x">
           <Reveal>
-            <div className="relative rounded-2xl overflow-hidden" style={{border:"1px solid rgba(62,207,142,0.16)",background:"rgba(255,255,255,0.04)"}}>
+            <div className="relative rounded-2xl overflow-hidden" style={{border:"1px solid rgba(62,207,142,0.16)",background:"rgba(var(--fg, 255,255,255),0.04)"}}>
               <GlowBlob color="rgba(201,168,106,0.14)" size={400} top={-120} right={-80}/>
               <GlowBlob color="rgba(62,207,142,0.10)" size={350} bottom={-100} left={-60}/>
               <div className="relative p-8 md:p-12 grid md:grid-cols-12 gap-8 items-center">

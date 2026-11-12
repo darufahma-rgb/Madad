@@ -153,15 +153,15 @@ const printCss = ({ color = true, size = 'large', paper = 'A4' } = {}) => {
 body { margin: 0; font-family: "Noto Naskh Arabic", "Amiri", serif; direction: rtl; color: #111; font-size: ${fs}px; line-height: 1.95; }
 .cover { text-align: center; padding-top: 30vh; page-break-after: always; }
 .cover h1 { font-size: ${fs + 22}px; margin: 0 0 8px; color: ${color ? '#0f5f46' : '#111'}; }
-.cover .sub { font-size: ${fs + 6}px; color: #444; }
+.cover .sub { font-size: ${fs + 6}px; color: var(--t-4, #444); }
 .cover .orn { width: 120px; height: 3px; margin: 14px auto; background: ${color ? 'linear-gradient(90deg,#c9a86a,#0f5f46,#c9a86a)' : '#999'}; border-radius: 2px; }
-.cover .brand { margin-top: 36px; font-family: system-ui, sans-serif; direction: ltr; font-size: 11px; color: #888; }
+.cover .brand { margin-top: 36px; font-family: system-ui, sans-serif; direction: ltr; font-size: 11px; color: var(--t-3, #888); }
 .toc { page-break-after: always; }
 .toc h2 { text-align: center; font-size: ${fs + 7}px; margin: 6px 0 14px; color: ${color ? '#0f5f46' : '#111'}; }
 .toc ol { margin: 0; padding-inline-start: 22px; list-style: arabic-indic; }
 .toc .tb { font-weight: 700; margin-top: 10px; color: ${color ? '#0f5f46' : '#111'}; }
 .tk-bab { text-align: center; font-size: ${fs + 7}px; margin: 20px 0 12px; padding: 6px 10px; border-radius: 8px; break-after: avoid;
-  ${color ? 'background: #0f5f46; color: #fff;' : 'border-top: 2px solid #111; border-bottom: 2px solid #111;'} }
+  ${color ? 'background: #0f5f46; color: #fff;' : 'border-top: 2px solid var(--bg-1, #111); border-bottom: 2px solid var(--bg-1, #111);'} }
 .tk-bab.tk-key { page-break-before: always; }
 .tk-title { font-size: ${fs + 3}px; margin: 16px 0 6px; padding-bottom: 3px; border-bottom: 2px solid ${color ? '#c9a86a' : '#555'}; color: ${color ? '#0f5f46' : '#111'}; break-after: avoid; }
 .tk-sec { padding: 4px 12px 6px; margin: 8px 0; border-radius: 6px; }
@@ -173,14 +173,14 @@ ${secs}
 .tk-warn-note { display: none; }
 .tk-list { margin: 2px 0 6px; padding-inline-start: 20px; }
 .tk-list > li { margin: 3px 0; }
-${color ? '.tk-list > li::marker { color: #c9a86a; } .tk-sub > li::marker { color: #3b74c4; font-weight: 700; }' : ''}
+${color ? '.tk-list > li::marker { color: var(--a-gold, #c9a86a); } .tk-sub > li::marker { color: #3b74c4; font-weight: 700; }' : ''}
 ol.tk-list, ol.tk-sub { list-style: arabic-indic; }
 .tk-sub { margin: 2px 0 4px; padding-inline-start: 22px; }
 .tk-list b { text-decoration: underline; text-underline-offset: 4px; }
 .tk-gh { color: ${color ? '#c22' : '#000'}; ${color ? '' : 'font-weight: 700;'} }
 .tk-cont { margin-inline-start: 4px; }
 p { margin: 4px 0; }
-.foot { margin-top: 24px; text-align: center; font-family: system-ui, sans-serif; direction: ltr; font-size: 10px; color: #999; }
+.foot { margin-top: 24px; text-align: center; font-family: system-ui, sans-serif; direction: ltr; font-size: 10px; color: var(--t-2, #999); }
 `;
 };
 
@@ -253,7 +253,7 @@ const TalkhisPdfDialog = ({ onClose, onDownload, exercises = null, busy = '' }) 
   return createPortal(
     <div className="fixed inset-0 z-[90] flex items-end md:items-center justify-center md:px-4">
       <div className="absolute inset-0 bg-black/70" onClick={busy ? undefined : onClose}/>
-      <div className="relative w-full md:max-w-md rounded-t-2xl md:rounded-2xl border border-white/10 p-5" style={{ background: '#141414' }}>
+      <div className="relative w-full md:max-w-md rounded-t-2xl md:rounded-2xl border border-white/10 p-5" style={{ background: 'var(--bg-1, #141414)' }}>
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-display text-lg font-semibold text-ink">Unduh PDF talkhisan</h3>
           {!busy && <button onClick={onClose} className="w-8 h-8 rounded-lg hover:bg-white/6 flex items-center justify-center text-ink-muted"><Icon name="x" className="w-4 h-4"/></button>}
@@ -658,7 +658,7 @@ const TalkhisLocked = () => {
         <div className="relative rounded-xl border border-white/10 bg-black/20 p-4 max-h-[420px] overflow-hidden">
           <div className="text-[10px] uppercase tracking-wider text-ink-soft mb-2">Contoh hasil</div>
           <div dir="rtl" lang="ar" className="tk-body" style={{ fontSize: 16 }} dangerouslySetInnerHTML={{ __html: html }}/>
-          <div className="absolute inset-x-0 bottom-0 h-28 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(12,12,12,0), #0c0c0c)' }}/>
+          <div className="absolute inset-x-0 bottom-0 h-28 pointer-events-none" style={{ background: 'linear-gradient(to bottom, rgba(var(--surf, 12,12,12),0), var(--bg-0, #0c0c0c))' }}/>
         </div>
       </div>
     </div>
@@ -905,7 +905,7 @@ const TalkhisTab = ({ set, setSet, access }) => {
     // Jendela dibuka langsung saat diklik (kalau menunggu proses dulu, browser memblokirnya sebagai pop-up).
     const w = window.open('', '_blank');
     if (!w) { toast.push('Jendela unduhan diblokir browser. Izinkan pop-up untuk Talqeeh lalu coba lagi.'); return; }
-    w.document.write('<p style="font-family:system-ui;padding:24px;color:#555">Menyiapkan PDF talkhisan…</p>');
+    w.document.write('<p style="font-family:system-ui;padding:24px;color:var(--t-4, #555)">Menyiapkan PDF talkhisan…</p>');
     let cur = t;
     const missing = prefs.exercises ? missingExercises(t) : [];
     if (missing.length) {

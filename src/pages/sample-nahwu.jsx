@@ -25,7 +25,7 @@ const SamplePromptCard = ({ prompt, formatEnabled }) => {
         </button>
       </div>
       <div className="p-3 rounded-xl text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap"
-        style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)",maxHeight:"96px",overflow:"hidden",WebkitLineClamp:4,display:"-webkit-box",WebkitBoxOrient:"vertical"}}>
+        style={{background:"rgba(var(--fg, 255,255,255),0.03)",border:"1px solid rgba(var(--fg, 255,255,255),0.08)",maxHeight:"96px",overflow:"hidden",WebkitLineClamp:4,display:"-webkit-box",WebkitBoxOrient:"vertical"}}>
         {prompt.template}
       </div>
     </div>
@@ -490,7 +490,7 @@ Untuk setiap bait:
                 Sekali bayar, berlaku selamanya.
               </p>
               <button onClick={() => window.dispatchEvent(new CustomEvent("talqeeh:open-join", { detail: { plan: "library" } }))} className="btn btn-gold px-7 py-3.5 text-base font-medium"
-                style={{ boxShadow:"0 0 40px rgba(201,168,106,.35), 0 1px 0 rgba(255,255,255,.3) inset" }}>
+                style={{ boxShadow:"0 0 40px rgba(201,168,106,.35), 0 1px 0 rgba(var(--fg, 255,255,255),.3) inset" }}>
                 Ambil Library · {LIBRARY_PRICE} →
               </button>
               <p className="text-xs text-ink-soft mt-4 max-w-md mx-auto">

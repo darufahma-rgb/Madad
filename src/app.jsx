@@ -21,19 +21,19 @@ class ErrorBoundary extends React.Component {
         <div style={{
           minHeight:"100vh", display:"flex", flexDirection:"column",
           alignItems:"center", justifyContent:"center",
-          background:"#0c0c0c", padding:"24px", textAlign:"center",
+          background:"var(--bg-0, #0c0c0c)", padding:"24px", textAlign:"center",
         }}>
-          <div style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:"2rem",color:"#C9A86A",marginBottom:"12px"}}>
+          <div style={{fontFamily:"Georgia,'Times New Roman',serif",fontSize:"2rem",color:"var(--a-gold, #C9A86A)",marginBottom:"12px"}}>
             تَلْقِيح
           </div>
           <h2 style={{fontFamily:"DM Sans,sans-serif",color:"#F5F0FF",fontSize:"1.25rem",marginBottom:"8px"}}>
             Ada yang tidak beres
           </h2>
-          <p style={{color:"#6ee7b7",fontSize:"0.9rem",marginBottom:"16px",maxWidth:"520px",lineHeight:"1.6"}}>
+          <p style={{color:"var(--a-green, #6ee7b7)",fontSize:"0.9rem",marginBottom:"16px",maxWidth:"520px",lineHeight:"1.6"}}>
             {this.state.error?.message || "Coba refresh halaman. Kalau masalah berlanjut, hubungi admin Talqeeh."}
           </p>
           {this.state.error && (
-            <pre style={{color:"#f87171",fontSize:"0.75rem",textAlign:"left",background:"rgba(255,255,255,0.05)",padding:"12px",borderRadius:"8px",maxWidth:"90vw",overflowX:"auto",marginBottom:"20px",maxHeight:"200px"}}>
+            <pre style={{color:"var(--a-red, #f87171)",fontSize:"0.75rem",textAlign:"left",background:"rgba(var(--fg, 255,255,255),0.05)",padding:"12px",borderRadius:"8px",maxWidth:"90vw",overflowX:"auto",marginBottom:"20px",maxHeight:"200px"}}>
               {this.state.error.stack}
             </pre>
           )}

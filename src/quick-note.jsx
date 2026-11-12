@@ -70,9 +70,9 @@ const QuickNoteModal = ({ open, onClose, contextLabel, contextSource }) => {
           onChange={e => setTitle(e.target.value)}
           placeholder="Judul catatan..."
           className="w-full bg-transparent text-ink font-display text-lg placeholder-ink-soft border-b pb-3 mb-4 outline-none transition-colors"
-          style={{borderColor:"rgba(255,255,255,0.10)"}}
+          style={{borderColor:"rgba(var(--fg, 255,255,255),0.10)"}}
           onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.55)"}
-          onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+          onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}
         />
         <textarea
           value={body}
@@ -80,9 +80,9 @@ const QuickNoteModal = ({ open, onClose, contextLabel, contextSource }) => {
           placeholder="Tulis catatanmu di sini..."
           rows={6}
           className="w-full bg-white/4 rounded-xl p-4 text-sm text-ink-muted placeholder-ink-soft outline-none transition-colors resize-none leading-relaxed border"
-          style={{borderColor:"rgba(255,255,255,0.09)"}}
-          onFocus={e => { e.target.style.borderColor="rgba(62,207,142,0.40)"; e.target.style.background="rgba(255,255,255,0.05)"; }}
-          onBlur={e => { e.target.style.borderColor="rgba(255,255,255,0.09)"; e.target.style.background="rgba(255,255,255,0.04)"; }}
+          style={{borderColor:"rgba(var(--fg, 255,255,255),0.09)"}}
+          onFocus={e => { e.target.style.borderColor="rgba(62,207,142,0.40)"; e.target.style.background="rgba(var(--fg, 255,255,255),0.05)"; }}
+          onBlur={e => { e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.09)"; e.target.style.background="rgba(var(--fg, 255,255,255),0.04)"; }}
         />
 
         <div className="mt-4">

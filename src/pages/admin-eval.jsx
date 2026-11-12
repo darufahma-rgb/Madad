@@ -3,12 +3,12 @@ import React, { useState, useEffect, useMemo } from 'react';
    Soal uji diperiksa asatidz → evaluasi menjalankan tugas persis seperti di aplikasi → skor per tugas & per model. */
 
 const TASKS = {
-  summary: { label: 'Ringkasan', color: '#3ecf8e', how: 'AI penguji: cakupan poin kunci, dikurangi kesalahan & kutipan palsu' },
-  qa:      { label: 'Tanya tutor', color: '#60a5fa', how: 'AI penguji: cakupan poin jawaban, dikurangi kesalahan & kutipan palsu' },
-  irab:    { label: "I'rab", color: '#c9a86a', how: "Pasti: kata kunci i'rab ditemukan di analisis kata yang tepat" },
-  tasykil: { label: 'Harakat', color: '#a78bfa', how: 'Pasti: harakat per huruf dibanding kunci' },
-  grade:   { label: 'Penilaian tahriri', color: '#f472b6', how: 'Pasti: nilai AI di dalam rentang asatidz (−25 per poin meleset)' },
-  prompt:  { label: 'Prompt Library', color: '#34d399', how: 'Prompt dijalankan seperti "Jalankan di sini", lalu AI penguji menilai 7 kriteria rubrik (+ poin tambahan asatidz bila ada). Teks prompt diambil dari data terbaru setiap evaluasi.' },
+  summary: { label: 'Ringkasan', color: 'var(--a-green, #3ecf8e)', how: 'AI penguji: cakupan poin kunci, dikurangi kesalahan & kutipan palsu' },
+  qa:      { label: 'Tanya tutor', color: 'var(--a-blue, #60a5fa)', how: 'AI penguji: cakupan poin jawaban, dikurangi kesalahan & kutipan palsu' },
+  irab:    { label: "I'rab", color: 'var(--a-gold, #c9a86a)', how: "Pasti: kata kunci i'rab ditemukan di analisis kata yang tepat" },
+  tasykil: { label: 'Harakat', color: 'var(--a-violet, #a78bfa)', how: 'Pasti: harakat per huruf dibanding kunci' },
+  grade:   { label: 'Penilaian tahriri', color: 'var(--a-pink, #f472b6)', how: 'Pasti: nilai AI di dalam rentang asatidz (−25 per poin meleset)' },
+  prompt:  { label: 'Prompt Library', color: 'var(--a-green, #34d399)', how: 'Prompt dijalankan seperti "Jalankan di sini", lalu AI penguji menilai 7 kriteria rubrik (+ poin tambahan asatidz bila ada). Teks prompt diambil dari data terbaru setiap evaluasi.' },
 };
 const STATUS = {
   draft:    { label: 'Draft', cls: 'bg-amber-500/12 text-amber-300 border-amber-500/30' },

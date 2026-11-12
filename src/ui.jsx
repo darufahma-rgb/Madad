@@ -140,7 +140,7 @@ const Stars = ({ value = 0, max = 5, className = "" }) => (
 /* ---------------- Talqeeh Logo mark ---------------- */
 const LogoMark = ({ size = 36, className = "" }) => (
   <span className={"inline-flex items-center justify-center " + className} style={{ width: size, height: size }}>
-    <img src="/assets/talqeeh-logo.png" alt="Talqeeh" style={{ width: size, height: size, objectFit: "contain", mixBlendMode: "screen" }}/>
+    <img src="/assets/talqeeh-logo.png" alt="Talqeeh" className="brand-logo" style={{ width: size, height: size, objectFit: "contain", mixBlendMode: "screen" }}/>
   </span>
 );
 
@@ -167,7 +167,7 @@ const ToolIcon = ({ tool, size = "w-11 h-11", rounded = "rounded-xl", className 
   if (tool.logo) {
     const containerBg = tool.logoBg === "#FFFFFF"
       ? "#FFFFFF"
-      : "rgba(14,10,26,0.85)";
+      : "rgba(var(--surf, 14,10,26),0.85)";
     return (
       <span
         className={`${size} ${rounded} flex items-center justify-center overflow-hidden flex-shrink-0 ${className}`}
@@ -189,7 +189,7 @@ const ToolIcon = ({ tool, size = "w-11 h-11", rounded = "rounded-xl", className 
       className={`${size} ${rounded} flex items-center justify-center overflow-hidden flex-shrink-0 ${className}`}
       style={{
         background: `linear-gradient(135deg, ${bg}, ${bg}BB)`,
-        boxShadow: `0 2px 12px ${bg}40, inset 0 1px 0 rgba(255,255,255,0.18)`,
+        boxShadow: `0 2px 12px ${bg}40, inset 0 1px 0 rgba(var(--fg, 255,255,255),0.18)`,
       }}
     >
       <span className="text-sm font-bold text-white tracking-tight leading-none" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.35)" }}>{tool.monogram}</span>

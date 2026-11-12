@@ -45,7 +45,7 @@ const RunInTalqeehButton = ({ getText, title, source, className = 'btn-ghost tex
   <button
     onClick={() => runPromptInTalqeeh(typeof getText === 'function' ? getText() : getText, { title, source })}
     className={`${className} inline-flex items-center gap-1.5`}
-    style={{ minHeight: 40, borderColor: 'rgba(62,207,142,0.35)', color: '#a7f3d0' }}>
+    style={{ minHeight: 40, borderColor: 'rgba(62,207,142,0.35)', color: 'var(--a-green, #a7f3d0)' }}>
     <Icon name="sparkles" className="w-3.5 h-3.5"/>
     {label}
   </button>
@@ -254,7 +254,7 @@ const PromptChat = ({ trial = null }) => {
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setHistoryOpen(false)}/>
                 <div className="absolute right-0 top-11 z-50 w-[300px] max-w-[85vw] rounded-2xl border border-white/10 p-2 shadow-2xl shadow-black/50"
-                  style={{ background: '#161616' }}>
+                  style={{ background: 'var(--bg-2, #161616)' }}>
                   <div className="px-2.5 py-1.5 text-[11px] uppercase tracking-wider text-ink-soft">Riwayat · disimpan di perangkat ini</div>
                   {threads.length === 0
                     ? <p className="px-2.5 py-3 text-xs text-ink-soft">Belum ada percakapan.</p>
@@ -347,7 +347,7 @@ const PromptChat = ({ trial = null }) => {
       </div>
 
       {/* Kotak ketik menempel di bawah */}
-      <div className="sticky z-20 pt-2 pb-2 sm:pt-3 sm:pb-3 md:pb-5" style={{ bottom: 'var(--tabbar-height, 0px)', background: 'linear-gradient(to top, rgb(12,12,12) 70%, rgba(12,12,12,0))' }}>
+      <div className="sticky z-20 pt-2 pb-2 sm:pt-3 sm:pb-3 md:pb-5" style={{ bottom: 'var(--tabbar-height, 0px)', background: 'linear-gradient(to top, rgb(var(--surf, 12,12,12)) 70%, rgba(var(--surf, 12,12,12),0))' }}>
         <div className="container-x w-full">
           <div className="max-w-3xl mx-auto relative">
             {showJump && (messages.length > 0 || sending) && (
@@ -388,7 +388,7 @@ const PromptChat = ({ trial = null }) => {
                 </span>
                 <button onClick={send} disabled={sending || !input.trim()} aria-label="Kirim"
                   className="ml-auto w-9 h-9 rounded-xl flex items-center justify-center transition-colors disabled:opacity-40"
-                  style={{ background: input.trim() && !sending ? '#3ecf8e' : 'rgba(255,255,255,0.08)' }}>
+                  style={{ background: input.trim() && !sending ? '#3ecf8e' : 'rgba(var(--fg, 255,255,255),0.08)' }}>
                   <Icon name="arrowRight" className="w-4 h-4" style={{ stroke: input.trim() && !sending ? '#0b0b0b' : 'currentColor' }}/>
                 </button>
               </div>

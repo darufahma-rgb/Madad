@@ -169,7 +169,7 @@ const PwaInstallBanner = () => {
     <div className="fixed left-3 right-3 z-[95] sheet-enter md:hidden"
       style={{ bottom: 'calc(var(--tabbar-height, 0px) + var(--safe-bottom) + 12px)' }}>
       <div className="flex items-center gap-3 p-3 rounded-2xl border shadow-2xl"
-        style={{ background: 'rgba(20,24,22,0.97)', borderColor: 'rgba(62,207,142,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
+        style={{ background: 'rgba(var(--surf, 20,24,22),0.97)', borderColor: 'rgba(62,207,142,0.35)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' }}>
         <img src="/icons/icon-192.png" alt="" className="w-11 h-11 rounded-xl flex-shrink-0"/>
         <div className="flex-1 min-w-0">
           <div className="text-sm font-semibold text-ink leading-tight">Pasang aplikasi Talqeeh</div>

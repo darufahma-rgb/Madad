@@ -157,7 +157,7 @@ const MaddahDashCard = ({ maddah }) => {
         </div>
 
         {hasContent && topAITool && (
-          <div className="flex items-center gap-2 md:gap-2.5 mb-2.5 md:mb-3 p-2 md:p-2.5 rounded-xl" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
+          <div className="flex items-center gap-2 md:gap-2.5 mb-2.5 md:mb-3 p-2 md:p-2.5 rounded-xl" style={{background:"rgba(var(--fg, 255,255,255),0.03)",border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
             <ToolIcon tool={topAITool} size="w-7 h-7 md:w-8 md:h-8"/>
             <div className="flex-1 min-w-0">
               <div className="hidden md:block text-[10px] text-ink-soft uppercase tracking-wider">AI rekomendasi</div>
@@ -220,7 +220,7 @@ const MahadBadge = ({ profile }) => {
   if (level.startsWith("idad")) {
     return (
       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
-        style={{background:"rgba(16,185,129,0.15)",color:"#10B981",border:"1px solid rgba(16,185,129,0.30)"}}>
+        style={{background:"rgba(16,185,129,0.15)",color:"var(--a-green, #10B981)",border:"1px solid rgba(16,185,129,0.30)"}}>
         🌱 I'DADI · {info.kelas || ""}
       </span>
     );
@@ -332,8 +332,8 @@ Kalau paham, jawab singkat: "Wa'alaikumussalam, siap membantu." Lalu tunggu pert
   };
 
   const inputStyle = {
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.10)",
+    background: "rgba(var(--fg, 255,255,255),0.04)",
+    border: "1px solid rgba(var(--fg, 255,255,255),0.10)",
     borderRadius: 10,
     color: "var(--color-ink, #F1EDE4)",
     outline: "none",
@@ -386,7 +386,7 @@ Kalau paham, jawab singkat: "Wa'alaikumussalam, siap membantu." Lalu tunggu pert
                     placeholder={namaDefault}
                     style={inputStyle}
                     onFocus={e => e.target.style.borderColor = "rgba(62,207,142,0.5)"}
-                    onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.10)"}
+                    onBlur={e => e.target.style.borderColor = "rgba(var(--fg, 255,255,255),0.10)"}
                   />
                 </div>
                 <div>
@@ -400,20 +400,20 @@ Kalau paham, jawab singkat: "Wa'alaikumussalam, siap membantu." Lalu tunggu pert
                     placeholder="cth: aku punya ujian minggu depan, fokus ke Fiqh Hanafi"
                     style={inputStyle}
                     onFocus={e => e.target.style.borderColor = "rgba(62,207,142,0.5)"}
-                    onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.10)"}
+                    onBlur={e => e.target.style.borderColor = "rgba(var(--fg, 255,255,255),0.10)"}
                   />
                 </div>
               </div>
 
               {/* Prompt preview */}
-              <div className="rounded-xl overflow-hidden" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
+              <div className="rounded-xl overflow-hidden" style={{background:"rgba(var(--fg, 255,255,255),0.03)",border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
                 <p className={`text-xs text-ink-soft font-mono leading-relaxed p-3 whitespace-pre-wrap ${expanded ? "" : "line-clamp-3"}`}>
                   {prompt}
                 </p>
                 <button
                   onClick={() => setExpanded(v => !v)}
                   className="w-full text-center text-[11px] text-ink-soft/60 hover:text-ink-soft py-1.5 border-t transition-colors"
-                  style={{borderColor:"rgba(255,255,255,0.06)"}}
+                  style={{borderColor:"rgba(var(--fg, 255,255,255),0.06)"}}
                 >
                   {expanded ? "Sembunyikan ↑" : "Lihat selengkapnya ↓"}
                 </button>
@@ -910,7 +910,7 @@ const LibraryPage = () => {
                 <span className="gradient-text-anim">{firstName}</span>{" "}
                 <span className="text-gold-300">🌙</span>
               </h1>
-              <div style={{height:"1px",background:"rgba(255,255,255,0.1)",marginBottom:"12px"}}/>
+              <div style={{height:"1px",background:"rgba(var(--fg, 255,255,255),0.1)",marginBottom:"12px"}}/>
               <div className="flex flex-wrap gap-2">
                 {isMahadLevel(profile.level) ? (
                   <MahadBadge profile={profile}/>
@@ -920,7 +920,7 @@ const LibraryPage = () => {
                       Darul Lughah
                     </span>
                     {dlMustawaLabel && (
-                      <span style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
+                      <span style={{background:"rgba(var(--fg, 255,255,255),0.08)",border:"1px solid rgba(var(--fg, 255,255,255),0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
                         Mustawa {dlMustawaLabel}
                       </span>
                     )}
@@ -928,24 +928,24 @@ const LibraryPage = () => {
                 ) : (
                   <>
                     {facultyLabel && (
-                      <span style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
+                      <span style={{background:"rgba(var(--fg, 255,255,255),0.08)",border:"1px solid rgba(var(--fg, 255,255,255),0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
                         {facultyLabel}
                       </span>
                     )}
                     {majorLabel && (
-                      <span style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
+                      <span style={{background:"rgba(var(--fg, 255,255,255),0.08)",border:"1px solid rgba(var(--fg, 255,255,255),0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
                         {majorLabel}
                       </span>
                     )}
                     {levelLabel && (
-                      <span style={{background:"rgba(255,255,255,0.08)",border:"1px solid rgba(255,255,255,0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
+                      <span style={{background:"rgba(var(--fg, 255,255,255),0.08)",border:"1px solid rgba(var(--fg, 255,255,255),0.12)",borderRadius:"20px",padding:"4px 12px",fontSize:"12px",display:"inline-flex",color:"rgba(245,240,255,0.7)"}}>
                         {levelLabel}
                       </span>
                     )}
                   </>
                 )}
               </div>
-              <p style={{fontSize:"14px",color:"rgba(255,255,255,0.5)",fontStyle:"italic",marginTop:"12px"}}>
+              <p style={{fontSize:"14px",color:"rgba(var(--fg, 255,255,255),0.5)",fontStyle:"italic",marginTop:"12px"}}>
                 Talqeeh siap menemani belajarmu hari ini.
               </p>
             </div>
@@ -1149,7 +1149,7 @@ const LibraryPage = () => {
                 <span style={{
                   fontSize: 10, fontWeight: 800,
                   background: 'rgba(255,200,50,0.2)',
-                  color: '#ffc832',
+                  color: 'var(--a-amber, #ffc832)',
                   padding: '3px 10px',
                   borderRadius: 99,
                   border: '1px solid rgba(255,200,50,0.3)',
@@ -1164,24 +1164,24 @@ const LibraryPage = () => {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 position: 'relative',
               }}>
-                <Icon name="upload" className="w-6 h-6" style={{ color: '#3ecf8e' }}/>
+                <Icon name="upload" className="w-6 h-6" style={{ color: 'var(--a-green, #3ecf8e)' }}/>
               </div>
 
               {/* Text */}
               <div style={{ flex: 1, position: 'relative' }}>
                 <div className="font-display" style={{
-                  fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 4,
+                  fontSize: 18, fontWeight: 800, color: 'var(--t-1, #fff)', marginBottom: 4,
                 }}>
                   Submit Soal Imtihan → Dapat Reward!
                 </div>
-                <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.5 }}>
-                  Punya soal ujian Al-Azhar tahun lalu? Submit & dapat <strong style={{ color: '#3ecf8e' }}>voucher makan siang</strong> sampai Rp 50.000.
+                <div style={{ fontSize: 13, color: 'var(--t-2, #aaa)', lineHeight: 1.5 }}>
+                  Punya soal ujian Al-Azhar tahun lalu? Submit & dapat <strong style={{ color: 'var(--a-green, #3ecf8e)' }}>voucher makan siang</strong> sampai Rp 50.000.
                 </div>
               </div>
 
               {/* Arrow */}
               <div style={{
-                fontSize: 20, color: '#3ecf8e', flexShrink: 0,
+                fontSize: 20, color: 'var(--a-green, #3ecf8e)', flexShrink: 0,
                 position: 'relative',
               }}>→</div>
             </a>
@@ -1671,7 +1671,7 @@ const AdaptiveGuideQuick = ({ profile, topRec }) => {
             </div>
 
             <div className="md:col-span-5 flex flex-col">
-              <div className="rounded-xl overflow-hidden flex-1 mb-4" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
+              <div className="rounded-xl overflow-hidden flex-1 mb-4" style={{border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-line" style={{background:"rgba(62,207,142,0.12)"}}>
                   <div className="text-[11px] uppercase tracking-wider text-gold-400 font-semibold flex items-center gap-1.5">
                     <Icon name="cpu" className="w-3 h-3"/> Starter prompt

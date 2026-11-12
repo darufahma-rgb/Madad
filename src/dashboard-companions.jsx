@@ -310,7 +310,7 @@ const IntentionStrip = () => {
               onChange={e => { setCustomText(e.target.value); if (e.target.value) setSelClassic(null); }}
               className="w-full bg-night-900/60 border border-white/10 rounded-xl p-3 text-sm text-ink placeholder-ink-soft resize-none outline-none transition-colors"
               onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+              onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}
               style={useArabic ? {direction:"rtl",fontFamily:"'Scheherazade New',serif",fontSize:"1.1rem",lineHeight:1.8} : {}}/>
           </div>
 

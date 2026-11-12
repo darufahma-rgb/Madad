@@ -170,7 +170,7 @@ const MaddahHubPage = () => {
               placeholder="Cari Maddah (Indonesia atau Arab)..."
               className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-2.5 pr-10 text-sm text-ink placeholder-ink-soft outline-none transition-colors"
               onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+              onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}
             />
             <Icon name="search" className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-soft pointer-events-none"/>
           </div>

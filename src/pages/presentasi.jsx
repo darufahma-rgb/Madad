@@ -144,8 +144,8 @@ const Foot = ({ dark }) => (
 const Card = ({ children, style, dark, accent }) => (
   <div className="absolute" style={{
     borderRadius: 22, padding: 36,
-    background: dark ? (accent ? NIGHT : "rgba(255,255,255,0.06)") : "#fff",
-    border: `1.5px solid ${accent || (dark ? "rgba(255,255,255,0.18)" : "#E2EAE6")}`,
+    background: dark ? (accent ? NIGHT : "rgba(var(--fg, 255,255,255),0.06)") : "#fff",
+    border: `1.5px solid ${accent || (dark ? "rgba(var(--fg, 255,255,255),0.18)" : "#E2EAE6")}`,
     boxShadow: dark ? "none" : "0 6px 24px rgba(15,26,21,0.08)", ...style,
   }}>{children}</div>
 );
@@ -210,22 +210,22 @@ const LivePhone = ({ left, top }) => (
   <div className="absolute" style={{ left, top }}>
     <div className="pr-float">
       <div style={{ width: 400, height: 690, borderRadius: 44, padding: 14, background: "#040806", border: "1.5px solid #2B3A33", boxShadow: "0 30px 70px rgba(0,0,0,0.55)" }}>
-        <div className="flex flex-col" style={{ height: "100%", borderRadius: 32, background: "#0f1311", padding: "22px 18px 16px", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="flex flex-col" style={{ height: "100%", borderRadius: 32, background: "#0f1311", padding: "22px 18px 16px", border: "1px solid rgba(var(--fg, 255,255,255),0.06)" }}>
           <div className="flex items-center justify-between" style={{ marginBottom: 14 }}>
             <span className="flex items-center" style={{ gap: 6, fontSize: 13, fontWeight: 700, letterSpacing: "0.15em", color: EM }}><Icon name="mic" stroke={EM} style={{ width: 15, height: 15 }}/>LIVE CAPTION</span>
             <span style={{ fontSize: 12, color: MUTED_D }}>Ushul Fiqh · Qiyas</span>
           </div>
           <div className="flex-1 flex flex-col" style={{ gap: 12 }}>
             {LIVE_DEMO.map((s, i) => (
-              <div key={s.t} className="pr-pop" style={{ animationDelay: `${900 + i * 1500}ms`, borderRadius: 18, padding: "12px 14px", background: s.penting ? "rgba(201,168,106,0.09)" : "rgba(255,255,255,0.035)", border: `1px solid ${s.penting ? "rgba(201,168,106,0.55)" : "rgba(255,255,255,0.09)"}` }}>
+              <div key={s.t} className="pr-pop" style={{ animationDelay: `${900 + i * 1500}ms`, borderRadius: 18, padding: "12px 14px", background: s.penting ? "rgba(201,168,106,0.09)" : "rgba(var(--fg, 255,255,255),0.035)", border: `1px solid ${s.penting ? "rgba(201,168,106,0.55)" : "rgba(var(--fg, 255,255,255),0.09)"}` }}>
                 <div style={{ fontSize: 11, color: MUTED_D }}>{s.t}{s.penting && <span style={{ color: GOLD, marginLeft: 8 }}>★ Ditekankan duktur</span>}</div>
-                <Arabic style={{ fontSize: 19, color: "#fff", textAlign: "right", marginTop: 2 }}>{s.ar}</Arabic>
+                <Arabic style={{ fontSize: 19, color: "var(--t-1, #fff)", textAlign: "right", marginTop: 2 }}>{s.ar}</Arabic>
                 <div style={{ fontSize: 15, lineHeight: 1.35, color: "#A7EBC9", marginTop: 6 }}>{s.id}</div>
                 {s.istilah && (
                   <div className="flex flex-wrap" style={{ gap: 6, marginTop: 8 }}>
                     {s.istilah.map(([ar, arti]) => (
-                      <span key={ar} className="inline-flex items-center" style={{ gap: 6, padding: "3px 8px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.12)", fontSize: 12, color: MUTED_D }}>
-                        <span dir="rtl" style={{ fontFamily: ARABIC, fontSize: 15, color: "#fff" }}>{ar}</span>{arti}
+                      <span key={ar} className="inline-flex items-center" style={{ gap: 6, padding: "3px 8px", borderRadius: 8, border: "1px solid rgba(var(--fg, 255,255,255),0.12)", fontSize: 12, color: MUTED_D }}>
+                        <span dir="rtl" style={{ fontFamily: ARABIC, fontSize: 15, color: "var(--t-1, #fff)" }}>{ar}</span>{arti}
                       </span>
                     ))}
                   </div>
@@ -233,11 +233,11 @@ const LivePhone = ({ left, top }) => (
               </div>
             ))}
           </div>
-          <div className="flex items-center" style={{ gap: 12, marginTop: 12, padding: "10px 14px", borderRadius: 18, background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}>
+          <div className="flex items-center" style={{ gap: 12, marginTop: 12, padding: "10px 14px", borderRadius: 18, background: "rgba(0,0,0,0.4)", border: "1px solid rgba(var(--fg, 255,255,255),0.1)" }}>
             <span className="flex items-end" style={{ gap: 4, height: 22 }} aria-hidden="true">
               {[0, 0.25, 0.5, 0.15, 0.35].map((d, i) => <span key={i} className="pr-wave" style={{ width: 4, height: 22, borderRadius: 4, background: EM, animationDelay: `${d}s` }}/>)}
             </span>
-            <span className="pr-pulse" style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>Mendengarkan…</span>
+            <span className="pr-pulse" style={{ fontSize: 14, fontWeight: 600, color: "var(--t-1, #fff)" }}>Mendengarkan…</span>
             <span style={{ marginLeft: "auto", padding: "5px 10px", borderRadius: 10, border: "1px solid rgba(201,168,106,0.4)", fontSize: 13, color: "#E9D7AE" }}>Tandai</span>
             <span className="flex items-center justify-center" style={{ width: 40, height: 40, borderRadius: 99, background: "#f0715a", boxShadow: "0 0 0 5px rgba(240,113,90,0.18)" }}><span style={{ width: 13, height: 13, borderRadius: 3, background: "#fff" }}/></span>
           </div>
@@ -254,7 +254,7 @@ const buildSlides = (d) => [
       <BgDark/>
       <img src="/assets/talqeeh-logo.png" alt="Talqeeh" className="absolute" style={{ left: 96, top: 76, width: 104 }}/>
       <Kicker style={{ position: "absolute", left: 96, top: 214 }}>Teman belajar Masisir</Kicker>
-      <h1 className="absolute font-display" style={{ left: 96, top: 262, width: 860, margin: 0, fontSize: 88, lineHeight: 1.04, fontWeight: 800, letterSpacing: "-0.03em", color: "#fff" }}>
+      <h1 className="absolute font-display" style={{ left: 96, top: 262, width: 860, margin: 0, fontSize: 88, lineHeight: 1.04, fontWeight: 800, letterSpacing: "-0.03em", color: "var(--t-1, #fff)" }}>
         Muqarrar tebal?<br/><span className="pr-shine">Kini terasa ringan.</span>
       </h1>
       <p className="absolute" style={{ left: 96, top: 478, width: 760, margin: 0, fontSize: 31, lineHeight: 1.45, color: MUTED_D }}>Teman belajar AI yang dibentuk khusus untuk muqarrar dan cara ujian Al-Azhar, dari Ma'had sampai S2.</p>
@@ -285,7 +285,7 @@ const buildSlides = (d) => [
         </div>
       ))}
       <div className="absolute flex items-center" style={{ left: 80, right: 80, top: 610, height: 136, borderRadius: 22, background: NIGHT, padding: "0 48px", fontSize: 34 }}>
-        <span style={{ color: "#fff" }}>Masalahnya bukan kamu kurang rajin.&nbsp;</span><b style={{ color: EM }}>Alatnya yang belum dibuat untukmu.</b>
+        <span style={{ color: "var(--t-1, #fff)" }}>Masalahnya bukan kamu kurang rajin.&nbsp;</span><b style={{ color: EM }}>Alatnya yang belum dibuat untukmu.</b>
       </div>
     </>) },
 
@@ -318,7 +318,7 @@ const buildSlides = (d) => [
       <img src="/assets/talqeeh-logo.png" alt="Logo Talqeeh (تلقيح)" className="absolute" style={{ left: 283, top: 330, width: 250, filter: "drop-shadow(0 6px 24px rgba(0,0,0,0.45))" }}/>
       <div className="absolute" style={{ left: 800, top: 222, right: 80 }}>
         <Kicker>Filosofi nama</Kicker>
-        <div className="font-display" style={{ fontSize: 64, fontWeight: 800, color: "#fff", marginTop: 18, lineHeight: 1.05 }}>Menyuburkan <span className="pr-shine">pemahaman</span></div>
+        <div className="font-display" style={{ fontSize: 64, fontWeight: 800, color: "var(--t-1, #fff)", marginTop: 18, lineHeight: 1.05 }}>Menyuburkan <span className="pr-shine">pemahaman</span></div>
         <p style={{ fontSize: 29, color: MUTED_D, lineHeight: 1.5, marginTop: 30 }}>Talqīḥ berarti penyerbukan: proses yang membuat sesuatu tumbuh dan berbuah.</p>
         <p style={{ fontSize: 29, color: MUTED_D, lineHeight: 1.5, marginTop: 18 }}>Talqeeh tidak menggantikan duktur, kitab, atau talaqqi. Ia membuat ilmu yang kamu pelajari tumbuh lebih cepat dan berakar lebih kuat.</p>
       </div>
@@ -355,9 +355,9 @@ const buildSlides = (d) => [
         [d.prompts, "prompt racikan", "siap pakai per maddah, tingkat, dan tujuan"],
         [d.users, "Masisir", "sudah belajar bersama Talqeeh"],
         ["6", "metode belajar", "berbasis riset, langsung jadi fitur"]].map(([n, l, s], i) => (
-        <div key={l} className="absolute" style={{ left: 80 + i * 368, top: 280, width: 330, height: 360, borderLeft: i ? "1.5px solid rgba(255,255,255,0.2)" : "none", paddingLeft: i ? 40 : 0 }}>
+        <div key={l} className="absolute" style={{ left: 80 + i * 368, top: 280, width: 330, height: 360, borderLeft: i ? "1.5px solid rgba(var(--fg, 255,255,255),0.2)" : "none", paddingLeft: i ? 40 : 0 }}>
           <div className="font-display tabular-nums" style={{ fontSize: 104, fontWeight: 800, lineHeight: 1, color: i === 2 ? GOLD : EM, letterSpacing: "-0.03em" }}><CountUp value={n} delay={300 + i * 150}/></div>
-          <div style={{ fontSize: 34, fontWeight: 700, color: "#fff", marginTop: 40 }}>{l}</div>
+          <div style={{ fontSize: 34, fontWeight: 700, color: "var(--t-1, #fff)", marginTop: 40 }}>{l}</div>
           <div style={{ fontSize: 26, color: MUTED_D, marginTop: 14, lineHeight: 1.4 }}>{s}</div>
         </div>
       ))}
@@ -367,7 +367,7 @@ const buildSlides = (d) => [
     body: () => (<>
       <BgSection/>
       <div className="absolute font-display" style={{ left: 96, top: 230, fontSize: 104, fontWeight: 800, color: GOLD }}>02</div>
-      <div className="absolute font-display" style={{ left: 96, top: 370, fontSize: 86, fontWeight: 800, color: "#fff", lineHeight: 1.05 }}>Lihat apa yang<br/>bisa dilakukan</div>
+      <div className="absolute font-display" style={{ left: 96, top: 370, fontSize: 86, fontWeight: 800, color: "var(--t-1, #fff)", lineHeight: 1.05 }}>Lihat apa yang<br/>bisa dilakukan</div>
       <p className="absolute" style={{ left: 96, top: 570, width: 760, margin: 0, fontSize: 32, color: MUTED_D, lineHeight: 1.4 }}>Dari prompt per maddah sampai AI yang ikut mendengarkan kuliah duktur.</p>
       <Arabic style={{ position: "absolute", left: 1050, top: 360, width: 400, textAlign: "center", fontSize: 66, color: GOLD }}>المميزات</Arabic>
     </>) },
@@ -400,7 +400,7 @@ const buildSlides = (d) => [
       <Title>Unggah diktatmu. Sisanya, biar AI.</Title>
       <div className="absolute flex items-center" style={{ left: 80, width: 740, top: 196, height: 104, borderRadius: 99, background: NIGHT, padding: "0 24px", gap: 22 }}>
         <Badge icon="upload" v="darkEm" size={80}/>
-        <div style={{ fontSize: 24, lineHeight: 1.3 }}><b style={{ color: EM }}>PDF, scan, Word, slide, foto, rekaman</b><br/><span style={{ color: "#fff" }}>semua bisa, termasuk teks Arab</span></div>
+        <div style={{ fontSize: 24, lineHeight: 1.3 }}><b style={{ color: EM }}>PDF, scan, Word, slide, foto, rekaman</b><br/><span style={{ color: "var(--t-1, #fff)" }}>semua bisa, termasuk teks Arab</span></div>
       </div>
       {[["bookOpen", "Pahami", "Ringkasan gaya kitab, peta konsep, terjemah & i'rab"],
         ["refresh", "Hafalkan", "Flashcard yang muncul tepat sebelum kamu lupa"],
@@ -424,7 +424,7 @@ const buildSlides = (d) => [
       <BgDark/>
       <Title dark>Duktur bicara. Kamu langsung paham.</Title>
       <span className="absolute" style={{ left: 80, top: 200, padding: "10px 30px", borderRadius: 99, background: GOLD, color: NIGHT, fontSize: 21, fontWeight: 700, letterSpacing: "0.2em" }}>BARU · LIVE CAPTION</span>
-      <div className="absolute" style={{ left: 80, top: 270, width: 940, fontSize: 38, fontWeight: 700, color: "#fff" }}>Nggak keburu nyatet? Tetap paham.</div>
+      <div className="absolute" style={{ left: 80, top: 270, width: 940, fontSize: 38, fontWeight: 700, color: "var(--t-1, #fff)" }}>Nggak keburu nyatet? Tetap paham.</div>
       {[["mic", "Fokus mendengarkan", "Ucapan duktur langsung tertulis, fushah maupun 'ammiyah."],
         ["type", "Terjemah dalam hitungan detik", "Bahasa Indonesia yang mudah, istilah sulit dijelaskan."],
         ["star", "Tahu mana yang keluar di imtihan", "Saat duktur menekankan sesuatu, langsung ditandai."],
@@ -432,7 +432,7 @@ const buildSlides = (d) => [
         <div key={t} className="absolute flex items-center" style={{ left: 80, top: 360 + i * 110, gap: 28, width: 960 }}>
           <Badge icon={ic} v="darkEm" size={84}/>
           <div>
-            <div style={{ fontSize: 29, fontWeight: 700, color: "#fff" }}>{t}</div>
+            <div style={{ fontSize: 29, fontWeight: 700, color: "var(--t-1, #fff)" }}>{t}</div>
             <div style={{ fontSize: 24, color: MUTED_D, marginTop: 4 }}>{s}</div>
           </div>
         </div>
@@ -449,7 +449,7 @@ const buildSlides = (d) => [
       </div>
       <Title dark>Muraja'ah yang bikin nagih</Title>
       <div className="absolute" style={{ left: 1040, top: 210, right: 80 }}>
-        <p style={{ fontSize: 29, color: "#fff", lineHeight: 1.45, margin: 0 }}>Muqarrarmu berubah jadi petualangan. Raih syahadah di hadapan Majelis Ulama.</p>
+        <p style={{ fontSize: 29, color: "var(--t-1, #fff)", lineHeight: 1.45, margin: 0 }}>Muqarrarmu berubah jadi petualangan. Raih syahadah di hadapan Majelis Ulama.</p>
         {[["sparkles", "Soal disusun AI dari diktatmu"], ["star", "Cerita, level, bintang, misi"], ["gamepad", "3 dunia gratis untuk dicoba"]].map(([ic, t], i) => (
           <div key={t} className="flex items-center pr-pop" style={{ gap: 22, marginTop: 26, animationDelay: `${600 + i * 160}ms` }}>
             <Badge icon={ic} v="darkEm" size={66}/>
@@ -459,7 +459,7 @@ const buildSlides = (d) => [
       </div>
       <div className="absolute" style={{ left: 1040, right: 80, top: 662, padding: "22px 30px", borderRadius: 22, background: "#2A2414", border: `1.5px solid ${GOLD}` }}>
         <div style={{ fontSize: 26, fontWeight: 700, color: GOLD }}>Talkhis otomatis</div>
-        <div style={{ fontSize: 24, color: "#fff", marginTop: 6 }}>Muqarrar diringkas dalam bahasa Arab, siap cetak</div>
+        <div style={{ fontSize: 24, color: "var(--t-1, #fff)", marginTop: 6 }}>Muqarrar diringkas dalam bahasa Arab, siap cetak</div>
       </div>
     </>) },
 
@@ -490,7 +490,7 @@ const buildSlides = (d) => [
     body: () => (<>
       <BgSection/>
       <div className="absolute font-display" style={{ left: 96, top: 230, fontSize: 104, fontWeight: 800, color: GOLD }}>03</div>
-      <div className="absolute font-display" style={{ left: 96, top: 370, fontSize: 86, fontWeight: 800, color: "#fff", lineHeight: 1.05 }}>Mulai dalam<br/>lima menit</div>
+      <div className="absolute font-display" style={{ left: 96, top: 370, fontSize: 86, fontWeight: 800, color: "var(--t-1, #fff)", lineHeight: 1.05 }}>Mulai dalam<br/>lima menit</div>
       <p className="absolute" style={{ left: 96, top: 570, width: 760, margin: 0, fontSize: 32, color: MUTED_D, lineHeight: 1.4 }}>Dari login pertama sampai belajar dari diktatmu sendiri.</p>
       <Arabic style={{ position: "absolute", left: 1010, top: 365, width: 480, textAlign: "center", fontSize: 56, color: GOLD }}>طريقة الاستخدام</Arabic>
     </>) },
@@ -550,7 +550,7 @@ const buildSlides = (d) => [
         </Card>
       ))}
       <div className="absolute flex items-center" style={{ left: 80, right: 80, top: 704, height: 88, borderRadius: 99, background: NIGHT, padding: "0 46px", fontSize: 26 }}>
-        <b style={{ color: GOLD }}>Jatah Live Caption</b>&nbsp; <span style={{ color: "#fff" }}>8 jam per 30 hari · maksimal 3 jam per hari · mode Akurat dihitung 4×</span>
+        <b style={{ color: GOLD }}>Jatah Live Caption</b>&nbsp; <span style={{ color: "var(--t-1, #fff)" }}>8 jam per 30 hari · maksimal 3 jam per hari · mode Akurat dihitung 4×</span>
       </div>
     </>) },
 
@@ -595,12 +595,12 @@ const buildSlides = (d) => [
         <div key={t} className="absolute flex" style={{ left: 80 + (i % 2) * 736, top: 216 + Math.floor(i / 2) * 208, width: 690, gap: 30 }}>
           <Badge icon={ic} v="darkGold" size={106}/>
           <div>
-            <div style={{ fontSize: 32, fontWeight: 700, color: "#fff" }}>{t}</div>
+            <div style={{ fontSize: 32, fontWeight: 700, color: "var(--t-1, #fff)" }}>{t}</div>
             <div style={{ fontSize: 26, color: MUTED_D, marginTop: 10, lineHeight: 1.45 }}>{s}</div>
           </div>
         </div>
       ))}
-      <div className="absolute flex items-center" style={{ left: 80, right: 80, top: 648, height: 136, borderRadius: 22, background: "rgba(255,255,255,0.06)", border: "1.5px solid rgba(255,255,255,0.18)", padding: "0 48px", fontFamily: SERIF, fontStyle: "italic", fontSize: 29, lineHeight: 1.45, color: GOLD }}>
+      <div className="absolute flex items-center" style={{ left: 80, right: 80, top: 648, height: 136, borderRadius: 22, background: "rgba(var(--fg, 255,255,255),0.06)", border: "1.5px solid rgba(var(--fg, 255,255,255),0.18)", padding: "0 48px", fontFamily: SERIF, fontStyle: "italic", fontSize: 29, lineHeight: 1.45, color: GOLD }}>
         Talqeeh adalah alat bantu, bukan pengganti talaqqi dan muthala'ah. Hasil AI tetap dicek dengan kitab dan penjelasan masyaikh.
       </div>
     </>) },
@@ -610,19 +610,19 @@ const buildSlides = (d) => [
       <BgDark/>
       <img src="/assets/talqeeh-logo.png" alt="Talqeeh" className="absolute" style={{ left: 96, top: 76, width: 104 }}/>
       <Kicker style={{ position: "absolute", left: 96, top: 214 }}>Jazakumullahu khairan</Kicker>
-      <div className="absolute font-display" style={{ left: 96, top: 262, width: 900, fontSize: 62, lineHeight: 1.1, fontWeight: 800, letterSpacing: "-0.02em", color: "#fff" }}>
+      <div className="absolute font-display" style={{ left: 96, top: 262, width: 900, fontSize: 62, lineHeight: 1.1, fontWeight: 800, letterSpacing: "-0.02em", color: "var(--t-1, #fff)" }}>
         Muqarrarnya tetap sama.<br/><span className="pr-shine">Caramu memahaminya, tidak.</span>
       </div>
       <p className="absolute" style={{ left: 96, top: 440, width: 820, margin: 0, fontSize: 31, color: MUTED_D, lineHeight: 1.45 }}>Coba gratis hari ini: Nahwu + 1 maddah pilihan, dan AI Partner untuk 1 materi.</p>
       {[["compass", "talqeeh.id"], ["messageSquare", "WhatsApp admin: +62 813-1150-6025"], ["users", "Instagram AIGYPT: @ai.gypt"]].map(([ic, t], i) => (
-        <div key={t} className="absolute flex items-center" style={{ left: 96, top: 610 + i * 56, gap: 18, fontSize: 26, color: "#fff" }}>
+        <div key={t} className="absolute flex items-center" style={{ left: 96, top: 610 + i * 56, gap: 18, fontSize: 26, color: "var(--t-1, #fff)" }}>
           <Icon name={ic} stroke={GOLD} style={{ width: 34, height: 34 }}/>{t}
         </div>
       ))}
       <Ornament size={600} left={980} top={110}/>
       <div className="absolute flex flex-col items-center" style={{ left: 1130, top: 250, width: 300 }}>
         <div style={{ padding: 14, borderRadius: 26, background: "#fff", boxShadow: "0 20px 60px rgba(0,0,0,0.5)" }}><Qr size={272}/></div>
-        <div style={{ marginTop: 22, fontSize: 25, fontWeight: 700, color: "#fff" }}>Scan & coba gratis</div>
+        <div style={{ marginTop: 22, fontSize: 25, fontWeight: 700, color: "var(--t-1, #fff)" }}>Scan & coba gratis</div>
         <div style={{ marginTop: 4, fontSize: 21, color: GOLD }}>talqeeh.id</div>
       </div>
     </>) },
@@ -721,7 +721,7 @@ const PresentasiPage = () => {
         <div className="flex-1 flex gap-1 items-center min-w-0">
           {slides.map((s, i) => (
             <button key={s.key} onClick={() => go(i)} aria-label={"Ke slide " + (i + 1)} className="group flex-1 h-5 flex items-center">
-              <span className="block w-full h-[3px] rounded-full transition-all group-hover:h-[5px]" style={{ background: i <= idx ? EM : "rgba(255,255,255,0.14)" }}/>
+              <span className="block w-full h-[3px] rounded-full transition-all group-hover:h-[5px]" style={{ background: i <= idx ? EM : "rgba(var(--fg, 255,255,255),0.14)" }}/>
             </button>
           ))}
         </div>

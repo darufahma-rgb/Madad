@@ -146,7 +146,7 @@ const LevelBars =({ level, active }) => (
   <span className="inline-flex items-end gap-[3px] h-4" aria-hidden="true">
     {[0.35, 0.7, 1, 0.6, 0.3].map((k, i) => (
       <span key={i} className="w-[3px] rounded-full transition-all duration-100"
-        style={{ height: `${Math.max(18, (active ? level * k : 0) * 100)}%`, background: active ? '#3ecf8e' : 'rgba(255,255,255,0.25)' }}/>
+        style={{ height: `${Math.max(18, (active ? level * k : 0) * 100)}%`, background: active ? '#3ecf8e' : 'rgba(var(--fg, 255,255,255),0.25)' }}/>
     ))}
   </span>
 );
@@ -795,7 +795,7 @@ const LiveCaptionBody = () => {
           desktop, dan di HP berada di atas bottom nav (60px). */}
       <div className="sticky z-30 mt-6 bottom-[calc(72px+env(safe-area-inset-bottom))] md:bottom-4">
         <div>
-          <div className="rounded-2xl border border-white/10 shadow-2xl shadow-black/40 px-4 py-3 flex items-center gap-3" style={{ background: 'rgba(16,18,17,0.96)' }}>
+          <div className="rounded-2xl border border-white/10 shadow-2xl shadow-black/40 px-4 py-3 flex items-center gap-3" style={{ background: 'rgba(var(--surf, 16,18,17),0.96)' }}>
             <LevelBars level={mic.level} active={mic.recording}/>
             <div className="min-w-0">
               <div className="text-sm font-semibold text-ink tabular-nums">{clock(elapsed)}</div>

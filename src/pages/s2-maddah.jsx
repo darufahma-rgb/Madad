@@ -183,7 +183,7 @@ const FootnoteFields = ({ values, onChange }) => {
             className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-ink outline-none transition-colors"
             style={{fontSize:16}}
             onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-            onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+            onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}
           />
         </div>
       ))}
@@ -412,7 +412,7 @@ const S2MaddahPage = () => {
                 className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink outline-none transition-colors"
                 style={{fontSize:16}}
                 onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+                onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}
               />
               {topikInput.trim().length > 0 && topikInput.trim().split(" ").length < 2 && (
                 <p className="text-xs text-amber-400 mt-1">
@@ -423,7 +423,7 @@ const S2MaddahPage = () => {
 
             {/* Preview + Actions */}
             <div className="card-glass p-5">
-              <div className="p-3 rounded-xl mb-4" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
+              <div className="p-3 rounded-xl mb-4" style={{background:"rgba(var(--fg, 255,255,255),0.03)",border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
                 <div className="text-xs text-ink-soft mb-1">Preview prompt:</div>
                 <p className="text-xs text-ink-muted leading-relaxed font-mono line-clamp-4 whitespace-pre-wrap">
                   {promptPreview}{promptPreview.length >= 300 ? "..." : ""}
@@ -470,7 +470,7 @@ const S2MaddahPage = () => {
                 className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink outline-none transition-colors"
                 style={{fontSize:16}}
                 onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+                onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}
               />
             </div>
 
@@ -503,7 +503,7 @@ const S2MaddahPage = () => {
                   className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink outline-none transition-colors resize-none"
                   style={{fontSize:16, minHeight:100}}
                   onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-                  onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+                  onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}
                 />
               </div>
             )}
@@ -521,7 +521,7 @@ const S2MaddahPage = () => {
                   className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink outline-none transition-colors"
                   style={{fontSize:16}}
                   onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-                  onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+                  onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}
                 />
               </div>
             )}
@@ -536,7 +536,7 @@ const S2MaddahPage = () => {
 
             {/* Preview + Actions */}
             <div className="card-glass p-5 border border-gold-500/15">
-              <div className="p-3 rounded-xl mb-4" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
+              <div className="p-3 rounded-xl mb-4" style={{background:"rgba(var(--fg, 255,255,255),0.03)",border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
                 <div className="text-xs text-ink-soft mb-1">Preview prompt:</div>
                 <p className="text-xs text-ink-muted leading-relaxed font-mono line-clamp-4 whitespace-pre-wrap">
                   {promptPreview}{promptPreview.length >= 300 ? "..." : ""}

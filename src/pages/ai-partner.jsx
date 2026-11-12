@@ -474,7 +474,7 @@ const Composer = ({ tier, trial, onUpload }) => {
             </button>
             <button onClick={submit} disabled={!text.trim()} aria-label="Kirim"
               className="ml-auto w-9 h-9 rounded-xl flex items-center justify-center transition-colors disabled:opacity-40"
-              style={{ background: text.trim() ? '#3ecf8e' : 'rgba(255,255,255,0.08)' }}>
+              style={{ background: text.trim() ? '#3ecf8e' : 'rgba(var(--fg, 255,255,255),0.08)' }}>
               <Icon name="arrowRight" className="w-4 h-4" style={{ stroke: text.trim() ? '#0b0b0b' : 'currentColor' }}/>
             </button>
           </div>
@@ -534,7 +534,7 @@ const RecentChats = () => {
               </div>
             </button>
             {confirmId === t.id ? (
-              <div className="absolute inset-0 rounded-xl flex items-center justify-between gap-2 px-3.5" style={{ background: 'rgba(20,20,20,0.96)' }}>
+              <div className="absolute inset-0 rounded-xl flex items-center justify-between gap-2 px-3.5" style={{ background: 'rgba(var(--surf, 20,20,20),0.96)' }}>
                 <span className="text-xs text-ink-muted">Hapus percakapan ini?</span>
                 <span className="flex gap-1.5 flex-shrink-0">
                   <button onClick={() => setConfirmId(null)} className="text-xs px-3 py-1.5 rounded-lg text-ink-soft hover:text-ink">Batal</button>
@@ -701,7 +701,7 @@ const AiPartnerDetail = ({ setId, status }) => {
 
       {/* Stepper alur belajar — di HP menempel di bawah top bar supaya pindah tahap tanpa menggulir ke atas */}
       <div className="sticky md:static z-20 -mx-4 px-4 md:mx-0 md:px-0 py-2 md:py-0 mb-3 md:mb-5 border-b border-white/[0.06] md:border-0"
-        style={narrow ? { top: 'calc(56px + var(--safe-top, 0px))', background: '#0c0c0c' } : undefined}>
+        style={narrow ? { top: 'calc(56px + var(--safe-top, 0px))', background: 'var(--bg-0, #0c0c0c)' } : undefined}>
       <div className="grid grid-cols-4 gap-1.5 md:gap-2">
         {STUDY_STEPS.map((s, i) => {
           const active = step === s.id;

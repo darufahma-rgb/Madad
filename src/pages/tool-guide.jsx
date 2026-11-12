@@ -199,7 +199,7 @@ const SingleToolGuide = ({ toolId, profile }) => {
               </Reveal>
 
               {/* Starter prompt */}
-              <Reveal className="rounded-2xl overflow-hidden" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
+              <Reveal className="rounded-2xl overflow-hidden" style={{border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
                 <div className="flex items-center justify-between px-5 py-3 border-b border-line" style={{background:"rgba(62,207,142,0.12)"}}>
                   <div className="text-xs uppercase tracking-wider text-gold-400 flex items-center gap-2">
                     <Icon name="cpu" className="w-3.5 h-3.5"/> Starter prompt

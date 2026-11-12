@@ -59,13 +59,13 @@ const ViewColumn = ({ view, isMobile }) => {
   );
 
   if (!isMobile) return (
-    <div className="card-glass rounded-xl p-6 h-full" style={{border:"1px solid rgba(255,255,255,0.08)",borderTop:"2px solid rgba(201,168,106,0.2)"}}>
+    <div className="card-glass rounded-xl p-6 h-full" style={{border:"1px solid rgba(var(--fg, 255,255,255),0.08)",borderTop:"2px solid rgba(201,168,106,0.2)"}}>
       {content}
     </div>
   );
 
   return (
-    <div className="card-glass rounded-xl overflow-hidden" style={{border:"1px solid rgba(255,255,255,0.08)",borderTop:"2px solid rgba(201,168,106,0.2)"}}>
+    <div className="card-glass rounded-xl overflow-hidden" style={{border:"1px solid rgba(var(--fg, 255,255,255),0.08)",borderTop:"2px solid rgba(201,168,106,0.2)"}}>
       <button
         onClick={() => setCollapsed(!collapsed)}
         className="w-full flex items-center justify-between p-4 text-left">
@@ -275,7 +275,7 @@ Tolong bantu aku merenungkan mas'alah ini dengan adab thalib:
           {/* Titik Perbedaan */}
           {entry.notes && (
             <Reveal className="mt-12">
-              <div className="card-glass-strong p-7 rounded-xl" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
+              <div className="card-glass-strong p-7 rounded-xl" style={{border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-1 h-10 rounded-full bg-gradient-to-b from-emerald-400 to-gold-400/60"/>
                   <div>

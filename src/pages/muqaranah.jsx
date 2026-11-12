@@ -121,8 +121,8 @@ const MuqaranahPage = () => {
                 onChange={e => setSearch(e.target.value)}
                 placeholder="Cari masalah, ulama, atau kitab..."
                 className="w-full pl-11 pr-4 py-3.5 bg-white/4 border border-white/10 rounded-xl text-sm text-ink placeholder-ink-soft outline-none transition-all"
-                onFocus={e => { e.target.style.borderColor="rgba(62,207,142,0.45)"; e.target.style.background="rgba(255,255,255,0.06)"; }}
-                onBlur={e => { e.target.style.borderColor="rgba(255,255,255,0.10)"; e.target.style.background="rgba(255,255,255,0.04)"; }}
+                onFocus={e => { e.target.style.borderColor="rgba(62,207,142,0.45)"; e.target.style.background="rgba(var(--fg, 255,255,255),0.06)"; }}
+                onBlur={e => { e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"; e.target.style.background="rgba(var(--fg, 255,255,255),0.04)"; }}
               />
             </div>
           </Reveal>

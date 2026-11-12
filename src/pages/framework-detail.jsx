@@ -184,7 +184,7 @@ const FrameworkDetailPage = () => {
               Salin prompt ini ke AI favoritmu (ChatGPT, Claude, Gemini), lalu ganti bagian [DALAM KURUNG] sesuai materimu.
             </p>
             <div className="p-3 rounded-xl mb-3 text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap"
-                 style={{background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)"}}>
+                 style={{background:"rgba(var(--fg, 255,255,255),0.03)", border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
               {fw.aiPrompt}
             </div>
             <CopyButton

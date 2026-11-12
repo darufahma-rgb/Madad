@@ -200,6 +200,7 @@ const SidebarContent = ({ collapsed, onToggle, onNavigate, onClose, mobile }) =>
         {collapsed ? (
           <div className="flex flex-col items-center gap-1">
             <div title={`${session?.name || ''}${session?.email ? ` · ${session.email}` : ''} · ${tierLabel}`}><Avatar name={session?.name} size={34}/></div>
+            <ThemeToggle compact className="w-11 h-9 rounded-xl"/>
             <button onClick={() => (confirmLogout ? logout() : setConfirmLogout(true))} title={confirmLogout ? 'Klik lagi untuk keluar' : 'Logout'}
               className={`w-11 h-9 rounded-xl flex items-center justify-center ${confirmLogout ? 'bg-rose-500/15 text-rose-400' : 'text-ink-soft hover:text-ink hover:bg-white/5'}`}>
               <Icon name="logout" className="w-4 h-4" style={{ stroke: 'currentColor' }}/>
@@ -220,6 +221,7 @@ const SidebarContent = ({ collapsed, onToggle, onNavigate, onClose, mobile }) =>
               {session?.email && <div className="text-[11px] text-ink-muted break-all leading-snug" title={session.email}>{session.email}</div>}
               <div className="text-[11px] truncate" style={{ color: isFree ? '#c9a86a' : '#3ecf8e' }}>{tierLabel}</div>
             </div>
+            <ThemeToggle compact/>
             <button onClick={() => setConfirmLogout(true)} title="Logout" className="w-8 h-8 rounded-lg flex items-center justify-center text-ink-soft hover:text-ink hover:bg-white/5">
               <Icon name="logout" className="w-4 h-4" style={{ stroke: 'currentColor' }}/>
             </button>
@@ -244,13 +246,13 @@ const ShellTabBar = ({ onMenu, menuOpen }) => {
   const Tab = ({ label, icon, active, onClick }) => (
     <button onClick={onClick} className="flex-1 flex flex-col items-center justify-center gap-1 relative">
       {active && <span className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-[3px] rounded-b-full" style={{ background: '#3ecf8e' }}/>}
-      <Icon name={icon} className="w-5 h-5" style={{ stroke: active ? '#3ecf8e' : 'rgba(255,255,255,0.45)' }}/>
-      <span className={`text-[10px] leading-none ${active ? 'font-semibold' : ''}`} style={{ color: active ? '#3ecf8e' : 'rgba(255,255,255,0.45)' }}>{label}</span>
+      <Icon name={icon} className="w-5 h-5" style={{ stroke: active ? '#3ecf8e' : 'rgba(var(--fg, 255,255,255),0.45)' }}/>
+      <span className={`text-[10px] leading-none ${active ? 'font-semibold' : ''}`} style={{ color: active ? '#3ecf8e' : 'rgba(var(--fg, 255,255,255),0.45)' }}>{label}</span>
     </button>
   );
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-[100] border-t"
-      style={{ background: 'rgba(12,12,12,0.94)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTopColor: 'rgba(255,255,255,0.08)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+      style={{ background: 'rgba(var(--surf, 12,12,12),0.94)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTopColor: 'rgba(var(--fg, 255,255,255),0.08)', paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="flex items-stretch" style={{ height: 60 }}>
         {tabs.map(t => <Tab key={t.label} {...t} active={t.active && !menuOpen} onClick={() => navigate(t.to)}/>)}
         <Tab label="Menu" icon="menu" active={menuOpen} onClick={onMenu}/>
@@ -294,7 +296,7 @@ const AppShell = ({ title, children }) => {
     <div className="min-h-screen">
       {/* Sidebar desktop */}
       <aside className="hidden md:block fixed top-0 left-0 bottom-0 z-40 border-r border-white/[0.06] transition-[width] duration-200"
-        style={{ width: sidebarW, background: 'linear-gradient(180deg, rgba(20,20,20,0.98), rgba(12,12,12,0.98))' }}>
+        style={{ width: sidebarW, background: 'linear-gradient(180deg, rgba(var(--surf, 20,20,20),0.98), rgba(var(--surf, 12,12,12),0.98))' }}>
         <SidebarContent collapsed={collapsed} onToggle={isWide ? toggle : null}/>
       </aside>
 
@@ -303,7 +305,7 @@ const AppShell = ({ title, children }) => {
         <div className="fixed inset-0 z-[110]">
           <div className="absolute inset-0 bg-night-950/70 backdrop-blur-sm modal-back" onClick={() => setDrawerOpen(false)}/>
           <aside className="absolute top-0 left-0 bottom-0 w-[84%] max-w-[300px] border-r border-white/[0.08] drawer-enter"
-            style={{ background: '#111', paddingTop: 'var(--safe-top)', paddingBottom: 'var(--safe-bottom)' }}>
+            style={{ background: 'var(--bg-1, #111)', paddingTop: 'var(--safe-top)', paddingBottom: 'var(--safe-bottom)' }}>
             <SidebarContent mobile onClose={() => setDrawerOpen(false)} onNavigate={() => setDrawerOpen(false)}/>
           </aside>
         </div>

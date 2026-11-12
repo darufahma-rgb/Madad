@@ -77,7 +77,7 @@ const S2SetupStep = ({ profile, onSave }) => {
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink outline-none transition-colors"
                 style={{fontSize: 16, borderRadius: 12}}
                 onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.50)"}
-                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+                onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}
               />
             </div>
             <div>
@@ -92,7 +92,7 @@ const S2SetupStep = ({ profile, onSave }) => {
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink outline-none transition-colors"
                 style={{fontSize: 16, borderRadius: 12}}
                 onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.50)"}
-                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+                onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}
               />
               <p className="text-[11px] text-ink-soft/60 mt-1">
                 AI akan menyesuaikan penjelasan berdasarkan kitab ini
@@ -541,7 +541,7 @@ const OverlayFrame = ({ firstName, children }) => (
   <div className="fixed inset-0 z-[130] overflow-y-auto" style={{ background: "rgba(8,8,8,0.78)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}>
     <div className="min-h-full flex items-start md:items-center justify-center p-3 md:p-8">
       <div className="page-enter w-full max-w-3xl rounded-3xl border border-white/10 shadow-2xl shadow-black/60 p-5 md:p-8"
-        style={{ background: "linear-gradient(180deg, #171717, #111)" }}>
+        style={{ background: "linear-gradient(180deg, var(--bg-2, #171717), var(--bg-1, #111))" }}>
         <div className="flex items-center gap-3 mb-6">
           <LogoMark size={36}/>
           <div className="min-w-0">
@@ -570,9 +570,9 @@ const UpgradeOfferModal = ({ onClose }) => {
   const go = (plan) => { clearUpgradeOffer(); onClose(); navigate(`/gabung?plan=${plan}`); };
   const later = () => { clearUpgradeOffer(); onClose(); };
   const plans = [
-    { plan: "library", title: "Library", price: LIBRARY_PRICE, note: "sekali bayar · selamanya", color: "#c9a86a",
+    { plan: "library", title: "Library", price: LIBRARY_PRICE, note: "sekali bayar · selamanya", color: "var(--a-gold, #c9a86a)",
       items: LIBRARY_FEATURES.slice(0, 4), cta: "Pilih Library" },
-    { plan: "imtihan", title: "Paket Imtihan", color: "#3ecf8e", recommended: true,
+    { plan: "imtihan", title: "Paket Imtihan", color: "var(--a-green, #3ecf8e)", recommended: true,
       price: formatRupiah(imtihan.total), note: "sekali bayar",
       tagline: `Library selamanya + AI Study Partner ${IMTIHAN_AI_DAYS} hari`,
       imtihan,
@@ -588,7 +588,7 @@ const UpgradeOfferModal = ({ onClose }) => {
     <div className="fixed inset-0 z-[130] overflow-y-auto" style={{ background: "rgba(8,8,8,0.78)", backdropFilter: "blur(6px)", WebkitBackdropFilter: "blur(6px)" }}>
       <div className="min-h-full flex items-start md:items-center justify-center p-3 md:p-8">
         <div className="page-enter w-full max-w-3xl rounded-3xl border border-white/10 shadow-2xl shadow-black/60 p-5 md:p-8"
-          style={{ background: "linear-gradient(180deg, #171717, #111)" }}>
+          style={{ background: "linear-gradient(180deg, var(--bg-2, #171717), var(--bg-1, #111))" }}>
           <div className="text-center mb-6">
             <div className="text-xs uppercase tracking-[0.2em] text-gold-400 mb-2">Profilmu sudah siap ✦</div>
             <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink leading-tight">Mau buka semua fitur Talqeeh?</h2>
@@ -709,12 +709,12 @@ const QuestionStep = ({ question, options, value, onPick, mahadJenjang, onClearJ
           if (opt.isSeparator) {
             return (
               <div key={opt.id} className="col-span-full flex items-center gap-3 mt-3 mb-1">
-                <div className="h-px flex-1" style={{background:"rgba(255,255,255,0.08)"}}/>
+                <div className="h-px flex-1" style={{background:"rgba(var(--fg, 255,255,255),0.08)"}}/>
                 <span className="text-[10px] uppercase tracking-[0.2em] font-semibold"
                   style={{color:"rgba(201,168,106,0.65)"}}>
                   {opt.label}
                 </span>
-                <div className="h-px flex-1" style={{background:"rgba(255,255,255,0.08)"}}/>
+                <div className="h-px flex-1" style={{background:"rgba(var(--fg, 255,255,255),0.08)"}}/>
               </div>
             );
           }

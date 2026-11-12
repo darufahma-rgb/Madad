@@ -44,8 +44,8 @@ const LANDING_STYLES = `
 
   .btn-hero-dark {
     display:inline-flex; align-items:center; gap:8px;
-    background: rgba(255,255,255,0.08);
-    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(var(--fg, 255,255,255),0.08);
+    border: 1px solid rgba(var(--fg, 255,255,255),0.2);
     color: white;
     font-weight: 500;
     padding: 16px 32px;
@@ -55,7 +55,7 @@ const LANDING_STYLES = `
     transition: background .2s ease;
     white-space: nowrap;
   }
-  .btn-hero-dark:hover { background: rgba(255,255,255,0.15); }
+  .btn-hero-dark:hover { background: rgba(var(--fg, 255,255,255),0.15); }
 `;
 
 const StyleInject = () => {
@@ -111,9 +111,9 @@ const HeroCard = () => (
     <div
       className="rounded-[20px] p-7 relative overflow-hidden"
       style={{
-        background: "rgba(255,255,255,0.06)",
+        background: "rgba(var(--fg, 255,255,255),0.06)",
         backdropFilter: "blur(16px)",
-        border: "1px solid rgba(255,255,255,0.12)",
+        border: "1px solid rgba(var(--fg, 255,255,255),0.12)",
         boxShadow: "0 0 60px rgba(139,92,246,0.20), 0 24px 48px rgba(0,0,0,0.35)",
         width: "100%",
         maxWidth: "360px",
@@ -218,7 +218,7 @@ const UserCountBadge = () => {
   if (!Number.isFinite(count) || count <= 0) return null;
   return (
     <div className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 mb-6 text-sm"
-      style={{ background: "rgba(62,207,142,0.08)", border: "1px solid rgba(62,207,142,0.25)", color: "rgba(255,255,255,0.78)" }}>
+      style={{ background: "rgba(62,207,142,0.08)", border: "1px solid rgba(62,207,142,0.25)", color: "rgba(var(--fg, 255,255,255),0.78)" }}>
       <Icon name="users" className="w-4 h-4 text-emerald-300 flex-shrink-0"/>
       <span><span className="font-semibold text-emerald-200">{count.toLocaleString('id-ID')}+ Masisir</span> sudah pakai Talqeeh</span>
     </div>
@@ -236,7 +236,7 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
     <GlowBlob color="rgba(201,168,106,0.08)" size={500} top={300} right={-150}/>
     {/* Radial vignette — fokus ke tengah */}
     <div className="absolute inset-0 pointer-events-none" style={{
-      background: "radial-gradient(ellipse 75% 65% at 50% 40%, transparent 25%, rgba(12,12,12,0.45) 100%)"
+      background: "radial-gradient(ellipse 75% 65% at 50% 40%, transparent 25%, rgba(var(--surf, 12,12,12),0.45) 100%)"
     }}/>
 
     <div className="container-x relative">
@@ -266,7 +266,7 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
         <Reveal delay={90}>
           <button onClick={() => document.getElementById("pustaka-rujukan")?.scrollIntoView({ behavior: "smooth", block: "start" })}
             className="inline-flex items-center gap-2 rounded-full pl-1.5 pr-3.5 py-1.5 mb-6 text-sm transition hover:bg-white/[0.06]"
-            style={{ border: "1px solid rgba(201,168,106,0.35)", background: "rgba(201,168,106,0.07)", color: "rgba(255,255,255,0.82)" }}>
+            style={{ border: "1px solid rgba(201,168,106,0.35)", background: "rgba(201,168,106,0.07)", color: "rgba(var(--fg, 255,255,255),0.82)" }}>
             <span className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider shrink-0" style={{ background: "#C9A86A", color: "#141414" }}>Segera hadir</span>
             <span className="text-left">Tanya AI dengan rujukan kitab</span>
             <Icon name="arrowRight" className="w-3.5 h-3.5 text-gold-300 flex-shrink-0"/>
@@ -296,7 +296,7 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
 
         {/* Sub-headline */}
         <Reveal delay={180}>
-          <p className="text-lg md:text-xl mb-10 max-w-xl" style={{ color:"rgba(255,255,255,0.62)", lineHeight:1.65 }}>
+          <p className="text-lg md:text-xl mb-10 max-w-xl" style={{ color:"rgba(var(--fg, 255,255,255),0.62)", lineHeight:1.65 }}>
             Template prompt siap pakai untuk {CATALOG.maddah} maddah Al-Azhar, plus AI Partner yang
             menerjemahkan kuliah duktur secara langsung dan mengubah diktat serta slide-mu jadi ringkasan, flashcard, kuis, dan i'rab.
             Untuk Masisir dari Ma'had, Darul Lughoh (DL), sampai S2.
@@ -338,11 +338,11 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
 
         {/* Login link */}
         <Reveal delay={300}>
-          <div className="mb-10 text-sm" style={{ color:"rgba(255,255,255,0.42)" }}>
+          <div className="mb-10 text-sm" style={{ color:"rgba(var(--fg, 255,255,255),0.42)" }}>
             Sudah member?{" "}
             <button
               onClick={onOpenLogin}
-              style={{ color:"#3ecf8e", textDecoration:"underline", textUnderlineOffset:"3px", background:"none", border:"none", cursor:"pointer", fontSize:"14px", padding:"10px 4px", margin:"-10px -4px" }}
+              style={{ color:"var(--a-green, #3ecf8e)", textDecoration:"underline", textUnderlineOffset:"3px", background:"none", border:"none", cursor:"pointer", fontSize:"14px", padding:"10px 4px", margin:"-10px -4px" }}
             >
               Masuk dengan Google
             </button>
@@ -353,7 +353,7 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
         <Reveal delay={340}>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-2 md:mb-16">
             {[`${CATALOG.maddah} maddah (S1 + Ma'had)`, `${CATALOG.prompts} template prompt`, "Library sekali bayar, selamanya", `AI Partner: paket 1 bulan atau Paket Imtihan ${IMTIHAN_AI_DAYS} hari`].map((t, i) => (
-              <span key={i} className="flex items-center gap-2 text-xs" style={{ color:"rgba(255,255,255,0.42)" }}>
+              <span key={i} className="flex items-center gap-2 text-xs" style={{ color:"rgba(var(--fg, 255,255,255),0.42)" }}>
                 <Icon name="check" className="w-3.5 h-3.5 text-gold-400 flex-shrink-0"/>{t}
               </span>
             ))}
@@ -398,7 +398,7 @@ const SampleMaddahSection = () => (
               <span className="chip-glass text-[10px] flex-shrink-0">GRATIS</span>
             </div>
             <div className="mb-6 p-4 rounded-xl" style={{background:"rgba(62,207,142,0.06)",border:"1px solid rgba(62,207,142,0.15)"}}>
-              <div className="text-xs uppercase tracking-wider mb-2 font-medium" style={{color:"#3ecf8e"}}>AI yang direkomendasikan</div>
+              <div className="text-xs uppercase tracking-wider mb-2 font-medium" style={{color:"var(--a-green, #3ecf8e)"}}>AI yang direkomendasikan</div>
               <div className="flex items-center gap-3 text-sm text-ink">
                 <span className="font-semibold">NotebookLM</span>
                 <span className="text-ink-soft">+</span>
@@ -407,7 +407,7 @@ const SampleMaddahSection = () => (
             </div>
             <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-5">
               {[{n:4,l:"Pahami"},{n:3,l:"Hafal"},{n:3,l:"Latihan"},{n:2,l:"Ujian"},{n:2,l:"Talaqqi"},{n:3,l:"Eksplor"}].map((c,i)=>(
-                <div key={i} className="text-center p-3 rounded-xl" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
+                <div key={i} className="text-center p-3 rounded-xl" style={{background:"rgba(var(--fg, 255,255,255),0.03)",border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
                   <div className="font-display text-xl text-ink font-semibold">{c.n}</div>
                   <div className="text-[10px] text-ink-soft uppercase tracking-wider mt-1">{c.l}</div>
                 </div>
@@ -549,7 +549,7 @@ const AllMaddahPreview = () => {
                     <div className="arabic-display text-gold-300 text-xl md:text-2xl mb-1" style={{direction:"rtl"}}>{f.arabic}</div>
                     <h3 className="font-display text-sm md:text-lg font-semibold text-ink leading-snug">{f.label}</h3>
                   </div>
-                  <span className="text-[10px] md:text-xs px-2 py-0.5 md:py-1 rounded font-medium flex-shrink-0 md:ml-2" style={{background:"rgba(62,207,142,0.10)",color:"#3ecf8e",border:"1px solid rgba(62,207,142,0.20)"}}>
+                  <span className="text-[10px] md:text-xs px-2 py-0.5 md:py-1 rounded font-medium flex-shrink-0 md:ml-2" style={{background:"rgba(62,207,142,0.10)",color:"var(--a-green, #3ecf8e)",border:"1px solid rgba(62,207,142,0.20)"}}>
                     {f.count} Maddah
                   </span>
                 </div>
@@ -586,42 +586,42 @@ const TestimoniSection = () => {
       name: "Member Talqeeh",
       info: "Al-Azhar Cairo",
       initial: "M",
-      color: "#3ecf8e",
+      color: "var(--a-green, #3ecf8e)",
     },
     {
       text: "Sangat terbantu dengan urutan maddah, contoh prompt dan rekomendasi AI yang digunakan. Untuk latihan melalui Claude sangat bermanfaat dan nyaman.",
       name: "Member Talqeeh",
       info: "Al-Azhar Cairo",
       initial: "M",
-      color: "#a78bfa",
+      color: "var(--a-violet, #a78bfa)",
     },
     {
       text: "Inovasi tanpa henti, klass! Big applause untuk seluruh tim Talqeeh.",
       name: "Member Talqeeh",
       info: "Al-Azhar Cairo",
       initial: "M",
-      color: "#fbbf24",
+      color: "var(--a-amber, #fbbf24)",
     },
     {
       text: "Sangat membantu, apalagi di musim imtihan termin ini. Walaupun masih awam sama AI tapi udah mulai belajar dikit-dikit berkat Talqeeh.",
       name: "Member Talqeeh",
       info: "Al-Azhar Cairo",
       initial: "M",
-      color: "#3ecf8e",
+      color: "var(--a-green, #3ecf8e)",
     },
     {
       text: "Setiap prompt yang disediakan Talqeeh langsung menjelaskan materi yang kita perlukan, dengan penjelasan yang mudah.",
       name: "Member Talqeeh",
       info: "Al-Azhar Cairo",
       initial: "M",
-      color: "#f97316",
+      color: "var(--a-amber, #f97316)",
     },
     {
       text: "Alhamdulillah Talqeeh bisa membantu dalam proses belajar. Prompt-nya lengkap dan sesuai dengan kebutuhan mahasiswa Azhar.",
       name: "Member Talqeeh",
       info: "Al-Azhar Cairo",
       initial: "M",
-      color: "#a78bfa",
+      color: "var(--a-violet, #a78bfa)",
     },
   ];
 
@@ -650,8 +650,8 @@ const TestimoniSection = () => {
           >
             {testimonials.map((t, i) => (
               <div key={i} className="testimonial-card" style={{
-                background: '#111',
-                border: '1px solid rgba(255,255,255,0.07)',
+                background: 'var(--bg-1, #111)',
+                border: '1px solid rgba(var(--fg, 255,255,255),0.07)',
                 borderRadius: 16,
                 padding: '20px 20px 16px',
                 display: 'flex',
@@ -673,21 +673,21 @@ const TestimoniSection = () => {
 
                 <div style={{ display: 'flex', gap: 3 }}>
                   {[1,2,3,4,5].map(s => (
-                    <span key={s} style={{ color: '#fbbf24', fontSize: 12 }}>★</span>
+                    <span key={s} style={{ color: 'var(--a-amber, #fbbf24)', fontSize: 12 }}>★</span>
                   ))}
                 </div>
 
                 <p style={{
                   fontSize: 14,
                   lineHeight: 1.75,
-                  color: '#ccc',
+                  color: 'var(--t-2, #ccc)',
                   flex: 1,
                   fontStyle: 'italic',
                 }}>
                   "{t.text}"
                 </p>
 
-                <div style={{ height: 1, background: 'rgba(255,255,255,0.06)' }}/>
+                <div style={{ height: 1, background: 'rgba(var(--fg, 255,255,255),0.06)' }}/>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                   <div style={{
@@ -702,10 +702,10 @@ const TestimoniSection = () => {
                     {t.initial}
                   </div>
                   <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--t-1, #fff)' }}>
                       {t.name}
                     </div>
-                    <div style={{ fontSize: 11, color: '#666' }}>
+                    <div style={{ fontSize: 11, color: 'var(--t-4, #666)' }}>
                       {t.info}
                     </div>
                   </div>
@@ -766,12 +766,12 @@ const HadiahPreviewBanner = () => (
           </div>
           <div style={{
             fontFamily: '"DM Sans",sans-serif',
-            fontSize: 20, fontWeight: 700, color: '#fff', marginBottom: 10,
+            fontSize: 20, fontWeight: 700, color: 'var(--t-1, #fff)', marginBottom: 10,
           }}>
             🎁 Hadiah Spesial Menanti Kamu
           </div>
           <div style={{
-            fontSize: 13, color: '#aaa', maxWidth: 420, margin: '0 auto', lineHeight: 1.65,
+            fontSize: 13, color: 'var(--t-2, #aaa)', maxWidth: 420, margin: '0 auto', lineHeight: 1.65,
           }}>
             Setiap member Talqeeh mendapatkan akses eksklusif ke platform partner kami.{' '}
             Login untuk klaim hadiahmu.
@@ -1088,7 +1088,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
               <div className="flex-1 mb-8"><FeatureList items={[...LIBRARY_FEATURES, ...LIBRARY_AI_EXTRAS]} color="text-gold-400"/></div>
               <button onClick={() => onOpenJoin("library")}
                 className="btn btn-gold w-full py-4 text-base font-medium"
-                style={{ boxShadow:"0 0 50px rgba(201,168,106,.35), 0 1px 0 rgba(255,255,255,.3) inset" }}>
+                style={{ boxShadow:"0 0 50px rgba(201,168,106,.35), 0 1px 0 rgba(var(--fg, 255,255,255),.3) inset" }}>
                 Pilih Library
               </button>
             </div>
@@ -1335,8 +1335,8 @@ const BankSoalPreview = ({ onOpenLogin }) => {
               <div style={{
                 position: 'absolute', top: 16, left: 16, right: 16,
                 height: 80, borderRadius: 14,
-                background: 'rgba(255,255,255,0.02)',
-                border: '1px solid rgba(255,255,255,0.05)',
+                background: 'rgba(var(--fg, 255,255,255),0.02)',
+                border: '1px solid rgba(var(--fg, 255,255,255),0.05)',
                 zIndex: 1,
               }}/>
 
@@ -1344,15 +1344,15 @@ const BankSoalPreview = ({ onOpenLogin }) => {
               <div style={{
                 position: 'absolute', top: 8, left: 8, right: 8,
                 height: 80, borderRadius: 14,
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.07)',
+                background: 'rgba(var(--fg, 255,255,255),0.03)',
+                border: '1px solid rgba(var(--fg, 255,255,255),0.07)',
                 zIndex: 2,
               }}/>
 
               {/* Card 1 — depan (utama) */}
               <div style={{
                 position: 'relative', zIndex: 3,
-                background: '#111',
+                background: 'var(--bg-1, #111)',
                 border: `1.5px solid rgba(62,207,142,0.3)`,
                 borderRadius: 16,
                 overflow: 'hidden',
@@ -1362,7 +1362,7 @@ const BankSoalPreview = ({ onOpenLogin }) => {
                 {/* Header card */}
                 <div style={{
                   padding: '16px 20px',
-                  borderBottom: '1px solid rgba(255,255,255,0.06)',
+                  borderBottom: '1px solid rgba(var(--fg, 255,255,255),0.06)',
                   display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                   background: 'rgba(62,207,142,0.04)',
                 }}>
@@ -1372,10 +1372,10 @@ const BankSoalPreview = ({ onOpenLogin }) => {
                       background: EM, boxShadow: `0 0 8px ${EM}`,
                     }}/>
                     <div>
-                      <span style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--t-1, #fff)' }}>
                         {loading ? 'Memuat...' : firstSoal?.maddah_nama || 'Tauhid'}
                       </span>
-                      <span style={{ fontSize: 12, color: '#888', marginLeft: 8 }}>
+                      <span style={{ fontSize: 12, color: 'var(--t-3, #888)', marginLeft: 8 }}>
                         {firstSoal?.tahun} · {firstSoal?.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
                       </span>
                     </div>
@@ -1393,7 +1393,7 @@ const BankSoalPreview = ({ onOpenLogin }) => {
                   <div style={{
                     direction: 'rtl', textAlign: 'right',
                     fontSize: 16, lineHeight: 2,
-                    color: '#eee', fontFamily: 'serif',
+                    color: 'var(--t-1, #eee)', fontFamily: 'serif',
                   }}>
                     {loading
                       ? 'جاري التحميل...'
@@ -1404,7 +1404,7 @@ const BankSoalPreview = ({ onOpenLogin }) => {
                   <div style={{
                     position: 'absolute', bottom: 0, left: 0, right: 0,
                     height: 80,
-                    background: 'linear-gradient(to bottom, transparent, #111)',
+                    background: 'linear-gradient(to bottom, transparent, var(--bg-1, #111))',
                   }}/>
                 </div>
 
@@ -1413,15 +1413,15 @@ const BankSoalPreview = ({ onOpenLogin }) => {
                   padding: '12px 20px',
                   display: 'flex', alignItems: 'center', gap: 12,
                 }}>
-                  <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }}/>
+                  <div style={{ flex: 1, height: 1, background: 'rgba(var(--fg, 255,255,255),0.06)' }}/>
                   <div style={{
-                    fontSize: 11, color: '#666',
+                    fontSize: 11, color: 'var(--t-4, #666)',
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}>
                     <span>🔒</span>
                     <span>Soal lengkap + prompt jawaban</span>
                   </div>
-                  <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }}/>
+                  <div style={{ flex: 1, height: 1, background: 'rgba(var(--fg, 255,255,255),0.06)' }}/>
                 </div>
 
                 {/* Prompt jawaban — blur dengan overlay lock */}
@@ -1436,7 +1436,7 @@ const BankSoalPreview = ({ onOpenLogin }) => {
                     <div style={{ fontSize: 11, color: EM, fontWeight: 700, marginBottom: 8 }}>
                       📋 PROMPT JAWABAN SOAL 1
                     </div>
-                    <div style={{ fontSize: 13, color: '#ccc', lineHeight: 1.6 }}>
+                    <div style={{ fontSize: 13, color: 'var(--t-2, #ccc)', lineHeight: 1.6 }}>
                       Kamu adalah asisten akademik Al-Azhar yang ahli bahasa Arab...
                       Jawab soal ini sesuai manhaj Al-Azhar dengan format jawaban Arab + penjelasan Indonesia...
                     </div>
@@ -1453,10 +1453,10 @@ const BankSoalPreview = ({ onOpenLogin }) => {
                     backdropFilter: 'blur(2px)',
                   }}>
                     <div style={{ fontSize: 24 }}>🔒</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--t-1, #fff)' }}>
                       Prompt jawaban untuk member
                     </div>
-                    <div style={{ fontSize: 12, color: '#888', textAlign: 'center' }}>
+                    <div style={{ fontSize: 12, color: 'var(--t-3, #888)', textAlign: 'center' }}>
                       Salin prompt → paste ke Claude/ChatGPT → dapat jawaban lengkap
                     </div>
                   </div>
@@ -1465,7 +1465,7 @@ const BankSoalPreview = ({ onOpenLogin }) => {
                 {/* Footer — stats + CTA */}
                 <div style={{
                   padding: '16px 20px',
-                  borderTop: '1px solid rgba(255,255,255,0.06)',
+                  borderTop: '1px solid rgba(var(--fg, 255,255,255),0.06)',
                   background: 'rgba(0,0,0,0.3)',
                 }}>
                   {/* Stats row */}
@@ -1481,7 +1481,7 @@ const BankSoalPreview = ({ onOpenLogin }) => {
                     ].map(s => (
                       <div key={s.label} style={{ textAlign: 'center' }}>
                         <div style={{ fontSize: 18, fontWeight: 800, color: EM }}>{s.value}</div>
-                        <div style={{ fontSize: 10, color: '#666' }}>{s.label}</div>
+                        <div style={{ fontSize: 10, color: 'var(--t-4, #666)' }}>{s.label}</div>
                       </div>
                     ))}
                   </div>
@@ -1505,9 +1505,9 @@ const BankSoalPreview = ({ onOpenLogin }) => {
                       style={{
                         flex: 1, padding: '12px',
                         borderRadius: 11,
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        background: 'rgba(255,255,255,0.04)',
-                        color: '#ccc', fontWeight: 600, fontSize: 13,
+                        border: '1px solid rgba(var(--fg, 255,255,255),0.12)',
+                        background: 'rgba(var(--fg, 255,255,255),0.04)',
+                        color: 'var(--t-2, #ccc)', fontWeight: 600, fontSize: 13,
                         cursor: 'pointer',
                       }}
                     >
@@ -1520,7 +1520,7 @@ const BankSoalPreview = ({ onOpenLogin }) => {
               {/* Label "dan X soal lainnya" */}
               <div style={{
                 textAlign: 'center', marginTop: 20,
-                fontSize: 13, color: '#666',
+                fontSize: 13, color: 'var(--t-4, #666)',
               }}>
                 + {soalList.length > 1 ? `${soalList.length - 1} soal lainnya` : 'soal dari maddah lainnya'} —
                 <span
@@ -1542,13 +1542,13 @@ const BankSoalPreview = ({ onOpenLogin }) => {
               justifyContent: 'space-between', gap: 12,
               flexWrap: 'wrap',
             }}>
-              <div style={{ fontSize: 13, color: '#a08030' }}>
+              <div style={{ fontSize: 13, color: 'var(--a-gold, #a08030)' }}>
                 📸 Punya soal imtihan tahun lalu?
               </div>
               <span
                 onClick={() => navigate('/submit-soal')}
                 style={{
-                  fontSize: 13, color: '#ffc832',
+                  fontSize: 13, color: 'var(--a-amber, #ffc832)',
                   fontWeight: 700, cursor: 'pointer',
                   whiteSpace: 'nowrap',
                 }}
@@ -1634,29 +1634,29 @@ const SubmitSoalBanner = () => (
           <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
               <span style={{
-                fontSize: 10, fontWeight: 700, color: '#f59e0b',
+                fontSize: 10, fontWeight: 700, color: 'var(--a-amber, #f59e0b)',
                 background: 'rgba(245,158,11,0.15)',
                 border: '1px solid rgba(245,158,11,0.35)',
                 padding: '2px 8px', borderRadius: 99, letterSpacing: '0.06em',
               }}>
                 🔥 EVENT
               </span>
-              <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: 'var(--t-1, #fff)' }}>
                 Punya soal imtihan lama?
               </span>
               <span style={{
-                fontSize: 10, fontWeight: 700, color: '#3ecf8e',
+                fontSize: 10, fontWeight: 700, color: 'var(--a-green, #3ecf8e)',
                 background: 'rgba(62,207,142,0.15)',
                 padding: '2px 8px', borderRadius: 99,
               }}>
                 DAPAT REWARD
               </span>
             </div>
-            <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.5 }}>
-              Submit soal Al-Azhar tahun lalu → dapat <strong style={{ color: '#3ecf8e' }}>paket Library gratis</strong> selamanya
+            <div style={{ fontSize: 13, color: 'var(--t-2, #aaa)', lineHeight: 1.5 }}>
+              Submit soal Al-Azhar tahun lalu → dapat <strong style={{ color: 'var(--a-green, #3ecf8e)' }}>paket Library gratis</strong> selamanya
             </div>
           </div>
-          <div style={{ color: '#3ecf8e', fontSize: 18, flexShrink: 0 }}>→</div>
+          <div style={{ color: 'var(--a-green, #3ecf8e)', fontSize: 18, flexShrink: 0 }}>→</div>
         </div>
       </a>
     </section>

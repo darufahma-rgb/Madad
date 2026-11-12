@@ -384,7 +384,7 @@ const KurasahEditorPage = () => {
             }}
             className="bg-white/4 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-ink-muted outline-none transition-colors appearance-none"
             onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.40)"}
-            onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}>
+            onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}>
             {sourceOptions.map(o => (
               <option key={o.type || ""} value={o.type || ""}>{o.label}</option>
             ))}
@@ -406,12 +406,12 @@ const KurasahEditorPage = () => {
 
         {/* Editor / Preview */}
         {isMobile ? (
-          <div className="flex-1 card-glass rounded-xl overflow-hidden" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
+          <div className="flex-1 card-glass rounded-xl overflow-hidden" style={{border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
             {tab === "edit" ? EditorPane() : <div className="p-5">{PreviewPane()}</div>}
           </div>
         ) : (
           <div className="flex-1 grid grid-cols-2 gap-5">
-            <div className="flex flex-col card-glass rounded-xl overflow-hidden" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
+            <div className="flex flex-col card-glass rounded-xl overflow-hidden" style={{border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
               {EditorPane()}
             </div>
             {PreviewPane()}

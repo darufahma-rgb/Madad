@@ -91,7 +91,7 @@ const VizNextToken = () => {
             <span className={"sv-fade text-right text-[clamp(0.9rem,min(1.5vw,2.8vh),1.3rem)] " + (i === 0 ? "text-gold-300 font-medium" : "text-ink-muted")} style={dl(i, 900, 120)}>{c.w}</span>
             <span className="relative h-[10px] rounded-full bg-white/[0.06] overflow-hidden">
               <span className="sv-growx absolute inset-y-0 left-0 rounded-full"
-                    style={{ width: (c.p * 2) + "%", background: i === 0 ? GOLD : "rgba(255,255,255,0.28)", animationDelay: (1000 + i * 130) + "ms" }}/>
+                    style={{ width: (c.p * 2) + "%", background: i === 0 ? GOLD : "rgba(var(--fg, 255,255,255),0.28)", animationDelay: (1000 + i * 130) + "ms" }}/>
             </span>
             <span className={"sv-fade num tabular-nums text-sm md:text-base " + (i === 0 ? "text-gold-300" : "text-ink-muted")} style={dl(i, 1300, 130)}>{c.p}%</span>
           </div>
@@ -160,7 +160,7 @@ const VizForgetting = () => {
            aria-label="Grafik ilustrasi: ingatan turun cepat tanpa pengulangan, dan bertahan lebih lama dengan pengulangan pada hari 1, 3, 7, dan 14">
         {[0, 0.5, 1].map((v) => (
           <g key={v}>
-            <line x1={L} x2={W - R} y1={Y(v)} y2={Y(v)} stroke="rgba(255,255,255,0.09)" strokeWidth="1"/>
+            <line x1={L} x2={W - R} y1={Y(v)} y2={Y(v)} stroke="rgba(var(--fg, 255,255,255),0.09)" strokeWidth="1"/>
             <text x={L - 8} y={Y(v) + 4} textAnchor="end" fill="#8c8c8c" fontSize="14">{Math.round(v * 100)}%</text>
           </g>
         ))}

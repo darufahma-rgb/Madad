@@ -275,7 +275,7 @@ Setelah saya jawab semua, tolong analisis:
 const MahadChip = () => (
   <span
     className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-    style={{ background: "rgba(16,185,129,0.15)", color: "#10B981", border: "1px solid rgba(16,185,129,0.30)" }}
+    style={{ background: "rgba(16,185,129,0.15)", color: "var(--a-green, #10B981)", border: "1px solid rgba(16,185,129,0.30)" }}
   >
     MA'HAD
   </span>
@@ -301,8 +301,8 @@ const PromptCard = ({ item, formatEnabled }) => {
     <div
       className="flex flex-col relative overflow-hidden"
       style={{
-        background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(255,255,255,0.08)",
+        background: "rgba(var(--fg, 255,255,255),0.03)",
+        border: "1px solid rgba(var(--fg, 255,255,255),0.08)",
         borderRadius: "16px",
         padding: "18px",
       }}
@@ -314,7 +314,7 @@ const PromptCard = ({ item, formatEnabled }) => {
 
       {/* Sub-category label */}
       {subcat && subcat.id !== "all" && (
-        <p className="text-[11px] mb-1.5 uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.35)" }}>
+        <p className="text-[11px] mb-1.5 uppercase tracking-wider" style={{ color: "rgba(var(--fg, 255,255,255),0.35)" }}>
           {subcat.emoji} {subcat.label}
         </p>
       )}
@@ -323,7 +323,7 @@ const PromptCard = ({ item, formatEnabled }) => {
       <h3 className="font-display text-[15px] font-bold text-ink mb-2 leading-snug">{item.title}</h3>
 
       {/* Situation */}
-      <p className="text-[12px] mb-3" style={{ color: "rgba(255,255,255,0.45)" }}>📌 {item.situation}</p>
+      <p className="text-[12px] mb-3" style={{ color: "rgba(var(--fg, 255,255,255),0.45)" }}>📌 {item.situation}</p>
 
       {/* Template preview / expanded */}
       <div
@@ -338,7 +338,7 @@ const PromptCard = ({ item, formatEnabled }) => {
           maskImage: expanded ? "none" : "linear-gradient(black 30%, transparent)",
         }}
       >
-        <pre className="font-mono text-[12px] leading-relaxed whitespace-pre-wrap m-0" style={{ color: "rgba(255,255,255,0.7)" }}>
+        <pre className="font-mono text-[12px] leading-relaxed whitespace-pre-wrap m-0" style={{ color: "rgba(var(--fg, 255,255,255),0.7)" }}>
           {item.template}
         </pre>
       </div>
@@ -349,9 +349,9 @@ const PromptCard = ({ item, formatEnabled }) => {
           onClick={() => setExpanded(v => !v)}
           className="flex-1 py-2.5 rounded-lg text-[12px] transition-colors"
           style={{
-            border: "1px solid rgba(255,255,255,0.1)",
+            border: "1px solid rgba(var(--fg, 255,255,255),0.1)",
             background: "transparent",
-            color: "rgba(255,255,255,0.5)",
+            color: "rgba(var(--fg, 255,255,255),0.5)",
           }}
         >
           {expanded ? "Sembunyikan ▲" : "Lihat Prompt ▼"}
@@ -361,7 +361,7 @@ const PromptCard = ({ item, formatEnabled }) => {
           className="flex-1 py-2.5 rounded-lg text-[12px] font-semibold transition-all"
           style={{
             background: copied ? "rgba(16,185,129,0.35)" : "rgba(16,185,129,0.2)",
-            color: "#10B981",
+            color: "var(--a-green, #10B981)",
             border: "none",
           }}
         >
@@ -398,14 +398,14 @@ const MahadTab = ({ profile }) => {
         >
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] uppercase tracking-wider font-bold" style={{ color: "#10B981" }}>Prompt Khusus Ma'had</span>
+              <span className="text-[10px] uppercase tracking-wider font-bold" style={{ color: "var(--a-green, #10B981)" }}>Prompt Khusus Ma'had</span>
             </div>
             <p className="text-sm text-ink-muted leading-relaxed">
-              {total} template prompt siap pakai untuk pelajar Ma'had Al-Azhar. Salin, paste ke AI pilihanmu, lalu isi bagian dalam kurung kotak <code className="text-[11px] px-1 py-0.5 rounded" style={{background:"rgba(255,255,255,0.08)"}}>[...]</code>
+              {total} template prompt siap pakai untuk pelajar Ma'had Al-Azhar. Salin, paste ke AI pilihanmu, lalu isi bagian dalam kurung kotak <code className="text-[11px] px-1 py-0.5 rounded" style={{background:"rgba(var(--fg, 255,255,255),0.08)"}}>[...]</code>
             </p>
           </div>
           <div className="text-right flex-shrink-0">
-            <div className="font-display text-3xl font-bold" style={{ color: "#10B981" }}>{total}</div>
+            <div className="font-display text-3xl font-bold" style={{ color: "var(--a-green, #10B981)" }}>{total}</div>
             <div className="text-[10px] text-ink-muted uppercase tracking-wide">Template</div>
           </div>
         </div>
@@ -423,8 +423,8 @@ const MahadTab = ({ profile }) => {
                 onClick={() => setActiveSub(s.id)}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all"
                 style={isActive
-                  ? { background: "rgba(16,185,129,0.18)", color: "#10B981", border: "1px solid rgba(16,185,129,0.35)" }
-                  : { background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.08)" }
+                  ? { background: "rgba(16,185,129,0.18)", color: "var(--a-green, #10B981)", border: "1px solid rgba(16,185,129,0.35)" }
+                  : { background: "rgba(var(--fg, 255,255,255),0.05)", color: "rgba(var(--fg, 255,255,255),0.5)", border: "1px solid rgba(var(--fg, 255,255,255),0.08)" }
                 }
               >
                 <span>{s.emoji}</span>
@@ -432,8 +432,8 @@ const MahadTab = ({ profile }) => {
                 <span
                   className="text-[10px] px-1.5 py-0.5 rounded-full"
                   style={isActive
-                    ? { background: "rgba(16,185,129,0.25)", color: "#10B981" }
-                    : { background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }
+                    ? { background: "rgba(16,185,129,0.25)", color: "var(--a-green, #10B981)" }
+                    : { background: "rgba(var(--fg, 255,255,255),0.08)", color: "rgba(var(--fg, 255,255,255),0.4)" }
                   }
                 >
                   {count}
@@ -478,7 +478,7 @@ const MasisirTab = ({ profile }) => {
   const shortcuts = [
     {
       icon: "target",
-      color: "#3ecf8e",
+      color: "var(--a-green, #3ecf8e)",
       title: "Siap Imtihan",
       desc: "Prompt untuk kompres materi, drill soal Azhari, mock syafawi, dan analogi konsep sulit.",
       to: "/siap-imtihan",
@@ -486,7 +486,7 @@ const MasisirTab = ({ profile }) => {
     },
     {
       icon: "layers",
-      color: "#C9A86A",
+      color: "var(--a-gold, #C9A86A)",
       title: "Prompt per Maddah",
       desc: `${CATALOG.prompts} prompt template diorganisir per maddah — Fiqh, Nahwu, Tafsir, Hadits, dan lainnya.`,
       to: "/maddah",
@@ -494,7 +494,7 @@ const MasisirTab = ({ profile }) => {
     },
     {
       icon: "sparkles",
-      color: "#3ecf8e",
+      color: "var(--a-green, #3ecf8e)",
       title: "Adaptive Tool Guide",
       desc: "Guide cara pakai setiap AI (ChatGPT, Claude, Perplexity, dll) disesuaikan gaya belajarmu.",
       to: "/tools",
@@ -502,7 +502,7 @@ const MasisirTab = ({ profile }) => {
     },
     {
       icon: "bookOpen",
-      color: "#C9A86A",
+      color: "var(--a-gold, #C9A86A)",
       title: "Kurasah AI",
       desc: "Buat catatan pintar langsung dari sesi AI. Simpan, edit, dan susun ulang dengan mudah.",
       to: "/kurasah",
@@ -593,7 +593,7 @@ const PromptLibraryPage = () => {
       </section>
 
       {/* Tab bar */}
-      <section className="pb-2 sticky top-[var(--app-header-h)] z-30" style={{ background: "rgba(12,12,12,0.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+      <section className="pb-2 sticky top-[var(--app-header-h)] z-30" style={{ background: "rgba(var(--surf, 12,12,12),0.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(var(--fg, 255,255,255),0.06)" }}>
         <div className="container-x">
           <div className="flex items-center gap-1 py-2">
             {tabs.map(tab => {
@@ -605,13 +605,13 @@ const PromptLibraryPage = () => {
                   className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all relative"
                   style={isActive
                     ? { background: tab.id === "mahad" ? "rgba(16,185,129,0.15)" : "rgba(62,207,142,0.15)", color: tab.id === "mahad" ? "#10B981" : "#3ecf8e", border: `1px solid ${tab.id === "mahad" ? "rgba(16,185,129,0.3)" : "rgba(62,207,142,0.3)"}` }
-                    : { background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.45)", border: "1px solid rgba(255,255,255,0.08)" }
+                    : { background: "rgba(var(--fg, 255,255,255),0.04)", color: "rgba(var(--fg, 255,255,255),0.45)", border: "1px solid rgba(var(--fg, 255,255,255),0.08)" }
                   }
                 >
                   <span>{tab.icon}</span>
                   <span>{tab.label}</span>
                   {tab.badge && (
-                    <span className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-full" style={{ background: "rgba(16,185,129,0.2)", color: "#10B981" }}>
+                    <span className="text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-full" style={{ background: "rgba(16,185,129,0.2)", color: "var(--a-green, #10B981)" }}>
                       Baru
                     </span>
                   )}

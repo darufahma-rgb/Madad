@@ -239,7 +239,7 @@ const AdminPage = () => {
   return (
     <div className="page-enter min-h-screen">
       {/* Header admin: latar solid (konten tidak menembus), tab satu baris yang bisa digeser — tidak terlipat dua baris. */}
-      <section className="border-b border-line sticky top-0 z-20" style={{ background: "#0c0c0c" }}>
+      <section className="border-b border-line sticky top-0 z-20" style={{ background: "var(--bg-0, #0c0c0c)" }}>
         <div className="container-x pt-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <span className="chip chip-gold text-[10px] flex-shrink-0">ADMIN</span>
@@ -344,7 +344,7 @@ const AdminLogin = ({ onLogin }) => {
               placeholder="PIN"
               className={`code-input w-full bg-white/5 border rounded-xl px-5 py-4 text-2xl text-ink outline-none ${error ? "border-rose-600 ring-2 ring-rose-600/30" : "border-white/10"}`}
               onFocus={e => { if (!error) e.target.style.borderColor="rgba(62,207,142,0.50)"; }}
-              onBlur={e => e.target.style.borderColor= error ? "" : "rgba(255,255,255,0.10)"}
+              onBlur={e => e.target.style.borderColor= error ? "" : "rgba(var(--fg, 255,255,255),0.10)"}
             />
             {error && <div className="mt-3 text-sm text-rose-600" role="alert">{error}</div>}
             <button type="submit" disabled={loading} className="btn btn-primary w-full mt-5">
@@ -478,17 +478,17 @@ const StatCard = ({ label, value, icon, color }) => {
 const rupiah = (n) => 'Rp ' + Math.round(n || 0).toLocaleString('id-ID');
 const usd = (n) => '$' + (n || 0).toFixed(2);
 const AI_KIND_LABELS = {
-  prompt:     { label: 'Tanya AI',         sub: 'pesan', color: '#2dd4bf' },
-  generate:   { label: 'Pembuatan AI',     sub: 'ringkasan, kartu, kuis, mufradat, peta, tahriri', color: '#3ecf8e' },
-  chat:       { label: 'Tutor & syafawi',  sub: 'pesan', color: '#60a5fa' },
-  analyze:    { label: "I'rab & harakat",  sub: 'analisis', color: '#c9a86a' },
-  grade:      { label: 'Nilai tahriri',    sub: 'jawaban', color: '#f97316' },
-  ocr:        { label: 'Baca foto/scan',   sub: 'halaman', color: '#a78bfa' },
-  transcribe: { label: 'Transkrip',        sub: 'menit', color: '#f472b6' },
-  live:       { label: 'Live Caption',     sub: 'menit', color: '#38bdf8' },
-  talkhis:    { label: 'Talkhis',          sub: 'muqarrar', color: '#f59e0b' },
-  ilmi:       { label: 'Ilmi Index',       sub: 'muqarrar dianalisis', color: '#c9a86a' },
-  admin:      { label: 'Admin & uji',      sub: 'tes model, evaluasi, draf bank soal', color: '#9ca3af', costOnly: true },
+  prompt:     { label: 'Tanya AI',         sub: 'pesan', color: 'var(--a-green, #2dd4bf)' },
+  generate:   { label: 'Pembuatan AI',     sub: 'ringkasan, kartu, kuis, mufradat, peta, tahriri', color: 'var(--a-green, #3ecf8e)' },
+  chat:       { label: 'Tutor & syafawi',  sub: 'pesan', color: 'var(--a-blue, #60a5fa)' },
+  analyze:    { label: "I'rab & harakat",  sub: 'analisis', color: 'var(--a-gold, #c9a86a)' },
+  grade:      { label: 'Nilai tahriri',    sub: 'jawaban', color: 'var(--a-amber, #f97316)' },
+  ocr:        { label: 'Baca foto/scan',   sub: 'halaman', color: 'var(--a-violet, #a78bfa)' },
+  transcribe: { label: 'Transkrip',        sub: 'menit', color: 'var(--a-pink, #f472b6)' },
+  live:       { label: 'Live Caption',     sub: 'menit', color: 'var(--a-blue, #38bdf8)' },
+  talkhis:    { label: 'Talkhis',          sub: 'muqarrar', color: 'var(--a-amber, #f59e0b)' },
+  ilmi:       { label: 'Ilmi Index',       sub: 'muqarrar dianalisis', color: 'var(--a-gold, #c9a86a)' },
+  admin:      { label: 'Admin & uji',      sub: 'tes model, evaluasi, draf bank soal', color: 'var(--t-3, #9ca3af)', costOnly: true },
   other:      { label: 'Lainnya',          sub: 'tanpa kategori', color: '#6b7280', costOnly: true },
 };
 window.AI_KIND_LABELS = AI_KIND_LABELS; // dipakai juga oleh tab Pemakaian AI (admin-ai-usage.jsx)
@@ -773,7 +773,7 @@ const AdminAnalytics = () => {
         <div className="grid lg:grid-cols-3 gap-4">
           <Panel title="Pemasukan per hari" className="lg:col-span-2">
             <BarChart data={revenue.byDay} format={rupiah}
-              series={[{ key: 'library', label: 'Library', color: '#c9a86a' }, { key: 'ai', label: 'AI Partner', color: '#3ecf8e' }]}/>
+              series={[{ key: 'library', label: 'Library', color: 'var(--a-gold, #c9a86a)' }, { key: 'ai', label: 'AI Partner', color: 'var(--a-green, #3ecf8e)' }]}/>
           </Panel>
           <Panel title="Rincian">
             <div className="space-y-3 text-sm">
@@ -800,7 +800,7 @@ const AdminAnalytics = () => {
       <Section title="Pertumbuhan member">
         <div className="grid lg:grid-cols-2 gap-4 mb-4">
           <Panel title={`Member baru per hari · total ${members.total}`}>
-            <BarChart data={members.newByDay} series={[{ key: 'count', label: 'Member baru', color: '#c9a86a' }]} height={140}/>
+            <BarChart data={members.newByDay} series={[{ key: 'count', label: 'Member baru', color: 'var(--a-gold, #c9a86a)' }]} height={140}/>
           </Panel>
           <Panel title="Member yang belajar per hari">
             <LineChart data={members.presentByDay.map(d => ({ day: d.day, value: d.count }))} format={v => `${v} member`}/>
@@ -813,8 +813,8 @@ const AdminAnalytics = () => {
         <div className="grid lg:grid-cols-2 gap-4">
           <Panel title="Status akun">
             <ProportionBar parts={[
-              { label: 'Member Library', value: members.paid ?? members.active, color: '#c9a86a' },
-              { label: 'Akun gratis', value: members.free || 0, color: '#60a5fa' },
+              { label: 'Member Library', value: members.paid ?? members.active, color: 'var(--a-gold, #c9a86a)' },
+              { label: 'Akun gratis', value: members.free || 0, color: 'var(--a-blue, #60a5fa)' },
               { label: 'Nonaktif/expired', value: Math.max(0, members.total - members.active), color: '#f43f5e' },
             ]}/>
             <div className="text-[11px] text-ink-soft mt-3">
@@ -928,8 +928,8 @@ const AdminAnalytics = () => {
           </Panel>
           <Panel title="Bank soal (cek diri)">
             <ProportionBar parts={[
-              { label: 'Paham', value: library.soal.paham, color: '#3ecf8e' },
-              { label: 'Belum', value: library.soal.belum, color: '#f59e0b' },
+              { label: 'Paham', value: library.soal.paham, color: 'var(--a-green, #3ecf8e)' },
+              { label: 'Belum', value: library.soal.belum, color: 'var(--a-amber, #f59e0b)' },
             ]}/>
             <p className="text-[11px] text-ink-soft mt-3">Jumlah tanda "Paham/Belum" yang diberi member di Bank Soal.</p>
           </Panel>
@@ -941,10 +941,10 @@ const AdminAnalytics = () => {
 
 /* ============== MEMBERS ============== */
 const MEMBER_TYPE_CONFIG = {
-  berbayar: { label: 'Berbayar', color: '#3ecf8e', bg: 'rgba(62,207,142,0.1)',  icon: '💳' },
-  gratis:   { label: 'Gratis (akses penuh)', color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', icon: '🎁' },
-  trial:    { label: 'Trial',    color: '#fbbf24', bg: 'rgba(251,191,36,0.1)',  icon: '⏳' },
-  reward:   { label: 'Reward',   color: '#f97316', bg: 'rgba(249,115,22,0.1)',  icon: '🏆' },
+  berbayar: { label: 'Berbayar', color: 'var(--a-green, #3ecf8e)', bg: 'rgba(62,207,142,0.1)',  icon: '💳' },
+  gratis:   { label: 'Gratis (akses penuh)', color: 'var(--a-violet, #a78bfa)', bg: 'rgba(167,139,250,0.1)', icon: '🎁' },
+  trial:    { label: 'Trial',    color: 'var(--a-amber, #fbbf24)', bg: 'rgba(251,191,36,0.1)',  icon: '⏳' },
+  reward:   { label: 'Reward',   color: 'var(--a-amber, #f97316)', bg: 'rgba(249,115,22,0.1)',  icon: '🏆' },
 };
 
 // Member berbayar yang belum punya email Google dan belum login → perlu diisi admin.
@@ -973,11 +973,11 @@ const buildAiIndex = (rows) => {
 const formatShortDate = (iso) => iso ? new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "";
 
 const PLAN_FILTERS = [
-  { value: 'library',      label: 'Member Library',      color: '#c9a86a', test: (m, ai) => isLibraryMember(m) },
-  { value: 'ai_aktif',     label: 'AI Partner aktif',    color: '#3ecf8e', test: (m, ai) => !!ai[m.code]?.active },
-  { value: 'library_ai',   label: 'Library + AI',        color: '#a78bfa', test: (m, ai) => isLibraryMember(m) && !!ai[m.code]?.active },
-  { value: 'library_only', label: 'Library tanpa AI',    color: '#f59e0b', test: (m, ai) => isLibraryMember(m) && !ai[m.code]?.active },
-  { value: 'ai_habis',     label: 'AI Partner habis',    color: '#f97316', test: (m, ai) => !ai[m.code]?.active && !!ai[m.code]?.lastExpired },
+  { value: 'library',      label: 'Member Library',      color: 'var(--a-gold, #c9a86a)', test: (m, ai) => isLibraryMember(m) },
+  { value: 'ai_aktif',     label: 'AI Partner aktif',    color: 'var(--a-green, #3ecf8e)', test: (m, ai) => !!ai[m.code]?.active },
+  { value: 'library_ai',   label: 'Library + AI',        color: 'var(--a-violet, #a78bfa)', test: (m, ai) => isLibraryMember(m) && !!ai[m.code]?.active },
+  { value: 'library_only', label: 'Library tanpa AI',    color: 'var(--a-amber, #f59e0b)', test: (m, ai) => isLibraryMember(m) && !ai[m.code]?.active },
+  { value: 'ai_habis',     label: 'AI Partner habis',    color: 'var(--a-amber, #f97316)', test: (m, ai) => !ai[m.code]?.active && !!ai[m.code]?.lastExpired },
 ];
 const matchesMemberFilter = (m, value, ai) => {
   if (value === 'semua') return true;
@@ -1294,17 +1294,17 @@ const AdminMembers = () => {
       {/* Ringkasan paket: klik untuk memfilter tabel */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
         {[
-          { value: 'library',      label: 'Member Library',   hint: 'akun berbayar aktif',          color: '#c9a86a' },
-          { value: 'ai_aktif',     label: 'AI Partner aktif', hint: 'langganan belum habis',        color: '#3ecf8e' },
-          { value: 'library_ai',   label: 'Library + AI',     hint: 'punya keduanya',               color: '#a78bfa' },
-          { value: 'akun_gratis',  label: 'Akun gratis',      hint: 'login Google, belum bayar',    color: '#60a5fa' },
+          { value: 'library',      label: 'Member Library',   hint: 'akun berbayar aktif',          color: 'var(--a-gold, #c9a86a)' },
+          { value: 'ai_aktif',     label: 'AI Partner aktif', hint: 'langganan belum habis',        color: 'var(--a-green, #3ecf8e)' },
+          { value: 'library_ai',   label: 'Library + AI',     hint: 'punya keduanya',               color: 'var(--a-violet, #a78bfa)' },
+          { value: 'akun_gratis',  label: 'Akun gratis',      hint: 'login Google, belum bayar',    color: 'var(--a-blue, #60a5fa)' },
         ].map(s => {
           const count = members.filter(m => matchesMemberFilter(m, s.value, aiIndex)).length;
           const on = filterType === s.value;
           return (
             <button key={s.value} onClick={() => setFilterType(on ? 'semua' : s.value)}
               className="text-left rounded-xl px-4 py-3 transition-colors"
-              style={{ background: on ? `${s.color}18` : 'rgba(255,255,255,0.03)', border: `1px solid ${on ? s.color : s.color + '33'}` }}>
+              style={{ background: on ? `${s.color}18` : 'rgba(var(--fg, 255,255,255),0.03)', border: `1px solid ${on ? s.color : s.color + '33'}` }}>
               <div style={{ fontSize: 22, fontWeight: 800, color: s.color, lineHeight: 1 }}>
                 {s.value !== 'library' && s.value !== 'akun_gratis' && aiError ? '–' : count}
               </div>
@@ -1323,7 +1323,7 @@ const AdminMembers = () => {
         {Object.entries(MEMBER_TYPE_CONFIG).map(([value, t]) => (
           <div key={value} style={{
             padding: '10px 16px', borderRadius: 10,
-            background: 'rgba(255,255,255,0.03)',
+            background: 'rgba(var(--fg, 255,255,255),0.03)',
             border: `1px solid ${t.color}33`,
             display: 'flex', alignItems: 'center', gap: 8,
           }}>
@@ -1332,7 +1332,7 @@ const AdminMembers = () => {
               <div style={{ fontSize: 18, fontWeight: 800, color: t.color, lineHeight: 1 }}>
                 {members.filter(m => m.member_type === value).length}
               </div>
-              <div style={{ fontSize: 10, color: '#666', marginTop: 1 }}>{t.label}</div>
+              <div style={{ fontSize: 10, color: 'var(--t-4, #666)', marginTop: 1 }}>{t.label}</div>
             </div>
           </div>
         ))}
@@ -1345,18 +1345,18 @@ const AdminMembers = () => {
             placeholder="Cari nama, kode, email, atau nomor WA..."
             className="w-full bg-white/5 border border-white/10 rounded-xl pl-10 pr-3 py-2.5 text-sm text-ink placeholder:text-ink-soft outline-none transition-colors"
             onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-            onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+            onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
         </div>
         {/* Filter member type */}
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           {[
-            { value: 'semua',       label: 'Semua',                 color: '#888' },
-            { value: 'belum_email', label: 'Belum ada email',       color: '#c9a86a' },
-            { value: 'berbayar',    label: 'Berbayar',              color: '#3ecf8e' },
-            { value: 'gratis',      label: 'Gratis (akses penuh)',  color: '#a78bfa' },
-            { value: 'trial',       label: 'Trial',                 color: '#fbbf24' },
-            { value: 'reward',      label: 'Reward Bank Soal',      color: '#f97316' },
-            { value: 'akun_gratis', label: 'Akun gratis (belum bayar)', color: '#60a5fa' },
+            { value: 'semua',       label: 'Semua',                 color: 'var(--t-3, #888)' },
+            { value: 'belum_email', label: 'Belum ada email',       color: 'var(--a-gold, #c9a86a)' },
+            { value: 'berbayar',    label: 'Berbayar',              color: 'var(--a-green, #3ecf8e)' },
+            { value: 'gratis',      label: 'Gratis (akses penuh)',  color: 'var(--a-violet, #a78bfa)' },
+            { value: 'trial',       label: 'Trial',                 color: 'var(--a-amber, #fbbf24)' },
+            { value: 'reward',      label: 'Reward Bank Soal',      color: 'var(--a-amber, #f97316)' },
+            { value: 'akun_gratis', label: 'Akun gratis (belum bayar)', color: 'var(--a-blue, #60a5fa)' },
             ...PLAN_FILTERS,
           ].map(t => (
             <button
@@ -1368,9 +1368,9 @@ const AdminMembers = () => {
                 cursor: 'pointer', transition: 'all 0.15s',
                 border: filterType === t.value
                   ? `1px solid ${t.color}`
-                  : '1px solid rgba(255,255,255,0.08)',
+                  : '1px solid rgba(var(--fg, 255,255,255),0.08)',
                 background: filterType === t.value ? `${t.color}18` : 'transparent',
-                color: filterType === t.value ? t.color : '#666',
+                color: filterType === t.value ? t.color : 'var(--t-4, #666)',
               }}
             >
               {t.label}
@@ -1435,7 +1435,7 @@ const AdminMembers = () => {
                     <div className="flex items-center flex-wrap gap-1">
                       <span className="text-ink font-medium">{m.name}</span>
                       {m.tier === 'free' ? (
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(96,165,250,0.12)', color: '#60a5fa', border: '1px solid #60a5fa44' }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: 'rgba(96,165,250,0.12)', color: 'var(--a-blue, #60a5fa)', border: '1px solid #60a5fa44' }}>
                           🆓 Akun gratis
                         </span>
                       ) : (() => {
@@ -1568,7 +1568,7 @@ const MemberProfileModal = ({ member, onClose }) => {
           )}
         </div>
         {profile ? (
-          <div className="p-4 rounded-xl" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
+          <div className="p-4 rounded-xl" style={{background:"rgba(var(--fg, 255,255,255),0.03)",border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
             <div className="text-xs uppercase tracking-wider text-gold-400 mb-3">Profil Onboarding</div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
@@ -1592,7 +1592,7 @@ const MemberProfileModal = ({ member, onClose }) => {
             </div>
           </div>
         ) : (
-          <div className="p-4 rounded-xl text-sm text-ink-muted text-center" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
+          <div className="p-4 rounded-xl text-sm text-ink-muted text-center" style={{background:"rgba(var(--fg, 255,255,255),0.03)",border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
             Member belum menyelesaikan onboarding.
           </div>
         )}
@@ -1652,7 +1652,7 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
         onChange={e => set(key, opts.upper ? e.target.value.toUpperCase() : e.target.value)}
         className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-ink outline-none transition-colors font-mono placeholder:font-sans"
         onFocus={e => e.target.style.borderColor = "rgba(62,207,142,0.45)"}
-        onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.10)"}
+        onBlur={e => e.target.style.borderColor = "rgba(var(--fg, 255,255,255),0.10)"}
         placeholder={opts.placeholder || ""}
       />
     </div>
@@ -1675,7 +1675,7 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
           {field("Expires At", "expiresAt", { type: "date" })}
           {/* Dropdown member type */}
           <div style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: 0.5, display: 'block', marginBottom: 6 }}>
+            <label style={{ fontSize: 11, color: 'var(--t-3, #888)', fontWeight: 700, letterSpacing: 0.5, display: 'block', marginBottom: 6 }}>
               TIPE MEMBER
             </label>
             <select
@@ -1683,8 +1683,8 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
               onChange={e => set("member_type", e.target.value)}
               style={{
                 width: '100%', padding: '9px 12px', borderRadius: 9,
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: '#1a1a1a', color: '#fff', fontSize: 13,
+                border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+                background: 'var(--bg-3, #1a1a1a)', color: 'var(--t-1, #fff)', fontSize: 13,
                 cursor: 'pointer',
               }}
             >
@@ -1693,20 +1693,20 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
               <option value="trial">⏳ Trial — akses sementara</option>
               <option value="reward">🏆 Reward — dari bank soal</option>
             </select>
-            <div style={{ fontSize: 11, color: '#555', marginTop: 5 }}>
+            <div style={{ fontSize: 11, color: 'var(--t-4, #555)', marginTop: 5 }}>
               Tipe ini menentukan kategori member untuk laporan dan filter.
             </div>
           </div>
           <div style={{ marginBottom: 14 }}>
-            <label style={{ fontSize: 11, color: '#888', fontWeight: 700, letterSpacing: 0.5, display: 'block', marginBottom: 6 }}>
+            <label style={{ fontSize: 11, color: 'var(--t-3, #888)', fontWeight: 700, letterSpacing: 0.5, display: 'block', marginBottom: 6 }}>
               PAKET AKSES
             </label>
             <select value={form.tier} onChange={e => set("tier", e.target.value)}
-              style={{ width: '100%', padding: '9px 12px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 13, cursor: 'pointer' }}>
+              style={{ width: '100%', padding: '9px 12px', borderRadius: 9, border: '1px solid rgba(var(--fg, 255,255,255),0.1)', background: 'var(--bg-3, #1a1a1a)', color: 'var(--t-1, #fff)', fontSize: 13, cursor: 'pointer' }}>
               <option value="library">📚 Library — akses penuh</option>
               <option value="free">🆓 Akun gratis — akses terbatas (belum bayar)</option>
             </select>
-            <div style={{ fontSize: 11, color: '#555', marginTop: 5 }}>
+            <div style={{ fontSize: 11, color: 'var(--t-4, #555)', marginTop: 5 }}>
               Ubah ke Library untuk meng-upgrade akun gratis yang bayar manual (misal lewat WhatsApp).
             </div>
           </div>
@@ -1718,7 +1718,7 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
               rows={2}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-ink outline-none resize-none transition-colors"
               onFocus={e => e.target.style.borderColor = "rgba(62,207,142,0.45)"}
-              onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.10)"}
+              onBlur={e => e.target.style.borderColor = "rgba(var(--fg, 255,255,255),0.10)"}
               placeholder="Opsional"
             />
           </div>
@@ -1971,7 +1971,7 @@ const MemberActions = ({ member, updateMember, onDelete, onReload, members }) =>
           <div role="menu" className={`fixed z-[96] border border-white/10 shadow-2xl shadow-black/60 text-sm text-left ${pos?.mobile
               ? "left-0 right-0 bottom-0 rounded-t-2xl pt-2 pb-[calc(12px+env(safe-area-inset-bottom))] max-h-[80vh] overflow-y-auto"
               : "rounded-xl w-52 py-1.5"}`}
-            style={{ background: "#161616", ...(pos?.mobile ? {} : { top: pos?.top, bottom: pos?.bottom, right: pos?.right }) }}>
+            style={{ background: "var(--bg-2, #161616)", ...(pos?.mobile ? {} : { top: pos?.top, bottom: pos?.bottom, right: pos?.right }) }}>
             {pos?.mobile && (
               <div className="px-5 pt-1 pb-3 border-b border-white/8 mb-1">
                 <div className="w-10 h-1 rounded-full bg-white/15 mx-auto mb-3"/>
@@ -2097,19 +2097,19 @@ const GenerateModal = ({ open, onClose, members, onAdd }) => {
               <label className="text-xs uppercase tracking-wider text-ink-muted mb-1.5 block">Nama Member</label>
               <input value={name} onChange={(e)=>setName(e.target.value)} placeholder="Ahmad Fauzi" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink outline-none transition-colors"
                 onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+                onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
             </div>
             <div>
               <label className="text-xs uppercase tracking-wider text-ink-muted mb-1.5 block">WhatsApp</label>
               <input value={whatsapp} onChange={(e)=>setWhatsapp(e.target.value)} placeholder="+20xxxxxxxxxx" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink font-mono outline-none transition-colors"
                 onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+                onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
             </div>
             <div>
               <label className="text-xs uppercase tracking-wider text-ink-muted mb-1.5 block">Email Google (opsional)</label>
               <input type="email" value={email} onChange={(e)=>setEmail(e.target.value)} placeholder="nama@gmail.com" className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink outline-none transition-colors"
                 onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+                onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
               <div className="text-[11px] text-ink-soft mt-1">Kalau diisi, member cukup login Google dengan email ini. Kalau kosong, sistem membuat PIN aktivasi untuk dikirim via WA.</div>
             </div>
             <div>
@@ -2601,7 +2601,7 @@ const AdminGuides = () => {
               onChange={e => setEditedGuide({...editedGuide, when: e.target.value})}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ink text-sm outline-none transition-colors min-h-[80px] resize-y"
               onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+              onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}
             />
           </div>
 
@@ -2612,7 +2612,7 @@ const AdminGuides = () => {
               onChange={e => setEditedGuide({...editedGuide, starterPrompt: e.target.value})}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-ink font-mono text-xs outline-none transition-colors min-h-[200px] resize-y"
               onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+              onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}
             />
           </div>
 
@@ -2639,7 +2639,7 @@ const SettingsField = ({ label, value, onChange, mono = false, hint }) => (
       onChange={e => onChange(e.target.value)}
       className={`w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink text-sm outline-none transition-colors ${mono ? "font-mono" : ""}`}
       onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-      onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+      onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}
     />
     {hint && <div className="text-[11px] text-ink-soft mt-1">{hint}</div>}
   </div>
@@ -3449,7 +3449,7 @@ const BankSoalDraftPanel = ({ soal, onChanged }) => {
   };
 
   const area = 'w-full rounded-xl px-3 py-2 text-sm text-ink outline-none resize-y';
-  const areaStyle = { background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)' };
+  const areaStyle = { background: 'rgba(var(--fg, 255,255,255),0.04)', border: '1px solid rgba(var(--fg, 255,255,255),0.1)' };
 
   return (
     <div className="mb-5 rounded-2xl p-4" style={{ background: 'rgba(201,168,106,0.05)', border: '1px solid rgba(201,168,106,0.25)' }}>
@@ -3478,7 +3478,7 @@ const BankSoalDraftPanel = ({ soal, onChanged }) => {
 
       <div className="space-y-3 max-h-[55vh] overflow-y-auto pr-1">
         {blocks.map((b, i) => (
-          <div key={i} className="rounded-xl p-3" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div key={i} className="rounded-xl p-3" style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(var(--fg, 255,255,255),0.06)' }}>
             <div className="flex items-center justify-between gap-2 mb-2">
               <span className="text-xs font-semibold text-gold-300">Soal {i + 1}</span>
               <div className="flex items-center gap-2">
@@ -4017,7 +4017,7 @@ const AdminBankSoal = () => {
                         padding: '4px 10px', borderRadius: 6,
                         border: '1px solid rgba(255,80,80,0.2)',
                         background: 'rgba(255,80,80,0.06)',
-                        color: '#ff8080', fontSize: 11,
+                        color: 'var(--a-red, #ff8080)', fontSize: 11,
                         cursor: 'pointer', marginLeft: 8,
                       }}
                     >
@@ -4047,8 +4047,8 @@ const AdminBankSoal = () => {
                   onClick={() => setShowEdit(e => !e)}
                   style={{
                     padding: '5px 12px', borderRadius: 8, fontSize: 12, fontWeight: 700,
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    background: showEdit ? 'rgba(62,207,142,0.15)' : 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(var(--fg, 255,255,255),0.15)',
+                    background: showEdit ? 'rgba(62,207,142,0.15)' : 'rgba(var(--fg, 255,255,255),0.05)',
                     color: showEdit ? '#3ecf8e' : '#aaa', cursor: 'pointer',
                   }}>
                   ✏️ Edit Info
@@ -4066,12 +4066,12 @@ const AdminBankSoal = () => {
                   border: '1px solid rgba(62,207,142,0.2)',
                   marginBottom: 4,
                 }}>
-                  <div style={{ fontSize: 11, color: '#3ecf8e', fontWeight: 700, marginBottom: 12, letterSpacing: 0.5 }}>
+                  <div style={{ fontSize: 11, color: 'var(--a-green, #3ecf8e)', fontWeight: 700, marginBottom: 12, letterSpacing: 0.5 }}>
                     EDIT INFO SOAL
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
                     <div style={{ gridColumn: '1 / -1' }}>
-                      <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>MADDAH</label>
+                      <label style={{ fontSize: 10, color: 'var(--t-3, #888)', fontWeight: 600, display: 'block', marginBottom: 4 }}>MADDAH</label>
                       <select
                         value={editForm.maddah_id || ''}
                         onChange={e => {
@@ -4080,8 +4080,8 @@ const AdminBankSoal = () => {
                         }}
                         style={{
                           width: '100%', padding: '7px 10px', borderRadius: 7,
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          background: '#1a1a1a', color: '#fff',
+                          border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+                          background: 'var(--bg-3, #1a1a1a)', color: 'var(--t-1, #fff)',
                           fontSize: 13, boxSizing: 'border-box',
                         }}
                       >
@@ -4094,28 +4094,28 @@ const AdminBankSoal = () => {
                       </select>
                     </div>
                     <div>
-                      <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>TAHUN</label>
+                      <label style={{ fontSize: 10, color: 'var(--t-3, #888)', fontWeight: 600, display: 'block', marginBottom: 4 }}>TAHUN</label>
                       <input
                         value={editForm.tahun || ''}
                         onChange={e => setEditForm(f => ({ ...f, tahun: e.target.value }))}
                         placeholder="2025/2026"
                         style={{
                           width: '100%', padding: '7px 10px', borderRadius: 7,
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          background: 'rgba(255,255,255,0.05)', color: '#fff',
+                          border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+                          background: 'rgba(var(--fg, 255,255,255),0.05)', color: 'var(--t-1, #fff)',
                           fontSize: 13, boxSizing: 'border-box',
                         }}
                       />
                     </div>
                     <div>
-                      <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>FASHL</label>
+                      <label style={{ fontSize: 10, color: 'var(--t-3, #888)', fontWeight: 600, display: 'block', marginBottom: 4 }}>FASHL</label>
                       <select
                         value={editForm.fashl || 'tsani'}
                         onChange={e => setEditForm(f => ({ ...f, fashl: e.target.value }))}
                         style={{
                           width: '100%', padding: '7px 10px', borderRadius: 7,
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          background: '#1a1a1a', color: '#fff',
+                          border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+                          background: 'var(--bg-3, #1a1a1a)', color: 'var(--t-1, #fff)',
                           fontSize: 13, boxSizing: 'border-box',
                         }}
                       >
@@ -4124,14 +4124,14 @@ const AdminBankSoal = () => {
                       </select>
                     </div>
                     <div>
-                      <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>FAKULTAS</label>
+                      <label style={{ fontSize: 10, color: 'var(--t-3, #888)', fontWeight: 600, display: 'block', marginBottom: 4 }}>FAKULTAS</label>
                       <select
                         value={editForm.fakultas || ''}
                         onChange={e => setEditForm(f => ({ ...f, fakultas: e.target.value }))}
                         style={{
                           width: '100%', padding: '7px 10px', borderRadius: 7,
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          background: '#1a1a1a', color: '#fff',
+                          border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+                          background: 'var(--bg-3, #1a1a1a)', color: 'var(--t-1, #fff)',
                           fontSize: 13, boxSizing: 'border-box',
                         }}
                       >
@@ -4142,14 +4142,14 @@ const AdminBankSoal = () => {
                       </select>
                     </div>
                     <div>
-                      <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>TINGKAT</label>
+                      <label style={{ fontSize: 10, color: 'var(--t-3, #888)', fontWeight: 600, display: 'block', marginBottom: 4 }}>TINGKAT</label>
                       <select
                         value={editForm.tingkat || ''}
                         onChange={e => setEditForm(f => ({ ...f, tingkat: e.target.value }))}
                         style={{
                           width: '100%', padding: '7px 10px', borderRadius: 7,
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          background: '#1a1a1a', color: '#fff',
+                          border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+                          background: 'var(--bg-3, #1a1a1a)', color: 'var(--t-1, #fff)',
                           fontSize: 13, boxSizing: 'border-box',
                         }}
                       >
@@ -4157,13 +4157,13 @@ const AdminBankSoal = () => {
                         {['1', '2', '3', '4', '5'].map(t => <option key={t} value={t}>Tingkat {t}</option>)}
                       </select>
                       {editTingkatHint && (
-                        <div style={{ fontSize: 10, color: '#e0b85c', marginTop: 4 }}>{editTingkatHint}</div>
+                        <div style={{ fontSize: 10, color: 'var(--a-gold, #e0b85c)', marginTop: 4 }}>{editTingkatHint}</div>
                       )}
                     </div>
                   </div>
                   {selected.status === 'approved' && (
                     <div style={{ marginBottom: 12 }}>
-                      <label style={{ fontSize: 10, color: '#888', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                      <label style={{ fontSize: 10, color: 'var(--t-3, #888)', fontWeight: 600, display: 'block', marginBottom: 4 }}>
                         TEKS SOAL <span style={{ fontWeight: 400 }}>(untuk koreksi salah ketik / OCR)</span>
                       </label>
                       <textarea
@@ -4172,8 +4172,8 @@ const AdminBankSoal = () => {
                         rows={8} dir="auto"
                         style={{
                           width: '100%', padding: '8px 10px', borderRadius: 7,
-                          border: '1px solid rgba(255,255,255,0.1)',
-                          background: 'rgba(255,255,255,0.05)', color: '#fff',
+                          border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+                          background: 'rgba(var(--fg, 255,255,255),0.05)', color: 'var(--t-1, #fff)',
                           fontSize: 12, fontFamily: 'monospace', boxSizing: 'border-box', resize: 'vertical',
                         }}
                       />
@@ -4206,37 +4206,37 @@ const AdminBankSoal = () => {
                     ['Tahun', selected.tahun],
                     ['Fashl', selected.fashl],
                   ].map(([k, v]) => (
-                    <tr key={k} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <td style={{ color: '#888', fontSize: 13, padding: '8px 0', width: 120 }}>{k}</td>
-                      <td style={{ fontSize: 13, fontWeight: 600, color: '#fff', paddingBottom: 8, paddingTop: 8 }}>{v}</td>
+                    <tr key={k} style={{ borderBottom: '1px solid rgba(var(--fg, 255,255,255),0.05)' }}>
+                      <td style={{ color: 'var(--t-3, #888)', fontSize: 13, padding: '8px 0', width: 120 }}>{k}</td>
+                      <td style={{ fontSize: 13, fontWeight: 600, color: 'var(--t-1, #fff)', paddingBottom: 8, paddingTop: 8 }}>{v}</td>
                     </tr>
                   ))}
                   {/* Baris Status + AI Parsed */}
-                  <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ color: '#888', fontSize: 13, padding: '8px 0', width: 120 }}>Status</td>
-                    <td style={{ fontSize: 13, fontWeight: 600, color: '#fff', paddingBottom: 8, paddingTop: 8 }}>
+                  <tr style={{ borderBottom: '1px solid rgba(var(--fg, 255,255,255),0.05)' }}>
+                    <td style={{ color: 'var(--t-3, #888)', fontSize: 13, padding: '8px 0', width: 120 }}>Status</td>
+                    <td style={{ fontSize: 13, fontWeight: 600, color: 'var(--t-1, #fff)', paddingBottom: 8, paddingTop: 8 }}>
                       <span style={{
                         padding: '3px 10px', borderRadius: 99, fontSize: 12,
                         background: selected.status === 'approved'
                           ? 'rgba(62,207,142,0.15)' : selected.status === 'rejected'
-                          ? 'rgba(248,113,113,0.12)' : 'rgba(255,255,255,0.08)',
+                          ? 'rgba(248,113,113,0.12)' : 'rgba(var(--fg, 255,255,255),0.08)',
                         color: selected.status === 'approved' ? '#3ecf8e'
                           : selected.status === 'rejected' ? '#f87171' : '#aaa',
                       }}>
                         {selected.status}
                       </span>
                     </td>
-                    <td style={{ color: '#888', fontSize: 13, padding: '8px 0', width: 120 }}>AI Parsed</td>
-                    <td style={{ fontSize: 13, fontWeight: 600, color: '#fff' }}>
+                    <td style={{ color: 'var(--t-3, #888)', fontSize: 13, padding: '8px 0', width: 120 }}>AI Parsed</td>
+                    <td style={{ fontSize: 13, fontWeight: 600, color: 'var(--t-1, #fff)' }}>
                       {selected.ai_parsed ? 'Sudah' : 'Belum'}
                     </td>
                   </tr>
                   {/* Baris Bank Soal */}
                   <tr>
-                    <td style={{ color: '#888', fontSize: 13, padding: '8px 0' }}>Bank Soal</td>
+                    <td style={{ color: 'var(--t-3, #888)', fontSize: 13, padding: '8px 0' }}>Bank Soal</td>
                     <td colSpan={3} style={{ paddingTop: 8, paddingBottom: 8 }}>
                       {statusSoal === null ? (
-                        <span style={{ fontSize: 12, color: '#555' }}>Mengecek...</span>
+                        <span style={{ fontSize: 12, color: 'var(--t-4, #555)' }}>Mengecek...</span>
                       ) : statusSoal === 'ada' ? (
                         <span style={{
                           display: 'inline-flex', alignItems: 'center', gap: 6,
@@ -4244,7 +4244,7 @@ const AdminBankSoal = () => {
                           padding: '4px 12px', borderRadius: 99,
                           background: 'rgba(251,191,36,0.1)',
                           border: '1px solid rgba(251,191,36,0.3)',
-                          color: '#fbbf24',
+                          color: 'var(--a-amber, #fbbf24)',
                         }}>
                           ⚠️ Sudah ada soal ini — kemungkinan duplikat
                         </span>
@@ -4255,7 +4255,7 @@ const AdminBankSoal = () => {
                           padding: '4px 12px', borderRadius: 99,
                           background: 'rgba(62,207,142,0.1)',
                           border: '1px solid rgba(62,207,142,0.25)',
-                          color: '#3ecf8e',
+                          color: 'var(--a-green, #3ecf8e)',
                         }}>
                           ✦ Belum ada — soal baru!
                         </span>
@@ -4269,21 +4269,21 @@ const AdminBankSoal = () => {
               <div>
                 <div className="text-xs text-ink-muted mb-2 font-medium uppercase tracking-wide">Foto Soal</div>
                 {selected.foto_deleted ? (
-                  <div style={{ padding: '12px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, color: '#888', fontSize: 13, textAlign: 'center' }}>
+                  <div style={{ padding: '12px', background: 'rgba(var(--fg, 255,255,255),0.03)', borderRadius: 8, color: 'var(--t-3, #888)', fontSize: 13, textAlign: 'center' }}>
                     🗑️ Foto sudah dihapus setelah di-parse
                   </div>
                 ) : loadingFoto ? (
-                  <div style={{ padding: '12px', color: '#888', fontSize: 13, textAlign: 'center' }}>
+                  <div style={{ padding: '12px', color: 'var(--t-3, #888)', fontSize: 13, textAlign: 'center' }}>
                     Memuat foto...
                   </div>
                 ) : signedUrl ? (
                   <img
                     src={signedUrl}
                     alt="Foto soal"
-                    style={{ width: '100%', borderRadius: 8, maxHeight: 400, objectFit: 'contain', background: '#1a1a1a' }}
+                    style={{ width: '100%', borderRadius: 8, maxHeight: 400, objectFit: 'contain', background: 'var(--bg-3, #1a1a1a)' }}
                   />
                 ) : (
-                  <div style={{ padding: '12px', color: '#888', fontSize: 13, textAlign: 'center' }}>
+                  <div style={{ padding: '12px', color: 'var(--t-3, #888)', fontSize: 13, textAlign: 'center' }}>
                     Foto tidak tersedia
                   </div>
                 )}
@@ -4310,11 +4310,11 @@ const AdminBankSoal = () => {
                   borderRadius: 8, fontSize: 12,
                 }}>
                   {tahunDariSoal === selected.tahun ? (
-                    <span style={{ color: '#3ecf8e' }}>
+                    <span style={{ color: 'var(--a-green, #3ecf8e)' }}>
                       ✅ Tahun di kertas soal: <strong>{tahunDariSoal}</strong> — sesuai dengan submission
                     </span>
                   ) : (
-                    <span style={{ color: '#ffc832' }}>
+                    <span style={{ color: 'var(--a-amber, #ffc832)' }}>
                       ⚠️ Tahun di kertas soal: <strong>{tahunDariSoal}</strong> — berbeda dengan yang disubmit ({selected.tahun || 'tidak ada'})
                     </span>
                   )}
@@ -4324,12 +4324,12 @@ const AdminBankSoal = () => {
               {/* Preview hasil parse — tampilkan Arab + arti per soal */}
               {soalTeks && soalTeks.includes('[SOAL_ARAB]') && (
                 <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, color: '#888', fontWeight: 600, marginBottom: 8 }}>
+                  <div style={{ fontSize: 11, color: 'var(--t-3, #888)', fontWeight: 600, marginBottom: 8 }}>
                     PREVIEW HASIL PARSE
                   </div>
                   <div style={{
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(var(--fg, 255,255,255),0.02)',
+                    border: '1px solid rgba(var(--fg, 255,255,255),0.08)',
                     borderRadius: 10, padding: '12px 14px',
                     maxHeight: 300, overflowY: 'auto',
                   }}>
@@ -4339,14 +4339,14 @@ const AdminBankSoal = () => {
                       const arti  = parts[1]?.trim();
                       const total = soalTeks.split('[SOAL_ARAB]').slice(1).filter(b => b.trim()).length;
                       return (
-                        <div key={i} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: i < total - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none' }}>
+                        <div key={i} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: i < total - 1 ? '1px solid rgba(var(--fg, 255,255,255),0.06)' : 'none' }}>
                           {arab && (
-                            <div style={{ direction: 'rtl', textAlign: 'right', fontSize: 15, color: '#eee', lineHeight: 2, fontFamily: 'serif', marginBottom: 8 }}>
+                            <div style={{ direction: 'rtl', textAlign: 'right', fontSize: 15, color: 'var(--t-1, #eee)', lineHeight: 2, fontFamily: 'serif', marginBottom: 8 }}>
                               {arab}
                             </div>
                           )}
                           {arti && (
-                            <div style={{ fontSize: 13, color: '#3ecf8e', lineHeight: 1.6, paddingLeft: 12, borderLeft: '2px solid rgba(62,207,142,0.3)' }}>
+                            <div style={{ fontSize: 13, color: 'var(--a-green, #3ecf8e)', lineHeight: 1.6, paddingLeft: 12, borderLeft: '2px solid rgba(62,207,142,0.3)' }}>
                               {arti}
                             </div>
                           )}
@@ -4359,7 +4359,7 @@ const AdminBankSoal = () => {
 
               {/* Textarea raw untuk edit manual */}
               <div style={{ marginBottom: 16 }}>
-                <div style={{ fontSize: 11, color: '#888', fontWeight: 600, marginBottom: 6 }}>
+                <div style={{ fontSize: 11, color: 'var(--t-3, #888)', fontWeight: 600, marginBottom: 6 }}>
                   TEKS SOAL RAW (BISA DIEDIT)
                 </div>
                 <textarea
@@ -4370,8 +4370,8 @@ const AdminBankSoal = () => {
                   placeholder="Teks soal akan muncul di sini setelah di-parse, atau isi manual..."
                   style={{
                     width: '100%', padding: '10px 14px', borderRadius: 9,
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    background: 'rgba(255,255,255,0.04)', color: '#fff',
+                    border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+                    background: 'rgba(var(--fg, 255,255,255),0.04)', color: 'var(--t-1, #fff)',
                     fontSize: 13, resize: 'vertical', boxSizing: 'border-box',
                     fontFamily: 'monospace',
                   }}
@@ -4390,10 +4390,10 @@ const AdminBankSoal = () => {
                   borderRadius: 12,
                   padding: '14px 16px',
                 }}>
-                  <div style={{ fontSize: 12, color: '#3ecf8e', fontWeight: 700, marginBottom: 6 }}>
+                  <div style={{ fontSize: 12, color: 'var(--a-green, #3ecf8e)', fontWeight: 700, marginBottom: 6 }}>
                     💡 Generate Jawaban dengan AI
                   </div>
-                  <div style={{ fontSize: 12, color: '#aaa', lineHeight: 1.6, marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, color: 'var(--t-2, #aaa)', lineHeight: 1.6, marginBottom: 12 }}>
                     Salin prompt ini → paste ke Claude → dapat arti, jawaban Arab, dan penjelasan → isi ke field di bawah.
                   </div>
                   <button
@@ -4449,7 +4449,7 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                       borderRadius: 9,
                       border: '1px solid rgba(62,207,142,0.4)',
                       background: 'rgba(62,207,142,0.1)',
-                      color: '#3ecf8e',
+                      color: 'var(--a-green, #3ecf8e)',
                       fontWeight: 700,
                       fontSize: 13,
                       cursor: 'pointer',
@@ -4458,8 +4458,8 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                   >
                     {copiedPrompt ? '✅ Prompt Tersalin! Paste ke Claude sekarang' : '📋 Salin Prompt untuk Claude'}
                   </button>
-                  <div style={{ marginTop: 10, fontSize: 11, color: '#666', lineHeight: 1.6 }}>
-                    ⚠️ Setelah dapat jawaban dari Claude: cek bagian <strong style={{ color: '#888' }}>[PERLU DIVERIFIKASI]</strong> sebelum approve. Ayat & hadits wajib dicek ulang ke sumber aslinya.
+                  <div style={{ marginTop: 10, fontSize: 11, color: 'var(--t-4, #666)', lineHeight: 1.6 }}>
+                    ⚠️ Setelah dapat jawaban dari Claude: cek bagian <strong style={{ color: 'var(--t-3, #888)' }}>[PERLU DIVERIFIKASI]</strong> sebelum approve. Ayat & hadits wajib dicek ulang ke sumber aslinya.
                   </div>
                 </div>
               </div>
@@ -4469,7 +4469,7 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                   marginBottom: 20, padding: '12px 14px',
                   background: 'rgba(255,200,50,0.06)',
                   border: '1px solid rgba(255,200,50,0.2)',
-                  borderRadius: 10, fontSize: 13, color: '#a08030',
+                  borderRadius: 10, fontSize: 13, color: 'var(--a-gold, #a08030)',
                 }}>
                   💡 Input jawaban per soal tersedia setelah submission di-approve.
                 </div>
@@ -4505,10 +4505,10 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                             borderRadius: 8,
                             border: reward === opt.value
                               ? '1px solid #3ecf8e'
-                              : '1px solid rgba(255,255,255,0.1)',
+                              : '1px solid rgba(var(--fg, 255,255,255),0.1)',
                             background: reward === opt.value
                               ? 'rgba(62,207,142,0.15)'
-                              : 'rgba(255,255,255,0.03)',
+                              : 'rgba(var(--fg, 255,255,255),0.03)',
                             color: reward === opt.value ? '#3ecf8e' : '#aaa',
                             fontSize: 12,
                             fontWeight: reward === opt.value ? 700 : 400,
@@ -4526,7 +4526,7 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                         marginTop: 10, padding: '10px 12px',
                         background: 'rgba(255,200,50,0.06)',
                         border: '1px solid rgba(255,200,50,0.2)',
-                        borderRadius: 8, fontSize: 12, color: '#a08030',
+                        borderRadius: 8, fontSize: 12, color: 'var(--a-gold, #a08030)',
                       }}>
                         ⚠️ Rp 25rb untuk 1 termin penuh, Rp 50rb untuk 2 termin penuh (member); non-member 2 termin dapat Library + Rp 25rb.
                         Voucher diklaim manual via japri — kamu yang proses transfernya.
@@ -4537,7 +4537,7 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                         marginTop: 10, padding: '10px 12px',
                         background: 'rgba(62,207,142,0.06)',
                         border: '1px solid rgba(62,207,142,0.15)',
-                        borderRadius: 8, fontSize: 12, color: '#3ecf8e',
+                        borderRadius: 8, fontSize: 12, color: 'var(--a-green, #3ecf8e)',
                       }}>
                         ✅ Buat member baru di tab Member (tanpa email) — kamu akan dapat PIN aktivasi untuk dikirim ke submitter.
                         Library gratis tidak termasuk AI Partner.
@@ -4600,7 +4600,7 @@ Format output: gunakan persis 3 section dengan header yang sama seperti di atas.
                         padding: '9px 16px', borderRadius: 9,
                         border: '1px solid rgba(255,80,80,0.3)',
                         background: 'rgba(255,80,80,0.08)',
-                        color: '#ff8080', fontSize: 12, fontWeight: 700,
+                        color: 'var(--a-red, #ff8080)', fontSize: 12, fontWeight: 700,
                         cursor: 'pointer',
                       }}
                     >

@@ -104,7 +104,7 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
         {/* Modal Header */}
         <div style={{
           padding: '18px 24px',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid rgba(var(--fg, 255,255,255),0.07)',
           background: 'rgba(62,207,142,0.04)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
           flexShrink: 0,
@@ -113,23 +113,23 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
             <div style={{ fontSize: 10, color: EM, fontWeight: 700, letterSpacing: 1.5, marginBottom: 6 }}>
               BANK SOAL IMTIHAN
             </div>
-            <div style={{ fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 4 }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: 'var(--t-1, #fff)', marginBottom: 4 }}>
               {group.maddah_nama}
             </div>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <span style={{
-                fontSize: 11, color: '#888',
-                background: 'rgba(255,255,255,0.05)',
+                fontSize: 11, color: 'var(--t-3, #888)',
+                background: 'rgba(var(--fg, 255,255,255),0.05)',
                 padding: '3px 10px', borderRadius: 99,
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: '1px solid rgba(var(--fg, 255,255,255),0.08)',
               }}>
                 {group.tahun}
               </span>
               <span style={{
-                fontSize: 11, color: '#888',
-                background: 'rgba(255,255,255,0.05)',
+                fontSize: 11, color: 'var(--t-3, #888)',
+                background: 'rgba(var(--fg, 255,255,255),0.05)',
                 padding: '3px 10px', borderRadius: 99,
-                border: '1px solid rgba(255,255,255,0.08)',
+                border: '1px solid rgba(var(--fg, 255,255,255),0.08)',
               }}>
                 {group.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
               </span>
@@ -144,7 +144,7 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
               </span>
               {isMember && pahamCount > 0 && (
                 <span style={{
-                  fontSize: 11, color: '#ffb84d',
+                  fontSize: 11, color: 'var(--a-amber, #ffb84d)',
                   background: 'rgba(255,184,77,0.1)',
                   padding: '3px 10px', borderRadius: 99,
                   border: '1px solid rgba(255,184,77,0.2)',
@@ -159,9 +159,9 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
             onClick={onClose}
             style={{
               width: 36, height: 36, borderRadius: 10,
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: 'rgba(255,255,255,0.05)',
-              color: '#888', cursor: 'pointer', fontSize: 18,
+              border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+              background: 'rgba(var(--fg, 255,255,255),0.05)',
+              color: 'var(--t-3, #888)', cursor: 'pointer', fontSize: 18,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               flexShrink: 0,
             }}
@@ -193,7 +193,7 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
                   marginBottom: 28,
                   paddingBottom: 28,
                   borderBottom: (si < allSoal.length - 1 || bi < blocksLength - 1)
-                    ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                    ? '1px solid rgba(var(--fg, 255,255,255),0.06)' : 'none',
                 }}>
                   {/* Nomor soal */}
                   <div style={{
@@ -207,17 +207,17 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
                         background: 'rgba(62,207,142,0.15)',
                         border: '1px solid rgba(62,207,142,0.3)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: 13, fontWeight: 800, color: '#3ecf8e',
+                        fontSize: 13, fontWeight: 800, color: 'var(--a-green, #3ecf8e)',
                         flexShrink: 0,
                       }}>{nomor}</div>
-                      <span style={{ fontSize: 11, color: '#555', fontWeight: 600, letterSpacing: 0.5 }}>
+                      <span style={{ fontSize: 11, color: 'var(--t-4, #555)', fontWeight: 600, letterSpacing: 0.5 }}>
                         SOAL {nomor}
                       </span>
                       {soalStatus === 'paham' && (
-                        <span style={{ fontSize: 11, color: '#3ecf8e' }}>✅ Paham</span>
+                        <span style={{ fontSize: 11, color: 'var(--a-green, #3ecf8e)' }}>✅ Paham</span>
                       )}
                       {soalStatus === 'belum' && (
-                        <span style={{ fontSize: 11, color: '#ffb84d' }}>🤔 Masih bingung</span>
+                        <span style={{ fontSize: 11, color: 'var(--a-amber, #ffb84d)' }}>🤔 Masih bingung</span>
                       )}
                     </div>
 
@@ -248,9 +248,9 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
                       direction: 'rtl', textAlign: 'right',
                       fontSize: 17, lineHeight: 2.1,
                       fontFamily: '"Scheherazade New","Noto Naskh Arabic","Traditional Arabic",serif',
-                      color: '#f0ece4',
-                      background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(255,255,255,0.08)',
+                      color: 'var(--t-1, #f0ece4)',
+                      background: 'rgba(var(--fg, 255,255,255),0.03)',
+                      border: '1px solid rgba(var(--fg, 255,255,255),0.08)',
                       borderRadius: 12, padding: '16px 20px',
                       marginBottom: 14,
                     }}>
@@ -267,7 +267,7 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
                       paddingBottom: 4,
                     }}>
                       <div style={{
-                        fontSize: 10, fontWeight: 700, color: '#3ecf8e',
+                        fontSize: 10, fontWeight: 700, color: 'var(--a-green, #3ecf8e)',
                         letterSpacing: 1, marginBottom: 10,
                       }}>
                         TERJEMAHAN
@@ -287,8 +287,8 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
                         style={{
                           padding: '6px 14px', borderRadius: 8,
                           fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                          border: soalStatus === 'paham' ? '1px solid rgba(62,207,142,0.6)' : '1px solid rgba(255,255,255,0.1)',
-                          background: soalStatus === 'paham' ? 'rgba(62,207,142,0.15)' : 'rgba(255,255,255,0.04)',
+                          border: soalStatus === 'paham' ? '1px solid rgba(62,207,142,0.6)' : '1px solid rgba(var(--fg, 255,255,255),0.1)',
+                          background: soalStatus === 'paham' ? 'rgba(62,207,142,0.15)' : 'rgba(var(--fg, 255,255,255),0.04)',
                           color: soalStatus === 'paham' ? '#3ecf8e' : '#888',
                         }}
                       >✅ Paham</button>
@@ -297,8 +297,8 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
                         style={{
                           padding: '6px 14px', borderRadius: 8,
                           fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                          border: soalStatus === 'belum' ? '1px solid rgba(255,184,77,0.6)' : '1px solid rgba(255,255,255,0.1)',
-                          background: soalStatus === 'belum' ? 'rgba(255,184,77,0.15)' : 'rgba(255,255,255,0.04)',
+                          border: soalStatus === 'belum' ? '1px solid rgba(255,184,77,0.6)' : '1px solid rgba(var(--fg, 255,255,255),0.1)',
+                          background: soalStatus === 'belum' ? 'rgba(255,184,77,0.15)' : 'rgba(var(--fg, 255,255,255),0.04)',
                           color: soalStatus === 'belum' ? '#ffb84d' : '#888',
                         }}
                       >🤔 Masih Bingung</button>
@@ -315,10 +315,10 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
             border: '1px solid rgba(62,207,142,0.18)',
             borderRadius: 14, textAlign: 'center',
           }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 6 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--t-1, #fff)', marginBottom: 6 }}>
               🔒 Jawaban lengkap ada di paket Library
             </div>
-            <div style={{ fontSize: 13, color: '#888', marginBottom: 16, lineHeight: 1.6 }}>
+            <div style={{ fontSize: 13, color: 'var(--t-3, #888)', marginBottom: 16, lineHeight: 1.6 }}>
               Prompt jawaban lengkap, arti soal, dan semua soal dari maddah lainnya<br/>
               terbuka untuk member — sekali bayar {LIBRARY_PRICE}, berlaku selamanya.
             </div>
@@ -331,10 +331,10 @@ Bahasa pengantar: Indonesia akademik. Istilah teknis tetap Arab.`;
               }}>
               Gabung Member →
             </button>
-            <div style={{ fontSize: 12, color: '#777', marginTop: 12 }}>
+            <div style={{ fontSize: 12, color: 'var(--t-3, #777)', marginTop: 12 }}>
               Sudah member?{' '}
               <button onClick={() => window.dispatchEvent(new CustomEvent('talqeeh:open-login'))}
-                style={{ color: '#3ecf8e', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontSize: 12 }}>
+                style={{ color: 'var(--a-green, #3ecf8e)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontSize: 12 }}>
                 Masuk dengan Google
               </button>
             </div>
@@ -416,12 +416,12 @@ export default function BankSoalPublikPage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0c0c0c' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-0, #0c0c0c)' }}>
       {/* Hero header */}
       <div style={{
         padding: '48px 24px 32px',
         textAlign: 'center',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
+        borderBottom: '1px solid rgba(var(--fg, 255,255,255),0.06)',
         background: 'linear-gradient(to bottom, rgba(62,207,142,0.06), transparent)',
       }}>
         <div style={{
@@ -432,13 +432,13 @@ export default function BankSoalPublikPage() {
         </div>
         <h1 style={{
           fontSize: 'clamp(28px,5vw,42px)', fontWeight: 800,
-          color: '#fff', margin: '0 0 10px',
+          color: 'var(--t-1, #fff)', margin: '0 0 10px',
           fontFamily: '"DM Sans",sans-serif', lineHeight: 1.15,
         }}>
           Soal Ujian Al-Azhar
         </h1>
         <p style={{
-          fontSize: 15, color: '#888', margin: '0 auto 24px',
+          fontSize: 15, color: 'var(--t-3, #888)', margin: '0 auto 24px',
           maxWidth: 480, lineHeight: 1.7,
         }}>
           Koleksi soal tahriri dari Masisir untuk Masisir.<br/>
@@ -455,8 +455,8 @@ export default function BankSoalPublikPage() {
             onChange={e => setFilter(f => ({ ...f, tahun: e.target.value, maddah: '' }))}
             style={{
               padding: '9px 14px', borderRadius: 10, fontSize: 13,
-              border: '1px solid rgba(255,255,255,0.12)',
-              background: '#1a1a1a', color: filter.tahun ? '#fff' : '#666',
+              border: '1px solid rgba(var(--fg, 255,255,255),0.12)',
+              background: 'var(--bg-3, #1a1a1a)', color: filter.tahun ? '#fff' : '#666',
               minWidth: 140, cursor: 'pointer',
             }}
           >
@@ -469,8 +469,8 @@ export default function BankSoalPublikPage() {
             onChange={e => setFilter(f => ({ ...f, maddah: e.target.value }))}
             style={{
               padding: '9px 14px', borderRadius: 10, fontSize: 13,
-              border: '1px solid rgba(255,255,255,0.12)',
-              background: '#1a1a1a', color: filter.maddah ? '#fff' : '#666',
+              border: '1px solid rgba(var(--fg, 255,255,255),0.12)',
+              background: 'var(--bg-3, #1a1a1a)', color: filter.maddah ? '#fff' : '#666',
               minWidth: 200, cursor: 'pointer',
             }}
           >
@@ -483,8 +483,8 @@ export default function BankSoalPublikPage() {
               onClick={() => setFilter({ tahun: '', maddah: '' })}
               style={{
                 padding: '9px 14px', borderRadius: 10, fontSize: 13,
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: 'transparent', color: '#666', cursor: 'pointer',
+                border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+                background: 'transparent', color: 'var(--t-4, #666)', cursor: 'pointer',
               }}
             >✕ Reset</button>
           )}
@@ -497,7 +497,7 @@ export default function BankSoalPublikPage() {
         {/* Summary */}
         {!loading && groups.length > 0 && (
           <div style={{
-            fontSize: 12, color: '#555', marginBottom: 20,
+            fontSize: 12, color: 'var(--t-4, #555)', marginBottom: 20,
             display: 'flex', alignItems: 'center', gap: 6,
           }}>
             <span style={{
@@ -517,8 +517,8 @@ export default function BankSoalPublikPage() {
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} style={{
                 height: 140, borderRadius: 14,
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.06)',
+                background: 'rgba(var(--fg, 255,255,255),0.03)',
+                border: '1px solid rgba(var(--fg, 255,255,255),0.06)',
                 animation: 'pulse 1.5s ease-in-out infinite',
               }}/>
             ))}
@@ -526,7 +526,7 @@ export default function BankSoalPublikPage() {
         ) : groups.length === 0 ? (
           <div style={{
             textAlign: 'center', padding: '64px 20px',
-            color: '#555', fontSize: 14,
+            color: 'var(--t-4, #555)', fontSize: 14,
           }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>📭</div>
             Belum ada soal untuk filter ini.
@@ -546,8 +546,8 @@ export default function BankSoalPublikPage() {
                         onClick={() => setSelected(group)}
                         style={{
                           borderRadius: 14, padding: '18px 18px 16px',
-                          background: '#111',
-                          border: '1px solid rgba(255,255,255,0.08)',
+                          background: 'var(--bg-1, #111)',
+                          border: '1px solid rgba(var(--fg, 255,255,255),0.08)',
                           cursor: 'pointer',
                           transition: 'all 0.18s ease',
                           display: 'flex', flexDirection: 'column',
@@ -558,25 +558,25 @@ export default function BankSoalPublikPage() {
                           e.currentTarget.style.transform = 'translateY(-2px)';
                         }}
                         onMouseLeave={e => {
-                          e.currentTarget.style.border = '1px solid rgba(255,255,255,0.08)';
+                          e.currentTarget.style.border = '1px solid rgba(var(--fg, 255,255,255),0.08)';
                           e.currentTarget.style.transform = 'translateY(0)';
                         }}
                       >
-                        <div style={{ fontSize: 10, fontWeight: 700, color: '#555', marginBottom: 10, textTransform: 'uppercase' }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--t-4, #555)', marginBottom: 10, textTransform: 'uppercase' }}>
                           {fakultasLabel(group.fakultas)}
                         </div>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', lineHeight: 1.35, marginBottom: 6, flex: 1 }}>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--t-1, #fff)', lineHeight: 1.35, marginBottom: 6, flex: 1 }}>
                           {group.maddah_nama}
                         </div>
-                        <div style={{ fontSize: 12, color: '#666', marginBottom: 14 }}>
+                        <div style={{ fontSize: 12, color: 'var(--t-4, #666)', marginBottom: 14 }}>
                           {group.tahun} · {group.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: '#3ecf8e', display: 'flex', alignItems: 'center', gap: 5 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid rgba(var(--fg, 255,255,255),0.06)' }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--a-green, #3ecf8e)', display: 'flex', alignItems: 'center', gap: 5 }}>
                             <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#3ecf8e', display: 'inline-block' }}/>
                             {group.count} soal
                           </span>
-                          <span style={{ fontSize: 11, color: '#444' }}>Lihat →</span>
+                          <span style={{ fontSize: 11, color: 'var(--t-4, #444)' }}>Lihat →</span>
                         </div>
                       </div>
                     ))}
@@ -590,8 +590,8 @@ export default function BankSoalPublikPage() {
                         }}
                         style={{
                           borderRadius: 14, padding: '18px 18px 16px',
-                          background: 'rgba(255,255,255,0.02)',
-                          border: '1px solid rgba(255,255,255,0.05)',
+                          background: 'rgba(var(--fg, 255,255,255),0.02)',
+                          border: '1px solid rgba(var(--fg, 255,255,255),0.05)',
                           cursor: 'pointer',
                           display: 'flex', flexDirection: 'column',
                           position: 'relative', overflow: 'hidden',
@@ -605,32 +605,32 @@ export default function BankSoalPublikPage() {
                         }}
                         onMouseLeave={e => {
                           e.currentTarget.style.opacity = '0.5';
-                          e.currentTarget.style.border = '1px solid rgba(255,255,255,0.05)';
+                          e.currentTarget.style.border = '1px solid rgba(var(--fg, 255,255,255),0.05)';
                         }}
                       >
                         {/* Lock overlay */}
                         <div style={{
                           position: 'absolute', top: 10, right: 10,
                           width: 24, height: 24, borderRadius: 6,
-                          background: 'rgba(255,255,255,0.06)',
+                          background: 'rgba(var(--fg, 255,255,255),0.06)',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                           fontSize: 12,
                         }}>🔒</div>
 
-                        <div style={{ fontSize: 10, fontWeight: 700, color: '#444', marginBottom: 10, textTransform: 'uppercase' }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: 'var(--t-4, #444)', marginBottom: 10, textTransform: 'uppercase' }}>
                           {fakultasLabel(group.fakultas)}
                         </div>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: '#888', lineHeight: 1.35, marginBottom: 6, flex: 1 }}>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--t-3, #888)', lineHeight: 1.35, marginBottom: 6, flex: 1 }}>
                           {group.maddah_nama}
                         </div>
-                        <div style={{ fontSize: 12, color: '#444', marginBottom: 14 }}>
+                        <div style={{ fontSize: 12, color: 'var(--t-4, #444)', marginBottom: 14 }}>
                           {group.tahun} · {group.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
                         </div>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-                          <span style={{ fontSize: 12, color: '#555' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTop: '1px solid rgba(var(--fg, 255,255,255),0.04)' }}>
+                          <span style={{ fontSize: 12, color: 'var(--t-4, #555)' }}>
                             {group.count} soal
                           </span>
-                          <span style={{ fontSize: 11, color: '#3ecf8e', fontWeight: 600 }}>
+                          <span style={{ fontSize: 11, color: 'var(--a-green, #3ecf8e)', fontWeight: 600 }}>
                             Untuk member →
                           </span>
                         </div>
@@ -647,10 +647,10 @@ export default function BankSoalPublikPage() {
                       borderRadius: 16, textAlign: 'center',
                     }}>
                       <div style={{ fontSize: 20, marginBottom: 8 }}>🔒</div>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 6 }}>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--t-1, #fff)', marginBottom: 6 }}>
                         {lockedGroups.length} paket soal lainnya hanya untuk member
                       </div>
-                      <div style={{ fontSize: 13, color: '#888', marginBottom: 20, lineHeight: 1.6 }}>
+                      <div style={{ fontSize: 13, color: 'var(--t-3, #888)', marginBottom: 20, lineHeight: 1.6 }}>
                         Kamu sudah lihat {MAX_FREE} paket soal gratis. Semua soal lengkap dengan prompt jawabannya
                         ada di paket Library — sekali bayar, berlaku selamanya.
                       </div>
@@ -664,9 +664,9 @@ export default function BankSoalPublikPage() {
                         </button>
                         <button onClick={() => window.dispatchEvent(new CustomEvent('talqeeh:open-login'))} style={{
                           padding: '11px 24px', borderRadius: 11,
-                          border: '1px solid rgba(255,255,255,0.12)',
-                          background: 'rgba(255,255,255,0.04)',
-                          color: '#ccc', fontWeight: 600, fontSize: 14,
+                          border: '1px solid rgba(var(--fg, 255,255,255),0.12)',
+                          background: 'rgba(var(--fg, 255,255,255),0.04)',
+                          color: 'var(--t-2, #ccc)', fontWeight: 600, fontSize: 14,
                           cursor: 'pointer',
                         }}>
                           Sudah member? Masuk
@@ -690,10 +690,10 @@ export default function BankSoalPublikPage() {
           alignItems: 'center', gap: 20, flexWrap: 'wrap',
         }}>
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 4 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--t-1, #fff)', marginBottom: 4 }}>
               Punya soal imtihan tahun lalu?
             </div>
-            <div style={{ fontSize: 13, color: '#888' }}>
+            <div style={{ fontSize: 13, color: 'var(--t-3, #888)' }}>
               Submit & dapat paket Library gratis (belum member) atau voucher makan siang (member)
             </div>
           </div>

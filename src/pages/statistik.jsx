@@ -38,13 +38,13 @@ const Heatmap = ({ days, weeks = 12 }) => {
             {col.map(c => (
               <span key={c.key} title={c.key}
                 className="w-3 h-3 md:w-3.5 md:h-3.5 rounded-sm"
-                style={{ background: c.future ? 'transparent' : c.on ? '#3ecf8e' : 'rgba(255,255,255,0.07)' }}/>
+                style={{ background: c.future ? 'transparent' : c.on ? '#3ecf8e' : 'rgba(var(--fg, 255,255,255),0.07)' }}/>
             ))}
           </div>
         ))}
       </div>
       <div className="flex items-center gap-1.5 mt-2 text-[10px] text-ink-soft">
-        <span className="w-2.5 h-2.5 rounded-sm" style={{ background: 'rgba(255,255,255,0.07)' }}/> tidak belajar
+        <span className="w-2.5 h-2.5 rounded-sm" style={{ background: 'rgba(var(--fg, 255,255,255),0.07)' }}/> tidak belajar
         <span className="w-2.5 h-2.5 rounded-sm ml-2" style={{ background: '#3ecf8e' }}/> belajar
       </div>
     </div>
@@ -188,8 +188,8 @@ const StatistikPage = () => {
                 {soalCounts === null ? <div className="text-sm text-ink-muted">Memuat…</div>
                   : (soalCounts.paham || soalCounts.belum)
                     ? <ProportionBar parts={[
-                        { label: 'Paham', value: soalCounts.paham || 0, color: '#3ecf8e' },
-                        { label: 'Belum', value: soalCounts.belum || 0, color: '#f59e0b' },
+                        { label: 'Paham', value: soalCounts.paham || 0, color: 'var(--a-green, #3ecf8e)' },
+                        { label: 'Belum', value: soalCounts.belum || 0, color: 'var(--a-amber, #f59e0b)' },
                       ]}/>
                     : <div className="text-sm text-ink-muted">Belum ada soal yang kamu tandai.</div>}
               </Box>

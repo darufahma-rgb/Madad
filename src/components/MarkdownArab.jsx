@@ -30,7 +30,7 @@ export default function MarkdownArab({ content, style = {}, ltr = false }) {
         textAlign: ltr ? 'left' : 'right',
         lineHeight: 2,
         fontSize: 15,
-        color: '#ddd',
+        color: 'var(--t-1, #ddd)',
         fontFamily: ltr ? 'inherit' : 'serif',
         ...style,
       }}

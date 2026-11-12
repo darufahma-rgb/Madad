@@ -135,7 +135,7 @@ const ProfilBelajarPage = () => {
                   className={`w-full text-left px-5 py-4 rounded-xl border transition flex items-center gap-4 ${sel ? 'border-emerald-500/60 bg-emerald-500/15' : 'border-white/10 bg-white/3 hover:border-emerald-500/35'}`}>
                   <span className="flex gap-1 flex-shrink-0">
                     {[1, 2, 3, 4, 5].map(k => (
-                      <span key={k} className="w-2 h-2 rounded-full" style={{ background: k <= o.value ? '#3ecf8e' : 'rgba(255,255,255,0.12)' }}/>
+                      <span key={k} className="w-2 h-2 rounded-full" style={{ background: k <= o.value ? '#3ecf8e' : 'rgba(var(--fg, 255,255,255),0.12)' }}/>
                     ))}
                   </span>
                   <span className="text-sm text-ink">{o.label}</span>

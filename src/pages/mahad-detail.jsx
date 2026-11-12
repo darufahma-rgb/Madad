@@ -54,7 +54,7 @@ const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled, slotShared, 
           {runLocked ? (
             <button onClick={guardSlots(slotState, idPrefix, toast, () => {})}
               className="btn btn-ghost text-xs px-3 py-2.5 justify-center inline-flex items-center gap-1.5 opacity-60"
-              style={{ minHeight: 40, borderColor: 'rgba(62,207,142,0.35)', color: '#a7f3d0' }}>
+              style={{ minHeight: 40, borderColor: 'rgba(62,207,142,0.35)', color: 'var(--a-green, #a7f3d0)' }}>
               <Icon name="sparkles" className="w-3.5 h-3.5"/> Jalankan di sini
             </button>
           ) : (
@@ -82,7 +82,7 @@ const MahadPromptCard = ({ p, maddah, resolvePrompt, formatEnabled, slotShared, 
 
       {/* Prompt preview */}
       <div className="p-3 rounded-xl mb-3"
-        style={{background:"rgba(255,255,255,0.03)", border:"1px solid rgba(255,255,255,0.08)"}}>
+        style={{background:"rgba(var(--fg, 255,255,255),0.03)", border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
         <p className={`text-xs text-ink-muted leading-relaxed whitespace-pre-wrap font-mono ${
           showFull ? "" : "line-clamp-4"
         }`}>
@@ -281,7 +281,7 @@ const MahadDetailPage = () => {
               onChange={e => setTopikInput(e.target.value)}
               placeholder="Atau ketik topik sendiri, mis. Qira'ah Jahriyyah…"
               className="flex-1 text-sm px-3 py-2 rounded-xl text-ink placeholder:text-ink-soft outline-none focus:ring-1 focus:ring-violet-500/50"
-              style={{background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.10)", minHeight:40}}
+              style={{background:"rgba(var(--fg, 255,255,255),0.05)", border:"1px solid rgba(var(--fg, 255,255,255),0.10)", minHeight:40}}
             />
             {topikInput && (
               <button onClick={() => setTopikInput("")}
@@ -319,7 +319,7 @@ const MahadDetailPage = () => {
 
         {/* Kind tabs */}
         <div className="sticky top-[var(--app-header-h)] z-20 -mx-4 md:mx-0 mb-5"
-          style={{background:"rgba(10,5,20,0.92)", backdropFilter:"blur(16px)", borderBottom:"1px solid rgba(255,255,255,0.07)"}}>
+          style={{background:"rgba(var(--surf, 10,5,20),0.92)", backdropFilter:"blur(16px)", borderBottom:"1px solid rgba(var(--fg, 255,255,255),0.07)"}}>
           <div className="flex gap-2 px-4 md:px-0 py-3 overflow-x-auto no-scrollbar">
             {MAHAD_KINDS.map(kind => {
               const count = Array.isArray(maddah.prompts?.[kind.id])

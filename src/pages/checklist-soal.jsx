@@ -46,12 +46,12 @@ const ALL_MADDAH = [
 ];
 
 const KATEGORI = [
-  { id: "qurani",  label: "Quran & Tafsir",         color: "#a78bfa" },
-  { id: "haditsi", label: "Hadits & Mustholah",      color: "#a78bfa" },
-  { id: "fiqhi",   label: "Fiqh & Ushul",            color: "#fbbf24" },
-  { id: "aqdi",    label: "Aqidah & Pemikiran",       color: "#a78bfa" },
-  { id: "lughawi", label: "Lughah Arabiyah",          color: "#fbbf24" },
-  { id: "tarikhi", label: "Tarikh & Dakwah",          color: "#a78bfa" },
+  { id: "qurani",  label: "Quran & Tafsir",         color: "var(--a-violet, #a78bfa)" },
+  { id: "haditsi", label: "Hadits & Mustholah",      color: "var(--a-violet, #a78bfa)" },
+  { id: "fiqhi",   label: "Fiqh & Ushul",            color: "var(--a-amber, #fbbf24)" },
+  { id: "aqdi",    label: "Aqidah & Pemikiran",       color: "var(--a-violet, #a78bfa)" },
+  { id: "lughawi", label: "Lughah Arabiyah",          color: "var(--a-amber, #fbbf24)" },
+  { id: "tarikhi", label: "Tarikh & Dakwah",          color: "var(--a-violet, #a78bfa)" },
 ];
 
 const FAKULTAS_LIST = [
@@ -117,12 +117,12 @@ export default function ChecklistSoalPage() {
   const faktultasAktifData = FAKULTAS_LIST.find(f => f.id === aktivFakultas);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0c0c0c", paddingBottom: 80 }}>
+    <div style={{ minHeight: "100vh", background: "var(--bg-0, #0c0c0c)", paddingBottom: 80 }}>
 
       {/* ── Header ── */}
       <div style={{
         padding: "40px 24px 28px", textAlign: "center",
-        borderBottom: "1px solid rgba(255,255,255,0.06)",
+        borderBottom: "1px solid rgba(var(--fg, 255,255,255),0.06)",
         background: "linear-gradient(to bottom, rgba(62,207,142,0.05), transparent)",
       }}>
         <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: 2, color: EM, marginBottom: 10 }}>
@@ -130,12 +130,12 @@ export default function ChecklistSoalPage() {
         </div>
         <h1 style={{
           fontSize: "clamp(22px,4vw,34px)", fontWeight: 800,
-          color: "#fff", margin: "0 0 8px",
+          color: "var(--t-1, #fff)", margin: "0 0 8px",
           fontFamily: '"DM Sans",sans-serif',
         }}>
           Maddah Mana yang Belum Ada Soalnya?
         </h1>
-        <p style={{ fontSize: 14, color: "#888", margin: "0 auto 0", maxWidth: 500, lineHeight: 1.6 }}>
+        <p style={{ fontSize: 14, color: "var(--t-3, #888)", margin: "0 auto 0", maxWidth: 500, lineHeight: 1.6 }}>
           Checklist {ALL_MADDAH.length} maddah S1 Al-Azhar · Cek yang belum ada &amp; submit untuk dapat reward!
         </p>
       </div>
@@ -157,8 +157,8 @@ export default function ChecklistSoalPage() {
                 style={{
                   padding: "8px 14px", borderRadius: 10, fontSize: 12,
                   fontWeight: isActive ? 700 : 500, cursor: "pointer",
-                  border: isActive ? "1px solid rgba(62,207,142,0.5)" : "1px solid rgba(255,255,255,0.1)",
-                  background: isActive ? "rgba(62,207,142,0.12)" : "rgba(255,255,255,0.03)",
+                  border: isActive ? "1px solid rgba(62,207,142,0.5)" : "1px solid rgba(var(--fg, 255,255,255),0.1)",
+                  background: isActive ? "rgba(62,207,142,0.12)" : "rgba(var(--fg, 255,255,255),0.03)",
                   color: isActive ? EM : "#888",
                   transition: "all 0.15s",
                 }}
@@ -167,7 +167,7 @@ export default function ChecklistSoalPage() {
                 <span style={{
                   marginLeft: 6, fontSize: 10,
                   color: isActive ? EM : "#555",
-                  background: isActive ? "rgba(62,207,142,0.15)" : "rgba(255,255,255,0.06)",
+                  background: isActive ? "rgba(62,207,142,0.15)" : "rgba(var(--fg, 255,255,255),0.06)",
                   padding: "1px 6px", borderRadius: 99,
                 }}>
                   {filled}/{total}
@@ -183,8 +183,8 @@ export default function ChecklistSoalPage() {
             <button key={t} onClick={() => setAktivTahun(t)} style={{
               padding: "6px 14px", borderRadius: 8, fontSize: 12,
               fontWeight: aktivTahun === t ? 700 : 400, cursor: "pointer",
-              border: aktivTahun === t ? "1px solid rgba(255,200,50,0.5)" : "1px solid rgba(255,255,255,0.08)",
-              background: aktivTahun === t ? "rgba(255,200,50,0.1)" : "rgba(255,255,255,0.02)",
+              border: aktivTahun === t ? "1px solid rgba(255,200,50,0.5)" : "1px solid rgba(var(--fg, 255,255,255),0.08)",
+              background: aktivTahun === t ? "rgba(255,200,50,0.1)" : "rgba(var(--fg, 255,255,255),0.02)",
               color: aktivTahun === t ? "#ffc832" : "#666",
             }}>{t}</button>
           ))}
@@ -196,8 +196,8 @@ export default function ChecklistSoalPage() {
             placeholder="Cari maddah..."
             style={{
               marginLeft: "auto", padding: "6px 12px", borderRadius: 8,
-              fontSize: 12, border: "1px solid rgba(255,255,255,0.1)",
-              background: "#1a1a1a", color: "#fff", width: 160,
+              fontSize: 12, border: "1px solid rgba(var(--fg, 255,255,255),0.1)",
+              background: "var(--bg-3, #1a1a1a)", color: "var(--t-1, #fff)", width: 160,
               outline: "none",
             }}
           />
@@ -210,7 +210,7 @@ export default function ChecklistSoalPage() {
             style={{
               padding: "4px 12px", borderRadius: 99, fontSize: 11,
               fontWeight: filterKategori === "" ? 700 : 400, cursor: "pointer",
-              border: filterKategori === "" ? `1px solid ${EM}` : "1px solid rgba(255,255,255,0.08)",
+              border: filterKategori === "" ? `1px solid ${EM}` : "1px solid rgba(var(--fg, 255,255,255),0.08)",
               background: filterKategori === "" ? "rgba(62,207,142,0.1)" : "transparent",
               color: filterKategori === "" ? EM : "#666",
             }}
@@ -219,9 +219,9 @@ export default function ChecklistSoalPage() {
             <button key={k.id} onClick={() => setFilterKategori(k.id)} style={{
               padding: "4px 12px", borderRadius: 99, fontSize: 11,
               fontWeight: filterKategori === k.id ? 700 : 400, cursor: "pointer",
-              border: filterKategori === k.id ? `1px solid ${k.color}` : "1px solid rgba(255,255,255,0.08)",
+              border: filterKategori === k.id ? `1px solid ${k.color}` : "1px solid rgba(var(--fg, 255,255,255),0.08)",
               background: filterKategori === k.id ? `${k.color}18` : "transparent",
-              color: filterKategori === k.id ? k.color : "#666",
+              color: filterKategori === k.id ? k.color : "var(--t-4, #666)",
             }}>{k.label}</button>
           ))}
         </div>
@@ -230,14 +230,14 @@ export default function ChecklistSoalPage() {
         {!loading && (
           <div style={{ marginBottom: 24 }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-              <span style={{ fontSize: 12, color: "#666" }}>
+              <span style={{ fontSize: 12, color: "var(--t-4, #666)" }}>
                 {faktultasAktifData?.label} · {aktivTahun}
               </span>
               <span style={{ fontSize: 12, fontWeight: 700, color: pct === 100 ? EM : "#fff" }}>
                 {filledSlot}/{totalSlot} slot ({pct}%)
               </span>
             </div>
-            <div style={{ height: 5, borderRadius: 99, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+            <div style={{ height: 5, borderRadius: 99, background: "rgba(var(--fg, 255,255,255),0.06)", overflow: "hidden" }}>
               <div style={{
                 height: "100%", borderRadius: 99,
                 width: `${pct}%`,
@@ -245,7 +245,7 @@ export default function ChecklistSoalPage() {
                 transition: "width 0.6s ease",
               }}/>
             </div>
-            <div style={{ fontSize: 11, color: "#555", marginTop: 4 }}>
+            <div style={{ fontSize: 11, color: "var(--t-4, #555)", marginTop: 4 }}>
               {totalSlot - filledSlot > 0
                 ? `🎯 ${totalSlot - filledSlot} slot belum ada — submit & dapat reward!`
                 : "✅ Semua slot untuk filter ini sudah terisi!"}
@@ -255,9 +255,9 @@ export default function ChecklistSoalPage() {
 
         {/* ── Grid Checklist ── */}
         {loading ? (
-          <div style={{ textAlign: "center", color: "#555", padding: 48 }}>Memuat data...</div>
+          <div style={{ textAlign: "center", color: "var(--t-4, #555)", padding: 48 }}>Memuat data...</div>
         ) : maddahFakultas.length === 0 ? (
-          <div style={{ textAlign: "center", color: "#555", padding: 48 }}>
+          <div style={{ textAlign: "center", color: "var(--t-4, #555)", padding: 48 }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
             Tidak ada maddah untuk filter ini.
           </div>
@@ -279,7 +279,7 @@ export default function ChecklistSoalPage() {
 
               return (
                 <div key={maddah.name} style={{
-                  background: "#111",
+                  background: "var(--bg-1, #111)",
                   border: allDone
                     ? "1px solid rgba(62,207,142,0.25)"
                     : noneDone
@@ -299,11 +299,11 @@ export default function ChecklistSoalPage() {
                       }}>
                         {kategori?.label}
                       </div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", lineHeight: 1.3, marginBottom: 3 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "var(--t-1, #fff)", lineHeight: 1.3, marginBottom: 3 }}>
                         {maddah.name}
                       </div>
                       <div style={{
-                        fontSize: 13, color: "#666",
+                        fontSize: 13, color: "var(--t-4, #666)",
                         fontFamily: '"Scheherazade New","Noto Naskh Arabic",serif',
                         direction: "rtl", textAlign: "right",
                       }}>
@@ -379,7 +379,7 @@ export default function ChecklistSoalPage() {
                     <a href="#/submit-soal" style={{
                       display: "block", marginTop: 10, padding: "7px",
                       borderRadius: 8, textAlign: "center", textDecoration: "none",
-                      fontSize: 12, fontWeight: 700, color: "#ffc832",
+                      fontSize: 12, fontWeight: 700, color: "var(--a-amber, #ffc832)",
                       background: "rgba(255,200,50,0.06)",
                       border: "1px solid rgba(255,200,50,0.15)",
                     }}>
@@ -397,7 +397,7 @@ export default function ChecklistSoalPage() {
           {[
             { icon: "✓", color: EM,        bg: "rgba(62,207,142,0.15)",    label: "Soal tersedia" },
             { icon: "✕", color: RED,       bg: "rgba(248,113,113,0.12)",   label: "Belum ada — bisa kamu submit!" },
-            { icon: "◐", color: "#ffc832", bg: "rgba(255,200,50,0.1)",     label: "Sebagian tersedia" },
+            { icon: "◐", color: "var(--a-amber, #ffc832)", bg: "rgba(255,200,50,0.1)",     label: "Sebagian tersedia" },
           ].map(l => (
             <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{
@@ -406,7 +406,7 @@ export default function ChecklistSoalPage() {
                 display: "flex", alignItems: "center", justifyContent: "center",
                 fontSize: 11, fontWeight: 800,
               }}>{l.icon}</span>
-              <span style={{ fontSize: 12, color: "#777" }}>{l.label}</span>
+              <span style={{ fontSize: 12, color: "var(--t-3, #777)" }}>{l.label}</span>
             </div>
           ))}
         </div>
@@ -421,10 +421,10 @@ export default function ChecklistSoalPage() {
           alignItems: "center", gap: 16, flexWrap: "wrap",
         }}>
           <div>
-            <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 4 }}>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "var(--t-1, #fff)", marginBottom: 4 }}>
               Punya soal imtihan tahun lalu?
             </div>
-            <div style={{ fontSize: 13, color: "#888" }}>
+            <div style={{ fontSize: 13, color: "var(--t-3, #888)" }}>
               Submit soal yang belum ada di checklist ini — belum member dapat paket Library gratis, member dapat voucher makan siang
             </div>
           </div>

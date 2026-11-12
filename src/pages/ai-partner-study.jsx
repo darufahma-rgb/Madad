@@ -80,7 +80,7 @@ const ToolbarActions = ({ actions }) => {
         {open && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setOpen(false)}/>
-            <div className="absolute right-0 top-full mt-1.5 z-50 min-w-[210px] rounded-xl border border-white/10 shadow-2xl p-1" style={{ background: '#171717' }}>
+            <div className="absolute right-0 top-full mt-1.5 z-50 min-w-[210px] rounded-xl border border-white/10 shadow-2xl p-1" style={{ background: 'var(--bg-2, #171717)' }}>
               {list.map(a => (
                 <button key={a.label} disabled={a.disabled} onClick={() => { setOpen(false); a.onClick(); }}
                   className="w-full flex items-center gap-3 px-3 py-3 text-sm text-ink rounded-lg hover:bg-white/5 text-left disabled:opacity-50">
@@ -206,17 +206,17 @@ const LangPicker = ({ value, onChange, disabled }) => (
 
 // Jenis bagian ringkasan → ikon & warna. Dicocokkan dari judul (Indonesia atau Arab tanpa harakat).
 const SECTION_KINDS = [
-  { id: 'key',    icon: 'sparkles', color: '#3ecf8e', match: /poin inti|inti kuliah|intisari|النقاط|الرئيسة|خلاصة/i },
-  { id: 'explain', icon: 'lightbulb', color: '#2dd4bf', match: /penjelasan|الشرح/i },
-  { id: 'def',    icon: 'bookOpen', color: '#c9a86a', match: /ta'?rif|definisi|التعريف/i },
-  { id: 'split',  icon: 'network',  color: '#60a5fa', match: /taqsim|pembagian|klasifikasi|التقسيم/i },
-  { id: 'rules',  icon: 'list',     color: '#a78bfa', match: /syarat|rukun|hukum|الشروط|الأركان|الحكم/i },
-  { id: 'debate', icon: 'scale',    color: '#f59e0b', match: /khilaf|tarjih|perbedaan|الخلاف|الترجيح/i },
-  { id: 'proof',  icon: 'quote',    color: '#c9a86a', match: /dalil|الأدلة|الدليل/i },
-  { id: 'exam',   icon: 'target',   color: '#f472b6', match: /imtihan|ujian|الامتحان|المتوقع/i },
+  { id: 'key',    icon: 'sparkles', color: 'var(--a-green, #3ecf8e)', match: /poin inti|inti kuliah|intisari|النقاط|الرئيسة|خلاصة/i },
+  { id: 'explain', icon: 'lightbulb', color: 'var(--a-green, #2dd4bf)', match: /penjelasan|الشرح/i },
+  { id: 'def',    icon: 'bookOpen', color: 'var(--a-gold, #c9a86a)', match: /ta'?rif|definisi|التعريف/i },
+  { id: 'split',  icon: 'network',  color: 'var(--a-blue, #60a5fa)', match: /taqsim|pembagian|klasifikasi|التقسيم/i },
+  { id: 'rules',  icon: 'list',     color: 'var(--a-violet, #a78bfa)', match: /syarat|rukun|hukum|الشروط|الأركان|الحكم/i },
+  { id: 'debate', icon: 'scale',    color: 'var(--a-amber, #f59e0b)', match: /khilaf|tarjih|perbedaan|الخلاف|الترجيح/i },
+  { id: 'proof',  icon: 'quote',    color: 'var(--a-gold, #c9a86a)', match: /dalil|الأدلة|الدليل/i },
+  { id: 'exam',   icon: 'target',   color: 'var(--a-pink, #f472b6)', match: /imtihan|ujian|الامتحان|المتوقع/i },
   // Bagian khas talkhisan kuliah (Live Caption).
-  { id: 'terms',  icon: 'type',     color: '#38bdf8', match: /istilah|mufradat|المصطلحات|المفردات/i },
-  { id: 'review', icon: 'check',    color: '#3ecf8e', match: /muraja'?ah|المراجعة/i },
+  { id: 'terms',  icon: 'type',     color: 'var(--a-blue, #38bdf8)', match: /istilah|mufradat|المصطلحات|المفردات/i },
+  { id: 'review', icon: 'check',    color: 'var(--a-green, #3ecf8e)', match: /muraja'?ah|المراجعة/i },
 ];
 const stripHarakat = (s) => s.replace(/[ً-ٰٟـ]/g, '');
 
@@ -237,7 +237,7 @@ const splitSections = (md) => {
   return sections.map((s, i) => {
     const [main, sub] = s.title.split(/\s+[—–-]\s+/);
     const plain = stripHarakat(s.title);
-    const kind = SECTION_KINDS.find(k => k.match.test(plain)) || { id: 'other', icon: 'bookmark', color: '#9ca3af' };
+    const kind = SECTION_KINDS.find(k => k.match.test(plain)) || { id: 'other', icon: 'bookmark', color: 'var(--t-3, #9ca3af)' };
     return { id: `sec-${i}`, title: main || s.title, sub: sub || '', kind, body: s.body.join('\n').trim() };
   }).filter(s => s.title || s.body);
 };
@@ -265,7 +265,7 @@ const SummarySection = ({ section, rtl, size, open, onToggle, source, onCite }) 
   const exam = kind.id === 'exam';
   return (
     <section id={section.id} className="scroll-mt-32 rounded-2xl overflow-hidden"
-      style={{ border: `1px solid ${exam ? kind.color + '55' : 'rgba(255,255,255,0.08)'}`, background: exam ? `linear-gradient(160deg, ${kind.color}14, rgba(255,255,255,0.02))` : 'rgba(255,255,255,0.025)' }}>
+      style={{ border: `1px solid ${exam ? kind.color + '55' : 'rgba(var(--fg, 255,255,255),0.08)'}`, background: exam ? `linear-gradient(160deg, ${kind.color}14, rgba(var(--fg, 255,255,255),0.02))` : 'rgba(var(--fg, 255,255,255),0.025)' }}>
       {section.title && (
         <button onClick={onToggle} className="w-full flex items-center gap-3 px-4 md:px-6 py-3.5 md:py-4 text-start" dir={rtl ? 'rtl' : 'ltr'}>
           <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: `${kind.color}1c`, border: `1px solid ${kind.color}40` }}>
@@ -578,7 +578,7 @@ const useTextSelection = (containerRef) => {
 
 const SelectionBar = ({ children }) => (
   <div className="fixed left-1/2 -translate-x-1/2 z-[70] flex gap-2 p-2 rounded-2xl border border-emerald-500/30 shadow-2xl max-w-[calc(100vw-24px)] flex-wrap justify-center"
-    style={{ bottom: 'calc(var(--tabbar-height, 0px) + 20px)', background: 'rgba(12,12,12,0.95)', backdropFilter: 'blur(12px)' }}>
+    style={{ bottom: 'calc(var(--tabbar-height, 0px) + 20px)', background: 'rgba(var(--surf, 12,12,12),0.95)', backdropFilter: 'blur(12px)' }}>
     {children}
   </div>
 );
@@ -1219,7 +1219,7 @@ const FlashcardTab = ({ set, setSet, access, askTutor }) => {
           )}
           {flipped && (
             <div className="grid grid-cols-2 gap-3 mt-3 md:mt-4">
-              <button onClick={() => answer(false)} className="btn btn-ghost py-3.5 text-sm" style={{ borderColor: 'rgba(255,184,77,0.4)', color: '#ffb84d' }}>
+              <button onClick={() => answer(false)} className="btn btn-ghost py-3.5 text-sm" style={{ borderColor: 'rgba(255,184,77,0.4)', color: 'var(--a-amber, #ffb84d)' }}>
                 Belum hafal
               </button>
               <button onClick={() => answer(true)} className="btn btn-primary py-3.5 text-sm">Hafal ✓</button>

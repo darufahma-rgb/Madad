@@ -63,9 +63,9 @@ const CopyPromptButton = ({ label, onCopy, EM, variant = 'outline' }) => {
           color: copied ? EM : '#000',
           border: `1px solid ${copied ? 'rgba(62,207,142,0.4)' : EM}`,
         } : {
-          background: copied ? 'rgba(62,207,142,0.12)' : 'rgba(255,255,255,0.04)',
+          background: copied ? 'rgba(62,207,142,0.12)' : 'rgba(var(--fg, 255,255,255),0.04)',
           color: copied ? EM : '#aaa',
-          border: `1px solid ${copied ? 'rgba(62,207,142,0.3)' : 'rgba(255,255,255,0.1)'}`,
+          border: `1px solid ${copied ? 'rgba(62,207,142,0.3)' : 'rgba(var(--fg, 255,255,255),0.1)'}`,
         }),
       }}
     >
@@ -151,7 +151,7 @@ const SoalDetailPage = () => {
     return (
       <div className="page-enter">
         <div className="container-x py-20 text-center">
-          <div style={{ fontSize: 13, color: '#666' }}>Memuat soal...</div>
+          <div style={{ fontSize: 13, color: 'var(--t-4, #666)' }}>Memuat soal...</div>
         </div>
       </div>
     );
@@ -191,7 +191,7 @@ const SoalDetailPage = () => {
         const parts = str.split(/\*\*(.*?)\*\*/g);
         return parts.map((part, j) =>
           j % 2 === 1
-            ? <strong key={j} style={{ color: '#fff', fontWeight: 700 }}>{part}</strong>
+            ? <strong key={j} style={{ color: 'var(--t-1, #fff)', fontWeight: 700 }}>{part}</strong>
             : part
         );
       };
@@ -202,7 +202,7 @@ const SoalDetailPage = () => {
         </div>
       );
       if (line.startsWith('## ')) return (
-        <div key={i} style={{ fontSize: 14, fontWeight: 700, color: '#ddd', marginTop: 16, marginBottom: 6 }}>
+        <div key={i} style={{ fontSize: 14, fontWeight: 700, color: 'var(--t-1, #ddd)', marginTop: 16, marginBottom: 6 }}>
           {parseBold(line.slice(3))}
         </div>
       );
@@ -210,7 +210,7 @@ const SoalDetailPage = () => {
       if (/^[-*] /.test(line)) return (
         <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 4, paddingLeft: 4 }}>
           <span style={{ color: EM, flexShrink: 0, marginTop: 2 }}>•</span>
-          <span style={{ fontSize: 13, color: '#ccc', lineHeight: 1.7 }}>{parseBold(line.slice(2))}</span>
+          <span style={{ fontSize: 13, color: 'var(--t-2, #ccc)', lineHeight: 1.7 }}>{parseBold(line.slice(2))}</span>
         </div>
       );
 
@@ -219,19 +219,19 @@ const SoalDetailPage = () => {
         return (
           <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 4, paddingLeft: 4 }}>
             <span style={{ color: EM, flexShrink: 0, fontWeight: 700, minWidth: 16 }}>{num}.</span>
-            <span style={{ fontSize: 13, color: '#ccc', lineHeight: 1.7 }}>{parseBold(line.slice(num.length + 2))}</span>
+            <span style={{ fontSize: 13, color: 'var(--t-2, #ccc)', lineHeight: 1.7 }}>{parseBold(line.slice(num.length + 2))}</span>
           </div>
         );
       }
 
       if (line.trim() === '---') return (
-        <hr key={i} style={{ border: 'none', borderTop: '1px solid rgba(255,255,255,0.07)', margin: '12px 0' }}/>
+        <hr key={i} style={{ border: 'none', borderTop: '1px solid rgba(var(--fg, 255,255,255),0.07)', margin: '12px 0' }}/>
       );
 
       if (line.trim() === '') return <div key={i} style={{ height: 6 }}/>;
 
       return (
-        <div key={i} style={{ fontSize: 13, color: '#ccc', lineHeight: 1.75, marginBottom: 2 }}>
+        <div key={i} style={{ fontSize: 13, color: 'var(--t-2, #ccc)', lineHeight: 1.75, marginBottom: 2 }}>
           {parseBold(line)}
         </div>
       );
@@ -270,7 +270,7 @@ const SoalDetailPage = () => {
               <div style={{
                 display: 'inline-flex', alignItems: 'center', gap: 6,
                 marginTop: 8,
-                fontSize: 12, color: '#3ecf8e', fontWeight: 600,
+                fontSize: 12, color: 'var(--a-green, #3ecf8e)', fontWeight: 600,
                 padding: '4px 12px', borderRadius: 20,
                 background: 'rgba(62,207,142,0.1)',
                 border: '1px solid rgba(62,207,142,0.25)',
@@ -297,18 +297,18 @@ const SoalDetailPage = () => {
 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
             <div style={{
-              fontSize: 11, color: '#888', fontWeight: 600,
+              fontSize: 11, color: 'var(--t-3, #888)', fontWeight: 600,
               padding: '4px 12px', borderRadius: 20,
-              border: '1px solid rgba(255,255,255,0.08)',
-              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(var(--fg, 255,255,255),0.08)',
+              background: 'rgba(var(--fg, 255,255,255),0.03)',
             }}>
               {totalSoal} soal
             </div>
             <div style={{
-              fontSize: 11, color: '#888', fontWeight: 600,
+              fontSize: 11, color: 'var(--t-3, #888)', fontWeight: 600,
               padding: '4px 12px', borderRadius: 20,
-              border: '1px solid rgba(255,255,255,0.08)',
-              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(var(--fg, 255,255,255),0.08)',
+              background: 'rgba(var(--fg, 255,255,255),0.03)',
             }}>
               {fashlStr}
             </div>
@@ -326,7 +326,7 @@ const SoalDetailPage = () => {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           flexWrap: 'wrap', gap: 10,
         }}>
-          <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.5 }}>
+          <div style={{ fontSize: 13, color: 'var(--t-2, #aaa)', lineHeight: 1.5 }}>
             <span style={{ color: EM, fontWeight: 700 }}>Mau latihan lengkap?</span>
             {' '}Salin semua prompt sekaligus lalu paste ke AI.
           </div>
@@ -392,10 +392,10 @@ const SoalDetailPage = () => {
                 {block.arab ? (
                   <div style={{
                     direction: 'rtl', textAlign: 'right',
-                    fontSize: 18, lineHeight: 2.2, color: '#f0ece4',
+                    fontSize: 18, lineHeight: 2.2, color: 'var(--t-1, #f0ece4)',
                     fontFamily: '"Scheherazade New", "Noto Naskh Arabic", "Traditional Arabic", serif',
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(var(--fg, 255,255,255),0.03)',
+                    border: '1px solid rgba(var(--fg, 255,255,255),0.08)',
                     borderRadius: 12, padding: '16px 20px', marginBottom: 12,
                   }}>
                     {cleanArab(block.arab)}
@@ -404,7 +404,7 @@ const SoalDetailPage = () => {
 
                 {arti ? (
                   <div style={{
-                    fontSize: 13, color: '#bbb', lineHeight: 1.8,
+                    fontSize: 13, color: 'var(--t-2, #bbb)', lineHeight: 1.8,
                     paddingLeft: 14,
                     borderLeft: '2px solid rgba(62,207,142,0.35)',
                     marginBottom: 16,
@@ -416,7 +416,7 @@ const SoalDetailPage = () => {
                 {jawaban ? (
                   <div>
                     <div style={{
-                      fontSize: 10, color: '#666', fontWeight: 700,
+                      fontSize: 10, color: 'var(--t-4, #666)', fontWeight: 700,
                       letterSpacing: 0.8, marginBottom: 10,
                     }}>
                       JAWABAN
@@ -426,7 +426,7 @@ const SoalDetailPage = () => {
                         direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap',
                         fontSize: 17, lineHeight: 2.2,
                         fontFamily: '"Scheherazade New", "Noto Naskh Arabic", "Traditional Arabic", serif',
-                        color: '#e8e4dc',
+                        color: 'var(--t-1, #e8e4dc)',
                         background: 'rgba(62,207,142,0.04)',
                         border: '1px solid rgba(62,207,142,0.14)',
                         borderRadius: 12, padding: '16px 20px',
@@ -445,7 +445,7 @@ const SoalDetailPage = () => {
                           background: 'rgba(0,0,0,0.5)',
                         }}>
                           <div style={{ fontSize: 24 }}>🔒</div>
-                          <div style={{ fontSize: 14, color: '#fff', fontWeight: 700 }}>
+                          <div style={{ fontSize: 14, color: 'var(--t-1, #fff)', fontWeight: 700 }}>
                             Jawaban lengkap untuk member
                           </div>
                           <button onClick={() => window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library' } }))}
@@ -467,7 +467,7 @@ const SoalDetailPage = () => {
                     border: '1px solid rgba(62,207,142,0.18)',
                     display: 'flex', flexDirection: 'column', gap: 10,
                   }}>
-                    <div style={{ fontSize: 13, color: '#888', lineHeight: 1.6 }}>
+                    <div style={{ fontSize: 13, color: 'var(--t-3, #888)', lineHeight: 1.6 }}>
                       Jawaban belum tersedia — gunakan prompt di bawah untuk dapat jawaban dari AI sekarang.
                     </div>
                     <CopyPromptButton
@@ -491,13 +491,13 @@ const SoalDetailPage = () => {
                 {penj && isMember && (
                   <div style={{
                     marginTop: 12,
-                    background: 'rgba(255,255,255,0.025)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: 'rgba(var(--fg, 255,255,255),0.025)',
+                    border: '1px solid rgba(var(--fg, 255,255,255),0.07)',
                     borderRadius: 10, padding: '14px 16px',
-                    fontSize: 13, lineHeight: 1.8, color: '#bbb', whiteSpace: 'pre-wrap',
+                    fontSize: 13, lineHeight: 1.8, color: 'var(--t-2, #bbb)', whiteSpace: 'pre-wrap',
                   }}>
                     <div style={{
-                      fontSize: 10, color: '#555', fontWeight: 700,
+                      fontSize: 10, color: 'var(--t-4, #555)', fontWeight: 700,
                       marginBottom: 8, letterSpacing: 0.6,
                     }}>
                       TERJEMAH & KATA KUNCI

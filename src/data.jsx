@@ -906,7 +906,7 @@ const LEARNING_PATHS = [
     level: "Beginner",
     label: "Tholibun Jadid 🌱",
     icon: "🌱",
-    color: "#6EE7B7",
+    color: "var(--a-green, #6EE7B7)",
     desc: "Mengenal AI, prompt dasar, dan etika penggunaan untuk pemula.",
     modules: [
       {
@@ -1003,7 +1003,7 @@ const LEARNING_PATHS = [
     level: "Intermediate",
     label: "Bertumbuh",
     icon: "🌿",
-    color: "#A07BFA",
+    color: "var(--a-violet, #A07BFA)",
     desc: "Workflow untuk memahami kitab klasik, menulis makalah, dan murajaah sistematis.",
     modules: [
       {
@@ -1110,7 +1110,7 @@ const LEARNING_PATHS = [
     level: "Advanced",
     label: "Siap menjelajah",
     icon: "🕌",
-    color: "#E5C18A",
+    color: "var(--a-gold, #E5C18A)",
     desc: "Riset akademik tingkat lanjut, multi-AI workflow, dan produktivitas kelas pakar.",
     modules: [
       {

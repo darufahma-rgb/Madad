@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import './theme-light.css';
 
 // Foundation (urutan ini penting — jangan diubah)
 import './icons.jsx';
 import './ui.jsx';
+import './theme.jsx';
 import './data.jsx';
 import './supabase.jsx';
 import './funnel.jsx';

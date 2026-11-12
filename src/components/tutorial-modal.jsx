@@ -38,15 +38,15 @@ const IllusLogin = () => (
 const IllusAiPartner = () => (
   <svg viewBox="0 0 300 160" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
     <rect width="300" height="160" rx="12" fill="#101010" stroke="rgba(62,207,142,0.2)"/>
-    <rect x="20" y="24" width="90" height="104" rx="9" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeDasharray="4 3"/>
+    <rect x="20" y="24" width="90" height="104" rx="9" fill="rgba(var(--fg, 255,255,255),0.04)" stroke="rgba(var(--fg, 255,255,255),0.12)" strokeDasharray="4 3"/>
     <text x="65" y="72" fontSize="20" fill={EM} textAnchor="middle">⬆</text>
     <text x="65" y="94" fontSize="9" fill="#aaa" textAnchor="middle">Diktat.pdf</text>
     <text x="130" y="80" fontSize="16" fill={EM} textAnchor="middle">→</text>
     {["Ringkasan", "Flashcard", "Kuis", "Tanya Tutor"].map((t, i) => (
       <g key={t}>
         <rect x="150" y={24 + i * 27} width="128" height="21" rx="6"
-          fill={i === 0 ? "rgba(62,207,142,0.15)" : "rgba(255,255,255,0.04)"}
-          stroke={i === 0 ? EM : "rgba(255,255,255,0.1)"}/>
+          fill={i === 0 ? "rgba(62,207,142,0.15)" : "rgba(var(--fg, 255,255,255),0.04)"}
+          stroke={i === 0 ? EM : "rgba(var(--fg, 255,255,255),0.1)"}/>
         <text x="214" y={38 + i * 27} fontSize="10" fill={i === 0 ? EM : "#bbb"} textAnchor="middle">{t}</text>
       </g>
     ))}
@@ -61,8 +61,8 @@ const IllusProfil = () => (
     {["Dakwah","Ushuluddin","Syariah"].map((f,i)=>(
       <g key={f}>
         <rect x={20+i*90} y="36" width="80" height="26" rx="7"
-          fill={i===0?"rgba(62,207,142,0.15)":"rgba(255,255,255,0.04)"}
-          stroke={i===0?EM:"rgba(255,255,255,0.1)"}/>
+          fill={i===0?"rgba(62,207,142,0.15)":"rgba(var(--fg, 255,255,255),0.04)"}
+          stroke={i===0?EM:"rgba(var(--fg, 255,255,255),0.1)"}/>
         <text x={20+i*90+40} y="53" fontSize="10" fill={i===0?EM:"#999"} textAnchor="middle">{f}</text>
       </g>
     ))}
@@ -70,8 +70,8 @@ const IllusProfil = () => (
     {["1","2","3","4"].map((t,i)=>(
       <g key={t}>
         <rect x={20+i*46} y="96" width="36" height="28" rx="7"
-          fill={i===2?"rgba(62,207,142,0.15)":"rgba(255,255,255,0.04)"}
-          stroke={i===2?EM:"rgba(255,255,255,0.1)"}/>
+          fill={i===2?"rgba(62,207,142,0.15)":"rgba(var(--fg, 255,255,255),0.04)"}
+          stroke={i===2?EM:"rgba(var(--fg, 255,255,255),0.1)"}/>
         <text x={20+i*46+18} y="115" fontSize="12" fill={i===2?EM:"#999"} textAnchor="middle" fontWeight="bold">{t}</text>
       </g>
     ))}
@@ -87,7 +87,7 @@ const IllusMaddah = () => (
     <text x="20" y="42" fontSize="9" fill="#777">Firqah 3 · Dakwah Islamiyah</text>
     {[["Tafsir Maudhu'i","18 prompt"],["Tiarat Fikriyyah","16 prompt"],["Wasail Tabligh","14 prompt"]].map(([n,c],i)=>(
       <g key={n}>
-        <rect x="20" y={52+i*34} width="260" height="28" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+        <rect x="20" y={52+i*34} width="260" height="28" rx="8" fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
         <circle cx="38" cy={66+i*34} r="8" fill="rgba(62,207,142,0.15)"/>
         <text x="38" y={70+i*34} fontSize="9" fill={EM} textAnchor="middle">📖</text>
         <text x="55" y={63+i*34} fontSize="11" fill="#eee" fontWeight="bold">{n}</text>
@@ -107,8 +107,8 @@ const IllusKategori = () => (
       return (
         <g key={label}>
           <rect x={20+col*90} y={34+row*56} width="80" height="48" rx="9"
-            fill={i===0?"rgba(62,207,142,0.12)":"rgba(255,255,255,0.03)"}
-            stroke={i===0?EM:"rgba(255,255,255,0.08)"}/>
+            fill={i===0?"rgba(62,207,142,0.12)":"rgba(var(--fg, 255,255,255),0.03)"}
+            stroke={i===0?EM:"rgba(var(--fg, 255,255,255),0.08)"}/>
           <text x={20+col*90+40} y={34+row*56+22} fontSize="16" textAnchor="middle">{emoji}</text>
           <text x={20+col*90+40} y={34+row*56+38} fontSize="10" fill={i===0?EM:"#ccc"} textAnchor="middle" fontWeight="bold">{label}</text>
         </g>
@@ -120,7 +120,7 @@ const IllusKategori = () => (
 const IllusCopy = () => (
   <svg viewBox="0 0 300 160" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
     <rect width="300" height="160" rx="12" fill="#101010" stroke="rgba(62,207,142,0.2)"/>
-    <rect x="20" y="16" width="260" height="90" rx="9" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="20" y="16" width="260" height="90" rx="9" fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
     <text x="34" y="34" fontSize="9" fill={EM} fontWeight="bold">PROMPT — MOCK IMTIHAN</text>
     {["Aku Firqah 3 Dakwah, belajar Tafsir Maudhu'i.","Buatkan soal ujian gaya Azhar — 'arrif,","bayyin, qarin... Tunggu jawabanku, nilai","seperti mushahhih Azhari."].map((l,i)=>(
       <text key={i} x="34" y={50+i*14} fontSize="9" fill="#bbb">{l}</text>
@@ -136,10 +136,10 @@ const IllusCatatan = () => (
   <svg viewBox="0 0 300 160" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
     <rect width="300" height="160" rx="12" fill="#101010" stroke="rgba(62,207,142,0.2)"/>
     <text x="20" y="26" fontSize="12" fill="#fff" fontWeight="bold">Kurasah (Catatan)</text>
-    <rect x="20" y="34" width="260" height="40" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="20" y="34" width="260" height="40" rx="8" fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
     <text x="34" y="52" fontSize="11" fill="#eee" fontWeight="bold">Catatan Tafsir — Pekan 3</text>
     <text x="34" y="66" fontSize="9" fill="#777">Makna ayat & faedah dari talaqqi...</text>
-    <rect x="20" y="82" width="260" height="40" rx="8" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="20" y="82" width="260" height="40" rx="8" fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
     <text x="34" y="100" fontSize="11" fill="#eee" fontWeight="bold">Kaidah Ushul Fiqh</text>
     <text x="34" y="114" fontSize="9" fill={EM}>Sudah dirapikan oleh AI ✓</text>
     <rect x="20" y="130" width="260" height="22" rx="7" fill="rgba(62,207,142,0.15)" stroke={EM}/>
@@ -153,11 +153,11 @@ const IllusProgress = () => (
     <text x="20" y="26" fontSize="12" fill="#fff" fontWeight="bold">Ritme Belajar</text>
     {Array.from({length:14}).map((_,i)=>(
       <rect key={i} x={20+(i%7)*36} y={34+Math.floor(i/7)*20} width="28" height="14" rx="4"
-        fill={i<9?EM:"rgba(255,255,255,0.06)"} opacity={i<9?(0.4+i/18):1}/>
+        fill={i<9?EM:"rgba(var(--fg, 255,255,255),0.06)"} opacity={i<9?(0.4+i/18):1}/>
     ))}
     <text x="20" y="94" fontSize="10" fill={EM} fontWeight="bold">🔥 9 hari berturut-turut!</text>
     <text x="20" y="114" fontSize="11" fill="#fff" fontWeight="bold">Progress Maddah</text>
-    <rect x="20" y="122" width="260" height="10" rx="5" fill="rgba(255,255,255,0.06)"/>
+    <rect x="20" y="122" width="260" height="10" rx="5" fill="rgba(var(--fg, 255,255,255),0.06)"/>
     <rect x="20" y="122" width="170" height="10" rx="5" fill={EM}/>
     <text x="20" y="148" fontSize="9" fill="#888">12 dari 18 maddah dipelajari</text>
   </svg>
@@ -377,7 +377,7 @@ export default function TutorialModal() {
         onTouchEnd={handleTouchEnd}
         style={{
           width: "100%", maxWidth: 480, maxHeight: "90vh",
-          background: "#111", borderRadius: 20,
+          background: "var(--bg-1, #111)", borderRadius: 20,
           border: "1px solid rgba(62,207,142,0.2)",
           boxShadow: "0 24px 80px rgba(0,0,0,0.6)",
           display: "flex", flexDirection: "column",
@@ -387,13 +387,13 @@ export default function TutorialModal() {
         {/* Header */}
         <div style={{
           padding: "14px 16px 10px",
-          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          borderBottom: "1px solid rgba(var(--fg, 255,255,255),0.06)",
           display: "flex", alignItems: "center", justifyContent: "space-between",
           flexShrink: 0,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontSize: 20 }}>{step.emoji}</span>
-            <div style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "var(--t-1, #fff)" }}>
               {step.title}
             </div>
           </div>
@@ -402,9 +402,9 @@ export default function TutorialModal() {
               onClick={handleClose}
               style={{
                 padding: "6px 14px", borderRadius: 8,
-                border: "1px solid rgba(255,255,255,0.15)",
-                background: "rgba(255,255,255,0.06)",
-                color: "#ccc", cursor: "pointer", fontSize: 13, fontWeight: 600,
+                border: "1px solid rgba(var(--fg, 255,255,255),0.15)",
+                background: "rgba(var(--fg, 255,255,255),0.06)",
+                color: "var(--t-2, #ccc)", cursor: "pointer", fontSize: 13, fontWeight: 600,
               }}
             >
               Lewati
@@ -413,9 +413,9 @@ export default function TutorialModal() {
               onClick={handleClose}
               style={{
                 width: 30, height: 30, borderRadius: 8,
-                border: "1px solid rgba(255,255,255,0.12)",
-                background: "rgba(255,255,255,0.05)",
-                color: "#aaa", cursor: "pointer", fontSize: 16,
+                border: "1px solid rgba(var(--fg, 255,255,255),0.12)",
+                background: "rgba(var(--fg, 255,255,255),0.05)",
+                color: "var(--t-2, #aaa)", cursor: "pointer", fontSize: 16,
                 display: "flex", alignItems: "center", justifyContent: "center",
                 flexShrink: 0,
               }}
@@ -434,7 +434,7 @@ export default function TutorialModal() {
                   width: i === current ? 20 : 8, height: 8,
                   borderRadius: 99, flexShrink: 0,
                   border: "none", cursor: s.locked ? "not-allowed" : "pointer",
-                  background: i === current ? EM : s.locked ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.2)",
+                  background: i === current ? EM : s.locked ? "rgba(var(--fg, 255,255,255),0.08)" : "rgba(var(--fg, 255,255,255),0.2)",
                   transition: "all 0.25s ease",
                   padding: 0,
                 }}
@@ -442,11 +442,11 @@ export default function TutorialModal() {
             ))}
           </div>
           {/* Counter */}
-          <div style={{ textAlign: 'center', fontSize: 11, color: '#666', marginBottom: 6 }}>
+          <div style={{ textAlign: 'center', fontSize: 11, color: 'var(--t-4, #666)', marginBottom: 6 }}>
             {current + 1} dari {steps.length}
           </div>
           {/* Progress bar */}
-          <div style={{ height: 3, background: "rgba(255,255,255,0.06)", borderRadius: 99, overflow: "hidden" }}>
+          <div style={{ height: 3, background: "rgba(var(--fg, 255,255,255),0.06)", borderRadius: 99, overflow: "hidden" }}>
             <div style={{
               height: "100%", width: `${pct}%`,
               background: `linear-gradient(90deg, ${EM_DEEP}, ${EM})`,
@@ -460,10 +460,10 @@ export default function TutorialModal() {
           {isLocked ? (
             <div style={{ textAlign: "center", padding: "40px 16px" }}>
               <div style={{ fontSize: 44, marginBottom: 14 }}>🔒</div>
-              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: "#fff" }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 8, color: "var(--t-1, #fff)" }}>
                 Langkah Khusus Member
               </h2>
-              <p style={{ color: "#aaa", lineHeight: 1.6, fontSize: 14, marginBottom: 22 }}>
+              <p style={{ color: "var(--t-2, #aaa)", lineHeight: 1.6, fontSize: 14, marginBottom: 22 }}>
                 Langkah ini hanya untuk member Talqeeh.
                 Gabung untuk akses penuh ke semua fitur & {CATALOG.prompts} prompt AI.
               </p>
@@ -483,7 +483,7 @@ export default function TutorialModal() {
               </div>
 
               {/* Intro */}
-              <p style={{ fontSize: 14, color: "#bbb", lineHeight: 1.65, margin: "14px 0 16px" }}>
+              <p style={{ fontSize: 14, color: "var(--t-2, #bbb)", lineHeight: 1.65, margin: "14px 0 16px" }}>
                 {step.intro}
               </p>
 
@@ -505,7 +505,7 @@ export default function TutorialModal() {
                           marginTop: 1,
                         }}>{i + 1}</span>
                       )}
-                      <span style={{ color: "#ddd" }}>{c}</span>
+                      <span style={{ color: "var(--t-1, #ddd)" }}>{c}</span>
                     </li>
                   );
                 })}
@@ -519,7 +519,7 @@ export default function TutorialModal() {
                 fontSize: 13, lineHeight: 1.6, marginBottom: 4,
               }}>
                 <span style={{ fontWeight: 800, color: EM }}>💡 Tips: </span>
-                <span style={{ color: "#ccc" }}>{step.tip}</span>
+                <span style={{ color: "var(--t-2, #ccc)" }}>{step.tip}</span>
               </div>
             </div>
           )}
@@ -528,15 +528,15 @@ export default function TutorialModal() {
         {/* Footer nav */}
         <div style={{
           padding: "12px 16px",
-          borderTop: "1px solid rgba(255,255,255,0.06)",
+          borderTop: "1px solid rgba(var(--fg, 255,255,255),0.06)",
           display: "flex", gap: 8, flexShrink: 0,
         }}>
           {current > 0 ? (
             <button onClick={() => setCurrent(c => c - 1)}
               style={{
                 padding: "12px 16px", borderRadius: 12, fontSize: 14,
-                border: "1px solid rgba(255,255,255,0.12)",
-                background: "transparent", color: "#ccc", cursor: "pointer",
+                border: "1px solid rgba(var(--fg, 255,255,255),0.12)",
+                background: "transparent", color: "var(--t-2, #ccc)", cursor: "pointer",
                 flexShrink: 0,
               }}>
               ←

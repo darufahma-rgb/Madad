@@ -13,7 +13,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
   const updEv = (field, val) => onChange({ ...view, evidence: { ...view.evidence, [field]: val } });
 
   return (
-    <div className="card-glass rounded-xl overflow-hidden" style={{border:"1px solid rgba(255,255,255,0.08)"}}>
+    <div className="card-glass rounded-xl overflow-hidden" style={{border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
       <button
         type="button"
         onClick={() => setOpen(!open)}
@@ -37,7 +37,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
       </button>
 
       {open && (
-        <div className="px-5 pb-6 space-y-4 border-t pt-5" style={{borderColor:"rgba(255,255,255,0.07)"}}>
+        <div className="px-5 pb-6 space-y-4 border-t pt-5" style={{borderColor:"rgba(var(--fg, 255,255,255),0.07)"}}>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
               <label className="text-[11px] uppercase tracking-wider text-ink-soft block mb-1.5">Nama Ulama</label>
@@ -45,7 +45,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
                 placeholder="Imam Asy-Syafi'i"
                 className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink placeholder-ink-soft outline-none transition-colors"
                 onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+                onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
             </div>
             <div>
               <label className="text-[11px] uppercase tracking-wider text-ink-soft block mb-1.5">Nama Arab</label>
@@ -54,7 +54,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
                 className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink placeholder-ink-soft outline-none transition-colors arabic text-right"
                 style={{direction:"rtl"}}
                 onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+                onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
             </div>
           </div>
           <div>
@@ -63,7 +63,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
               placeholder="Syafi'iyah"
               className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink placeholder-ink-soft outline-none transition-colors"
               onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+              onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
           </div>
           <div>
             <label className="text-[11px] uppercase tracking-wider text-ink-soft block mb-1.5">Qoul (Pendapat Utama)</label>
@@ -72,7 +72,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
               rows={3}
               className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink placeholder-ink-soft outline-none transition-colors resize-none leading-relaxed"
               onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+              onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
           </div>
           <div className="rounded-xl bg-gold-500/5 border border-gold-400/15 p-4 space-y-3">
             <div className="text-[10px] uppercase tracking-wider text-gold-400">Dalil</div>
@@ -82,18 +82,18 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
               className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2 text-sm text-gold-200 placeholder-ink-soft outline-none transition-colors resize-none arabic text-right leading-loose"
               style={{direction:"rtl"}}
               onFocus={e => e.target.style.borderColor="rgba(201,168,106,0.40)"}
-              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+              onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
             <textarea value={view.evidence.translation} onChange={e => updEv("translation", e.target.value)}
               placeholder="Terjemah singkat..."
               rows={2}
               className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink-muted placeholder-ink-soft outline-none transition-colors resize-none leading-relaxed"
               onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.40)"}
-              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+              onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
             <input value={view.evidence.notes} onChange={e => updEv("notes", e.target.value)}
               placeholder="Catatan tambahan tentang dalil (opsional)"
               className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink-muted placeholder-ink-soft outline-none transition-colors"
               onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.40)"}
-              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+              onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
           </div>
           <div>
             <label className="text-[11px] uppercase tracking-wider text-ink-soft block mb-1.5">Wajh Istidlal</label>
@@ -102,7 +102,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
               rows={3}
               className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink-muted placeholder-ink-soft outline-none transition-colors resize-none leading-relaxed"
               onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+              onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
           </div>
           <div>
             <label className="text-[11px] uppercase tracking-wider text-ink-soft block mb-1.5">Sumber Kitab</label>
@@ -110,7 +110,7 @@ const ViewForm = ({ view, idx, onChange, onRemove, total }) => {
               placeholder="Al-Umm · Mughni Al-Muhtaj"
               className="w-full bg-white/4 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-ink-muted placeholder-ink-soft outline-none transition-colors"
               onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+              onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
           </div>
         </div>
       )}
@@ -245,7 +245,7 @@ Setelah kamu draft, aku akan paste hasilnya ke form Talqeeh dan tambahkan reflek
                   placeholder="Hukum Membaca Basmalah dalam Al-Fatihah"
                   className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-ink font-display text-lg placeholder-ink-soft outline-none transition-colors"
                   onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-                  onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+                  onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
               </div>
               <div>
                 <label className="text-[11px] uppercase tracking-wider text-ink-soft block mb-1.5">Judul Arab (opsional)</label>
@@ -254,7 +254,7 @@ Setelah kamu draft, aku akan paste hasilnya ke form Talqeeh dan tambahkan reflek
                   className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-gold-200 placeholder-ink-soft outline-none transition-colors arabic text-right"
                   style={{direction:"rtl"}}
                   onFocus={e => e.target.style.borderColor="rgba(201,168,106,0.45)"}
-                  onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+                  onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
               </div>
               <div>
                 <label className="text-[11px] uppercase tracking-wider text-ink-soft block mb-2">Kategori</label>
@@ -275,7 +275,7 @@ Setelah kamu draft, aku akan paste hasilnya ke form Talqeeh dan tambahkan reflek
                   rows={3}
                   className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink-muted placeholder-ink-soft outline-none transition-colors resize-none leading-relaxed"
                   onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-                  onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+                  onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
               </div>
             </Reveal>
 
@@ -317,7 +317,7 @@ Setelah kamu draft, aku akan paste hasilnya ke form Talqeeh dan tambahkan reflek
                 rows={4}
                 className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink-muted placeholder-ink-soft outline-none transition-colors resize-none leading-relaxed"
                 onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-                onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}/>
+                onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}/>
             </Reveal>
 
             {/* Save */}

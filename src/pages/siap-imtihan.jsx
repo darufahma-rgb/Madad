@@ -332,15 +332,15 @@ const TalkhisanSection = ({ profile }) => {
   if (!isMember) return (
     <div style={{
       padding: '32px 20px', textAlign: 'center',
-      background: 'rgba(255,255,255,0.02)',
-      border: '1px solid rgba(255,255,255,0.08)',
+      background: 'rgba(var(--fg, 255,255,255),0.02)',
+      border: '1px solid rgba(var(--fg, 255,255,255),0.08)',
       borderRadius: 16,
     }}>
       <div style={{ fontSize: 32, marginBottom: 12 }}>🔒</div>
-      <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 8 }}>
+      <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--t-1, #fff)', marginBottom: 8 }}>
         Fitur Khusus Member
       </div>
-      <div style={{ fontSize: 13, color: '#aaa', marginBottom: 16, lineHeight: 1.6 }}>
+      <div style={{ fontSize: 13, color: 'var(--t-2, #aaa)', marginBottom: 16, lineHeight: 1.6 }}>
         Upload dan parse talkhisan dengan AI hanya tersedia untuk member Talqeeh.
       </div>
       <a href="#/maddah-publik" style={{
@@ -570,7 +570,7 @@ const TalkhisanSection = ({ profile }) => {
               placeholder="الحمد لله رب العالمين... (paste teks Arab dari PDF talkhisanmu)"
               className="w-full bg-white/4 border border-white/10 rounded-xl px-4 py-3 text-sm text-ink placeholder-ink-soft outline-none transition-colors resize-none arabic"
               onFocus={e => e.target.style.borderColor="rgba(62,207,142,0.45)"}
-              onBlur={e => e.target.style.borderColor="rgba(255,255,255,0.10)"}
+              onBlur={e => e.target.style.borderColor="rgba(var(--fg, 255,255,255),0.10)"}
               style={{ minHeight: 120, direction: "rtl", fontSize: 15, lineHeight: 1.8 }}
               rows={5}
             />
@@ -592,9 +592,9 @@ const TalkhisanSection = ({ profile }) => {
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
               <span style={{
                 fontSize: 11, color: usageCount >= 3 ? '#ff8080' : '#888',
-                background: 'rgba(255,255,255,0.04)',
+                background: 'rgba(var(--fg, 255,255,255),0.04)',
                 padding: '3px 10px', borderRadius: 99,
-                border: `1px solid ${usageCount >= 3 ? 'rgba(255,80,80,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                border: `1px solid ${usageCount >= 3 ? 'rgba(255,80,80,0.3)' : 'rgba(var(--fg, 255,255,255),0.08)'}`,
               }}>
                 {usageCount >= 3
                   ? '⛔ Batas harian tercapai'
@@ -617,10 +617,10 @@ const TalkhisanSection = ({ profile }) => {
                 borderRadius: 14,
               }}>
                 <div style={{ fontSize: 24, marginBottom: 8 }}>⛔</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#ff8080', marginBottom: 6 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--a-red, #ff8080)', marginBottom: 6 }}>
                   Batas harian tercapai
                 </div>
-                <div style={{ fontSize: 12, color: '#888' }}>
+                <div style={{ fontSize: 12, color: 'var(--t-3, #888)' }}>
                   Kamu sudah parse 3x hari ini. Fitur ini reset setiap hari. Coba lagi besok!
                 </div>
               </div>
@@ -632,10 +632,10 @@ const TalkhisanSection = ({ profile }) => {
                 borderRadius: 14,
               }}>
                 <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
-                <div style={{ fontSize: 14, color: '#3ecf8e', fontWeight: 700 }}>
+                <div style={{ fontSize: 14, color: 'var(--a-green, #3ecf8e)', fontWeight: 700 }}>
                   AI sedang membaca talkhisanmu...
                 </div>
-                <div style={{ fontSize: 12, color: '#888', marginTop: 6 }}>
+                <div style={{ fontSize: 12, color: 'var(--t-3, #888)', marginTop: 6 }}>
                   Biasanya 10–20 detik
                 </div>
               </div>
@@ -644,15 +644,15 @@ const TalkhisanSection = ({ profile }) => {
                 padding: '16px', background: 'rgba(62,207,142,0.06)',
                 border: '1px solid rgba(62,207,142,0.3)', borderRadius: 14,
               }}>
-                <div style={{ fontSize: 13, color: '#3ecf8e', fontWeight: 700, marginBottom: 8 }}>
+                <div style={{ fontSize: 13, color: 'var(--a-green, #3ecf8e)', fontWeight: 700, marginBottom: 8 }}>
                   ✅ Talkhisan berhasil dibaca!
                 </div>
-                <div style={{ fontSize: 12, color: '#aaa', marginBottom: 12 }}>
+                <div style={{ fontSize: 12, color: 'var(--t-2, #aaa)', marginBottom: 12 }}>
                   {teksInput.length} karakter · Pindah ke tab "Paste Teks" untuk edit, atau langsung pilih mode di bawah.
                 </div>
                 <button
                   onClick={() => { setTeksInput(''); setUploadError(''); }}
-                  style={{ fontSize: 12, color: '#ff8080', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  style={{ fontSize: 12, color: 'var(--a-red, #ff8080)', background: 'none', border: 'none', cursor: 'pointer' }}>
                   🗑️ Hapus & upload ulang
                 </button>
               </div>
@@ -661,7 +661,7 @@ const TalkhisanSection = ({ profile }) => {
                 onClick={() => fileRef.current?.click()}
                 style={{
                   padding: '40px 20px', textAlign: 'center', cursor: 'pointer',
-                  background: 'rgba(255,255,255,0.02)',
+                  background: 'rgba(var(--fg, 255,255,255),0.02)',
                   border: '2px dashed rgba(62,207,142,0.3)',
                   borderRadius: 14, transition: 'all 0.2s',
                 }}
@@ -669,10 +669,10 @@ const TalkhisanSection = ({ profile }) => {
                 onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(62,207,142,0.3)'}
               >
                 <div style={{ fontSize: 36, marginBottom: 12 }}>📄</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 6 }}>
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--t-1, #fff)', marginBottom: 6 }}>
                   Upload Talkhisan
                 </div>
-                <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.6 }}>
+                <div style={{ fontSize: 13, color: 'var(--t-2, #aaa)', lineHeight: 1.6 }}>
                   PDF atau foto (JPG/PNG)<br/>
                   AI akan baca teks Arab secara otomatis
                 </div>
@@ -681,11 +681,11 @@ const TalkhisanSection = ({ profile }) => {
                   padding: '8px 20px', borderRadius: 10,
                   background: 'rgba(62,207,142,0.15)',
                   border: '1px solid rgba(62,207,142,0.3)',
-                  fontSize: 13, color: '#3ecf8e', fontWeight: 700,
+                  fontSize: 13, color: 'var(--a-green, #3ecf8e)', fontWeight: 700,
                 }}>
                   Pilih File →
                 </div>
-                <div style={{ fontSize: 11, color: '#666', marginTop: 10 }}>
+                <div style={{ fontSize: 11, color: 'var(--t-4, #666)', marginTop: 10 }}>
                   Maks. foto: dikompresi otomatis · PDF: maks. 10 halaman
                 </div>
               </div>
@@ -695,7 +695,7 @@ const TalkhisanSection = ({ profile }) => {
                 marginTop: 10, padding: '10px 14px',
                 background: 'rgba(255,80,80,0.08)',
                 border: '1px solid rgba(255,80,80,0.2)',
-                borderRadius: 10, fontSize: 13, color: '#ff8080',
+                borderRadius: 10, fontSize: 13, color: 'var(--a-red, #ff8080)',
               }}>
                 ⚠️ {uploadError}
               </div>
@@ -758,7 +758,7 @@ const TalkhisanSection = ({ profile }) => {
 
         {/* Mode description */}
         {mode && (
-          <div className="flex items-start gap-2 mb-4 p-3 rounded-xl border" style={{background:"rgba(255,255,255,0.03)",borderColor:"rgba(255,255,255,0.08)"}}>
+          <div className="flex items-start gap-2 mb-4 p-3 rounded-xl border" style={{background:"rgba(var(--fg, 255,255,255),0.03)",borderColor:"rgba(var(--fg, 255,255,255),0.08)"}}>
             <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 ${
               mode.color === "gold" ? "bg-gold-500/15" : ""
             }`} style={mode.color !== "gold" ? {background:"rgba(62,207,142,0.16)"} : {}}>
@@ -779,7 +779,7 @@ const TalkhisanSection = ({ profile }) => {
         )}
 
         {/* Preview prompt */}
-        <div className="p-3 rounded-xl mb-4" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
+        <div className="p-3 rounded-xl mb-4" style={{background:"rgba(var(--fg, 255,255,255),0.03)",border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
           <div className="text-xs text-ink-soft mb-1.5">Preview prompt:</div>
           <div className="text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap line-clamp-4">
             {resolvedPrompt.slice(0, 250)}...
@@ -816,8 +816,8 @@ const TalkhisanSection = ({ profile }) => {
               marginTop: 8,
               padding: '10px',
               borderRadius: 10,
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: savedToKurasah ? 'rgba(62,207,142,0.15)' : 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+              background: savedToKurasah ? 'rgba(62,207,142,0.15)' : 'rgba(var(--fg, 255,255,255),0.04)',
               color: savedToKurasah ? '#3ecf8e' : '#aaa',
               fontSize: 13,
               fontWeight: 600,
@@ -957,7 +957,7 @@ const ImtihanPromptCard = ({ mode, maddah, profile }) => {
         </div>
 
         {/* Preview prompt (3 baris) */}
-        <div className="p-3 rounded-xl mb-4" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
+        <div className="p-3 rounded-xl mb-4" style={{background:"rgba(var(--fg, 255,255,255),0.03)",border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
           <p className="text-xs text-ink-soft font-mono leading-relaxed line-clamp-3 whitespace-pre-wrap">
             {prompt.slice(0, 220)}...
           </p>
@@ -1086,9 +1086,9 @@ const CopyPromptButton = ({ label, onCopy, EM, variant = 'outline' }) => {
           color: copied ? EM : '#000',
           border: `1px solid ${copied ? 'rgba(62,207,142,0.4)' : EM}`,
         } : {
-          background: copied ? 'rgba(62,207,142,0.12)' : 'rgba(255,255,255,0.04)',
+          background: copied ? 'rgba(62,207,142,0.12)' : 'rgba(var(--fg, 255,255,255),0.04)',
           color: copied ? EM : '#aaa',
-          border: `1px solid ${copied ? 'rgba(62,207,142,0.3)' : 'rgba(255,255,255,0.1)'}`,
+          border: `1px solid ${copied ? 'rgba(62,207,142,0.3)' : 'rgba(var(--fg, 255,255,255),0.1)'}`,
         }),
       }}
     >
@@ -1157,7 +1157,7 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
         onClick={e => e.stopPropagation()}
         style={{
           width: '100%', maxWidth: 620, maxHeight: '90vh',
-          background: '#0f0f0f',
+          background: 'var(--bg-0, #0f0f0f)',
           borderRadius: 20,
           border: '1px solid rgba(62,207,142,0.22)',
           boxShadow: '0 32px 96px rgba(0,0,0,0.7)',
@@ -1168,7 +1168,7 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
         {/* Header */}
         <div style={{
           padding: '16px 20px',
-          borderBottom: '1px solid rgba(255,255,255,0.07)',
+          borderBottom: '1px solid rgba(var(--fg, 255,255,255),0.07)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start',
           flexShrink: 0, gap: 12,
           background: 'rgba(62,207,142,0.04)',
@@ -1177,10 +1177,10 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
             <div style={{ fontSize: 10, color: EM, fontWeight: 700, letterSpacing: 1.4, marginBottom: 4 }}>
               BANK SOAL
             </div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', lineHeight: 1.3 }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--t-1, #fff)', lineHeight: 1.3 }}>
               {soal.maddah_nama}
             </div>
-            <div style={{ fontSize: 12, color: '#888', marginTop: 3 }}>
+            <div style={{ fontSize: 12, color: 'var(--t-3, #888)', marginTop: 3 }}>
               {soal.tahun} · {soal.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
             </div>
           </div>
@@ -1199,9 +1199,9 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
               onClick={onClose}
               style={{
                 width: 34, height: 34, borderRadius: 10,
-                border: '1px solid rgba(255,255,255,0.12)',
-                background: 'rgba(255,255,255,0.05)',
-                color: '#aaa', cursor: 'pointer', fontSize: 16,
+                border: '1px solid rgba(var(--fg, 255,255,255),0.12)',
+                background: 'rgba(var(--fg, 255,255,255),0.05)',
+                color: 'var(--t-2, #aaa)', cursor: 'pointer', fontSize: 16,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
               ✕
@@ -1213,10 +1213,10 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
         <div style={{ overflowY: 'auto', flex: 1, padding: '20px' }}>
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: 6,
-            fontSize: 11, color: '#888', fontWeight: 600,
+            fontSize: 11, color: 'var(--t-3, #888)', fontWeight: 600,
             padding: '4px 10px', borderRadius: 20,
-            border: '1px solid rgba(255,255,255,0.08)',
-            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(var(--fg, 255,255,255),0.08)',
+            background: 'rgba(var(--fg, 255,255,255),0.03)',
             marginBottom: 16,
           }}>
             {totalSoal} soal dalam ujian ini
@@ -1236,7 +1236,7 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
             return (
               <div key={i} style={{
                 marginBottom: 28, paddingBottom: 28,
-                borderBottom: i < totalSoal - 1 ? '1px solid rgba(255,255,255,0.06)' : 'none',
+                borderBottom: i < totalSoal - 1 ? '1px solid rgba(var(--fg, 255,255,255),0.06)' : 'none',
               }}>
                 {/* Nomor + tombol copy */}
                 <div style={{
@@ -1267,10 +1267,10 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
                 {block.arab ? (
                   <div style={{
                     direction: 'rtl', textAlign: 'right',
-                    fontSize: 17, lineHeight: 2.1, color: '#f0ece4',
+                    fontSize: 17, lineHeight: 2.1, color: 'var(--t-1, #f0ece4)',
                     fontFamily: '"Scheherazade New", "Noto Naskh Arabic", "Traditional Arabic", serif',
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.08)',
+                    background: 'rgba(var(--fg, 255,255,255),0.03)',
+                    border: '1px solid rgba(var(--fg, 255,255,255),0.08)',
                     borderRadius: 12, padding: '14px 18px', marginBottom: 10,
                   }}>
                     {block.arab}
@@ -1280,7 +1280,7 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
                 {/* Arti */}
                 {arti ? (
                   <div style={{
-                    fontSize: 13, color: '#bbb', lineHeight: 1.75,
+                    fontSize: 13, color: 'var(--t-2, #bbb)', lineHeight: 1.75,
                     paddingLeft: 14,
                     borderLeft: '2px solid rgba(62,207,142,0.35)',
                     marginBottom: 14, fontStyle: 'italic',
@@ -1292,7 +1292,7 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
                 {/* Jawaban */}
                 {jawaban ? (
                   <div style={{ marginBottom: 10 }}>
-                    <div style={{ fontSize: 10, color: '#666', fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>
+                    <div style={{ fontSize: 10, color: 'var(--t-4, #666)', fontWeight: 700, letterSpacing: 0.8, marginBottom: 8 }}>
                       JAWABAN
                     </div>
                     <div style={{ position: 'relative' }}>
@@ -1300,7 +1300,7 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
                         direction: 'rtl', textAlign: 'right', whiteSpace: 'pre-wrap',
                         fontSize: 16, lineHeight: 2.1,
                         fontFamily: '"Scheherazade New", "Noto Naskh Arabic", "Traditional Arabic", serif',
-                        color: '#e8e4dc',
+                        color: 'var(--t-1, #e8e4dc)',
                         background: 'rgba(62,207,142,0.04)',
                         border: '1px solid rgba(62,207,142,0.14)',
                         borderRadius: 12, padding: '14px 18px',
@@ -1319,7 +1319,7 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
                           background: 'rgba(0,0,0,0.45)',
                         }}>
                           <div style={{ fontSize: 22 }}>🔒</div>
-                          <div style={{ fontSize: 13, color: '#fff', fontWeight: 700 }}>
+                          <div style={{ fontSize: 13, color: 'var(--t-1, #fff)', fontWeight: 700 }}>
                             Jawaban lengkap untuk member
                           </div>
                           <a href="#/maddah-publik" onClick={onClose}
@@ -1337,9 +1337,9 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
                 ) : (
                   <div style={{
                     padding: '16px 14px', borderRadius: 10, textAlign: 'center',
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px dashed rgba(255,255,255,0.08)',
-                    fontSize: 13, color: '#555',
+                    background: 'rgba(var(--fg, 255,255,255),0.02)',
+                    border: '1px dashed rgba(var(--fg, 255,255,255),0.08)',
+                    fontSize: 13, color: 'var(--t-4, #555)',
                   }}>
                     Jawaban sedang disiapkan tim Talqeeh 🕐
                   </div>
@@ -1348,12 +1348,12 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
                 {/* Penjelasan (member only) */}
                 {penj && isMember && (
                   <div style={{
-                    background: 'rgba(255,255,255,0.025)',
-                    border: '1px solid rgba(255,255,255,0.07)',
+                    background: 'rgba(var(--fg, 255,255,255),0.025)',
+                    border: '1px solid rgba(var(--fg, 255,255,255),0.07)',
                     borderRadius: 10, padding: '12px 14px',
-                    fontSize: 13, lineHeight: 1.75, color: '#bbb', marginTop: 10, whiteSpace: 'pre-wrap',
+                    fontSize: 13, lineHeight: 1.75, color: 'var(--t-2, #bbb)', marginTop: 10, whiteSpace: 'pre-wrap',
                   }}>
-                    <div style={{ fontSize: 10, color: '#555', fontWeight: 700, marginBottom: 6, letterSpacing: 0.6 }}>
+                    <div style={{ fontSize: 10, color: 'var(--t-4, #555)', fontWeight: 700, marginBottom: 6, letterSpacing: 0.6 }}>
                       TERJEMAH & KATA KUNCI
                     </div>
                     {penj}
@@ -1371,7 +1371,7 @@ const SoalDetailModal = ({ soal, onClose, isMember }) => {
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             flexWrap: 'wrap', gap: 10,
           }}>
-            <div style={{ fontSize: 13, color: '#aaa', lineHeight: 1.5 }}>
+            <div style={{ fontSize: 13, color: 'var(--t-2, #aaa)', lineHeight: 1.5 }}>
               <span style={{ color: EM, fontWeight: 700 }}>Mau latihan lengkap?</span>
               {' '}Salin semua prompt sekaligus lalu paste ke AI.
             </div>
@@ -1474,7 +1474,7 @@ const BankSoalSection = () => {
   const hasFilter = filter.fakultas || filter.maddah || filter.tahun;
 
   return (
-    <section style={{ background: 'rgba(62,207,142,0.025)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '24px 0 28px' }}>
+    <section style={{ background: 'rgba(62,207,142,0.025)', borderBottom: '1px solid rgba(var(--fg, 255,255,255),0.06)', padding: '24px 0 28px' }}>
       <div className="container-x">
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16, flexWrap: 'wrap', gap: 12 }}>
@@ -1482,10 +1482,10 @@ const BankSoalSection = () => {
             <div style={{ fontSize: 10, color: EM, fontWeight: 700, letterSpacing: 1.5, marginBottom: 4 }}>
               DARI MASISIR UNTUK MASISIR
             </div>
-            <h2 className="font-display" style={{ fontSize: 20, fontWeight: 800, color: '#fff', margin: '0 0 4px' }}>
+            <h2 className="font-display" style={{ fontSize: 20, fontWeight: 800, color: 'var(--t-1, #fff)', margin: '0 0 4px' }}>
               🗂️ Bank Soal Imtihan
             </h2>
-            <p style={{ fontSize: 13, color: '#999', margin: 0 }}>
+            <p style={{ fontSize: 13, color: 'var(--t-2, #999)', margin: 0 }}>
               Soal ujian tahun-tahun sebelumnya, dikumpulkan dari kontributor Masisir.
             </p>
           </div>
@@ -1507,8 +1507,8 @@ const BankSoalSection = () => {
             onChange={e => setFilter(f => ({ ...f, fakultas: e.target.value, maddah: '' }))}
             style={{
               flex: 1, minWidth: 120, padding: '8px 10px', borderRadius: 8,
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: '#1a1a1a', color: filter.fakultas ? '#fff' : '#666', fontSize: 12,
+              border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+              background: 'var(--bg-3, #1a1a1a)', color: filter.fakultas ? '#fff' : '#666', fontSize: 12,
             }}
           >
             <option value="">Semua Fakultas</option>
@@ -1520,8 +1520,8 @@ const BankSoalSection = () => {
             onChange={e => setFilter(f => ({ ...f, maddah: e.target.value }))}
             style={{
               flex: 2, minWidth: 160, padding: '8px 10px', borderRadius: 8,
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: '#1a1a1a', color: filter.maddah ? '#fff' : '#666', fontSize: 12,
+              border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+              background: 'var(--bg-3, #1a1a1a)', color: filter.maddah ? '#fff' : '#666', fontSize: 12,
             }}
           >
             <option value="">Semua Maddah</option>
@@ -1533,8 +1533,8 @@ const BankSoalSection = () => {
             onChange={e => setFilter(f => ({ ...f, tahun: e.target.value }))}
             style={{
               flex: 1, minWidth: 110, padding: '8px 10px', borderRadius: 8,
-              border: '1px solid rgba(255,255,255,0.1)',
-              background: '#1a1a1a', color: filter.tahun ? '#fff' : '#666', fontSize: 12,
+              border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+              background: 'var(--bg-3, #1a1a1a)', color: filter.tahun ? '#fff' : '#666', fontSize: 12,
             }}
           >
             <option value="">Semua Tahun</option>
@@ -1546,8 +1546,8 @@ const BankSoalSection = () => {
               onClick={() => setFilter({ fakultas: '', maddah: '', tahun: '' })}
               style={{
                 padding: '8px 12px', borderRadius: 8,
-                border: '1px solid rgba(255,255,255,0.1)',
-                background: 'transparent', color: '#888',
+                border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
+                background: 'transparent', color: 'var(--t-3, #888)',
                 fontSize: 12, cursor: 'pointer',
               }}
             >
@@ -1558,7 +1558,7 @@ const BankSoalSection = () => {
 
         {/* Summary */}
         {!loading && (
-          <div style={{ fontSize: 12, color: '#666', marginBottom: 12 }}>
+          <div style={{ fontSize: 12, color: 'var(--t-4, #666)', marginBottom: 12 }}>
             {filtered.length > 0
               ? `${Object.keys(grouped).length} slot tersedia · ${filtered.length} soal`
               : 'Belum ada soal untuk filter ini'}
@@ -1567,18 +1567,18 @@ const BankSoalSection = () => {
 
         {/* Grid soal */}
         {loading ? (
-          <div style={{ textAlign: 'center', color: '#888', padding: '32px 0', fontSize: 13 }}>
+          <div style={{ textAlign: 'center', color: 'var(--t-3, #888)', padding: '32px 0', fontSize: 13 }}>
             Memuat bank soal...
           </div>
         ) : Object.keys(grouped).length === 0 ? (
           <div style={{
             textAlign: 'center', padding: '32px 20px',
-            background: 'rgba(255,255,255,0.02)',
-            border: '1px dashed rgba(255,255,255,0.08)',
+            background: 'rgba(var(--fg, 255,255,255),0.02)',
+            border: '1px dashed rgba(var(--fg, 255,255,255),0.08)',
             borderRadius: 14,
           }}>
             <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
-            <div style={{ fontSize: 14, color: '#888', marginBottom: 12 }}>
+            <div style={{ fontSize: 14, color: 'var(--t-3, #888)', marginBottom: 12 }}>
               {soalList.length === 0
                 ? 'Belum ada soal yang tersedia.'
                 : 'Belum ada soal untuk filter ini.'}
@@ -1615,10 +1615,10 @@ const BankSoalSection = () => {
                   e.currentTarget.style.borderColor = 'rgba(62,207,142,0.2)';
                 }}
               >
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 4 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--t-1, #fff)', marginBottom: 4 }}>
                   {group.maddah_nama}
                 </div>
-                <div style={{ fontSize: 11, color: '#888', marginBottom: 10 }}>
+                <div style={{ fontSize: 11, color: 'var(--t-3, #888)', marginBottom: 10 }}>
                   {group.tahun} · {group.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -1628,7 +1628,7 @@ const BankSoalSection = () => {
                   {isMember ? (
                     <span style={{ fontSize: 11, color: EM }}>Buka →</span>
                   ) : (
-                    <span style={{ fontSize: 11, color: '#666' }}>🔒</span>
+                    <span style={{ fontSize: 11, color: 'var(--t-4, #666)' }}>🔒</span>
                   )}
                 </div>
               </div>

@@ -76,7 +76,7 @@ const Icon = ({ name, className = "w-5 h-5", strokeWidth = 1.6, ...rest }) => {
   const d = paths[name];
   if (!d) return null;
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} style={{color:"white",...(rest.style||{})}} {...rest}>
+    <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className} style={{color:"rgb(var(--c-white))",stroke:"rgb(var(--c-white))",...(rest.style||{})}} {...rest}>
       {d}
     </svg>
   );

@@ -37,8 +37,8 @@ const WelcomePage = () => {
   };
 
   const inputStyle = {
-    background: "rgba(255,255,255,0.04)",
-    border: "1px solid rgba(255,255,255,0.10)",
+    background: "rgba(var(--fg, 255,255,255),0.04)",
+    border: "1px solid rgba(var(--fg, 255,255,255),0.10)",
     borderRadius: 10,
     color: "var(--color-ink, #F1EDE4)",
     outline: "none",
@@ -118,7 +118,7 @@ const WelcomePage = () => {
                       placeholder={firstName}
                       style={inputStyle}
                       onFocus={e => e.target.style.borderColor = "rgba(62,207,142,0.5)"}
-                      onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.10)"}
+                      onBlur={e => e.target.style.borderColor = "rgba(var(--fg, 255,255,255),0.10)"}
                     />
                   </div>
                   <div>
@@ -132,20 +132,20 @@ const WelcomePage = () => {
                       placeholder="cth: aku punya ujian minggu depan, fokus ke Nahwu"
                       style={inputStyle}
                       onFocus={e => e.target.style.borderColor = "rgba(62,207,142,0.5)"}
-                      onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.10)"}
+                      onBlur={e => e.target.style.borderColor = "rgba(var(--fg, 255,255,255),0.10)"}
                     />
                   </div>
                 </div>
 
                 {/* Preview */}
-                <div className="rounded-xl overflow-hidden mb-4" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
+                <div className="rounded-xl overflow-hidden mb-4" style={{background:"rgba(var(--fg, 255,255,255),0.03)",border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
                   <p className={`text-xs text-ink-soft font-mono leading-relaxed p-3 whitespace-pre-wrap ${expandedPreview ? "" : "line-clamp-3"}`}>
                     {starterPack}
                   </p>
                   <button
                     onClick={() => setExpandedPreview(v => !v)}
                     className="w-full text-center text-[11px] text-ink-soft/60 hover:text-ink-soft py-1.5 border-t transition-colors"
-                    style={{borderColor:"rgba(255,255,255,0.06)"}}
+                    style={{borderColor:"rgba(var(--fg, 255,255,255),0.06)"}}
                   >
                     {expandedPreview ? "Sembunyikan ↑" : "Lihat selengkapnya ↓"}
                   </button>

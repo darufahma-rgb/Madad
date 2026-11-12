@@ -19,7 +19,7 @@ export default function ReferenceShelf({ docs, publications, publicationError, o
   }, [docs, publications, search, filter, subject, sort]);
   const stats = [['Kitab tersimpan', docs?.length || 0], ['Rujukan aktif', publications ? activeIds.size : '—'], ['Perlu diperiksa', (docs || []).filter(d => !ready(d)).length]];
   return <section aria-label="Katalog pustaka rujukan" className="space-y-5">
-    <div className="grid grid-cols-3 gap-2 sm:gap-3">{stats.map(([label, value], i) => <div key={label} className="rounded-2xl border border-white/[0.08] p-3 sm:p-5" style={{ background: i === 1 ? 'linear-gradient(135deg,rgba(62,207,142,.12),rgba(62,207,142,.025))' : 'rgba(255,255,255,.025)' }}>
+    <div className="grid grid-cols-3 gap-2 sm:gap-3">{stats.map(([label, value], i) => <div key={label} className="rounded-2xl border border-white/[0.08] p-3 sm:p-5" style={{ background: i === 1 ? 'linear-gradient(135deg,rgba(62,207,142,.12),rgba(62,207,142,.025))' : 'rgba(var(--fg, 255,255,255),.025)' }}>
       <div className={`text-2xl sm:text-3xl font-display ${i === 1 ? 'text-emerald-200' : 'text-ink'}`}>{value}</div><div className="text-[11px] sm:text-xs text-ink-soft mt-1">{label}</div>
     </div>)}</div>
     {publicationError && <p role="alert" className="rounded-xl border border-amber-300/20 bg-amber-300/5 p-3 text-xs text-amber-100">{publicationError} Status aktivasi belum dapat ditampilkan.</p>}

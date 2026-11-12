@@ -89,7 +89,7 @@ const LineChart = ({ data, color = '#3ecf8e', height = 120, format = (v) => v.to
         </defs>
         {data.length > 0 && <path d={area} fill={`url(#${gradId})`}/>}
         {data.length > 0 && <path d={line} fill="none" stroke={color} strokeWidth="2" vectorEffect="non-scaling-stroke"/>}
-        {active && <line x1={x(hover)} x2={x(hover)} y1="0" y2={H} stroke="rgba(255,255,255,0.25)" vectorEffect="non-scaling-stroke"/>}
+        {active && <line x1={x(hover)} x2={x(hover)} y1="0" y2={H} stroke="rgba(var(--fg, 255,255,255),0.25)" vectorEffect="non-scaling-stroke"/>}
       </svg>
     </div>
   );
@@ -151,11 +151,11 @@ const RadarChart = ({ dims, values, size = 320, color = '#3ecf8e', progress = 1,
     <svg viewBox={`0 0 ${size} ${size}`} style={{ width: '100%', maxWidth: size, height: 'auto', overflow: 'visible' }} role="img"
       aria-label={dims.map(d => `${d.label} ${values?.[d.key] ?? 0}`).join(', ')}>
       {[0.25, 0.5, 0.75, 1].map(f => (
-        <polygon key={f} points={ring(f)} fill="none" stroke="rgba(255,255,255,0.09)" strokeWidth="1"/>
+        <polygon key={f} points={ring(f)} fill="none" stroke="rgba(var(--fg, 255,255,255),0.09)" strokeWidth="1"/>
       ))}
       {dims.map((_, i) => {
         const [x, y] = point(i, 1);
-        return <line key={i} x1={c} y1={c} x2={x} y2={y} stroke="rgba(255,255,255,0.07)"/>;
+        return <line key={i} x1={c} y1={c} x2={x} y2={y} stroke="rgba(var(--fg, 255,255,255),0.07)"/>;
       })}
       <polygon points={shape} fill={color} fillOpacity="0.22" stroke={color} strokeWidth="2.5" strokeLinejoin="round"/>
       {dims.map((d, i) => {
@@ -167,7 +167,7 @@ const RadarChart = ({ dims, values, size = 320, color = '#3ecf8e', progress = 1,
         const anchor = Math.abs(x - c) < 4 ? 'middle' : x > c ? 'start' : 'end';
         return (
           <text key={d.key} x={x} y={y} textAnchor={anchor} dominantBaseline="middle"
-            fontSize="12" fontWeight="600" fill={highlight === d.key ? color : 'rgba(255,255,255,0.6)'}>
+            fontSize="12" fontWeight="600" fill={highlight === d.key ? color : 'rgba(var(--fg, 255,255,255),0.6)'}>
             {d.label}
           </text>
         );

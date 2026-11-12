@@ -230,14 +230,14 @@ function SubmitSoalPage() {
   if (step === 'success') return (
     <div style={{ maxWidth: 480, margin: '0 auto', padding: '60px 20px', textAlign: 'center' }}>
       <div style={{ fontSize: 56, marginBottom: 16 }}>🎉</div>
-      <h2 style={{ fontSize: 22, fontWeight: 800, color: '#fff', marginBottom: 12 }}>
+      <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--t-1, #fff)', marginBottom: 12 }}>
         Jazakallah Khair!
       </h2>
-      <p style={{ color: '#bbb', lineHeight: 1.7, fontSize: 15 }}>
+      <p style={{ color: 'var(--t-2, #bbb)', lineHeight: 1.7, fontSize: 15 }}>
         Soal kamu sudah kami terima dan sedang direview.<br/>
         Reward akan dikirim ke WhatsApp <strong style={{ color: EM }}>{form.wa}</strong> setelah diverifikasi.
       </p>
-      <p style={{ color: '#888', fontSize: 13, marginTop: 16 }}>Barakallahu fiik 🙏</p>
+      <p style={{ color: 'var(--t-3, #888)', fontSize: 13, marginTop: 16 }}>Barakallahu fiik 🙏</p>
       <button onClick={() => { setStep('form'); setForm({ nama:'', wa:'', fakultas:'', maddah_id:'', maddah_nama:'', tingkat:'', tahun:'', fashl:'' }); setPreviewUrl(null); setCompressedFile(null); setFotoUrl(null); setFotoError(''); setDupMsg(''); }}
         style={{ marginTop: 28, padding: '11px 24px', borderRadius: 10, background: EM, color: '#000', border: 'none', fontWeight: 800, cursor: 'pointer', fontSize: 14 }}>
         Submit Soal Lain
@@ -248,7 +248,7 @@ function SubmitSoalPage() {
   if (step === 'confirm') return (
     <div style={{ maxWidth: 480, margin: '0 auto', padding: '40px 20px' }}>
       <div className="card-glass" style={{ padding: 24 }}>
-        <h2 style={{ fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 16 }}>Konfirmasi Submission</h2>
+        <h2 style={{ fontSize: 18, fontWeight: 800, color: 'var(--t-1, #fff)', marginBottom: 16 }}>Konfirmasi Submission</h2>
         {[
           ['Nama', form.nama],
           ['WhatsApp', form.wa],
@@ -259,8 +259,8 @@ function SubmitSoalPage() {
           ['Fashl', form.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'],
         ].map(([k, v]) => (
           <div key={k} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 10, fontSize: 14 }}>
-            <span style={{ color: '#888' }}>{k}</span>
-            <span style={{ color: '#eee', fontWeight: 600 }}>{v}</span>
+            <span style={{ color: 'var(--t-3, #888)' }}>{k}</span>
+            <span style={{ color: 'var(--t-1, #eee)', fontWeight: 600 }}>{v}</span>
           </div>
         ))}
         {previewUrl && (
@@ -270,7 +270,7 @@ function SubmitSoalPage() {
           ✅ Reward akan dikirim ke WhatsApp <strong style={{ color: EM }}>{form.wa}</strong>
         </div>
         <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
-          <button onClick={() => setStep('form')} style={{ flex: 1, padding: '11px', borderRadius: 10, border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: '#ccc', cursor: 'pointer', fontSize: 14 }}>
+          <button onClick={() => setStep('form')} style={{ flex: 1, padding: '11px', borderRadius: 10, border: '1px solid rgba(var(--fg, 255,255,255),0.12)', background: 'transparent', color: 'var(--t-2, #ccc)', cursor: 'pointer', fontSize: 14 }}>
             ← Edit
           </button>
           <button onClick={handleConfirm} disabled={loading}
@@ -308,14 +308,14 @@ function SubmitSoalPage() {
           }}
         >
           <div>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#ffc832", marginBottom: 2 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--a-amber, #ffc832)", marginBottom: 2 }}>
               🗂️ Lihat maddah yang belum ada soalnya
             </div>
-            <div style={{ fontSize: 12, color: "#888" }}>
+            <div style={{ fontSize: 12, color: "var(--t-3, #888)" }}>
               Cek maddah yang soalnya masih kosong — soal itu lebih dibutuhkan!
             </div>
           </div>
-          <span style={{ fontSize: 12, color: "#ffc832", flexShrink: 0 }}>Lihat →</span>
+          <span style={{ fontSize: 12, color: "var(--a-amber, #ffc832)", flexShrink: 0 }}>Lihat →</span>
         </div>
 
         {/* Header */}
@@ -323,10 +323,10 @@ function SubmitSoalPage() {
           <div style={{ fontSize: 11, color: EM, fontWeight: 700, letterSpacing: 1.5, marginBottom: 6 }}>
             KONTRIBUSI UNTUK MASISIR
           </div>
-          <h1 style={{ fontSize: 26, fontWeight: 800, color: '#fff', margin: '0 0 8px' }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, color: 'var(--t-1, #fff)', margin: '0 0 8px' }}>
             Submit Soal Imtihan
           </h1>
-          <p style={{ fontSize: 14, color: '#aaa', lineHeight: 1.6, margin: 0 }}>
+          <p style={{ fontSize: 14, color: 'var(--t-2, #aaa)', lineHeight: 1.6, margin: 0 }}>
             Bantu Masisir lain belajar dari soal-soal tahun sebelumnya. Belum member? Dapat paket Library gratis. Sudah member? Dapat voucher makan siang.
           </p>
         </div>
@@ -351,10 +351,10 @@ function SubmitSoalPage() {
                 fontSize: 18,
               }}>🍽️</div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--t-1, #fff)' }}>
                   Reward Kontributor
                 </div>
-                <div style={{ fontSize: 12, color: '#888' }}>
+                <div style={{ fontSize: 12, color: 'var(--t-3, #888)' }}>
                   Submit soal → dapat voucher makan siang
                 </div>
               </div>
@@ -401,8 +401,8 @@ function SubmitSoalPage() {
                 <div style={{ fontSize: 20, flexShrink: 0 }}>{tier.icon}</div>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{tier.label}</span>
-                    <span style={{ fontSize: 11, color: '#777' }}>· {tier.sublabel}</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--t-1, #fff)' }}>{tier.label}</span>
+                    <span style={{ fontSize: 11, color: 'var(--t-3, #777)' }}>· {tier.sublabel}</span>
                   </div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: tier.textColor }}>
                     {tier.reward}
@@ -413,8 +413,8 @@ function SubmitSoalPage() {
 
             {/* Catatan */}
             <div style={{
-              marginTop: 10, fontSize: 11, color: '#666',
-              borderTop: '1px solid rgba(255,255,255,0.06)',
+              marginTop: 10, fontSize: 11, color: 'var(--t-4, #666)',
+              borderTop: '1px solid rgba(var(--fg, 255,255,255),0.06)',
               paddingTop: 10, lineHeight: 1.6,
             }}>
               💡 Voucher diklaim dengan japri admin Talqeeh via WhatsApp setelah soal diverifikasi.
@@ -445,10 +445,10 @@ function SubmitSoalPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16, position: 'relative' }}>
               <div style={{ fontSize: 28 }}>🎟️</div>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: '#ffc832' }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: 'var(--a-amber, #ffc832)' }}>
                   Dapatkan Library Talqeeh GRATIS
                 </div>
-                <div style={{ fontSize: 12, color: '#a08030' }}>
+                <div style={{ fontSize: 12, color: 'var(--a-gold, #a08030)' }}>
                   Submit soal ujian Al-Azhar → dapat reward
                 </div>
               </div>
@@ -489,17 +489,17 @@ function SubmitSoalPage() {
                   padding: '10px 14px', borderRadius: 10, marginBottom: 8,
                   background: item.highlight
                     ? 'rgba(62,207,142,0.1)'
-                    : 'rgba(255,255,255,0.03)',
+                    : 'rgba(var(--fg, 255,255,255),0.03)',
                   border: item.highlight
                     ? '1px solid rgba(62,207,142,0.4)'
-                    : '1px solid rgba(255,255,255,0.06)',
+                    : '1px solid rgba(var(--fg, 255,255,255),0.06)',
                   position: 'relative',
                 }}>
                   <span style={{ fontSize: 14, flexShrink: 0 }}>{item.icon}</span>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>{item.label}</span>
-                      <span style={{ fontSize: 11, color: '#666' }}>· {item.sublabel}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--t-1, #fff)' }}>{item.label}</span>
+                      <span style={{ fontSize: 11, color: 'var(--t-4, #666)' }}>· {item.sublabel}</span>
                     </div>
                     <span style={{
                       fontSize: 13, fontWeight: 700,
@@ -524,9 +524,9 @@ function SubmitSoalPage() {
             {/* Catatan cara klaim */}
             <div style={{
               marginTop: 12, padding: '10px 12px',
-              background: 'rgba(255,255,255,0.02)',
-              border: '1px dashed rgba(255,255,255,0.08)',
-              borderRadius: 8, fontSize: 11, color: '#666', lineHeight: 1.6,
+              background: 'rgba(var(--fg, 255,255,255),0.02)',
+              border: '1px dashed rgba(var(--fg, 255,255,255),0.08)',
+              borderRadius: 8, fontSize: 11, color: 'var(--t-4, #666)', lineHeight: 1.6,
             }}>
               💡 Setelah soal diverifikasi, admin mengirim PIN aktivasi via WhatsApp —
               login pakai Google lalu masukkan PIN itu untuk membuka Library.
@@ -537,28 +537,28 @@ function SubmitSoalPage() {
         )}
 
         {/* Panduan Accordion */}
-        <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14, marginBottom: 20, overflow: 'hidden' }}>
+        <div style={{ border: '1px solid rgba(var(--fg, 255,255,255),0.08)', borderRadius: 14, marginBottom: 20, overflow: 'hidden' }}>
           <button
             onClick={() => setPanduanOpen(p => !p)}
-            style={{ width: '100%', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: 'none', cursor: 'pointer', color: '#fff' }}
+            style={{ width: '100%', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(var(--fg, 255,255,255),0.03)', border: 'none', cursor: 'pointer', color: 'var(--t-1, #fff)' }}
           >
             <span style={{ fontWeight: 700, fontSize: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
               📋 Baca Panduan Submit Dulu
-              <span style={{ fontSize: 11, color: '#3ecf8e', fontWeight: 600, background: 'rgba(62,207,142,0.12)', padding: '2px 8px', borderRadius: 99 }}>
+              <span style={{ fontSize: 11, color: 'var(--a-green, #3ecf8e)', fontWeight: 600, background: 'rgba(62,207,142,0.12)', padding: '2px 8px', borderRadius: 99 }}>
                 Wajib dibaca
               </span>
             </span>
-            <span style={{ color: '#888', fontSize: 18, transition: 'transform 0.2s', transform: panduanOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+            <span style={{ color: 'var(--t-3, #888)', fontSize: 18, transition: 'transform 0.2s', transform: panduanOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}>
               ▾
             </span>
           </button>
 
           {panduanOpen && (
-            <div style={{ padding: '16px 18px 20px', borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: 14, color: '#ccc', lineHeight: 1.7 }}>
+            <div style={{ padding: '16px 18px 20px', borderTop: '1px solid rgba(var(--fg, 255,255,255),0.06)', fontSize: 14, color: 'var(--t-2, #ccc)', lineHeight: 1.7 }}>
 
               {/* Soal yang diterima */}
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontWeight: 700, color: '#3ecf8e', marginBottom: 10, fontSize: 13, letterSpacing: 0.5 }}>✅ SOAL YANG DITERIMA</div>
+                <div style={{ fontWeight: 700, color: 'var(--a-green, #3ecf8e)', marginBottom: 10, fontSize: 13, letterSpacing: 0.5 }}>✅ SOAL YANG DITERIMA</div>
                 {[
                   ['Berbahasa Arab', 'Soal Al-Azhar memang ditulis dalam bahasa Arab. Soal bahasa Indonesia tidak diterima.'],
                   ['Soal tahriri (ujian tulis)', 'Harus dari kertas soal asli yang dibagikan saat ujian — bukan soal syafawi yang diingat-ingat.'],
@@ -566,17 +566,17 @@ function SubmitSoalPage() {
                   ['Dari Al-Azhar Cairo', 'Soal dari kampus atau instansi lain tidak diterima.'],
                 ].map(([judul, isi]) => (
                   <div key={judul} style={{ marginBottom: 10, paddingLeft: 12, borderLeft: '2px solid rgba(62,207,142,0.3)' }}>
-                    <div style={{ fontWeight: 700, color: '#eee', fontSize: 13 }}>{judul}</div>
-                    <div style={{ color: '#aaa', fontSize: 13 }}>{isi}</div>
+                    <div style={{ fontWeight: 700, color: 'var(--t-1, #eee)', fontSize: 13 }}>{judul}</div>
+                    <div style={{ color: 'var(--t-2, #aaa)', fontSize: 13 }}>{isi}</div>
                   </div>
                 ))}
               </div>
 
               {/* Cara foto yang benar */}
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontWeight: 700, color: '#3ecf8e', marginBottom: 10, fontSize: 13, letterSpacing: 0.5 }}>📸 CARA FOTO YANG BENAR</div>
+                <div style={{ fontWeight: 700, color: 'var(--a-green, #3ecf8e)', marginBottom: 10, fontSize: 13, letterSpacing: 0.5 }}>📸 CARA FOTO YANG BENAR</div>
                 <div style={{ background: 'rgba(62,207,142,0.06)', borderRadius: 10, padding: '12px 14px', marginBottom: 10 }}>
-                  <div style={{ fontWeight: 700, color: '#fff', marginBottom: 6, fontSize: 13 }}>Lakukan ini ✅</div>
+                  <div style={{ fontWeight: 700, color: 'var(--t-1, #fff)', marginBottom: 6, fontSize: 13 }}>Lakukan ini ✅</div>
                   {[
                     'Taruh kertas di tempat datar (meja atau lantai)',
                     'Pastikan pencahayaan cukup — dekat jendela di siang hari paling bagus',
@@ -584,46 +584,46 @@ function SubmitSoalPage() {
                     'Zoom setelah foto dan pastikan tulisan Arab terbaca jelas',
                     'Kalau soal 2 halaman, submit dua foto terpisah',
                   ].map(t => (
-                    <div key={t} style={{ color: '#bbb', fontSize: 13, marginBottom: 4 }}>✓ {t}</div>
+                    <div key={t} style={{ color: 'var(--t-2, #bbb)', fontSize: 13, marginBottom: 4 }}>✓ {t}</div>
                   ))}
                 </div>
                 <div style={{ background: 'rgba(255,80,80,0.06)', borderRadius: 10, padding: '12px 14px' }}>
-                  <div style={{ fontWeight: 700, color: '#ff8080', marginBottom: 6, fontSize: 13 }}>Jangan lakukan ini ❌</div>
+                  <div style={{ fontWeight: 700, color: 'var(--a-red, #ff8080)', marginBottom: 6, fontSize: 13 }}>Jangan lakukan ini ❌</div>
                   {[
                     'Foto sambil dipegang — hasilnya goyang dan blur',
                     'Foto dari sudut miring — tulisan tidak terbaca',
                     'Pakai flash berlebihan — menyebabkan silau',
                     'Foto di tempat gelap',
                   ].map(t => (
-                    <div key={t} style={{ color: '#bbb', fontSize: 13, marginBottom: 4 }}>✗ {t}</div>
+                    <div key={t} style={{ color: 'var(--t-2, #bbb)', fontSize: 13, marginBottom: 4 }}>✗ {t}</div>
                   ))}
                 </div>
               </div>
 
               {/* Reward */}
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontWeight: 700, color: '#3ecf8e', marginBottom: 10, fontSize: 13, letterSpacing: 0.5 }}>🎁 SISTEM REWARD</div>
+                <div style={{ fontWeight: 700, color: 'var(--a-green, #3ecf8e)', marginBottom: 10, fontSize: 13, letterSpacing: 0.5 }}>🎁 SISTEM REWARD</div>
                 {[
                   ['1 termin penuh', 'Semua maddah di satu fashl dalam satu tahun', 'Belum member: Library gratis · Member: voucher Rp 25.000'],
                   ['2 termin penuh', 'Dua fashl berbeda atau dua tahun berbeda', 'Belum member: Library + voucher Rp 25.000 · Member: voucher Rp 50.000'],
                   ['Sebagian', 'Belum lengkap 1 termin penuh', 'Diskon spesial untuk paket Library'],
                 ].map(([label, ket, reward]) => (
-                  <div key={label} style={{ display: 'flex', gap: 10, marginBottom: 10, padding: '10px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 9 }}>
-                    <div style={{ flexShrink: 0, fontWeight: 700, color: '#fff', fontSize: 13, minWidth: 100 }}>{label}</div>
+                  <div key={label} style={{ display: 'flex', gap: 10, marginBottom: 10, padding: '10px 12px', background: 'rgba(var(--fg, 255,255,255),0.03)', borderRadius: 9 }}>
+                    <div style={{ flexShrink: 0, fontWeight: 700, color: 'var(--t-1, #fff)', fontSize: 13, minWidth: 100 }}>{label}</div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ color: '#aaa', fontSize: 12 }}>{ket}</div>
-                      <div style={{ color: '#3ecf8e', fontWeight: 700, fontSize: 13 }}>{reward}</div>
+                      <div style={{ color: 'var(--t-2, #aaa)', fontSize: 12 }}>{ket}</div>
+                      <div style={{ color: 'var(--a-green, #3ecf8e)', fontWeight: 700, fontSize: 13 }}>{reward}</div>
                     </div>
                   </div>
                 ))}
-                <div style={{ fontSize: 12, color: '#888', marginTop: 4 }}>
-                  💡 <strong style={{ color: '#ccc' }}>1 termin penuh</strong> = semua maddah yang kamu ambil di satu fashl dalam satu tahun ajaran. Contoh: Syariah Tingkat 2 Fashl Awwal 2024/2025 punya 6 maddah → harus submit keenam-enamnya.
+                <div style={{ fontSize: 12, color: 'var(--t-3, #888)', marginTop: 4 }}>
+                  💡 <strong style={{ color: 'var(--t-2, #ccc)' }}>1 termin penuh</strong> = semua maddah yang kamu ambil di satu fashl dalam satu tahun ajaran. Contoh: Syariah Tingkat 2 Fashl Awwal 2024/2025 punya 6 maddah → harus submit keenam-enamnya.
                 </div>
               </div>
 
               {/* FAQ */}
               <div>
-                <div style={{ fontWeight: 700, color: '#3ecf8e', marginBottom: 10, fontSize: 13, letterSpacing: 0.5 }}>❓ PERTANYAAN YANG SERING DITANYA</div>
+                <div style={{ fontWeight: 700, color: 'var(--a-green, #3ecf8e)', marginBottom: 10, fontSize: 13, letterSpacing: 0.5 }}>❓ PERTANYAAN YANG SERING DITANYA</div>
                 {[
                   ['Soalku dari tahun 2022, bisa?', 'Untuk saat ini hanya menerima soal 2023/2024 sampai 2025/2026.'],
                   ['Aku sudah member, rewardnya apa?', 'Voucher makan siang: Rp 25.000 untuk 1 termin penuh, Rp 50.000 untuk 2 termin penuh.'],
@@ -632,9 +632,9 @@ function SubmitSoalPage() {
                   ['Boleh submit soal teman?', 'Boleh, selama soalnya asli dari Al-Azhar dan kamu tahu info maddah + tahunnya dengan benar.'],
                   ['Berapa lama prosesnya?', 'Biasanya 1-2 hari. Kalau 3 hari belum ada kabar, hubungi admin.'],
                 ].map(([q, a]) => (
-                  <div key={q} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <div style={{ fontWeight: 700, color: '#eee', fontSize: 13, marginBottom: 3 }}>Q: {q}</div>
-                    <div style={{ color: '#aaa', fontSize: 13 }}>A: {a}</div>
+                  <div key={q} style={{ marginBottom: 12, paddingBottom: 12, borderBottom: '1px solid rgba(var(--fg, 255,255,255),0.05)' }}>
+                    <div style={{ fontWeight: 700, color: 'var(--t-1, #eee)', fontSize: 13, marginBottom: 3 }}>Q: {q}</div>
+                    <div style={{ color: 'var(--t-2, #aaa)', fontSize: 13 }}>A: {a}</div>
                   </div>
                 ))}
               </div>
@@ -642,7 +642,7 @@ function SubmitSoalPage() {
               {/* Footer */}
               <div style={{ textAlign: 'center', marginTop: 16, padding: '12px', background: 'rgba(62,207,142,0.06)', borderRadius: 10, fontSize: 13, color: '#aaa' }}>
                 Jazakallahu khair atas kontribusinya untuk sesama Masisir! 🙏<br/>
-                <span style={{ fontSize: 12, color: '#777' }}>Ada pertanyaan? Hubungi admin via WhatsApp.</span>
+                <span style={{ fontSize: 12, color: 'var(--t-3, #777)' }}>Ada pertanyaan? Hubungi admin via WhatsApp.</span>
               </div>
 
             </div>
@@ -650,7 +650,7 @@ function SubmitSoalPage() {
         </div>
 
         {/* Syarat */}
-        <div style={{ marginTop: 16, fontSize: 12, color: '#555', lineHeight: 1.7 }}>
+        <div style={{ marginTop: 16, fontSize: 12, color: 'var(--t-4, #555)', lineHeight: 1.7 }}>
           Dengan submit, kamu menyetujui soal digunakan untuk keperluan belajar Masisir.<br/>
           Soal yang blur, bukan bahasa Arab, atau bukan dari Al-Azhar akan ditolak.
         </div>
@@ -665,22 +665,22 @@ function SubmitSoalPage() {
               <label style={{ fontSize: 12, color: EM, fontWeight: 700, display: 'block', marginBottom: 6 }}>NAMA LENGKAP *</label>
               <input value={form.nama} onChange={e => set('nama', e.target.value)}
                 placeholder="Nama kamu"
-                style={{ width: '100%', padding: '10px 14px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: 14, boxSizing: 'border-box' }}/>
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 9, border: '1px solid rgba(var(--fg, 255,255,255),0.1)', background: 'rgba(var(--fg, 255,255,255),0.05)', color: 'var(--t-1, #fff)', fontSize: 14, boxSizing: 'border-box' }}/>
             </div>
 
             {/* WA */}
             <div style={{ marginBottom: 16 }}>
-              <label style={{ fontSize: 12, color: EM, fontWeight: 700, display: 'block', marginBottom: 6 }}>NOMOR WHATSAPP * <span style={{ color: '#888', fontWeight: 400 }}>(untuk terima reward)</span></label>
+              <label style={{ fontSize: 12, color: EM, fontWeight: 700, display: 'block', marginBottom: 6 }}>NOMOR WHATSAPP * <span style={{ color: 'var(--t-3, #888)', fontWeight: 400 }}>(untuk terima reward)</span></label>
               <input value={form.wa} onChange={e => set('wa', e.target.value)}
                 placeholder="628xxxxxxxxxx"
-                style={{ width: '100%', padding: '10px 14px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#fff', fontSize: 14, boxSizing: 'border-box' }}/>
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 9, border: '1px solid rgba(var(--fg, 255,255,255),0.1)', background: 'rgba(var(--fg, 255,255,255),0.05)', color: 'var(--t-1, #fff)', fontSize: 14, boxSizing: 'border-box' }}/>
             </div>
 
             {/* Fakultas */}
             <div style={{ marginBottom: 16 }}>
               <label style={{ fontSize: 12, color: EM, fontWeight: 700, display: 'block', marginBottom: 6 }}>FAKULTAS *</label>
               <select value={form.fakultas} onChange={e => { set('fakultas', e.target.value); set('maddah_id', ''); set('maddah_nama', ''); setDupMsg(''); }}
-                style={{ width: '100%', padding: '10px 14px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 14, boxSizing: 'border-box' }}>
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 9, border: '1px solid rgba(var(--fg, 255,255,255),0.1)', background: 'var(--bg-3, #1a1a1a)', color: 'var(--t-1, #fff)', fontSize: 14, boxSizing: 'border-box' }}>
                 <option value="">Pilih fakultas...</option>
                 {faculties.map(f => <option key={f.id} value={f.id}>{f.label}</option>)}
               </select>
@@ -698,7 +698,7 @@ function SubmitSoalPage() {
                   checkSoalStatus(m?.name || '', form.tahun, form.fashl);
                 }}
                 disabled={!form.fakultas}
-                style={{ width: '100%', padding: '10px 14px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 14, boxSizing: 'border-box' }}>
+                style={{ width: '100%', padding: '10px 14px', borderRadius: 9, border: '1px solid rgba(var(--fg, 255,255,255),0.1)', background: 'var(--bg-3, #1a1a1a)', color: 'var(--t-1, #fff)', fontSize: 14, boxSizing: 'border-box' }}>
                 <option value="">Pilih maddah...</option>
                 {filteredMaddahs.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
               </select>
@@ -709,7 +709,7 @@ function SubmitSoalPage() {
               <div>
                 <label style={{ fontSize: 11, color: EM, fontWeight: 700, display: 'block', marginBottom: 6 }}>TINGKAT *</label>
                 <select value={form.tingkat} onChange={e => set('tingkat', e.target.value)}
-                  style={{ width: '100%', padding: '10px 8px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 13, boxSizing: 'border-box' }}>
+                  style={{ width: '100%', padding: '10px 8px', borderRadius: 9, border: '1px solid rgba(var(--fg, 255,255,255),0.1)', background: 'var(--bg-3, #1a1a1a)', color: 'var(--t-1, #fff)', fontSize: 13, boxSizing: 'border-box' }}>
                   <option value="">-</option>
                   {['1','2','3','4'].map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
@@ -718,7 +718,7 @@ function SubmitSoalPage() {
                 <label style={{ fontSize: 11, color: EM, fontWeight: 700, display: 'block', marginBottom: 6 }}>TAHUN *</label>
                 <select value={form.tahun}
                   onChange={e => { set('tahun', e.target.value); if (form.maddah_id && e.target.value && form.fashl) checkDuplikat(form.maddah_id, e.target.value, form.fashl); checkSoalStatus(form.maddah_nama, e.target.value, form.fashl); }}
-                  style={{ width: '100%', padding: '10px 8px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 13, boxSizing: 'border-box' }}>
+                  style={{ width: '100%', padding: '10px 8px', borderRadius: 9, border: '1px solid rgba(var(--fg, 255,255,255),0.1)', background: 'var(--bg-3, #1a1a1a)', color: 'var(--t-1, #fff)', fontSize: 13, boxSizing: 'border-box' }}>
                   <option value="">-</option>
                   {TAHUN_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
@@ -727,7 +727,7 @@ function SubmitSoalPage() {
                 <label style={{ fontSize: 11, color: EM, fontWeight: 700, display: 'block', marginBottom: 6 }}>FASHL *</label>
                 <select value={form.fashl}
                   onChange={e => { set('fashl', e.target.value); if (form.maddah_id && form.tahun && e.target.value) checkDuplikat(form.maddah_id, form.tahun, e.target.value); checkSoalStatus(form.maddah_nama, form.tahun, e.target.value); }}
-                  style={{ width: '100%', padding: '10px 8px', borderRadius: 9, border: '1px solid rgba(255,255,255,0.1)', background: '#1a1a1a', color: '#fff', fontSize: 13, boxSizing: 'border-box' }}>
+                  style={{ width: '100%', padding: '10px 8px', borderRadius: 9, border: '1px solid rgba(var(--fg, 255,255,255),0.1)', background: 'var(--bg-3, #1a1a1a)', color: 'var(--t-1, #fff)', fontSize: 13, boxSizing: 'border-box' }}>
                   <option value="">-</option>
                   {FASHL_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                 </select>
@@ -743,8 +743,8 @@ function SubmitSoalPage() {
                 display: 'flex', alignItems: 'flex-start', gap: 12,
                 transition: 'all 0.3s',
                 ...(checkingStatus ? {
-                  background: 'rgba(255,255,255,0.03)',
-                  border: '1px solid rgba(255,255,255,0.08)',
+                  background: 'rgba(var(--fg, 255,255,255),0.03)',
+                  border: '1px solid rgba(var(--fg, 255,255,255),0.08)',
                 } : soalStatus === 'ada' ? {
                   background: 'rgba(251,191,36,0.08)',
                   border: '1px solid rgba(251,191,36,0.3)',
@@ -757,12 +757,12 @@ function SubmitSoalPage() {
                   <>
                     <div style={{
                       width: 18, height: 18, borderRadius: '50%',
-                      border: '2px solid rgba(255,255,255,0.2)',
+                      border: '2px solid rgba(var(--fg, 255,255,255),0.2)',
                       borderTopColor: '#3ecf8e',
                       flexShrink: 0, marginTop: 2,
                       animation: 'spin 0.8s linear infinite',
                     }}/>
-                    <span style={{ fontSize: 13, color: '#888' }}>
+                    <span style={{ fontSize: 13, color: 'var(--t-3, #888)' }}>
                       Mengecek status di bank soal...
                     </span>
                   </>
@@ -775,18 +775,18 @@ function SubmitSoalPage() {
                       fontSize: 13, flexShrink: 0,
                     }}>⚠️</div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#fbbf24', marginBottom: 4 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--a-amber, #fbbf24)', marginBottom: 4 }}>
                         Soal ini sudah ada di bank soal
                       </div>
-                      <div style={{ fontSize: 12, color: '#a08030', lineHeight: 1.6 }}>
+                      <div style={{ fontSize: 12, color: 'var(--a-gold, #a08030)', lineHeight: 1.6 }}>
                         Sudah ada kontributor yang submit soal ini sebelumnya.
-                        Kamu tetap boleh submit jika punya <strong style={{color:'#fbbf24'}}>versi soal yang berbeda</strong> atau tahun ajaran yang lebih lengkap.
+                        Kamu tetap boleh submit jika punya <strong style={{color:'var(--a-amber, #fbbf24)'}}>versi soal yang berbeda</strong> atau tahun ajaran yang lebih lengkap.
                       </div>
                       <a
                         href="#/bank-soal"
                         style={{
                           display: 'inline-block', marginTop: 8,
-                          fontSize: 11, color: '#fbbf24',
+                          fontSize: 11, color: 'var(--a-amber, #fbbf24)',
                           textDecoration: 'underline', textUnderlineOffset: 3,
                         }}
                       >
@@ -803,11 +803,11 @@ function SubmitSoalPage() {
                       fontSize: 13, flexShrink: 0,
                     }}>✅</div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#3ecf8e', marginBottom: 4 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--a-green, #3ecf8e)', marginBottom: 4 }}>
                         Soal ini belum ada — kamu yang pertama!
                       </div>
                       <div style={{ fontSize: 12, color: '#4a9a6a', lineHeight: 1.6 }}>
-                        Belum ada yang submit soal <strong style={{color:'#3ecf8e'}}>
+                        Belum ada yang submit soal <strong style={{color:'var(--a-green, #3ecf8e)'}}>
                         {form.maddah_nama} {form.tahun} {form.fashl === 'awwal' ? 'Fashl Awwal' : 'Fashl Tsani'}
                         </strong> ini.
                         Kontribusimu lebih dibutuhkan dan reward lebih mudah didapat!
@@ -836,46 +836,46 @@ function SubmitSoalPage() {
             {/* Upload foto */}
             <div style={{ marginBottom: 20 }}>
               <label style={{ fontSize: 12, color: EM, fontWeight: 700, display: 'block', marginBottom: 6 }}>
-                FOTO SOAL * <span style={{ color: '#888', fontWeight: 400 }}>(foto jelas kertas soal asli)</span>
+                FOTO SOAL * <span style={{ color: 'var(--t-3, #888)', fontWeight: 400 }}>(foto jelas kertas soal asli)</span>
               </label>
               <div
                 onClick={() => !uploading && fileRef.current?.click()}
                 style={{ border: `2px dashed ${fotoError ? 'rgba(239,68,68,0.4)' : fotoUrl ? 'rgba(62,207,142,0.5)' : 'rgba(62,207,142,0.3)'}`, borderRadius: 12, padding: '20px', textAlign: 'center', cursor: uploading ? 'wait' : 'pointer', background: 'rgba(62,207,142,0.03)' }}>
                 {compressing ? (
-                  <div style={{ color: '#888', fontSize: 13 }}>Mengompres foto...</div>
+                  <div style={{ color: 'var(--t-3, #888)', fontSize: 13 }}>Mengompres foto...</div>
                 ) : uploading ? (
-                  <div style={{ color: '#3ecf8e', fontSize: 13 }}>⏳ Mengupload foto...</div>
+                  <div style={{ color: 'var(--a-green, #3ecf8e)', fontSize: 13 }}>⏳ Mengupload foto...</div>
                 ) : previewUrl ? (
                   <>
                     <img src={previewUrl} alt="preview" style={{ maxWidth: '100%', maxHeight: 200, borderRadius: 8, objectFit: 'contain' }}/>
-                    {fotoUrl && <div style={{ color: '#3ecf8e', fontSize: 11, marginTop: 6 }}>✅ Foto berhasil diupload</div>}
+                    {fotoUrl && <div style={{ color: 'var(--a-green, #3ecf8e)', fontSize: 11, marginTop: 6 }}>✅ Foto berhasil diupload</div>}
                   </>
                 ) : (
                   <>
                     <div style={{ fontSize: 28, marginBottom: 8 }}>📸</div>
-                    <div style={{ color: '#888', fontSize: 13 }}>Tap untuk pilih foto</div>
-                    <div style={{ color: '#666', fontSize: 11, marginTop: 4 }}>Foto &gt;1MB akan dikompresi otomatis</div>
+                    <div style={{ color: 'var(--t-3, #888)', fontSize: 13 }}>Tap untuk pilih foto</div>
+                    <div style={{ color: 'var(--t-4, #666)', fontSize: 11, marginTop: 4 }}>Foto &gt;1MB akan dikompresi otomatis</div>
                   </>
                 )}
               </div>
-              {fotoError && <div style={{ color: '#f87171', fontSize: 12, marginTop: 6 }}>⚠️ {fotoError}</div>}
+              {fotoError && <div style={{ color: 'var(--a-red, #f87171)', fontSize: 12, marginTop: 6 }}>⚠️ {fotoError}</div>}
               <input ref={fileRef} type="file" accept="image/*" onChange={handleFoto} style={{ display: 'none' }}/>
             </div>
 
             {/* CAPTCHA */}
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 12, color: '#3ecf8e', fontWeight: 700, display: 'block', marginBottom: 8 }}>
+              <label style={{ fontSize: 12, color: 'var(--a-green, #3ecf8e)', fontWeight: 700, display: 'block', marginBottom: 8 }}>
                 VERIFIKASI *
               </label>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.12)',
+                  background: 'rgba(var(--fg, 255,255,255),0.06)',
+                  border: '1px solid rgba(var(--fg, 255,255,255),0.12)',
                   borderRadius: 9,
                   padding: '10px 18px',
                   fontSize: 18,
                   fontWeight: 800,
-                  color: '#fff',
+                  color: 'var(--t-1, #fff)',
                   letterSpacing: 2,
                   minWidth: 100,
                   textAlign: 'center',
@@ -896,9 +896,9 @@ function SubmitSoalPage() {
                       ? captchaValid
                         ? '1px solid rgba(62,207,142,0.6)'
                         : '1px solid rgba(255,80,80,0.4)'
-                      : '1px solid rgba(255,255,255,0.1)',
-                    background: 'rgba(255,255,255,0.05)',
-                    color: '#fff',
+                      : '1px solid rgba(var(--fg, 255,255,255),0.1)',
+                    background: 'rgba(var(--fg, 255,255,255),0.05)',
+                    color: 'var(--t-1, #fff)',
                     fontSize: 16,
                     fontWeight: 700,
                     textAlign: 'center',
@@ -909,10 +909,10 @@ function SubmitSoalPage() {
                   onClick={() => { setCaptcha(generateCaptcha()); setCaptchaInput(''); }}
                   style={{
                     background: 'transparent',
-                    border: '1px solid rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(var(--fg, 255,255,255),0.1)',
                     borderRadius: 8,
                     padding: '8px 10px',
-                    color: '#888',
+                    color: 'var(--t-3, #888)',
                     cursor: 'pointer',
                     fontSize: 14,
                   }}
@@ -922,12 +922,12 @@ function SubmitSoalPage() {
                 </button>
               </div>
               {captchaInput && !captchaValid && (
-                <div style={{ fontSize: 12, color: '#ff8080', marginTop: 6 }}>
+                <div style={{ fontSize: 12, color: 'var(--a-red, #ff8080)', marginTop: 6 }}>
                   Jawaban salah, coba lagi
                 </div>
               )}
               {captchaValid && (
-                <div style={{ fontSize: 12, color: '#3ecf8e', marginTop: 6 }}>
+                <div style={{ fontSize: 12, color: 'var(--a-green, #3ecf8e)', marginTop: 6 }}>
                   ✓ Verifikasi berhasil
                 </div>
               )}

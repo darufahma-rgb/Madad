@@ -43,12 +43,12 @@ const FormatToggle = ({ enabled, onChange }) => (
       <input type="checkbox" className="sr-only" checked={enabled} onChange={e => onChange(e.target.checked)}/>
       <div className="w-8 h-[18px] rounded-full transition-colors border"
         style={{
-          background: enabled ? "rgba(62,207,142,0.25)" : "rgba(255,255,255,0.06)",
-          borderColor: enabled ? "rgba(62,207,142,0.5)" : "rgba(255,255,255,0.15)",
+          background: enabled ? "rgba(62,207,142,0.25)" : "rgba(var(--fg, 255,255,255),0.06)",
+          borderColor: enabled ? "rgba(62,207,142,0.5)" : "rgba(var(--fg, 255,255,255),0.15)",
         }}/>
       <div className="absolute top-[2px] left-[2px] w-[14px] h-[14px] rounded-full transition-transform"
         style={{
-          background: enabled ? "#3ecf8e" : "rgba(255,255,255,0.35)",
+          background: enabled ? "#3ecf8e" : "rgba(var(--fg, 255,255,255),0.35)",
           transform: enabled ? "translateX(14px)" : "translateX(0)",
         }}/>
     </div>

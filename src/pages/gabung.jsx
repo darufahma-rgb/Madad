@@ -17,7 +17,7 @@ const DeadlineBar = ({ promo, total, hideCta, onTake }) => {
   if (!(left > 0)) return null;
   const days = Math.floor(left / 86400e3);
   return (
-    <div className="sticky top-[var(--app-header-h)] z-30 border-b border-gold-500/30 backdrop-blur-xl" style={{ background: 'rgba(28,24,16,0.92)' }}>
+    <div className="sticky top-[var(--app-header-h)] z-30 border-b border-gold-500/30 backdrop-blur-xl" style={{ background: 'rgba(var(--surf, 28,24,16),0.92)' }}>
       <div className="container-x py-2 flex items-center gap-3">
         <div className="flex-1 min-w-0 leading-tight">
           <div className="text-[11px] text-ink-muted truncate">
@@ -117,8 +117,8 @@ const COMPARE_ROWS = [
 
 const TESTIMONIALS = [
   { text: 'Dari yang awalnya ngerasa gak yakin buat ujian jadi akhirnya yakin dan semangat belajar bisa naik berkat adanya Talqeeh.', color: EMERALD },
-  { text: 'Sangat terbantu dengan urutan maddah, contoh prompt dan rekomendasi AI yang digunakan. Untuk latihan melalui Claude sangat bermanfaat dan nyaman.', color: '#a78bfa' },
-  { text: 'Setiap prompt yang disediakan Talqeeh langsung menjelaskan materi yang kita perlukan, dengan penjelasan yang mudah.', color: '#f97316' },
+  { text: 'Sangat terbantu dengan urutan maddah, contoh prompt dan rekomendasi AI yang digunakan. Untuk latihan melalui Claude sangat bermanfaat dan nyaman.', color: 'var(--a-violet, #a78bfa)' },
+  { text: 'Setiap prompt yang disediakan Talqeeh langsung menjelaskan materi yang kita perlukan, dengan penjelasan yang mudah.', color: 'var(--a-amber, #f97316)' },
 ];
 
 const FAQS = [
@@ -294,14 +294,14 @@ const RombonganCard = ({ event, seats, onSeats, onChoose }) => {
 
 const Mark = ({ ok, color, className = 'w-4 h-4' }) => ok
   ? <Icon name="check" strokeWidth={2.2} className={`${className} flex-shrink-0`} style={{ stroke: color }}/>
-  : <Icon name="x" strokeWidth={2} className={`${className} flex-shrink-0`} style={{ stroke: 'rgba(255,255,255,0.28)' }}/>;
+  : <Icon name="x" strokeWidth={2} className={`${className} flex-shrink-0`} style={{ stroke: 'rgba(var(--fg, 255,255,255),0.28)' }}/>;
 
 const PlanCard = ({ color, icon, badge, title, tagline, price, priceNote, strike, saving, sub, extra, items, cta, ctaClass, onClick, current, selected, recommended, secondary, className = '' }) => {
   const accent = recommended || selected;
   return (
     <div className={`card-glass-strong p-6 md:p-7 relative overflow-hidden flex flex-col transition-transform ${recommended ? 'md:-translate-y-3' : ''} ${className}`}
       style={{
-        border: `1px solid ${accent ? `${color}99` : 'rgba(255,255,255,0.08)'}`,
+        border: `1px solid ${accent ? `${color}99` : 'rgba(var(--fg, 255,255,255),0.08)'}`,
         boxShadow: accent ? `0 0 0 1px ${color}55, 0 24px 60px -30px ${color}88` : undefined,
       }}>
       <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full blur-3xl pointer-events-none" style={{ background: `${color}22` }}/>

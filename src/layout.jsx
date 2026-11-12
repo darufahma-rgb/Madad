@@ -952,7 +952,7 @@ const CouponPopup = () => {
     <div className="fixed inset-0 z-[135] flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="coupon-title">
       <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={close}/>
       <div className="relative w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border border-gold-500/30 p-6 text-center shadow-2xl max-h-[92vh] overflow-y-auto"
-        style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(201,168,106,0.20), transparent 60%), #121614" }}>
+        style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(201,168,106,0.20), transparent 60%), var(--bg-1, #121614)" }}>
         <button onClick={close} aria-label="Tutup" className="absolute top-3 right-3 w-9 h-9 rounded-xl text-ink-muted hover:text-ink hover:bg-white/5 flex items-center justify-center">
           <Icon name="x" className="w-4 h-4"/>
         </button>
@@ -1000,7 +1000,7 @@ const RunningOfferPopup = ({ offer, profile, path }) => {
     <div className="fixed inset-0 z-[135] flex items-end sm:items-center justify-center p-0 sm:p-4" role="dialog" aria-modal="true" aria-labelledby="offer-title">
       <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={close}/>
       <div className="relative w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border border-gold-500/30 p-6 text-center shadow-2xl"
-        style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(201,168,106,0.20), transparent 60%), #121614" }}>
+        style={{ background: "radial-gradient(120% 80% at 50% 0%, rgba(201,168,106,0.20), transparent 60%), var(--bg-1, #121614)" }}>
         <button onClick={close} aria-label="Tutup" className="absolute top-3 right-3 w-9 h-9 rounded-xl text-ink-muted hover:text-ink hover:bg-white/5 flex items-center justify-center">
           <Icon name="x" className="w-4 h-4"/>
         </button>
@@ -1524,9 +1524,9 @@ const CheckoutRedirect = ({ checkout, email }) => {
     <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 modal-back"
       style={{ background: "rgba(5,5,5,0.9)", backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)" }}>
       <div className="modal-pop w-full max-w-md rounded-3xl border border-white/10 shadow-2xl shadow-black/60 p-6 md:p-8"
-        style={{ background: "linear-gradient(180deg,#171717,#101010)" }}>
+        style={{ background: "linear-gradient(180deg,var(--bg-2, #171717),#101010)" }}>
         <div className="flex items-center gap-2.5 mb-6">
-          <img src="/assets/talqeeh-logo.png" alt="" className="w-8 h-8 object-contain"/>
+          <img src="/assets/talqeeh-logo.png" alt="" className="brand-logo w-8 h-8 object-contain"/>
           <div>
             <div className="font-display text-base font-semibold text-ink leading-tight">Talqeeh</div>
             <div className="text-[11px] text-ink-soft">Checkout aman</div>
@@ -1776,7 +1776,7 @@ const MobileTabBar = () => {
         background: "rgba(15,10,42,0.95)",
         backdropFilter: "blur(20px)",
         WebkitBackdropFilter: "blur(20px)",
-        borderTopColor: "rgba(255,255,255,0.08)",
+        borderTopColor: "rgba(var(--fg, 255,255,255),0.08)",
         paddingBottom: "env(safe-area-inset-bottom)",
       }}
     >
@@ -1795,11 +1795,11 @@ const MobileTabBar = () => {
               <Icon
                 name={tab.icon}
                 className={"w-5 h-5 transition-colors " + (active ? "text-emerald-400" : "")}
-                style={active ? {} : {color:"rgba(255,255,255,0.4)"}}
+                style={active ? {} : {color:"rgba(var(--fg, 255,255,255),0.4)"}}
               />
               <span
                 className={"text-[9px] leading-none transition-colors mt-0.5 " + (active ? "font-bold" : "")}
-                style={{color: active ? "#3ecf8e" : "rgba(255,255,255,0.4)"}}
+                style={{color: active ? "#3ecf8e" : "rgba(var(--fg, 255,255,255),0.4)"}}
               >
                 {tab.label}
               </span>

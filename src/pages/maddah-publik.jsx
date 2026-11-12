@@ -242,18 +242,18 @@ const MaddahPublikPage = ({ onOpenPayment, onOpenJoin, onOpenLogin }) => {
               <div style={{ flex: 1 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 4, flexWrap: 'wrap' }}>
                   <span style={{
-                    fontSize: 10, fontWeight: 700, color: '#f59e0b',
+                    fontSize: 10, fontWeight: 700, color: 'var(--a-amber, #f59e0b)',
                     background: 'rgba(245,158,11,0.15)',
                     border: '1px solid rgba(245,158,11,0.35)',
                     padding: '2px 7px', borderRadius: 99, letterSpacing: '0.06em',
                   }}>
                     🔥 EVENT
                   </span>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: '#fff' }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--t-1, #fff)' }}>
                     Punya soal imtihan tahun lalu?
                   </div>
                 </div>
-                <div style={{ fontSize: 12, color: '#aaa' }}>
+                <div style={{ fontSize: 12, color: 'var(--t-2, #aaa)' }}>
                   Submit &amp; dapat paket Library gratis selamanya →
                 </div>
               </div>

@@ -156,7 +156,7 @@ const PromptSlotFields = ({ slotState, idPrefix }) => {
       {slots.map(s => {
         const bad = tried && missingIdx.has(s.index);
         const cls = `w-full text-sm px-3 py-2 rounded-lg text-ink placeholder:text-ink-soft outline-none focus:ring-1 focus:ring-emerald-500/50 ${bad ? "ring-1 ring-amber-400/70" : ""}`;
-        const style = { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" };
+        const style = { background: "rgba(var(--fg, 255,255,255),0.05)", border: "1px solid rgba(var(--fg, 255,255,255),0.10)" };
         return (
           <label key={s.index} className={`block min-w-0 ${s.kind === "tempel" ? "sm:col-span-2" : ""}`}>
             <span className="block text-[11px] text-ink-soft mb-1">
@@ -233,7 +233,7 @@ const PromptFeedback = ({ source, maddahId, kind, title }) => {
 
   if (asking) {
     return (
-      <div className="mt-3 p-3 rounded-xl" style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)" }}>
+      <div className="mt-3 p-3 rounded-xl" style={{ background: "rgba(var(--fg, 255,255,255),0.03)", border: "1px solid rgba(var(--fg, 255,255,255),0.08)" }}>
         <div className="text-xs text-ink mb-2">Apa yang kurang dari prompt ini?</div>
         <div className="flex flex-wrap gap-1.5 mb-2">
           {PROMPT_FB_REASONS.map(([id, label]) => (
@@ -243,7 +243,7 @@ const PromptFeedback = ({ source, maddahId, kind, title }) => {
         <textarea rows={2} value={note} onChange={e => setNote(e.target.value)} maxLength={500} dir="auto"
           placeholder="Ceritakan singkat (opsional), mis. soalnya tidak dari bab yang kuisi"
           className="w-full text-sm px-3 py-2 rounded-lg text-ink placeholder:text-ink-soft outline-none focus:ring-1 focus:ring-emerald-500/50"
-          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)" }}/>
+          style={{ background: "rgba(var(--fg, 255,255,255),0.05)", border: "1px solid rgba(var(--fg, 255,255,255),0.10)" }}/>
         <div className="flex justify-end gap-2 mt-2">
           <button onClick={() => setAsking(false)} className="btn btn-ghost text-xs px-3 py-1.5">Batal</button>
           <button onClick={() => send(-1, { reason: reason || "lainnya", note })} disabled={sending || !reason}
@@ -350,7 +350,7 @@ const MaddahPromptCard = ({ prompt, maddah, profile, formatEnabled, slotShared, 
           {runLocked ? (
             <button onClick={guardSlots(slotState, idPrefix, toast, () => {})}
               className="btn btn-ghost text-xs px-3 py-2.5 justify-center w-full sm:w-auto inline-flex items-center gap-1.5 opacity-60"
-              style={{ minHeight: 40, borderColor: 'rgba(62,207,142,0.35)', color: '#a7f3d0' }}>
+              style={{ minHeight: 40, borderColor: 'rgba(62,207,142,0.35)', color: 'var(--a-green, #a7f3d0)' }}>
               <Icon name="sparkles" className="w-3.5 h-3.5"/> Jalankan di sini
             </button>
           ) : (
@@ -367,7 +367,7 @@ const MaddahPromptCard = ({ prompt, maddah, profile, formatEnabled, slotShared, 
 
       <PromptSlotFields slotState={slotState} idPrefix={idPrefix}/>
 
-      <div className="p-3 rounded-xl mb-3" style={{background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.08)"}}>
+      <div className="p-3 rounded-xl mb-3" style={{background:"rgba(var(--fg, 255,255,255),0.03)",border:"1px solid rgba(var(--fg, 255,255,255),0.08)"}}>
         <div className={`text-xs text-ink-muted leading-relaxed font-mono whitespace-pre-wrap ${!showFull ? "line-clamp-4" : ""}`}>
           {slotState.finalText}
         </div>
@@ -528,14 +528,14 @@ const MaddahDetailPage = () => {
               <input type="text" value={topikValue} onChange={e => setTopik(e.target.value)} dir="auto"
                 placeholder="Bab / topik yang sedang kamu pelajari — otomatis masuk ke semua prompt"
                 className="flex-1 min-w-0 text-sm px-3 py-2 rounded-xl text-ink placeholder:text-ink-soft outline-none focus:ring-1 focus:ring-emerald-500/50"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.10)", minHeight: 40 }}/>
+                style={{ background: "rgba(var(--fg, 255,255,255),0.05)", border: "1px solid rgba(var(--fg, 255,255,255),0.10)", minHeight: 40 }}/>
               {topikValue && (
                 <button onClick={() => setTopik("")} className="text-xs text-ink-soft hover:text-ink px-2" style={{ minHeight: 40 }} aria-label="Hapus topik">✕</button>
               )}
             </div>
 
             <div className="sticky top-[var(--app-header-h)] z-20 -mx-4 md:mx-0 mb-5 border-b border-line"
-              style={{ background: "rgba(10,5,20,0.92)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
+              style={{ background: "rgba(var(--surf, 10,5,20),0.92)", backdropFilter: "blur(16px)", WebkitBackdropFilter: "blur(16px)" }}>
               <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-2 px-4 md:px-0">
                 {MADDAH_PROMPT_KINDS.map(kind => {
                   const count = Array.isArray(maddah.prompts?.[kind.id])

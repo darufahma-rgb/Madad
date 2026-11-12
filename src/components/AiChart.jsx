@@ -93,14 +93,14 @@ const TreeNode = ({ node, depth, color, last }) => {
     <div className="relative" style={{ paddingInlineStart: depth ? 22 : 0 }}>
       {depth > 0 && (
         <>
-          <span className="absolute" style={{ insetInlineStart: 8, top: 0, bottom: last ? 'auto' : 0, height: last ? 22 : 'auto', borderInlineStart: '1.5px solid rgba(255,255,255,0.14)' }}/>
-          <span className="absolute" style={{ insetInlineStart: 8, top: 22, width: 12, borderTop: '1.5px solid rgba(255,255,255,0.14)' }}/>
+          <span className="absolute" style={{ insetInlineStart: 8, top: 0, bottom: last ? 'auto' : 0, height: last ? 22 : 'auto', borderInlineStart: '1.5px solid rgba(var(--fg, 255,255,255),0.14)' }}/>
+          <span className="absolute" style={{ insetInlineStart: 8, top: 22, width: 12, borderTop: '1.5px solid rgba(var(--fg, 255,255,255),0.14)' }}/>
         </>
       )}
       <div className="py-1">
         <button type="button" onClick={() => hasKids && setOpen(o => !o)}
           className={`text-left rounded-xl px-3 py-2 border transition-colors max-w-full ${hasKids ? 'cursor-pointer hover:bg-white/[0.06]' : 'cursor-default'}`}
-          style={{ borderColor: depth === 0 ? color : 'rgba(255,255,255,0.1)', background: depth === 0 ? `${color}1f` : 'rgba(255,255,255,0.03)', borderInlineStart: `3px solid ${color}` }}>
+          style={{ borderColor: depth === 0 ? color : 'rgba(var(--fg, 255,255,255),0.1)', background: depth === 0 ? `${color}1f` : 'rgba(var(--fg, 255,255,255),0.03)', borderInlineStart: `3px solid ${color}` }}>
           <div className="flex items-center gap-2">
             <span className={`text-ink ${depth === 0 ? 'font-semibold' : 'font-medium'} text-[0.95em]`}><Label text={node.label}/></span>
             {hasKids && <span className="text-[11px] text-ink-soft flex-shrink-0">{open ? '▾' : `▸ ${node.children.length}`}</span>}
@@ -123,7 +123,7 @@ const Flow = ({ steps }) => (
       <div key={i}>
         <div className="flex gap-3 items-start rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2.5">
           <span className="w-6 h-6 rounded-full flex items-center justify-center text-[12px] font-semibold flex-shrink-0 mt-0.5"
-            style={{ background: 'rgba(62,207,142,0.16)', color: '#6ee7b7', border: '1px solid rgba(62,207,142,0.35)' }}>{i + 1}</span>
+            style={{ background: 'rgba(62,207,142,0.16)', color: 'var(--a-green, #6ee7b7)', border: '1px solid rgba(62,207,142,0.35)' }}>{i + 1}</span>
           <div className="min-w-0">
             <div className="text-ink font-medium text-[0.95em]"><Label text={s.label}/></div>
             <Ar>{s.ar}</Ar>
@@ -177,7 +177,7 @@ const Pie = ({ items, unit }) => {
   return (
     <div className="flex flex-col sm:flex-row items-center gap-5">
       <svg viewBox="0 0 120 120" className="w-36 h-36 flex-shrink-0 -rotate-90" role="img" aria-label="Diagram lingkaran">
-        <circle cx="60" cy="60" r={R} fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="18"/>
+        <circle cx="60" cy="60" r={R} fill="none" stroke="rgba(var(--fg, 255,255,255),0.06)" strokeWidth="18"/>
         {items.map((s, i) => {
           const len = (s.value / total) * C;
           const el = <circle key={i} cx="60" cy="60" r={R} fill="none" stroke={CHART_COLORS[i % CHART_COLORS.length]} strokeWidth="18"

@@ -1,14 +1,20 @@
+/* Warna dasar memakai variabel CSS (src/index.css: :root = tema gelap, html.light = tema terang), supaya satu kelas
+   seperti text-ink, bg-white/5, atau border-white/10 berganti otomatis saat tema diganti. */
+const v = (name) => `rgb(var(--${name}) / <alpha-value>)`;
+
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
-        ink:    { DEFAULT: '#ededed', muted: '#888888', soft: '#555555' },
-        night:  { 950: '#0c0c0c', 900: '#111111', 800: '#161616', 700: '#1c1c1c', 600: '#202020' },
+        // "white" = warna latar depan: putih di tema gelap, hampir hitam di tema terang.
+        white:  v('c-white'),
+        ink:    { DEFAULT: v('c-ink'), muted: v('c-ink-muted'), soft: v('c-ink-soft') },
+        night:  { 950: v('c-night-950'), 900: v('c-night-900'), 800: v('c-night-800'), 700: v('c-night-700'), 600: v('c-night-600') },
         violet: { 900: '#0a2419', 700: '#24b47e', 600: '#3ecf8e', 500: '#3ecf8e', 400: '#4ade80', 300: '#86efac', 200: '#bbf7d0', 100: '#dcfce7' },
         gold:   { 700: '#9A7A3C', 600: '#B3904D', 500: '#C9A86A', 400: '#D9BD85', 300: '#E8D0A0', 100: '#F6EDD8' },
-        glass:  { DEFAULT: 'rgba(255,255,255,0.03)', raised: 'rgba(255,255,255,0.05)', strong: 'rgba(255,255,255,0.07)' },
-        line:   'rgba(255,255,255,0.08)',
+        glass:  { DEFAULT: 'rgb(var(--c-white) / 0.03)', raised: 'rgb(var(--c-white) / 0.05)', strong: 'rgb(var(--c-white) / 0.07)' },
+        line:   'rgb(var(--c-white) / 0.08)',
         rose:   { 600: '#C97B9B', 700: '#A86483' },
         mint:   { 500: '#3ecf8e', 600: '#24b47e' },
       },

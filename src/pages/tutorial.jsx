@@ -33,7 +33,7 @@ const IllusLogin = () => (
 const IllusAiPartner = () => (
   <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
     <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <rect x="24" y="28" width="96" height="120" rx="10" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeDasharray="4 3"/>
+    <rect x="24" y="28" width="96" height="120" rx="10" fill="rgba(var(--fg, 255,255,255),0.04)" stroke="rgba(var(--fg, 255,255,255),0.12)" strokeDasharray="4 3"/>
     <text x="72" y="84" fontSize="22" fill={EM} textAnchor="middle">⬆</text>
     <text x="72" y="108" fontSize="10" fill="#aaa" textAnchor="middle">Diktat.pdf</text>
     <path d="M132 88 L152 88" stroke={EM} strokeWidth="2" markerEnd="url(#aiarrow)"/>
@@ -45,8 +45,8 @@ const IllusAiPartner = () => (
     {["Ringkasan", "Flashcard", "Kuis", "Tanya Tutor"].map((t, i) => (
       <g key={t}>
         <rect x="166" y={28 + i * 32} width="130" height="24" rx="7"
-          fill={i === 0 ? "rgba(62,207,142,0.15)" : "rgba(255,255,255,0.04)"}
-          stroke={i === 0 ? EM : "rgba(255,255,255,0.1)"}/>
+          fill={i === 0 ? "rgba(62,207,142,0.15)" : "rgba(var(--fg, 255,255,255),0.04)"}
+          stroke={i === 0 ? EM : "rgba(var(--fg, 255,255,255),0.1)"}/>
         <text x="231" y={44 + i * 32} fontSize="11" fill={i === 0 ? EM : "#bbb"} textAnchor="middle">{t}</text>
       </g>
     ))}
@@ -61,8 +61,8 @@ const IllusProfil = () => (
     {["Dakwah", "Ushuluddin", "Syariah"].map((f, i) => (
       <g key={f}>
         <rect x={24 + i * 95} y="44" width="86" height="30" rx="8"
-          fill={i === 0 ? "rgba(62,207,142,0.15)" : "rgba(255,255,255,0.04)"}
-          stroke={i === 0 ? EM : "rgba(255,255,255,0.1)"}/>
+          fill={i === 0 ? "rgba(62,207,142,0.15)" : "rgba(var(--fg, 255,255,255),0.04)"}
+          stroke={i === 0 ? EM : "rgba(var(--fg, 255,255,255),0.1)"}/>
         <text x={24 + i * 95 + 43} y="63" fontSize="11" fill={i === 0 ? EM : "#aaa"} textAnchor="middle">{f}</text>
       </g>
     ))}
@@ -70,8 +70,8 @@ const IllusProfil = () => (
     {["1", "2", "3", "4"].map((t, i) => (
       <g key={t}>
         <rect x={24 + i * 50} y="112" width="40" height="34" rx="8"
-          fill={i === 2 ? "rgba(62,207,142,0.15)" : "rgba(255,255,255,0.04)"}
-          stroke={i === 2 ? EM : "rgba(255,255,255,0.1)"}/>
+          fill={i === 2 ? "rgba(62,207,142,0.15)" : "rgba(var(--fg, 255,255,255),0.04)"}
+          stroke={i === 2 ? EM : "rgba(var(--fg, 255,255,255),0.1)"}/>
         <text x={24 + i * 50 + 20} y="134" fontSize="13" fill={i === 2 ? EM : "#aaa"} textAnchor="middle" fontWeight="bold">{t}</text>
       </g>
     ))}
@@ -92,7 +92,7 @@ const IllusMaddah = () => (
     ].map(([name, count], i) => (
       <g key={name}>
         <rect x="24" y={58 + i * 44} width="272" height="36" rx="9"
-          fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+          fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
         <circle cx="44" cy={76 + i * 44} r="9" fill="rgba(62,207,142,0.15)"/>
         <text x="44" y={80 + i * 44} fontSize="10" fill={EM} textAnchor="middle">📖</text>
         <text x="62" y={73 + i * 44} fontSize="12" fill="#eee" fontWeight="bold">{name}</text>
@@ -115,8 +115,8 @@ const IllusKategori = () => (
       return (
         <g key={label}>
           <rect x={24 + col * 95} y={42 + row * 70} width="86" height="60" rx="10"
-            fill={i === 0 ? "rgba(62,207,142,0.12)" : "rgba(255,255,255,0.03)"}
-            stroke={i === 0 ? EM : "rgba(255,255,255,0.08)"}/>
+            fill={i === 0 ? "rgba(62,207,142,0.12)" : "rgba(var(--fg, 255,255,255),0.03)"}
+            stroke={i === 0 ? EM : "rgba(var(--fg, 255,255,255),0.08)"}/>
           <text x={24 + col * 95 + 43} y={42 + row * 70 + 28} fontSize="18" textAnchor="middle">{emoji}</text>
           <text x={24 + col * 95 + 43} y={42 + row * 70 + 48} fontSize="11" fill={i === 0 ? EM : "#bbb"} textAnchor="middle" fontWeight="bold">{label}</text>
         </g>
@@ -128,7 +128,7 @@ const IllusKategori = () => (
 const IllusCopy = () => (
   <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
     <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <rect x="24" y="22" width="272" height="110" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="24" y="22" width="272" height="110" rx="10" fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
     <text x="38" y="44" fontSize="10" fill={EM} fontWeight="bold">PROMPT — MOCK IMTIHAN</text>
     {[
       "Aku Firqah 3 Dakwah, belajar Tafsir.",
@@ -148,10 +148,10 @@ const IllusCatatan = () => (
   <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
     <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
     <text x="24" y="30" fontSize="13" fill="#fff" fontWeight="bold">Kurasah (Catatan)</text>
-    <rect x="24" y="42" width="272" height="50" rx="9" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="24" y="42" width="272" height="50" rx="9" fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
     <text x="38" y="60" fontSize="11" fill="#eee" fontWeight="bold">Catatan Tafsir — Pekan 3</text>
     <text x="38" y="78" fontSize="9" fill="#888">Makna ayat & faedah dari talaqqi...</text>
-    <rect x="24" y="100" width="272" height="50" rx="9" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="24" y="100" width="272" height="50" rx="9" fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
     <text x="38" y="118" fontSize="11" fill="#eee" fontWeight="bold">Kaidah Ushul Fiqh</text>
     <text x="38" y="136" fontSize="9" fill="#888">Sudah dirapikan oleh AI ✓</text>
     <rect x="24" y="160" width="272" height="28" rx="8" fill="rgba(62,207,142,0.15)" stroke={EM}/>
@@ -166,11 +166,11 @@ const IllusProgress = () => (
     {Array.from({ length: 14 }).map((_, i) => (
       <rect key={i} x={24 + (i % 7) * 38} y={42 + Math.floor(i / 7) * 22}
         width="30" height="16" rx="4"
-        fill={i < 9 ? EM : "rgba(255,255,255,0.06)"} opacity={i < 9 ? (0.4 + (i / 20)) : 1}/>
+        fill={i < 9 ? EM : "rgba(var(--fg, 255,255,255),0.06)"} opacity={i < 9 ? (0.4 + (i / 20)) : 1}/>
     ))}
     <text x="24" y="112" fontSize="11" fill={EM} fontWeight="bold">🔥 9 hari berturut-turut!</text>
     <text x="24" y="140" fontSize="11" fill="#fff" fontWeight="bold">Progress Maddah</text>
-    <rect x="24" y="150" width="272" height="12" rx="6" fill="rgba(255,255,255,0.06)"/>
+    <rect x="24" y="150" width="272" height="12" rx="6" fill="rgba(var(--fg, 255,255,255),0.06)"/>
     <rect x="24" y="150" width="180" height="12" rx="6" fill={EM}/>
     <text x="24" y="180" fontSize="10" fill="#888">12 dari 18 maddah dipelajari</text>
   </svg>
@@ -197,13 +197,13 @@ const IllusMuqaranah = () => (
   <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
     <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
     <text x="160" y="26" fontSize="12" fill="#fff" fontWeight="bold" textAnchor="middle">Muqaranah — Perbandingan Mazhab</text>
-    <rect x="20" y="36" width="130" height="130" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="20" y="36" width="130" height="130" rx="10" fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
     <text x="85" y="56" fontSize="10" fill={EM} textAnchor="middle" fontWeight="bold">Mazhab Syafi'i</text>
     <text x="85" y="74" fontSize="9" fill="#bbb" textAnchor="middle">Hukum: Wajib</text>
     <text x="85" y="88" fontSize="9" fill="#bbb" textAnchor="middle">Dalil: QS. Al-Baqarah</text>
     <text x="85" y="102" fontSize="9" fill="#bbb" textAnchor="middle">Syarat: 3 perkara</text>
     <text x="85" y="120" fontSize="8" fill="#777" textAnchor="middle">Tarjih: ✓ Kuat</text>
-    <rect x="170" y="36" width="130" height="130" rx="10" fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+    <rect x="170" y="36" width="130" height="130" rx="10" fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
     <text x="235" y="56" fontSize="10" fill="#aaa" textAnchor="middle" fontWeight="bold">Mazhab Hanafi</text>
     <text x="235" y="74" fontSize="9" fill="#bbb" textAnchor="middle">Hukum: Sunnah</text>
     <text x="235" y="88" fontSize="9" fill="#bbb" textAnchor="middle">Dalil: Hadits Riwayat</text>
@@ -226,9 +226,9 @@ const IllusToolGuide = () => (
     ].map(([name, desc, rec], i) => (
       <g key={name}>
         <rect x="24" y={54 + i * 44} width="272" height="36" rx="9"
-          fill={rec ? "rgba(62,207,142,0.08)" : "rgba(255,255,255,0.03)"}
-          stroke={rec ? "rgba(62,207,142,0.3)" : "rgba(255,255,255,0.08)"}/>
-        <circle cx="44" cy={72 + i * 44} r="9" fill={rec ? "rgba(62,207,142,0.2)" : "rgba(255,255,255,0.06)"}/>
+          fill={rec ? "rgba(62,207,142,0.08)" : "rgba(var(--fg, 255,255,255),0.03)"}
+          stroke={rec ? "rgba(62,207,142,0.3)" : "rgba(var(--fg, 255,255,255),0.08)"}/>
+        <circle cx="44" cy={72 + i * 44} r="9" fill={rec ? "rgba(62,207,142,0.2)" : "rgba(var(--fg, 255,255,255),0.06)"}/>
         <text x="44" y={76 + i * 44} fontSize="9" fill={rec ? EM : "#777"} textAnchor="middle">{rec ? "★" : "○"}</text>
         <text x="62" y={69 + i * 44} fontSize="11" fill="#eee" fontWeight="bold">{name}</text>
         <text x="62" y={82 + i * 44} fontSize="9" fill="#888">{desc}</text>
@@ -250,7 +250,7 @@ const IllusFramework = () => (
     ].map(([name, desc], i) => (
       <g key={name}>
         <rect x="24" y={50 + i * 34} width="272" height="26" rx="7"
-          fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.07)"/>
+          fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.07)"/>
         <rect x="24" y={50 + i * 34} width="4" height="26" rx="2" fill={EM}/>
         <text x="38" y={65 + i * 34} fontSize="10" fill="#eee" fontWeight="bold">{name}</text>
         <text x="160" y={65 + i * 34} fontSize="9" fill="#888">{desc}</text>
@@ -276,7 +276,7 @@ const IllusSiapImtihan = () => (
       return (
         <g key={name}>
           <rect x={24 + col * 142} y={52 + row * 44} width="132" height="36" rx="8"
-            fill="rgba(255,255,255,0.03)" stroke="rgba(255,255,255,0.08)"/>
+            fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
           <text x={24 + col * 142 + 16} y={68 + row * 44} fontSize="12">{emoji}</text>
           <text x={24 + col * 142 + 32} y={66 + row * 44} fontSize="9" fill="#eee" fontWeight="bold">{name}</text>
           <text x={24 + col * 142 + 32} y={78 + row * 44} fontSize="8" fill="#888">{desc}</text>
@@ -298,10 +298,10 @@ const IllusPaths = () => (
     ].map(([level, label, desc, pct], i) => (
       <g key={level}>
         <rect x="24" y={52 + i * 46} width="272" height="38" rx="9"
-          fill="rgba(255,255,255,0.03)" stroke={i === 0 ? "rgba(62,207,142,0.3)" : "rgba(255,255,255,0.07)"}/>
+          fill="rgba(var(--fg, 255,255,255),0.03)" stroke={i === 0 ? "rgba(62,207,142,0.3)" : "rgba(var(--fg, 255,255,255),0.07)"}/>
         <text x="38" y={68 + i * 46} fontSize="10" fill={i === 0 ? EM : "#aaa"} fontWeight="bold">{level} — {label}</text>
         <text x="38" y={80 + i * 46} fontSize="9" fill="#777">{desc}</text>
-        <rect x="160" y={62 + i * 46} width="120" height="8" rx="4" fill="rgba(255,255,255,0.06)"/>
+        <rect x="160" y={62 + i * 46} width="120" height="8" rx="4" fill="rgba(var(--fg, 255,255,255),0.06)"/>
         <rect x="160" y={62 + i * 46} width={120 * pct / 100} height="8" rx="4" fill={i === 0 ? EM : "rgba(62,207,142,0.3)"}/>
         <text x="285" y={70 + i * 46} fontSize="8" fill={i === 0 ? EM : "#777"} textAnchor="end">{pct}%</text>
       </g>
@@ -517,13 +517,13 @@ function TutorialPage() {
     <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 16px 100px" }}>
       {/* Header */}
       <div style={{ padding: "28px 4px 18px" }}>
-        <div style={{ fontSize: 12, color: "#888", letterSpacing: 1.5, fontWeight: 600 }}>
+        <div style={{ fontSize: 12, color: "var(--t-3, #888)", letterSpacing: 1.5, fontWeight: 600 }}>
           PANDUAN PENGGUNAAN
         </div>
         <h1 className="font-display" style={{ fontSize: 30, fontWeight: 800, margin: "6px 0 8px", lineHeight: 1.1 }}>
           Cara Pakai <span style={{ color: EM }}>Talqeeh</span>
         </h1>
-        <p style={{ fontSize: 15, color: "#aaa", margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: 15, color: "var(--t-2, #aaa)", margin: 0, lineHeight: 1.5 }}>
           Dari login pertama sampai mahir. Ikuti {STEPS.length} langkah ini pelan-pelan.
         </p>
       </div>
@@ -536,7 +536,7 @@ function TutorialPage() {
             style={{
               width: 36, height: 36, borderRadius: 12, flexShrink: 0,
               border: "none", cursor: s.locked ? "not-allowed" : "pointer",
-              background: i === current ? EM : s.locked ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.1)",
+              background: i === current ? EM : s.locked ? "rgba(var(--fg, 255,255,255),0.04)" : "rgba(var(--fg, 255,255,255),0.1)",
               color: i === current ? "#000" : s.locked ? "#555" : "#fff",
               fontWeight: 800, fontSize: 14, transition: "all 0.2s",
             }}>
@@ -547,10 +547,10 @@ function TutorialPage() {
 
       {/* Progress bar */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ height: 6, background: "rgba(255,255,255,0.06)", borderRadius: 99, overflow: "hidden" }}>
+        <div style={{ height: 6, background: "rgba(var(--fg, 255,255,255),0.06)", borderRadius: 99, overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${EM_DEEP}, ${EM})`, borderRadius: 99, transition: "width 0.4s ease" }}/>
         </div>
-        <div style={{ fontSize: 12, color: "#777", marginTop: 6, textAlign: "right" }}>{pct}% selesai</div>
+        <div style={{ fontSize: 12, color: "var(--t-3, #777)", marginTop: 6, textAlign: "right" }}>{pct}% selesai</div>
       </div>
 
       {isLocked ? (
@@ -559,7 +559,7 @@ function TutorialPage() {
           <h2 className="font-display" style={{ fontSize: 22, fontWeight: 800, marginBottom: 10 }}>
             Langkah Khusus Member
           </h2>
-          <p style={{ color: "#aaa", marginBottom: 26, lineHeight: 1.6, fontSize: 15 }}>
+          <p style={{ color: "var(--t-2, #aaa)", marginBottom: 26, lineHeight: 1.6, fontSize: 15 }}>
             Langkah {step.id} dan seterusnya hanya untuk member Talqeeh.
             Gabung untuk akses penuh — {CATALOG.maddah} maddah & {CATALOG.prompts} prompt AI.
           </p>
@@ -585,7 +585,7 @@ function TutorialPage() {
             <h2 className="font-display" style={{ fontSize: 23, fontWeight: 800, margin: "0 0 10px" }}>
               {step.title}
             </h2>
-            <p style={{ fontSize: 15, color: "#bbb", lineHeight: 1.6, marginBottom: 20 }}>
+            <p style={{ fontSize: 15, color: "var(--t-2, #bbb)", lineHeight: 1.6, marginBottom: 20 }}>
               {step.intro}
             </p>
 
@@ -603,7 +603,7 @@ function TutorialPage() {
                         alignItems: "center", justifyContent: "center", marginTop: 1,
                       }}>{i + 1}</span>
                     )}
-                    <span style={{ color: "#ddd" }}>{c}</span>
+                    <span style={{ color: "var(--t-1, #ddd)" }}>{c}</span>
                   </li>
                 );
               })}
@@ -615,18 +615,18 @@ function TutorialPage() {
               borderRadius: 12, padding: "14px 16px", fontSize: 14, lineHeight: 1.6, marginTop: 16,
             }}>
               <span style={{ fontWeight: 800, color: EM }}>💡 Tips: </span>
-              <span style={{ color: "#cfcfcf" }}>{step.tip}</span>
+              <span style={{ color: "var(--t-2, #cfcfcf)" }}>{step.tip}</span>
             </div>
           </div>
 
           {/* Nav */}
           <div style={{
-            padding: "16px 22px", borderTop: "1px solid rgba(255,255,255,0.06)",
+            padding: "16px 22px", borderTop: "1px solid rgba(var(--fg, 255,255,255),0.06)",
             display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10,
           }}>
             <button onClick={() => setCurrent(Math.max(0, current - 1))} disabled={current === 0}
               style={{
-                padding: "11px 18px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.12)",
+                padding: "11px 18px", borderRadius: 10, border: "1px solid rgba(var(--fg, 255,255,255),0.12)",
                 background: "transparent", color: current === 0 ? "#444" : "#fff",
                 cursor: current === 0 ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 600,
               }}>← Balik</button>
@@ -648,7 +648,7 @@ function TutorialPage() {
       )}
 
       {/* Help footer */}
-      <div style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: "#777" }}>
+      <div style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: "var(--t-3, #777)" }}>
         Masih bingung? Hubungi admin lewat WhatsApp untuk bantuan langsung.
       </div>
     </div>

@@ -340,7 +340,7 @@ const ProgressRing = ({ percent, size = 44 }) => {
   return (
     <div className="relative flex-shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="4"/>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(var(--fg, 255,255,255),0.08)" strokeWidth="4"/>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#3ecf8e" strokeWidth="4" strokeLinecap="round"
           strokeDasharray={c} strokeDashoffset={c * (1 - percent / 100)} style={{ transition: 'stroke-dashoffset .5s ease' }}/>
       </svg>
