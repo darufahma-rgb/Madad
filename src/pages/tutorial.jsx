@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 /* ════════════════════════════════════════════════════════════════
    TUTORIAL PAGE — Panduan lengkap Talqeeh
@@ -500,6 +500,107 @@ const STEPS = [
   },
 ];
 
+/* Video tutorial per fitur (9:16, bersuara). Berkas di public/videos/tutorial/NN.mp4 + poster NN.jpg. */
+const VIDEO_TUTORIALS = [
+  { group: "AI Partner", items: [
+    { n: "01", title: "Upload materi ke AI Partner", dur: "0:34" },
+    { n: "02", title: "Talkhis otomatis + terjemah", dur: "0:33" },
+    { n: "03", title: "Terjemah & i'rab kalimat", dur: "0:23" },
+    { n: "04", title: "Ringkasan, flashcard & kuis", dur: "0:25" },
+  ] },
+  { group: "Kuliah & tanya", items: [
+    { n: "05", title: "Live Caption kuliah duktur", dur: "0:29" },
+    { n: "06", title: "Tanya AI", dur: "0:23" },
+    { n: "07", title: "Tutor & simulasi syafawi", dur: "0:25" },
+  ] },
+  { group: "Library & imtihan", items: [
+    { n: "08", title: "Maddah & template prompt", dur: "0:23" },
+    { n: "09", title: "Bank Soal & Siap Imtihan", dur: "0:25" },
+    { n: "10", title: "Kurasah", dur: "0:21" },
+  ] },
+  { group: "Akun", items: [
+    { n: "11", title: "Kupon Paket Imtihan dari Instagram", dur: "0:30" },
+    { n: "12", title: "Ganti ke tema terang", dur: "0:21" },
+  ] },
+];
+const ALL_VIDEOS = VIDEO_TUTORIALS.flatMap(g => g.items);
+const videoSrc = (n, ext) => `/videos/tutorial/${n}.${ext}`;
+
+const VideoPlayer = ({ index, onClose, onGo }) => {
+  const v = ALL_VIDEOS[index];
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+  }, []);
+  return (
+    <div className="fixed inset-0 z-[140] flex items-center justify-center p-3" role="dialog" aria-modal="true" aria-label={v.title}
+      style={{ background: "rgba(0,0,0,0.88)" }} onClick={onClose}>
+      <div className="relative w-full flex flex-col items-center" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+        <div className="w-full flex items-center justify-between gap-3 mb-2 px-1">
+          <div className="min-w-0">
+            <div className="text-[11px] tracking-wider text-emerald-300 font-semibold">VIDEO {v.n} DARI {ALL_VIDEOS.length}</div>
+            <div className="text-white font-semibold text-[15px] truncate" style={{ color: "#fff" }}>{v.title}</div>
+          </div>
+          <button onClick={onClose} aria-label="Tutup video" className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(255,255,255,0.1)" }}>
+            <Icon name="x" className="w-5 h-5" style={{ stroke: "#fff" }}/>
+          </button>
+        </div>
+        <video key={v.n} src={videoSrc(v.n, "mp4")} poster={videoSrc(v.n, "jpg")} controls autoPlay playsInline preload="auto"
+          className="w-full rounded-2xl bg-black" style={{ aspectRatio: "9 / 16", maxHeight: "calc(100vh - 150px)", objectFit: "contain" }}/>
+        <div className="w-full flex justify-between gap-2 mt-3">
+          <button disabled={index === 0} onClick={() => onGo(index - 1)} className="px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-30"
+            style={{ background: "rgba(255,255,255,0.1)", color: "#fff" }}>← Sebelumnya</button>
+          <button disabled={index === ALL_VIDEOS.length - 1} onClick={() => onGo(index + 1)} className="px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-30"
+            style={{ background: EM, color: "#04140c" }}>Berikutnya →</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const VideoTutorials = () => {
+  const [playing, setPlaying] = useState(null);
+  const open = (n) => { setPlaying(ALL_VIDEOS.findIndex(v => v.n === n)); window.logFunnel?.("tutorial_video", n); };
+  return (
+    <section className="mb-8" aria-labelledby="video-tutorial-title">
+      <div className="flex items-end justify-between gap-3 mb-3 px-1">
+        <div>
+          <h2 id="video-tutorial-title" className="font-display text-xl font-bold text-ink">Video tutorial</h2>
+          <p className="text-[13px] text-ink-muted mt-0.5">{ALL_VIDEOS.length} video singkat, masing-masing di bawah satu menit.</p>
+        </div>
+        <span className="text-[11px] text-ink-soft flex-shrink-0">Ketuk untuk putar</span>
+      </div>
+      {VIDEO_TUTORIALS.map(g => (
+        <div key={g.group} className="mb-4">
+          <div className="text-[11px] font-semibold tracking-[0.14em] uppercase text-gold-400 mb-2 px-1">{g.group}</div>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x" style={{ scrollbarWidth: "none" }}>
+            {g.items.map(v => (
+              <button key={v.n} onClick={() => open(v.n)} className="snap-start flex-shrink-0 text-left group" style={{ width: 132 }}
+                aria-label={`Putar video: ${v.title}`}>
+                <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black" style={{ aspectRatio: "9 / 16" }}>
+                  <img src={videoSrc(v.n, "jpg")} alt="" loading="lazy" className="w-full h-full object-cover transition-transform group-hover:scale-[1.03]"/>
+                  <div className="absolute inset-0 flex items-center justify-center" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,0.65))" }}>
+                    <span className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: "rgba(62,207,142,0.92)", boxShadow: "0 6px 18px rgba(0,0,0,0.4)" }}>
+                      <Icon name="play" className="w-5 h-5" style={{ stroke: "#04140c", fill: "#04140c" }}/>
+                    </span>
+                  </div>
+                  <span className="absolute bottom-1.5 right-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-md" style={{ background: "rgba(0,0,0,0.7)", color: "#fff" }}>{v.dur}</span>
+                </div>
+                <div className="text-[12.5px] text-ink font-medium leading-snug mt-1.5 line-clamp-2">{v.title}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+      {playing != null && <VideoPlayer index={playing} onClose={() => setPlaying(null)} onGo={setPlaying}/>}
+    </section>
+  );
+};
+
 function TutorialPage() {
   const [current, setCurrent] = useState(0);
   const { session } = useAuth();
@@ -524,9 +625,13 @@ function TutorialPage() {
           Cara Pakai <span style={{ color: EM }}>Talqeeh</span>
         </h1>
         <p style={{ fontSize: 15, color: "var(--t-2, #aaa)", margin: 0, lineHeight: 1.5 }}>
-          Dari login pertama sampai mahir. Ikuti {STEPS.length} langkah ini pelan-pelan.
+          Dari login pertama sampai mahir. Tonton videonya, atau ikuti {STEPS.length} langkah di bawah pelan-pelan.
         </p>
       </div>
+
+      <VideoTutorials/>
+
+      <h2 className="font-display text-xl font-bold text-ink px-1 mb-3">Panduan langkah demi langkah</h2>
 
       {/* Step dots */}
       <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "4px 4px 18px" }}>
