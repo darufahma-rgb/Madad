@@ -1,761 +1,166 @@
 import React, { useState, useEffect } from 'react';
 
 /* ════════════════════════════════════════════════════════════════
-   TUTORIAL PAGE — Panduan lengkap Talqeeh
-   Route: #/tutorial (publik: 3 langkah pertama, member: semua)
-   Style: dark theme Talqeeh (emerald #3ecf8e, DM Sans, glass cards)
+   TUTORIAL — video singkat per fitur (bersuara). Publik, tanpa login. Route: #/tutorial.
+   Dua versi rekaman: HP (9:16) di public/videos/tutorial/NN.mp4 + NN.jpg, dan laptop (16:9)
+   di public/videos/tutorial/desktop/NN.mp4 + NN.jpg. Versi dipilih dari lebar layar;
+   pengguna bisa menggantinya (disimpan per perangkat).
    ════════════════════════════════════════════════════════════════ */
 
-const EM = "#3ecf8e";
-const EM_DEEP = "#1a9e68";
-
-/* ── Komponen ilustrasi mockup UI (SVG) ── */
-
-const IllusLogin = () => (
-  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="loginbg" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stopColor="#101010"/>
-        <stop offset="100%" stopColor="#0a0a0a"/>
-      </linearGradient>
-    </defs>
-    <rect width="320" height="200" rx="14" fill="url(#loginbg)" stroke="rgba(62,207,142,0.2)"/>
-    <circle cx="160" cy="48" r="20" fill="none" stroke={EM} strokeWidth="2"/>
-    <text x="160" y="54" fontSize="18" fill={EM} textAnchor="middle" fontWeight="bold">ت</text>
-    <text x="160" y="86" fontSize="11" fill="#999" textAnchor="middle">Masuk ke Talqeeh</text>
-    <rect x="60" y="100" width="200" height="36" rx="9" fill="#fff"/>
-    <circle cx="86" cy="118" r="8" fill="none" stroke="#4285F4" strokeWidth="3"/>
-    <text x="172" y="123" fontSize="12" fill="#222" textAnchor="middle" fontWeight="bold">Masuk dengan Google</text>
-    <text x="160" y="164" fontSize="10" fill="#777" textAnchor="middle">Belum member? Pilih paket setelah login</text>
-  </svg>
-);
-
-const IllusAiPartner = () => (
-  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
-    <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <rect x="24" y="28" width="96" height="120" rx="10" fill="rgba(var(--fg, 255,255,255),0.04)" stroke="rgba(var(--fg, 255,255,255),0.12)" strokeDasharray="4 3"/>
-    <text x="72" y="84" fontSize="22" fill={EM} textAnchor="middle">⬆</text>
-    <text x="72" y="108" fontSize="10" fill="#aaa" textAnchor="middle">Diktat.pdf</text>
-    <path d="M132 88 L152 88" stroke={EM} strokeWidth="2" markerEnd="url(#aiarrow)"/>
-    <defs>
-      <marker id="aiarrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
-        <path d="M0,0 L8,4 L0,8 z" fill={EM}/>
-      </marker>
-    </defs>
-    {["Ringkasan", "Flashcard", "Kuis", "Tanya Tutor"].map((t, i) => (
-      <g key={t}>
-        <rect x="166" y={28 + i * 32} width="130" height="24" rx="7"
-          fill={i === 0 ? "rgba(62,207,142,0.15)" : "rgba(var(--fg, 255,255,255),0.04)"}
-          stroke={i === 0 ? EM : "rgba(var(--fg, 255,255,255),0.1)"}/>
-        <text x="231" y={44 + i * 32} fontSize="11" fill={i === 0 ? EM : "#bbb"} textAnchor="middle">{t}</text>
-      </g>
-    ))}
-    <text x="160" y="182" fontSize="10" fill="#777" textAnchor="middle">Semua dibuat dari materi yang kamu upload</text>
-  </svg>
-);
-
-const IllusProfil = () => (
-  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
-    <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <text x="24" y="32" fontSize="13" fill="#fff" fontWeight="bold">Pilih Fakultas</text>
-    {["Dakwah", "Ushuluddin", "Syariah"].map((f, i) => (
-      <g key={f}>
-        <rect x={24 + i * 95} y="44" width="86" height="30" rx="8"
-          fill={i === 0 ? "rgba(62,207,142,0.15)" : "rgba(var(--fg, 255,255,255),0.04)"}
-          stroke={i === 0 ? EM : "rgba(var(--fg, 255,255,255),0.1)"}/>
-        <text x={24 + i * 95 + 43} y="63" fontSize="11" fill={i === 0 ? EM : "#aaa"} textAnchor="middle">{f}</text>
-      </g>
-    ))}
-    <text x="24" y="100" fontSize="13" fill="#fff" fontWeight="bold">Tingkat / Firqah</text>
-    {["1", "2", "3", "4"].map((t, i) => (
-      <g key={t}>
-        <rect x={24 + i * 50} y="112" width="40" height="34" rx="8"
-          fill={i === 2 ? "rgba(62,207,142,0.15)" : "rgba(var(--fg, 255,255,255),0.04)"}
-          stroke={i === 2 ? EM : "rgba(var(--fg, 255,255,255),0.1)"}/>
-        <text x={24 + i * 50 + 20} y="134" fontSize="13" fill={i === 2 ? EM : "#aaa"} textAnchor="middle" fontWeight="bold">{t}</text>
-      </g>
-    ))}
-    <rect x="24" y="160" width="272" height="28" rx="8" fill={EM}/>
-    <text x="160" y="179" fontSize="12" fill="#000" textAnchor="middle" fontWeight="bold">Simpan Profil</text>
-  </svg>
-);
-
-const IllusMaddah = () => (
-  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
-    <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <text x="24" y="30" fontSize="13" fill="#fff" fontWeight="bold">Maddah Kamu</text>
-    <text x="24" y="46" fontSize="10" fill="#777">Firqah 3 · Dakwah</text>
-    {[
-      ["Tafsir Maudhu'i", "18 prompt"],
-      ["Tiarat Fikriyyah", "16 prompt"],
-      ["Manahij Bahts", "12 prompt"],
-    ].map(([name, count], i) => (
-      <g key={name}>
-        <rect x="24" y={58 + i * 44} width="272" height="36" rx="9"
-          fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
-        <circle cx="44" cy={76 + i * 44} r="9" fill="rgba(62,207,142,0.15)"/>
-        <text x="44" y={80 + i * 44} fontSize="10" fill={EM} textAnchor="middle">📖</text>
-        <text x="62" y={73 + i * 44} fontSize="12" fill="#eee" fontWeight="bold">{name}</text>
-        <text x="62" y={87 + i * 44} fontSize="9" fill={EM}>{count}</text>
-        <text x="280" y={80 + i * 44} fontSize="14" fill="#555" textAnchor="middle">›</text>
-      </g>
-    ))}
-  </svg>
-);
-
-const IllusKategori = () => (
-  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
-    <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <text x="24" y="28" fontSize="12" fill="#fff" fontWeight="bold">Pilih Kategori Belajar</text>
-    {[
-      ["📖", "Pahami"], ["🧠", "Hafal"], ["✏️", "Latihan"],
-      ["📝", "Ujian"], ["🎙️", "Talaqqi"], ["🔍", "Eksplorasi"],
-    ].map(([emoji, label], i) => {
-      const col = i % 3, row = Math.floor(i / 3);
-      return (
-        <g key={label}>
-          <rect x={24 + col * 95} y={42 + row * 70} width="86" height="60" rx="10"
-            fill={i === 0 ? "rgba(62,207,142,0.12)" : "rgba(var(--fg, 255,255,255),0.03)"}
-            stroke={i === 0 ? EM : "rgba(var(--fg, 255,255,255),0.08)"}/>
-          <text x={24 + col * 95 + 43} y={42 + row * 70 + 28} fontSize="18" textAnchor="middle">{emoji}</text>
-          <text x={24 + col * 95 + 43} y={42 + row * 70 + 48} fontSize="11" fill={i === 0 ? EM : "#bbb"} textAnchor="middle" fontWeight="bold">{label}</text>
-        </g>
-      );
-    })}
-  </svg>
-);
-
-const IllusCopy = () => (
-  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
-    <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <rect x="24" y="22" width="272" height="110" rx="10" fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
-    <text x="38" y="44" fontSize="10" fill={EM} fontWeight="bold">PROMPT — MOCK IMTIHAN</text>
-    {[
-      "Aku Firqah 3 Dakwah, belajar Tafsir.",
-      "Buatkan soal ujian gaya Azhar untuk",
-      "[SEBUTKAN]: 'arrif, bayyin, qarin...",
-      "Tunggu jawabanku lalu nilai.",
-    ].map((line, i) => (
-      <text key={i} x="38" y={62 + i * 16} fontSize="9.5" fill="#bbb">{line}</text>
-    ))}
-    <rect x="24" y="144" width="130" height="34" rx="9" fill={EM}/>
-    <text x="89" y="166" fontSize="12" fill="#000" textAnchor="middle" fontWeight="bold">📋 Copy Prompt</text>
-    <text x="172" y="166" fontSize="11" fill="#777">→ tempel di Claude</text>
-  </svg>
-);
-
-const IllusCatatan = () => (
-  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
-    <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <text x="24" y="30" fontSize="13" fill="#fff" fontWeight="bold">Kurasah (Catatan)</text>
-    <rect x="24" y="42" width="272" height="50" rx="9" fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
-    <text x="38" y="60" fontSize="11" fill="#eee" fontWeight="bold">Catatan Tafsir — Pekan 3</text>
-    <text x="38" y="78" fontSize="9" fill="#888">Makna ayat & faedah dari talaqqi...</text>
-    <rect x="24" y="100" width="272" height="50" rx="9" fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
-    <text x="38" y="118" fontSize="11" fill="#eee" fontWeight="bold">Kaidah Ushul Fiqh</text>
-    <text x="38" y="136" fontSize="9" fill="#888">Sudah dirapikan oleh AI ✓</text>
-    <rect x="24" y="160" width="272" height="28" rx="8" fill="rgba(62,207,142,0.15)" stroke={EM}/>
-    <text x="160" y="179" fontSize="12" fill={EM} textAnchor="middle" fontWeight="bold">+ Catatan Baru</text>
-  </svg>
-);
-
-const IllusProgress = () => (
-  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
-    <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <text x="24" y="30" fontSize="13" fill="#fff" fontWeight="bold">Ritme Belajar</text>
-    {Array.from({ length: 14 }).map((_, i) => (
-      <rect key={i} x={24 + (i % 7) * 38} y={42 + Math.floor(i / 7) * 22}
-        width="30" height="16" rx="4"
-        fill={i < 9 ? EM : "rgba(var(--fg, 255,255,255),0.06)"} opacity={i < 9 ? (0.4 + (i / 20)) : 1}/>
-    ))}
-    <text x="24" y="112" fontSize="11" fill={EM} fontWeight="bold">🔥 9 hari berturut-turut!</text>
-    <text x="24" y="140" fontSize="11" fill="#fff" fontWeight="bold">Progress Maddah</text>
-    <rect x="24" y="150" width="272" height="12" rx="6" fill="rgba(var(--fg, 255,255,255),0.06)"/>
-    <rect x="24" y="150" width="180" height="12" rx="6" fill={EM}/>
-    <text x="24" y="180" fontSize="10" fill="#888">12 dari 18 maddah dipelajari</text>
-  </svg>
-);
-
-const IllusTips = () => (
-  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
-    <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <text x="160" y="28" fontSize="12" fill="#fff" fontWeight="bold" textAnchor="middle">Alur Belajar Ideal</text>
-    {["Pahami", "Latihan", "Ujian", "Eksplorasi"].map((s, i) => (
-      <g key={s}>
-        <rect x="40" y={42 + i * 36} width="240" height="28" rx="8"
-          fill="rgba(62,207,142,0.08)" stroke="rgba(62,207,142,0.3)"/>
-        <circle cx="58" cy={56 + i * 36} r="8" fill={EM}/>
-        <text x="58" y={60 + i * 36} fontSize="10" fill="#000" textAnchor="middle" fontWeight="bold">{i + 1}</text>
-        <text x="76" y={60 + i * 36} fontSize="11" fill="#ddd" fontWeight="bold">{s}</text>
-        {i < 3 && <text x="160" y={78 + i * 36} fontSize="10" fill={EM} textAnchor="middle">↓</text>}
-      </g>
-    ))}
-  </svg>
-);
-
-const IllusMuqaranah = () => (
-  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
-    <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <text x="160" y="26" fontSize="12" fill="#fff" fontWeight="bold" textAnchor="middle">Muqaranah — Perbandingan Mazhab</text>
-    <rect x="20" y="36" width="130" height="130" rx="10" fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
-    <text x="85" y="56" fontSize="10" fill={EM} textAnchor="middle" fontWeight="bold">Mazhab Syafi'i</text>
-    <text x="85" y="74" fontSize="9" fill="#bbb" textAnchor="middle">Hukum: Wajib</text>
-    <text x="85" y="88" fontSize="9" fill="#bbb" textAnchor="middle">Dalil: QS. Al-Baqarah</text>
-    <text x="85" y="102" fontSize="9" fill="#bbb" textAnchor="middle">Syarat: 3 perkara</text>
-    <text x="85" y="120" fontSize="8" fill="#777" textAnchor="middle">Tarjih: ✓ Kuat</text>
-    <rect x="170" y="36" width="130" height="130" rx="10" fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
-    <text x="235" y="56" fontSize="10" fill="#aaa" textAnchor="middle" fontWeight="bold">Mazhab Hanafi</text>
-    <text x="235" y="74" fontSize="9" fill="#bbb" textAnchor="middle">Hukum: Sunnah</text>
-    <text x="235" y="88" fontSize="9" fill="#bbb" textAnchor="middle">Dalil: Hadits Riwayat</text>
-    <text x="235" y="102" fontSize="9" fill="#bbb" textAnchor="middle">Syarat: 2 perkara</text>
-    <text x="235" y="120" fontSize="8" fill="#777" textAnchor="middle">Tarjih: Perlu dalil</text>
-    <circle cx="160" cy="100" r="14" fill="#1a1a1a" stroke="rgba(62,207,142,0.3)"/>
-    <text x="160" y="105" fontSize="10" fill={EM} textAnchor="middle" fontWeight="bold">VS</text>
-  </svg>
-);
-
-const IllusToolGuide = () => (
-  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
-    <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <text x="24" y="28" fontSize="12" fill="#fff" fontWeight="bold">Tool Guide — Rekomendasi AI</text>
-    <text x="24" y="42" fontSize="9" fill="#777">Disesuaikan dengan gaya belajarmu</text>
-    {[
-      ["Claude", "Terbaik untuk analisis & nuansa bahasa Arab", true],
-      ["ChatGPT", "Baik untuk soal latihan & drill cepat", false],
-      ["Gemini", "Bagus untuk riset & referensi umum", false],
-    ].map(([name, desc, rec], i) => (
-      <g key={name}>
-        <rect x="24" y={54 + i * 44} width="272" height="36" rx="9"
-          fill={rec ? "rgba(62,207,142,0.08)" : "rgba(var(--fg, 255,255,255),0.03)"}
-          stroke={rec ? "rgba(62,207,142,0.3)" : "rgba(var(--fg, 255,255,255),0.08)"}/>
-        <circle cx="44" cy={72 + i * 44} r="9" fill={rec ? "rgba(62,207,142,0.2)" : "rgba(var(--fg, 255,255,255),0.06)"}/>
-        <text x="44" y={76 + i * 44} fontSize="9" fill={rec ? EM : "#777"} textAnchor="middle">{rec ? "★" : "○"}</text>
-        <text x="62" y={69 + i * 44} fontSize="11" fill="#eee" fontWeight="bold">{name}</text>
-        <text x="62" y={82 + i * 44} fontSize="9" fill="#888">{desc}</text>
-      </g>
-    ))}
-  </svg>
-);
-
-const IllusFramework = () => (
-  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
-    <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <text x="24" y="28" fontSize="12" fill="#fff" fontWeight="bold">Framework Belajar</text>
-    <text x="24" y="42" fontSize="9" fill="#777">6 metode berbasis riset ilmiah untuk Masisir</text>
-    {[
-      ["Spaced Repetition", "Ulangi di waktu yang tepat"],
-      ["Active Recall", "Uji diri tanpa lihat catatan"],
-      ["Interleaving", "Campur topik saat belajar"],
-      ["Elaborative Interrogation", "Tanya 'mengapa' di setiap konsep"],
-    ].map(([name, desc], i) => (
-      <g key={name}>
-        <rect x="24" y={50 + i * 34} width="272" height="26" rx="7"
-          fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.07)"/>
-        <rect x="24" y={50 + i * 34} width="4" height="26" rx="2" fill={EM}/>
-        <text x="38" y={65 + i * 34} fontSize="10" fill="#eee" fontWeight="bold">{name}</text>
-        <text x="160" y={65 + i * 34} fontSize="9" fill="#888">{desc}</text>
-      </g>
-    ))}
-  </svg>
-);
-
-const IllusSiapImtihan = () => (
-  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
-    <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <text x="24" y="28" fontSize="12" fill="#fff" fontWeight="bold">Siap Imtihan</text>
-    <text x="24" y="42" fontSize="9" fill="#777">6 mode persiapan ujian khusus Azhari</text>
-    {[
-      ["📦", "Kompres Materi", "Rangkuman padat siap tulis"],
-      ["🎯", "Drill Soal Azhari", "'Arrif, bayyin, wadhdhih"],
-      ["🎤", "Mock Syafawi", "Simulasi ujian lisan dengan AI"],
-      ["💡", "Analogi & Paham", "Konsep sulit jadi mudah"],
-      ["📝", "Poin Hafalan", "Poin kunci untuk dihafal"],
-      ["📖", "Faham Isi", "Terjemah + penjelasan istilah"],
-    ].map(([emoji, name, desc], i) => {
-      const col = i % 2, row = Math.floor(i / 2);
-      return (
-        <g key={name}>
-          <rect x={24 + col * 142} y={52 + row * 44} width="132" height="36" rx="8"
-            fill="rgba(var(--fg, 255,255,255),0.03)" stroke="rgba(var(--fg, 255,255,255),0.08)"/>
-          <text x={24 + col * 142 + 16} y={68 + row * 44} fontSize="12">{emoji}</text>
-          <text x={24 + col * 142 + 32} y={66 + row * 44} fontSize="9" fill="#eee" fontWeight="bold">{name}</text>
-          <text x={24 + col * 142 + 32} y={78 + row * 44} fontSize="8" fill="#888">{desc}</text>
-        </g>
-      );
-    })}
-  </svg>
-);
-
-const IllusPaths = () => (
-  <svg viewBox="0 0 320 200" style={{ width: "100%", height: "auto" }} xmlns="http://www.w3.org/2000/svg">
-    <rect width="320" height="200" rx="14" fill="#0d0d0d" stroke="rgba(62,207,142,0.2)"/>
-    <text x="24" y="28" fontSize="12" fill="#fff" fontWeight="bold">Learning Path</text>
-    <text x="24" y="42" fontSize="9" fill="#777">Belajar bertahap dari pemula ke AI-ready</text>
-    {[
-      ["Level 1", "Pemula", "Kenalan dengan AI", 100],
-      ["Level 2", "Menengah", "Pakai AI untuk maddah", 60],
-      ["Level 3", "Mahir", "Workflow AI penuh", 20],
-    ].map(([level, label, desc, pct], i) => (
-      <g key={level}>
-        <rect x="24" y={52 + i * 46} width="272" height="38" rx="9"
-          fill="rgba(var(--fg, 255,255,255),0.03)" stroke={i === 0 ? "rgba(62,207,142,0.3)" : "rgba(var(--fg, 255,255,255),0.07)"}/>
-        <text x="38" y={68 + i * 46} fontSize="10" fill={i === 0 ? EM : "#aaa"} fontWeight="bold">{level} — {label}</text>
-        <text x="38" y={80 + i * 46} fontSize="9" fill="#777">{desc}</text>
-        <rect x="160" y={62 + i * 46} width="120" height="8" rx="4" fill="rgba(var(--fg, 255,255,255),0.06)"/>
-        <rect x="160" y={62 + i * 46} width={120 * pct / 100} height="8" rx="4" fill={i === 0 ? EM : "rgba(62,207,142,0.3)"}/>
-        <text x="285" y={70 + i * 46} fontSize="8" fill={i === 0 ? EM : "#777"} textAnchor="end">{pct}%</text>
-      </g>
-    ))}
-  </svg>
-);
-
-/* ── Data langkah tutorial ── */
-const STEPS = [
-  {
-    id: 1, emoji: "📲", title: "Login Pertama Kali", memberOnly: false,
-    illus: <IllusLogin/>,
-    intro: "Langkah paling awal — masuk ke Talqeeh pakai akun Google. Tanpa password, tanpa kode.",
-    steps: [
-      "Buka talqeeh.id di browser HP atau laptop.",
-      "Klik \"Masuk\" di pojok kanan atas, lalu \"Masuk dengan Google\".",
-      "Pilih akun Google yang mau kamu pakai untuk Talqeeh.",
-      "Belum member? Kamu langsung diarahkan ke pilihan paket: Library, atau Library + AI Partner.",
-      "Bayar di Mayar (QRIS, VA, atau e-wallet) — tagihannya langsung atas akunmu, akses aktif otomatis.",
-    ],
-    tip: "Member lama yang dulu login pakai kode: masuk dengan Google, lalu masukkan PIN aktivasi yang dikirim admin via WhatsApp. Cukup sekali — setelah itu tinggal login pakai Google.",
-  },
-  {
-    id: 2, emoji: "👤", title: "Setup Profil Belajar", memberOnly: false,
-    illus: <IllusProfil/>,
-    intro: "Talqeeh menyesuaikan maddah dengan kurikulum kamu. Isi profil dengan benar supaya yang muncul tepat.",
-    steps: [
-      "Setelah login pertama, kamu otomatis diarahkan ke halaman setup profil.",
-      "Pilih fakultas kamu — misalnya Dakwah, Ushuluddin, Syariah, atau Ma'had.",
-      "Pilih tingkat atau firqah kamu (1, 2, 3, atau 4).",
-      "Kalau fakultas kamu punya jurusan (mis. Ushuluddin: Tafsir/Aqidah/Hadits), pilih juga.",
-      "Pilih gaya belajar favorit, lalu klik \"Simpan Profil\".",
-    ],
-    tip: "Profil bisa diubah kapan saja lewat menu pengaturan. Kalau maddah yang muncul terasa tidak sesuai, cek lagi apakah fakultas & tingkatmu sudah benar.",
-  },
-  {
-    id: 3, emoji: "📚", title: "Menjelajahi Maddah", memberOnly: false,
-    illus: <IllusMaddah/>,
-    intro: "Dashboard menampilkan semua maddah sesuai fakultas & tingkatmu. Ini pusat belajarmu.",
-    steps: [
-      "Di dashboard, kamu lihat daftar maddah sesuai profil kamu.",
-      "Tiap kartu maddah menampilkan nama dan jumlah prompt yang tersedia.",
-      "Klik maddah yang sedang kamu pelajari atau yang mau disiapkan untuk ujian.",
-      "Scroll ke bawah untuk melihat semua maddah — termasuk maddah Ma'had jika kamu di jenjang itu.",
-    ],
-    tip: `Talqeeh punya ${CATALOG.maddah} maddah total — ${CATALOG.maddahS1} maddah S1 dari semua fakultas dan ${CATALOG.maddahMahad} maddah Ma'had (I'dadi, Tsanawi Adabi & Ilmi). Yang muncul di dashboard-mu hanya yang sesuai kurikulummu.`,
-  },
-  {
-    id: 4, emoji: "🤖", title: "Mengenal 6 Kategori Prompt", memberOnly: true,
-    illus: <IllusKategori/>,
-    intro: "Setiap maddah punya 6 kategori prompt. Masing-masing untuk kebutuhan belajar yang berbeda.",
-    steps: [
-      "📖 Pahami — minta AI menjelaskan konsep maddah dengan bahasa yang mudah.",
-      "🧠 Hafal — bantu muraja'ah, buat tabel hafalan & mnemonic.",
-      "✏️ Latihan — drill soal latihan dengan koreksi langkah demi langkah.",
-      "📝 Ujian — simulasi imtihan tahriri & syafawi gaya Azhari.",
-      "🎙️ Talaqqi — rapikan catatan berantakan dari kuliah jadi terstruktur.",
-      "🔍 Eksplorasi — dalami topik lebih jauh & hubungkan dengan ilmu lain.",
-    ],
-    tip: "Tidak harus pakai semua. Pilih sesuai kebutuhanmu saat itu. Mau paham materi baru? Pahami. Tinggal seminggu sebelum ujian? Langsung ke Ujian.",
-  },
-  {
-    id: 5, emoji: "✂️", title: "Copy Prompt & Pakai di AI", memberOnly: true,
-    illus: <IllusCopy/>,
-    intro: "Ini inti Talqeeh — prompt yang sudah dirancang khusus, tinggal copy & tempel ke AI favoritmu.",
-    steps: [
-      "Pilih kategori, lalu pilih judul prompt yang sesuai kebutuhanmu.",
-      "Klik tombol \"Copy Prompt\" — teks prompt otomatis tersalin.",
-      "Buka Claude (claude.ai) atau ChatGPT di tab/aplikasi lain.",
-      "Tempel (paste) prompt-nya ke kolom chat.",
-      "Ganti bagian [SEBUTKAN] dengan topik spesifik yang kamu pelajari.",
-      "Kirim — AI langsung kasih penjelasan, soal, atau simulasi ujian sesuai prompt.",
-    ],
-    tip: "Makin spesifik isian [SEBUTKAN], makin tajam jawaban AI. Jangan cuma tulis \"Nahwu\" — tulis \"bab kana wa akhawatuha untuk Firqah 2\". Detail kecil bikin beda besar.",
-  },
-  {
-    id: 6, emoji: "📒", title: "Merapikan Catatan (Kurasah)", memberOnly: true,
-    illus: <IllusCatatan/>,
-    intro: "Punya catatan talaqqi yang berantakan? Talqeeh bisa bantu rapikan & menyimpannya.",
-    steps: [
-      "Buka menu Kurasah (Catatan) dari navigasi bawah.",
-      "Klik \"+ Catatan Baru\" untuk membuat catatan.",
-      "Tempel catatan mentah dari kuliah/talaqqi kamu.",
-      "Buka maddah terkait, pilih kategori Talaqqi, copy prompt \"Rapikan Catatan\".",
-      "Tempel ke AI bersama catatanmu — AI akan strukturkan jadi rapi.",
-      "Simpan hasilnya kembali ke Kurasah.",
-    ],
-    tip: "Catatan tersimpan di cloud dan otomatis sync. Ganti HP atau buka di laptop, catatanmu tetap ada. Tidak akan hilang.",
-  },
-  {
-    id: 7, emoji: "📈", title: "Tracking Progress & Niat", memberOnly: true,
-    illus: <IllusProgress/>,
-    intro: "Talqeeh bantu kamu tetap konsisten dengan fitur pelacakan yang otomatis.",
-    steps: [
-      "🎯 Niat Harian — tulis niat belajarmu tiap hari untuk menjaga fokus & keberkahan.",
-      "📊 Progress Maddah — tandai maddah yang sudah kamu pelajari & pahami.",
-      "🗓️ Ritme Belajar — lihat streak (rentetan) hari kamu aktif belajar.",
-      "Semua tercatat otomatis saat kamu pakai Talqeeh — tidak perlu input manual.",
-    ],
-    tip: "Cek Ritme Belajar tiap pekan. Streak yang panjang adalah tanda konsistensi — dan konsistensi adalah kunci sukses imtihan di Azhar.",
-  },
-  {
-    id: 8, emoji: "🚀", title: "Tips Jadi Mahir", memberOnly: true,
-    illus: <IllusTips/>,
-    intro: "Beberapa kebiasaan yang membedakan member biasa dengan member yang benar-benar memaksimalkan Talqeeh.",
-    steps: [
-      "✅ Pakai sebelum & sesudah talaqqi — Pahami sebelum kuliah, Talaqqi sesudahnya.",
-      "✅ Ikuti alur: Pahami → Latihan → Ujian → Eksplorasi untuk penguasaan penuh.",
-      "✅ Gunakan Mock Imtihan minimal H-7 sebelum ujian asli.",
-      "✅ Isi placeholder [SEBUTKAN] sespesifik mungkin.",
-      "✅ Rapikan catatan tiap habis kuliah — jangan menumpuk.",
-      "✅ Jaga streak harian — sedikit tapi konsisten lebih baik dari banyak tapi jarang.",
-    ],
-    tip: "Talqeeh adalah alat bantu, bukan pengganti talaqqi & muthala'ah. Kombinasikan dengan belajar langsung ke masyaikh untuk hasil terbaik. Barakallahu fiik! 🤲",
-  },
-  {
-    id: 9, emoji: "⚖️", title: "Muqaranah — Perbandingan Mazhab", memberOnly: true,
-    illus: <IllusMuqaranah/>,
-    intro: "Fitur khusus untuk membandingkan pendapat antar mazhab dalam satu tampilan — sangat berguna untuk maddah Fiqh, Ushul, Aqidah, dan Hadits.",
-    steps: [
-      "Buka menu Muqaranah dari navigasi.",
-      "Pilih topik dari library yang sudah tersedia — mencakup Fiqh, Ushul Fiqh, Aqidah, dan Hadits.",
-      "Lihat perbandingan pendapat mazhab secara berdampingan: dalil, hukum, syarat, dan tarjih.",
-      "Bisa juga buat Muqaranah sendiri — klik \"+ Buat Muqaranah\" dan isi topik, pendapat, dan tarjih sesuai catatanmu.",
-      "Gunakan prompt Eksplorasi di maddah untuk minta AI bantu analisis perbedaan lebih dalam.",
-    ],
-    tip: "Muqaranah sangat berguna untuk persiapan ujian maddah yang sering menanyakan perbedaan pendapat (khilaf). Buat sendiri berdasarkan catatan talaqqi untuk hasil terbaik.",
-  },
-  {
-    id: 10, emoji: "🛠️", title: "Tool Guide — Pilih AI yang Tepat", memberOnly: true,
-    illus: <IllusToolGuide/>,
-    intro: "Tidak semua AI cocok untuk semua kebutuhan. Tool Guide membantu kamu memilih AI yang paling sesuai dengan gaya belajar dan tugasmu.",
-    steps: [
-      "Buka menu Tool Guide dari navigasi.",
-      "Talqeeh otomatis merekomendasikan AI berdasarkan gaya belajar yang kamu isi di profil.",
-      "Pilih AI (Claude, ChatGPT, Gemini, dll) untuk lihat panduan penggunaan yang sudah disesuaikan.",
-      "Tiap AI punya kelebihan berbeda — Claude terbaik untuk analisis bahasa Arab & nuansa, ChatGPT cepat untuk drill soal.",
-      "Ikuti langkah & workflow yang disarankan untuk hasil optimal dari tiap AI.",
-    ],
-    tip: "Untuk maddah Azhari, Claude paling direkomendasikan karena kemampuan analisis teks Arab dan nuansa fiqhnya. Tapi kombinasikan dengan AI lain sesuai kebutuhan.",
-  },
-  {
-    id: 11, emoji: "🧪", title: "Framework Belajar", memberOnly: true,
-    illus: <IllusFramework/>,
-    intro: "6 metode belajar berbasis riset ilmiah yang sudah diadaptasi untuk konteks Masisir Al-Azhar. Belajar lebih efektif dengan cara yang benar.",
-    steps: [
-      "Buka menu Framework dari navigasi.",
-      "Baca 6 framework yang tersedia — mulai dari Spaced Repetition, Active Recall, Interleaving, dan lainnya.",
-      "Tiap framework dilengkapi penjelasan cara kerjanya dan contoh penerapan di maddah Azhar.",
-      "Pilih framework yang paling cocok dengan gaya belajarmu dan terapkan saat pakai Talqeeh.",
-      "Kombinasikan dengan prompt Talqeeh — misalnya framework Active Recall + prompt Latihan untuk hasil maksimal.",
-    ],
-    tip: "Spaced Repetition adalah framework paling powerful untuk hafalan maddah Azhar. Kombinasikan dengan prompt Hafal di Talqeeh: ulangi di H+1, H+3, H+7 setelah belajar.",
-  },
-  {
-    id: 12, emoji: "📋", title: "Siap Imtihan — Mode Ujian", memberOnly: true,
-    illus: <IllusSiapImtihan/>,
-    intro: "Mode khusus persiapan ujian: bank soal tahun lalu, 4 mode prompt gaya imtihan Al-Azhar, dan Bedah Talkhisan.",
-    steps: [
-      "Buka menu Siap Imtihan dari dashboard atau navigasi.",
-      "Cek Bank Soal di bagian atas — soal tahriri tahun-tahun sebelumnya lengkap dengan prompt jawabannya.",
-      "Pilih maddah yang mau disiapkan, lalu pilih salah satu dari 4 mode:",
-      "📦 Kompres Materi — rangkuman padat satu bab, siap ditulis di kertas ujian.",
-      "🎯 Drill Soal Azhari — latihan soal persis gaya Azhar: 'arrif, bayyin, wadhdhih, qaarin.",
-      "🎤 Mock Syafawi — simulasi ujian lisan, AI berperan sebagai dosen yang menguji.",
-      "💡 Analogi & Paham — konsep sulit dijelaskan lewat analogi yang mudah dipahami.",
-      "Punya talkhisan? Tempel atau upload di Bedah Talkhisan untuk dapat prompt faham, hafal, dan drill dari isinya.",
-    ],
-    tip: "Gunakan Siap Imtihan minimal H-7 sebelum ujian. Urutan ideal: Kompres Materi → Drill Soal → Mock Syafawi. Tiga hari terakhir fokus ke Mock Syafawi untuk melatih kepercayaan diri.",
-  },
-  {
-    id: 13, emoji: "✨", title: "AI Partner — Belajar dari Diktatmu", memberOnly: true,
-    illus: <IllusAiPartner/>,
-    intro: "Tambahan berlangganan untuk member Library (bisa coba gratis 1 materi). Bedanya dengan prompt: kamu nggak perlu salin ke AI lain — Talqeeh langsung mengolah materimu.",
-    steps: [
-      "Buka AI Partner dari Beranda, lalu taruh file materimu: PDF (termasuk scan), Word, slide, foto diktat, atau rekaman kuliah.",
-      "Pahami: ringkasan gaya kitab (Indonesia/Arab/dwibahasa), peta konsep taqsimat, dan materi asli — blok kalimat Arab untuk terjemah & i'rab, atau tekan \"Harakat\".",
-      "Hafalkan: flashcard dengan pengulangan terjadwal dan mufradat lengkap dengan wazan — ketuk ikon suara untuk mendengar lafalnya.",
-      "Uji diri: kuis pilihan ganda dan latihan tahriri yang dinilai AI, termasuk koreksi bahasa Arabmu.",
-      "Tanya: tutor yang menjawab dari materimu, atau Simulasi Syafawi dengan duktur AI.",
-    ],
-    tip: "Hasil AI tetap perlu dicek ulang dengan diktat dan penjelasan duktur. Pakai AI Partner untuk muraja'ah, bukan pengganti talaqqi.",
-  },
-  {
-    id: 14, emoji: "🗺️", title: "Learning Path — Belajar Bertahap", memberOnly: true,
-    illus: <IllusPaths/>,
-    intro: "Jalur belajar terstruktur dari pemula ke mahir — 3 level, masing-masing 5 modul yang bisa dikerjakan sesuai pace kamu.",
-    steps: [
-      "Buka menu Learning Path dari navigasi.",
-      "Ada 3 level: Pemula (kenalan AI), Menengah (pakai AI untuk maddah), Mahir (workflow AI penuh).",
-      "Mulai dari Level 1 kalau baru pertama pakai AI, atau langsung loncat ke level yang sesuai.",
-      "Kerjakan tiap modul secara berurutan — tiap modul berisi panduan praktis yang bisa langsung diterapkan.",
-      "Progress tersimpan otomatis — kamu bisa lanjut kapan saja dari modul terakhir.",
-    ],
-    tip: "Kalau sudah terbiasa pakai Talqeeh, langsung mulai dari Level 2. Level 3 berisi workflow lanjutan yang bisa melipatgandakan efektivitas belajarmu dengan AI.",
-  },
+const VIDEOS = [
+  { n: '01', group: 'AI Partner', title: 'Upload materi ke AI Partner', desc: "Masukkan diktat, PDF, atau foto kitab, lalu pelajari lewat Pahami, Hafalkan, Uji Diri, dan Tanya.", dur: '0:34' },
+  { n: '02', group: 'AI Partner', title: 'Talkhis otomatis + terjemah', desc: 'Petakan mabahits, tulis talkhis per judul, terjemahkan, lalu unduh PDF.', dur: '0:33' },
+  { n: '03', group: 'AI Partner', title: "Terjemah & i'rab kalimat", desc: "Blok kalimat Arab, dapat terjemah harfiyah, terjemah bebas, dan i'rab per kata.", dur: '0:23' },
+  { n: '04', group: 'AI Partner', title: 'Ringkasan, flashcard & kuis', desc: 'Ringkasan, peta konsep, flashcard, mufradat, kuis, dan tahriri yang dinilai AI.', dur: '0:25' },
+  { n: '05', group: 'Kuliah & tanya', title: 'Live Caption kuliah duktur', desc: 'Ucapan duktur jadi teks Arab plus terjemah, tandai bagian penting, buat talkhisan.', dur: '0:29' },
+  { n: '06', group: 'Kuliah & tanya', title: 'Tanya AI', desc: 'Tanya langsung di Talqeeh, jawaban sesuai muqarrar, simpan ke Kurasah.', dur: '0:23' },
+  { n: '07', group: 'Kuliah & tanya', title: 'Tutor & simulasi syafawi', desc: 'Tutor dari materimu sendiri, dan latihan syafawi dengan suara.', dur: '0:25' },
+  { n: '08', group: 'Library & imtihan', title: 'Maddah & template prompt', desc: 'Kitab utama, AI terbaik, dan template prompt per maddah.', dur: '0:23' },
+  { n: '09', group: 'Library & imtihan', title: 'Bank Soal & Siap Imtihan', desc: 'Soal tahun-tahun sebelumnya dan mode persiapan tahriri & syafawi.', dur: '0:25' },
+  { n: '10', group: 'Library & imtihan', title: 'Kurasah', desc: 'Simpan catatan, beri tag, cari, dan export cadangannya.', dur: '0:21' },
+  { n: '11', group: 'Akun', title: 'Kupon Paket Imtihan dari Instagram', desc: 'Follow @talqeeh, unggah screenshot, dapat kode kupon Rp149.000.', dur: '0:30' },
+  { n: '12', group: 'Akun', title: 'Ganti ke tema terang', desc: 'Pindah tema gelap atau terang dari Menu.', dur: '0:21' },
 ];
+const GROUPS = ['Semua', ...new Set(VIDEOS.map(v => v.group))];
+const src = (n, ext, desk) => `/videos/tutorial/${desk ? 'desktop/' : ''}${n}.${ext}`;
 
-/* Video tutorial per fitur (9:16, bersuara). Berkas di public/videos/tutorial/NN.mp4 + poster NN.jpg. */
-const VIDEO_TUTORIALS = [
-  { group: "AI Partner", items: [
-    { n: "01", title: "Upload materi ke AI Partner", dur: "0:34" },
-    { n: "02", title: "Talkhis otomatis + terjemah", dur: "0:33" },
-    { n: "03", title: "Terjemah & i'rab kalimat", dur: "0:23" },
-    { n: "04", title: "Ringkasan, flashcard & kuis", dur: "0:25" },
-  ] },
-  { group: "Kuliah & tanya", items: [
-    { n: "05", title: "Live Caption kuliah duktur", dur: "0:29" },
-    { n: "06", title: "Tanya AI", dur: "0:23" },
-    { n: "07", title: "Tutor & simulasi syafawi", dur: "0:25" },
-  ] },
-  { group: "Library & imtihan", items: [
-    { n: "08", title: "Maddah & template prompt", dur: "0:23" },
-    { n: "09", title: "Bank Soal & Siap Imtihan", dur: "0:25" },
-    { n: "10", title: "Kurasah", dur: "0:21" },
-  ] },
-  { group: "Akun", items: [
-    { n: "11", title: "Kupon Paket Imtihan dari Instagram", dur: "0:30" },
-    { n: "12", title: "Ganti ke tema terang", dur: "0:21" },
-  ] },
-];
-const ALL_VIDEOS = VIDEO_TUTORIALS.flatMap(g => g.items);
-const videoSrc = (n, ext) => `/videos/tutorial/${n}.${ext}`;
-
-const VideoPlayer = ({ index, onClose, onGo }) => {
-  const v = ALL_VIDEOS[index];
+/* Versi video: laptop untuk layar lebar, HP untuk layar sempit. Pilihan manual disimpan per perangkat. */
+const VARIANT_KEY = 'talqeeh_tutorial_variant';
+const WIDE_QUERY = '(min-width: 900px)';
+const readVariant = () => {
+  try { const s = localStorage.getItem(VARIANT_KEY); if (s === 'desktop' || s === 'mobile') return s; } catch {}
+  return window.matchMedia?.(WIDE_QUERY).matches ? 'desktop' : 'mobile';
+};
+const useVariant = () => {
+  const [variant, setVariant] = useState(readVariant);
   useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
-    window.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { window.removeEventListener("keydown", onKey); document.body.style.overflow = prev; };
+    const mq = window.matchMedia?.(WIDE_QUERY);
+    if (!mq) return;
+    // Ikuti perubahan lebar layar selama pengguna belum memilih sendiri.
+    const f = () => { let saved = null; try { saved = localStorage.getItem(VARIANT_KEY); } catch {} if (!saved) setVariant(mq.matches ? 'desktop' : 'mobile'); };
+    mq.addEventListener?.('change', f);
+    return () => mq.removeEventListener?.('change', f);
   }, []);
+  const choose = (v) => { try { localStorage.setItem(VARIANT_KEY, v); } catch {} setVariant(v); };
+  return [variant, choose];
+};
+
+const Player = ({ index, desk, onClose, onGo }) => {
+  const v = VIDEOS[index];
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+      if (e.key === 'ArrowRight' && index < VIDEOS.length - 1) onGo(index + 1);
+      if (e.key === 'ArrowLeft' && index > 0) onGo(index - 1);
+    };
+    window.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { window.removeEventListener('keydown', onKey); document.body.style.overflow = prev; };
+  }, [index]);
   return (
     <div className="fixed inset-0 z-[140] flex items-center justify-center p-3" role="dialog" aria-modal="true" aria-label={v.title}
-      style={{ background: "rgba(0,0,0,0.88)" }} onClick={onClose}>
-      <div className="relative w-full flex flex-col items-center" style={{ maxWidth: 420 }} onClick={e => e.stopPropagation()}>
+      style={{ background: 'rgba(0,0,0,0.9)' }} onClick={onClose}>
+      <div className="relative w-full flex flex-col items-center" style={{ maxWidth: desk ? 'min(1120px, calc((100dvh - 150px) * 16 / 9))' : 420 }} onClick={e => e.stopPropagation()}>
         <div className="w-full flex items-center justify-between gap-3 mb-2 px-1">
           <div className="min-w-0">
-            <div className="text-[11px] tracking-wider text-emerald-300 font-semibold">VIDEO {v.n} DARI {ALL_VIDEOS.length}</div>
-            <div className="text-white font-semibold text-[15px] truncate" style={{ color: "#fff" }}>{v.title}</div>
+            <div className="text-[11px] tracking-wider font-semibold" style={{ color: '#86efac' }}>VIDEO {v.n} DARI {VIDEOS.length}</div>
+            <div className="font-semibold text-[15px] truncate" style={{ color: '#fff' }}>{v.title}</div>
           </div>
           <button onClick={onClose} aria-label="Tutup video" className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
-            style={{ background: "rgba(255,255,255,0.1)" }}>
-            <Icon name="x" className="w-5 h-5" style={{ stroke: "#fff" }}/>
+            style={{ background: 'rgba(255,255,255,0.12)' }}>
+            <Icon name="x" className="w-5 h-5" style={{ stroke: '#fff' }}/>
           </button>
         </div>
-        <video key={v.n} src={videoSrc(v.n, "mp4")} poster={videoSrc(v.n, "jpg")} controls autoPlay playsInline preload="auto"
-          className="w-full rounded-2xl bg-black" style={{ aspectRatio: "9 / 16", maxHeight: "calc(100vh - 150px)", objectFit: "contain" }}/>
+        <video key={`${desk}-${v.n}`} src={src(v.n, 'mp4', desk)} poster={src(v.n, 'jpg', desk)} controls autoPlay playsInline preload="auto"
+          onEnded={() => index < VIDEOS.length - 1 && onGo(index + 1)}
+          className="w-full rounded-2xl" style={{ background: '#000', aspectRatio: desk ? '16 / 9' : '9 / 16', maxHeight: 'calc(100dvh - 150px)', objectFit: 'contain' }}/>
         <div className="w-full flex justify-between gap-2 mt-3">
           <button disabled={index === 0} onClick={() => onGo(index - 1)} className="px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-30"
-            style={{ background: "rgba(255,255,255,0.1)", color: "#fff" }}>← Sebelumnya</button>
-          <button disabled={index === ALL_VIDEOS.length - 1} onClick={() => onGo(index + 1)} className="px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-30"
-            style={{ background: EM, color: "#04140c" }}>Berikutnya →</button>
+            style={{ background: 'rgba(255,255,255,0.12)', color: '#fff' }}>← Sebelumnya</button>
+          <button disabled={index === VIDEOS.length - 1} onClick={() => onGo(index + 1)} className="px-4 py-2.5 rounded-xl text-sm font-semibold disabled:opacity-30"
+            style={{ background: '#3ecf8e', color: '#04140c' }}>Berikutnya →</button>
         </div>
       </div>
     </div>
   );
 };
 
-const VideoTutorials = () => {
+const VideoCard = ({ v, desk, onPlay }) => (
+  <button onClick={onPlay} className="group text-left rounded-2xl overflow-hidden border border-white/10 bg-white/[0.03] hover:border-emerald-500/40 transition-colors"
+    aria-label={`Putar video: ${v.title}`}>
+    <div className="relative" style={{ aspectRatio: desk ? '16 / 9' : '9 / 16', background: '#0b0f0d' }}>
+      <img src={src(v.n, 'jpg', desk)} alt="" loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover"/>
+      <span className="absolute inset-0 flex items-center justify-center" style={{ paddingTop: desk ? 0 : '38%', paddingLeft: desk ? '42%' : 0 }}>
+        <span className="w-14 h-14 rounded-full flex items-center justify-center transition-transform group-hover:scale-110"
+          style={{ background: 'rgba(62,207,142,0.95)', boxShadow: '0 8px 24px rgba(0,0,0,0.45)' }}>
+          <Icon name="play" className="w-6 h-6" style={{ stroke: '#04140c', fill: '#04140c' }}/>
+        </span>
+      </span>
+      <span className="absolute bottom-2 right-2 text-[11px] font-semibold px-2 py-0.5 rounded-md" style={{ background: 'rgba(0,0,0,0.72)', color: '#fff' }}>{v.dur}</span>
+    </div>
+    <div className="p-3">
+      <div className="text-sm font-semibold text-ink leading-snug">{v.title}</div>
+      <div className="text-xs text-ink-muted leading-relaxed mt-1 line-clamp-2">{v.desc}</div>
+    </div>
+  </button>
+);
+
+function TutorialPage() {
+  const [group, setGroup] = useState('Semua');
   const [playing, setPlaying] = useState(null);
-  const open = (n) => { setPlaying(ALL_VIDEOS.findIndex(v => v.n === n)); window.logFunnel?.("tutorial_video", n); };
+  const [variant, chooseVariant] = useVariant();
+  const desk = variant === 'desktop';
+  const shown = group === 'Semua' ? VIDEOS : VIDEOS.filter(v => v.group === group);
+  const play = (v) => { setPlaying(VIDEOS.indexOf(v)); window.logFunnel?.('tutorial_video', `${desk ? 'd' : 'm'}${v.n}`); };
+  const settings = useAppSettings() || {};
+  const wa = (settings.whatsapp || '').replace(/\D/g, '') || DEFAULT_ADMIN_WA;
+
   return (
-    <section className="mb-8" aria-labelledby="video-tutorial-title">
-      <div className="flex items-end justify-between gap-3 mb-3 px-1">
-        <div>
-          <h2 id="video-tutorial-title" className="font-display text-xl font-bold text-ink">Video tutorial</h2>
-          <p className="text-[13px] text-ink-muted mt-0.5">{ALL_VIDEOS.length} video singkat, masing-masing di bawah satu menit.</p>
-        </div>
-        <span className="text-[11px] text-ink-soft flex-shrink-0">Ketuk untuk putar</span>
-      </div>
-      {VIDEO_TUTORIALS.map(g => (
-        <div key={g.group} className="mb-4">
-          <div className="text-[11px] font-semibold tracking-[0.14em] uppercase text-gold-400 mb-2 px-1">{g.group}</div>
-          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x" style={{ scrollbarWidth: "none" }}>
-            {g.items.map(v => (
-              <button key={v.n} onClick={() => open(v.n)} className="snap-start flex-shrink-0 text-left group" style={{ width: 132 }}
-                aria-label={`Putar video: ${v.title}`}>
-                <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black" style={{ aspectRatio: "9 / 16" }}>
-                  <img src={videoSrc(v.n, "jpg")} alt="" loading="lazy" className="w-full h-full object-cover transition-transform group-hover:scale-[1.03]"/>
-                  <div className="absolute inset-0 flex items-center justify-center" style={{ background: "linear-gradient(180deg, rgba(0,0,0,0) 45%, rgba(0,0,0,0.65))" }}>
-                    <span className="w-11 h-11 rounded-full flex items-center justify-center" style={{ background: "rgba(62,207,142,0.92)", boxShadow: "0 6px 18px rgba(0,0,0,0.4)" }}>
-                      <Icon name="play" className="w-5 h-5" style={{ stroke: "#04140c", fill: "#04140c" }}/>
-                    </span>
-                  </div>
-                  <span className="absolute bottom-1.5 right-1.5 text-[10px] font-semibold px-1.5 py-0.5 rounded-md" style={{ background: "rgba(0,0,0,0.7)", color: "#fff" }}>{v.dur}</span>
-                </div>
-                <div className="text-[12.5px] text-ink font-medium leading-snug mt-1.5 line-clamp-2">{v.title}</div>
+    <div className="container-x pb-24">
+      <div className="max-w-5xl mx-auto">
+        <header className="pt-7 md:pt-12 pb-5">
+          <div className="text-[11px] font-semibold tracking-[0.18em] uppercase text-gold-400">Video tutorial</div>
+          <h1 className="font-display text-3xl md:text-4xl font-bold text-ink mt-1.5 leading-tight">Cara pakai Talqeeh</h1>
+          <p className="text-[15px] text-ink-muted mt-2 max-w-xl leading-relaxed">
+            {VIDEOS.length} video singkat, masing-masing di bawah satu menit. Ketuk video untuk memutarnya.
+          </p>
+          <div className="mt-4 inline-flex rounded-xl border border-white/10 p-1 bg-white/[0.03]" role="radiogroup" aria-label="Versi tampilan video">
+            {[['mobile', 'smartphone', 'Tampilan HP'], ['desktop', 'monitor', 'Tampilan laptop']].map(([id, , label]) => (
+              <button key={id} role="radio" aria-checked={variant === id} onClick={() => chooseVariant(id)}
+                className={`px-3.5 py-1.5 rounded-lg text-[13px] transition-colors ${variant === id ? 'bg-emerald-500/15 text-emerald-200 font-semibold' : 'text-ink-muted hover:text-ink'}`}>
+                {label}
               </button>
             ))}
           </div>
+        </header>
+
+        <div className="flex gap-2 overflow-x-auto pb-1 mb-5 -mx-1 px-1" style={{ scrollbarWidth: 'none' }} role="tablist" aria-label="Kelompok video">
+          {GROUPS.map(g => (
+            <button key={g} role="tab" aria-selected={group === g} onClick={() => setGroup(g)}
+              className={`flex-shrink-0 px-3.5 py-2 rounded-full text-sm border transition-colors ${group === g ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-200 font-semibold' : 'border-white/10 text-ink-muted hover:text-ink hover:bg-white/5'}`}>
+              {g}
+            </button>
+          ))}
         </div>
-      ))}
-      {playing != null && <VideoPlayer index={playing} onClose={() => setPlaying(null)} onGo={setPlaying}/>}
-    </section>
-  );
-};
 
-function TutorialPage() {
-  const [current, setCurrent] = useState(0);
-  const { session } = useAuth();
-  const isLoggedIn = !!session;
-
-  const steps = isLoggedIn
-    ? STEPS
-    : STEPS.map((s) => ({ ...s, locked: s.memberOnly }));
-
-  const step = steps[current];
-  const isLocked = step.locked;
-  const pct = Math.round(((current + 1) / steps.length) * 100);
-
-  return (
-    <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 16px 100px" }}>
-      {/* Header */}
-      <div style={{ padding: "28px 4px 18px" }}>
-        <div style={{ fontSize: 12, color: "var(--t-3, #888)", letterSpacing: 1.5, fontWeight: 600 }}>
-          PANDUAN PENGGUNAAN
+        <div className={`grid gap-3 md:gap-4 ${desk ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-4'}`}>
+          {shown.map(v => <VideoCard key={v.n} v={v} desk={desk} onPlay={() => play(v)}/>)}
         </div>
-        <h1 className="font-display" style={{ fontSize: 30, fontWeight: 800, margin: "6px 0 8px", lineHeight: 1.1 }}>
-          Cara Pakai <span style={{ color: EM }}>Talqeeh</span>
-        </h1>
-        <p style={{ fontSize: 15, color: "var(--t-2, #aaa)", margin: 0, lineHeight: 1.5 }}>
-          Dari login pertama sampai mahir. Tonton videonya, atau ikuti {STEPS.length} langkah di bawah pelan-pelan.
-        </p>
-      </div>
 
-      <VideoTutorials/>
-
-      <h2 className="font-display text-xl font-bold text-ink px-1 mb-3">Panduan langkah demi langkah</h2>
-
-      {/* Step dots */}
-      <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "4px 4px 18px" }}>
-        {steps.map((s, i) => (
-          <button key={s.id} onClick={() => !s.locked && setCurrent(i)}
-            aria-label={`Langkah ${s.id}`}
-            style={{
-              width: 36, height: 36, borderRadius: 12, flexShrink: 0,
-              border: "none", cursor: s.locked ? "not-allowed" : "pointer",
-              background: i === current ? EM : s.locked ? "rgba(var(--fg, 255,255,255),0.04)" : "rgba(var(--fg, 255,255,255),0.1)",
-              color: i === current ? "#000" : s.locked ? "#555" : "#fff",
-              fontWeight: 800, fontSize: 14, transition: "all 0.2s",
-            }}>
-            {s.locked ? "🔒" : s.id}
-          </button>
-        ))}
-      </div>
-
-      {/* Progress bar */}
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ height: 6, background: "rgba(var(--fg, 255,255,255),0.06)", borderRadius: 99, overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${EM_DEEP}, ${EM})`, borderRadius: 99, transition: "width 0.4s ease" }}/>
-        </div>
-        <div style={{ fontSize: 12, color: "var(--t-3, #777)", marginTop: 6, textAlign: "right" }}>{pct}% selesai</div>
-      </div>
-
-      {isLocked ? (
-        <div className="card-glass" style={{ textAlign: "center", padding: "56px 24px" }}>
-          <div style={{ fontSize: 52, marginBottom: 16 }}>🔒</div>
-          <h2 className="font-display" style={{ fontSize: 22, fontWeight: 800, marginBottom: 10 }}>
-            Langkah Khusus Member
-          </h2>
-          <p style={{ color: "var(--t-2, #aaa)", marginBottom: 26, lineHeight: 1.6, fontSize: 15 }}>
-            Langkah {step.id} dan seterusnya hanya untuk member Talqeeh.
-            Gabung untuk akses penuh — {CATALOG.maddah} maddah & {CATALOG.prompts} prompt AI.
-          </p>
-          <button onClick={() => scrollToPaket()} style={{
-            display: "inline-block", background: EM, color: "#000", fontWeight: 800, border: "none", cursor: "pointer",
-            padding: "13px 30px", borderRadius: 12, fontSize: 15,
-          }}>
-            Lihat Paket Member →
-          </button>
-        </div>
-      ) : (
-        <div className="card-glass" style={{ overflow: "hidden" }}>
-          {/* Illustration */}
-          <div style={{ padding: "20px 20px 0", background: "rgba(62,207,142,0.03)" }}>
-            {step.illus}
+        <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.03] p-5 flex flex-col sm:flex-row sm:items-center gap-3 justify-between">
+          <div>
+            <div className="text-sm font-semibold text-ink">Masih bingung?</div>
+            <div className="text-xs text-ink-muted mt-0.5">Tanya admin Talqeeh lewat WhatsApp, kami bantu langsung.</div>
           </div>
-
-          {/* Body */}
-          <div style={{ padding: "22px 22px 8px" }}>
-            <div style={{ fontSize: 12, color: EM, fontWeight: 700, letterSpacing: 1, marginBottom: 8 }}>
-              {step.emoji} LANGKAH {step.id} DARI {STEPS.length}
-            </div>
-            <h2 className="font-display" style={{ fontSize: 23, fontWeight: 800, margin: "0 0 10px" }}>
-              {step.title}
-            </h2>
-            <p style={{ fontSize: 15, color: "var(--t-2, #bbb)", lineHeight: 1.6, marginBottom: 20 }}>
-              {step.intro}
-            </p>
-
-            {/* Steps list */}
-            <ol style={{ listStyle: "none", padding: 0, margin: "0 0 18px", counterReset: "step" }}>
-              {step.steps.map((c, i) => {
-                const hasEmoji = /^[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u2705]/u.test(c);
-                return (
-                  <li key={i} style={{ display: "flex", gap: 12, marginBottom: 13, lineHeight: 1.55, fontSize: 14.5, alignItems: "flex-start" }}>
-                    {!hasEmoji && (
-                      <span style={{
-                        flexShrink: 0, width: 22, height: 22, borderRadius: 7,
-                        background: "rgba(62,207,142,0.15)", color: EM,
-                        fontSize: 12, fontWeight: 800, display: "flex",
-                        alignItems: "center", justifyContent: "center", marginTop: 1,
-                      }}>{i + 1}</span>
-                    )}
-                    <span style={{ color: "var(--t-1, #ddd)" }}>{c}</span>
-                  </li>
-                );
-              })}
-            </ol>
-
-            {/* Tip */}
-            <div style={{
-              background: "rgba(62,207,142,0.08)", border: "1px solid rgba(62,207,142,0.22)",
-              borderRadius: 12, padding: "14px 16px", fontSize: 14, lineHeight: 1.6, marginTop: 16,
-            }}>
-              <span style={{ fontWeight: 800, color: EM }}>💡 Tips: </span>
-              <span style={{ color: "var(--t-2, #cfcfcf)" }}>{step.tip}</span>
-            </div>
-          </div>
-
-          {/* Nav */}
-          <div style={{
-            padding: "16px 22px", borderTop: "1px solid rgba(var(--fg, 255,255,255),0.06)",
-            display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10,
-          }}>
-            <button onClick={() => setCurrent(Math.max(0, current - 1))} disabled={current === 0}
-              style={{
-                padding: "11px 18px", borderRadius: 10, border: "1px solid rgba(var(--fg, 255,255,255),0.12)",
-                background: "transparent", color: current === 0 ? "#444" : "#fff",
-                cursor: current === 0 ? "not-allowed" : "pointer", fontSize: 14, fontWeight: 600,
-              }}>← Balik</button>
-
-            {current < steps.length - 1 ? (
-              <button onClick={() => setCurrent(current + 1)}
-                style={{
-                  padding: "11px 22px", borderRadius: 10, border: "none",
-                  background: EM, color: "#000", cursor: "pointer", fontSize: 14, fontWeight: 800,
-                }}>Lanjut →</button>
-            ) : (
-              <a href={isLoggedIn ? "#/dashboard" : "#/maddah-publik"} style={{
-                padding: "11px 22px", borderRadius: 10, border: "none",
-                background: EM, color: "#000", textDecoration: "none", fontSize: 14, fontWeight: 800,
-              }}>{isLoggedIn ? "Mulai Belajar 🚀" : "Gabung Member →"}</a>
-            )}
-          </div>
+          {wa && (
+            <a href={`https://wa.me/${wa}?text=${encodeURIComponent('Assalamualaikum, saya mau tanya cara pakai Talqeeh.')}`} target="_blank" rel="noopener noreferrer"
+              className="btn btn-ghost text-sm px-4 py-2.5 justify-center">Chat admin</a>
+          )}
         </div>
-      )}
-
-      {/* Help footer */}
-      <div style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: "var(--t-3, #777)" }}>
-        Masih bingung? Hubungi admin lewat WhatsApp untuk bantuan langsung.
       </div>
+
+      {playing != null && <Player index={playing} desk={desk} onClose={() => setPlaying(null)} onGo={setPlaying}/>}
     </div>
   );
 }
