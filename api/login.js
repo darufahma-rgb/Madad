@@ -222,17 +222,26 @@ async function handleCheckout(req, user, res) {
     return res.status(200).json({ ok: false, status: 'needs_imtihan' });
   }
 
-  const offer = plan === 'imtihan' ? await getWelcomeOffer(member, { coupon }) : null;
+  // Bacaan yang saling lepas dijalankan bersamaan: tiap bacaan ±0,3 dtk, dulu berurutan sampai beberapa detik.
+  const isImtihan = plan === 'imtihan';
+  const [offer, referral, program, basePrice, linkFromUrl] = await Promise.all([
+    isImtihan ? getWelcomeOffer(member, { coupon }) : null,
+    isImtihan && member ? readMemberReferral(member.code).catch(() => null) : null,
+    isImtihan && member ? readAffiliateProgram() : null,
+    isImtihan ? imtihanPrice() : null,
+    isImtihan && partnerSlug ? getLivePartnerLink(partnerSlug) : null,
+  ]);
   // Tautan kerja sama: akun yang sudah ditandai ke satu kekeluargaan tetap tercatat ke sana, walau memakai tautan lain.
   // Yang menekan bayar setelah tautannya berakhir diberi tahu, bukan diam-diam ditagih harga normal.
-  const tagged = plan === 'imtihan' && member ? (await readMemberReferral(member.code))?.partner_slug : null;
-  const partner = plan !== 'imtihan' ? null
-    : (tagged && await getLivePartnerLink(tagged)) || (partnerSlug ? await getLivePartnerLink(partnerSlug) : null);
-  if (plan === 'imtihan' && partnerSlug && !partner) return res.status(200).json({ ok: false, status: 'partner_closed' });
-  // Program Mitra: akun yang diajak mitra dapat potongan; harga termurah yang menang (penawaran pribadi, mitra, kekeluargaan).
-  const program = plan === 'imtihan' && member ? await readAffiliateProgram() : null;
-  const affiliate = program?.open ? await resolveMemberAffiliate(member, ref).catch(() => null) : null;
-  const affiliateAmount = affiliate ? affiliatePrice(await imtihanPrice(), program.discount) : null;
+  const tagged = referral?.partner_slug || null;
+  const [taggedLink, affiliate] = await Promise.all([
+    tagged ? getLivePartnerLink(tagged) : null,
+    // Program Mitra: akun yang diajak mitra dapat potongan; harga termurah yang menang (penawaran pribadi, mitra, kekeluargaan).
+    program?.open ? resolveMemberAffiliate(member, ref).catch(() => null) : null,
+  ]);
+  const partner = !isImtihan ? null : taggedLink || linkFromUrl;
+  if (isImtihan && partnerSlug && !partner) return res.status(200).json({ ok: false, status: 'partner_closed' });
+  const affiliateAmount = affiliate ? affiliatePrice(basePrice, program.discount) : null;
   const best = Math.min(offer?.price || Infinity, affiliateAmount || Infinity);
   const usePartner = partner && partner.price <= best;
   const result = await createCheckout({

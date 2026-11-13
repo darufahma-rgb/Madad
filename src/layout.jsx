@@ -1386,16 +1386,18 @@ const useCheckout = ({ plans, enabled = true, onPaid } = {}) => {
   // opts: { seats } untuk Paket Rombongan.
   const start = async (plan, opts = {}) => {
     window.logFunnel?.('click_pay', plan);
-    setState({ status: "creating", checkout: null });
+    // Layar checkout langsung tampil (status "creating") sementara tagihan dibuat di server, supaya tidak terasa macet.
+    setState({ status: "creating", checkout: null, plan, amount: opts.amount || null });
+    setPayOpen(true);
     const r = await createCheckout(plan, opts);
     if (!r.ok) {
+      setPayOpen(false);
       setState({ status: "error", checkout: null, code: r.status, error: CHECKOUT_ERRORS[r.status] || CHECKOUT_ERRORS.error });
       return;
     }
     const checkout = { ...r.checkout, at: Date.now() };
     savePendingCheckout(checkout);
     setState({ status: "waiting", checkout });
-    setPayOpen(true);
   };
 
   const reopen = () => { if (state.checkout?.link) setPayOpen(true); };
@@ -1503,22 +1505,29 @@ const checkoutLines = (c) => {
   const amount = c?.amount || 0;
   if (c?.plan === "library") return [["Library", "akses selamanya", amount]];
   if (c?.plan === "ai") return [["AI Study Partner", "30 hari penuh", amount]];
-  return [["Library", "akses selamanya", LIBRARY_PRICE_IDR], ["AI Study Partner", "30 hari penuh", Math.max(0, amount - LIBRARY_PRICE_IDR)]];
+  const days = c?.plan === "imtihan" || c?.plan === "rombongan" ? IMTIHAN_AI_DAYS : 30;
+  return [["Library", "akses selamanya", LIBRARY_PRICE_IDR], ["AI Study Partner", `${days} hari penuh`, Math.max(0, amount - LIBRARY_PRICE_IDR)]];
 };
 
-const CheckoutPayModal = (props) => (props.checkout.payOpen && props.checkout.checkout?.link ? <CheckoutRedirect {...props}/> : null);
+const CheckoutPayModal = (props) => {
+  const { payOpen, status, checkout: c } = props.checkout;
+  if (!payOpen) return null;
+  if (status === "creating") return <CheckoutRedirect {...props} preparing/>;
+  return c?.link ? <CheckoutRedirect key={c.id} {...props}/> : null;
+};
 
-const CheckoutRedirect = ({ checkout, email }) => {
-  const c = checkout.checkout;
-  const lines = checkoutLines(c);
+const CheckoutRedirect = ({ checkout, email, preparing = false }) => {
+  // Saat tagihan masih dibuat, ringkasan memakai paket & harga yang sedang dibayar (dikirim lewat start()).
+  const c = preparing ? { plan: checkout.plan, amount: checkout.amount } : checkout.checkout;
+  const lines = c?.amount ? checkoutLines(c) : [];
   const [leaving, setLeaving] = useState(false);
-  const go = () => { setLeaving(true); window.location.href = c.link; };
+  const go = () => { if (!c?.link) return; setLeaving(true); window.location.href = c.link; };
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    const t = setTimeout(go, REDIRECT_DELAY_MS);
-    return () => { clearTimeout(t); document.body.style.overflow = ""; };
-  }, []);
+    const t = preparing ? null : setTimeout(go, REDIRECT_DELAY_MS);
+    return () => { if (t) clearTimeout(t); document.body.style.overflow = ""; };
+  }, [preparing]);
 
   return createPortal(
     <div className="fixed inset-0 z-[160] flex items-center justify-center p-4 modal-back"
@@ -1533,8 +1542,8 @@ const CheckoutRedirect = ({ checkout, email }) => {
           </div>
         </div>
         <div className="text-[11px] uppercase tracking-[0.18em] text-gold-400 mb-1.5">Pesananmu</div>
-        <div className="font-display text-xl font-semibold text-ink mb-4">{PLAN_LABELS[c.plan] || "Paket Talqeeh"}</div>
-        <div className="space-y-2.5 text-sm rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
+        <div className="font-display text-xl font-semibold text-ink mb-4">{PLAN_LABELS[c?.plan] || "Paket Talqeeh"}</div>
+        {lines.length > 0 && <div className="space-y-2.5 text-sm rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
           {lines.map(([name, note, value]) => (
             <div key={name} className="flex items-start justify-between gap-3">
               <span className="text-ink-muted"><span className="text-ink">{name}</span> · <span className="text-[12px]">{note}</span></span>
@@ -1545,24 +1554,24 @@ const CheckoutRedirect = ({ checkout, email }) => {
             <span className="text-ink font-semibold">Total</span>
             <span className="font-display text-2xl font-semibold text-emerald-300 tabular-nums">{formatRupiah(c.amount)}</span>
           </div>
-        </div>
+        </div>}
         {email && <div className="text-[11px] text-ink-soft mt-3">Untuk akun <span className="text-ink-muted">{email}</span></div>}
 
         <div className="flex items-center gap-2.5 mt-6 text-sm text-ink">
           <span className="w-4 h-4 flex-shrink-0 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin"/>
-          Mengalihkan ke halaman pembayaran aman…
+          {preparing ? "Menyiapkan tagihanmu…" : "Mengalihkan ke halaman pembayaran aman…"}
         </div>
         <p className="text-[12px] text-ink-soft leading-relaxed mt-2">
           Bayar lewat QRIS, virtual account, atau e-wallet di halaman Mayar. Setelah lunas, kamu otomatis kembali ke Talqeeh
           dan aksesnya langsung aktif.
         </p>
 
-        <button onClick={go} disabled={leaving} className="btn btn-gold w-full py-3 text-sm font-semibold mt-5">
-          {leaving ? "Membuka halaman pembayaran…" : "Lanjut ke pembayaran"}
+        <button onClick={go} disabled={leaving || preparing} className={`btn btn-gold w-full py-3 text-sm font-semibold mt-5 ${preparing ? "opacity-60 cursor-wait" : ""}`}>
+          {preparing ? "Menyiapkan…" : leaving ? "Membuka halaman pembayaran…" : "Lanjut ke pembayaran"}
         </button>
         <div className="flex items-center justify-between mt-3 text-[11px] text-ink-soft">
           <span className="inline-flex items-center gap-1.5"><Icon name="shield" className="w-3.5 h-3.5"/> Diproses aman oleh Mayar</span>
-          {!leaving && <button onClick={checkout.closePay} className="hover:text-ink">Batal</button>}
+          {!leaving && !preparing && <button onClick={checkout.closePay} className="hover:text-ink">Batal</button>}
         </div>
       </div>
     </div>,
@@ -1608,7 +1617,7 @@ const AiSubscriptionModal = ({ open, onClose, onNeedMembership }) => {
   const daysLeft = status.expiresAt ? Math.ceil((Date.parse(status.expiresAt) - Date.now()) / 86400000) : null;
 
   const payButton = (label) => canPay ? (
-    <button onClick={() => checkout.start("ai")} disabled={checkout.status === "creating"}
+    <button onClick={() => checkout.start("ai", { amount: aiPrice })} disabled={checkout.status === "creating"}
       className={`btn btn-gold w-full text-base py-3.5 font-semibold ${checkout.status === "creating" ? "opacity-60 cursor-wait" : ""}`}>
       {checkout.status === "creating" ? "Menyiapkan tagihan…" : label}
     </button>

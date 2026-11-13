@@ -499,7 +499,11 @@ const GabungPage = () => {
     navigate('/dashboard');
   };
 
-  const openPayment = () => { setStep(null); checkout.start(payPlan, payPlan === 'rombongan' ? { seats: rombonganSize.seats } : payPlan === 'imtihan' && partner?.priceLive ? { partner: partner.slug } : {}); };
+  const openPayment = () => {
+    setStep(null);
+    const opts = payPlan === 'rombongan' ? { seats: rombonganSize.seats } : payPlan === 'imtihan' && partner?.priceLive ? { partner: partner.slug } : {};
+    checkout.start(payPlan, { ...opts, amount: payTotal });
+  };
   // Rombongan boleh dibeli member Library juga (bagian pembeli menambah masa AI Partner).
   const chooseRombongan = (n) => {
     setSeats(n);

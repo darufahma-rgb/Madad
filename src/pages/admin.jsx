@@ -50,6 +50,34 @@ const memberToSb = (member) => {
 /* ── Admin API Helpers (SEC-1, SEC-2) ── */
 const adminToken = () => sessionStorage.getItem('talqee_admin_token') || '';
 
+/* Tes sekali: apakah Mayar mengembalikan kode QRIS untuk tagihan metode QRIS (supaya QR bisa tampil langsung di Talqeeh).
+   Membuat 1 tagihan uji Rp1.000 yang hangus 15 menit; hasilnya (jawaban mentah Mayar) bisa disalin untuk developer. */
+const MayarQrisProbe = () => {
+  const [state, setState] = useState({ busy: false, out: null, error: '' });
+  const run = async () => {
+    if (!confirm('Buat 1 tagihan uji Rp1.000 (QRIS, hangus 15 menit) di Mayar? Tidak perlu dibayar.')) return;
+    setState({ busy: true, out: null, error: '' });
+    try { setState({ busy: false, out: await adminMembersAPI('mayar-qris-probe'), error: '' }); }
+    catch (e) { setState({ busy: false, out: null, error: e.message }); }
+  };
+  const text = state.out ? JSON.stringify(state.out, null, 1) : '';
+  return (
+    <div className="border-t border-white/8 pt-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-sm text-ink-muted">Tes QRIS Mayar <span className="text-[11px] text-ink-soft">(untuk QRIS langsung di Talqeeh)</span></div>
+        <button onClick={run} disabled={state.busy} className="btn btn-ghost text-xs px-3 py-1.5">{state.busy ? 'Mengetes…' : 'Jalankan tes'}</button>
+      </div>
+      {state.error && <p className="text-xs text-rose-300 mt-2">{state.error}</p>}
+      {text && (
+        <div className="mt-2">
+          <textarea readOnly value={text} rows={10} className="w-full rounded-lg bg-black/30 border border-white/10 p-2 font-mono text-[11px] text-ink-muted"/>
+          <button onClick={() => navigator.clipboard?.writeText(text)} className="btn btn-ghost text-xs px-3 py-1.5 mt-1">Salin hasil</button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const adminMembersAPI = async (action, code, row, extra = {}) => {
   const r = await fetch('/api/admin-members', {
     method: 'POST',
@@ -2971,6 +2999,7 @@ const AdminSettings = () => {
           <SettingsField label="Harga AI Partner 30 hari pertama di paket Library + AI (Rp) · perpanjang tetap Rp75.000" value={settings.aiPriceMonthly} mono
             onChange={v => setSettings({...settings, aiPriceMonthly: v.replace(/[^\d]/g, "")})}
             hint="Angka saja, misal 49000. Harga ini yang ditampilkan dan ditagihkan. Kosongkan untuk menutup penjualan AI Partner (akses manual dari tab Langganan & Bayar tetap bisa)."/>
+          <MayarQrisProbe/>
         </div>
 
         <SalesEventsCard imtihan={imtihanEvent} setImtihan={setImtihanEvent} rombongan={rombonganEvent} setRombongan={setRombonganEvent}/>

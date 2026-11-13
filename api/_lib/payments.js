@@ -92,6 +92,29 @@ async function mayarRequest(path, { method = 'GET', body } = {}) {
   }
 }
 
+/* Tes admin: apakah tagihan metode QRIS mengembalikan kode QRIS (untuk menampilkan QR langsung di Talqeeh)?
+   Membuat SATU tagihan uji Rp1.000 yang kedaluwarsa 15 menit, lalu mengembalikan jawaban Mayar apa adanya
+   (create + detail). Tidak menyentuh tabel Talqeeh. */
+export async function probeMayarQris() {
+  const key = (process.env.MAYAR_API_KEY || '').trim();
+  if (!key) return { ok: false, error: 'MAYAR_API_KEY belum diisi' };
+  const headers = { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json', Accept: 'application/json' };
+  const call = async (path, init = {}) => {
+    const t0 = Date.now();
+    try {
+      const r = await fetch(`${mayarBase()}${path}`, { headers, ...init });
+      return { path, http: r.status, ms: Date.now() - t0, body: await r.json().catch(() => null) };
+    } catch (err) { return { path, error: err.message, ms: Date.now() - t0 }; }
+  };
+  const create = await call('/payments/create', { method: 'POST', body: JSON.stringify({
+    name: 'Uji QRIS Talqeeh (abaikan)', amount: 1000, description: 'Tes integrasi QRIS dari admin Talqeeh. Tidak perlu dibayar.',
+    paymentMethod: 'qris', expiredAt: new Date(Date.now() + 15 * 60e3).toISOString(),
+  }) });
+  const id = create.body?.data?.id;
+  const details = id ? await Promise.all([`/payment/${id}`, `/payments/${id}`].map(p => call(p))) : [];
+  return { ok: true, base: mayarBase(), create, details };
+}
+
 // Nilai status "lunas" belum terdokumentasi lengkap; contoh docs hanya "unpaid". Terima beberapa ejaan umum.
 const PAID_WORDS = new Set(['paid', 'success', 'succeeded', 'settled', 'settlement', 'completed']);
 const isPaidWord = (v) => v === true || PAID_WORDS.has(String(v || '').toLowerCase());
@@ -179,10 +202,9 @@ export function checkoutBlockReason(plan, member) {
 // partnerSlug: tagihan dicatat ke tautan kerja sama itu (dasar hitungan kas kekeluargaan). imtihanAmount sudah harga tautannya.
 // affiliate: { slug, percent } dari Program Mitra (api/_lib/affiliates.js); komisinya dihitung dari harga yang ditagih.
 export async function createCheckout({ user, member, plan, appOrigin, imtihanAmount, seats, partnerSlug, affiliate }) {
-  const prices = await getPrices();
+  const [prices, rombongan] = await Promise.all([getPrices(), plan === 'rombongan' ? rombonganSize(seats) : null]);
   // Paket Imtihan, Rombongan & perpanjang AI berharga tetap, jadi tidak bergantung pada harga AI bulanan di Settings.
   if (!['library', 'ai', 'imtihan', 'rombongan'].includes(plan) && !isTalkhisAddon(plan) && !prices.ai) return { ok: false, status: 'ai_price_unset' };
-  const rombongan = plan === 'rombongan' ? await rombonganSize(seats) : null;
   if (plan === 'rombongan' && !rombongan) return { ok: false, status: 'rombongan_closed' };
   const parts = await splitAmount(plan, prices, imtihanAmount, rombongan);
   const amount = parts.library_amount + parts.ai_amount;
