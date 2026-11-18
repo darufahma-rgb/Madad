@@ -830,7 +830,7 @@ const LiveCaptionBody = ({ status }) => {
 };
 
 const LiveCaptionPage = () => {
-  const status = useAiStatus();
+  const status = useAiStatus({ welcome: true });
   useEffect(() => { window.logFunnel?.('view_live_caption'); }, []);
   return (
     <div className="page-enter">

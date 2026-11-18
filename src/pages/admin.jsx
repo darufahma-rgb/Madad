@@ -2887,9 +2887,10 @@ const ModelField = ({ label, hint, value, active, onChange }) => {
    Samakan bawaan dengan DEFAULT_TOKENS di api/_lib/tokens.js. 1 token = $0,0001 biaya AI (dipotong sesuai biaya asli). */
 const TOKEN_DEFAULTS = {
   usdRate: 16500,
-  packs: [{ id: 't100', price: 100000, tokens: 25000 }, { id: 't199', price: 199000, tokens: 60000 }],
-  grants: { imtihan: 60000 },
-  convert: { imtihan: 60000, monthly: 25000, talkhis_1: 12000, talkhis_3: 30000 },
+  packs: [{ id: 't100', price: 100000, tokens: 35000 }, { id: 't199', price: 199000, tokens: 75000 }],
+  grants: { imtihan: 75000, free: 1500 },
+  limits: { freeDaily: 30 },
+  convert: { imtihan: 75000, monthly: 35000, talkhis_1: 12000, talkhis_3: 30000 },
 };
 const tokenInputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink outline-none font-mono focus:border-emerald-500/45";
 
@@ -2932,6 +2933,25 @@ const TokenSettingsCard = ({ tokens, setTokens, eventPrice }) => {
           <label className="text-[11px] text-ink-soft block mb-1">Token di Paket Imtihan (harga kupon/mitra/event berlaku)</label>
           <input inputMode="numeric" value={tokens.grants.imtihan ?? ""} onChange={e => setIn('grants', 'imtihan', e.target.value)} className={tokenInputClass}/>
         </div>
+      </div>
+
+      <div>
+        <div className="text-[11px] text-ink-muted mb-2">Token gratis untuk mencoba <span className="text-ink-soft">(sekali per akun, saat pertama membuka AI Partner)</span></div>
+        <div className="grid grid-cols-2 gap-3 max-w-[420px]">
+          <div>
+            <label className="text-[11px] text-ink-soft block mb-1">Token per akun</label>
+            <input inputMode="numeric" value={tokens.grants.free ?? ""} onChange={e => setIn('grants', 'free', e.target.value)} className={tokenInputClass}/>
+          </div>
+          <div>
+            <label className="text-[11px] text-ink-soft block mb-1">Akun per hari (maks.)</label>
+            <input inputMode="numeric" value={tokens.limits.freeDaily ?? ""} onChange={e => setIn('limits', 'freeDaily', e.target.value)} className={tokenInputClass}/>
+          </div>
+        </div>
+        <p className="text-[11px] text-ink-soft mt-2">
+          Biaya paling besar: {formatRupiah(costOf(tokens.grants.free))} per akun, {formatRupiah(costOf(tokens.grants.free) * (Number(tokens.limits.freeDaily) || 0))} per hari,
+          ±{formatRupiah(costOf(tokens.grants.free) * (Number(tokens.limits.freeDaily) || 0) * 30)} per bulan kalau batas harian selalu penuh dan semua tokennya dipakai.
+          Kalau batas hari itu penuh, akun baru memakai jatah coba gratis lama dan mendapat tokennya besok. 0 = token gratis dimatikan.
+        </p>
       </div>
 
       <div>
@@ -3035,6 +3055,7 @@ const AdminSettings = () => {
             usdRate: c.usdRate || TOKEN_DEFAULTS.usdRate,
             packs: Array.isArray(c.packs) && c.packs.length ? c.packs : TOKEN_DEFAULTS.packs,
             grants: { ...TOKEN_DEFAULTS.grants, ...(c.grants || {}) },
+            limits: { ...TOKEN_DEFAULTS.limits, ...(c.limits || {}) },
             convert: { ...TOKEN_DEFAULTS.convert, ...(c.convert || {}) },
           });
         } catch {}

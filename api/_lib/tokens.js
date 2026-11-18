@@ -5,10 +5,12 @@
      Tidak ada lagi masa 30/60 hari, kuota harian/bulanan, atau jatah talkhis: selama token masih ada, semua fitur terbuka.
    - Paket token sekaligus membuka Library selamanya. Paket Library saja tetap dijual (tanpa token).
    - Pembelian sebelum model ini berlaku (Paket Imtihan, AI 30 hari, tambahan talkhis) dikonversi jadi token, sekali, otomatis.
-   - Coba gratis (akun gratis / Library tanpa token) tetap memakai jatah cicip lama, bukan token.
+   - Coba gratis: tiap akun mendapat token gratis sekali (grants.free) saat pertama membuka AI Partner. Jumlah pemberian
+     per hari dibatasi (limits.freeDaily) supaya tidak bisa dikuras dengan banyak akun Google. Kalau batas hari itu penuh,
+     akun memakai jatah cicip lama dan mendapat tokennya di hari berikutnya.
    Angka bisa diubah admin lewat setting `aiTokens` (JSON). Tabel & fungsi: migrations/ai_tokens.sql.
    Selama migrasi itu belum dijalankan (setting aiTokensStart belum ada), sistem langganan & kuota lama tetap berlaku. */
-import { sbConfig, sbHeaders } from './member.js';
+import { sbConfig, sbHeaders, consumeQuota } from './member.js';
 import { readSettings } from './settings.js';
 import { CLASS_TRIAL_PRODUCT } from './events.js';
 
@@ -18,17 +20,21 @@ export const DEFAULT_TOKENS = {
   usdRate: 16500, // kurs untuk hitungan untung di admin
   // Paket token. Pembeli yang belum punya Library otomatis mendapat Library selamanya.
   packs: [
-    { id: 't100', price: 100000, tokens: 25000 },
-    { id: 't199', price: 199000, tokens: 60000 },
+    { id: 't100', price: 100000, tokens: 35000 },
+    { id: 't199', price: 199000, tokens: 75000 },
   ],
-  // Paket Imtihan (plan 'imtihan' — harga kupon/mitra/kekeluargaan/rombongan tetap berlaku) = Library + token sebanyak ini.
-  grants: { imtihan: 60000 },
+  // imtihan: Paket Imtihan (plan 'imtihan' — harga kupon/mitra/kekeluargaan/rombongan tetap berlaku) = Library + token ini.
+  // free: token gratis sekali per akun untuk mencoba AI Partner.
+  grants: { imtihan: 75000, free: 1500 },
+  // freeDaily: paling banyak sekian akun per hari yang mendapat token gratis (seluruh Talqeeh).
+  limits: { freeDaily: 30 },
   // Konversi pembelian lama yang masa AI-nya masih berjalan saat model token mulai berlaku.
-  convert: { imtihan: 60000, monthly: 25000, talkhis_1: 12000, talkhis_3: 30000 },
+  convert: { imtihan: 75000, monthly: 35000, talkhis_1: 12000, talkhis_3: 30000 },
 };
 
 /* Perkiraan token per pemakaian, untuk ditampilkan ke pengguna (potongan sebenarnya mengikuti biaya asli tiap panggilan).
    Sumber: biaya terukur di kode (Live Caption $0,0064/menit, tutor ±$0,01, i'rab ±$0,02, talkhis ±$1–2,7 per muqarrar). */
+// Token gratis (1.500) kira-kira cukup untuk 1 ringkasan + kuis dan beberapa pesan tutor.
 export const TOKEN_GUIDE = { chat: 100, analyze: 200, generate: 600, ocr: 60, livePerMinute: 70, transcribePerMinute: 40, talkhis: 15000, ilmi: 3000 };
 
 const blank = (v) => v == null || v === '';
@@ -45,7 +51,7 @@ export const parseTokenConfig = (raw) => {
     const id = String(p?.id || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
     return tokens && price && id ? { id, price, tokens } : null;
   }).filter(Boolean).slice(0, 4);
-  return { usdRate: int(o?.usdRate, 1000, 100000) ?? d.usdRate, packs: packs.length ? packs : d.packs, grants: pick('grants'), convert: pick('convert') };
+  return { usdRate: int(o?.usdRate, 1000, 100000) ?? d.usdRate, packs: packs.length ? packs : d.packs, grants: pick('grants'), limits: pick('limits'), convert: pick('convert') };
 };
 
 // Token untuk satu pemanggilan AI. Biaya tak diketahui (respons terputus) → taksiran dari jumlah token model, harga Sonnet.
@@ -151,10 +157,15 @@ export const grantsDue = (rows, { start, subActive = false, have = new Set(), cf
 const ensured = new Map(); // code → waktu terakhir diperiksa (per instance)
 const ENSURE_GAP_MS = 10 * 60 * 1000;
 
-export const ensureGrants = async (code, { force = false } = {}) => {
+// Token gratis sekali per akun. Murni (dites): perlu diberi kalau belum pernah dan jumlahnya di setting lebih dari 0.
+export const freeGrantDue = (have, cfg = DEFAULT_TOKENS) => !have.has('free:welcome') && cfg.grants.free > 0 && cfg.limits.freeDaily > 0;
+
+/* welcome: true → sekalian beri token gratis (dipanggil saat pengguna membuka AI Partner, bukan di setiap halaman, supaya
+   jatah pemberian harian tidak habis untuk akun yang tidak memakai AI). Mengembalikan true kalau token gratis baru diberikan. */
+export const ensureGrants = async (code, { force = false, welcome = false } = {}) => {
   const start = await tokensStart();
-  if (start == null || !code) return;
-  if (!force && Date.now() - (ensured.get(code) || 0) < ENSURE_GAP_MS) return;
+  if (start == null || !code) return false;
+  if (!force && !welcome && Date.now() - (ensured.get(code) || 0) < ENSURE_GAP_MS) return false;
   try {
     const { url, key } = sbConfig();
     const h = { headers: sbHeaders(key) };
@@ -168,16 +179,24 @@ export const ensureGrants = async (code, { force = false } = {}) => {
       // Langganan AI lama yang masih berjalan dan sudah ada sebelum model token (trial kelas tidak dikonversi).
       fetch(`${url}/rest/v1/ai_subscriptions?member_code=eq.${c}&status=eq.active&or=(expires_at.is.null,expires_at.gt.${new Date().toISOString()})&select=product_id,updated_at`, h).then(arr).catch(() => []),
     ]);
-    if (!ledger) return; // buku catatan tidak terbaca → jangan memberi apa pun
+    if (!ledger) return false; // buku catatan tidak terbaca → jangan memberi apa pun
     const subActive = (Array.isArray(subs) ? subs : []).some(s => s.product_id !== CLASS_TRIAL_PRODUCT && !(Date.parse(s.updated_at || '') >= start));
     const rows = [
       ...(Array.isArray(checkouts) ? checkouts : []).map(x => ({ ref: `checkout:${x.id}`, plan: x.plan, paidAt: x.paid_at, tokens: Number(x.tokens) || 0 })),
       ...(Array.isArray(groups) ? groups : []).map(g => ({ ref: `group:${g.code}`, plan: 'group', paidAt: g.redeemed_at, tokens: 0 })),
     ];
-    const due = grantsDue(rows, { start, subActive, have: new Set(ledger.map(r => r.ref)), cfg: await getTokenConfig() });
+    const have = new Set(ledger.map(r => r.ref));
+    const due = grantsDue(rows, { start, subActive, have, cfg: await getTokenConfig() });
     for (const g of due) await grantTokens(code, g.amount, g.reason, g.ref);
     ensured.set(code, Date.now());
+    const cfg = await getTokenConfig();
+    if (welcome && freeGrantDue(have, cfg) && (await consumeQuota('TOKEN-FREE', 'free_grant', cfg.limits.freeDaily))) {
+      const st = await grantTokens(code, cfg.grants.free, 'free', 'free:welcome');
+      return !!st && !st.missing;
+    }
+    return false;
   } catch (err) {
     console.warn('[tokens] ensureGrants gagal:', err.message);
+    return false;
   }
 };

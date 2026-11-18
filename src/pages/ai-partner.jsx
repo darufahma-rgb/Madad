@@ -555,7 +555,7 @@ const RecentChats = () => {
 };
 
 const AiPartnerPage = () => {
-  const status = useAiStatus();
+  const status = useAiStatus({ welcome: true });
   const [creating, setCreating] = useState(false);
   useEffect(() => { window.logFunnel?.('view_ai_partner'); }, []);
   const listRef = React.useRef(null);
@@ -749,7 +749,7 @@ const AiPartnerDetail = ({ setId, status }) => {
 };
 
 const AiPartnerDetailPage = ({ setId }) => {
-  const status = useAiStatus();
+  const status = useAiStatus({ welcome: true });
   return (
     <div className="page-enter">
       <BackToHome to="/ai-partner" label="Semua materi"/>

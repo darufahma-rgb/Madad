@@ -6,7 +6,7 @@ process.env.SUPABASE_URL = 'http://sb.test';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'k';
 
 const {
-  DEFAULT_TOKENS, TOKEN_USD, parseTokenConfig, tokensFor, tokenValueIdr, saleMargin, grantsDue,
+  DEFAULT_TOKENS, TOKEN_USD, parseTokenConfig, tokensFor, tokenValueIdr, saleMargin, grantsDue, freeGrantDue,
   tokensOn, clearTokenCache, tokenState, chargeTokens, ensureGrants,
 } = await import('../api/_lib/tokens.js');
 
@@ -35,13 +35,13 @@ test('token dipotong sebesar biaya asli, dibulatkan ke atas', () => {
 });
 
 test('tiap paket untung walau semua tokennya terpakai', () => {
-  assert.equal(tokenValueIdr(25000), 41250);
+  assert.equal(tokenValueIdr(35000), 57750);
   for (const p of DEFAULT_TOKENS.packs) {
     const m = saleMargin({ price: p.price, tokens: p.tokens });
-    assert.ok(m.safe && m.percent >= 40, `paket ${p.id}: sisa ${m.percent}%`);
+    assert.ok(m.safe && m.percent >= 35, `paket ${p.id}: sisa ${m.percent}%`);
   }
   // Paket Imtihan harga kupon (termurah yang dijual) tetap untung.
-  assert.equal(saleMargin({ price: 149000, tokens: DEFAULT_TOKENS.grants.imtihan }).profit, 50000);
+  assert.equal(saleMargin({ price: 149000, tokens: DEFAULT_TOKENS.grants.imtihan }).profit, 25250);
   assert.equal(saleMargin({ price: 30000, tokens: 25000 }).safe, false);
 });
 
@@ -49,7 +49,7 @@ test('token dari pembelian: baru, lama (dikonversi), kedaluwarsa, sudah tercatat
   const start = Date.parse('2026-11-20T00:00:00Z');
   const iso = (t) => new Date(t).toISOString();
   const rows = [
-    { ref: 'a', plan: 'token', paidAt: iso(start + DAY), tokens: 25000 },
+    { ref: 'a', plan: 'token', paidAt: iso(start + DAY), tokens: 35000 },
     { ref: 'b', plan: 'imtihan', paidAt: iso(start + DAY), tokens: 0 },           // Paket Imtihan baru = paket token besar
     { ref: 'c', plan: 'imtihan', paidAt: iso(start - 10 * DAY), tokens: 0 },      // pembeli lama
     { ref: 'd', plan: 'ai', paidAt: iso(start - 5 * DAY), tokens: 0 },
@@ -59,16 +59,16 @@ test('token dari pembelian: baru, lama (dikonversi), kedaluwarsa, sudah tercatat
     { ref: 'h', plan: 'token', paidAt: null, tokens: 9 },
   ];
   assert.deepEqual(grantsDue(rows, { start, subActive: true, have: new Set(['d']) }), [
-    { ref: 'a', amount: 25000, reason: 'buy' },
-    { ref: 'b', amount: 60000, reason: 'buy' },
-    { ref: 'c', amount: 60000, reason: 'convert' },
+    { ref: 'a', amount: 35000, reason: 'buy' },
+    { ref: 'b', amount: 75000, reason: 'buy' },
+    { ref: 'c', amount: 75000, reason: 'convert' },
     { ref: 'e', amount: 30000, reason: 'convert' },
-    { ref: 'f', amount: 60000, reason: 'convert' },
+    { ref: 'f', amount: 75000, reason: 'convert' },
   ]);
   // Masa AI lamanya sudah habis → pembelian lama tidak dikonversi; pembelian baru tetap masuk.
   assert.deepEqual(grantsDue(rows, { start, subActive: false }).map(g => g.ref), ['a', 'b']);
   // Akses lama tanpa tagihan (diberi admin): sekali, setara paket kecil.
-  assert.deepEqual(grantsDue([], { start, subActive: true }), [{ ref: 'legacy:sub', amount: 25000, reason: 'convert' }]);
+  assert.deepEqual(grantsDue([], { start, subActive: true }), [{ ref: 'legacy:sub', amount: 35000, reason: 'convert' }]);
   assert.deepEqual(grantsDue([], { start, subActive: true, have: new Set(['legacy:sub']) }), []);
   assert.deepEqual(grantsDue([], { start, subActive: false }), []);
 });
@@ -89,12 +89,38 @@ const fake = (state) => async (url, opts = {}) => {
     if (!state.refs.has(body.p_ref)) { state.refs.add(body.p_ref); state.balance += body.p_amount; state.granted += body.p_amount; }
     return json([{ balance: state.balance, granted: state.granted }]);
   }
+  if (path === 'rpc/consume_ai_quota') { if ((state.capLeft ?? 1) <= 0) return json(false); state.capLeft = (state.capLeft ?? 1) - 1; return json(true); }
   if (path === 'payment_checkouts') return json(state.checkouts);
   if (path === 'ai_subscriptions') return json(state.subs || []);
   if (path === 'group_codes') return json([]);
   if (path === 'ai_token_ledger') return json([...state.refs].map(ref => ({ ref })));
   return json([], 404);
 };
+
+test('token gratis: sekali per akun, bisa dimatikan', () => {
+  assert.equal(freeGrantDue(new Set()), true);
+  assert.equal(freeGrantDue(new Set(['free:welcome'])), false);
+  assert.equal(freeGrantDue(new Set(), parseTokenConfig({ grants: { free: 0 } })), false);
+  assert.equal(freeGrantDue(new Set(), parseTokenConfig({ limits: { freeDaily: 0 } })), false);
+  // 1.500 token gratis paling mahal ±Rp2.475 per akun.
+  assert.equal(tokenValueIdr(DEFAULT_TOKENS.grants.free), 2475);
+});
+
+test('token gratis lewat ensureGrants: dibatasi per hari, tidak dobel', async () => {
+  const state = { settings: { aiTokensStart: new Date(Date.now() - DAY).toISOString() }, balance: 0, granted: 0, refs: new Set(), checkouts: [], capLeft: 1 };
+  globalThis.fetch = fake(state);
+  clearTokenCache();
+  assert.equal(await ensureGrants('F1', { welcome: true }), true);
+  assert.equal(state.balance, 1500);
+  assert.equal(await ensureGrants('F1', { welcome: true }), false); // sudah pernah
+  assert.equal(state.balance, 1500);
+  const other = { ...state, balance: 0, granted: 0, refs: new Set(), capLeft: 0 };
+  globalThis.fetch = fake(other);
+  assert.equal(await ensureGrants('F2', { welcome: true }), false); // batas hari ini penuh
+  assert.equal(other.balance, 0);
+  globalThis.fetch = fake({ ...other, refs: new Set() });
+  assert.equal(await ensureGrants('F3'), false); // tanpa welcome (mis. dari Beranda) → tidak diberi
+});
 
 test('migrasi belum dijalankan → model token mati', async () => {
   globalThis.fetch = fake({ settings: {} });
@@ -105,7 +131,7 @@ test('migrasi belum dijalankan → model token mati', async () => {
 test('alur saldo: paket masuk sekali, dipotong sesuai biaya, gangguan tidak menggagalkan AI', async () => {
   const state = {
     settings: { aiTokensStart: new Date(Date.now() - DAY).toISOString() }, balance: 0, granted: 0, refs: new Set(), down: false,
-    checkouts: [{ id: 'c1', plan: 'token', paid_at: new Date().toISOString(), tokens: 25000 }],
+    checkouts: [{ id: 'c1', plan: 'token', paid_at: new Date().toISOString(), tokens: 35000 }],
   };
   globalThis.fetch = fake(state);
   clearTokenCache();
@@ -113,11 +139,11 @@ test('alur saldo: paket masuk sekali, dipotong sesuai biaya, gangguan tidak meng
 
   await ensureGrants('M1', { force: true });
   await ensureGrants('M1', { force: true }); // dipanggil lagi → tidak dobel
-  assert.deepEqual(await tokenState('M1'), { balance: 25000, granted: 25000 });
+  assert.deepEqual(await tokenState('M1'), { balance: 35000, granted: 35000 });
 
-  assert.deepEqual(await chargeTokens('M1', tokensFor(0.0123), 'spend:chat'), { balance: 24877, granted: 25000 });
+  assert.deepEqual(await chargeTokens('M1', tokensFor(0.0123), 'spend:chat'), { balance: 34877, granted: 35000 });
   // Pemakaian terakhir boleh membuat saldo sedikit minus; pemakaian berikutnya ditolak di pintu masuk API.
-  assert.equal((await chargeTokens('M1', 25000, 'spend:talkhis')).balance, -123);
+  assert.equal((await chargeTokens('M1', 35000, 'spend:talkhis')).balance, -123);
 
   state.down = true;
   assert.equal(await chargeTokens('M1', 10, 'spend:chat'), null);

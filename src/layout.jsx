@@ -1164,7 +1164,7 @@ const useTokens = () => {
   const t = useAppSettings().tokens;
   if (!t || !Array.isArray(t.packs) || !t.packs.length) return null;
   const packs = [...t.packs].sort((a, b) => a.price - b.price);
-  return { packs, small: packs[0], big: packs[packs.length - 1], imtihan: t.imtihan || packs[packs.length - 1].tokens, guide: t.guide || {} };
+  return { packs, small: packs[0], big: packs[packs.length - 1], imtihan: t.imtihan || packs[packs.length - 1].tokens, free: t.free || 0, guide: t.guide || {} };
 };
 const formatTokens = (n) => Number(n || 0).toLocaleString("id-ID");
 // Kira-kira apa yang didapat dari sejumlah token (untuk teks paket). Angka dibulatkan ke bawah.

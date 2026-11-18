@@ -1710,8 +1710,14 @@ export default async function handler(req, res) {
       if (ip !== 'unknown' && !checkStatusRateLimit(ip)) {
         return res.status(429).json({ ok: false, error: 'Terlalu banyak percobaan.' });
       }
-      const access = await requireAiTier(req);
+      let access = await requireAiTier(req);
       if (!access.ok) return res.status(200).json({ ok: true, active: false, tier: 'none' });
+      // Model token: akun yang belum punya token mendapat token gratis sekali saat membuka AI Partner (body.welcome).
+      if (access.tier === 'trial' && body.welcome === true && (await tokensOn())
+        && (await ensureGrants(access.code, { welcome: true }))) {
+        access = await requireAiTier(req);
+        if (!access.ok) return res.status(200).json({ ok: true, active: false, tier: 'none' });
+      }
       if (access.tier === 'pro') {
         const sctx = { code: access.code, tier: 'pro', emails: [access.member?.email, access.user?.email] };
         return res.status(200).json({

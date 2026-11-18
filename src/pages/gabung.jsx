@@ -55,6 +55,15 @@ const PersonalRecap = ({ profile }) => {
 };
 
 // Isi tiap paket: [teks, termasuk?]. Yang tidak termasuk ditampilkan redup + ikon silang.
+// Model token: akun gratis mendapat token gratis sekali, bukan jatah cicip per fitur.
+const freeItems = (t) => (t && t.free > 0 ? [
+  ['Maddah Nahwu + 1 maddah pilihanmu', true],
+  ['2 soal bank soal imtihan', true],
+  [`${formatTokens(t.free)} token AI gratis: cukup untuk 1 ringkasan + kuis dan beberapa tanya tutor`, true],
+  ['Kurasah, Statistik & Profil Belajar', true],
+  [`${CATALOG.maddah - 2} maddah lainnya`, false],
+  ['Siap Imtihan & Muqaranah 4 madzhab', false],
+] : FREE_ITEMS);
 const FREE_ITEMS = [
   ['Maddah Nahwu + 1 maddah pilihanmu', true],
   ['2 soal bank soal imtihan', true],
@@ -135,11 +144,11 @@ const tokenCompareRows = (c) => [
   ['Template prompt per maddah', 'Maddah terbuka', CATALOG.prompts, CATALOG.prompts],
   ['Bank soal imtihan tahriri', '2 soal', 'Semua', 'Semua'],
   ['Siap Imtihan & Muqaranah 4 madzhab', false, true, true],
-  ['AI Partner: ringkasan, flashcard, kuis, mufradat', '1 materi pendek', '1 materi', 'Pakai token'],
-  ["AI Partner: terjemah & i'rab, tanya tutor", 'Coba beberapa kali', 'Coba lebih banyak', 'Pakai token'],
-  ['Upload PDF muqarrar utuh, talkhis, peta konsep, tahriri, syafawi', false, false, 'Pakai token'],
-  ['Live Caption & rekaman kuliah duktur', false, false, 'Pakai token'],
-  ['Token AI (tidak hangus)', false, false, `${formatTokens(c.small.tokens)} atau ${formatTokens(c.big.tokens)}`],
+  ['Token AI gratis untuk mencoba (sekali)', c.free ? formatTokens(c.free) : false, c.free ? formatTokens(c.free) : false, true],
+  ['AI Partner: ringkasan, flashcard, kuis, tutor, terjemah & i\'rab', 'Pakai token', 'Pakai token', 'Pakai token'],
+  ['Upload PDF muqarrar utuh, talkhis, peta konsep, tahriri, syafawi', 'Pakai token', 'Pakai token', 'Pakai token'],
+  ['Live Caption & rekaman kuliah duktur', 'Pakai token', 'Pakai token', 'Pakai token'],
+  ['Token AI yang dibeli (tidak hangus)', false, false, `${formatTokens(c.small.tokens)} atau ${formatTokens(c.big.tokens)}`],
 ];
 
 const TESTIMONIALS = [
@@ -151,11 +160,17 @@ const TESTIMONIALS = [
 const faqs = (c) => [
   ['Apa bedanya dengan pakai ChatGPT langsung?',
     'Kamu tidak mulai dari nol. Talqeeh sudah menyiapkan prompt untuk tiap maddah muqarrar Azhar, rekomendasi AI yang paling cocok, dan bank soal imtihan. AI Partner juga dibuat khusus untuk teks Arab: i\'rab, harakat, dan ringkasan gaya kitab.'],
-  ['Apa itu Paket Imtihan?',
+  c ? ['Apa itu Paket Imtihan?',
+    `Paket token besar: Library selamanya + ${formatTokens(c.imtihan)} token AI yang tidak hangus, dalam sekali bayar. Harga normal ${formatRupiah(IMTIHAN_PRICE_IDR)}, lebih murah lewat kupon atau event promo.`]
+  : ['Apa itu Paket Imtihan?',
     `Library selamanya + ${imtihanAi()} untuk persiapan imtihan, dalam sekali bayar — harga normal ${formatRupiah(IMTIHAN_PRICE_IDR)}, lebih murah selama event promo. Setelah masanya habis, Library tetap milikmu dan AI bisa diperpanjang ${formatRupiah(AI_RENEW_PRICE_IDR)} per 30 hari, kapan saja.`],
-  ['Library bayar sekali atau bulanan?',
+  c ? ['Library bayar sekali atau bulanan?',
+    `Sekali bayar, berlaku selamanya — termasuk semua update fitur Library ke depan. Library ikut di setiap paket token, atau bisa dibeli sendiri ${LIBRARY_PRICE} tanpa token AI.`]
+  : ['Library bayar sekali atau bulanan?',
     `Sekali bayar ${LIBRARY_PRICE}, aksesnya berlaku selamanya — termasuk semua update fitur Library ke depan. AI Partner opsional: ambil Paket Imtihan untuk persiapan imtihan, atau per 30 hari.`],
-  ['Boleh coba gratis dulu?',
+  c && c.free > 0 ? ['Boleh coba gratis dulu?',
+    `Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan ${formatTokens(c.free)} token AI gratis begitu kamu membuka AI Partner — cukup untuk 1 ringkasan + kuis dari materimu dan beberapa tanya tutor. Kalau cocok, beli token kapan saja; progresmu tetap tersimpan.`]
+  : ['Boleh coba gratis dulu?',
     "Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan AI Partner untuk 1 materi pendek (±10–15 halaman) — termasuk 2× terjemah & i'rab dan 3× tanya tutor (member Library: 10× dan 15×). Kalau cocok, upgrade kapan saja — progresmu tetap tersimpan."],
   ['Bayarnya pakai apa? Berapa lama aktifnya?',
     'Lewat Mayar: QRIS, virtual account, atau e-wallet. Tagihannya dibuat langsung untuk akun Google-mu, jadi akses aktif otomatis begitu pembayaran masuk — biasanya kurang dari 1 menit.'],
@@ -163,7 +178,9 @@ const faqs = (c) => [
     `Token adalah saldo untuk memakai AI di Talqeeh. Tiap kali AI bekerja untukmu (menjawab tutor, meng-i'rab, meringkas, Live Caption, talkhis), tokenmu berkurang sesuai besar pekerjaannya: kira-kira ${formatTokens(c.guide.chat || 100)} token per pesan tutor, ${formatTokens(c.guide.livePerMinute || 70)} per menit Live Caption, dan ${formatTokens(c.guide.talkhis || 15000)} per talkhis muqarrar. Ada dua paket: ${formatTokens(c.small.tokens)} token (${formatRupiah(c.small.price)}) dan ${formatTokens(c.big.tokens)} token (${formatRupiah(c.big.price)}). Fiturnya sama, yang beda cuma jumlah tokennya. Token tidak hangus, sisanya selalu terlihat di AI Partner, dan kalau habis tinggal beli lagi. Membuka materi dan hasil yang sudah dibuat tidak memakai token.`]
   : ['Paket Imtihan benar-benar sepuasnya?',
     `Ya. Selama ${IMTIHAN_AI_DAYS} hari, terjemah & i'rab, pesan tutor, Tanya AI, ringkasan/kuis/flashcard, materi baru, dan baca foto bisa kamu pakai sepuasnya. Pengecualiannya fitur yang biayanya dihitung per menit atau per muqarrar: talkhis ${IMTIHAN_TALKHIS_CAP} muqarrar per paket (bisa ditambah mulai Rp39.000 per muqarrar), dan Live Caption kuliah duktur: 8 jam per 30 hari, maksimal 3 jam per hari (mode Akurat untuk kelas ramai dihitung 4× menit).`],
-  ['AI Partner diperpanjang otomatis?',
+  c ? ['Ada potongan otomatis atau langganan?',
+    'Tidak ada. Token dibeli sekali bayar dan tidak hangus. Kalau habis, AI berhenti dan kamu bisa beli token lagi kapan saja — materi dan progresmu tetap tersimpan.']
+  : ['AI Partner diperpanjang otomatis?',
     `Tidak. Tidak ada potongan otomatis, baik Paket Imtihan maupun per 30 hari. Kalau mau lanjut, perpanjang ${formatRupiah(AI_RENEW_PRICE_IDR)} per 30 hari kapan saja — sisa harimu tidak hangus.`],
   ['Saya member lama, harus bayar lagi?',
     'Tidak. Minta PIN aktivasi ke admin, lalu masukkan lewat tautan "Member lama? Masukkan PIN" di halaman ini.'],
@@ -682,7 +699,7 @@ const GabungPage = () => {
         )}
         <div className="grid md:grid-cols-3 gap-5 md:gap-4 max-w-6xl mx-auto items-stretch md:pt-4">
           <PlanCard color={SKY} icon="leaf" title="Gratis" tagline="Coba dulu, rasakan bedanya"
-            price="Rp 0" sub="Tanpa kartu · tanpa pembayaran" items={FREE_ITEMS}
+            price="Rp 0" sub="Tanpa kartu · tanpa pembayaran" items={freeItems(tokens)}
             current={isFree} selected={plan === 'free'} ctaClass="btn btn-ghost"
             cta={startingFree ? 'Menyiapkan akun…' : paidMember ? 'Sudah termasuk di Library' : isTrial ? 'Kamu sedang trial' : 'Mulai gratis'}
             onClick={paidMember || isTrial ? () => navigate('/dashboard') : chooseFree}/>

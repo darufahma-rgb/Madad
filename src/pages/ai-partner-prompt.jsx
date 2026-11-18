@@ -419,7 +419,7 @@ const UserMessage = ({ text }) => {
 };
 
 const AiPromptPage = () => {
-  const status = useAiStatus();
+  const status = useAiStatus({ welcome: true });
   return (
     <div className="page-enter">
       {status.loading

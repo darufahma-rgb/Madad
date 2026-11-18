@@ -98,11 +98,12 @@ const aiStream = async (action, payload = {}, onDelta) => {
 };
 
 // Status akses: { loading, tier: 'pro' | 'trial' | 'none', trial: { used, set_id }, tokens: { balance, packs, guide } | null }
-const useAiStatus = () => {
+// welcome: halaman AI Partner (bukan Beranda) → akun tanpa token mendapat token gratis sekali di model token.
+const useAiStatus = ({ welcome = false } = {}) => {
   const [state, setState] = useState({ loading: true, tier: 'none', trial: null });
   useEffect(() => {
     let alive = true;
-    const load = () => aiCall('status').then(d => {
+    const load = () => aiCall('status', welcome ? { welcome: true } : {}).then(d => {
       if (!alive) return;
       setState({ loading: false, tier: d.ok ? (d.tier || (d.active ? 'pro' : 'none')) : 'none', trial: d.trial || null, tokens: d.tokens || null });
     });
