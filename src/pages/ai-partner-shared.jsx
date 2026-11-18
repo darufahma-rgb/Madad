@@ -55,6 +55,8 @@ const aiCall = async (action, payload = {}) => {
 };
 
 const normalizeAiError = (data) => {
+  // Model token: saldo habis → buka layar beli token (sekali), pesannya tetap dikembalikan ke pemanggil.
+  if (!data.ok && data.error === 'quota' && data.scope === 'tokens') { openAiUpgrade('tokens'); refreshAiStatus(); }
   if (!data.ok && data.error === 'quota') data.error = data.message;
   if (!data.ok && data.error === 'upgrade') { data.upgrade = true; data.error = data.message; }
   if (!data.ok && data.error === 'not_member') data.error = 'Fitur ini untuk member Talqeeh.';
@@ -95,14 +97,14 @@ const aiStream = async (action, payload = {}, onDelta) => {
   }
 };
 
-// Status akses: { loading, tier: 'pro' | 'trial' | 'none', trial: { used, set_id } }
+// Status akses: { loading, tier: 'pro' | 'trial' | 'none', trial: { used, set_id }, tokens: { balance, packs, guide } | null }
 const useAiStatus = () => {
   const [state, setState] = useState({ loading: true, tier: 'none', trial: null });
   useEffect(() => {
     let alive = true;
     const load = () => aiCall('status').then(d => {
       if (!alive) return;
-      setState({ loading: false, tier: d.ok ? (d.tier || (d.active ? 'pro' : 'none')) : 'none', trial: d.trial || null });
+      setState({ loading: false, tier: d.ok ? (d.tier || (d.active ? 'pro' : 'none')) : 'none', trial: d.trial || null, tokens: d.tokens || null });
     });
     load();
     // Dipicu setelah pembayaran AI Partner lunas, supaya halaman langsung terbuka tanpa refresh.
@@ -110,6 +112,92 @@ const useAiStatus = () => {
     return () => { alive = false; window.removeEventListener('talqeeh:ai-status-changed', load); };
   }, []);
   return state;
+};
+
+/* ── Token AI ──
+   Satu saldo untuk semua fitur AI: tiap pemakaian memotong token sesuai biaya aslinya, token tidak hangus.
+   tokens = status.tokens dari server ({ balance, packs, guide }); null = model token belum berlaku. */
+const TokenShopModal = ({ open, onClose, tokens }) => {
+  const { session } = useAuth();
+  const shop = useTokens();
+  const payOnline = !!useAppSettings().payOnline;
+  const checkout = useCheckout({ plans: ['token'], enabled: open, onPaid: () => { refreshAiStatus(); onClose(); } });
+  const packs = tokens?.packs || shop?.packs || [];
+  const g = tokens?.guide || shop?.guide || {};
+  const balance = tokens?.balance ?? null;
+  const rows = [
+    ['Tanya tutor / Tanya AI', `±${formatTokens(g.chat || 100)} per pesan`],
+    ["Terjemah & i'rab", `±${formatTokens(g.analyze || 200)} per kalimat`],
+    ['Ringkasan, kuis, flashcard', `±${formatTokens(g.generate || 600)} per pembuatan`],
+    ['Live Caption', `±${formatTokens(g.livePerMinute || 70)} per menit`],
+    ['Talkhis muqarrar', `±${formatTokens(g.talkhis || 15000)} per muqarrar`],
+  ];
+  return (
+    <Modal open={open} onClose={onClose} size="md">
+      <div className="p-6 md:p-8">
+        <div className="text-[11px] uppercase tracking-[0.18em] text-gold-400 mb-1.5">Token AI</div>
+        {balance != null && (
+          <div className="font-display text-3xl font-semibold text-ink mb-1">{formatTokens(Math.max(0, balance))} <span className="text-base text-ink-muted font-normal">token</span></div>
+        )}
+        <p className="text-sm text-ink-muted mb-5">{TOKEN_RULES}</p>
+
+        <div className="text-xs text-ink-soft mb-2">Beli token</div>
+        {payOnline ? (
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            {packs.map(p => (
+              <button key={p.id} onClick={() => checkout.start('token', { pack: p.id })} disabled={checkout.status === 'creating'}
+                className="rounded-2xl border border-emerald-500/30 bg-emerald-500/[0.06] hover:bg-emerald-500/[0.12] px-4 py-3 text-left transition-colors disabled:opacity-60">
+                <div className="font-display text-xl font-semibold text-ink">{formatTokens(p.tokens)} <span className="text-xs text-ink-muted font-normal">token</span></div>
+                <div className="text-sm text-emerald-200">{formatRupiah(p.price)}</div>
+              </button>
+            ))}
+          </div>
+        ) : <div className="text-sm text-ink-muted mb-5">Pembayaran online belum dibuka. Hubungi admin untuk membeli token.</div>}
+        {checkout.status === 'creating' && <div className="text-xs text-ink-muted mb-3">Menyiapkan tagihan…</div>}
+        {checkout.status === 'error' && <div className="text-xs text-rose-300 mb-3">{checkout.error}</div>}
+        {(checkout.status === 'waiting' || checkout.status === 'timeout') && (
+          <div className="text-xs text-ink-muted mb-3">
+            Menunggu pembayaran… token masuk otomatis setelah lunas.{' '}
+            <button onClick={checkout.reopen} className="text-emerald-300 underline underline-offset-2">Lanjutkan pembayaran</button>
+            {' · '}<button onClick={checkout.cancel} className="hover:text-ink underline underline-offset-2">Batalkan</button>
+          </div>
+        )}
+
+        <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] p-4">
+          <div className="text-xs text-ink-soft mb-2.5">Kira-kira pemakaian token</div>
+          <div className="space-y-2">
+            {rows.map(([name, price]) => (
+              <div key={name} className="flex items-start justify-between gap-3 text-sm">
+                <span className="text-ink">{name}</span>
+                <span className="text-emerald-200 flex-shrink-0 text-right">{price}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-ink-soft leading-relaxed mt-3">Angka perkiraan. Potongan sebenarnya mengikuti panjang materi dan jawaban AI. Membuka materi, flashcard, dan hasil yang sudah dibuat tidak memakai token.</p>
+        </div>
+        <CheckoutPayModal checkout={checkout} email={session?.email}/>
+      </div>
+    </Modal>
+  );
+};
+
+// Pil saldo + pintu ke "Beli token". Tidak tampil kalau model token belum berlaku untuk akun ini.
+const TokenBadge = ({ tokens, className = '' }) => {
+  const [open, setOpen] = useState(false);
+  if (!tokens) return null;
+  const balance = Math.max(0, tokens.balance || 0);
+  const low = balance < 2000;
+  return (
+    <>
+      <button onClick={() => setOpen(true)}
+        className={`inline-flex items-center gap-2 text-xs rounded-full border px-3 py-1.5 transition-colors ${low ? 'border-amber-400/40 bg-amber-400/[0.08] text-amber-200' : 'border-white/10 bg-white/[0.03] text-ink-muted hover:text-ink'} ${className}`}>
+        <Icon name="sparkles" className="w-3.5 h-3.5"/>
+        Token: <span className="font-medium text-ink">{formatTokens(balance)}</span>
+        <span className="text-emerald-300">{low ? 'Beli token' : 'Lihat'}</span>
+      </button>
+      <TokenShopModal open={open} onClose={() => setOpen(false)} tokens={tokens}/>
+    </>
+  );
 };
 
 // Layar upgrade (upgrade-wall.jsx). reason menentukan judulnya: irab, tutor, syafawi, prompt, materi, ocr, pdf, talkhis, preview.
@@ -591,7 +679,7 @@ const FeedbackBar = ({ setId, kind, refId, content, model, label = 'Hasil ini me
 };
 
 Object.assign(window, {
-  aiCall, aiStream, useAiStatus, FeedbackBar, openAiUpgrade, refreshAiStatus, trialTaste, learnerPayload, learnerSummary, maddahName, hasArabic, isMostlyArabic, speakArabic, saveToKurasah,
+  aiCall, aiStream, useAiStatus, TokenBadge, TokenShopModal, FeedbackBar, openAiUpgrade, refreshAiStatus, trialTaste, learnerPayload, learnerSummary, maddahName, hasArabic, isMostlyArabic, speakArabic, saveToKurasah,
   TTS, useTts, SpeechPlayer, segmentForSpeech,
   SOURCE_META, STUDY_STEPS, stepDone, studyPercent,
   ProgressRing, Skeleton, GeneratePanel, UpgradeCard, Pill, ArabicText, SpeakButton, aiInputClass,

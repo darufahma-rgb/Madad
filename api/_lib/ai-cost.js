@@ -5,6 +5,7 @@
    lalu requestAI/streamAI di ai.js mencatat tanpa perlu meneruskan parameter ke semua pemanggil. */
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { sbConfig, sbHeaders } from './member.js';
+import { tokensFor, chargeTokens } from './tokens.js';
 
 const store = new AsyncLocalStorage();
 export const withAiContext = (ctx, fn) => store.run(ctx, fn);
@@ -17,9 +18,14 @@ const int = (n) => (Number.isFinite(Number(n)) ? Math.round(Number(n)) : null);
    estimate: { tokensIn, tokensOut } dipakai bila usage tidak ada (mis. stream dihentikan karena batas waktu) —
    biayanya nanti dihitung analitik dari harga model. Tidak pernah melempar error. */
 export const recordAiCost = async (model, usage, estimate = null) => {
-  if (tableMissing) return;
   const ctx = store.getStore() || {};
   const cost = Number(usage?.cost);
+  // Model token: pemakai yang ditandai `metered` (lihat api/ai-partner.js) dipotong tokennya sebesar biaya panggilan ini.
+  if (ctx.metered && ctx.code) {
+    const est = { tokensIn: usage?.prompt_tokens ?? estimate?.tokensIn, tokensOut: usage?.completion_tokens ?? estimate?.tokensOut };
+    await chargeTokens(ctx.code, tokensFor(usage?.cost, est), `spend:${String(ctx.kind || 'other').slice(0, 30)}`);
+  }
+  if (tableMissing) return;
   const row = {
     member_code: String(ctx.code || 'system').slice(0, 40),
     kind: String(ctx.kind || 'other').slice(0, 30),

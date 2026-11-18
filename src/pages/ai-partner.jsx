@@ -575,6 +575,7 @@ const AiPartnerPage = () => {
               <div className="container-x pt-6 pb-24"><UpgradeCard title="Khusus member Talqeeh" message="Masuk dengan Google dan buat akun gratis untuk mencoba AI Partner 1 materi."/></div>
             </>
           : <>
+              {status.tokens && <div className="container-x pt-4 flex justify-end"><TokenBadge tokens={status.tokens}/></div>}
               <Composer tier={status.tier} trial={status.trial} onUpload={startUpload}/>
               <div ref={listRef} className="scroll-mt-20 pt-6 md:pt-10 border-t border-white/[0.06]">
                 <AiPartnerList status={status} creating={creating} setCreating={setCreating}/>

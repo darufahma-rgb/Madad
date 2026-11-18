@@ -20,6 +20,7 @@ import { handleBattleStory, handleBattleHalaqah } from './_lib/ai-partner/battle
 import { handleBattleQuiz } from './_lib/ai-partner/battle-quiz.js';
 import { ocrCacheKey, lookupOcrPages, storeOcrPage, handleOcrCache } from './_lib/ai-partner/ocr-cache.js';
 import { withAiContext } from './_lib/ai-cost.js';
+import { TOKEN_GUIDE, tokensOn, getTokenConfig, tokenState, grantTokens, ensureGrants } from './_lib/tokens.js';
 import { handleIlmi, handleIlmiView } from './_lib/ai-partner/ilmi-index.js';
 import { answerFromLibrary, manageReferenceBook, readReferencePage, LIBRARY_OWNER } from './_lib/ai-partner/reference-library.js';
 import { handleReferenceDonation, manageSubmissions } from './_lib/ai-partner/reference-donation.js';
@@ -244,6 +245,12 @@ const resetLabel = (d) => `${clockIn(d, 'Asia/Jakarta')} WIB (${clockIn(d, 'Afri
 
 const quotaExceeded = (res, kind, scope = 'daily', ctx = null) => {
   if (scope === 'unavailable') return res.status(503).json({ ok: false, error: 'Tidak bisa memeriksa kuota sekarang. Coba lagi sebentar.' });
+  if (scope === 'tokens') {
+    return res.status(429).json({
+      ok: false, error: 'quota', scope, tokens: { balance: ctx?.tokens?.balance ?? 0 },
+      message: 'Tokenmu habis. Beli token di halaman Paket untuk lanjut memakai AI — materi dan progresmu tetap tersimpan.',
+    });
+  }
   if (scope === 'package') {
     const cap = ctx?.talkhisCap ?? imtihanTalkhisCap(ctx);
     return res.status(429).json({
@@ -337,6 +344,13 @@ const isTrialMember = async (ctx) => {
    transkripsi audio) tetap memakai batas harian biasa dan batas paketnya. */
 const IMTIHAN_OPEN_KINDS = ['prompt', 'chat', 'generate', 'create', 'analyze', 'grade', 'ocr'];
 const IMTIHAN_FAIR_DAILY = 300;
+/* Model token (api/_lib/tokens.js): tiap panggilan AI memotong token sesuai biaya aslinya (ai-cost.js), jadi kuota
+   harian/bulanan, jatah talkhis, dan batas Live Caption tidak dipakai lagi — pembatasnya saldo token itu sendiri.
+   Tidak berlaku untuk member trial (jatah trial) dan email dengan limit khusus noMonthly (tim/admin: tanpa potongan). */
+const tokenMode = async (ctx) => {
+  if (ctx.tokenMode === undefined) ctx.tokenMode = (await tokensOn()) && !(await isTrialMember(ctx)) && !(await quotaOverride(ctx))?.noMonthly;
+  return ctx.tokenMode;
+};
 const imtihanOpen = (ctx, kind) => ctx?.imtihan === true && !ctx?.trialMember && IMTIHAN_OPEN_KINDS.includes(kind);
 // Live Caption pelanggan biasa: batas harian dari setting admin (aiLiveDailyLimit), bukan angka tetap di LIMITS.
 const baseDaily = (ctx) => (ctx?.trialMember ? TRIAL_MEMBER_DAILY : { ...LIMITS, live: cachedLiveDailyLimit() });
@@ -352,6 +366,7 @@ const dailyLimitCache = (ctx, kind) => ctx?.banked?.[kind] ?? ctx?.override?.dai
 const monthlyLimitsFor = async (ctx) => {
   if ((await quotaOverride(ctx))?.noMonthly) return null;
   if (await isTrialMember(ctx)) return TRIAL_MEMBER_MONTHLY;
+  if (await tokenMode(ctx)) return null;
   return (await isImtihanHolder(ctx)) ? null : await getMonthlyLimits();
 };
 const monthlyLimitCache = (ctx) => (ctx?.trialMember ? TRIAL_MEMBER_MONTHLY : cachedMonthlyLimits());
@@ -390,6 +405,11 @@ const bankedDailyLimit = async (ctx, kind) => {
 };
 
 const takeQuota = async (ctx, kind) => {
+  // Model token: tidak ada kuota. Saldo diperiksa sekali di pintu masuk (lihat handler), dipotong setelah AI selesai.
+  if (await tokenMode(ctx)) {
+    consumeQuota(ctx.code, kind, 1000000).catch(() => {}); // catat pemakaian untuk statistik (bukan pembatas)
+    return null;
+  }
   if (kind === 'talkhis' && !(await quotaOverride(ctx))?.noMonthly && !(await isTrialMember(ctx)) && (await isImtihanHolder(ctx)) && ctx.imtihanSince) {
     const used = await monthlyUsage(ctx.code, ctx.imtihanSince);
     if (!used) return 'unavailable';
@@ -529,6 +549,7 @@ async function handleOcrQuota(ctx, res) {
     if (ctx.memberTier === 'free') left = Math.min(left, FREE_OCR_LIFETIME - (await lifetimeUsage(ctx.code, 'ocr')));
     return res.status(200).json({ ok: true, remaining: Math.max(0, left), scope: 'trial' });
   }
+  if (await tokenMode(ctx)) return res.status(200).json({ ok: true, remaining: 500, scope: 'tokens' });
   let remaining = Math.max(0, (await bankedDailyLimit(ctx, 'ocr')) - usedToday);
   let scope = 'daily';
   const monthly = (await monthlyLimitsFor(ctx))?.ocr ?? null;
@@ -551,7 +572,7 @@ async function handleTranscribe(ctx, body, res) {
   if (overAudio === 'daily') {
     return res.status(429).json({ ok: false, error: 'quota', message: `Batas transkripsi harian (${dailyLimitCache(ctx, 'transcribe')} menit) tercapai. Coba lagi besok.` });
   }
-  if (overAudio === 'unavailable') return quotaExceeded(res, 'transcribe', overAudio, ctx);
+  if (overAudio === 'unavailable' || overAudio === 'credits') return quotaExceeded(res, 'transcribe', overAudio, ctx);
   if (overAudio) {
     return res.status(429).json({ ok: false, error: 'quota', message: `Jatah transkripsi ${monthlyLimitCache(ctx).transcribe} menit di periode langgananmu sudah habis. Jatah baru mulai ${formatQuotaDate(ctx.quotaResetAt || quotaPeriod(null).resetAt)}.` });
   }
@@ -612,6 +633,11 @@ const liveHours = (min) => {
 
 // Sisa jatah Live Caption (menit) untuk ditampilkan di halaman: hari ini dan, bila ada, periode langganan.
 async function handleLiveQuota(ctx, res) {
+  if (await tokenMode(ctx)) {
+    const balance = Math.max(0, (await tokenState(ctx.code))?.balance ?? 0);
+    const left = Math.floor(balance / TOKEN_GUIDE.livePerMinute);
+    return res.status(200).json({ ok: true, daily: left, dailyLeft: left, monthly: null, monthlyLeft: null, left, tokens: { balance, perMinute: TOKEN_GUIDE.livePerMinute } });
+  }
   const daily = await dailyLimit(ctx, 'live');
   const { url, key } = sbConfig();
   const today = new Date().toISOString().slice(0, 10);
@@ -654,7 +680,7 @@ async function chargeLive(ctx, body, res) {
       const day = dailyLimitCache(ctx, 'live');
       return fail(`Jatah Live Caption hari ini (${liveHours(day)}) sudah habis.${akurat(day)} Jatah harian terisi lagi pukul ${resetLabel(nextDailyReset())}.`);
     }
-    if (over === 'unavailable') { quotaExceeded(res, 'live', over, ctx); return null; }
+    if (over === 'unavailable' || over === 'credits') { quotaExceeded(res, 'live', over, ctx); return null; }
     if (over) {
       const period = monthlyLimitCache(ctx).live;
       return fail(`Jatah Live Caption ${liveHours(period)} di periode langgananmu sudah habis.${akurat(period)} Jatah baru mulai ${formatQuotaDate(ctx.quotaResetAt || quotaPeriod(null).resetAt)}.`);
@@ -1451,6 +1477,12 @@ async function handleFeedback(ctx, body, res) {
 }
 
 // Statistik belajar AI Partner milik member sendiri (halaman "Statistik Belajarku").
+// Saldo + paket + perkiraan pemakaian, untuk ditampilkan di halaman.
+const tokenInfo = async (code, state = null) => {
+  const [st, cfg] = await Promise.all([state || tokenState(code), getTokenConfig()]);
+  return { balance: st?.balance ?? 0, packs: cfg.packs, guide: TOKEN_GUIDE };
+};
+
 async function handleStats(ctx, res) {
   const { url, key } = sbConfig();
   const today = new Date().toISOString().slice(0, 10);
@@ -1491,7 +1523,8 @@ async function handleStats(ctx, res) {
     if (u.day === today) usageToday[u.kind] = u.count;
   }
 
-  const imtihanHolder = ctx.tier === 'pro' && !(await isTrialMember(ctx)) && (await isImtihanHolder(ctx));
+  const onTokens = ctx.tier === 'pro' && (await tokenMode(ctx));
+  const imtihanHolder = onTokens || (ctx.tier === 'pro' && !(await isTrialMember(ctx)) && (await isImtihanHolder(ctx)));
   return res.status(200).json({
     ok: true,
     data: {
@@ -1509,10 +1542,11 @@ async function handleStats(ctx, res) {
       // Paket Imtihan: fitur yang sepuasnya tidak ditampilkan di kotak jatah harian.
       limits: ctx.tier === 'pro' ? ((await isTrialMember(ctx)) ? TRIAL_MEMBER_DAILY
         : Object.fromEntries(Object.entries({ ...LIMITS, live: await getLiveDailyLimit() })
-          .filter(([k]) => !(imtihanHolder && IMTIHAN_OPEN_KINDS.includes(k))))) : null,
+          .filter(([k]) => !onTokens && !(imtihanHolder && IMTIHAN_OPEN_KINDS.includes(k))))) : null,
       // Paket Imtihan: tanpa kuota bulanan (hanya batas harian), jadi kotak jatah bulanan tidak ditampilkan.
       monthlyLimits: ctx.tier === 'pro' ? await monthlyLimitsFor(ctx) : null,
-      unlimitedMonthly: ctx.tier === 'pro' && !(await isTrialMember(ctx)) && (await isImtihanHolder(ctx)),
+      unlimitedMonthly: imtihanHolder,
+      tokens: onTokens ? await tokenInfo(ctx.code) : null,
       trialMember: ctx.tier === 'pro' && (await isTrialMember(ctx)),
       quotaPeriodStart: ctx.tier === 'pro' ? period.start : null,
       quotaResetAt: ctx.tier === 'pro' ? period.resetAt : null,
@@ -1598,6 +1632,18 @@ async function handleAdmin(action, req, res, body) {
     return res.status(200).json({ ok: true });
   }
 
+  // Tambah token AI manual (bonus, ganti rugi, akses untuk tim). Dicatat di buku token sebagai 'admin'.
+  if (action === 'admin-tokens') {
+    const code = normalizeCode(body.member_code);
+    const amount = Number(body.amount);
+    if (!code || !(await isActiveMember(code))) return res.status(400).json({ ok: false, error: 'Kode member tidak ditemukan atau tidak aktif' });
+    if (!Number.isInteger(amount) || amount < 1 || amount > 1000000) return res.status(400).json({ ok: false, error: 'Jumlah token harus angka 1–1.000.000' });
+    if (!(await tokensOn())) return res.status(400).json({ ok: false, error: 'Model token belum aktif — jalankan migrations/ai_tokens.sql di Supabase.' });
+    const st = await grantTokens(code, amount, 'admin', null);
+    if (!st || st.missing) return res.status(500).json({ ok: false, error: 'Gagal menambah token' });
+    return res.status(200).json({ ok: true, balance: st.balance });
+  }
+
   if (action === 'admin-revoke') {
     if (!isStr(body.id)) return res.status(400).json({ ok: false, error: 'id wajib' });
     const now = new Date().toISOString();
@@ -1666,7 +1712,13 @@ export default async function handler(req, res) {
       }
       const access = await requireAiTier(req);
       if (!access.ok) return res.status(200).json({ ok: true, active: false, tier: 'none' });
-      if (access.tier === 'pro') return res.status(200).json({ ok: true, active: true, tier: 'pro', expires_at: access.aiExpiresAt || null });
+      if (access.tier === 'pro') {
+        const sctx = { code: access.code, tier: 'pro', emails: [access.member?.email, access.user?.email] };
+        return res.status(200).json({
+          ok: true, active: true, tier: 'pro', expires_at: access.aiExpiresAt || null,
+          tokens: (await tokenMode(sctx)) ? await tokenInfo(access.code, access.tokens) : null,
+        });
+      }
       const [trial, promptUsed, irabUsed, tutorUsed] = await Promise.all([
         getTrialSetId(access.code), lifetimeUsage(access.code, 'prompt_trial'),
         lifetimeUsage(access.code, TRIAL_TASTE.irab.kind), lifetimeUsage(access.code, TRIAL_TASTE.tutor.kind),
@@ -1704,7 +1756,17 @@ export default async function handler(req, res) {
       return upgradeRequired(res, action, PRO_ONLY_MESSAGES[action]);
     }
 
-    const costCtx = { code: ctx.code, kind: COST_KIND[action] || 'other', detail: body.kind || body.mode || body.op || null };
+    /* Model token: pemakaian AI pelanggan dipotong dari saldonya setelah tiap panggilan (ai-cost.js). Saldo habis →
+       pemakaian baru ditolak di sini. Langkah yang tidak memanggil AI (membuka, mengedit, menghapus) tetap bisa. */
+    const metered = ctx.tier === 'pro' && (await tokenMode(ctx));
+    const aiOps = { talkhis: ['map', 'write', 'exercise', 'translate', 'check'], ilmi: ['start', 'chunk', 'finalize', 'ask'] }[action];
+    if (metered && COST_KIND[action] && (!aiOps || aiOps.includes(String(body.op || '')))) {
+      ctx.tokens = access.tokens || await tokenState(ctx.code);
+      if (!ctx.tokens) return quotaExceeded(res, COST_KIND[action], 'unavailable', ctx);
+      if (ctx.tokens.balance <= 0) return quotaExceeded(res, COST_KIND[action], 'tokens', ctx);
+    }
+
+    const costCtx = { code: ctx.code, kind: COST_KIND[action] || 'other', detail: body.kind || body.mode || body.op || null, metered };
     return await withAiContext(costCtx, async () => { switch (action) {
       case 'ocr':           return await handleOcr(ctx, body, res);
       case 'ocr-quota':     return await handleOcrQuota(ctx, res);

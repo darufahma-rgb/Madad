@@ -1,3 +1,4 @@
+import { tokensOn, tokenState, ensureGrants } from './tokens.js';
 import crypto from 'crypto';
 
 export const sbConfig = () => {
@@ -92,7 +93,17 @@ export const isActiveMember = async (code) => {
 
 // Langganan aktif = status active dan expires_at belum lewat (kosong = tanpa batas: akses manual admin /
 // Membership lama). Sebelum migrasi mayar_api.sql kolom expires_at belum ada → cek status saja.
+// Model token (api/_lib/tokens.js): akses AI = pernah punya token; saldo dipotong per pemakaian, tanpa masa aktif.
+// Langganan lama yang masih berjalan tetap dihitung aktif (trial kelas, akses tim) — pembelian lama dikonversi dulu.
 export const getAiAccess = async (code) => {
+  const sub = await getSubscriptionAccess(code);
+  if (!(await tokensOn())) return sub;
+  await ensureGrants(code);
+  const tokens = await tokenState(code);
+  return { active: sub.active || (tokens?.granted || 0) > 0, expiresAt: null, tokenMode: true, tokens };
+};
+
+const getSubscriptionAccess = async (code) => {
   const { url, key } = sbConfig();
   const base = `${url}/rest/v1/ai_subscriptions?member_code=eq.${encodeURIComponent(code)}&status=eq.active`;
   let r = await fetch(`${base}&or=(expires_at.is.null,expires_at.gt.${new Date().toISOString()})&select=expires_at`, { headers: sbHeaders(key) });
@@ -119,7 +130,7 @@ export const requireAiTier = async (req) => {
   const result = await requireMember(req);
   if (!result.ok) return result;
   const ai = await getAiAccess(result.code);
-  return { ...result, tier: ai.active ? 'pro' : 'trial', aiExpiresAt: ai.expiresAt };
+  return { ...result, tier: ai.active ? 'pro' : 'trial', aiExpiresAt: ai.expiresAt, tokens: ai.tokens || null };
 };
 
 // Fails closed: any error means the request is denied.

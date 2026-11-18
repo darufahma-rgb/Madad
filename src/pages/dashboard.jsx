@@ -486,8 +486,8 @@ const FreeTierBanner = ({ compact }) => {
         <div className="text-sm text-ink font-medium">{isTrial ? 'Aksesmu masih trial (sementara)' : 'Kamu memakai akun gratis'}</div>
         <div className="text-xs text-ink-muted leading-relaxed">
           {isTrial
-            ? `Akses trial bisa berakhir dan jatah AI-nya lebih kecil. Paket Imtihan mengamankan Library selamanya + AI Partner ${IMTIHAN_AI_DAYS} hari tanpa kuota bulanan.`
-            : `Terbuka: Nahwu + 1 maddah pilihan, 2 soal bank soal, dan coba AI Partner 1 materi. Paket Imtihan membuka ${CATALOG.maddah} maddah selamanya + AI Partner ${IMTIHAN_AI_DAYS} hari.`}
+            ? `Akses trial bisa berakhir dan jatah AI-nya lebih kecil. Paket Imtihan mengamankan Library selamanya + ${imtihanAi()} tanpa kuota bulanan.`
+            : `Terbuka: Nahwu + 1 maddah pilihan, 2 soal bank soal, dan coba AI Partner 1 materi. Paket Imtihan membuka ${CATALOG.maddah} maddah selamanya + ${imtihanAi()}.`}
           {imtihan.promo && <span className="text-gold-300"> Harga {imtihan.promo.name}: {formatRupiah(imtihan.total)} (normal {formatRupiah(imtihan.promo.normal)}), sampai {imtihan.promo.endLabel}.</span>}
         </div>
       </div>

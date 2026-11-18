@@ -574,7 +574,7 @@ const UpgradeOfferModal = ({ onClose }) => {
       items: LIBRARY_FEATURES.slice(0, 4), cta: "Pilih Library" },
     { plan: "imtihan", title: "Paket Imtihan", color: "var(--a-green, #3ecf8e)", recommended: true,
       price: formatRupiah(imtihan.total), note: "sekali bayar",
-      tagline: `Library selamanya + AI Study Partner ${IMTIHAN_AI_DAYS} hari`,
+      tagline: `Library selamanya + ${imtihanAi()}`,
       imtihan,
       itemsTitle: "Semua isi Library, ditambah:",
       items: AI_BUNDLE_FEATURES,

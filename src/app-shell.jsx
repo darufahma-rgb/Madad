@@ -189,7 +189,7 @@ const SidebarContent = ({ collapsed, onToggle, onNavigate, onClose, mobile }) =>
               <Icon name="crown" className="w-4 h-4" style={{ stroke: '#c9a86a' }}/> {isTrial ? 'Amankan aksesmu' : 'Buka semua fitur'}
             </div>
             <p className="text-[11px] text-ink-muted leading-relaxed mb-3">
-              {isTrial ? 'Aksesmu masih trial (sementara).' : `Semua ${CATALOG.maddah} maddah, bank soal, dan Siap Imtihan.`} Paket Imtihan: Library selamanya + AI Partner {IMTIHAN_AI_DAYS} hari.
+              {isTrial ? 'Aksesmu masih trial (sementara).' : `Semua ${CATALOG.maddah} maddah, bank soal, dan Siap Imtihan.`} Paket Imtihan: Library selamanya + {imtihanAi()}.
             </p>
             <button onClick={() => { navigate('/gabung?plan=imtihan'); onNavigate && onNavigate(); }} className="btn btn-gold w-full text-xs py-2 justify-center">
               Paket Imtihan · {formatRupiah(imtihanTotal)}

@@ -8,6 +8,7 @@ import { buildAdminAnalytics } from './_lib/analytics.js';
 import { buildAiUsage } from './_lib/ai-usage.js';
 import { parseAiPrice, extendAi, probeMayarQris } from './_lib/payments.js';
 import { newMemberCode } from './_lib/member.js';
+import { parseTokenConfig, clearTokenCache } from './_lib/tokens.js';
 import { QUOTA_KINDS, parseQuotaOverrides, MAX_LIVE_DAILY } from './_lib/ai-partner/limits.js';
 import { handleEmailAdmin } from './_lib/email.js';
 import { validateAffiliateProgram, readAffiliateProgram, slugAllowed, cleanSlug, summarizeSales, AFFILIATE_FIELDS } from './_lib/affiliates.js';
@@ -445,6 +446,11 @@ export default async function handler(req, res) {
         if (out.error) { res.status(400).json({ ok: false, error: out.error }); return; }
         row.affiliateProgram = JSON.stringify(out.value);
       }
+      // Model token: dirapikan di server (bagian yang tidak valid kembali ke bawaan), disimpan sebagai JSON.
+      if (row && row.aiTokens != null && typeof row.aiTokens !== 'string') {
+        row.aiTokens = JSON.stringify(parseTokenConfig(row.aiTokens));
+        clearTokenCache();
+      }
       clearSalesEventsCache();
       // Limit khusus per email: dirapikan & divalidasi di server, disimpan sebagai JSON (boleh lebih panjang dari 500).
       if (row && row.aiQuotaOverrides != null && typeof row.aiQuotaOverrides !== 'string') {
@@ -453,7 +459,7 @@ export default async function handler(req, res) {
       const now = new Date().toISOString();
       const rows = ADMIN_SETTING_KEYS
         .filter(k => typeof row?.[k] === 'string')
-        .map(k => ({ key: k, value: row[k].trim().slice(0, k === 'aiQuotaOverrides' || k === 'partnerLinks' ? 20000 : 500), updated_at: now }));
+        .map(k => ({ key: k, value: row[k].trim().slice(0, k === 'aiQuotaOverrides' || k === 'partnerLinks' ? 20000 : k === 'aiTokens' ? 2000 : 500), updated_at: now }));
       result = rows.length
         ? await sbRequest(supabaseUrl, serviceKey, 'POST', 'app_settings?on_conflict=key', rows, 'resolution=merge-duplicates,return=minimal')
         : { status: 200, data: null };

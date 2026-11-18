@@ -77,6 +77,19 @@ const AI_ITEMS = [
   ...AI_BUNDLE_FEATURES.map(f => [f, true]),
 ];
 
+/* Isi kartu paket token. Contoh pemakaian dihitung dari perkiraan token per fitur (TOKEN_GUIDE di server) — angka kira-kira,
+   bukan janji: potongan sebenarnya mengikuti panjang materi dan jawaban AI. */
+const tokenItems = (n, guide, withLibrary) => {
+  const ex = tokenExamples(n, guide);
+  return [
+    ...(withLibrary ? [['Semua isi paket Library — selamanya', true]] : []),
+    ['Semua fitur AI Partner terbuka, tanpa batas harian', true],
+    [`Kira-kira ${formatTokens(ex.chat)} pesan tutor, atau ±${ex.liveHours} jam Live Caption`, true],
+    ['Token tidak hangus — habis baru beli lagi', true],
+    ['Sisa token selalu terlihat di AI Partner', true],
+  ];
+};
+
 // Keunggulan yang memang ada di aplikasi — jangan tambah klaim yang belum dibangun.
 const ADVANTAGES = [
   { icon: 'mosque', color: GOLD, tag: 'Library', title: 'Khusus muqarrar Al-Azhar',
@@ -96,7 +109,8 @@ const ADVANTAGES = [
 // [fitur, gratis, library, library+ai] — true = termasuk, false = tidak, string = keterangan.
 // Angka jatah mengikuti api/ai-partner.js (TRIAL_TASTE, TRIAL_MAX_CONTENT, FREE_OCR_LIFETIME, LIMITS, IMTIHAN_TALKHIS_CAP).
 const IMTIHAN_TALKHIS_CAP = 3;
-const COMPARE_ROWS = [
+// c = useTokens(): null selama model token belum berlaku (teks paket lama).
+const compareRows = (c) => c ? tokenCompareRows(c) : [
   ['Maddah S1 + Ma\'had', 'Nahwu + 1', `Semua ${CATALOG.maddah}`, `Semua ${CATALOG.maddah}`],
   ['Template prompt per maddah', 'Maddah terbuka', CATALOG.prompts, CATALOG.prompts],
   ['Bank soal imtihan tahriri', '2 soal', 'Semua', 'Semua'],
@@ -109,10 +123,23 @@ const COMPARE_ROWS = [
   ['Tanya AI langsung di Talqeeh', '1 pesan', '2 pesan', 'Sepuasnya*'],
   ['Baca foto halaman kitab', '3 foto', '3 per hari', 'Sepuasnya*'],
   ['Upload PDF muqarrar utuh', false, false, true],
-  ['Talkhis otomatis bahasa Arab + PDF siap cetak & latihan soal', false, false, `${IMTIHAN_TALKHIS_CAP} muqarrar`],
+  ['Talkhis otomatis bahasa Arab + PDF siap cetak & latihan soal', false, false, `${IMTIHAN_TALKHIS_CAP} muqarrar*`],
   ['Peta konsep, harakat, tahriri dinilai AI, simulasi syafawi', false, false, true],
   ['Live Caption kuliah duktur (Arab → Indonesia)', false, false, '8 jam/30 hari*'],
   ['Unggah rekaman kuliah (audio/video)', false, false, true],
+];
+
+// Model token: kolom ketiga = paket token (dua ukuran, fiturnya sama).
+const tokenCompareRows = (c) => [
+  ['Maddah S1 + Ma\'had', 'Nahwu + 1', `Semua ${CATALOG.maddah}`, `Semua ${CATALOG.maddah}`],
+  ['Template prompt per maddah', 'Maddah terbuka', CATALOG.prompts, CATALOG.prompts],
+  ['Bank soal imtihan tahriri', '2 soal', 'Semua', 'Semua'],
+  ['Siap Imtihan & Muqaranah 4 madzhab', false, true, true],
+  ['AI Partner: ringkasan, flashcard, kuis, mufradat', '1 materi pendek', '1 materi', 'Pakai token'],
+  ["AI Partner: terjemah & i'rab, tanya tutor", 'Coba beberapa kali', 'Coba lebih banyak', 'Pakai token'],
+  ['Upload PDF muqarrar utuh, talkhis, peta konsep, tahriri, syafawi', false, false, 'Pakai token'],
+  ['Live Caption & rekaman kuliah duktur', false, false, 'Pakai token'],
+  ['Token AI (tidak hangus)', false, false, `${formatTokens(c.small.tokens)} atau ${formatTokens(c.big.tokens)}`],
 ];
 
 const TESTIMONIALS = [
@@ -121,18 +148,20 @@ const TESTIMONIALS = [
   { text: 'Setiap prompt yang disediakan Talqeeh langsung menjelaskan materi yang kita perlukan, dengan penjelasan yang mudah.', color: 'var(--a-amber, #f97316)' },
 ];
 
-const FAQS = [
+const faqs = (c) => [
   ['Apa bedanya dengan pakai ChatGPT langsung?',
     'Kamu tidak mulai dari nol. Talqeeh sudah menyiapkan prompt untuk tiap maddah muqarrar Azhar, rekomendasi AI yang paling cocok, dan bank soal imtihan. AI Partner juga dibuat khusus untuk teks Arab: i\'rab, harakat, dan ringkasan gaya kitab.'],
   ['Apa itu Paket Imtihan?',
-    `Library selamanya + AI Study Partner ${IMTIHAN_AI_DAYS} hari untuk persiapan imtihan, dalam sekali bayar — harga normal ${formatRupiah(IMTIHAN_PRICE_IDR)}, lebih murah selama event promo. Setelah masanya habis, Library tetap milikmu dan AI bisa diperpanjang ${formatRupiah(AI_RENEW_PRICE_IDR)} per 30 hari, kapan saja.`],
+    `Library selamanya + ${imtihanAi()} untuk persiapan imtihan, dalam sekali bayar — harga normal ${formatRupiah(IMTIHAN_PRICE_IDR)}, lebih murah selama event promo. Setelah masanya habis, Library tetap milikmu dan AI bisa diperpanjang ${formatRupiah(AI_RENEW_PRICE_IDR)} per 30 hari, kapan saja.`],
   ['Library bayar sekali atau bulanan?',
     `Sekali bayar ${LIBRARY_PRICE}, aksesnya berlaku selamanya — termasuk semua update fitur Library ke depan. AI Partner opsional: ambil Paket Imtihan untuk persiapan imtihan, atau per 30 hari.`],
   ['Boleh coba gratis dulu?',
     "Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan AI Partner untuk 1 materi pendek (±10–15 halaman) — termasuk 2× terjemah & i'rab dan 3× tanya tutor (member Library: 10× dan 15×). Kalau cocok, upgrade kapan saja — progresmu tetap tersimpan."],
   ['Bayarnya pakai apa? Berapa lama aktifnya?',
     'Lewat Mayar: QRIS, virtual account, atau e-wallet. Tagihannya dibuat langsung untuk akun Google-mu, jadi akses aktif otomatis begitu pembayaran masuk — biasanya kurang dari 1 menit.'],
-  ['Paket Imtihan benar-benar sepuasnya?',
+  c ? ['Token itu apa? Dipakainya gimana?',
+    `Token adalah saldo untuk memakai AI di Talqeeh. Tiap kali AI bekerja untukmu (menjawab tutor, meng-i'rab, meringkas, Live Caption, talkhis), tokenmu berkurang sesuai besar pekerjaannya: kira-kira ${formatTokens(c.guide.chat || 100)} token per pesan tutor, ${formatTokens(c.guide.livePerMinute || 70)} per menit Live Caption, dan ${formatTokens(c.guide.talkhis || 15000)} per talkhis muqarrar. Ada dua paket: ${formatTokens(c.small.tokens)} token (${formatRupiah(c.small.price)}) dan ${formatTokens(c.big.tokens)} token (${formatRupiah(c.big.price)}). Fiturnya sama, yang beda cuma jumlah tokennya. Token tidak hangus, sisanya selalu terlihat di AI Partner, dan kalau habis tinggal beli lagi. Membuka materi dan hasil yang sudah dibuat tidak memakai token.`]
+  : ['Paket Imtihan benar-benar sepuasnya?',
     `Ya. Selama ${IMTIHAN_AI_DAYS} hari, terjemah & i'rab, pesan tutor, Tanya AI, ringkasan/kuis/flashcard, materi baru, dan baca foto bisa kamu pakai sepuasnya. Pengecualiannya fitur yang biayanya dihitung per menit atau per muqarrar: talkhis ${IMTIHAN_TALKHIS_CAP} muqarrar per paket (bisa ditambah mulai Rp39.000 per muqarrar), dan Live Caption kuliah duktur: 8 jam per 30 hari, maksimal 3 jam per hari (mode Akurat untuk kelas ramai dihitung 4× menit).`],
   ['AI Partner diperpanjang otomatis?',
     `Tidak. Tidak ada potongan otomatis, baik Paket Imtihan maupun per 30 hari. Kalau mau lanjut, perpanjang ${formatRupiah(AI_RENEW_PRICE_IDR)} per 30 hari kapan saja — sisa harimu tidak hangus.`],
@@ -229,7 +258,7 @@ const GroupRedeemForm = ({ onDone, onClose }) => {
     if (!r.ok) { setError(GROUP_ERRORS[r.status] || GROUP_ERRORS.error); return; }
     window.dispatchEvent(new Event('talqeeh:ai-status-changed'));
     await refreshMemberSession();
-    toast.push(`Kode diterima — Paket Imtihan (Library + AI Partner ${IMTIHAN_AI_DAYS} hari) aktif!`);
+    toast.push(`Kode diterima — Paket Imtihan (Library + ${imtihanAi()}) aktif!`);
     onDone?.();
   };
   return (
@@ -237,7 +266,7 @@ const GroupRedeemForm = ({ onDone, onClose }) => {
       <h2 className="font-display text-2xl font-semibold text-ink mb-2">Tukar kode rombongan</h2>
       <p className="text-sm text-ink-muted mb-5 leading-relaxed">
         Dapat kode dari teman yang membeli Paket Rombongan? Masukkan di sini — akunmu langsung dapat Paket Imtihan:
-        Library selamanya + AI Partner {IMTIHAN_AI_DAYS} hari. Satu akun satu kode.
+        Library selamanya + {imtihanAi()}. Satu akun satu kode.
       </p>
       <input value={code} onChange={e => { setCode(formatGroupCodeInput(e.target.value)); setError(null); }}
         placeholder="RMB-XXXX-XXXX" maxLength={13} autoComplete="one-time-code" aria-label="Kode rombongan"
@@ -266,7 +295,7 @@ const RombonganCard = ({ event, seats, onSeats, onChoose }) => {
           </div>
           <h3 className="font-display text-2xl md:text-3xl font-semibold text-ink leading-tight mb-2">Paket Rombongan: belajar bareng teman serumah</h3>
           <p className="text-sm text-ink-muted leading-relaxed">
-            Satu orang bayar, semua dapat <span className="text-ink">Paket Imtihan</span> (Library selamanya + AI Partner {IMTIHAN_AI_DAYS} hari).
+            Satu orang bayar, semua dapat <span className="text-ink">Paket Imtihan</span> (Library selamanya + {imtihanAi()}).
             Kamu langsung aktif, dan untuk teman-temanmu dibuatkan kode — mereka tinggal login Google lalu tukar kodenya.
           </p>
         </div>
@@ -376,6 +405,7 @@ const GabungPage = () => {
   const { authStatus, authInfo, session, profile, isFree, isTrial, canUpgrade, redeemPin, refreshMemberSession, startFreeAccount } = useAuth();
   const google   = useGoogleSignIn();
   const settings = useAppSettings();
+  const tokens = useTokens();
   const toast    = useToast();
   const panelRef = useRef(null);
   useEffect(() => { window.logFunnel?.('view_gabung'); }, []);
@@ -423,7 +453,7 @@ const GabungPage = () => {
 
   // Tagihan Library/Library+AI yang sedang ditunggu (juga dilanjutkan setelah kembali dari Mayar).
   const checkout = useCheckout({
-    plans: ['library', 'library_ai', 'ai', 'imtihan', 'rombongan'],
+    plans: ['library', 'library_ai', 'ai', 'imtihan', 'rombongan', 'token'],
     enabled: !signedOut,
     onPaid: async (c) => {
       saveJoinPlanLocal(null);
@@ -465,8 +495,8 @@ const GabungPage = () => {
     if (!paidMember || (!step && !paidPlan)) return;
     saveJoinPlanLocal(null);
     if (paidPlan === 'ai' || paidPlan === 'rombongan') return;
-    const withAi = paidPlan === 'library_ai' || paidPlan === 'imtihan';
-    toast.push(withAi ? 'Selamat, Library & AI Partner-mu sudah aktif!' : 'Selamat, akses Library-mu sudah aktif!');
+    const withAi = paidPlan === 'library_ai' || paidPlan === 'imtihan' || paidPlan === 'token';
+    toast.push(paidPlan === 'token' || (withAi && tokens) ? 'Selamat, Library & token AI-mu sudah aktif!' : withAi ? 'Selamat, Library & AI Partner-mu sudah aktif!' : 'Selamat, akses Library-mu sudah aktif!');
     navigate(withAi ? '/ai-partner' : '/dashboard');
   }, [paidMember, paidPlan]);
 
@@ -476,8 +506,14 @@ const GabungPage = () => {
     window.dispatchEvent(new CustomEvent('talqeeh:open-login', { detail: { keepPlan: true } }));
   };
 
+  // Paket token: langsung ke checkout (layar ringkasan Talqeeh tampil sebelum pindah ke Mayar).
+  const chooseToken = (packId) => {
+    if (signedOut) { requireLogin(null); return; }
+    checkout.start('token', { pack: packId });
+  };
   const choosePaid = (nextPlan) => {
     if (signedOut) { requireLogin(nextPlan); return; }
+    if (paidMember && tokens) { if (nextPlan === 'library') navigate('/dashboard'); else chooseToken(tokens.big.id); return; }
     if (paidMember) {
       if (nextPlan === 'library_ai' || nextPlan === 'imtihan') window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library_ai' } }));
       else navigate('/dashboard');
@@ -575,9 +611,9 @@ const GabungPage = () => {
           </h1>
           <p className="text-ink-muted max-w-2xl mx-auto">
             {isTrial
-              ? `Aksesmu sekarang masih trial (sementara). Ambil Paket Imtihan supaya Library jadi milikmu selamanya, plus AI Partner ${IMTIHAN_AI_DAYS} hari tanpa kuota bulanan.`
+              ? `Aksesmu sekarang masih trial (sementara). Ambil Paket Imtihan supaya Library jadi milikmu selamanya, plus ${imtihanAi()} tanpa kuota bulanan.`
               : isFree
-              ? `Kamu sedang memakai akun gratis. Paket Imtihan membuka semua maddah, bank soal, dan persiapan imtihan selamanya, plus AI Partner ${IMTIHAN_AI_DAYS} hari — sekali bayar.`
+              ? `Kamu sedang memakai akun gratis. Paket Imtihan membuka semua maddah, bank soal, dan persiapan imtihan selamanya, plus ${imtihanAi()} — sekali bayar.`
               : `${CATALOG.maddah} maddah, ${CATALOG.prompts} prompt siap pakai, bank soal imtihan, dan AI Partner yang paham teks Arab. Mulai gratis, upgrade kapan saja.`}
           </p>
 
@@ -640,7 +676,7 @@ const GabungPage = () => {
         {paidMember && !step && (
           <div className="card-glass p-5 max-w-3xl mx-auto mb-8 flex items-center gap-4 flex-wrap" style={{ border: '1px solid rgba(62,207,142,0.3)' }}>
             <Icon name="check" className="w-5 h-5" style={{ stroke: EMERALD }}/>
-            <div className="flex-1 min-w-[200px] text-sm text-ink">Kamu sudah member Library. Tambah AI Partner kalau mau belajar langsung dari materimu.</div>
+            <div className="flex-1 min-w-[200px] text-sm text-ink">{tokens ? 'Kamu sudah punya Library. Beli token kalau mau memakai AI Partner; token tidak hangus.' : 'Kamu sudah member Library. Tambah AI Partner kalau mau belajar langsung dari materimu.'}</div>
             <button onClick={() => navigate('/dashboard')} className="btn btn-ghost text-sm px-4 py-2">Ke Beranda</button>
           </div>
         )}
@@ -650,7 +686,32 @@ const GabungPage = () => {
             current={isFree} selected={plan === 'free'} ctaClass="btn btn-ghost"
             cta={startingFree ? 'Menyiapkan akun…' : paidMember ? 'Sudah termasuk di Library' : isTrial ? 'Kamu sedang trial' : 'Mulai gratis'}
             onClick={paidMember || isTrial ? () => navigate('/dashboard') : chooseFree}/>
-          {paidMember ? (
+          {tokens ? (
+            <>
+              {/* Model token: dua paket, yang membedakan hanya jumlah tokennya. Pembeli baru memakai plan 'imtihan' untuk
+                  paket besar (harga kupon/mitra/kekeluargaan berlaku); yang sudah punya Library membeli plan 'token'. */}
+              <PlanCard className="order-first md:order-none" color={EMERALD} icon="sparkles" recommended
+                badge={!paidMember && imtihan.promo ? (imtihan.promo.personal ? "🎁 Khusus untukmu" : imtihan.promo.affiliate ? `🤝 ${imtihan.promo.name}` : `Promo ${imtihan.promo.name}`) : "Paling hemat per token"}
+                title={`${formatTokens(paidMember ? tokens.big.tokens : tokens.imtihan)} token`} tagline={paidMember ? 'Token AI, tidak hangus' : 'Paket Imtihan: Library + token AI'}
+                strike={!paidMember && imtihan.promo ? formatRupiah(imtihan.promo.normal) : undefined}
+                price={formatRupiah(paidMember ? tokens.big.price : imtihan.total)} priceNote="sekali bayar"
+                sub={paidMember ? 'Dipakai kapan saja sampai habis' : 'Library selamanya + token yang tidak hangus'}
+                items={tokenItems(paidMember ? tokens.big.tokens : tokens.imtihan, tokens.guide, !paidMember)} selected={plan === 'imtihan'} ctaClass="btn btn-primary"
+                cta={`Ambil ${formatTokens(paidMember ? tokens.big.tokens : tokens.imtihan)} token · ${formatRupiah(paidMember ? tokens.big.price : imtihan.total)}`}
+                onClick={() => (paidMember ? chooseToken(tokens.big.id) : choosePaid('imtihan'))}/>
+              <PlanCard color={GOLD} icon="layers" title={`${formatTokens(tokens.small.tokens)} token`} tagline={paidMember ? 'Token AI, tidak hangus' : 'Library + token AI'}
+                price={formatRupiah(tokens.small.price)} priceNote="sekali bayar"
+                sub={paidMember ? 'Dipakai kapan saja sampai habis' : 'Library selamanya + token yang tidak hangus'}
+                items={tokenItems(tokens.small.tokens, tokens.guide, !paidMember)} ctaClass="btn btn-gold"
+                cta={`Ambil ${formatTokens(tokens.small.tokens)} token · ${formatRupiah(tokens.small.price)}`}
+                onClick={() => chooseToken(tokens.small.id)}
+                secondary={!paidMember && (
+                  <button onClick={() => choosePaid('library')} className="mt-3 text-xs text-ink-muted hover:text-ink underline underline-offset-2">
+                    Cuma butuh Library tanpa AI? {LIBRARY_PRICE}, sekali bayar
+                  </button>
+                )}/>
+            </>
+          ) : paidMember ? (
             <>
               <PlanCard color={GOLD} icon="bookOpen" title="Library" tagline="Semua bekal belajar & imtihan"
                 price={LIBRARY_PRICE} sub="Sekali bayar · akses selamanya"
@@ -675,7 +736,7 @@ const GabungPage = () => {
               <PlanCard className="order-first md:order-none" color={EMERALD} icon="sparkles" recommended badge={imtihan.promo ? (imtihan.promo.personal ? "🎁 Khusus untukmu" : imtihan.promo.affiliate ? `🤝 ${imtihan.promo.name}` : `Promo ${imtihan.promo.name}`) : "Untuk persiapan imtihan"} title="Paket Imtihan" tagline="Library + AI, persiapan imtihan"
                 strike={imtihan.promo ? formatRupiah(imtihan.promo.normal) : undefined} saving={imtihan.promo ? (imtihan.promo.personal ? <>Hangus dalam <OfferClock endsAt={imtihan.promo.endsAt}/></> : imtihan.promo.endLabel ? `Sampai ${imtihan.promo.endLabel}` : `Hemat ${formatRupiah(imtihan.promo.normal - imtihan.total)}`) : undefined}
                 price={formatRupiah(imtihan.total)} priceNote="sekali bayar"
-                sub={`Library selamanya + AI ${IMTIHAN_AI_DAYS} hari`}
+                sub={`Library selamanya + ${imtihanAi()}`}
                 extra={<div className="mb-5 -mt-2"><ImtihanBreakdown bundle={imtihan}/></div>}
                 items={AI_ITEMS} selected={plan === 'imtihan'} ctaClass="btn btn-primary"
                 cta={`Ambil Paket Imtihan · ${formatRupiah(imtihan.total)}`} onClick={() => choosePaid('imtihan')}
@@ -864,13 +925,13 @@ const GabungPage = () => {
             <thead>
               <tr className="border-b border-white/10">
                 <th className="text-left font-medium text-ink-muted text-xs px-3 md:px-5 py-4 w-[34%] md:w-[40%]">Fitur</th>
-                {[['Gratis', SKY], ['Library', GOLD], ['Paket Imtihan', EMERALD]].map(([label, c]) => (
+                {[['Gratis', SKY], ['Library', GOLD], [tokens ? 'Paket token' : 'Paket Imtihan', EMERALD]].map(([label, c]) => (
                   <th key={label} className="px-1.5 md:px-3 py-4 text-center font-display font-semibold text-xs md:text-sm leading-tight" style={{ color: c }}>{label}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {COMPARE_ROWS.map(([label, ...vals]) => (
+              {compareRows(tokens).map(([label, ...vals]) => (
                 <tr key={label} className="border-b border-white/5 last:border-0">
                   <td className="px-3 md:px-5 py-3 text-ink text-[11px] md:text-[13px] leading-snug">{label}</td>
                   {vals.map((v, i) => (
@@ -884,13 +945,14 @@ const GabungPage = () => {
                 <td className="px-3 md:px-5 py-4 text-ink-muted text-xs">Harga</td>
                 <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm">Rp 0</td>
                 <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm" style={{ background: 'rgba(201,168,106,0.05)' }}>{LIBRARY_PRICE}<div className="text-[10px] text-ink-soft font-normal">sekali bayar</div></td>
-                <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm">{formatRupiah(imtihan.total)}<div className="text-[10px] text-ink-soft font-normal">Library selamanya + AI {IMTIHAN_AI_DAYS} hari</div></td>
+                <td className="px-1.5 md:px-3 py-4 text-center text-ink font-semibold text-xs md:text-sm">{formatRupiah(imtihan.total)}<div className="text-[10px] text-ink-soft font-normal">Library selamanya + {imtihanAi()}</div></td>
               </tr>
             </tbody>
           </table>
         </div>
         <p className="text-[11px] text-ink-soft text-center mt-3 max-w-2xl mx-auto">
-          *Paket Imtihan: materi baru, i'rab, pesan tutor, Tanya AI, dan baca foto sepuasnya selama {IMTIHAN_AI_DAYS} hari. Live Caption: 8 jam kuliah per 30 hari, mode Akurat dihitung 4×. Talkhis: {IMTIHAN_TALKHIS_CAP} muqarrar per paket, maksimal 1 per hari; tambahan Rp39.000/muqarrar atau Rp99.000/3 muqarrar. Materi gratis maksimal ±10–15 halaman.
+          {tokens ? <>*Paket token sekaligus membuka Library selamanya. {TOKEN_RULES} Pemakaian token mengikuti panjang materi dan jawaban AI. Materi gratis maksimal ±10–15 halaman.</> : <>
+          *Paket Imtihan: materi baru, i'rab, pesan tutor, Tanya AI, dan baca foto sepuasnya selama {IMTIHAN_AI_DAYS} hari. Live Caption: 8 jam kuliah per 30 hari, mode Akurat dihitung 4×. Talkhis: {IMTIHAN_TALKHIS_CAP} muqarrar per paket, maksimal 1 per hari; tambahan Rp39.000/muqarrar atau Rp99.000/3 muqarrar. Materi gratis maksimal ±10–15 halaman.</>}
         </p>
       </Section>
 
@@ -923,7 +985,7 @@ const GabungPage = () => {
       <Section className="pb-12 md:pb-16">
         <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink text-center mb-7">Pertanyaan yang sering muncul</h2>
         <div className="max-w-2xl mx-auto space-y-2.5">
-          {FAQS.map(([q, a]) => <FaqItem key={q} q={q} a={a}/>)}
+          {faqs(tokens).map(([q, a]) => <FaqItem key={q} q={q} a={a}/>)}
         </div>
       </Section>
 
@@ -966,6 +1028,7 @@ const RombonganPage = () => {
   const { authStatus, session, authInfo } = useAuth();
   const google = useGoogleSignIn();
   const settings = useAppSettings();
+  const tokens = useTokens();
   const toast = useToast();
   const [codes, setCodes] = useState(null);
   const signedOut = authStatus === 'signed_out' || (authStatus === 'member' && !session);
@@ -978,7 +1041,7 @@ const RombonganPage = () => {
   }, [signedOut, authStatus]);
   const link = `${window.location.origin}/#/gabung`;
   const shareText = (code) => encodeURIComponent(
-    `Assalamu'alaikum! Aku sudah bayarin Paket Imtihan Talqeeh buat kamu (Library + AI Partner ${IMTIHAN_AI_DAYS} hari). ` +
+    `Assalamu'alaikum! Aku sudah bayarin Paket Imtihan Talqeeh buat kamu (Library + ${imtihanAi()}). ` +
     `Buka ${link}, login pakai Google, lalu pilih "Punya kode rombongan dari teman?" dan masukkan kode: ${code}`);
   const copy = async (code) => {
     try { await navigator.clipboard.writeText(code); toast.push(`Kode ${code} disalin`); } catch { toast.push(code); }
@@ -1002,7 +1065,7 @@ const RombonganPage = () => {
             <Icon name="users" className="w-3.5 h-3.5" style={{ stroke: SKY }}/> Paket Rombongan
           </div>
           <h1 className="font-display text-3xl md:text-4xl font-semibold text-ink leading-tight mb-2">Belajar bareng teman serumah</h1>
-          <p className="text-ink-muted mb-8">Kode di bawah untuk teman-temanmu. Tiap kode memberi satu akun Paket Imtihan (Library selamanya + AI Partner {IMTIHAN_AI_DAYS} hari).</p>
+          <p className="text-ink-muted mb-8">Kode di bawah untuk teman-temanmu. Tiap kode memberi satu akun Paket Imtihan (Library selamanya + {imtihanAi()}).</p>
 
           {signedOut ? (
             <div className="card-glass p-6 text-center">

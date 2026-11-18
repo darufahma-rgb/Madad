@@ -1,8 +1,9 @@
 import { sbConfig, sbHeaders, getAuthUser, resolveMember, newMemberCode, consumeQuota, getAiAccess } from './_lib/member.js';
 import { normalizePin } from './_lib/pin.js';
+import { tokensOn, getTokenConfig } from './_lib/tokens.js';
 import { verifyUnsubToken, addOptout } from './_lib/email.js';
 import {
-  CHECKOUT_PLANS, mayarConfigured, checkoutBlockReason, createCheckout, getOwnedCheckout, refreshCheckout,
+  CHECKOUT_PLANS, TOKEN_MODE_CLOSED_PLANS, mayarConfigured, checkoutBlockReason, createCheckout, getOwnedCheckout, refreshCheckout,
   listGroupCodes, redeemGroupCode, claimClassTrial, imtihanPrice, isTalkhisAddon, runningImtihan,
 } from './_lib/payments.js';
 import {
@@ -209,7 +210,7 @@ const publicCheckout = (c) => ({ id: c.id, plan: c.plan, amount: c.amount, link:
 // Buat tagihan Mayar untuk paket yang dipilih (harga ditentukan server, bukan browser).
 async function handleCheckout(req, user, res) {
   if (!mayarConfigured()) return res.status(200).json({ ok: false, status: 'payments_disabled' });
-  const { plan, seats, partner: partnerSlug, ref, coupon } = await parseBody(req);
+  const { plan, seats, partner: partnerSlug, ref, coupon, pack: packId } = await parseBody(req);
   if (!CHECKOUT_PLANS.includes(plan)) return res.status(400).json({ ok: false, status: 'invalid_plan' });
   if (!checkCheckoutLimit(user.id)) return res.status(429).json({ ok: false, status: 'rate_limited' });
 
@@ -220,6 +221,15 @@ async function handleCheckout(req, user, res) {
   // Tambahan talkhis hanya untuk pemegang Paket Imtihan yang masih berjalan (jatahnya ikut masa paket itu).
   if (isTalkhisAddon(plan) && !(member && (await runningImtihan(member.code)))) {
     return res.status(200).json({ ok: false, status: 'needs_imtihan' });
+  }
+  // Model token: yang dijual Library, paket token, dan Paket Imtihan/Rombongan (= paket token besar). Paket lama ditutup.
+  const tokenModel = await tokensOn();
+  if (tokenModel && TOKEN_MODE_CLOSED_PLANS.includes(plan)) return res.status(200).json({ ok: false, status: 'plan_closed' });
+  let pack = null;
+  if (plan === 'token') {
+    if (!tokenModel) return res.status(400).json({ ok: false, status: 'invalid_plan' });
+    pack = (await getTokenConfig()).packs.find(p => p.id === packId) || null;
+    if (!pack) return res.status(200).json({ ok: false, status: 'invalid_pack' });
   }
 
   // Bacaan yang saling lepas dijalankan bersamaan: tiap bacaan ±0,3 dtk, dulu berurutan sampai beberapa detik.
@@ -245,7 +255,7 @@ async function handleCheckout(req, user, res) {
   const best = Math.min(offer?.price || Infinity, affiliateAmount || Infinity);
   const usePartner = partner && partner.price <= best;
   const result = await createCheckout({
-    user, member, plan, appOrigin: appOrigin(req), seats,
+    user, member, plan, appOrigin: appOrigin(req), seats, pack,
     imtihanAmount: usePartner ? partner.price : (Number.isFinite(best) ? best : undefined),
     partnerSlug: usePartner ? partner.slug : undefined,
     // Tagihan lewat tautan kekeluargaan tidak diberi komisi mitra (bagiannya sudah untuk kas kekeluargaan).

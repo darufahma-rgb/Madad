@@ -2883,6 +2883,105 @@ const ModelField = ({ label, hint, value, active, onChange }) => {
   );
 };
 
+/* ── Token AI ──
+   Samakan bawaan dengan DEFAULT_TOKENS di api/_lib/tokens.js. 1 token = $0,0001 biaya AI (dipotong sesuai biaya asli). */
+const TOKEN_DEFAULTS = {
+  usdRate: 16500,
+  packs: [{ id: 't100', price: 100000, tokens: 25000 }, { id: 't199', price: 199000, tokens: 60000 }],
+  grants: { imtihan: 60000 },
+  convert: { imtihan: 60000, monthly: 25000, talkhis_1: 12000, talkhis_3: 30000 },
+};
+const tokenInputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink outline-none font-mono focus:border-emerald-500/45";
+
+const TokenSettingsCard = ({ tokens, setTokens, eventPrice }) => {
+  const num = (v) => { const t = String(v).replace(/[^\d]/g, "").slice(0, 8); return t === "" ? "" : Number(t); };
+  const setIn = (group, k, v) => setTokens(c => ({ ...c, [group]: { ...c[group], [k]: num(v) } }));
+  const setPack = (i, k, v) => setTokens(c => ({ ...c, packs: c.packs.map((p, j) => (j === i ? { ...p, [k]: num(v) } : p)) }));
+  const costOf = (n) => Math.round((Number(n) || 0) * 0.0001 * (Number(tokens.usdRate) || TOKEN_DEFAULTS.usdRate));
+  const fmt = (n) => Number(n || 0).toLocaleString("id-ID");
+  // Untung per penjualan bila SEMUA token terpakai (kasus terburuk). Belum dipotong biaya Mayar dan komisi mitra.
+  const sales = [
+    ...tokens.packs.map(p => [`Paket ${fmt(p.tokens)} token`, Number(p.price) || 0, p.tokens]),
+    ['Paket Imtihan (harga normal)', IMTIHAN_PRICE_IDR, tokens.grants.imtihan],
+    ['Paket Imtihan (kupon Instagram)', OFFER_COUPON_PRICE, tokens.grants.imtihan],
+    eventPrice ? ['Paket Imtihan (harga event)', eventPrice, tokens.grants.imtihan] : null,
+  ].filter(Boolean);
+  return (
+    <div className="card-glass p-6 space-y-5">
+      <div>
+        <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Token AI</div>
+        <p className="text-[11px] text-ink-soft leading-relaxed">
+          Semua fitur AI memotong token tiap akun <span className="text-ink">sebesar biaya aslinya</span> (1 token = $0,0001), jadi token yang
+          habis terpakai nilainya persis sebesar biaya AI-nya. Tidak ada masa aktif, kuota harian, atau jatah talkhis: pembatasnya saldo token.
+          Paket token sekaligus membuka Library. Berlaku sejak <code>migrations/ai_tokens.sql</code> dijalankan; sebelum itu paket lama tetap dipakai.
+        </p>
+      </div>
+
+      <div>
+        <div className="text-[11px] text-ink-muted mb-2">Paket token yang dijual</div>
+        <div className="space-y-2">
+          {tokens.packs.map((p, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <input inputMode="numeric" value={p.tokens ?? ""} onChange={e => setPack(i, 'tokens', e.target.value)} className={tokenInputClass + " max-w-[130px]"}/>
+              <span className="text-xs text-ink-soft">token seharga Rp</span>
+              <input inputMode="numeric" value={p.price ?? ""} onChange={e => setPack(i, 'price', e.target.value)} className={tokenInputClass + " max-w-[130px]"}/>
+            </div>
+          ))}
+        </div>
+        <div className="mt-3 max-w-[260px]">
+          <label className="text-[11px] text-ink-soft block mb-1">Token di Paket Imtihan (harga kupon/mitra/event berlaku)</label>
+          <input inputMode="numeric" value={tokens.grants.imtihan ?? ""} onChange={e => setIn('grants', 'imtihan', e.target.value)} className={tokenInputClass}/>
+        </div>
+      </div>
+
+      <div>
+        <div className="text-[11px] text-ink-muted mb-2">Konversi pembelian lama jadi token <span className="text-ink-soft">(sekali, otomatis, untuk yang masa AI-nya masih berjalan)</span></div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[['imtihan', 'Paket Imtihan / Rombongan'], ['monthly', 'AI 30 hari / akses dari admin'], ['talkhis_1', 'Tambahan talkhis 1'], ['talkhis_3', 'Tambahan talkhis 3']].map(([k, label]) => (
+            <div key={k}>
+              <label className="text-[11px] text-ink-soft block mb-1">{label}</label>
+              <input inputMode="numeric" value={tokens.convert[k] ?? ""} onChange={e => setIn('convert', k, e.target.value)} className={tokenInputClass}/>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="pt-4 border-t border-white/[0.06]">
+        <div className="flex items-center justify-between gap-3 mb-2">
+          <div className="text-[11px] text-ink-muted">Untung per penjualan <span className="text-ink-soft">(kalau semua tokennya terpakai)</span></div>
+          <label className="text-[11px] text-ink-soft flex items-center gap-2">Kurs $1 = Rp
+            <input inputMode="numeric" value={tokens.usdRate ?? ""} onChange={e => setTokens(c => ({ ...c, usdRate: num(e.target.value) }))} className={tokenInputClass + " w-24"}/>
+          </label>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead><tr className="text-left text-ink-soft"><th className="py-1.5 pr-3 font-normal">Penjualan</th><th className="py-1.5 pr-3 font-normal text-right">Uang masuk</th><th className="py-1.5 pr-3 font-normal text-right">Biaya AI maks.</th><th className="py-1.5 font-normal text-right">Sisa</th></tr></thead>
+            <tbody>
+              {sales.map(([label, price, n]) => {
+                const cost = costOf(n), left = price - cost;
+                return (
+                  <tr key={label} className="border-t border-white/[0.05]">
+                    <td className="py-1.5 pr-3 text-ink">{label}</td>
+                    <td className="py-1.5 pr-3 text-right text-ink-muted">{formatRupiah(price)}</td>
+                    <td className="py-1.5 pr-3 text-right text-ink-muted">{formatRupiah(cost)} <span className="text-ink-soft">({fmt(n)} token)</span></td>
+                    <td className={"py-1.5 text-right font-medium " + (left > price * 0.3 ? "text-emerald-300" : left > 0 ? "text-amber-300" : "text-rose-400")}>
+                      {formatRupiah(left)} {price > 0 && <span className="text-ink-soft font-normal">({Math.round((left / price) * 100)}%)</span>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-[11px] text-ink-soft mt-2 leading-relaxed">
+          Hijau = sisa di atas 30%. Kuning = tipis. Merah = rugi — naikkan harga atau kurangi tokennya. "Sisa" belum dipotong biaya Mayar
+          dan komisi mitra. Coba gratis (akun tanpa token) tidak memakai token dan tetap dibatasi jatah cicip harian.
+        </p>
+      </div>
+    </div>
+  );
+};
+
 const AdminSettings = () => {
   const toast = useToast();
 
@@ -2912,6 +3011,8 @@ const AdminSettings = () => {
   // Limit khusus per email: [{ email, daily: { talkhis: 5, … }, noMonthly }] — lihat parseQuotaOverrides di server.
   const [overrides, setOverrides] = useState([]);
   const [newOverrideEmail, setNewOverrideEmail] = useState("");
+  // Token AI (api/_lib/tokens.js): paket token, token Paket Imtihan, konversi pembelian lama.
+  const [tokens, setTokens] = useState(TOKEN_DEFAULTS);
   // Event penjualan; contoh awal Paket Rombongan: 3 orang Rp 447.000 (Rp 149rb/orang), 5 orang Rp 695.000 (Rp 139rb/orang).
   const [imtihanEvent, setImtihanEvent] = useState({ enabled: false, name: '', price: '', startsAt: '', endsAt: '' });
   const [rombonganEvent, setRombonganEvent] = useState({ enabled: false, name: 'Paket Rombongan', startsAt: '', endsAt: '', sizes: [{ seats: 3, price: 447000 }, { seats: 5, price: 695000 }] });
@@ -2928,6 +3029,15 @@ const AdminSettings = () => {
         setSettings(s => ({ ...s, ...server }));
         try { setLimits(JSON.parse(server.aiMonthlyLimits || '{}') || {}); } catch { setLimits({}); }
         try { const o = JSON.parse(server.aiQuotaOverrides || '[]'); setOverrides(Array.isArray(o) ? o : []); } catch { setOverrides([]); }
+        try {
+          const c = JSON.parse(server.aiTokens || '{}') || {};
+          setTokens({
+            usdRate: c.usdRate || TOKEN_DEFAULTS.usdRate,
+            packs: Array.isArray(c.packs) && c.packs.length ? c.packs : TOKEN_DEFAULTS.packs,
+            grants: { ...TOKEN_DEFAULTS.grants, ...(c.grants || {}) },
+            convert: { ...TOKEN_DEFAULTS.convert, ...(c.convert || {}) },
+          });
+        } catch {}
         const ie = parseEventSetting(server.imtihanEvent);
         if (ie) setImtihanEvent({ ...ie, enabled: true });
         const re = parseEventSetting(server.rombonganEvent);
@@ -2943,7 +3053,7 @@ const AdminSettings = () => {
     setSaving(true);
     try {
       await adminMembersAPI('save-settings', null, {
-        ...settings, aiMonthlyLimits: limits, aiQuotaOverrides: overrides,
+        ...settings, aiMonthlyLimits: limits, aiQuotaOverrides: overrides, aiTokens: tokens,
         imtihanEvent: imtihanEvent.enabled ? imtihanEvent : { enabled: false },
         rombonganEvent: rombonganEvent.enabled ? rombonganEvent : { enabled: false },
         partnerLinks,
@@ -3046,6 +3156,8 @@ const AdminSettings = () => {
               active={activeModels?.[task]} onChange={v => setSettings({ ...settings, [key]: v })}/>
           ))}
         </div>
+
+        <TokenSettingsCard tokens={tokens} setTokens={setTokens} eventPrice={imtihanEvent.enabled ? Number(imtihanEvent.price) || 0 : 0}/>
 
         <div className="card-glass p-6 space-y-4">
           <div>
@@ -3218,6 +3330,18 @@ const AdminSubscriptions = () => {
     } finally { setBusy(false); }
   };
 
+  // Token untuk kode member di kolom yang sama (bonus, ganti rugi, atau akses untuk tim).
+  const [tokenAmount, setTokenAmount] = useState('');
+  const handleTokens = async () => {
+    if (!grantCode.trim() || !tokenAmount) return;
+    setBusy(true);
+    try {
+      const data = await aiPartnerAdmin('admin-tokens', { member_code: grantCode, amount: Number(tokenAmount) });
+      if (data.ok) { toast.push(`Token ditambahkan. Saldo sekarang ${Number(data.balance).toLocaleString('id-ID')}.`); setTokenAmount(''); }
+      else toast.push(data.error || 'Gagal menambah token');
+    } finally { setBusy(false); }
+  };
+
   const handleRevoke = async (row) => {
     if (!confirm(`Cabut akses AI Partner untuk ${row.member_code}?`)) return;
     const data = await aiPartnerAdmin('admin-revoke', { id: row.id });
@@ -3255,6 +3379,14 @@ const AdminSubscriptions = () => {
         <button onClick={handleGrant} disabled={busy || !grantCode.trim()} className="btn btn-primary text-sm px-5 py-2.5">
           {busy ? 'Memproses...' : 'Beri Akses'}
         </button>
+        <div className="w-full sm:w-auto flex gap-2 items-end">
+          <div>
+            <label className="text-xs uppercase tracking-wider text-gold-400 mb-2 block">Tambah token AI</label>
+            <input inputMode="numeric" value={tokenAmount} onChange={e => setTokenAmount(e.target.value.replace(/[^\d]/g, '').slice(0, 7))} placeholder="25000"
+              className="w-28 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink text-sm outline-none font-mono"/>
+          </div>
+          <button onClick={handleTokens} disabled={busy || !grantCode.trim() || !tokenAmount} className="btn btn-ghost text-sm px-5 py-2.5">Tambah Token</button>
+        </div>
       </div>
 
       {loading ? (

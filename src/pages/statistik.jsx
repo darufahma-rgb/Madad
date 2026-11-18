@@ -234,7 +234,13 @@ const StatistikPage = () => {
                     empty="Belum ada kuis yang diselesaikan."/>
                 </Box>
               </div>
-              {ai.limits && (
+              {ai.tokens && (
+                <div className="card-glass p-4 flex flex-wrap items-center gap-3">
+                  <TokenBadge tokens={ai.tokens}/>
+                  <span className="text-xs text-ink-soft">Semua fitur AI memakai token sesuai pemakaiannya. Token tidak hangus.</span>
+                </div>
+              )}
+              {ai.limits && Object.keys(ai.limits).length > 0 && (
                 <div className="grid lg:grid-cols-2 gap-4">
                   <QuotaBox title="Jatah AI hari ini" used={ai.usageToday} limits={ai.limits}
                     note={ai.unlimitedMonthly
