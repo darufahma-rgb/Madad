@@ -25,6 +25,7 @@ const sbToMember = (row) => {
     googleLinked: !!row.auth_user_id,
     pinExpiresAt: row.activation_pin_expires_at || null,
     tokens:      row.ai_tokens ?? null, // saldo token AI (model token); null = kolom belum ada
+    tokensGranted: row.ai_tokens_granted ?? null, // total token yang pernah didapat; 0 = belum pernah diisi
     _id:         row.id,
   };
 };
@@ -1193,6 +1194,25 @@ const AdminMembers = () => {
   // Model token: jadwal isi ulang bulanan member lama ({ [kode]: { target, cycle, cycles, nextResetAt, endsAt } }).
   const tokenMode = useTokenMode();
   const [schedules, setSchedules] = useState({});
+  /* Isi token sekarang untuk member berbayar yang saldonya belum pernah diisi (member lama & member Library), tanpa
+     menunggu mereka membuka Talqeeh. Diproses 25 per panggilan. */
+  const [syncing, setSyncing] = useState(null);
+  const syncTokens = async () => {
+    const codes = members.filter(m => m.tier !== 'free' && m.status === 'active' && m.tokens !== null && !m.tokensGranted).map(m => m.code);
+    if (!codes.length) { toast.push('Semua member berbayar sudah punya token.'); return; }
+    if (!confirm(`Isi token untuk ${codes.length} member berbayar yang belum pernah diisi? (jatah bulanan member lama + hadiah Library)`)) return;
+    const done = {};
+    for (let i = 0; i < codes.length; i += 25) {
+      setSyncing(`${Math.min(i + 25, codes.length)}/${codes.length}`);
+      const r = await aiPartnerAdmin('admin-token-sync', { codes: codes.slice(i, i + 25) }).catch(() => null);
+      if (!r?.ok) { toast.push(r?.error || 'Gagal mengisi token. Coba lagi.'); break; }
+      Object.assign(done, r.data || {});
+    }
+    setMembers(prev => prev.map(m => (done[m.code] ? { ...m, tokens: done[m.code].balance, tokensGranted: done[m.code].granted } : m)));
+    setSyncing(null);
+    const filled = Object.values(done).filter(x => x.granted > 0).length;
+    toast.push(`${filled} member sekarang punya token.`);
+  };
   const loadAiSubs = async () => {
     try {
       const [r, sch] = await Promise.all([aiPartnerAdmin('admin-list'), aiPartnerAdmin('admin-token-schedules').catch(() => null)]);
@@ -1315,6 +1335,14 @@ const AdminMembers = () => {
           <button onClick={() => setGrantOpen(true)} className="btn btn-ghost text-sm">
             <Icon name="crown" className="w-4 h-4"/> Beri akses
           </button>
+          {tokenMode && (() => {
+            const pending = members.filter(m => m.tier !== 'free' && m.status === 'active' && m.tokens !== null && !m.tokensGranted).length;
+            return pending > 0 && (
+              <button onClick={syncTokens} disabled={!!syncing} className="btn btn-gold text-sm" title="Isi jatah bulanan member lama dan hadiah member Library sekarang, tanpa menunggu mereka membuka Talqeeh">
+                <Icon name="refresh" className="w-4 h-4"/> {syncing ? `Mengisi token… ${syncing}` : `Isi token sekarang (${pending})`}
+              </button>
+            );
+          })()}
           <button onClick={() => setGenOpen(true)} className="btn btn-primary">
             <Icon name="sparkles" className="w-4 h-4"/> Tambah Member
           </button>
@@ -1561,6 +1589,9 @@ const TokenBadges = ({ member, schedule, pill }) => {
     <>
       {bal === null
         ? <span className="text-[11px] text-ink-soft">token: —</span>
+        : bal <= 0 && !member.tokensGranted
+          ? pill('#9497a9', member.tier === 'free' ? '🪙 belum ambil token gratis' : '🪙 belum diisi',
+              member.tier === 'free' ? 'Token gratis masuk saat dia pertama membuka AI Partner' : 'Token masuk otomatis saat member membuka Talqeeh, atau tekan "Isi token sekarang"')
         : bal > 0
           ? pill('#3ecf8e', `🪙 ${fmt(bal)} token`, 'Sisa token sekarang')
           : pill('#f97316', bal < 0 ? `🪙 ${fmt(bal)} (habis)` : '🪙 token habis', 'Saldo token habis')}
