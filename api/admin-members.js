@@ -8,7 +8,7 @@ import { buildAdminAnalytics } from './_lib/analytics.js';
 import { buildAiUsage } from './_lib/ai-usage.js';
 import { parseAiPrice, extendAi, probeMayarQris } from './_lib/payments.js';
 import { newMemberCode } from './_lib/member.js';
-import { parseTokenConfig, clearTokenCache } from './_lib/tokens.js';
+import { parseTokenConfig, clearTokenCache, tokensOn, grantTokens } from './_lib/tokens.js';
 import { QUOTA_KINDS, parseQuotaOverrides, MAX_LIVE_DAILY } from './_lib/ai-partner/limits.js';
 import { handleEmailAdmin } from './_lib/email.js';
 import { validateAffiliateProgram, readAffiliateProgram, slugAllowed, cleanSlug, summarizeSales, AFFILIATE_FIELDS } from './_lib/affiliates.js';
@@ -99,20 +99,27 @@ const normalizeGrantTargets = (input) => {
   return targets;
 };
 
-/* Admin memberi akses: Library selamanya dan/atau AI Study Partner (sekian hari atau tanpa batas).
+/* Admin memberi akses: Library selamanya dan/atau AI.
+   Model token (api/_lib/tokens.js): AI = token sebanyak `tokens` (tidak hangus, tercatat di buku token sebagai 'admin').
+   Sebelum model token berlaku: AI Study Partner sekian hari (aiDays) atau tanpa batas.
    target = email Google atau kode member. Email yang belum terdaftar dibuatkan akun — aktif saat pemiliknya
    login Google dengan email itu (resolveMember menautkan lewat email). aiDays: angka hari, 0 = tanpa batas,
    null = tidak memberi AI. Perpanjangan AI dihitung dari tanggal habis kalau masih aktif. */
-async function grantAccess(url, key, { target, library, aiDays, note }) {
+async function grantAccess(url, key, { target, library, aiDays, tokens, note }) {
   const raw = String(target || '').trim();
   const email = raw.toLowerCase();
   const byEmail = EMAIL_RE.test(email);
   const code = byEmail ? null : raw.toUpperCase();
   if (!byEmail && !/^[A-Z0-9-]{3,40}$/.test(code || '')) return { ok: false, error: 'Isi email Google atau kode member yang valid' };
-  const giveAi = aiDays !== null && aiDays !== undefined;
+  const tokenModel = await tokensOn();
+  const giveTokens = tokenModel && tokens !== null && tokens !== undefined && tokens !== '';
+  const amount = giveTokens ? Number(tokens) : null;
+  if (giveTokens && !(Number.isInteger(amount) && amount >= 1 && amount <= 1000000)) return { ok: false, error: 'Jumlah token harus 1–1.000.000' };
+  // Model token: durasi AI tidak dipakai lagi (akses AI = punya token).
+  const giveAi = !tokenModel && aiDays !== null && aiDays !== undefined;
   const days = giveAi ? Number(aiDays) : null;
   if (giveAi && !(Number.isInteger(days) && days >= 0 && days <= 3650)) return { ok: false, error: 'Durasi AI tidak valid' };
-  if (!library && !giveAi) return { ok: false, error: 'Pilih minimal satu akses: Library atau AI Study Partner' };
+  if (!library && !giveAi && !giveTokens) return { ok: false, error: tokenModel ? 'Pilih minimal satu: Library atau token AI' : 'Pilih minimal satu akses: Library atau AI Study Partner' };
   const why = String(note || '').trim().slice(0, 120);
 
   const fields = 'code,name,email,status,tier,auth_user_id';
@@ -159,9 +166,16 @@ async function grantAccess(url, key, { target, library, aiDays, note }) {
       catch (err) { return { ok: false, error: `Library tersimpan, tapi AI gagal diberikan: ${err.message}`, code: member.code }; }
     }
   }
+  let tokenBalance = null;
+  if (giveTokens) {
+    const st = await grantTokens(member.code, amount, 'admin', null);
+    if (!st || st.missing) return { ok: false, error: 'Library tersimpan, tapi token gagal ditambahkan', code: member.code };
+    tokenBalance = st.balance;
+  }
   return {
     ok: true, code: member.code, name: member.name, email: member.email || email || null,
     created, linked: !!member.auth_user_id, library: library || member.tier !== 'free', aiUntil,
+    tokens: giveTokens ? amount : null, tokenBalance,
   };
 }
 
@@ -278,7 +292,7 @@ export default async function handler(req, res) {
       }
     } else if (action === 'grant-access') {
       const g = JSON.parse(body || '{}');
-      const out = await grantAccess(supabaseUrl, serviceKey, { target: g.target, library: !!g.library, aiDays: g.aiDays, note: g.note });
+      const out = await grantAccess(supabaseUrl, serviceKey, { target: g.target, library: !!g.library, aiDays: g.aiDays, tokens: g.tokens, note: g.note });
       if (!out.ok) { res.status(400).json({ ok: false, error: out.error }); return; }
       result = { status: 200, data: out };
     } else if (action === 'grant-access-bulk') {
@@ -287,7 +301,7 @@ export default async function handler(req, res) {
       if (!targets.length) { res.status(400).json({ ok: false, error: 'Isi minimal satu email atau kode member' }); return; }
       const results = [];
       for (const target of targets) {
-        const out = await grantAccess(supabaseUrl, serviceKey, { target, library: !!g.library, aiDays: g.aiDays, note: g.note });
+        const out = await grantAccess(supabaseUrl, serviceKey, { target, library: !!g.library, aiDays: g.aiDays, tokens: g.tokens, note: g.note });
         results.push(out.ok ? { target, ok: true, ...out } : { target, ok: false, error: out.error });
       }
       result = { status: 200, data: { results, total: results.length, success: results.filter(r => r.ok).length } };
@@ -406,6 +420,9 @@ export default async function handler(req, res) {
       result = { status: 200, data: { count: rows.length, total: rows.reduce((n, r) => n + (Number(r.affiliate_commission) || 0), 0) } };
     } else if (action === 'get-settings') {
       result = { status: 200, data: await readSettings(ADMIN_SETTING_KEYS) };
+    } else if (action === 'token-mode') {
+      // Model token sudah berlaku? (migrations/ai_tokens.sql dijalankan) — panel admin menyesuaikan tampilan pemberian akses.
+      result = { status: 200, data: { on: await tokensOn() } };
     } else if (action === 'save-settings') {
       const badModel = Object.values(MODEL_SETTING_KEYS)
         .find(k => typeof row?.[k] === 'string' && row[k].trim() && !isValidModelId(row[k]));
