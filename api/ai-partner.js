@@ -1616,6 +1616,9 @@ async function handleAdmin(action, req, res, body) {
   }
 
   if (action === 'admin-grant') {
+    // Model token: akses AI tanpa batas tidak diberikan lagi — admin menambah token (admin-tokens), atau untuk akun tim
+    // memakai "Limit khusus per email" dengan bebas kuota (tanpa potongan token).
+    if (await tokensOn()) return res.status(400).json({ ok: false, error: 'Model token sudah berlaku: beri token, bukan akses AI tanpa batas. Untuk akun tim, pakai Limit khusus per email → Bebas kuota.' });
     const code = normalizeCode(body.member_code);
     if (!code || !(await isActiveMember(code))) {
       return res.status(400).json({ ok: false, error: 'Kode member tidak ditemukan atau tidak aktif' });

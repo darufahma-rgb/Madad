@@ -24,6 +24,7 @@ const sbToMember = (row) => {
     email:       row.email       || "",
     googleLinked: !!row.auth_user_id,
     pinExpiresAt: row.activation_pin_expires_at || null,
+    tokens:      row.ai_tokens ?? null, // saldo token AI (model token); null = kolom belum ada
     _id:         row.id,
   };
 };
@@ -1482,6 +1483,7 @@ const AdminMembers = () => {
                       })()}
                     </div>
                     <div className="text-[11px] text-ink-soft">{m.whatsapp}</div>
+                    {m.tokens !== null && m.tokens !== 0 && <div className="text-[11px] text-emerald-300">🪙 {Number(m.tokens).toLocaleString("id-ID")} token</div>}
                   </td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-2">
@@ -1763,6 +1765,19 @@ const EditMemberModal = ({ member, onClose, onSave }) => {
 };
 
 /* ── Beri akses: Library selamanya dan/atau AI Study Partner, lewat email Google atau kode member ── */
+/* Model token berlaku? (migrations/ai_tokens.sql sudah dijalankan). null = sedang dicek. Disimpan sekali per halaman admin. */
+let tokenModeCache = null;
+const useTokenMode = () => {
+  const [on, setOn] = useState(tokenModeCache);
+  useEffect(() => {
+    if (tokenModeCache !== null) return;
+    adminMembersAPI('token-mode').then(d => { tokenModeCache = !!d?.on; setOn(tokenModeCache); }).catch(() => setOn(false));
+  }, []);
+  return on;
+};
+// Pilihan cepat jumlah token di "Beri akses" (bisa juga diketik sendiri).
+const TOKEN_GRANT_PRESETS = [[1500, "1.500"], [5000, "5.000"], [35000, "35.000"], [75000, "75.000"]];
+
 const AI_GRANT_DURATIONS = [[30, "30 hari"], [60, "60 hari"], [90, "90 hari"], [180, "6 bulan"], [365, "1 tahun"], [0, "Tanpa batas"]];
 const GRANT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const parseGrantTargets = (value) => {
@@ -1786,6 +1801,8 @@ const GrantAccessModal = ({ open, onClose, members = [], initialTarget = "", onD
   const [library, setLibrary] = useState(true);
   const [ai, setAi] = useState(true);
   const [days, setDays] = useState(30);
+  const tokenMode = useTokenMode();
+  const [tokens, setTokens] = useState(5000);
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -1793,7 +1810,7 @@ const GrantAccessModal = ({ open, onClose, members = [], initialTarget = "", onD
 
   useEffect(() => {
     if (!open) return;
-    setTarget(initialTarget); setLibrary(true); setAi(true); setDays(30); setNote(""); setError(""); setResult(null);
+    setTarget(initialTarget); setLibrary(true); setAi(true); setDays(30); setTokens(5000); setNote(""); setError(""); setResult(null);
   }, [open, initialTarget]);
 
   const targets = useMemo(() => parseGrantTargets(target), [target]);
@@ -1808,7 +1825,9 @@ const GrantAccessModal = ({ open, onClose, members = [], initialTarget = "", onD
     if (!targets.length || busy) return;
     setBusy(true); setError("");
     try {
-      const payload = { library, aiDays: ai ? days : null, note };
+      const payload = tokenMode
+        ? { library, tokens: ai && Number(tokens) > 0 ? Number(tokens) : null, note }
+        : { library, aiDays: ai ? days : null, note };
       const data = targets.length === 1
         ? await adminMembersAPI("grant-access", null, null, { ...payload, target: targets[0] })
         : await adminMembersAPI("grant-access-bulk", null, null, { ...payload, targets });
@@ -1827,7 +1846,9 @@ const GrantAccessModal = ({ open, onClose, members = [], initialTarget = "", onD
     }
   };
 
-  const aiText = (r) => !r.aiUntil ? null : r.aiUntil === "unlimited" ? "AI Study Partner tanpa batas waktu"
+  const fmtTok = (n) => Number(n || 0).toLocaleString("id-ID");
+  const aiText = (r) => r.tokens ? `${fmtTok(r.tokens)} token AI (saldo sekarang ${fmtTok(r.tokenBalance)})`
+    : !r.aiUntil ? null : r.aiUntil === "unlimited" ? "AI Study Partner tanpa batas waktu"
     : `AI Study Partner sampai ${new Date(r.aiUntil).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })}`;
   const waText = (r) => {
     const parts = [r.library && "Library selamanya", aiText(r)].filter(Boolean).join(" + ");
@@ -1925,6 +1946,27 @@ const GrantAccessModal = ({ open, onClose, members = [], initialTarget = "", onD
               <span><span className="text-sm text-ink">Library selamanya</span><span className="block text-[11px] text-ink-soft">Semua maddah, bank soal, Siap Imtihan.</span></span>
             </label>
 
+            {tokenMode ? (
+            <div className="card-glass p-3.5">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" checked={ai} onChange={e => setAi(e.target.checked)} className="accent-emerald-500 w-4 h-4 mt-0.5"/>
+                <span><span className="text-sm text-ink">Token AI</span><span className="block text-[11px] text-ink-soft">Ditambahkan ke saldo, tidak hangus. Semua fitur AI terbuka selama token masih ada.</span></span>
+              </label>
+              {ai && (
+                <div className="mt-3 pl-7 space-y-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    {TOKEN_GRANT_PRESETS.map(([n, label]) => (
+                      <button type="button" key={n} onClick={() => setTokens(n)}
+                        className={`text-xs px-3 py-1.5 rounded-lg border ${Number(tokens) === n ? "border-emerald-500/50 bg-emerald-500/15 text-emerald-200" : "border-white/10 text-ink-muted hover:text-ink"}`}>{label}</button>
+                    ))}
+                  </div>
+                  <input inputMode="numeric" value={tokens} onChange={e => setTokens(e.target.value.replace(/[^\d]/g, "").slice(0, 7))} placeholder="jumlah token"
+                    className="w-40 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink outline-none font-mono focus:border-emerald-500/45"/>
+                  <p className="text-[11px] text-ink-soft">Paket Rp100rb = 35.000 token, Rp199rb = 75.000 token. Akun tim yang tidak dipotong token: pakai Settings → Limit khusus per email → Bebas kuota.</p>
+                </div>
+              )}
+            </div>
+            ) : (
             <div className="card-glass p-3.5">
               <label className="flex items-start gap-3 cursor-pointer">
                 <input type="checkbox" checked={ai} onChange={e => setAi(e.target.checked)} className="accent-emerald-500 w-4 h-4 mt-0.5"/>
@@ -1939,6 +1981,7 @@ const GrantAccessModal = ({ open, onClose, members = [], initialTarget = "", onD
                 </div>
               )}
             </div>
+            )}
 
             <div>
               <label className="text-xs text-ink-muted block mb-1">Catatan (opsional)</label>
@@ -1947,7 +1990,7 @@ const GrantAccessModal = ({ open, onClose, members = [], initialTarget = "", onD
             </div>
 
             {error && <div className="text-xs text-rose-400">{error}</div>}
-            <button type="submit" disabled={busy || !targets.length || (!library && !ai)} className="btn btn-primary w-full text-sm py-3">
+            <button type="submit" disabled={busy || !targets.length || (!library && !ai) || (tokenMode && ai && !library && !(Number(tokens) > 0))} className="btn btn-primary w-full text-sm py-3">
               {busy ? "Memproses…" : targets.length > 1 ? `Beri akses ke ${targets.length} target` : "Beri akses"}
             </button>
           </form>
@@ -3057,6 +3100,7 @@ const AdminSettings = () => {
   }));
   // Kuota bulanan AI per pelanggan; kosong = bawaan server (DEFAULT_MONTHLY_LIMITS).
   const [limits, setLimits] = useState({});
+  const tokenMode = useTokenMode();
   // Limit khusus per email: [{ email, daily: { talkhis: 5, … }, noMonthly }] — lihat parseQuotaOverrides di server.
   const [overrides, setOverrides] = useState([]);
   const [newOverrideEmail, setNewOverrideEmail] = useState("");
@@ -3213,6 +3257,12 @@ const AdminSettings = () => {
 
         <div className="card-glass p-6 space-y-4">
           <div>
+            {tokenMode && (
+              <div className="mb-3 rounded-xl border border-amber-400/30 bg-amber-400/[0.06] px-3 py-2 text-[11px] text-amber-200 leading-relaxed">
+                Model token sudah berlaku: kuota bulanan dan batas Live Caption di bawah tidak dipakai untuk pembeli token. Masih berlaku hanya
+                untuk member bertipe Trial dan akun lama yang belum punya token. Atur pemakaian lewat kartu Token AI di atas.
+              </div>
+            )}
             <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Kuota AI per 30 hari langganan</div>
             <p className="text-[11px] text-ink-soft leading-relaxed">
               Batas pemakaian tiap pelanggan AI Partner per periode 30 hari langganan (dihitung dari tanggal bayar; akses manual tanpa
@@ -3255,6 +3305,8 @@ const AdminSettings = () => {
             <p className="text-[11px] text-ink-soft leading-relaxed">
               Untuk akun tertentu (misalnya akun admin, penguji, atau mitra): batas harian sendiri per fitur, dan bisa bebas dari kuota
               bulanan. Kolom kosong = batas harian bawaan. Email lain tidak terpengaruh. Klik "Simpan Settings" setelah mengubah.
+              {tokenMode && <> <span className="text-emerald-300">Model token: centang "Bebas kuota" = akun ini memakai AI tanpa dipotong token
+              (untuk tim/penguji saja, biayanya ditanggung Talqeeh).</span></>}
             </p>
           </div>
           {overrides.map((o, idx) => {
@@ -3267,7 +3319,7 @@ const AdminSettings = () => {
                   <div className="flex items-center gap-3">
                     <label className="flex items-center gap-2 text-xs text-ink-muted cursor-pointer">
                       <input type="checkbox" checked={!!o.noMonthly} onChange={e => setO({ noMonthly: e.target.checked })} className="accent-emerald-500"/>
-                      Bebas kuota bulanan
+                      Bebas kuota bulanan · tanpa potong token
                     </label>
                     <button onClick={() => setOverrides(list => list.filter((_, i) => i !== idx))} className="text-xs text-ink-soft hover:text-rose-500 px-2 py-1">Hapus</button>
                   </div>
@@ -3372,6 +3424,7 @@ const AdminSubscriptions = () => {
 
   useEffect(() => { fetchData(); }, []);
 
+  const tokenMode = useTokenMode();
   const handleGrant = async () => {
     if (!grantCode.trim()) return;
     setBusy(true);
@@ -3408,11 +3461,11 @@ const AdminSubscriptions = () => {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="font-display text-4xl font-semibold text-ink mb-1">Langganan & Pembayaran</h1>
-          <p className="text-ink-muted">Akses AI Partner Belajar (dari webhook Mayar atau manual) dan riwayat pembayaran Mayar.</p>
+          <p className="text-ink-muted">{tokenMode ? 'Token AI member, akses AI lama (sebelum model token), dan riwayat pembayaran Mayar.' : 'Akses AI Partner Belajar (dari webhook Mayar atau manual) dan riwayat pembayaran Mayar.'}</p>
         </div>
         <div className="flex flex-wrap gap-2 justify-end">
           <button onClick={() => setGrantOpen(true)} className="btn btn-primary text-sm px-4 py-2">
-            <Icon name="crown" className="w-4 h-4"/> Beri Bonus
+            <Icon name="crown" className="w-4 h-4"/> {tokenMode ? 'Beri Library / Token' : 'Beri Bonus'}
           </button>
           <button onClick={fetchData} className="btn btn-ghost text-sm px-4 py-2">
             <Icon name="refresh" className="w-4 h-4"/> Refresh
@@ -3424,13 +3477,15 @@ const AdminSubscriptions = () => {
 
       <div className="card-glass p-5 mb-6 flex gap-3 flex-wrap items-end">
         <div className="flex-1 min-w-[220px]">
-          <label className="text-xs uppercase tracking-wider text-gold-400 mb-2 block">Beri akses AI Partner manual</label>
+          <label className="text-xs uppercase tracking-wider text-gold-400 mb-2 block">{tokenMode ? 'Kode member' : 'Beri akses AI Partner manual'}</label>
           <input value={grantCode} onChange={e => setGrantCode(e.target.value)} placeholder="MSR-XXXX-XXXX"
             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-ink text-sm outline-none font-mono"/>
         </div>
-        <button onClick={handleGrant} disabled={busy || !grantCode.trim()} className="btn btn-primary text-sm px-5 py-2.5">
-          {busy ? 'Memproses...' : 'Beri Akses'}
-        </button>
+        {!tokenMode && (
+          <button onClick={handleGrant} disabled={busy || !grantCode.trim()} className="btn btn-primary text-sm px-5 py-2.5">
+            {busy ? 'Memproses...' : 'Beri Akses'}
+          </button>
+        )}
         <div className="w-full sm:w-auto flex gap-2 items-end">
           <div>
             <label className="text-xs uppercase tracking-wider text-gold-400 mb-2 block">Tambah token AI</label>
