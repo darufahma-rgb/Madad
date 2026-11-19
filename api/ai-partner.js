@@ -1656,6 +1656,20 @@ async function handleAdmin(action, req, res, body) {
     return res.status(200).json({ ok: true, on: true, data: await legacySchedules() });
   }
 
+  /* Isi token sekarang untuk daftar member (paling banyak 25 per panggilan): jatah bulanan member lama, hadiah Library,
+     dan pembelian yang belum masuk. Tanpa ini token baru terisi saat member membuka Talqeeh. Aman diulang (ref unik). */
+  if (action === 'admin-token-sync') {
+    if (!(await tokensOn())) return res.status(400).json({ ok: false, error: 'Model token belum aktif — jalankan migrations/ai_tokens.sql.' });
+    const codes = [...new Set((Array.isArray(body.codes) ? body.codes : []).map(normalizeCode).filter(Boolean))].slice(0, 25);
+    const out = {};
+    for (const code of codes) {
+      await ensureGrants(code, { force: true });
+      const st = await tokenState(code);
+      if (st && !st.missing) out[code] = st;
+    }
+    return res.status(200).json({ ok: true, data: out });
+  }
+
   if (action === 'admin-revoke') {
     if (!isStr(body.id)) return res.status(400).json({ ok: false, error: 'id wajib' });
     const now = new Date().toISOString();
