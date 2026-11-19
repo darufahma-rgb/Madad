@@ -1609,10 +1609,10 @@ async function handleAdmin(action, req, res, body) {
   }
 
   if (action === 'admin-checkouts') {
-    const r = await fetch(
-      `${url}/rest/v1/payment_checkouts?select=id,created_at,plan,amount,email,name,member_code,status,paid_via,paid_at,link&order=created_at.desc&limit=100`,
-      { headers: sbHeaders(key) }
-    );
+    // tokens: jumlah token paket token (kolom dari migrations/ai_tokens.sql; tanpa kolom itu ambil tanpa tokens).
+    const base = 'id,created_at,plan,amount,email,name,member_code,status,paid_via,paid_at,link';
+    let r = await fetch(`${url}/rest/v1/payment_checkouts?select=${base},tokens&order=created_at.desc&limit=100`, { headers: sbHeaders(key) });
+    if (r.status === 400) r = await fetch(`${url}/rest/v1/payment_checkouts?select=${base}&order=created_at.desc&limit=100`, { headers: sbHeaders(key) });
     const data = r.ok ? await r.json() : [];
     return res.status(200).json({ ok: true, data: Array.isArray(data) ? data : [], missing: !r.ok });
   }

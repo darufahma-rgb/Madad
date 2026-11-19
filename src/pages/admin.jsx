@@ -791,8 +791,8 @@ const AdminAnalytics = () => {
         <KpiCard label="Aktif belajar" value={members.activeInRange} sub={`rata-rata ${avgActive}/hari`}/>
         <KpiCard label="Gratis → Library" value={members.freeConversionRate == null ? '—' : `${Math.round(members.freeConversionRate * 100)}%`}
           sub={`${members.freeConverted} dari ${members.freeStarted} akun gratis`}/>
-        <KpiCard label="Pelanggan AI aktif" value={ai.activeSubscribers}
-          sub={ai.conversionRate == null ? null : `${Math.round(ai.conversionRate * 100)}% pencoba AI berlangganan`}/>
+        <KpiCard label={ai.tokenModel ? "Punya token" : "Pelanggan AI aktif"} value={ai.activeSubscribers}
+          sub={ai.conversionRate == null ? null : `${Math.round(ai.conversionRate * 100)}% pencoba AI ${ai.tokenModel ? 'membeli token' : 'berlangganan'}`}/>
         <KpiCard label={costLabel(ai)} value={usd(ai.estCostUsd)} delta={<Delta now={ai.estCostUsd} prev={ai.estCostPrevUsd} invert/>}/>
       </div>
 
@@ -803,12 +803,12 @@ const AdminAnalytics = () => {
         <div className="grid lg:grid-cols-3 gap-4">
           <Panel title="Pemasukan per hari" className="lg:col-span-2">
             <BarChart data={revenue.byDay} format={rupiah}
-              series={[{ key: 'library', label: 'Library', color: 'var(--a-gold, #c9a86a)' }, { key: 'ai', label: 'AI Partner', color: 'var(--a-green, #3ecf8e)' }]}/>
+              series={[{ key: 'library', label: 'Library', color: 'var(--a-gold, #c9a86a)' }, { key: 'ai', label: ai.tokenModel ? 'Token AI' : 'AI Partner', color: 'var(--a-green, #3ecf8e)' }]}/>
           </Panel>
           <Panel title="Rincian">
             <div className="space-y-3 text-sm">
               <div className="flex justify-between"><span className="text-ink-muted">Library</span><span className="text-ink">{rupiah(revenue.library)}</span></div>
-              <div className="flex justify-between"><span className="text-ink-muted">AI Partner</span><span className="text-ink">{rupiah(revenue.ai)}</span></div>
+              <div className="flex justify-between"><span className="text-ink-muted">{ai.tokenModel ? 'Token AI' : 'AI Partner'}</span><span className="text-ink">{rupiah(revenue.ai)}</span></div>
               <div className="flex justify-between border-t border-white/8 pt-3"><span className="text-ink-muted">Transaksi Talqeeh</span><span className="text-ink">{revenue.transactions}</span></div>
               <div className="flex justify-between"><span className="text-ink-muted">Rata-rata transaksi</span><span className="text-ink">{rupiah(revenue.transactions ? revenue.total / revenue.transactions : 0)}</span></div>
               {revenue.otherCount > 0 && (
@@ -859,19 +859,19 @@ const AdminAnalytics = () => {
       </Section>
 
       {/* AI Partner */}
-      <Section title="AI Partner & biaya">
+      <Section title={ai.tokenModel ? "AI Partner, token & biaya" : "AI Partner & biaya"}>
         {!ai.migrated && <div className="card-glass p-4 mb-4 text-sm text-amber-300">Sebagian data AI Partner belum tersedia — pastikan migrasi AI Partner sudah dijalankan.</div>}
         <div className="grid lg:grid-cols-3 gap-4 mb-4">
           <Panel title="Pemakaian AI per hari" className="lg:col-span-2">
             <BarChart data={ai.usageByDay} height={160}
               series={Object.entries(AI_KIND_LABELS).filter(([, v]) => !v.costOnly).map(([key, v]) => ({ key, label: v.label, color: v.color }))}/>
           </Panel>
-          <Panel title="Coba gratis → berlangganan">
+          <Panel title={ai.tokenModel ? "Coba gratis → beli token" : "Coba gratis → berlangganan"}>
             <div className="space-y-3">
               {[
                 ['Semua akun aktif', members.active, '#6b7280'],
                 ['Mencoba AI Partner', ai.trialsStarted, '#c9a86a'],
-                ['Berlangganan', ai.trialConverted, '#3ecf8e'],
+                [ai.tokenModel ? 'Membeli token' : 'Berlangganan', ai.trialConverted, '#3ecf8e'],
               ].map(([label, value, color], i, arr) => (
                 <div key={label}>
                   <div className="flex justify-between text-sm mb-1"><span className="text-ink-muted">{label}</span><span className="text-ink">{value}</span></div>
@@ -880,7 +880,12 @@ const AdminAnalytics = () => {
                   </div>
                 </div>
               ))}
-              <div className="text-[11px] text-ink-soft pt-1">Pelanggan aktif sekarang: {ai.activeSubscribers}</div>
+              {ai.tokenModel ? (
+                <div className="text-[11px] text-ink-soft pt-1 leading-relaxed">
+                  Punya token sekarang: {ai.tokenHolders} · pernah membeli AI: {ai.tokenBuyers}<br/>
+                  Token beredar: {Number(ai.tokensOutstanding || 0).toLocaleString('id-ID')} (biaya AI paling besar ±{rupiah((ai.tokensOutstanding || 0) * 0.0001 * 16500)} kalau semuanya terpakai)
+                </div>
+              ) : <div className="text-[11px] text-ink-soft pt-1">Pelanggan aktif sekarang: {ai.activeSubscribers}</div>}
             </div>
           </Panel>
         </div>
@@ -1117,7 +1122,7 @@ const LegacyLinkPanel = ({ members, onDone, onClose }) => {
           <div className="font-display text-lg font-semibold text-ink">Hubungkan email member lama</div>
           <p className="text-xs text-ink-muted leading-relaxed mt-1 max-w-2xl">
             Isi email Google tiap member lama. Setelah disimpan, member itu jadi <span className="text-ink">Library selamanya</span> dan
-            cukup login Google dengan email tersebut — tanpa PIN. AI Partner tidak termasuk (tetap bayar sendiri).
+            cukup login Google dengan email tersebut — tanpa PIN. {tokenModeCache ? 'Token AI tidak ikut; mereka mendapat hadiah token member Library otomatis, atau beri lewat "Beri akses".' : 'AI Partner tidak termasuk (tetap bayar sendiri).'}
             Kalau member sudah telanjur punya akun gratis dengan email itu, akun gratisnya otomatis digabung ke keanggotaan lama.
           </p>
         </div>
@@ -3299,9 +3304,16 @@ const AdminSettings = () => {
             <span className="text-ink-muted">Harga Library</span>
             <span className="text-ink">{LIBRARY_PRICE} · sekali bayar</span>
           </div>
+          {tokenMode ? (
+            <div className="flex items-center justify-between text-sm border-t border-white/8 pt-3">
+              <span className="text-ink-muted">AI Partner</span>
+              <span className="text-ink text-right">dijual sebagai paket token · atur di kartu Token AI</span>
+            </div>
+          ) : (
           <SettingsField label="Harga AI Partner 30 hari pertama di paket Library + AI (Rp) · perpanjang tetap Rp75.000" value={settings.aiPriceMonthly} mono
             onChange={v => setSettings({...settings, aiPriceMonthly: v.replace(/[^\d]/g, "")})}
             hint="Angka saja, misal 49000. Harga ini yang ditampilkan dan ditagihkan. Kosongkan untuk menutup penjualan AI Partner (akses manual dari tab Langganan & Bayar tetap bisa)."/>
+          )}
           <MayarQrisProbe/>
         </div>
 
@@ -3600,6 +3612,13 @@ const AdminSubscriptions = () => {
       ) : rows.length === 0 ? (
         <div className="text-ink-muted text-sm">Belum ada subscriber.</div>
       ) : (
+        <>
+        {tokenMode && (
+          <p className="text-[11px] text-ink-soft mb-2 leading-relaxed">
+            Daftar di bawah = akses AI per masa aktif dari sistem lama (sebelum model token). Saldo & jadwal isi ulang token tiap member
+            ada di tab Members; akses AI sekarang mengikuti saldo token, bukan tanggal di tabel ini.
+          </p>
+        )}
         <div className="card-glass overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -3638,6 +3657,7 @@ const AdminSubscriptions = () => {
             </tbody>
           </table>
         </div>
+        </>
       )}
 
       <div className="mt-10 mb-3">
@@ -3665,7 +3685,10 @@ const AdminSubscriptions = () => {
               {checkouts.data.map(c => (
                 <tr key={c.id} className="border-b border-line/50">
                   <td className="px-4 py-3 text-ink-muted whitespace-nowrap">{new Date(c.created_at).toLocaleString('id-ID')}</td>
-                  <td className="px-4 py-3 text-ink">{{ library: 'Library', library_ai: 'Library + AI', ai: 'AI 30 hari', imtihan: 'Paket Imtihan' }[c.plan] || c.plan}</td>
+                  <td className="px-4 py-3 text-ink">
+                    {c.plan === 'token' ? `Token ${Number(c.tokens || 0).toLocaleString('id-ID')}`
+                      : { library: 'Library', library_ai: 'Library + AI', ai: 'AI 30 hari', imtihan: 'Paket Imtihan', rombongan: 'Paket Rombongan', talkhis_1: 'Tambahan talkhis 1', talkhis_3: 'Tambahan talkhis 3' }[c.plan] || c.plan}
+                  </td>
                   <td className="px-4 py-3 text-ink-muted">
                     <div className="text-ink">{c.name || '-'}</div>
                     <div className="text-[11px]">{c.email}</div>

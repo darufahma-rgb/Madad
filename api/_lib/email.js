@@ -1,3 +1,4 @@
+import { tokensOn } from './tokens.js';
 // Email ke member lewat Resend (Admin → Email). Env: RESEND_API_KEY, EMAIL_FROM ("Talqeeh <info@domainmu>"),
 // opsional EMAIL_REPLY_TO dan SITE_URL. Lihat migrations/email_broadcast.sql.
 import crypto from 'crypto';
@@ -16,6 +17,18 @@ export const AUDIENCES = {
   ai:         'Pelanggan AI Partner aktif',
   trial_ai:   'Pernah coba AI, belum berlangganan AI',
 };
+/* Model token (api/_lib/tokens.js): kelompok penerima yang sama, dengan arti versi token. Kunci tetap sama supaya
+   riwayat kampanye lama tetap terbaca; token_empty hanya ada di model token. */
+const TOKEN_AUDIENCES = {
+  no_ai:       'Belum punya token (gratis + Library yang belum beli token)',
+  all:         'Semua member',
+  free:        'Akun gratis',
+  library:     'Pelanggan Library',
+  ai:          'Punya token (saldo masih ada)',
+  token_empty: 'Token habis (pernah punya, saldo sekarang habis)',
+  trial_ai:    'Pernah coba AI gratis, belum beli token',
+};
+export const audiencesFor = async () => ((await tokensOn()) ? TOKEN_AUDIENCES : AUDIENCES);
 
 export const emailConfigured = () => !!(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
 
@@ -60,7 +73,7 @@ export const addOptout = async (email) =>
 
 /* ── Penerima ── */
 const fetchMembersForEmail = async () => {
-  for (const f of ['code,name,email,status,tier,ai_trial_set_id', 'code,name,email,status,tier', 'code,name,email,status']) {
+  for (const f of ['code,name,email,status,tier,ai_trial_set_id,ai_tokens,ai_tokens_granted', 'code,name,email,status,tier,ai_trial_set_id', 'code,name,email,status,tier', 'code,name,email,status']) {
     const rows = await fetchAll(`members?select=${f}&email=not.is.null`);
     if (rows) return rows;
   }
@@ -69,7 +82,8 @@ const fetchMembersForEmail = async () => {
 
 // optional: daftar berhenti berlangganan boleh belum ada (ekspor CSV untuk dikirim sendiri tidak butuh tabel email).
 export const buildAudience = async (audience, { optoutsOptional = false } = {}) => {
-  if (!AUDIENCES[audience]) return { error: 'Penerima tidak valid' };
+  const tokenModel = await tokensOn();
+  if (!(tokenModel ? TOKEN_AUDIENCES : AUDIENCES)[audience]) return { error: 'Penerima tidak valid' };
   const [members, subs, optouts] = await Promise.all([
     fetchMembersForEmail(),
     fetchAll(`ai_subscriptions?select=member_code,expires_at&status=eq.active`),
@@ -79,7 +93,17 @@ export const buildAudience = async (audience, { optoutsOptional = false } = {}) 
   const now = Date.now();
   const aiActive = new Set((subs || []).filter(s => !s.expires_at || Date.parse(s.expires_at) > now).map(s => s.member_code));
   const out = new Set((optouts || []).map(o => String(o.email).toLowerCase()));
-  const pick = {
+  // Model token: "punya AI" = saldo token masih ada; "pernah beli" ditandai token yang didapat lebih dari jatah gratis.
+  const bal = (m) => Number(m.ai_tokens) || 0;
+  const pick = tokenModel ? {
+    no_ai: (m) => !(Number(m.ai_tokens_granted) > 0) || (m.tier === 'free' && bal(m) <= 0),
+    all: () => true,
+    free: (m) => m.tier === 'free',
+    library: (m) => (m.tier || 'library') === 'library',
+    ai: (m) => bal(m) > 0,
+    token_empty: (m) => Number(m.ai_tokens_granted) > 0 && bal(m) <= 0,
+    trial_ai: (m) => (!!m.ai_trial_set_id || Number(m.ai_tokens_granted) > 0) && m.tier === 'free',
+  }[audience] : {
     no_ai: (m) => !aiActive.has(m.code),
     all: () => true,
     free: (m) => m.tier === 'free' && !aiActive.has(m.code),
@@ -233,7 +257,7 @@ const uploadEmailImage = async (p) => {
 
 export async function handleEmailAdmin(action, p) {
   if (action === 'email-status') {
-    return { ok: true, data: { configured: emailConfigured(), from: process.env.EMAIL_FROM || null, audiences: AUDIENCES } };
+    return { ok: true, data: { configured: emailConfigured(), from: process.env.EMAIL_FROM || null, audiences: await audiencesFor(), tokenMode: await tokensOn() } };
   }
   // Daftar email untuk dikirim sendiri (Gmail/WhatsApp), tanpa Resend. Yang sudah berhenti berlangganan tidak ikut.
   if (action === 'email-export') {
