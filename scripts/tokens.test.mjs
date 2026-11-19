@@ -108,7 +108,7 @@ test('token dari pembelian: baru, member lama diisi ulang tiap bulan, hadiah Lib
   // Akses lama dari admin tanpa tagihan: satu kali isi ulang.
   assert.deepEqual(grantsDue([], { start, subActive: true }), [{ ref: 'legacy:sub', amount: 30000, reason: 'reset:1/1', topup: true }]);
   assert.deepEqual(grantsDue([], { start, subActive: false, paidLibrary: false }), []);
-  assert.deepEqual(grantsDue([], { start, paidLibrary: true }), [{ ref: 'gift:library', amount: 5000, reason: 'gift' }]);
+  assert.deepEqual(grantsDue([], { start, paidLibrary: true }), [{ ref: 'gift:library', amount: 3000, reason: 'gift' }]);
 });
 
 /* ── Supabase tiruan ── */
@@ -228,10 +228,10 @@ test('isi ulang bulanan lewat ensureGrants: tidak menumpuk, hadiah Library sekal
   globalThis.fetch = fake(state);
   clearTokenCache();
   await ensureGrants('L1', { force: true });
-  assert.equal(state.balance, 35000); // isi ulang ke 30.000, lalu hadiah Library 5.000
+  assert.equal(state.balance, 33000); // isi ulang ke 30.000, lalu hadiah Library 3.000
   assert.ok(state.refs.has('reset:checkout:old:2') && state.refs.has('gift:library'));
   await ensureGrants('L1', { force: true });
-  assert.equal(state.balance, 35000);
+  assert.equal(state.balance, 33000);
 });
 
 test('migrasi belum dijalankan → model token mati', async () => {
