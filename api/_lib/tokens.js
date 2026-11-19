@@ -30,6 +30,12 @@ export const DEFAULT_TOKENS = {
     { id: 't100', price: 100000, tokens: 35000 },
     { id: 't199', price: 199000, tokens: 75000 },
   ],
+  // Tambahan token (add-on): paket kecil untuk member yang SUDAH punya Library, tanpa Library di dalamnya.
+  // Per token sengaja sedikit lebih mahal daripada paket besar supaya paket besar tetap paling hemat.
+  addons: [
+    { id: 'a25', price: 25000, tokens: 7500 },
+    { id: 'a50', price: 50000, tokens: 16000 },
+  ],
   // imtihan: Paket Imtihan (plan 'imtihan' — harga kupon/mitra/kekeluargaan/rombongan tetap berlaku) = Library + token ini.
   // free: token gratis sekali per akun untuk mencoba AI Partner.
   grants: { imtihan: 75000, free: 1500, gift: 5000 },
@@ -71,12 +77,17 @@ export const parseTokenConfig = (raw) => {
   try { o = typeof raw === 'string' ? JSON.parse(raw || '{}') : (raw || {}); } catch {}
   const d = DEFAULT_TOKENS;
   const pick = (group, min = 0, max = 10000000) => Object.fromEntries(Object.keys(d[group]).map(k => [k, int(o?.[group]?.[k], min, max) ?? d[group][k]]));
-  const packs = (Array.isArray(o?.packs) ? o.packs : []).map(p => {
+  const list = (raw, max) => (Array.isArray(raw) ? raw : []).map(p => {
     const tokens = int(p?.tokens, 1, 10000000), price = int(p?.price, 5000, 5000000);
     const id = String(p?.id || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
     return tokens && price && id ? { id, price, tokens } : null;
-  }).filter(Boolean).slice(0, 4);
+  }).filter(Boolean).slice(0, max);
+  const packs = list(o?.packs, 4);
+  // addons: [] di setting = add-on dimatikan; tidak ada di setting = bawaan. Id tidak boleh sama dengan paket utama.
+  const addons = Array.isArray(o?.addons) ? list(o.addons, 4) : d.addons;
+  const packIds = new Set((packs.length ? packs : d.packs).map(p => p.id));
   return { usdRate: int(o?.usdRate, 1000, 100000) ?? d.usdRate, packs: packs.length ? packs : d.packs,
+    addons: addons.filter(a => !packIds.has(a.id)),
     grants: pick('grants'), limits: pick('limits'), legacy: pick('legacy'), convert: pick('convert'), rates: pick('rates', 10, 500) };
 };
 

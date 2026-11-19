@@ -3007,6 +3007,7 @@ const ModelField = ({ label, hint, value, active, onChange }) => {
 const TOKEN_DEFAULTS = {
   usdRate: 16500,
   packs: [{ id: 't100', price: 100000, tokens: 35000 }, { id: 't199', price: 199000, tokens: 75000 }],
+  addons: [{ id: 'a25', price: 25000, tokens: 7500 }, { id: 'a50', price: 50000, tokens: 16000 }],
   grants: { imtihan: 75000, free: 1500, gift: 5000 },
   limits: { freeDaily: 30 },
   legacy: { imtihan: 30000, monthly: 30000 },
@@ -3019,6 +3020,9 @@ const TokenSettingsCard = ({ tokens, setTokens, eventPrice }) => {
   const num = (v) => { const t = String(v).replace(/[^\d]/g, "").slice(0, 8); return t === "" ? "" : Number(t); };
   const setIn = (group, k, v) => setTokens(c => ({ ...c, [group]: { ...c[group], [k]: num(v) } }));
   const setPack = (i, k, v) => setTokens(c => ({ ...c, packs: c.packs.map((p, j) => (j === i ? { ...p, [k]: num(v) } : p)) }));
+  const setAddon = (i, k, v) => setTokens(c => ({ ...c, addons: (c.addons || []).map((p, j) => (j === i ? { ...p, [k]: num(v) } : p)) }));
+  const addAddon = () => setTokens(c => ({ ...c, addons: [...(c.addons || []), { id: `a${Date.now().toString(36).slice(-6)}`, price: '', tokens: '' }].slice(0, 4) }));
+  const removeAddon = (i) => setTokens(c => ({ ...c, addons: (c.addons || []).filter((_, j) => j !== i) }));
   // Kasus terburuk: semua token dipakai di fitur dengan tarif terendah.
   const lowRate = Math.min(...Object.values(tokens.rates || {}).map(v => (Number(v) >= 10 ? Number(v) : 100))) / 100;
   const costOf = (n) => Math.round(((Number(n) || 0) * 0.0001 * (Number(tokens.usdRate) || TOKEN_DEFAULTS.usdRate)) / lowRate);
@@ -3026,6 +3030,7 @@ const TokenSettingsCard = ({ tokens, setTokens, eventPrice }) => {
   // Untung per penjualan bila SEMUA token terpakai (kasus terburuk). Belum dipotong biaya Mayar dan komisi mitra.
   const sales = [
     ...tokens.packs.map(p => [`Paket ${fmt(p.tokens)} token`, Number(p.price) || 0, p.tokens]),
+    ...(tokens.addons || []).filter(a => a.price && a.tokens).map(a => [`Tambahan ${fmt(a.tokens)} token`, Number(a.price) || 0, a.tokens]),
     ['Paket Imtihan (harga normal)', IMTIHAN_PRICE_IDR, tokens.grants.imtihan],
     ['Paket Imtihan (kupon Instagram)', OFFER_COUPON_PRICE, tokens.grants.imtihan],
     eventPrice ? ['Paket Imtihan (harga event)', eventPrice, tokens.grants.imtihan] : null,
@@ -3052,6 +3057,21 @@ const TokenSettingsCard = ({ tokens, setTokens, eventPrice }) => {
             </div>
           ))}
         </div>
+        <div className="text-[11px] text-ink-muted mt-4 mb-2">Tambahan token (add-on) <span className="text-ink-soft">· khusus member yang sudah punya Library, tanpa Library di dalamnya</span></div>
+        <div className="space-y-2">
+          {(tokens.addons || []).map((p, i) => (
+            <div key={p.id || i} className="flex items-center gap-2">
+              <input inputMode="numeric" value={p.tokens ?? ""} onChange={e => setAddon(i, 'tokens', e.target.value)} className={tokenInputClass + " max-w-[130px]"}/>
+              <span className="text-xs text-ink-soft">token seharga Rp</span>
+              <input inputMode="numeric" value={p.price ?? ""} onChange={e => setAddon(i, 'price', e.target.value)} className={tokenInputClass + " max-w-[130px]"}/>
+              <button type="button" onClick={() => removeAddon(i)} className="text-xs text-ink-soft hover:text-rose-400 px-2">Hapus</button>
+            </div>
+          ))}
+          {(tokens.addons || []).length < 4 && (
+            <button type="button" onClick={addAddon} className="text-xs text-emerald-300 hover:text-emerald-200">+ Tambah add-on</button>
+          )}
+        </div>
+        <p className="text-[11px] text-ink-soft mt-1.5">Harga minimal Rp5.000. Hapus semua add-on untuk mematikannya. Sebaiknya per token sedikit lebih mahal daripada paket besar.</p>
         <div className="mt-3 max-w-[260px]">
           <label className="text-[11px] text-ink-soft block mb-1">Token di Paket Imtihan (harga kupon/mitra/event berlaku)</label>
           <input inputMode="numeric" value={tokens.grants.imtihan ?? ""} onChange={e => setIn('grants', 'imtihan', e.target.value)} className={tokenInputClass}/>
@@ -3203,6 +3223,7 @@ const AdminSettings = () => {
           setTokens({
             usdRate: c.usdRate || TOKEN_DEFAULTS.usdRate,
             packs: Array.isArray(c.packs) && c.packs.length ? c.packs : TOKEN_DEFAULTS.packs,
+            addons: Array.isArray(c.addons) ? c.addons : TOKEN_DEFAULTS.addons,
             grants: { ...TOKEN_DEFAULTS.grants, ...(c.grants || {}) },
             limits: { ...TOKEN_DEFAULTS.limits, ...(c.limits || {}) },
             legacy: { ...TOKEN_DEFAULTS.legacy, ...(c.legacy || {}) },
