@@ -39,7 +39,17 @@ const Badge = ({ u }) => {
     : u.ai ? ['AI Partner', 'bg-emerald-500/15 text-emerald-200 border-emerald-400/30']
     : u.tier === 'free' ? ['Gratis', 'bg-white/5 text-ink-muted border-white/10']
     : ['Library', 'bg-sky-500/10 text-sky-200 border-sky-400/25'];
-  return <span className={`text-[10px] px-1.5 py-0.5 rounded-md border whitespace-nowrap ${cls}`}>{label}</span>;
+  return (
+    <>
+      <span className={`text-[10px] px-1.5 py-0.5 rounded-md border whitespace-nowrap ${cls}`}>{label}</span>
+      {/* Model token: sisa saldo pemakai ini. */}
+      {u.tokens != null && (
+        <span className={`text-[10px] px-1.5 py-0.5 rounded-md border whitespace-nowrap ml-1 ${u.tokens > 0 ? 'bg-emerald-500/10 text-emerald-200 border-emerald-400/25' : 'bg-orange-500/10 text-orange-200 border-orange-400/25'}`}>
+          🪙 {Number(u.tokens).toLocaleString('id-ID')}
+        </span>
+      )}
+    </>
+  );
 };
 
 const KindBar = ({ byKind, total }) => (

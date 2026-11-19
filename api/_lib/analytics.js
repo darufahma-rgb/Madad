@@ -1,3 +1,4 @@
+import { tokensOn } from './tokens.js';
 // Agregasi analitik admin: dihitung di server supaya browser admin tidak menerima baris mentah.
 import { sbConfig, sbHeaders } from './member.js';
 import { readSettings } from './settings.js';
@@ -103,7 +104,7 @@ const countRows = async (path) => {
 // Kolom tambahan datang dari migrasi terpisah (ai_partner_v2, free_tier); pakai yang tersedia saja.
 const fetchMembers = async () => {
   const base = 'members?select=code,name,email,status,created_at,last_login,auth_user_id';
-  for (const extra of [',ai_trial_set_id,tier,free_started_at', ',ai_trial_set_id', '']) {
+  for (const extra of [',ai_trial_set_id,tier,free_started_at,ai_tokens,ai_tokens_granted', ',ai_trial_set_id,tier,free_started_at', ',ai_trial_set_id', '']) {
     const result = await fetchAll(base + extra);
     if (!result.missing) return result;
   }
@@ -130,7 +131,7 @@ export async function buildAdminAnalytics(days) {
 
   const [
     members, payments, subs, usage, sets, presence, activity, profiles, settings,
-    notesCount, muqaranahCount, soalPaham, soalBelum, feedback, checkouts, costInfo, costLog, realFrom,
+    notesCount, muqaranahCount, soalPaham, soalBelum, feedback, checkouts, costInfo, costLog, realFrom, tokenModel, buyers,
   ] = await Promise.all([
     fetchMembers(),
     fetchAll(`payment_events?select=created_at,event,product_id,product_name,amount,handled_as&created_at=gte.${since}&order=created_at.asc`),
@@ -150,6 +151,9 @@ export async function buildAdminAnalytics(days) {
     aiCostTable(),
     fetchAll(`ai_cost_log?select=member_code,day,kind,model,cost_usd,tokens_in,tokens_out&day=gte.${prevFrom}`),
     firstCostDay(),
+    tokensOn().catch(() => false),
+    // Pembeli AI sepanjang masa (model token: paket token, Paket Imtihan/Rombongan, dan paket AI lama).
+    fetchAll('payment_checkouts?select=member_code&status=eq.paid&plan=in.(token,imtihan,rombongan,library_ai,ai)'),
   ]);
   const AI_COST_USD = costInfo.table;
 
@@ -296,11 +300,23 @@ export async function buildAdminAnalytics(days) {
   const bySource = {};
   for (const s of setsInRange) bySource[s.source_type] = (bySource[s.source_type] || 0) + 1;
 
+  /* Model token: "pelanggan aktif" = member yang saldo tokennya masih ada; "berlangganan" = pernah membeli AI (token,
+     Paket Imtihan/Rombongan, atau paket AI lama). Token beredar = sisa token semua member = biaya AI paling besar
+     yang masih bisa terpakai. */
+  const buyerCodes = new Set((buyers.rows || []).map(r => r.member_code).filter(Boolean));
+  const tokenBalances = m.map(x => Number(x.ai_tokens) || 0);
+  const tokenHolders = tokenBalances.filter(b => b > 0).length;
+  const tokensOutstanding = tokenBalances.reduce((a, b) => a + (b > 0 ? b : 0), 0);
+  const tokenTrialConverted = trialMembers.filter(x => buyerCodes.has(x.code) || everPaid.has(x.code)).length;
   const aiOut = {
-    activeSubscribers: activeSubs.size,
+    tokenModel: !!tokenModel,
+    tokenHolders,
+    tokensOutstanding,
+    tokenBuyers: buyerCodes.size,
+    activeSubscribers: tokenModel ? tokenHolders : activeSubs.size,
     trialsStarted: trialMembers.length,
-    trialConverted,
-    conversionRate: trialMembers.length ? trialConverted / trialMembers.length : null,
+    trialConverted: tokenModel ? tokenTrialConverted : trialConverted,
+    conversionRate: trialMembers.length ? (tokenModel ? tokenTrialConverted : trialConverted) / trialMembers.length : null,
     usageByKind,
     usageByDay: dayList.map(d => ({ day: d, ...usageByDay[d] })),
     costByKind,

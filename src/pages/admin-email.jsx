@@ -24,10 +24,33 @@ const AUDIENCE_OPTIONS = [
 const SITE = 'https://talqeeh.id';
 const fmt = (n) => `Rp ${Number(n).toLocaleString('id-ID')}`;
 
+/* Bagian AI di template, mengikuti model yang berlaku (window.getAppSettings().tokens ada = model token):
+   paket lama "AI Study Partner 60 hari" atau model token "75.000 token AI yang tidak hangus". */
+const aiCopy = () => {
+  const t = window.getAppSettings?.()?.tokens, days = window.IMTIHAN_AI_DAYS;
+  const n = t ? Number(t.imtihan || 0).toLocaleString('id-ID') : null;
+  const addon = t?.addons?.length ? Math.min(...t.addons.map(a => a.price)) : null;
+  return t ? {
+    paren: `${n} token AI yang tidak hangus`,
+    bullet: `${n} token AI yang tidak hangus untuk persiapan imtihan`,
+    waBold: `*${n} token AI*`,
+    head: `${n} Token AI`,
+    perks: "Untuk talkhis otomatis, i'rab, tutor AI, kuis, dan latihan tahriri. Token tidak hangus dan tanpa batas harian.",
+    addMore: `Beli token kapan saja dari akunmu${addon ? ` (tambahan token mulai ${fmt(addon)} untuk member Library)` : ''}, token tidak hangus dan tanpa potongan otomatis`,
+  } : {
+    paren: `AI Partner ${days} hari`,
+    bullet: `AI Study Partner ${days} hari untuk persiapan imtihan`,
+    waBold: `AI Study Partner *${days} hari*`,
+    head: `AI Study Partner ${days} Hari`,
+    perks: "Talkhis otomatis, i'rab, tutor AI, kuis, dan latihan tahriri. Tanpa kuota bulanan, dengan batas penggunaan wajar harian.",
+    addMore: 'Tambahkan kapan saja dari akunmu, per 30 hari, tanpa potongan otomatis',
+  };
+};
+
 // Teks pengumuman event. {nama} diganti sendiri saat mengirim (atau hapus kalau kirim massal lewat BCC).
 // Promosi Arena Imtihan: selalu bisa dipakai (tidak bergantung event harga).
 const arenaTemplates = () => {
-  const arena = `${SITE}/#/battle`, days = window.IMTIHAN_AI_DAYS;
+  const arena = `${SITE}/#/battle`, ai = aiCopy();
   return [
     {
       id: 'wa_arena_group', title: 'WhatsApp — grup kekeluargaan / angkatan (Arena Imtihan)',
@@ -67,7 +90,7 @@ Menjelang imtihan, coba latihan dengan cara yang lebih ringan: Arena Imtihan di 
 
 Mulai dari Balaghah, Nahwu, atau Ushul Fiqh: ${arena}
 
-Ingin latihan dari muqarrar kuliahmu sendiri? Dengan Paket Imtihan (Library selamanya + AI Partner ${days} hari), unggah PDF atau foto muqarrar dan AI menyusun soal imtihannya untukmu: ${SITE}/#/gabung?plan=imtihan
+Ingin latihan dari muqarrar kuliahmu sendiri? Dengan Paket Imtihan (Library selamanya + ${ai.paren}), unggah PDF atau foto muqarrar dan AI menyusun soal imtihannya untukmu: ${SITE}/#/gabung?plan=imtihan
 
 Semangat muraja'ahnya,
 Tim Talqeeh`,
@@ -77,7 +100,7 @@ Tim Talqeeh`,
 
 // Teks pengumuman event harga — hanya ditampilkan selama event Paket Imtihan berlangsung.
 const promoTemplates = () => {
-  const P = window.IMTIHAN_PROMO, normal = window.IMTIHAN_PRICE_IDR, days = window.IMTIHAN_AI_DAYS;
+  const P = window.IMTIHAN_PROMO, normal = window.IMTIHAN_PRICE_IDR, ai = aiCopy();
   const link = `${SITE}/#/gabung?plan=imtihan`;
   if (!(P?.price > 0) || !window.imtihanPromoActive?.()) return [];
   return [
@@ -90,7 +113,7 @@ Imtihan termin satu tinggal hitungan bulan. Biar persiapannya nggak mepet, Talqe
 
 Selama event, Paket Imtihan cuma ${fmt(P.price)} (normalnya ${fmt(normal)}):
 • Library selamanya: ${window.CATALOG?.maddah || 88} maddah S1 & Ma'had, ${window.CATALOG?.prompts || '1.200+'} template prompt, bank soal tahriri, Siap Imtihan, dan muqaranah 4 madzhab
-• AI Study Partner ${days} hari untuk persiapan imtihan: unggah diktatmu, lalu dapat ringkasan gaya kitab, flashcard, kuis, terjemah & i'rab, dan tutor yang menjawab dari materimu sendiri
+• ${ai.bullet}: unggah diktatmu, lalu dapat ringkasan gaya kitab, flashcard, kuis, terjemah & i'rab, dan tutor yang menjawab dari materimu sendiri
 
 Sekali bayar, tanpa potongan otomatis. Bayar lewat QRIS, virtual account, atau e-wallet, aksesnya langsung aktif.
 
@@ -111,7 +134,7 @@ Talqeeh lagi ada *${P.name}* sampai *${P.endLabel}* 🎯
 
 *Paket Imtihan* cuma *${fmt(P.price)}* (normal ${fmt(normal)}):
 ✅ Library selamanya (semua maddah, bank soal, Siap Imtihan)
-✅ AI Study Partner *${days} hari*: ringkasan, flashcard, kuis, i'rab & tutor dari diktatmu sendiri
+✅ ${ai.waBold}: ringkasan, flashcard, kuis, i'rab & tutor dari diktatmu sendiri
 
 Sekali bayar, tanpa potongan otomatis.
 👉 ${link}
@@ -130,7 +153,7 @@ Unggah diktat, PDF scan, foto, atau rekaman kuliah, lalu Talqeeh menyiapkan:
 • flashcard dan kuis dari materimu sendiri
 • terjemah & i'rab kalimat Arab, plus tutor yang menjawab dari diktatmu
 
-Tambahkan kapan saja dari akunmu, per 30 hari, tanpa potongan otomatis: ${SITE}/#/ai-partner
+${ai.addMore}: ${SITE}/#/ai-partner
 
 Semangat muraja'ahnya,
 Tim Talqeeh`,
@@ -162,7 +185,7 @@ const downloadCsv = (rows, audience) => {
    Dikirim per 50 penerima; kalau kena batas harian Resend, sisanya tetap "pending" dan bisa dilanjutkan. */
 const CAMPAIGN_LINK = `${SITE}/#/gabung?plan=imtihan`;
 const campaignPresets = () => {
-  const P = window.IMTIHAN_PROMO, normal = window.IMTIHAN_PRICE_IDR, days = window.IMTIHAN_AI_DAYS;
+  const P = window.IMTIHAN_PROMO, normal = window.IMTIHAN_PRICE_IDR, ai = aiCopy();
   const end = P ? `${P.endLabel}, pukul 23.59 waktu Kairo` : 'akhir promo';
   const price = P ? fmt(P.price) : '';
   const maddah = window.CATALOG?.maddah || 93, prompts = window.CATALOG?.prompts || '1.250+';
@@ -201,8 +224,8 @@ Sekali bayar, kamu mendapatkan:
 📚 *Library Selamanya*
 ${maddah} maddah, ${prompts} template prompt, dan bank soal imtihan.
 
-🤖 *AI Study Partner ${days} Hari*
-Talkhis otomatis, i'rab, tutor AI, kuis, dan latihan tahriri. Tanpa kuota bulanan, dengan batas penggunaan wajar harian.
+🤖 *${ai.head}*
+${ai.perks}
 
 ## ⏳ Jangan tunggu sampai harganya kembali normal
 
@@ -254,8 +277,8 @@ Sekali bayar, kamu mendapatkan:
 📚 *Library Selamanya*
 ${maddah} maddah, ${prompts} template prompt, dan bank soal imtihan.
 
-🤖 *AI Study Partner ${days} Hari*
-Talkhis otomatis, i'rab, tutor AI, kuis, dan latihan tahriri. Tanpa kuota bulanan, dengan batas penggunaan wajar harian.
+🤖 *${ai.head}*
+${ai.perks}
 
 ## ⏳ Promo berakhir ${P?.endLabel || 'sebentar lagi'}
 
@@ -290,7 +313,7 @@ Setelah itu, harga Paket Imtihan kembali ke ${fmt(normal)}.
 
 ✅ *Talkhis otomatis* dari PDF muqarrarmu, lengkap dengan PDF berwarna, latihan soal, dan kunci jawaban.
 ✅ *Bank soal imtihan asli* banin dan banat, lengkap dengan terjemah.
-✅ *AI Study Partner ${days} hari:* i'rab, tutor AI, kuis, dan latihan tahriri.
+✅ *${ai.head}:* i'rab, tutor AI, kuis, dan latihan tahriri.
 ✅ *Library selamanya:* ${maddah} maddah dan ${prompts} template prompt.
 
 *Sekali bayar, kepakai sampai imtihan selesai, dan Library-nya tetap milikmu selamanya.*
@@ -556,6 +579,11 @@ const EmailSender = () => {
 const AdminEmail = () => {
   const toast = useToast();
   const [audience, setAudience] = useState('no_ai');
+  // Label penerima dari server (model token punya arti & pilihan sendiri); sebelum termuat pakai daftar bawaan.
+  const [audienceList, setAudienceList] = useState(AUDIENCE_OPTIONS);
+  useEffect(() => {
+    emailAdminCall('email-status').then(d => { if (d?.audiences) setAudienceList(Object.entries(d.audiences)); }).catch(() => {});
+  }, []);
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -595,7 +623,7 @@ const AdminEmail = () => {
       <section className="card-glass-strong p-5 space-y-4">
         <h3 className="font-display text-lg font-semibold text-ink">Daftar email</h3>
         <div className="flex flex-wrap gap-2">
-          {AUDIENCE_OPTIONS.map(([id, label]) => (
+          {audienceList.map(([id, label]) => (
             <button key={id} type="button" aria-pressed={audience === id} onClick={() => setAudience(id)}
               className={`rounded-full border px-3 py-1.5 text-xs ${audience === id ? 'border-emerald-500 text-emerald-200 bg-emerald-500/10' : 'border-white/15 text-ink-muted hover:text-ink'}`}>{label}</button>
           ))}
