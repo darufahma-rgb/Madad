@@ -20,7 +20,7 @@ import { handleBattleStory, handleBattleHalaqah } from './_lib/ai-partner/battle
 import { handleBattleQuiz } from './_lib/ai-partner/battle-quiz.js';
 import { ocrCacheKey, lookupOcrPages, storeOcrPage, handleOcrCache } from './_lib/ai-partner/ocr-cache.js';
 import { withAiContext } from './_lib/ai-cost.js';
-import { tokensOn, getTokenConfig, tokenState, grantTokens, ensureGrants, tokenNews, tokenGuide } from './_lib/tokens.js';
+import { tokensOn, getTokenConfig, tokenState, grantTokens, ensureGrants, tokenNews, tokenGuide, legacySchedules } from './_lib/tokens.js';
 import { handleIlmi, handleIlmiView } from './_lib/ai-partner/ilmi-index.js';
 import { answerFromLibrary, manageReferenceBook, readReferencePage, LIBRARY_OWNER } from './_lib/ai-partner/reference-library.js';
 import { handleReferenceDonation, manageSubmissions } from './_lib/ai-partner/reference-donation.js';
@@ -1646,6 +1646,12 @@ async function handleAdmin(action, req, res, body) {
     const st = await grantTokens(code, amount, 'admin', null);
     if (!st || st.missing) return res.status(500).json({ ok: false, error: 'Gagal menambah token' });
     return res.status(200).json({ ok: true, balance: st.balance });
+  }
+
+  // Jadwal isi ulang token bulanan member lama, untuk kolom Paket di Admin → Members.
+  if (action === 'admin-token-schedules') {
+    if (!(await tokensOn())) return res.status(200).json({ ok: true, on: false, data: {} });
+    return res.status(200).json({ ok: true, on: true, data: await legacySchedules() });
   }
 
   if (action === 'admin-revoke') {
