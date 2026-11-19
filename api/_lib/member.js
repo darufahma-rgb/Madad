@@ -49,6 +49,9 @@ export const getAuthUser = async (req) => {
   const r = await fetch(`${url}/auth/v1/user`, {
     headers: { apikey: key, Authorization: `Bearer ${match[1]}` },
   });
+  // Gangguan di Supabase (5xx) bukan berarti belum login: lempar error supaya pemanggil membalas 5xx dan halaman
+  // mencoba lagi, alih-alih menampilkan "khusus member" ke orang yang sudah berlangganan.
+  if (r.status >= 500) throw new Error(`auth ${r.status}`);
   if (!r.ok) return null;
   const u = await r.json();
   if (!u?.id) return null;

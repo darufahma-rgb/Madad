@@ -97,23 +97,74 @@ const aiStream = async (action, payload = {}, onDelta) => {
   }
 };
 
-// Status akses: { loading, tier: 'pro' | 'trial' | 'none', trial: { used, set_id }, tokens: { balance, packs, guide } | null }
-// welcome: halaman AI Partner (bukan Beranda) → akun tanpa token mendapat token gratis sekali di model token.
+/* Status akses AI, dibagi oleh semua komponen di halaman (satu permintaan untuk banyak pemakai).
+   { loading, tier: 'pro' | 'trial' | 'none' | 'error', reason, trial, tokens }
+   - 'none' + reason 'login'      → sesi login habis/tidak terbaca: minta masuk lagi, bukan "buat akun".
+   - 'none' + reason 'not_member' → belum punya akun aktif.
+   - 'error'                      → server/koneksi gagal setelah dicoba ulang: tampilkan "coba lagi", bukan "khusus member".
+   welcome: halaman AI Partner (bukan Beranda) → akun tanpa token mendapat token gratis sekali di model token. */
+const AI_STATUS_TTL = 20 * 1000;
+const aiStatusStore = { value: null, at: 0, inflight: null, welcomed: false, subs: new Set() };
+const fetchAiStatus = async (welcome) => {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt) await new Promise(r => setTimeout(r, attempt * 2000));
+    const d = await aiCall('status', welcome ? { welcome: true } : {});
+    if (d.ok) return { loading: false, tier: d.tier || (d.active ? 'pro' : 'none'), reason: d.reason || null, trial: d.trial || null, tokens: d.tokens || null };
+  }
+  return { loading: false, tier: 'error', reason: null, trial: null, tokens: null };
+};
+const loadAiStatus = ({ force = false, welcome = false } = {}) => {
+  const st = aiStatusStore;
+  const needWelcome = welcome && !st.welcomed;
+  if (!force && !needWelcome && st.value && st.value.tier !== 'error' && Date.now() - st.at < AI_STATUS_TTL) return Promise.resolve(st.value);
+  if (st.inflight && !needWelcome) return st.inflight;
+  if (needWelcome) st.welcomed = true;
+  st.inflight = fetchAiStatus(needWelcome).then(v => {
+    st.value = v; st.at = Date.now(); st.inflight = null;
+    st.subs.forEach(fn => fn(v));
+    return v;
+  });
+  return st.inflight;
+};
 const useAiStatus = ({ welcome = false } = {}) => {
-  const [state, setState] = useState({ loading: true, tier: 'none', trial: null });
+  const [state, setState] = useState(() => aiStatusStore.value && Date.now() - aiStatusStore.at < AI_STATUS_TTL
+    ? aiStatusStore.value : { loading: true, tier: 'none', reason: null, trial: null, tokens: null });
   useEffect(() => {
     let alive = true;
-    const load = () => aiCall('status', welcome ? { welcome: true } : {}).then(d => {
-      if (!alive) return;
-      setState({ loading: false, tier: d.ok ? (d.tier || (d.active ? 'pro' : 'none')) : 'none', trial: d.trial || null, tokens: d.tokens || null });
-    });
-    load();
+    const set = (v) => { if (alive) setState(v); };
+    aiStatusStore.subs.add(set);
+    loadAiStatus({ welcome }).then(set);
     // Dipicu setelah pembayaran AI Partner lunas, supaya halaman langsung terbuka tanpa refresh.
-    window.addEventListener('talqeeh:ai-status-changed', load);
-    return () => { alive = false; window.removeEventListener('talqeeh:ai-status-changed', load); };
+    const onChange = () => loadAiStatus({ force: true });
+    window.addEventListener('talqeeh:ai-status-changed', onChange);
+    return () => { alive = false; aiStatusStore.subs.delete(set); window.removeEventListener('talqeeh:ai-status-changed', onChange); };
   }, []);
   return state;
 };
+
+/* Kartu untuk status yang bukan soal langganan: sesi login habis, atau status gagal dimuat. null kalau tidak berlaku. */
+const AccessProblem = ({ status }) => {
+  if (status.tier === 'error') {
+    return (
+      <div className="card-glass p-8 text-center max-w-xl mx-auto">
+        <h3 className="font-display text-lg font-semibold text-ink mb-2">Status langgananmu belum termuat</h3>
+        <p className="text-sm text-ink-muted mb-5 leading-relaxed">Koneksi atau server sedang tersendat. Langgananmu aman, coba muat lagi sebentar.</p>
+        <button onClick={() => window.location.reload()} className="btn btn-primary text-sm px-6 py-3">Muat ulang</button>
+      </div>
+    );
+  }
+  if (status.tier === 'none' && status.reason === 'login') {
+    return (
+      <div className="card-glass p-8 text-center max-w-xl mx-auto">
+        <h3 className="font-display text-lg font-semibold text-ink mb-2">Masuk lagi dulu, ya</h3>
+        <p className="text-sm text-ink-muted mb-5 leading-relaxed">Sesi login di perangkat ini sudah habis. Masuk lagi dengan akun Google yang dipakai saat berlangganan, nanti langgananmu langsung terbuka.</p>
+        <button onClick={() => window.dispatchEvent(new CustomEvent('talqeeh:open-login'))} className="btn btn-primary text-sm px-6 py-3">Masuk dengan Google</button>
+      </div>
+    );
+  }
+  return null;
+};
+const accessProblem = (status) => status.tier === 'error' || (status.tier === 'none' && status.reason === 'login');
 
 /* ── Token AI ──
    Satu saldo untuk semua fitur AI: tiap pemakaian memotong token sesuai biaya aslinya, token tidak hangus.
@@ -791,7 +842,7 @@ const FeedbackBar = ({ setId, kind, refId, content, model, label = 'Hasil ini me
 };
 
 Object.assign(window, {
-  aiCall, aiStream, useAiStatus, TokenBadge, TokenShopModal, TokenAnnouncement, TokenNews, FeedbackBar, openAiUpgrade, refreshAiStatus, trialTaste, learnerPayload, learnerSummary, maddahName, hasArabic, isMostlyArabic, speakArabic, saveToKurasah,
+  aiCall, aiStream, useAiStatus, AccessProblem, accessProblem, TokenBadge, TokenShopModal, TokenAnnouncement, TokenNews, FeedbackBar, openAiUpgrade, refreshAiStatus, trialTaste, learnerPayload, learnerSummary, maddahName, hasArabic, isMostlyArabic, speakArabic, saveToKurasah,
   TTS, useTts, SpeechPlayer, segmentForSpeech,
   SOURCE_META, STUDY_STEPS, stepDone, studyPercent,
   ProgressRing, Skeleton, GeneratePanel, UpgradeCard, Pill, ArabicText, SpeakButton, aiInputClass,

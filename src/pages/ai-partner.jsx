@@ -569,6 +569,7 @@ const AiPartnerPage = () => {
   return (
     <div className="page-enter">
       {status.loading ? <div className="pt-16"><GateLoading/></div>
+        : accessProblem(status) ? <><BackToHome/><div className="container-x pt-6 pb-24"><AccessProblem status={status}/></div></>
         : status.tier === 'none'
           ? <>
               <BackToHome/>
@@ -755,6 +756,7 @@ const AiPartnerDetailPage = ({ setId }) => {
       <BackToHome to="/ai-partner" label="Semua materi"/>
       <div className="pt-4">
         {status.loading ? <GateLoading/>
+          : accessProblem(status) ? <div className="container-x pb-24"><AccessProblem status={status}/></div>
           : status.tier === 'none'
             ? <div className="container-x pb-24"><UpgradeCard title="Khusus member Talqeeh"/></div>
             : <AiPartnerDetail setId={setId} status={status}/>}

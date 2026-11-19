@@ -124,10 +124,12 @@ const GENERATE_KINDS = ['summary', 'flashcards', 'quiz', 'glossary', 'mindmap', 
 const STUDY_KINDS = ['flashcards', 'quiz', 'glossary'];
 
 const statusAttempts = new Map();
+// Banyak Masisir berbagi alamat IP yang sama (jaringan seluler/wifi asrama), jadi batasnya longgar: status dipanggil
+// setiap membuka halaman AI. Akun tetap harus login (requireAiTier) untuk mendapat isi status apa pun.
 const checkStatusRateLimit = (ip) => {
   const now = Date.now();
   const recent = (statusAttempts.get(ip) || []).filter(t => now - t < 15 * 60 * 1000);
-  if (recent.length >= 60) return false;
+  if (recent.length >= 600) return false;
   recent.push(now);
   statusAttempts.set(ip, recent);
   return true;
@@ -1718,15 +1720,17 @@ export default async function handler(req, res) {
     if (action === 'status') {
       const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || req.headers['x-real-ip'] || 'unknown';
       if (ip !== 'unknown' && !checkStatusRateLimit(ip)) {
-        return res.status(429).json({ ok: false, error: 'Terlalu banyak percobaan.' });
+        return res.status(429).json({ ok: false, error: 'Terlalu banyak percobaan.', retry: true });
       }
       let access = await requireAiTier(req);
-      if (!access.ok) return res.status(200).json({ ok: true, active: false, tier: 'none' });
+      // reason: 'login' = sesi login habis/tidak terbaca (halaman meminta masuk lagi), 'not_member' = belum punya akun aktif.
+      const noAccess = (a) => res.status(200).json({ ok: true, active: false, tier: 'none', reason: a.status === 401 ? 'login' : 'not_member' });
+      if (!access.ok) return noAccess(access);
       // Model token: akun yang belum punya token mendapat token gratis sekali saat membuka AI Partner (body.welcome).
       if (access.tier === 'trial' && body.welcome === true && (await tokensOn())
         && (await ensureGrants(access.code, { welcome: true }))) {
         access = await requireAiTier(req);
-        if (!access.ok) return res.status(200).json({ ok: true, active: false, tier: 'none' });
+        if (!access.ok) return noAccess(access);
       }
       if (access.tier === 'pro') {
         const sctx = { code: access.code, tier: 'pro', emails: [access.member?.email, access.user?.email] };
