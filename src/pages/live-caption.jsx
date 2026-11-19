@@ -842,6 +842,8 @@ const LiveCaptionPage = () => {
       <div className="pt-4">
         {status.loading
           ? <div className="container-x pb-24"><div className="card-glass p-6 max-w-xl"><Skeleton lines={3}/></div></div>
+          : accessProblem(status)
+            ? <div className="container-x max-w-3xl pb-24"><AccessProblem status={status}/></div>
           : status.tier !== 'pro'
             ? <div className="container-x max-w-3xl pb-24">
                 <UpgradeCard title="Live Caption khusus pelanggan AI Partner"

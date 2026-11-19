@@ -424,6 +424,8 @@ const AiPromptPage = () => {
     <div className="page-enter">
       {status.loading
         ? <div className="container-x pt-10 pb-24"><div className="card-glass p-6 max-w-xl mx-auto"><Skeleton lines={3}/></div></div>
+        : accessProblem(status)
+          ? <div className="container-x pt-10 pb-24"><AccessProblem status={status}/></div>
         : status.tier === 'pro'
           ? <PromptChat/>
           : status.tier === 'trial'
