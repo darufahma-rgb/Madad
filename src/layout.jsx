@@ -1165,9 +1165,23 @@ const useTokens = () => {
   if (!t || !Array.isArray(t.packs) || !t.packs.length) return null;
   const packs = [...t.packs].sort((a, b) => a.price - b.price);
   const addons = Array.isArray(t.addons) ? [...t.addons].sort((a, b) => a.price - b.price) : [];
-  return { packs, addons, small: packs[0], big: packs[packs.length - 1], imtihan: t.imtihan || packs[packs.length - 1].tokens, free: t.free || 0, guide: t.guide || {} };
+  const big = packs[packs.length - 1];
+  // Paket Imtihan (plan 'imtihan') = paket besar: token bulan pertama + isi ulang bulanan.
+  const imtihanPack = { name: big.name || 'Paket Imtihan', tokens: t.imtihan || big.tokens, months: t.imtihanMonths || big.months || 1, refill: t.imtihanRefill ?? big.refill ?? 0 };
+  return { packs, addons, small: packs[0], big, imtihan: imtihanPack.tokens, imtihanPack, freeName: t.freeName || 'Coba Gratis', free: t.free || 0, guide: t.guide || {} };
 };
 const formatTokens = (n) => Number(n || 0).toLocaleString("id-ID");
+/* Isi paket token dalam kalimat: "35.000 token" atau "75.000 token + bulan depan diisi ulang jadi 35.000".
+   short: versi ringkas untuk label kecil. */
+const packMonthly = (p) => (Number(p?.months) || 1) > 1 && Number(p?.refill) > 0;
+const packText = (p, { short = false } = {}) => {
+  if (!p) return "";
+  if (!packMonthly(p)) return `${formatTokens(p.tokens)} token`;
+  const more = Number(p.months) - 1;
+  return short
+    ? `${formatTokens(p.tokens)} token + isi ulang ${formatTokens(p.refill)}`
+    : `${formatTokens(p.tokens)} token, lalu ${more === 1 ? 'bulan depan' : `${more} bulan berikutnya`} diisi ulang jadi ${formatTokens(p.refill)}`;
+};
 // Kira-kira apa yang didapat dari sejumlah token (untuk teks paket). Angka dibulatkan ke bawah.
 const tokenExamples = (n, guide = {}) => {
   const per = (k, d) => Math.max(1, guide[k] || d);
@@ -1176,7 +1190,11 @@ const tokenExamples = (n, guide = {}) => {
 // Bagian AI Paket Imtihan dalam teks: "AI Partner 60 hari" (paket lama) atau "60.000 token AI" (model token).
 const imtihanAi = () => {
   const t = getAppSettings()?.tokens;
-  return t ? `${formatTokens(t.imtihan)} token AI (tidak hangus)` : `AI Partner ${IMTIHAN_AI_DAYS} hari`;
+  if (!t) return `AI Partner ${IMTIHAN_AI_DAYS} hari`;
+  const p = { tokens: t.imtihan, months: t.imtihanMonths || 1, refill: t.imtihanRefill || 0 };
+  return packMonthly(p)
+    ? `${formatTokens(p.tokens)} token AI + isi ulang ${formatTokens(p.refill)} bulan depan`
+    : `${formatTokens(p.tokens)} token AI (tidak hangus)`;
 };
 const TOKEN_RULES = "Semua fitur AI memakai token sesuai pemakaiannya. Token tidak hangus, dan bisa dibeli lagi kapan saja.";
 
@@ -1187,7 +1205,7 @@ const ImtihanBreakdown = ({ bundle, className = "" }) => { const tokens = useTok
       <span className="text-ink tabular-nums flex-shrink-0">{formatRupiah(LIBRARY_PRICE_IDR)}</span>
     </div>
     <div className="flex items-start justify-between gap-3 mt-1.5">
-      <span className="text-ink-muted">{tokens ? <><span className="text-ink">Token AI</span> · {formatTokens(tokens.imtihan)} token, tidak hangus</> : <><span className="text-ink">AI Study Partner</span> · {IMTIHAN_AI_DAYS} hari, sepuasnya</>}</span>
+      <span className="text-ink-muted">{tokens ? <><span className="text-ink">Token AI</span> · {packText(tokens.imtihanPack, { short: true })}{packMonthly(tokens.imtihanPack) ? ' bulan depan' : ', tidak hangus'}</> : <><span className="text-ink">AI Study Partner</span> · {IMTIHAN_AI_DAYS} hari, sepuasnya</>}</span>
       <span className="text-ink tabular-nums flex-shrink-0">{formatRupiah(bundle.aiPart)}</span>
     </div>
     <div className="flex items-start justify-between gap-3 mt-2 pt-2 border-t border-white/10 font-semibold">
@@ -1541,7 +1559,7 @@ const checkoutLines = (c) => {
   }
   const days = c?.plan === "imtihan" || c?.plan === "rombongan" ? IMTIHAN_AI_DAYS : 30;
   const t = getAppSettings()?.tokens;
-  if (t && days !== 30) return [["Library", "akses selamanya", LIBRARY_PRICE_IDR], ["Token AI", `${formatTokens(t.imtihan)} token · tidak hangus`, Math.max(0, amount - LIBRARY_PRICE_IDR)]];
+  if (t && days !== 30) return [["Library", "akses selamanya", LIBRARY_PRICE_IDR], ["Token AI", imtihanAi(), Math.max(0, amount - LIBRARY_PRICE_IDR)]];
   return [["Library", "akses selamanya", LIBRARY_PRICE_IDR], ["AI Study Partner", `${days} hari penuh`, Math.max(0, amount - LIBRARY_PRICE_IDR)]];
 };
 
@@ -1911,7 +1929,7 @@ Object.assign(window, {
   imtihanBundle, ImtihanBreakdown, IMTIHAN_PRICE_IDR, IMTIHAN_AI_DAYS, IMTIHAN_PROMO, imtihanPromoActive, EventBanner, usePromoCountdown,
   rombonganEvent,
   useWelcomeOffer, OfferClock, WelcomeOfferPopup, useOfferCoupon, useCouponCode, InstagramCouponCard, ImtihanCouponPanel, OFFER_COUPON_PRICE, readAppliedCoupon,
-  useTokens, formatTokens, tokenExamples, TOKEN_RULES, imtihanAi,
+  useTokens, formatTokens, packText, packMonthly, tokenExamples, TOKEN_RULES, imtihanAi,
   useCheckout, CheckoutWaiting, CheckoutWatcher, CheckoutPayModal, readPendingCheckout, savePendingCheckout, formatRupiah, isTalkhisAddonPlan,
   LIBRARY_PRICE, LIBRARY_PRICE_IDR, AI_RENEW_PRICE_IDR, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
   scrollToLandingSection, scrollToPaket,

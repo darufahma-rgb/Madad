@@ -205,6 +205,7 @@ const TokenShopModal = ({ open, onClose, tokens }) => {
                   {addons.map(p => (
                     <button key={p.id} onClick={() => checkout.start('token', { pack: p.id })} disabled={checkout.status === 'creating'}
                       className="rounded-2xl border border-gold-500/30 bg-gold-500/[0.06] hover:bg-gold-500/[0.12] px-4 py-3 text-left transition-colors disabled:opacity-60">
+                      <div className="text-[11px] text-gold-300 mb-0.5">{p.name}</div>
                       <div className="font-display text-xl font-semibold text-ink">+{formatTokens(p.tokens)} <span className="text-xs text-ink-muted font-normal">token</span></div>
                       <div className="text-sm text-gold-200">{formatRupiah(p.price)}</div>
                     </button>
@@ -217,7 +218,9 @@ const TokenShopModal = ({ open, onClose, tokens }) => {
               {packs.map(p => (
                 <button key={p.id} onClick={() => checkout.start('token', { pack: p.id })} disabled={checkout.status === 'creating'}
                   className="rounded-2xl border border-emerald-500/30 bg-emerald-500/[0.06] hover:bg-emerald-500/[0.12] px-4 py-3 text-left transition-colors disabled:opacity-60">
+                  <div className="text-[11px] text-emerald-300 mb-0.5">{p.name}</div>
                   <div className="font-display text-xl font-semibold text-ink">{formatTokens(p.tokens)} <span className="text-xs text-ink-muted font-normal">token</span></div>
+                  {packMonthly(p) && <div className="text-[11px] text-ink-muted">+ isi ulang {formatTokens(p.refill)} bulan depan</div>}
                   <div className="text-sm text-emerald-200">{formatRupiah(p.price)}</div>
                 </button>
               ))}
@@ -291,7 +294,7 @@ const TokenAnnouncement = () => {
   if (!open || !shop) return null;
   const g = shop.guide || {};
   const points = [
-    ['layers', 'Dua paket token', `${formatTokens(shop.small.tokens)} token ${formatRupiah(shop.small.price)} atau ${formatTokens(shop.big.tokens)} token ${formatRupiah(shop.big.price)}. Fiturnya sama, yang beda cuma jumlah tokennya. Library ikut selamanya.`],
+    ['layers', `${shop.small.name} & ${shop.big.name}`, `${shop.small.name} ${formatRupiah(shop.small.price)}: ${packText(shop.small)}. ${shop.big.name} ${formatRupiah(shop.big.price)}: ${packText(shop.big)}. Fitur AI-nya sama, Library ikut selamanya.`],
     ['sparkles', 'Semua fitur AI terbuka', `Tidak ada lagi batas harian. Tiap pemakaian memotong token sesuai besarnya: ±${formatTokens(g.chat || 100)} per pesan tutor, ±${formatTokens(g.livePerMinute || 70)} per menit Live Caption.`],
     ['check', 'Token tidak hangus', 'Sisa token selalu terlihat di AI Partner. Habis? Tinggal beli lagi, materi dan progresmu tetap aman.'],
     ['crown', 'Member lama tetap aman', `Paket Imtihan & AI Partner lama dapat jatah ${formatTokens(shop.legacy?.imtihan || 30000)} token yang diisi ulang tiap bulan selama masa paketmu. Member Library: Library-mu berlaku selamanya + hadiah token.`],

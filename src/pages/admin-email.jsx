@@ -29,12 +29,13 @@ const fmt = (n) => `Rp ${Number(n).toLocaleString('id-ID')}`;
 const aiCopy = () => {
   const t = window.getAppSettings?.()?.tokens, days = window.IMTIHAN_AI_DAYS;
   const n = t ? Number(t.imtihan || 0).toLocaleString('id-ID') : null;
+  const refill = t && (t.imtihanMonths || 1) > 1 && t.imtihanRefill ? ` + isi ulang ${Number(t.imtihanRefill).toLocaleString('id-ID')} bulan depan` : '';
   const addon = t?.addons?.length ? Math.min(...t.addons.map(a => a.price)) : null;
   return t ? {
-    paren: `${n} token AI yang tidak hangus`,
-    bullet: `${n} token AI yang tidak hangus untuk persiapan imtihan`,
-    waBold: `*${n} token AI*`,
-    head: `${n} Token AI`,
+    paren: `${n} token AI${refill}`,
+    bullet: `${n} token AI${refill} untuk persiapan imtihan`,
+    waBold: `*${n} token AI*${refill}`,
+    head: `${n} Token AI${refill ? ' + Isi Ulang' : ''}`,
     perks: "Untuk talkhis otomatis, i'rab, tutor AI, kuis, dan latihan tahriri. Token tidak hangus dan tanpa batas harian.",
     addMore: `Beli token kapan saja dari akunmu${addon ? ` (tambahan token mulai ${fmt(addon)} untuk member Library)` : ''}, token tidak hangus dan tanpa potongan otomatis`,
   } : {

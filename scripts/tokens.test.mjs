@@ -6,7 +6,7 @@ process.env.SUPABASE_URL = 'http://sb.test';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'k';
 
 const {
-  DEFAULT_TOKENS, TOKEN_USD, parseTokenConfig, tokensFor, tokenValueIdr, saleMargin, grantsDue, freeGrantDue, rateFor, minRate, tokenGuide, legacyImtihanDays, legacySchedule,
+  DEFAULT_TOKENS, TOKEN_USD, parseTokenConfig, tokensFor, tokenValueIdr, saleMargin, grantsDue, freeGrantDue, rateFor, minRate, tokenGuide, legacyImtihanDays, legacySchedule, packTotal,
   tokensOn, clearTokenCache, tokenState, chargeTokens, ensureGrants,
 } = await import('../api/_lib/tokens.js');
 
@@ -16,7 +16,7 @@ test('setting kosong atau rusak memakai bawaan', () => {
   assert.deepEqual(parseTokenConfig(''), DEFAULT_TOKENS);
   assert.deepEqual(parseTokenConfig('{bukan json'), DEFAULT_TOKENS);
   const c = parseTokenConfig({ packs: [{ id: 'T50', price: 50000, tokens: 10000 }, { id: 'x', price: 1, tokens: 0 }], grants: { imtihan: '' }, convert: { monthly: 9000, talkhis_1: -5 }, rates: { live: 80, chat: 5 } });
-  assert.deepEqual(c.packs, [{ id: 't50', price: 50000, tokens: 10000 }]);
+  assert.deepEqual(c.packs, [{ id: 't50', name: 'Paket 1', price: 50000, tokens: 10000, months: 1, refill: 0 }]);
   assert.equal(c.grants.imtihan, DEFAULT_TOKENS.grants.imtihan);   // kosong → bawaan, bukan 0
   assert.equal(c.convert.monthly, 9000);
   assert.equal(c.convert.talkhis_1, DEFAULT_TOKENS.convert.talkhis_1); // negatif ditolak
@@ -28,7 +28,7 @@ test('tambahan token (add-on): bawaan, dimatikan, id tidak boleh sama dengan pak
   assert.deepEqual(parseTokenConfig({}).addons, DEFAULT_TOKENS.addons);
   assert.deepEqual(parseTokenConfig({ addons: [] }).addons, []);
   assert.deepEqual(parseTokenConfig({ addons: [{ id: 't100', price: 20000, tokens: 5000 }, { id: 'a10', price: 10000, tokens: 2500 }, { id: 'x', price: '', tokens: 1 }] }).addons,
-    [{ id: 'a10', price: 10000, tokens: 2500 }]);
+    [{ id: 'a10', name: 'Tambahan 2', price: 10000, tokens: 2500 }]);
   for (const a of DEFAULT_TOKENS.addons) {
     assert.ok(saleMargin({ price: a.price, tokens: a.tokens }).percent >= 40, `add-on ${a.id} terlalu tipis`);
     // Per token tidak lebih murah daripada paket besar.
@@ -94,7 +94,7 @@ test('token dari pembelian: baru, member lama diisi ulang tiap bulan, hadiah Lib
   // Hari ke-55 sejak bayar = bulan ke-2 dari 4.
   assert.deepEqual(at(55), [
     { ref: 'a', amount: 35000, reason: 'buy' },
-    { ref: 'b', amount: 75000, reason: 'buy' },
+    { ref: 'month:b:1', amount: 75000, reason: 'buy' },
     { ref: 'reset:c:2', amount: 30000, reason: 'reset:2/4', topup: true },
     { ref: 'e', amount: 30000, reason: 'convert' },
   ]); // sudah membeli paket baru → tanpa hadiah Library
@@ -103,7 +103,7 @@ test('token dari pembelian: baru, member lama diisi ulang tiap bulan, hadiah Lib
   assert.equal(at(95).find(g => g.ref.startsWith('reset:c')).ref, 'reset:c:4');   // bulan terakhir
   assert.equal(at(121).find(g => g.ref.startsWith('reset:c')), undefined);       // masa paket habis
   // Sudah tercatat → tidak diberi lagi.
-  const have = new Set(['a', 'b', 'reset:c:2', 'e']);
+  const have = new Set(['a', 'month:b:1', 'reset:c:2', 'e']);
   assert.deepEqual(grantsDue(rows, { start, now: Date.parse(old) + 55 * DAY, paidLibrary: true, have }), []);
   // Akses lama dari admin tanpa tagihan: satu kali isi ulang.
   assert.deepEqual(grantsDue([], { start, subActive: true }), [{ ref: 'legacy:sub', amount: 30000, reason: 'reset:1/1', topup: true }]);
@@ -146,18 +146,51 @@ test('jadwal isi ulang member lama: bulan ke berapa, kapan isi ulang berikutnya'
   const rows = [{ plan: 'imtihan', paidAt: old, createdAt: old }, { plan: 'token', paidAt: old }];
   const at = (days) => legacySchedule(rows, { start, now: Date.parse(old) + days * DAY });
   assert.deepEqual(at(55), {
-    target: 30000, cycle: 2, cycles: 4, cycleStart: '2026-10-31T00:00:00.000Z',
+    target: 30000, first: 30000, cycle: 2, cycles: 4, legacy: true, cycleStart: '2026-10-31T00:00:00.000Z',
     nextResetAt: '2026-11-30T00:00:00.000Z', endsAt: '2027-01-29T00:00:00.000Z',
   });
   assert.equal(at(100).cycle, 4);
   assert.equal(at(100).nextResetAt, null); // bulan terakhir
   assert.equal(at(121), null);             // sudah habis
-  // Dibeli setelah model token berlaku → bukan member lama.
-  assert.equal(legacySchedule([{ plan: 'imtihan', paidAt: '2026-11-25T00:00:00Z' }], { start, now: Date.parse('2026-11-26T00:00:00Z') }), null);
+  // Dibeli setelah model token berlaku → paket bulanan baru (bukan member lama), bulan 1 dari 2.
+  const baru = legacySchedule([{ plan: 'imtihan', paidAt: '2026-11-25T00:00:00Z' }], { start, now: Date.parse('2026-11-26T00:00:00Z') });
+  assert.equal(baru.legacy, false); assert.equal(baru.cycle, 1); assert.equal(baru.target, 35000);
+  // Paket sekali (Rp100rb) tidak punya jadwal.
+  assert.equal(legacySchedule([{ plan: 'token', paidAt: '2026-11-25T00:00:00Z', tokens: 35000, months: 1 }], { start, now: Date.parse('2026-11-26T00:00:00Z') }), null);
   // AI 30 hari lama: satu bulan, tanpa isi ulang berikutnya.
   const ai = legacySchedule([{ plan: 'ai', paidAt: '2026-11-10T00:00:00Z' }], { start, now: Date.parse('2026-11-21T00:00:00Z') });
   assert.equal(ai.cycles, 1);
   assert.equal(ai.nextResetAt, null);
+});
+
+test('Paket Imtihan Rp199rb: 75.000 di bulan pertama, bulan kedua diisi ulang sampai 35.000', () => {
+  const start = Date.parse('2026-11-20T00:00:00Z');
+  const paid = Date.parse('2026-11-25T00:00:00Z');
+  const rows = [
+    { ref: 'imt', plan: 'imtihan', paidAt: new Date(paid).toISOString(), tokens: 75000, months: 2, refill: 35000 },
+    { ref: 'pak', plan: 'token', paidAt: new Date(paid).toISOString(), tokens: 75000, months: 2, refill: 35000 },
+    { ref: 'kcl', plan: 'token', paidAt: new Date(paid).toISOString(), tokens: 35000, months: 1, refill: 0 },
+  ];
+  const at = (days, have = new Set()) => grantsDue(rows, { start, now: paid + days * DAY, have });
+  assert.deepEqual(at(3), [
+    { ref: 'month:imt:1', amount: 75000, reason: 'buy' },
+    { ref: 'month:pak:1', amount: 75000, reason: 'buy' },
+    { ref: 'kcl', amount: 35000, reason: 'buy' },
+  ]);
+  assert.deepEqual(at(35, new Set(['month:imt:1', 'month:pak:1', 'kcl'])), [
+    { ref: 'month:imt:2', amount: 35000, reason: 'month:2/2', topup: true },
+    { ref: 'month:pak:2', amount: 35000, reason: 'month:2/2', topup: true },
+  ]);
+  assert.deepEqual(at(61, new Set(['month:imt:1', 'month:pak:1', 'kcl', 'month:imt:2', 'month:pak:2'])), []); // paket selesai
+  // Pembeli Paket Imtihan yang sudah menerima tokennya sekaligus (sebelum ada isi ulang) tidak diberi lagi, tapi tetap dapat bulan ke-2.
+  const old = [{ ref: 'lama', plan: 'imtihan', paidAt: new Date(paid).toISOString() }];
+  assert.deepEqual(grantsDue(old, { start, now: paid + 3 * DAY, have: new Set(['lama']) }), []);
+  assert.deepEqual(grantsDue(old, { start, now: paid + 35 * DAY, have: new Set(['lama']) }), [{ ref: 'month:lama:2', amount: 35000, reason: 'month:2/2', topup: true }]);
+  // Jadwal untuk admin.
+  const sch = legacySchedule(rows, { start, now: paid + 3 * DAY });
+  assert.equal(sch.first, 75000); assert.equal(sch.target, 35000); assert.equal(sch.cycle, 1); assert.equal(sch.cycles, 2); assert.equal(sch.legacy, false);
+  // Total paling banyak = 75.000 + 35.000.
+  assert.equal(packTotal(DEFAULT_TOKENS.packs.find(p => p.id === 't199')), 110000);
 });
 
 test('token gratis: sekali per akun, bisa dimatikan', () => {

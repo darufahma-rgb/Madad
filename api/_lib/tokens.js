@@ -25,20 +25,26 @@ export const TOKEN_USD = 0.0001;
 
 export const DEFAULT_TOKENS = {
   usdRate: 16500, // kurs untuk hitungan untung di admin
-  // Paket token. Pembeli yang belum punya Library otomatis mendapat Library selamanya.
+  /* Paket token. Pembeli yang belum punya Library otomatis mendapat Library selamanya.
+     tokens = token bulan pertama (langsung ditambahkan ke saldo). months > 1 = tiap 30 hari berikutnya saldo diisi ulang
+     sampai `refill` (tidak menumpuk; token yang dibeli sendiri tidak terhapus), sampai bulan ke-`months`.
+     months 1 = sekali, tanpa isi ulang. */
   packs: [
-    { id: 't100', price: 100000, tokens: 35000 },
-    { id: 't199', price: 199000, tokens: 75000 },
+    { id: 't100', name: "Paket Muraja'ah", price: 100000, tokens: 35000, months: 1, refill: 0 },
+    { id: 't199', name: 'Paket Imtihan', price: 199000, tokens: 75000, months: 2, refill: 35000 },
   ],
   // Tambahan token (add-on): paket kecil untuk member yang SUDAH punya Library, tanpa Library di dalamnya.
   // Per token sengaja sedikit lebih mahal daripada paket besar supaya paket besar tetap paling hemat.
   addons: [
-    { id: 'a25', price: 25000, tokens: 7500 },
-    { id: 'a50', price: 50000, tokens: 16000 },
+    { id: 'a25', name: 'Tambahan Kecil', price: 25000, tokens: 7500 },
+    { id: 'a50', name: 'Tambahan Besar', price: 50000, tokens: 16000 },
   ],
-  // imtihan: Paket Imtihan (plan 'imtihan' — harga kupon/mitra/kekeluargaan/rombongan tetap berlaku) = Library + token ini.
-  // free: token gratis sekali per akun untuk mencoba AI Partner.
-  grants: { imtihan: 75000, free: 1000, gift: 5000 },
+  // Nama penawaran "gratis" di halaman Paket.
+  freeName: 'Coba Gratis',
+  /* imtihan/imtihanMonths/imtihanRefill: Paket Imtihan lewat plan 'imtihan' (harga kupon/mitra/kekeluargaan/rombongan
+     tetap berlaku) = Library + token bulan pertama, lalu isi ulang bulanan, sama dengan paket t199.
+     free: token gratis sekali per akun. */
+  grants: { imtihan: 75000, imtihanMonths: 2, imtihanRefill: 35000, free: 1000, gift: 5000 },
   // gift: hadiah token sekali untuk member Library yang sudah pernah membayar.
   // freeDaily: paling banyak sekian akun per hari yang mendapat token gratis (seluruh Talqeeh).
   limits: { freeDaily: 30 },
@@ -77,17 +83,25 @@ export const parseTokenConfig = (raw) => {
   try { o = typeof raw === 'string' ? JSON.parse(raw || '{}') : (raw || {}); } catch {}
   const d = DEFAULT_TOKENS;
   const pick = (group, min = 0, max = 10000000) => Object.fromEntries(Object.keys(d[group]).map(k => [k, int(o?.[group]?.[k], min, max) ?? d[group][k]]));
-  const list = (raw, max) => (Array.isArray(raw) ? raw : []).map(p => {
+  const name = (v, fallback) => String(v ?? '').replace(/[<>]/g, '').trim().slice(0, 40) || fallback;
+  const list = (raw, max, withMonths) => (Array.isArray(raw) ? raw : []).map((p, i) => {
+    const label = withMonths ? 'Paket' : 'Tambahan';
     const tokens = int(p?.tokens, 1, 10000000), price = int(p?.price, 5000, 5000000);
     const id = String(p?.id || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12);
-    return tokens && price && id ? { id, price, tokens } : null;
+    if (!(tokens && price && id)) return null;
+    const known = [...d.packs, ...d.addons].find(x => x.id === id);
+    const item = { id, name: name(p?.name, known?.name || `${label} ${i + 1}`), price, tokens };
+    if (!withMonths) return item;
+    const months = int(p?.months, 1, 12) ?? known?.months ?? 1;
+    return { ...item, months, refill: months > 1 ? (int(p?.refill, 0, 10000000) ?? known?.refill ?? tokens) : 0 };
   }).filter(Boolean).slice(0, max);
-  const packs = list(o?.packs, 4);
+  const packs = list(o?.packs, 4, true);
   // addons: [] di setting = add-on dimatikan; tidak ada di setting = bawaan. Id tidak boleh sama dengan paket utama.
-  const addons = Array.isArray(o?.addons) ? list(o.addons, 4) : d.addons;
+  const addons = Array.isArray(o?.addons) ? list(o.addons, 4, false) : d.addons;
   const packIds = new Set((packs.length ? packs : d.packs).map(p => p.id));
   return { usdRate: int(o?.usdRate, 1000, 100000) ?? d.usdRate, packs: packs.length ? packs : d.packs,
     addons: addons.filter(a => !packIds.has(a.id)),
+    freeName: name(o?.freeName, d.freeName),
     grants: pick('grants'), limits: pick('limits'), legacy: pick('legacy'), convert: pick('convert'), rates: pick('rates', 10, 500) };
 };
 
@@ -173,7 +187,36 @@ const IMTIHAN_SHORTENED_AT = Date.parse('2026-11-05T00:00:00Z');
 export const legacyImtihanDays = (createdAt) => (Date.parse(createdAt || '') < IMTIHAN_SHORTENED_AT ? 120 : 60);
 const PLAN_KIND = { imtihan: 'imtihan', rombongan: 'imtihan', group: 'imtihan', library_ai: 'monthly', ai: 'monthly', talkhis_1: 'talkhis_1', talkhis_3: 'talkhis_3' };
 
-/* Murni (dites). rows: [{ ref, plan, paidAt, createdAt, tokens }]; have: Set ref yang sudah tercatat.
+// Token paling banyak dari sebuah paket: bulan pertama + isi ulang di bulan-bulan berikutnya.
+export const packTotal = (p) => (Number(p?.tokens) || 0) + Math.max(0, (Number(p?.months) || 1) - 1) * (Number(p?.refill) || 0);
+
+/* Jatah bulanan sebuah tagihan, atau null kalau tagihan itu bukan paket bulanan:
+   { first, refill, months, paid, legacy } — legacy = dibayar sebelum model token (semua bulan diisi ulang sampai
+   `refill`); selain itu paket bulanan baru (bulan pertama `first` ditambahkan, bulan berikutnya diisi ulang). */
+const monthlyPlanOf = (row, { start, cfg, have = new Set() }) => {
+  const paid = Date.parse(row.paidAt || '');
+  if (!Number.isFinite(paid)) return null;
+  const kind = PLAN_KIND[row.plan];
+  if (paid < start) {
+    if (kind !== 'imtihan' && kind !== 'monthly') return null;
+    const days = kind === 'imtihan' ? legacyImtihanDays(row.createdAt) : CYCLE_DAYS;
+    if (paid + days * DAY <= start) return null; // sudah habis sebelum model token berlaku
+    return { first: cfg.legacy[kind], refill: cfg.legacy[kind], months: Math.ceil(days / CYCLE_DAYS), paid, legacy: true };
+  }
+  if (row.plan === 'token') {
+    const months = Math.max(1, Number(row.months) || 1);
+    return months > 1 ? { first: Number(row.tokens) || 0, refill: Number(row.refill) || 0, months, paid, legacy: false } : null;
+  }
+  if (kind === 'imtihan') {
+    const months = Math.max(1, Number(row.months) || Number(cfg.grants.imtihanMonths) || 1);
+    const first = Number(row.tokens) || cfg.grants.imtihan;
+    const refill = row.refill != null ? Number(row.refill) || 0 : cfg.grants.imtihanRefill;
+    return months > 1 ? { first, refill, months, paid, legacy: false } : null;
+  }
+  return null;
+};
+
+/* Murni (dites). rows: [{ ref, plan, paidAt, createdAt, tokens, months }]; have: Set ref yang sudah tercatat.
    Hasil: [{ ref, amount, reason, topup? }] — topup: true = isi ulang sampai `amount`, bukan menambah.
    subActive: masih punya langganan AI lama yang berjalan (akses dari admin tanpa tagihan → satu kali isi ulang).
    paidLibrary: member Library berbayar (bukan akun gratis/trial) yang sudah ada sebelum model token → hadiah token sekali.
@@ -186,26 +229,36 @@ export const grantsDue = (rows, { start, now = Date.now(), subActive = false, pa
     const paid = Date.parse(row.paidAt || '');
     if (!Number.isFinite(paid)) continue;
     if (paid >= start) boughtNew = true;
-    if (row.plan === 'token') { add({ ref: row.ref, amount: row.tokens, reason: 'buy' }); continue; }
     const kind = PLAN_KIND[row.plan];
-    if (!kind) continue;
-    if (paid >= start) {
-      // Dibayar setelah model token berlaku: Paket Imtihan = paket token besar; paket lama yang telat lunas dikonversi sekali.
-      add(kind === 'imtihan' ? { ref: row.ref, amount: cfg.grants.imtihan, reason: 'buy' } : { ref: row.ref, amount: cfg.convert[kind], reason: 'convert' });
+    const m = monthlyPlanOf(row, { start, cfg, have });
+    if (m) {
+      if (m.legacy) legacySeen = true;
+      const cycle = Math.floor((now - m.paid) / (CYCLE_DAYS * DAY));
+      if (cycle < 0 || cycle >= m.months) continue;
+      if (m.legacy) {
+        // Member lama: tiap bulan saldo dinaikkan sampai jatah bulanan (mis. Paket Imtihan lama 4 bulan → 4×).
+        const days = kind === 'imtihan' ? legacyImtihanDays(row.createdAt) : CYCLE_DAYS;
+        if (now >= m.paid + days * DAY) continue;
+        add({ ref: `reset:${row.ref}:${cycle + 1}`, amount: m.refill, reason: `reset:${cycle + 1}/${m.months}`, topup: true });
+      } else if (cycle === 0) {
+        // Paket bulanan baru, bulan pertama: token ditambahkan ke saldo. Pembeli Paket Imtihan yang sudah menerima
+        // tokennya sekaligus (ref tagihan, sebelum ada isi ulang bulanan) tidak diberi lagi.
+        if (!have.has(row.ref)) add({ ref: `month:${row.ref}:1`, amount: m.first, reason: `buy`, });
+      } else {
+        // Bulan berikutnya: saldo dinaikkan sampai jatah isi ulang (tidak menumpuk).
+        add({ ref: `month:${row.ref}:${cycle + 1}`, amount: m.refill, reason: `month:${cycle + 1}/${m.months}`, topup: true });
+      }
       continue;
     }
-    if (kind === 'talkhis_1' || kind === 'talkhis_3') { add({ ref: row.ref, amount: cfg.convert[kind], reason: 'convert' }); continue; }
-    // Member lama: jatah bulanan, diisi ulang di awal tiap siklus 30 hari selama masa paketnya.
-    const days = kind === 'imtihan' ? legacyImtihanDays(row.createdAt) : CYCLE_DAYS;
-    const end = paid + days * DAY;
-    if (end <= start) continue; // sudah habis sebelum model token berlaku
-    legacySeen = true;
-    if (now >= end) continue;
-    const cycle = Math.floor((now - paid) / (CYCLE_DAYS * DAY));
-    const cycles = Math.ceil(days / CYCLE_DAYS);
-    if (cycle >= 0 && cycle < cycles) {
-      add({ ref: `reset:${row.ref}:${cycle + 1}`, amount: cfg.legacy[kind], reason: `reset:${cycle + 1}/${cycles}`, topup: true });
+    if (row.plan === 'token') { add({ ref: row.ref, amount: row.tokens, reason: 'buy' }); continue; }
+    if (!kind) continue;
+    if (paid >= start) {
+      // Dibayar setelah model token berlaku: Paket Imtihan sekaligus (kalau diatur 1 bulan); paket lama yang telat lunas dikonversi.
+      if (kind === 'imtihan') { if (!have.has(row.ref)) add({ ref: row.ref, amount: Number(row.tokens) || cfg.grants.imtihan, reason: 'buy' }); }
+      else add({ ref: row.ref, amount: cfg.convert[kind], reason: 'convert' });
+      continue;
     }
+    if (kind === 'talkhis_1' || kind === 'talkhis_3') add({ ref: row.ref, amount: cfg.convert[kind], reason: 'convert' });
   }
   // Akses AI lama tanpa tagihan (diberi admin / Membership lama): satu kali isi ulang, setara satu bulan.
   if (subActive && !legacySeen) add({ ref: 'legacy:sub', amount: cfg.legacy.monthly, reason: 'reset:1/1', topup: true });
@@ -214,26 +267,23 @@ export const grantsDue = (rows, { start, now = Date.now(), subActive = false, pa
   return due;
 };
 
-/* Jadwal isi ulang bulanan member lama, untuk ditampilkan (panel admin). Murni (dites).
-   rows: seperti grantsDue. Mengembalikan paket lama yang masih berjalan dan paling lama berakhir:
-   { target, cycle, cycles, cycleStart, nextResetAt (null = bulan terakhir), endsAt }, atau null. */
-export const legacySchedule = (rows, { start, now = Date.now(), cfg = DEFAULT_TOKENS }) => {
+/* Jadwal isi ulang bulanan (member lama dan paket bulanan baru), untuk ditampilkan (panel admin). Murni (dites).
+   Mengembalikan paket bulanan yang masih berjalan dan paling lama berakhir:
+   { target, cycle, cycles, cycleStart, nextResetAt (null = bulan terakhir), endsAt, legacy }, atau null. */
+export const legacySchedule = (rows, { start, now = Date.now(), cfg = DEFAULT_TOKENS, have = new Set() }) => {
   let best = null;
   for (const row of rows) {
-    const kind = PLAN_KIND[row.plan];
-    if (kind !== 'imtihan' && kind !== 'monthly') continue;
-    const paid = Date.parse(row.paidAt || '');
-    if (!Number.isFinite(paid) || paid >= start) continue;
-    const days = kind === 'imtihan' ? legacyImtihanDays(row.createdAt) : CYCLE_DAYS;
-    const end = paid + days * DAY;
-    if (end <= start || end <= now) continue;
-    const cycle = Math.floor((now - paid) / (CYCLE_DAYS * DAY));
-    const cycles = Math.ceil(days / CYCLE_DAYS);
-    const next = paid + (cycle + 1) * CYCLE_DAYS * DAY;
+    const m = monthlyPlanOf(row, { start, cfg, have });
+    if (!m) continue;
+    const days = m.legacy && PLAN_KIND[row.plan] === 'imtihan' ? legacyImtihanDays(row.createdAt) : m.months * CYCLE_DAYS;
+    const end = m.paid + days * DAY;
+    if (end <= now) continue;
+    const cycle = Math.floor((now - m.paid) / (CYCLE_DAYS * DAY));
+    const next = m.paid + (cycle + 1) * CYCLE_DAYS * DAY;
     const item = {
-      target: cfg.legacy[kind], cycle: cycle + 1, cycles,
-      cycleStart: new Date(paid + cycle * CYCLE_DAYS * DAY).toISOString(),
-      nextResetAt: cycle + 1 < cycles && next < end ? new Date(next).toISOString() : null,
+      target: m.refill, first: m.first, cycle: cycle + 1, cycles: m.months, legacy: m.legacy,
+      cycleStart: new Date(m.paid + cycle * CYCLE_DAYS * DAY).toISOString(),
+      nextResetAt: cycle + 1 < m.months && next < end ? new Date(next).toISOString() : null,
       endsAt: new Date(end).toISOString(),
     };
     if (!best || Date.parse(item.endsAt) > Date.parse(best.endsAt)) best = item;
@@ -241,18 +291,18 @@ export const legacySchedule = (rows, { start, now = Date.now(), cfg = DEFAULT_TO
   return best;
 };
 
-/* Jadwal isi ulang semua member lama sekaligus (panel admin): { [member_code]: legacySchedule }. */
+/* Jadwal isi ulang semua member sekaligus (panel admin): { [member_code]: legacySchedule }. */
 export const legacySchedules = async () => {
   const start = await tokensStart();
   if (start == null) return {};
   const { url, key } = sbConfig();
   const h = { headers: sbHeaders(key) };
-  const from = new Date(start - LOOKBACK_DAYS * DAY).toISOString();
-  const until = new Date(start).toISOString();
+  const from = new Date(Date.now() - LOOKBACK_DAYS * DAY).toISOString();
   const page = async (q) => {
     const out = [];
     for (let offset = 0; offset < 20000; offset += 1000) {
       const r = await fetch(`${url}/rest/v1/${q}&limit=1000&offset=${offset}`, h);
+      if (r.status === 400 && offset === 0) return null; // kolom belum ada
       const rows = r.ok ? await r.json() : [];
       if (!Array.isArray(rows) || !rows.length) break;
       out.push(...rows);
@@ -260,14 +310,15 @@ export const legacySchedules = async () => {
     }
     return out;
   };
+  const q = (fields) => `payment_checkouts?status=eq.paid&plan=in.(imtihan,rombongan,library_ai,ai,token)&paid_at=gte.${from}&select=${fields}`;
   const [checkouts, groups, cfg] = await Promise.all([
-    page(`payment_checkouts?status=eq.paid&plan=in.(imtihan,rombongan,library_ai,ai)&paid_at=gte.${from}&paid_at=lt.${until}&select=member_code,plan,paid_at,created_at`),
-    page(`group_codes?redeemed_by=not.is.null&redeemed_at=gte.${from}&redeemed_at=lt.${until}&select=redeemed_by,redeemed_at,created_at`).catch(() => []),
+    page(q('id,member_code,plan,paid_at,created_at,tokens,token_months,token_refill')).then(r => r ?? page(q('id,member_code,plan,paid_at,created_at,tokens'))),
+    page(`group_codes?redeemed_by=not.is.null&redeemed_at=gte.${from}&select=code,redeemed_by,redeemed_at,created_at`).catch(() => []),
     getTokenConfig(),
   ]);
   const byCode = {};
-  for (const x of checkouts) if (x.member_code) (byCode[x.member_code] ||= []).push({ plan: x.plan, paidAt: x.paid_at, createdAt: x.created_at });
-  for (const g of groups) (byCode[g.redeemed_by] ||= []).push({ plan: 'group', paidAt: g.redeemed_at, createdAt: g.created_at });
+  for (const x of checkouts || []) if (x.member_code) (byCode[x.member_code] ||= []).push({ ref: `checkout:${x.id}`, plan: x.plan, paidAt: x.paid_at, createdAt: x.created_at, tokens: Number(x.tokens) || 0, months: x.token_months, refill: x.token_refill });
+  for (const g of groups || []) (byCode[g.redeemed_by] ||= []).push({ ref: `group:${g.code}`, plan: 'group', paidAt: g.redeemed_at, createdAt: g.created_at, tokens: 0 });
   const out = {};
   for (const [code, rows] of Object.entries(byCode)) {
     const s = legacySchedule(rows, { start, cfg });
@@ -295,7 +346,12 @@ export const ensureGrants = async (code, { force = false, welcome = false } = {}
     const c = encodeURIComponent(code);
     const arr = (r) => (r.ok ? r.json() : []);
     const [checkouts, groups, ledger, subs, members] = await Promise.all([
-      fetch(`${url}/rest/v1/payment_checkouts?member_code=eq.${c}&status=eq.paid&plan=in.(imtihan,rombongan,library_ai,ai,talkhis_1,talkhis_3,token)&paid_at=gte.${since}&select=id,plan,paid_at,created_at,tokens`, h).then(arr),
+      (async () => {
+        const q = (f) => fetch(`${url}/rest/v1/payment_checkouts?member_code=eq.${c}&status=eq.paid&plan=in.(imtihan,rombongan,library_ai,ai,talkhis_1,talkhis_3,token)&paid_at=gte.${since}&select=${f}`, h);
+        let r = await q('id,plan,paid_at,created_at,tokens,token_months,token_refill');
+        if (r.status === 400) r = await q('id,plan,paid_at,created_at,tokens'); // kolom token_months belum ada
+        return r.ok ? r.json() : [];
+      })(),
       fetch(`${url}/rest/v1/group_codes?redeemed_by=eq.${c}&redeemed_at=gte.${since}&select=code,redeemed_at,created_at`, h).then(arr).catch(() => []),
       fetch(`${url}/rest/v1/ai_token_ledger?member_code=eq.${c}&ref=not.is.null&select=ref&limit=1000`, h).then(r => (r.ok ? r.json() : null)),
       // Langganan AI lama yang masih berjalan dan sudah ada sebelum model token (trial kelas tidak dihitung).
@@ -308,7 +364,7 @@ export const ensureGrants = async (code, { force = false, welcome = false } = {}
     const paidLibrary = !!m && m.status === 'active' && (m.tier || 'library') !== 'free' && m.member_type !== 'trial'
       && !(Date.parse(m.created_at || '') >= start);
     const rows = [
-      ...(Array.isArray(checkouts) ? checkouts : []).map(x => ({ ref: `checkout:${x.id}`, plan: x.plan, paidAt: x.paid_at, createdAt: x.created_at, tokens: Number(x.tokens) || 0 })),
+      ...(Array.isArray(checkouts) ? checkouts : []).map(x => ({ ref: `checkout:${x.id}`, plan: x.plan, paidAt: x.paid_at, createdAt: x.created_at, tokens: Number(x.tokens) || 0, months: x.token_months, refill: x.token_refill })),
       ...(Array.isArray(groups) ? groups : []).map(g => ({ ref: `group:${g.code}`, plan: 'group', paidAt: g.redeemed_at, createdAt: g.created_at, tokens: 0 })),
     ];
     const have = new Set(ledger.map(r => r.ref));
@@ -340,7 +396,7 @@ export const tokenNews = async (code) => {
     const r = await fetch(`${url}/rest/v1/ai_token_ledger?member_code=eq.${encodeURIComponent(code)}&delta=gt.0&created_at=gte.${since}&select=id,ref,reason,delta,created_at&order=created_at.desc&limit=10`, { headers: sbHeaders(key) });
     const rows = r.ok ? await r.json() : [];
     return (Array.isArray(rows) ? rows : [])
-      .filter(x => NEWS_REASONS.includes(x.reason) || String(x.reason).startsWith('reset:'))
+      .filter(x => NEWS_REASONS.includes(x.reason) || String(x.reason).startsWith('reset:') || String(x.reason).startsWith('month:'))
       .map(x => ({ id: x.ref || `ledger:${x.id}`, reason: x.reason, amount: x.delta, at: x.created_at }));
   } catch { return []; }
 };
