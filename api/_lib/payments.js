@@ -5,7 +5,7 @@ import crypto from 'crypto';
 import { sbConfig, sbHeaders, newMemberCode } from './member.js';
 import { readSettings } from './settings.js';
 import { getLiveEvents, CLASS_TRIAL_PRODUCT, CLASS_TRIAL_HOURS, CLASS_TRIAL_DEFAULT_MAX } from './events.js';
-import { ensureGrants, tokensOn } from './tokens.js';
+import { ensureGrants, tokensOn, getTokenConfig } from './tokens.js';
 
 // Samakan dengan LIBRARY_PRICE di src/layout.jsx.
 export const LIBRARY_PRICE_IDR = 63000;
@@ -232,14 +232,27 @@ export async function createCheckout({ user, member, plan, appOrigin, imtihanAmo
 
   const { url, h } = sb();
   const name = (member?.name || user.name || user.email.split('@')[0]).slice(0, 120);
-  const created = await fetch(`${url}/rest/v1/payment_checkouts?select=${CHECKOUT_FIELDS}`, {
+  /* Token yang dijanjikan saat membeli disimpan di tagihan, supaya mengubah paket di Admin tidak mengubah hak pembeli:
+     tokens = token bulan pertama, token_months & token_refill = isi ulang bulanan (migrations/ai_tokens_monthly.sql). */
+  let tokenFields = {};
+  if (plan === 'token') tokenFields = { tokens: pack.tokens, token_months: pack.months || 1, token_refill: pack.refill || 0 };
+  else if (plan === 'imtihan' && (await tokensOn())) {
+    const g = (await getTokenConfig()).grants;
+    tokenFields = { tokens: g.imtihan, token_months: Math.max(1, g.imtihanMonths || 1), token_refill: g.imtihanRefill || 0 };
+  }
+  const insert = (extra) => fetch(`${url}/rest/v1/payment_checkouts?select=${CHECKOUT_FIELDS}`, {
     method: 'POST',
     headers: h({ Prefer: 'return=representation' }),
     body: JSON.stringify({
-      plan, amount, ...parts, ...(rombongan ? { seats: rombongan.seats } : {}), ...(plan === 'token' ? { tokens: pack.tokens } : {}), ...(partnerSlug ? { partner_slug: partnerSlug } : {}), ...affiliateFields,
+      plan, amount, ...parts, ...(rombongan ? { seats: rombongan.seats } : {}), ...extra, ...(partnerSlug ? { partner_slug: partnerSlug } : {}), ...affiliateFields,
       email: user.email, name, auth_user_id: user.id, member_code: member?.code || null,
     }),
   });
+  let created = await insert(tokenFields);
+  // Kolom isi ulang belum ada (migrasi belum dijalankan): simpan jumlah token saja, isi ulang memakai setting.
+  if (created.status === 400 && (tokenFields.token_months || tokenFields.token_refill != null)) {
+    created = await insert(plan === 'token' ? { tokens: pack.tokens } : {});
+  }
   if (!created.ok) throw new Error(`payment_checkouts insert ${created.status}: ${(await created.text()).slice(0, 200)}`);
   const row = (await created.json())[0];
 

@@ -1602,7 +1602,7 @@ const TokenBadges = ({ member, schedule, pill }) => {
           : pill('#f97316', bal < 0 ? `🪙 ${fmt(bal)} (habis)` : '🪙 token habis', 'Saldo token habis')}
       {schedule && (
         <div className="text-[11px] leading-snug text-ink-muted" title={`Paket lama berakhir ${formatShortDate(schedule.endsAt)}`}>
-          <span className="text-emerald-300">🔄 {fmt(schedule.target)}/bulan</span> · bulan {schedule.cycle}/{schedule.cycles}
+          <span className="text-emerald-300">🔄 isi ulang {fmt(schedule.target)}/bulan</span> · bulan {schedule.cycle}/{schedule.cycles}{schedule.legacy ? ' · member lama' : ''}
           <span className="block text-ink-soft">
             {schedule.nextResetAt
               ? `isi ulang ${shortDay(schedule.nextResetAt)} (${daysUntil(schedule.nextResetAt)} hari lagi)`
@@ -3011,9 +3011,13 @@ const ModelField = ({ label, hint, value, active, onChange }) => {
    Samakan bawaan dengan DEFAULT_TOKENS di api/_lib/tokens.js. 1 token = $0,0001 biaya AI (dipotong sesuai biaya asli). */
 const TOKEN_DEFAULTS = {
   usdRate: 16500,
-  packs: [{ id: 't100', price: 100000, tokens: 35000 }, { id: 't199', price: 199000, tokens: 75000 }],
-  addons: [{ id: 'a25', price: 25000, tokens: 7500 }, { id: 'a50', price: 50000, tokens: 16000 }],
-  grants: { imtihan: 75000, free: 1500, gift: 5000 },
+  packs: [
+    { id: 't100', name: "Paket Muraja'ah", price: 100000, tokens: 35000, months: 1, refill: 0 },
+    { id: 't199', name: 'Paket Imtihan', price: 199000, tokens: 75000, months: 2, refill: 35000 },
+  ],
+  addons: [{ id: 'a25', name: 'Tambahan Kecil', price: 25000, tokens: 7500 }, { id: 'a50', name: 'Tambahan Besar', price: 50000, tokens: 16000 }],
+  freeName: 'Coba Gratis',
+  grants: { imtihan: 75000, imtihanMonths: 2, imtihanRefill: 35000, free: 1000, gift: 5000 },
   limits: { freeDaily: 30 },
   legacy: { imtihan: 30000, monthly: 30000 },
   convert: { monthly: 35000, talkhis_1: 12000, talkhis_3: 30000 },
@@ -3033,12 +3037,15 @@ const TokenSettingsCard = ({ tokens, setTokens, eventPrice }) => {
   const costOf = (n) => Math.round(((Number(n) || 0) * 0.0001 * (Number(tokens.usdRate) || TOKEN_DEFAULTS.usdRate)) / lowRate);
   const fmt = (n) => Number(n || 0).toLocaleString("id-ID");
   // Untung per penjualan bila SEMUA token terpakai (kasus terburuk). Belum dipotong biaya Mayar dan komisi mitra.
+  // Token paling banyak dari satu pembelian: bulan pertama + isi ulang di bulan-bulan berikutnya (kasus terburuk).
+  const total = (t, months, refill) => (Number(t) || 0) + Math.max(0, (Number(months) || 1) - 1) * (Number(refill) || 0);
+  const imtihanTotal = total(tokens.grants.imtihan, tokens.grants.imtihanMonths, tokens.grants.imtihanRefill);
   const sales = [
-    ...tokens.packs.map(p => [`Paket ${fmt(p.tokens)} token`, Number(p.price) || 0, p.tokens]),
-    ...(tokens.addons || []).filter(a => a.price && a.tokens).map(a => [`Tambahan ${fmt(a.tokens)} token`, Number(a.price) || 0, a.tokens]),
-    ['Paket Imtihan (harga normal)', IMTIHAN_PRICE_IDR, tokens.grants.imtihan],
-    ['Paket Imtihan (kupon Instagram)', OFFER_COUPON_PRICE, tokens.grants.imtihan],
-    eventPrice ? ['Paket Imtihan (harga event)', eventPrice, tokens.grants.imtihan] : null,
+    ...tokens.packs.map(p => [`${p.name || 'Paket'} (${fmt(total(p.tokens, p.months, p.refill))} token maks.)`, Number(p.price) || 0, total(p.tokens, p.months, p.refill)]),
+    ...(tokens.addons || []).filter(a => a.price && a.tokens).map(a => [`${a.name || 'Tambahan'} (${fmt(a.tokens)} token)`, Number(a.price) || 0, a.tokens]),
+    ['Paket Imtihan · harga normal', IMTIHAN_PRICE_IDR, imtihanTotal],
+    ['Paket Imtihan · kupon Instagram', OFFER_COUPON_PRICE, imtihanTotal],
+    eventPrice ? ['Paket Imtihan · harga event', eventPrice, imtihanTotal] : null,
   ].filter(Boolean);
   return (
     <div className="card-glass p-6 space-y-5">
@@ -3055,17 +3062,29 @@ const TokenSettingsCard = ({ tokens, setTokens, eventPrice }) => {
         <div className="text-[11px] text-ink-muted mb-2">Paket token yang dijual</div>
         <div className="space-y-2">
           {tokens.packs.map((p, i) => (
-            <div key={i} className="flex items-center gap-2">
-              <input inputMode="numeric" value={p.tokens ?? ""} onChange={e => setPack(i, 'tokens', e.target.value)} className={tokenInputClass + " max-w-[130px]"}/>
-              <span className="text-xs text-ink-soft">token seharga Rp</span>
-              <input inputMode="numeric" value={p.price ?? ""} onChange={e => setPack(i, 'price', e.target.value)} className={tokenInputClass + " max-w-[130px]"}/>
+            <div key={i} className="rounded-xl border border-white/[0.06] p-3 space-y-2">
+              <input value={p.name ?? ""} onChange={e => setTokens(c => ({ ...c, packs: c.packs.map((x, j) => (j === i ? { ...x, name: e.target.value.slice(0, 40) } : x)) }))}
+                placeholder="Nama paket" className={tokenInputClass + " max-w-[260px] font-sans"}/>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs text-ink-soft">Rp</span>
+                <input inputMode="numeric" value={p.price ?? ""} onChange={e => setPack(i, 'price', e.target.value)} className={tokenInputClass + " max-w-[110px]"}/>
+                <span className="text-xs text-ink-soft">→</span>
+                <input inputMode="numeric" value={p.tokens ?? ""} onChange={e => setPack(i, 'tokens', e.target.value)} className={tokenInputClass + " max-w-[110px]"}/>
+                <span className="text-xs text-ink-soft">token, selama</span>
+                <input inputMode="numeric" value={p.months ?? ""} onChange={e => setPack(i, 'months', e.target.value)} className={tokenInputClass + " max-w-[60px]"}/>
+                <span className="text-xs text-ink-soft">bulan; tiap bulan berikutnya diisi ulang jadi</span>
+                <input inputMode="numeric" value={p.refill ?? ""} onChange={e => setPack(i, 'refill', e.target.value)} disabled={!(Number(p.months) > 1)} className={tokenInputClass + " max-w-[110px] disabled:opacity-40"}/>
+              </div>
             </div>
           ))}
+          <p className="text-[11px] text-ink-soft">1 bulan = token sekali tanpa isi ulang. Lebih dari 1 bulan = token bulan pertama ditambahkan, lalu tiap 30 hari saldo dinaikkan sampai angka isi ulang (tidak menumpuk; token yang dibeli sendiri tidak terhapus).</p>
         </div>
         <div className="text-[11px] text-ink-muted mt-4 mb-2">Tambahan token (add-on) <span className="text-ink-soft">· khusus member yang sudah punya Library, tanpa Library di dalamnya</span></div>
         <div className="space-y-2">
           {(tokens.addons || []).map((p, i) => (
-            <div key={p.id || i} className="flex items-center gap-2">
+            <div key={p.id || i} className="flex flex-wrap items-center gap-2">
+              <input value={p.name ?? ""} onChange={e => setTokens(c => ({ ...c, addons: (c.addons || []).map((x, j) => (j === i ? { ...x, name: e.target.value.slice(0, 40) } : x)) }))}
+                placeholder="Nama" className={tokenInputClass + " max-w-[160px] font-sans"}/>
               <input inputMode="numeric" value={p.tokens ?? ""} onChange={e => setAddon(i, 'tokens', e.target.value)} className={tokenInputClass + " max-w-[130px]"}/>
               <span className="text-xs text-ink-soft">token seharga Rp</span>
               <input inputMode="numeric" value={p.price ?? ""} onChange={e => setAddon(i, 'price', e.target.value)} className={tokenInputClass + " max-w-[130px]"}/>
@@ -3077,9 +3096,20 @@ const TokenSettingsCard = ({ tokens, setTokens, eventPrice }) => {
           )}
         </div>
         <p className="text-[11px] text-ink-soft mt-1.5">Harga minimal Rp5.000. Hapus semua add-on untuk mematikannya. Sebaiknya per token sedikit lebih mahal daripada paket besar.</p>
-        <div className="mt-3 max-w-[260px]">
-          <label className="text-[11px] text-ink-soft block mb-1">Token di Paket Imtihan (harga kupon/mitra/event berlaku)</label>
-          <input inputMode="numeric" value={tokens.grants.imtihan ?? ""} onChange={e => setIn('grants', 'imtihan', e.target.value)} className={tokenInputClass}/>
+        <div className="mt-4">
+          <div className="text-[11px] text-ink-muted mb-2">Paket Imtihan lewat halaman Paket untuk pembeli baru <span className="text-ink-soft">(harga kupon/mitra/event/Rombongan berlaku)</span></div>
+          <div className="flex flex-wrap items-center gap-2">
+            <input inputMode="numeric" value={tokens.grants.imtihan ?? ""} onChange={e => setIn('grants', 'imtihan', e.target.value)} className={tokenInputClass + " max-w-[110px]"}/>
+            <span className="text-xs text-ink-soft">token, selama</span>
+            <input inputMode="numeric" value={tokens.grants.imtihanMonths ?? ""} onChange={e => setIn('grants', 'imtihanMonths', e.target.value)} className={tokenInputClass + " max-w-[60px]"}/>
+            <span className="text-xs text-ink-soft">bulan; tiap bulan berikutnya diisi ulang jadi</span>
+            <input inputMode="numeric" value={tokens.grants.imtihanRefill ?? ""} onChange={e => setIn('grants', 'imtihanRefill', e.target.value)} className={tokenInputClass + " max-w-[110px]"}/>
+          </div>
+          <p className="text-[11px] text-ink-soft mt-1.5">Samakan dengan paket besar di atas. Mengubah angka ini tidak mengubah hak pembeli yang sudah membayar.</p>
+        </div>
+        <div className="mt-4 max-w-[260px]">
+          <label className="text-[11px] text-ink-soft block mb-1">Nama penawaran gratis</label>
+          <input value={tokens.freeName ?? ""} onChange={e => setTokens(c => ({ ...c, freeName: e.target.value.slice(0, 40) }))} className={tokenInputClass + " font-sans"}/>
         </div>
       </div>
 
@@ -3227,8 +3257,10 @@ const AdminSettings = () => {
           const c = JSON.parse(server.aiTokens || '{}') || {};
           setTokens({
             usdRate: c.usdRate || TOKEN_DEFAULTS.usdRate,
-            packs: Array.isArray(c.packs) && c.packs.length ? c.packs : TOKEN_DEFAULTS.packs,
-            addons: Array.isArray(c.addons) ? c.addons : TOKEN_DEFAULTS.addons,
+            // Paket yang tersimpan sebelum ada nama/bulan/isi ulang dilengkapi dari bawaan (per id).
+            packs: (Array.isArray(c.packs) && c.packs.length ? c.packs : TOKEN_DEFAULTS.packs).map(p => ({ ...(TOKEN_DEFAULTS.packs.find(d => d.id === p.id) || { months: 1, refill: 0 }), ...p })),
+            addons: (Array.isArray(c.addons) ? c.addons : TOKEN_DEFAULTS.addons).map(p => ({ ...(TOKEN_DEFAULTS.addons.find(d => d.id === p.id) || {}), ...p })),
+            freeName: c.freeName || TOKEN_DEFAULTS.freeName,
             grants: { ...TOKEN_DEFAULTS.grants, ...(c.grants || {}) },
             limits: { ...TOKEN_DEFAULTS.limits, ...(c.limits || {}) },
             legacy: { ...TOKEN_DEFAULTS.legacy, ...(c.legacy || {}) },

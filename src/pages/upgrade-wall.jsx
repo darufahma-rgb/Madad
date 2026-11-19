@@ -95,7 +95,7 @@ const UpgradeWall = () => {
           <div className="mt-4">
             <div className="text-[11px] text-ink-soft">mulai</div>
             <div className="font-display text-2xl font-semibold text-ink">{formatRupiah(shop.small.price)}</div>
-            <div className="text-[11px] text-ink-soft">sekali bayar · {formatTokens(shop.small.tokens)} token (tidak hangus) + Library selamanya</div>
+            <div className="text-[11px] text-ink-soft">{shop.small.name} · sekali bayar · {packText(shop.small)} + Library selamanya</div>
           </div>
         )}
         {!shop && isFree && P && (

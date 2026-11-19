@@ -66,7 +66,11 @@ export default async function handler(req, res) {
     // Event penjualan yang sedang berlangsung (Admin → Settings); null = tidak ada. Harga tagihan tetap dari server.
     imtihanEvent: events.imtihan,
     rombonganEvent: events.rombongan,
-    tokens: tokens ? { packs: tokens.packs, addons: tokens.addons, imtihan: tokens.grants.imtihan, free: tokens.grants.free, gift: tokens.grants.gift, legacy: tokens.legacy, guide: tokenGuide(tokens) } : null,
+    tokens: tokens ? {
+      packs: tokens.packs, addons: tokens.addons, freeName: tokens.freeName,
+      imtihan: tokens.grants.imtihan, imtihanMonths: tokens.grants.imtihanMonths, imtihanRefill: tokens.grants.imtihanRefill,
+      free: tokens.grants.free, gift: tokens.grants.gift, legacy: tokens.legacy, guide: tokenGuide(tokens),
+    } : null,
   };
 
   res.status(200).json({

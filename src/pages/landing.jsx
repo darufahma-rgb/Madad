@@ -1007,7 +1007,7 @@ const imtihanQuota = (c) => c ? [
   ["Ringkasan, kuis, flashcard", `±${formatTokens(c.guide.generate || 600)} token`],
   ["Live Caption kuliah duktur", `±${formatTokens(c.guide.livePerMinute || 70)} token / menit`],
   ["Talkhis muqarrar", `±${formatTokens(c.guide.talkhis || 15000)} token`],
-  ["Token di paket ini", formatTokens(c.imtihan)],
+  ["Token di paket ini", packText(c.imtihanPack, { short: true })],
 ] : [
   ["Terjemah & i'rab", "Sepuasnya"],
   ["Pesan tutor & Tanya AI", "Sepuasnya"],
@@ -1030,7 +1030,7 @@ const landingFaq = (c) => [
   { q: "Apa beda paket Library dan Paket Imtihan?",
     a: `Library berisi ${CATALOG.maddah} maddah, ${CATALOG.prompts} template prompt, bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Prompt-nya kamu salin ke AI pilihanmu (Claude, ChatGPT, NotebookLM, dll). Paket Imtihan = Library selamanya + ${imtihanAi()}: unggah materi kuliahmu sendiri (PDF, Word, slide, foto diktat, rekaman kuliah), lalu AI membuat ringkasan berpenjelasan, peta konsep, mufradat, flashcard, kuis, dan soal tahriri, menerjemahkan & meng-i'rab kalimat Arab, men-talkhis muqarrar jadi PDF siap cetak, dan menemani lewat tutor serta simulasi syafawi — tanpa pindah aplikasi.` },
   c ? { q: "Paket tokennya apa saja? Mana yang cocok?",
-    a: `Ada dua: ${formatTokens(c.small.tokens)} token (${formatRupiah(c.small.price)}) dan ${formatTokens(c.big.tokens)} token (${formatRupiah(c.big.price)}). Dua-duanya membuka Library selamanya dan semua fitur AI Partner; yang beda cuma jumlah tokennya. Token tidak hangus, jadi mulai dari yang kecil pun aman — kalau habis tinggal beli lagi. Paket besar lebih hemat per token, cocok untuk persiapan imtihan.` }
+    a: `Ada dua: ${c.small.name} (${formatRupiah(c.small.price)}) berisi ${packText(c.small)}, dan ${c.big.name} (${formatRupiah(c.big.price)}) berisi ${packText(c.big)}. Dua-duanya membuka Library selamanya dan semua fitur AI Partner; yang beda cuma jumlah tokennya. Token tidak hangus, jadi mulai dari yang kecil pun aman — kalau habis tinggal beli lagi. Paket besar lebih hemat per token, cocok untuk persiapan imtihan.` }
   : { q: "Ada paket AI Partner 1 bulan? Mana yang lebih baik?",
     a: `Ada. Paket 1 bulan = Library selamanya + AI Partner 30 hari, bisa diperpanjang per 30 hari. Untuk persiapan imtihan, ambil Paket Imtihan (Library + ${imtihanAi()}, sekali bayar): selama ${IMTIHAN_AI_DAYS} hari itu tidak ada kuota bulanan. Selama ada event promo, harganya lebih murah lagi.` },
   c ? { q: "Token itu apa? Ada batas pemakaiannya?",
@@ -1038,7 +1038,7 @@ const landingFaq = (c) => [
   : { q: "AI Partner di Paket Imtihan ada batasnya?",
     a: `Selama ${IMTIHAN_AI_DAYS} hari, terjemah & i'rab, pesan tutor, Tanya AI, ringkasan/kuis/flashcard, materi baru, dan baca halaman scan bisa kamu pakai sepuasnya. Batas hanya untuk fitur yang biayanya dihitung per menit atau per muqarrar. Live Caption kuliah duktur: 8 jam per 30 hari, maksimal 3 jam per hari (mode Akurat untuk kelas ramai dihitung 4× menit). Halaman muqarrar scan yang sudah pernah dibaca AI di Talqeeh bisa langsung terbuka gratis. Talkhis otomatis: 3 muqarrar per paket.` },
   c && c.free > 0 ? { q: "Bisa coba dulu sebelum bayar?",
-    a: `Bisa. Masuk dengan Google lalu pilih "Mulai gratis": kamu dapat akun gratis dengan maddah Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan ${formatTokens(c.free)} token AI gratis begitu membuka AI Partner — cukup untuk 1 ringkasan + kuis dari materimu sendiri dan beberapa tanya tutor. Kalau cocok, beli token kapan saja; akunnya sama, progresmu tetap aman.` }
+    a: `Bisa. Masuk dengan Google lalu pilih "Mulai gratis": kamu dapat akun gratis dengan maddah Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan ${formatTokens(c.free)} token AI gratis begitu membuka AI Partner — cukup untuk mencoba ringkasan dan tanya tutor dari materimu sendiri. Kalau cocok, beli token kapan saja; akunnya sama, progresmu tetap aman.` }
   : { q: "Bisa coba dulu sebelum bayar?",
     a: "Bisa. Masuk dengan Google lalu pilih \"Mulai gratis\": kamu dapat akun gratis dengan maddah Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan coba AI Partner untuk 1 materi pendek (±10–15 halaman): ringkasan, flashcard, kuis, mufradat, plus 2× terjemah & i'rab, 3 pesan tutor, 1 kali Tanya AI, dan 3 foto dibaca AI. Upgrade kapan saja — akunnya sama, progresmu tetap aman." },
   { q: "Library-nya berlaku sampai kapan?",
@@ -1143,7 +1143,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
                 <FeatureList items={AI_BUNDLE_FEATURES} color="text-emerald-400"/>
               </div>
               <QuotaBox
-                title={tokens ? `${formatTokens(tokens.imtihan)} token, tidak hangus` : `Tanpa kuota bulanan selama ${IMTIHAN_AI_DAYS} hari`}
+                title={tokens ? `${tokens.imtihanPack.name}: ${packText(tokens.imtihanPack, { short: true })}` : `Tanpa kuota bulanan selama ${IMTIHAN_AI_DAYS} hari`}
                 rows={imtihanQuota(tokens)}
                 note={tokens ? "Angka perkiraan: potongan sebenarnya mengikuti panjang materi dan jawaban AI. Tidak ada batas harian atau masa aktif. Sisa token selalu terlihat, dan kalau habis bisa beli lagi kapan saja." : "Fitur belajar harian bisa kamu pakai sepuasnya selama masa paket. Batas hanya untuk Live Caption, transkrip rekaman, dan talkhis, karena biayanya dihitung per menit atau per muqarrar."}
               />
@@ -1162,7 +1162,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
       <Reveal>
         <div className="max-w-5xl mx-auto mt-5 card-glass p-5 flex items-center gap-4 flex-wrap" style={{ border: "1px solid rgba(62,207,142,0.22)" }}>
           <div className="flex-1 min-w-[240px]">
-            <div className="text-ink font-medium">Butuh token lebih sedikit? {formatTokens(tokens.small.tokens)} token · {formatRupiah(tokens.small.price)}</div>
+            <div className="text-ink font-medium">Butuh token lebih sedikit? {tokens.small.name}: {packText(tokens.small)} · {formatRupiah(tokens.small.price)}</div>
             <div className="text-sm text-ink-muted leading-relaxed">
               Fiturnya sama persis: Library selamanya dan semua fitur AI Partner. Yang beda cuma jumlah tokennya. Token tidak hangus, dan kalau habis bisa beli lagi kapan saja.
             </div>

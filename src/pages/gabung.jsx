@@ -59,7 +59,7 @@ const PersonalRecap = ({ profile }) => {
 const freeItems = (t) => (t && t.free > 0 ? [
   ['Maddah Nahwu + 1 maddah pilihanmu', true],
   ['2 soal bank soal imtihan', true],
-  [`${formatTokens(t.free)} token AI gratis: cukup untuk 1 ringkasan + kuis dan beberapa tanya tutor`, true],
+  [`${formatTokens(t.free)} token AI gratis untuk mencoba ringkasan dan tanya tutor dari materimu`, true],
   ['Kurasah, Statistik & Profil Belajar', true],
   [`${CATALOG.maddah - 2} maddah lainnya`, false],
   ['Siap Imtihan & Muqaranah 4 madzhab', false],
@@ -88,10 +88,12 @@ const AI_ITEMS = [
 
 /* Isi kartu paket token. Contoh pemakaian dihitung dari perkiraan token per fitur (TOKEN_GUIDE di server) — angka kira-kira,
    bukan janji: potongan sebenarnya mengikuti panjang materi dan jawaban AI. */
-const tokenItems = (n, guide, withLibrary) => {
-  const ex = tokenExamples(n, guide);
+// p = paket ({ tokens, months, refill }); paket bulanan menampilkan isi ulangnya.
+const tokenItems = (p, guide, withLibrary) => {
+  const ex = tokenExamples(p.tokens, guide);
   return [
     ...(withLibrary ? [['Semua isi paket Library — selamanya', true]] : []),
+    [packMonthly(p) ? `${formatTokens(p.tokens)} token sekarang, lalu ${Number(p.months) - 1 === 1 ? 'bulan depan' : `${Number(p.months) - 1} bulan berikutnya`} diisi ulang jadi ${formatTokens(p.refill)}` : `${formatTokens(p.tokens)} token sekali, tanpa isi ulang bulanan`, true],
     ['Semua fitur AI Partner terbuka, tanpa batas harian', true],
     [`Kira-kira ${formatTokens(ex.chat)} pesan tutor, atau ±${ex.liveHours} jam Live Caption`, true],
     ['Token tidak hangus — habis baru beli lagi', true],
@@ -148,7 +150,7 @@ const tokenCompareRows = (c) => [
   ['AI Partner: ringkasan, flashcard, kuis, tutor, terjemah & i\'rab', 'Pakai token', 'Pakai token', 'Pakai token'],
   ['Upload PDF muqarrar utuh, talkhis, peta konsep, tahriri, syafawi', 'Pakai token', 'Pakai token', 'Pakai token'],
   ['Live Caption & rekaman kuliah duktur', 'Pakai token', 'Pakai token', 'Pakai token'],
-  ['Token AI yang dibeli (tidak hangus)', false, false, `${formatTokens(c.small.tokens)} atau ${formatTokens(c.big.tokens)}`],
+  ['Token AI yang dibeli (tidak hangus)', false, false, `${formatTokens(c.small.tokens)}, atau ${formatTokens(c.big.tokens)} + isi ulang`],
 ];
 
 const TESTIMONIALS = [
@@ -161,7 +163,7 @@ const faqs = (c) => [
   ['Apa bedanya dengan pakai ChatGPT langsung?',
     'Kamu tidak mulai dari nol. Talqeeh sudah menyiapkan prompt untuk tiap maddah muqarrar Azhar, rekomendasi AI yang paling cocok, dan bank soal imtihan. AI Partner juga dibuat khusus untuk teks Arab: i\'rab, harakat, dan ringkasan gaya kitab.'],
   c ? ['Apa itu Paket Imtihan?',
-    `Paket token besar: Library selamanya + ${formatTokens(c.imtihan)} token AI yang tidak hangus, dalam sekali bayar. Harga normal ${formatRupiah(IMTIHAN_PRICE_IDR)}, lebih murah lewat kupon atau event promo.`]
+    `${c.imtihanPack.name}: Library selamanya + ${packText(c.imtihanPack)}, dalam sekali bayar. Token tidak hangus. Harga normal ${formatRupiah(IMTIHAN_PRICE_IDR)}, lebih murah lewat kupon atau event promo.`]
   : ['Apa itu Paket Imtihan?',
     `Library selamanya + ${imtihanAi()} untuk persiapan imtihan, dalam sekali bayar — harga normal ${formatRupiah(IMTIHAN_PRICE_IDR)}, lebih murah selama event promo. Setelah masanya habis, Library tetap milikmu dan AI bisa diperpanjang ${formatRupiah(AI_RENEW_PRICE_IDR)} per 30 hari, kapan saja.`],
   c ? ['Library bayar sekali atau bulanan?',
@@ -169,7 +171,7 @@ const faqs = (c) => [
   : ['Library bayar sekali atau bulanan?',
     `Sekali bayar ${LIBRARY_PRICE}, aksesnya berlaku selamanya — termasuk semua update fitur Library ke depan. AI Partner opsional: ambil Paket Imtihan untuk persiapan imtihan, atau per 30 hari.`],
   c && c.free > 0 ? ['Boleh coba gratis dulu?',
-    `Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan ${formatTokens(c.free)} token AI gratis begitu kamu membuka AI Partner — cukup untuk 1 ringkasan + kuis dari materimu dan beberapa tanya tutor. Kalau cocok, beli token kapan saja; progresmu tetap tersimpan.`]
+    `Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan ${formatTokens(c.free)} token AI gratis begitu kamu membuka AI Partner — cukup untuk mencoba ringkasan dan tanya tutor dari materimu sendiri. Kalau cocok, beli token kapan saja; progresmu tetap tersimpan.`]
   : ['Boleh coba gratis dulu?',
     "Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan AI Partner untuk 1 materi pendek (±10–15 halaman) — termasuk 2× terjemah & i'rab dan 3× tanya tutor (member Library: 10× dan 15×). Kalau cocok, upgrade kapan saja — progresmu tetap tersimpan."],
   ['Bayarnya pakai apa? Berapa lama aktifnya?',
@@ -752,7 +754,7 @@ const GabungPage = () => {
         )}
         {tokens && !paidMember && <HowToJoin step={signedOut ? 1 : 3} adminWa={adminWa}/>}
         <div className="grid md:grid-cols-3 gap-5 md:gap-4 max-w-6xl mx-auto items-stretch md:pt-4">
-          <PlanCard color={SKY} icon="leaf" title="Gratis" tagline="Coba dulu, rasakan bedanya"
+          <PlanCard color={SKY} icon="leaf" title={tokens?.freeName || 'Gratis'} tagline="Coba dulu, rasakan bedanya"
             price="Rp 0" sub="Tanpa kartu · tanpa pembayaran" items={freeItems(tokens)}
             current={isFree} selected={plan === 'free'} ctaClass="btn btn-ghost"
             cta={startingFree ? 'Menyiapkan akun…' : paidMember ? 'Sudah termasuk di Library' : isTrial ? 'Kamu sedang trial' : 'Mulai gratis'}
@@ -763,18 +765,18 @@ const GabungPage = () => {
                   paket besar (harga kupon/mitra/kekeluargaan berlaku); yang sudah punya Library membeli plan 'token'. */}
               <PlanCard className="order-first md:order-none" color={EMERALD} icon="sparkles" recommended
                 badge={!paidMember && imtihan.promo ? (imtihan.promo.personal ? "🎁 Khusus untukmu" : imtihan.promo.affiliate ? `🤝 ${imtihan.promo.name}` : `Promo ${imtihan.promo.name}`) : "Paling hemat per token"}
-                title={`${formatTokens(paidMember ? tokens.big.tokens : tokens.imtihan)} token`} tagline={paidMember ? 'Token AI, tidak hangus' : 'Paket Imtihan: Library + token AI'}
+                title={(paidMember ? tokens.big : tokens.imtihanPack).name} tagline={`${packText(paidMember ? tokens.big : tokens.imtihanPack, { short: true })}${packMonthly(paidMember ? tokens.big : tokens.imtihanPack) ? ' bulan depan' : ''}`}
                 strike={!paidMember && imtihan.promo ? formatRupiah(imtihan.promo.normal) : undefined}
                 price={formatRupiah(paidMember ? tokens.big.price : imtihan.total)} priceNote="sekali bayar"
-                sub={paidMember ? 'Dipakai kapan saja sampai habis' : 'Library selamanya + token yang tidak hangus'}
-                items={tokenItems(paidMember ? tokens.big.tokens : tokens.imtihan, tokens.guide, !paidMember)} selected={plan === 'imtihan'} ctaClass="btn btn-primary"
-                cta={`Ambil ${formatTokens(paidMember ? tokens.big.tokens : tokens.imtihan)} token · ${formatRupiah(paidMember ? tokens.big.price : imtihan.total)}`}
+                sub={paidMember ? 'Token AI, isi ulang bulanan' : 'Library selamanya + token AI dengan isi ulang bulanan'}
+                items={tokenItems(paidMember ? tokens.big : tokens.imtihanPack, tokens.guide, !paidMember)} selected={plan === 'imtihan'} ctaClass="btn btn-primary"
+                cta={`Ambil ${(paidMember ? tokens.big : tokens.imtihanPack).name} · ${formatRupiah(paidMember ? tokens.big.price : imtihan.total)}`}
                 onClick={() => (paidMember ? chooseToken(tokens.big.id) : choosePaid('imtihan'))}/>
-              <PlanCard color={GOLD} icon="layers" title={`${formatTokens(tokens.small.tokens)} token`} tagline={paidMember ? 'Token AI, tidak hangus' : 'Library + token AI'}
+              <PlanCard color={GOLD} icon="layers" title={tokens.small.name} tagline={packText(tokens.small, { short: true })}
                 price={formatRupiah(tokens.small.price)} priceNote="sekali bayar"
                 sub={paidMember ? 'Dipakai kapan saja sampai habis' : 'Library selamanya + token yang tidak hangus'}
-                items={tokenItems(tokens.small.tokens, tokens.guide, !paidMember)} ctaClass="btn btn-gold"
-                cta={`Ambil ${formatTokens(tokens.small.tokens)} token · ${formatRupiah(tokens.small.price)}`}
+                items={tokenItems(tokens.small, tokens.guide, !paidMember)} ctaClass="btn btn-gold"
+                cta={`Ambil ${tokens.small.name} · ${formatRupiah(tokens.small.price)}`}
                 onClick={() => chooseToken(tokens.small.id)}
                 secondary={!paidMember && (
                   <button onClick={() => choosePaid('library')} className="mt-3 text-xs text-ink-muted hover:text-ink underline underline-offset-2">
@@ -832,7 +834,7 @@ const GabungPage = () => {
             <div className="flex gap-2 flex-wrap">
               {tokens.addons.map(a => (
                 <button key={a.id} onClick={() => chooseToken(a.id)} disabled={checkout.status === 'creating'} className="btn btn-gold text-sm px-4 py-2.5">
-                  +{formatTokens(a.tokens)} token · {formatRupiah(a.price)}
+                  {a.name}: +{formatTokens(a.tokens)} token · {formatRupiah(a.price)}
                 </button>
               ))}
             </div>
@@ -1011,7 +1013,7 @@ const GabungPage = () => {
             <thead>
               <tr className="border-b border-white/10">
                 <th className="text-left font-medium text-ink-muted text-xs px-3 md:px-5 py-4 w-[34%] md:w-[40%]">Fitur</th>
-                {[['Gratis', SKY], ['Library', GOLD], [tokens ? 'Paket token' : 'Paket Imtihan', EMERALD]].map(([label, c]) => (
+                {[[tokens?.freeName || 'Gratis', SKY], ['Library', GOLD], [tokens ? 'Paket token' : 'Paket Imtihan', EMERALD]].map(([label, c]) => (
                   <th key={label} className="px-1.5 md:px-3 py-4 text-center font-display font-semibold text-xs md:text-sm leading-tight" style={{ color: c }}>{label}</th>
                 ))}
               </tr>
