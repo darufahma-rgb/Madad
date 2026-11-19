@@ -186,6 +186,48 @@ const faqs = (c) => [
     'Tidak. Minta PIN aktivasi ke admin, lalu masukkan lewat tautan "Member lama? Masukkan PIN" di halaman ini.'],
 ];
 
+// Paket token yang dipilih sebelum login: dari tautan (#/gabung?plan=token&pack=t100) atau dari pilihan yang tersimpan.
+const cleanPack = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 12) || null;
+const packFromHash = () => {
+  const q = new URLSearchParams(window.location.hash.split('?')[1] || '');
+  if (q.get('plan') === 'token') return cleanPack(q.get('pack'));
+  try { const saved = localStorage.getItem(JOIN_PLAN_KEY) || ''; return saved.startsWith('token:') ? cleanPack(saved.slice(6)) : null; } catch { return null; }
+};
+
+/* Cara berlangganan dalam 3 langkah, dengan langkah yang sedang dijalani ditandai. Bantuan WhatsApp selalu terlihat. */
+const HowToJoin = ({ step, adminWa }) => {
+  const steps = [
+    ['Pilih paket', 'Paket token kecil atau besar. Keduanya sudah termasuk Library selamanya.'],
+    ['Masuk Google', 'Satu klik, tanpa daftar atau isi formulir.'],
+    ['Bayar', 'QRIS, virtual account, atau e-wallet. Token langsung masuk otomatis.'],
+  ];
+  const help = encodeURIComponent('Assalamu\'alaikum admin Talqeeh, saya mau berlangganan tapi masih bingung caranya. Bisa dibantu? 🙏');
+  return (
+    <div className="max-w-4xl mx-auto mb-6 md:mb-8 card-glass p-3.5 md:p-5">
+      <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
+        <div className="text-xs uppercase tracking-[0.18em] text-gold-400">Cara berlangganan</div>
+        <a href={`https://wa.me/${adminWa}?text=${help}`} target="_blank" rel="noopener noreferrer"
+          className="text-xs text-emerald-300 hover:text-emerald-200 inline-flex items-center gap-1.5">
+          <Icon name="messageSquare" className="w-3.5 h-3.5"/> Bingung? Chat admin
+        </a>
+      </div>
+      <ol className="grid grid-cols-3 gap-2 sm:gap-3">
+        {steps.map(([title, text], i) => {
+          const n = i + 1, done = n < step, now = n === step;
+          return (
+            <li key={title} className={`flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-1.5 sm:gap-3 rounded-xl px-2 sm:px-3 py-2.5 border ${now ? 'border-emerald-500/40 bg-emerald-500/[0.07]' : 'border-white/[0.06]'}`}>
+              <span className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-semibold ${done ? 'bg-emerald-500 text-black' : now ? 'bg-emerald-500/20 text-emerald-200 border border-emerald-500/50' : 'bg-white/5 text-ink-soft'}`}>
+                {done ? '✓' : n}
+              </span>
+              <span className="text-[13px] sm:text-sm leading-snug"><span className={`block font-medium ${now ? 'text-ink' : 'text-ink-muted'}`}>{title}</span><span className="hidden sm:inline text-[12px] text-ink-soft">{text}</span></span>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
+  );
+};
+
 const planFromHash = () => {
   const q = (window.location.hash.split('?')[1] || '');
   const plan = new URLSearchParams(q).get('plan');
@@ -525,9 +567,20 @@ const GabungPage = () => {
 
   // Paket token: langsung ke checkout (layar ringkasan Talqeeh tampil sebelum pindah ke Mayar).
   const chooseToken = (packId) => {
-    if (signedOut) { requireLogin(null); return; }
+    // Belum login: pilihan paket disimpan dulu, lalu otomatis dilanjutkan ke pembayaran setelah login Google.
+    if (signedOut) { requireLogin(`token:${packId}`); return; }
     checkout.start('token', { pack: packId });
   };
+  // Kembali dari login dengan paket token yang sudah dipilih → langsung buka pembayarannya (sekali).
+  const resumedPack = useRef(false);
+  useEffect(() => {
+    const pack = packFromHash();
+    if (!pack || signedOut || resumedPack.current || waiting || !tokens || authStatus === 'loading') return;
+    if (!tokens.packs.some(p => p.id === pack)) return;
+    resumedPack.current = true;
+    saveJoinPlanLocal(null);
+    chooseToken(pack);
+  }, [signedOut, authStatus, !!tokens]);
   const choosePaid = (nextPlan) => {
     if (signedOut) { requireLogin(nextPlan); return; }
     if (paidMember && tokens) { if (nextPlan === 'library') navigate('/dashboard'); else chooseToken(tokens.big.id); return; }
@@ -697,6 +750,7 @@ const GabungPage = () => {
             <button onClick={() => navigate('/dashboard')} className="btn btn-ghost text-sm px-4 py-2">Ke Beranda</button>
           </div>
         )}
+        {tokens && !paidMember && <HowToJoin step={signedOut ? 1 : 3} adminWa={adminWa}/>}
         <div className="grid md:grid-cols-3 gap-5 md:gap-4 max-w-6xl mx-auto items-stretch md:pt-4">
           <PlanCard color={SKY} icon="leaf" title="Gratis" tagline="Coba dulu, rasakan bedanya"
             price="Rp 0" sub="Tanpa kartu · tanpa pembayaran" items={freeItems(tokens)}

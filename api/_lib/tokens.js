@@ -203,6 +203,68 @@ export const grantsDue = (rows, { start, now = Date.now(), subActive = false, pa
   return due;
 };
 
+/* Jadwal isi ulang bulanan member lama, untuk ditampilkan (panel admin). Murni (dites).
+   rows: seperti grantsDue. Mengembalikan paket lama yang masih berjalan dan paling lama berakhir:
+   { target, cycle, cycles, cycleStart, nextResetAt (null = bulan terakhir), endsAt }, atau null. */
+export const legacySchedule = (rows, { start, now = Date.now(), cfg = DEFAULT_TOKENS }) => {
+  let best = null;
+  for (const row of rows) {
+    const kind = PLAN_KIND[row.plan];
+    if (kind !== 'imtihan' && kind !== 'monthly') continue;
+    const paid = Date.parse(row.paidAt || '');
+    if (!Number.isFinite(paid) || paid >= start) continue;
+    const days = kind === 'imtihan' ? legacyImtihanDays(row.createdAt) : CYCLE_DAYS;
+    const end = paid + days * DAY;
+    if (end <= start || end <= now) continue;
+    const cycle = Math.floor((now - paid) / (CYCLE_DAYS * DAY));
+    const cycles = Math.ceil(days / CYCLE_DAYS);
+    const next = paid + (cycle + 1) * CYCLE_DAYS * DAY;
+    const item = {
+      target: cfg.legacy[kind], cycle: cycle + 1, cycles,
+      cycleStart: new Date(paid + cycle * CYCLE_DAYS * DAY).toISOString(),
+      nextResetAt: cycle + 1 < cycles && next < end ? new Date(next).toISOString() : null,
+      endsAt: new Date(end).toISOString(),
+    };
+    if (!best || Date.parse(item.endsAt) > Date.parse(best.endsAt)) best = item;
+  }
+  return best;
+};
+
+/* Jadwal isi ulang semua member lama sekaligus (panel admin): { [member_code]: legacySchedule }. */
+export const legacySchedules = async () => {
+  const start = await tokensStart();
+  if (start == null) return {};
+  const { url, key } = sbConfig();
+  const h = { headers: sbHeaders(key) };
+  const from = new Date(start - LOOKBACK_DAYS * DAY).toISOString();
+  const until = new Date(start).toISOString();
+  const page = async (q) => {
+    const out = [];
+    for (let offset = 0; offset < 20000; offset += 1000) {
+      const r = await fetch(`${url}/rest/v1/${q}&limit=1000&offset=${offset}`, h);
+      const rows = r.ok ? await r.json() : [];
+      if (!Array.isArray(rows) || !rows.length) break;
+      out.push(...rows);
+      if (rows.length < 1000) break;
+    }
+    return out;
+  };
+  const [checkouts, groups, cfg] = await Promise.all([
+    page(`payment_checkouts?status=eq.paid&plan=in.(imtihan,rombongan,library_ai,ai)&paid_at=gte.${from}&paid_at=lt.${until}&select=member_code,plan,paid_at,created_at`),
+    page(`group_codes?redeemed_by=not.is.null&redeemed_at=gte.${from}&redeemed_at=lt.${until}&select=redeemed_by,redeemed_at,created_at`).catch(() => []),
+    getTokenConfig(),
+  ]);
+  const byCode = {};
+  for (const x of checkouts) if (x.member_code) (byCode[x.member_code] ||= []).push({ plan: x.plan, paidAt: x.paid_at, createdAt: x.created_at });
+  for (const g of groups) (byCode[g.redeemed_by] ||= []).push({ plan: 'group', paidAt: g.redeemed_at, createdAt: g.created_at });
+  const out = {};
+  for (const [code, rows] of Object.entries(byCode)) {
+    const s = legacySchedule(rows, { start, cfg });
+    if (s) out[code] = s;
+  }
+  return out;
+};
+
 const ensured = new Map(); // code → waktu terakhir diperiksa (per instance)
 const ENSURE_GAP_MS = 10 * 60 * 1000;
 

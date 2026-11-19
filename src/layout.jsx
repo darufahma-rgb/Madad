@@ -566,11 +566,11 @@ const LoginModal = ({ open, onClose, onSuccess, joinPlan }) => {
         ) : (
           <div className="mt-3">
             <h2 className="font-display text-2xl font-semibold text-ink mb-2">
-              {joinPlan ? "Login dulu, lalu pilih paket" : "Masuk ke Talqeeh"}
+              {joinPlan ? "Langkah 2 dari 3: masuk dengan Google" : "Masuk ke Talqeeh"}
             </h2>
             <p className="text-sm text-ink-muted mb-6 leading-relaxed">
               {joinPlan
-                ? "Akun Google jadi identitas keanggotaanmu. Setelah login, kamu diarahkan ke halaman pilihan paket — bayar sekarang atau coba gratis dulu."
+                ? "Paket pilihanmu sudah tersimpan. Setelah masuk dengan Google, kamu langsung diarahkan ke pembayaran (QRIS, virtual account, atau e-wallet). Tidak perlu daftar atau isi formulir."
                 : "Login pakai akun Google. Belum jadi member? Setelah login kamu bisa pilih paket — atau coba gratis dulu."}
             </p>
             <GoogleButton onClick={google.start} loading={google.loading} disabled={authStatus === "loading"}/>

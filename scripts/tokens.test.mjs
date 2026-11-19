@@ -6,7 +6,7 @@ process.env.SUPABASE_URL = 'http://sb.test';
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'k';
 
 const {
-  DEFAULT_TOKENS, TOKEN_USD, parseTokenConfig, tokensFor, tokenValueIdr, saleMargin, grantsDue, freeGrantDue, rateFor, minRate, tokenGuide, legacyImtihanDays,
+  DEFAULT_TOKENS, TOKEN_USD, parseTokenConfig, tokensFor, tokenValueIdr, saleMargin, grantsDue, freeGrantDue, rateFor, minRate, tokenGuide, legacyImtihanDays, legacySchedule,
   tokensOn, clearTokenCache, tokenState, chargeTokens, ensureGrants,
 } = await import('../api/_lib/tokens.js');
 
@@ -126,6 +126,26 @@ const fake = (state) => async (url, opts = {}) => {
   if (path === 'ai_token_ledger') return json([...state.refs].map(ref => ({ ref })));
   return json([], 404);
 };
+
+test('jadwal isi ulang member lama: bulan ke berapa, kapan isi ulang berikutnya', () => {
+  const start = Date.parse('2026-11-20T00:00:00Z');
+  const old = '2026-10-01T00:00:00Z'; // Paket Imtihan 4 bulan → berakhir 29 Jan 2027
+  const rows = [{ plan: 'imtihan', paidAt: old, createdAt: old }, { plan: 'token', paidAt: old }];
+  const at = (days) => legacySchedule(rows, { start, now: Date.parse(old) + days * DAY });
+  assert.deepEqual(at(55), {
+    target: 30000, cycle: 2, cycles: 4, cycleStart: '2026-10-31T00:00:00.000Z',
+    nextResetAt: '2026-11-30T00:00:00.000Z', endsAt: '2027-01-29T00:00:00.000Z',
+  });
+  assert.equal(at(100).cycle, 4);
+  assert.equal(at(100).nextResetAt, null); // bulan terakhir
+  assert.equal(at(121), null);             // sudah habis
+  // Dibeli setelah model token berlaku → bukan member lama.
+  assert.equal(legacySchedule([{ plan: 'imtihan', paidAt: '2026-11-25T00:00:00Z' }], { start, now: Date.parse('2026-11-26T00:00:00Z') }), null);
+  // AI 30 hari lama: satu bulan, tanpa isi ulang berikutnya.
+  const ai = legacySchedule([{ plan: 'ai', paidAt: '2026-11-10T00:00:00Z' }], { start, now: Date.parse('2026-11-21T00:00:00Z') });
+  assert.equal(ai.cycles, 1);
+  assert.equal(ai.nextResetAt, null);
+});
 
 test('token gratis: sekali per akun, bisa dimatikan', () => {
   assert.equal(freeGrantDue(new Set()), true);

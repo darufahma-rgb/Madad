@@ -1008,11 +1008,18 @@ const PLAN_FILTERS = [
   { value: 'library_only', label: 'Library tanpa AI',    color: 'var(--a-amber, #f59e0b)', test: (m, ai) => isLibraryMember(m) && !ai[m.code]?.active },
   { value: 'ai_habis',     label: 'AI Partner habis',    color: 'var(--a-amber, #f97316)', test: (m, ai) => !ai[m.code]?.active && !!ai[m.code]?.lastExpired },
 ];
+/* Model token: filter berdasarkan saldo token dan jadwal isi ulang (ai.__sch = jadwal member lama per kode). */
+const TOKEN_FILTERS = [
+  { value: 'library',      label: 'Member Library',      color: 'var(--a-gold, #c9a86a)', test: (m) => isLibraryMember(m) },
+  { value: 'punya_token',  label: 'Punya token',         color: 'var(--a-green, #3ecf8e)', test: (m) => (m.tokens || 0) > 0 },
+  { value: 'token_habis',  label: 'Token habis',         color: 'var(--a-amber, #f97316)', test: (m) => m.tokens !== null && m.tokens <= 0 && m.tier !== 'free' },
+  { value: 'isi_ulang',    label: 'Member lama (isi ulang bulanan)', color: 'var(--a-violet, #a78bfa)', test: (m, ai) => !!ai?.__sch?.[m.code] },
+];
 const matchesMemberFilter = (m, value, ai) => {
   if (value === 'semua') return true;
   if (value === 'belum_email') return needsEmail(m);
   if (value === 'akun_gratis') return m.tier === 'free';
-  const plan = PLAN_FILTERS.find(p => p.value === value);
+  const plan = (ai?.__sch ? TOKEN_FILTERS : PLAN_FILTERS).find(p => p.value === value);
   if (plan) return plan.test(m, ai);
   return m.tier !== 'free' && m.member_type === value;
 };
@@ -1183,11 +1190,15 @@ const AdminMembers = () => {
   const [aiError,    setAiError]    = useState(null);
   const toast = useToast();
 
+  // Model token: jadwal isi ulang bulanan member lama ({ [kode]: { target, cycle, cycles, nextResetAt, endsAt } }).
+  const tokenMode = useTokenMode();
+  const [schedules, setSchedules] = useState({});
   const loadAiSubs = async () => {
     try {
-      const r = await aiPartnerAdmin('admin-list');
+      const [r, sch] = await Promise.all([aiPartnerAdmin('admin-list'), aiPartnerAdmin('admin-token-schedules').catch(() => null)]);
       if (!r.ok) throw new Error(r.error || 'gagal');
       setAiIndex(buildAiIndex(r.data));
+      if (sch?.ok) setSchedules(sch.data || {});
       setAiError(null);
     } catch (err) {
       setAiError(err.message);
@@ -1270,6 +1281,8 @@ const AdminMembers = () => {
     setMembers(prev => [newMember, ...prev]);
   };
 
+  // Model token: filter memakai saldo token & jadwal isi ulang, bukan langganan AI per hari.
+  const filterCtx = tokenMode ? { ...aiIndex, __sch: schedules } : aiIndex;
   const filtered = members.filter(m => {
     const q = search.toLowerCase();
     const matchSearch = !search ||
@@ -1277,7 +1290,7 @@ const AdminMembers = () => {
       m.code.toLowerCase().includes(q) ||
       (m.email || "").toLowerCase().includes(q) ||
       (m.whatsapp || "").replace(/\D/g, "").includes(q.replace(/\D/g, "") || "~");
-    return matchSearch && matchesMemberFilter(m, filterType, aiIndex);
+    return matchSearch && matchesMemberFilter(m, filterType, filterCtx);
   });
 
   const copyCode = (code) => {
@@ -1322,20 +1335,25 @@ const AdminMembers = () => {
 
       {/* Ringkasan paket: klik untuk memfilter tabel */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-        {[
+        {(tokenMode ? [
+          { value: 'library',      label: 'Member Library',   hint: 'akun berbayar aktif',          color: 'var(--a-gold, #c9a86a)' },
+          { value: 'punya_token',  label: 'Punya token',      hint: 'saldo token masih ada',        color: 'var(--a-green, #3ecf8e)' },
+          { value: 'isi_ulang',    label: 'Isi ulang bulanan', hint: 'member lama, paket berjalan', color: 'var(--a-violet, #a78bfa)' },
+          { value: 'akun_gratis',  label: 'Akun gratis',      hint: 'login Google, belum bayar',    color: 'var(--a-blue, #60a5fa)' },
+        ] : [
           { value: 'library',      label: 'Member Library',   hint: 'akun berbayar aktif',          color: 'var(--a-gold, #c9a86a)' },
           { value: 'ai_aktif',     label: 'AI Partner aktif', hint: 'langganan belum habis',        color: 'var(--a-green, #3ecf8e)' },
           { value: 'library_ai',   label: 'Library + AI',     hint: 'punya keduanya',               color: 'var(--a-violet, #a78bfa)' },
           { value: 'akun_gratis',  label: 'Akun gratis',      hint: 'login Google, belum bayar',    color: 'var(--a-blue, #60a5fa)' },
-        ].map(s => {
-          const count = members.filter(m => matchesMemberFilter(m, s.value, aiIndex)).length;
+        ]).map(s => {
+          const count = members.filter(m => matchesMemberFilter(m, s.value, filterCtx)).length;
           const on = filterType === s.value;
           return (
             <button key={s.value} onClick={() => setFilterType(on ? 'semua' : s.value)}
               className="text-left rounded-xl px-4 py-3 transition-colors"
               style={{ background: on ? `${s.color}18` : 'rgba(var(--fg, 255,255,255),0.03)', border: `1px solid ${on ? s.color : s.color + '33'}` }}>
               <div style={{ fontSize: 22, fontWeight: 800, color: s.color, lineHeight: 1 }}>
-                {s.value !== 'library' && s.value !== 'akun_gratis' && aiError ? '–' : count}
+                {!tokenMode && s.value !== 'library' && s.value !== 'akun_gratis' && aiError ? '–' : count}
               </div>
               <div className="text-xs text-ink mt-1 font-medium">{s.label}</div>
               <div className="text-[10px] text-ink-soft">{s.hint}</div>
@@ -1386,7 +1404,7 @@ const AdminMembers = () => {
             { value: 'trial',       label: 'Trial',                 color: 'var(--a-amber, #fbbf24)' },
             { value: 'reward',      label: 'Reward Bank Soal',      color: 'var(--a-amber, #f97316)' },
             { value: 'akun_gratis', label: 'Akun gratis (belum bayar)', color: 'var(--a-blue, #60a5fa)' },
-            ...PLAN_FILTERS,
+            ...(tokenMode ? TOKEN_FILTERS : PLAN_FILTERS),
           ].map(t => (
             <button
               key={t.value}
@@ -1405,7 +1423,7 @@ const AdminMembers = () => {
               {t.label}
               {t.value !== 'semua' && (
                 <span style={{ marginLeft: 5, opacity: 0.7 }}>
-                  ({members.filter(m => matchesMemberFilter(m, t.value, aiIndex)).length})
+                  ({members.filter(m => matchesMemberFilter(m, t.value, filterCtx)).length})
                 </span>
               )}
             </button>
@@ -1483,7 +1501,6 @@ const AdminMembers = () => {
                       })()}
                     </div>
                     <div className="text-[11px] text-ink-soft">{m.whatsapp}</div>
-                    {m.tokens !== null && m.tokens !== 0 && <div className="text-[11px] text-emerald-300">🪙 {Number(m.tokens).toLocaleString("id-ID")} token</div>}
                   </td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-2">
@@ -1508,7 +1525,7 @@ const AdminMembers = () => {
                         : <span className="text-[11px] text-ink-soft italic">belum aktivasi</span>}
                   </td>
                   <td className="px-4 py-3.5">
-                    <PlanBadges member={m} ai={aiIndex[m.code]}/>
+                    <PlanBadges member={m} ai={aiIndex[m.code]} tokenMode={tokenMode} schedule={schedules[m.code]}/>
                   </td>
                   <td className="px-4 py-3.5">
                     <StatusPill status={m.status}/>
@@ -1533,7 +1550,35 @@ const AdminMembers = () => {
   );
 };
 
-const PlanBadges = ({ member, ai }) => {
+const shortDay = (iso) => iso ? new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "short" }) : "";
+const daysUntil = (iso) => Math.max(0, Math.ceil((Date.parse(iso) - Date.now()) / 86400000));
+
+/* Model token: saldo token + (member lama) jatah per bulan, bulan ke berapa, dan kapan isi ulang berikutnya. */
+const TokenBadges = ({ member, schedule, pill }) => {
+  const bal = member.tokens;
+  const fmt = (n) => Number(n || 0).toLocaleString("id-ID");
+  return (
+    <>
+      {bal === null
+        ? <span className="text-[11px] text-ink-soft">token: —</span>
+        : bal > 0
+          ? pill('#3ecf8e', `🪙 ${fmt(bal)} token`, 'Sisa token sekarang')
+          : pill('#f97316', bal < 0 ? `🪙 ${fmt(bal)} (habis)` : '🪙 token habis', 'Saldo token habis')}
+      {schedule && (
+        <div className="text-[11px] leading-snug text-ink-muted" title={`Paket lama berakhir ${formatShortDate(schedule.endsAt)}`}>
+          <span className="text-emerald-300">🔄 {fmt(schedule.target)}/bulan</span> · bulan {schedule.cycle}/{schedule.cycles}
+          <span className="block text-ink-soft">
+            {schedule.nextResetAt
+              ? `isi ulang ${shortDay(schedule.nextResetAt)} (${daysUntil(schedule.nextResetAt)} hari lagi)`
+              : `bulan terakhir · selesai ${shortDay(schedule.endsAt)}`}
+          </span>
+        </div>
+      )}
+    </>
+  );
+};
+
+const PlanBadges = ({ member, ai, tokenMode, schedule }) => {
   const pill = (color, text, title) => (
     <span title={title} style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: `${color}1f`, color, border: `1px solid ${color}44`, whiteSpace: 'nowrap' }}>{text}</span>
   );
@@ -1544,7 +1589,7 @@ const PlanBadges = ({ member, ai }) => {
         : member.tier === 'free'
           ? pill('#60a5fa', 'Gratis')
           : pill('#888888', 'Library nonaktif')}
-      {ai?.active
+      {tokenMode ? <TokenBadges member={member} schedule={schedule} pill={pill}/> : ai?.active
         ? pill('#3ecf8e', `✨ AI ${ai.unlimited ? 'tanpa batas' : `s/d ${formatShortDate(ai.expiresAt)}`}`)
         : ai?.lastExpired
           ? pill('#f97316', `AI habis ${formatShortDate(ai.lastExpired)}`)
