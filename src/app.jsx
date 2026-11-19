@@ -78,7 +78,9 @@ const postLoginPath = () => {
   return "/dashboard";
 };
 
-const gabungPath = (plan) => `/gabung${plan ? `?plan=${plan}` : ""}`;
+// Paket token disimpan sebagai "token:<id paket>" supaya pilihan tidak hilang saat login Google (halaman bisa dimuat ulang).
+const isTokenPlan = (plan) => typeof plan === "string" && plan.startsWith("token:");
+const gabungPath = (plan) => (isTokenPlan(plan) ? `/gabung?plan=token&pack=${encodeURIComponent(plan.slice(6))}` : `/gabung${plan ? `?plan=${plan}` : ""}`);
 
 const App = () => {
   const path = useRoute();
@@ -115,6 +117,13 @@ const App = () => {
     navigate("/gabung");
   }, []);
 
+  // Member (gratis/Library) yang memilih paket token sebelum login, lalu kembali dari redirect Google → lanjut ke pembayarannya.
+  useEffect(() => {
+    if (authStatus !== "member") return;
+    const plan = readJoinPlan();
+    if (isTokenPlan(plan) && !path.startsWith("/gabung")) navigate(gabungPath(plan));
+  }, [authStatus]);
+
   // Sudah login Google tapi belum punya akun (juga jalur balik dari redirect OAuth):
   // langsung buatkan akun gratis dan masuk dashboard — onboarding & tawaran paket muncul di sana.
   // Yang memilih paket berbayar sebelum login, atau member lama (perlu PIN), tetap ke halaman Gabung.
@@ -122,7 +131,7 @@ const App = () => {
     if (authStatus === "needs_activation") {
       setLoginOpen(false);
       const plan = readJoinPlan();
-      const wantsPaid = plan === "library" || plan === "library_ai" || plan === "imtihan" || plan === "rombongan";
+      const wantsPaid = plan === "library" || plan === "library_ai" || plan === "imtihan" || plan === "rombongan" || isTokenPlan(plan);
       if (wantsPaid || authInfo?.likelyLegacyMember) {
         if (!path.startsWith("/gabung")) navigate(gabungPath(plan));
         return;
@@ -175,6 +184,8 @@ const App = () => {
     setLoginOpen(false);
     const saved = plan || readJoinPlan();
     saveJoinPlan(null);
+    // Paket token yang dipilih sebelum login → langsung lanjut ke pembayarannya (akun apa pun).
+    if (isTokenPlan(saved)) { setTimeout(() => navigate(gabungPath(saved)), 50); return; }
     // Akun gratis yang tadinya memilih paket berbayar → lanjut ke halaman Gabung untuk upgrade.
     if (isFreeTier() && (saved === "library" || saved === "library_ai" || saved === "imtihan")) {
       setTimeout(() => navigate(gabungPath(saved)), 50);
