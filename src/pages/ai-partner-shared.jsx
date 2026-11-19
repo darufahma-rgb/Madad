@@ -276,7 +276,7 @@ const TokenBadge = ({ tokens, className = '' }) => {
 
 /* ── Pengumuman model token ──
    Muncul sekali per browser saat membuka website, selama model token berlaku (settings.tokens ada). Tidak tampil di admin. */
-const TOKEN_ANNOUNCE_KEY = 'talqeeh_token_announce_v1';
+const TOKEN_ANNOUNCE_KEY = 'talqeeh_token_announce_v2';  // v2: desain baru, tampil lagi sekali ke semua orang
 const tokenAnnounceSeen = () => { try { return !!localStorage.getItem(TOKEN_ANNOUNCE_KEY); } catch { return true; } };
 
 const TokenAnnouncement = () => {
