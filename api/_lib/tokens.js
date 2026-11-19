@@ -44,7 +44,7 @@ export const DEFAULT_TOKENS = {
   /* imtihan/imtihanMonths/imtihanRefill: Paket Imtihan lewat plan 'imtihan' (harga kupon/mitra/kekeluargaan/rombongan
      tetap berlaku) = Library + token bulan pertama, lalu isi ulang bulanan, sama dengan paket t199.
      free: token gratis sekali per akun. */
-  grants: { imtihan: 75000, imtihanMonths: 2, imtihanRefill: 35000, free: 1000, gift: 5000 },
+  grants: { imtihan: 75000, imtihanMonths: 2, imtihanRefill: 35000, free: 1000, gift: 3000 },
   // gift: hadiah token sekali untuk member Library yang sudah pernah membayar.
   // freeDaily: paling banyak sekian akun per hari yang mendapat token gratis (seluruh Talqeeh).
   limits: { freeDaily: 30 },

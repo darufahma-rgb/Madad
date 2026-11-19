@@ -3017,7 +3017,7 @@ const TOKEN_DEFAULTS = {
   ],
   addons: [{ id: 'a25', name: 'Tambahan Kecil', price: 25000, tokens: 7500 }, { id: 'a50', name: 'Tambahan Besar', price: 50000, tokens: 16000 }],
   freeName: 'Coba Gratis',
-  grants: { imtihan: 75000, imtihanMonths: 2, imtihanRefill: 35000, free: 1000, gift: 5000 },
+  grants: { imtihan: 75000, imtihanMonths: 2, imtihanRefill: 35000, free: 1000, gift: 3000 },
   limits: { freeDaily: 30 },
   legacy: { imtihan: 30000, monthly: 30000 },
   convert: { monthly: 35000, talkhis_1: 12000, talkhis_3: 30000 },
