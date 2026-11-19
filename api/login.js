@@ -228,7 +228,14 @@ async function handleCheckout(req, user, res) {
   let pack = null;
   if (plan === 'token') {
     if (!tokenModel) return res.status(400).json({ ok: false, status: 'invalid_plan' });
-    pack = (await getTokenConfig()).packs.find(p => p.id === packId) || null;
+    const cfg = await getTokenConfig();
+    pack = cfg.packs.find(p => p.id === packId) || null;
+    // Tambahan token (add-on) hanya untuk member yang sudah punya Library; akun gratis/baru membeli paket utama.
+    const addon = !pack ? cfg.addons.find(p => p.id === packId) || null : null;
+    if (addon && !(member && member.status === 'active' && member.tier !== 'free' && member.member_type !== 'trial')) {
+      return res.status(200).json({ ok: false, status: 'addon_needs_library' });
+    }
+    pack = pack || addon;
     if (!pack) return res.status(200).json({ ok: false, status: 'invalid_pack' });
   }
 

@@ -823,6 +823,21 @@ const GabungPage = () => {
             </>
           )}
         </div>
+        {tokens && paidMember && tokens.addons.length > 0 && (
+          <div className="max-w-6xl mx-auto mt-5 card-glass p-5 flex items-center gap-4 flex-wrap" style={{ border: `1px solid ${GOLD}44` }}>
+            <div className="flex-1 min-w-[220px]">
+              <div className="text-ink font-medium">Cuma butuh tambahan token?</div>
+              <div className="text-sm text-ink-muted">Khusus member Library. Token langsung masuk ke saldomu dan tidak hangus.</div>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {tokens.addons.map(a => (
+                <button key={a.id} onClick={() => chooseToken(a.id)} disabled={checkout.status === 'creating'} className="btn btn-gold text-sm px-4 py-2.5">
+                  +{formatTokens(a.tokens)} token · {formatRupiah(a.price)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         {rombongan && <RombonganCard event={rombongan} seats={seats} onSeats={setSeats} onChoose={chooseRombongan}/>}
         {freeError && <div className="text-sm text-rose-400 text-center mt-4">{freeError}</div>}
 

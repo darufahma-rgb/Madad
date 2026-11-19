@@ -175,6 +175,9 @@ const TokenShopModal = ({ open, onClose, tokens }) => {
   const payOnline = !!useAppSettings().payOnline;
   const checkout = useCheckout({ plans: ['token'], enabled: open, onPaid: () => { refreshAiStatus(); onClose(); } });
   const packs = tokens?.packs || shop?.packs || [];
+  // Tambahan token hanya untuk member yang sudah punya Library (akun gratis membeli paket utama).
+  const hasLibrary = !!session && session.tier !== 'free';
+  const addons = hasLibrary ? (tokens?.addons || shop?.addons || []) : [];
   const g = tokens?.guide || shop?.guide || {};
   const balance = tokens?.balance ?? null;
   const rows = [
@@ -193,17 +196,33 @@ const TokenShopModal = ({ open, onClose, tokens }) => {
         )}
         <p className="text-sm text-ink-muted mb-5">{TOKEN_RULES}</p>
 
-        <div className="text-xs text-ink-soft mb-2">Beli token</div>
         {payOnline ? (
-          <div className="grid grid-cols-2 gap-3 mb-5">
-            {packs.map(p => (
-              <button key={p.id} onClick={() => checkout.start('token', { pack: p.id })} disabled={checkout.status === 'creating'}
-                className="rounded-2xl border border-emerald-500/30 bg-emerald-500/[0.06] hover:bg-emerald-500/[0.12] px-4 py-3 text-left transition-colors disabled:opacity-60">
-                <div className="font-display text-xl font-semibold text-ink">{formatTokens(p.tokens)} <span className="text-xs text-ink-muted font-normal">token</span></div>
-                <div className="text-sm text-emerald-200">{formatRupiah(p.price)}</div>
-              </button>
-            ))}
-          </div>
+          <>
+            {addons.length > 0 && (
+              <>
+                <div className="text-xs text-ink-soft mb-2">Tambah token</div>
+                <div className="grid grid-cols-2 gap-3 mb-4">
+                  {addons.map(p => (
+                    <button key={p.id} onClick={() => checkout.start('token', { pack: p.id })} disabled={checkout.status === 'creating'}
+                      className="rounded-2xl border border-gold-500/30 bg-gold-500/[0.06] hover:bg-gold-500/[0.12] px-4 py-3 text-left transition-colors disabled:opacity-60">
+                      <div className="font-display text-xl font-semibold text-ink">+{formatTokens(p.tokens)} <span className="text-xs text-ink-muted font-normal">token</span></div>
+                      <div className="text-sm text-gold-200">{formatRupiah(p.price)}</div>
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+            <div className="text-xs text-ink-soft mb-2">{addons.length ? 'Paket token (lebih hemat per token)' : 'Beli token'}</div>
+            <div className="grid grid-cols-2 gap-3 mb-5">
+              {packs.map(p => (
+                <button key={p.id} onClick={() => checkout.start('token', { pack: p.id })} disabled={checkout.status === 'creating'}
+                  className="rounded-2xl border border-emerald-500/30 bg-emerald-500/[0.06] hover:bg-emerald-500/[0.12] px-4 py-3 text-left transition-colors disabled:opacity-60">
+                  <div className="font-display text-xl font-semibold text-ink">{formatTokens(p.tokens)} <span className="text-xs text-ink-muted font-normal">token</span></div>
+                  <div className="text-sm text-emerald-200">{formatRupiah(p.price)}</div>
+                </button>
+              ))}
+            </div>
+          </>
         ) : <div className="text-sm text-ink-muted mb-5">Pembayaran online belum dibuka. Hubungi admin untuk membeli token.</div>}
         {checkout.status === 'creating' && <div className="text-xs text-ink-muted mb-3">Menyiapkan tagihan…</div>}
         {checkout.status === 'error' && <div className="text-xs text-rose-300 mb-3">{checkout.error}</div>}

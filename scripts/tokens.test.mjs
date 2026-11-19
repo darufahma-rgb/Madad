@@ -24,6 +24,19 @@ test('setting kosong atau rusak memakai bawaan', () => {
   assert.equal(c.rates.chat, 100); // di bawah 10% ditolak
 });
 
+test('tambahan token (add-on): bawaan, dimatikan, id tidak boleh sama dengan paket utama, tetap untung', () => {
+  assert.deepEqual(parseTokenConfig({}).addons, DEFAULT_TOKENS.addons);
+  assert.deepEqual(parseTokenConfig({ addons: [] }).addons, []);
+  assert.deepEqual(parseTokenConfig({ addons: [{ id: 't100', price: 20000, tokens: 5000 }, { id: 'a10', price: 10000, tokens: 2500 }, { id: 'x', price: '', tokens: 1 }] }).addons,
+    [{ id: 'a10', price: 10000, tokens: 2500 }]);
+  for (const a of DEFAULT_TOKENS.addons) {
+    assert.ok(saleMargin({ price: a.price, tokens: a.tokens }).percent >= 40, `add-on ${a.id} terlalu tipis`);
+    // Per token tidak lebih murah daripada paket besar.
+    const best = Math.max(...DEFAULT_TOKENS.packs.map(p => p.tokens / p.price));
+    assert.ok(a.tokens / a.price <= best, `add-on ${a.id} lebih murah per token daripada paket besar`);
+  }
+});
+
 test('token dipotong sebesar biaya asli, dibulatkan ke atas', () => {
   assert.equal(tokensFor(0.01), 100);        // satu pesan tutor ±$0,01
   assert.equal(tokensFor(0.0064), 64);       // satu menit Live Caption

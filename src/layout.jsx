@@ -1164,7 +1164,8 @@ const useTokens = () => {
   const t = useAppSettings().tokens;
   if (!t || !Array.isArray(t.packs) || !t.packs.length) return null;
   const packs = [...t.packs].sort((a, b) => a.price - b.price);
-  return { packs, small: packs[0], big: packs[packs.length - 1], imtihan: t.imtihan || packs[packs.length - 1].tokens, free: t.free || 0, guide: t.guide || {} };
+  const addons = Array.isArray(t.addons) ? [...t.addons].sort((a, b) => a.price - b.price) : [];
+  return { packs, addons, small: packs[0], big: packs[packs.length - 1], imtihan: t.imtihan || packs[packs.length - 1].tokens, free: t.free || 0, guide: t.guide || {} };
 };
 const formatTokens = (n) => Number(n || 0).toLocaleString("id-ID");
 // Kira-kira apa yang didapat dari sejumlah token (untuk teks paket). Angka dibulatkan ke bawah.
@@ -1340,6 +1341,7 @@ const CHECKOUT_ERRORS = {
   ai_price_unset:    "Harga AI Partner belum diumumkan. Hubungi admin untuk akses AI Partner.",
   already_library:   "Akunmu sudah member Library.",
   needs_library:     "AI Partner adalah tambahan untuk member Library. Pilih paket Library + AI Partner.",
+  addon_needs_library: "Tambahan token khusus member Library. Pilih paket token (Rp100rb atau Rp199rb) yang sudah termasuk Library.",
   rate_limited:      "Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.",
   plan_closed:       "Paket ini sudah tidak dijual. Sekarang AI Talqeeh memakai token — pilih paket token di halaman Paket.",
   invalid_pack:      "Paket token ini sudah tidak tersedia. Muat ulang halaman lalu pilih lagi.",
@@ -1532,7 +1534,11 @@ const checkoutLines = (c) => {
   const amount = c?.amount || 0;
   if (c?.plan === "library") return [["Library", "akses selamanya", amount]];
   if (c?.plan === "ai") return [["AI Study Partner", "30 hari penuh", amount]];
-  if (c?.plan === "token") return [["Token AI", "tidak hangus · termasuk Library selamanya", amount]];
+  // Tambahan token (add-on) lebih murah dari paket termurah dan tidak membawa Library.
+  if (c?.plan === "token") {
+    const smallest = Math.min(...((getAppSettings()?.tokens?.packs || []).map(p => p.price)), Infinity);
+    return [["Token AI", amount < smallest ? "tambahan token · tidak hangus" : "tidak hangus · termasuk Library selamanya", amount]];
+  }
   const days = c?.plan === "imtihan" || c?.plan === "rombongan" ? IMTIHAN_AI_DAYS : 30;
   const t = getAppSettings()?.tokens;
   if (t && days !== 30) return [["Library", "akses selamanya", LIBRARY_PRICE_IDR], ["Token AI", `${formatTokens(t.imtihan)} token · tidak hangus`, Math.max(0, amount - LIBRARY_PRICE_IDR)]];

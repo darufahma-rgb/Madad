@@ -1483,7 +1483,7 @@ async function handleFeedback(ctx, body, res) {
 // Saldo + paket + perkiraan pemakaian, untuk ditampilkan di halaman.
 const tokenInfo = async (code, state = null) => {
   const [st, cfg, news] = await Promise.all([state || tokenState(code), getTokenConfig(), tokenNews(code)]);
-  return { balance: st?.balance ?? 0, packs: cfg.packs, guide: tokenGuide(cfg), news };
+  return { balance: st?.balance ?? 0, packs: cfg.packs, addons: cfg.addons, guide: tokenGuide(cfg), news };
 };
 
 async function handleStats(ctx, res) {
