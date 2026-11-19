@@ -316,6 +316,8 @@ const App = () => {
       <CheckoutWatcher paused={aiPaymentOpen}/>
       {session && <UpgradeWall/>}
       {session && <WelcomeOfferPopup/>}
+      <TokenAnnouncement/>
+      {session && <TokenNews/>}
       {showQuickNote && <QuickNoteButton/>}
       {isMember && <SupportButton/>}
       {isMember && !useShell && <MobileTabBar/>}

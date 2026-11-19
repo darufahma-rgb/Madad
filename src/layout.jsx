@@ -640,7 +640,7 @@ const AI_PARTNER_FEATURES = [
   "Tutor dari materimu + simulasi ujian syafawi",
 ];
 const PLAN_LABELS = { library: "Library", library_ai: "Library + AI Partner 30 hari", ai: "AI Partner 30 hari", imtihan: "Paket Imtihan", rombongan: "Paket Rombongan",
-  talkhis_1: "Tambahan talkhis 1 muqarrar", talkhis_3: "Tambahan talkhis 3 muqarrar" };
+  talkhis_1: "Tambahan talkhis 1 muqarrar", talkhis_3: "Tambahan talkhis 3 muqarrar", token: "Paket Token AI" };
 const isTalkhisAddonPlan = (plan) => plan === "talkhis_1" || plan === "talkhis_3";
 
 /* Paket Library + AI Study Partner: satu kali bayar di awal = Library selamanya + AI 30 hari pertama.
@@ -1017,7 +1017,7 @@ const RunningOfferPopup = ({ offer, profile, path }) => {
           <div className="text-[10px] text-ink-soft mt-1">jam : menit : detik</div>
         </div>
         <ul className="mt-4 space-y-1.5 text-left text-sm text-ink">
-          {["Talkhis otomatis muqarrar + PDF siap cetak", "Live Caption: terjemah kuliah duktur secara langsung", `AI Study Partner ${IMTIHAN_AI_DAYS} hari`, `Library ${CATALOG.maddah} maddah + bank soal, selamanya`].map(t => (
+          {["Talkhis otomatis muqarrar + PDF siap cetak", "Live Caption: terjemah kuliah duktur secara langsung", `${imtihanAi()}`, `Library ${CATALOG.maddah} maddah + bank soal, selamanya`].map(t => (
             <li key={t} className="flex gap-2"><Icon name="check" className="w-4 h-4 text-emerald-300 flex-shrink-0 mt-0.5"/>{t}</li>
           ))}
         </ul>
@@ -1157,14 +1157,36 @@ const AiBundleBreakdown = ({ bundle, className = "" }) => bundle ? (
 ) : null;
 
 // Rincian Paket Imtihan: isi paket, perbandingan dengan beli terpisah, dan yang terjadi setelah masanya habis.
-const ImtihanBreakdown = ({ bundle, className = "" }) => bundle ? (
+/* Model token (api/_lib/tokens.js). useTokens() = null selama model token belum berlaku → halaman memakai paket lama.
+   packs: paket token yang dijual; small/big: paket termurah & terbesar; imtihan: token di Paket Imtihan (= paket besar,
+   tapi harga kupon/mitra/kekeluargaan berlaku); guide: perkiraan token per pemakaian. */
+const useTokens = () => {
+  const t = useAppSettings().tokens;
+  if (!t || !Array.isArray(t.packs) || !t.packs.length) return null;
+  const packs = [...t.packs].sort((a, b) => a.price - b.price);
+  return { packs, small: packs[0], big: packs[packs.length - 1], imtihan: t.imtihan || packs[packs.length - 1].tokens, free: t.free || 0, guide: t.guide || {} };
+};
+const formatTokens = (n) => Number(n || 0).toLocaleString("id-ID");
+// Kira-kira apa yang didapat dari sejumlah token (untuk teks paket). Angka dibulatkan ke bawah.
+const tokenExamples = (n, guide = {}) => {
+  const per = (k, d) => Math.max(1, guide[k] || d);
+  return { chat: Math.floor(n / per("chat", 100) / 10) * 10, liveHours: Math.floor(n / per("livePerMinute", 70) / 60), talkhis: Math.floor(n / per("talkhis", 15000)) };
+};
+// Bagian AI Paket Imtihan dalam teks: "AI Partner 60 hari" (paket lama) atau "60.000 token AI" (model token).
+const imtihanAi = () => {
+  const t = getAppSettings()?.tokens;
+  return t ? `${formatTokens(t.imtihan)} token AI (tidak hangus)` : `AI Partner ${IMTIHAN_AI_DAYS} hari`;
+};
+const TOKEN_RULES = "Semua fitur AI memakai token sesuai pemakaiannya. Token tidak hangus, dan bisa dibeli lagi kapan saja.";
+
+const ImtihanBreakdown = ({ bundle, className = "" }) => { const tokens = useTokens(); return bundle ? (
   <div className={`rounded-xl border border-white/10 bg-black/20 p-3.5 text-[13px] ${className}`}>
     <div className="flex items-start justify-between gap-3">
       <span className="text-ink-muted"><span className="text-ink">Library</span> · akses selamanya</span>
       <span className="text-ink tabular-nums flex-shrink-0">{formatRupiah(LIBRARY_PRICE_IDR)}</span>
     </div>
     <div className="flex items-start justify-between gap-3 mt-1.5">
-      <span className="text-ink-muted"><span className="text-ink">AI Study Partner</span> · {IMTIHAN_AI_DAYS} hari, sepuasnya</span>
+      <span className="text-ink-muted">{tokens ? <><span className="text-ink">Token AI</span> · {formatTokens(tokens.imtihan)} token, tidak hangus</> : <><span className="text-ink">AI Study Partner</span> · {IMTIHAN_AI_DAYS} hari, sepuasnya</>}</span>
       <span className="text-ink tabular-nums flex-shrink-0">{formatRupiah(bundle.aiPart)}</span>
     </div>
     <div className="flex items-start justify-between gap-3 mt-2 pt-2 border-t border-white/10 font-semibold">
@@ -1177,16 +1199,18 @@ const ImtihanBreakdown = ({ bundle, className = "" }) => bundle ? (
     {bundle.promo && (
       <div className="text-[12px] text-gold-300 mt-1.5">Harga {bundle.promo.name} — sampai {bundle.promo.endLabel}</div>
     )}
-    {bundle.saving && (
+    {bundle.saving && !tokens && (
       <div className="text-[12px] text-emerald-300/90 mt-1.5">
         Beli terpisah {formatRupiah(bundle.separate)} → hemat {formatRupiah(bundle.saving)} ({bundle.savingPct}%)
       </div>
     )}
     <p className="text-[11.5px] text-ink-soft leading-relaxed mt-2.5">
-      Setelah {IMTIHAN_AI_DAYS} hari, Library tetap milikmu selamanya. AI Partner bisa diperpanjang {formatRupiah(AI_RENEW_PRICE_IDR)}/30 hari kapan saja — tanpa potongan otomatis.
+      {tokens
+        ? `Library milikmu selamanya. ${TOKEN_RULES} Tanpa potongan otomatis.`
+        : <>Setelah {IMTIHAN_AI_DAYS} hari, Library tetap milikmu selamanya. AI Partner bisa diperpanjang {formatRupiah(AI_RENEW_PRICE_IDR)}/30 hari kapan saja — tanpa potongan otomatis.</>}
     </p>
   </div>
-) : null;
+) : null; };
 const DEFAULT_ADMIN_WA = "6281311506025";
 const PAYMENT_WAIT_LIMIT_MS = 10 * 60 * 1000;
 
@@ -1317,6 +1341,8 @@ const CHECKOUT_ERRORS = {
   already_library:   "Akunmu sudah member Library.",
   needs_library:     "AI Partner adalah tambahan untuk member Library. Pilih paket Library + AI Partner.",
   rate_limited:      "Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.",
+  plan_closed:       "Paket ini sudah tidak dijual. Sekarang AI Talqeeh memakai token — pilih paket token di halaman Paket.",
+  invalid_pack:      "Paket token ini sudah tidak tersedia. Muat ulang halaman lalu pilih lagi.",
   rombongan_closed:  "Event Paket Rombongan sudah berakhir atau ukuran rombongan ini tidak tersedia.",
   partner_closed:    "Tautan harga khusus ini sudah berakhir. Muat ulang halaman untuk melihat harga saat ini.",
   network:           "Tidak bisa terhubung ke server. Cek koneksi lalu coba lagi.",
@@ -1468,9 +1494,10 @@ const CheckoutWatcher = ({ paused }) => {
       }
       window.dispatchEvent(new Event("talqeeh:ai-status-changed"));
       await refreshMemberSession();
-      toast.push(c.plan === "ai" ? "Pembayaran diterima — AI Partner aktif 30 hari!"
+      toast.push(c.plan === "token" ? "Pembayaran diterima — token AI-mu sudah masuk!"
+        : c.plan === "ai" ? "Pembayaran diterima — AI Partner aktif 30 hari!"
         : c.plan === "library_ai" ? "Pembayaran diterima — Library & AI Partner aktif!"
-        : c.plan === "imtihan" ? `Pembayaran diterima — Library & AI Partner ${IMTIHAN_AI_DAYS} hari aktif!`
+        : c.plan === "imtihan" ? `Pembayaran diterima — Library & ${imtihanAi()} aktif!`
         : "Pembayaran diterima — Library-mu sudah aktif!");
     },
   });
@@ -1505,7 +1532,10 @@ const checkoutLines = (c) => {
   const amount = c?.amount || 0;
   if (c?.plan === "library") return [["Library", "akses selamanya", amount]];
   if (c?.plan === "ai") return [["AI Study Partner", "30 hari penuh", amount]];
+  if (c?.plan === "token") return [["Token AI", "tidak hangus · termasuk Library selamanya", amount]];
   const days = c?.plan === "imtihan" || c?.plan === "rombongan" ? IMTIHAN_AI_DAYS : 30;
+  const t = getAppSettings()?.tokens;
+  if (t && days !== 30) return [["Library", "akses selamanya", LIBRARY_PRICE_IDR], ["Token AI", `${formatTokens(t.imtihan)} token · tidak hangus`, Math.max(0, amount - LIBRARY_PRICE_IDR)]];
   return [["Library", "akses selamanya", LIBRARY_PRICE_IDR], ["AI Study Partner", `${days} hari penuh`, Math.max(0, amount - LIBRARY_PRICE_IDR)]];
 };
 
@@ -1582,7 +1612,12 @@ const CheckoutRedirect = ({ checkout, email, preparing = false }) => {
 /* ---------------- AI Subscription Modal (AI Partner per 30 hari) ---------------- */
 const formatAiDate = (iso) => new Date(iso).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 
-const AiSubscriptionModal = ({ open, onClose, onNeedMembership }) => {
+// Model token: tidak ada lagi langganan 30 hari — pintu "perpanjang AI" membuka pilihan paket token.
+const AiSubscriptionModal = (props) => (useTokens()
+  ? <TokenShopModal open={props.open} onClose={props.onClose} tokens={null}/>
+  : <AiSubscriptionModalLegacy {...props}/>);
+
+const AiSubscriptionModalLegacy = ({ open, onClose, onNeedMembership }) => {
   const { session } = useAuth();
   const toast = useToast();
   const [status, setStatus] = useState({ loading: false, active: false, expiresAt: null });
@@ -1870,6 +1905,7 @@ Object.assign(window, {
   imtihanBundle, ImtihanBreakdown, IMTIHAN_PRICE_IDR, IMTIHAN_AI_DAYS, IMTIHAN_PROMO, imtihanPromoActive, EventBanner, usePromoCountdown,
   rombonganEvent,
   useWelcomeOffer, OfferClock, WelcomeOfferPopup, useOfferCoupon, useCouponCode, InstagramCouponCard, ImtihanCouponPanel, OFFER_COUPON_PRICE, readAppliedCoupon,
+  useTokens, formatTokens, tokenExamples, TOKEN_RULES, imtihanAi,
   useCheckout, CheckoutWaiting, CheckoutWatcher, CheckoutPayModal, readPendingCheckout, savePendingCheckout, formatRupiah, isTalkhisAddonPlan,
   LIBRARY_PRICE, LIBRARY_PRICE_IDR, AI_RENEW_PRICE_IDR, LIBRARY_PRICE_ORIGINAL, LIBRARY_FEATURES, AI_PARTNER_FEATURES, CATALOG,
   scrollToLandingSection, scrollToPaket,

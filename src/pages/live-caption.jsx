@@ -207,7 +207,7 @@ const exportText = (title, segments) => {
   return lines.join('\n');
 };
 
-const LiveCaptionBody = () => {
+const LiveCaptionBody = ({ status }) => {
   const toast = useToast();
   const draft = useRef(readDraft()).current;
   const [title, setTitle] = useState(draft?.title || '');
@@ -363,7 +363,7 @@ const LiveCaptionBody = () => {
       return true;
     }
     if (d.upgrade) { stopAll(); openAiUpgrade('live'); }
-    else if (/batas|jatah|quota|ditutup/i.test(d.error || '')) {
+    else if (/batas|jatah|quota|ditutup|token/i.test(d.error || '')) {
       // Jatah habis: berhenti merekam, buang potongan yang masih mengantre (semuanya akan ditolak dengan pesan yang
       // sama), dan jangan tampilkan kartu error + "Coba lagi" per potongan. Pesannya cukup sekali di atas.
       // stopAll dulu: mic.stop() masih mengirim potongan terakhir ke antrean, yang lalu ikut dibuang di bawah.
@@ -646,9 +646,16 @@ const LiveCaptionBody = () => {
             <li>Saat duktur bilang "ini penting" atau "keluar di imtihan", bagian itu ditandai otomatis. Kamu juga bisa menandai sendiri dengan <span className="text-gold-300">Tandai</span>.</li>
             <li>Istilah penting dicatat di bawah tiap kalimat, lalu dirangkum di akhir sesi.</li>
             <li>Setelah selesai, simpan jadi materi AI Partner untuk diringkas, dibuat kuis, dan lainnya.</li>
-            <li>Jatah Live Caption terpisah dari transkrip rekaman: 1 menit kuliah = 1 menit jatah (mode Akurat = 4 menit jatah).</li>
+            {quota?.tokens
+              ? <li>Live Caption memakai token: kira-kira {quota.tokens.perMinute} token per menit kuliah (mode Akurat lebih boros, ±4× lipat).</li>
+              : <li>Jatah Live Caption terpisah dari transkrip rekaman: 1 menit kuliah = 1 menit jatah (mode Akurat = 4 menit jatah).</li>}
           </ul>
-          {quota && (
+          {quota?.tokens ? (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <TokenBadge tokens={{ ...(status?.tokens || {}), balance: quota.tokens.balance }}/>
+              <span className="text-xs text-ink-soft">cukup untuk ±{durationLabel(quota.left)} Live Caption</span>
+            </div>
+          ) : quota && (
             <div className="mt-4 inline-flex items-center gap-2 text-xs rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-ink-muted">
               Sisa jatah: <span className="text-emerald-200 font-medium">{durationLabel(quota.left)}</span>
               {quota.monthlyLeft != null && quota.monthlyLeft < quota.dailyLeft ? ' periode ini' : ' hari ini'}
@@ -823,7 +830,7 @@ const LiveCaptionBody = () => {
 };
 
 const LiveCaptionPage = () => {
-  const status = useAiStatus();
+  const status = useAiStatus({ welcome: true });
   useEffect(() => { window.logFunnel?.('view_live_caption'); }, []);
   return (
     <div className="page-enter">
@@ -840,7 +847,7 @@ const LiveCaptionPage = () => {
                 <UpgradeCard title="Live Caption khusus pelanggan AI Partner"
                   message="Rekam kuliah duktur dan baca transkrip Arab beserta terjemahan Indonesianya secara langsung, lalu simpan jadi materi untuk diringkas dan dibuat kuis."/>
               </div>
-            : <LiveCaptionBody/>}
+            : <LiveCaptionBody status={status}/>}
       </div>
     </div>
   );

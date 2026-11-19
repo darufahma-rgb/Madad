@@ -228,6 +228,9 @@ const UserCountBadge = () => {
 /* ══════════════════════════════════════════════════════════════
    1. HERO
    ══════════════════════════════════════════════════════════════ */
+// Ikut berubah saat pengaturan termuat (model token atau paket lama).
+const AiTrustText = () => (useTokens() ? "AI Partner pakai token, tidak hangus" : `AI Partner: paket 1 bulan atau Paket Imtihan ${IMTIHAN_AI_DAYS} hari`);
+
 const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
   <section className="relative overflow-hidden pt-8 md:pt-28 pb-12 md:pb-20">
     {/* Background */}
@@ -352,7 +355,7 @@ const LandingHero = ({ onOpenLogin, onOpenJoin }) => (
         {/* Trust row */}
         <Reveal delay={340}>
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mb-2 md:mb-16">
-            {[`${CATALOG.maddah} maddah (S1 + Ma'had)`, `${CATALOG.prompts} template prompt`, "Library sekali bayar, selamanya", `AI Partner: paket 1 bulan atau Paket Imtihan ${IMTIHAN_AI_DAYS} hari`].map((t, i) => (
+            {[`${CATALOG.maddah} maddah (S1 + Ma'had)`, `${CATALOG.prompts} template prompt`, "Library sekali bayar, selamanya", <AiTrustText key="ai"/>].map((t, i) => (
               <span key={i} className="flex items-center gap-2 text-xs" style={{ color:"rgba(var(--fg, 255,255,255),0.42)" }}>
                 <Icon name="check" className="w-3.5 h-3.5 text-gold-400 flex-shrink-0"/>{t}
               </span>
@@ -431,6 +434,7 @@ const SampleMaddahSection = () => (
    2.7 DUA CARA BELAJAR — Library vs AI Partner
    ══════════════════════════════════════════════════════════════ */
 const TwoWaysSection = () => {
+  useAppSettings(); // render ulang saat pengaturan termuat (teks paket mengikuti model token)
   const ways = [
     {
       badge: "Library", tone: "gold", when: "Sekali bayar · selamanya",
@@ -440,7 +444,7 @@ const TwoWaysSection = () => {
       extras: "Termasuk bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian.",
     },
     {
-      badge: "AI Partner", tone: "emerald", when: `Tambahan · 1 bulan atau ${IMTIHAN_AI_DAYS} hari (Paket Imtihan)`,
+      badge: "AI Partner", tone: "emerald", when: getAppSettings()?.tokens ? "Pakai token · tidak hangus" : `Tambahan · 1 bulan atau ${IMTIHAN_AI_DAYS} hari (Paket Imtihan)`,
       title: "Belajar langsung dari diktatmu sendiri",
       desc: "Unggah diktat, slide, foto kitab, atau rekaman kuliah. AI Partner membaca isinya — termasuk teks Arab — lalu menyiapkan bahan belajar di Talqeeh, tanpa perlu menyusun prompt.",
       steps: ["Unggah PDF, Word, slide, foto, atau rekaman", "Dapat ringkasan berpenjelasan, peta konsep, mufradat, flashcard, kuis, soal tahriri", "Tutor yang mengajar dari materimu, terjemah & i'rab, simulasi syafawi dengan suara"],
@@ -896,7 +900,7 @@ const ReferenceLibrarySection = () => (
   </section>
 );
 
-const LiveCaptionSection = ({ onOpenJoin }) => (
+const LiveCaptionSection = ({ onOpenJoin }) => { const tokens = useTokens(); return (
   <section id="live-caption" className="section pt-0">
     <style>{`@keyframes card-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }`}</style>
     <div className="container-x">
@@ -940,13 +944,13 @@ const LiveCaptionSection = ({ onOpenJoin }) => (
             <button onClick={() => onOpenJoin("imtihan")} className="btn btn-primary w-full sm:w-auto justify-center px-6 py-3.5 text-sm font-medium">
               Ambil Paket Imtihan <Icon name="arrowRight" className="w-4 h-4"/>
             </button>
-            <span className="text-xs text-ink-soft w-full sm:w-auto text-center sm:text-left">Live Caption 8 jam kuliah per 30 hari · AI Partner {IMTIHAN_AI_DAYS} hari</span>
+            <span className="text-xs text-ink-soft w-full sm:w-auto text-center sm:text-left">{tokens ? `Live Caption ±${formatTokens(tokens.guide.livePerMinute || 70)} token per menit · paket mulai ${formatRupiah(tokens.small.price)}` : <>Live Caption 8 jam kuliah per 30 hari · {imtihanAi()}</>}</span>
           </div>
         </Reveal>
       </div>
     </div>
   </section>
-);
+); };
 
 /* ══════════════════════════════════════════════════════════════
    6. PRICING + FINAL CTA
@@ -996,7 +1000,15 @@ const QuotaBox = ({ title, rows, note }) => {
     </div>
   );
 };
-const IMTIHAN_QUOTA = [
+// c = useTokens(): model token → perkiraan pemakaian token; null → jatah paket lama.
+const imtihanQuota = (c) => c ? [
+  ["Tanya tutor / Tanya AI", `±${formatTokens(c.guide.chat || 100)} token / pesan`],
+  ["Terjemah & i'rab", `±${formatTokens(c.guide.analyze || 200)} token / kalimat`],
+  ["Ringkasan, kuis, flashcard", `±${formatTokens(c.guide.generate || 600)} token`],
+  ["Live Caption kuliah duktur", `±${formatTokens(c.guide.livePerMinute || 70)} token / menit`],
+  ["Talkhis muqarrar", `±${formatTokens(c.guide.talkhis || 15000)} token`],
+  ["Token di paket ini", formatTokens(c.imtihan)],
+] : [
   ["Terjemah & i'rab", "Sepuasnya"],
   ["Pesan tutor & Tanya AI", "Sepuasnya"],
   ["Ringkasan, kuis, flashcard", "Sepuasnya"],
@@ -1008,7 +1020,7 @@ const IMTIHAN_QUOTA = [
   ["Cerita AI & Halaqah (game)", "15 & 40 / hari"],
 ];
 
-const LANDING_FAQ = [
+const landingFaq = (c) => [
   { q: "Apa itu Pustaka Rujukan Talqeeh? Sudah bisa dipakai?",
     a: "Pustaka Rujukan sedang disiapkan untuk membantu Tanya AI dan Tutor menjawab berdasarkan kitab pilihan admin, disertai kutipan asli dan halaman PDF yang bisa diperiksa. Fitur ini belum aktif; aktivasi menunggu penyiapan database dan pengisian serta pemeriksaan kitab. Jawaban AI tetap perlu ditelaah bersama duktur." },
   { q: "Siapa yang memilih kitab rujukannya?",
@@ -1016,12 +1028,18 @@ const LANDING_FAQ = [
   { q: "Kenapa harus login pakai Google dulu?",
     a: "Akun Google jadi identitas keanggotaanmu. Pembayaran otomatis tercatat ke akun itu, jadi nggak ada kode yang perlu ditunggu atau diketik, dan kamu bisa belajar di HP maupun laptop dengan akun yang sama." },
   { q: "Apa beda paket Library dan Paket Imtihan?",
-    a: `Library berisi ${CATALOG.maddah} maddah, ${CATALOG.prompts} template prompt, bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Prompt-nya kamu salin ke AI pilihanmu (Claude, ChatGPT, NotebookLM, dll). Paket Imtihan = Library selamanya + AI Partner ${IMTIHAN_AI_DAYS} hari: unggah materi kuliahmu sendiri (PDF, Word, slide, foto diktat, rekaman kuliah), lalu AI membuat ringkasan berpenjelasan, peta konsep, mufradat, flashcard, kuis, dan soal tahriri, menerjemahkan & meng-i'rab kalimat Arab, men-talkhis muqarrar jadi PDF siap cetak, dan menemani lewat tutor serta simulasi syafawi — tanpa pindah aplikasi.` },
-  { q: "Ada paket AI Partner 1 bulan? Mana yang lebih baik?",
-    a: `Ada. Paket 1 bulan = Library selamanya + AI Partner 30 hari, bisa diperpanjang per 30 hari. Untuk persiapan imtihan, ambil Paket Imtihan (Library + AI Partner ${IMTIHAN_AI_DAYS} hari, sekali bayar): selama ${IMTIHAN_AI_DAYS} hari itu tidak ada kuota bulanan. Selama ada event promo, harganya lebih murah lagi.` },
-  { q: "AI Partner di Paket Imtihan ada batasnya?",
+    a: `Library berisi ${CATALOG.maddah} maddah, ${CATALOG.prompts} template prompt, bank soal imtihan, Siap Imtihan, Muqaranah, Kurasah, dan Companion harian — sekali bayar, berlaku selamanya. Prompt-nya kamu salin ke AI pilihanmu (Claude, ChatGPT, NotebookLM, dll). Paket Imtihan = Library selamanya + ${imtihanAi()}: unggah materi kuliahmu sendiri (PDF, Word, slide, foto diktat, rekaman kuliah), lalu AI membuat ringkasan berpenjelasan, peta konsep, mufradat, flashcard, kuis, dan soal tahriri, menerjemahkan & meng-i'rab kalimat Arab, men-talkhis muqarrar jadi PDF siap cetak, dan menemani lewat tutor serta simulasi syafawi — tanpa pindah aplikasi.` },
+  c ? { q: "Paket tokennya apa saja? Mana yang cocok?",
+    a: `Ada dua: ${formatTokens(c.small.tokens)} token (${formatRupiah(c.small.price)}) dan ${formatTokens(c.big.tokens)} token (${formatRupiah(c.big.price)}). Dua-duanya membuka Library selamanya dan semua fitur AI Partner; yang beda cuma jumlah tokennya. Token tidak hangus, jadi mulai dari yang kecil pun aman — kalau habis tinggal beli lagi. Paket besar lebih hemat per token, cocok untuk persiapan imtihan.` }
+  : { q: "Ada paket AI Partner 1 bulan? Mana yang lebih baik?",
+    a: `Ada. Paket 1 bulan = Library selamanya + AI Partner 30 hari, bisa diperpanjang per 30 hari. Untuk persiapan imtihan, ambil Paket Imtihan (Library + ${imtihanAi()}, sekali bayar): selama ${IMTIHAN_AI_DAYS} hari itu tidak ada kuota bulanan. Selama ada event promo, harganya lebih murah lagi.` },
+  c ? { q: "Token itu apa? Ada batas pemakaiannya?",
+    a: `Token adalah saldo untuk memakai AI di Talqeeh. Tiap kali AI bekerja untukmu, tokenmu berkurang sesuai besar pekerjaannya: kira-kira ${formatTokens(c.guide.chat || 100)} token per pesan tutor, ${formatTokens(c.guide.livePerMinute || 70)} per menit Live Caption, dan ${formatTokens(c.guide.talkhis || 15000)} per talkhis muqarrar. Tidak ada batas harian atau masa aktif: selama token masih ada, semua fitur terbuka. Sisa token selalu terlihat di AI Partner. Membuka materi dan hasil yang sudah dibuat tidak memakai token.` }
+  : { q: "AI Partner di Paket Imtihan ada batasnya?",
     a: `Selama ${IMTIHAN_AI_DAYS} hari, terjemah & i'rab, pesan tutor, Tanya AI, ringkasan/kuis/flashcard, materi baru, dan baca halaman scan bisa kamu pakai sepuasnya. Batas hanya untuk fitur yang biayanya dihitung per menit atau per muqarrar. Live Caption kuliah duktur: 8 jam per 30 hari, maksimal 3 jam per hari (mode Akurat untuk kelas ramai dihitung 4× menit). Halaman muqarrar scan yang sudah pernah dibaca AI di Talqeeh bisa langsung terbuka gratis. Talkhis otomatis: 3 muqarrar per paket.` },
-  { q: "Bisa coba dulu sebelum bayar?",
+  c && c.free > 0 ? { q: "Bisa coba dulu sebelum bayar?",
+    a: `Bisa. Masuk dengan Google lalu pilih "Mulai gratis": kamu dapat akun gratis dengan maddah Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan ${formatTokens(c.free)} token AI gratis begitu membuka AI Partner — cukup untuk 1 ringkasan + kuis dari materimu sendiri dan beberapa tanya tutor. Kalau cocok, beli token kapan saja; akunnya sama, progresmu tetap aman.` }
+  : { q: "Bisa coba dulu sebelum bayar?",
     a: "Bisa. Masuk dengan Google lalu pilih \"Mulai gratis\": kamu dapat akun gratis dengan maddah Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan coba AI Partner untuk 1 materi pendek (±10–15 halaman): ringkasan, flashcard, kuis, mufradat, plus 2× terjemah & i'rab, 3 pesan tutor, 1 kali Tanya AI, dan 3 foto dibaca AI. Upgrade kapan saja — akunnya sama, progresmu tetap aman." },
   { q: "Library-nya berlaku sampai kapan?",
     a: "Selamanya. Sekali bayar, dan maddah, prompt, atau fitur Library yang ditambahkan nanti ikut terbuka tanpa biaya tambahan." },
@@ -1037,6 +1055,7 @@ const LANDING_FAQ = [
 
 const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
   const settings = useAppSettings();
+  const tokens = useTokens();
   const imtihan = imtihanBundle(settings);
   const monthly = aiBundle(settings);
   const promoLeft = usePromoCountdown();
@@ -1064,7 +1083,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
             <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-gold-400 text-black uppercase tracking-wider flex-shrink-0">Event</span>
             <span className="flex-1 min-w-[220px]">
               <span className="block text-ink font-semibold">{imtihan.promo.name}: Paket Imtihan {formatRupiah(imtihan.total)} <span className="line-through text-ink-soft font-normal">{formatRupiah(imtihan.promo.normal)}</span></span>
-              <span className="block text-sm text-ink-muted">Library selamanya + AI Partner {IMTIHAN_AI_DAYS} hari. Berlaku sampai {imtihan.promo.endLabel}{promoLeft ? ` — sisa ${promoLeft}` : ''}.</span>
+              <span className="block text-sm text-ink-muted">Library selamanya + {imtihanAi()}. Berlaku sampai {imtihan.promo.endLabel}{promoLeft ? ` — sisa ${promoLeft}` : ''}.</span>
             </span>
             <span className="text-sm text-emerald-300 font-medium flex-shrink-0">Ambil sekarang →</span>
           </button>
@@ -1107,7 +1126,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
                 {formatRupiah(imtihan.total)}
               </span>
               <div className="text-xs text-ink-soft uppercase tracking-wider mt-2 mb-4">
-                Library selamanya + AI Study Partner {IMTIHAN_AI_DAYS} hari
+                Library selamanya + {imtihanAi()}
               </div>
               <ImtihanBreakdown bundle={imtihan} className="mb-6"/>
               <a href="#live-caption" onClick={e => { e.preventDefault(); document.getElementById('live-caption')?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
@@ -1115,7 +1134,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
                 <span className="w-9 h-9 rounded-lg flex-shrink-0 flex items-center justify-center bg-emerald-500/15"><Icon name="mic" className="w-4 h-4 text-emerald-300"/></span>
                 <span className="min-w-0">
                   <span className="block text-sm font-semibold text-ink">Baru: Live Caption kuliah duktur</span>
-                  <span className="block text-xs text-ink-muted">Terjemah langsung fushah & 'ammiyah, 8 jam / 30 hari</span>
+                  <span className="block text-xs text-ink-muted">Terjemah langsung fushah & 'ammiyah{tokens ? `, ±${tokenExamples(tokens.imtihan, tokens.guide).liveHours} jam kalau semua token dipakai untuk ini` : ', 8 jam / 30 hari'}</span>
                 </span>
                 <Icon name="arrowRight" className="w-4 h-4 text-emerald-300 ml-auto flex-shrink-0"/>
               </a>
@@ -1124,9 +1143,9 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
                 <FeatureList items={AI_BUNDLE_FEATURES} color="text-emerald-400"/>
               </div>
               <QuotaBox
-                title={`Tanpa kuota bulanan selama ${IMTIHAN_AI_DAYS} hari`}
-                rows={IMTIHAN_QUOTA}
-                note="Fitur belajar harian bisa kamu pakai sepuasnya selama masa paket. Batas hanya untuk Live Caption, transkrip rekaman, dan talkhis, karena biayanya dihitung per menit atau per muqarrar."
+                title={tokens ? `${formatTokens(tokens.imtihan)} token, tidak hangus` : `Tanpa kuota bulanan selama ${IMTIHAN_AI_DAYS} hari`}
+                rows={imtihanQuota(tokens)}
+                note={tokens ? "Angka perkiraan: potongan sebenarnya mengikuti panjang materi dan jawaban AI. Tidak ada batas harian atau masa aktif. Sisa token selalu terlihat, dan kalau habis bisa beli lagi kapan saja." : "Fitur belajar harian bisa kamu pakai sepuasnya selama masa paket. Batas hanya untuk Live Caption, transkrip rekaman, dan talkhis, karena biayanya dihitung per menit atau per muqarrar."}
               />
               <p className="text-xs text-emerald-300 mb-3">Cukup satu kali bayar untuk persiapan sampai imtihan.</p>
               <button onClick={() => onOpenJoin("imtihan")}
@@ -1138,7 +1157,20 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
         </div>
       </Reveal>
 
-      {/* Paket 1 bulan: tersedia, tapi diarahkan ke Paket Imtihan yang lebih hemat */}
+      {/* Model token: paket kecil di bawah paket besar. Paket lama (AI 1 bulan) hanya tampil sebelum model token berlaku. */}
+      {tokens ? (
+      <Reveal>
+        <div className="max-w-5xl mx-auto mt-5 card-glass p-5 flex items-center gap-4 flex-wrap" style={{ border: "1px solid rgba(62,207,142,0.22)" }}>
+          <div className="flex-1 min-w-[240px]">
+            <div className="text-ink font-medium">Butuh token lebih sedikit? {formatTokens(tokens.small.tokens)} token · {formatRupiah(tokens.small.price)}</div>
+            <div className="text-sm text-ink-muted leading-relaxed">
+              Fiturnya sama persis: Library selamanya dan semua fitur AI Partner. Yang beda cuma jumlah tokennya. Token tidak hangus, dan kalau habis bisa beli lagi kapan saja.
+            </div>
+          </div>
+          <button onClick={() => navigate("/gabung")} className="btn btn-ghost text-sm px-5 py-2.5">Lihat paket token</button>
+        </div>
+      </Reveal>
+      ) : (
       <Reveal>
         <div className="max-w-5xl mx-auto mt-5 card-glass p-5 flex items-center gap-4 flex-wrap" style={{ border: "1px solid rgba(62,207,142,0.22)" }}>
           <div className="flex-1 min-w-[240px]">
@@ -1152,7 +1184,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
                 : <span className="text-emerald-300">Untuk persiapan imtihan, pilih Paket Imtihan ({IMTIHAN_AI_DAYS} hari tanpa kuota bulanan).</span>}
             </div>
             <div className="text-xs text-ink-soft leading-relaxed mt-1.5">
-              Jatah per 30 hari: 150 pesan tutor/Tanya AI, 150× i'rab, 40× ringkasan/kuis/flashcard, 15 materi baru, 60 halaman scan, 300 menit transkrip, 6 talkhis muqarrar.
+              {"Jatah per 30 hari: 150 pesan tutor/Tanya AI, 150× i'rab, 40× ringkasan/kuis/flashcard, 15 materi baru, 60 halaman scan, 300 menit transkrip, 6 talkhis muqarrar."}
             </div>
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -1161,6 +1193,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
           </div>
         </div>
       </Reveal>
+      )}
 
       {/* Paket Rombongan — hanya selama event (Admin → Settings → Event penjualan) */}
       {rombongan && (
@@ -1197,9 +1230,9 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 text-sm">
             {[
               ["Login Google", "Tombol paket langsung minta login dulu."],
-              ["Pilih paket", "Library, paket 1 bulan, atau Paket Imtihan (rekomendasi)."],
+              ["Pilih paket", tokens ? "Paket token kecil atau besar (keduanya sudah termasuk Library), atau Library saja." : "Library, paket 1 bulan, atau Paket Imtihan (rekomendasi)."],
               ["Bayar di Mayar", "QRIS, VA, e-wallet. Tagihan langsung atas akunmu."],
-              ["Aktif otomatis", `Tanpa kode, tanpa nunggu admin. AI Partner langsung aktif: 30 hari (paket 1 bulan) atau ${IMTIHAN_AI_DAYS} hari (Paket Imtihan).`],
+              ["Aktif otomatis", tokens ? "Tanpa kode, tanpa nunggu admin. Token langsung masuk ke akunmu dan AI Partner bisa dipakai saat itu juga." : `Tanpa kode, tanpa nunggu admin. AI Partner langsung aktif: 30 hari (paket 1 bulan) atau ${IMTIHAN_AI_DAYS} hari (Paket Imtihan).`],
             ].map(([title, desc], i) => (
               <div key={title} className="flex flex-col md:flex-row gap-2 md:gap-3">
                 <span className="w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-semibold text-emerald-200"
@@ -1222,7 +1255,7 @@ const PricingAndCTA = ({ onOpenJoin, onOpenLogin }) => {
           </div>
         </div>
         <div className="space-y-2">
-          {LANDING_FAQ.map(item => (
+          {landingFaq(tokens).map(item => (
             <details key={item.q} className="card-glass px-5 py-4 group">
               <summary className="cursor-pointer list-none flex items-center justify-between gap-4 text-ink font-medium text-sm md:text-base">
                 {item.q}

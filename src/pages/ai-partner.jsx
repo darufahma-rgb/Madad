@@ -555,7 +555,7 @@ const RecentChats = () => {
 };
 
 const AiPartnerPage = () => {
-  const status = useAiStatus();
+  const status = useAiStatus({ welcome: true });
   const [creating, setCreating] = useState(false);
   useEffect(() => { window.logFunnel?.('view_ai_partner'); }, []);
   const listRef = React.useRef(null);
@@ -575,6 +575,7 @@ const AiPartnerPage = () => {
               <div className="container-x pt-6 pb-24"><UpgradeCard title="Khusus member Talqeeh" message="Masuk dengan Google dan buat akun gratis untuk mencoba AI Partner 1 materi."/></div>
             </>
           : <>
+              {status.tokens && <div className="container-x pt-4 flex justify-end"><TokenBadge tokens={status.tokens}/></div>}
               <Composer tier={status.tier} trial={status.trial} onUpload={startUpload}/>
               <div ref={listRef} className="scroll-mt-20 pt-6 md:pt-10 border-t border-white/[0.06]">
                 <AiPartnerList status={status} creating={creating} setCreating={setCreating}/>
@@ -748,7 +749,7 @@ const AiPartnerDetail = ({ setId, status }) => {
 };
 
 const AiPartnerDetailPage = ({ setId }) => {
-  const status = useAiStatus();
+  const status = useAiStatus({ welcome: true });
   return (
     <div className="page-enter">
       <BackToHome to="/ai-partner" label="Semua materi"/>

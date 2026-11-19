@@ -4,6 +4,7 @@ export const ADMIN_SETTING_KEYS = [
   'mayarLibraryUrl', 'mayarLibraryProductId', 'mayarUrl', 'mayarAiProductId', 'aiPriceLabel', 'aiPriceMonthly',
   'aiModelDefault', 'aiModelStudy', 'aiModelVision', 'aiModelArabic', 'aiModelGrade', 'aiModelChat', 'aiModelPrompt', 'aiModelTranscribe', 'aiModelLiveHear', 'aiModelLiveHearAccurate', 'aiModelLiveTranslate', 'aiModelLiveTranslateAccurate', 'aiModelLiveTalkhis', 'aiModelIlmi', 'aiModelTalkhisStrong',
   'aiMonthlyLimits', 'aiQuotaOverrides', 'aiLiveDailyLimit',
+  'aiTokens', // Model token: paket token, token Paket Imtihan, konversi pembelian lama (JSON, lihat api/_lib/tokens.js)
   'imtihanEvent', 'rombonganEvent', 'partnerLinks', // event penjualan (JSON, lihat api/_lib/events.js)
   'affiliateProgram', // Program Mitra (JSON, lihat api/_lib/affiliates.js)
 ];

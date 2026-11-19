@@ -722,7 +722,7 @@ const ProgressCard = ({ prog, onCancel }) => (
 /* ── Halaman ── */
 const IlmiIndexPage = ({ libraryMode = false }) => {
   const { ilmi, ilmiView, aiCall } = useContext(IlmiApi);
-  const status = useAiStatus();
+  const status = useAiStatus({ welcome: true });
   const path = useRoute();
   const [libraryDoc, setLibraryDoc] = useState(null);
   const docId = libraryMode ? libraryDoc : new URLSearchParams(path.split('?')[1] || '').get('doc');

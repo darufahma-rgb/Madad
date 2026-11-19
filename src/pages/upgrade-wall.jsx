@@ -15,6 +15,7 @@ const REASONS = {
   talkhis:  { title: 'Talkhis otomatis khusus pelanggan', tried: 'Talkhis Arab gaya Masisir dari muqarrarmu sendiri, dicek kelengkapannya, siap dicetak jadi PDF.' },
   live:     { title: 'Live Caption khusus pelanggan', tried: 'Dengar kuliah duktur dengan transkrip Arab dan terjemahan Indonesia secara langsung, lalu simpan jadi materi.' },
   preview:  { title: 'Buka semua alat belajar untuk materi ini', tried: 'Ringkasan tadi baru sebagian kecil. Peta konsep, latihan tahriri, dan talkhis menunggu di balik langganan.' },
+  tokens:   { title: 'Tokenmu habis', tried: 'Beli token untuk lanjut memakai AI. Materi, flashcard, dan progresmu tetap tersimpan.' },
   default:  { title: 'Fitur ini khusus pelanggan', tried: 'Berlangganan untuk membuka semua fitur AI Partner.' },
 };
 
@@ -32,6 +33,7 @@ const UpgradeWall = () => {
   const [reason, setReason] = useState(null);
   const left = window.usePromoCountdown ? window.usePromoCountdown() : null;
   const offer = useWelcomeOffer();
+  const shop = useTokens(); // model token: yang dijual paket token, bukan langganan
 
   useEffect(() => {
     const open = (e) => {
@@ -50,6 +52,8 @@ const UpgradeWall = () => {
   }, [reason]);
 
   if (!reason) return null;
+  // Sudah punya Library (atau tokennya habis): langsung ke pilihan paket token.
+  if (shop && !isFree) return <TokenShopModal open onClose={() => setReason(null)} tokens={null}/>;
   const copy = REASONS[reason] || REASONS.default;
   const P = window.IMTIHAN_PROMO;
   const promo = isFree && left && P;
@@ -58,7 +62,8 @@ const UpgradeWall = () => {
   const pay = () => {
     window.logFunnel?.('click_pay', `wall_${reason}`);
     close();
-    if (isFree) navigate('/gabung?plan=imtihan');
+    if (shop) navigate('/gabung');
+    else if (isFree) navigate('/gabung?plan=imtihan');
     else window.dispatchEvent(new CustomEvent('talqeeh:open-join', { detail: { plan: 'library_ai' } }));
   };
 
@@ -76,7 +81,7 @@ const UpgradeWall = () => {
         <p className="text-sm text-ink-muted mt-1.5 leading-relaxed">{copy.tried}</p>
 
         <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-          <div className="text-[11px] uppercase tracking-wider text-ink-soft mb-2">{isFree ? 'Dengan Paket Imtihan kamu dapat' : 'Dengan AI Partner kamu dapat'}</div>
+          <div className="text-[11px] uppercase tracking-wider text-ink-soft mb-2">{shop ? 'Dengan paket token kamu dapat' : isFree ? 'Dengan Paket Imtihan kamu dapat' : 'Dengan AI Partner kamu dapat'}</div>
           <ul className="space-y-1.5">
             {(isFree ? [...UNLOCKS, `Library ${window.CATALOG?.maddah || 93} maddah, akses selamanya`] : UNLOCKS).map(t => (
               <li key={t} className="flex gap-2 text-sm text-ink leading-snug">
@@ -86,7 +91,14 @@ const UpgradeWall = () => {
           </ul>
         </div>
 
-        {isFree && P && (
+        {shop && (
+          <div className="mt-4">
+            <div className="text-[11px] text-ink-soft">mulai</div>
+            <div className="font-display text-2xl font-semibold text-ink">{formatRupiah(shop.small.price)}</div>
+            <div className="text-[11px] text-ink-soft">sekali bayar · {formatTokens(shop.small.tokens)} token (tidak hangus) + Library selamanya</div>
+          </div>
+        )}
+        {!shop && isFree && P && (
           <div className="mt-4 flex items-end justify-between gap-3">
             <div>
               {(offer || promo) && <div className="text-xs text-ink-soft line-through">{formatRupiah(window.IMTIHAN_PRICE_IDR)}</div>}
@@ -108,7 +120,7 @@ const UpgradeWall = () => {
         )}
 
         <button onClick={pay} className="btn btn-gold w-full justify-center text-sm py-3 mt-4">
-          {isFree ? `Ambil Paket Imtihan ${formatRupiah(price)}` : 'Berlangganan AI Partner'}
+          {shop ? 'Lihat paket token' : isFree ? `Ambil Paket Imtihan ${formatRupiah(price)}` : 'Berlangganan AI Partner'}
           <Icon name="arrowRight" className="w-4 h-4"/>
         </button>
         <div className="flex items-center justify-between mt-3 text-xs">
