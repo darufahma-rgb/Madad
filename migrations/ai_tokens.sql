@@ -51,7 +51,29 @@ begin
   return query select m.ai_tokens, m.ai_tokens_granted from members m where m.code = p_code;
 end $$;
 
+-- Isi ulang token sampai `p_target` (bukan menambah di atasnya): dipakai untuk jatah bulanan member lama. Kalau saldo masih
+-- di atas target (mis. ada token yang dibeli), tidak ada yang berubah. Satu kali per p_ref. Mengembalikan { balance, granted }.
+create or replace function public.topup_ai_tokens(p_code text, p_target integer, p_reason text, p_ref text)
+returns table (balance integer, granted integer) language plpgsql security definer set search_path = public as $$
+declare v_now integer; v_delta integer; v_new bigint;
+begin
+  select ai_tokens into v_now from members where code = p_code for update;
+  if found and p_target is not null and p_target > 0 then
+    v_delta := greatest(0, p_target - v_now);
+    insert into ai_token_ledger (member_code, delta, reason, ref)
+      values (p_code, v_delta, left(p_reason, 60), p_ref)
+      on conflict (member_code, ref) where ref is not null do nothing
+      returning id into v_new;
+    if v_new is not null and v_delta > 0 then
+      update members set ai_tokens = ai_tokens + v_delta, ai_tokens_granted = ai_tokens_granted + v_delta where code = p_code;
+    end if;
+  end if;
+  return query select m.ai_tokens, m.ai_tokens_granted from members m where m.code = p_code;
+end $$;
+
 revoke all on function public.charge_ai_tokens(text, integer, text) from public, anon, authenticated;
+revoke all on function public.topup_ai_tokens(text, integer, text, text) from public, anon, authenticated;
+grant execute on function public.topup_ai_tokens(text, integer, text, text) to service_role;
 revoke all on function public.grant_ai_tokens(text, integer, text, text) from public, anon, authenticated;
 grant execute on function public.charge_ai_tokens(text, integer, text) to service_role;
 grant execute on function public.grant_ai_tokens(text, integer, text, text) to service_role;
@@ -66,3 +88,16 @@ alter table public.payment_checkouts add column if not exists tokens integer;
 insert into public.app_settings (key, value)
   values ('aiTokensStart', to_char(now() at time zone 'utc', 'YYYY-MM-DD"T"HH24:MI:SS"Z"'))
   on conflict (key) do nothing;
+
+-- Library selamanya untuk semua akun yang pernah berlangganan (bukan akun gratis, bukan akses trial sementara dari admin):
+-- member berbayar yang masa Library-nya terbatas atau sudah kedaluwarsa dibuka lagi, tanpa batas waktu.
+do $$
+declare has_tier boolean; has_type boolean;
+begin
+  select exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'members' and column_name = 'tier') into has_tier;
+  select exists (select 1 from information_schema.columns where table_schema = 'public' and table_name = 'members' and column_name = 'member_type') into has_type;
+  execute 'update public.members set status = ''active'', expires_at = ''2099-12-31'' where status in (''active'', ''expired'')'
+    || ' and (expires_at is null or expires_at < ''2099-12-31'')'
+    || case when has_tier then ' and coalesce(tier, ''library'') <> ''free''' else '' end
+    || case when has_type then ' and coalesce(member_type, '''') <> ''trial''' else '' end;
+end $$;

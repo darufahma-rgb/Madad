@@ -2,7 +2,7 @@ import { readSettings, PUBLIC_SETTING_KEYS } from './_lib/settings.js';
 import { mayarConfigured, parseAiPrice } from './_lib/payments.js';
 import { getLiveEvents } from './_lib/events.js';
 import { sbConfig, sbHeaders } from './_lib/member.js';
-import { tokensOn, getTokenConfig, TOKEN_GUIDE } from './_lib/tokens.js';
+import { tokensOn, getTokenConfig, tokenGuide } from './_lib/tokens.js';
 
 // Jumlah pengguna untuk bukti sosial di landing ("150+ Masisir sudah pakai Talqeeh").
 // Dihitung dari member aktif (gratis + berbayar), dibulatkan ke BAWAH supaya klaimnya selalu benar,
@@ -66,7 +66,7 @@ export default async function handler(req, res) {
     // Event penjualan yang sedang berlangsung (Admin → Settings); null = tidak ada. Harga tagihan tetap dari server.
     imtihanEvent: events.imtihan,
     rombonganEvent: events.rombongan,
-    tokens: tokens ? { packs: tokens.packs, imtihan: tokens.grants.imtihan, free: tokens.grants.free, guide: TOKEN_GUIDE } : null,
+    tokens: tokens ? { packs: tokens.packs, imtihan: tokens.grants.imtihan, free: tokens.grants.free, gift: tokens.grants.gift, legacy: tokens.legacy, guide: tokenGuide(tokens) } : null,
   };
 
   res.status(200).json({

@@ -2888,9 +2888,11 @@ const ModelField = ({ label, hint, value, active, onChange }) => {
 const TOKEN_DEFAULTS = {
   usdRate: 16500,
   packs: [{ id: 't100', price: 100000, tokens: 35000 }, { id: 't199', price: 199000, tokens: 75000 }],
-  grants: { imtihan: 75000, free: 1500 },
+  grants: { imtihan: 75000, free: 1500, gift: 5000 },
   limits: { freeDaily: 30 },
-  convert: { imtihan: 75000, monthly: 35000, talkhis_1: 12000, talkhis_3: 30000 },
+  legacy: { imtihan: 30000, monthly: 30000 },
+  convert: { monthly: 35000, talkhis_1: 12000, talkhis_3: 30000 },
+  rates: { chat: 100, prompt: 100, analyze: 100, generate: 100, grade: 100, ocr: 100, live: 100, transcribe: 100, talkhis: 100, ilmi: 100, game: 100 },
 };
 const tokenInputClass = "w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-ink outline-none font-mono focus:border-emerald-500/45";
 
@@ -2898,7 +2900,9 @@ const TokenSettingsCard = ({ tokens, setTokens, eventPrice }) => {
   const num = (v) => { const t = String(v).replace(/[^\d]/g, "").slice(0, 8); return t === "" ? "" : Number(t); };
   const setIn = (group, k, v) => setTokens(c => ({ ...c, [group]: { ...c[group], [k]: num(v) } }));
   const setPack = (i, k, v) => setTokens(c => ({ ...c, packs: c.packs.map((p, j) => (j === i ? { ...p, [k]: num(v) } : p)) }));
-  const costOf = (n) => Math.round((Number(n) || 0) * 0.0001 * (Number(tokens.usdRate) || TOKEN_DEFAULTS.usdRate));
+  // Kasus terburuk: semua token dipakai di fitur dengan tarif terendah.
+  const lowRate = Math.min(...Object.values(tokens.rates || {}).map(v => (Number(v) >= 10 ? Number(v) : 100))) / 100;
+  const costOf = (n) => Math.round(((Number(n) || 0) * 0.0001 * (Number(tokens.usdRate) || TOKEN_DEFAULTS.usdRate)) / lowRate);
   const fmt = (n) => Number(n || 0).toLocaleString("id-ID");
   // Untung per penjualan bila SEMUA token terpakai (kasus terburuk). Belum dipotong biaya Mayar dan komisi mitra.
   const sales = [
@@ -2912,8 +2916,8 @@ const TokenSettingsCard = ({ tokens, setTokens, eventPrice }) => {
       <div>
         <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Token AI</div>
         <p className="text-[11px] text-ink-soft leading-relaxed">
-          Semua fitur AI memotong token tiap akun <span className="text-ink">sebesar biaya aslinya</span> (1 token = $0,0001), jadi token yang
-          habis terpakai nilainya persis sebesar biaya AI-nya. Tidak ada masa aktif, kuota harian, atau jatah talkhis: pembatasnya saldo token.
+          Semua fitur AI memotong token tiap akun <span className="text-ink">sebesar biaya aslinya × tarif fitur</span> (1 token = $0,0001), jadi
+          dengan tarif 100 token yang habis terpakai nilainya persis sebesar biaya AI-nya. Tidak ada masa aktif, kuota harian, atau jatah talkhis: pembatasnya saldo token.
           Paket token sekaligus membuka Library. Berlaku sejak <code>migrations/ai_tokens.sql</code> dijalankan; sebelum itu paket lama tetap dipakai.
         </p>
       </div>
@@ -2955,15 +2959,40 @@ const TokenSettingsCard = ({ tokens, setTokens, eventPrice }) => {
       </div>
 
       <div>
-        <div className="text-[11px] text-ink-muted mb-2">Konversi pembelian lama jadi token <span className="text-ink-soft">(sekali, otomatis, untuk yang masa AI-nya masih berjalan)</span></div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[['imtihan', 'Paket Imtihan / Rombongan'], ['monthly', 'AI 30 hari / akses dari admin'], ['talkhis_1', 'Tambahan talkhis 1'], ['talkhis_3', 'Tambahan talkhis 3']].map(([k, label]) => (
-            <div key={k}>
+        <div className="text-[11px] text-ink-muted mb-2">Member lama <span className="text-ink-soft">(membayar sebelum model token berlaku)</span></div>
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          {[['legacy', 'imtihan', 'Paket Imtihan lama, per bulan'], ['legacy', 'monthly', 'AI 30 hari lama, per bulan'], ['grants', 'gift', 'Hadiah member Library (sekali)'],
+            ['convert', 'talkhis_1', 'Tambahan talkhis 1 (sekali)'], ['convert', 'talkhis_3', 'Tambahan talkhis 3 (sekali)']].map(([group, k, label]) => (
+            <div key={group + k}>
               <label className="text-[11px] text-ink-soft block mb-1">{label}</label>
-              <input inputMode="numeric" value={tokens.convert[k] ?? ""} onChange={e => setIn('convert', k, e.target.value)} className={tokenInputClass}/>
+              <input inputMode="numeric" value={tokens[group]?.[k] ?? ""} onChange={e => setIn(group, k, e.target.value)} className={tokenInputClass}/>
             </div>
           ))}
         </div>
+        <p className="text-[11px] text-ink-soft mt-2 leading-relaxed">
+          Jatah bulanan diisi ulang tiap 30 hari selama masa paket lamanya (Paket Imtihan sebelum 5 Nov 2026 = 4 bulan, sesudahnya 2 bulan;
+          AI 30 hari = 1 bulan). Isi ulang = saldo dinaikkan sampai angka ini, tidak menumpuk, dan token yang dibeli sendiri tidak terhapus.
+          Biaya paling besar per member lama Paket Imtihan 4 bulan: {formatRupiah(costOf((Number(tokens.legacy?.imtihan) || 0) * 4))}.
+        </p>
+      </div>
+
+      <div>
+        <div className="text-[11px] text-ink-muted mb-2">Tarif per fitur <span className="text-ink-soft">(% dari biaya asli; 100 = sesuai biaya asli)</span></div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[['chat', 'Tutor & syafawi'], ['prompt', 'Tanya AI'], ['analyze', "Terjemah & i'rab"], ['generate', 'Ringkasan, kuis, dll.'],
+            ['grade', 'Nilai tahriri'], ['ocr', 'Baca foto/scan'], ['live', 'Live Caption'], ['transcribe', 'Transkrip rekaman'],
+            ['talkhis', 'Talkhis'], ['ilmi', 'Ilmi Index'], ['game', 'Arena Imtihan']].map(([k, label]) => (
+            <div key={k}>
+              <label className="text-[11px] text-ink-soft block mb-1">{label}</label>
+              <input inputMode="numeric" value={tokens.rates?.[k] ?? ""} onChange={e => setIn('rates', k, e.target.value)} className={tokenInputClass}/>
+            </div>
+          ))}
+        </div>
+        <p className="text-[11px] text-ink-soft mt-2 leading-relaxed">
+          Di bawah 100 = fitur itu lebih hemat token buat pengguna, tapi Talqeeh ikut menanggung sisa biayanya (tabel untung di bawah langsung
+          memakai tarif terendah sebagai kasus terburuk). Di atas 100 = lebih boros token. Rentang 10–500. Perkiraan token per fitur di
+          halaman Paket ikut menyesuaikan.
+        </p>
       </div>
 
       <div className="pt-4 border-t border-white/[0.06]">
@@ -3056,6 +3085,8 @@ const AdminSettings = () => {
             packs: Array.isArray(c.packs) && c.packs.length ? c.packs : TOKEN_DEFAULTS.packs,
             grants: { ...TOKEN_DEFAULTS.grants, ...(c.grants || {}) },
             limits: { ...TOKEN_DEFAULTS.limits, ...(c.limits || {}) },
+            legacy: { ...TOKEN_DEFAULTS.legacy, ...(c.legacy || {}) },
+            rates: { ...TOKEN_DEFAULTS.rates, ...(c.rates || {}) },
             convert: { ...TOKEN_DEFAULTS.convert, ...(c.convert || {}) },
           });
         } catch {}

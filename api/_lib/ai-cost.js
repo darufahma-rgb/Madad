@@ -5,7 +5,7 @@
    lalu requestAI/streamAI di ai.js mencatat tanpa perlu meneruskan parameter ke semua pemanggil. */
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { sbConfig, sbHeaders } from './member.js';
-import { tokensFor, chargeTokens } from './tokens.js';
+import { tokensFor, chargeTokens, getTokenConfig, rateFor } from './tokens.js';
 
 const store = new AsyncLocalStorage();
 export const withAiContext = (ctx, fn) => store.run(ctx, fn);
@@ -23,7 +23,8 @@ export const recordAiCost = async (model, usage, estimate = null) => {
   // Model token: pemakai yang ditandai `metered` (lihat api/ai-partner.js) dipotong tokennya sebesar biaya panggilan ini.
   if (ctx.metered && ctx.code) {
     const est = { tokensIn: usage?.prompt_tokens ?? estimate?.tokensIn, tokensOut: usage?.completion_tokens ?? estimate?.tokensOut };
-    await chargeTokens(ctx.code, tokensFor(usage?.cost, est), `spend:${String(ctx.kind || 'other').slice(0, 30)}`);
+    const rate = rateFor(ctx.kind, await getTokenConfig().catch(() => undefined));
+    await chargeTokens(ctx.code, tokensFor(usage?.cost, est, rate), `spend:${String(ctx.kind || 'other').slice(0, 30)}`);
   }
   if (tableMissing) return;
   const row = {

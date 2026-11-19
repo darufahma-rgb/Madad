@@ -20,7 +20,7 @@ import { handleBattleStory, handleBattleHalaqah } from './_lib/ai-partner/battle
 import { handleBattleQuiz } from './_lib/ai-partner/battle-quiz.js';
 import { ocrCacheKey, lookupOcrPages, storeOcrPage, handleOcrCache } from './_lib/ai-partner/ocr-cache.js';
 import { withAiContext } from './_lib/ai-cost.js';
-import { TOKEN_GUIDE, tokensOn, getTokenConfig, tokenState, grantTokens, ensureGrants } from './_lib/tokens.js';
+import { tokensOn, getTokenConfig, tokenState, grantTokens, ensureGrants, tokenNews, tokenGuide } from './_lib/tokens.js';
 import { handleIlmi, handleIlmiView } from './_lib/ai-partner/ilmi-index.js';
 import { answerFromLibrary, manageReferenceBook, readReferencePage, LIBRARY_OWNER } from './_lib/ai-partner/reference-library.js';
 import { handleReferenceDonation, manageSubmissions } from './_lib/ai-partner/reference-donation.js';
@@ -635,8 +635,9 @@ const liveHours = (min) => {
 async function handleLiveQuota(ctx, res) {
   if (await tokenMode(ctx)) {
     const balance = Math.max(0, (await tokenState(ctx.code))?.balance ?? 0);
-    const left = Math.floor(balance / TOKEN_GUIDE.livePerMinute);
-    return res.status(200).json({ ok: true, daily: left, dailyLeft: left, monthly: null, monthlyLeft: null, left, tokens: { balance, perMinute: TOKEN_GUIDE.livePerMinute } });
+    const perMinute = tokenGuide(await getTokenConfig()).livePerMinute;
+    const left = Math.floor(balance / perMinute);
+    return res.status(200).json({ ok: true, daily: left, dailyLeft: left, monthly: null, monthlyLeft: null, left, tokens: { balance, perMinute } });
   }
   const daily = await dailyLimit(ctx, 'live');
   const { url, key } = sbConfig();
@@ -1479,8 +1480,8 @@ async function handleFeedback(ctx, body, res) {
 // Statistik belajar AI Partner milik member sendiri (halaman "Statistik Belajarku").
 // Saldo + paket + perkiraan pemakaian, untuk ditampilkan di halaman.
 const tokenInfo = async (code, state = null) => {
-  const [st, cfg] = await Promise.all([state || tokenState(code), getTokenConfig()]);
-  return { balance: st?.balance ?? 0, packs: cfg.packs, guide: TOKEN_GUIDE };
+  const [st, cfg, news] = await Promise.all([state || tokenState(code), getTokenConfig(), tokenNews(code)]);
+  return { balance: st?.balance ?? 0, packs: cfg.packs, guide: tokenGuide(cfg), news };
 };
 
 async function handleStats(ctx, res) {
