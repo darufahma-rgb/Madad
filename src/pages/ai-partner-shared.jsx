@@ -291,37 +291,98 @@ const TokenAnnouncement = () => {
     setOpen(false);
     window.dispatchEvent(new Event('talqeeh:token-announce-closed'));
   };
+  // Esc menutup; halaman di belakang tidak ikut bergulir selama pop-up terbuka.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', onKey);
+    return () => { document.body.style.overflow = prev; window.removeEventListener('keydown', onKey); };
+  }, [open]);
   if (!open || !shop) return null;
-  const g = shop.guide || {};
-  const points = [
-    ['layers', `${shop.small.name} & ${shop.big.name}`, `${shop.small.name} ${formatRupiah(shop.small.price)}: ${packText(shop.small)}. ${shop.big.name} ${formatRupiah(shop.big.price)}: ${packText(shop.big)}. Fitur AI-nya sama, Library ikut selamanya.`],
-    ['sparkles', 'Semua fitur AI terbuka', `Tidak ada lagi batas harian. Tiap pemakaian memotong token sesuai besarnya: ±${formatTokens(g.chat || 100)} per pesan tutor, ±${formatTokens(g.livePerMinute || 70)} per menit Live Caption.`],
-    ['check', 'Token tidak hangus', 'Sisa token selalu terlihat di AI Partner. Habis? Tinggal beli lagi, materi dan progresmu tetap aman.'],
-    ['crown', 'Member lama tetap aman', `Paket Imtihan & AI Partner lama dapat jatah ${formatTokens(shop.legacy?.imtihan || 30000)} token yang diisi ulang tiap bulan selama masa paketmu. Member Library: Library-mu berlaku selamanya + hadiah token.`],
-    ...(shop.free > 0 ? [['heart', 'Akun baru dapat token gratis', `${formatTokens(shop.free)} token untuk mencoba AI Partner, langsung dari materimu sendiri.`]] : []),
+  const big = shop.big, small = shop.small;
+  const perks = [
+    ['sparkles', 'Semua fitur AI terbuka', 'tanpa batas harian'],
+    ['check', 'Token tidak hangus', 'habis, tinggal isi lagi'],
+    ['bookOpen', 'Library selamanya', 'ikut di setiap paket'],
   ];
   return (
-    <Modal open onClose={close} size="md">
-      <div className="p-6 md:p-8">
-        <div className="text-[11px] uppercase tracking-[0.18em] text-gold-400 mb-1.5">Pembaruan Talqeeh</div>
-        <h2 className="font-display text-2xl font-semibold text-ink leading-snug mb-2">Sekarang AI Talqeeh pakai token</h2>
-        <p className="text-sm text-ink-muted mb-5">Lebih jelas dan lebih adil: bayar sesuai pemakaianmu, tanpa masa aktif.</p>
-        <ul className="space-y-3.5 mb-6">
-          {points.map(([icon, title, text]) => (
-            <li key={title} className="flex gap-3">
-              <span className="w-8 h-8 rounded-xl flex-shrink-0 flex items-center justify-center bg-emerald-500/10 border border-emerald-500/20">
-                <Icon name={icon} className="w-4 h-4 text-emerald-300"/>
-              </span>
-              <span className="text-sm leading-snug"><span className="block text-ink font-medium">{title}</span><span className="text-ink-muted">{text}</span></span>
-            </li>
-          ))}
-        </ul>
-        <div className="flex gap-3">
-          <button onClick={() => { close(); navigate('/gabung'); }} className="btn btn-primary flex-1 justify-center text-sm py-3">Lihat paket</button>
-          <button onClick={close} className="btn btn-ghost flex-1 justify-center text-sm py-3">Mengerti</button>
+    <div className="fixed inset-0 z-[180] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="token-announce-title">
+      <style>{`@keyframes ta-up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}@keyframes ta-glow{0%,100%{opacity:.55}50%{opacity:1}}`}</style>
+      <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={close}/>
+      <div className="relative w-full sm:max-w-lg max-h-[92dvh] flex flex-col rounded-t-[28px] sm:rounded-[28px] overflow-hidden border border-white/10 bg-[#0f1311] shadow-2xl"
+        style={{ animation: 'ta-up .35s ease-out' }}>
+        <div className="overflow-y-auto">
+          {/* Kepala */}
+          <div className="relative px-6 pt-7 pb-6 text-center overflow-hidden" style={{ background: 'radial-gradient(120% 90% at 50% 0%, rgba(62,207,142,0.28), rgba(201,168,106,0.10) 55%, transparent 80%)' }}>
+            <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-56 rounded-full blur-3xl" style={{ background: 'rgba(62,207,142,0.25)', animation: 'ta-glow 3s ease-in-out infinite' }}/>
+            <button onClick={close} aria-label="Tutup" className="absolute top-3 right-3 w-9 h-9 rounded-xl text-ink-muted hover:text-ink hover:bg-white/5 flex items-center justify-center">
+              <Icon name="x" className="w-4 h-4"/>
+            </button>
+            <div className="relative inline-flex items-center gap-1.5 rounded-full border border-gold-500/40 bg-gold-500/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-gold-300 mb-4">
+              ✨ Baru di Talqeeh
+            </div>
+            <h2 id="token-announce-title" className="relative font-display text-[28px] sm:text-3xl font-bold leading-[1.15] text-ink">
+              AI Talqeeh sekarang<br/>pakai <span style={{ background: 'linear-gradient(135deg,#3ecf8e,#c9a86a)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>token</span>
+            </h2>
+            <p className="relative text-sm text-ink-muted mt-2">Bayar sesuai pemakaian. Tanpa masa aktif, tanpa langganan.</p>
+          </div>
+
+          {/* Paket */}
+          <div className="px-5 grid grid-cols-2 gap-3">
+            <div className="relative rounded-2xl p-4 border-2 border-emerald-400/60 bg-emerald-500/[0.09]">
+              <div className="absolute -top-2.5 left-3 rounded-full bg-emerald-400 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-black">Paling hemat</div>
+              <div className="text-[13px] font-semibold text-emerald-200 mt-1">{big.name}</div>
+              <div className="font-display text-xl font-bold text-ink mt-1">{formatRupiah(big.price)}</div>
+              <div className="text-[12px] text-ink mt-2 leading-snug"><b>{formatTokens(big.tokens)}</b> token</div>
+              {packMonthly(big) && <div className="text-[11px] text-emerald-300 leading-snug">+ isi ulang {formatTokens(big.refill)} bulan depan</div>}
+            </div>
+            <div className="rounded-2xl p-4 border border-white/10 bg-white/[0.03]">
+              <div className="text-[13px] font-semibold text-gold-300 mt-1">{small.name}</div>
+              <div className="font-display text-xl font-bold text-ink mt-1">{formatRupiah(small.price)}</div>
+              <div className="text-[12px] text-ink mt-2 leading-snug"><b>{formatTokens(small.tokens)}</b> token</div>
+              <div className="text-[11px] text-ink-soft leading-snug">sekali, tanpa isi ulang</div>
+            </div>
+          </div>
+
+          {/* Keuntungan */}
+          <div className="px-5 mt-4 grid grid-cols-3 gap-2">
+            {perks.map(([icon, title, sub]) => (
+              <div key={title} className="rounded-xl border border-white/[0.07] bg-white/[0.02] px-2 py-3 text-center">
+                <Icon name={icon} className="w-4 h-4 text-emerald-300 mx-auto mb-1.5"/>
+                <div className="text-[11.5px] font-medium text-ink leading-tight">{title}</div>
+                <div className="text-[10.5px] text-ink-soft leading-tight mt-0.5">{sub}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Member lama & akun baru */}
+          <div className="px-5 mt-4 mb-5 space-y-2">
+            <div className="flex gap-3 rounded-xl border border-gold-500/25 bg-gold-500/[0.06] px-3.5 py-3">
+              <Icon name="crown" className="w-4 h-4 text-gold-300 flex-shrink-0 mt-0.5"/>
+              <div className="text-[12.5px] leading-snug text-ink-muted">
+                <span className="text-ink font-medium">Member lama tetap aman.</span> Paket lamamu jadi {formatTokens(shop.legacy?.imtihan || 30000)} token yang diisi ulang tiap bulan selama masa paketmu. Member Library: Library selamanya + hadiah token.
+              </div>
+            </div>
+            {shop.free > 0 && (
+              <div className="flex gap-3 rounded-xl border border-white/[0.07] bg-white/[0.02] px-3.5 py-3">
+                <Icon name="heart" className="w-4 h-4 text-emerald-300 flex-shrink-0 mt-0.5"/>
+                <div className="text-[12.5px] leading-snug text-ink-muted"><span className="text-ink font-medium">Akun baru?</span> Dapat {formatTokens(shop.free)} token gratis untuk mencoba AI Partner.</div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Tombol selalu terlihat */}
+        <div className="border-t border-white/[0.07] bg-[#0f1311] px-5 pt-3.5 flex gap-3" style={{ paddingBottom: 'calc(14px + env(safe-area-inset-bottom, 0px))' }}>
+          <button onClick={close} className="btn btn-ghost flex-1 justify-center text-sm py-3">Nanti saja</button>
+          <button onClick={() => { close(); navigate('/gabung'); }} className="btn btn-primary flex-[1.4] justify-center text-sm py-3 font-semibold">
+            Lihat paket <Icon name="arrowRight" className="w-4 h-4"/>
+          </button>
         </div>
       </div>
-    </Modal>
+    </div>
   );
 };
 
