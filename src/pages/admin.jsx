@@ -3013,7 +3013,7 @@ const TOKEN_DEFAULTS = {
   usdRate: 16500,
   packs: [{ id: 't100', price: 100000, tokens: 35000 }, { id: 't199', price: 199000, tokens: 75000 }],
   addons: [{ id: 'a25', price: 25000, tokens: 7500 }, { id: 'a50', price: 50000, tokens: 16000 }],
-  grants: { imtihan: 75000, free: 1500, gift: 5000 },
+  grants: { imtihan: 75000, free: 1000, gift: 5000 },
   limits: { freeDaily: 30 },
   legacy: { imtihan: 30000, monthly: 30000 },
   convert: { monthly: 35000, talkhis_1: 12000, talkhis_3: 30000 },

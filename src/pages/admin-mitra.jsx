@@ -55,7 +55,7 @@ const ProgramCard = ({ program, onSaved }) => {
         <div className="text-xs uppercase tracking-wider text-gold-400 mb-1">Program Mitra</div>
         <p className="text-[11px] text-ink-soft leading-relaxed">
           Mitra daftar di <span className="font-mono">#/mitra</span>, kamu setujui di bawah, lalu mereka membagikan <span className="font-mono">#/gabung?ref=kode</span>.
-          Komisi dicatat per tagihan Paket Imtihan saat tagihan dibuat; tagihan lewat tautan kekeluargaan tidak diberi komisi mitra.
+          Komisi dicatat per tagihan Paket Imtihan (dan, di model token, paket token utama yang dibeli akun baru — tanpa potongan harga; tambahan token tidak dihitung) saat tagihan dibuat; tagihan lewat tautan kekeluargaan tidak diberi komisi mitra.
           Butuh <span className="font-mono">migrations/mitra.sql</span> sekali di Supabase.
         </p>
       </div>

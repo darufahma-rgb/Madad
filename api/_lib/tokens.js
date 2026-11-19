@@ -38,7 +38,7 @@ export const DEFAULT_TOKENS = {
   ],
   // imtihan: Paket Imtihan (plan 'imtihan' — harga kupon/mitra/kekeluargaan/rombongan tetap berlaku) = Library + token ini.
   // free: token gratis sekali per akun untuk mencoba AI Partner.
-  grants: { imtihan: 75000, free: 1500, gift: 5000 },
+  grants: { imtihan: 75000, free: 1000, gift: 5000 },
   // gift: hadiah token sekali untuk member Library yang sudah pernah membayar.
   // freeDaily: paling banyak sekian akun per hari yang mendapat token gratis (seluruh Talqeeh).
   limits: { freeDaily: 30 },
@@ -61,7 +61,7 @@ export const minRate = (cfg = DEFAULT_TOKENS) => Math.min(...Object.values(cfg.r
 
 /* Perkiraan token per pemakaian, untuk ditampilkan ke pengguna (potongan sebenarnya mengikuti biaya asli tiap panggilan).
    Sumber: biaya terukur di kode (Live Caption $0,0064/menit, tutor ±$0,01, i'rab ±$0,02, talkhis ±$1–2,7 per muqarrar). */
-// Token gratis (1.500) kira-kira cukup untuk 1 ringkasan + kuis dan beberapa pesan tutor.
+// Token gratis (1.000) kira-kira cukup untuk 1 ringkasan dan beberapa pesan tutor.
 export const TOKEN_GUIDE = { chat: 100, analyze: 200, generate: 600, ocr: 60, livePerMinute: 70, transcribePerMinute: 40, talkhis: 15000, ilmi: 3000 };
 // Perkiraan setelah tarif per fitur (rates) diterapkan — angka inilah yang ditampilkan ke pengguna.
 const GUIDE_KIND = { chat: 'chat', analyze: 'analyze', generate: 'generate', ocr: 'ocr', livePerMinute: 'live', transcribePerMinute: 'transcribe', talkhis: 'talkhis', ilmi: 'ilmi' };

@@ -59,7 +59,7 @@ const PersonalRecap = ({ profile }) => {
 const freeItems = (t) => (t && t.free > 0 ? [
   ['Maddah Nahwu + 1 maddah pilihanmu', true],
   ['2 soal bank soal imtihan', true],
-  [`${formatTokens(t.free)} token AI gratis: cukup untuk 1 ringkasan + kuis dan beberapa tanya tutor`, true],
+  [`${formatTokens(t.free)} token AI gratis untuk mencoba ringkasan dan tanya tutor dari materimu`, true],
   ['Kurasah, Statistik & Profil Belajar', true],
   [`${CATALOG.maddah - 2} maddah lainnya`, false],
   ['Siap Imtihan & Muqaranah 4 madzhab', false],
@@ -169,7 +169,7 @@ const faqs = (c) => [
   : ['Library bayar sekali atau bulanan?',
     `Sekali bayar ${LIBRARY_PRICE}, aksesnya berlaku selamanya — termasuk semua update fitur Library ke depan. AI Partner opsional: ambil Paket Imtihan untuk persiapan imtihan, atau per 30 hari.`],
   c && c.free > 0 ? ['Boleh coba gratis dulu?',
-    `Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan ${formatTokens(c.free)} token AI gratis begitu kamu membuka AI Partner — cukup untuk 1 ringkasan + kuis dari materimu dan beberapa tanya tutor. Kalau cocok, beli token kapan saja; progresmu tetap tersimpan.`]
+    `Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan ${formatTokens(c.free)} token AI gratis begitu kamu membuka AI Partner — cukup untuk mencoba ringkasan dan tanya tutor dari materimu sendiri. Kalau cocok, beli token kapan saja; progresmu tetap tersimpan.`]
   : ['Boleh coba gratis dulu?',
     "Boleh. Akun gratis membuka Nahwu + 1 maddah pilihanmu, 2 soal bank soal, dan AI Partner untuk 1 materi pendek (±10–15 halaman) — termasuk 2× terjemah & i'rab dan 3× tanya tutor (member Library: 10× dan 15×). Kalau cocok, upgrade kapan saja — progresmu tetap tersimpan."],
   ['Bayarnya pakai apa? Berapa lama aktifnya?',

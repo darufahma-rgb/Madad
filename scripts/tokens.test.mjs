@@ -165,8 +165,8 @@ test('token gratis: sekali per akun, bisa dimatikan', () => {
   assert.equal(freeGrantDue(new Set(['free:welcome'])), false);
   assert.equal(freeGrantDue(new Set(), parseTokenConfig({ grants: { free: 0 } })), false);
   assert.equal(freeGrantDue(new Set(), parseTokenConfig({ limits: { freeDaily: 0 } })), false);
-  // 1.500 token gratis paling mahal ±Rp2.475 per akun.
-  assert.equal(tokenValueIdr(DEFAULT_TOKENS.grants.free), 2475);
+  // 1.000 token gratis paling mahal ±Rp1.650 per akun.
+  assert.equal(tokenValueIdr(DEFAULT_TOKENS.grants.free), 1650);
 });
 
 test('token gratis lewat ensureGrants: dibatasi per hari, tidak dobel', async () => {
@@ -174,9 +174,9 @@ test('token gratis lewat ensureGrants: dibatasi per hari, tidak dobel', async ()
   globalThis.fetch = fake(state);
   clearTokenCache();
   assert.equal(await ensureGrants('F1', { welcome: true }), true);
-  assert.equal(state.balance, 1500);
+  assert.equal(state.balance, 1000);
   assert.equal(await ensureGrants('F1', { welcome: true }), false); // sudah pernah
-  assert.equal(state.balance, 1500);
+  assert.equal(state.balance, 1000);
   const other = { ...state, balance: 0, granted: 0, refs: new Set(), capLeft: 0 };
   globalThis.fetch = fake(other);
   assert.equal(await ensureGrants('F2', { welcome: true }), false); // batas hari ini penuh

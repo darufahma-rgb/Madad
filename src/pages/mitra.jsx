@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+
+// Yang dihitung komisinya: Paket Imtihan, dan di model token juga paket token utama yang dibeli teman baru.
+const soldWhat = () => (window.getAppSettings?.()?.tokens ? 'Paket Imtihan atau paket token' : 'Paket Imtihan');
 /* Talqeeh — Program Mitra (#/mitra): daftar jadi mitra, lalu dasbor tautan ajakan & komisi.
    Server: action affiliate-* di api/login.js → api/_lib/affiliates.js. Harga & komisi selalu dihitung server. */
 
@@ -27,7 +30,7 @@ const MitraHero = ({ program }) => (
         Ajak teman belajar, <span style={{ color: MITRA_GOLD }}>dapat komisi</span>
       </h1>
       <p className="text-ink-muted max-w-2xl mx-auto">
-        Bagikan tautanmu ke teman serumah, angkatan, atau pengikutmu. Tiap Paket Imtihan yang dibeli lewat tautanmu
+        Bagikan tautanmu ke teman serumah, angkatan, atau pengikutmu. Tiap {soldWhat()} yang dibeli lewat tautanmu
         memberimu komisi {program ? `${program.percent}%` : ''} dari harga yang dibayar
         {program?.discount > 0 ? <>, dan temanmu hemat {formatRupiah(program.discount)}</> : null}.
       </p>
@@ -39,7 +42,7 @@ const HowItWorks = ({ program }) => {
   const steps = [
     ['Daftar', 'Isi formulir singkat. Admin memeriksa lalu menyetujui, biasanya dalam 1–2 hari.'],
     ['Bagikan tautan', `Kamu dapat tautan sendiri.${program?.discount > 0 ? ` Teman yang mendaftar lewat tautanmu dapat potongan ${formatRupiah(program.discount)} untuk Paket Imtihan.` : ''}`],
-    ['Terima komisi', `${program ? `${program.percent}%` : 'Komisi'} dari tiap Paket Imtihan yang lunas, ditransfer admin ke rekening atau e-wallet yang kamu isi.`],
+    ['Terima komisi', `${program ? `${program.percent}%` : 'Komisi'} dari tiap ${soldWhat()} yang lunas, ditransfer admin ke rekening atau e-wallet yang kamu isi.`],
   ];
   return (
     <div className="grid md:grid-cols-3 gap-3 max-w-4xl mx-auto mt-8">
@@ -120,7 +123,7 @@ const ApplyForm = ({ initial, suggestedName, onDone }) => {
         {busy ? 'Mengirim…' : 'Kirim pendaftaran'}
       </button>
       <p className="text-[11px] text-ink-soft leading-relaxed">
-        Komisi dihitung dari Paket Imtihan yang dibeli akun baru lewat tautanmu (tautan pertama yang dibuka temanmu yang dihitung).
+        Komisi dihitung dari {soldWhat()} yang dibeli akun baru lewat tautanmu (tautan pertama yang dibuka temanmu yang dihitung).
         Membeli lewat tautan sendiri tidak dihitung. Tautan kerja sama kekeluargaan tidak digabung dengan komisi mitra.
       </p>
     </form>
@@ -155,7 +158,7 @@ const MitraDashboard = ({ affiliate, stats, program }) => {
           <div>
             <div className="text-[11px] uppercase tracking-[0.16em]" style={{ color: MITRA_GOLD }}>Tautan ajakanmu</div>
             <div className="text-sm text-ink-muted mt-1">
-              Komisi {affiliate.percent}% per Paket Imtihan{program.discount > 0 ? ` · temanmu hemat ${formatRupiah(program.discount)}` : ''}
+              Komisi {affiliate.percent}% per {soldWhat()}{program.discount > 0 ? ` · temanmu hemat ${formatRupiah(program.discount)}` : ''}
             </div>
           </div>
           <span className="text-[11px] px-2 py-0.5 rounded-full border border-emerald-400/30 text-emerald-200">{suspended ? 'Nonaktif' : 'Aktif'}</span>
@@ -170,7 +173,7 @@ const MitraDashboard = ({ affiliate, stats, program }) => {
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
         <StatTile label="Akun diajak" value={s.signups} sub="login lewat tautanmu"/>
-        <StatTile label="Terjual" value={s.sold} sub="Paket Imtihan lunas"/>
+        <StatTile label="Terjual" value={s.sold} sub={`${soldWhat()} lunas`}/>
         <StatTile label="Komisi belum dibayar" value={formatRupiah(s.unpaid)} color={MITRA_GOLD}/>
         <StatTile label="Sudah dibayar" value={formatRupiah(s.paid)} color={MITRA_EMERALD} sub={`total ${formatRupiah(s.earned)}`}/>
       </div>
@@ -197,7 +200,7 @@ const MitraDashboard = ({ affiliate, stats, program }) => {
       <div className="card-glass p-5 text-sm text-ink-muted leading-relaxed space-y-1.5">
         <div className="text-ink font-medium">Pembayaran komisi</div>
         <p>Komisi dikirim admin ke <span className="text-ink">{affiliate.payout}</span>. Mau ganti rekening? Hubungi admin lewat WhatsApp.</p>
-        <p>Yang dihitung: akun baru yang membuka tautanmu sebelum login, lalu membeli Paket Imtihan. Tautan berlaku 30 hari di perangkat temanmu.</p>
+        <p>Yang dihitung: akun baru yang membuka tautanmu sebelum login, lalu membeli {soldWhat()}. Tautan berlaku 30 hari di perangkat temanmu.</p>
       </div>
     </div>
   );

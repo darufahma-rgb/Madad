@@ -338,7 +338,7 @@ const newsCopy = (n) => {
     return { icon: 'refresh', title: `Jatah token bulan ke-${k}${total && total !== '1' ? ` dari ${total}` : ''} sudah masuk`, text: `Paket lamamu sekarang memakai token. Saldomu diisi ulang (+${amount} token) dan akan diisi lagi tiap bulan selama masa paketmu berjalan. Token yang kamu beli sendiri tidak terhapus.` };
   }
   if (n.reason === 'convert') return { icon: 'refresh', title: `Paket lamamu jadi ${amount} token`, text: 'Pembelianmu sebelumnya sudah dikonversi jadi token. Pakai untuk fitur AI apa saja, token tidak hangus.' };
-  if (n.reason === 'free') return { icon: 'heart', title: `Selamat datang! ${amount} token gratis`, text: 'Cukup untuk mencoba AI Partner dari materimu sendiri: ringkasan, kuis, dan tanya tutor.' };
+  if (n.reason === 'free') return { icon: 'heart', title: `Selamat datang! ${amount} token gratis`, text: 'Untuk mencoba AI Partner dari materimu sendiri, misalnya ringkasan dan tanya tutor.' };
   return { icon: 'sparkles', title: `+${amount} token dari admin Talqeeh`, text: 'Token sudah masuk ke akunmu dan bisa langsung dipakai.' };
 };
 

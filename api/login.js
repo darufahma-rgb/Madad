@@ -225,7 +225,7 @@ async function handleCheckout(req, user, res) {
   // Model token: yang dijual Library, paket token, dan Paket Imtihan/Rombongan (= paket token besar). Paket lama ditutup.
   const tokenModel = await tokensOn();
   if (tokenModel && TOKEN_MODE_CLOSED_PLANS.includes(plan)) return res.status(200).json({ ok: false, status: 'plan_closed' });
-  let pack = null;
+  let pack = null, packIsAddon = false;
   if (plan === 'token') {
     if (!tokenModel) return res.status(400).json({ ok: false, status: 'invalid_plan' });
     const cfg = await getTokenConfig();
@@ -235,16 +235,21 @@ async function handleCheckout(req, user, res) {
     if (addon && !(member && member.status === 'active' && member.tier !== 'free' && member.member_type !== 'trial')) {
       return res.status(200).json({ ok: false, status: 'addon_needs_library' });
     }
+    packIsAddon = !!addon;
     pack = pack || addon;
     if (!pack) return res.status(200).json({ ok: false, status: 'invalid_pack' });
   }
 
   // Bacaan yang saling lepas dijalankan bersamaan: tiap bacaan ±0,3 dtk, dulu berurutan sampai beberapa detik.
   const isImtihan = plan === 'imtihan';
+  /* Komisi mitra: Paket Imtihan, dan paket token utama (bukan tambahan token) yang dibeli akun yang belum punya Library
+     (pembeli baru). Potongan harga mitra hanya untuk Paket Imtihan; paket token dihitung komisinya saja. */
+  const newBuyer = !member || member.tier === 'free' || member.member_type === 'trial';
+  const affiliateEligible = isImtihan || (plan === 'token' && !packIsAddon && newBuyer);
   const [offer, referral, program, basePrice, linkFromUrl] = await Promise.all([
     isImtihan ? getWelcomeOffer(member, { coupon }) : null,
     isImtihan && member ? readMemberReferral(member.code).catch(() => null) : null,
-    isImtihan && member ? readAffiliateProgram() : null,
+    affiliateEligible && member ? readAffiliateProgram() : null,
     isImtihan ? imtihanPrice() : null,
     isImtihan && partnerSlug ? getLivePartnerLink(partnerSlug) : null,
   ]);
@@ -258,7 +263,7 @@ async function handleCheckout(req, user, res) {
   ]);
   const partner = !isImtihan ? null : taggedLink || linkFromUrl;
   if (isImtihan && partnerSlug && !partner) return res.status(200).json({ ok: false, status: 'partner_closed' });
-  const affiliateAmount = affiliate ? affiliatePrice(basePrice, program.discount) : null;
+  const affiliateAmount = affiliate && isImtihan ? affiliatePrice(basePrice, program.discount) : null;
   const best = Math.min(offer?.price || Infinity, affiliateAmount || Infinity);
   const usePartner = partner && partner.price <= best;
   const result = await createCheckout({
