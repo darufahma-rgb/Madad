@@ -727,7 +727,7 @@ const TalkhisQuotaCard = ({ quota }) => {
   );
 };
 
-const TalkhisTab = ({ set, setSet, access }) => {
+const TalkhisTab = ({ set, setSet, access, goTo }) => {
   const toast = useToast();
   const t = viewTalkhis(set.talkhis);
   const [pdfOpen, setPdfOpen] = useState(false);
@@ -1076,6 +1076,7 @@ const TalkhisTab = ({ set, setSet, access }) => {
         <TalkhisPdfDialog busy={pdfBusy} onClose={() => setPdfOpen(false)} onDownload={download}
           exercises={{ missing: missingExercises(t).length }}/>
       )}
+      {window.SelfTestNudge && <window.SelfTestNudge goTo={goTo} kind="talkhis"/>}
       {window.BattleStudyBanner && <window.BattleStudyBanner set={set} />}
       <p className="text-[11px] text-ink-soft mt-5 leading-relaxed">
         Talkhis ditulis AI dari teks muqarrarmu dan dicek otomatis, tapi tetap cocokkan dengan muqarrar dan catatan duktur sebelum dihafal.
