@@ -1779,6 +1779,10 @@ const TUTOR_FOLLOWUPS = [
   'Kasih contoh lain',
   'Uji aku satu soal tentang ini',
 ];
+/* Mode guru: tutor membimbing dengan petunjuk dulu, baru memberi jawaban setelah pelajar mencoba.
+   Teks permintaan jawaban harus sama dengan GURU_ANSWER_REQUEST di api/_lib/ai-partner/prompts.js. */
+const TUTOR_GURU_KEY = 'talqeeh_tutor_guru';
+const GURU_ANSWER_REQUEST = 'Aku sudah mencoba, tolong berikan jawaban lengkapnya';
 const WEAK_SUGGESTION = 'Bantu aku memahami bagian yang masih sering kusalahkan di materi ini';
 const hasWeakPoints = (set) => weakList(set).length > 0;
 
@@ -1794,6 +1798,13 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
   const chat = (set.chat || []).filter(m => (m.mode || 'tutor') === mode);
   const speech = useArabicSpeech();
   const [voiceOn, setVoiceOn] = useState(() => { try { return localStorage.getItem(SYAFAWI_VOICE_KEY) !== 'off'; } catch { return true; } });
+  const [guruOn, setGuruOn] = useState(() => { try { return localStorage.getItem(TUTOR_GURU_KEY) === 'on'; } catch { return false; } });
+  const toggleGuru = () => {
+    const next = !guruOn;
+    setGuruOn(next);
+    try { localStorage.setItem(TUTOR_GURU_KEY, next ? 'on' : 'off'); } catch {}
+    toast.push(next ? 'Mode guru aktif: tutor memberi petunjuk dulu, jawabannya setelah kamu mencoba.' : 'Mode guru mati: tutor langsung menjawab.');
+  };
   const toggleVoice = () => setVoiceOn(v => {
     try { localStorage.setItem(SYAFAWI_VOICE_KEY, v ? 'off' : 'on'); } catch {}
     if (v) speech.stop();
@@ -1852,7 +1863,8 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
     window.markMethod?.(mode === 'syafawi' || message.includes('teknik Feynman') ? 'feynman-technique' : 'elaborative-interrogation');
     setSet(s => ({ ...s, chat: [...(s.chat || []), { role: 'user', content: message, mode }] }));
     resetLive();
-    const data = await aiStream('chat', { set_id: set.id, message, mode }, (_, full) => pushLive(full));
+    const guru = mode === 'tutor' && guruOn;
+    const data = await aiStream('chat', { set_id: set.id, message, mode, ...(guru ? { guru: true } : {}) }, (_, full) => pushLive(full));
     setSending(false);
     resetLive();
     if (!data.ok) {
@@ -1862,7 +1874,7 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
       if (data.upgrade) { logFunnel('paywall', 'tutor'); refreshAiStatus(); }
       return;
     }
-    setSet(s => ({ ...s, chat: [...(s.chat || []), { role: 'assistant', content: data.reply, mode, model: data.model, refs: data.refs, grounded: data.grounded, needs_clarification: data.needs_clarification }] }));
+    setSet(s => ({ ...s, chat: [...(s.chat || []), { role: 'assistant', content: data.reply, mode, ...(guru ? { guru: true } : {}), model: data.model, refs: data.refs, grounded: data.grounded, needs_clarification: data.needs_clarification }] }));
     if (data.trial_left != null) refreshAiStatus();
     if (mode === 'syafawi' && voiceOn) speech.speak(arabicQuestionOf(data.reply));
   };
@@ -1887,6 +1899,9 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
           ))}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          {mode === 'tutor' && (
+            <ToolbarButton icon="lightbulb" onClick={toggleGuru}>{guruOn ? 'Mode guru: aktif' : 'Mode guru: mati'}</ToolbarButton>
+          )}
           {mode === 'syafawi' && speech.supported && (
             <ToolbarButton icon={voiceOn ? 'volume' : 'volumeOff'} onClick={toggleVoice}>{voiceOn ? 'Suara duktur: aktif' : 'Suara duktur: mati'}</ToolbarButton>
           )}
@@ -1912,7 +1927,9 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
         <div className="flex-1 space-y-4 mb-4 md:overflow-y-auto md:max-h-[540px]">
           {chat.length === 0 && mode === 'tutor' && (
             <div className="text-center py-6">
-              <p className="text-ink-muted text-sm mb-4">Tanya apa saja tentang materi ini. Tutor menjawab berdasarkan isi materimu.</p>
+              <p className="text-ink-muted text-sm mb-4">{guruOn
+                ? 'Mode guru aktif: tutor menunjukkan bagian materinya dan memberi petunjuk dulu. Jawab dengan kata-katamu sendiri, lalu tutor menilai dan melengkapinya.'
+                : 'Tanya apa saja tentang materi ini. Tutor menjawab berdasarkan isi materimu.'}</p>
               <div className="flex flex-col gap-2 max-w-md mx-auto">
                 {hasWeakPoints(set) && (
                   <button onClick={() => send(WEAK_SUGGESTION)} className="text-xs text-left px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/35 text-emerald-200 hover:bg-emerald-500/15">
@@ -1973,6 +1990,10 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
           ))}
           {mode === 'tutor' && !sending && chat.length > 0 && chat[chat.length - 1].role === 'assistant' && (
             <div className="flex flex-wrap gap-2 sm:pl-10">
+              {chat[chat.length - 1].guru && (
+                <button onClick={() => send(GURU_ANSWER_REQUEST)}
+                  className="text-xs px-3 py-1.5 rounded-full bg-gold-500/10 border border-gold-500/35 text-gold-200 hover:bg-gold-500/15">Sudah coba, kasih jawabannya</button>
+              )}
               {TUTOR_FOLLOWUPS.map(f => (
                 <button key={f} onClick={() => send(f)}
                   className="text-xs px-3 py-1.5 rounded-full bg-white/4 border border-white/10 text-ink-muted hover:text-ink hover:border-emerald-500/35">{f}</button>

@@ -6,7 +6,7 @@ import { resolveModels, isValidModelId, clearModelCache, TASK_THINKING } from '.
 import {
   PROMPTS, SUMMARY_LANGS, summaryPrompt, weakPointsNote, GRADE_PROMPT, IRAB_PROMPT, TASYKIL_PROMPT,
   OCR_PROMPT, transcribePrompt, transcribeAnswerPrompt, TRANSCRIBE_DIALECTS,
-  lectureTalkhisPrompt, lectureTalkhisInput, LECTURE_TALKHIS_CONTINUE, tutorSystem, syafawiSystem, learnerContext,
+  lectureTalkhisPrompt, lectureTalkhisInput, LECTURE_TALKHIS_CONTINUE, tutorSystem, GURU_RULES, syafawiSystem, learnerContext,
   isHighStakesFiqh, FIQH_REMINDER,
   SUMMARY_MAP_NOTE, SUMMARY_REDUCE_NOTE, gradeUserPrompt, promptChatSystem,
 } from './_lib/ai-partner/prompts.js';
@@ -1246,6 +1246,8 @@ async function handleChat(ctx, body, res) {
   const message = typeof body.message === 'string' ? body.message.trim() : '';
   if (!message || message.length > 2000) return res.status(400).json({ ok: false, error: 'Pesan kosong atau terlalu panjang' });
   const mode = body.mode === 'syafawi' ? 'syafawi' : 'tutor';
+  // Mode guru: tutor membimbing dulu, tidak langsung memberi jawaban (hanya untuk tanya tutor).
+  const guru = mode === 'tutor' && body.guru === true;
   const set = await getOwnedSet(ctx.code, body.set_id, 'id,title,content,chat,quiz,flashcards,essays,essay_attempts,progress');
   if (!set) return res.status(404).json({ ok: false, error: 'Materi tidak ditemukan' });
   const all = Array.isArray(set.chat) ? set.chat : [];
@@ -1270,7 +1272,8 @@ async function handleChat(ctx, body, res) {
   // biasa dari materi (di bawah) tetap berjalan seperti semula.
   // "lanjutkan" meneruskan jawaban yang terpotong, jadi tidak dicari di pustaka.
   const startedAt = Date.now();
-  const result = mode === 'tutor' && !continuing
+  // Mode guru melewati Pustaka Rujukan: jawaban pustaka selalu langsung, tidak membimbing.
+  const result = mode === 'tutor' && !continuing && !guru
     ? await tryReferenceLibrary({ question: message, history, modelTask: isHighStakesFiqh(message) ? 'grade' : 'chat', material: { id: set.id, title: set.title, text: set.content } })
     : null;
   if (result) {
@@ -1301,7 +1304,7 @@ async function handleChat(ctx, body, res) {
   const highStakes = mode !== 'syafawi' && isHighStakesFiqh(`${message}\n${history.filter(m => m.role === 'user').slice(-2).map(m => m.content).join('\n')}`);
   const models = await resolveModels();
   const { out, stream, failed } = await runAIContinued(body, res, {
-    system: (mode === 'syafawi' ? syafawiSystem(set.title, material) + weakPointsNote(set, 'syafawi') : tutorSystem(set.title, material) + weakPointsNote(set)) + learnerContext(body.learner),
+    system: (mode === 'syafawi' ? syafawiSystem(set.title, material) + weakPointsNote(set, 'syafawi') : tutorSystem(set.title, material) + (guru ? GURU_RULES : '') + weakPointsNote(set)) + learnerContext(body.learner),
     messages: [...history.map(m => ({ role: m.role, content: m.content })), { role: 'user', content: message }],
     maxTokens: CHAT_MAX_TOKENS,
     timeLimitMs: chatTimeLeft(startedAt),
@@ -1320,7 +1323,7 @@ async function handleChat(ctx, body, res) {
   const chat = [
     ...all,
     { role: 'user', content: message, at: now, mode },
-    { role: 'assistant', content: reply, at: now, mode, model: out.model, ...(tutorCtx ? { ctx: tutorCtx } : {}) },
+    { role: 'assistant', content: reply, at: now, mode, model: out.model, ...(guru ? { guru: true } : {}), ...(tutorCtx ? { ctx: tutorCtx } : {}) },
   ].slice(-CHAT_MAX_STORED);
   await updateSet(ctx.code, set.id, { chat });
   return sendResult(res, stream, { reply, model: out.model, ...(trialLeft != null ? { trial_left: trialLeft } : {}) });
