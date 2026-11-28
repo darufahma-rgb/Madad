@@ -48,6 +48,7 @@ import './pages/dashboard.jsx';
 import './pages/tool-guide.jsx';
 import './pages/paths.jsx';
 import './pages/ethics.jsx';
+import './pages/event-imtihan.jsx';
 import './pages/privacy.jsx';
 import './pages/developer.jsx';
 import './pages/seminar-ai.jsx';
