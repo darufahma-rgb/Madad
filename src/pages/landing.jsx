@@ -1701,6 +1701,7 @@ const SubmitSoalBanner = () => (
 const LandingPage = ({ onOpenLogin, onOpenJoin }) => (
   <div className="page-enter">
     <StyleInject/>
+    <WorkshopBanner/>
     <LandingHero onOpenLogin={onOpenLogin} onOpenJoin={onOpenJoin}/>
     <ReferenceLibrarySection/>
     <LiveCaptionSection onOpenJoin={onOpenJoin}/>

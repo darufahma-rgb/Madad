@@ -329,6 +329,7 @@ const App = () => {
       {session && <UpgradeWall/>}
       {session && <WelcomeOfferPopup/>}
       <TokenAnnouncement/>
+      <WorkshopInvitePopup/>
       {session && <TokenNews/>}
       {showQuickNote && <QuickNoteButton/>}
       {isMember && <SupportButton/>}

@@ -38,6 +38,8 @@ const navGroups = (profile) => [
     { to: '/kurasah',    label: 'Kurasah',    icon: 'pen' },
   ]},
   { label: 'Latihan', items: [
+    // Workshop "Menuju Imtihan": hilang sendiri saat pendaftaran ditutup (7 Des 2026, 14.00 Kairo).
+    ...(Date.now() < Date.parse('2026-12-07T12:00:00Z') ? [{ to: '/event', label: 'Workshop Imtihan', icon: 'sparkles' }] : []),
     { to: '/ilmi-index',      label: 'Ilmi Index',     icon: 'list' },
     { to: '/battle',          label: 'Arena Imtihan', icon: 'gamepad' },
     { to: '/siap-imtihan',    label: 'Siap Imtihan',   icon: 'target',  locked: true },

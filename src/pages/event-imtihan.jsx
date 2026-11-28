@@ -17,6 +17,8 @@ const EVENT = {
   address: "Kawasan Rabi'ah Adawiyah (Rob' El Adaweya), dekat Wisma Nusantara, Kairo, Mesir",
   format: 'Offline, tatap muka',
   quota: 50,
+  // Ajakan (banner, menu, pop-up) berhenti sendiri saat pendaftaran ditutup: 7 Desember 2026, 14.00 waktu Kairo.
+  closesAt: '2026-12-07T12:00:00Z',
   priceIdr: 'Rp120.000',
   priceEgp: '360 LE',
   // Belum ditetapkan panitia. Isi nomor WhatsApp CS (format 62… / 20…) kalau sudah ada: tombol "Tanya panitia" muncul sendiri.
@@ -154,6 +156,7 @@ const EventRegisterBox = () => {
     if (d && d.ok) {
       setInfo(d);
       setMine(d.registration || null);
+      if (d.registration && d.registration.status !== 'cancelled') { try { localStorage.setItem('talqeeh_event_imtihan_registered', '1'); } catch {} }
       if (d.registration) setForm({ name: d.registration.name, whatsapp: d.registration.whatsapp, currency: d.registration.currency });
     } else setInfo({ ready: false });
     setLoading(false);
@@ -515,4 +518,102 @@ const EventImtihanPage = () => {
   );
 };
 
-window.EventImtihanPage = EventImtihanPage;
+/* ── Ajakan ikut workshop: banner di beranda dan pop-up sekali untuk semua pengguna ── */
+const EVENT_INVITE_KEY = 'talqeeh_event_imtihan_invite_v1';
+const EVENT_REGISTERED_KEY = 'talqeeh_event_imtihan_registered';
+const eventPromoLive = () => Date.now() < Date.parse(EVENT.closesAt);
+const eventFlag = (key) => { try { return !!localStorage.getItem(key); } catch { return true; } };
+const setEventFlag = (key) => { try { localStorage.setItem(key, new Date().toISOString()); } catch {} };
+
+const WorkshopBanner = () => {
+  if (!eventPromoLive()) return null;
+  return (
+    <div className="container-x pt-4 md:pt-6">
+      <a href="/event" onClick={(e) => { e.preventDefault(); navigate('/event'); }}
+        className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-500/35 bg-emerald-500/10 hover:bg-emerald-500/15 px-4 md:px-5 py-3 transition">
+        <span className="min-w-0">
+          <span className="block text-[11px] uppercase tracking-wider text-gold-400">Workshop · {EVENT.day}, {EVENT.date}</span>
+          <span className="block text-sm md:text-base font-semibold text-ink leading-snug">{EVENT.name}</span>
+        </span>
+        <span className="flex-shrink-0 inline-flex items-center gap-1.5 text-xs md:text-sm font-semibold text-emerald-200">
+          Daftar <Icon name="arrowRight" className="w-4 h-4"/>
+        </span>
+      </a>
+    </div>
+  );
+};
+
+/* Pop-up ajakan: muncul sekali per perangkat, hanya selama pendaftaran masih buka dan kursi masih ada.
+   Tidak muncul di halaman event, admin, seminar, dan pembayaran, dan menunggu pengumuman token ditutup dulu. */
+const EVENT_QUIET_PATHS = ['/event', '/admin', '/seminar', '/gabung'];
+const WorkshopInvitePopup = () => {
+  const path = useRoute();
+  const [open, setOpen] = useState(false);
+  const [left, setLeft] = useState(null);
+  const [tick, setTick] = useState(0);
+  const quiet = EVENT_QUIET_PATHS.some(q => String(path || '').startsWith(q));
+
+  useEffect(() => {
+    const on = () => setTick(t => t + 1);
+    window.addEventListener('talqeeh:token-announce-closed', on);
+    return () => window.removeEventListener('talqeeh:token-announce-closed', on);
+  }, []);
+
+  useEffect(() => {
+    if (quiet) { setOpen(false); return undefined; }
+    if (!eventPromoLive() || eventFlag(EVENT_INVITE_KEY) || eventFlag(EVENT_REGISTERED_KEY)) return undefined;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      // Jangan menumpuk di atas pengumuman token: tunggu sampai itu ditutup.
+      if (document.getElementById('token-announce-title')) return;
+      const info = await eventCall('event-info');
+      if (cancelled || !info.ok || !info.ready || info.closed || info.full) return;
+      if (document.getElementById('token-announce-title')) return;
+      setLeft(info.left); setOpen(true);
+    }, 1800);
+    return () => { cancelled = true; clearTimeout(timer); };
+  }, [quiet, tick]);
+
+  const close = () => { setEventFlag(EVENT_INVITE_KEY); setOpen(false); };
+  useEffect(() => {
+    if (!open) return undefined;
+    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open]);
+  if (!open) return null;
+
+  const go = () => { close(); navigate('/event'); };
+  return (
+    <div className="fixed inset-0 z-[170] flex items-end sm:items-center justify-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="event-invite-title">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={close}/>
+      <div className="relative w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl border border-white/12 overflow-hidden" style={{ background: 'var(--bg-1, #121212)' }}>
+        <div className="px-6 pt-7 pb-6" style={{ background: 'radial-gradient(120% 90% at 50% 0%, rgba(62,207,142,0.20), transparent 70%)' }}>
+          <button onClick={close} aria-label="Tutup" className="absolute top-4 right-4 w-9 h-9 rounded-full text-ink-muted hover:text-ink hover:bg-white/8 flex items-center justify-center">
+            <Icon name="x" className="w-4 h-4"/>
+          </button>
+          <div className="text-[11px] uppercase tracking-[0.2em] text-gold-400 mb-3">Workshop · AIGYPT × HPIM Mesir</div>
+          <h2 id="event-invite-title" className="font-display text-2xl font-semibold text-ink leading-tight">
+            Menuju Imtihan: <span className="text-emerald-300">Belajar Efektif dengan AI</span>
+          </h2>
+          <p className="text-sm text-ink-muted mt-2 leading-relaxed">
+            Tiga jam belajar strateginya, lalu langsung praktik di Talqeeh.id dengan materi kuliahmu sendiri.
+          </p>
+          <div className="mt-4 space-y-2 text-sm text-ink">
+            <div className="flex gap-2.5"><Icon name="timer" className="w-4 h-4 text-gold-400 mt-0.5 flex-shrink-0"/><span>{EVENT.day}, {EVENT.date} · {EVENT.time}</span></div>
+            <div className="flex gap-2.5"><Icon name="compass" className="w-4 h-4 text-gold-400 mt-0.5 flex-shrink-0"/><span>{EVENT.place}, dekat Wisma Nusantara, Kairo</span></div>
+            <div className="flex gap-2.5"><Icon name="bookmark" className="w-4 h-4 text-gold-400 mt-0.5 flex-shrink-0"/><span>{EVENT.priceIdr} atau {EVENT.priceEgp} per orang</span></div>
+            <div className="flex gap-2.5"><Icon name="users" className="w-4 h-4 text-gold-400 mt-0.5 flex-shrink-0"/><span>Kuota {EVENT.quota} peserta{left != null ? `, sisa ${left} kursi` : ''}</span></div>
+          </div>
+          <div className="mt-6 flex gap-2.5">
+            <button onClick={close} className="btn btn-ghost flex-1 py-3 text-sm">Nanti saja</button>
+            <button onClick={go} className="btn btn-primary flex-[1.4] py-3 text-sm">Lihat dan daftar <Icon name="arrowRight" className="w-4 h-4"/></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Catatan: nama EventBanner sudah dipakai banner event penjualan di layout.jsx, jadi di sini memakai Workshop*.
+Object.assign(window, { EventImtihanPage, WorkshopBanner, WorkshopInvitePopup });
