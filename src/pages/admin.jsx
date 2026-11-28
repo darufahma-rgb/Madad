@@ -202,6 +202,7 @@ const ADMIN_TABS = [
   { id: "email",      label: "Email & Event",     icon: "messageSquare" },
   { id: "bank-soal",  label: "Bank Soal",         icon: "fileText" },
   { id: "seminar",    label: "Akses Seminar",     icon: "book" },
+  { id: "workshop",   label: "Peserta Workshop",  icon: "users" },
   { id: "maddah",     label: "Maddah Analytics",  icon: "layers" },
   { id: "muqaranah",  label: "Muqaranah",         icon: "scale" },
   { id: "onboarding", label: "Onboarding Data",   icon: "list" },
@@ -311,6 +312,7 @@ const AdminPage = () => {
         {tab === "ai-subs"    && <AdminSubscriptions/>}
         {tab === "mitra"      && <AdminMitra/>}
         {tab === "seminar"    && <AdminSeminar/>}
+        {tab === "workshop"   && <AdminWorkshop/>}
         {tab === "email"      && <AdminEmail/>}
         {tab === "ai-eval"    && <AdminEval/>}
         {tab === "prompt-quality" && <AdminPromptQuality/>}

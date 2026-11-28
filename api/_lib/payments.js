@@ -74,7 +74,7 @@ export class MayarError extends Error {
 }
 
 // Body `statusCode` yang menentukan hasil, walau status HTTP-nya berbeda (docs Mayar V2).
-async function mayarRequest(path, { method = 'GET', body } = {}) {
+export async function mayarRequest(path, { method = 'GET', body } = {}) {
   const key = (process.env.MAYAR_API_KEY || '').trim();
   if (!key) throw new MayarError('MAYAR_API_KEY belum diisi', 0);
   const controller = new AbortController();

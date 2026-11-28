@@ -61,6 +61,7 @@ import './pages/presentasi.jsx';
 import './pages/admin.jsx';
 import './pages/admin-eval.jsx';
 import './pages/admin-seminar.jsx';
+import './pages/admin-workshop.jsx';
 import './pages/admin-email.jsx';
 import './pages/admin-ai-usage.jsx';
 import './pages/admin-prompt-quality.jsx';

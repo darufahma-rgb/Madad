@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 /* Talqeeh, halaman event (publik): "Menuju Imtihan: Belajar Efektif dengan AI".
-   Semua isi diambil dari brief kegiatan. Hal yang belum ditetapkan panitia (tautan pendaftaran, kontak CS,
-   metode pembayaran, nama narasumber) sengaja TIDAK diisi tebakan: isi di EVENT di bawah kalau sudah ada,
-   dan halaman otomatis menampilkan tombolnya. */
+   Semua isi diambil dari brief kegiatan. Pendaftaran langsung di halaman ini (api/_lib/workshop.js):
+   wajib login Google, bayar Rupiah lewat Mayar (lunas otomatis) atau Pound Mesir (dikonfirmasi panitia).
+   Hal yang belum ditetapkan panitia (kontak CS, cara bayar Pound Mesir, nama narasumber) sengaja TIDAK diisi tebakan. */
 
 const EVENT = {
   name: 'Menuju Imtihan: Belajar Efektif dengan AI',
@@ -19,8 +19,7 @@ const EVENT = {
   quota: 50,
   priceIdr: 'Rp120.000',
   priceEgp: '360 LE',
-  // Belum ditetapkan panitia. Isi kalau sudah ada: tautan pendaftaran resmi dan nomor WhatsApp CS (format 62… / 20…).
-  registerUrl: '',
+  // Belum ditetapkan panitia. Isi nomor WhatsApp CS (format 62… / 20…) kalau sudah ada: tombol "Tanya panitia" muncul sendiri.
   whatsapp: '',
 };
 
@@ -93,32 +92,210 @@ const eventWaLink = () => EVENT.whatsapp
   ? `https://wa.me/${EVENT.whatsapp.replace(/\D/g, '')}?text=${encodeURIComponent(`Assalamu'alaikum, saya mau tanya tentang workshop "${EVENT.name}".`)}`
   : '';
 
-// Tombol daftar: tampil hanya kalau tautan/kontaknya sudah diisi. Selama belum, tampilkan keterangan apa adanya.
-const EventRegisterCta = ({ compact = false }) => {
+const eventCall = async (action, body) => {
+  try {
+    const isPublic = action === 'event-info';
+    const opts = { method: 'POST', body: JSON.stringify(body || {}) };
+    const res = isPublic
+      ? await fetch(`/api/login?action=${action}`, { ...opts, headers: { 'Content-Type': 'application/json' } })
+      : await window.authFetch(`/api/login?action=${action}`, opts);
+    const data = await res.json().catch(() => null);
+    if (res.status === 429) return { ok: false, status: 'rate_limited' };
+    return data || { ok: false, status: 'error' };
+  } catch {
+    return { ok: false, status: 'error' };
+  }
+};
+
+const EVENT_ERRORS = {
+  invalid: 'Isi nama lengkap dan nomor WhatsApp yang benar dulu ya.',
+  full: 'Maaf, kuota 50 peserta sudah penuh.',
+  closed: 'Pendaftaran sudah ditutup.',
+  not_ready: 'Pendaftaran belum dibuka. Coba lagi nanti ya.',
+  rate_limited: 'Terlalu banyak percobaan. Tunggu beberapa menit, lalu coba lagi.',
+  member_blocked: 'Akunmu belum bisa dipakai mendaftar. Hubungi panitia ya.',
+  error: 'Ada gangguan. Cek koneksimu, lalu coba lagi.',
+};
+
+const EventNotice = ({ tone = 'gold', title, children }) => (
+  <div className={`rounded-2xl border px-5 py-4 ${tone === 'emerald' ? 'border-emerald-500/40 bg-emerald-500/10' : tone === 'rose' ? 'border-rose-600/40 bg-rose-600/10' : 'border-gold-500/35 bg-gold-500/10'}`}>
+    <div className="text-sm font-semibold text-ink">{title}</div>
+    {children && <div className="text-xs md:text-sm text-ink-muted mt-1 leading-relaxed">{children}</div>}
+  </div>
+);
+
+const EventWaButton = ({ label = 'Tanya panitia' }) => {
   const wa = eventWaLink();
-  if (!EVENT.registerUrl && !wa) {
+  if (!wa) return null;
+  return (
+    <a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-ghost px-5 py-2.5 text-sm">
+      <Icon name="messageSquare" className="w-4 h-4"/> {label}
+    </a>
+  );
+};
+
+/* Kotak pendaftaran. Urutannya: masuk dengan Google → isi nama, WhatsApp, dan mata uang → bayar.
+   Rupiah dibayar lewat Mayar dan lunas otomatis; Pound Mesir menunggu konfirmasi panitia. */
+const EventRegisterBox = () => {
+  const { authStatus, authInfo, session } = useAuth();
+  // Sudah login Google: member, atau akun baru yang sedang dibuatkan akun gratisnya.
+  const signedIn = authStatus === 'member' || authStatus === 'needs_activation' || !!session;
+  const email = (authInfo && authInfo.email) || (session && session.email) || '';
+  const [info, setInfo] = useState(null);          // { ready, closed, full, left, quota, mayar }
+  const [mine, setMine] = useState(null);          // pendaftaran akun ini
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState({ name: '', whatsapp: '', currency: 'IDR' });
+
+  const load = useCallback(async () => {
+    const d = signedIn ? await eventCall('event-me') : await eventCall('event-info');
+    if (d && d.ok) {
+      setInfo(d);
+      setMine(d.registration || null);
+      if (d.registration) setForm({ name: d.registration.name, whatsapp: d.registration.whatsapp, currency: d.registration.currency });
+    } else setInfo({ ready: false });
+    setLoading(false);
+  }, [signedIn]);
+
+  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    if (!form.name && session && session.name) setForm(f => ({ ...f, name: f.name || session.name }));
+  }, [session]);
+  // Kembali dari halaman bayar Mayar: cek status beberapa kali sampai lunas.
+  useEffect(() => {
+    if (!signedIn || !mine || mine.status !== 'pending' || mine.currency !== 'IDR' || !mine.link) return undefined;
+    let n = 0;
+    const t = setInterval(() => { n += 1; if (n > 30) clearInterval(t); else load(); }, 10000);
+    return () => clearInterval(t);
+  }, [signedIn, mine && mine.status, mine && mine.link, load]);
+
+  const login = () => {
+    try { sessionStorage.setItem('talqeeh_return_to', JSON.stringify({ path: '/event', at: Date.now() })); } catch {}
+    window.dispatchEvent(new CustomEvent('talqeeh:open-login', { detail: { keepPlan: false } }));
+  };
+
+  const submit = async (e) => {
+    e.preventDefault();
+    if (busy) return;
+    setBusy(true); setError('');
+    const d = await eventCall('event-register', form);
+    setBusy(false);
+    if (!d.ok) { setError(EVENT_ERRORS[d.status] || EVENT_ERRORS.error); if (d.status === 'full' || d.status === 'closed') load(); return; }
+    setMine(d.registration); setEditing(false);
+    if (d.status === 'registered' && d.registration.currency === 'IDR' && d.registration.link) window.location.href = d.registration.link;
+    else load();
+  };
+
+  if (loading) return <div className="card-glass p-5 text-sm text-ink-muted">Memuat pendaftaran…</div>;
+  if (!info || !info.ready) return <EventNotice title="Pendaftaran segera dibuka">Formulir pendaftaran akan muncul di sini.</EventNotice>;
+
+  // Sudah lunas.
+  if (mine && mine.status === 'paid') {
     return (
-      <div className={`rounded-2xl border border-gold-500/35 bg-gold-500/10 ${compact ? 'px-4 py-3' : 'px-5 py-4'}`}>
-        <div className="text-sm font-semibold text-ink">Pendaftaran segera dibuka</div>
-        <p className="text-xs text-ink-muted mt-1 leading-relaxed">
-          Tautan pendaftaran, metode pembayaran, dan kontak panitia akan diumumkan di halaman ini.
+      <EventNotice tone="emerald" title={`Kamu sudah terdaftar, ${mine.name}.`}>
+        Pembayaranmu sudah kami terima. Sampai jumpa {EVENT.day}, {EVENT.date} di {EVENT.place}. Registrasi mulai 13.30 waktu Kairo.
+        <div className="mt-3"><EventWaButton/></div>
+      </EventNotice>
+    );
+  }
+
+  // Sudah daftar, belum lunas.
+  if (mine && mine.status === 'pending' && !editing) {
+    const price = mine.currency === 'EGP' ? EVENT.priceEgp : EVENT.priceIdr;
+    return (
+      <div className="card-glass-strong p-5 md:p-6">
+        <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1">Menunggu pembayaran</div>
+        <div className="font-display text-lg font-semibold text-ink">{mine.name} · {price}</div>
+        {mine.currency === 'IDR' ? (
+          <>
+            <p className="text-sm text-ink-muted mt-2 leading-relaxed">
+              {mine.link ? 'Selesaikan pembayaran lewat Mayar. Setelah lunas, halaman ini berubah sendiri.' : 'Tautan bayarmu sudah tidak berlaku. Buat tautan baru untuk melanjutkan.'}
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2.5">
+              {mine.link
+                ? <a href={mine.link} className="btn btn-primary px-6 py-3 text-sm">Bayar {price} <Icon name="arrowRight" className="w-4 h-4"/></a>
+                : <button onClick={submit} disabled={busy} className="btn btn-primary px-6 py-3 text-sm disabled:opacity-60">{busy ? 'Menyiapkan…' : 'Buat tautan bayar'}</button>}
+              <button onClick={load} className="btn btn-ghost px-5 py-3 text-sm"><Icon name="refresh" className="w-4 h-4"/> Saya sudah bayar</button>
+            </div>
+          </>
+        ) : (
+          <p className="text-sm text-ink-muted mt-2 leading-relaxed">
+            Pembayaran dengan Pound Mesir dikonfirmasi langsung oleh panitia. Panitia akan menghubungimu lewat WhatsApp di nomor {mine.whatsapp}.
+          </p>
+        )}
+        <p className="text-xs text-ink-soft mt-3 leading-relaxed">
+          {mine.seatHeld ? 'Kursimu dipegang selama 24 jam sejak mendaftar. Setelah itu kursi bisa diambil peserta lain.' : 'Masa pegang kursimu sudah lewat. Kursi baru aman setelah pembayaran diterima.'}
         </p>
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <button onClick={() => setEditing(true)} className="text-xs text-gold-300 hover:text-gold-200 underline underline-offset-2">Ubah data atau cara bayar</button>
+          <EventWaButton/>
+        </div>
+        {error && <p className="text-sm text-rose-400 mt-3">{error}</p>}
       </div>
     );
   }
+
+  if (info.closed) return <EventNotice title="Pendaftaran sudah ditutup">Terima kasih atas minatnya. Pantau kegiatan AIGYPT dan HPIM Mesir berikutnya.</EventNotice>;
+  if (info.full && !mine) return <EventNotice tone="rose" title="Kuota penuh">Semua {info.quota} kursi sudah terisi. Pendaftaran ditutup.</EventNotice>;
+
+  if (!signedIn) {
+    return (
+      <div className="card-glass-strong p-5 md:p-6">
+        <div className="font-display text-lg font-semibold text-ink">Daftar workshop</div>
+        <p className="text-sm text-ink-muted mt-1.5 leading-relaxed">
+          Masuk dengan akun Google dulu. Akun yang sama dipakai untuk sesi praktik di Talqeeh.id.
+        </p>
+        <button onClick={login} className="btn btn-primary px-6 py-3 text-sm mt-4">Masuk dengan Google untuk daftar <Icon name="arrowRight" className="w-4 h-4"/></button>
+        <p className="text-xs text-ink-soft mt-3">Sisa {info.left} dari {info.quota} kursi.</p>
+      </div>
+    );
+  }
+
+  const input = 'w-full rounded-xl bg-white/5 border border-white/12 px-4 py-3 text-sm text-ink placeholder:text-ink-soft focus:outline-none focus:border-emerald-500/50';
   return (
-    <div className="flex flex-wrap gap-2.5">
-      {EVENT.registerUrl && (
-        <a href={EVENT.registerUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary px-6 py-3 text-sm">
-          Daftar sekarang <Icon name="arrowRight" className="w-4 h-4"/>
-        </a>
+    <form onSubmit={submit} className="card-glass-strong p-5 md:p-6">
+      <div className="font-display text-lg font-semibold text-ink">Daftar workshop</div>
+      <p className="text-xs text-ink-soft mt-1">Masuk sebagai {email || 'akun Google-mu'}. Sisa {info.left} dari {info.quota} kursi.</p>
+      <label className="block mt-4">
+        <span className="text-xs text-ink-muted">Nama lengkap</span>
+        <input className={`${input} mt-1`} value={form.name} maxLength={80} required
+          onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} placeholder="Nama sesuai yang dipanggil panitia"/>
+      </label>
+      <label className="block mt-3">
+        <span className="text-xs text-ink-muted">Nomor WhatsApp aktif</span>
+        <input className={`${input} mt-1`} value={form.whatsapp} maxLength={20} required inputMode="tel"
+          onChange={(e) => setForm(f => ({ ...f, whatsapp: e.target.value }))} placeholder="+20 1xx xxxx xxxx atau +62 8xx xxxx xxxx"/>
+      </label>
+      <div className="mt-4">
+        <span className="text-xs text-ink-muted">Bayar dengan</span>
+        <div className="grid grid-cols-2 gap-2.5 mt-1">
+          {[['IDR', 'Rupiah', EVENT.priceIdr, 'Bayar online lewat Mayar'], ['EGP', 'Pound Mesir', EVENT.priceEgp, 'Dikonfirmasi panitia']].map(([id, label, price, sub]) => (
+            <button type="button" key={id} onClick={() => setForm(f => ({ ...f, currency: id }))}
+              className={`text-left rounded-xl border px-4 py-3 transition ${form.currency === id ? 'border-emerald-500/60 bg-emerald-500/12' : 'border-white/12 bg-white/4 hover:border-white/25'}`}>
+              <div className="text-[11px] uppercase tracking-wider text-gold-400">{label}</div>
+              <div className="font-display text-lg font-semibold text-ink">{price}</div>
+              <div className="text-[11px] text-ink-muted mt-0.5">{sub}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+      {form.currency === 'IDR' && !info.mayar && (
+        <p className="text-xs text-gold-300 mt-3">Pembayaran online sedang tidak tersedia. Kamu tetap bisa mendaftar, lalu membayar setelah tautannya siap.</p>
       )}
-      {wa && (
-        <a href={wa} target="_blank" rel="noopener noreferrer" className="btn btn-ghost px-6 py-3 text-sm">
-          <Icon name="messageSquare" className="w-4 h-4"/> Tanya panitia
-        </a>
-      )}
-    </div>
+      {error && <p className="text-sm text-rose-400 mt-3">{error}</p>}
+      <div className="mt-5 flex flex-wrap items-center gap-3">
+        <button type="submit" disabled={busy} className="btn btn-primary px-6 py-3 text-sm disabled:opacity-60">
+          {busy ? 'Memproses…' : form.currency === 'IDR' ? `Daftar dan bayar ${EVENT.priceIdr}` : 'Daftar sekarang'}
+          {!busy && <Icon name="arrowRight" className="w-4 h-4"/>}
+        </button>
+        {editing && <button type="button" onClick={() => setEditing(false)} className="text-xs text-ink-muted hover:text-ink underline underline-offset-2">Batal</button>}
+      </div>
+      <p className="text-xs text-ink-soft mt-3 leading-relaxed">
+        Dengan mendaftar, kamu dibuatkan akun Talqeeh gratis (kalau belum punya). Tiket workshop tidak termasuk akses premium Talqeeh.id.
+      </p>
+    </form>
   );
 };
 
@@ -188,7 +365,7 @@ const EventImtihanPage = () => {
             ))}
           </div>
 
-          <div className="mt-6 max-w-xl"><EventRegisterCta/></div>
+          <div id="daftar" className="mt-6 max-w-xl scroll-mt-24"><EventRegisterBox/></div>
         </div>
       </section>
 
@@ -310,9 +487,9 @@ const EventImtihanPage = () => {
               </div>
             </div>
             <p className="mt-4 text-xs text-ink-soft leading-relaxed max-w-2xl">
-              Kedua nominal adalah harga tetap, bukan hasil konversi kurs. Metode pembayaran akan diumumkan bersama tautan pendaftaran.
+              Kedua nominal adalah harga tetap, bukan hasil konversi kurs. Rupiah dibayar online lewat Mayar. Pound Mesir dikonfirmasi langsung oleh panitia.
             </p>
-            <div className="mt-6 max-w-xl"><EventRegisterCta compact/></div>
+            <div className="mt-6"><a href="#daftar" onClick={(e) => { e.preventDefault(); document.getElementById("daftar")?.scrollIntoView({ behavior: "smooth", block: "center" }); }} className="btn btn-primary px-6 py-3 text-sm">Daftar di bagian atas <Icon name="chevronUp" className="w-4 h-4"/></a></div>
           </Reveal>
         </div>
       </section>
@@ -330,7 +507,7 @@ const EventImtihanPage = () => {
             ))}
           </div>
           <p className="mt-6 text-xs text-ink-soft leading-relaxed max-w-2xl">
-            Nama narasumber, tautan pendaftaran, dan kontak panitia akan diperbarui di halaman ini setelah ditetapkan.
+            Nama narasumber dan kontak panitia akan diperbarui di halaman ini setelah ditetapkan.
           </p>
         </div>
       </section>

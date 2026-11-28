@@ -231,7 +231,7 @@ const App = () => {
   }, [session, authStatus, profile, isFree, canUpgrade]);
 
   const isAdmin = path === "/admin" || path.startsWith("/admin/");
-  const isPublic = path === "/" || path.startsWith("/gabung") || path === "/rombongan" || path === "/mitra" || path.startsWith("/mitra?") || path.startsWith("/sample/") || path === "/ethics" || path === "/event" || path.startsWith("/event/") || path === "/privacy" || path === "/developer" || path.split("?")[0] === "/presentasi" || path === "/seminar" || path.startsWith("/seminar/") || path.startsWith("/seminar?") || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal" || path === "/battle" || path.startsWith("/battle") || path === "/game";
+  const isPublic = path === "/" || path.startsWith("/gabung") || path === "/rombongan" || path === "/mitra" || path.startsWith("/mitra?") || path.startsWith("/sample/") || path === "/ethics" || path === "/event" || path.startsWith("/event/") || path.startsWith("/event?") || path === "/privacy" || path === "/developer" || path.split("?")[0] === "/presentasi" || path === "/seminar" || path.startsWith("/seminar/") || path.startsWith("/seminar?") || path === "/maddah-publik" || path.startsWith("/framework") || path === "/tutorial" || path === "/submit-soal" || path === "/bank-soal" || path === "/checklist-soal" || path === "/battle" || path.startsWith("/battle") || path === "/game";
 
   // Admin gets its own layout (no public nav/footer)
   if (isAdmin) {
@@ -252,7 +252,7 @@ const App = () => {
   else if (path === "/mitra" || path.startsWith("/mitra?")) { page = <MitraPage/>; routeLabel = "Mitra Talqeeh"; }
   else if (path.startsWith("/sample/nahwu"))        { page = <SampleNahwuPage/>; routeLabel = "Sample Nahwu"; }
   else if (path === "/ethics")            { page = <EthicsPage/>; routeLabel = "Etika"; }
-  else if (path === "/event" || path.startsWith("/event/")) { page = <EventImtihanPage/>; routeLabel = "Workshop Menuju Imtihan"; }
+  else if (path === "/event" || path.startsWith("/event/") || path.startsWith("/event?")) { page = <EventImtihanPage/>; routeLabel = "Workshop Menuju Imtihan"; }
   else if (path === "/privacy")           { page = <PrivacyPage/>; routeLabel = "Kebijakan Privasi"; }
   else if (path === "/seminar/pemateri") { page = <SeminarGate view="pemateri"/>; routeLabel = "Panduan Pemateri"; }
   else if (path.split("?")[0] === "/seminar/slides") { page = <SeminarGate view="slides"/>; routeLabel = "Slide Seminar"; }

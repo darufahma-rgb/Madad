@@ -1,6 +1,7 @@
 import https from 'https';
 import { verifyToken } from './admin-auth.js';
 import { ADMIN_SETTING_KEYS, readSettings } from './_lib/settings.js';
+import { listRegistrations, setRegistrationStatus } from './_lib/workshop.js';
 import { validateImtihanEvent, validateRombonganEvent, validatePartnerLinks, readPartnerLinks, clearSalesEventsCache, CLASS_TRIAL_PRODUCT } from './_lib/events.js';
 import { MODEL_SETTING_KEYS, isValidModelId } from './_lib/models.js';
 import { newActivationPin, PIN_TTL_DAYS } from './_lib/pin.js';
@@ -319,6 +320,13 @@ export default async function handler(req, res) {
       const out = await buildAiUsage(p.range, p.code);
       if (out.error) { res.status(400).json({ ok: false, error: out.error }); return; }
       result = { status: 200, data: out };
+    } else if (action === 'event-list') {
+      result = { status: 200, data: await listRegistrations() };
+    } else if (action === 'event-set-status') {
+      const p = JSON.parse(body || '{}');
+      const out = await setRegistrationStatus(p.id, p.status, p.note);
+      if (!out.ok) { res.status(400).json({ ok: false, error: out.error }); return; }
+      result = { status: 200, data: out.row };
     } else if (action === 'mayar-qris-probe') {
       result = { status: 200, data: await probeMayarQris() };
     } else if (action === 'analytics') {
