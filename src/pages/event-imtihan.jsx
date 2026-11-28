@@ -313,13 +313,13 @@ const EventRegisterBox = () => {
   );
 };
 
-const EventSectionTitle = ({ kicker, title, subtitle }) => (
-  <div className="mb-6 md:mb-8">
-    <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 flex items-center gap-2">
-      <span className="w-6 h-px bg-gold-500/70"/>{kicker}
+const EventSectionTitle = ({ kicker, title, subtitle, center = false }) => (
+  <div className={`mb-7 md:mb-10 ${center ? 'text-center mx-auto max-w-2xl' : ''}`}>
+    <div className={`text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 flex items-center gap-2 ${center ? 'justify-center' : ''}`}>
+      <span className="w-6 h-px bg-gold-500/70"/>{kicker}{center && <span className="w-6 h-px bg-gold-500/70"/>}
     </div>
-    <h2 className="font-display text-2xl md:text-3xl font-semibold text-ink leading-tight">{title}</h2>
-    {subtitle && <p className="mt-2 text-sm md:text-base text-ink-muted max-w-2xl leading-relaxed">{subtitle}</p>}
+    <h2 className="font-display text-2xl md:text-4xl font-semibold text-ink leading-[1.12] tracking-tight">{title}</h2>
+    {subtitle && <p className={`mt-3 text-sm md:text-base text-ink-muted leading-relaxed ${center ? '' : 'max-w-2xl'}`}>{subtitle}</p>}
   </div>
 );
 
@@ -336,216 +336,405 @@ const EventCheckList = ({ items }) => (
   </ul>
 );
 
+// Acara mulai Senin 7 Desember 2026, 14.00 waktu Kairo (UTC+2).
+const EVENT_STARTS_AT = Date.parse('2026-12-07T12:00:00Z');
+const eventCountdown = (now = Date.now()) => {
+  const ms = EVENT_STARTS_AT - now;
+  if (ms <= 0) return null;
+  const m = Math.floor(ms / 60000);
+  return { days: Math.floor(m / 1440), hours: Math.floor((m % 1440) / 60), minutes: m % 60 };
+};
+
+const EventCountdown = () => {
+  const [left, setLeft] = useState(eventCountdown());
+  useEffect(() => {
+    const t = setInterval(() => setLeft(eventCountdown()), 30000);
+    return () => clearInterval(t);
+  }, []);
+  if (!left) return null;
+  const cells = [[left.days, 'hari'], [left.hours, 'jam'], [left.minutes, 'menit']];
+  return (
+    <div className="inline-flex items-center gap-3">
+      <span className="text-[11px] uppercase tracking-[0.18em] text-ink-soft">Dimulai dalam</span>
+      <div className="flex gap-1.5">
+        {cells.map(([n, label]) => (
+          <div key={label} className="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-center min-w-[52px]">
+            <div className="font-display text-xl font-semibold text-ink tabular-nums leading-none">{String(n).padStart(2, '0')}</div>
+            <div className="text-[10px] uppercase tracking-wider text-ink-soft mt-1">{label}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const EVENT_PAINS = [
+  { icon: 'bookOpen', title: 'Materinya banyak', desc: 'Muqarrar berbahasa Arab menumpuk, dan semuanya harus dikuasai.' },
+  { icon: 'timer', title: 'Waktunya sedikit', desc: 'Imtihan makin dekat, sementara waktu belajar terbatas.' },
+  { icon: 'brain', title: 'Sulit menempel', desc: 'Sudah dibaca, tetapi sulit dipahami dan diingat saat ujian.' },
+];
+
+const EVENT_FACILITY_ICONS = ['sparkles', 'compass', 'layers', 'users', 'clipboard', 'home', 'heart'];
+const EVENT_SESSION_TIME = ['14.10–14.40', '14.40–15.10', '15.10–16.20', '16.20–16.45'];
+const EVENT_SESSION_MIN = [30, 30, 70, 25];
+const EVENT_RUNDOWN_MIN = [30, 10, 30, 30, 70, 25, 15];
+
 const EventImtihanPage = () => {
+  const { session } = useAuth();
   useEffect(() => {
     const prev = document.title;
     document.title = `${EVENT.name} · Talqeeh`;
     return () => { document.title = prev; };
   }, []);
 
+  const toRegister = (e) => {
+    if (e) e.preventDefault();
+    document.getElementById('daftar')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
   const facts = [
-    { icon: 'timer', label: 'Waktu', value: `${EVENT.day}, ${EVENT.date}`, sub: `${EVENT.time} · ${EVENT.registration}` },
-    { icon: 'compass', label: 'Tempat', value: EVENT.place, sub: EVENT.address },
-    { icon: 'users', label: 'Kuota', value: `${EVENT.quota} peserta`, sub: EVENT.format },
-    { icon: 'bookmark', label: 'Biaya', value: `${EVENT.priceIdr} atau ${EVENT.priceEgp}`, sub: 'Per orang. Pilih salah satu mata uang.' },
+    { icon: 'timer', value: `${EVENT.day}, ${EVENT.date}`, sub: `${EVENT.time}. ${EVENT.registration}.` },
+    { icon: 'compass', value: EVENT.place, sub: EVENT.address },
+    { icon: 'users', value: `${EVENT.quota} peserta`, sub: EVENT.format },
   ];
+  const stats = [['3', 'jam workshop'], ['4', 'sesi belajar'], ['70', 'menit praktik langsung'], [String(EVENT.quota), 'kursi saja']];
 
   return (
     <div className="page-enter">
-      {/* Hero */}
-      <section className="relative pt-6 md:pt-12 pb-8 md:pb-12 overflow-hidden">
-        <GlowBlob color="rgba(62,207,142,0.18)" size={520} top={-220} right={-160}/>
-        <div className="container-x relative">
-          <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4 flex items-center gap-2 flex-wrap">
-            <span className="w-6 h-px bg-gold-500/70"/>Workshop · AIGYPT × HPIM Mesir
-          </div>
-          <h1 className="font-display text-3xl md:text-5xl lg:text-6xl font-semibold text-ink leading-[1.05] tracking-tightest max-w-4xl">
-            Menuju Imtihan: <span className="text-emerald-300">Belajar Efektif dengan AI</span>
-          </h1>
-          <p className="mt-4 text-lg md:text-xl text-ink font-medium">{EVENT.tagline}</p>
-          <p className="mt-2 text-sm md:text-base text-ink-muted max-w-2xl leading-relaxed">
-            {EVENT.type} selama 3 jam. Peserta belajar strateginya, lalu langsung praktik di Talqeeh.id dengan materi kuliahnya sendiri.
-          </p>
+      {/* ── Hero: info di kiri, kotak pendaftaran di kanan ── */}
+      <section className="relative pt-6 md:pt-14 pb-10 md:pb-16 overflow-hidden">
+        <div className="hero-light-beam"/>
+        <GlowBlob color="rgba(62,207,142,0.20)" size={620} top={-260} right={-180}/>
+        <GlowBlob color="rgba(201,168,106,0.12)" size={420} bottom={-220} left={-160}/>
+        <div className="absolute top-10 right-[46%] h-[420px] w-[300px] opacity-[0.07] pointer-events-none hidden lg:block">
+          <Arch className="w-full h-full" color="rgba(212,165,116,0.9)"/>
+        </div>
+        <div className="container-x relative grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          <div className="lg:col-span-7">
+            <div className="flex flex-wrap items-center gap-2 mb-5">
+              <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] px-3 py-1.5 rounded-full border border-gold-500/40 bg-gold-500/10 text-gold-300">
+                <Icon name="sparkles" className="w-3.5 h-3.5"/> Workshop offline
+              </span>
+              <span className="text-[11px] uppercase tracking-[0.18em] text-ink-soft">AIGYPT × HPIM Mesir</span>
+            </div>
+            <h1 className="font-display font-semibold text-ink leading-[1.02] tracking-tightest text-[2.5rem] sm:text-6xl lg:text-7xl">
+              Menuju Imtihan:
+              <span className="block text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(100deg, #6ee7b7 0%, #3ecf8e 45%, #d4a574 100%)' }}>
+                Belajar Efektif dengan AI
+              </span>
+            </h1>
+            <p className="mt-5 text-lg md:text-2xl text-ink font-medium leading-snug">{EVENT.tagline}</p>
+            <p className="mt-3 text-sm md:text-base text-ink-muted max-w-xl leading-relaxed">
+              Tiga jam belajar strateginya, lalu langsung praktik di Talqeeh.id dengan materi kuliahmu sendiri.
+            </p>
 
-          <div className="mt-7 grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-            {facts.map((f) => (
-              <div key={f.label} className="card-glass p-4 md:p-5">
-                <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider text-gold-400 mb-2">
-                  <Icon name={f.icon} className="w-3.5 h-3.5"/>{f.label}
+            <div className="mt-6"><EventCountdown/></div>
+
+            <div className="mt-7 space-y-3.5 max-w-xl">
+              {facts.map((f) => (
+                <div key={f.value} className="flex gap-3.5">
+                  <span className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-gold-300 flex items-center justify-center flex-shrink-0">
+                    <Icon name={f.icon} className="w-[18px] h-[18px]"/>
+                  </span>
+                  <div className="min-w-0">
+                    <div className="font-display text-base md:text-lg font-semibold text-ink leading-snug">{f.value}</div>
+                    <div className="text-xs md:text-sm text-ink-muted leading-relaxed">{f.sub}</div>
+                  </div>
                 </div>
-                <div className="font-display text-base md:text-lg font-semibold text-ink leading-snug">{f.value}</div>
-                <div className="text-xs text-ink-muted mt-1 leading-relaxed">{f.sub}</div>
+              ))}
+            </div>
+          </div>
+
+          <div className="lg:col-span-5 lg:sticky lg:top-24">
+            <div className="rounded-3xl border border-emerald-500/25 p-1.5" style={{ background: 'linear-gradient(160deg, rgba(62,207,142,0.14), rgba(255,255,255,0.02) 55%)' }}>
+              <div className="rounded-[20px] px-5 pt-5 pb-1 flex items-end justify-between gap-3">
+                <div>
+                  <div className="text-[11px] uppercase tracking-wider text-gold-400">Biaya per orang</div>
+                  <div className="font-display text-3xl font-semibold text-ink leading-tight">{EVENT.priceIdr}</div>
+                </div>
+                <div className="text-right pb-1">
+                  <div className="text-[11px] text-ink-soft">atau</div>
+                  <div className="font-display text-xl font-semibold text-ink">{EVENT.priceEgp}</div>
+                </div>
+              </div>
+              <div id="daftar" className="mt-3 scroll-mt-24"><EventRegisterBox/></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Angka ringkas ── */}
+      <section className="pb-12 md:pb-20">
+        <div className="container-x">
+          <Reveal className="grid grid-cols-2 md:grid-cols-4 rounded-3xl border border-white/10 overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)' }}>
+            {stats.map(([n, label], i) => (
+              <div key={label} className={`px-5 py-6 md:py-8 text-center ${i % 2 ? 'border-l border-white/8' : ''} ${i > 1 ? 'border-t md:border-t-0 border-white/8' : ''} ${i === 2 ? 'md:border-l' : ''}`}>
+                <div className="font-display text-4xl md:text-5xl font-semibold text-emerald-300 leading-none">{n}</div>
+                <div className="text-xs md:text-sm text-ink-muted mt-2">{label}</div>
               </div>
             ))}
-          </div>
-
-          <div id="daftar" className="mt-6 max-w-xl scroll-mt-24"><EventRegisterBox/></div>
+          </Reveal>
         </div>
       </section>
 
-      {/* Latar belakang */}
-      <section className="pb-12 md:pb-16">
-        <div className="container-x">
-          <Reveal className="card-glass-strong p-6 md:p-10">
+      {/* ── Kenapa workshop ini ── */}
+      <section className="pb-12 md:pb-20">
+        <div className="container-x grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+          <Reveal className="lg:col-span-5">
             <EventSectionTitle kicker="Kenapa workshop ini" title="Materi banyak, waktu sedikit, imtihan makin dekat."/>
-            <div className="grid md:grid-cols-2 gap-6 md:gap-10 text-sm md:text-base text-ink-muted leading-relaxed">
-              <p>
-                Mahasiswa Al-Azhar menghadapi tantangan yang sama setiap menjelang imtihan: banyaknya materi berbahasa Arab,
-                waktu yang terbatas, dan sulitnya memahami serta mengingat pembahasan akademik.
-              </p>
-              <p>
-                Lewat workshop ini, AIGYPT dan HPIM Mesir memperkenalkan cara belajar yang memanfaatkan AI secara terarah.
-                Peserta tidak hanya mendengar teorinya, tetapi langsung mempraktikkannya di Talqeeh.id.
-              </p>
-            </div>
-            <div className="mt-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/8 px-5 py-4 text-sm md:text-base text-ink leading-relaxed">
-              <strong>Satu prinsip yang dipegang:</strong> AI adalah alat bantu belajar, bukan pengganti dosen, kitab,
-              atau proses berpikir kritis mahasiswa.
-            </div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* Untuk siapa + fasilitas */}
-      <section className="pb-12 md:pb-16">
-        <div className="container-x grid lg:grid-cols-2 gap-5 md:gap-6">
-          <Reveal className="card-glass p-6 md:p-8">
-            <EventSectionTitle kicker="Untuk siapa" title={`Terbuka untuk ${EVENT.quota} peserta`}/>
-            <EventCheckList items={EVENT_AUDIENCE}/>
-          </Reveal>
-          <Reveal className="card-glass p-6 md:p-8">
-            <EventSectionTitle kicker="Yang kamu dapat" title="Sudah termasuk dalam biaya pendaftaran"/>
-            <EventCheckList items={EVENT_FACILITIES}/>
-            <p className="mt-5 text-xs text-ink-soft leading-relaxed">
-              Akses premium Talqeeh.id dan sertifikat belum termasuk dalam fasilitas yang dikonfirmasi.
+            <p className="text-sm md:text-base text-ink-muted leading-relaxed -mt-3">
+              Lewat workshop ini, AIGYPT dan HPIM Mesir memperkenalkan cara belajar yang memanfaatkan AI secara terarah.
+              Peserta tidak hanya mendengar teorinya, tetapi langsung mempraktikkannya di Talqeeh.id.
             </p>
           </Reveal>
+          <div className="lg:col-span-7 grid sm:grid-cols-3 gap-3 md:gap-4">
+            {EVENT_PAINS.map((x) => (
+              <Reveal key={x.title} className="card-glass p-5">
+                <span className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-300 flex items-center justify-center mb-4">
+                  <Icon name={x.icon} className="w-5 h-5"/>
+                </span>
+                <div className="font-display text-base md:text-lg font-semibold text-ink mb-1.5">{x.title}</div>
+                <p className="text-xs md:text-sm text-ink-muted leading-relaxed">{x.desc}</p>
+              </Reveal>
+            ))}
+            <Reveal className="sm:col-span-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/8 px-5 py-4 flex gap-3.5 items-start">
+              <span className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-center justify-center flex-shrink-0">
+                <Icon name="shield" className="w-[18px] h-[18px]"/>
+              </span>
+              <p className="text-sm md:text-base text-ink leading-relaxed">
+                <strong>Satu prinsip yang dipegang:</strong> AI adalah alat bantu belajar, bukan pengganti dosen, kitab,
+                atau proses berpikir kritis mahasiswa.
+              </p>
+            </Reveal>
+          </div>
         </div>
       </section>
 
-      {/* Materi */}
-      <section className="pb-12 md:pb-16">
+      {/* ── Alur belajar ── */}
+      <section className="pb-12 md:pb-20">
+        <div className="container-x">
+          <EventSectionTitle center kicker="Alur yang dipraktikkan" title="Dari materi kuliah sampai teruji" subtitle="Lima langkah ini dikerjakan langsung di Talqeeh.id, dengan materi perkuliahanmu sendiri."/>
+          <Reveal className="relative">
+            <div className="hidden md:block absolute left-[10%] right-[10%] top-6 h-px" style={{ background: 'linear-gradient(90deg, rgba(62,207,142,0.1), rgba(62,207,142,0.6), rgba(212,165,116,0.6))' }}/>
+            <div className="grid grid-cols-1 md:grid-cols-5 gap-3 md:gap-4">
+              {EVENT_FLOW.map((step, i) => (
+                <div key={step} className="relative flex md:flex-col items-center md:text-center gap-4 md:gap-3">
+                  <span className="relative z-10 w-12 h-12 rounded-full flex items-center justify-center font-display text-lg font-semibold text-black flex-shrink-0"
+                    style={{ background: i === EVENT_FLOW.length - 1 ? '#d4a574' : '#3ecf8e', boxShadow: '0 0 0 6px var(--bg-0, #0c0c0c)' }}>{i + 1}</span>
+                  <div className="font-display text-base md:text-lg font-semibold text-ink">{step}</div>
+                </div>
+              ))}
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Empat sesi ── */}
+      <section className="pb-12 md:pb-20">
         <div className="container-x">
           <EventSectionTitle kicker="Materi dan aktivitas" title="Empat sesi, dari paham sampai teruji"/>
-          <div className="grid sm:grid-cols-2 gap-4 md:gap-5">
-            {EVENT_SESSIONS.map((s) => (
-              <Reveal key={s.n} className="card-glass p-5 md:p-7">
-                <div className="flex items-center gap-3 mb-3">
-                  <span className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-center justify-center flex-shrink-0">
-                    <Icon name={s.icon} className="w-5 h-5"/>
-                  </span>
-                  <div className="text-[11px] uppercase tracking-wider text-gold-400">Sesi {s.n}</div>
-                </div>
-                <h3 className="font-display text-lg md:text-xl font-semibold text-ink mb-2">{s.title}</h3>
-                <p className="text-sm text-ink-muted leading-relaxed">{s.desc}</p>
-                {s.n === 3 && (
-                  <div className="mt-4 flex flex-wrap items-center gap-1.5">
-                    {EVENT_FLOW.map((step, i) => (
-                      <React.Fragment key={step}>
-                        <span className="text-[11px] md:text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-ink">{step}</span>
-                        {i < EVENT_FLOW.length - 1 && <Icon name="chevronRight" className="w-3 h-3 text-ink-soft"/>}
-                      </React.Fragment>
-                    ))}
+          <div className="grid md:grid-cols-6 gap-4 md:gap-5">
+            {EVENT_SESSIONS.map((s, i) => {
+              const main = s.n === 3;
+              return (
+                <Reveal key={s.n} className={`relative overflow-hidden rounded-3xl border p-6 md:p-8 ${main ? 'md:col-span-4 border-emerald-500/35' : s.n === 4 ? 'md:col-span-2 border-white/10' : 'md:col-span-3 border-white/10'}`}
+                  style={{ background: main ? 'linear-gradient(135deg, rgba(62,207,142,0.14), rgba(255,255,255,0.03) 60%)' : 'rgba(255,255,255,0.035)' }}>
+                  <div className="absolute -top-4 right-3 font-display font-semibold leading-none select-none pointer-events-none text-[7rem] md:text-[9rem]" style={{ color: 'rgba(255,255,255,0.045)' }}>0{s.n}</div>
+                  <div className={`relative ${main ? 'lg:flex lg:items-center lg:gap-8' : ''}`}>
+                    <div className={main ? 'lg:flex-1' : ''}>
+                      <div className="flex items-center gap-3 mb-4">
+                        <span className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-center justify-center flex-shrink-0">
+                          <Icon name={s.icon} className="w-5 h-5"/>
+                        </span>
+                        <div>
+                          <div className="text-[11px] uppercase tracking-wider text-gold-400">Sesi {s.n}{main ? ' · sesi utama' : ''}</div>
+                          <div className="text-xs text-ink-soft tabular-nums">{EVENT_SESSION_TIME[i]} · {EVENT_SESSION_MIN[i]} menit</div>
+                        </div>
+                      </div>
+                      <h3 className={`font-display font-semibold text-ink mb-2 ${main ? 'text-2xl md:text-3xl' : 'text-lg md:text-xl'}`}>{s.title}</h3>
+                      <p className="text-sm md:text-[15px] text-ink-muted leading-relaxed max-w-xl">{s.desc}</p>
+                    </div>
+                    {main && (
+                      <div className="mt-5 lg:mt-0 flex flex-wrap lg:flex-col gap-2 lg:w-52 flex-shrink-0">
+                        {EVENT_FLOW.map((step, k) => (
+                          <span key={step} className="inline-flex items-center gap-2 text-xs md:text-sm px-3 py-1.5 rounded-xl bg-white/6 border border-white/10 text-ink">
+                            <span className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-semibold flex items-center justify-center">{k + 1}</span>{step}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+                </Reveal>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Rundown + untuk siapa ── */}
+      <section className="pb-12 md:pb-20">
+        <div className="container-x grid lg:grid-cols-12 gap-8 lg:gap-12">
+          <div className="lg:col-span-7">
+            <EventSectionTitle kicker="Rundown" title={`${EVENT.day}, ${EVENT.date}`} subtitle="Semua jam dalam waktu Kairo."/>
+            <Reveal className="relative pl-7">
+              <div className="absolute left-[9px] top-2 bottom-2 w-px" style={{ background: 'linear-gradient(180deg, rgba(62,207,142,0.7), rgba(212,165,116,0.5))' }}/>
+              {EVENT_RUNDOWN.map(([time, agenda], i) => {
+                const main = agenda.startsWith('Praktik');
+                return (
+                  <div key={time} className="relative pb-5 last:pb-0">
+                    <span className={`absolute -left-7 top-1.5 w-[19px] h-[19px] rounded-full border-2 ${main ? 'bg-emerald-400 border-emerald-300' : 'border-emerald-500/60'}`} style={main ? undefined : { background: 'var(--bg-0, #0c0c0c)' }}/>
+                    <div className={`rounded-2xl border px-4 py-3 md:px-5 md:py-3.5 flex items-center justify-between gap-3 ${main ? 'border-emerald-500/35 bg-emerald-500/10' : 'border-white/8 bg-white/3'}`}>
+                      <div className="min-w-0">
+                        <div className="text-xs font-semibold text-emerald-300 tabular-nums">{time}</div>
+                        <div className="text-sm md:text-base text-ink font-medium leading-snug">{agenda}</div>
+                      </div>
+                      <span className="text-[11px] text-ink-soft whitespace-nowrap">{EVENT_RUNDOWN_MIN[i]} menit</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </Reveal>
+          </div>
+          <div className="lg:col-span-5 space-y-5">
+            <Reveal className="card-glass p-6 md:p-7">
+              <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-2">Untuk siapa</div>
+              <h3 className="font-display text-xl md:text-2xl font-semibold text-ink mb-4">Terbuka untuk {EVENT.quota} peserta</h3>
+              <EventCheckList items={EVENT_AUDIENCE}/>
+            </Reveal>
+            <Reveal className="rounded-3xl border border-gold-500/30 bg-gold-500/8 p-6 md:p-7">
+              <div className="font-display text-lg font-semibold text-ink">Kursi terbatas</div>
+              <p className="text-sm text-ink-muted mt-1.5 leading-relaxed">Hanya {EVENT.quota} kursi. Kursi dipegang 24 jam sejak mendaftar, lalu aman setelah pembayaran diterima.</p>
+              <a href="#daftar" onClick={toRegister} className="btn btn-primary px-5 py-2.5 text-sm mt-4">Amankan kursiku <Icon name="arrowRight" className="w-4 h-4"/></a>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Fasilitas ── */}
+      <section className="pb-12 md:pb-20">
+        <div className="container-x">
+          <EventSectionTitle kicker="Yang kamu dapat" title="Sudah termasuk dalam biaya pendaftaran"/>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            {EVENT_FACILITIES.map((x, i) => (
+              <Reveal key={x} className={`card-glass p-4 md:p-5 ${i === 0 ? 'col-span-2 lg:col-span-2' : ''}`}>
+                <span className="w-10 h-10 rounded-xl bg-emerald-500/12 border border-emerald-500/25 text-emerald-300 flex items-center justify-center mb-3">
+                  <Icon name={EVENT_FACILITY_ICONS[i]} className="w-5 h-5"/>
+                </span>
+                <div className="text-sm md:text-[15px] text-ink font-medium leading-snug">{x.replace(/\.$/, '')}</div>
               </Reveal>
             ))}
           </div>
+          <p className="mt-4 text-xs text-ink-soft leading-relaxed">
+            Akses premium Talqeeh.id dan sertifikat belum termasuk dalam fasilitas yang dikonfirmasi.
+          </p>
         </div>
       </section>
 
-      {/* Rundown */}
-      <section className="pb-12 md:pb-16">
+      {/* ── Hasil + tujuan ── */}
+      <section className="pb-12 md:pb-20">
         <div className="container-x">
-          <EventSectionTitle kicker="Rundown" title={`${EVENT.day}, ${EVENT.date}`} subtitle="Semua jam dalam waktu Kairo."/>
-          <Reveal className="card-glass overflow-hidden">
-            {EVENT_RUNDOWN.map(([time, agenda], i) => (
-              <div key={time} className={`grid grid-cols-[112px_1fr] md:grid-cols-[160px_1fr] gap-3 px-5 md:px-7 py-3.5 md:py-4 ${i ? 'border-t border-white/6' : ''}`}>
-                <div className="text-sm font-semibold text-emerald-300 tabular-nums">{time}</div>
-                <div className="text-sm md:text-base text-ink">{agenda}</div>
-              </div>
+          <EventSectionTitle kicker="Setelah workshop" title="Yang kamu bawa pulang"/>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+            {EVENT_OUTCOMES.map((x, i) => (
+              <Reveal key={x} className="relative rounded-2xl border border-white/10 bg-white/3 p-5 md:p-6 overflow-hidden">
+                <div className="font-display text-3xl font-semibold text-gold-400/80 leading-none mb-3">0{i + 1}</div>
+                <div className="text-sm md:text-[15px] text-ink leading-relaxed">{x.replace(/\.$/, '')}</div>
+              </Reveal>
             ))}
+          </div>
+          <Reveal className="card-glass-strong p-6 md:p-8 mt-5">
+            <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">Tujuan kegiatan</div>
+            <div className="grid md:grid-cols-2 gap-x-10 gap-y-2.5">
+              <EventCheckList items={EVENT_GOALS.slice(0, 4)}/>
+              <EventCheckList items={EVENT_GOALS.slice(4)}/>
+            </div>
           </Reveal>
         </div>
       </section>
 
-      {/* Tujuan + hasil */}
-      <section className="pb-12 md:pb-16">
-        <div className="container-x grid lg:grid-cols-2 gap-5 md:gap-6">
-          <Reveal className="card-glass p-6 md:p-8">
-            <EventSectionTitle kicker="Tujuan kegiatan" title="Apa yang ingin dicapai"/>
-            <EventCheckList items={EVENT_GOALS}/>
-          </Reveal>
-          <Reveal className="card-glass p-6 md:p-8">
-            <EventSectionTitle kicker="Setelah workshop" title="Yang kamu bawa pulang"/>
-            <EventCheckList items={EVENT_OUTCOMES}/>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* Biaya */}
-      <section className="pb-12 md:pb-16">
+      {/* ── Narasumber ── */}
+      <section className="pb-12 md:pb-20">
         <div className="container-x">
-          <Reveal className="card-glass-strong p-6 md:p-10">
-            <EventSectionTitle kicker="Biaya pendaftaran" title="Bayar dengan Rupiah atau Pound Mesir"/>
-            <div className="grid sm:grid-cols-2 gap-4 max-w-2xl">
-              <div className="rounded-2xl border border-white/10 bg-white/4 p-5">
+          <Reveal className="relative overflow-hidden rounded-3xl border border-white/10 grid md:grid-cols-12" style={{ background: 'linear-gradient(120deg, rgba(201,168,106,0.10), rgba(255,255,255,0.03) 50%)' }}>
+            <div className="md:col-span-4 lg:col-span-3">
+              <img src={EVENT_SPEAKER.photo} alt="Daru Fahmaa Muliawan" loading="lazy" width="600" height="749"
+                className="w-full h-64 md:h-full object-cover object-top"/>
+            </div>
+            <div className="md:col-span-8 lg:col-span-9 p-6 md:p-10 flex flex-col justify-center">
+              <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3 flex items-center gap-2"><span className="w-6 h-px bg-gold-500/70"/>Narasumber</div>
+              <div className="font-display text-2xl md:text-4xl font-semibold text-ink leading-tight">{EVENT_SPEAKER.name}</div>
+              <div className="text-sm md:text-base text-gold-300 mt-2">{EVENT_SPEAKER.role}</div>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {EVENT_SPEAKER.education.map((x) => (
+                  <span key={x} className="text-xs md:text-sm px-3 py-1.5 rounded-xl bg-white/6 border border-white/10 text-ink-muted">{x}</span>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ── Biaya + ajakan akhir ── */}
+      <section className="pb-12 md:pb-20">
+        <div className="container-x">
+          <Reveal className="relative overflow-hidden rounded-3xl border border-emerald-500/30 p-6 md:p-12 text-center" style={{ background: 'radial-gradient(90% 120% at 50% 0%, rgba(62,207,142,0.18), rgba(255,255,255,0.02) 70%)' }}>
+            <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3">Biaya pendaftaran</div>
+            <h2 className="font-display text-2xl md:text-4xl font-semibold text-ink leading-tight">Bayar dengan Rupiah atau Pound Mesir</h2>
+            <div className="mt-7 grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto text-left">
+              <div className="rounded-2xl border border-white/12 bg-black/20 p-5 md:p-6">
                 <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1">Rupiah (IDR)</div>
-                <div className="font-display text-3xl font-semibold text-ink">{EVENT.priceIdr}</div>
-                <div className="text-xs text-ink-muted mt-1">per orang</div>
+                <div className="font-display text-3xl md:text-4xl font-semibold text-ink">{EVENT.priceIdr}</div>
+                <div className="text-xs text-ink-muted mt-1.5">Per orang. Bayar online lewat Mayar.</div>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-white/4 p-5">
+              <div className="rounded-2xl border border-white/12 bg-black/20 p-5 md:p-6">
                 <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-1">Pound Mesir (EGP)</div>
-                <div className="font-display text-3xl font-semibold text-ink">{EVENT.priceEgp}</div>
-                <div className="text-xs text-ink-muted mt-1">per orang</div>
+                <div className="font-display text-3xl md:text-4xl font-semibold text-ink">{EVENT.priceEgp}</div>
+                <div className="text-xs text-ink-muted mt-1.5">Per orang. Bayar langsung ke panitia.</div>
               </div>
             </div>
-            <p className="mt-4 text-xs text-ink-soft leading-relaxed max-w-2xl">
-              Kedua nominal adalah harga tetap, bukan hasil konversi kurs. Rupiah dibayar online lewat Mayar. Pound Mesir dibayar langsung ke panitia.
+            <p className="mt-4 text-xs text-ink-soft leading-relaxed max-w-xl mx-auto">
+              Kedua nominal adalah harga tetap, bukan hasil konversi kurs.
             </p>
-            <div className="mt-6"><a href="#daftar" onClick={(e) => { e.preventDefault(); document.getElementById("daftar")?.scrollIntoView({ behavior: "smooth", block: "center" }); }} className="btn btn-primary px-6 py-3 text-sm">Daftar di bagian atas <Icon name="chevronUp" className="w-4 h-4"/></a></div>
-          </Reveal>
-        </div>
-      </section>
-
-      {/* Narasumber */}
-      <section className="pb-12 md:pb-16">
-        <div className="container-x">
-          <EventSectionTitle kicker="Narasumber" title="Dibawakan langsung oleh pendiri Talqeeh"/>
-          <Reveal className="card-glass p-6 md:p-8 max-w-3xl">
-            <div className="flex items-center gap-4 md:gap-6">
-              <img src={EVENT_SPEAKER.photo} alt="Daru Fahmaa Muliawan" loading="lazy" width="112" height="112"
-                className="w-20 h-20 md:w-28 md:h-28 rounded-2xl object-cover object-top border border-gold-500/40 flex-shrink-0"/>
-              <div className="min-w-0">
-                <div className="font-display text-xl md:text-2xl font-semibold text-ink leading-tight">{EVENT_SPEAKER.name}</div>
-                <div className="text-sm text-gold-300 mt-1">{EVENT_SPEAKER.role}</div>
-                <ul className="mt-4 space-y-1.5 text-sm text-ink-muted leading-relaxed">
-                  {EVENT_SPEAKER.education.map((x) => <li key={x}>{x}</li>)}
-                </ul>
-              </div>
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
+              <a href="#daftar" onClick={toRegister} className="btn btn-primary px-7 py-3.5 text-sm md:text-base">Daftar sekarang <Icon name="arrowRight" className="w-4 h-4"/></a>
+              <EventWaButton label="Tanya panitia"/>
             </div>
           </Reveal>
         </div>
       </section>
 
-      {/* Penyelenggara */}
-      <section className="pb-16 md:pb-24">
+      {/* ── Penyelenggara ── */}
+      <section className="pb-24 md:pb-28">
         <div className="container-x">
-          <EventSectionTitle kicker="Penyelenggara" title="Kolaborasi tiga pihak"/>
+          <EventSectionTitle center kicker="Penyelenggara" title="Kolaborasi tiga pihak"/>
           <div className="grid md:grid-cols-3 gap-4">
             {EVENT_ORGANIZERS.map((o) => (
-              <Reveal key={o.name} className="card-glass p-5 md:p-6">
-                <div className="font-display text-lg font-semibold text-ink mb-1.5">{o.name}</div>
+              <Reveal key={o.name} className="card-glass p-5 md:p-6 text-center">
+                <div className="font-display text-xl font-semibold text-ink mb-1.5">{o.name}</div>
                 <p className="text-sm text-ink-muted leading-relaxed">{o.role}</p>
               </Reveal>
             ))}
           </div>
-          <div className="mt-4"><EventWaButton label="Ada pertanyaan? Tanya panitia"/></div>
         </div>
       </section>
+
+      {/* Tombol daftar yang menempel di bawah layar HP. Hanya untuk pengunjung: member punya bilah menu di posisi itu. */}
+      {!session && eventPromoLiveSafe() && (
+        <div className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-white/10 px-4 pt-3" style={{ background: 'rgba(12,12,12,0.94)', backdropFilter: 'blur(10px)', paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))' }}>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <div className="font-display text-base font-semibold text-ink leading-tight">{EVENT.priceIdr} <span className="text-ink-soft text-xs font-normal">atau {EVENT.priceEgp}</span></div>
+              <div className="text-[11px] text-ink-muted">{EVENT.day}, {EVENT.date}</div>
+            </div>
+            <a href="#daftar" onClick={toRegister} className="btn btn-primary px-5 py-2.5 text-sm flex-shrink-0">Daftar <Icon name="arrowRight" className="w-4 h-4"/></a>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
+
+const eventPromoLiveSafe = () => Date.now() < EVENT_STARTS_AT;
 
 /* ── Ajakan ikut workshop: banner di beranda dan pop-up sekali untuk semua pengguna ── */
 const EVENT_INVITE_KEY = 'talqeeh_event_imtihan_invite_v1';
