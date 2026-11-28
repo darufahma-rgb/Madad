@@ -324,6 +324,7 @@ const AppShell = ({ title, children }) => {
             )}
             {!isDesktop && <LogoMark size={26}/>}
             <div className="font-display text-base md:text-lg font-semibold text-ink truncate flex-1 min-w-0">{title}</div>
+            {window.WorkshopHeaderButton && <window.WorkshopHeaderButton className="!py-1.5 !px-3.5"/>}
             <GlobalSearch/>
             {!isDesktop && (
               <button onClick={() => window._openGlobalSearch && window._openGlobalSearch()} aria-label="Cari" className="w-9 h-9 rounded-lg flex items-center justify-center text-ink-soft hover:bg-white/5">

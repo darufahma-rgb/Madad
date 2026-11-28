@@ -380,7 +380,6 @@ const EVENT_SESSION_MIN = [30, 30, 70, 25];
 const EVENT_RUNDOWN_MIN = [30, 10, 30, 30, 70, 25, 15];
 
 const EventImtihanPage = () => {
-  const { session } = useAuth();
   useEffect(() => {
     const prev = document.title;
     document.title = `${EVENT.name} · Talqeeh`;
@@ -402,14 +401,14 @@ const EventImtihanPage = () => {
   return (
     <div className="page-enter">
       {/* ── Hero: info di kiri, kotak pendaftaran di kanan ── */}
-      <section className="relative pt-6 md:pt-14 pb-10 md:pb-16 overflow-hidden">
+      <section className="relative pt-5 md:pt-14 pb-8 md:pb-16 overflow-hidden">
         <div className="hero-light-beam"/>
         <GlowBlob color="rgba(62,207,142,0.20)" size={620} top={-260} right={-180}/>
         <GlowBlob color="rgba(201,168,106,0.12)" size={420} bottom={-220} left={-160}/>
         <div className="absolute top-10 right-[46%] h-[420px] w-[300px] opacity-[0.07] pointer-events-none hidden lg:block">
           <Arch className="w-full h-full" color="rgba(212,165,116,0.9)"/>
         </div>
-        <div className="container-x relative grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+        <div className="container-x relative grid lg:grid-cols-12 gap-5 lg:gap-12 items-start">
           <div className="lg:col-span-7">
             <div className="flex flex-wrap items-center gap-2 mb-5">
               <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.18em] px-3 py-1.5 rounded-full border border-gold-500/40 bg-gold-500/10 text-gold-300">
@@ -417,7 +416,7 @@ const EventImtihanPage = () => {
               </span>
               <span className="text-[11px] uppercase tracking-[0.18em] text-ink-soft">AIGYPT × HPIM Mesir</span>
             </div>
-            <h1 className="font-display font-semibold text-ink leading-[1.02] tracking-tightest text-[2.5rem] sm:text-6xl lg:text-7xl">
+            <h1 className="font-display font-semibold text-ink leading-[1.02] tracking-tightest text-[2.1rem] sm:text-6xl lg:text-7xl">
               Menuju Imtihan:
               <span className="block text-transparent bg-clip-text" style={{ backgroundImage: 'linear-gradient(100deg, #6ee7b7 0%, #3ecf8e 45%, #d4a574 100%)' }}>
                 Belajar Efektif dengan AI
@@ -428,9 +427,20 @@ const EventImtihanPage = () => {
               Tiga jam belajar strateginya, lalu langsung praktik di Talqeeh.id dengan materi kuliahmu sendiri.
             </p>
 
-            <div className="mt-6"><EventCountdown/></div>
+            {/* HP: empat info inti dalam satu kotak, supaya langsung terbaca tanpa menggulir. */}
+            <div className="lg:hidden mt-5 grid grid-cols-2 rounded-2xl border border-white/10 overflow-hidden" style={{ background: 'rgba(255,255,255,0.04)' }}>
+              {[['Kapan', 'Senin, 7 Des 2026', '14.00–17.00 Kairo'], ['Di mana', EVENT.place, 'Dekat Wisma Nusantara'], ['Biaya', EVENT.priceIdr, `atau ${EVENT.priceEgp}`], ['Kuota', `${EVENT.quota} kursi`, 'Offline, tatap muka']].map(([label, value, sub], i) => (
+                <div key={label} className={`px-4 py-3 ${i % 2 ? 'border-l border-white/8' : ''} ${i > 1 ? 'border-t border-white/8' : ''}`}>
+                  <div className="text-[10px] uppercase tracking-wider text-gold-400">{label}</div>
+                  <div className="font-display text-[15px] font-semibold text-ink leading-snug mt-0.5">{value}</div>
+                  <div className="text-[11px] text-ink-muted leading-snug">{sub}</div>
+                </div>
+              ))}
+            </div>
 
-            <div className="mt-7 space-y-3.5 max-w-xl">
+            <div className="hidden lg:block mt-6"><EventCountdown/></div>
+
+            <div className="hidden lg:block mt-7 space-y-3.5 max-w-xl">
               {facts.map((f) => (
                 <div key={f.value} className="flex gap-3.5">
                   <span className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-gold-300 flex items-center justify-center flex-shrink-0">
@@ -447,7 +457,7 @@ const EventImtihanPage = () => {
 
           <div className="lg:col-span-5 lg:sticky lg:top-24">
             <div className="rounded-3xl border border-emerald-500/25 p-1.5" style={{ background: 'linear-gradient(160deg, rgba(62,207,142,0.14), rgba(255,255,255,0.02) 55%)' }}>
-              <div className="rounded-[20px] px-5 pt-5 pb-1 flex items-end justify-between gap-3">
+              <div className="hidden lg:flex rounded-[20px] px-5 pt-5 pb-1 items-end justify-between gap-3">
                 <div>
                   <div className="text-[11px] uppercase tracking-wider text-gold-400">Biaya per orang</div>
                   <div className="font-display text-3xl font-semibold text-ink leading-tight">{EVENT.priceIdr}</div>
@@ -457,14 +467,26 @@ const EventImtihanPage = () => {
                   <div className="font-display text-xl font-semibold text-ink">{EVENT.priceEgp}</div>
                 </div>
               </div>
-              <div id="daftar" className="mt-3 scroll-mt-24"><EventRegisterBox/></div>
+              <div id="daftar" className="lg:mt-3 scroll-mt-24"><EventRegisterBox/></div>
             </div>
+            <div className="lg:hidden mt-5 flex justify-center"><EventCountdown/></div>
           </div>
         </div>
       </section>
 
-      {/* ── Angka ringkas ── */}
-      <section className="pb-12 md:pb-20">
+      {/* HP: lompat cepat ke bagian yang dicari */}
+      <div className="md:hidden pb-10"><div className="container-x">
+        <div className="text-[11px] uppercase tracking-wider text-ink-soft mb-2">Lihat bagian</div>
+        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-4 px-4">
+          {[['materi', 'Materi'], ['jadwal', 'Jadwal'], ['fasilitas', 'Fasilitas'], ['narasumber', 'Narasumber'], ['biaya', 'Biaya']].map(([id, label]) => (
+            <a key={id} href={`#${id}`} onClick={(e) => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' }); }}
+              className="flex-shrink-0 text-sm px-4 py-2 rounded-full border border-white/12 bg-white/5 text-ink">{label}</a>
+          ))}
+        </div>
+      </div></div>
+
+      {/* ── Angka ringkas (layar lebar) ── */}
+      <section className="hidden md:block pb-12 md:pb-20">
         <div className="container-x">
           <Reveal className="grid grid-cols-2 md:grid-cols-4 rounded-3xl border border-white/10 overflow-hidden" style={{ background: 'rgba(255,255,255,0.03)' }}>
             {stats.map(([n, label], i) => (
@@ -489,12 +511,14 @@ const EventImtihanPage = () => {
           </Reveal>
           <div className="lg:col-span-7 grid sm:grid-cols-3 gap-3 md:gap-4">
             {EVENT_PAINS.map((x) => (
-              <Reveal key={x.title} className="card-glass p-5">
-                <span className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-300 flex items-center justify-center mb-4">
+              <Reveal key={x.title} className="card-glass p-4 sm:p-5 flex sm:block gap-3.5 items-start">
+                <span className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/25 text-rose-300 flex items-center justify-center flex-shrink-0 sm:mb-4">
                   <Icon name={x.icon} className="w-5 h-5"/>
                 </span>
-                <div className="font-display text-base md:text-lg font-semibold text-ink mb-1.5">{x.title}</div>
-                <p className="text-xs md:text-sm text-ink-muted leading-relaxed">{x.desc}</p>
+                <div>
+                  <div className="font-display text-base md:text-lg font-semibold text-ink mb-0.5 sm:mb-1.5">{x.title}</div>
+                  <p className="text-[13px] md:text-sm text-ink-muted leading-relaxed">{x.desc}</p>
+                </div>
               </Reveal>
             ))}
             <Reveal className="sm:col-span-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/8 px-5 py-4 flex gap-3.5 items-start">
@@ -510,8 +534,8 @@ const EventImtihanPage = () => {
         </div>
       </section>
 
-      {/* ── Alur belajar ── */}
-      <section className="pb-12 md:pb-20">
+      {/* ── Alur belajar (layar lebar; di HP alurnya tampil di kartu Sesi 3) ── */}
+      <section className="hidden md:block pb-12 md:pb-20">
         <div className="container-x">
           <EventSectionTitle center kicker="Alur yang dipraktikkan" title="Dari materi kuliah sampai teruji" subtitle="Lima langkah ini dikerjakan langsung di Talqeeh.id, dengan materi perkuliahanmu sendiri."/>
           <Reveal className="relative">
@@ -530,14 +554,14 @@ const EventImtihanPage = () => {
       </section>
 
       {/* ── Empat sesi ── */}
-      <section className="pb-12 md:pb-20">
+      <section id="materi" className="pb-12 md:pb-20 scroll-mt-20">
         <div className="container-x">
           <EventSectionTitle kicker="Materi dan aktivitas" title="Empat sesi, dari paham sampai teruji"/>
           <div className="grid md:grid-cols-6 gap-4 md:gap-5">
             {EVENT_SESSIONS.map((s, i) => {
               const main = s.n === 3;
               return (
-                <Reveal key={s.n} className={`relative overflow-hidden rounded-3xl border p-6 md:p-8 ${main ? 'md:col-span-4 border-emerald-500/35' : s.n === 4 ? 'md:col-span-2 border-white/10' : 'md:col-span-3 border-white/10'}`}
+                <Reveal key={s.n} className={`relative overflow-hidden rounded-3xl border p-5 md:p-8 ${main ? 'md:col-span-4 border-emerald-500/35' : s.n === 4 ? 'md:col-span-2 border-white/10' : 'md:col-span-3 border-white/10'}`}
                   style={{ background: main ? 'linear-gradient(135deg, rgba(62,207,142,0.14), rgba(255,255,255,0.03) 60%)' : 'rgba(255,255,255,0.035)' }}>
                   <div className="absolute -top-4 right-3 font-display font-semibold leading-none select-none pointer-events-none text-[7rem] md:text-[9rem]" style={{ color: 'rgba(255,255,255,0.045)' }}>0{s.n}</div>
                   <div className={`relative ${main ? 'lg:flex lg:items-center lg:gap-8' : ''}`}>
@@ -572,7 +596,7 @@ const EventImtihanPage = () => {
       </section>
 
       {/* ── Rundown + untuk siapa ── */}
-      <section className="pb-12 md:pb-20">
+      <section id="jadwal" className="pb-12 md:pb-20 scroll-mt-20">
         <div className="container-x grid lg:grid-cols-12 gap-8 lg:gap-12">
           <div className="lg:col-span-7">
             <EventSectionTitle kicker="Rundown" title={`${EVENT.day}, ${EVENT.date}`} subtitle="Semua jam dalam waktu Kairo."/>
@@ -611,10 +635,11 @@ const EventImtihanPage = () => {
       </section>
 
       {/* ── Fasilitas ── */}
-      <section className="pb-12 md:pb-20">
+      <section id="fasilitas" className="pb-12 md:pb-20 scroll-mt-20">
         <div className="container-x">
           <EventSectionTitle kicker="Yang kamu dapat" title="Sudah termasuk dalam biaya pendaftaran"/>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+          <div className="md:hidden card-glass p-5"><EventCheckList items={EVENT_FACILITIES.map(x => x.replace(/\.$/, ''))}/></div>
+          <div className="hidden md:grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
             {EVENT_FACILITIES.map((x, i) => (
               <Reveal key={x} className={`card-glass p-4 md:p-5 ${i === 0 ? 'col-span-2 lg:col-span-2' : ''}`}>
                 <span className="w-10 h-10 rounded-xl bg-emerald-500/12 border border-emerald-500/25 text-emerald-300 flex items-center justify-center mb-3">
@@ -634,7 +659,15 @@ const EventImtihanPage = () => {
       <section className="pb-12 md:pb-20">
         <div className="container-x">
           <EventSectionTitle kicker="Setelah workshop" title="Yang kamu bawa pulang"/>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+          <div className="sm:hidden card-glass p-5 space-y-3">
+            {EVENT_OUTCOMES.map((x, i) => (
+              <div key={x} className="flex gap-3 items-start">
+                <span className="font-display text-base font-semibold text-gold-400 w-6 flex-shrink-0 leading-snug">{i + 1}.</span>
+                <span className="text-sm text-ink leading-relaxed">{x.replace(/\.$/, '')}</span>
+              </div>
+            ))}
+          </div>
+          <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             {EVENT_OUTCOMES.map((x, i) => (
               <Reveal key={x} className="relative rounded-2xl border border-white/10 bg-white/3 p-5 md:p-6 overflow-hidden">
                 <div className="font-display text-3xl font-semibold text-gold-400/80 leading-none mb-3">0{i + 1}</div>
@@ -642,7 +675,7 @@ const EventImtihanPage = () => {
               </Reveal>
             ))}
           </div>
-          <Reveal className="card-glass-strong p-6 md:p-8 mt-5">
+          <Reveal className="hidden md:block card-glass-strong p-6 md:p-8 mt-5">
             <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-4">Tujuan kegiatan</div>
             <div className="grid md:grid-cols-2 gap-x-10 gap-y-2.5">
               <EventCheckList items={EVENT_GOALS.slice(0, 4)}/>
@@ -653,7 +686,7 @@ const EventImtihanPage = () => {
       </section>
 
       {/* ── Narasumber ── */}
-      <section className="pb-12 md:pb-20">
+      <section id="narasumber" className="pb-12 md:pb-20 scroll-mt-20">
         <div className="container-x">
           <Reveal className="relative overflow-hidden rounded-3xl border border-white/10 grid md:grid-cols-12" style={{ background: 'linear-gradient(120deg, rgba(201,168,106,0.10), rgba(255,255,255,0.03) 50%)' }}>
             <div className="md:col-span-4 lg:col-span-3">
@@ -675,7 +708,7 @@ const EventImtihanPage = () => {
       </section>
 
       {/* ── Biaya + ajakan akhir ── */}
-      <section className="pb-12 md:pb-20">
+      <section id="biaya" className="pb-12 md:pb-20 scroll-mt-20">
         <div className="container-x">
           <Reveal className="relative overflow-hidden rounded-3xl border border-emerald-500/30 p-6 md:p-12 text-center" style={{ background: 'radial-gradient(90% 120% at 50% 0%, rgba(62,207,142,0.18), rgba(255,255,255,0.02) 70%)' }}>
             <div className="text-xs uppercase tracking-[0.22em] text-gold-400 mb-3">Biaya pendaftaran</div>
@@ -704,7 +737,7 @@ const EventImtihanPage = () => {
       </section>
 
       {/* ── Penyelenggara ── */}
-      <section className="pb-24 md:pb-28">
+      <section className="pb-16 md:pb-28">
         <div className="container-x">
           <EventSectionTitle center kicker="Penyelenggara" title="Kolaborasi tiga pihak"/>
           <div className="grid md:grid-cols-3 gap-4">
@@ -718,23 +751,9 @@ const EventImtihanPage = () => {
         </div>
       </section>
 
-      {/* Tombol daftar yang menempel di bawah layar HP. Hanya untuk pengunjung: member punya bilah menu di posisi itu. */}
-      {!session && eventPromoLiveSafe() && (
-        <div className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-white/10 px-4 pt-3" style={{ background: 'rgba(12,12,12,0.94)', backdropFilter: 'blur(10px)', paddingBottom: 'calc(12px + env(safe-area-inset-bottom, 0px))' }}>
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0">
-              <div className="font-display text-base font-semibold text-ink leading-tight">{EVENT.priceIdr} <span className="text-ink-soft text-xs font-normal">atau {EVENT.priceEgp}</span></div>
-              <div className="text-[11px] text-ink-muted">{EVENT.day}, {EVENT.date}</div>
-            </div>
-            <a href="#daftar" onClick={toRegister} className="btn btn-primary px-5 py-2.5 text-sm flex-shrink-0">Daftar <Icon name="arrowRight" className="w-4 h-4"/></a>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
-
-const eventPromoLiveSafe = () => Date.now() < EVENT_STARTS_AT;
 
 /* ── Ajakan ikut workshop: banner di beranda dan pop-up sekali untuk semua pengguna ── */
 const EVENT_INVITE_KEY = 'talqeeh_event_imtihan_invite_v1';
@@ -834,4 +853,16 @@ const WorkshopInvitePopup = () => {
 };
 
 // Catatan: nama EventBanner sudah dipakai banner event penjualan di layout.jsx, jadi di sini memakai Workshop*.
-Object.assign(window, { EventImtihanPage, WorkshopBanner, WorkshopInvitePopup });
+/* Tombol "Daftar" di header saat halaman event dibuka: langsung menggulir ke kotak pendaftaran. */
+const WorkshopHeaderButton = ({ className = '' }) => {
+  const path = useRoute();
+  if (!String(path || '').startsWith('/event') || !eventPromoLive()) return null;
+  const go = () => document.getElementById('daftar')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  return (
+    <button onClick={go} className={`btn btn-primary whitespace-nowrap text-sm py-2 px-4 ${className}`}>
+      Daftar <Icon name="arrowRight" className="w-4 h-4"/>
+    </button>
+  );
+};
+
+Object.assign(window, { EventImtihanPage, WorkshopBanner, WorkshopInvitePopup, WorkshopHeaderButton });

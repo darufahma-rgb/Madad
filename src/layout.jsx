@@ -288,14 +288,20 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
               <button onClick={onOpenLogin} className="btn btn-ghost text-sm py-2 px-4">
                 <Icon name="user" className="w-4 h-4"/> Masuk
               </button>
-              <button onClick={onOpenPayment} className="btn btn-primary whitespace-nowrap text-sm py-2.5 px-4">
-                <Icon name="sparkles" className="w-4 h-4"/> Gabung Member
-              </button>
+              {/* Di halaman event, tombol utama header menjadi "Daftar" workshop. */}
+              {path.startsWith("/event") && eventLive
+                ? <WorkshopHeaderButton className="!py-2.5"/>
+                : (
+                  <button onClick={onOpenPayment} className="btn btn-primary whitespace-nowrap text-sm py-2.5 px-4">
+                    <Icon name="sparkles" className="w-4 h-4"/> Gabung Member
+                  </button>
+                )}
             </>
           )}
         </div>
         {/* Mobile: avatar untuk member, hamburger untuk tamu */}
         <div className="md:hidden flex items-center gap-1">
+          {session && <WorkshopHeaderButton className="!py-1.5 !px-3.5 mr-1"/>}
           {session && (
             <button onClick={() => window._openGlobalSearch && window._openGlobalSearch()} className="w-9 h-9 flex items-center justify-center text-ink-soft">
               <Icon name="search" className="w-5 h-5"/>
@@ -311,6 +317,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
             </button>
           ) : (
             <div className="flex items-center gap-1">
+              <WorkshopHeaderButton className="!py-1.5 !px-3.5 mr-1"/>
               <button onClick={onOpenLogin} className="text-sm text-emerald-300 font-medium px-3 py-2">Masuk</button>
               <button onClick={() => setOpen(true)} className="w-9 h-9 inline-flex items-center justify-center rounded-lg text-ink hover:bg-white/5">
                 <Icon name="menu" className="w-5 h-5"/>
