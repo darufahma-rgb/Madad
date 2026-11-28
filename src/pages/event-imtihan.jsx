@@ -21,8 +21,8 @@ const EVENT = {
   closesAt: '2026-12-07T12:00:00Z',
   priceIdr: 'Rp120.000',
   priceEgp: '360 LE',
-  // Belum ditetapkan panitia. Isi nomor WhatsApp CS (format 62… / 20…) kalau sudah ada: tombol "Tanya panitia" muncul sendiri.
-  whatsapp: '',
+  // Nomor WhatsApp panitia (format internasional tanpa +). Dipakai tombol "Tanya panitia" dan konfirmasi bayar Pound Mesir.
+  whatsapp: '6281311506025',
 };
 
 const EVENT_AUDIENCE = [
@@ -225,7 +225,7 @@ const EventRegisterBox = () => {
           </>
         ) : (
           <p className="text-sm text-ink-muted mt-2 leading-relaxed">
-            Bayar {price} langsung ke panitia. Panitia akan menghubungimu lewat WhatsApp di nomor {mine.whatsapp}, lalu menandai pendaftaranmu lunas setelah pembayaran diterima.
+            Bayar {price} langsung ke panitia. Hubungi panitia lewat tombol WhatsApp di bawah untuk cara bayarnya. Pendaftaranmu ditandai lunas setelah pembayaran diterima.
           </p>
         )}
         <p className="text-xs text-ink-soft mt-3 leading-relaxed">
@@ -252,6 +252,7 @@ const EventRegisterBox = () => {
         </p>
         <button onClick={login} className="btn btn-primary px-6 py-3 text-sm mt-4">Masuk dengan Google untuk daftar <Icon name="arrowRight" className="w-4 h-4"/></button>
         <p className="text-xs text-ink-soft mt-3">Sisa {info.left} dari {info.quota} kursi.</p>
+        <div className="mt-3"><EventWaButton/></div>
       </div>
     );
   }
@@ -510,8 +511,9 @@ const EventImtihanPage = () => {
             ))}
           </div>
           <p className="mt-6 text-xs text-ink-soft leading-relaxed max-w-2xl">
-            Nama narasumber dan kontak panitia akan diperbarui di halaman ini setelah ditetapkan.
+            Nama narasumber akan diperbarui di halaman ini setelah ditetapkan.
           </p>
+          <div className="mt-4"><EventWaButton label="Ada pertanyaan? Tanya panitia"/></div>
         </div>
       </section>
     </div>
