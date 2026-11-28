@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 /* Talqeeh, halaman event (publik): "Menuju Imtihan: Belajar Efektif dengan AI".
    Semua isi diambil dari brief kegiatan. Pendaftaran langsung di halaman ini (api/_lib/workshop.js):
-   wajib login Google, bayar Rupiah lewat Mayar (lunas otomatis) atau Pound Mesir (dikonfirmasi panitia).
+   wajib login Google, bayar Rupiah lewat Mayar (lunas otomatis) atau Pound Mesir (langsung ke panitia, ditandai lunas di Admin).
    Hal yang belum ditetapkan panitia (kontak CS, cara bayar Pound Mesir, nama narasumber) sengaja TIDAK diisi tebakan. */
 
 const EVENT = {
@@ -222,7 +222,7 @@ const EventRegisterBox = () => {
           </>
         ) : (
           <p className="text-sm text-ink-muted mt-2 leading-relaxed">
-            Pembayaran dengan Pound Mesir dikonfirmasi langsung oleh panitia. Panitia akan menghubungimu lewat WhatsApp di nomor {mine.whatsapp}.
+            Bayar {price} langsung ke panitia. Panitia akan menghubungimu lewat WhatsApp di nomor {mine.whatsapp}, lalu menandai pendaftaranmu lunas setelah pembayaran diterima.
           </p>
         )}
         <p className="text-xs text-ink-soft mt-3 leading-relaxed">
@@ -271,7 +271,7 @@ const EventRegisterBox = () => {
       <div className="mt-4">
         <span className="text-xs text-ink-muted">Bayar dengan</span>
         <div className="grid grid-cols-2 gap-2.5 mt-1">
-          {[['IDR', 'Rupiah', EVENT.priceIdr, 'Bayar online lewat Mayar'], ['EGP', 'Pound Mesir', EVENT.priceEgp, 'Dikonfirmasi panitia']].map(([id, label, price, sub]) => (
+          {[['IDR', 'Rupiah', EVENT.priceIdr, 'Bayar online lewat Mayar'], ['EGP', 'Pound Mesir', EVENT.priceEgp, 'Bayar langsung ke panitia']].map(([id, label, price, sub]) => (
             <button type="button" key={id} onClick={() => setForm(f => ({ ...f, currency: id }))}
               className={`text-left rounded-xl border px-4 py-3 transition ${form.currency === id ? 'border-emerald-500/60 bg-emerald-500/12' : 'border-white/12 bg-white/4 hover:border-white/25'}`}>
               <div className="text-[11px] uppercase tracking-wider text-gold-400">{label}</div>
@@ -487,7 +487,7 @@ const EventImtihanPage = () => {
               </div>
             </div>
             <p className="mt-4 text-xs text-ink-soft leading-relaxed max-w-2xl">
-              Kedua nominal adalah harga tetap, bukan hasil konversi kurs. Rupiah dibayar online lewat Mayar. Pound Mesir dikonfirmasi langsung oleh panitia.
+              Kedua nominal adalah harga tetap, bukan hasil konversi kurs. Rupiah dibayar online lewat Mayar. Pound Mesir dibayar langsung ke panitia.
             </p>
             <div className="mt-6"><a href="#daftar" onClick={(e) => { e.preventDefault(); document.getElementById("daftar")?.scrollIntoView({ behavior: "smooth", block: "center" }); }} className="btn btn-primary px-6 py-3 text-sm">Daftar di bagian atas <Icon name="chevronUp" className="w-4 h-4"/></a></div>
           </Reveal>
