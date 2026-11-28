@@ -283,9 +283,13 @@ const TokenAnnouncement = () => {
   const shop = useTokens();
   const path = useRoute();
   const [open, setOpen] = useState(false);
+  // Halaman yang punya tujuan sendiri (admin, event, seminar) tidak ditimpa pengumuman ini.
+  // Pengumuman tetap muncul begitu pengunjung pindah ke halaman lain.
+  const quiet = ['/admin', '/event', '/seminar'].some(q => String(path || '').startsWith(q));
   useEffect(() => {
-    if (shop && !tokenAnnounceSeen() && !String(path || '').startsWith('/admin')) setOpen(true);
-  }, [!!shop]);
+    if (shop && !quiet && !tokenAnnounceSeen()) setOpen(true);
+    else if (quiet) setOpen(false);
+  }, [!!shop, quiet]);
   const close = () => {
     try { localStorage.setItem(TOKEN_ANNOUNCE_KEY, new Date().toISOString()); } catch {}
     setOpen(false);
