@@ -755,6 +755,7 @@ const DashboardHomePage = () => {
   return (
     <div className="page-enter">
       {showOffer && isFree && <UpgradeOfferModal onClose={() => setShowOffer(false)}/>}
+      {window.WorkshopBanner && <window.WorkshopBanner/>}
       <section className="relative pt-6 md:pt-16 pb-16 overflow-hidden">
         <div className="hero-light-beam"/>
         <GlowBlob color="rgba(62,207,142,0.20)" size={600} top={-200} right={-100}/>

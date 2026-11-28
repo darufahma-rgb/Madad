@@ -213,7 +213,10 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     { to: "/kurasah",          label: "Kurasah",   wideOnly: true },
   ];
   // Link tambahan untuk mobile menu
+  // Workshop "Menuju Imtihan": tautannya hilang sendiri saat pendaftaran ditutup (7 Des 2026, 14.00 Kairo).
+  const eventLive = Date.now() < Date.parse('2026-12-07T12:00:00Z');
   const memberLinksExtra = [
+    ...(eventLive ? [{ to: "/event", label: "Workshop Menuju Imtihan" }] : []),
     { to: "/battle",           label: "🎮 Arena Imtihan" },
     { to: "/ai-partner",       label: "AI Partner" },
     { to: "/paths",            label: "Learning Path" },
@@ -223,14 +226,17 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
     { to: "/developer",        label: "Tentang Developer" },
   ];
   const publicLinks = [
+    ...(eventLive ? [{ to: "/event", label: "Workshop", highlight: true }] : []),
     { to: "/battle",        label: "🎮 Arena Imtihan", highlight: true },
     { to: "/sample/nahwu", label: "Preview" },
     { to: "/maddah-publik", label: "Maddah" },
     { to: "/#paket",        label: "Paket" },
     { to: "/framework",     label: "Framework" },
     { to: "/tutorial",      label: "Cara Pakai" },
-    { to: "/checklist-soal", label: "Status Soal" },
-    { to: "/developer",     label: "Developer", xxlOnly: true },
+    // Selama tautan Workshop tampil, "Status Soal" hanya muncul di layar sangat lebar supaya menu tidak terpotong.
+    { to: "/checklist-soal", label: "Status Soal", xxlOnly: eventLive },
+    // "Developer" tetap ada di footer; di menu atas disembunyikan selama tautan Workshop tampil supaya muat.
+    ...(eventLive ? [] : [{ to: "/developer",     label: "Developer", xxlOnly: true }]),
     { to: "/submit-soal",   label: "Submit Soal", highlight: true },
   ];
   const links = session ? memberLinks : publicLinks;
@@ -393,6 +399,7 @@ const Navbar = ({ onOpenLogin, onOpenPayment }) => {
                 </button>
               )}
             </div>
+            {Date.now() < Date.parse('2026-12-07T12:00:00Z') && <SheetLink icon="sparkles" label="Workshop Menuju Imtihan" onClick={() => { navigate("/event"); setMobileSheetOpen(false); }}/>}
             <SheetLink icon="star" label="Statistik Belajarku" onClick={() => { navigate("/statistik"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="target" label="Siap Imtihan" onClick={() => { navigate("/siap-imtihan"); setMobileSheetOpen(false); }}/>
             <SheetLink icon="bookOpen" label="Learning Path" onClick={() => { navigate("/paths"); setMobileSheetOpen(false); }}/>
@@ -433,6 +440,7 @@ const Footer = () => {
         <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
           {[
             ["/", "Beranda"],
+            ...(Date.now() < Date.parse('2026-12-07T12:00:00Z') ? [["/event", "Workshop Menuju Imtihan"]] : []),
             ["/maddah-publik", "Daftar Maddah"],
             ["/bank-soal", "Bank Soal"],
             ["/submit-soal", "Submit Soal"],
