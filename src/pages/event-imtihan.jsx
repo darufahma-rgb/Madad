@@ -85,7 +85,8 @@ const EVENT_OUTCOMES = [
 ];
 
 const EVENT_SPEAKER = {
-  name: 'Daru Fahma Muliawan, Lc.',
+  name: 'Daru Fahmaa Muliawan, Lc.',
+  photo: '/daru-fahmaa.webp',   // foto yang sama dengan halaman Developer dan beranda
   role: 'Founder Talqeeh dan Founder AIGYPT, komunitas AI pertama di Masisir',
   education: [
     'S1 Syariah Islamiyah, Universitas Al-Azhar, Mesir (2019–2024)',
@@ -512,10 +513,9 @@ const EventImtihanPage = () => {
         <div className="container-x">
           <EventSectionTitle kicker="Narasumber" title="Dibawakan langsung oleh pendiri Talqeeh"/>
           <Reveal className="card-glass p-6 md:p-8 max-w-3xl">
-            <div className="flex items-start gap-4">
-              <span className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-center justify-center flex-shrink-0">
-                <Icon name="user" className="w-6 h-6"/>
-              </span>
+            <div className="flex items-center gap-4 md:gap-6">
+              <img src={EVENT_SPEAKER.photo} alt="Daru Fahmaa Muliawan" loading="lazy" width="112" height="112"
+                className="w-20 h-20 md:w-28 md:h-28 rounded-2xl object-cover object-top border border-gold-500/40 flex-shrink-0"/>
               <div className="min-w-0">
                 <div className="font-display text-xl md:text-2xl font-semibold text-ink leading-tight">{EVENT_SPEAKER.name}</div>
                 <div className="text-sm text-gold-300 mt-1">{EVENT_SPEAKER.role}</div>
