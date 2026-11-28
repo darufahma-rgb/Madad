@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 /* Talqeeh, halaman event (publik): "Menuju Imtihan: Belajar Efektif dengan AI".
    Semua isi diambil dari brief kegiatan. Pendaftaran langsung di halaman ini (api/_lib/workshop.js):
    wajib login Google, bayar Rupiah lewat Mayar (lunas otomatis) atau Pound Mesir (langsung ke panitia, ditandai lunas di Admin).
-   Hal yang belum ditetapkan panitia (kontak CS, cara bayar Pound Mesir, nama narasumber) sengaja TIDAK diisi tebakan. */
+   Hal yang belum ditetapkan panitia (mis. rekening atau cara bayar Pound Mesir) sengaja TIDAK diisi tebakan. */
 
 const EVENT = {
   name: 'Menuju Imtihan: Belajar Efektif dengan AI',
@@ -83,6 +83,15 @@ const EVENT_OUTCOMES = [
   'Mampu melakukan latihan pemahaman menggunakan AI.',
   'Memiliki rencana belajar pribadi menjelang imtihan.',
 ];
+
+const EVENT_SPEAKER = {
+  name: 'Daru Fahma Muliawan, Lc.',
+  role: 'Founder Talqeeh dan Founder AIGYPT, komunitas AI pertama di Masisir',
+  education: [
+    'S1 Syariah Islamiyah, Universitas Al-Azhar, Mesir (2019–2024)',
+    "S2 Fiqh 'Amm, Universitas Al-Azhar, Mesir (2025)",
+  ],
+};
 
 const EVENT_ORGANIZERS = [
   { name: 'AIGYPT', role: 'Konsep kegiatan, materi pembelajaran, narasumber, dan pelaksanaan workshop.' },
@@ -498,6 +507,27 @@ const EventImtihanPage = () => {
         </div>
       </section>
 
+      {/* Narasumber */}
+      <section className="pb-12 md:pb-16">
+        <div className="container-x">
+          <EventSectionTitle kicker="Narasumber" title="Dibawakan langsung oleh pendiri Talqeeh"/>
+          <Reveal className="card-glass p-6 md:p-8 max-w-3xl">
+            <div className="flex items-start gap-4">
+              <span className="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 flex items-center justify-center flex-shrink-0">
+                <Icon name="user" className="w-6 h-6"/>
+              </span>
+              <div className="min-w-0">
+                <div className="font-display text-xl md:text-2xl font-semibold text-ink leading-tight">{EVENT_SPEAKER.name}</div>
+                <div className="text-sm text-gold-300 mt-1">{EVENT_SPEAKER.role}</div>
+                <ul className="mt-4 space-y-1.5 text-sm text-ink-muted leading-relaxed">
+                  {EVENT_SPEAKER.education.map((x) => <li key={x}>{x}</li>)}
+                </ul>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
       {/* Penyelenggara */}
       <section className="pb-16 md:pb-24">
         <div className="container-x">
@@ -510,9 +540,6 @@ const EventImtihanPage = () => {
               </Reveal>
             ))}
           </div>
-          <p className="mt-6 text-xs text-ink-soft leading-relaxed max-w-2xl">
-            Nama narasumber akan diperbarui di halaman ini setelah ditetapkan.
-          </p>
           <div className="mt-4"><EventWaButton label="Ada pertanyaan? Tanya panitia"/></div>
         </div>
       </section>
