@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { readSettings } from './_lib/settings.js';
 import { activateLibrary, matchWebhookCheckout, fulfillCheckout } from './_lib/payments.js';
+import { matchWorkshopWebhook } from './_lib/workshop.js';
 
 const readRawBody = (req) => new Promise((resolve) => {
   let body = '';
@@ -214,10 +215,17 @@ async function processEvent(body) {
           handledAs = 'checkout';
         }
       } else {
-        const { mayarLibraryProductId } = await readSettings(['mayarLibraryProductId']);
-        if (mayarLibraryProductId && data.productId === mayarLibraryProductId.trim()) {
-          memberCode = await activateLibraryMember(data);
-          handledAs = memberCode ? 'library' : 'library_no_email';
+        // Tiket workshop (halaman /event): tabel terpisah, tidak mengaktifkan Library atau AI Partner.
+        const workshop = await matchWorkshopWebhook(data);
+        if (workshop) {
+          handledAs = workshop.handledAs;
+          memberCode = workshop.memberCode || null;
+        } else {
+          const { mayarLibraryProductId } = await readSettings(['mayarLibraryProductId']);
+          if (mayarLibraryProductId && data.productId === mayarLibraryProductId.trim()) {
+            memberCode = await activateLibraryMember(data);
+            handledAs = memberCode ? 'library' : 'library_no_email';
+          }
         }
       }
     } else if (AI_STATUS_BY_EVENT[event]) {

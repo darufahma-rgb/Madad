@@ -471,7 +471,27 @@ const LockedPreview = ({ set }) => {
   );
 };
 
-const SummaryTab = ({ set, setSet, access, askTutor }) => {
+/* Ajakan uji diri setelah membaca ringkasan/talkhis: ringkasan hanya pintu masuk, yang menguatkan ingatan
+   adalah mengeluarkan kembali isinya dari kepala sendiri (flashcard, kuis, tahriri). */
+const SelfTestNudge = ({ goTo, kind = 'ringkasan' }) => {
+  if (!goTo) return null;
+  const go = (step, sub, what) => { window.logFunnel?.('selftest', what); goTo(step, sub); };
+  return (
+    <div className="mt-5 rounded-2xl border border-gold-500/30 bg-gold-500/8 p-4 sm:p-5">
+      <div className="text-sm font-semibold text-ink mb-1">Sudah baca {kind}-nya? Sekarang uji dirimu.</div>
+      <p className="text-xs text-ink-muted leading-relaxed mb-3">
+        Membaca {kind} baru langkah awal. Ilmu menempel saat kamu mengeluarkannya lagi dari kepalamu sendiri, lalu cocokkan dengan muqarrar aslinya.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <button onClick={() => go('hafalkan', 'cards', 'cards')} className="btn btn-primary text-xs px-4 py-2"><Icon name="layers" className="w-3.5 h-3.5"/> Hafalkan dengan flashcard</button>
+        <button onClick={() => go('uji', 'quiz', 'quiz')} className="text-xs px-4 py-2 rounded-xl border border-white/12 text-ink hover:border-emerald-500/35 inline-flex items-center gap-1.5"><Icon name="target" className="w-3.5 h-3.5"/> Kerjakan kuis</button>
+        <button onClick={() => go('uji', 'essay', 'essay')} className="text-xs px-4 py-2 rounded-xl border border-white/12 text-ink hover:border-emerald-500/35 inline-flex items-center gap-1.5"><Icon name="pen" className="w-3.5 h-3.5"/> Latihan tahriri</button>
+      </div>
+    </div>
+  );
+};
+
+const SummaryTab = ({ set, setSet, access, askTutor, goTo }) => {
   const { busy, generate, upgrade } = useGenerate(set, setSet, 'summary', 'summary');
   const summaryRef = useRef(null);
   const selected = useTextSelection(summaryRef);
@@ -535,6 +555,7 @@ const SummaryTab = ({ set, setSet, access, askTutor }) => {
       {!continuation.partial && (
         <FeedbackBar setId={set.id} kind="summary" content={set.summary} model={set.progress?.models?.summary} className="mt-4" label="Ringkasan ini akurat & membantu?"/>
       )}
+      {!continuation.continuing && <SelfTestNudge goTo={goTo}/>}
       {access.tier !== 'pro' && <LockedPreview set={set}/>}
       <BattleStudyBanner set={set} />
     </div>
@@ -825,7 +846,21 @@ const MindmapTab = ({ set, setSet, access, askTutor }) => {
 
 /* ── 1c. Materi asli + terjemah, i'rab, harakat ── */
 
-const IrabResult = ({ result, onSaveKurasah, onAddCard, setId, model }) => (
+/* Mode latihan i'rab: i'rab tiap kata ditutup dulu supaya pelajar menebak kedudukannya sendiri,
+   lalu mengetuk untuk mencocokkan. Pilihan diingat per perangkat; bawaannya aktif. */
+const IRAB_PRACTICE_KEY = 'talqeeh_irab_practice';
+const IrabResult = ({ result, onSaveKurasah, onAddCard, setId, model }) => {
+  const [practice, setPractice] = useState(() => { try { return localStorage.getItem(IRAB_PRACTICE_KEY) !== 'off'; } catch { return true; } });
+  const [opened, setOpened] = useState(() => new Set());
+  const togglePractice = () => {
+    const next = !practice;
+    setPractice(next); setOpened(new Set());
+    try { localStorage.setItem(IRAB_PRACTICE_KEY, next ? 'on' : 'off'); } catch {}
+  };
+  const open = (i) => setOpened(prev => new Set(prev).add(i));
+  const total = result.irab.length;
+  const allOpen = !practice || opened.size >= total;
+  return (
   <div className="space-y-5">
     <div className="flex items-start gap-2">
       <ArabicText size={26} className="flex-1">{result.teks}</ArabicText>
@@ -842,11 +877,29 @@ const IrabResult = ({ result, onSaveKurasah, onAddCard, setId, model }) => (
       </div>
     </div>
     <div>
-      <div className="text-[11px] uppercase tracking-wider text-gold-400 mb-2">I'rab</div>
+      <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
+        <div className="text-[11px] uppercase tracking-wider text-gold-400">I'rab</div>
+        <div className="flex items-center gap-2">
+          {practice && !allOpen && (
+            <button onClick={() => setOpened(new Set(result.irab.map((_, i) => i)))} className="text-[11px] px-2.5 py-1 rounded-lg border border-white/10 text-ink-muted hover:text-ink">Tampilkan semua</button>
+          )}
+          <button onClick={togglePractice} className={`text-[11px] px-2.5 py-1 rounded-lg border ${practice ? 'border-emerald-500/40 bg-emerald-500/12 text-emerald-200' : 'border-white/10 text-ink-muted hover:text-ink'}`}>
+            {practice ? 'Mode latihan: aktif' : 'Mode latihan: mati'}
+          </button>
+        </div>
+      </div>
+      {practice && !allOpen && (
+        <p className="text-xs text-ink-muted mb-2">Tebak dulu kedudukan tiap kata, lalu ketuk untuk mencocokkan jawabanmu.</p>
+      )}
       <div className="rounded-xl border border-white/8 overflow-hidden">
         {result.irab.map((w, i) => (
           <div key={i} className="grid grid-cols-[minmax(70px,auto)_1fr] gap-3 px-4 py-3 border-b border-white/6 last:border-0 odd:bg-white/2">
             <div dir="rtl" className="text-gold-300 text-right" style={{ fontFamily: '"Noto Naskh Arabic", serif', fontSize: 20 }}>{w.kata}</div>
+            {practice && !opened.has(i) ? (
+              <button onClick={() => open(i)} className="min-w-0 text-left rounded-lg border border-dashed border-white/15 px-3 py-2 text-xs text-ink-muted hover:border-emerald-500/40 hover:text-ink">
+                Apa kedudukan kata ini? Ketuk untuk melihat i'rabnya.
+              </button>
+            ) : (
             <div className="min-w-0">
               <div dir="rtl" className="text-ink text-right" style={{ fontFamily: '"Noto Naskh Arabic", serif', fontSize: 16, lineHeight: 1.8 }}>{w.irab}</div>
               {w.penjelasan && <div className="text-xs text-ink-muted mt-0.5">{w.penjelasan}</div>}
@@ -857,6 +910,7 @@ const IrabResult = ({ result, onSaveKurasah, onAddCard, setId, model }) => (
                 </div>
               )}
             </div>
+            )}
           </div>
         ))}
       </div>
@@ -887,7 +941,8 @@ const IrabResult = ({ result, onSaveKurasah, onAddCard, setId, model }) => (
         content={`${result.teks}\n${result.terjemah_bebas}\n${result.irab.map(w => `${w.kata}: ${w.irab}`).join('\n')}`}/>
     )}
   </div>
-);
+  );
+};
 
 const irabToMarkdown = (r) =>
   `## ${r.teks}\n\n**Terjemah harfiyah:** ${r.terjemah_harfiyah}\n\n**Terjemah bebas:** ${r.terjemah_bebas}\n\n| Kata | I'rab | Penjelasan |\n|---|---|---|\n` +
@@ -1798,7 +1853,7 @@ const TutorTab = ({ set, setSet, access, initialAsk, onAsked }) => {
   const chat = (set.chat || []).filter(m => (m.mode || 'tutor') === mode);
   const speech = useArabicSpeech();
   const [voiceOn, setVoiceOn] = useState(() => { try { return localStorage.getItem(SYAFAWI_VOICE_KEY) !== 'off'; } catch { return true; } });
-  const [guruOn, setGuruOn] = useState(() => { try { return localStorage.getItem(TUTOR_GURU_KEY) === 'on'; } catch { return false; } });
+  const [guruOn, setGuruOn] = useState(() => { try { return localStorage.getItem(TUTOR_GURU_KEY) !== 'off'; } catch { return true; } });
   const toggleGuru = () => {
     const next = !guruOn;
     setGuruOn(next);
@@ -2247,7 +2302,7 @@ export const BattleTab = ({ set }) => {
 
 Object.assign(window, {
   MasteryCard, SummaryTab, MindmapTab, MaterialTab, FlashcardTab, GlossaryTab, QuizTab, EssayTab, TutorTab,
-  BattleTab, BattleStudyBanner, launchBattleFromSet,
+  BattleTab, BattleStudyBanner, launchBattleFromSet, SelfTestNudge,
   // Dipakai juga oleh talkhisan kuliah di halaman Live Caption.
   SummaryView, LangPicker, LiveWritingNote,
 });

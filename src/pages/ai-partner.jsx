@@ -652,6 +652,8 @@ const AiPartnerDetail = ({ setId, status }) => {
   }, 0);
   const goStep = (id) => { setStep(id); showContent(); };
   const goSub = (id) => { setSub(p => ({ ...p, [step]: id })); showContent(); };
+  // Pindah langsung ke tab tertentu (mis. dari ringkasan ke kuis) untuk ajakan uji diri.
+  const goTo = (stepId, subId) => { setSub(p => ({ ...p, [stepId]: subId })); setStep(stepId); showContent(); };
   // "Tanya tutor" dari kuis, flashcard, peta konsep, atau tahriri: buka tab Tanya dan kirim pertanyaannya.
   // Pengguna coba gratis juga boleh, di materi coba gratisnya selama jatah cicip tutor masih ada.
   const askTutor = (isPro || trialTaste(access, 'tutor').can) ? (text) => {
@@ -744,7 +746,7 @@ const AiPartnerDetail = ({ setId, status }) => {
 
       <SpeechPlayer/>
       <TabBody key={`${set.id}-${current.id}`} set={set} setSet={setSet} access={access}
-        askTutor={askTutor} initialAsk={current.id === 'tutor' ? pendingAsk : null} onAsked={() => setPendingAsk(null)}/>
+        askTutor={askTutor} goTo={goTo} initialAsk={current.id === 'tutor' ? pendingAsk : null} onAsked={() => setPendingAsk(null)}/>
     </div>
   );
 };
