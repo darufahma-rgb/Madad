@@ -204,11 +204,20 @@ const EventRegisterBox = () => {
   if (loading) return <div className="card-glass p-5 text-sm text-ink-muted">Memuat pendaftaran…</div>;
   if (!info || !info.ready) return <EventNotice title="Pendaftaran segera dibuka">Formulir pendaftaran akan muncul di sini.</EventNotice>;
 
-  // Sudah lunas.
+  // Sudah lunas. Tautan grup WhatsApp peserta dikirim server hanya untuk status ini.
   if (mine && mine.status === 'paid') {
     return (
       <EventNotice tone="emerald" title={`Kamu sudah terdaftar, ${mine.name}.`}>
         Pembayaranmu sudah kami terima. Sampai jumpa {EVENT.day}, {EVENT.date} di {EVENT.place}. Registrasi mulai 13.30 waktu Kairo.
+        {mine.groupUrl && (
+          <div className="mt-4 rounded-xl border border-emerald-500/35 bg-black/20 px-4 py-3.5">
+            <div className="text-sm font-semibold text-ink">Langkah terakhir: gabung grup WhatsApp peserta</div>
+            <p className="text-xs text-ink-muted mt-1 leading-relaxed">Info lokasi, persiapan, dan pengumuman dari panitia dibagikan di grup ini.</p>
+            <a href={mine.groupUrl} target="_blank" rel="noopener noreferrer" className="btn btn-primary px-5 py-2.5 text-sm mt-3">
+              <Icon name="users" className="w-4 h-4"/> Gabung grup WhatsApp
+            </a>
+          </div>
+        )}
         <div className="mt-3"><EventWaButton/></div>
       </EventNotice>
     );

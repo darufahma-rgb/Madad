@@ -142,6 +142,22 @@ test('webhook Mayar menandai lunas, dan mengabaikan pembayaran lain', async () =
   assert.equal(rows[0].paid_via, 'webhook');
 });
 
+test('tautan grup WhatsApp hanya untuk yang sudah lunas', async () => {
+  reset(); at('2026-11-30T10:00:00Z');
+  const a = await reg(1);
+  assert.equal(a.registration.groupUrl, null);
+  const e = await reg(2, { currency: 'EGP' });
+  assert.equal(e.registration.groupUrl, null);
+  assert.equal(JSON.stringify(await W.workshopInfo()).includes('chat.whatsapp.com'), false);
+  await W.matchWorkshopWebhook({ paymentLinkId: rows[0].mayar_id, amount: 120000 });
+  const paid = W.publicRegistration(await W.getMyRegistration(user(1).id));
+  assert.match(paid.groupUrl, /^https:\/\/chat\.whatsapp\.com\//);
+  await W.setRegistrationStatus(rows[1].id, 'paid');
+  assert.match(W.publicRegistration(await W.getMyRegistration(user(2).id)).groupUrl, /^https:\/\/chat\.whatsapp\.com\//);
+  await W.setRegistrationStatus(rows[1].id, 'cancelled');
+  assert.equal(W.publicRegistration(await W.getMyRegistration(user(2).id)).groupUrl, null);
+});
+
 test('pendaftaran ditutup saat acara mulai', async () => {
   reset(); at('2026-12-07T12:00:01Z');
   assert.equal((await reg(1)).status, 'closed');
