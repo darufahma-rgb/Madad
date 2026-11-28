@@ -14,6 +14,8 @@ export const WORKSHOP = {
   price: { IDR: 120000, EGP: 360 },
   // Pendaftaran ditutup saat acara mulai: Senin 7 Desember 2026, 14.00 waktu Kairo (UTC+2).
   closesAt: '2026-12-07T12:00:00Z',
+  // Grup WhatsApp peserta. Hanya dikirim ke pendaftar yang SUDAH LUNAS (lihat publicRow), tidak pernah ke halaman publik.
+  groupUrl: 'https://chat.whatsapp.com/HIuG5NRzFIACV1VXofRI5s',
 };
 
 const HOLD_MS = 24 * 3600 * 1000;         // lama kursi dipegang pendaftar yang belum bayar
@@ -61,6 +63,7 @@ const publicRow = (row) => row && ({
   id: row.id, status: row.status, currency: row.currency, amount: row.amount, name: row.name, whatsapp: row.whatsapp,
   link: row.status === 'pending' && row.currency === 'IDR' && row.link && Date.now() - Date.parse(row.link_at || row.created_at) < LINK_TTL_MS ? row.link : null,
   seatHeld: holding(row), paidAt: row.paid_at || null,
+  groupUrl: row.status === 'paid' && /^https:\/\/chat\.whatsapp\.com\//.test(WORKSHOP.groupUrl || '') ? WORKSHOP.groupUrl : null,
 });
 
 export async function getMyRegistration(authUserId) {

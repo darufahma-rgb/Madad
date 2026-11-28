@@ -332,7 +332,9 @@ export default function TutorialModal() {
   useEffect(() => {
     // Pengguna baru mendapat onboarding singkat + tawaran paket dulu; tutorial tidak ikut terbuka sendiri
     // (tetap bisa dibuka lewat tombol Tutorial).
-    if (isLoggedIn && onboarded) {
+    // Tidak membuka sendiri di halaman event: di sana pengunjung sedang mendaftar workshop.
+    const onEventPage = (window.location.pathname + window.location.hash).includes("/event");
+    if (isLoggedIn && onboarded && !onEventPage) {
       const done = localStorage.getItem("talqeeh_tutorial_done");
       if (!done) {
         const t = setTimeout(() => setOpen(true), 800);
